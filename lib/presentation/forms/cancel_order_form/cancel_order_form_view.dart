@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:formz/formz.dart';
-import 'package:flutter/services.dart';
 import 'package:horizon/domain/entities/remote_data.dart';
-import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
 import 'package:horizon/presentation/common/fee_estimation_v2.dart';
 
@@ -69,7 +67,8 @@ class _CancelOrderForm extends State<CancelOrderForm> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            OfferHashInputField(controller: _offerHashController),
+            // OfferHashInputField(controller: _offerHashController),
+            const OpenOrderInputField(),
             const HorizonUI.HorizonDivider(),
             FeeSelectionV2(
               value: state.feeOption,
@@ -126,48 +125,90 @@ class _CancelOrderForm extends State<CancelOrderForm> {
   }
 }
 
-class OfferHashInputField extends StatelessWidget {
-  TextEditingController controller;
+// class OfferHashInputField extends StatelessWidget {
+//   TextEditingController controller;
+//
+//   OfferHashInputField({super.key, required this.controller});
+//
+//   @override
+//   Widget build(BuildContext context) {
+//     return BlocBuilder<CancelOrderFormBloc, FormStateModel>(
+//       // buildWhen: (previous, current) =>
+//       //     previous.offerHash != current.offerHash ||
+//       //     previous.offerHashValidationStatus != current.offerHashValidationStatus,
+//       builder: (context, state) {
+//         final hasError = !state.offerHash.isPure && state.offerHash.isNotValid;
+//
+//         final error = switch (state.offerHash.error) {
+//           OfferHashValidationError.required => "Required",
+//           _ => null
+//         };
+//
+//         return TextField(
+//             controller: controller,
+//             onChanged: (value) => context
+//                 .read<CancelOrderFormBloc>()
+//                 .add(OfferHashChanged(value)),
+//             decoration: InputDecoration(
+//               labelText: 'Offer Hash',
+//               errorText: hasError ? error : null,
+//               helperText: hasError ? null : ' ',
+//               // suffixIcon: switch (state.offerHashValidationStatus) {
+//               //   Loading() => Container(
+//               //       height: 10,
+//               //       width: 10,
+//               //       margin: const EdgeInsets.all(12.0),
+//               //       child: const CircularProgressIndicator(strokeWidth: 2)),
+//               //   Success() => const Icon(
+//               //       Icons.check,
+//               //       color: Colors.green,
+//               //       size: 20, // Adjust size as needed
+//               //     ),
+//               //   _ => const SizedBox.shrink()
+//               // }),
+//             ));
+//       },
+//     );
+//   }
+// }
 
-  OfferHashInputField({super.key, required this.controller});
+class OpenOrderInputField extends StatelessWidget {
+  const OpenOrderInputField({super.key});
 
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<CancelOrderFormBloc, FormStateModel>(
-      // buildWhen: (previous, current) =>
-      //     previous.offerHash != current.offerHash ||
-      //     previous.offerHashValidationStatus != current.offerHashValidationStatus,
       builder: (context, state) {
-        final hasError = !state.offerHash.isPure && state.offerHash.isNotValid;
-
-        final error = switch (state.offerHash.error) {
-          OfferHashValidationError.required => "Required",
-          _ => null
+        return switch (state.orders) {
+          NotAsked() => const CircularProgressIndicator(),
+          Loading() => const CircularProgressIndicator(),
+          Success(data: var orders) => HorizonUI.HorizonDropdownMenu<String>(
+              enabled: true,
+              label: "Select Order to Cancel",
+              selectedValue: state.offerHash.value.isNotEmpty
+                  ? state.offerHash.value
+                  : null,
+              onChanged: (String? value) {
+                context
+                    .read<CancelOrderFormBloc>()
+                    .add(OfferHashChanged(value!));
+              },
+              items: orders
+                  .map((order) => DropdownMenuItem<String>(
+                      value: order.txHash,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(order.txHash.substring(0, 6)),
+                          const SizedBox(width: 16),
+                          Text(
+                              "${order.giveQuantityNormalized} ${order.giveAsset} / ${order.getQuantityNormalized} ${order.getAsset}")
+                        ],
+                      )))
+                  .toList(),
+            ),
+          Failure(errorMessage: var error) => Text(error.toString())
         };
-
-        return TextField(
-            controller: controller,
-            onChanged: (value) => context
-                .read<CancelOrderFormBloc>()
-                .add(OfferHashChanged(value)),
-            decoration: InputDecoration(
-              labelText: 'Offer Hash',
-              errorText: hasError ? error : null,
-              helperText: hasError ? null : ' ',
-              // suffixIcon: switch (state.offerHashValidationStatus) {
-              //   Loading() => Container(
-              //       height: 10,
-              //       width: 10,
-              //       margin: const EdgeInsets.all(12.0),
-              //       child: const CircularProgressIndicator(strokeWidth: 2)),
-              //   Success() => const Icon(
-              //       Icons.check,
-              //       color: Colors.green,
-              //       size: 20, // Adjust size as needed
-              //     ),
-              //   _ => const SizedBox.shrink()
-              // }),
-            ));
       },
     );
   }

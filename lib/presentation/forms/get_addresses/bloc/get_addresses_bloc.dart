@@ -46,15 +46,12 @@ class GetAddressesBloc extends Bloc<GetAddressesEvent, GetAddressesState> {
         addresses =
             await addressRepository.getAllByAccountUuid(selectedAccountUuid);
       } else {
-        if (state.importedAddress == null) {
-          throw Exception("No imported address selected.");
-        }
-
         addresses = [
           Address(
               address: state.importedAddress.value,
               accountUuid: "-1",
-              index: -1) // Cast an imported address to an address ( accountUuid and index do not matter )
+              index:
+                  -1) // Cast an imported address to an address ( accountUuid and index do not matter )
         ]; // Wrap the single selected address in a list
       }
 

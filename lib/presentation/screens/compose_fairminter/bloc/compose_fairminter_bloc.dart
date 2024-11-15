@@ -22,12 +22,14 @@ class ComposeFairminterEventParams {
   final int? startBlock;
   final bool isLocked;
   final String? parent;
+  final int? endBlock;
   ComposeFairminterEventParams({
     required this.asset,
     required this.maxMintPerTx,
     required this.hardCap,
     required this.divisible,
     this.startBlock,
+    this.endBlock,
     required this.isLocked,
     this.parent,
   });
@@ -148,7 +150,8 @@ class ComposeFairminterBloc extends ComposeBaseBloc<ComposeFairminterState> {
                   hardCap: event.params.hardCap,
                   startBlock: event.params.startBlock,
                   divisible: event.params.divisible,
-                  lockQuantity: event.params.isLocked),
+                  lockQuantity: event.params.isLocked,
+                  endBlock: event.params.endBlock),
               composeFn: composeRepository.composeFairminterVerbose);
 
       final composed = composeResponse.$1;

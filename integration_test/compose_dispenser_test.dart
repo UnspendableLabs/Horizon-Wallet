@@ -600,6 +600,90 @@ void main() {
           findsOneWidget);
     });
 
+    testWidgets('ensure price per unit exceeds dust limit',
+        (WidgetTester tester) async {
+      // Mock dependencies
+      when(() => mockFetchDispenserFormDataUseCase.call(any()))
+          .thenAnswer((_) async => (
+                [
+                  Balance(
+                    address: "test-address",
+                    asset: 'ASSET1_DIVISIBLE',
+                    quantity: 100000000,
+                    quantityNormalized: '1.0',
+                    assetInfo: FakeAssetInfo(
+                        divisible: true, assetLongname: "ASSET1_DIVISIBLE"),
+                  ),
+                  Balance(
+                    address: "test-address",
+                    asset: 'ASSET2_NOT_DIVISIBLE',
+                    quantity: 10,
+                    quantityNormalized: '10',
+                    assetInfo: FakeAssetInfo(
+                        divisible: false,
+                        assetLongname: "ASSET2_NOT_DIVISIBLE"),
+                  ),
+                ],
+                const FeeEstimates(fast: 10, medium: 5, slow: 2),
+                <Dispenser>[],
+              ));
+
+      when(() => mockWriteLocalTransactionUseCase.call(any(), any()))
+          .thenAnswer((_) async {});
+      when(() => mockAnalyticsService.trackEvent(any()))
+          .thenAnswer((_) async {});
+
+      // Instantiate ComposeDispenserBloc with mocks
+      final composeDispenserBloc = ComposeDispenserBloc(
+        fetchDispenserFormDataUseCase: mockFetchDispenserFormDataUseCase,
+        composeTransactionUseCase: mockComposeTransactionUseCase,
+        composeRepository: mockComposeRepository,
+        analyticsService: mockAnalyticsService,
+        signAndBroadcastTransactionUseCase:
+            mockSignAndBroadcastTransactionUseCase,
+        writelocalTransactionUseCase: mockWriteLocalTransactionUseCase,
+      );
+
+      // Build the widget tree
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: MultiBlocProvider(
+              providers: [
+                BlocProvider<ComposeDispenserBloc>.value(
+                    value: composeDispenserBloc),
+                BlocProvider<DashboardActivityFeedBloc>.value(
+                    value: mockDashboardActivityFeedBloc),
+              ],
+              child: ComposeDispenserPage(
+                address: FakeAddress().address,
+                dashboardActivityFeedBloc: mockDashboardActivityFeedBloc,
+              ),
+            ),
+          ),
+        ),
+      );
+
+      // Dispatch the FetchFormData event
+      composeDispenserBloc
+          .add(FetchFormData(currentAddress: FakeAddress().address));
+
+      // Allow time for the Bloc to process and the UI to rebuild
+      await tester.pumpAndSettle();
+
+      await tester.enterText(
+          find.byKey(const Key('price_per_unit_input')), '0.000005');
+
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.widgetWithText(ElevatedButton, 'CONTINUE'));
+
+      await tester.pumpAndSettle();
+
+      expect(find.text('Price must exceed dust limit of 600 satoshis'),
+          findsOneWidget);
+    });
+
     testWidgets('give_quantity <= escrow_quantity',
         (WidgetTester tester) async {
       // Mock dependencies
