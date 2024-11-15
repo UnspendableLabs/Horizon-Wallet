@@ -10,7 +10,7 @@ AssetInfoModel _$AssetInfoModelFromJson(Map<String, dynamic> json) =>
     AssetInfoModel(
       divisible: json['divisible'] as bool,
       assetLongname: json['asset_longname'] as String?,
-      description: json['description'] as String,
+      description: json['description'] as String?,
       locked: json['locked'] as bool,
       issuer: json['issuer'] as String?,
     );

@@ -24,6 +24,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:horizon/domain/repositories/asset_repository.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
+import 'package:horizon/domain/repositories/order_repository.dart';
 import 'package:horizon/presentation/forms/cancel_order_form/cancel_order_form_bloc.dart';
 import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
@@ -75,11 +76,9 @@ class ComposeCancelPageWrapper extends StatelessWidget {
               )..add(FetchFormData(currentAddress: currentAddress)),
               child: BlocProvider(
                 create: (context) => CancelOrderFormBloc(
+                    orderRepository: GetIt.I.get<OrderRepository>(),
                     composeRepository: GetIt.I.get<ComposeRepository>(),
                     onSubmitSuccess: (success) {
-                      print("form submit succss");
-                      print(success);
-
                       context
                           .read<ComposeCancelBloc>()
                           .add(ComposeResponseReceived(

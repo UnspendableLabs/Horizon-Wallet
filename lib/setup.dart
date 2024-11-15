@@ -51,6 +51,9 @@ import 'package:horizon/domain/services/wallet_service.dart';
 import 'package:horizon/domain/repositories/asset_repository.dart';
 import 'package:horizon/data/sources/repositories/asset_repository_impl.dart';
 
+import 'package:horizon/domain/repositories/order_repository.dart';
+import 'package:horizon/data/sources/repositories/order_repository_impl.dart';
+
 import 'package:horizon/domain/repositories/transaction_repository.dart';
 import 'package:horizon/data/sources/repositories/transaction_repository_impl.dart';
 import 'package:horizon/data/sources/local/dao/transactions_dao.dart';
@@ -270,6 +273,9 @@ Future<void> setup() async {
       AddressRepositoryImpl(injector.get<DatabaseManager>().database));
   injector.registerSingleton<ImportedAddressRepository>(
       ImportedAddressRepositoryImpl(injector.get<DatabaseManager>().database));
+
+  injector.registerSingleton<OrderRepository>(
+      OrderRepositoryImpl(api: GetIt.I.get<V2Api>()));
 
   injector.registerSingleton<EventsRepository>(
       EventsRepositoryImpl(api_: GetIt.I.get<V2Api>()));

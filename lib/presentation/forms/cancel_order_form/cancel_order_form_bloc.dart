@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:horizon/domain/entities/order.dart';
 import 'package:horizon/domain/entities/remote_data.dart';
 import 'package:formz/formz.dart';
 import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
@@ -6,6 +7,7 @@ import 'package:horizon/domain/entities/fee_option.dart' as FeeOption;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/repositories/asset_repository.dart';
+import 'package:horizon/domain/repositories/order_repository.dart';
 import 'package:bloc_concurrency/bloc_concurrency.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
@@ -70,6 +72,8 @@ class SubmissionFailed extends FormEvent {
 // State
 
 class FormStateModel extends Equatable {
+  final RemoteData<List<Order>> orders;
+
   final RemoteData<FeeEstimates> feeEstimates;
   final FeeOption.FeeOption feeOption;
 
@@ -79,6 +83,7 @@ class FormStateModel extends Equatable {
   final String? errorMessage;
 
   const FormStateModel({
+    required this.orders,
     required this.feeEstimates,
     required this.feeOption,
     this.offerHash = const OfferHashInput.pure(),
@@ -89,6 +94,7 @@ class FormStateModel extends Equatable {
   });
 
   FormStateModel copyWith({
+    RemoteData<List<Order>>? orders,
     OfferHashInput? offerHash,
     FormzSubmissionStatus? submissionStatus,
     String? errorMessage,
@@ -96,6 +102,7 @@ class FormStateModel extends Equatable {
     RemoteData<FeeEstimates>? feeEstimates,
   }) {
     return FormStateModel(
+      orders: orders ?? this.orders,
       offerHash: offerHash ?? this.offerHash,
       submissionStatus: submissionStatus ?? this.submissionStatus,
       errorMessage: errorMessage ?? this.errorMessage,
@@ -106,6 +113,7 @@ class FormStateModel extends Equatable {
 
   @override
   List<Object?> get props => [
+        orders,
         offerHash,
         submissionStatus,
         errorMessage,
@@ -154,6 +162,7 @@ class CancelOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
 
   final ComposeTransactionUseCase composeTransactionUseCase;
   final ComposeRepository composeRepository;
+  final OrderRepository orderRepository;
 
   CancelOrderFormBloc({
     required this.onSubmitSuccess,
@@ -164,9 +173,11 @@ class CancelOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
     required this.composeTransactionUseCase,
     required this.composeRepository,
     required this.onFormCancelled,
+    required this.orderRepository,
     String? initialGiveAsset,
     int? initialGiveQuantity,
   }) : super(FormStateModel(
+          orders: NotAsked(),
           feeEstimates: NotAsked(),
           feeOption: Medium(),
         )) {
@@ -184,17 +195,15 @@ class CancelOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
     InitializeForm event,
     Emitter<FormStateModel> emit,
   ) async {
-    print("iniitialize?");
-
-    emit(state.copyWith(feeEstimates: Loading()));
+    emit(state.copyWith(feeEstimates: Loading(), orders: Loading()));
 
     try {
-      final feeEstimates = await _fetchFeeEstimates();
-      emit(state.copyWith(feeEstimates: Success(feeEstimates)));
-      print("fee estiamtes $feeEstimates");
-      print("iniitialize success?");
+      final [feeEstimates as FeeEstimates, openOrders as List<Order>] =
+          await Future.wait([_fetchFeeEstimates(), _fetchOrders()]);
+
+      emit(state.copyWith(
+          feeEstimates: Success(feeEstimates), orders: Success(openOrders)));
     } catch (e) {
-      print("iniitialize error?");
       emit(state.copyWith(
         errorMessage: "Error initializing form",
       ));
@@ -294,6 +303,17 @@ class CancelOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
     }
   }
 
+  Future<List<Order>> _fetchOrders() async {
+    try {
+      final e =
+          await orderRepository.getByAddress(currentAddress, "open").run();
+      return e.match(
+          (error) => throw FetchOrdersException(error), (success) => success);
+    } catch (e) {
+      throw FetchOrdersException(e.toString());
+    }
+  }
+
   int _getFeeRate() {
     return switch (state.feeEstimates) {
       Success(data: var feeEstimates) => switch (state.feeOption) {
@@ -305,6 +325,13 @@ class CancelOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
       _ => throw Exception("fee? invariant")
     };
   }
+}
+
+class FetchOrdersException implements Exception {
+  final String message;
+  FetchOrdersException(this.message);
+  @override
+  String toString() => 'FetchOrdersException: $message';
 }
 
 class FetchFeeEstimatesException implements Exception {

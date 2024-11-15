@@ -10,6 +10,7 @@ import 'package:horizon/data/models/compose_cancel.dart';
 import 'package:horizon/data/models/cursor.dart';
 import 'package:horizon/data/models/dispenser.dart';
 import 'package:horizon/data/models/fairminter.dart';
+import 'package:horizon/data/models/order.dart';
 import 'package:horizon/data/models/node_info.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:retrofit/retrofit.dart';
@@ -3705,6 +3706,54 @@ class UTXO {
   factory UTXO.fromJson(Map<String, dynamic> json) => _$UTXOFromJson(json);
 }
 
+// {
+//       "tx_index": 2962751,
+//       "tx_hash": "b9966a3daa4ea075902c4f0c3e123abd1164501076914249dbfd1c10bdb8ecb0",
+//       "block_index": 870109,
+//       "source": "bc1q0eapk4tyqa7r2vcta6z6v2mgnqcux3kfkmurzp",
+//       "give_asset": "PEPEFAIR",
+//       "give_quantity": 1000000000,
+//       "give_remaining": 1000000000,
+//       "get_asset": "MINTS",
+//       "get_quantity": 1000000000,
+//       "get_remaining": 1000000000,
+//       "expiration": 100,
+//       "expire_index": 870108,
+//       "fee_required": 0,
+//       "fee_required_remaining": 0,
+//       "fee_provided": 4872,
+//       "fee_provided_remaining": 4872,
+//       "status": "expired",
+//       "give_price": 1,
+//       "get_price": 1,
+//       "confirmed": true,
+//       "block_time": 1731490433,
+//       "give_asset_info": {
+//         "asset_longname": "",
+//         "description": "https://jlbmoope6h7l77q57j6ij7az35ekslty4lzhqyxdv425pqqffira.arweave.net/SsLHOeTx_r_-Hfp8hPwZ30ipLnji8nhi468118IFKiI/PEPEF.json",
+//         "issuer": "1LEVY62hNa2qQybRFWLb2h9sdPPexnDcR",
+//         "divisible": true,
+//         "locked": true
+//       },
+//       "get_asset_info": {
+//         "asset_longname": "",
+//         "description": "https://www.xcp.io/json/mints.json",
+//         "issuer": "1PWef6kHvfmdEBBM2vKtJcijzVJpiE4Fic",
+//         "divisible": true,
+//         "locked": true
+//       },
+//       "give_quantity_normalized": "10.00000000",
+//       "get_quantity_normalized": "10.00000000",
+//       "get_remaining_normalized": "10.00000000",
+//       "give_remaining_normalized": "10.00000000",
+//       "fee_provided_normalized": "0.00004872",
+//       "fee_required_normalized": "0.00000000",
+//       "fee_required_remaining_normalized": "0.00000000",
+//       "fee_provided_remaining_normalized": "0.00004872",
+//       "give_price_normalized": "1.0000000000000000",
+//       "get_price_normalized": "1.0000000000000000"
+//     }
+
 @RestApi()
 abstract class V2Api {
   factory V2Api(Dio dio, {String baseUrl}) = _V2Api;
@@ -3993,6 +4042,16 @@ abstract class V2Api {
     @Query("unconfirmed") bool? unconfirmed,
     @Query("exact_fee") int? fee,
     @Query("inputs_set") String? inputsSet,
+  ]);
+
+  @GET("/addresses/{address}/orders?verbose=true")
+  Future<Response<List<OrderVerbose>>> getOrdersByAddressVerbose(
+    @Path("address") String address, [
+    @Query("status") String? status,
+    @Query("show_unconfirmed") bool? showUnconfirmed,
+    @Query("cursor") CursorModel? cursor,
+    @Query("limit") int? limit,
+    @Query("offset") int? offset,
   ]);
 
   @GET("/fairminters?verbose=true")
