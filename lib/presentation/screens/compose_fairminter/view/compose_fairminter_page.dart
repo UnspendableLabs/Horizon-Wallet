@@ -81,6 +81,7 @@ class ComposeFairminterPageState extends State<ComposeFairminterPage> {
   TextEditingController maxMintPerTxController = TextEditingController();
   TextEditingController hardcapController = TextEditingController();
   TextEditingController startBlockController = TextEditingController();
+  TextEditingController endBlockController = TextEditingController();
 
   Asset? asset;
 
@@ -132,7 +133,12 @@ class ComposeFairminterPageState extends State<ComposeFairminterPage> {
                         const HorizonUI.HorizonTextFormField(
                           label: "Start block (optional)",
                           enabled: false,
-                        )
+                        ),
+                        const SizedBox(height: 16.0),
+                        const HorizonUI.HorizonTextFormField(
+                          label: "End block (optional)",
+                          enabled: false,
+                        ),
                       ],
                   onInitialCancel: () => _handleInitialCancel(),
                   onInitialSubmit: (formKey) {},
@@ -224,6 +230,9 @@ class ComposeFairminterPageState extends State<ComposeFairminterPage> {
               startBlock: startBlockController.text.isEmpty
                   ? null
                   : int.parse(startBlockController.text),
+              endBlock: endBlockController.text.isEmpty
+                  ? null
+                  : int.parse(endBlockController.text),
               isLocked: isLocked,
             ),
           ));
@@ -360,6 +369,17 @@ class ComposeFairminterPageState extends State<ComposeFairminterPage> {
           _handleInitialSubmit(formKey, assets);
         },
       ),
+      const SizedBox(height: 16.0),
+      HorizonUI.HorizonTextFormField(
+        label: "End block (optional)",
+        controller: endBlockController,
+        inputFormatters: [
+          FilteringTextInputFormatter.digitsOnly,
+        ],
+        onFieldSubmitted: (value) {
+          _handleInitialSubmit(formKey, assets);
+        },
+      ),
       if (error != null)
         SelectableText(
           error!,
@@ -417,6 +437,12 @@ class ComposeFairminterPageState extends State<ComposeFairminterPage> {
       HorizonUI.HorizonTextFormField(
         label: "Start block",
         controller: TextEditingController(text: params.startBlock.toString()),
+        enabled: false,
+      ),
+      const SizedBox(height: 16.0),
+      HorizonUI.HorizonTextFormField(
+        label: "End block",
+        controller: TextEditingController(text: params.endBlock.toString()),
         enabled: false,
       ),
     ];

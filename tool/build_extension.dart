@@ -11,7 +11,8 @@ void main(List<String> args) async {
   final apiPassword = Platform.environment['HORIZON_COUNTERPARTY_API_PASSWORD'];
 
   if (browser == "firefox") {
-    print('Firefox is not supported for extension build. See https://bugzilla.mozilla.org/show_bug.cgi?id=1688314');
+    print(
+        'Firefox is not supported for extension build. See https://bugzilla.mozilla.org/show_bug.cgi?id=1688314');
     exit(1);
   }
 
@@ -47,7 +48,6 @@ Future<void> buildFlutter(
     '--csp',
     '--no-web-resources-cdn',
     '--release',
-
     '--dart-define=HORIZON_IS_EXTENSION=true',
     '--dart-define=HORIZON_NETWORK=$network',
     '--dart-define=HORIZON_ENABLE_DB_VIEWER=true',
@@ -73,18 +73,18 @@ Future<String> buildManifest(String browser) async {
     };
   }
 
-  final outputPath = 'web/manifest.json';
+  const outputPath = 'web/manifest.json';
   final outputFile = File(outputPath);
   // Write the manifest file
   await outputFile
-      .writeAsString(JsonEncoder.withIndent('  ').convert(manifest));
+      .writeAsString(const JsonEncoder.withIndent('  ').convert(manifest));
 
   return original;
 }
 
 Future<String> buildIndexHtml() async {
   // Read the original index.html
-  final indexPath = 'web/index.html';
+  const indexPath = 'web/index.html';
   var content = await File(indexPath).readAsString();
 
   // Remove the serviceWorkerVersion injection for the extension build
@@ -96,7 +96,7 @@ Future<String> buildIndexHtml() async {
   print('Removed service worker version injection for extension build.');
 
   // Define output path for modified index.html
-  final outputPath = 'web/index.html';
+  const outputPath = 'web/index.html';
   final outputFile = File(outputPath);
   await outputFile.parent.create(recursive: true);
   await outputFile.writeAsString(content_);
@@ -104,6 +104,7 @@ Future<String> buildIndexHtml() async {
 
   return content;
 }
+
 Future<void> resetFile(String path, String content) async {
   final outputFile = File(path);
   await outputFile.writeAsString(content);

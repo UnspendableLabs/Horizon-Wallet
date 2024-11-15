@@ -283,6 +283,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
         final maxMintPerTx = params.maxMintPerTx;
         final hardCap = params.hardCap;
         final startBlock = params.startBlock;
+        final endBlock = params.endBlock;
         final divisible = params.divisible;
         final lockQuantity = params.lockQuantity;
 
@@ -297,6 +298,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
             maxMintPerTx,
             hardCap,
             startBlock,
+            endBlock,
             fee,
             lockQuantity,
             inputsSetString);
