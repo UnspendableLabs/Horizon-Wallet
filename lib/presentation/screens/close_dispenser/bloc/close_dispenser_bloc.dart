@@ -1,3 +1,4 @@
+import 'package:horizon/common/uuid.dart';
 import 'package:horizon/domain/entities/compose_dispenser.dart';
 import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/domain/entities/fee_option.dart' as FeeOption;
@@ -195,7 +196,8 @@ class CloseDispenserBloc extends ComposeBaseBloc<CloseDispenserState> {
           await writelocalTransactionUseCase.call(txHex, txHash);
 
           logger.d('dispenser broadcasted txHash: $txHash');
-          analyticsService.trackEvent('broadcast_tx_dispenser_close');
+          analyticsService.trackAnonymousEvent('broadcast_tx_dispenser_close',
+              properties: {'distinct_id': uuid.v4()});
 
           emit(state.copyWith(
               submitState: SubmitSuccess(

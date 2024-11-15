@@ -490,7 +490,7 @@ void main() {
         // Mock other dependencies
         when(() => mockWriteLocalTransactionUseCase.call(txHex, txHash))
             .thenAnswer((_) async {});
-        when(() => mockAnalyticsService.trackEvent(any()))
+        when(() => mockAnalyticsService.trackAnonymousEvent(any()))
             .thenAnswer((_) async {});
 
         // Set up composeTransaction mock
@@ -573,7 +573,7 @@ void main() {
         // Mock other dependencies
         when(() => mockWriteLocalTransactionUseCase.call(txHex, txHash))
             .thenAnswer((_) async {});
-        when(() => mockAnalyticsService.trackEvent(any()))
+        when(() => mockAnalyticsService.trackAnonymousEvent(any()))
             .thenAnswer((_) async {});
 
         // Set up composeTransaction mock

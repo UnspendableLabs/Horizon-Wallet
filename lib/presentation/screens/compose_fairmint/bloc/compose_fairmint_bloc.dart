@@ -1,3 +1,4 @@
+import 'package:horizon/common/uuid.dart';
 import 'package:horizon/core/logging/logger.dart';
 import 'package:collection/collection.dart';
 import 'package:horizon/domain/entities/compose_fairmint.dart';
@@ -208,7 +209,8 @@ class ComposeFairmintBloc extends ComposeBaseBloc<ComposeFairmintState> {
           await writelocalTransactionUseCase.call(txHex, txHash);
 
           logger.info('fairmint broadcasted txHash: $txHash');
-          analyticsService.trackEvent('broadcast_tx_fairmint');
+          analyticsService.trackAnonymousEvent('broadcast_tx_fairmint',
+              properties: {'distinct_id': uuid.v4()});
 
           emit(state.copyWith(
               submitState: SubmitSuccess(

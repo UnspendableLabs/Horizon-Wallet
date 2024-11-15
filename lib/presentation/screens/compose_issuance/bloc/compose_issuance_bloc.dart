@@ -1,3 +1,4 @@
+import 'package:horizon/common/uuid.dart';
 import 'package:horizon/domain/entities/compose_issuance.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
@@ -189,7 +190,8 @@ class ComposeIssuanceBloc extends ComposeBaseBloc<ComposeIssuanceState> {
           await writelocalTransactionUseCase.call(txHex, txHash);
 
           logger.info('issuance broadcasted txHash: $txHash');
-          analyticsService.trackEvent('broadcast_tx_issue');
+          analyticsService.trackAnonymousEvent('broadcast_tx_issue',
+              properties: {'distinct_id': uuid.v4()});
 
           emit(state.copyWith(
               submitState: SubmitSuccess(
