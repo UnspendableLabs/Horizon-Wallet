@@ -491,8 +491,10 @@ void main() {
         when(() => mockWriteLocalTransactionUseCase.call(txHex, txHash))
             .thenAnswer((_) async {});
 
-        when(() => mockAnalyticsService.trackAnonymousEvent(any()))
-            .thenAnswer((_) async {});
+        when(() => mockAnalyticsService.trackAnonymousEvent(
+              any(),
+              properties: any(named: 'properties'),
+            )).thenAnswer((_) async {});
 
         return composeDispenserBloc;
       },
@@ -526,8 +528,10 @@ void main() {
         ),
       ],
       verify: (_) {
-        verify(() => mockAnalyticsService
-            .trackAnonymousEvent('broadcast_tx_dispenser')).called(1);
+        verify(() => mockAnalyticsService.trackAnonymousEvent(
+              'broadcast_tx_dispenser',
+              properties: any(named: 'properties'),
+            )).called(1);
       },
     );
     blocTest<ComposeDispenserBloc, ComposeDispenserState>(
