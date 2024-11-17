@@ -1,3 +1,4 @@
+import 'package:horizon/common/uuid.dart';
 import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/domain/entities/compose_send.dart';
@@ -322,7 +323,8 @@ class ComposeSendBloc extends ComposeBaseBloc<ComposeSendState> {
           await writelocalTransactionUseCase.call(txHex, txHash);
 
           logger.info('send broadcasted txHash: $txHash');
-          analyticsService.trackEvent('broadcast_tx_send');
+          analyticsService.trackAnonymousEvent('broadcast_tx_send',
+              properties: {'distinct_id': uuid.v4()});
 
           emit(state.copyWith(
               submitState: SubmitSuccess(

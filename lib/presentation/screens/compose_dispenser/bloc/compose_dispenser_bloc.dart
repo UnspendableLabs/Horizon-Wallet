@@ -1,3 +1,4 @@
+import 'package:horizon/common/uuid.dart';
 import 'package:horizon/domain/entities/compose_dispenser.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
@@ -269,7 +270,8 @@ class ComposeDispenserBloc extends ComposeBaseBloc<ComposeDispenserState> {
           await writelocalTransactionUseCase.call(txHex, txHash);
 
           logger.d('dispenser broadcasted txHash: $txHash');
-          analyticsService.trackEvent('broadcast_tx_dispenser');
+          analyticsService.trackAnonymousEvent('broadcast_tx_dispenser',
+              properties: {'distinct_id': uuid.v4()});
 
           emit(state.copyWith(
               submitState: SubmitSuccess(

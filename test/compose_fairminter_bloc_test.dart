@@ -215,8 +215,10 @@ void main() {
         when(() => mockWriteLocalTransactionUseCase.call(txHex, txHash))
             .thenAnswer((_) async {});
 
-        when(() => mockAnalyticsService.trackEvent(any()))
-            .thenAnswer((_) async {});
+        when(() => mockAnalyticsService.trackAnonymousEvent(
+              'broadcast_tx_fairminter',
+              properties: any(named: 'properties'),
+            )).thenAnswer((_) async {});
 
         return composeFairminterBloc;
       },
@@ -250,8 +252,10 @@ void main() {
         ),
       ],
       verify: (_) {
-        verify(() => mockAnalyticsService.trackEvent('broadcast_tx_fairminter'))
-            .called(1);
+        verify(() => mockAnalyticsService.trackAnonymousEvent(
+              'broadcast_tx_fairminter',
+              properties: any(named: 'properties'),
+            )).called(1);
       },
     );
   });

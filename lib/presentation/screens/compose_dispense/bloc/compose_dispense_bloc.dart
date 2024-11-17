@@ -1,3 +1,4 @@
+import 'package:horizon/common/uuid.dart';
 import 'package:horizon/domain/entities/compose_dispense.dart';
 import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/domain/entities/fee_option.dart' as FeeOption;
@@ -263,7 +264,8 @@ class ComposeDispenseBloc extends ComposeBaseBloc<ComposeDispenseState> {
           await writelocalTransactionUseCase.call(txHex, txHash);
 
           logger.error('dispense broadcasted txHash: $txHash');
-          analyticsService.trackEvent('broadcast_tx_dispense');
+          analyticsService.trackAnonymousEvent('broadcast_tx_dispense',
+              properties: {'distinct_id': uuid.v4()});
 
           emit(state.copyWith(
               submitState: SubmitSuccess(
