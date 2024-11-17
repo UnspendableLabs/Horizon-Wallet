@@ -1,36 +1,37 @@
+import 'package:horizon/core/logging/logger.dart';
 import 'package:posthog_flutter/posthog_flutter.dart';
-import 'package:logger/logger.dart';
 import 'dart:js' as js;
 import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/domain/repositories/config_repository.dart';
 
-var logger = Logger();
 
 // PostHog Web Implementation
 class PostHogWebAnalyticsService implements AnalyticsService {
   final Config config;
   final String? apiKey;
   final String? host;
+  final Logger logger;
+
   bool _isInitialized = false;
 
-  PostHogWebAnalyticsService(this.config, this.apiKey, this.host) {
+  PostHogWebAnalyticsService(this.config, this.apiKey, this.host, this.logger) {
     _initialize();
   }
 
   void _initialize() {
     try {
       if (!config.isAnalyticsEnabled) {
-        logger.i('Analytics is disabled. Skipping initialization.');
+        logger.info('Analytics is disabled. Skipping initialization.');
         return;
       }
 
       if (_isInitialized) {
-        logger.i('Analytics already initialized. Skipping.');
+        logger.info('Analytics already initialized. Skipping.');
         return;
       }
 
       if (apiKey == null || host == null) {
-        logger.e(
+        logger.info(
             'Posthog configuration missing. Analytics initialization failed.');
         return;
       }
@@ -69,9 +70,9 @@ class PostHogWebAnalyticsService implements AnalyticsService {
       ]);
 
       _isInitialized = true;
-      logger.i('Analytics initialized successfully.');
+      logger.info('Analytics initialized successfully.');
     } catch (e) {
-      logger.e("Error initializing analytics: $e");
+      logger.error("Error initializing analytics: $e");
     }
   }
 
@@ -80,9 +81,9 @@ class PostHogWebAnalyticsService implements AnalyticsService {
     if (!config.isAnalyticsEnabled || !_isInitialized) return;
     try {
       await Posthog().capture(eventName: eventName, properties: properties);
-      logger.i('Even capture: $eventName, $properties');
+      logger.info('Event capture: $eventName, $properties');
     } catch (e) {
-      logger.e("Error tracking event: $e");
+      logger.error("Error tracking event: $e");
     }
   }
 
@@ -91,9 +92,9 @@ class PostHogWebAnalyticsService implements AnalyticsService {
     if (!config.isAnalyticsEnabled || !_isInitialized) return;
     try {
       await Posthog().reset();
-      logger.d('Analytics reset.');
+      logger.info('Analytics reset.');
     } catch (e) {
-      logger.e("Error resetting analytics: $e");
+      logger.error("Error resetting analytics: $e");
     }
   }
 
@@ -104,9 +105,9 @@ class PostHogWebAnalyticsService implements AnalyticsService {
     try {
       await Posthog().reset();
       await Posthog().capture(eventName: eventName, properties: properties);
-      logger.i('Anonymous event capture: $eventName, $properties');
+      logger.info('Anonymous event capture: $eventName, $properties');
     } catch (e) {
-      logger.e("Error tracking anonymous event: $e");
+      logger.error("Error tracking anonymous event: $e");
     }
   }
 }
