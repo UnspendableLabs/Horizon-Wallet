@@ -109,20 +109,4 @@ class PostHogWebAnalyticsService implements AnalyticsService {
       logger.e("Error tracking anonymous event: $e");
     }
   }
-
-  // @override
-  // void trackEvent(String eventName, {Map<String, Object>? properties}) async {
-  //   if (!config.isAnalyticsEnabled || !_isInitialized) return;
-  //   // Check if the event type is a `broadcast_tx` type
-  //   if (eventName.startsWith('broadcast_tx')) {
-  //     // Remove UUID from properties to ensure full anonymity for transaction events
-  //     properties?.remove('uuid');
-  //   }
-  //   try {
-  //     await Posthog().capture(event: eventName, properties: properties);
-  //     logger.i('Event capture: $eventName, $properties');
-  //   } catch (e) {
-  //     logger.e("Error tracking event: $e");
-  //   }
-  // }
 }
