@@ -4,7 +4,6 @@ import 'dart:js' as js;
 import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/domain/repositories/config_repository.dart';
 
-
 // PostHog Web Implementation
 class PostHogWebAnalyticsService implements AnalyticsService {
   final Config config;

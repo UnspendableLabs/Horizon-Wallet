@@ -31,7 +31,7 @@ class PrivacyPolicy extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Last Updated: September 24, 2024',
+                  'Last Updated: November 18, 2024',
                   style: TextStyle(
                       color: isDarkTheme ? Colors.grey : Colors.grey[600]),
                 ),
@@ -42,100 +42,122 @@ class PrivacyPolicy extends StatelessWidget {
                 ),
                 const SizedBox(height: 24),
                 _buildSection(
-                  '1. Information We Collect',
+                  '1. Data We Collect',
                   [
                     Text(
-                      'We collect various types of information in connection with the services we provide, as detailed below:',
+                      'We collect data solely for analytics and debugging purposes. No Personally Identifiable Information (PII) is collected.',
                       style: TextStyle(color: fontColor),
                     ),
                     const SizedBox(height: 16),
                     _buildSubsection(
-                      'Personal Information',
-                      [
-                        _buildBulletPoint(
-                          'We do not collect personally identifiable information (PII).',
-                          fontColor,
-                        ),
-                      ],
+                      'Contextual Metadata:',
+                      [],
                       fontColor,
                     ),
                     _buildSubsection(
-                      'Automatically Collected Information',
+                      'Each event includes metadata such as:',
                       [
                         _buildBulletPoint(
-                          'Vercel Analytics: To better understand and enhance user experience, we collect analytics data, including:',
+                          'User agent (browser and operating system details)',
+                          fontColor,
+                        ),
+                        _buildBulletPoint(
+                          'Timestamp',
+                          fontColor,
+                        ),
+                        _buildBulletPoint(
+                          'Timezone',
+                          fontColor,
+                        ),
+                        _buildBulletPoint(
+                          'URL',
+                          fontColor,
+                        ),
+                      ],
+                      fontColor,
+                      16,
+                    ),
+                    const SizedBox(height: 16),
+                    _buildSubsection(
+                      'Event Types:',
+                      [],
+                      fontColor,
+                    ),
+                    _buildSubsection(
+                      'We log the following types of events:',
+                      [
+                        _buildBulletPoint(
+                          'Web Vitals',
                           fontColor,
                           subPoints: [
-                            'Referring websites',
-                            'Visitor country of origin',
-                            'Visitor operating system',
-                            'Visitor browser',
+                            'Data: Metrics such as page load time, input delay, and visual stability are collected throughout the session.',
+                            'UUID: A random UUID is assigned to each session to group all Web Vitals. This UUID resets periodically.',
                           ],
                         ),
                         _buildBulletPoint(
-                          'Vercel Logs: To monitor and improve our service, we log certain request information, which includes:',
+                          'Broadcasted Transactions:',
                           fontColor,
                           subPoints: [
-                            'Request path',
-                            'Request time',
-                            'User agent (information also aggregated by our analytics platform)',
-                            'Visitor location',
-                            'Request execution time',
-                            'Any server-side errors, which do not include any PII',
+                            'Data: We log when a transaction occurs and its type (e.g., broadcast_tx_issue, broadcast_tx_send).',
+                            'UUID: Each broadcast_tx_* event is assigned a random, unique UUID to ensure it is not linked to any wallet UUID, session ID, or other events.',
                           ],
                         ),
                         _buildBulletPoint(
-                          'Sentry: For error tracking and performance monitoring, we collect data on client and server-side exceptions, including:',
+                          'Wallet Sessions:',
                           fontColor,
                           subPoints: [
-                            'Request path that generated the exception',
-                            'Browser',
-                            'Operating system',
-                            'IP address',
-                            'Backtrace',
+                            'Data: A wallet_opened event is logged whenever a wallet is accessed (opened, refreshed, or logged into).',
+                            'UUID: Each wallet is assigned a persistent, anonymous UUID tied to local storage. If a wallet is deleted locally and re-imported, a new UUID is generated.',
                           ],
                         ),
                       ],
                       fontColor,
+                      16,
                     ),
                   ],
                   fontColor,
                 ),
                 _buildSection(
-                  '2. How We Use Your Information',
+                  '2. How We Use the Data',
                   [
                     Text(
-                      'We use the information we collect in the following ways:',
+                      'We use the data collected to:',
                       style: TextStyle(color: fontColor),
                     ),
                     const SizedBox(height: 8),
                     _buildBulletPoint(
-                      'To Provide and Maintain Our Service: Ensuring the functionality and security of our service.',
+                      'Monitor performance and debug issues.',
                       fontColor,
                     ),
                     _buildBulletPoint(
-                      'To Improve Our Service: Analyzing how users interact with our service to improve user experience and performance.',
-                      fontColor,
-                    ),
-                    _buildBulletPoint(
-                      'To Monitor and Fix Errors: Using Sentry to track and resolve client and server-side exceptions.',
+                      'Track aggregated usage patterns, such as the total number of active wallets.',
                       fontColor,
                     ),
                   ],
                   fontColor,
                 ),
                 _buildSection(
-                  '3. Changes to This Privacy Policy',
+                  '3. Data Handling',
                   [
                     Text(
-                      'We may update this Privacy Policy from time to time. Any changes will be effective immediately upon posting of the revised policy on our website. We encourage you to review this Privacy Policy periodically for any updates. Your continued use of the service after any changes to the policy will constitute your acceptance of those changes.',
+                      'We do not sell, share, or rent the data we collect. Data is processed by third-party service providers solely for analytics and debugging. We retain data for as long as it is needed to fulfill the purposes described in this policy.',
                       style: TextStyle(color: fontColor),
                     ),
                   ],
                   fontColor,
                 ),
                 _buildSection(
-                  '4. Contact Us',
+                  '4. Updates to This Policy',
+                  [
+                    Text(
+                      'We may update this Privacy Policy at any time. Updates will be posted on this page with the "Last Updated" date.',
+                      style: TextStyle(color: fontColor),
+                    ),
+                  ],
+                  fontColor,
+                ),
+                _buildSection(
+                  '5. Contact Us',
                   [
                     Text(
                       'If you have any questions about this Privacy Policy, please contact us:',
@@ -184,15 +206,15 @@ class PrivacyPolicy extends StatelessWidget {
     );
   }
 
-  Widget _buildSubsection(
-      String title, List<Widget> children, Color fontColor) {
+  Widget _buildSubsection(String title, List<Widget> children, Color fontColor,
+      [double? fontSize]) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           title,
           style: TextStyle(
-            fontSize: 20,
+            fontSize: fontSize ?? 20,
             fontWeight: FontWeight.bold,
             color: fontColor,
           ),
