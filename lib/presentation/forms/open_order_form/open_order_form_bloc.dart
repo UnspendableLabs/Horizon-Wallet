@@ -264,7 +264,7 @@ class FormStateModel extends Equatable {
   final String? errorMessage;
 
   final bool lockRatio;
-  final Rational? ratio;
+  final Option<Rational> ratio;
 
   const FormStateModel(
       {required this.feeEstimates,
@@ -280,7 +280,7 @@ class FormStateModel extends Equatable {
       this.submissionStatus = FormzSubmissionStatus.initial,
       this.errorMessage,
       this.lockRatio = false,
-      this.ratio});
+      this.ratio = const Option.none()});
 
   FormStateModel copyWith({
     RemoteData<List<Balance>>? giveAssets,
@@ -296,7 +296,7 @@ class FormStateModel extends Equatable {
     FeeOption.FeeOption? feeOption,
     RemoteData<FeeEstimates>? feeEstimates,
     bool? lockRatio,
-    Rational? ratio,
+    Option<Rational>? ratio,
   }) {
     return FormStateModel(
         giveAssets: giveAssets ?? this.giveAssets,
@@ -426,14 +426,14 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
         final ratio = giveQuantity / getQuantity;
         emit(state.copyWith(
           lockRatio: true,
-          ratio: ratio,
+          ratio: Option.of(ratio),
           errorMessage: null, // Clear any previous errors
         ));
       } else {
         // Cannot lock ratio due to invalid quantities
         emit(state.copyWith(
           lockRatio: false, // Ensure lock ratio is disabled
-          ratio: null,
+          ratio: const Option.none(),
           errorMessage: 'Cannot lock ratio: invalid quantities.',
         ));
       }
@@ -441,7 +441,7 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
       // Unlock ratio
       emit(state.copyWith(
         lockRatio: false,
-        ratio: null,
+        ratio: const Option.none(),
         errorMessage: null, // Clear any previous errors
       ));
     }
@@ -579,10 +579,8 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
               ? (params.initialGetQuantity / 100000000)
               : params.initialGetQuantity)
           .toString();
-      nextGetQuantity = GetQuantityInput.dirty(
-        nextGetQuantityNormalized,
-        isDivisible: initialGetAsset.divisible!
-      );
+      nextGetQuantity = GetQuantityInput.dirty(nextGetQuantityNormalized,
+          isDivisible: initialGetAsset.divisible!);
     } catch (e) {
       nextGetAsset =
           GetAssetInput.dirty(params.initialGetAsset); // Keep the input
@@ -595,7 +593,7 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
         Decimal.parse(nextGetQuantity.value);
 
     emit(state.copyWith(
-      ratio: ratio,
+      ratio: Option.of(ratio),
       giveAssets: nextGiveAssets,
       feeEstimates: nextFeeEstimates,
       giveAsset: nextGiveAsset,
@@ -605,9 +603,7 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
       getQuantity: nextGetQuantity,
       getAssetValidationStatus: nextGetAssetValidationStatus,
     ));
-
   }
-
 
   void _onGiveAssetChanged(
       GiveAssetChanged event, Emitter<FormStateModel> emit) {
@@ -621,6 +617,8 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
     );
 
     emit(state.copyWith(
+      ratio: Option.none(),
+      lockRatio: false,
       giveQuantity: giveQuantity,
       giveAsset: giveAssetInput,
       errorMessage: null,
@@ -693,14 +691,16 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
     // assume it's divisble until we blur
     final input = GetQuantityInput.dirty(event.value, isDivisible: true);
 
-    if (state.lockRatio && state.ratio != null) {
+    if (state.lockRatio && state.ratio.isSome()) {
       final get = Decimal.tryParse(event.value);
       final give = Decimal.tryParse(state.giveQuantity.value);
+      final ratio = state.ratio
+          .fold(() => throw Exception("invariant"), (ratio) => ratio);
 
       if (give != null && get != null) {
         final newGive = (get *
-                Decimal.fromBigInt(state.ratio!.numerator) /
-                Decimal.fromBigInt(state.ratio!.denominator))
+                Decimal.fromBigInt(ratio.numerator) /
+                Decimal.fromBigInt(ratio.denominator))
             .toDecimal(scaleOnInfinitePrecision: 8);
 
         emit(state.copyWith(
@@ -735,16 +735,19 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
     // Create a new GiveQuantityInput with the updated value
     final input = GiveQuantityInput.dirty(event.value, isDivisible: true);
 
-    if (state.lockRatio && state.ratio != null) {
+    if (state.lockRatio && state.ratio.isSome()) {
       final give = Decimal.tryParse(event.value) ?? Decimal.one;
       final get = Decimal.tryParse(state.getQuantity.value);
+      final ratio = state.ratio
+          .fold(() => throw Exception("invariant"), (ratio) => ratio);
 
       if (get != null) {
         // Use the stored ratio to compute the new getQuantity
+      
 
         final newGet = (give *
-                Decimal.fromBigInt(state.ratio!.denominator) /
-                Decimal.fromBigInt(state.ratio!.numerator))
+                Decimal.fromBigInt(ratio.denominator) /
+                Decimal.fromBigInt(ratio.numerator))
             .toDecimal(scaleOnInfinitePrecision: 8);
         // Format the newGet to match the expected decimal places
 
