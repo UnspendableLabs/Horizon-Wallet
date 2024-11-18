@@ -980,7 +980,7 @@ class AddressActions extends StatelessWidget {
               currentAddress: currentAddress,
               isDarkTheme: isDarkTheme,
               icon: Icons.toc,
-              text: "Order",
+              text: "ORDER",
               iconSize: 18.0,
               dashboardActivityFeedBloc: dashboardActivityFeedBloc,
             ),
