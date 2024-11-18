@@ -68,12 +68,12 @@ class _OpenOrderForm extends State<OpenOrderForm> {
         context.read<OpenOrderFormBloc>().add(GetAssetBlurred());
       }
     });
-    
-    _giveAssetFocusNode.addListener(() {
-      if (!_giveAssetFocusNode.hasFocus) {
-        context.read<OpenOrderFormBloc>().add(GiveAssetBlurred());
-      }
-    });
+
+    // _giveAssetFocusNode.addListener(() {
+    //   if (!_giveAssetFocusNode.hasFocus) {
+    //     context.read<OpenOrderFormBloc>().add(GiveAssetBlurred());
+    //   }
+    // });
   }
 
   @override
@@ -144,143 +144,141 @@ class _OpenOrderForm extends State<OpenOrderForm> {
         // ScaffoldMessenger.of(context).showSnackBar(
         //     SnackBar(content: Text(state.errorMessage ?? 'Submission Failed')));
       }
-}, builder: (context, state) {
-
-  bool isRatioLocked = state.lockRatio;
-
-  return Padding(
-    padding: const EdgeInsets.all(16.0),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Padding(
-          padding: EdgeInsets.fromLTRB(2.0, 0.0, 0.0, 16.0),
-          child: Text("Sell",
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-        ),
-        Row(
+    }, builder: (context, state) {
+      return Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Expanded(
-                child: GiveQuantityInputField(
-                    focusNode: _giveQuantityFocusNode,
-                    controller: _giveQuantityController)),
-            const SizedBox(width: 16),
-            Expanded(
-                child: GiveAssetInputField(
-              focusNode: _giveAssetFocusNode,
-              controller: _giveAssetController,
-            )),
-          ],
-        ),
-        const SizedBox(height: 16),
-        const Padding(
-          padding: EdgeInsets.fromLTRB(2.0, 0.0, 0.0, 16.0),
-          child: Text("Buy",
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-        ),
-        Row(
-          children: [
-            Expanded(
-                child: GetQuantityInputField(
-              focusNode: _getQuantityFocusNode,
-              controller: _getQuantityController,
-            )),
-            const SizedBox(width: 16),
-            Expanded(
-                child: GetAssetInputField(
-                    controller: _getAssetController,
-                    focusNode: _getAssetFocusNode))
-          ],
-        ),
-        const SizedBox(height: 17),
-        // Price and Lock Ratio Row
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            // Price Label
             const Padding(
-              padding: EdgeInsets.fromLTRB(2.0, 8.0, 0.0, 16.0),
-              child: Text("Price",
+              padding: EdgeInsets.fromLTRB(2.0, 0.0, 0.0, 16.0),
+              child: Text("Sell",
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             ),
-            // Lock Ratio Toggle
-            LockRatioToggle(),
-          ],
-        ),
-        Padding(
-          padding: const EdgeInsets.all(2.0),
-          child: Row(
-            children: [
-              Expanded(
-                child: Price(
-                  giveQuantity: state.giveQuantity.isValid
-                      ? double.tryParse(state.giveQuantity.value)
-                      : null,
-                  getQuantity: state.getQuantity.isValid
-                      ? double.tryParse(state.getQuantity.value)
-                      : null,
-                  giveAsset: state.giveAsset.value,
-                  getAsset: state.getAssetValidationStatus is Success
-                      ? state.getAsset.value
-                      : null,
+            Row(
+              children: [
+                Expanded(
+                    child: GiveQuantityInputField(
+                        focusNode: _giveQuantityFocusNode,
+                        controller: _giveQuantityController)),
+                const SizedBox(width: 16),
+                Expanded(
+                    child: GiveAssetInputField(
+                  focusNode: _giveAssetFocusNode,
+                  controller: _giveAssetController,
+                )),
+              ],
+            ),
+            const SizedBox(height: 16),
+            const Padding(
+              padding: EdgeInsets.fromLTRB(2.0, 0.0, 0.0, 16.0),
+              child: Text("Buy",
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            ),
+            Row(
+              children: [
+                Expanded(
+                    child: GetQuantityInputField(
+                  focusNode: _getQuantityFocusNode,
+                  controller: _getQuantityController,
+                )),
+                const SizedBox(width: 16),
+                Expanded(
+                    child: GetAssetInputField(
+                        controller: _getAssetController,
+                        focusNode: _getAssetFocusNode))
+              ],
+            ),
+            const SizedBox(height: 17),
+            // Price and Lock Ratio Row
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                // Price Label
+                const Padding(
+                  padding: EdgeInsets.fromLTRB(2.0, 8.0, 0.0, 16.0),
+                  child: Text("Price",
+                      style:
+                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                ),
+                // Lock Ratio Toggle
+                LockRatioToggle(),
+              ],
+            ),
+            Padding(
+              padding: const EdgeInsets.all(2.0),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Price(
+                      giveQuantity: state.giveQuantity.isValid
+                          ? double.tryParse(state.giveQuantity.value)
+                          : null,
+                      getQuantity: state.getQuantity.isValid
+                          ? double.tryParse(state.getQuantity.value)
+                          : null,
+                      giveAsset: state.giveAsset.value,
+                      getAsset: state.getAssetValidationStatus is Success
+                          ? state.getAsset.value
+                          : null,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const HorizonUI.HorizonDivider(),
+            FeeSelectionV2(
+              value: state.feeOption,
+              feeEstimates: switch (state.feeEstimates) {
+                Success(data: var feeEstimates) =>
+                  FeeEstimateSuccess(feeEstimates: feeEstimates),
+                _ => FeeEstimateLoading()
+              },
+              onFieldSubmitted: () {},
+              onSelected: (feeOption) {
+                context
+                    .read<OpenOrderFormBloc>()
+                    .add(FeeOptionChanged(feeOption));
+              },
+              layout: MediaQuery.of(context).size.width > 768
+                  ? FeeSelectionLayout.row
+                  : FeeSelectionLayout.column,
+            ),
+            const HorizonUI.HorizonDivider(),
+            if (state.submissionStatus.isFailure)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                child: SelectableText(
+                  state.errorMessage ?? "Submit failure",
+                  style: TextStyle(color: Theme.of(context).colorScheme.error),
                 ),
               ),
-            ],
-          ),
-        ),
-        const HorizonUI.HorizonDivider(),
-        FeeSelectionV2(
-          value: state.feeOption,
-          feeEstimates: switch (state.feeEstimates) {
-            Success(data: var feeEstimates) =>
-              FeeEstimateSuccess(feeEstimates: feeEstimates),
-            _ => FeeEstimateLoading()
-          },
-          onFieldSubmitted: () {},
-          onSelected: (feeOption) {
-            context
-                .read<OpenOrderFormBloc>()
-                .add(FeeOptionChanged(feeOption));
-          },
-          layout: MediaQuery.of(context).size.width > 768
-              ? FeeSelectionLayout.row
-              : FeeSelectionLayout.column,
-        ),
-        const HorizonUI.HorizonDivider(),
-        if (state.submissionStatus.isFailure)
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8.0),
-            child: SelectableText(
-              state.errorMessage ?? "Submit failure",
-              style: TextStyle(color: Theme.of(context).colorScheme.error),
-            ),
-          ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            HorizonUI.HorizonCancelButton(
-              onPressed: () {
-                context.read<OpenOrderFormBloc>().add(FormCancelled());
-              },
-              buttonText: 'CANCEL',
-            ),
-            HorizonUI.HorizonContinueButton(
-              loading: state.submissionStatus.isInProgress,
-              onPressed: state.submissionStatus.isInProgress
-                  ? () {}
-                  : () {
-                      context
-                          .read<OpenOrderFormBloc>()
-                          .add(FormSubmitted());
-                    },
-              buttonText: 'CONTINUE',
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                HorizonUI.HorizonCancelButton(
+                  onPressed: () {
+                    context.read<OpenOrderFormBloc>().add(FormCancelled());
+                  },
+                  buttonText: 'CANCEL',
+                ),
+                HorizonUI.HorizonContinueButton(
+                  loading: state.submissionStatus.isInProgress,
+                  onPressed: state.submissionStatus.isInProgress
+                      ? () {}
+                      : () {
+                          context
+                              .read<OpenOrderFormBloc>()
+                              .add(FormSubmitted());
+                        },
+                  buttonText: 'CONTINUE',
+                ),
+              ],
             ),
           ],
         ),
-      ],
-    ),
-  );
-});
+      );
+    });
   }
 }
 
@@ -288,8 +286,13 @@ class GiveAssetInputField extends StatelessWidget {
   final TextEditingController controller;
   final FocusNode focusNode;
 
-  const GiveAssetInputField(
-      {super.key, required this.controller, required this.focusNode});
+  final FocusNode inner = FocusNode();
+
+  GiveAssetInputField({
+    super.key,
+    required this.controller,
+    required this.focusNode,
+  });
 
   Future<List<Balance>> _fetchSuggestions(
       BuildContext context, String pattern) async {
@@ -333,8 +336,7 @@ class GiveAssetInputField extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<OpenOrderFormBloc, FormStateModel>(
       builder: (context, state) {
-        final showError = !state.giveAsset.isPure &&
-            state.giveAsset.isNotValid;
+        final showError = !state.giveAsset.isPure && state.giveAsset.isNotValid;
 
         final error = switch (state.giveAsset.error) {
           GiveAssetValidationError.required => "Required",
@@ -343,60 +345,51 @@ class GiveAssetInputField extends StatelessWidget {
           _ => null
         };
         return TypeAheadField<Balance>(
-          direction: VerticalDirection.down,
-          focusNode: focusNode,
-          controller: controller,
-          builder: (context, decoration, child) => TextField(
-            controller: controller,
+            direction: VerticalDirection.down,
             focusNode: focusNode,
-            style: DefaultTextStyle.of(context).style,
-            decoration: InputDecoration(
-                labelText: "Give Asset",
-                errorText: showError ? error : null,
-                helperText: showError ? null : ' ',
-                suffixIcon: switch (state.giveAssetValidationStatus) {
-                  Loading() => Container(
-                      height: 10,
-                      width: 10,
-                      margin: const EdgeInsets.all(12.0),
-                      child: const CircularProgressIndicator(strokeWidth: 2)),
-                  Success() => const Icon(
-                      Icons.check,
-                      color: Colors.green,
-                      size: 20, // Adjust size as needed
-                    ),
-                  _ => const SizedBox.shrink()
-                }),
-          ),
-          itemBuilder: (context, suggestion) {
-            return ListTile(
-              title: Text(suggestion.asset),
-            );
-          },
-          loadingBuilder: (context) {
-            return const Padding(
-              padding: EdgeInsets.all(8.0),
-              child: CircularProgressIndicator(),
-            );
-          },
-          onSelected: (selectedAsset) {
-            context
-                .read<OpenOrderFormBloc>()
-                .add(GiveAssetChanged(selectedAsset.asset));
-          },
-          suggestionsCallback: (pattern) {
-            if (state.giveAssets is Success<List<Balance>>) {
-              final giveAssets =
-                  (state.giveAssets as Success<List<Balance>>).data;
-              return giveAssets
-                  .where((element) => element.asset
-                      .toLowerCase()
-                      .contains(pattern.toLowerCase()))
-                  .toList();
-            }
-            return [];
-          },
-        );
+            controller: controller,
+            builder: (context, decoration, child) => TextField(
+                  controller: controller,
+                  focusNode: focusNode,
+                  style: DefaultTextStyle.of(context).style,
+                  decoration: InputDecoration(
+                      labelText: "Give Asset",
+                      errorText: showError ? error : null,
+                      helperText: showError ? null : ' ',
+                      suffixIcon: switch (state.giveAssetValidationStatus) {
+                        Loading() => Container(
+                            height: 10,
+                            width: 10,
+                            margin: const EdgeInsets.all(12.0),
+                            child: const CircularProgressIndicator(
+                                strokeWidth: 2)),
+                        Success() => const Icon(
+                            Icons.check,
+                            color: Colors.green,
+                            size: 20, // Adjust size as needed
+                          ),
+                        _ => const SizedBox.shrink()
+                      }),
+                ),
+            itemBuilder: (context, suggestion) {
+              return ListTile(
+                title: Text(suggestion.asset),
+              );
+            },
+            loadingBuilder: (context) {
+              return const Padding(
+                padding: EdgeInsets.all(8.0),
+                child: CircularProgressIndicator(),
+              );
+            },
+            onSelected: (selectedAsset) {
+              context
+                  .read<OpenOrderFormBloc>()
+                  .add(GiveAssetChanged(selectedAsset.asset));
+            },
+            suggestionsCallback: (pattern) {
+              return _fetchSuggestions(context, pattern);
+            });
       },
     );
   }
@@ -711,4 +704,3 @@ class LockRatioToggle extends StatelessWidget {
     );
   }
 }
-
