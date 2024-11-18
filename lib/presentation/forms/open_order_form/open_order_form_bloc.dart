@@ -21,11 +21,14 @@ enum GiveAssetValidationError { empty }
 
 class GiveAssetInput extends FormzInput<String, GiveAssetValidationError> {
   const GiveAssetInput.pure() : super.pure('');
-  const GiveAssetInput.dirty([super.value = '']) : super.dirty();
+  const GiveAssetInput.dirty(super.value) : super.dirty();
 
   @override
   GiveAssetValidationError? validator(String value) {
-    return value.isNotEmpty ? null : GiveAssetValidationError.empty;
+    if (value.isEmpty) {
+      return GiveAssetValidationError.empty;
+    }
+    return null;
   }
 }
 
@@ -230,9 +233,7 @@ class SubmissionFailed extends FormEvent {
 
   @override
   List<Object?> get props => [errorMessage];
-}
-
-// State
+} // State
 
 class FormStateModel extends Equatable {
   final RemoteData<FeeEstimates> feeEstimates;
@@ -244,6 +245,8 @@ class FormStateModel extends Equatable {
   final GiveQuantityInput giveQuantity;
   final GetAssetInput getAsset;
   final RemoteData<Asset> getAssetValidationStatus;
+  final RemoteData<Asset> giveAssetValidationStatus;
+
   final GetQuantityInput getQuantity;
   // final PriceInput price;
   final FormzSubmissionStatus submissionStatus;
@@ -258,6 +261,7 @@ class FormStateModel extends Equatable {
     this.giveQuantity = const GiveQuantityInput.pure(),
     this.getAsset = const GetAssetInput.pure(),
     required this.getAssetValidationStatus,
+    required this.giveAssetValidationStatus,
     this.getQuantity = const GetQuantityInput.pure(),
     // this.price = cons PriceInput.pure(),
     this.submissionStatus = FormzSubmissionStatus.initial,
@@ -275,6 +279,7 @@ class FormStateModel extends Equatable {
     FormzSubmissionStatus? submissionStatus,
     String? errorMessage,
     RemoteData<Asset>? getAssetValidationStatus,
+    RemoteData<Asset>? giveAssetValidationStatus,
     FeeOption.FeeOption? feeOption,
     RemoteData<FeeEstimates>? feeEstimates,
   }) {
@@ -287,6 +292,8 @@ class FormStateModel extends Equatable {
       getQuantity: getQuantity ?? this.getQuantity,
       getAssetValidationStatus:
           getAssetValidationStatus ?? this.getAssetValidationStatus,
+      giveAssetValidationStatus:
+          giveAssetValidationStatus ?? this.giveAssetValidationStatus,
       // price: price ?? this.price,
       submissionStatus: submissionStatus ?? this.submissionStatus,
       errorMessage: errorMessage ?? this.errorMessage,
@@ -306,6 +313,7 @@ class FormStateModel extends Equatable {
         submissionStatus,
         errorMessage,
         getAssetValidationStatus,
+        giveAssetValidationStatus,
         feeOption,
       ];
 }
@@ -365,6 +373,7 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
           giveAssets: NotAsked(),
           getAssets: NotAsked(),
           getAssetValidationStatus: NotAsked(),
+          giveAssetValidationStatus: NotAsked(),
           feeEstimates: NotAsked(),
           feeOption: Medium(),
         )) {
@@ -383,119 +392,361 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
     on<SubmissionFailed>(_onSubmissionFailed);
   }
 
+  _handleInitialize(InitializeForm event, Emitter<FormStateModel> emit) async {
+    emit(state.copyWith(
+      giveAssets: Loading(),
+      feeEstimates: Loading<FeeEstimates>(),
+    ));
+
+    final [balances_ as List<Balance>, feeEstimates_ as FeeEstimates] =
+        await Future.wait([
+      balanceRepository.getBalancesForAddress(currentAddress),
+      _fetchFeeEstimates(),
+    ]);
+
+    final balances = balances_
+        .where((balance) => balance.asset.toUpperCase() != "BTC")
+        .toList();
+
+    emit(state.copyWith(
+        giveAssets: Success(balances),
+        feeEstimates: Success<FeeEstimates>(feeEstimates_)));
+  }
+
   Future<void> _onInitializeForm(
     InitializeForm event,
     Emitter<FormStateModel> emit,
   ) async {
-    emit(state.copyWith(giveAssets: Loading(), feeEstimates: Loading()));
+    if (event.params == null) {
+      return _handleInitialize(event, emit);
+    }
+    final InitializeParams params = event.params!;
+
+    GiveAssetInput giveAsset = GiveAssetInput.dirty(params.initialGiveAsset);
+
+    GetAssetInput getAsset = GetAssetInput.dirty(params.initialGetAsset);
+
+    emit(state.copyWith(
+      giveAsset: giveAsset,
+      getAsset: getAsset,
+      giveAssets: Loading(),
+      feeEstimates: Loading<FeeEstimates>(),
+      getAssetValidationStatus: Loading(),
+      giveAssetValidationStatus: Loading(),
+    ));
+
+    late GiveAssetInput nextGiveAsset;
+    late GiveQuantityInput nextGiveQuantity;
+    late RemoteData<Asset> nextGiveAssetValidationStatus;
+    late GetAssetInput nextGetAsset;
+    late GetQuantityInput nextGetQuantity;
+    late RemoteData<Asset> nextGetAssetValidationStatus;
 
     try {
-      final [balances_ as List<Balance>, feeEstimates as FeeEstimates] =
-          await Future.wait([
-        balanceRepository.getBalancesForAddress(currentAddress),
-        _fetchFeeEstimates(),
-      ]);
-
-      final balances = balances_
-          .where((balance) => balance.asset.toUpperCase() != "BTC")
-          .toList();
-
-      if (event.params == null) {
-        emit(state.copyWith(
-            giveAssets: Success(balances),
-            feeEstimates: Success(feeEstimates)));
-      } else {
-        final InitializeParams params = event.params!;
-
-        final balanceForAsset = balances.firstWhereOrNull(
-          (balance) =>
-              balance.asset.toLowerCase() ==
-              params.initialGiveAsset.toLowerCase(),
-        );
-
-        if (balanceForAsset == null) {
-          // Case: No balance for the initial asset
-          emit(state.copyWith(
-            giveAssets: Success(balances),
-            feeEstimates: Success(feeEstimates),
-            errorMessage:
-                'No balance available for the initial asset ${params.initialGiveAsset}',
-          ));
-          return;
-        }
-
-        int initialGiveQuantity = event.params!.initialGiveQuantity;
-
-        final initialGiveQuantityNormalized =
-            balanceForAsset.assetInfo.divisible
-                ? (initialGiveQuantity / 100000000)
-                : initialGiveQuantity;
-
-        if (initialGiveQuantity > balanceForAsset.quantity) {
-          // Case: Insufficient balance
-          emit(state.copyWith(
-            giveAsset: GiveAssetInput.dirty(balanceForAsset.asset),
-            giveAssets: Success(balances),
-            feeEstimates: Success(feeEstimates),
-            giveQuantity: GiveQuantityInput.dirty(
-              initialGiveQuantityNormalized.toString(),
-              balance: balanceForAsset.quantity,
-              isDivisible: balanceForAsset.assetInfo.divisible,
-            ),
-            errorMessage:
-                'Insufficient balance for the initial quantity of $initialGiveQuantity',
-          ));
-        } else {
-          // there is adequate give asset balance
-          emit(state.copyWith(
-            giveAsset: GiveAssetInput.dirty(balanceForAsset.asset),
-            giveAssets: Success(balances),
-            feeEstimates: Success(feeEstimates),
-            giveQuantity: GiveQuantityInput.dirty(
-              initialGiveQuantityNormalized.toString(),
-              balance: balanceForAsset.quantity,
-              isDivisible: balanceForAsset.assetInfo.divisible,
-            ),
-          ));
-
-          // now validate the get asset
-
-          emit(state.copyWith(
-            getAsset: GetAssetInput.dirty(params.initialGetAsset),
-            getAssetValidationStatus: Loading(),
-          ));
-
-          try {
-            final asset =
-                await assetRepository.getAssetVerbose(params.initialGetAsset);
-
-            int initialGetQuantity = event.params!.initialGetQuantity;
-
-            final initialGetQuantityNormalized = asset.divisible ?? false
-                ? (initialGetQuantity / 100000000)
-                : initialGetQuantity;
-
-            emit(state.copyWith(
-              getQuantity: GetQuantityInput.dirty(
-                initialGetQuantityNormalized.toString(),
-                isDivisible: asset.divisible ?? false,
-              ),
-              getAssetValidationStatus: Success(asset),
-            ));
-          } catch (e) {
-            emit(state.copyWith(
-              getAssetValidationStatus: Failure('Asset not found'),
-            ));
-            return;
-          }
-        }
-      }
+      final initialGiveAsset =
+          await assetRepository.getAssetVerbose(params.initialGiveAsset);
+      nextGiveAsset = GiveAssetInput.dirty(params.initialGiveAsset);
+      nextGiveAssetValidationStatus = Success(initialGiveAsset);
+      String nextGiveQuantityNormalized = (initialGiveAsset.divisible ?? false
+              ? (params.initialGiveQuantity / 100000000)
+              : params.initialGiveQuantity)
+          .toString();
+      nextGiveQuantity = GiveQuantityInput.dirty(
+        nextGiveQuantityNormalized,
+        isDivisible: initialGiveAsset.divisible!,
+      );
     } catch (e) {
-      emit(state.copyWith(
-        errorMessage: "Invalid order details",
-      ));
+      // if we can't find a give asset, just treat input as divisible
+      nextGiveAsset =
+          GiveAssetInput.dirty(params.initialGiveAsset); // Keep the input
+      nextGiveAssetValidationStatus = Failure("Asset not found");
+      nextGiveQuantity = GiveQuantityInput.dirty(
+          params.initialGiveQuantity.toString(),
+          isDivisible: true);
     }
+
+    try {
+      final initialGetAsset =
+          await assetRepository.getAssetVerbose(params.initialGetAsset);
+      nextGetAsset = GetAssetInput.dirty(params.initialGetAsset);
+      nextGetAssetValidationStatus = Success(initialGetAsset);
+      String nextGetQuantityNormalized = (initialGetAsset.divisible ?? false
+              ? (params.initialGetQuantity / 100000000)
+              : params.initialGetQuantity)
+          .toString();
+      nextGetQuantity = GetQuantityInput.dirty(
+        nextGetQuantityNormalized,
+      );
+    } catch (e) {
+      nextGetAsset =
+          GetAssetInput.dirty(params.initialGetAsset); // Keep the input
+      nextGetAssetValidationStatus = Failure("Asset not found");
+      nextGetQuantity =
+          GetQuantityInput.dirty(params.initialGetQuantity.toString());
+    }
+
+    emit(state.copyWith(
+      giveAsset: nextGiveAsset,
+      giveQuantity: nextGiveQuantity,
+      giveAssetValidationStatus: nextGiveAssetValidationStatus,
+      getAsset: nextGetAsset,
+      getQuantity: nextGetQuantity,
+      getAssetValidationStatus: nextGetAssetValidationStatus,
+    ));
+
+    // // we can't immediatly set quantities because we don't know whether or not the asset is normalized
+    //
+    // final results = await Future.wait([
+    //   balanceRepository.getBalancesForAddress(currentAddress),
+    //   _fetchFeeEstimates(),
+    // ]);
+    //
+    // final balances_ = results[0] as List<Balance>;
+    // final balances = balances_
+    //     .where((balance) => balance.asset.toUpperCase() != "BTC")
+    //     .toList();
+    // final feeEstimates_ = results[1] as FeeEstimates;
+    // final initialGiveAsset = results[2] as Asset;
+    // final initialGetAsset = results[3] as Asset;
+    // //
+    // final balanceForAsset = balances.firstWhereOrNull(
+    //   (balance) =>
+    //       balance.asset.toLowerCase() == params.initialGiveAsset.toLowerCase(),
+    // );
+    //
+    // final initialGiveQuantityNormalized = initialGiveAsset.divisible
+    //     ? (initialGiveQuantity / 100000000)
+    //     : initialGiveQuantity;
+
+    // emit(state.copyWith(
+    //   giveAsset: giveAsset,
+    //   giveAssets: Success(balances),
+    // ));
+
+    //  first set all params, handling asset normalization
+
+    // late String? errorMessage;
+    // GiveAssetInput giveAsset = GiveAssetInput.dirty(params.initialGiveAsset);
+    //
+    // late GiveQuantityInput giveQuantity = GiveQuantityInput.dirty(
+    //   params.initialGiveQuantity.toString();
+    // GetAssetInput getAsset;
+    // late GetQuantityInput getQuantity;
+    // late RemoteData<Asset> getAssetValidationStatus;
+    //
+    // print('Emitting loading states for giveAssets, feeEstimates, and getAssetValidationStatus.');
+    // emit(state.copyWith(
+    //   giveAssets: Loading(),
+    //   feeEstimates: Loading(),
+    //   getAssetValidationStatus: Loading(),
+    // ));
+    //
+    // try {
+    //   print('Fetching balances and fee estimates.');
+    //   final results = await Future.wait([
+    //     balanceRepository.getBalancesForAddress(currentAddress),
+    //     _fetchFeeEstimates(),
+    //   ]);
+    //
+    //   final balances_ = results[0] as List<Balance>;
+    //   final feeEstimates_ = results[1] as FeeEstimates;
+    //
+    //   print('Filtering balances to exclude BTC.');
+    //   final balances = balances_
+    //       .where((balance) => balance.asset.toUpperCase() != "BTC")
+    //       .toList();
+    //
+    //   print('Searching for balance of the initial give asset: ${params.initialGiveAsset}.');
+    //   final balanceForAsset = balances.firstWhereOrNull(
+    //     (balance) =>
+    //         balance.asset.toLowerCase() == params.initialGiveAsset.toLowerCase(),
+    //   );
+    //
+    //   if (balanceForAsset == null) {
+    //     errorMessage =
+    //         'No balance available for the initial asset ${params.initialGiveAsset}';
+    //     print(errorMessage);
+    //   } else {
+    //     int initialGiveQuantity = params.initialGiveQuantity;
+    //     print('Initial give quantity: $initialGiveQuantity');
+    //
+    //     final initialGiveQuantityNormalized = balanceForAsset.assetInfo.divisible
+    //         ? (initialGiveQuantity / 100000000)
+    //         : initialGiveQuantity;
+    //     print('Normalized give quantity: $initialGiveQuantityNormalized');
+    //
+    //     if (initialGiveQuantity > balanceForAsset.quantity) {
+    //       // Case: Insufficient balance
+    //       errorMessage =
+    //           'Insufficient balance for the initial quantity of $initialGiveQuantity';
+    //       print(errorMessage);
+    //
+    //       giveAsset = GiveAssetInput.dirty(balanceForAsset.asset);
+    //       giveQuantity = GiveQuantityInput.dirty(
+    //         initialGiveQuantityNormalized.toString(),
+    //         balance: balanceForAsset.quantity,
+    //         isDivisible: balanceForAsset.assetInfo.divisible,
+    //       );
+    //     } else {
+    //       // Adequate give asset balance
+    //       print('Adequate balance found for give asset.');
+    //
+    //       giveAsset = GiveAssetInput.dirty(balanceForAsset.asset);
+    //       giveQuantity = GiveQuantityInput.dirty(
+    //         initialGiveQuantityNormalized.toString(),
+    //         balance: balanceForAsset.quantity,
+    //         isDivisible: balanceForAsset.assetInfo.divisible,
+    //       );
+    //     }
+    //   }
+    //
+    //   getAsset = GetAssetInput.dirty(params.initialGetAsset);
+    //   print('Set get asset to: ${params.initialGetAsset}');
+    //
+    //   try {
+    //     print('Fetching detailed information for get asset.');
+    //     final asset =
+    //         await assetRepository.getAssetVerbose(params.initialGetAsset);
+    //
+    //     int initialGetQuantity = params.initialGetQuantity;
+    //     print('Initial get quantity: $initialGetQuantity');
+    //
+    //     final initialGetQuantityNormalized = asset.divisible ?? false
+    //         ? (initialGetQuantity / 100000000)
+    //         : initialGetQuantity;
+    //     print('Normalized get quantity: $initialGetQuantityNormalized');
+    //
+    //     getQuantity = GetQuantityInput.dirty(
+    //       initialGetQuantityNormalized.toString(),
+    //       isDivisible: asset.divisible ?? false,
+    //     );
+    //     getAssetValidationStatus = Success(asset);
+    //     print('Asset fetched successfully: ${asset.asset}');
+    //   } catch (e) {
+    //     getAssetValidationStatus = Failure('Asset not found');
+    //     print('Error fetching get asset: $e');
+    //   }
+    //
+    //   print('Emitting final state with collected data.');
+    //   emit(state.copyWith(
+    //     giveAssets: Success(balances),
+    //     feeEstimates: Success(feeEstimates_),
+    //     giveAsset: giveAsset ?? state.giveAsset,
+    //     giveQuantity: giveQuantity,
+    //     getAsset: getAsset,
+    //     getQuantity: getQuantity,
+    //     getAssetValidationStatus: getAssetValidationStatus,
+    //     errorMessage: errorMessage,
+    //   ));
+    // } catch (e) {
+    //   print('An unexpected error occurred: $e');
+    //   emit(state.copyWith(
+    //     errorMessage: 'An unexpected error occurred',
+    //   ));
+    // }
   }
+
+  // Future<void> _onInitializeForm(
+  //   InitializeForm event,
+  //   Emitter<FormStateModel> emit,
+  // ) async {
+  //   if (event.params == null) {
+  //     return _handleInitialize(event, emit);
+  //   }
+  //
+  //   final InitializeParams params = event.params!;
+  //   late String? errorMessage;
+  //   late GiveAssetInput giveAsset;
+  //   late GiveQuantityInput giveQuantity;
+  //   late GetAssetInput getAsset;
+  //   late GetQuantityInput getQuantity;
+  //   late RemoteData<Asset> getAssetValidationStatus;
+  //
+  //   emit(state.copyWith(
+  //     giveAssets: Loading(),
+  //     feeEstimates: Loading(),
+  //     getAssetValidationStatus: Loading(),
+  //   ));
+  //
+  //   final [balances_ as List<Balance>, feeEstimates_ as FeeEstimates] =
+  //       await Future.wait([
+  //     balanceRepository.getBalancesForAddress(currentAddress),
+  //     _fetchFeeEstimates(),
+  //   ]);
+  //
+  //   final balances = balances_
+  //       .where((balance) => balance.asset.toUpperCase() != "BTC")
+  //       .toList();
+  //
+  //   final balanceForAsset = balances.firstWhereOrNull(
+  //     (balance) =>
+  //         balance.asset.toLowerCase() == params.initialGiveAsset.toLowerCase(),
+  //   );
+  //
+  //   if (balanceForAsset == null) {
+  //     errorMessage =
+  //         'No balance available for the initial asset ${params.initialGiveAsset}';
+  //   } else {
+  //     int initialGiveQuantity = event.params!.initialGiveQuantity;
+  //
+  //     final initialGiveQuantityNormalized = balanceForAsset.assetInfo.divisible
+  //         ? (initialGiveQuantity / 100000000)
+  //         : initialGiveQuantity;
+  //
+  //     if (initialGiveQuantity > balanceForAsset.quantity) {
+  //       // Case: Insufficient balance
+  //       giveAsset = GiveAssetInput.dirty(balanceForAsset.asset);
+  //       giveQuantity = GiveQuantityInput.dirty(
+  //         initialGiveQuantityNormalized.toString(),
+  //         balance: balanceForAsset.quantity,
+  //         isDivisible: balanceForAsset.assetInfo.divisible,
+  //       );
+  //       errorMessage =
+  //           'Insufficient balance for the initial quantity of $initialGiveQuantity';
+  //     } else {
+  //       // there is adequate give asset balance
+  //
+  //       giveAsset = GiveAssetInput.dirty(balanceForAsset.asset);
+  //       giveQuantity = GiveQuantityInput.dirty(
+  //         initialGiveQuantityNormalized.toString(),
+  //         balance: balanceForAsset.quantity,
+  //         isDivisible: balanceForAsset.assetInfo.divisible,
+  //       );
+  //     }
+  //   }
+  //
+  //   getAsset = GetAssetInput.dirty(params.initialGetAsset);
+  //
+  //   try {
+  //     final asset =
+  //         await assetRepository.getAssetVerbose(params.initialGetAsset);
+  //
+  //     int initialGetQuantity = event.params!.initialGetQuantity;
+  //
+  //     final initialGetQuantityNormalized = asset.divisible ?? false
+  //         ? (initialGetQuantity / 100000000)
+  //         : initialGetQuantity;
+  //
+  //     getQuantity = GetQuantityInput.dirty(
+  //       initialGetQuantityNormalized.toString(),
+  //       isDivisible: asset.divisible ?? false,
+  //     );
+  //     getAssetValidationStatus = Success(asset);
+  //   } catch (e) {
+  //     getAssetValidationStatus = Failure('Asset not found');
+  //   }
+  //
+  //   emit(state.copyWith(
+  //     giveAssets: Success(balances),
+  //     feeEstimates: Success(feeEstimates_),
+  //     giveAsset: giveAsset,
+  //     giveQuantity: giveQuantity,
+  //     getAsset: getAsset,
+  //     getQuantity: getQuantity,
+  //     getAssetValidationStatus: getAssetValidationStatus,
+  //     errorMessage: errorMessage,
+  //   ));
+  // }
 
   void _onGiveAssetChanged(
       GiveAssetChanged event, Emitter<FormStateModel> emit) {

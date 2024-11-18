@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:formz/formz.dart';
 import 'package:flutter/services.dart';
@@ -7,6 +8,7 @@ import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
 import 'package:horizon/presentation/common/fee_estimation_v2.dart';
 import 'package:decimal/decimal.dart';
+import 'package:flutter_typeahead/flutter_typeahead.dart';
 
 import './open_order_form_bloc.dart';
 
@@ -26,6 +28,7 @@ class _OpenOrderForm extends State<OpenOrderForm> {
   late TextEditingController _getAssetController;
 
   late FocusNode _giveQuantityFocusNode;
+  late FocusNode _giveAssetFocusNode;
   late FocusNode _getQuantityFocusNode;
   late FocusNode _getAssetFocusNode;
 
@@ -37,6 +40,7 @@ class _OpenOrderForm extends State<OpenOrderForm> {
     _getQuantityController = TextEditingController();
     _getAssetController = TextEditingController();
 
+    _giveAssetFocusNode = FocusNode();
     _giveQuantityFocusNode = FocusNode();
     _getQuantityFocusNode = FocusNode();
     _getAssetFocusNode = FocusNode();
@@ -95,6 +99,7 @@ class _OpenOrderForm extends State<OpenOrderForm> {
     _getQuantityController.dispose();
     _getAssetController.dispose();
 
+    _giveAssetFocusNode.dispose();
     _giveQuantityFocusNode.dispose();
     _getQuantityFocusNode.dispose();
     _getAssetFocusNode.dispose();
@@ -145,7 +150,11 @@ class _OpenOrderForm extends State<OpenOrderForm> {
                         focusNode: _giveQuantityFocusNode,
                         controller: _giveQuantityController)),
                 const SizedBox(width: 16),
-                const Expanded(child: GiveAssetInputField()),
+                Expanded(
+                    child: GiveAssetInputField(
+                  focusNode: _giveAssetFocusNode,
+                  controller: _giveAssetController,
+                )),
               ],
             ),
             const SizedBox(height: 16),
@@ -245,53 +254,179 @@ class _OpenOrderForm extends State<OpenOrderForm> {
 }
 
 class GiveAssetInputField extends StatelessWidget {
-  const GiveAssetInputField({super.key});
+  final TextEditingController controller;
+  final FocusNode focusNode;
+
+  const GiveAssetInputField(
+      {super.key, required this.controller, required this.focusNode});
+
+  Future<List<Balance>> _fetchSuggestions(
+      BuildContext context, String pattern) async {
+    final bloc = context.read<OpenOrderFormBloc>();
+    final currentState = bloc.state; // Get the current state immediately
+
+    // If the current state is already Success, use it directly
+    if (currentState.giveAssets is Success<List<Balance>>) {
+      final giveAssets =
+          (currentState.giveAssets as Success<List<Balance>>).data;
+
+      return giveAssets
+          .where((element) =>
+              element.asset.toLowerCase().contains(pattern.toLowerCase()))
+          .toList();
+    }
+
+    // Otherwise, listen for a new state
+    final stream = bloc.stream;
+
+    final successState = await stream.firstWhere(
+      (state) =>
+          state.giveAssets is Success<List<Balance>> ||
+          state.giveAssets is Failure,
+    );
+
+    if (successState.giveAssets is Success<List<Balance>>) {
+      final giveAssets =
+          (successState.giveAssets as Success<List<Balance>>).data;
+
+      return giveAssets
+          .where((element) =>
+              element.asset.toLowerCase().contains(pattern.toLowerCase()))
+          .toList();
+    } else {
+      throw Exception('Failed to load assets');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<OpenOrderFormBloc, FormStateModel>(
-      // buildWhen: (previous, current) =>
-      //     previous.giveAssets != current.giveAssets ||
-      //     previous.giveAsset != current.giveAsset,
       builder: (context, state) {
-        if (state.giveAssets is Loading) {
-          return const Center(child: CircularProgressIndicator());
-        } else if (state.giveAssets is Success<List<Balance>>) {
-          final giveAssets = (state.giveAssets as Success<List<Balance>>).data;
-          final hasError =
-              !state.giveAsset.isPure && state.giveAsset.error != null;
-          const errorMessage = 'Required';
+        final showError = !state.giveAsset.isPure &&
+            state.giveAsset.isNotValid &&
+            !focusNode.hasFocus;
 
-          return HorizonUI.HorizonDropdownMenu<String>(
-            enabled: true,
-            label: 'Give Asset',
-            selectedValue:
-                state.giveAsset.value.isNotEmpty ? state.giveAsset.value : null,
-            onChanged: (selectedAsset) {
-              if (selectedAsset != null) {
-                context
-                    .read<OpenOrderFormBloc>()
-                    .add(GiveAssetChanged(selectedAsset));
-              }
-            },
-            // selectedValue: state.giveAsset.value,
-            items: giveAssets.map<DropdownMenuItem<String>>((balance) {
-              return HorizonUI.buildDropdownMenuItem(
-                  balance.asset, balance.asset);
-            }).toList(),
-            errorText: hasError ? errorMessage : null,
-            helperText: hasError ? null : ' ',
-          );
-        } else if (state.giveAssets is Failure) {
-          return const Text('Failed to load assets',
-              style: TextStyle(color: Colors.red));
-        } else {
-          return const Text("not asked");
-        }
+        final error = "Required";
+
+        return TypeAheadField<Balance>(
+          direction: VerticalDirection.down,
+          focusNode: focusNode,
+          controller: controller,
+          builder: (context, decoration, child) => TextField(
+            controller: controller,
+            focusNode: focusNode,
+            style: DefaultTextStyle.of(context).style,
+            decoration: InputDecoration(
+              border: const OutlineInputBorder(),
+              labelText: "GiveAsset",
+              errorText: showError ? error : null,
+              helperText: showError ? null : ' ',
+            ),
+          ),
+          itemBuilder: (context, suggestion) {
+            return ListTile(
+              title: Text(suggestion.asset),
+            );
+          },
+          loadingBuilder: (context) {
+            return const Padding(
+              padding: EdgeInsets.all(8.0),
+              child: CircularProgressIndicator(),
+            );
+          },
+          onSelected: (selectedAsset) {
+            context
+                .read<OpenOrderFormBloc>()
+                .add(GiveAssetChanged(selectedAsset.asset));
+          },
+          suggestionsCallback: (pattern) {
+            if (state.giveAssets is Success<List<Balance>>) {
+              final giveAssets =
+                  (state.giveAssets as Success<List<Balance>>).data;
+              return giveAssets
+                  .where((element) => element.asset
+                      .toLowerCase()
+                      .contains(pattern.toLowerCase()))
+                  .toList();
+            }
+            return [];
+          },
+        );
       },
     );
   }
 }
+
+// class GiveAssetInputField extends StatelessWidget {
+//   final TextEditingController controller;
+//
+//   const GiveAssetInputField({super.key, required this.controller});
+//
+//
+//
+//
+//   @override
+//   Widget build(BuildContext context) {
+//     return BlocBuilder<OpenOrderFormBloc, FormStateModel>(
+//       // buildWhen: (previous, current) =>
+//       //     previous.giveAssets != current.giveAssets ||
+//       //     previous.giveAsset != current.giveAsset,
+//       builder: (context, state) {
+//         Future<List<Balance>> _suggestionsCallback(String pattern) async {
+//           final completer = Completer<List<Balance>>();
+//           late StreamSubscription
+//               subscription; // Declare it as late to initialize later
+//
+//           // Listen to state changes until we get Success or Failure
+//           subscription =
+//               context.read<OpenOrderFormBloc>().stream.listen((newState) {
+//
+//
+//             print("new state $newState" );
+//
+//             if (newState.giveAssets is Success<List<Balance>>) {
+//               subscription.cancel(); // Stop listening
+//               completer.complete(
+//                   (newState.giveAssets as Success<List<Balance>>).data);
+//             } else if (newState.giveAssets is Failure) {
+//               subscription.cancel(); // Stop listening
+//               completer.completeError(Exception('Failed to load assets'));
+//             }
+//           });
+//
+//           try {
+//             // Await the completion of the completer
+//             final giveAssets = await completer.future;
+//
+//             // Filter the results based on the input pattern
+//             return giveAssets
+//                 .where((element) =>
+//                     element.asset.toLowerCase().contains(pattern.toLowerCase()))
+//                 .toList();
+//           } finally {
+//             subscription.cancel(); // Ensure cleanup in case of errors
+//           }
+//         }
+//
+//         return TypeAheadField(
+//           itemBuilder: (context, suggestion) {
+//             return ListTile(
+//               title: Text(suggestion.asset),
+//             );
+//           },
+//           loadingBuilder: (BuildContext context) {
+//             return Padding(
+//               padding: EdgeInsets.all(8.0),
+//               child: CircularProgressIndicator(),
+//             );
+//           },
+//           onSelected: print,
+//           suggestionsCallback: _suggestionsCallback,
+//         );
+//       },
+//     );
+//   }
+// }
 
 class GetAssetInputField extends StatelessWidget {
   final TextEditingController controller;
