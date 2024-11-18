@@ -110,7 +110,20 @@ import 'dart:convert';
 Future<void> setup() async {
   GetIt injector = GetIt.I;
 
-  injector.registerSingleton<Logger>(LoggerImpl(logger.Logger()));
+  injector.registerSingleton<Logger>(LoggerImpl(
+    logger.Logger(
+      filter: logger.ProductionFilter(),
+      printer: logger.PrettyPrinter(
+        methodCount: 0,
+        errorMethodCount: 5,
+        lineLength: 120,
+        colors: false,
+        printEmojis: false,
+        printTime: true,
+      ),
+      output: logger.ConsoleOutput(),
+    ),
+  ));
 
   Config config = ConfigImpl();
 
@@ -222,6 +235,7 @@ Future<void> setup() async {
     const String.fromEnvironment('HORIZON_POSTHOG_API_HOST').isNotEmpty
         ? const String.fromEnvironment('HORIZON_POSTHOG_API_HOST')
         : null,
+    GetIt.I.get<Logger>(),
   ));
 
   injector.registerSingleton<BitcoinRepository>(BitcoinRepositoryImpl(

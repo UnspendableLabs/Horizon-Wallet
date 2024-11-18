@@ -36,7 +36,8 @@ class ShellStateCubit extends Cubit<ShellState> {
         return;
       }
 
-      analyticsService.identify(wallet.uuid);
+      analyticsService.trackAnonymousEvent('wallet_opened',
+          properties: {'distinct_id': wallet.uuid});
 
       List<Account> accounts =
           await accountRepository.getAccountsByWalletUuid(wallet.uuid);

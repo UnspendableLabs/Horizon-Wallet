@@ -215,8 +215,10 @@ void main() {
         when(() => mockWriteLocalTransactionUseCase.call(txHex, txHash))
             .thenAnswer((_) async {});
 
-        when(() => mockAnalyticsService.trackEvent(any()))
-            .thenAnswer((_) async {});
+        when(() => mockAnalyticsService.trackAnonymousEvent(
+              'broadcast_tx_fairminter',
+              properties: any(named: 'properties'),
+            )).thenAnswer((_) async {});
 
         return composeFairminterBloc;
       },
@@ -250,8 +252,150 @@ void main() {
         ),
       ],
       verify: (_) {
-        verify(() => mockAnalyticsService.trackEvent('broadcast_tx_fairminter'))
-            .called(1);
+        verify(() => mockAnalyticsService.trackAnonymousEvent(
+              'broadcast_tx_fairminter',
+              properties: any(named: 'properties'),
+            )).called(1);
+      },
+    );
+  });
+
+  group('FetchFormData with Fairminter filtering', () {
+    final mockAssets = [
+      const Asset(asset: 'VALID', assetLongname: 'VALID.ASSET'),
+      const Asset(asset: 'LOCKED', assetLongname: 'LOCKED.ASSET'),
+      const Asset(asset: 'OPEN', assetLongname: 'OPEN.ASSET'),
+      const Asset(asset: 'INVALID', assetLongname: 'INVALID.ASSET'),
+      const Asset(asset: 'UNRELATED', assetLongname: 'UNRELATED.ASSET'),
+    ];
+
+    final mockFairminters = [
+      const Fairminter(
+        status: 'closed',
+        asset: 'VALID',
+        assetLongname: 'VALID.ASSET',
+        txHash: 'tx-hash',
+        txIndex: 0,
+        source: 'source',
+        quantityByPrice: 1000,
+        hardCap: 10000,
+        maxMintPerTx: 1000,
+        premintQuantity: 0,
+        startBlock: 100,
+        endBlock: 200,
+        mintedAssetCommissionInt: 0,
+        softCap: 1000,
+        softCapDeadlineBlock: 100,
+      ),
+      const Fairminter(
+        status: 'closed',
+        asset: 'LOCKED',
+        assetLongname: 'LOCKED.ASSET',
+        lockQuantity: true, // This one should be invalid due to being locked
+        txHash: 'tx-hash',
+        txIndex: 0,
+        source: 'source',
+        quantityByPrice: 1000,
+        hardCap: 10000,
+        maxMintPerTx: 1000,
+        premintQuantity: 0,
+        startBlock: 100,
+        endBlock: 200,
+        mintedAssetCommissionInt: 0,
+        softCap: 1000,
+        softCapDeadlineBlock: 100,
+      ),
+      const Fairminter(
+        status: 'open',
+        asset: 'OPEN',
+        assetLongname: 'OPEN.ASSET',
+        txHash: 'tx-hash',
+        txIndex: 0,
+        source: 'source',
+        quantityByPrice: 1000,
+        hardCap: 10000,
+        maxMintPerTx: 1000,
+        premintQuantity: 0,
+        startBlock: 100,
+        endBlock: 200,
+        mintedAssetCommissionInt: 0,
+        softCap: 1000,
+        softCapDeadlineBlock: 100,
+      ),
+      const Fairminter(
+        status:
+            'invalid: Hard cap of asset `INVALID.ASSET` is already reached.',
+        asset: null,
+        assetLongname: null,
+        txHash: 'tx-hash',
+        txIndex: 0,
+        source: 'source',
+        quantityByPrice: 1000,
+        hardCap: 10000,
+        maxMintPerTx: 1000,
+        premintQuantity: 0,
+        startBlock: 100,
+        endBlock: 200,
+        mintedAssetCommissionInt: 0,
+        softCap: 1000,
+        softCapDeadlineBlock: 100,
+      ),
+    ];
+
+    blocTest<ComposeFairminterBloc, ComposeFairminterState>(
+      'correctly filters assets based on fairminter status',
+      build: () {
+        when(() => mockFetchFairminterFormDataUseCase.call(any())).thenAnswer(
+          (_) async => (
+            mockAssets,
+            mockFeeEstimates,
+            mockFairminters,
+          ),
+        );
+        return composeFairminterBloc;
+      },
+      act: (bloc) {
+        bloc.add(FetchFormData(currentAddress: 'test-address'));
+      },
+      expect: () => [
+        composeFairminterBloc.state.copyWith(
+          balancesState: const BalancesState.loading(),
+          feeState: const FeeState.loading(),
+          assetState: const AssetState.loading(),
+          submitState: const SubmitInitial(),
+          fairmintersState: const FairmintersState.loading(),
+        ),
+        composeFairminterBloc.state.copyWith(
+          balancesState: const BalancesState.success([]),
+          feeState: const FeeState.success(mockFeeEstimates),
+          assetState: AssetState.success(mockAssets
+              .where((asset) =>
+                  asset.asset == 'VALID' || asset.asset == 'UNRELATED')
+              .toList()),
+          fairmintersState: FairmintersState.success(mockFairminters),
+        ),
+      ],
+      verify: (_) {
+        final state = composeFairminterBloc.state;
+        final assets = (state.assetState as dynamic).assets;
+
+        expect(assets.length, 2,
+            reason: 'Should only have valid and unrelated assets');
+
+        expect(assets.any((asset) => asset.asset == 'VALID'), true,
+            reason: 'Should include asset with closed fairminter');
+
+        expect(assets.any((asset) => asset.asset == 'LOCKED'), false,
+            reason: 'Should exclude asset with closed but locked fairminter');
+
+        expect(assets.any((asset) => asset.asset == 'UNRELATED'), true,
+            reason: 'Should include asset with no fairminter');
+
+        expect(assets.any((asset) => asset.asset == 'OPEN'), false,
+            reason: 'Should exclude asset with open fairminter');
+
+        expect(assets.any((asset) => asset.asset == 'INVALID'), false,
+            reason: 'Should exclude asset parsed from invalid status message');
       },
     );
   });

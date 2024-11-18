@@ -1,3 +1,4 @@
+import 'package:horizon/common/uuid.dart';
 import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/domain/entities/compose_fairminter.dart';
 import 'package:horizon/domain/entities/fee_estimates.dart';
@@ -76,10 +77,28 @@ class ComposeFairminterBloc extends ComposeBaseBloc<ComposeFairminterState> {
       final (assets, feeEstimates, fairminters) =
           await fetchFairminterFormDataUseCase.call(event.currentAddress!);
 
-      final fairminterAssets =
-          fairminters.map((fairminter) => fairminter.asset).toList();
+      final invalidFairminters = fairminters
+          .where((fairminter) =>
+              fairminter.status != 'closed' ||
+              (fairminter.status == 'closed' &&
+                  fairminter.lockQuantity == true))
+          .toList();
+
+      final invalidFairminterAssets = invalidFairminters
+          .map((fairminter) {
+            if (fairminter.asset != null) return fairminter.asset!;
+
+            final match =
+                RegExp(r'`(.*?)`').firstMatch(fairminter.status ?? '');
+            return match?.group(1) ?? '';
+          })
+          .where((asset) => asset.isNotEmpty)
+          .toList();
+
       final validAssets = assets
-          .where((asset) => !fairminterAssets.contains(asset.asset))
+          .where((asset) =>
+              !invalidFairminterAssets.contains(asset.asset) &&
+              !invalidFairminterAssets.contains(asset.assetLongname))
           .toList();
 
       emit(state.copyWith(
@@ -216,7 +235,8 @@ class ComposeFairminterBloc extends ComposeBaseBloc<ComposeFairminterState> {
           await writelocalTransactionUseCase.call(txHex, txHash);
 
           logger.info('fairminter broadcasted txHash: $txHash');
-          analyticsService.trackEvent('broadcast_tx_fairminter');
+          analyticsService.trackAnonymousEvent('broadcast_tx_fairminter',
+              properties: {'distinct_id': uuid.v4()});
 
           emit(state.copyWith(
               submitState: SubmitSuccess(

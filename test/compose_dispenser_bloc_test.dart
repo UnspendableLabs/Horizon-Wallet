@@ -199,7 +199,7 @@ void main() {
         composeDispenserBloc.state.copyWith(
           balancesState: BalancesState.success(mockBalances),
           feeState: const FeeState.success(mockFeeEstimates),
-          dialogState: const DialogState.successNormalFlow(),
+          dialogState: const DialogState.warning(hasOpenDispensers: false),
           submitState: const SubmitInitial(),
         ),
       ],
@@ -225,7 +225,7 @@ void main() {
         composeDispenserBloc.state.copyWith(
           balancesState: BalancesState.success(mockBalances),
           feeState: const FeeState.success(mockFeeEstimates),
-          dialogState: const DialogState.warning(),
+          dialogState: const DialogState.warning(hasOpenDispensers: true),
           submitState: const SubmitInitial(),
         ),
       ],
@@ -491,8 +491,10 @@ void main() {
         when(() => mockWriteLocalTransactionUseCase.call(txHex, txHash))
             .thenAnswer((_) async {});
 
-        when(() => mockAnalyticsService.trackEvent(any()))
-            .thenAnswer((_) async {});
+        when(() => mockAnalyticsService.trackAnonymousEvent(
+              any(),
+              properties: any(named: 'properties'),
+            )).thenAnswer((_) async {});
 
         return composeDispenserBloc;
       },
@@ -526,8 +528,10 @@ void main() {
         ),
       ],
       verify: (_) {
-        verify(() => mockAnalyticsService.trackEvent('broadcast_tx_dispenser'))
-            .called(1);
+        verify(() => mockAnalyticsService.trackAnonymousEvent(
+              'broadcast_tx_dispenser',
+              properties: any(named: 'properties'),
+            )).called(1);
       },
     );
     blocTest<ComposeDispenserBloc, ComposeDispenserState>(

@@ -56,8 +56,7 @@ void main() {
       when(() => mockGetFeeEstimatesUseCase.call(targets: (1, 3, 6)))
           .thenAnswer((_) async => mockFeeEstimates);
 
-      when(() => mockFairminterRepository.getFairmintersByAddress(
-              testAddress, 'open'))
+      when(() => mockFairminterRepository.getFairmintersByAddress(testAddress))
           .thenAnswer((_) => TaskEither.right(mockFairminters));
 
       // Act
@@ -73,8 +72,9 @@ void main() {
           .called(1);
       verify(() => mockGetFeeEstimatesUseCase.call(targets: (1, 3, 6)))
           .called(1);
-      verify(() => mockFairminterRepository.getFairmintersByAddress(
-          testAddress, 'open')).called(1);
+      verify(() =>
+              mockFairminterRepository.getFairmintersByAddress(testAddress))
+          .called(1);
     });
 
     test('should throw FetchAssetsException when asset fetch fails', () async {
@@ -85,8 +85,7 @@ void main() {
       when(() => mockGetFeeEstimatesUseCase.call(targets: (1, 3, 6)))
           .thenAnswer((_) async => mockFeeEstimates);
 
-      when(() => mockFairminterRepository.getFairmintersByAddress(
-              testAddress, 'open'))
+      when(() => mockFairminterRepository.getFairmintersByAddress(testAddress))
           .thenAnswer((_) => TaskEither.right(mockFairminters));
 
       // Act & Assert
@@ -106,8 +105,7 @@ void main() {
       when(() => mockGetFeeEstimatesUseCase.call(targets: (1, 3, 6)))
           .thenThrow(Exception('Fee estimates fetch failed'));
 
-      when(() => mockFairminterRepository.getFairmintersByAddress(
-              testAddress, 'open'))
+      when(() => mockFairminterRepository.getFairmintersByAddress(testAddress))
           .thenAnswer((_) => TaskEither.right(mockFairminters));
 
       // Act & Assert
@@ -126,8 +124,7 @@ void main() {
       when(() => mockGetFeeEstimatesUseCase.call(targets: (1, 3, 6)))
           .thenAnswer((_) async => mockFeeEstimates);
 
-      when(() => mockFairminterRepository.getFairmintersByAddress(
-              testAddress, 'open'))
+      when(() => mockFairminterRepository.getFairmintersByAddress(testAddress))
           .thenThrow(Exception('Fairminters fetch failed'));
 
       // Act & Assert

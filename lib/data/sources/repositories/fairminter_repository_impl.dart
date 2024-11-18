@@ -52,8 +52,8 @@ class FairminterRepositoryImpl implements FairminterRepository {
   }
 
   @override
-  TaskEither<String, List<e.Fairminter>> getFairmintersByAddress(
-      String address, String? status) {
+  TaskEither<String, List<e.Fairminter>> getFairmintersByAddress(String address,
+      [String? status]) {
     return TaskEither.tryCatch(() => _getFairmintersByAddress(address, status),
         (error, stacktrace) {
       logger?.error(

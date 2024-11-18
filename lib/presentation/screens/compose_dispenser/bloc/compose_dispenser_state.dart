@@ -55,7 +55,8 @@ class DialogState with _$DialogState {
       required int mainchainrate,
       required int feeRate}) = _DispenserCloseDialogAndOpenNewAddress;
 
-  const factory DialogState.warning() = _DispenserWarning;
+  const factory DialogState.warning({bool? hasOpenDispensers}) =
+      _DispenserWarning;
 
   const factory DialogState.error(String error) = _DispenserError;
 }
