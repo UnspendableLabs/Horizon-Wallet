@@ -199,6 +199,32 @@ void main() {
         composeDispenserBloc.state.copyWith(
           balancesState: BalancesState.success(mockBalances),
           feeState: const FeeState.success(mockFeeEstimates),
+          dialogState: const DialogState.successNormalFlow(),
+          submitState: const SubmitInitial(),
+        ),
+      ],
+    );
+
+    blocTest<ComposeDispenserBloc, ComposeDispenserState>(
+      'emits loading and then success states when data is fetched successfully for segwit address',
+      build: () {
+        when(() => mockFetchDispenserFormDataUseCase.call(any())).thenAnswer(
+            (_) async => (mockBalances, mockFeeEstimates, <Dispenser>[]));
+        return composeDispenserBloc;
+      },
+      act: (bloc) {
+        bloc.add(FetchFormData(currentAddress: 'bc1qxxxxxxxxxxxx'));
+      },
+      expect: () => [
+        composeDispenserBloc.state.copyWith(
+          feeState: const FeeState.loading(),
+          balancesState: const BalancesState.loading(),
+          submitState: const SubmitInitial(),
+          dialogState: const DialogState.loading(),
+        ),
+        composeDispenserBloc.state.copyWith(
+          balancesState: BalancesState.success(mockBalances),
+          feeState: const FeeState.success(mockFeeEstimates),
           dialogState: const DialogState.warning(hasOpenDispensers: false),
           submitState: const SubmitInitial(),
         ),
