@@ -276,10 +276,11 @@ void main() {
             initialGetQuantity: 2000000000))),
     expect: () => [
       isA<FormStateModel>()
+          .having((s) => s.lockRatio, 'lockRatio', true),
+      isA<FormStateModel>()
           .having((s) => s.lockRatio, 'lockRatio', true)
           .having((s) => s.ratio, 'ratio',
-              Decimal.fromInt(10) / Decimal.fromInt(2000000000)),
-      isA<FormStateModel>()
+              Decimal.fromInt(10) / Decimal.fromInt(20)),
     ],
   );
 

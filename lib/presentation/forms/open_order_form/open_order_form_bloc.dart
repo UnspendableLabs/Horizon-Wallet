@@ -91,7 +91,7 @@ class GiveQuantityInput extends FormzInput<String, GiveQuantityValidationError>
         return GiveQuantityValidationError.invalid;
       }
 
-      if (balance != null && quantity > balance!) {
+      if (balance == null || balance != null && quantity > balance!) {
         return GiveQuantityValidationError.exceedsBalance;
       }
 
@@ -419,7 +419,6 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
       final giveQuantity = Decimal.tryParse(state.giveQuantity.value);
       final getQuantity = Decimal.tryParse(state.getQuantity.value);
 
-
       if (getQuantity != null &&
           getQuantity > Decimal.zero &&
           giveQuantity != null &&
@@ -482,12 +481,8 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
 
     GetAssetInput getAsset = GetAssetInput.dirty(params.initialGetAsset);
 
-    Rational ratio = Decimal.parse(params.initialGiveQuantity.toString()) /
-        Decimal.parse(params.initialGetQuantity.toString());
-
     emit(state.copyWith(
       lockRatio: true,
-      ratio: ratio,
       giveAsset: giveAsset,
       getAsset: getAsset,
       giveAssets: Loading(),
@@ -542,6 +537,15 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
     );
 
     try {
+      final initialGiveBalance = switch (nextGiveAssets) {
+        Success(data: var data) => data.firstWhereOrNull(
+            (balance) =>
+                balance.asset.toLowerCase() ==
+                params.initialGiveAsset.toLowerCase(),
+          ),
+        _ => null
+      };
+
       final initialGiveAsset =
           await assetRepository.getAssetVerbose(params.initialGiveAsset);
       nextGiveAsset = GiveAssetInput.dirty(params.initialGiveAsset);
@@ -550,8 +554,10 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
               ? (params.initialGiveQuantity / 100000000)
               : params.initialGiveQuantity)
           .toString();
+
       nextGiveQuantity = GiveQuantityInput.dirty(
         nextGiveQuantityNormalized,
+        balance: initialGiveBalance?.quantity ?? 0,
         isDivisible: initialGiveAsset.divisible!,
       );
     } catch (e) {
@@ -584,7 +590,11 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
           GetQuantityInput.dirty(params.initialGetQuantity.toString());
     }
 
+    Rational ratio = Decimal.parse(nextGiveQuantity.value) /
+        Decimal.parse(nextGetQuantity.value);
+
     emit(state.copyWith(
+      ratio: ratio,
       giveAssets: nextGiveAssets,
       feeEstimates: nextFeeEstimates,
       giveAsset: nextGiveAsset,
@@ -897,7 +907,7 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
       ));
     }
   }
-  
+
   void _onGiveAssetBlurred(
       GiveAssetBlurred event, Emitter<FormStateModel> emit) async {
     emit(state.copyWith(
@@ -905,7 +915,8 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
     ));
 
     try {
-      final asset = await assetRepository.getAssetVerbose(state.giveAsset.value);
+      final asset =
+          await assetRepository.getAssetVerbose(state.giveAsset.value);
 
       final giveQuantityInput = GiveQuantityInput.dirty(
         state.giveQuantity.value,
@@ -936,16 +947,13 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
         final newGive = (get *
                 Decimal.fromBigInt(state.ratio!.numerator) /
                 Decimal.fromBigInt(state.ratio!.denominator))
-            .toDecimal();
-
-
+            .toDecimal(scaleOnInfinitePrecision: 8);
 
         emit(state.copyWith(
           getQuantity: input,
           giveQuantity: GiveQuantityInput.dirty(formatDecimal(newGive),
-            balance: state.giveQuantity.balance,
-            isDivisible: state.giveQuantity.isDivisible
-          ),
+              balance: state.giveQuantity.balance,
+              isDivisible: state.giveQuantity.isDivisible),
         ));
         return;
       }
@@ -974,16 +982,16 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
     final input = GiveQuantityInput.dirty(event.value, isDivisible: true);
 
     if (state.lockRatio && state.ratio != null) {
-      final give = Decimal.tryParse(event.value);
+      final give = Decimal.tryParse(event.value) ?? Decimal.one;
       final get = Decimal.tryParse(state.getQuantity.value);
 
-      if (give != null && get != null) {
+      if (get != null) {
         // Use the stored ratio to compute the new getQuantity
 
         final newGet = (give *
                 Decimal.fromBigInt(state.ratio!.denominator) /
                 Decimal.fromBigInt(state.ratio!.numerator))
-            .toDecimal();
+            .toDecimal(scaleOnInfinitePrecision: 8);
         // Format the newGet to match the expected decimal places
 
         emit(state.copyWith(
@@ -1014,29 +1022,31 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
   void _onGiveQuantityBlurred(
     GiveQuantityBlurred event,
     Emitter<FormStateModel> emit,
-  ) {
+  ) async {
     final value = state.giveQuantity.value;
 
-    final balance = _getBalanceForAsset(state.giveAsset.value);
+    late bool isDivisible;
+    late int balance;
 
-    if (balance == null) {
-      // if we don't have a balance we permit divisibility
-      final input = GiveQuantityInput.dirty(
-        value,
-        isDivisible: true,
-      );
+    try {
+      final asset =
+          await assetRepository.getAssetVerbose(state.giveAsset.value);
+      isDivisible = asset.divisible ?? true;
+    } catch (e) {
+      isDivisible = true;
+    }
 
-      emit(state.copyWith(
-        giveQuantity: input,
-      ));
-
-      return;
+    try {
+      final balance_ = _getBalanceForAsset(state.giveAsset.value);
+      balance = balance_?.quantity ?? 0;
+    } catch (e) {
+      balance = 0;
     }
 
     final input = GiveQuantityInput.dirty(
       value,
-      balance: balance.quantity,
-      isDivisible: balance.assetInfo.divisible,
+      balance: balance,
+      isDivisible: isDivisible,
     );
 
     emit(state.copyWith(giveQuantity: input, errorMessage: null));
