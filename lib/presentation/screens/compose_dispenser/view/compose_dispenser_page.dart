@@ -462,25 +462,27 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
     );
   }
 
-  Widget _displayDispensersWarning(ComposeDispenserState state, bool loading) {
+  Widget _displayDispensersWarning(
+      ComposeDispenserState state, bool loading, bool hasOpenDispensers) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              const Icon(Icons.warning, color: Colors.orange),
-              const SizedBox(width: 8.0),
-              Expanded(
-                child: SelectableText(
-                  'Address currently has open dispensers. Creating multiple dispensers on the same address will result in a multidispense.',
-                  style: Theme.of(context).textTheme.bodyMedium,
+          if (hasOpenDispensers)
+            Row(
+              children: [
+                const Icon(Icons.warning, color: Colors.orange),
+                const SizedBox(width: 8.0),
+                Expanded(
+                  child: SelectableText(
+                    'Address currently has open dispensers. Creating multiple dispensers on the same address will result in a multidispense.',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
                 ),
-              ),
-            ],
-          ),
+              ],
+            ),
           const SizedBox(height: 16.0),
           Text(
             'How would you like to proceed?',
@@ -600,7 +602,7 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
             _buildPricePerUnitInput(loading, formKey),
           ],
         );
-      }, warning: () {
+      }, warning: (hasOpenDispensers) {
         return Column(
           children: [
             HorizonUI.HorizonTextFormField(
@@ -608,7 +610,7 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
               controller: openAddressController,
               label: "Open Address",
             ),
-            _displayDispensersWarning(state, loading),
+            _displayDispensersWarning(state, loading, hasOpenDispensers!),
           ],
         );
       }),
@@ -721,7 +723,7 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
   bool _shouldHideSubmitButtons(DialogState dialogState) {
     return dialogState.maybeWhen(
       loading: () => true,
-      warning: () => true,
+      warning: (_) => true,
       orElse: () => false,
     );
   }
