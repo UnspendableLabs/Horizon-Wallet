@@ -15,6 +15,7 @@ import 'package:horizon/domain/entities/asset_info.dart';
 import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
 import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
+import 'package:decimal/decimal.dart';
 
 class MockOnFormCancelled extends Mock {
   void call();
@@ -141,6 +142,38 @@ void main() {
   });
 
   blocTest<OpenOrderFormBloc, FormStateModel>(
+    'defaults lock ratio to false',
+    build: () {
+      when(() => getFeeEstimatesUseCase.call(targets: any(named: 'targets')))
+          .thenAnswer(
+              (_) async => const FeeEstimates(fast: 50, medium: 30, slow: 10));
+
+      when(() => balanceRepository.getBalancesForAddress(any())).thenAnswer(
+        (_) async => [
+          FakeBalance(
+              address: testAddress,
+              asset: 'ASSET1',
+              quantity: 100,
+              quantityNormalized: "100",
+              assetInfo: FakeAssetInfo(divisible: false)),
+          FakeBalance(
+              address: testAddress,
+              asset: 'ASSET2',
+              quantity: 200,
+              quantityNormalized: "20000000000",
+              assetInfo: FakeAssetInfo(divisible: true)),
+        ],
+      );
+      return bloc;
+    },
+    act: (bloc) => bloc.add(const InitializeForm()),
+    expect: () => [
+      isA<FormStateModel>().having((s) => s.lockRatio, 'lockRatio', false),
+      isA<FormStateModel>()
+    ],
+  );
+
+  blocTest<OpenOrderFormBloc, FormStateModel>(
     'emits correct state when InitializeForm is added with empty params',
     build: () {
       when(() => getFeeEstimatesUseCase.call(targets: any(named: 'targets')))
@@ -193,6 +226,64 @@ void main() {
   );
 
   blocTest<OpenOrderFormBloc, FormStateModel>(
+    'sets lock ratio true with  replete / valid params',
+    build: () {
+      when(() => assetRepository.getAssetVerbose('ASSET1')).thenAnswer(
+        (_) async => FakeAsset(
+          asset: 'ASSET1',
+          owner: 'owner_address',
+          divisible: false,
+          locked: false,
+        ),
+      );
+
+      when(() => assetRepository.getAssetVerbose('ASSET3')).thenAnswer(
+        (_) async => FakeAsset(
+          asset: 'ASSET1',
+          owner: 'owner_address',
+          divisible: true,
+          locked: false,
+        ),
+      );
+
+      when(() => getFeeEstimatesUseCase.call(targets: any(named: 'targets')))
+          .thenAnswer(
+              (_) async => const FeeEstimates(fast: 50, medium: 30, slow: 10));
+
+      when(() => balanceRepository.getBalancesForAddress(any())).thenAnswer(
+        (_) async => [
+          FakeBalance(
+              address: testAddress,
+              asset: 'ASSET1',
+              quantity: 100,
+              quantityNormalized: "100",
+              assetInfo: FakeAssetInfo(divisible: false)),
+          FakeBalance(
+              address: testAddress,
+              asset: 'ASSET2',
+              quantity: 200,
+              quantityNormalized: "20000000000",
+              assetInfo: FakeAssetInfo(divisible: true)),
+        ],
+      );
+      return bloc;
+    },
+    act: (bloc) => bloc.add(InitializeForm(
+        params: InitializeParams(
+            initialGiveAsset: "ASSET1",
+            initialGiveQuantity: 10,
+            initialGetAsset: "ASSET3",
+            initialGetQuantity: 2000000000))),
+    expect: () => [
+      isA<FormStateModel>()
+          .having((s) => s.lockRatio, 'lockRatio', true)
+          .having((s) => s.ratio, 'ratio',
+              Decimal.fromInt(10) / Decimal.fromInt(2000000000)),
+      isA<FormStateModel>()
+    ],
+  );
+
+  blocTest<OpenOrderFormBloc, FormStateModel>(
     'emits correct state when InitializeForm is added with replete / valid params',
     build: () {
       when(() => assetRepository.getAssetVerbose('ASSET1')).thenAnswer(
@@ -203,7 +294,7 @@ void main() {
           locked: false,
         ),
       );
-      
+
       when(() => assetRepository.getAssetVerbose('ASSET3')).thenAnswer(
         (_) async => FakeAsset(
           asset: 'ASSET1',
@@ -274,18 +365,549 @@ void main() {
             'getAsset.value',
             "20.0",
           )
+    ],
+  );
 
-      // isA<FormStateModel>()
-      // .having(
-      //   (s) => s.giveAssets,
-      //   'giveAssets',
-      //   isA<Success<List<Balance>>>(),
-      // )
-      // .having(
-      //   (s) => s.feeEstimates,
-      //   'feeEstimates',
-      //   isA<Success<FeeEstimates>>(),
-      // ),
+  blocTest<OpenOrderFormBloc, FormStateModel>(
+    "when give asset does not exist",
+    build: () {
+      when(() => assetRepository.getAssetVerbose("NOT_AN_ASSET"))
+          .thenAnswer((_) async {
+        throw Exception('Not found');
+      });
+
+      when(() => assetRepository.getAssetVerbose('ASSET3')).thenAnswer(
+        (_) async => FakeAsset(
+          asset: 'ASSET1',
+          owner: 'owner_address',
+          divisible: true,
+          locked: false,
+        ),
+      );
+
+      when(() => getFeeEstimatesUseCase.call(targets: any(named: 'targets')))
+          .thenAnswer(
+              (_) async => const FeeEstimates(fast: 50, medium: 30, slow: 10));
+
+      when(() => balanceRepository.getBalancesForAddress(any())).thenAnswer(
+        (_) async => [
+          FakeBalance(
+              address: testAddress,
+              asset: 'ASSET1',
+              quantity: 100,
+              quantityNormalized: "100",
+              assetInfo: FakeAssetInfo(divisible: false)),
+          FakeBalance(
+              address: testAddress,
+              asset: 'ASSET2',
+              quantity: 200,
+              quantityNormalized: "20000000000",
+              assetInfo: FakeAssetInfo(divisible: true)),
+        ],
+      );
+      return bloc;
+    },
+    act: (bloc) => bloc.add(InitializeForm(
+        params: InitializeParams(
+            initialGiveAsset: "NOT_AN_ASSET",
+            initialGiveQuantity: 10,
+            initialGetAsset: "ASSET3",
+            initialGetQuantity: 2000000000))),
+    expect: () => [
+      isA<FormStateModel>()
+          .having(
+            (s) => s.giveAssets,
+            'giveAssets',
+            isA<Loading<List<Balance>>>(),
+          )
+          .having(
+            (s) => s.feeEstimates,
+            'feeEstimates',
+            isA<Loading<FeeEstimates>>(),
+          )
+          .having(
+            (s) => s.giveAsset.value,
+            'giveAsset.value',
+            "NOT_AN_ASSET",
+          )
+          .having((s) => s.getAsset.value, 'getAsset', "ASSET3")
+          .having((s) => s.getAssetValidationStatus, 'getAssetValidationStatus',
+              isA<Loading<Asset>>())
+          .having((s) => s.giveAssetValidationStatus,
+              'giveAssetValidationStatus', isA<Loading<Asset>>()),
+      isA<FormStateModel>()
+          .having(
+            (s) => s.giveQuantity.value,
+            'giveAsset.value',
+            "10",
+          )
+          .having(
+            (s) => s.getQuantity.value,
+            'getAsset.value',
+            "20.0",
+          )
+          .having((s) => s.giveAssetValidationStatus,
+              'giveAssetValidationStatus', isA<Failure<Asset>>()),
+    ],
+  );
+
+  blocTest<OpenOrderFormBloc, FormStateModel>(
+    'fails to enable lock ratio when give quantity is invalid',
+    build: () {
+      when(() => assetRepository.getAssetVerbose('ASSET1')).thenAnswer(
+        (_) async => FakeAsset(
+          asset: 'ASSET1',
+          owner: 'owner_address',
+          divisible: false,
+          locked: false,
+        ),
+      );
+
+      when(() => assetRepository.getAssetVerbose('ASSET3')).thenAnswer(
+        (_) async => FakeAsset(
+          asset: 'ASSET3',
+          owner: 'owner_address',
+          divisible: true,
+          locked: false,
+        ),
+      );
+
+      when(() => getFeeEstimatesUseCase.call(targets: any(named: 'targets')))
+          .thenAnswer(
+              (_) async => const FeeEstimates(fast: 50, medium: 30, slow: 10));
+
+      when(() => balanceRepository.getBalancesForAddress(any())).thenAnswer(
+        (_) async => [
+          FakeBalance(
+              address: testAddress,
+              asset: 'ASSET1',
+              quantity: 100,
+              quantityNormalized: "100",
+              assetInfo: FakeAssetInfo(divisible: false)),
+          FakeBalance(
+              address: testAddress,
+              asset: 'ASSET2',
+              quantity: 200,
+              quantityNormalized: "20000000000",
+              assetInfo: FakeAssetInfo(divisible: true)),
+        ],
+      );
+
+      return bloc;
+    },
+    seed: () => FormStateModel(
+      getAssets: Loading(),
+      feeOption: FeeOption.Medium(),
+      giveAssets: Success([
+        FakeBalance(
+            address: testAddress,
+            asset: 'ASSET1',
+            quantity: 100,
+            quantityNormalized: "100",
+            assetInfo: FakeAssetInfo(divisible: false)),
+        FakeBalance(
+            address: testAddress,
+            asset: 'ASSET2',
+            quantity: 200,
+            quantityNormalized: "20000000000",
+            assetInfo: FakeAssetInfo(divisible: true)),
+      ]),
+      feeEstimates: Success(const FeeEstimates(fast: 50, medium: 30, slow: 10)),
+      giveAsset: GiveAssetInput.dirty("ASSET1"),
+      getAsset: GetAssetInput.dirty("ASSET3"),
+      giveQuantity: GiveQuantityInput.dirty("invalid", isDivisible: false),
+      getQuantity: GetQuantityInput.dirty("2000000000", isDivisible: true),
+      giveAssetValidationStatus: Success(FakeAsset(
+        asset: 'ASSET1',
+        owner: 'owner_address',
+        divisible: false,
+        locked: false,
+      )),
+      getAssetValidationStatus: Success(FakeAsset(
+        asset: 'ASSET3',
+        owner: 'owner_address',
+        divisible: true,
+        locked: false,
+      )),
+      lockRatio: false,
+      ratio: null,
+      errorMessage: null,
+    ),
+    act: (bloc) => bloc.add(LockRatioChanged(true)),
+    expect: () => [
+      isA<FormStateModel>()
+          .having((s) => s.lockRatio, 'lockRatio', false)
+          .having((s) => s.ratio, 'ratio', null)
+          .having((s) => s.errorMessage, 'errorMessage',
+              'Cannot lock ratio: invalid quantities.'),
+    ],
+  );
+
+  // 4. Attempt to Enable Lock Ratio with Invalid Get Quantity
+  blocTest<OpenOrderFormBloc, FormStateModel>(
+    'fails to enable lock ratio when get quantity is invalid',
+    build: () {
+      when(() => assetRepository.getAssetVerbose('ASSET1')).thenAnswer(
+        (_) async => FakeAsset(
+          asset: 'ASSET1',
+          owner: 'owner_address',
+          divisible: false,
+          locked: false,
+        ),
+      );
+
+      when(() => assetRepository.getAssetVerbose('ASSET3')).thenAnswer(
+        (_) async => FakeAsset(
+          asset: 'ASSET3',
+          owner: 'owner_address',
+          divisible: true,
+          locked: false,
+        ),
+      );
+
+      when(() => getFeeEstimatesUseCase.call(targets: any(named: 'targets')))
+          .thenAnswer(
+              (_) async => const FeeEstimates(fast: 50, medium: 30, slow: 10));
+
+      when(() => balanceRepository.getBalancesForAddress(any())).thenAnswer(
+        (_) async => [
+          FakeBalance(
+              address: testAddress,
+              asset: 'ASSET1',
+              quantity: 100,
+              quantityNormalized: "100",
+              assetInfo: FakeAssetInfo(divisible: false)),
+          FakeBalance(
+              address: testAddress,
+              asset: 'ASSET2',
+              quantity: 200,
+              quantityNormalized: "20000000000",
+              assetInfo: FakeAssetInfo(divisible: true)),
+        ],
+      );
+
+      return bloc;
+    },
+    seed: () => FormStateModel(
+      getAssets: Loading(),
+      feeOption: FeeOption.Medium(),
+      giveAssets: Success([
+        FakeBalance(
+            address: testAddress,
+            asset: 'ASSET1',
+            quantity: 100,
+            quantityNormalized: "100",
+            assetInfo: FakeAssetInfo(divisible: false)),
+        FakeBalance(
+            address: testAddress,
+            asset: 'ASSET2',
+            quantity: 200,
+            quantityNormalized: "20000000000",
+            assetInfo: FakeAssetInfo(divisible: true)),
+      ]),
+      feeEstimates: Success(const FeeEstimates(fast: 50, medium: 30, slow: 10)),
+      giveAsset: GiveAssetInput.dirty("ASSET1"),
+      getAsset: GetAssetInput.dirty("ASSET3"),
+      giveQuantity: GiveQuantityInput.dirty("10", isDivisible: false),
+      getQuantity: GetQuantityInput.dirty("invalid", isDivisible: true),
+      giveAssetValidationStatus: Success(FakeAsset(
+        asset: 'ASSET1',
+        owner: 'owner_address',
+        divisible: false,
+        locked: false,
+      )),
+      getAssetValidationStatus: Success(FakeAsset(
+        asset: 'ASSET3',
+        owner: 'owner_address',
+        divisible: true,
+        locked: false,
+      )),
+      lockRatio: false,
+      ratio: null,
+      errorMessage: null,
+    ),
+    act: (bloc) => bloc.add(LockRatioChanged(true)),
+    expect: () => [
+      isA<FormStateModel>()
+          .having((s) => s.lockRatio, 'lockRatio', false)
+          .having((s) => s.ratio, 'ratio', null)
+          .having((s) => s.errorMessage, 'errorMessage',
+              'Cannot lock ratio: invalid quantities.'),
+    ],
+  );
+
+  blocTest<OpenOrderFormBloc, FormStateModel>(
+    'fails to enable lock ratio when give quantity is invalid',
+    build: () {
+      when(() => assetRepository.getAssetVerbose("ASSET1"))
+          .thenAnswer((_) async {
+        return FakeAsset(
+          asset: 'ASSET1',
+          owner: 'owner_address',
+          divisible: false,
+          locked: false,
+        );
+      });
+
+      when(() => assetRepository.getAssetVerbose('ASSET3')).thenAnswer(
+        (_) async => FakeAsset(
+          asset: 'ASSET3',
+          owner: 'owner_address',
+          divisible: true,
+          locked: false,
+        ),
+      );
+
+      when(() => getFeeEstimatesUseCase.call(targets: any(named: 'targets')))
+          .thenAnswer(
+              (_) async => const FeeEstimates(fast: 50, medium: 30, slow: 10));
+
+      when(() => balanceRepository.getBalancesForAddress(any())).thenAnswer(
+        (_) async => [
+          FakeBalance(
+              address: testAddress,
+              asset: 'ASSET1',
+              quantity: 100,
+              quantityNormalized: "100",
+              assetInfo: FakeAssetInfo(divisible: false)),
+          FakeBalance(
+              address: testAddress,
+              asset: 'ASSET2',
+              quantity: 200,
+              quantityNormalized: "20000000000",
+              assetInfo: FakeAssetInfo(divisible: true)),
+        ],
+      );
+
+      return bloc;
+    },
+    seed: () => FormStateModel(
+      getAssets: Loading(),
+      feeOption: FeeOption.Medium(),
+      feeEstimates: Success(const FeeEstimates(fast: 50, medium: 30, slow: 10)),
+      giveAssets: Success([
+        FakeBalance(
+            address: testAddress,
+            asset: 'ASSET1',
+            quantity: 100,
+            quantityNormalized: "100",
+            assetInfo: FakeAssetInfo(divisible: false)),
+        FakeBalance(
+            address: testAddress,
+            asset: 'ASSET2',
+            quantity: 200,
+            quantityNormalized: "20000000000",
+            assetInfo: FakeAssetInfo(divisible: true)),
+      ]),
+      giveAsset: GiveAssetInput.dirty("ASSET1"),
+      getAsset: GetAssetInput.dirty("ASSET3"),
+      giveQuantity: GiveQuantityInput.dirty("invalid", isDivisible: false),
+      getQuantity: GetQuantityInput.dirty("2000000000", isDivisible: true),
+      giveAssetValidationStatus: Success(FakeAsset(
+        asset: 'ASSET1',
+        owner: 'owner_address',
+        divisible: false,
+        locked: false,
+      )),
+      getAssetValidationStatus: Success(FakeAsset(
+        asset: 'ASSET3',
+        owner: 'owner_address',
+        divisible: true,
+        locked: false,
+      )),
+      lockRatio: false,
+      ratio: null,
+      errorMessage: null,
+    ),
+    act: (bloc) => bloc.add(LockRatioChanged(true)),
+    expect: () => [
+      isA<FormStateModel>()
+          .having((s) => s.lockRatio, 'lockRatio', false)
+          .having((s) => s.ratio, 'ratio', null)
+          .having((s) => s.errorMessage, 'errorMessage',
+              'Cannot lock ratio: invalid quantities.'),
+    ],
+  );
+
+  blocTest<OpenOrderFormBloc, FormStateModel>(
+    'updates get quantity when give quantity changes and ratio is locked',
+    build: () {
+      when(() => assetRepository.getAssetVerbose('ASSET1')).thenAnswer(
+        (_) async => FakeAsset(
+          asset: 'ASSET1',
+          owner: 'owner_address',
+          divisible: false,
+          locked: false,
+        ),
+      );
+
+      when(() => assetRepository.getAssetVerbose('ASSET3')).thenAnswer(
+        (_) async => FakeAsset(
+          asset: 'ASSET3',
+          owner: 'owner_address',
+          divisible: true,
+          locked: false,
+        ),
+      );
+
+      when(() => getFeeEstimatesUseCase.call(targets: any(named: 'targets')))
+          .thenAnswer(
+              (_) async => const FeeEstimates(fast: 50, medium: 30, slow: 10));
+
+      when(() => balanceRepository.getBalancesForAddress(any())).thenAnswer(
+        (_) async => [
+          FakeBalance(
+              address: testAddress,
+              asset: 'ASSET1',
+              quantity: 100,
+              quantityNormalized: "100",
+              assetInfo: FakeAssetInfo(divisible: false)),
+          FakeBalance(
+              address: testAddress,
+              asset: 'ASSET2',
+              quantity: 200,
+              quantityNormalized: "20000000000",
+              assetInfo: FakeAssetInfo(divisible: true)),
+        ],
+      );
+
+      return bloc;
+    },
+    seed: () => FormStateModel(
+      getAssets: Loading(),
+      feeOption: FeeOption.Medium(),
+      giveAssets: Success([
+        FakeBalance(
+            address: testAddress,
+            asset: 'ASSET1',
+            quantity: 100,
+            quantityNormalized: "100",
+            assetInfo: FakeAssetInfo(divisible: false)),
+        FakeBalance(
+            address: testAddress,
+            asset: 'ASSET2',
+            quantity: 200,
+            quantityNormalized: "20000000000",
+            assetInfo: FakeAssetInfo(divisible: true)),
+      ]),
+      feeEstimates: Success(const FeeEstimates(fast: 50, medium: 30, slow: 10)),
+      giveAsset: GiveAssetInput.dirty("ASSET1"),
+      getAsset: GetAssetInput.dirty("ASSET3"),
+      giveQuantity: GiveQuantityInput.dirty("10", isDivisible: false),
+      getQuantity: GetQuantityInput.dirty("2000000000", isDivisible: true),
+      giveAssetValidationStatus: Success(FakeAsset(
+        asset: 'ASSET1',
+        owner: 'owner_address',
+        divisible: false,
+        locked: false,
+      )),
+      getAssetValidationStatus: Success(FakeAsset(
+        asset: 'ASSET3',
+        owner: 'owner_address',
+        divisible: true,
+        locked: false,
+      )),
+      lockRatio: true,
+      ratio: Decimal.fromInt(10) / Decimal.fromInt(2000000000),
+      errorMessage: null,
+    ),
+    act: (bloc) => bloc.add(GiveQuantityChanged("20")),
+    expect: () => [
+      isA<FormStateModel>()
+          .having((s) => s.giveQuantity.value, 'giveQuantity', "20")
+          .having((s) => s.getQuantity.value, 'getQuantity', "4000000000")
+          .having((s) => s.errorMessage, 'errorMessage', null),
+    ],
+  );
+
+  blocTest<OpenOrderFormBloc, FormStateModel>(
+    'updates give quantity when get quantity changes and ratio is locked',
+    build: () {
+      when(() => assetRepository.getAssetVerbose('ASSET1')).thenAnswer(
+        (_) async => FakeAsset(
+          asset: 'ASSET1',
+          owner: 'owner_address',
+          divisible: false,
+          locked: false,
+        ),
+      );
+
+      when(() => assetRepository.getAssetVerbose('ASSET3')).thenAnswer(
+        (_) async => FakeAsset(
+          asset: 'ASSET3',
+          owner: 'owner_address',
+          divisible: true,
+          locked: false,
+        ),
+      );
+
+      when(() => getFeeEstimatesUseCase.call(targets: any(named: 'targets')))
+          .thenAnswer(
+              (_) async => const FeeEstimates(fast: 50, medium: 30, slow: 10));
+
+      when(() => balanceRepository.getBalancesForAddress(any())).thenAnswer(
+        (_) async => [
+          FakeBalance(
+              address: testAddress,
+              asset: 'ASSET1',
+              quantity: 100,
+              quantityNormalized: "100",
+              assetInfo: FakeAssetInfo(divisible: false)),
+          FakeBalance(
+              address: testAddress,
+              asset: 'ASSET2',
+              quantity: 200,
+              quantityNormalized: "20000000000",
+              assetInfo: FakeAssetInfo(divisible: true)),
+        ],
+      );
+
+      return bloc;
+    },
+    seed: () => FormStateModel(
+      giveAssets: Success([
+        FakeBalance(
+            address: testAddress,
+            asset: 'ASSET1',
+            quantity: 100,
+            quantityNormalized: "100",
+            assetInfo: FakeAssetInfo(divisible: false)),
+        FakeBalance(
+            address: testAddress,
+            asset: 'ASSET2',
+            quantity: 200,
+            quantityNormalized: "20000000000",
+            assetInfo: FakeAssetInfo(divisible: true)),
+      ]),
+      getAssets: Loading(),
+      feeOption: FeeOption.Medium(),
+      feeEstimates: Success(const FeeEstimates(fast: 50, medium: 30, slow: 10)),
+      giveAsset: GiveAssetInput.dirty("ASSET1"),
+      getAsset: GetAssetInput.dirty("ASSET3"),
+      giveQuantity: GiveQuantityInput.dirty("10", isDivisible: false),
+      getQuantity: GetQuantityInput.dirty("2000000000", isDivisible: true),
+      giveAssetValidationStatus: Success(FakeAsset(
+        asset: 'ASSET1',
+        owner: 'owner_address',
+        divisible: false,
+        locked: false,
+      )),
+      getAssetValidationStatus: Success(FakeAsset(
+        asset: 'ASSET3',
+        owner: 'owner_address',
+        divisible: true,
+        locked: false,
+      )),
+      lockRatio: true,
+      ratio: Decimal.fromInt(10) / Decimal.fromInt(2000000000),
+      errorMessage: null,
+    ),
+    act: (bloc) => bloc.add(GetQuantityChanged("3000000000")),
+    expect: () => [
+      isA<FormStateModel>()
+          .having((s) => s.getQuantity.value, 'getQuantity', "3000000000")
+          .having((s) => s.giveQuantity.value, 'giveQuantity', "15")
+          .having((s) => s.errorMessage, 'errorMessage', null),
     ],
   );
 

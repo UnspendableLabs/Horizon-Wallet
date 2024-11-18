@@ -16,8 +16,11 @@ import 'package:horizon/domain/entities/compose_order.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
 import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/domain/entities/fee_option.dart';
+import 'package:decimal/decimal.dart';
+import 'package:rational/rational.dart';
+import 'package:fpdart/fpdart.dart';
 
-enum GiveAssetValidationError { empty }
+enum GiveAssetValidationError { required }
 
 class GiveAssetInput extends FormzInput<String, GiveAssetValidationError> {
   const GiveAssetInput.pure() : super.pure('');
@@ -26,7 +29,7 @@ class GiveAssetInput extends FormzInput<String, GiveAssetValidationError> {
   @override
   GiveAssetValidationError? validator(String value) {
     if (value.isEmpty) {
-      return GiveAssetValidationError.empty;
+      return GiveAssetValidationError.required;
     }
     return null;
   }
@@ -215,6 +218,15 @@ class GiveQuantityBlurred extends FormEvent {}
 
 class GetQuantityBlurred extends FormEvent {}
 
+class LockRatioChanged extends FormEvent {
+  final bool lockRatio;
+
+  const LockRatioChanged(this.lockRatio);
+
+  @override
+  List<Object?> get props => [lockRatio];
+}
+
 class FeeOptionChanged extends FormEvent {
   final FeeOption.FeeOption feeOption;
   const FeeOptionChanged(this.feeOption);
@@ -252,21 +264,25 @@ class FormStateModel extends Equatable {
   final FormzSubmissionStatus submissionStatus;
   final String? errorMessage;
 
-  const FormStateModel({
-    required this.feeEstimates,
-    required this.feeOption,
-    required this.giveAssets,
-    required this.getAssets,
-    this.giveAsset = const GiveAssetInput.pure(),
-    this.giveQuantity = const GiveQuantityInput.pure(),
-    this.getAsset = const GetAssetInput.pure(),
-    required this.getAssetValidationStatus,
-    required this.giveAssetValidationStatus,
-    this.getQuantity = const GetQuantityInput.pure(),
-    // this.price = cons PriceInput.pure(),
-    this.submissionStatus = FormzSubmissionStatus.initial,
-    this.errorMessage,
-  });
+  final bool lockRatio;
+  final Rational? ratio;
+
+  const FormStateModel(
+      {required this.feeEstimates,
+      required this.feeOption,
+      required this.giveAssets,
+      required this.getAssets,
+      this.giveAsset = const GiveAssetInput.pure(),
+      this.giveQuantity = const GiveQuantityInput.pure(),
+      this.getAsset = const GetAssetInput.pure(),
+      required this.getAssetValidationStatus,
+      required this.giveAssetValidationStatus,
+      this.getQuantity = const GetQuantityInput.pure(),
+      // this.price = cons PriceInput.pure(),
+      this.submissionStatus = FormzSubmissionStatus.initial,
+      this.errorMessage,
+      this.lockRatio = false,
+      this.ratio});
 
   FormStateModel copyWith({
     RemoteData<List<Balance>>? giveAssets,
@@ -282,24 +298,27 @@ class FormStateModel extends Equatable {
     RemoteData<Asset>? giveAssetValidationStatus,
     FeeOption.FeeOption? feeOption,
     RemoteData<FeeEstimates>? feeEstimates,
+    bool? lockRatio,
+    Rational? ratio,
   }) {
     return FormStateModel(
-      giveAssets: giveAssets ?? this.giveAssets,
-      getAssets: getAssets ?? this.getAssets,
-      giveAsset: giveAsset ?? this.giveAsset,
-      giveQuantity: giveQuantity ?? this.giveQuantity,
-      getAsset: getAsset ?? this.getAsset,
-      getQuantity: getQuantity ?? this.getQuantity,
-      getAssetValidationStatus:
-          getAssetValidationStatus ?? this.getAssetValidationStatus,
-      giveAssetValidationStatus:
-          giveAssetValidationStatus ?? this.giveAssetValidationStatus,
-      // price: price ?? this.price,
-      submissionStatus: submissionStatus ?? this.submissionStatus,
-      errorMessage: errorMessage ?? this.errorMessage,
-      feeEstimates: feeEstimates ?? this.feeEstimates,
-      feeOption: feeOption ?? this.feeOption,
-    );
+        giveAssets: giveAssets ?? this.giveAssets,
+        getAssets: getAssets ?? this.getAssets,
+        giveAsset: giveAsset ?? this.giveAsset,
+        giveQuantity: giveQuantity ?? this.giveQuantity,
+        getAsset: getAsset ?? this.getAsset,
+        getQuantity: getQuantity ?? this.getQuantity,
+        getAssetValidationStatus:
+            getAssetValidationStatus ?? this.getAssetValidationStatus,
+        giveAssetValidationStatus:
+            giveAssetValidationStatus ?? this.giveAssetValidationStatus,
+        // price: price ?? this.price,
+        submissionStatus: submissionStatus ?? this.submissionStatus,
+        errorMessage: errorMessage ?? this.errorMessage,
+        feeEstimates: feeEstimates ?? this.feeEstimates,
+        feeOption: feeOption ?? this.feeOption,
+        lockRatio: lockRatio ?? this.lockRatio,
+        ratio: ratio ?? this.ratio);
   }
 
   @override
@@ -315,6 +334,8 @@ class FormStateModel extends Equatable {
         getAssetValidationStatus,
         giveAssetValidationStatus,
         feeOption,
+        lockRatio,
+        ratio
       ];
 }
 
@@ -390,6 +411,46 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
     on<FormCancelled>(_onFormCancelled);
     on<InitializeForm>(_onInitializeForm);
     on<SubmissionFailed>(_onSubmissionFailed);
+    on<LockRatioChanged>(_onLockRatioChanged);
+  }
+  void _onLockRatioChanged(
+    LockRatioChanged event,
+    Emitter<FormStateModel> emit,
+  ) {
+    final lockRatio = event.lockRatio;
+
+    if (lockRatio) {
+      // Attempt to parse both quantities
+      final giveQuantity = Decimal.tryParse(state.giveQuantity.value);
+
+      final getQuantity = Decimal.tryParse(state.getQuantity.value);
+
+      if (getQuantity != null &&
+          getQuantity > Decimal.zero &&
+          giveQuantity != null &&
+          giveQuantity > Decimal.zero) {
+        final ratio = giveQuantity / getQuantity;
+        emit(state.copyWith(
+          lockRatio: true,
+          ratio: ratio,
+          errorMessage: null, // Clear any previous errors
+        ));
+      } else {
+        // Cannot lock ratio due to invalid quantities
+        emit(state.copyWith(
+          lockRatio: false, // Ensure lock ratio is disabled
+          ratio: null,
+          errorMessage: 'Cannot lock ratio: invalid quantities.',
+        ));
+      }
+    } else {
+      // Unlock ratio
+      emit(state.copyWith(
+        lockRatio: false,
+        ratio: null,
+        errorMessage: null, // Clear any previous errors
+      ));
+    }
   }
 
   _handleInitialize(InitializeForm event, Emitter<FormStateModel> emit) async {
@@ -426,7 +487,12 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
 
     GetAssetInput getAsset = GetAssetInput.dirty(params.initialGetAsset);
 
+    Rational ratio = Decimal.parse(params.initialGiveQuantity.toString()) /
+        Decimal.parse(params.initialGetQuantity.toString());
+
     emit(state.copyWith(
+      lockRatio: true,
+      ratio: ratio,
       giveAsset: giveAsset,
       getAsset: getAsset,
       giveAssets: Loading(),
@@ -435,12 +501,50 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
       giveAssetValidationStatus: Loading(),
     ));
 
+    late RemoteData<List<Balance>> nextGiveAssets;
+    late RemoteData<FeeEstimates> nextFeeEstimates;
+
     late GiveAssetInput nextGiveAsset;
     late GiveQuantityInput nextGiveQuantity;
     late RemoteData<Asset> nextGiveAssetValidationStatus;
     late GetAssetInput nextGetAsset;
     late GetQuantityInput nextGetQuantity;
     late RemoteData<Asset> nextGetAssetValidationStatus;
+
+    final getBalancesTaskEither = TaskEither.tryCatch(
+      () => balanceRepository.getBalancesForAddress(currentAddress),
+      (error, stacktrace) => 'Error fetching balances',
+    );
+
+    final getFeeEstimatesTaskEither = TaskEither.tryCatch(
+      () => _fetchFeeEstimates(),
+      (error, stacktrace) => 'Error fetching fee estimates',
+    );
+
+    final getGiveAssetTaskEither = TaskEither.tryCatch(
+      () => assetRepository.getAssetVerbose(params.initialGiveAsset),
+      (error, stacktrace) => 'Error fetching give asset',
+    );
+
+    final getGetAssetTaskEither = TaskEither.tryCatch(
+      () => assetRepository.getAssetVerbose(params.initialGetAsset),
+      (error, stacktrace) => 'Error fetching get asset',
+    );
+
+    final results = await Future.wait([
+      getBalancesTaskEither.run(),
+      getFeeEstimatesTaskEither.run(),
+      getGiveAssetTaskEither.run(),
+      getGetAssetTaskEither.run(),
+    ]);
+
+    nextGiveAssets = (results[0] as Either<String, List<Balance>>)
+        .fold((error) => Failure(error), (balances) => Success(balances));
+
+    nextFeeEstimates = (results[1] as Either<String, FeeEstimates>).fold(
+      (error) => Failure(error),
+      (feeEstimates) => Success(feeEstimates),
+    );
 
     try {
       final initialGiveAsset =
@@ -486,6 +590,8 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
     }
 
     emit(state.copyWith(
+      giveAssets: nextGiveAssets,
+      feeEstimates: nextFeeEstimates,
       giveAsset: nextGiveAsset,
       giveQuantity: nextGiveQuantity,
       giveAssetValidationStatus: nextGiveAssetValidationStatus,
@@ -496,10 +602,6 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
 
     // // we can't immediatly set quantities because we don't know whether or not the asset is normalized
     //
-    // final results = await Future.wait([
-    //   balanceRepository.getBalancesForAddress(currentAddress),
-    //   _fetchFeeEstimates(),
-    // ]);
     //
     // final balances_ = results[0] as List<Balance>;
     // final balances = balances_
@@ -769,6 +871,7 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
   void _onGetAssetChanged(
       GetAssetChanged event, Emitter<FormStateModel> emit) async {
     final getAssetInput = GetAssetInput.dirty(event.getAssetId);
+
     emit(state.copyWith(
       getAsset: getAssetInput,
       getAssetValidationStatus: NotAsked(),
@@ -804,6 +907,25 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
       GetQuantityChanged event, Emitter<FormStateModel> emit) {
     // assume it's divisble until we blur
     final input = GetQuantityInput.dirty(event.value, isDivisible: true);
+
+    if (state.lockRatio && state.ratio != null) {
+      final get = Decimal.tryParse(event.value);
+      final give = Decimal.tryParse(state.giveQuantity.value);
+
+      if (give != null && get != null) {
+        final newGive = (get *
+                Decimal.fromBigInt(state.ratio!.numerator) /
+                Decimal.fromBigInt(state.ratio!.denominator))
+            .toDecimal();
+
+        emit(state.copyWith(
+          getQuantity: input,
+          giveQuantity: GiveQuantityInput.dirty(formatDecimal(newGive)),
+        ));
+        return;
+      }
+    }
+
     emit(state.copyWith(getQuantity: input, errorMessage: null));
   }
 
@@ -823,9 +945,45 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
 
   void _onGiveQuantityChanged(
       GiveQuantityChanged event, Emitter<FormStateModel> emit) {
-    // permit divisiblity until blur
+    // Create a new GiveQuantityInput with the updated value
     final input = GiveQuantityInput.dirty(event.value, isDivisible: true);
-    emit(state.copyWith(giveQuantity: input, errorMessage: null));
+
+    if (state.lockRatio && state.ratio != null) {
+      final give = Decimal.tryParse(event.value);
+      final get = Decimal.tryParse(state.getQuantity.value);
+
+      if (give != null && get != null) {
+        // Use the stored ratio to compute the new getQuantity
+
+        final newGet = (give *
+                Decimal.fromBigInt(state.ratio!.denominator) /
+                Decimal.fromBigInt(state.ratio!.numerator))
+            .toDecimal();
+        // Format the newGet to match the expected decimal places
+
+        emit(state.copyWith(
+          giveQuantity: input,
+          getQuantity: GetQuantityInput.dirty(formatDecimal(newGet),
+              isDivisible: state.getQuantity.isDivisible),
+          errorMessage: null,
+        ));
+        return;
+      } else {
+        // If quantities are invalid, emit an error and disable lockRatio
+        emit(state.copyWith(
+          lockRatio: false,
+          ratio: null,
+          errorMessage: 'Cannot lock ratio: invalid quantities.',
+        ));
+        return;
+      }
+    }
+
+    // If lockRatio is not enabled, just update the giveQuantity
+    emit(state.copyWith(
+      giveQuantity: input,
+      errorMessage: null,
+    ));
   }
 
   void _onGiveQuantityBlurred(
@@ -989,6 +1147,14 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
       _ => null,
     };
   }
+
+  double? _parseQuantity(String value) {
+    try {
+      return double.parse(value);
+    } catch (e) {
+      return null;
+    }
+  }
 }
 
 class FetchFeeEstimatesException implements Exception {
@@ -1001,4 +1167,16 @@ class FetchFeeEstimatesException implements Exception {
 
 EventTransformer<T> debounce<T>(Duration duration) {
   return (events, mapper) => events.debounceTime(duration).flatMap(mapper);
+}
+
+String formatDecimal(Decimal decimal, {int maxDecimalPlaces = 8}) {
+  Decimal rounded = decimal.round(scale: maxDecimalPlaces);
+
+  String fixed = rounded.toStringAsFixed(maxDecimalPlaces);
+
+  fixed = fixed.replaceFirst(RegExp(r'0+$'), ''); // Remove trailing zeros
+  fixed = fixed.replaceFirst(
+      RegExp(r'\.$'), ''); // Remove trailing decimal point if any
+
+  return fixed;
 }
