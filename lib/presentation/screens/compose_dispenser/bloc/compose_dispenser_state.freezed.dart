@@ -419,7 +419,7 @@ mixin _$DialogState {
             int mainchainrate,
             int feeRate)
         closeDialogAndOpenNewAddress,
-    required TResult Function() warning,
+    required TResult Function(bool? hasOpenDispensers) warning,
     required TResult Function(String error) error,
   }) =>
       throw _privateConstructorUsedError;
@@ -438,7 +438,7 @@ mixin _$DialogState {
             int mainchainrate,
             int feeRate)?
         closeDialogAndOpenNewAddress,
-    TResult? Function()? warning,
+    TResult? Function(bool? hasOpenDispensers)? warning,
     TResult? Function(String error)? error,
   }) =>
       throw _privateConstructorUsedError;
@@ -457,7 +457,7 @@ mixin _$DialogState {
             int mainchainrate,
             int feeRate)?
         closeDialogAndOpenNewAddress,
-    TResult Function()? warning,
+    TResult Function(bool? hasOpenDispensers)? warning,
     TResult Function(String error)? error,
     required TResult orElse(),
   }) =>
@@ -574,7 +574,7 @@ class _$DispenserInitialImpl implements _DispenserInitial {
             int mainchainrate,
             int feeRate)
         closeDialogAndOpenNewAddress,
-    required TResult Function() warning,
+    required TResult Function(bool? hasOpenDispensers) warning,
     required TResult Function(String error) error,
   }) {
     return initial();
@@ -596,7 +596,7 @@ class _$DispenserInitialImpl implements _DispenserInitial {
             int mainchainrate,
             int feeRate)?
         closeDialogAndOpenNewAddress,
-    TResult? Function()? warning,
+    TResult? Function(bool? hasOpenDispensers)? warning,
     TResult? Function(String error)? error,
   }) {
     return initial?.call();
@@ -618,7 +618,7 @@ class _$DispenserInitialImpl implements _DispenserInitial {
             int mainchainrate,
             int feeRate)?
         closeDialogAndOpenNewAddress,
-    TResult Function()? warning,
+    TResult Function(bool? hasOpenDispensers)? warning,
     TResult Function(String error)? error,
     required TResult orElse(),
   }) {
@@ -737,7 +737,7 @@ class _$DispenserLoadingImpl implements _DispenserLoading {
             int mainchainrate,
             int feeRate)
         closeDialogAndOpenNewAddress,
-    required TResult Function() warning,
+    required TResult Function(bool? hasOpenDispensers) warning,
     required TResult Function(String error) error,
   }) {
     return loading();
@@ -759,7 +759,7 @@ class _$DispenserLoadingImpl implements _DispenserLoading {
             int mainchainrate,
             int feeRate)?
         closeDialogAndOpenNewAddress,
-    TResult? Function()? warning,
+    TResult? Function(bool? hasOpenDispensers)? warning,
     TResult? Function(String error)? error,
   }) {
     return loading?.call();
@@ -781,7 +781,7 @@ class _$DispenserLoadingImpl implements _DispenserLoading {
             int mainchainrate,
             int feeRate)?
         closeDialogAndOpenNewAddress,
-    TResult Function()? warning,
+    TResult Function(bool? hasOpenDispensers)? warning,
     TResult Function(String error)? error,
     required TResult orElse(),
   }) {
@@ -903,7 +903,7 @@ class _$DispenserSuccessNormalFlowImpl implements _DispenserSuccessNormalFlow {
             int mainchainrate,
             int feeRate)
         closeDialogAndOpenNewAddress,
-    required TResult Function() warning,
+    required TResult Function(bool? hasOpenDispensers) warning,
     required TResult Function(String error) error,
   }) {
     return successNormalFlow();
@@ -925,7 +925,7 @@ class _$DispenserSuccessNormalFlowImpl implements _DispenserSuccessNormalFlow {
             int mainchainrate,
             int feeRate)?
         closeDialogAndOpenNewAddress,
-    TResult? Function()? warning,
+    TResult? Function(bool? hasOpenDispensers)? warning,
     TResult? Function(String error)? error,
   }) {
     return successNormalFlow?.call();
@@ -947,7 +947,7 @@ class _$DispenserSuccessNormalFlowImpl implements _DispenserSuccessNormalFlow {
             int mainchainrate,
             int feeRate)?
         closeDialogAndOpenNewAddress,
-    TResult Function()? warning,
+    TResult Function(bool? hasOpenDispensers)? warning,
     TResult Function(String error)? error,
     required TResult orElse(),
   }) {
@@ -1072,7 +1072,7 @@ class _$DispenserSuccessCreateNewAddressFlowImpl
             int mainchainrate,
             int feeRate)
         closeDialogAndOpenNewAddress,
-    required TResult Function() warning,
+    required TResult Function(bool? hasOpenDispensers) warning,
     required TResult Function(String error) error,
   }) {
     return successCreateNewAddressFlow();
@@ -1094,7 +1094,7 @@ class _$DispenserSuccessCreateNewAddressFlowImpl
             int mainchainrate,
             int feeRate)?
         closeDialogAndOpenNewAddress,
-    TResult? Function()? warning,
+    TResult? Function(bool? hasOpenDispensers)? warning,
     TResult? Function(String error)? error,
   }) {
     return successCreateNewAddressFlow?.call();
@@ -1116,7 +1116,7 @@ class _$DispenserSuccessCreateNewAddressFlowImpl
             int mainchainrate,
             int feeRate)?
         closeDialogAndOpenNewAddress,
-    TResult Function()? warning,
+    TResult Function(bool? hasOpenDispensers)? warning,
     TResult Function(String error)? error,
     required TResult orElse(),
   }) {
@@ -1336,7 +1336,7 @@ class _$DispenserCloseDialogAndOpenNewAddressImpl
             int mainchainrate,
             int feeRate)
         closeDialogAndOpenNewAddress,
-    required TResult Function() warning,
+    required TResult Function(bool? hasOpenDispensers) warning,
     required TResult Function(String error) error,
   }) {
     return closeDialogAndOpenNewAddress(originalAddress, divisible, asset,
@@ -1359,7 +1359,7 @@ class _$DispenserCloseDialogAndOpenNewAddressImpl
             int mainchainrate,
             int feeRate)?
         closeDialogAndOpenNewAddress,
-    TResult? Function()? warning,
+    TResult? Function(bool? hasOpenDispensers)? warning,
     TResult? Function(String error)? error,
   }) {
     return closeDialogAndOpenNewAddress?.call(originalAddress, divisible, asset,
@@ -1382,7 +1382,7 @@ class _$DispenserCloseDialogAndOpenNewAddressImpl
             int mainchainrate,
             int feeRate)?
         closeDialogAndOpenNewAddress,
-    TResult Function()? warning,
+    TResult Function(bool? hasOpenDispensers)? warning,
     TResult Function(String error)? error,
     required TResult orElse(),
   }) {
@@ -1476,6 +1476,8 @@ abstract class _$$DispenserWarningImplCopyWith<$Res> {
   factory _$$DispenserWarningImplCopyWith(_$DispenserWarningImpl value,
           $Res Function(_$DispenserWarningImpl) then) =
       __$$DispenserWarningImplCopyWithImpl<$Res>;
+  @useResult
+  $Res call({bool? hasOpenDispensers});
 }
 
 /// @nodoc
@@ -1485,26 +1487,52 @@ class __$$DispenserWarningImplCopyWithImpl<$Res>
   __$$DispenserWarningImplCopyWithImpl(_$DispenserWarningImpl _value,
       $Res Function(_$DispenserWarningImpl) _then)
       : super(_value, _then);
+
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? hasOpenDispensers = freezed,
+  }) {
+    return _then(_$DispenserWarningImpl(
+      hasOpenDispensers: freezed == hasOpenDispensers
+          ? _value.hasOpenDispensers
+          : hasOpenDispensers // ignore: cast_nullable_to_non_nullable
+              as bool?,
+    ));
+  }
 }
 
 /// @nodoc
 
 class _$DispenserWarningImpl implements _DispenserWarning {
-  const _$DispenserWarningImpl();
+  const _$DispenserWarningImpl({this.hasOpenDispensers});
+
+  @override
+  final bool? hasOpenDispensers;
 
   @override
   String toString() {
-    return 'DialogState.warning()';
+    return 'DialogState.warning(hasOpenDispensers: $hasOpenDispensers)';
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
-        (other.runtimeType == runtimeType && other is _$DispenserWarningImpl);
+        (other.runtimeType == runtimeType &&
+            other is _$DispenserWarningImpl &&
+            (identical(other.hasOpenDispensers, hasOpenDispensers) ||
+                other.hasOpenDispensers == hasOpenDispensers));
   }
 
   @override
-  int get hashCode => runtimeType.hashCode;
+  int get hashCode => Object.hash(runtimeType, hasOpenDispensers);
+
+  @JsonKey(ignore: true)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$DispenserWarningImplCopyWith<_$DispenserWarningImpl> get copyWith =>
+      __$$DispenserWarningImplCopyWithImpl<_$DispenserWarningImpl>(
+          this, _$identity);
 
   @override
   @optionalTypeArgs
@@ -1522,10 +1550,10 @@ class _$DispenserWarningImpl implements _DispenserWarning {
             int mainchainrate,
             int feeRate)
         closeDialogAndOpenNewAddress,
-    required TResult Function() warning,
+    required TResult Function(bool? hasOpenDispensers) warning,
     required TResult Function(String error) error,
   }) {
-    return warning();
+    return warning(hasOpenDispensers);
   }
 
   @override
@@ -1544,10 +1572,10 @@ class _$DispenserWarningImpl implements _DispenserWarning {
             int mainchainrate,
             int feeRate)?
         closeDialogAndOpenNewAddress,
-    TResult? Function()? warning,
+    TResult? Function(bool? hasOpenDispensers)? warning,
     TResult? Function(String error)? error,
   }) {
-    return warning?.call();
+    return warning?.call(hasOpenDispensers);
   }
 
   @override
@@ -1566,12 +1594,12 @@ class _$DispenserWarningImpl implements _DispenserWarning {
             int mainchainrate,
             int feeRate)?
         closeDialogAndOpenNewAddress,
-    TResult Function()? warning,
+    TResult Function(bool? hasOpenDispensers)? warning,
     TResult Function(String error)? error,
     required TResult orElse(),
   }) {
     if (warning != null) {
-      return warning();
+      return warning(hasOpenDispensers);
     }
     return orElse();
   }
@@ -1631,7 +1659,13 @@ class _$DispenserWarningImpl implements _DispenserWarning {
 }
 
 abstract class _DispenserWarning implements DialogState {
-  const factory _DispenserWarning() = _$DispenserWarningImpl;
+  const factory _DispenserWarning({final bool? hasOpenDispensers}) =
+      _$DispenserWarningImpl;
+
+  bool? get hasOpenDispensers;
+  @JsonKey(ignore: true)
+  _$$DispenserWarningImplCopyWith<_$DispenserWarningImpl> get copyWith =>
+      throw _privateConstructorUsedError;
 }
 
 /// @nodoc
@@ -1712,7 +1746,7 @@ class _$DispenserErrorImpl implements _DispenserError {
             int mainchainrate,
             int feeRate)
         closeDialogAndOpenNewAddress,
-    required TResult Function() warning,
+    required TResult Function(bool? hasOpenDispensers) warning,
     required TResult Function(String error) error,
   }) {
     return error(this.error);
@@ -1734,7 +1768,7 @@ class _$DispenserErrorImpl implements _DispenserError {
             int mainchainrate,
             int feeRate)?
         closeDialogAndOpenNewAddress,
-    TResult? Function()? warning,
+    TResult? Function(bool? hasOpenDispensers)? warning,
     TResult? Function(String error)? error,
   }) {
     return error?.call(this.error);
@@ -1756,7 +1790,7 @@ class _$DispenserErrorImpl implements _DispenserError {
             int mainchainrate,
             int feeRate)?
         closeDialogAndOpenNewAddress,
-    TResult Function()? warning,
+    TResult Function(bool? hasOpenDispensers)? warning,
     TResult Function(String error)? error,
     required TResult orElse(),
   }) {
