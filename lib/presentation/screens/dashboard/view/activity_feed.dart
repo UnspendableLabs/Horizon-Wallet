@@ -590,17 +590,16 @@ class DashboardActivityFeedScreen extends StatefulWidget {
 
 class DashboardActivityFeedScreenState
     extends State<DashboardActivityFeedScreen> {
-  DashboardActivityFeedBloc? _bloc;
-  static int? displayedTransactionsCount;
+  late int _displayedTransactionsCount;
   static const int pageSize = 20;
+  DashboardActivityFeedBloc? _bloc;
 
   @override
   void initState() {
     super.initState();
-    _bloc = context.read<DashboardActivityFeedBloc>();
-    displayedTransactionsCount = widget.initialItemCount;
+    _displayedTransactionsCount = widget.initialItemCount;
     // Start polling after the first frame
-    // TODO: make this part of config?
+    _bloc = context.read<DashboardActivityFeedBloc>();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _bloc?.add(const StartPolling(interval: Duration(seconds: 30)));
@@ -609,7 +608,6 @@ class DashboardActivityFeedScreenState
 
   @override
   void dispose() {
-    // Use the saved reference to the bloc
     _bloc?.add(const StopPolling());
     super.dispose();
   }
@@ -629,28 +627,38 @@ class DashboardActivityFeedScreenState
         // print('DashboardActivityFeedBloc state changed: $state');
       },
       builder: (context, state) {
+        final widgets = <Widget>[];
+
+        if (state is DashboardActivityFeedStateCompleteOk ||
+            state is DashboardActivityFeedStateReloadingOk) {
+          widgets.add(_buildNewTransactionsBanner(state));
+        }
+
+        widgets.addAll(_buildContent(state));
+
+        if (state is DashboardActivityFeedStateCompleteOk &&
+            state.transactions.length > _displayedTransactionsCount) {
+          widgets.add(
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+              child: ElevatedButton(
+                onPressed: () {
+                  setState(() {
+                    _displayedTransactionsCount += pageSize;
+                  });
+                },
+                child: const Text("View More"),
+              ),
+            ),
+          );
+        }
+
         return SliverList(
-            delegate: SliverChildListDelegate([
-          if (state is DashboardActivityFeedStateCompleteOk ||
-              state is DashboardActivityFeedStateReloadingOk)
-            _buildNewTransactionsBanner(state),
-          ..._buildContent(state),
-          state is DashboardActivityFeedStateCompleteOk &&
-                  state.transactions.length > displayedTransactionsCount!
-              ? Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                  child: ElevatedButton(
-                    onPressed: () {
-                      setState(() {
-                        displayedTransactionsCount =
-                            displayedTransactionsCount! + pageSize;
-                      });
-                    },
-                    child: const Text("View More"),
-                  ),
-                )
-              : const SizedBox.shrink(),
-        ]));
+          delegate: SliverChildBuilderDelegate(
+            (context, index) => widgets[index],
+            childCount: widgets.length,
+          ),
+        );
       },
     );
   }
@@ -660,14 +668,14 @@ class DashboardActivityFeedScreenState
         state is DashboardActivityFeedStateLoading) {
       return [
         const SizedBox(
-          height: 200, // Adjust as needed
+          height: 200,
           child: Center(child: CircularProgressIndicator()),
         )
       ];
     } else if (state is DashboardActivityFeedStateCompleteError) {
       return [
         SizedBox(
-          height: 200, // Adjust as needed
+          height: 200,
           child: Center(child: Text('Error: ${state.error}')),
         )
       ];
@@ -695,10 +703,10 @@ class DashboardActivityFeedScreenState
       }
 
       final displayedTransactions =
-          filteredTransactions.take(displayedTransactionsCount!).toList();
+          filteredTransactions.take(_displayedTransactionsCount).toList();
       final isMobile = MediaQuery.of(context).size.width < 600;
 
-      final List<Widget> widgets = displayedTransactions
+      return displayedTransactions
           .map((transaction) => ActivityFeedListItem(
                 key: ValueKey(transaction.id),
                 item: transaction,
@@ -706,8 +714,6 @@ class DashboardActivityFeedScreenState
                 isMobile: isMobile,
               ))
           .toList();
-
-      return widgets.toList();
     }
 
     throw Exception('Invalid state: $state');
