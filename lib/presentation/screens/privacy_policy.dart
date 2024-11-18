@@ -76,6 +76,7 @@ class PrivacyPolicy extends StatelessWidget {
                       ],
                       fontColor,
                       16,
+                      FontWeight.normal,
                     ),
                     const SizedBox(height: 16),
                     _buildSubsection(
@@ -113,6 +114,7 @@ class PrivacyPolicy extends StatelessWidget {
                       ],
                       fontColor,
                       16,
+                      FontWeight.normal,
                     ),
                   ],
                   fontColor,
@@ -207,7 +209,7 @@ class PrivacyPolicy extends StatelessWidget {
   }
 
   Widget _buildSubsection(String title, List<Widget> children, Color fontColor,
-      [double? fontSize]) {
+      [double? fontSize, FontWeight? fontWeight]) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -215,7 +217,7 @@ class PrivacyPolicy extends StatelessWidget {
           title,
           style: TextStyle(
             fontSize: fontSize ?? 20,
-            fontWeight: FontWeight.bold,
+            fontWeight: fontWeight ?? FontWeight.bold,
             color: fontColor,
           ),
         ),
