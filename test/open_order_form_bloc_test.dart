@@ -496,7 +496,6 @@ void main() {
       return bloc;
     },
     seed: () => FormStateModel(
-      getAssets: Loading(),
       feeOption: FeeOption.Medium(),
       giveAssets: Success([
         FakeBalance(
@@ -589,7 +588,6 @@ void main() {
       return bloc;
     },
     seed: () => FormStateModel(
-      getAssets: Loading(),
       feeOption: FeeOption.Medium(),
       giveAssets: Success([
         FakeBalance(
@@ -682,7 +680,6 @@ void main() {
       return bloc;
     },
     seed: () => FormStateModel(
-      getAssets: Loading(),
       feeOption: FeeOption.Medium(),
       feeEstimates: Success(const FeeEstimates(fast: 50, medium: 30, slow: 10)),
       giveAssets: Success([
@@ -774,7 +771,6 @@ void main() {
       return bloc;
     },
     seed: () => FormStateModel(
-      getAssets: Loading(),
       feeOption: FeeOption.Medium(),
       giveAssets: Success([
         FakeBalance(
@@ -879,7 +875,6 @@ void main() {
             quantityNormalized: "20000000000",
             assetInfo: FakeAssetInfo(divisible: true)),
       ]),
-      getAssets: Loading(),
       feeOption: FeeOption.Medium(),
       feeEstimates: Success(const FeeEstimates(fast: 50, medium: 30, slow: 10)),
       giveAsset: GiveAssetInput.dirty("ASSET1"),
@@ -910,6 +905,7 @@ void main() {
           .having((s) => s.errorMessage, 'errorMessage', null),
     ],
   );
+}
 
   // blocTest<OpenOrderFormBloc, FormStateModel>(
   //   'emits [Loading(), Success()] when InitializeForm is added and repository returns balances',
@@ -1294,4 +1290,3 @@ void main() {
   //         )).called(1);
   //   },
   // );
-}

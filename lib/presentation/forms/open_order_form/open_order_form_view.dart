@@ -51,6 +51,12 @@ class _OpenOrderForm extends State<OpenOrderForm> {
       }
     });
 
+    _giveQuantityFocusNode.addListener(() {
+      if (!_giveQuantityFocusNode.hasFocus) {
+        context.read<OpenOrderFormBloc>().add(GiveQuantityBlurred());
+      }
+    });
+
     _getQuantityFocusNode.addListener(() {
       if (!_getQuantityFocusNode.hasFocus) {
         context.read<OpenOrderFormBloc>().add(GetQuantityBlurred());
@@ -60,6 +66,12 @@ class _OpenOrderForm extends State<OpenOrderForm> {
     _getAssetFocusNode.addListener(() {
       if (!_getAssetFocusNode.hasFocus) {
         context.read<OpenOrderFormBloc>().add(GetAssetBlurred());
+      }
+    });
+    
+    _giveAssetFocusNode.addListener(() {
+      if (!_giveAssetFocusNode.hasFocus) {
+        context.read<OpenOrderFormBloc>().add(GiveAssetBlurred());
       }
     });
   }
@@ -686,7 +698,7 @@ class LockRatioToggle extends StatelessWidget {
       builder: (context, state) {
         return Row(
           children: [
-            Text('Lock Ratio'),
+            Text('Lock Price'),
             Switch(
               value: state.lockRatio,
               onChanged: (value) {

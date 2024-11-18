@@ -252,7 +252,6 @@ class FormStateModel extends Equatable {
   final FeeOption.FeeOption feeOption;
 
   final RemoteData<List<Balance>> giveAssets;
-  final RemoteData<List<Asset>> getAssets;
   final GiveAssetInput giveAsset;
   final GiveQuantityInput giveQuantity;
   final GetAssetInput getAsset;
@@ -271,7 +270,6 @@ class FormStateModel extends Equatable {
       {required this.feeEstimates,
       required this.feeOption,
       required this.giveAssets,
-      required this.getAssets,
       this.giveAsset = const GiveAssetInput.pure(),
       this.giveQuantity = const GiveQuantityInput.pure(),
       this.getAsset = const GetAssetInput.pure(),
@@ -286,7 +284,6 @@ class FormStateModel extends Equatable {
 
   FormStateModel copyWith({
     RemoteData<List<Balance>>? giveAssets,
-    RemoteData<List<Asset>>? getAssets,
     GiveAssetInput? giveAsset,
     GiveQuantityInput? giveQuantity,
     GetAssetInput? getAsset,
@@ -303,7 +300,6 @@ class FormStateModel extends Equatable {
   }) {
     return FormStateModel(
         giveAssets: giveAssets ?? this.giveAssets,
-        getAssets: getAssets ?? this.getAssets,
         giveAsset: giveAsset ?? this.giveAsset,
         giveQuantity: giveQuantity ?? this.giveQuantity,
         getAsset: getAsset ?? this.getAsset,
@@ -324,7 +320,6 @@ class FormStateModel extends Equatable {
   @override
   List<Object?> get props => [
         giveAssets,
-        getAssets,
         giveAsset,
         giveQuantity,
         getAsset,
@@ -392,7 +387,6 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
     int? initialGiveQuantity,
   }) : super(FormStateModel(
           giveAssets: NotAsked(),
-          getAssets: NotAsked(),
           getAssetValidationStatus: NotAsked(),
           giveAssetValidationStatus: NotAsked(),
           feeEstimates: NotAsked(),
@@ -401,6 +395,7 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
     on<GiveAssetChanged>(_onGiveAssetChanged);
     on<GetAssetChanged>(_onGetAssetChanged);
     on<GetAssetBlurred>(_onGetAssetBlurred);
+    on<GiveAssetBlurred>(_onGiveAssetBlurred);
     on<GetQuantityChanged>(_onGetQuantityChanged);
     on<GetQuantityBlurred>(_onGetQuantityBlurred); //
     on<GiveQuantityChanged>(_onGiveQuantityChanged);
@@ -422,8 +417,8 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
     if (lockRatio) {
       // Attempt to parse both quantities
       final giveQuantity = Decimal.tryParse(state.giveQuantity.value);
-
       final getQuantity = Decimal.tryParse(state.getQuantity.value);
+
 
       if (getQuantity != null &&
           getQuantity > Decimal.zero &&
@@ -902,6 +897,31 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
       ));
     }
   }
+  
+  void _onGiveAssetBlurred(
+      GiveAssetBlurred event, Emitter<FormStateModel> emit) async {
+    emit(state.copyWith(
+      giveAssetValidationStatus: Loading(),
+    ));
+
+    try {
+      final asset = await assetRepository.getAssetVerbose(state.giveAsset.value);
+
+      final giveQuantityInput = GiveQuantityInput.dirty(
+        state.giveQuantity.value,
+        isDivisible: asset.divisible ?? false,
+      );
+
+      emit(state.copyWith(
+        giveQuantity: giveQuantityInput,
+        giveAssetValidationStatus: Success(asset),
+      ));
+    } catch (e) {
+      emit(state.copyWith(
+        giveAssetValidationStatus: Failure('Asset not found'),
+      ));
+    }
+  }
 
   void _onGetQuantityChanged(
       GetQuantityChanged event, Emitter<FormStateModel> emit) {
@@ -918,9 +938,14 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
                 Decimal.fromBigInt(state.ratio!.denominator))
             .toDecimal();
 
+
+
         emit(state.copyWith(
           getQuantity: input,
-          giveQuantity: GiveQuantityInput.dirty(formatDecimal(newGive)),
+          giveQuantity: GiveQuantityInput.dirty(formatDecimal(newGive),
+            balance: state.giveQuantity.balance,
+            isDivisible: state.giveQuantity.isDivisible
+          ),
         ));
         return;
       }
