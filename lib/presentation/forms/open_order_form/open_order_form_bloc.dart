@@ -581,6 +581,7 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
           .toString();
       nextGetQuantity = GetQuantityInput.dirty(
         nextGetQuantityNormalized,
+        isDivisible: initialGetAsset.divisible!
       );
     } catch (e) {
       nextGetAsset =
