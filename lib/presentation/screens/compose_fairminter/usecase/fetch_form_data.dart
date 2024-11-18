@@ -62,7 +62,7 @@ class FetchFairminterFormDataUseCase {
   Future<List<Fairminter>> _fetchFairminters(String currentAddress) async {
     try {
       return await fairminterRepository
-          .getFairmintersByAddress(currentAddress, 'open')
+          .getFairmintersByAddress(currentAddress)
           .run()
           .then((either) => either.fold(
                 (error) => throw FetchFairmintersException(
