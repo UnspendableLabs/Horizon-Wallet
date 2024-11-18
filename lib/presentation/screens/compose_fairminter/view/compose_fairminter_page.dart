@@ -219,7 +219,6 @@ class ComposeFairminterPageState extends State<ComposeFairminterPage> {
         parent = null;
       }
 
-
       context.read<ComposeFairminterBloc>().add(ComposeTransactionEvent(
             sourceAddress: widget.address,
             params: ComposeFairminterEventParams(

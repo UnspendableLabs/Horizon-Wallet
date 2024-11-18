@@ -78,7 +78,10 @@ class ComposeFairminterBloc extends ComposeBaseBloc<ComposeFairminterState> {
           await fetchFairminterFormDataUseCase.call(event.currentAddress!);
 
       final invalidFairminters = fairminters
-          .where((fairminter) => fairminter.status != 'closed')
+          .where((fairminter) =>
+              fairminter.status != 'closed' ||
+              (fairminter.status == 'closed' &&
+                  fairminter.lockQuantity == true))
           .toList();
 
       final invalidFairminterAssets = invalidFairminters

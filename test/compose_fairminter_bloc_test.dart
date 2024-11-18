@@ -263,6 +263,7 @@ void main() {
   group('FetchFormData with Fairminter filtering', () {
     final mockAssets = [
       const Asset(asset: 'VALID', assetLongname: 'VALID.ASSET'),
+      const Asset(asset: 'LOCKED', assetLongname: 'LOCKED.ASSET'),
       const Asset(asset: 'OPEN', assetLongname: 'OPEN.ASSET'),
       const Asset(asset: 'INVALID', assetLongname: 'INVALID.ASSET'),
       const Asset(asset: 'UNRELATED', assetLongname: 'UNRELATED.ASSET'),
@@ -273,6 +274,24 @@ void main() {
         status: 'closed',
         asset: 'VALID',
         assetLongname: 'VALID.ASSET',
+        txHash: 'tx-hash',
+        txIndex: 0,
+        source: 'source',
+        quantityByPrice: 1000,
+        hardCap: 10000,
+        maxMintPerTx: 1000,
+        premintQuantity: 0,
+        startBlock: 100,
+        endBlock: 200,
+        mintedAssetCommissionInt: 0,
+        softCap: 1000,
+        softCapDeadlineBlock: 100,
+      ),
+      const Fairminter(
+        status: 'closed',
+        asset: 'LOCKED',
+        assetLongname: 'LOCKED.ASSET',
+        lockQuantity: true, // This one should be invalid due to being locked
         txHash: 'tx-hash',
         txIndex: 0,
         source: 'source',
@@ -365,6 +384,9 @@ void main() {
 
         expect(assets.any((asset) => asset.asset == 'VALID'), true,
             reason: 'Should include asset with closed fairminter');
+
+        expect(assets.any((asset) => asset.asset == 'LOCKED'), false,
+            reason: 'Should exclude asset with closed but locked fairminter');
 
         expect(assets.any((asset) => asset.asset == 'UNRELATED'), true,
             reason: 'Should include asset with no fairminter');
