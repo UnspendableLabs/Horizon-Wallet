@@ -630,6 +630,8 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
     final getAssetInput = GetAssetInput.dirty(event.getAssetId);
 
     emit(state.copyWith(
+      ratio: Option.none(),
+      lockRatio: false,
       getAsset: getAssetInput,
       getAssetValidationStatus: NotAsked(),
     ));
@@ -743,7 +745,6 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
 
       if (get != null) {
         // Use the stored ratio to compute the new getQuantity
-      
 
         final newGet = (give *
                 Decimal.fromBigInt(ratio.denominator) /
