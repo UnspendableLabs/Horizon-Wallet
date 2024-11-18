@@ -676,7 +676,17 @@ class DashboardActivityFeedScreenState
       final transactions =
           (state as dynamic).transactions as List<ActivityFeedItem>;
 
-      if (transactions.isEmpty) {
+      final filteredTransactions = transactions.where((t) {
+        if (t.event != null && t.event is VerboseAssetIssuanceEvent) {
+          final assetIssuanceEvent = t.event as VerboseAssetIssuanceEvent;
+          return !(assetIssuanceEvent.params.assetEvents == "fairmint" &&
+              !widget.addresses
+                  .any((a) => a == assetIssuanceEvent.params.source));
+        }
+        return true;
+      }).toList();
+
+      if (filteredTransactions.isEmpty) {
         return [
           const NoData(
             title: 'No Transactions',
@@ -685,7 +695,7 @@ class DashboardActivityFeedScreenState
       }
 
       final displayedTransactions =
-          transactions.take(displayedTransactionsCount!).toList();
+          filteredTransactions.take(displayedTransactionsCount!).toList();
       final isMobile = MediaQuery.of(context).size.width < 600;
 
       final List<Widget> widgets = displayedTransactions

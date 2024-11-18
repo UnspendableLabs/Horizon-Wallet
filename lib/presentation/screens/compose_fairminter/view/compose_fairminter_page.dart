@@ -215,6 +215,10 @@ class ComposeFairminterPageState extends State<ComposeFairminterPage> {
         subAsset = fullAssetName.split('.')[1];
       }
 
+      if (parent == '') {
+        parent = null;
+      }
+
       context.read<ComposeFairminterBloc>().add(ComposeTransactionEvent(
             sourceAddress: widget.address,
             params: ComposeFairminterEventParams(
@@ -394,9 +398,10 @@ class ComposeFairminterPageState extends State<ComposeFairminterPage> {
         quantityToQuantityNormalized(params.maxMintPerTx!, params.divisible!);
     final Decimal hardcapNormalized =
         quantityToQuantityNormalized(params.hardCap!, params.divisible!);
-    final String assetName = params.assetParent == null
-        ? params.asset
-        : "${params.assetParent}.${params.asset}";
+    final String assetName =
+        (params.assetParent == null || params.assetParent == '')
+            ? params.asset
+            : "${params.assetParent}.${params.asset}";
     return [
       HorizonUI.HorizonTextFormField(
         label: "Source Address",
