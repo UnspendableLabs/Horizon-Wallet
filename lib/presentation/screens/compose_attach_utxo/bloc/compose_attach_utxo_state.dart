@@ -1,5 +1,4 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:horizon/domain/entities/asset.dart';
 
 import 'package:horizon/domain/entities/fee_option.dart';
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_state.dart';
@@ -16,9 +15,6 @@ class ComposeAttachUtxoState with _$ComposeAttachUtxoState, ComposeStateBase {
     required BalancesState balancesState,
     required FeeOption feeOption,
     required SubmitState submitState,
-
-    // Specific properties
-    required AssetState assetState,
   }) = _ComposeAttachUtxoState;
 
   factory ComposeAttachUtxoState.initial() => ComposeAttachUtxoState(
@@ -26,14 +22,5 @@ class ComposeAttachUtxoState with _$ComposeAttachUtxoState, ComposeStateBase {
         balancesState: const BalancesState.initial(),
         feeOption: Medium(),
         submitState: const SubmitInitial(),
-        assetState: const AssetState.initial(),
       );
-}
-
-@freezed
-class AssetState with _$AssetState {
-  const factory AssetState.initial() = _AssetInitial;
-  const factory AssetState.loading() = _AssetLoading;
-  const factory AssetState.success(Asset asset) = _AssetSuccess;
-  const factory AssetState.error(String error) = _AssetError;
 }

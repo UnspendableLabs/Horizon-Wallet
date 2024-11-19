@@ -81,7 +81,7 @@ class ComposeAttachUtxoResponseParams {
   final String asset;
   final int quantity;
   final String quantityNormalized;
-  final String destinationVout;
+  final String? destinationVout;
   final AssetInfo assetInfo;
 
   ComposeAttachUtxoResponseParams(
@@ -89,6 +89,6 @@ class ComposeAttachUtxoResponseParams {
       required this.asset,
       required this.quantity,
       required this.quantityNormalized,
-      required this.destinationVout,
+      this.destinationVout,
       required this.assetInfo});
 }

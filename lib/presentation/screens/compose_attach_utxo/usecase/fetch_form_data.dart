@@ -1,33 +1,31 @@
-import 'package:horizon/domain/entities/asset.dart';
+import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/domain/entities/fee_estimates.dart';
-import 'package:horizon/domain/repositories/asset_repository.dart';
+import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
 
 class FetchComposeAttachUtxoFormDataUseCase {
   final GetFeeEstimatesUseCase getFeeEstimatesUseCase;
-  final AssetRepository assetRepository;
+  final BalanceRepository balanceRepository;
 
   FetchComposeAttachUtxoFormDataUseCase({
     required this.getFeeEstimatesUseCase,
-    required this.assetRepository,
+    required this.balanceRepository,
   });
 
-  Future<(FeeEstimates, Asset)> call(String assetName) async {
-    print('IN THE USECASE');
+  Future<(FeeEstimates, Balance)> call(String address, String assetName) async {
     try {
       // Initiate both asynchronous calls
       final futures = await Future.wait([
-        _fetchAsset(assetName),
+        _fetchAssetBalance(address, assetName),
         _fetchFeeEstimates(),
       ]);
 
-      print('fetched futures: ${futures[0]} ${futures[1]}');
-      final asset = futures[0] as Asset;
+      final balance = futures[0] as Balance;
       final feeEstimates = futures[1] as FeeEstimates;
 
-      return (feeEstimates, asset);
-    } on FetchAssetException catch (e) {
-      throw FetchAssetException(e.message);
+      return (feeEstimates, balance);
+    } on FetchBalanceException catch (e) {
+      throw FetchBalanceException(e.message);
     } on FetchFeeEstimatesException catch (e) {
       throw FetchFeeEstimatesException(e.message);
     } catch (e) {
@@ -43,21 +41,23 @@ class FetchComposeAttachUtxoFormDataUseCase {
     }
   }
 
-  Future<Asset> _fetchAsset(String assetName) async {
+  Future<Balance> _fetchAssetBalance(String address, String assetName) async {
     try {
-      return await assetRepository.getAssetVerbose(assetName);
+      return await balanceRepository
+          .getBalancesForAddressAndAssetVerbose(address, assetName)
+          .then((balances) => balances.first);
     } catch (e) {
-      throw FetchAssetException(e.toString());
+      throw FetchBalanceException(e.toString());
     }
   }
 }
 
-class FetchAssetException implements Exception {
+class FetchBalanceException implements Exception {
   final String message;
-  FetchAssetException(this.message);
+  FetchBalanceException(this.message);
 
   @override
-  String toString() => 'FetchAssetException: $message';
+  String toString() => 'FetchBalanceException: $message';
 }
 
 class FetchFeeEstimatesException implements Exception {

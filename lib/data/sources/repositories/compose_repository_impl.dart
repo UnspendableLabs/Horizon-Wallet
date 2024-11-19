@@ -15,6 +15,8 @@ import 'package:horizon/domain/entities/compose_dispense.dart'
     as compose_dispense;
 import 'package:horizon/domain/entities/compose_order.dart' as compose_order;
 import 'package:horizon/domain/entities/compose_cancel.dart' as compose_cancel;
+import 'package:horizon/domain/entities/compose_attach_utxo.dart'
+    as compose_attach_utxo;
 import 'package:horizon/domain/entities/utxo.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
 
@@ -439,6 +441,41 @@ class ComposeRepositoryImpl extends ComposeRepository {
 
         if (response.result == null) {
           throw Exception('Failed to compose cancel');
+        }
+
+        return response.result!.toDomain();
+      },
+      inputsSet,
+    );
+  }
+
+  @override
+  Future<compose_attach_utxo.ComposeAttachUtxoResponse> composeAttachUtxo(
+      int fee,
+      List<Utxo> inputsSet,
+      compose_attach_utxo.ComposeAttachUtxoParams params) async {
+    return await _retryOnInvalidUtxo<
+        compose_attach_utxo.ComposeAttachUtxoResponse>(
+      (currentInputSet) async {
+        final address = params.address;
+        final asset = params.asset;
+        final quantity = params.quantity;
+
+        final inputsSetString =
+            currentInputSet.map((e) => "${e.txid}:${e.vout}").join(',');
+
+        final response = await api.composeAttachUtxo(
+            address,
+            asset,
+            quantity,
+            null,
+            false,
+            true, //  allow unconfirmed
+            fee, //exect fee
+            inputsSetString);
+
+        if (response.result == null) {
+          throw Exception('Failed to compose attach utxo');
         }
 
         return response.result!.toDomain();

@@ -156,6 +156,8 @@ BalanceVerbose _$BalanceVerboseFromJson(Map<String, dynamic> json) =>
       assetInfo:
           AssetInfoModel.fromJson(json['asset_info'] as Map<String, dynamic>),
       quantityNormalized: json['quantity_normalized'] as String,
+      utxo: json['utxo'] as String?,
+      utxoAddress: json['utxo_address'] as String?,
     );
 
 Map<String, dynamic> _$BalanceVerboseToJson(BalanceVerbose instance) =>
@@ -165,6 +167,8 @@ Map<String, dynamic> _$BalanceVerboseToJson(BalanceVerbose instance) =>
       'asset': instance.asset,
       'quantity_normalized': instance.quantityNormalized,
       'asset_info': instance.assetInfo,
+      'utxo': instance.utxo,
+      'utxo_address': instance.utxoAddress,
     };
 
 MultiBalance _$MultiBalanceFromJson(Map<String, dynamic> json) => MultiBalance(
@@ -5411,7 +5415,7 @@ class _V2Api implements V2Api {
   }
 
   @override
-  Future<Response<BalanceVerbose>> getBalanceForAddressAndAssetVerbose(
+  Future<Response<List<BalanceVerbose>>> getBalancesForAddressAndAssetVerbose(
     String address,
     String asset,
   ) async {
@@ -5420,7 +5424,7 @@ class _V2Api implements V2Api {
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
     final _result = await _dio.fetch<Map<String, dynamic>>(
-        _setStreamType<Response<BalanceVerbose>>(Options(
+        _setStreamType<Response<List<BalanceVerbose>>>(Options(
       method: 'GET',
       headers: _headers,
       extra: _extra,
@@ -5436,9 +5440,14 @@ class _V2Api implements V2Api {
               _dio.options.baseUrl,
               baseUrl,
             ))));
-    final _value = Response<BalanceVerbose>.fromJson(
+    final _value = Response<List<BalanceVerbose>>.fromJson(
       _result.data!,
-      (json) => BalanceVerbose.fromJson(json as Map<String, dynamic>),
+      (json) => json is List<dynamic>
+          ? json
+              .map<BalanceVerbose>(
+                  (i) => BalanceVerbose.fromJson(i as Map<String, dynamic>))
+              .toList()
+          : List.empty(),
     );
     return _value;
   }

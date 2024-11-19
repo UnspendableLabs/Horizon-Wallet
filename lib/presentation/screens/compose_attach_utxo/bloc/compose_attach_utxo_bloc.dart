@@ -1,5 +1,4 @@
 import 'package:horizon/core/logging/logger.dart';
-import 'package:horizon/domain/entities/asset.dart';
 import 'package:horizon/domain/entities/compose_attach_utxo.dart';
 import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/domain/entities/fee_option.dart' as FeeOption;
@@ -16,7 +15,7 @@ import 'package:horizon/presentation/screens/compose_attach_utxo/bloc/compose_at
 import 'package:horizon/presentation/screens/compose_attach_utxo/usecase/fetch_form_data.dart';
 
 class ComposeAttachUtxoEventParams {
-  final Asset asset;
+  final String asset;
   final int quantity;
 
   ComposeAttachUtxoEventParams({
@@ -52,33 +51,32 @@ class ComposeAttachUtxoBloc extends ComposeBaseBloc<ComposeAttachUtxoState> {
           feeOption: FeeOption.Medium(),
           balancesState: const BalancesState.initial(),
           feeState: const FeeState.initial(),
-          assetState: const AssetState.initial(),
         ));
 
   @override
   void onFetchFormData(FetchFormData event, emit) async {
-    print('onFetchFormData');
     emit(state.copyWith(
-        balancesState: const BalancesState.loading(),
-        feeState: const FeeState.loading(),
-        submitState: const SubmitInitial(),
-        assetState: const AssetState.loading()));
+      balancesState: const BalancesState.loading(),
+      feeState: const FeeState.loading(),
+      submitState: const SubmitInitial(),
+    ));
 
-    print('fetching form data');
     try {
-      print('fetching form data??????');
-      final (feeEstimates, asset) =
-          await fetchComposeAttachUtxoFormDataUseCase.call(event.assetName!);
-      print('fetched form data');
+      final (feeEstimates, balance) =
+          await fetchComposeAttachUtxoFormDataUseCase.call(
+              event.currentAddress!, event.assetName!);
 
       emit(state.copyWith(
-        balancesState: const BalancesState.success([]),
+        balancesState: BalancesState.success([balance]),
         feeState: FeeState.success(feeEstimates),
-        assetState: AssetState.success(asset),
       ));
     } on FetchFeeEstimatesException catch (e) {
       emit(state.copyWith(
         feeState: FeeState.error(e.message),
+      ));
+    } on FetchBalanceException catch (e) {
+      emit(state.copyWith(
+        balancesState: BalancesState.error(e.message),
       ));
     } catch (e) {
       emit(state.copyWith(
@@ -110,35 +108,41 @@ class ComposeAttachUtxoBloc extends ComposeBaseBloc<ComposeAttachUtxoState> {
   void onComposeTransaction(ComposeTransactionEvent event, emit) async {
     emit((state).copyWith(submitState: const SubmitInitial(loading: true)));
 
-    // try {
-    //   final feeRate = _getFeeRate();
-    //   final source = event.sourceAddress;
-    //   final asset = event.params.asset;
-    //   final quantity = event.params.quantity;
+    try {
+      final feeRate = _getFeeRate();
+      final source = event.sourceAddress;
+      final asset = event.params.asset;
+      final quantity = event.params.quantity;
 
-    //   final composeResponse = await composeTransactionUseCase.call<ComposeAttachUtxoParams, ComposeAttachUtxoResponse>(
-    //       feeRate: feeRate,
-    //       source: source,
-    //       params: ComposeAttachUtxoParams(address: source, quantity: quantity, asset: asset),
-    //       composeFn: composeRepository.composeAttachUtxoVerbose);
+      final composeResponse = await composeTransactionUseCase
+          .call<ComposeAttachUtxoParams, ComposeAttachUtxoResponse>(
+              feeRate: feeRate,
+              source: source,
+              params: ComposeAttachUtxoParams(
+                  address: source, quantity: quantity, asset: asset),
+              composeFn: composeRepository.composeAttachUtxo);
 
-    //   final composed = composeResponse.$1;
-    //   final virtualSize = composeResponse.$2;
+      final composed = composeResponse.$1;
+      final virtualSize = composeResponse.$2;
 
-    //   emit(state.copyWith(
-    //       submitState: SubmitComposingTransaction<ComposeFairmintResponse, void>(
-    //     composeTransaction: composed,
-    //     fee: composed.btcFee,
-    //     feeRate: feeRate,
-    //     virtualSize: virtualSize.virtualSize,
-    //     adjustedVirtualSize: virtualSize.adjustedVirtualSize,
-    //   )));
-    // } on ComposeTransactionException catch (e) {
-    //   emit(state.copyWith(submitState: SubmitInitial(loading: false, error: e.message)));
-    // } catch (e) {
-    //   emit(state.copyWith(
-    //       submitState: SubmitInitial(loading: false, error: 'An unexpected error occurred: ${e.toString()}')));
-    // }
+      emit(state.copyWith(
+          submitState:
+              SubmitComposingTransaction<ComposeAttachUtxoResponse, void>(
+        composeTransaction: composed,
+        fee: composed.btcFee,
+        feeRate: feeRate,
+        virtualSize: virtualSize.virtualSize,
+        adjustedVirtualSize: virtualSize.adjustedVirtualSize,
+      )));
+    } on ComposeTransactionException catch (e) {
+      emit(state.copyWith(
+          submitState: SubmitInitial(loading: false, error: e.message)));
+    } catch (e) {
+      emit(state.copyWith(
+          submitState: SubmitInitial(
+              loading: false,
+              error: 'An unexpected error occurred: ${e.toString()}')));
+    }
   }
 
   @override

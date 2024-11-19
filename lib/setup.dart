@@ -387,7 +387,7 @@ Future<void> setup() async {
   injector.registerSingleton<FetchComposeAttachUtxoFormDataUseCase>(
       FetchComposeAttachUtxoFormDataUseCase(
           getFeeEstimatesUseCase: GetIt.I.get<GetFeeEstimatesUseCase>(),
-          assetRepository: injector.get<AssetRepository>()));
+          balanceRepository: injector.get<BalanceRepository>()));
 
   injector.registerSingleton<SignAndBroadcastTransactionUseCase>(
       SignAndBroadcastTransactionUseCase(

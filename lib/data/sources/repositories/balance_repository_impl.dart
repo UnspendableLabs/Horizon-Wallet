@@ -123,15 +123,18 @@ class BalanceRepositoryImpl implements BalanceRepository {
   }
 
   @override
-  Future<b.Balance> getBalanceForAddressAndAssetVerbose(
+  Future<List<b.Balance>> getBalancesForAddressAndAssetVerbose(
       String address, String assetName) async {
     final response =
-        await api.getBalanceForAddressAndAssetVerbose(assetName, address);
-    final balance = response.result;
-    if (balance == null) {
+        await api.getBalancesForAddressAndAssetVerbose(address, assetName);
+    final balances = response.result;
+    if (balances == null) {
       throw Exception('Failed to get balance for $address and $assetName');
     }
-    return b.Balance(
+
+    final List<b.Balance> entityBalances = [];
+    for (var balance in balances) {
+      entityBalances.add(b.Balance(
         address: address,
         quantity: balance.quantity.toInt(),
         quantityNormalized: balance.quantityNormalized,
@@ -140,6 +143,9 @@ class BalanceRepositoryImpl implements BalanceRepository {
           assetLongname: balance.assetInfo.assetLongname,
           description: balance.assetInfo.description,
           divisible: balance.assetInfo.divisible,
-        ));
+        ),
+      ));
+    }
+    return entityBalances;
   }
 }

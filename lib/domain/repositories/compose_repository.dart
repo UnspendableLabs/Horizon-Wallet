@@ -1,4 +1,5 @@
 import 'package:horizon/domain/entities/bitcoin_decoded_tx.dart';
+import 'package:horizon/domain/entities/compose_attach_utxo.dart';
 import 'package:horizon/domain/entities/compose_fairmint.dart';
 import 'package:horizon/domain/entities/compose_fairminter.dart';
 import 'package:horizon/domain/entities/compose_issuance.dart';
@@ -30,9 +31,13 @@ abstract class ComposeRepository {
 
   Future<ComposeDispenserResponseVerbose> composeDispenserChain(
       int fee, DecodedTx prevDecodedTransaction, ComposeDispenserParams params);
+
   Future<ComposeOrderResponse> composeOrder(
       int fee, List<Utxo> inputsSet, ComposeOrderParams params);
 
   Future<ComposeCancelResponse> composeCancel(
       int fee, List<Utxo> inputsSet, ComposeCancelParams params);
+
+  Future<ComposeAttachUtxoResponse> composeAttachUtxo(
+      int fee, List<Utxo> inputsSet, ComposeAttachUtxoParams params);
 }

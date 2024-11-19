@@ -163,13 +163,17 @@ class BalanceVerbose extends Balance {
   @override
   final String quantityNormalized;
   final AssetInfoModel assetInfo;
+  final String? utxo;
+  final String? utxoAddress;
 
   BalanceVerbose(
       {super.address,
       required super.quantity,
       required super.asset,
       required this.assetInfo,
-      required this.quantityNormalized});
+      required this.quantityNormalized,
+      this.utxo,
+      this.utxoAddress});
 
   factory BalanceVerbose.fromJson(Map<String, dynamic> json) =>
       _$BalanceVerboseFromJson(json);
@@ -4382,7 +4386,7 @@ abstract class V2Api {
   ]);
 
   @GET("/addresses/{address}/balances/{asset}?verbose=true")
-  Future<Response<BalanceVerbose>> getBalanceForAddressAndAssetVerbose(
+  Future<Response<List<BalanceVerbose>>> getBalancesForAddressAndAssetVerbose(
     @Path("address") String address,
     @Path("asset") String asset,
   );

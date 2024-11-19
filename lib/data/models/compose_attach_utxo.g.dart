@@ -40,7 +40,7 @@ ComposeAttachUtxoResponseParamsModel
           asset: json['asset'] as String,
           quantity: (json['quantity'] as num).toInt(),
           quantityNormalized: json['quantity_normalized'] as String,
-          destinationVout: json['destination_vout'] as String,
+          destinationVout: json['destination_vout'] as String?,
           assetInfo: AssetInfoModel.fromJson(
               json['asset_info'] as Map<String, dynamic>),
         );

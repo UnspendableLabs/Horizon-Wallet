@@ -1,14 +1,17 @@
 import 'package:decimal/decimal.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/core/logging/logger.dart';
-import 'package:horizon/domain/entities/asset.dart';
+import 'package:horizon/domain/entities/balance.dart';
+import 'package:horizon/domain/entities/compose_attach_utxo.dart';
 import 'package:horizon/domain/repositories/block_repository.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_event.dart';
 import 'package:horizon/presentation/common/compose_base/view/compose_base_page.dart';
+import 'package:horizon/presentation/common/shared_util.dart';
 import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
 import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transaction_usecase.dart';
 import 'package:horizon/presentation/common/usecase/write_local_transaction_usecase.dart';
@@ -48,7 +51,8 @@ class ComposeAttachUtxoPageWrapper extends StatelessWidget {
           writelocalTransactionUseCase:
               GetIt.I.get<WriteLocalTransactionUseCase>(),
           blockRepository: GetIt.I.get<BlockRepository>(),
-        )..add(FetchFormData(currentAddress: currentAddress)),
+        )..add(FetchFormData(
+            currentAddress: currentAddress, assetName: assetName)),
         child: ComposeAttachUtxoPage(
           address: currentAddress,
           assetName: assetName,
@@ -98,8 +102,8 @@ class ComposeAttachUtxoPageState extends State<ComposeAttachUtxoPage> {
     return BlocConsumer<ComposeAttachUtxoBloc, ComposeAttachUtxoState>(
       listener: (context, state) {},
       builder: (context, state) {
-        print('STATE: ${state.assetState}');
-        return state.assetState.maybeWhen(
+        print('STATE: ${state.balancesState}');
+        return state.balancesState.maybeWhen(
           loading: () =>
               ComposeBasePage<ComposeAttachUtxoBloc, ComposeAttachUtxoState>(
             dashboardActivityFeedBloc: widget.dashboardActivityFeedBloc,
@@ -110,9 +114,21 @@ class ComposeAttachUtxoPageState extends State<ComposeAttachUtxoPage> {
                 label: 'From Address',
                 enabled: false,
               ),
+              const SizedBox(height: 16),
+              HorizonUI.HorizonTextFormField(
+                controller: assetController,
+                label: 'Asset',
+                enabled: false,
+              ),
+              const SizedBox(height: 16),
               HorizonUI.HorizonTextFormField(
                 controller: quantityController,
                 label: 'Quantity',
+                enabled: false,
+              ),
+              const SizedBox(height: 16),
+              const HorizonUI.HorizonTextFormField(
+                label: 'Available Supply',
                 enabled: false,
               ),
             ],
@@ -129,16 +145,17 @@ class ComposeAttachUtxoPageState extends State<ComposeAttachUtxoPage> {
             },
             onFinalizeCancel: () => () {},
           ),
-          success: (asset) =>
+          success: (balances) =>
               ComposeBasePage<ComposeAttachUtxoBloc, ComposeAttachUtxoState>(
             dashboardActivityFeedBloc: widget.dashboardActivityFeedBloc,
             onFeeChange: (fee) => context
                 .read<ComposeAttachUtxoBloc>()
                 .add(ChangeFeeOption(value: fee)),
             buildInitialFormFields: (state, loading, formKey) =>
-                _buildInitialFormFields(state, loading, formKey, asset),
+                _buildInitialFormFields(state, loading, formKey, balances[0]),
             onInitialCancel: () => _handleInitialCancel(),
-            onInitialSubmit: (formKey) => _handleInitialSubmit(formKey, asset),
+            onInitialSubmit: (formKey) =>
+                _handleInitialSubmit(formKey, balances[0]),
             buildConfirmationFormFields: (state, composeTransaction, formKey) =>
                 _buildConfirmationDetails(composeTransaction),
             onConfirmationBack: () => _onConfirmationBack(),
@@ -161,7 +178,7 @@ class ComposeAttachUtxoPageState extends State<ComposeAttachUtxoPage> {
     Navigator.of(context).pop();
   }
 
-  void _handleInitialSubmit(GlobalKey<FormState> formKey, Asset asset) {
+  void _handleInitialSubmit(GlobalKey<FormState> formKey, Balance balance) {
     setState(() {
       _submitted = true;
     });
@@ -169,7 +186,7 @@ class ComposeAttachUtxoPageState extends State<ComposeAttachUtxoPage> {
       Decimal input = Decimal.parse(quantityController.text);
       int quantity;
 
-      if (asset.divisible!) {
+      if (balance.assetInfo.divisible) {
         quantity = (input * Decimal.fromInt(100000000)).toBigInt().toInt();
       } else {
         quantity = input.toBigInt().toInt();
@@ -178,7 +195,7 @@ class ComposeAttachUtxoPageState extends State<ComposeAttachUtxoPage> {
       context.read<ComposeAttachUtxoBloc>().add(ComposeTransactionEvent(
             sourceAddress: fromAddressController.text,
             params: ComposeAttachUtxoEventParams(
-              asset: asset,
+              asset: widget.assetName,
               quantity: quantity,
             ),
           ));
@@ -186,18 +203,28 @@ class ComposeAttachUtxoPageState extends State<ComposeAttachUtxoPage> {
   }
 
   List<Widget> _buildInitialFormFields(ComposeAttachUtxoState state,
-      bool loading, GlobalKey<FormState> formKey, Asset asset) {
-    print('BUILDING INITIAL FORM FIELDS');
-
+      bool loading, GlobalKey<FormState> formKey, Balance balance) {
     return [
       HorizonUI.HorizonTextFormField(
         controller: fromAddressController,
         label: 'From Address',
         enabled: false,
       ),
+      const SizedBox(height: 16),
+      HorizonUI.HorizonTextFormField(
+        controller: assetController,
+        label: 'Asset',
+        enabled: false,
+      ),
+      const SizedBox(height: 16),
       HorizonUI.HorizonTextFormField(
         controller: quantityController,
-        label: 'Quantity',
+        label: 'Quantity to attach',
+        inputFormatters: [
+          balance.assetInfo.divisible == true
+              ? DecimalTextInputFormatter(decimalRange: 20)
+              : FilteringTextInputFormatter.digitsOnly,
+        ],
         validator: (value) {
           if (value == null || value.isEmpty) {
             return 'Quantity is required';
@@ -205,15 +232,33 @@ class ComposeAttachUtxoPageState extends State<ComposeAttachUtxoPage> {
           return null;
         },
         onFieldSubmitted: (value) {
-          _handleInitialSubmit(formKey, asset);
+          _handleInitialSubmit(formKey, balance);
         },
+      ),
+      const SizedBox(height: 32),
+      HorizonUI.HorizonTextFormField(
+        controller: TextEditingController(text: balance.quantityNormalized),
+        label: 'Available Supply',
+        enabled: false,
       ),
     ];
   }
 
   List<Widget> _buildConfirmationDetails(dynamic composeTransaction) {
-    // final params = (composeTransaction as ComposeFairmintResponse).params;
-    return [];
+    final params = (composeTransaction as ComposeAttachUtxoResponse).params;
+    return [
+      HorizonUI.HorizonTextFormField(
+        controller: TextEditingController(text: params.asset),
+        label: 'Asset',
+        enabled: false,
+      ),
+      const SizedBox(height: 16),
+      HorizonUI.HorizonTextFormField(
+        controller: TextEditingController(text: params.quantityNormalized),
+        label: 'Quantity',
+        enabled: false,
+      ),
+    ];
   }
 
   void _onConfirmationBack() {
