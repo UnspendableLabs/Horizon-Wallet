@@ -609,17 +609,11 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
       GiveAssetChanged event, Emitter<FormStateModel> emit) {
     final giveAssetInput = GiveAssetInput.dirty(event.giveAssetId);
 
-    final balance = _getBalanceForAsset(event.giveAssetId);
-
-    final giveQuantity = GiveQuantityInput.dirty(
-      state.giveQuantity.value,
-      isDivisible: balance?.assetInfo.divisible ?? false,
-    );
 
     emit(state.copyWith(
       ratio: const Option.none(),
       lockRatio: false,
-      giveQuantity: giveQuantity,
+      // giveQuantity: giveQuantity,
       giveAsset: giveAssetInput,
       errorMessage: null,
     ));
@@ -669,12 +663,16 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
     ));
 
     try {
+
       final asset =
           await assetRepository.getAssetVerbose(state.giveAsset.value);
+     
+      final balance = _getBalanceForAsset(state.giveAsset.value);
 
       final giveQuantityInput = GiveQuantityInput.dirty(
         state.giveQuantity.value,
         isDivisible: asset.divisible ?? false,
+        balance: balance?.quantity ?? 0
       );
 
       emit(state.copyWith(
