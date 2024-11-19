@@ -1,14 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:horizon/domain/repositories/config_repository.dart';
-import 'package:get_it/get_it.dart';
 
 class Link extends StatefulWidget {
-  final String display;
+  final Widget display;
   final String href;
-  final Config config = GetIt.I<Config>();
 
-  Link({
+  const Link({
     super.key,
     required this.display,
     required this.href,
@@ -30,21 +27,11 @@ class LinkState extends State<Link> {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-        onTap: _launchUrl,
-        child: RichText(
-          text: TextSpan(
-            style: DefaultTextStyle.of(context).style,
-            children: [
-              TextSpan(
-                mouseCursor: WidgetStateMouseCursor.clickable,
-                text: widget.display,
-                style: const TextStyle(
-                  decoration: TextDecoration.underline,
-                ),
-              ),
-            ],
-          ),
-        ));
+      onTap: _launchUrl,
+      child: MouseRegion(
+        cursor: SystemMouseCursors.click,
+        child: widget.display,
+      ),
+    );
   }
 }
-

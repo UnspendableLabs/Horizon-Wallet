@@ -1496,14 +1496,6 @@ class DashboardPageState extends State<DashboardPage> {
                                                 widget.accountUuid,
                                           );
                                         }),
-                                        Row(
-                                          children: [
-                                            Text(widget
-                                                    .currentAddress?.address ??
-                                                widget.currentImportedAddress!
-                                                    .address),
-                                          ],
-                                        ),
                                         SizedBox(
                                           height: 258,
                                           child: Container(
@@ -1694,11 +1686,6 @@ class DashboardPageState extends State<DashboardPage> {
                                         widget.currentImportedAddress!.address,
                                     screenWidth: screenWidth,
                                   );
-                                })),
-                                SliverToBoxAdapter(
-                                    child: Builder(builder: (context) {
-                                  return Text(widget.currentAddress?.address ??
-                                      widget.currentImportedAddress!.address);
                                 })),
                                 SliverStack(children: [
                                   SliverPositioned.fill(
