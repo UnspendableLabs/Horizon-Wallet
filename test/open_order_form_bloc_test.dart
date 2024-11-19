@@ -514,8 +514,10 @@ void main() {
       feeEstimates: Success(const FeeEstimates(fast: 50, medium: 30, slow: 10)),
       giveAsset: const GiveAssetInput.dirty("ASSET1"),
       getAsset: const GetAssetInput.dirty("ASSET3"),
-      giveQuantity: const GiveQuantityInput.dirty("invalid", isDivisible: false),
-      getQuantity: const GetQuantityInput.dirty("2000000000", isDivisible: true),
+      giveQuantity:
+          const GiveQuantityInput.dirty("invalid", isDivisible: false),
+      getQuantity:
+          const GetQuantityInput.dirty("2000000000", isDivisible: true),
       giveAssetValidationStatus: Success(FakeAsset(
         asset: 'ASSET1',
         owner: 'owner_address',
@@ -698,8 +700,10 @@ void main() {
       ]),
       giveAsset: const GiveAssetInput.dirty("ASSET1"),
       getAsset: const GetAssetInput.dirty("ASSET3"),
-      giveQuantity: const GiveQuantityInput.dirty("invalid", isDivisible: false),
-      getQuantity: const GetQuantityInput.dirty("2000000000", isDivisible: true),
+      giveQuantity:
+          const GiveQuantityInput.dirty("invalid", isDivisible: false),
+      getQuantity:
+          const GetQuantityInput.dirty("2000000000", isDivisible: true),
       giveAssetValidationStatus: Success(FakeAsset(
         asset: 'ASSET1',
         owner: 'owner_address',
@@ -790,7 +794,8 @@ void main() {
       giveAsset: const GiveAssetInput.dirty("ASSET1"),
       getAsset: const GetAssetInput.dirty("ASSET3"),
       giveQuantity: const GiveQuantityInput.dirty("10", isDivisible: false),
-      getQuantity: const GetQuantityInput.dirty("2000000000", isDivisible: true),
+      getQuantity:
+          const GetQuantityInput.dirty("2000000000", isDivisible: true),
       giveAssetValidationStatus: Success(FakeAsset(
         asset: 'ASSET1',
         owner: 'owner_address',
@@ -880,7 +885,8 @@ void main() {
       giveAsset: const GiveAssetInput.dirty("ASSET1"),
       getAsset: const GetAssetInput.dirty("ASSET3"),
       giveQuantity: const GiveQuantityInput.dirty("10", isDivisible: false),
-      getQuantity: const GetQuantityInput.dirty("2000000000", isDivisible: true),
+      getQuantity:
+          const GetQuantityInput.dirty("2000000000", isDivisible: true),
       giveAssetValidationStatus: Success(FakeAsset(
         asset: 'ASSET1',
         owner: 'owner_address',
@@ -970,7 +976,8 @@ void main() {
       giveAsset: const GiveAssetInput.dirty("ASSET1"),
       getAsset: const GetAssetInput.dirty("ASSET3"),
       giveQuantity: const GiveQuantityInput.dirty("10", isDivisible: false),
-      getQuantity: const GetQuantityInput.dirty("2000000000", isDivisible: true),
+      getQuantity:
+          const GetQuantityInput.dirty("2000000000", isDivisible: true),
       giveAssetValidationStatus: Success(FakeAsset(
         asset: 'ASSET1',
         owner: 'owner_address',
@@ -992,6 +999,87 @@ void main() {
       isA<FormStateModel>()
           .having((s) => s.lockRatio, 'lockRatio', false)
           .having((s) => s.ratio, 'ratio', const Option.none())
+    ],
+  );
+
+  blocTest<OpenOrderFormBloc, FormStateModel>(
+    'give asset validation fails when asset doesnt exits',
+    build: () {
+      when(() => assetRepository.getAssetVerbose('UNKNOWN'))
+          .thenThrow(Exception('Not found'));
+
+      when(() => assetRepository.getAssetVerbose('ASSET1')).thenAnswer(
+        (_) async => FakeAsset(
+          asset: 'ASSET1',
+          owner: 'owner_address',
+          divisible: false,
+          locked: false,
+        ),
+      );
+
+      when(() => assetRepository.getAssetVerbose('ASSET3')).thenAnswer(
+        (_) async => FakeAsset(
+          asset: 'ASSET3',
+          owner: 'owner_address',
+          divisible: true,
+          locked: false,
+        ),
+      );
+
+      when(() => getFeeEstimatesUseCase.call(targets: any(named: 'targets')))
+          .thenAnswer(
+              (_) async => const FeeEstimates(fast: 50, medium: 30, slow: 10));
+
+      when(() => balanceRepository.getBalancesForAddress(any())).thenAnswer(
+        (_) async => [
+          FakeBalance(
+              address: testAddress,
+              asset: 'ASSET1',
+              quantity: 100,
+              quantityNormalized: "100",
+              assetInfo: FakeAssetInfo(divisible: false)),
+          FakeBalance(
+              address: testAddress,
+              asset: 'ASSET2',
+              quantity: 200,
+              quantityNormalized: "20000000000",
+              assetInfo: FakeAssetInfo(divisible: true)),
+        ],
+      );
+
+      return bloc;
+    },
+    seed: () => FormStateModel(
+      giveAssets: Success([
+        FakeBalance(
+            address: testAddress,
+            asset: 'ASSET1',
+            quantity: 100,
+            quantityNormalized: "100",
+            assetInfo: FakeAssetInfo(divisible: false)),
+        FakeBalance(
+            address: testAddress,
+            asset: 'ASSET2',
+            quantity: 200,
+            quantityNormalized: "20000000000",
+            assetInfo: FakeAssetInfo(divisible: true)),
+      ]),
+      feeOption: FeeOption.Medium(),
+      feeEstimates: Success(const FeeEstimates(fast: 50, medium: 30, slow: 10)),
+      giveAsset: const GiveAssetInput.dirty("UNKNOWN"),
+      giveAssetValidationStatus: NotAsked(),
+      getAssetValidationStatus: NotAsked(),
+      lockRatio: true,
+      ratio: Option.of(Decimal.fromInt(10) / Decimal.fromInt(2000000000)),
+      errorMessage: null,
+    ),
+    act: (bloc) => bloc.add(GiveAssetBlurred()),
+    expect: () => [
+
+      isA<FormStateModel>().having((s) => s.giveAssetValidationStatus,
+          'giveAssetValidationStatus', isA<Loading<Asset>>()),
+      isA<FormStateModel>().having((s) => s.giveAssetValidationStatus,
+          'giveAssetValidationStatus', isA<Failure<Asset>>())
     ],
   );
 
@@ -1059,7 +1147,8 @@ void main() {
       giveAsset: const GiveAssetInput.dirty("ASSET1"),
       getAsset: const GetAssetInput.dirty("ASSET3"),
       giveQuantity: const GiveQuantityInput.dirty("10", isDivisible: false),
-      getQuantity: const GetQuantityInput.dirty("2000000000", isDivisible: true),
+      getQuantity:
+          const GetQuantityInput.dirty("2000000000", isDivisible: true),
       giveAssetValidationStatus: Success(FakeAsset(
         asset: 'ASSET1',
         owner: 'owner_address',

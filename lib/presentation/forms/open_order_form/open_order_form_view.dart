@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:formz/formz.dart';
 import 'package:flutter/services.dart';
@@ -7,6 +8,7 @@ import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
 import 'package:horizon/presentation/common/fee_estimation_v2.dart';
 import 'package:decimal/decimal.dart';
+import 'package:flutter_typeahead/flutter_typeahead.dart';
 
 import './open_order_form_bloc.dart';
 
@@ -26,7 +28,6 @@ class _OpenOrderForm extends State<OpenOrderForm> {
   late TextEditingController _getAssetController;
 
   late FocusNode _giveQuantityFocusNode;
-  late FocusNode _giveAssetFocusNode;
   late FocusNode _getQuantityFocusNode;
   late FocusNode _getAssetFocusNode;
 
@@ -38,7 +39,6 @@ class _OpenOrderForm extends State<OpenOrderForm> {
     _getQuantityController = TextEditingController();
     _getAssetController = TextEditingController();
 
-    _giveAssetFocusNode = FocusNode();
     _giveQuantityFocusNode = FocusNode();
     _getQuantityFocusNode = FocusNode();
     _getAssetFocusNode = FocusNode();
@@ -67,11 +67,6 @@ class _OpenOrderForm extends State<OpenOrderForm> {
       }
     });
 
-    _giveAssetFocusNode.addListener(() {
-      if (!_giveAssetFocusNode.hasFocus) {
-        context.read<OpenOrderFormBloc>().add(GiveAssetBlurred());
-      }
-    });
   }
 
   @override
@@ -109,7 +104,6 @@ class _OpenOrderForm extends State<OpenOrderForm> {
     _getQuantityController.dispose();
     _getAssetController.dispose();
 
-    _giveAssetFocusNode.dispose();
     _giveQuantityFocusNode.dispose();
     _getQuantityFocusNode.dispose();
     _getAssetFocusNode.dispose();
@@ -162,7 +156,6 @@ class _OpenOrderForm extends State<OpenOrderForm> {
                 const SizedBox(width: 16),
                 Expanded(
                     child: GiveAssetInputField(
-                  focusNode: _giveAssetFocusNode,
                   controller: _giveAssetController,
                 )),
               ],
@@ -189,11 +182,11 @@ class _OpenOrderForm extends State<OpenOrderForm> {
             ),
             const SizedBox(height: 17),
             // Price and Lock Ratio Row
-            const Row(
+            Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 // Price Label
-                Padding(
+                const Padding(
                   padding: EdgeInsets.fromLTRB(2.0, 8.0, 0.0, 16.0),
                   child: Text("Price",
                       style:
@@ -282,13 +275,47 @@ class _OpenOrderForm extends State<OpenOrderForm> {
 
 class GiveAssetInputField extends StatelessWidget {
   final TextEditingController controller;
-  final FocusNode focusNode;
 
-  const GiveAssetInputField({
-    super.key,
+  GiveAssetInputField({
+    Key? key,
     required this.controller,
-    required this.focusNode,
-  });
+  }) : super(key: key);
+
+  Future<List<Balance>> _fetchSuggestions(
+      BuildContext context, String pattern) async {
+    final bloc = context.read<OpenOrderFormBloc>();
+    final currentState = bloc.state;
+
+    if (currentState.giveAssets is Success<List<Balance>>) {
+      final giveAssets =
+          (currentState.giveAssets as Success<List<Balance>>).data;
+
+      return giveAssets
+          .where((element) =>
+              element.asset.toLowerCase().contains(pattern.toLowerCase()))
+          .toList();
+    }
+
+    final stream = bloc.stream;
+
+    final successState = await stream.firstWhere(
+      (state) =>
+          state.giveAssets is Success<List<Balance>> ||
+          state.giveAssets is Failure,
+    );
+
+    if (successState.giveAssets is Success<List<Balance>>) {
+      final giveAssets =
+          (successState.giveAssets as Success<List<Balance>>).data;
+
+      return giveAssets
+          .where((element) =>
+              element.asset.toLowerCase().contains(pattern.toLowerCase()))
+          .toList();
+    } else {
+      throw Exception('Failed to load assets');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -296,33 +323,51 @@ class GiveAssetInputField extends StatelessWidget {
       builder: (context, state) {
         final showError = !state.giveAsset.isPure && state.giveAsset.isNotValid;
 
-        final error = switch (state.giveAsset.error) {
+        final error_ = switch (state.giveAsset.error) {
           GiveAssetValidationError.required => "Required",
-          _ when state.giveAssetValidationStatus is Failure =>
-            "Asset not found",
           _ => null
         };
 
-        final assets = switch (state.giveAssets) {
-          Success(data: var assets) => assets,
-          _ => <Balance>[]
+        final assetValidationError = switch (state.giveAssetValidationStatus) {
+          Failure() => "Asset not found",
+          _ => null
         };
 
-        return RawAutocomplete<Balance>(
-          textEditingController: controller,
-          focusNode: focusNode,
+        final error = assetValidationError ?? error_;
+
+        return Autocomplete<Balance>(
           optionsBuilder: (TextEditingValue textEditingValue) {
-            return assets.where((Balance option) {
-              return option.asset
-                  .toLowerCase()
-                  .contains(textEditingValue.text.toLowerCase());
-            });
+            if (textEditingValue.text.isEmpty) {
+              return const Iterable<Balance>.empty();
+            }
+            return _fetchSuggestions(context, textEditingValue.text);
           },
-          displayStringForOption: (Balance option) => option.asset,
-          fieldViewBuilder: (context, controller, focusNode, onFieldSubmitted) {
-            return TextField(
-              controller: controller,
+          displayStringForOption: (Balance balance) => balance.asset,
+          onSelected: (Balance selectedAsset) {
+            context
+                .read<OpenOrderFormBloc>()
+                .add(GiveAssetChanged(selectedAsset.asset));
+          },
+          fieldViewBuilder: (BuildContext context,
+              TextEditingController textEditingController,
+              FocusNode focusNode,
+              VoidCallback onFieldSubmitted) {
+            // Add a listener to the provided focusNode
+            focusNode.addListener(() {
+              if (!focusNode.hasFocus) {
+                context.read<OpenOrderFormBloc>().add(GiveAssetBlurred());
+                // Handle blur event here
+                // You can perform any additional actions here
+              }
+            });
+
+            return TextFormField(
+              controller: textEditingController,
               focusNode: focusNode,
+              onFieldSubmitted: (String? value) {
+                onFieldSubmitted();
+              },
+              style: DefaultTextStyle.of(context).style,
               decoration: InputDecoration(
                 labelText: "Give Asset",
                 errorText: showError ? error : null,
@@ -332,42 +377,15 @@ class GiveAssetInputField extends StatelessWidget {
                       height: 10,
                       width: 10,
                       margin: const EdgeInsets.all(12.0),
-                      child: const CircularProgressIndicator(strokeWidth: 2)),
+                      child: const CircularProgressIndicator(strokeWidth: 2),
+                    ),
                   Success() => const Icon(
                       Icons.check,
                       color: Colors.green,
-                      size: 20,
+                      size: 20, // Adjust size as needed
                     ),
-                  _ => const SizedBox.shrink()
+                  _ => const SizedBox.shrink(),
                 },
-              ),
-            );
-          },
-          optionsViewBuilder: (context, onSelected, options) {
-            return Align(
-              alignment: Alignment.topLeft,
-              child: Material(
-                elevation: 4.0,
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxHeight: 200),
-                  child: ListView.builder(
-                    padding: EdgeInsets.zero,
-                    shrinkWrap: true,
-                    itemCount: options.length,
-                    itemBuilder: (BuildContext context, int index) {
-                      final Balance option = options.elementAt(index);
-                      return ListTile(
-                        title: Text(option.asset),
-                        onTap: () {
-                          onSelected(option);
-                          context
-                              .read<OpenOrderFormBloc>()
-                              .add(GiveAssetChanged(option.asset));
-                        },
-                      );
-                    },
-                  ),
-                ),
               ),
             );
           },
@@ -596,15 +614,13 @@ class Price extends StatelessWidget {
 }
 
 class LockRatioToggle extends StatelessWidget {
-  const LockRatioToggle({super.key});
-
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<OpenOrderFormBloc, FormStateModel>(
       builder: (context, state) {
         return Row(
           children: [
-            const Text('Lock Price'),
+            Text('Lock Price'),
             Switch(
               value: state.lockRatio,
               onChanged: (value) {
