@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:formz/formz.dart';
 import 'package:flutter/services.dart';
@@ -8,7 +7,6 @@ import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
 import 'package:horizon/presentation/common/fee_estimation_v2.dart';
 import 'package:decimal/decimal.dart';
-import 'package:flutter_typeahead/flutter_typeahead.dart';
 
 import './open_order_form_bloc.dart';
 
@@ -191,11 +189,11 @@ class _OpenOrderForm extends State<OpenOrderForm> {
             ),
             const SizedBox(height: 17),
             // Price and Lock Ratio Row
-            Row(
+            const Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 // Price Label
-                const Padding(
+                Padding(
                   padding: EdgeInsets.fromLTRB(2.0, 8.0, 0.0, 16.0),
                   child: Text("Price",
                       style:
@@ -286,51 +284,11 @@ class GiveAssetInputField extends StatelessWidget {
   final TextEditingController controller;
   final FocusNode focusNode;
 
-  final FocusNode inner = FocusNode();
-
-  GiveAssetInputField({
+  const GiveAssetInputField({
     super.key,
     required this.controller,
     required this.focusNode,
   });
-
-  Future<List<Balance>> _fetchSuggestions(
-      BuildContext context, String pattern) async {
-    final bloc = context.read<OpenOrderFormBloc>();
-    final currentState = bloc.state; // Get the current state immediately
-
-    // If the current state is already Success, use it directly
-    if (currentState.giveAssets is Success<List<Balance>>) {
-      final giveAssets =
-          (currentState.giveAssets as Success<List<Balance>>).data;
-
-      return giveAssets
-          .where((element) =>
-              element.asset.toLowerCase().contains(pattern.toLowerCase()))
-          .toList();
-    }
-
-    // Otherwise, listen for a new state
-    final stream = bloc.stream;
-
-    final successState = await stream.firstWhere(
-      (state) =>
-          state.giveAssets is Success<List<Balance>> ||
-          state.giveAssets is Failure,
-    );
-
-    if (successState.giveAssets is Success<List<Balance>>) {
-      final giveAssets =
-          (successState.giveAssets as Success<List<Balance>>).data;
-
-      return giveAssets
-          .where((element) =>
-              element.asset.toLowerCase().contains(pattern.toLowerCase()))
-          .toList();
-    } else {
-      throw Exception('Failed to load assets');
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -344,27 +302,27 @@ class GiveAssetInputField extends StatelessWidget {
             "Asset not found",
           _ => null
         };
-        return Autocomplete<Balance>(
+
+        final assets = switch (state.giveAssets) {
+          Success(data: var assets) => assets,
+          _ => <Balance>[]
+        };
+
+        return RawAutocomplete<Balance>(
+          textEditingController: controller,
+          focusNode: focusNode,
           optionsBuilder: (TextEditingValue textEditingValue) {
-            if (textEditingValue.text.isEmpty) {
-              return const Iterable<Balance>.empty();
-            }
-            return _fetchSuggestions(context, textEditingValue.text);
+            return assets.where((Balance option) {
+              return option.asset
+                  .toLowerCase()
+                  .contains(textEditingValue.text.toLowerCase());
+            });
           },
-          displayStringForOption: (Balance balance) => balance.asset,
-          onSelected: (Balance selectedAsset) {
-            context
-                .read<OpenOrderFormBloc>()
-                .add(GiveAssetChanged(selectedAsset.asset));
-          },
-          fieldViewBuilder: (BuildContext context,
-              TextEditingController textEditingController,
-              FocusNode focusNode,
-              VoidCallback onFieldSubmitted) {
+          displayStringForOption: (Balance option) => option.asset,
+          fieldViewBuilder: (context, controller, focusNode, onFieldSubmitted) {
             return TextField(
-              controller: textEditingController,
+              controller: controller,
               focusNode: focusNode,
-              style: DefaultTextStyle.of(context).style,
               decoration: InputDecoration(
                 labelText: "Give Asset",
                 errorText: showError ? error : null,
@@ -374,117 +332,50 @@ class GiveAssetInputField extends StatelessWidget {
                       height: 10,
                       width: 10,
                       margin: const EdgeInsets.all(12.0),
-                      child: const CircularProgressIndicator(strokeWidth: 2),
-                    ),
+                      child: const CircularProgressIndicator(strokeWidth: 2)),
                   Success() => const Icon(
                       Icons.check,
                       color: Colors.green,
-                      size: 20, // Adjust size as needed
+                      size: 20,
                     ),
-                  _ => const SizedBox.shrink(),
+                  _ => const SizedBox.shrink()
                 },
               ),
             );
           },
-          // optionsBuilder: (BuildContext context,
-          //     AutocompleteOnSelected<Balance> onSelected,
-          //     Iterable<Balance> options) {
-          //   return Align(
-          //     alignment: Alignment.topLeft,
-          //     child: Material(
-          //       elevation: 4.0,
-          //       child: ListView.builder(
-          //         padding: EdgeInsets.zero,
-          //         itemCount: options.length,
-          //         itemBuilder: (BuildContext context, int index) {
-          //           final Balance suggestion = options.elementAt(index);
-          //           return ListTile(
-          //             title: Text(suggestion.asset),
-          //             onTap: () {
-          //               onSelected(suggestion);
-          //             },
-          //           );
-          //         },
-          //       ),
-          //     ),
-          //   );
-          // },
+          optionsViewBuilder: (context, onSelected, options) {
+            return Align(
+              alignment: Alignment.topLeft,
+              child: Material(
+                elevation: 4.0,
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxHeight: 200),
+                  child: ListView.builder(
+                    padding: EdgeInsets.zero,
+                    shrinkWrap: true,
+                    itemCount: options.length,
+                    itemBuilder: (BuildContext context, int index) {
+                      final Balance option = options.elementAt(index);
+                      return ListTile(
+                        title: Text(option.asset),
+                        onTap: () {
+                          onSelected(option);
+                          context
+                              .read<OpenOrderFormBloc>()
+                              .add(GiveAssetChanged(option.asset));
+                        },
+                      );
+                    },
+                  ),
+                ),
+              ),
+            );
+          },
         );
       },
     );
   }
 }
-
-// class GiveAssetInputField extends StatelessWidget {
-//   final TextEditingController controller;
-//
-//   const GiveAssetInputField({super.key, required this.controller});
-//
-//
-//
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     return BlocBuilder<OpenOrderFormBloc, FormStateModel>(
-//       // buildWhen: (previous, current) =>
-//       //     previous.giveAssets != current.giveAssets ||
-//       //     previous.giveAsset != current.giveAsset,
-//       builder: (context, state) {
-//         Future<List<Balance>> _suggestionsCallback(String pattern) async {
-//           final completer = Completer<List<Balance>>();
-//           late StreamSubscription
-//               subscription; // Declare it as late to initialize later
-//
-//           // Listen to state changes until we get Success or Failure
-//           subscription =
-//               context.read<OpenOrderFormBloc>().stream.listen((newState) {
-//
-//
-//             print("new state $newState" );
-//
-//             if (newState.giveAssets is Success<List<Balance>>) {
-//               subscription.cancel(); // Stop listening
-//               completer.complete(
-//                   (newState.giveAssets as Success<List<Balance>>).data);
-//             } else if (newState.giveAssets is Failure) {
-//               subscription.cancel(); // Stop listening
-//               completer.completeError(Exception('Failed to load assets'));
-//             }
-//           });
-//
-//           try {
-//             // Await the completion of the completer
-//             final giveAssets = await completer.future;
-//
-//             // Filter the results based on the input pattern
-//             return giveAssets
-//                 .where((element) =>
-//                     element.asset.toLowerCase().contains(pattern.toLowerCase()))
-//                 .toList();
-//           } finally {
-//             subscription.cancel(); // Ensure cleanup in case of errors
-//           }
-//         }
-//
-//         return TypeAheadField(
-//           itemBuilder: (context, suggestion) {
-//             return ListTile(
-//               title: Text(suggestion.asset),
-//             );
-//           },
-//           loadingBuilder: (BuildContext context) {
-//             return Padding(
-//               padding: EdgeInsets.all(8.0),
-//               child: CircularProgressIndicator(),
-//             );
-//           },
-//           onSelected: print,
-//           suggestionsCallback: _suggestionsCallback,
-//         );
-//       },
-//     );
-//   }
-// }
 
 class GetAssetInputField extends StatelessWidget {
   final TextEditingController controller;
@@ -705,13 +596,15 @@ class Price extends StatelessWidget {
 }
 
 class LockRatioToggle extends StatelessWidget {
+  const LockRatioToggle({super.key});
+
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<OpenOrderFormBloc, FormStateModel>(
       builder: (context, state) {
         return Row(
           children: [
-            Text('Lock Price'),
+            const Text('Lock Price'),
             Switch(
               value: state.lockRatio,
               onChanged: (value) {

@@ -617,7 +617,7 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
     );
 
     emit(state.copyWith(
-      ratio: Option.none(),
+      ratio: const Option.none(),
       lockRatio: false,
       giveQuantity: giveQuantity,
       giveAsset: giveAssetInput,
@@ -630,7 +630,7 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
     final getAssetInput = GetAssetInput.dirty(event.getAssetId);
 
     emit(state.copyWith(
-      ratio: Option.none(),
+      ratio: const Option.none(),
       lockRatio: false,
       getAsset: getAssetInput,
       getAssetValidationStatus: NotAsked(),
