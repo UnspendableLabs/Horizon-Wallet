@@ -69,11 +69,11 @@ class _OpenOrderForm extends State<OpenOrderForm> {
       }
     });
 
-    // _giveAssetFocusNode.addListener(() {
-    //   if (!_giveAssetFocusNode.hasFocus) {
-    //     context.read<OpenOrderFormBloc>().add(GiveAssetBlurred());
-    //   }
-    // });
+    _giveAssetFocusNode.addListener(() {
+      if (!_giveAssetFocusNode.hasFocus) {
+        context.read<OpenOrderFormBloc>().add(GiveAssetBlurred());
+      }
+    });
   }
 
   @override
@@ -344,52 +344,72 @@ class GiveAssetInputField extends StatelessWidget {
             "Asset not found",
           _ => null
         };
-        return TypeAheadField<Balance>(
-            direction: VerticalDirection.down,
-            focusNode: focusNode,
-            controller: controller,
-            builder: (context, decoration, child) => TextField(
-                  controller: controller,
-                  focusNode: focusNode,
-                  style: DefaultTextStyle.of(context).style,
-                  decoration: InputDecoration(
-                      labelText: "Give Asset",
-                      errorText: showError ? error : null,
-                      helperText: showError ? null : ' ',
-                      suffixIcon: switch (state.giveAssetValidationStatus) {
-                        Loading() => Container(
-                            height: 10,
-                            width: 10,
-                            margin: const EdgeInsets.all(12.0),
-                            child: const CircularProgressIndicator(
-                                strokeWidth: 2)),
-                        Success() => const Icon(
-                            Icons.check,
-                            color: Colors.green,
-                            size: 20, // Adjust size as needed
-                          ),
-                        _ => const SizedBox.shrink()
-                      }),
-                ),
-            itemBuilder: (context, suggestion) {
-              return ListTile(
-                title: Text(suggestion.asset),
-              );
-            },
-            loadingBuilder: (context) {
-              return const Padding(
-                padding: EdgeInsets.all(8.0),
-                child: CircularProgressIndicator(),
-              );
-            },
-            onSelected: (selectedAsset) {
-              context
-                  .read<OpenOrderFormBloc>()
-                  .add(GiveAssetChanged(selectedAsset.asset));
-            },
-            suggestionsCallback: (pattern) {
-              return _fetchSuggestions(context, pattern);
-            });
+        return Autocomplete<Balance>(
+          optionsBuilder: (TextEditingValue textEditingValue) {
+            if (textEditingValue.text.isEmpty) {
+              return const Iterable<Balance>.empty();
+            }
+            return _fetchSuggestions(context, textEditingValue.text);
+          },
+          displayStringForOption: (Balance balance) => balance.asset,
+          onSelected: (Balance selectedAsset) {
+            context
+                .read<OpenOrderFormBloc>()
+                .add(GiveAssetChanged(selectedAsset.asset));
+          },
+          fieldViewBuilder: (BuildContext context,
+              TextEditingController textEditingController,
+              FocusNode focusNode,
+              VoidCallback onFieldSubmitted) {
+            return TextField(
+              controller: textEditingController,
+              focusNode: focusNode,
+              style: DefaultTextStyle.of(context).style,
+              decoration: InputDecoration(
+                labelText: "Give Asset",
+                errorText: showError ? error : null,
+                helperText: showError ? null : ' ',
+                suffixIcon: switch (state.giveAssetValidationStatus) {
+                  Loading() => Container(
+                      height: 10,
+                      width: 10,
+                      margin: const EdgeInsets.all(12.0),
+                      child: const CircularProgressIndicator(strokeWidth: 2),
+                    ),
+                  Success() => const Icon(
+                      Icons.check,
+                      color: Colors.green,
+                      size: 20, // Adjust size as needed
+                    ),
+                  _ => const SizedBox.shrink(),
+                },
+              ),
+            );
+          },
+          // optionsBuilder: (BuildContext context,
+          //     AutocompleteOnSelected<Balance> onSelected,
+          //     Iterable<Balance> options) {
+          //   return Align(
+          //     alignment: Alignment.topLeft,
+          //     child: Material(
+          //       elevation: 4.0,
+          //       child: ListView.builder(
+          //         padding: EdgeInsets.zero,
+          //         itemCount: options.length,
+          //         itemBuilder: (BuildContext context, int index) {
+          //           final Balance suggestion = options.elementAt(index);
+          //           return ListTile(
+          //             title: Text(suggestion.asset),
+          //             onTap: () {
+          //               onSelected(suggestion);
+          //             },
+          //           );
+          //         },
+          //       ),
+          //     ),
+          //   );
+          // },
+        );
       },
     );
   }
