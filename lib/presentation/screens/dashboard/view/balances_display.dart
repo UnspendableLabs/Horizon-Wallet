@@ -8,6 +8,7 @@ import 'package:horizon/domain/entities/asset.dart';
 import 'package:horizon/domain/repositories/config_repository.dart';
 import 'package:horizon/presentation/common/colors.dart';
 import 'package:horizon/presentation/common/no_data.dart';
+import 'package:horizon/presentation/screens/compose_attach_utxo/view/compose_attach_utxo_page.dart';
 import 'package:horizon/presentation/screens/compose_send/view/compose_send_page.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_bloc.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_state.dart';
@@ -212,8 +213,15 @@ class BalancesSliverState extends State<BalancesSliver> {
               _buildTableCell1(entry.key, entry.value.assetInfo.assetLongname,
                   isClickable, textColor),
               _buildTableCell2(entry.value.quantityNormalized, textColor),
-              _buildTableCell3(entry.key, textColor, isOwner, currentOwnedAsset,
-                  entry.value.quantity, fairminterAssets, entry.value.utxo, entry.value.utxoAddress)
+              _buildTableCell3(
+                  entry.key,
+                  textColor,
+                  isOwner,
+                  currentOwnedAsset,
+                  entry.value.quantity,
+                  fairminterAssets,
+                  entry.value.utxo,
+                  entry.value.utxoAddress)
             ],
           );
         }).toList();
@@ -230,8 +238,8 @@ class BalancesSliverState extends State<BalancesSliver> {
                   asset.asset, asset.assetLongname, true, textColor),
               _buildTableCell2(asset.divisible == true ? '0.00000000' : '0',
                   textColor), // these are zero balances
-              _buildTableCell3(
-                  asset.asset, textColor, true, asset, 0, fairminterAssets, null, null)
+              _buildTableCell3(asset.asset, textColor, true, asset, 0,
+                  fairminterAssets, null, null)
             ],
           );
         }).toList();
@@ -255,10 +263,9 @@ class BalancesSliverState extends State<BalancesSliver> {
                 ),
                 columnWidths: {
                   0: FlexColumnWidth(
-                      MediaQuery.of(context).size.width < 600 ? 1 : 2),
+                      MediaQuery.of(context).size.width < 600 ? 1.2 : 2),
                   1: const FlexColumnWidth(1),
-                  2: FlexColumnWidth(
-                      MediaQuery.of(context).size.width < 600 ? 1 : 1),
+                  2: const FlexColumnWidth(1.2),
                 },
                 children: displayedRows,
               ),
@@ -373,114 +380,155 @@ class BalancesSliverState extends State<BalancesSliver> {
         ),
       );
 
-  TableCell _buildTableCell3(String assetName, Color textColor, bool isOwner,
-      Asset? currentOwnedAsset, int quantity, List<String> fairminterAssets, String? utxo, String? utxoAddress) {
+  TableCell _buildTableCell3(
+      String assetName,
+      Color textColor,
+      bool isOwner,
+      Asset? currentOwnedAsset,
+      int quantity,
+      List<String> fairminterAssets,
+      String? utxo,
+      String? utxoAddress) {
     return TableCell(
       verticalAlignment: TableCellVerticalAlignment.middle,
       child: Container(
-        padding: const EdgeInsets.fromLTRB(4.0, 8.0, 2.0, 8.0),
+        padding: const EdgeInsets.symmetric(vertical: 8.0),
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.end,
           children: [
-            if (utxo == null)
-              IconButton(onPressed: () {
-                HorizonUI.HorizonDialog.show(
-                  context: context,
-                  body: HorizonUI.HorizonDialog(
-                    title: 'Attach UTXO',
-                    body: Text(utxo ?? ''),
-                  ),
-                );
-              }, icon: const Icon(Icons.attach_file, size: 16.0)),
-            if (utxoAddress != null)
-              IconButton(onPressed: () {}, icon: const Icon(Icons.link_off, size: 16.0)),
-            if (quantity > 0)
-              IconButton(
-                iconSize: 16.0,
-                icon: const Icon(Icons.send),
-                onPressed: () {
-                  HorizonUI.HorizonDialog.show(
-                    context: context,
-                    body: HorizonUI.HorizonDialog(
-                      title: 'Compose Send',
-                      body: ComposeSendPageWrapper(
-                        currentAddress: widget.currentAddress,
-                        dashboardActivityFeedBloc:
-                            BlocProvider.of<DashboardActivityFeedBloc>(context),
-                        asset: assetName,
+            if (utxo == null && quantity > 0 && assetName != 'BTC')
+              SizedBox(
+                width: 32,
+                height: 32,
+                child: IconButton(
+                  padding: EdgeInsets.zero,
+                  onPressed: () {
+                    HorizonUI.HorizonDialog.show(
+                      context: context,
+                      body: HorizonUI.HorizonDialog(
+                        title: 'Attach UTXO',
+                        body: ComposeAttachUtxoPageWrapper(
+                            dashboardActivityFeedBloc:
+                                BlocProvider.of<DashboardActivityFeedBloc>(
+                                    context),
+                            currentAddress: widget.currentAddress,
+                            assetName: assetName),
                       ),
-                      includeBackButton: false,
-                      includeCloseButton: true,
-                    ),
-                  );
-                },
+                    );
+                  },
+                  icon: const Icon(Icons.attach_file, size: 16.0),
+                ),
               ),
-            if (!isOwner) const SizedBox(width: 38),
-            if (isOwner)
-              PopupMenuButton<IssuanceActionType>(
-                icon: const Icon(Icons.more_vert),
-                onSelected: (IssuanceActionType result) {
-                  HorizonUI.HorizonDialog.show(
-                    context: context,
-                    body: HorizonUI.HorizonDialog(
-                      title: "Update Issuance",
-                      body: UpdateIssuancePageWrapper(
-                        currentAddress: widget.currentAddress,
-                        assetName: currentOwnedAsset!.asset,
-                        assetLongname: currentOwnedAsset.assetLongname,
-                        actionType: result,
-                        dashboardActivityFeedBloc:
-                            BlocProvider.of<DashboardActivityFeedBloc>(context),
+            if (utxoAddress != null)
+              SizedBox(
+                width: 32,
+                height: 32,
+                child: IconButton(
+                  padding: EdgeInsets.zero,
+                  onPressed: () {},
+                  icon: const Icon(Icons.link_off, size: 16.0),
+                ),
+              ),
+            if (quantity > 0)
+              SizedBox(
+                width: 32,
+                height: 32,
+                child: IconButton(
+                  padding: EdgeInsets.zero,
+                  iconSize: 16.0,
+                  icon: const Icon(Icons.send),
+                  onPressed: () {
+                    HorizonUI.HorizonDialog.show(
+                      context: context,
+                      body: HorizonUI.HorizonDialog(
+                        title: 'Compose Send',
+                        body: ComposeSendPageWrapper(
+                          currentAddress: widget.currentAddress,
+                          dashboardActivityFeedBloc:
+                              BlocProvider.of<DashboardActivityFeedBloc>(
+                                  context),
+                          asset: assetName,
+                        ),
+                        includeBackButton: false,
+                        includeCloseButton: true,
                       ),
-                      includeBackButton: false,
-                      includeCloseButton: true,
-                      onBackButtonPressed: () {
-                        Navigator.of(context).pop();
-                      },
+                    );
+                  },
+                ),
+              ),
+            if (isOwner)
+              SizedBox(
+                width: 32,
+                height: 32,
+                child: PopupMenuButton<IssuanceActionType>(
+                  padding: EdgeInsets.zero,
+                  iconSize: 16.0,
+                  icon: const Icon(Icons.more_vert),
+                  onSelected: (IssuanceActionType result) {
+                    HorizonUI.HorizonDialog.show(
+                      context: context,
+                      body: HorizonUI.HorizonDialog(
+                        title: "Update Issuance",
+                        body: UpdateIssuancePageWrapper(
+                          currentAddress: widget.currentAddress,
+                          assetName: currentOwnedAsset!.asset,
+                          assetLongname: currentOwnedAsset.assetLongname,
+                          actionType: result,
+                          dashboardActivityFeedBloc:
+                              BlocProvider.of<DashboardActivityFeedBloc>(
+                                  context),
+                        ),
+                        includeBackButton: false,
+                        includeCloseButton: true,
+                        onBackButtonPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                      ),
+                    );
+                  },
+                  itemBuilder: (BuildContext context) =>
+                      <PopupMenuEntry<IssuanceActionType>>[
+                    PopupMenuItem<IssuanceActionType>(
+                      value: IssuanceActionType.reset,
+                      enabled: currentOwnedAsset?.locked != true &&
+                          !fairminterAssets.contains(currentOwnedAsset?.asset),
+                      child: const Text('Reset Asset'),
                     ),
-                  );
-                },
-                itemBuilder: (BuildContext context) =>
-                    <PopupMenuEntry<IssuanceActionType>>[
-                  PopupMenuItem<IssuanceActionType>(
-                    value: IssuanceActionType.reset,
-                    enabled: currentOwnedAsset?.locked != true &&
-                        !fairminterAssets.contains(currentOwnedAsset?.asset),
-                    child: const Text('Reset Asset'),
-                  ),
-                  PopupMenuItem<IssuanceActionType>(
-                    value: IssuanceActionType.lockQuantity,
-                    enabled: currentOwnedAsset?.locked != true &&
-                        !fairminterAssets.contains(currentOwnedAsset?.asset),
-                    child: const Text('Lock Quantity'),
-                  ),
-                  PopupMenuItem<IssuanceActionType>(
-                    value: IssuanceActionType.lockDescription,
-                    enabled: currentOwnedAsset?.locked != true &&
-                        !fairminterAssets.contains(currentOwnedAsset?.asset),
-                    child: const Text('Lock Description'),
-                  ),
-                  PopupMenuItem<IssuanceActionType>(
-                    value: IssuanceActionType.changeDescription,
-                    enabled: currentOwnedAsset?.locked != true &&
-                        !fairminterAssets.contains(currentOwnedAsset?.asset),
-                    child: const Text('Change Description'),
-                  ),
-                  PopupMenuItem<IssuanceActionType>(
-                    value: IssuanceActionType.issueMore,
-                    enabled: currentOwnedAsset?.locked != true &&
-                        !fairminterAssets.contains(currentOwnedAsset?.asset),
-                    child: const Text('Issue More'),
-                  ),
-                  const PopupMenuItem<IssuanceActionType>(
-                    value: IssuanceActionType.issueSubasset,
-                    child: Text('Issue Subasset'),
-                  ),
-                  const PopupMenuItem<IssuanceActionType>(
-                    value: IssuanceActionType.transferOwnership,
-                    child: Text('Transfer Ownership'),
-                  ),
-                ],
+                    PopupMenuItem<IssuanceActionType>(
+                      value: IssuanceActionType.lockQuantity,
+                      enabled: currentOwnedAsset?.locked != true &&
+                          !fairminterAssets.contains(currentOwnedAsset?.asset),
+                      child: const Text('Lock Quantity'),
+                    ),
+                    PopupMenuItem<IssuanceActionType>(
+                      value: IssuanceActionType.lockDescription,
+                      enabled: currentOwnedAsset?.locked != true &&
+                          !fairminterAssets.contains(currentOwnedAsset?.asset),
+                      child: const Text('Lock Description'),
+                    ),
+                    PopupMenuItem<IssuanceActionType>(
+                      value: IssuanceActionType.changeDescription,
+                      enabled: currentOwnedAsset?.locked != true &&
+                          !fairminterAssets.contains(currentOwnedAsset?.asset),
+                      child: const Text('Change Description'),
+                    ),
+                    PopupMenuItem<IssuanceActionType>(
+                      value: IssuanceActionType.issueMore,
+                      enabled: currentOwnedAsset?.locked != true &&
+                          !fairminterAssets.contains(currentOwnedAsset?.asset),
+                      child: const Text('Issue More'),
+                    ),
+                    const PopupMenuItem<IssuanceActionType>(
+                      value: IssuanceActionType.issueSubasset,
+                      child: Text('Issue Subasset'),
+                    ),
+                    const PopupMenuItem<IssuanceActionType>(
+                      value: IssuanceActionType.transferOwnership,
+                      child: Text('Transfer Ownership'),
+                    ),
+                  ],
+                ),
               ),
           ],
         ),

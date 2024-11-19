@@ -93,6 +93,7 @@ import 'package:horizon/presentation/common/usecase/get_virtual_size_usecase.dar
 import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
 import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transaction_usecase.dart';
 import 'package:horizon/presentation/common/usecase/write_local_transaction_usecase.dart';
+import 'package:horizon/presentation/screens/compose_attach_utxo/usecase/fetch_form_data.dart';
 import 'package:horizon/presentation/screens/compose_dispenser/usecase/fetch_form_data.dart';
 import 'package:horizon/presentation/screens/compose_dispense/usecase/fetch_form_data.dart';
 import 'package:horizon/presentation/screens/compose_dispense/usecase/fetch_open_dispensers_on_address.dart';
@@ -156,7 +157,7 @@ Future<void> setup() async {
     ConnectionErrorInterceptor(),
     BadResponseInterceptor(),
     BadCertificateInterceptor(),
-    SimpleLogInterceptor(),
+    // SimpleLogInterceptor(),
     RetryInterceptor(
       dio: dio, retries: 3,
       retryableExtraStatuses: {400}, // to handle backend bug with compose
@@ -182,7 +183,7 @@ Future<void> setup() async {
     ConnectionErrorInterceptor(),
     BadResponseInterceptor(),
     BadCertificateInterceptor(),
-    SimpleLogInterceptor(),
+    // SimpleLogInterceptor(),
     RetryInterceptor(
       dio: dio,
       retries: 4,
@@ -382,6 +383,11 @@ Future<void> setup() async {
       FetchIssuanceFormDataUseCase(
           balanceRepository: injector.get<BalanceRepository>(),
           getFeeEstimatesUseCase: GetIt.I.get<GetFeeEstimatesUseCase>()));
+
+  injector.registerSingleton<FetchComposeAttachUtxoFormDataUseCase>(
+      FetchComposeAttachUtxoFormDataUseCase(
+          getFeeEstimatesUseCase: GetIt.I.get<GetFeeEstimatesUseCase>(),
+          assetRepository: injector.get<AssetRepository>()));
 
   injector.registerSingleton<SignAndBroadcastTransactionUseCase>(
       SignAndBroadcastTransactionUseCase(

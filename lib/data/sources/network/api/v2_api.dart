@@ -3,6 +3,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:horizon/data/models/asset_info.dart';
 import 'package:horizon/data/models/bitcoin_decoded_tx.dart';
 import 'package:horizon/data/models/compose.dart';
+import 'package:horizon/data/models/compose_attach_utxo.dart';
 import 'package:horizon/data/models/compose_fairmint.dart';
 import 'package:horizon/data/models/compose_fairminter.dart';
 import 'package:horizon/data/models/compose_order.dart';
@@ -4225,6 +4226,19 @@ abstract class V2Api {
     @Query("cursor") CursorModel? cursor,
     @Query("limit") int? limit,
     @Query("event_name") String? eventName,
+  ]);
+
+  @GET("/addresses/{address}/compose/attach?verbose=true")
+  Future<Response<ComposeAttachUtxoResponseModel>> composeAttachUtxo(
+    @Path("address") String address,
+    @Query("asset") String asset,
+    @Query("quantity") int quantity, [
+    @Query("destination_vout") String? destinationVout,
+    @Query("skip_validation") bool? skipValidation,
+    @Query("allow_unconfirmed_inputs") bool? allowUnconfirmedInputs,
+    @Query("exact_fee") int? exactFee,
+    @Query("inputs_set") String? inputsSet,
+    @Query("unconfirmed") bool? unconfirmed,
   ]);
 
   // {

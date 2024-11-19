@@ -9,9 +9,9 @@ class AssetRepositoryImpl implements AssetRepository {
   final V2Api api;
   AssetRepositoryImpl({required this.api});
   @override
-  Future<a.Asset> getAssetVerbose(String uuid) async {
+  Future<a.Asset> getAssetVerbose(String assetName) async {
     final response =
-        await api.getAssetVerbose(uuid, Options()..disableRetry = true);
+        await api.getAssetVerbose(assetName, Options()..disableRetry = true);
 
     if (response.result == null) {
       throw Exception('Asset not found');
