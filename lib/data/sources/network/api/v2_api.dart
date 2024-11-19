@@ -189,8 +189,14 @@ class MultiBalanceVerbose {
   final String? address;
   final int quantity;
   final String quantityNormalized;
+  final String? utxo;
+  final String? utxoAddress;
   MultiBalanceVerbose(
-      {this.address, required this.quantity, required this.quantityNormalized});
+      {this.address,
+      required this.quantity,
+      required this.quantityNormalized,
+      this.utxo,
+      this.utxoAddress});
 
   factory MultiBalanceVerbose.fromJson(Map<String, dynamic> json) =>
       _$MultiBalanceVerboseFromJson(json);

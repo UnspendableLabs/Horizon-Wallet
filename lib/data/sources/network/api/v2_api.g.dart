@@ -183,6 +183,8 @@ MultiBalanceVerbose _$MultiBalanceVerboseFromJson(Map<String, dynamic> json) =>
       address: json['address'] as String?,
       quantity: (json['quantity'] as num).toInt(),
       quantityNormalized: json['quantity_normalized'] as String,
+      utxo: json['utxo'] as String?,
+      utxoAddress: json['utxo_address'] as String?,
     );
 
 Map<String, dynamic> _$MultiBalanceVerboseToJson(
@@ -191,6 +193,8 @@ Map<String, dynamic> _$MultiBalanceVerboseToJson(
       'address': instance.address,
       'quantity': instance.quantity,
       'quantity_normalized': instance.quantityNormalized,
+      'utxo': instance.utxo,
+      'utxo_address': instance.utxoAddress,
     };
 
 MultiAddressBalance _$MultiAddressBalanceFromJson(Map<String, dynamic> json) =>

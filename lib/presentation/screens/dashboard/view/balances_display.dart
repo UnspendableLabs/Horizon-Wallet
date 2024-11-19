@@ -213,7 +213,7 @@ class BalancesSliverState extends State<BalancesSliver> {
                   isClickable, textColor),
               _buildTableCell2(entry.value.quantityNormalized, textColor),
               _buildTableCell3(entry.key, textColor, isOwner, currentOwnedAsset,
-                  entry.value.quantity, fairminterAssets)
+                  entry.value.quantity, fairminterAssets, entry.value.utxo, entry.value.utxoAddress)
             ],
           );
         }).toList();
@@ -231,7 +231,7 @@ class BalancesSliverState extends State<BalancesSliver> {
               _buildTableCell2(asset.divisible == true ? '0.00000000' : '0',
                   textColor), // these are zero balances
               _buildTableCell3(
-                  asset.asset, textColor, true, asset, 0, fairminterAssets)
+                  asset.asset, textColor, true, asset, 0, fairminterAssets, null, null)
             ],
           );
         }).toList();
@@ -374,7 +374,7 @@ class BalancesSliverState extends State<BalancesSliver> {
       );
 
   TableCell _buildTableCell3(String assetName, Color textColor, bool isOwner,
-      Asset? currentOwnedAsset, int quantity, List<String> fairminterAssets) {
+      Asset? currentOwnedAsset, int quantity, List<String> fairminterAssets, String? utxo, String? utxoAddress) {
     return TableCell(
       verticalAlignment: TableCellVerticalAlignment.middle,
       child: Container(
@@ -382,6 +382,18 @@ class BalancesSliverState extends State<BalancesSliver> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            if (utxo == null)
+              IconButton(onPressed: () {
+                HorizonUI.HorizonDialog.show(
+                  context: context,
+                  body: HorizonUI.HorizonDialog(
+                    title: 'Attach UTXO',
+                    body: Text(utxo ?? ''),
+                  ),
+                );
+              }, icon: const Icon(Icons.attach_file, size: 16.0)),
+            if (utxoAddress != null)
+              IconButton(onPressed: () {}, icon: const Icon(Icons.link_off, size: 16.0)),
             if (quantity > 0)
               IconButton(
                 iconSize: 16.0,
