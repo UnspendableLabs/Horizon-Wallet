@@ -84,6 +84,7 @@ dependencies:
   chrome_extension: ^0.4.0
   process_runner: ^4.2.0
   flutter_typeahead: ^5.2.0
+  pub_semver: ^2.1.4
 
 
 dev_dependencies:
