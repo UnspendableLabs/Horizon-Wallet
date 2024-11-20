@@ -16,16 +16,22 @@ import 'package:horizon/domain/entities/compose_order.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
 import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/domain/entities/fee_option.dart';
+import 'package:decimal/decimal.dart';
+import 'package:rational/rational.dart';
+import 'package:fpdart/fpdart.dart';
 
-enum GiveAssetValidationError { empty }
+enum GiveAssetValidationError { required }
 
 class GiveAssetInput extends FormzInput<String, GiveAssetValidationError> {
   const GiveAssetInput.pure() : super.pure('');
-  const GiveAssetInput.dirty([super.value = '']) : super.dirty();
+  const GiveAssetInput.dirty(super.value) : super.dirty();
 
   @override
   GiveAssetValidationError? validator(String value) {
-    return value.isNotEmpty ? null : GiveAssetValidationError.empty;
+    if (value.isEmpty) {
+      return GiveAssetValidationError.required;
+    }
+    return null;
   }
 }
 
@@ -85,7 +91,7 @@ class GiveQuantityInput extends FormzInput<String, GiveQuantityValidationError>
         return GiveQuantityValidationError.invalid;
       }
 
-      if (balance != null && quantity > balance!) {
+      if (balance == null || balance != null && quantity > balance!) {
         return GiveQuantityValidationError.exceedsBalance;
       }
 
@@ -212,6 +218,15 @@ class GiveQuantityBlurred extends FormEvent {}
 
 class GetQuantityBlurred extends FormEvent {}
 
+class LockRatioChanged extends FormEvent {
+  final bool lockRatio;
+
+  const LockRatioChanged(this.lockRatio);
+
+  @override
+  List<Object?> get props => [lockRatio];
+}
+
 class FeeOptionChanged extends FormEvent {
   final FeeOption.FeeOption feeOption;
   const FeeOptionChanged(this.feeOption);
@@ -230,43 +245,45 @@ class SubmissionFailed extends FormEvent {
 
   @override
   List<Object?> get props => [errorMessage];
-}
-
-// State
+} // State
 
 class FormStateModel extends Equatable {
   final RemoteData<FeeEstimates> feeEstimates;
   final FeeOption.FeeOption feeOption;
 
   final RemoteData<List<Balance>> giveAssets;
-  final RemoteData<List<Asset>> getAssets;
   final GiveAssetInput giveAsset;
   final GiveQuantityInput giveQuantity;
   final GetAssetInput getAsset;
   final RemoteData<Asset> getAssetValidationStatus;
+  final RemoteData<Asset> giveAssetValidationStatus;
+
   final GetQuantityInput getQuantity;
   // final PriceInput price;
   final FormzSubmissionStatus submissionStatus;
   final String? errorMessage;
 
-  const FormStateModel({
-    required this.feeEstimates,
-    required this.feeOption,
-    required this.giveAssets,
-    required this.getAssets,
-    this.giveAsset = const GiveAssetInput.pure(),
-    this.giveQuantity = const GiveQuantityInput.pure(),
-    this.getAsset = const GetAssetInput.pure(),
-    required this.getAssetValidationStatus,
-    this.getQuantity = const GetQuantityInput.pure(),
-    // this.price = cons PriceInput.pure(),
-    this.submissionStatus = FormzSubmissionStatus.initial,
-    this.errorMessage,
-  });
+  final bool lockRatio;
+  final Option<Rational> ratio;
+
+  const FormStateModel(
+      {required this.feeEstimates,
+      required this.feeOption,
+      required this.giveAssets,
+      this.giveAsset = const GiveAssetInput.pure(),
+      this.giveQuantity = const GiveQuantityInput.pure(),
+      this.getAsset = const GetAssetInput.pure(),
+      required this.getAssetValidationStatus,
+      required this.giveAssetValidationStatus,
+      this.getQuantity = const GetQuantityInput.pure(),
+      // this.price = cons PriceInput.pure(),
+      this.submissionStatus = FormzSubmissionStatus.initial,
+      this.errorMessage,
+      this.lockRatio = false,
+      this.ratio = const Option.none()});
 
   FormStateModel copyWith({
     RemoteData<List<Balance>>? giveAssets,
-    RemoteData<List<Asset>>? getAssets,
     GiveAssetInput? giveAsset,
     GiveQuantityInput? giveQuantity,
     GetAssetInput? getAsset,
@@ -275,30 +292,34 @@ class FormStateModel extends Equatable {
     FormzSubmissionStatus? submissionStatus,
     String? errorMessage,
     RemoteData<Asset>? getAssetValidationStatus,
+    RemoteData<Asset>? giveAssetValidationStatus,
     FeeOption.FeeOption? feeOption,
     RemoteData<FeeEstimates>? feeEstimates,
+    bool? lockRatio,
+    Option<Rational>? ratio,
   }) {
     return FormStateModel(
-      giveAssets: giveAssets ?? this.giveAssets,
-      getAssets: getAssets ?? this.getAssets,
-      giveAsset: giveAsset ?? this.giveAsset,
-      giveQuantity: giveQuantity ?? this.giveQuantity,
-      getAsset: getAsset ?? this.getAsset,
-      getQuantity: getQuantity ?? this.getQuantity,
-      getAssetValidationStatus:
-          getAssetValidationStatus ?? this.getAssetValidationStatus,
-      // price: price ?? this.price,
-      submissionStatus: submissionStatus ?? this.submissionStatus,
-      errorMessage: errorMessage ?? this.errorMessage,
-      feeEstimates: feeEstimates ?? this.feeEstimates,
-      feeOption: feeOption ?? this.feeOption,
-    );
+        giveAssets: giveAssets ?? this.giveAssets,
+        giveAsset: giveAsset ?? this.giveAsset,
+        giveQuantity: giveQuantity ?? this.giveQuantity,
+        getAsset: getAsset ?? this.getAsset,
+        getQuantity: getQuantity ?? this.getQuantity,
+        getAssetValidationStatus:
+            getAssetValidationStatus ?? this.getAssetValidationStatus,
+        giveAssetValidationStatus:
+            giveAssetValidationStatus ?? this.giveAssetValidationStatus,
+        // price: price ?? this.price,
+        submissionStatus: submissionStatus ?? this.submissionStatus,
+        errorMessage: errorMessage ?? this.errorMessage,
+        feeEstimates: feeEstimates ?? this.feeEstimates,
+        feeOption: feeOption ?? this.feeOption,
+        lockRatio: lockRatio ?? this.lockRatio,
+        ratio: ratio ?? this.ratio);
   }
 
   @override
   List<Object?> get props => [
         giveAssets,
-        getAssets,
         giveAsset,
         giveQuantity,
         getAsset,
@@ -306,7 +327,10 @@ class FormStateModel extends Equatable {
         submissionStatus,
         errorMessage,
         getAssetValidationStatus,
+        giveAssetValidationStatus,
         feeOption,
+        lockRatio,
+        ratio
       ];
 }
 
@@ -363,14 +387,15 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
     int? initialGiveQuantity,
   }) : super(FormStateModel(
           giveAssets: NotAsked(),
-          getAssets: NotAsked(),
           getAssetValidationStatus: NotAsked(),
+          giveAssetValidationStatus: NotAsked(),
           feeEstimates: NotAsked(),
           feeOption: Medium(),
         )) {
     on<GiveAssetChanged>(_onGiveAssetChanged);
     on<GetAssetChanged>(_onGetAssetChanged);
     on<GetAssetBlurred>(_onGetAssetBlurred);
+    on<GiveAssetBlurred>(_onGiveAssetBlurred);
     on<GetQuantityChanged>(_onGetQuantityChanged);
     on<GetQuantityBlurred>(_onGetQuantityBlurred); //
     on<GiveQuantityChanged>(_onGiveQuantityChanged);
@@ -381,135 +406,214 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
     on<FormCancelled>(_onFormCancelled);
     on<InitializeForm>(_onInitializeForm);
     on<SubmissionFailed>(_onSubmissionFailed);
+    on<LockRatioChanged>(_onLockRatioChanged);
+  }
+  void _onLockRatioChanged(
+    LockRatioChanged event,
+    Emitter<FormStateModel> emit,
+  ) {
+    final lockRatio = event.lockRatio;
+
+    if (lockRatio) {
+      // Attempt to parse both quantities
+      final giveQuantity = Decimal.tryParse(state.giveQuantity.value);
+      final getQuantity = Decimal.tryParse(state.getQuantity.value);
+
+      if (getQuantity != null &&
+          getQuantity > Decimal.zero &&
+          giveQuantity != null &&
+          giveQuantity > Decimal.zero) {
+        final ratio = giveQuantity / getQuantity;
+        emit(state.copyWith(
+          lockRatio: true,
+          ratio: Option.of(ratio),
+          errorMessage: null, // Clear any previous errors
+        ));
+      } else {
+        // Cannot lock ratio due to invalid quantities
+        emit(state.copyWith(
+          lockRatio: false, // Ensure lock ratio is disabled
+          ratio: const Option.none(),
+          errorMessage: 'Cannot lock ratio: invalid quantities.',
+        ));
+      }
+    } else {
+      // Unlock ratio
+      emit(state.copyWith(
+        lockRatio: false,
+        ratio: const Option.none(),
+        errorMessage: null, // Clear any previous errors
+      ));
+    }
+  }
+
+  _handleInitialize(InitializeForm event, Emitter<FormStateModel> emit) async {
+    emit(state.copyWith(
+      giveAssets: Loading(),
+      feeEstimates: Loading<FeeEstimates>(),
+    ));
+
+    final [balances_ as List<Balance>, feeEstimates_ as FeeEstimates] =
+        await Future.wait([
+      balanceRepository.getBalancesForAddress(currentAddress),
+      _fetchFeeEstimates(),
+    ]);
+
+    final balances = balances_
+        .where((balance) => balance.asset.toUpperCase() != "BTC")
+        .toList();
+
+    emit(state.copyWith(
+        giveAssets: Success(balances),
+        feeEstimates: Success<FeeEstimates>(feeEstimates_)));
   }
 
   Future<void> _onInitializeForm(
     InitializeForm event,
     Emitter<FormStateModel> emit,
   ) async {
-    emit(state.copyWith(giveAssets: Loading(), feeEstimates: Loading()));
+    if (event.params == null) {
+      return _handleInitialize(event, emit);
+    }
+    final InitializeParams params = event.params!;
+
+    GiveAssetInput giveAsset = GiveAssetInput.dirty(params.initialGiveAsset);
+
+    GetAssetInput getAsset = GetAssetInput.dirty(params.initialGetAsset);
+
+    emit(state.copyWith(
+      lockRatio: true,
+      giveAsset: giveAsset,
+      getAsset: getAsset,
+      giveAssets: Loading(),
+      feeEstimates: Loading<FeeEstimates>(),
+      getAssetValidationStatus: Loading(),
+      giveAssetValidationStatus: Loading(),
+    ));
+
+    late RemoteData<List<Balance>> nextGiveAssets;
+    late RemoteData<FeeEstimates> nextFeeEstimates;
+
+    late GiveAssetInput nextGiveAsset;
+    late GiveQuantityInput nextGiveQuantity;
+    late RemoteData<Asset> nextGiveAssetValidationStatus;
+    late GetAssetInput nextGetAsset;
+    late GetQuantityInput nextGetQuantity;
+    late RemoteData<Asset> nextGetAssetValidationStatus;
+
+    final getBalancesTaskEither = TaskEither.tryCatch(
+      () => balanceRepository.getBalancesForAddress(currentAddress),
+      (error, stacktrace) => 'Error fetching balances',
+    );
+
+    final getFeeEstimatesTaskEither = TaskEither.tryCatch(
+      () => _fetchFeeEstimates(),
+      (error, stacktrace) => 'Error fetching fee estimates',
+    );
+
+    final getGiveAssetTaskEither = TaskEither.tryCatch(
+      () => assetRepository.getAssetVerbose(params.initialGiveAsset),
+      (error, stacktrace) => 'Error fetching give asset',
+    );
+
+    final getGetAssetTaskEither = TaskEither.tryCatch(
+      () => assetRepository.getAssetVerbose(params.initialGetAsset),
+      (error, stacktrace) => 'Error fetching get asset',
+    );
+
+    final results = await Future.wait([
+      getBalancesTaskEither.run(),
+      getFeeEstimatesTaskEither.run(),
+      getGiveAssetTaskEither.run(),
+      getGetAssetTaskEither.run(),
+    ]);
+
+    nextGiveAssets = (results[0] as Either<String, List<Balance>>)
+        .fold((error) => Failure(error), (balances) => Success(balances));
+
+    nextFeeEstimates = (results[1] as Either<String, FeeEstimates>).fold(
+      (error) => Failure(error),
+      (feeEstimates) => Success(feeEstimates),
+    );
 
     try {
-      final [balances_ as List<Balance>, feeEstimates as FeeEstimates] =
-          await Future.wait([
-        balanceRepository.getBalancesForAddress(currentAddress),
-        _fetchFeeEstimates(),
-      ]);
+      final initialGiveBalance = switch (nextGiveAssets) {
+        Success(data: var data) => data.firstWhereOrNull(
+            (balance) =>
+                balance.asset.toLowerCase() ==
+                params.initialGiveAsset.toLowerCase(),
+          ),
+        _ => null
+      };
 
-      final balances = balances_
-          .where((balance) => balance.asset.toUpperCase() != "BTC")
-          .toList();
+      final initialGiveAsset =
+          await assetRepository.getAssetVerbose(params.initialGiveAsset);
+      nextGiveAsset = GiveAssetInput.dirty(params.initialGiveAsset);
+      nextGiveAssetValidationStatus = Success(initialGiveAsset);
+      String nextGiveQuantityNormalized = (initialGiveAsset.divisible ?? false
+              ? (params.initialGiveQuantity / 100000000)
+              : params.initialGiveQuantity)
+          .toString();
 
-      if (event.params == null) {
-        emit(state.copyWith(
-            giveAssets: Success(balances),
-            feeEstimates: Success(feeEstimates)));
-      } else {
-        final InitializeParams params = event.params!;
-
-        final balanceForAsset = balances.firstWhereOrNull(
-          (balance) =>
-              balance.asset.toLowerCase() ==
-              params.initialGiveAsset.toLowerCase(),
-        );
-
-        if (balanceForAsset == null) {
-          // Case: No balance for the initial asset
-          emit(state.copyWith(
-            giveAssets: Success(balances),
-            feeEstimates: Success(feeEstimates),
-            errorMessage:
-                'No balance available for the initial asset ${params.initialGiveAsset}',
-          ));
-          return;
-        }
-
-        int initialGiveQuantity = event.params!.initialGiveQuantity;
-
-        final initialGiveQuantityNormalized =
-            balanceForAsset.assetInfo.divisible
-                ? (initialGiveQuantity / 100000000)
-                : initialGiveQuantity;
-
-        if (initialGiveQuantity > balanceForAsset.quantity) {
-          // Case: Insufficient balance
-          emit(state.copyWith(
-            giveAsset: GiveAssetInput.dirty(balanceForAsset.asset),
-            giveAssets: Success(balances),
-            feeEstimates: Success(feeEstimates),
-            giveQuantity: GiveQuantityInput.dirty(
-              initialGiveQuantityNormalized.toString(),
-              balance: balanceForAsset.quantity,
-              isDivisible: balanceForAsset.assetInfo.divisible,
-            ),
-            errorMessage:
-                'Insufficient balance for the initial quantity of $initialGiveQuantity',
-          ));
-        } else {
-          // there is adequate give asset balance
-          emit(state.copyWith(
-            giveAsset: GiveAssetInput.dirty(balanceForAsset.asset),
-            giveAssets: Success(balances),
-            feeEstimates: Success(feeEstimates),
-            giveQuantity: GiveQuantityInput.dirty(
-              initialGiveQuantityNormalized.toString(),
-              balance: balanceForAsset.quantity,
-              isDivisible: balanceForAsset.assetInfo.divisible,
-            ),
-          ));
-
-          // now validate the get asset
-
-          emit(state.copyWith(
-            getAsset: GetAssetInput.dirty(params.initialGetAsset),
-            getAssetValidationStatus: Loading(),
-          ));
-
-          try {
-            final asset =
-                await assetRepository.getAssetVerbose(params.initialGetAsset);
-
-            int initialGetQuantity = event.params!.initialGetQuantity;
-
-            final initialGetQuantityNormalized = asset.divisible ?? false
-                ? (initialGetQuantity / 100000000)
-                : initialGetQuantity;
-
-            emit(state.copyWith(
-              getQuantity: GetQuantityInput.dirty(
-                initialGetQuantityNormalized.toString(),
-                isDivisible: asset.divisible ?? false,
-              ),
-              getAssetValidationStatus: Success(asset),
-            ));
-          } catch (e) {
-            emit(state.copyWith(
-              getAssetValidationStatus: Failure('Asset not found'),
-            ));
-            return;
-          }
-        }
-      }
+      nextGiveQuantity = GiveQuantityInput.dirty(
+        nextGiveQuantityNormalized,
+        balance: initialGiveBalance?.quantity ?? 0,
+        isDivisible: initialGiveAsset.divisible!,
+      );
     } catch (e) {
-      emit(state.copyWith(
-        errorMessage: "Invalid order details",
-      ));
+      // if we can't find a give asset, just treat input as divisible
+      nextGiveAsset =
+          GiveAssetInput.dirty(params.initialGiveAsset); // Keep the input
+      nextGiveAssetValidationStatus = Failure("Asset not found");
+      nextGiveQuantity = GiveQuantityInput.dirty(
+          params.initialGiveQuantity.toString(),
+          isDivisible: true);
     }
+
+    try {
+      final initialGetAsset =
+          await assetRepository.getAssetVerbose(params.initialGetAsset);
+      nextGetAsset = GetAssetInput.dirty(params.initialGetAsset);
+      nextGetAssetValidationStatus = Success(initialGetAsset);
+      String nextGetQuantityNormalized = (initialGetAsset.divisible ?? false
+              ? (params.initialGetQuantity / 100000000)
+              : params.initialGetQuantity)
+          .toString();
+      nextGetQuantity = GetQuantityInput.dirty(nextGetQuantityNormalized,
+          isDivisible: initialGetAsset.divisible!);
+    } catch (e) {
+      nextGetAsset =
+          GetAssetInput.dirty(params.initialGetAsset); // Keep the input
+      nextGetAssetValidationStatus = Failure("Asset not found");
+      nextGetQuantity =
+          GetQuantityInput.dirty(params.initialGetQuantity.toString());
+    }
+
+    Rational ratio = Decimal.parse(nextGiveQuantity.value) /
+        Decimal.parse(nextGetQuantity.value);
+
+    emit(state.copyWith(
+      ratio: Option.of(ratio),
+      giveAssets: nextGiveAssets,
+      feeEstimates: nextFeeEstimates,
+      giveAsset: nextGiveAsset,
+      giveQuantity: nextGiveQuantity,
+      giveAssetValidationStatus: nextGiveAssetValidationStatus,
+      getAsset: nextGetAsset,
+      getQuantity: nextGetQuantity,
+      getAssetValidationStatus: nextGetAssetValidationStatus,
+    ));
   }
 
   void _onGiveAssetChanged(
       GiveAssetChanged event, Emitter<FormStateModel> emit) {
     final giveAssetInput = GiveAssetInput.dirty(event.giveAssetId);
 
-    final balance = _getBalanceForAsset(event.giveAssetId);
-
-    final giveQuantity = GiveQuantityInput.dirty(
-      state.giveQuantity.value,
-      isDivisible: balance?.assetInfo.divisible ?? false,
-    );
 
     emit(state.copyWith(
-      giveQuantity: giveQuantity,
+      ratio: const Option.none(),
+      lockRatio: false,
+      // giveQuantity: giveQuantity,
       giveAsset: giveAssetInput,
       errorMessage: null,
     ));
@@ -518,7 +622,10 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
   void _onGetAssetChanged(
       GetAssetChanged event, Emitter<FormStateModel> emit) async {
     final getAssetInput = GetAssetInput.dirty(event.getAssetId);
+
     emit(state.copyWith(
+      ratio: const Option.none(),
+      lockRatio: false,
       getAsset: getAssetInput,
       getAssetValidationStatus: NotAsked(),
     ));
@@ -549,10 +656,63 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
     }
   }
 
+  void _onGiveAssetBlurred(
+      GiveAssetBlurred event, Emitter<FormStateModel> emit) async {
+    emit(state.copyWith(
+      giveAssetValidationStatus: Loading(),
+    ));
+
+    try {
+
+      final asset =
+          await assetRepository.getAssetVerbose(state.giveAsset.value);
+     
+      final balance = _getBalanceForAsset(state.giveAsset.value);
+
+      final giveQuantityInput = GiveQuantityInput.dirty(
+        state.giveQuantity.value,
+        isDivisible: asset.divisible ?? false,
+        balance: balance?.quantity ?? 0
+      );
+
+      emit(state.copyWith(
+        giveQuantity: giveQuantityInput,
+        giveAssetValidationStatus: Success(asset),
+      ));
+    } catch (e) {
+      emit(state.copyWith(
+        giveAssetValidationStatus: Failure('Asset not found'),
+      ));
+    }
+  }
+
   void _onGetQuantityChanged(
       GetQuantityChanged event, Emitter<FormStateModel> emit) {
     // assume it's divisble until we blur
     final input = GetQuantityInput.dirty(event.value, isDivisible: true);
+
+    if (state.lockRatio && state.ratio.isSome()) {
+      final get = Decimal.tryParse(event.value);
+      final give = Decimal.tryParse(state.giveQuantity.value);
+      final ratio = state.ratio
+          .fold(() => throw Exception("invariant"), (ratio) => ratio);
+
+      if (give != null && get != null) {
+        final newGive = (get *
+                Decimal.fromBigInt(ratio.numerator) /
+                Decimal.fromBigInt(ratio.denominator))
+            .toDecimal(scaleOnInfinitePrecision: 8);
+
+        emit(state.copyWith(
+          getQuantity: input,
+          giveQuantity: GiveQuantityInput.dirty(formatDecimal(newGive),
+              balance: state.giveQuantity.balance,
+              isDivisible: state.giveQuantity.isDivisible),
+        ));
+        return;
+      }
+    }
+
     emit(state.copyWith(getQuantity: input, errorMessage: null));
   }
 
@@ -572,37 +732,77 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
 
   void _onGiveQuantityChanged(
       GiveQuantityChanged event, Emitter<FormStateModel> emit) {
-    // permit divisiblity until blur
+    // Create a new GiveQuantityInput with the updated value
     final input = GiveQuantityInput.dirty(event.value, isDivisible: true);
-    emit(state.copyWith(giveQuantity: input, errorMessage: null));
+
+    if (state.lockRatio && state.ratio.isSome()) {
+      final give = Decimal.tryParse(event.value) ?? Decimal.one;
+      final get = Decimal.tryParse(state.getQuantity.value);
+      final ratio = state.ratio
+          .fold(() => throw Exception("invariant"), (ratio) => ratio);
+
+      if (get != null) {
+        // Use the stored ratio to compute the new getQuantity
+
+        final newGet = (give *
+                Decimal.fromBigInt(ratio.denominator) /
+                Decimal.fromBigInt(ratio.numerator))
+            .toDecimal(scaleOnInfinitePrecision: 8);
+        // Format the newGet to match the expected decimal places
+
+        emit(state.copyWith(
+          giveQuantity: input,
+          getQuantity: GetQuantityInput.dirty(formatDecimal(newGet),
+              isDivisible: state.getQuantity.isDivisible),
+          errorMessage: null,
+        ));
+        return;
+      } else {
+        // If quantities are invalid, emit an error and disable lockRatio
+        emit(state.copyWith(
+          lockRatio: false,
+          ratio: null,
+          errorMessage: 'Cannot lock ratio: invalid quantities.',
+        ));
+        return;
+      }
+    }
+
+    // If lockRatio is not enabled, just update the giveQuantity
+    emit(state.copyWith(
+      giveQuantity: input,
+      errorMessage: null,
+    ));
   }
 
   void _onGiveQuantityBlurred(
     GiveQuantityBlurred event,
     Emitter<FormStateModel> emit,
-  ) {
+  ) async {
     final value = state.giveQuantity.value;
 
-    final balance = _getBalanceForAsset(state.giveAsset.value);
+    late bool isDivisible;
+    late int balance;
 
-    if (balance == null) {
-      // if we don't have a balance we permit divisibility
-      final input = GiveQuantityInput.dirty(
-        value,
-        isDivisible: true,
-      );
+    try {
+      final asset =
+          await assetRepository.getAssetVerbose(state.giveAsset.value);
+      isDivisible = asset.divisible ?? true;
+    } catch (e) {
+      isDivisible = true;
+    }
 
-      emit(state.copyWith(
-        giveQuantity: input,
-      ));
-
-      return;
+    try {
+      final balance_ = _getBalanceForAsset(state.giveAsset.value);
+      balance = balance_?.quantity ?? 0;
+    } catch (e) {
+      balance = 0;
     }
 
     final input = GiveQuantityInput.dirty(
       value,
-      balance: balance.quantity,
-      isDivisible: balance.assetInfo.divisible,
+      balance: balance,
+      isDivisible: isDivisible,
     );
 
     emit(state.copyWith(giveQuantity: input, errorMessage: null));
@@ -738,6 +938,14 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
       _ => null,
     };
   }
+
+  double? _parseQuantity(String value) {
+    try {
+      return double.parse(value);
+    } catch (e) {
+      return null;
+    }
+  }
 }
 
 class FetchFeeEstimatesException implements Exception {
@@ -750,4 +958,16 @@ class FetchFeeEstimatesException implements Exception {
 
 EventTransformer<T> debounce<T>(Duration duration) {
   return (events, mapper) => events.debounceTime(duration).flatMap(mapper);
+}
+
+String formatDecimal(Decimal decimal, {int maxDecimalPlaces = 8}) {
+  Decimal rounded = decimal.round(scale: maxDecimalPlaces);
+
+  String fixed = rounded.toStringAsFixed(maxDecimalPlaces);
+
+  fixed = fixed.replaceFirst(RegExp(r'0+$'), ''); // Remove trailing zeros
+  fixed = fixed.replaceFirst(
+      RegExp(r'\.$'), ''); // Remove trailing decimal point if any
+
+  return fixed;
 }

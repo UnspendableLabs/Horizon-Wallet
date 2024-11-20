@@ -108,6 +108,9 @@ import 'package:horizon/data/logging/logger_impl.dart';
 import 'package:horizon/domain/entities/extension_rpc.dart';
 import 'dart:convert';
 
+// will need to move this import elsewhere for compile to native
+import 'dart:html' as html;
+
 Future<void> setup() async {
   GetIt injector = GetIt.I;
 
@@ -448,6 +451,8 @@ Future<void> setup() async {
                 },
                 null,
               );
+
+              Future.delayed(const Duration(seconds: 1), html.window.close);
             }
           : (args) => GetIt.I<Logger>().debug("""
                RPCGetAddressesSuccessCallback called with:
@@ -464,9 +469,11 @@ Future<void> setup() async {
                 {"id": args.requestId, "hex": args.signedPsbt},
                 null,
               );
+
+              Future.delayed(const Duration(seconds: 1), html.window.close);
             }
           : (args) => GetIt.I<Logger>().debug("""
-               RPCGetSignPsbtCallback called with:
+               RPCGetSignPsbtSuccessCallback called with:
                   tabId: ${args.tabId}
                   requestId: ${args.requestId}
                   signedPsbt: ${args.signedPsbt}
