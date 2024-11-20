@@ -40,6 +40,7 @@ import 'package:horizon/presentation/screens/onboarding_import_pk/view/onboardin
 import 'package:horizon/presentation/screens/privacy_policy.dart';
 import 'package:horizon/presentation/screens/tos.dart';
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
+import 'package:horizon/presentation/version_cubit.dart';
 import 'package:horizon/presentation/shell/bloc/shell_state.dart';
 import 'package:horizon/presentation/shell/theme/bloc/theme_bloc.dart';
 import 'package:horizon/domain/repositories/version_repository.dart';
@@ -124,16 +125,8 @@ class LoadingScreen extends StatelessWidget {
 
 class VersionUpgradeWarning extends StatefulWidget {
   final Widget child;
-  final bool show;
-  final Version current;
-  final Version latest;
 
-  const VersionUpgradeWarning(
-      {required this.show,
-      required this.child,
-      required this.current,
-      required this.latest,
-      super.key});
+  const VersionUpgradeWarning({required this.child, super.key});
 
   @override
   VersionUpgradeWarningState createState() => VersionUpgradeWarningState();
@@ -145,12 +138,17 @@ class VersionUpgradeWarningState extends State<VersionUpgradeWarning> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    if (!_hasShownSnackbar && widget.show) {
+
+    final versionInfo = context
+        .read<VersionCubit>()
+        .state; // we should only ever get to this page if shell is success
+
+    if (!_hasShownSnackbar && versionInfo.current < versionInfo.latest) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
               content: Text(
-            'There is a new version of Horizon Wallet: ${widget.latest}.  Your version is ${widget.current} ',
+            'There is a new version of Horizon Wallet: ${versionInfo.latest}.  Your version is ${versionInfo.current} ',
           )),
         );
         _hasShownSnackbar = true;
@@ -257,9 +255,6 @@ class AppRouter {
                             return Scaffold(
                                 bottomNavigationBar: const Footer(),
                                 body: VersionUpgradeWarning(
-                                    current: state.current,
-                                    latest: state.latest,
-                                    show: state.shouldShowUpgradeWarning,
                                     child: DashboardPageWrapper(key: key)));
                           },
                           orElse: () => const SizedBox.shrink(),
@@ -405,7 +400,6 @@ void main() {
         runApp(MyApp(
           currentVersion: version,
           latestVersion: versionInfo.latest,
-          showUpgradeWarning: version < versionInfo.latest,
         ));
       }
     }).run();
@@ -431,12 +425,10 @@ Future<ValueNotifier<Color>> initSettings() async {
 class MyApp extends StatelessWidget {
   final Version currentVersion;
   final Version latestVersion;
-  final bool showUpgradeWarning;
 
   MyApp({
     required this.currentVersion,
     required this.latestVersion,
-    required this.showUpgradeWarning,
     super.key,
   });
 
@@ -681,11 +673,14 @@ class MyApp extends StatelessWidget {
 
     return MultiBlocProvider(
       providers: [
+        BlocProvider<VersionCubit>(
+          create: (context) => VersionCubit(VersionCubitState(
+            latest: latestVersion,
+            current: currentVersion,
+          )),
+        ),
         BlocProvider<ShellStateCubit>(
           create: (context) => ShellStateCubit(
-              current: currentVersion,
-              latest: latestVersion,
-              showUpgradeWarning: showUpgradeWarning,
               walletRepository: GetIt.I<WalletRepository>(),
               accountRepository: GetIt.I<AccountRepository>(),
               addressRepository: GetIt.I<AddressRepository>(),

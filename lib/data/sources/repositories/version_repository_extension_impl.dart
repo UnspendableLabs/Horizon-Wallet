@@ -11,6 +11,8 @@ class VersionRepositoryExtensionImpl implements VersionRepository {
   final Logger logger;
   Dio dio;
 
+  VersionInfo? _cache;
+
   VersionRepositoryExtensionImpl({required this.config, required this.logger})
       : dio = Dio(BaseOptions(
           baseUrl: config.versionInfoEndpoint,
@@ -29,8 +31,18 @@ class VersionRepositoryExtensionImpl implements VersionRepository {
   }
 
   Future<VersionInfo> _get() async {
+
+    if (_cache != null) {
+      return _cache!;
+    }
+
     final response = await dio.get("");
-    return _parseVersionInfo(response);
+
+    final versionInfo = _parseVersionInfo(response);
+
+    _cache = versionInfo;
+
+    return versionInfo;
   }
 
   VersionInfo _parseVersionInfo(Response<dynamic> response) {

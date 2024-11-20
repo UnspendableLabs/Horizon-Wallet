@@ -22,9 +22,6 @@ class ShellState with _$ShellState {
 class ShellStateSuccess with _$ShellStateSuccess {
   // Private constructor
   const factory ShellStateSuccess._({
-    required Version current,
-    required Version latest,
-    required bool shouldShowUpgradeWarning,
     required bool redirect,
     required Wallet wallet,
     required List<Account> accounts,
@@ -37,9 +34,6 @@ class ShellStateSuccess with _$ShellStateSuccess {
 
   // Factory for account/address state
   factory ShellStateSuccess.withAccount({
-    required Version current,
-    required Version latest,
-    required bool shouldShowUpgradeWarning,
     required bool redirect,
     required Wallet wallet,
     required List<Account> accounts,
@@ -49,9 +43,6 @@ class ShellStateSuccess with _$ShellStateSuccess {
     List<ImportedAddress>? importedAddresses,
   }) {
     return ShellStateSuccess._(
-      current: current,
-      latest: latest,
-      shouldShowUpgradeWarning: shouldShowUpgradeWarning,
       redirect: redirect,
       wallet: wallet,
       accounts: accounts,
@@ -76,9 +67,6 @@ class ShellStateSuccess with _$ShellStateSuccess {
     required ImportedAddress currentImportedAddress,
   }) {
     return ShellStateSuccess._(
-      current: current,
-      latest: latest,
-      shouldShowUpgradeWarning: shouldShowUpgradeWarning,
       redirect: redirect,
       wallet: wallet,
       accounts: accounts,

@@ -8,14 +8,10 @@ import 'package:horizon/domain/repositories/imported_address_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
-import 'package:pub_semver/pub_semver.dart';
 
 import './shell_state.dart';
 
 class ShellStateCubit extends Cubit<ShellState> {
-  Version current;
-  Version latest;
-  bool showUpgradeWarning;
   WalletRepository walletRepository;
   AccountRepository accountRepository;
   AddressRepository addressRepository;
@@ -23,10 +19,7 @@ class ShellStateCubit extends Cubit<ShellState> {
   AnalyticsService analyticsService;
 
   ShellStateCubit(
-      {required this.current,
-      required this.latest,
-      required this.showUpgradeWarning,
-      required this.walletRepository,
+      {required this.walletRepository,
       required this.accountRepository,
       required this.addressRepository,
       required this.importedAddressRepository,
@@ -68,9 +61,6 @@ class ShellStateCubit extends Cubit<ShellState> {
           await importedAddressRepository.getAll();
 
       emit(ShellState.success(ShellStateSuccess.withAccount(
-        current: current,
-        latest: latest,
-        shouldShowUpgradeWarning: showUpgradeWarning,
         redirect: true,
         wallet: wallet,
         accounts: accounts,
@@ -169,9 +159,6 @@ class ShellStateCubit extends Cubit<ShellState> {
           await importedAddressRepository.getAll();
 
       emit(ShellState.success(ShellStateSuccess.withAccount(
-        current: (state as ShellStateSuccess).current,
-        latest: (state as ShellStateSuccess).latest,
-        shouldShowUpgradeWarning: false,
         redirect: true,
         wallet: wallet,
         accounts: accounts,
@@ -222,9 +209,6 @@ class ShellStateCubit extends Cubit<ShellState> {
           await importedAddressRepository.getAll();
 
       emit(ShellState.success(ShellStateSuccess.withAccount(
-        current: (state as ShellStateSuccess).current,
-        latest: (state as ShellStateSuccess).latest,
-        shouldShowUpgradeWarning: false,
         redirect: true,
         wallet: wallet,
         accounts: accounts,
