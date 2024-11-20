@@ -772,23 +772,12 @@ class EventsRepositoryImpl implements EventsRepository {
   }) async {
     List<VerboseEvent> events = [];
 
-    /// if unconfirmed, get mempool events
-    if (unconfirmed == true) {
-      final mempoolEvents =
-          await _getAllMempoolVerboseEventsForAddress(address, whitelist);
-      events.addAll(mempoolEvents);
-    }
-
     final addressesParam = address;
 
     final whitelist_ = whitelist?.join(",");
 
-    final response = await api_.getEventsByAddressesVerbose(
-        addressesParam,
-        cursor_model.CursorMapper.toData(cursor),
-        limit,
-        unconfirmed,
-        whitelist_);
+    final response = await api_.getEventsByAddressesVerbose(addressesParam,
+        cursor_model.CursorMapper.toData(cursor), limit, whitelist_);
 
     if (response.error != null) {
       throw Exception("Error getting events by addresses: ${response.error}");
@@ -821,7 +810,15 @@ class EventsRepositoryImpl implements EventsRepository {
     final eventResults = await Future.wait(futures);
     results.addAll(eventResults);
 
-    return results.expand((events) => events).toList();
+    final allEvents = results.expand((events) => events).toList();
+
+    if (unconfirmed == true) {
+      final mempoolEvents =
+          await _getAllMempoolVerboseEventsForAddress(address, whitelist);
+      allEvents.addAll(mempoolEvents);
+    }
+
+    return allEvents;
   }
 
   Future<List<VerboseEvent>> _getAllVerboseEventsForAddress(
