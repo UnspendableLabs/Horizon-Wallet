@@ -9,6 +9,7 @@ import 'package:horizon/domain/repositories/config_repository.dart';
 import 'package:horizon/presentation/common/colors.dart';
 import 'package:horizon/presentation/common/no_data.dart';
 import 'package:horizon/presentation/screens/compose_attach_utxo/view/compose_attach_utxo_page.dart';
+import 'package:horizon/presentation/screens/compose_detach_utxo/view/compose_detach_utxo_page.dart';
 import 'package:horizon/presentation/screens/compose_send/view/compose_send_page.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_bloc.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_state.dart';
@@ -277,6 +278,12 @@ class BalancesSliverState extends State<BalancesSliver> {
           final textColor = widget.isDarkTheme
               ? darkThemeAssetLinkColor
               : lightThemeAssetLinkColor;
+
+          Asset? currentOwnedAsset = ownedAssets
+              .firstWhereOrNull((asset) => asset.asset == balance.asset);
+
+          final bool isOwner = _isOwned(currentOwnedAsset);
+
           return TableRow(children: [
             _buildTableCell1(balance.asset, balance.assetInfo.assetLongname,
                 true, textColor),
@@ -284,8 +291,8 @@ class BalancesSliverState extends State<BalancesSliver> {
             _buildTableCell3(
                 balance.asset,
                 textColor,
-                false,
-                null,
+                isOwner,
+                currentOwnedAsset,
                 balance.quantity,
                 fairminterAssets,
                 balance.utxo,
@@ -480,7 +487,21 @@ class BalancesSliverState extends State<BalancesSliver> {
                 height: 32,
                 child: IconButton(
                   padding: EdgeInsets.zero,
-                  onPressed: () {},
+                  onPressed: () {
+                    HorizonUI.HorizonDialog.show(
+                      context: context,
+                      body: HorizonUI.HorizonDialog(
+                        title: 'Detach UTXO',
+                        body: ComposeDetachUtxoPageWrapper(
+                            dashboardActivityFeedBloc:
+                                BlocProvider.of<DashboardActivityFeedBloc>(
+                                    context),
+                            currentAddress: widget.currentAddress,
+                            assetName: assetName,
+                            utxo: utxo!),
+                      ),
+                    );
+                  },
                   icon: const Icon(Icons.link_off, size: 16.0),
                 ),
               ),

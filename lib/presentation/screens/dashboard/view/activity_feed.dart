@@ -258,7 +258,10 @@ class ActivityFeedListItem extends StatelessWidget {
       } else if (params.assetEvents == "lock_quantity reissuance") {
         return SelectableText(
             "Lock Quantity for ${displayAssetName(params.asset, params.assetLongname)}");
-      } else if (params.assetEvents == "lock_description reissuance") {
+      } else if (params.assetEvents == "change_description") {
+        return SelectableText(
+            "Change Description for ${displayAssetName(params.asset, params.assetLongname)}");
+      } else if (params.assetEvents == "lock_description") {
         return SelectableText(
             "Lock Description for ${displayAssetName(params.asset, params.assetLongname)}");
       } else if (params.assetEvents == "open_fairminter") {

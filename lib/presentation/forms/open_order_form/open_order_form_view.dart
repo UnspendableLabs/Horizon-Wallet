@@ -8,7 +8,6 @@ import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
 import 'package:horizon/presentation/common/fee_estimation_v2.dart';
 import 'package:decimal/decimal.dart';
-import 'package:flutter_typeahead/flutter_typeahead.dart';
 
 import './open_order_form_bloc.dart';
 
@@ -66,7 +65,6 @@ class _OpenOrderForm extends State<OpenOrderForm> {
         context.read<OpenOrderFormBloc>().add(GetAssetBlurred());
       }
     });
-
   }
 
   @override
@@ -182,11 +180,11 @@ class _OpenOrderForm extends State<OpenOrderForm> {
             ),
             const SizedBox(height: 17),
             // Price and Lock Ratio Row
-            Row(
+            const Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 // Price Label
-                const Padding(
+                Padding(
                   padding: EdgeInsets.fromLTRB(2.0, 8.0, 0.0, 16.0),
                   child: Text("Price",
                       style:
@@ -276,10 +274,10 @@ class _OpenOrderForm extends State<OpenOrderForm> {
 class GiveAssetInputField extends StatelessWidget {
   final TextEditingController controller;
 
-  GiveAssetInputField({
-    Key? key,
+  const GiveAssetInputField({
+    super.key,
     required this.controller,
-  }) : super(key: key);
+  });
 
   Future<List<Balance>> _fetchSuggestions(
       BuildContext context, String pattern) async {
@@ -614,13 +612,15 @@ class Price extends StatelessWidget {
 }
 
 class LockRatioToggle extends StatelessWidget {
+  const LockRatioToggle({super.key});
+
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<OpenOrderFormBloc, FormStateModel>(
       builder: (context, state) {
         return Row(
           children: [
-            Text('Lock Price'),
+            const Text('Lock Price'),
             Switch(
               value: state.lockRatio,
               onChanged: (value) {

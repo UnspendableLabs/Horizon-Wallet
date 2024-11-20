@@ -1075,7 +1075,6 @@ void main() {
     ),
     act: (bloc) => bloc.add(GiveAssetBlurred()),
     expect: () => [
-
       isA<FormStateModel>().having((s) => s.giveAssetValidationStatus,
           'giveAssetValidationStatus', isA<Loading<Asset>>()),
       isA<FormStateModel>().having((s) => s.giveAssetValidationStatus,

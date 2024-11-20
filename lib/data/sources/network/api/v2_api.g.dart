@@ -5378,6 +5378,53 @@ class _V2Api implements V2Api {
   }
 
   @override
+  Future<Response<ComposeDetachUtxoResponseModel>> composeDetachUtxo(
+    String utxo, [
+    String? destination,
+    bool? skipValidation,
+    bool? allowUnconfirmedInputs,
+    int? exactFee,
+    String? inputsSet,
+    bool? unconfirmed,
+  ]) async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{
+      r'destination': destination,
+      r'skip_validation': skipValidation,
+      r'allow_unconfirmed_inputs': allowUnconfirmedInputs,
+      r'exact_fee': exactFee,
+      r'inputs_set': inputsSet,
+      r'unconfirmed': unconfirmed,
+    };
+    queryParameters.removeWhere((k, v) => v == null);
+    final _headers = <String, dynamic>{};
+    const Map<String, dynamic>? _data = null;
+    final _result = await _dio.fetch<Map<String, dynamic>>(
+        _setStreamType<Response<ComposeDetachUtxoResponseModel>>(Options(
+      method: 'GET',
+      headers: _headers,
+      extra: _extra,
+    )
+            .compose(
+              _dio.options,
+              '/utxos/${utxo}/compose/detach?verbose=true',
+              queryParameters: queryParameters,
+              data: _data,
+            )
+            .copyWith(
+                baseUrl: _combineBaseUrls(
+              _dio.options.baseUrl,
+              baseUrl,
+            ))));
+    final _value = Response<ComposeDetachUtxoResponseModel>.fromJson(
+      _result.data!,
+      (json) =>
+          ComposeDetachUtxoResponseModel.fromJson(json as Map<String, dynamic>),
+    );
+    return _value;
+  }
+
+  @override
   Future<Response<List<UTXO>>> getUnspentUTXOs(
     String address, [
     bool? unconfirmed,

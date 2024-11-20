@@ -1,6 +1,6 @@
 import 'package:horizon/common/uuid.dart';
 import 'package:horizon/core/logging/logger.dart';
-import 'package:horizon/domain/entities/compose_attach_utxo.dart';
+import 'package:horizon/domain/entities/compose_detach_utxo.dart';
 import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/domain/entities/fee_option.dart' as FeeOption;
 import 'package:horizon/domain/repositories/block_repository.dart';
@@ -10,36 +10,33 @@ import 'package:horizon/presentation/common/compose_base/bloc/compose_base_bloc.
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_event.dart';
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_state.dart';
 import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
+import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
 import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transaction_usecase.dart';
 import 'package:horizon/presentation/common/usecase/write_local_transaction_usecase.dart';
-import 'package:horizon/presentation/screens/compose_attach_utxo/bloc/compose_attach_utxo_state.dart';
-import 'package:horizon/presentation/screens/compose_attach_utxo/usecase/fetch_form_data.dart';
+import 'package:horizon/presentation/screens/compose_detach_utxo/bloc/compose_detach_utxo_state.dart';
 
-class ComposeAttachUtxoEventParams {
-  final String asset;
-  final int quantity;
+class ComposeDetachUtxoEventParams {
+  final String utxo;
 
-  ComposeAttachUtxoEventParams({
-    required this.asset,
-    required this.quantity,
+  ComposeDetachUtxoEventParams({
+    required this.utxo,
   });
 }
 
-class ComposeAttachUtxoBloc extends ComposeBaseBloc<ComposeAttachUtxoState> {
+class ComposeDetachUtxoBloc extends ComposeBaseBloc<ComposeDetachUtxoState> {
   final ComposeRepository composeRepository;
   final AnalyticsService analyticsService;
   final Logger logger;
-  final FetchComposeAttachUtxoFormDataUseCase
-      fetchComposeAttachUtxoFormDataUseCase;
+  final GetFeeEstimatesUseCase getFeeEstimatesUseCase;
   final ComposeTransactionUseCase composeTransactionUseCase;
   final SignAndBroadcastTransactionUseCase signAndBroadcastTransactionUseCase;
   final WriteLocalTransactionUseCase writelocalTransactionUseCase;
   final BlockRepository blockRepository;
   final String? initialFairminterTxHash;
 
-  ComposeAttachUtxoBloc({
+  ComposeDetachUtxoBloc({
     required this.logger,
-    required this.fetchComposeAttachUtxoFormDataUseCase,
+    required this.getFeeEstimatesUseCase,
     required this.composeTransactionUseCase,
     required this.composeRepository,
     required this.analyticsService,
@@ -47,7 +44,7 @@ class ComposeAttachUtxoBloc extends ComposeBaseBloc<ComposeAttachUtxoState> {
     required this.writelocalTransactionUseCase,
     required this.blockRepository,
     this.initialFairminterTxHash,
-  }) : super(ComposeAttachUtxoState(
+  }) : super(ComposeDetachUtxoState(
           submitState: const SubmitInitial(),
           feeOption: FeeOption.Medium(),
           balancesState: const BalancesState.initial(),
@@ -63,26 +60,18 @@ class ComposeAttachUtxoBloc extends ComposeBaseBloc<ComposeAttachUtxoState> {
     ));
 
     try {
-      final (feeEstimates, balance) =
-          await fetchComposeAttachUtxoFormDataUseCase.call(
-              event.currentAddress!, event.assetName!);
+      final feeEstimates =
+          await getFeeEstimatesUseCase.call(targets: (1, 3, 6));
 
       emit(state.copyWith(
-        balancesState: BalancesState.success([balance]),
         feeState: FeeState.success(feeEstimates),
       ));
     } on FetchFeeEstimatesException catch (e) {
       emit(state.copyWith(
         feeState: FeeState.error(e.message),
       ));
-    } on FetchBalanceException catch (e) {
-      emit(state.copyWith(
-        balancesState: BalancesState.error(e.message),
-      ));
     } catch (e) {
       emit(state.copyWith(
-        balancesState: BalancesState.error(
-            'An unexpected error occurred: ${e.toString()}'),
         feeState:
             FeeState.error('An unexpected error occurred: ${e.toString()}'),
       ));
@@ -112,23 +101,21 @@ class ComposeAttachUtxoBloc extends ComposeBaseBloc<ComposeAttachUtxoState> {
     try {
       final feeRate = _getFeeRate();
       final source = event.sourceAddress;
-      final asset = event.params.asset;
-      final quantity = event.params.quantity;
+      final utxo = event.params.utxo;
 
       final composeResponse = await composeTransactionUseCase
-          .call<ComposeAttachUtxoParams, ComposeAttachUtxoResponse>(
+          .call<ComposeDetachUtxoParams, ComposeDetachUtxoResponse>(
               feeRate: feeRate,
               source: source,
-              params: ComposeAttachUtxoParams(
-                  address: source, quantity: quantity, asset: asset),
-              composeFn: composeRepository.composeAttachUtxo);
+              params: ComposeDetachUtxoParams(utxo: utxo, destination: source),
+              composeFn: composeRepository.composeDetachUtxo);
 
       final composed = composeResponse.$1;
       final virtualSize = composeResponse.$2;
 
       emit(state.copyWith(
           submitState:
-              SubmitComposingTransaction<ComposeAttachUtxoResponse, void>(
+              SubmitComposingTransaction<ComposeDetachUtxoResponse, void>(
         composeTransaction: composed,
         fee: composed.btcFee,
         feeRate: feeRate,
@@ -149,7 +136,7 @@ class ComposeAttachUtxoBloc extends ComposeBaseBloc<ComposeAttachUtxoState> {
   @override
   void onFinalizeTransaction(FinalizeTransactionEvent event, emit) async {
     emit(state.copyWith(
-        submitState: SubmitFinalizing<ComposeAttachUtxoResponse>(
+        submitState: SubmitFinalizing<ComposeDetachUtxoResponse>(
       loading: false,
       error: null,
       composeTransaction: event.composeTransaction,
@@ -160,17 +147,17 @@ class ComposeAttachUtxoBloc extends ComposeBaseBloc<ComposeAttachUtxoState> {
   @override
   void onSignAndBroadcastTransaction(
       SignAndBroadcastTransactionEvent event, emit) async {
-    if (state.submitState is! SubmitFinalizing<ComposeAttachUtxoResponse>) {
+    if (state.submitState is! SubmitFinalizing<ComposeDetachUtxoResponse>) {
       return;
     }
 
     final s =
-        (state.submitState as SubmitFinalizing<ComposeAttachUtxoResponse>);
+        (state.submitState as SubmitFinalizing<ComposeDetachUtxoResponse>);
     final compose = s.composeTransaction;
     final fee = s.fee;
 
     emit(state.copyWith(
-        submitState: SubmitFinalizing<ComposeAttachUtxoResponse>(
+        submitState: SubmitFinalizing<ComposeDetachUtxoResponse>(
       loading: true,
       error: null,
       fee: fee,
@@ -184,8 +171,8 @@ class ComposeAttachUtxoBloc extends ComposeBaseBloc<ComposeAttachUtxoState> {
         onSuccess: (txHex, txHash) async {
           await writelocalTransactionUseCase.call(txHex, txHash);
 
-          logger.info('attach utxo broadcasted txHash: $txHash');
-          analyticsService.trackAnonymousEvent('broadcast_tx_attach_utxo',
+          logger.info('detach utxo broadcasted txHash: $txHash');
+          analyticsService.trackAnonymousEvent('broadcast_tx_detach_utxo',
               properties: {'distinct_id': uuid.v4()});
 
           emit(state.copyWith(
@@ -195,7 +182,7 @@ class ComposeAttachUtxoBloc extends ComposeBaseBloc<ComposeAttachUtxoState> {
         },
         onError: (msg) {
           emit(state.copyWith(
-              submitState: SubmitFinalizing<ComposeAttachUtxoResponse>(
+              submitState: SubmitFinalizing<ComposeDetachUtxoResponse>(
             loading: false,
             error: msg,
             fee: fee,
@@ -203,4 +190,12 @@ class ComposeAttachUtxoBloc extends ComposeBaseBloc<ComposeAttachUtxoState> {
           )));
         });
   }
+}
+
+class FetchFeeEstimatesException implements Exception {
+  final String message;
+  FetchFeeEstimatesException(this.message);
+
+  @override
+  String toString() => 'FetchFeeEstimatesException: $message';
 }
