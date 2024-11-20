@@ -10,6 +10,7 @@ import 'package:horizon/domain/entities/imported_address.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/imported_address_repository.dart';
+import 'package:horizon/domain/repositories/config_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/logout/view/logout_dialog.dart';
@@ -23,6 +24,7 @@ import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
 import 'package:horizon/presentation/screens/dashboard/bloc/logout/logout_bloc.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/logout/logout_state.dart';
 import 'package:horizon/presentation/common/colors.dart';
+import 'package:horizon/presentation/common/link.dart';
 import 'package:horizon/presentation/screens/dashboard/account_form/view/account_form.dart';
 import 'package:horizon/presentation/screens/dashboard/address_form/view/address_form.dart';
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
@@ -343,6 +345,9 @@ class HorizonAppBarContent extends StatelessWidget {
       orElse: () => null,
     );
 
+    final addressURL =
+        GetIt.I<Config>().horizonExplorerBase + '/addresses/$address';
+
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -580,6 +585,18 @@ class HorizonAppBarContent extends StatelessWidget {
                           },
                           itemBuilder: (BuildContext context) =>
                               <PopupMenuEntry<String>>[
+                            PopupMenuItem<String>(
+                              value: 'view_current_address_in_explorer',
+                              child: Link(
+                                  display: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text('View address in explorer'),
+                                        Icon(Icons.open_in_new, size: 16)
+                                      ]),
+                                  href: addressURL),
+                            ),
                             const PopupMenuItem<String>(
                               value: 'view_seed_phrase',
                               child: Text('View wallet seed phrase'),
