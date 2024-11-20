@@ -501,7 +501,7 @@ class TimeoutInterceptor extends Interceptor {
         err.type == DioExceptionType.sendTimeout) {
       // final requestPath = err.requestOptions.uri.toString();
       final timeoutDuration =
-          err.requestOptions.connectTimeout ?? const Duration(seconds: 5);
+          err.requestOptions.connectTimeout ?? const Duration(seconds: 10);
       final formattedError = CustomDioException(
         requestOptions: err.requestOptions,
         error:

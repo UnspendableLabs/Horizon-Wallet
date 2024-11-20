@@ -75,6 +75,9 @@ class VerboseEventMapper {
       case "ATTACH_TO_UTXO":
         return VerboseAttachToUtxoEventMapper.toDomain(
             apiEvent as api.VerboseAttachToUtxoEvent);
+      case "DETACH_FROM_UTXO":
+        return VerboseDetachFromUtxoEventMapper.toDomain(
+            apiEvent as api.VerboseDetachFromUtxoEvent);
 
       // case 'NEW_TRANSACTION':
       //   return VerboseNewTransactionEventMapper.toDomain(
@@ -778,6 +781,35 @@ class VerboseAttachToUtxoEventMapper {
       blockIndex: apiEvent.blockIndex,
       blockTime: apiEvent.blockTime,
       params: VerboseAttachToUtxoParamsMapper.toDomain(apiEvent.params),
+    );
+  }
+}
+
+class VerboseDetachFromUtxoParamsMapper {
+  static VerboseDetachFromUtxoParams toDomain(
+      api.VerboseDetachFromUtxoParams apiParams) {
+    return VerboseDetachFromUtxoParams(
+      asset: apiParams.asset,
+      blockIndex: apiParams.blockIndex,
+      destination: apiParams.destination,
+      feePaid: apiParams.feePaid,
+      quantityNormalized: apiParams.quantityNormalized,
+      feePaidNormalized: apiParams.feePaidNormalized,
+    );
+  }
+}
+
+class VerboseDetachFromUtxoEventMapper {
+  static VerboseDetachFromUtxoEvent toDomain(
+      api.VerboseDetachFromUtxoEvent apiEvent) {
+    return VerboseDetachFromUtxoEvent(
+      state: StateMapper.getVerbose(apiEvent),
+      eventIndex: apiEvent.eventIndex,
+      event: apiEvent.event,
+      txHash: apiEvent.txHash,
+      blockIndex: apiEvent.blockIndex,
+      blockTime: apiEvent.blockTime,
+      params: VerboseDetachFromUtxoParamsMapper.toDomain(apiEvent.params),
     );
   }
 }

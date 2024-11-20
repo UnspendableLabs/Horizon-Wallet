@@ -293,6 +293,8 @@ class Event {
         return OrderFilledEvent.fromJson(json);
       case "ATTACH_TO_UTXO":
         return AttachToUtxoEvent.fromJson(json);
+      case "DETACH_FROM_UTXO":
+        return DetachFromUtxoEvent.fromJson(json);
       default:
         return _$EventFromJson(json);
     }
@@ -1301,6 +1303,107 @@ class OrderFilledEvent extends Event {
 }
 
 @JsonSerializable(fieldRename: FieldRename.snake)
+class DetachFromUtxoEvent extends Event {
+  final DetachFromUtxoParams params;
+
+  DetachFromUtxoEvent({
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
+    required this.params,
+  });
+
+  factory DetachFromUtxoEvent.fromJson(Map<String, dynamic> json) =>
+      _$DetachFromUtxoEventFromJson(json);
+
+  Map<String, dynamic> toJson() => _$DetachFromUtxoEventToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class DetachFromUtxoParams {
+  final String asset;
+  final int blockIndex;
+  final String destination;
+  final int feePaid;
+  final int msgIndex;
+  final int quantity;
+  final String source;
+  final String status;
+  final String txHash;
+  final int txIndex;
+  final int blockTime;
+
+  DetachFromUtxoParams({
+    required this.asset,
+    required this.blockIndex,
+    required this.destination,
+    required this.feePaid,
+    required this.msgIndex,
+    required this.quantity,
+    required this.source,
+    required this.status,
+    required this.txHash,
+    required this.txIndex,
+    required this.blockTime,
+  });
+
+  factory DetachFromUtxoParams.fromJson(Map<String, dynamic> json) =>
+      _$DetachFromUtxoParamsFromJson(json);
+
+  Map<String, dynamic> toJson() => _$DetachFromUtxoParamsToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class VerboseDetachFromUtxoEvent extends VerboseEvent {
+  final VerboseDetachFromUtxoParams params;
+
+  VerboseDetachFromUtxoEvent({
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
+    required super.blockTime,
+    required this.params,
+  });
+
+  factory VerboseDetachFromUtxoEvent.fromJson(Map<String, dynamic> json) =>
+      _$VerboseDetachFromUtxoEventFromJson(json);
+
+  Map<String, dynamic> toJson() => _$VerboseDetachFromUtxoEventToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class VerboseDetachFromUtxoParams extends DetachFromUtxoParams {
+  final AssetInfoModel assetInfo;
+  final String quantityNormalized;
+  final String feePaidNormalized;
+
+  VerboseDetachFromUtxoParams({
+    required super.asset,
+    required super.blockIndex,
+    required super.destination,
+    required super.feePaid,
+    required super.msgIndex,
+    required super.quantity,
+    required super.source,
+    required super.status,
+    required super.txHash,
+    required super.txIndex,
+    required super.blockTime,
+    required this.assetInfo,
+    required this.quantityNormalized,
+    required this.feePaidNormalized,
+  });
+
+  factory VerboseDetachFromUtxoParams.fromJson(Map<String, dynamic> json) =>
+      _$VerboseDetachFromUtxoParamsFromJson(json);
+
+  @override
+  Map<String, dynamic> toJson() => _$VerboseDetachFromUtxoParamsToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
 class AttachToUtxoEvent extends Event {
   final AttachToUtxoParams params;
 
@@ -2090,6 +2193,8 @@ class VerboseEvent extends Event {
         return VerboseOrderFilledEvent.fromJson(json);
       case "ATTACH_TO_UTXO":
         return VerboseAttachToUtxoEvent.fromJson(json);
+      case "DETACH_FROM_UTXO":
+        return VerboseDetachFromUtxoEvent.fromJson(json);
       default:
         return _$VerboseEventFromJson(json);
     }

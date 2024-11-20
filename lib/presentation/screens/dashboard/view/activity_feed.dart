@@ -236,6 +236,8 @@ class ActivityFeedListItem extends StatelessWidget {
         _buildNewFairminterTitle(params),
       VerboseAttachToUtxoEvent(params: var params) => SelectableText(
           "Attach to UTXO ${params.asset} ${params.quantityNormalized} ${params.destination}"),
+      VerboseDetachFromUtxoEvent(params: var params) => SelectableText(
+          "Detach from UTXO ${params.asset} ${params.quantityNormalized} ${params.destination}"),
       _ => SelectableText(
           'Invariant: title unsupported event type: ${event.runtimeType}'),
     };
@@ -520,6 +522,8 @@ class ActivityFeedListItem extends StatelessWidget {
         const Icon(Icons.toc, color: Colors.grey),
       VerboseAttachToUtxoEvent(params: var _) =>
         const Icon(Icons.attach_file, color: Colors.grey),
+      VerboseDetachFromUtxoEvent(params: var _) =>
+        const Icon(Icons.link_off, color: Colors.grey),
       _ => const Icon(Icons.error),
     };
   }

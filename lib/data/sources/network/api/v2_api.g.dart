@@ -1360,6 +1360,120 @@ Map<String, dynamic> _$OrderFilledEventToJson(OrderFilledEvent instance) =>
       'params': instance.params,
     };
 
+DetachFromUtxoEvent _$DetachFromUtxoEventFromJson(Map<String, dynamic> json) =>
+    DetachFromUtxoEvent(
+      eventIndex: (json['event_index'] as num?)?.toInt(),
+      event: json['event'] as String,
+      txHash: json['tx_hash'] as String?,
+      blockIndex: (json['block_index'] as num?)?.toInt(),
+      params:
+          DetachFromUtxoParams.fromJson(json['params'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$DetachFromUtxoEventToJson(
+        DetachFromUtxoEvent instance) =>
+    <String, dynamic>{
+      'event_index': instance.eventIndex,
+      'event': instance.event,
+      'tx_hash': instance.txHash,
+      'block_index': instance.blockIndex,
+      'params': instance.params,
+    };
+
+DetachFromUtxoParams _$DetachFromUtxoParamsFromJson(
+        Map<String, dynamic> json) =>
+    DetachFromUtxoParams(
+      asset: json['asset'] as String,
+      blockIndex: (json['block_index'] as num).toInt(),
+      destination: json['destination'] as String,
+      feePaid: (json['fee_paid'] as num).toInt(),
+      msgIndex: (json['msg_index'] as num).toInt(),
+      quantity: (json['quantity'] as num).toInt(),
+      source: json['source'] as String,
+      status: json['status'] as String,
+      txHash: json['tx_hash'] as String,
+      txIndex: (json['tx_index'] as num).toInt(),
+      blockTime: (json['block_time'] as num).toInt(),
+    );
+
+Map<String, dynamic> _$DetachFromUtxoParamsToJson(
+        DetachFromUtxoParams instance) =>
+    <String, dynamic>{
+      'asset': instance.asset,
+      'block_index': instance.blockIndex,
+      'destination': instance.destination,
+      'fee_paid': instance.feePaid,
+      'msg_index': instance.msgIndex,
+      'quantity': instance.quantity,
+      'source': instance.source,
+      'status': instance.status,
+      'tx_hash': instance.txHash,
+      'tx_index': instance.txIndex,
+      'block_time': instance.blockTime,
+    };
+
+VerboseDetachFromUtxoEvent _$VerboseDetachFromUtxoEventFromJson(
+        Map<String, dynamic> json) =>
+    VerboseDetachFromUtxoEvent(
+      eventIndex: (json['event_index'] as num?)?.toInt(),
+      event: json['event'] as String,
+      txHash: json['tx_hash'] as String?,
+      blockIndex: (json['block_index'] as num?)?.toInt(),
+      blockTime: (json['block_time'] as num?)?.toInt(),
+      params: VerboseDetachFromUtxoParams.fromJson(
+          json['params'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$VerboseDetachFromUtxoEventToJson(
+        VerboseDetachFromUtxoEvent instance) =>
+    <String, dynamic>{
+      'event_index': instance.eventIndex,
+      'event': instance.event,
+      'tx_hash': instance.txHash,
+      'block_index': instance.blockIndex,
+      'block_time': instance.blockTime,
+      'params': instance.params,
+    };
+
+VerboseDetachFromUtxoParams _$VerboseDetachFromUtxoParamsFromJson(
+        Map<String, dynamic> json) =>
+    VerboseDetachFromUtxoParams(
+      asset: json['asset'] as String,
+      blockIndex: (json['block_index'] as num).toInt(),
+      destination: json['destination'] as String,
+      feePaid: (json['fee_paid'] as num).toInt(),
+      msgIndex: (json['msg_index'] as num).toInt(),
+      quantity: (json['quantity'] as num).toInt(),
+      source: json['source'] as String,
+      status: json['status'] as String,
+      txHash: json['tx_hash'] as String,
+      txIndex: (json['tx_index'] as num).toInt(),
+      blockTime: (json['block_time'] as num).toInt(),
+      assetInfo:
+          AssetInfoModel.fromJson(json['asset_info'] as Map<String, dynamic>),
+      quantityNormalized: json['quantity_normalized'] as String,
+      feePaidNormalized: json['fee_paid_normalized'] as String,
+    );
+
+Map<String, dynamic> _$VerboseDetachFromUtxoParamsToJson(
+        VerboseDetachFromUtxoParams instance) =>
+    <String, dynamic>{
+      'asset': instance.asset,
+      'block_index': instance.blockIndex,
+      'destination': instance.destination,
+      'fee_paid': instance.feePaid,
+      'msg_index': instance.msgIndex,
+      'quantity': instance.quantity,
+      'source': instance.source,
+      'status': instance.status,
+      'tx_hash': instance.txHash,
+      'tx_index': instance.txIndex,
+      'block_time': instance.blockTime,
+      'asset_info': instance.assetInfo,
+      'quantity_normalized': instance.quantityNormalized,
+      'fee_paid_normalized': instance.feePaidNormalized,
+    };
+
 AttachToUtxoEvent _$AttachToUtxoEventFromJson(Map<String, dynamic> json) =>
     AttachToUtxoEvent(
       eventIndex: (json['event_index'] as num?)?.toInt(),

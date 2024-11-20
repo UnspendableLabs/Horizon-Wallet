@@ -32,7 +32,8 @@ final DEFAULT_WHITELIST = [
   "ORDER_FILLED",
   "CANCEL_ORDER",
   "ORDER_EXPIRATION",
-  "ATTACH_TO_UTXO"
+  "ATTACH_TO_UTXO",
+  "DETACH_FROM_UTXO"
 ];
 
 class DashboardActivityFeedBloc
