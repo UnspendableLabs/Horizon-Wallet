@@ -234,6 +234,8 @@ class ActivityFeedListItem extends StatelessWidget {
         const SelectableText("Order Expiration"),
       VerboseNewFairminterEvent(params: var params) =>
         _buildNewFairminterTitle(params),
+      VerboseAttachToUtxoEvent(params: var params) => SelectableText(
+          "Attach to UTXO ${params.asset} ${params.quantityNormalized} ${params.destination}"),
       _ => SelectableText(
           'Invariant: title unsupported event type: ${event.runtimeType}'),
     };
@@ -513,6 +515,8 @@ class ActivityFeedListItem extends StatelessWidget {
         const Icon(Icons.toc, color: Colors.grey),
       VerboseOrderExpirationEvent(params: var _) =>
         const Icon(Icons.toc, color: Colors.grey),
+      VerboseAttachToUtxoEvent(params: var _) =>
+        const Icon(Icons.attach_file, color: Colors.grey),
       _ => const Icon(Icons.error),
     };
   }

@@ -269,19 +269,21 @@ class ComposeAttachUtxoPageState extends State<ComposeAttachUtxoPage> {
 
   void _onConfirmationContinue(
       dynamic composeTransaction, int fee, GlobalKey<FormState> formKey) {
-    // context.read<ComposeAttachUtxoBloc>().add(FinalizeTransactionEvent<ComposeFairmintResponse>(
-    //       composeTransaction: composeTransaction,
-    //       fee: fee,
-    //     ));
+    context
+        .read<ComposeAttachUtxoBloc>()
+        .add(FinalizeTransactionEvent<ComposeAttachUtxoResponse>(
+          composeTransaction: composeTransaction,
+          fee: fee,
+        ));
   }
 
   void _onFinalizeSubmit(String password, GlobalKey<FormState> formKey) {
     if (formKey.currentState!.validate()) {
-      // context.read<ComposeAttachUtxoBloc>().add(
-      //       SignAndBroadcastTransactionEvent(
-      //         password: password,
-      //       ),
-      //     );
+      context.read<ComposeAttachUtxoBloc>().add(
+            SignAndBroadcastTransactionEvent(
+              password: password,
+            ),
+          );
     }
   }
 
@@ -291,14 +293,3 @@ class ComposeAttachUtxoPageState extends State<ComposeAttachUtxoPage> {
         .add(FetchFormData(currentAddress: widget.address));
   }
 }
-
-// class UpperCaseTextEditingController extends TextEditingController {
-//   @override
-//   set value(TextEditingValue newValue) {
-//     super.value = newValue.copyWith(
-//       text: newValue.text.toUpperCase(),
-//       selection: newValue.selection,
-//       composing: newValue.composing,
-//     );
-//   }
-// }

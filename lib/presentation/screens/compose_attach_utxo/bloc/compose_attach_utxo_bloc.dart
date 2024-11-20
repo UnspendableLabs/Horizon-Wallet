@@ -1,3 +1,4 @@
+import 'package:horizon/common/uuid.dart';
 import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/domain/entities/compose_attach_utxo.dart';
 import 'package:horizon/domain/entities/fee_estimates.dart';
@@ -147,13 +148,13 @@ class ComposeAttachUtxoBloc extends ComposeBaseBloc<ComposeAttachUtxoState> {
 
   @override
   void onFinalizeTransaction(FinalizeTransactionEvent event, emit) async {
-    // emit(state.copyWith(
-    //     submitState: SubmitFinalizing<ComposeFairmintResponse>(
-    //   loading: false,
-    //   error: null,
-    //   composeTransaction: event.composeTransaction,
-    //   fee: event.fee,
-    // )));
+    emit(state.copyWith(
+        submitState: SubmitFinalizing<ComposeAttachUtxoResponse>(
+      loading: false,
+      error: null,
+      composeTransaction: event.composeTransaction,
+      fee: event.fee,
+    )));
   }
 
   @override
@@ -163,39 +164,44 @@ class ComposeAttachUtxoBloc extends ComposeBaseBloc<ComposeAttachUtxoState> {
       return;
     }
 
-    // final s = (state.submitState as SubmitFinalizing<ComposeFairmintResponse>);
-    // final compose = s.composeTransaction;
-    // final fee = s.fee;
+    final s =
+        (state.submitState as SubmitFinalizing<ComposeAttachUtxoResponse>);
+    final compose = s.composeTransaction;
+    final fee = s.fee;
 
-    // emit(state.copyWith(
-    //     submitState: SubmitFinalizing<ComposeFairmintResponse>(
-    //   loading: true,
-    //   error: null,
-    //   fee: fee,
-    //   composeTransaction: compose,
-    // )));
+    emit(state.copyWith(
+        submitState: SubmitFinalizing<ComposeAttachUtxoResponse>(
+      loading: true,
+      error: null,
+      fee: fee,
+      composeTransaction: compose,
+    )));
 
-    // await signAndBroadcastTransactionUseCase.call(
-    //     password: event.password,
-    //     source: compose.params.source,
-    //     rawtransaction: compose.rawtransaction,
-    //     onSuccess: (txHex, txHash) async {
-    //       await writelocalTransactionUseCase.call(txHex, txHash);
+    await signAndBroadcastTransactionUseCase.call(
+        password: event.password,
+        source: compose.params.source,
+        rawtransaction: compose.rawtransaction,
+        onSuccess: (txHex, txHash) async {
+          await writelocalTransactionUseCase.call(txHex, txHash);
 
-    //       logger.info('fairmint broadcasted txHash: $txHash');
-    //       analyticsService.trackAnonymousEvent('broadcast_tx_fairmint', properties: {'distinct_id': uuid.v4()});
+          logger.info('attach utxo broadcasted txHash: $txHash');
+          analyticsService.trackAnonymousEvent('broadcast_tx_attach_utxo',
+              properties: {'distinct_id': uuid.v4()});
 
-    //       emit(state.copyWith(submitState: SubmitSuccess(transactionHex: txHex, sourceAddress: compose.params.source)));
-    //     },
-    //     onError: (msg) {
-    //       emit(state.copyWith(
-    //           submitState: SubmitFinalizing<ComposeFairmintResponse>(
-    //         loading: false,
-    //         error: msg,
-    //         fee: fee,
-    //         composeTransaction: compose,
-    //       )));
-    //     });
+          emit(state.copyWith(
+              submitState: SubmitSuccess(
+                  transactionHex: txHex,
+                  sourceAddress: compose.params.source)));
+        },
+        onError: (msg) {
+          emit(state.copyWith(
+              submitState: SubmitFinalizing<ComposeAttachUtxoResponse>(
+            loading: false,
+            error: msg,
+            fee: fee,
+            composeTransaction: compose,
+          )));
+        });
   }
 }
 

@@ -290,6 +290,8 @@ class Event {
         return OrderExpirationEvent.fromJson(json);
       case "ORDER_FILLED":
         return OrderFilledEvent.fromJson(json);
+      case "ATTACH_TO_UTXO":
+        return AttachToUtxoEvent.fromJson(json);
       default:
         return _$EventFromJson(json);
     }
@@ -1298,6 +1300,58 @@ class OrderFilledEvent extends Event {
 }
 
 @JsonSerializable(fieldRename: FieldRename.snake)
+class AttachToUtxoEvent extends Event {
+  final AttachToUtxoParams params;
+
+  AttachToUtxoEvent({
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
+    required this.params,
+  });
+
+  factory AttachToUtxoEvent.fromJson(Map<String, dynamic> json) =>
+      _$AttachToUtxoEventFromJson(json);
+
+  Map<String, dynamic> toJson() => _$AttachToUtxoEventToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class AttachToUtxoParams {
+  final String asset;
+  final int blockIndex;
+  final String destination;
+  final int feePaid;
+  final int msgIndex;
+  final int quantity;
+  final String source;
+  final String status;
+  final String txHash;
+  final int txIndex;
+  final int blockTime;
+
+  AttachToUtxoParams({
+    required this.asset,
+    required this.blockIndex,
+    required this.destination,
+    required this.feePaid,
+    required this.msgIndex,
+    required this.quantity,
+    required this.source,
+    required this.status,
+    required this.txHash,
+    required this.txIndex,
+    required this.blockTime,
+  });
+
+  factory AttachToUtxoParams.fromJson(Map<String, dynamic> json) =>
+      _$AttachToUtxoParamsFromJson(json);
+
+  Map<String, dynamic> toJson() => _$AttachToUtxoParamsToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
 class OrderFilledParams {
   final String status;
   final String txHash;
@@ -1496,6 +1550,54 @@ class VerboseOrderExpirationParams extends OrderExpirationParams {
 
   @override
   Map<String, dynamic> toJson() => _$VerboseOrderExpirationParamsToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class VerboseAttachToUtxoEvent extends VerboseEvent {
+  final VerboseAttachToUtxoParams params;
+
+  VerboseAttachToUtxoEvent({
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
+    required super.blockTime,
+    required this.params,
+  });
+
+  factory VerboseAttachToUtxoEvent.fromJson(Map<String, dynamic> json) =>
+      _$VerboseAttachToUtxoEventFromJson(json);
+
+  Map<String, dynamic> toJson() => _$VerboseAttachToUtxoEventToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class VerboseAttachToUtxoParams extends AttachToUtxoParams {
+  final AssetInfoModel assetInfo;
+  final String quantityNormalized;
+  final String feePaidNormalized;
+  VerboseAttachToUtxoParams({
+    required super.asset,
+    required super.blockIndex,
+    required super.destination,
+    required super.feePaid,
+    required super.msgIndex,
+    required super.quantity,
+    required super.source,
+    required super.status,
+    required super.txHash,
+    required super.txIndex,
+    required super.blockTime,
+    required this.assetInfo,
+    required this.quantityNormalized,
+    required this.feePaidNormalized,
+  });
+
+  factory VerboseAttachToUtxoParams.fromJson(Map<String, dynamic> json) =>
+      _$VerboseAttachToUtxoParamsFromJson(json);
+
+  @override
+  Map<String, dynamic> toJson() => _$VerboseAttachToUtxoParamsToJson(this);
 }
 
 // {
@@ -1985,7 +2087,8 @@ class VerboseEvent extends Event {
         return VerboseOrderExpirationEvent.fromJson(json);
       case "ORDER_FILLED":
         return VerboseOrderFilledEvent.fromJson(json);
-
+      case "ATTACH_TO_UTXO":
+        return VerboseAttachToUtxoEvent.fromJson(json);
       default:
         return _$VerboseEventFromJson(json);
     }

@@ -60,7 +60,9 @@ class BalanceRepositoryImpl implements BalanceRepository {
               // issuer: a.assetInfo.issuer,
               divisible: a.assetInfo.divisible,
               // locked: a.assetInfo.locked,
-            )));
+            ),
+            utxo: a.utxo,
+            utxoAddress: a.utxoAddress));
       }
       cursor = cursor_model.CursorMapper.toDomain(response.nextCursor);
     } while (cursor != null);
@@ -90,7 +92,9 @@ class BalanceRepositoryImpl implements BalanceRepository {
                 // issuer: a.assetInfo.issuer,
                 divisible: a.assetInfo.divisible,
                 // locked: a.assetInfo.locked,
-              )));
+              ),
+              utxo: balance.utxo,
+              utxoAddress: balance.utxoAddress));
         }
       }
       cursor = response.nextCursor;
@@ -144,6 +148,8 @@ class BalanceRepositoryImpl implements BalanceRepository {
           description: balance.assetInfo.description,
           divisible: balance.assetInfo.divisible,
         ),
+        utxo: balance.utxo,
+        utxoAddress: balance.utxoAddress,
       ));
     }
     return entityBalances;

@@ -35,7 +35,7 @@ class BalancesDisplay extends StatefulWidget {
 class BalancesDisplayState extends State<BalancesDisplay> {
   final TextEditingController _searchController = TextEditingController();
   bool _showOwnedOnly = false;
-
+  bool _showUtxoOnly = false;
   @override
   void initState() {
     super.initState();
@@ -75,25 +75,49 @@ class BalancesDisplayState extends State<BalancesDisplay> {
                     ),
                   ),
                 ),
-                const SizedBox(width: 8),
-                Row(
+                // const SizedBox(width: 8),
+                Column(
                   children: [
-                    Checkbox(
-                      value: _showOwnedOnly,
-                      onChanged: (value) {
-                        setState(() {
-                          _showOwnedOnly = value ?? false;
-                        });
-                      },
-                      fillColor: WidgetStateProperty.resolveWith<Color>(
-                          (Set<WidgetState> states) {
-                        return widget.isDarkTheme
-                            ? darkThemeInputColor
-                            : whiteLightTheme; // Use transparent for unchecked state
-                      }),
-                      key: const Key('owned_checkbox'), // Add this line
+                    Row(
+                      children: [
+                        Checkbox(
+                          value: _showOwnedOnly,
+                          onChanged: (value) {
+                            setState(() {
+                              _showOwnedOnly = value ?? false;
+                            });
+                          },
+                          fillColor: WidgetStateProperty.resolveWith<Color>(
+                              (Set<WidgetState> states) {
+                            return widget.isDarkTheme
+                                ? darkThemeInputColor
+                                : whiteLightTheme; // Use transparent for unchecked state
+                          }),
+                          key: const Key('owned_checkbox'), // Add this line
+                        ),
+                        const Text('My issuances'),
+                      ],
                     ),
-                    const Text('My issuances'),
+                    Row(
+                      children: [
+                        Checkbox(
+                          value: _showUtxoOnly,
+                          onChanged: (value) {
+                            setState(() {
+                              _showUtxoOnly = value ?? false;
+                            });
+                          },
+                          fillColor: WidgetStateProperty.resolveWith<Color>(
+                              (Set<WidgetState> states) {
+                            return widget.isDarkTheme
+                                ? darkThemeInputColor
+                                : whiteLightTheme; // Use transparent for unchecked state
+                          }),
+                          key: const Key('utxo_checkbox'), // Add this line
+                        ),
+                        const Text('Utxo attached'),
+                      ],
+                    ),
                   ],
                 ),
               ],
@@ -105,6 +129,7 @@ class BalancesDisplayState extends State<BalancesDisplay> {
             initialItemCount: widget.initialItemCount,
             searchTerm: _searchController.text,
             showOwnedOnly: _showOwnedOnly,
+            showUtxoOnly: _showUtxoOnly,
           ),
         ],
       ),
@@ -118,7 +143,7 @@ class BalancesSliver extends StatefulWidget {
   final String currentAddress;
   final String searchTerm;
   final bool showOwnedOnly;
-
+  final bool showUtxoOnly;
   const BalancesSliver({
     super.key,
     required this.isDarkTheme,
@@ -126,6 +151,7 @@ class BalancesSliver extends StatefulWidget {
     required this.currentAddress,
     required this.searchTerm,
     required this.showOwnedOnly,
+    required this.showUtxoOnly,
   });
 
   @override
@@ -151,7 +177,7 @@ class BalancesSliverState extends State<BalancesSliver> {
 
   List<Widget> _buildBalanceList(Result result) {
     return result.when(
-      ok: (balances, aggregated, ownedAssets, fairminters) {
+      ok: (balances, aggregated, utxoBalances, ownedAssets, fairminters) {
         if (balances.isEmpty && ownedAssets.isEmpty) {
           return [
             const NoData(
@@ -244,8 +270,36 @@ class BalancesSliverState extends State<BalancesSliver> {
           );
         }).toList();
 
-        rows.addAll(balanceRows);
-        rows.addAll(ownedAssetRows);
+        final utxoRows = utxoBalances
+            .where((balance) =>
+                _matchesSearch(balance.asset, balance.assetInfo.assetLongname))
+            .map((balance) {
+          final textColor = widget.isDarkTheme
+              ? darkThemeAssetLinkColor
+              : lightThemeAssetLinkColor;
+          return TableRow(children: [
+            _buildTableCell1(balance.asset, balance.assetInfo.assetLongname,
+                true, textColor),
+            _buildTableCell2(balance.quantityNormalized, textColor),
+            _buildTableCell3(
+                balance.asset,
+                textColor,
+                false,
+                null,
+                balance.quantity,
+                fairminterAssets,
+                balance.utxo,
+                balance.utxoAddress)
+          ]);
+        }).toList();
+
+        if (widget.showUtxoOnly) {
+          rows.addAll(utxoRows);
+        } else {
+          rows.addAll(balanceRows);
+          rows.addAll(utxoRows);
+          rows.addAll(ownedAssetRows);
+        }
 
         final displayedRows =
             _viewAll ? rows : rows.take(widget.initialItemCount).toList();

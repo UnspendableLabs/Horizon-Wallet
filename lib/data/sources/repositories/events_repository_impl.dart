@@ -72,6 +72,9 @@ class VerboseEventMapper {
       case "ORDER_EXPIRATION":
         return VerboseOrderExpirationEventMapper.toDomain(
             apiEvent as api.VerboseOrderExpirationEvent);
+      case "ATTACH_TO_UTXO":
+        return VerboseAttachToUtxoEventMapper.toDomain(
+            apiEvent as api.VerboseAttachToUtxoEvent);
 
       // case 'NEW_TRANSACTION':
       //   return VerboseNewTransactionEventMapper.toDomain(
@@ -746,6 +749,35 @@ class VerboseOrderExpirationParamsMapper {
       orderHash: apiParams.orderHash,
       source: apiParams.source,
       blockTime: apiParams.blockTime,
+    );
+  }
+}
+
+class VerboseAttachToUtxoParamsMapper {
+  static VerboseAttachToUtxoParams toDomain(
+      api.VerboseAttachToUtxoParams apiParams) {
+    return VerboseAttachToUtxoParams(
+      asset: apiParams.asset,
+      blockIndex: apiParams.blockIndex,
+      destination: apiParams.destination,
+      feePaid: apiParams.feePaid,
+      quantityNormalized: apiParams.quantityNormalized,
+      feePaidNormalized: apiParams.feePaidNormalized,
+    );
+  }
+}
+
+class VerboseAttachToUtxoEventMapper {
+  static VerboseAttachToUtxoEvent toDomain(
+      api.VerboseAttachToUtxoEvent apiEvent) {
+    return VerboseAttachToUtxoEvent(
+      state: StateMapper.getVerbose(apiEvent),
+      eventIndex: apiEvent.eventIndex,
+      event: apiEvent.event,
+      txHash: apiEvent.txHash,
+      blockIndex: apiEvent.blockIndex,
+      blockTime: apiEvent.blockTime,
+      params: VerboseAttachToUtxoParamsMapper.toDomain(apiEvent.params),
     );
   }
 }

@@ -1398,3 +1398,60 @@ class VerboseOrderExpirationEvent extends VerboseEvent {
     required this.params,
   });
 }
+
+class VerboseAttachToUtxoEvent extends VerboseEvent {
+  final VerboseAttachToUtxoParams params;
+
+  const VerboseAttachToUtxoEvent({
+    required super.state,
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
+    required super.blockTime,
+    required this.params,
+  });
+}
+
+class VerboseAttachToUtxoParams extends AttachToUtxoEventParams {
+  // final AssetInfo assetInfo;
+  final String quantityNormalized;
+  final String feePaidNormalized;
+
+  VerboseAttachToUtxoParams({
+    required super.asset,
+    required super.blockIndex,
+    required super.destination,
+    required super.feePaid,
+    // required this.assetInfo,
+    required this.quantityNormalized,
+    required this.feePaidNormalized,
+  });
+}
+
+class AttachToUtxoEventParams {
+  final String asset;
+  final int blockIndex;
+  final String destination;
+  final int feePaid;
+
+  AttachToUtxoEventParams({
+    required this.asset,
+    required this.blockIndex,
+    required this.destination,
+    required this.feePaid,
+  });
+}
+
+class AttachToUtxoEvent extends Event {
+  final AttachToUtxoEventParams params;
+
+  const AttachToUtxoEvent({
+    required super.state,
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
+    required this.params,
+  });
+}
