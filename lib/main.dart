@@ -374,9 +374,6 @@ void main() {
         ),
       )));
     }, (versionInfo) {
-      print("version $version");
-      print("versionInfo.min ${version.min}");
-
       if (version < versionInfo.min) {
         runApp(MaterialApp(
           home: Scaffold(
