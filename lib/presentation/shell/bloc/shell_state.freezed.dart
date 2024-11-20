@@ -809,6 +809,9 @@ abstract class _Success implements ShellState {
 
 /// @nodoc
 mixin _$ShellStateSuccess {
+  Version get current => throw _privateConstructorUsedError;
+  Version get latest => throw _privateConstructorUsedError;
+  bool get shouldShowUpgradeWarning => throw _privateConstructorUsedError;
   bool get redirect => throw _privateConstructorUsedError;
   Wallet get wallet => throw _privateConstructorUsedError;
   List<Account> get accounts => throw _privateConstructorUsedError;
@@ -832,7 +835,10 @@ abstract class $ShellStateSuccessCopyWith<$Res> {
       _$ShellStateSuccessCopyWithImpl<$Res, ShellStateSuccess>;
   @useResult
   $Res call(
-      {bool redirect,
+      {Version current,
+      Version latest,
+      bool shouldShowUpgradeWarning,
+      bool redirect,
       Wallet wallet,
       List<Account> accounts,
       String? currentAccountUuid,
@@ -855,6 +861,9 @@ class _$ShellStateSuccessCopyWithImpl<$Res, $Val extends ShellStateSuccess>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
+    Object? current = null,
+    Object? latest = null,
+    Object? shouldShowUpgradeWarning = null,
     Object? redirect = null,
     Object? wallet = null,
     Object? accounts = null,
@@ -865,6 +874,18 @@ class _$ShellStateSuccessCopyWithImpl<$Res, $Val extends ShellStateSuccess>
     Object? currentImportedAddress = freezed,
   }) {
     return _then(_value.copyWith(
+      current: null == current
+          ? _value.current
+          : current // ignore: cast_nullable_to_non_nullable
+              as Version,
+      latest: null == latest
+          ? _value.latest
+          : latest // ignore: cast_nullable_to_non_nullable
+              as Version,
+      shouldShowUpgradeWarning: null == shouldShowUpgradeWarning
+          ? _value.shouldShowUpgradeWarning
+          : shouldShowUpgradeWarning // ignore: cast_nullable_to_non_nullable
+              as bool,
       redirect: null == redirect
           ? _value.redirect
           : redirect // ignore: cast_nullable_to_non_nullable
@@ -910,7 +931,10 @@ abstract class _$$ShellStateSuccessImplCopyWith<$Res>
   @override
   @useResult
   $Res call(
-      {bool redirect,
+      {Version current,
+      Version latest,
+      bool shouldShowUpgradeWarning,
+      bool redirect,
       Wallet wallet,
       List<Account> accounts,
       String? currentAccountUuid,
@@ -931,6 +955,9 @@ class __$$ShellStateSuccessImplCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
+    Object? current = null,
+    Object? latest = null,
+    Object? shouldShowUpgradeWarning = null,
     Object? redirect = null,
     Object? wallet = null,
     Object? accounts = null,
@@ -941,6 +968,18 @@ class __$$ShellStateSuccessImplCopyWithImpl<$Res>
     Object? currentImportedAddress = freezed,
   }) {
     return _then(_$ShellStateSuccessImpl(
+      current: null == current
+          ? _value.current
+          : current // ignore: cast_nullable_to_non_nullable
+              as Version,
+      latest: null == latest
+          ? _value.latest
+          : latest // ignore: cast_nullable_to_non_nullable
+              as Version,
+      shouldShowUpgradeWarning: null == shouldShowUpgradeWarning
+          ? _value.shouldShowUpgradeWarning
+          : shouldShowUpgradeWarning // ignore: cast_nullable_to_non_nullable
+              as bool,
       redirect: null == redirect
           ? _value.redirect
           : redirect // ignore: cast_nullable_to_non_nullable
@@ -981,7 +1020,10 @@ class __$$ShellStateSuccessImplCopyWithImpl<$Res>
 
 class _$ShellStateSuccessImpl implements _ShellStateSuccess {
   const _$ShellStateSuccessImpl(
-      {required this.redirect,
+      {required this.current,
+      required this.latest,
+      required this.shouldShowUpgradeWarning,
+      required this.redirect,
       required this.wallet,
       required final List<Account> accounts,
       required this.currentAccountUuid,
@@ -993,6 +1035,12 @@ class _$ShellStateSuccessImpl implements _ShellStateSuccess {
         _addresses = addresses,
         _importedAddresses = importedAddresses;
 
+  @override
+  final Version current;
+  @override
+  final Version latest;
+  @override
+  final bool shouldShowUpgradeWarning;
   @override
   final bool redirect;
   @override
@@ -1033,7 +1081,7 @@ class _$ShellStateSuccessImpl implements _ShellStateSuccess {
 
   @override
   String toString() {
-    return 'ShellStateSuccess._(redirect: $redirect, wallet: $wallet, accounts: $accounts, currentAccountUuid: $currentAccountUuid, addresses: $addresses, currentAddress: $currentAddress, importedAddresses: $importedAddresses, currentImportedAddress: $currentImportedAddress)';
+    return 'ShellStateSuccess._(current: $current, latest: $latest, shouldShowUpgradeWarning: $shouldShowUpgradeWarning, redirect: $redirect, wallet: $wallet, accounts: $accounts, currentAccountUuid: $currentAccountUuid, addresses: $addresses, currentAddress: $currentAddress, importedAddresses: $importedAddresses, currentImportedAddress: $currentImportedAddress)';
   }
 
   @override
@@ -1041,6 +1089,11 @@ class _$ShellStateSuccessImpl implements _ShellStateSuccess {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$ShellStateSuccessImpl &&
+            (identical(other.current, current) || other.current == current) &&
+            (identical(other.latest, latest) || other.latest == latest) &&
+            (identical(
+                    other.shouldShowUpgradeWarning, shouldShowUpgradeWarning) ||
+                other.shouldShowUpgradeWarning == shouldShowUpgradeWarning) &&
             (identical(other.redirect, redirect) ||
                 other.redirect == redirect) &&
             (identical(other.wallet, wallet) || other.wallet == wallet) &&
@@ -1060,6 +1113,9 @@ class _$ShellStateSuccessImpl implements _ShellStateSuccess {
   @override
   int get hashCode => Object.hash(
       runtimeType,
+      current,
+      latest,
+      shouldShowUpgradeWarning,
       redirect,
       wallet,
       const DeepCollectionEquality().hash(_accounts),
@@ -1079,7 +1135,10 @@ class _$ShellStateSuccessImpl implements _ShellStateSuccess {
 
 abstract class _ShellStateSuccess implements ShellStateSuccess {
   const factory _ShellStateSuccess(
-      {required final bool redirect,
+      {required final Version current,
+      required final Version latest,
+      required final bool shouldShowUpgradeWarning,
+      required final bool redirect,
       required final Wallet wallet,
       required final List<Account> accounts,
       required final String? currentAccountUuid,
@@ -1088,6 +1147,12 @@ abstract class _ShellStateSuccess implements ShellStateSuccess {
       final List<ImportedAddress>? importedAddresses,
       final ImportedAddress? currentImportedAddress}) = _$ShellStateSuccessImpl;
 
+  @override
+  Version get current;
+  @override
+  Version get latest;
+  @override
+  bool get shouldShowUpgradeWarning;
   @override
   bool get redirect;
   @override

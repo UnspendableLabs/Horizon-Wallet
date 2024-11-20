@@ -346,7 +346,7 @@ class HorizonAppBarContent extends StatelessWidget {
     );
 
     final addressURL =
-        GetIt.I<Config>().horizonExplorerBase + '/addresses/$address';
+        '${GetIt.I<Config>().horizonExplorerBase}/addresses/$address';
 
     return SafeArea(
       child: Padding(
@@ -588,7 +588,7 @@ class HorizonAppBarContent extends StatelessWidget {
                             PopupMenuItem<String>(
                               value: 'view_current_address_in_explorer',
                               child: Link(
-                                  display: Row(
+                                  display: const Row(
                                       mainAxisAlignment:
                                           MainAxisAlignment.spaceBetween,
                                       children: [

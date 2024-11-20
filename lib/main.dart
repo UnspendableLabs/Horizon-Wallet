@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:pub_semver/pub_semver.dart';
+import 'package:horizon/presentation/common/footer/view/footer.dart';
 import 'package:dio/dio.dart';
 import 'package:drift_db_viewer/drift_db_viewer.dart';
 import 'package:flutter/material.dart';
@@ -40,8 +42,9 @@ import 'package:horizon/presentation/screens/tos.dart';
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 import 'package:horizon/presentation/shell/bloc/shell_state.dart';
 import 'package:horizon/presentation/shell/theme/bloc/theme_bloc.dart';
+import 'package:horizon/domain/repositories/version_repository.dart';
 import 'package:horizon/setup.dart';
-import 'package:logger/logger.dart';
+import 'package:horizon/core/logging/logger.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 final _sectionNavigatorKey = GlobalKey<NavigatorState>();
@@ -117,6 +120,46 @@ class LoadingScreen extends StatelessWidget {
           ),
         ),
       );
+}
+
+class VersionUpgradeWarning extends StatefulWidget {
+  final Widget child;
+  final bool show;
+  final Version current;
+  final Version latest;
+
+  const VersionUpgradeWarning(
+      {required this.show,
+      required this.child,
+      required this.current,
+      required this.latest,
+      super.key});
+
+  @override
+  VersionUpgradeWarningState createState() => VersionUpgradeWarningState();
+}
+
+class VersionUpgradeWarningState extends State<VersionUpgradeWarning> {
+  bool _hasShownSnackbar = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_hasShownSnackbar && widget.show) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text(
+            'There is a new version of the Horizon Wallet: ${widget.latest}.  Your version is ${widget.current} ',
+          )),
+        );
+        _hasShownSnackbar = true;
+      });
+    }
+  }
+
+  @override
+  Widget build(context) => widget.child;
 }
 
 class AppRouter {
@@ -211,7 +254,13 @@ class AppRouter {
                             } else if (state.currentImportedAddress != null) {
                               key = Key(state.currentImportedAddress!.address);
                             }
-                            return DashboardPageWrapper(key: key);
+                            return Scaffold(
+                                bottomNavigationBar: const Footer(),
+                                body: VersionUpgradeWarning(
+                                    current: state.current,
+                                    latest: state.latest,
+                                    show: state.shouldShowUpgradeWarning,
+                                    child: DashboardPageWrapper(key: key)));
                           },
                           orElse: () => const SizedBox.shrink(),
                         );
@@ -298,7 +347,6 @@ class ErrorScreen extends StatelessWidget {
 }
 
 void main() {
-  final logger = Logger();
   // Catch synchronous errors in Flutter framework
   FlutterError.onError = (FlutterErrorDetails details) {
     FlutterError.dumpErrorToConsole(details);
@@ -315,13 +363,61 @@ void main() {
 
     await initSettings();
 
-    runApp(MyApp());
+    final version = GetIt.I<Config>().version;
+    final versionInfo = GetIt.I<VersionRepository>().get();
+
+    versionInfo.match((failure) {
+      runApp(const MaterialApp(
+          home: Scaffold(
+        body: Center(
+          child: Text("Error fetching supported version info"),
+        ),
+      )));
+    }, (versionInfo) {
+      print("version $version");
+      print("versionInfo.min ${version.min}");
+
+      if (version < versionInfo.min) {
+        runApp(MaterialApp(
+          home: Scaffold(
+            body: Center(
+                child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                  const Icon(Icons.warning_amber_rounded,
+                      size: 60.0, color: Colors.redAccent),
+                  const SizedBox(height: 16),
+                  const Text(
+                    "Upgrade Required!",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold, // Bold font weight
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                      "Your version ($version) is below the minimum supported version (${versionInfo.min})",
+                      style: const TextStyle(
+                        fontSize: 18.0, // Standard readable font size
+                        color: Colors.black87,
+                      )),
+                ])),
+          ),
+        ));
+      } else {
+        runApp(MyApp(
+          currentVersion: version,
+          latestVersion: versionInfo.latest,
+          showUpgradeWarning: version < versionInfo.latest,
+        ));
+      }
+    }).run();
   }, (Object error, StackTrace stackTrace) {
+    final logger = GetIt.I<Logger>();
     if (error is DioException) {
-      logger.e({'error': error.message, 'stackTrace': stackTrace.toString()});
+      logger.error(error.message ?? "", null, stackTrace);
     } else {
-      logger
-          .e({'error': error.toString(), 'stackTrace': stackTrace.toString()});
+      logger.error(error.toString(), null, stackTrace);
     }
     // Log the error to a service or handle it accordingly
   });
@@ -336,7 +432,14 @@ Future<ValueNotifier<Color>> initSettings() async {
 }
 
 class MyApp extends StatelessWidget {
+  final Version currentVersion;
+  final Version latestVersion;
+  final bool showUpgradeWarning;
+
   MyApp({
+    required this.currentVersion,
+    required this.latestVersion,
+    required this.showUpgradeWarning,
     super.key,
   });
 
@@ -577,10 +680,15 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // if showWarning, just display a one off toast here?
+
     return MultiBlocProvider(
       providers: [
         BlocProvider<ShellStateCubit>(
           create: (context) => ShellStateCubit(
+              current: currentVersion,
+              latest: latestVersion,
+              showUpgradeWarning: showUpgradeWarning,
               walletRepository: GetIt.I<WalletRepository>(),
               accountRepository: GetIt.I<AccountRepository>(),
               addressRepository: GetIt.I<AddressRepository>(),
