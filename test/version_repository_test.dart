@@ -1,6 +1,6 @@
 import 'package:horizon/domain/repositories/config_repository.dart';
 import 'package:horizon/domain/repositories/version_repository.dart';
-import 'package:horizon/data/sources/repositories/version_repository_impl.dart';
+import 'package:horizon/data/sources/repositories/version_repository_extension_impl.dart';
 import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/domain/entities/version_info.dart';
 import 'package:pub_semver/pub_semver.dart';
@@ -20,7 +20,7 @@ void main() {
   late MockConfig mockConfig;
   late MockDio mockDio;
   late MockLogger mockLogger;
-  late VersionRepositoryImpl versionRepository;
+  late VersionRepositoryExtensionImpl versionRepository;
 
   setUpAll(() {
     registerFallbackValue(Uri());
@@ -39,7 +39,7 @@ void main() {
 
     // Inject the mocked Dio instance into VersionRepositoryImpl
     versionRepository =
-        VersionRepositoryImpl(config: mockConfig, logger: mockLogger);
+        VersionRepositoryExtensionImpl(config: mockConfig, logger: mockLogger);
     versionRepository.dio = mockDio; // Replace the dio instance with the mock
   });
 
