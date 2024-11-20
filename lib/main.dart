@@ -150,7 +150,7 @@ class VersionUpgradeWarningState extends State<VersionUpgradeWarning> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
               content: Text(
-            'There is a new version of the Horizon Wallet: ${widget.latest}.  Your version is ${widget.current} ',
+            'There is a new version of Horizon Wallet: ${widget.latest}.  Your version is ${widget.current} ',
           )),
         );
         _hasShownSnackbar = true;

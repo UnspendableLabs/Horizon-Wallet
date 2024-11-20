@@ -50,6 +50,7 @@ import 'package:horizon/domain/services/wallet_service.dart';
 
 import 'package:horizon/domain/repositories/version_repository.dart';
 import 'package:horizon/data/sources/repositories/version_repository_impl.dart';
+import 'package:horizon/data/sources/repositories/version_repository_extension_impl.dart';
 
 import 'package:horizon/domain/repositories/asset_repository.dart';
 import 'package:horizon/data/sources/repositories/asset_repository_impl.dart';
@@ -476,8 +477,10 @@ Future<void> setup() async {
                   signedPsbt: ${args.signedPsbt}
           """));
 
-  injector.registerSingleton<VersionRepository>(
-      VersionRepositoryImpl(config: config, logger: GetIt.I<Logger>()));
+  injector.registerLazySingleton<VersionRepository>(() => config.isWebExtension
+      ? VersionRepositoryExtensionImpl(
+          config: config, logger: GetIt.I<Logger>())
+      : VersionRepositoryImpl(config: config));
 }
 
 class CustomDioException extends DioException {
