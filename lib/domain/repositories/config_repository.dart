@@ -4,6 +4,7 @@ enum Network { mainnet, testnet, regtest }
 
 abstract class Config {
   Version get version;
+  String get versionInfoEndpoint;
   Network get network;
   String get counterpartyApiBase;
   String get counterpartyApiUsername;

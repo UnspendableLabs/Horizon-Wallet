@@ -6,6 +6,14 @@ class ConfigImpl implements Config {
   Version get version => Version.parse('1.3.11');
 
   @override
+  String get versionInfoEndpoint {
+    const envValue = String.fromEnvironment('HORIZON_VERSION_INFO_ENDPOINT');
+    return envValue.isNotEmpty
+        ? envValue
+        : "https://version-service.vercel.app/api";
+  }
+
+  @override
   Network get network {
     // default to testnet for now
     const networkString =
