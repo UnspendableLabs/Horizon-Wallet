@@ -1,6 +1,9 @@
+import 'package:pub_semver/pub_semver.dart';
+
 enum Network { mainnet, testnet, regtest }
 
 abstract class Config {
+  Version get version;
   Network get network;
   String get counterpartyApiBase;
   String get counterpartyApiUsername;
