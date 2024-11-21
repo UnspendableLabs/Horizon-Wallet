@@ -128,6 +128,10 @@ class DashboardActivityFeedBloc
             nextCursor = nextCursor_;
           }
         }
+        final (mempoolEvents, _, _) =
+            await eventsRepository.getMempoolEventsByAddressVerbose(
+                address: address, whitelist: DEFAULT_WHITELIST);
+        newCounterpartyEvents.addAll(mempoolEvents);
       }
 
       // 2) compute all new btc transactions above last seen
