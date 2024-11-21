@@ -802,23 +802,22 @@ class EventsRepositoryImpl implements EventsRepository {
     List<String>? whitelist,
   }) async {
     final addresses = [address];
-    final results = <List<VerboseEvent>>[];
+    final List<VerboseEvent> events = [];
+
+    if (unconfirmed == true) {
+      final mempoolEvents =
+          await _getAllMempoolVerboseEventsForAddress(address, whitelist);
+      events.addAll(mempoolEvents);
+    }
 
     final futures = addresses.map((address) =>
         _getAllVerboseEventsForAddress(address, unconfirmed, whitelist));
 
     final eventResults = await Future.wait(futures);
-    results.addAll(eventResults);
+    final allEvents = eventResults.expand((events) => events).toList();
+    events.addAll(allEvents);
 
-    final allEvents = results.expand((events) => events).toList();
-
-    if (unconfirmed == true) {
-      final mempoolEvents =
-          await _getAllMempoolVerboseEventsForAddress(address, whitelist);
-      allEvents.addAll(mempoolEvents);
-    }
-
-    return allEvents;
+    return events;
   }
 
   Future<List<VerboseEvent>> _getAllVerboseEventsForAddress(
