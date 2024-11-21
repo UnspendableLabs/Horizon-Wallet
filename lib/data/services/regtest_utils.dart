@@ -7,10 +7,10 @@ import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/js/bip32.dart' as bip32;
 import 'package:horizon/js/ecpair.dart' as ecpair;
 import 'package:horizon/js/tiny_secp256k1.dart' as tinysecp256k1js;
-import "encryption_service_impl.dart";
+import "encryption_service_web_worker_impl.dart";
 
 class RegTestUtils {
-  EncryptionService encryptionService = EncryptionServiceImpl();
+  EncryptionService encryptionService = EncryptionServiceWebWorkerImpl();
 
   final bip32.BIP32Factory _bip32 = bip32.BIP32Factory(tinysecp256k1js.ecc);
 

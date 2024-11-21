@@ -5,7 +5,6 @@
 import FlutterMacOS
 import Foundation
 
-import dargon2_flutter_desktop
 import flutter_js
 import flutter_secure_storage_macos
 import path_provider_foundation
@@ -16,7 +15,6 @@ import sqlite3_flutter_libs
 import url_launcher_macos
 
 func RegisterGeneratedPlugins(registry: FlutterPluginRegistry) {
-  Dargon2FlutterDesktopPlugin.register(with: registry.registrar(forPlugin: "Dargon2FlutterDesktopPlugin"))
   FlutterJsPlugin.register(with: registry.registrar(forPlugin: "FlutterJsPlugin"))
   FlutterSecureStoragePlugin.register(with: registry.registrar(forPlugin: "FlutterSecureStoragePlugin"))
   PathProviderPlugin.register(with: registry.registrar(forPlugin: "PathProviderPlugin"))
