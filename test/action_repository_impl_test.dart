@@ -163,9 +163,11 @@ void main() {
       );
     });
     group(RPCSignPsbtAction, () {
-      test('should decode a valid RPCGetAddressesAction action', () {
+      test('should decode a valid RPCSignPsbtAction action with signInputs',
+          () {
         // Arrange
-        const encodedString = 'signPsbt:ext,1,def,psbt-hex';
+        const encodedString =
+            'signPsbt:ext,1,def,psbt-hex,%7B%221A2b3C4D5E6F7G8H9I0J%22%3A%5B0%2C1%2C3%5D%7D';
 
         // Act
         final result = actionRepository.fromString(encodedString);
@@ -180,7 +182,40 @@ void main() {
             expect(action.tabId, 1);
             expect(action.requestId, 'def');
             expect(action.psbt, 'psbt-hex');
+            expect(action.signInputs, {
+              "1A2b3C4D5E6F7G8H9I0J": [0, 1, 3]
+            });
           },
+        );
+      });
+
+      test('should return an error for invalid signInputs format', () {
+        // Arrange
+        const encodedString = 'signPsbt:ext,1,def,psbt-hex,invalid-sign-inputs';
+
+        // Act
+        final result = actionRepository.fromString(encodedString);
+
+        // Assert
+        expect(result.isLeft(), true);
+        result.match(
+          (l) => expect(l, 'Failed to parse action'),
+          (r) => fail('Expected Left but got Right: $r'),
+        );
+      });
+
+      test('should return an error for missing signInputs', () {
+        // Arrange
+        const encodedString = 'signPsbt:ext,1,def,psbt-hex';
+
+        // Act
+        final result = actionRepository.fromString(encodedString);
+
+        // Assert
+        expect(result.isLeft(), true);
+        result.match(
+          (l) => expect(l, 'Failed to parse action'),
+          (r) => fail('Expected Left but got Right: $r'),
         );
       });
     });

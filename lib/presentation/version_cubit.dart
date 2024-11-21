@@ -5,8 +5,7 @@ class VersionCubitState {
   final Version latest;
   final Version current;
 
-  const VersionCubitState(
-      {required this.latest,  required this.current});
+  const VersionCubitState({required this.latest, required this.current});
 }
 
 class VersionCubit extends Cubit<VersionCubitState> {
