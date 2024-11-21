@@ -64,12 +64,13 @@ async function rpcGetAddresses(requestId, port) {
   });
 }
 
-async function rpcSignPsbt(requestId, port, psbt) {
+async function rpcSignPsbt(requestId, port, hex, signInputs) {
   const origin = getOriginFromPort(port);
   const tabId = getTabIdFromPort(port);
+  const encodedSignInputs = encodeURIComponent(JSON.stringify(signInputs));
 
   const window = await popup({
-    url: `/index.html#?action=signPsbt:ext,${tabId},${requestId},${psbt}`,
+    url: `/index.html#?action=signPsbt:ext,${tabId},${requestId},${hex},${encodedSignInputs}`,
   });
 
   listenForPopupClose({
@@ -103,7 +104,12 @@ async function rpcMessageHandler(message, port) {
       await rpcGetAddresses(message["id"], port);
       break;
     case "signPsbt":
-      await rpcSignPsbt(message["id"], port, message["params"]["hex"]);
+      await rpcSignPsbt(
+        message["id"],
+        port,
+        message["params"]["hex"],
+        message["params"]["signInputs"],
+      );
       break;
     case "fairmint":
       await rpcFairmint(message["params"]["fairminterTxHash"]);
@@ -117,11 +123,9 @@ async function rpcMessageHandler(message, port) {
 }
 
 chrome.runtime.onConnect.addListener((port) => {
-
   if (port.name !== CONTENT_SCRIPT_PORT) return;
 
   port.onMessage.addListener((event) => {
-
     if (!port.sender?.tab?.id) {
       console.warn("Received message from content script with no tab ID");
       return;

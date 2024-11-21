@@ -1,3 +1,4 @@
+import "dart:convert";
 import "package:horizon/domain/repositories/action_repository.dart";
 import "package:horizon/domain/entities/action.dart";
 import "package:fpdart/fpdart.dart";
@@ -39,8 +40,15 @@ class ActionRepositoryImpl implements ActionRepository {
       ["getAddresses:ext", String tabId, String requestId] =>
         RPCGetAddressesAction(
             int.tryParse(tabId)!, requestId), // TODO:be more paranoid
-      ["signPsbt:ext", String tabId, String requestId, String psbt] =>
-        RPCSignPsbtAction(int.tryParse(tabId)!, requestId, psbt),
+      [
+        "signPsbt:ext",
+        String tabId,
+        String requestId,
+        String psbt,
+        String signInputs
+      ] =>
+        RPCSignPsbtAction(int.tryParse(tabId)!, requestId, psbt,
+            _parseSignInputs(signInputs)),
       _ => throw Exception()
     };
   }
@@ -53,5 +61,23 @@ class ActionRepositoryImpl implements ActionRepository {
   @override
   Option<Action> dequeue() {
     return Option.fromNullable(_currentAction);
+  }
+
+  Map<String, List<int>> _parseSignInputs(String signInputsStr) {
+    try {
+      final decoded = Uri.decodeComponent(signInputsStr);
+      final jsonMap = json.decode(decoded) as Map<String, dynamic>;
+
+      // Convert to Map<String, List<int>>
+      return jsonMap.map((key, value) {
+        if (value is List) {
+          return MapEntry(key, value.cast<int>());
+        } else {
+          throw FormatException("Invalid signInputs format");
+        }
+      });
+    } catch (e) {
+      throw FormatException("Failed to parse signInputs: $e");
+    }
   }
 }
