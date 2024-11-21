@@ -1285,7 +1285,6 @@ class DashboardPageState extends State<DashboardPage> {
         requestId: var requestId,
         psbt: var psbt,
         signInputs: var signInputs
-             
       ) =>
         () => _handleRPCSignPsbtAction(tabId, requestId, psbt, signInputs),
       _ => noop

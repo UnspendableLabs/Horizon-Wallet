@@ -31,7 +31,6 @@ class VersionRepositoryExtensionImpl implements VersionRepository {
   }
 
   Future<VersionInfo> _get() async {
-
     if (_cache != null) {
       return _cache!;
     }

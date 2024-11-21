@@ -2,7 +2,6 @@ import "package:fpdart/fpdart.dart";
 import 'package:formz/formz.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import 'package:horizon/common/fn.dart';
 import 'package:horizon/domain/entities/wallet.dart';
 import 'package:horizon/domain/entities/unified_address.dart';
 import 'package:horizon/domain/entities/address.dart';
