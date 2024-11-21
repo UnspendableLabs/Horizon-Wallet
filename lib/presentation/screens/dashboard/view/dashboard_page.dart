@@ -16,6 +16,7 @@ import 'package:horizon/domain/repositories/account_settings_repository.dart';
 import 'package:horizon/domain/repositories/action_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/imported_address_repository.dart';
+import 'package:horizon/domain/repositories/unified_address_repository.dart';
 import 'package:horizon/domain/repositories/address_tx_repository.dart';
 import 'package:horizon/domain/repositories/asset_repository.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
@@ -64,6 +65,7 @@ import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/entities/extension_rpc.dart';
+import 'package:horizon/domain/services/imported_address_service.dart';
 
 class SignPsbtModal extends StatelessWidget {
   final int tabId;
@@ -74,6 +76,10 @@ class SignPsbtModal extends StatelessWidget {
   final EncryptionService encryptionService;
   final AddressService addressService;
   final RPCSignPsbtSuccessCallback onSuccess;
+  final Map<String, List<int>> signInputs;
+  final ImportedAddressService importedAddressService;
+  final UnifiedAddressRepository addressRepository;
+  final AccountRepository accountRepository;
 
   const SignPsbtModal(
       {super.key,
@@ -84,17 +90,25 @@ class SignPsbtModal extends StatelessWidget {
       required this.addressService,
       required this.tabId,
       required this.requestId,
-      required this.onSuccess});
+      required this.onSuccess,
+      required this.signInputs,
+      required this.importedAddressService,
+      required this.addressRepository,
+      required this.accountRepository});
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (_) => SignPsbtBloc(
+        addressRepository: addressRepository,
+        importedAddressService: importedAddressService,
+        signInputs: signInputs,
         unsignedPsbt: unsignedPsbt,
         transactionService: transactionService,
         walletRepository: walletRepository,
         encryptionService: encryptionService,
         addressService: addressService,
+        accountRepository: accountRepository,
       ),
       child: SignPsbtForm(
         key: Key(unsignedPsbt),
@@ -1269,9 +1283,11 @@ class DashboardPageState extends State<DashboardPage> {
       URLAction.RPCSignPsbtAction(
         tabId: var tabId,
         requestId: var requestId,
-        psbt: var psbt
+        psbt: var psbt,
+        signInputs: var signInputs
+             
       ) =>
-        () => _handleRPCSignPsbtAction(tabId, requestId, psbt),
+        () => _handleRPCSignPsbtAction(tabId, requestId, psbt, signInputs),
       _ => noop
     };
   }
@@ -1362,7 +1378,8 @@ class DashboardPageState extends State<DashboardPage> {
         ));
   }
 
-  void _handleRPCSignPsbtAction(int tabId, String requestId, String psbt) {
+  void _handleRPCSignPsbtAction(int tabId, String requestId, String psbt,
+      Map<String, List<int>> signInputs) {
     HorizonUI.HorizonDialog.show(
         context: context,
         body: HorizonUI.HorizonDialog(
@@ -1371,6 +1388,10 @@ class DashboardPageState extends State<DashboardPage> {
               tabId: tabId,
               requestId: requestId,
               unsignedPsbt: psbt,
+              signInputs: signInputs,
+              accountRepository: GetIt.I<AccountRepository>(),
+              addressRepository: GetIt.I<UnifiedAddressRepository>(),
+              importedAddressService: GetIt.I.get<ImportedAddressService>(),
               transactionService: GetIt.I.get<TransactionService>(),
               walletRepository: GetIt.I.get<WalletRepository>(),
               encryptionService: GetIt.I.get<EncryptionService>(),

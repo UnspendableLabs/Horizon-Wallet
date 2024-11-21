@@ -73,7 +73,7 @@ class ActionRepositoryImpl implements ActionRepository {
         if (value is List) {
           return MapEntry(key, value.cast<int>());
         } else {
-          throw FormatException("Invalid signInputs format");
+          throw const FormatException("Invalid signInputs format");
         }
       });
     } catch (e) {

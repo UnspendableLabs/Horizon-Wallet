@@ -86,6 +86,9 @@ import 'package:horizon/data/sources/repositories/fee_estimates_repository_mempo
 import 'package:horizon/data/sources/network/esplora_client.dart';
 import 'package:horizon/data/sources/network/mempool_space_client.dart';
 
+import 'package:horizon/domain/repositories/unified_address_repository.dart';
+import 'package:horizon/data/sources/repositories/unified_address_repository_impl.dart';
+
 import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/data/services/analytics_service_impl.dart';
 import 'package:horizon/presentation/common/usecase/import_wallet_usecase.dart';
@@ -295,6 +298,13 @@ Future<void> setup() async {
   injector.registerSingleton<ImportedAddressRepository>(
       ImportedAddressRepositoryImpl(injector.get<DatabaseManager>().database));
 
+  injector.registerSingleton<UnifiedAddressRepository>(
+    UnifiedAddressRepositoryImpl(
+      addressRepository: GetIt.I.get<AddressRepository>(),
+      importedAddressRepository: GetIt.I.get<ImportedAddressRepository>(),
+    ),
+  );
+
   injector.registerSingleton<OrderRepository>(
       OrderRepositoryImpl(api: GetIt.I.get<V2Api>()));
 
@@ -450,7 +460,7 @@ Future<void> setup() async {
                 null,
               );
 
-              Future.delayed(const Duration(seconds: 1), html.window.close);
+              Future.delayed(const Duration(seconds: 2), html.window.close);
             }
           : (args) => GetIt.I<Logger>().debug("""
                RPCGetAddressesSuccessCallback called with:
@@ -468,7 +478,7 @@ Future<void> setup() async {
                 null,
               );
 
-              Future.delayed(const Duration(seconds: 1), html.window.close);
+              Future.delayed(const Duration(seconds: 2), html.window.close);
             }
           : (args) => GetIt.I<Logger>().debug("""
                RPCGetSignPsbtSuccessCallback called with:
