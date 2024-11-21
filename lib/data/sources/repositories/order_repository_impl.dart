@@ -27,12 +27,8 @@ class OrderRepositoryImpl implements OrderRepository {
     final List<e.Order> orders = [];
 
     while (true) {
-      final response = await api.getOrdersByAddressVerbose(
-          address,
-          status,
-          true, // include unconfirmed
-          cursor,
-          limit);
+      final response =
+          await api.getOrdersByAddressVerbose(address, status, cursor, limit);
       final result = response.result ?? [];
 
       orders.addAll(result.map((order) => order.toDomain()));
