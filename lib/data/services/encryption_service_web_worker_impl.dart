@@ -88,7 +88,6 @@ class EncryptionServiceWebWorkerImpl implements EncryptionService {
       }
     } else {
       throw Exception('Web Worker not supported');
-    
     }
   }
 

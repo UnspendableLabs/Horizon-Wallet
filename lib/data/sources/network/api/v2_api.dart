@@ -4022,6 +4022,12 @@ abstract class V2Api {
     @Query("limit") int? limit,
   ]);
 
+  @GET("/utxos/{utxo}/balances?verbose=true")
+  Future<Response<List<BalanceVerbose>>> getBalancesByUTXO(
+    @Path("utxo") String utxo, [
+    @Query("cursor") CursorModel? cursor,
+    @Query("limit") int? limit,
+  ]);
   // Counterparty API Root
   // Blocks
   //     Get Blocks

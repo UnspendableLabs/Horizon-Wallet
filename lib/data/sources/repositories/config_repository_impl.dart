@@ -22,7 +22,7 @@ class ConfigImpl implements Config {
 
   String get _defaultCounterpartyApiBase => switch (network) {
         Network.mainnet => 'https://api.unspendablelabs.com:4000/v2',
-        Network.testnet => 'https://api.counterparty.io:14000/v2',
+        Network.testnet => 'http://localhost:14000/v2',
         Network.regtest => 'http://localhost:24000/v2'
       };
 

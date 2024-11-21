@@ -268,7 +268,8 @@ class TransactionServiceImpl implements TransactionService {
         psbt.addInput(input);
         usedTxIds.add(txHash);
       } else {
-        throw Exception('Invariant: No utxo found for txHash: $txHash');
+        throw TransactionServiceException(
+            'Insufficient funds: no utxos available');
       }
     }
 
@@ -299,7 +300,7 @@ class TransactionServiceImpl implements TransactionService {
 
     // if we don't have enough inputs to cover the btc + fee value, throw an error
     if (inputSetValue < targetValue) {
-      throw Exception(
+      throw TransactionServiceException(
           'Insufficient funds: available $inputSetValue, needed $targetValue');
     }
 

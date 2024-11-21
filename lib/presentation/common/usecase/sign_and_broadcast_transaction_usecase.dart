@@ -107,10 +107,12 @@ class SignAndBroadcastTransactionUseCase<R extends ComposeResponse> {
         final String errorMessage = 'Failed to broadcast the transaction: $e';
         throw SignAndBroadcastTransactionException(errorMessage);
       }
+    } on SignAndBroadcastTransactionException catch (e) {
+      onError(e.message);
+    } on TransactionServiceException catch (e) {
+      onError(e.message);
     } catch (e) {
-      onError(e is SignAndBroadcastTransactionException
-          ? e.message
-          : 'An unexpected error occurred.');
+      onError('An unexpected error occurred.');
     }
   }
 

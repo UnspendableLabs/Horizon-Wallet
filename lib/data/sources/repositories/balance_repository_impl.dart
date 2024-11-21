@@ -154,4 +154,30 @@ class BalanceRepositoryImpl implements BalanceRepository {
     }
     return entityBalances;
   }
+
+  @override
+  Future<List<b.Balance>> getBalancesForUTXO(String utxo) async {
+    final response = await api.getBalancesByUTXO(utxo);
+    final balances = response.result;
+    if (balances == null) {
+      throw Exception('Failed to get balances for $utxo');
+    }
+    final List<b.Balance> entityBalances = [];
+    for (var balance in balances) {
+      entityBalances.add(b.Balance(
+        address: balance.address,
+        quantity: balance.quantity.toInt(),
+        quantityNormalized: balance.quantityNormalized,
+        asset: balance.asset,
+        utxo: utxo,
+        utxoAddress: balance.utxoAddress,
+        assetInfo: ai.AssetInfo(
+          assetLongname: balance.assetInfo.assetLongname,
+          description: balance.assetInfo.description,
+          divisible: balance.assetInfo.divisible,
+        ),
+      ));
+    }
+    return entityBalances;
+  }
 }

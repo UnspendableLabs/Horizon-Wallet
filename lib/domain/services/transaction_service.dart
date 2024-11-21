@@ -35,3 +35,8 @@ abstract class TransactionService {
       required String destinationPrivKey,
       required int fee});
 }
+
+class TransactionServiceException implements Exception {
+  final String message;
+  TransactionServiceException(this.message);
+}

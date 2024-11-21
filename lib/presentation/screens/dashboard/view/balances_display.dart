@@ -203,11 +203,6 @@ class BalancesSliverState extends State<BalancesSliver> {
           ...entries,
         ];
 
-        final ownedAssetsNotIncludedInEntries = ownedAssets
-            .where((asset) =>
-                !orderedEntries.any((entry) => entry.key == asset.asset))
-            .toList();
-
         final fairminterAssets =
             fairminters.map((fairminter) => fairminter.asset!).toList();
 
@@ -253,27 +248,13 @@ class BalancesSliverState extends State<BalancesSliver> {
           );
         }).toList();
 
-        final ownedAssetRows = ownedAssetsNotIncludedInEntries
-            .where((asset) => _matchesSearch(asset.asset, asset.assetLongname))
-            .map((asset) {
-          final textColor = widget.isDarkTheme
-              ? darkThemeAssetLinkColor
-              : lightThemeAssetLinkColor;
-          return TableRow(
-            children: [
-              _buildTableCell1(
-                  asset.asset, asset.assetLongname, true, textColor),
-              _buildTableCell2(asset.divisible == true ? '0.00000000' : '0',
-                  textColor), // these are zero balances
-              _buildTableCell3(asset.asset, textColor, true, asset, 0,
-                  fairminterAssets, null, null)
-            ],
-          );
-        }).toList();
-
         final utxoRows = utxoBalances
             .where((balance) =>
                 _matchesSearch(balance.asset, balance.assetInfo.assetLongname))
+            .where((balance) => (widget.showOwnedOnly
+                ? _isOwned(ownedAssets
+                    .firstWhereOrNull((asset) => asset.asset == balance.asset))
+                : true))
             .map((balance) {
           final textColor = widget.isDarkTheme
               ? darkThemeAssetLinkColor
@@ -298,6 +279,31 @@ class BalancesSliverState extends State<BalancesSliver> {
                 balance.utxo,
                 balance.utxoAddress)
           ]);
+        }).toList();
+
+        final ownedAssetsNotIncludedInEntries = ownedAssets
+            .where((asset) =>
+                !orderedEntries.any((entry) => entry.key == asset.asset))
+            .where((asset) =>
+                !utxoBalances.any((balance) => balance.asset == asset.asset))
+            .toList();
+
+        final ownedAssetRows = ownedAssetsNotIncludedInEntries
+            .where((asset) => _matchesSearch(asset.asset, asset.assetLongname))
+            .map((asset) {
+          final textColor = widget.isDarkTheme
+              ? darkThemeAssetLinkColor
+              : lightThemeAssetLinkColor;
+          return TableRow(
+            children: [
+              _buildTableCell1(
+                  asset.asset, asset.assetLongname, true, textColor),
+              _buildTableCell2(asset.divisible == true ? '0.00000000' : '0',
+                  textColor), // these are zero balances
+              _buildTableCell3(asset.asset, textColor, true, asset, 0,
+                  fairminterAssets, null, null)
+            ],
+          );
         }).toList();
 
         if (widget.showUtxoOnly) {

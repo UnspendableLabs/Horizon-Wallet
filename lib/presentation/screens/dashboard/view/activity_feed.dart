@@ -327,22 +327,21 @@ class ActivityFeedListItem extends StatelessWidget {
       ) =>
         SelectableText(
             "Issue ${unpackedData.quantityNormalized} ${unpackedData.asset}"),
-      TransactionInfoDispense(
-        unpackedData: var unpackedData,
-      ) =>
-        const SelectableText("Trigger Dispense"),
-      // btc send
       TransactionInfo(btcAmount: var btcAmount)
           when btcAmount != null && btcAmount > 0 =>
         SendTitle(
           quantityNormalized: satoshisToBtc(btcAmount).toStringAsFixed(8),
           asset: 'BTC',
         ),
+      TransactionInfoDispense(
+        unpackedData: var unpackedData,
+      ) =>
+        const SelectableText("Trigger Dispense"),
+      // btc send
       TransactionInfoDispenser(
         unpackedData: var unpackedData,
       ) =>
         SelectableText("Open or Update Dispenser for ${unpackedData.asset}"),
-      TransactionInfoDispense() => const SelectableText("Trigger Dispense"),
       TransactionInfoFairmint(
         unpackedData: var unpackedData,
       ) =>
