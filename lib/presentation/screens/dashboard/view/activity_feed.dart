@@ -235,9 +235,9 @@ class ActivityFeedListItem extends StatelessWidget {
       VerboseNewFairminterEvent(params: var params) =>
         _buildNewFairminterTitle(params),
       VerboseAttachToUtxoEvent(params: var params) => SelectableText(
-          "Attach to UTXO ${params.asset} ${params.quantityNormalized} ${params.destination}"),
+          "Attach to UTXO ${params.asset} ${params.quantityNormalized}"),
       VerboseDetachFromUtxoEvent(params: var params) => SelectableText(
-          "Detach from UTXO ${params.asset} ${params.quantityNormalized} ${params.destination}"),
+          "Detach from UTXO ${params.asset} ${params.quantityNormalized}"),
       _ => SelectableText(
           'Invariant: title unsupported event type: ${event.runtimeType}'),
     };

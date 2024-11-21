@@ -286,8 +286,10 @@ void main() {
       );
 
       // Assert
-      expect(result,
-          (mockComposeResponse, const VirtualSize(virtualSize, adjustedVirtualSize)));
+      expect(result, (
+        mockComposeResponse,
+        const VirtualSize(virtualSize, adjustedVirtualSize)
+      ));
 
       // Verify that getUnspentForAddress was called once
       verify(() => mockUtxoRepository.getUnspentForAddress(source)).called(1);

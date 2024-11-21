@@ -7,6 +7,7 @@ import 'package:horizon/data/models/compose_attach_utxo.dart';
 import 'package:horizon/data/models/compose_detach_utxo.dart';
 import 'package:horizon/data/models/compose_fairmint.dart';
 import 'package:horizon/data/models/compose_fairminter.dart';
+import 'package:horizon/data/models/compose_movetoutxo.dart';
 import 'package:horizon/data/models/compose_order.dart';
 import 'package:horizon/data/models/compose_cancel.dart';
 import 'package:horizon/data/models/cursor.dart';
@@ -4462,6 +4463,17 @@ abstract class V2Api {
 
   @GET("/utxos/{utxo}/compose/detach?verbose=true")
   Future<Response<ComposeDetachUtxoResponseModel>> composeDetachUtxo(
+    @Path("utxo") String utxo, [
+    @Query("destination") String? destination,
+    @Query("skip_validation") bool? skipValidation,
+    @Query("allow_unconfirmed_inputs") bool? allowUnconfirmedInputs,
+    @Query("exact_fee") int? exactFee,
+    @Query("inputs_set") String? inputsSet,
+    @Query("unconfirmed") bool? unconfirmed,
+  ]);
+
+  @GET("/utxos/{utxo}/compose/movetoutxo?verbose=true")
+  Future<Response<ComposeMoveToUtxoResponseModel>> composeMoveToUtxo(
     @Path("utxo") String utxo, [
     @Query("destination") String? destination,
     @Query("skip_validation") bool? skipValidation,

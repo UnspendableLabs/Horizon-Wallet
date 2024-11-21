@@ -4,6 +4,7 @@ import 'package:horizon/domain/entities/compose_detach_utxo.dart';
 import 'package:horizon/domain/entities/compose_fairmint.dart';
 import 'package:horizon/domain/entities/compose_fairminter.dart';
 import 'package:horizon/domain/entities/compose_issuance.dart';
+import 'package:horizon/domain/entities/compose_movetoutxo.dart';
 import 'package:horizon/domain/entities/compose_send.dart';
 import 'package:horizon/domain/entities/compose_dispenser.dart';
 import 'package:horizon/domain/entities/compose_dispense.dart';
@@ -44,4 +45,7 @@ abstract class ComposeRepository {
 
   Future<ComposeDetachUtxoResponse> composeDetachUtxo(
       int fee, List<Utxo> inputsSet, ComposeDetachUtxoParams params);
+
+  Future<ComposeMoveToUtxoResponse> composeMoveToUtxo(
+      int fee, List<Utxo> inputsSet, ComposeMoveToUtxoParams params);
 }
