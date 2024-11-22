@@ -5,7 +5,6 @@ import "./compose_fn.dart";
 class ComposeMoveToUtxoParams extends ComposeParams {
   final String utxo;
   final String destination;
-
   ComposeMoveToUtxoParams({
     required this.utxo,
     required this.destination,

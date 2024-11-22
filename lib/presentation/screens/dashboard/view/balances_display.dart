@@ -10,6 +10,7 @@ import 'package:horizon/presentation/common/colors.dart';
 import 'package:horizon/presentation/common/no_data.dart';
 import 'package:horizon/presentation/screens/compose_attach_utxo/view/compose_attach_utxo_page.dart';
 import 'package:horizon/presentation/screens/compose_detach_utxo/view/compose_detach_utxo_page.dart';
+import 'package:horizon/presentation/screens/compose_movetoutxo/view/compose_movetoutxo_page.dart';
 import 'package:horizon/presentation/screens/compose_send/view/compose_send_page.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_bloc.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_state.dart';
@@ -481,35 +482,105 @@ class BalancesSliverState extends State<BalancesSliver> {
                                     context),
                             currentAddress: widget.currentAddress,
                             assetName: assetName),
+                        includeBackButton: false,
+                        includeCloseButton: true,
+                        onBackButtonPressed: () {
+                          Navigator.of(context).pop();
+                        },
                       ),
                     );
                   },
                   icon: const Icon(Icons.attach_file, size: 16.0),
                 ),
               ),
-            if (utxoAddress != null)
-              SizedBox(
-                width: 32,
-                height: 32,
-                child: IconButton(
-                  padding: EdgeInsets.zero,
-                  onPressed: () {
+            // if (utxoAddress != null)
+            //   SizedBox(
+            //     width: 32,
+            //     height: 32,
+            //     child: IconButton(
+            //       padding: EdgeInsets.zero,
+            //       onPressed: () {
+            //         HorizonUI.HorizonDialog.show(
+            //           context: context,
+            //           body: HorizonUI.HorizonDialog(
+            //             title: 'Detach UTXO',
+            //             body: ComposeDetachUtxoPageWrapper(
+            //                 dashboardActivityFeedBloc:
+            //                     BlocProvider.of<DashboardActivityFeedBloc>(
+            //                         context),
+            //                 currentAddress: widget.currentAddress,
+            //                 assetName: assetName,
+            //                 utxo: utxo!,
+            //             ),
+            //             includeBackButton: false,
+            //             includeCloseButton: true,
+            //             onBackButtonPressed: () {
+            //               Navigator.of(context).pop();
+            //             },
+            //           ),
+            //         );
+            //       },
+            //       icon: const Icon(Icons.link_off, size: 16.0),
+            //     ),
+            //   ),
+            if (utxo != null)
+              PopupMenuButton<String>(
+                padding: EdgeInsets.zero,
+                iconSize: 16.0,
+                icon: const Icon(Icons.link_off),
+                onSelected: (String result) {
+                  if (result == 'move') {
+                    HorizonUI.HorizonDialog.show(
+                      context: context,
+                      body: HorizonUI.HorizonDialog(
+                        title: "Move to Address",
+                        body: ComposeMoveToUtxoPageWrapper(
+                          dashboardActivityFeedBloc:
+                              BlocProvider.of<DashboardActivityFeedBloc>(
+                                  context),
+                          currentAddress: widget.currentAddress,
+                          assetName: assetName,
+                          utxo: utxo,
+                        ),
+                        includeBackButton: false,
+                        includeCloseButton: true,
+                        onBackButtonPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                      ),
+                    );
+                  } else if (result == 'detach') {
                     HorizonUI.HorizonDialog.show(
                       context: context,
                       body: HorizonUI.HorizonDialog(
                         title: 'Detach UTXO',
                         body: ComposeDetachUtxoPageWrapper(
-                            dashboardActivityFeedBloc:
-                                BlocProvider.of<DashboardActivityFeedBloc>(
-                                    context),
-                            currentAddress: widget.currentAddress,
-                            assetName: assetName,
-                            utxo: utxo!),
+                          dashboardActivityFeedBloc:
+                              BlocProvider.of<DashboardActivityFeedBloc>(
+                                  context),
+                          currentAddress: widget.currentAddress,
+                          assetName: assetName,
+                          utxo: utxo,
+                        ),
+                        includeBackButton: false,
+                        includeCloseButton: true,
+                        onBackButtonPressed: () {
+                          Navigator.of(context).pop();
+                        },
                       ),
                     );
-                  },
-                  icon: const Icon(Icons.link_off, size: 16.0),
-                ),
+                  }
+                },
+                itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                  const PopupMenuItem<String>(
+                    value: 'detach',
+                    child: Text('Detach from UTXO'),
+                  ),
+                  const PopupMenuItem<String>(
+                    value: 'move',
+                    child: Text('Move to UTXO'),
+                  ),
+                ],
               ),
             if (quantity > 0)
               SizedBox(
