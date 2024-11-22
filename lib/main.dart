@@ -123,16 +123,16 @@ class LoadingScreen extends StatelessWidget {
       );
 }
 
-class VersionUpgradeWarning extends StatefulWidget {
+class VersionWarningSnackbar extends StatefulWidget {
   final Widget child;
 
-  const VersionUpgradeWarning({required this.child, super.key});
+  const VersionWarningSnackbar({required this.child, super.key});
 
   @override
-  VersionUpgradeWarningState createState() => VersionUpgradeWarningState();
+  VersionWarningState createState() => VersionWarningState();
 }
 
-class VersionUpgradeWarningState extends State<VersionUpgradeWarning> {
+class VersionWarningState extends State<VersionWarningSnackbar> {
   bool _hasShownSnackbar = false;
 
   @override
@@ -142,6 +142,33 @@ class VersionUpgradeWarningState extends State<VersionUpgradeWarning> {
     final versionInfo = context
         .read<VersionCubit>()
         .state; // we should only ever get to this page if shell is success
+
+    if (!_hasShownSnackbar && versionInfo.warning != null) {
+      switch (versionInfo.warning!) {
+        case NewVersionAvailable():
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                  content: Text(
+                'There is a new version of Horizon Wallet: ${versionInfo.latest}.  Your version is ${versionInfo.current} ',
+              )),
+            );
+            _hasShownSnackbar = true;
+          });
+          break;
+        case VersionServiceUnreachable():
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                  content: Text(
+                'Version service unreachable.  Horizon Wallet may be out of date. Your version is ${versionInfo.current} ',
+              )),
+            );
+            _hasShownSnackbar = true;
+          });
+          break;
+      }
+    }
 
     if (!_hasShownSnackbar && versionInfo.current < versionInfo.latest) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -254,7 +281,7 @@ class AppRouter {
                             }
                             return Scaffold(
                                 bottomNavigationBar: const Footer(),
-                                body: VersionUpgradeWarning(
+                                body: VersionWarningSnackbar(
                                     child: DashboardPageWrapper(key: key)));
                           },
                           orElse: () => const SizedBox.shrink(),
@@ -362,12 +389,11 @@ void main() {
     final versionInfo = GetIt.I<VersionRepository>().get();
 
     versionInfo.match((failure) {
-      runApp(const MaterialApp(
-          home: Scaffold(
-        body: Center(
-          child: Text("Error fetching supported version info"),
-        ),
-      )));
+      runApp(MyApp(
+        currentVersion: version,
+        latestVersion: version,
+        warning: VersionServiceUnreachable(),
+      ));
     }, (versionInfo) {
       if (version < versionInfo.min) {
         runApp(MaterialApp(
@@ -395,6 +421,12 @@ void main() {
                       )),
                 ])),
           ),
+        ));
+      } else if (version < versionInfo.latest) {
+        runApp(MyApp(
+          currentVersion: version,
+          latestVersion: versionInfo.latest,
+          warning: NewVersionAvailable(),
         ));
       } else {
         runApp(MyApp(
@@ -425,10 +457,12 @@ Future<ValueNotifier<Color>> initSettings() async {
 class MyApp extends StatelessWidget {
   final Version currentVersion;
   final Version latestVersion;
+  final VersionWarning? warning;
 
   MyApp({
     required this.currentVersion,
     required this.latestVersion,
+    this.warning,
     super.key,
   });
 
@@ -677,6 +711,7 @@ class MyApp extends StatelessWidget {
           create: (context) => VersionCubit(VersionCubitState(
             latest: latestVersion,
             current: currentVersion,
+            warning: warning,
           )),
         ),
         BlocProvider<ShellStateCubit>(
