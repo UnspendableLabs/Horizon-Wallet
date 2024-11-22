@@ -845,6 +845,7 @@ void main() {
   group("LoadQuiet", () {
     late List<MockTransactionInfo> mockedLocal;
     late List<MockEvent> mockedRemote;
+    late List<VerboseEvent> mockedMempool;
 
     blocTest<DashboardActivityFeedBloc, DashboardActivityFeedState>(
         "returns new transactions count = all txs above the most recent remote hash",
@@ -873,10 +874,13 @@ void main() {
           final mockEventsRepository = MockEventsRepository();
 
           mockedRemote = MockEventFactory.createMultiple([
-            ("0004", EventStateMempool(), null),
             ("0005", EventStateConfirmed(blockHeight: 1, blockTime: 1), 1),
-            ("0002", EventStateMempool(), null),
             ("0003", EventStateConfirmed(blockHeight: 1, blockTime: 1), 1),
+          ]);
+
+          mockedMempool = MockEventFactory.createMultiple([
+            ("0004", EventStateMempool(), null),
+            ("0002", EventStateMempool(), null),
           ]);
 
           // `LoadMore`
@@ -887,6 +891,12 @@ void main() {
                 limit: 10,
                 whitelist: DEFAULT_WHITELIST,
               )).thenAnswer((_) async => (mockedRemote, null, null));
+
+          when(() => mockEventsRepository.getMempoolEventsByAddressVerbose(
+                address: "0x123",
+                whitelist: DEFAULT_WHITELIST,
+              )).thenAnswer((_) async => (mockedMempool, cursor, 0));
+
           return DashboardActivityFeedBloc(
               logger: LoggerFake(),
               pageSize: 10,
@@ -901,11 +911,11 @@ void main() {
                 ActivityFeedItem(
                     id: "0001", hash: "0001", info: mockedLocal[0]),
                 ActivityFeedItem(
-                    id: "0002", hash: "0002", event: mockedRemote[2]),
+                    id: "0002", hash: "0002", event: mockedMempool[1]),
                 ActivityFeedItem(
                     id: "0003",
                     hash: "0003",
-                    event: mockedRemote[3],
+                    event: mockedRemote[1],
                     confirmations: 100),
               ],
               newTransactionCount: 0,
@@ -964,10 +974,8 @@ void main() {
 
           when(() => mockTransactionLocalRepository.getAllByAccount("123"))
               .thenAnswer((_) async => mockedLocal);
-
           final mockEventsRepository = MockEventsRepository();
           mockedRemote = MockEventFactory.createMultiple([
-            ("0001", EventStateMempool(), null),
             (
               "0002",
               EventStateConfirmed(
@@ -975,6 +983,10 @@ void main() {
                   blockTime: DateTime.now().toIntDividedBy1000()),
               1
             ),
+          ]);
+
+          mockedMempool = MockEventFactory.createMultiple([
+            ("0001", EventStateMempool(), null),
           ]);
 
           // `LoadMore`
@@ -985,6 +997,10 @@ void main() {
                 limit: 10,
                 whitelist: DEFAULT_WHITELIST,
               )).thenAnswer((_) async => (mockedRemote, null, null));
+          when(() => mockEventsRepository.getMempoolEventsByAddressVerbose(
+                address: "0x123",
+                whitelist: DEFAULT_WHITELIST,
+              )).thenAnswer((_) async => (mockedMempool, cursor, 0));
 
           return DashboardActivityFeedBloc(
               logger: LoggerFake(),
@@ -1002,7 +1018,7 @@ void main() {
                 ActivityFeedItem(
                     id: "0002",
                     hash: "0002",
-                    event: mockedRemote[1],
+                    event: mockedMempool[0],
                     confirmations: 100),
               ],
               newTransactionCount: 0,
@@ -1085,6 +1101,8 @@ void main() {
             ),
           ]);
 
+          mockedMempool = MockEventFactory.createMultiple([]);
+
           // `LoadMore`
           when(() => mockEventsRepository.getByAddressVerbose(
                 unconfirmed: true,
@@ -1093,6 +1111,11 @@ void main() {
                 limit: 10,
                 whitelist: DEFAULT_WHITELIST,
               )).thenAnswer((_) async => (mockedRemote, null, null));
+
+          when(() => mockEventsRepository.getMempoolEventsByAddressVerbose(
+                address: "0x123",
+                whitelist: DEFAULT_WHITELIST,
+              )).thenAnswer((_) async => (mockedMempool, cursor, 0));
 
           return DashboardActivityFeedBloc(
               logger: LoggerFake(),
