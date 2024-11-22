@@ -64,5 +64,6 @@ class RPCSignPsbtAction extends RPCAction {
   @override
   CallerType get caller => CallerType.extension;
   final String psbt;
-  RPCSignPsbtAction(super.tabId, super.requestId, this.psbt);
+  final Map<String, List<int>> signInputs;
+  RPCSignPsbtAction(super.tabId, super.requestId, this.psbt, this.signInputs);
 }

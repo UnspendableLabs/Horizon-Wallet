@@ -4275,7 +4275,6 @@ abstract class V2Api {
   Future<Response<List<OrderVerbose>>> getOrdersByAddressVerbose(
     @Path("address") String address, [
     @Query("status") String? status,
-    @Query("show_unconfirmed") bool? showUnconfirmed,
     @Query("cursor") CursorModel? cursor,
     @Query("limit") int? limit,
     @Query("offset") int? offset,
@@ -4283,7 +4282,6 @@ abstract class V2Api {
 
   @GET("/fairminters?verbose=true")
   Future<Response<List<FairminterModel>>> getAllFairminters([
-    @Query("show_unconfirmed") bool? showUnconfirmed,
     @Query("cursor") CursorModel? cursor,
     @Query("limit") int? limit,
     @Query("offset") int? offset,
@@ -4293,7 +4291,6 @@ abstract class V2Api {
   Future<Response<List<FairminterModel>>> getFairmintersByAddress(
     @Path("address") String address, [
     @Query("status") String? status,
-    @Query("show_unconfirmed") bool? showUnconfirmed,
     @Query("cursor") CursorModel? cursor,
     @Query("limit") int? limit,
     @Query("offset") int? offset,
@@ -4371,7 +4368,6 @@ abstract class V2Api {
     @Query("status") String? status,
     @Query("limit") int? limit,
     @Query("cursor") CursorModel? cursor,
-    @Query("show_unconfirmed") bool? showUnconfirmed,
   ]);
 
   @GET("/addresses/{address}/compose/dispense?verbose=true")
@@ -4399,7 +4395,6 @@ abstract class V2Api {
     @Query("cursor") CursorModel? cursor,
     @Query("limit") int? limit,
     @Query("offset") int? offset,
-    @Query("show_unconfirmed") bool? showUnconfirmed,
   ]);
 
   @GET("/addresses/{address}/assets/owned?verbose=true")
@@ -4409,7 +4404,6 @@ abstract class V2Api {
     @Query("cursor") CursorModel? cursor,
     @Query("limit") int? limit,
     @Query("offset") int? offset,
-    @Query("show_unconfirmed") bool? showUnconfirmed,
   ]);
 
   // @Verbose()
@@ -4418,7 +4412,6 @@ abstract class V2Api {
     @Query("addresses") String addresses, [
     @Query("cursor") CursorModel? cursor,
     @Query("limit") int? limit,
-    @Query("show_unconfirmed") bool? showUnconfirmed,
   ]);
 
   @GET("/addresses/events")
@@ -4426,7 +4419,6 @@ abstract class V2Api {
     @Query("addresses") String addresses, [
     @Query("cursor") CursorModel? cursor,
     @Query("limit") int? limit,
-    @Query("show_unconfirmed") bool? showUnconfirmed,
     @Query("event_name") String? eventName,
   ]);
 
@@ -4436,7 +4428,6 @@ abstract class V2Api {
     @Query("addresses") String addresses, [
     @Query("cursor") CursorModel? cursor,
     @Query("limit") int? limit,
-    @Query("show_unconfirmed") bool? showUnconfirmed,
     @Query("event_name") String? eventName,
   ]);
 

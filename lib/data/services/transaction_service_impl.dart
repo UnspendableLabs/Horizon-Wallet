@@ -36,23 +36,26 @@ class TransactionServiceImpl implements TransactionService {
   TransactionServiceImpl({required this.config});
 
   @override
-  String signPsbt(String psbtHex, String privateKey) {
+  String signPsbt(String psbtHex, Map<int, String> inputPrivateKeyMap) {
     // We assume segwit for now
+    final sigHashTypes = [
+      (SIGHASH_SINGLE | SIGHASH_ANYONECANPAY).toJS,
+      (SIGHASH_ALL | SIGHASH_ANYONECANPAY).toJS
+    ].toJS;
+
     bitcoinjs.Psbt psbt = bitcoinjs.Psbt.fromHex(psbtHex);
 
-    Buffer privKeyJS =
-        Buffer.from(Uint8List.fromList(hex.decode(privateKey)).toJS);
+    for (final entry in inputPrivateKeyMap.entries) {
+      final index = entry.key;
+      final privateKey = entry.value;
 
-    final network = _getNetwork();
+      Buffer privKeyJS =
+          Buffer.from(Uint8List.fromList(hex.decode(privateKey)).toJS);
+      final network = _getNetwork();
+      dynamic signer = ecpairFactory.fromPrivateKey(privKeyJS, network);
 
-    dynamic signer = ecpairFactory.fromPrivateKey(privKeyJS, network);
-
-    psbt.signAllInputs(
-        signer,
-        [
-          (SIGHASH_SINGLE | SIGHASH_ANYONECANPAY).toJS,
-          (SIGHASH_ALL | SIGHASH_ANYONECANPAY).toJS
-        ].toJS);
+      psbt.signInput(index, signer, sigHashTypes);
+    }
 
     return psbt.toHex();
   }

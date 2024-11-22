@@ -31,43 +31,52 @@ function forwardDomEventToBackground({ payload, method }) {
   });
 }
 
-const validators = {
-  signPsbt: (msg, errors) => {
-    if (!msg.params?.hex || typeof msg.params.hex !== "string") {
-      errors.push(
-        "Missing or invalid 'hex' parameter for 'signPsbt'. Expected a string.",
-      );
-    }
-  },
-  dispense: (msg, errors) => {
-    if (!msg.params?.address || typeof msg.params.address !== "string") {
-      errors.push(
-        "Missing or invalid 'address' parameter for 'dispense'. Expected a string.",
-      );
-    }
-  },
-  fairmint: (msg, errors) => {
-    if (
-      !msg.params?.fairminterTxHash ||
-      typeof msg.params.fairminterTxHash !== "string"
-    ) {
-      errors.push(
-        "Missing or invalid 'fairminterTxHash' parameter for 'fairmint'. Expected a string.",
-      );
-    }
-  },
-};
-
 const methodValidators = {
   signPsbt: (msg) => {
     const errors = [];
+
+    // Validate 'hex'
     if (!msg.params?.hex || typeof msg.params.hex !== "string") {
       errors.push(
         "Missing or invalid 'hex' parameter for 'signPsbt'. Expected a string.",
       );
     }
+
+    // Validate 'signInputs'
+    const signInputs = msg.params?.signInputs;
+    if (
+      !signInputs ||
+      typeof signInputs !== "object" ||
+      Array.isArray(signInputs)
+    ) {
+      errors.push(
+        "Missing or invalid 'signInputs' parameter for 'signPsbt'. Expected an object mapping addresses to input indices.",
+      );
+    } else {
+      // Iterate over 'signInputs' to validate each value
+      for (const [address, indices] of Object.entries(signInputs)) {
+        if (typeof address !== "string" || !Array.isArray(indices)) {
+          errors.push(
+            `Invalid entry in 'signInputs'. Address '${address}' must map to an array of integers.`,
+          );
+          continue;
+        }
+
+        // Check that each index in the array is an integer
+        const invalidIndices = indices.filter(
+          (index) => !Number.isInteger(index),
+        );
+        if (invalidIndices.length > 0) {
+          errors.push(
+            `Invalid indices in 'signInputs' for address '${address}'. All values must be integers.`,
+          );
+        }
+      }
+    }
+
     return errors;
   },
+
   dispense: (msg) => {
     const errors = [];
     if (!msg.params?.address || typeof msg.params.address !== "string") {
@@ -116,8 +125,6 @@ function validate(msg) {
 }
 
 document.addEventListener("horizon-provider-request", (event) => {
-
-
   const errors = validate(event.detail);
 
   if (errors.length) {

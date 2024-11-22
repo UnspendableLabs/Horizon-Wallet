@@ -3,7 +3,7 @@ import "package:horizon/domain/entities/utxo.dart";
 abstract class TransactionService {
   String signPsbt(
     String psbtHex,
-    String privateKey,
+    Map<int, String> inputPrivateKeyMap,
   );
 
   Future<String> signTransaction(String unsignedTransaction, String privateKey,

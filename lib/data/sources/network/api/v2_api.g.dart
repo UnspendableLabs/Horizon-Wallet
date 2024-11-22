@@ -4666,7 +4666,6 @@ class _V2Api implements V2Api {
   Future<Response<List<OrderVerbose>>> getOrdersByAddressVerbose(
     String address, [
     String? status,
-    bool? showUnconfirmed,
     CursorModel? cursor,
     int? limit,
     int? offset,
@@ -4674,7 +4673,6 @@ class _V2Api implements V2Api {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{
       r'status': status,
-      r'show_unconfirmed': showUnconfirmed,
       r'cursor': cursor?.toJson(),
       r'limit': limit,
       r'offset': offset,
@@ -4713,14 +4711,12 @@ class _V2Api implements V2Api {
 
   @override
   Future<Response<List<FairminterModel>>> getAllFairminters([
-    bool? showUnconfirmed,
     CursorModel? cursor,
     int? limit,
     int? offset,
   ]) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{
-      r'show_unconfirmed': showUnconfirmed,
       r'cursor': cursor?.toJson(),
       r'limit': limit,
       r'offset': offset,
@@ -4761,7 +4757,6 @@ class _V2Api implements V2Api {
   Future<Response<List<FairminterModel>>> getFairmintersByAddress(
     String address, [
     String? status,
-    bool? showUnconfirmed,
     CursorModel? cursor,
     int? limit,
     int? offset,
@@ -4769,7 +4764,6 @@ class _V2Api implements V2Api {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{
       r'status': status,
-      r'show_unconfirmed': showUnconfirmed,
       r'cursor': cursor?.toJson(),
       r'limit': limit,
       r'offset': offset,
@@ -5068,14 +5062,12 @@ class _V2Api implements V2Api {
     String? status,
     int? limit,
     CursorModel? cursor,
-    bool? showUnconfirmed,
   ]) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{
       r'status': status,
       r'limit': limit,
       r'cursor': cursor?.toJson(),
-      r'show_unconfirmed': showUnconfirmed,
     };
     queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};
@@ -5206,7 +5198,6 @@ class _V2Api implements V2Api {
     CursorModel? cursor,
     int? limit,
     int? offset,
-    bool? showUnconfirmed,
   ]) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{
@@ -5214,7 +5205,6 @@ class _V2Api implements V2Api {
       r'cursor': cursor?.toJson(),
       r'limit': limit,
       r'offset': offset,
-      r'show_unconfirmed': showUnconfirmed,
     };
     queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};
@@ -5254,7 +5244,6 @@ class _V2Api implements V2Api {
     CursorModel? cursor,
     int? limit,
     int? offset,
-    bool? showUnconfirmed,
   ]) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{
@@ -5262,7 +5251,6 @@ class _V2Api implements V2Api {
       r'cursor': cursor?.toJson(),
       r'limit': limit,
       r'offset': offset,
-      r'show_unconfirmed': showUnconfirmed,
     };
     queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};
@@ -5301,14 +5289,12 @@ class _V2Api implements V2Api {
     String addresses, [
     CursorModel? cursor,
     int? limit,
-    bool? showUnconfirmed,
   ]) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{
       r'addresses': addresses,
       r'cursor': cursor?.toJson(),
       r'limit': limit,
-      r'show_unconfirmed': showUnconfirmed,
     };
     queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};
@@ -5347,7 +5333,6 @@ class _V2Api implements V2Api {
     String addresses, [
     CursorModel? cursor,
     int? limit,
-    bool? showUnconfirmed,
     String? eventName,
   ]) async {
     final _extra = <String, dynamic>{};
@@ -5355,7 +5340,6 @@ class _V2Api implements V2Api {
       r'addresses': addresses,
       r'cursor': cursor?.toJson(),
       r'limit': limit,
-      r'show_unconfirmed': showUnconfirmed,
       r'event_name': eventName,
     };
     queryParameters.removeWhere((k, v) => v == null);
@@ -5394,7 +5378,6 @@ class _V2Api implements V2Api {
     String addresses, [
     CursorModel? cursor,
     int? limit,
-    bool? showUnconfirmed,
     String? eventName,
   ]) async {
     final _extra = <String, dynamic>{};
@@ -5402,7 +5385,6 @@ class _V2Api implements V2Api {
       r'addresses': addresses,
       r'cursor': cursor?.toJson(),
       r'limit': limit,
-      r'show_unconfirmed': showUnconfirmed,
       r'event_name': eventName,
     };
     queryParameters.removeWhere((k, v) => v == null);
