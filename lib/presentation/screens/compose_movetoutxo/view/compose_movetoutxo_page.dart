@@ -9,11 +9,11 @@ import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_event.dart';
 import 'package:horizon/presentation/common/compose_base/view/compose_base_page.dart';
 import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
-import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
 import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transaction_usecase.dart';
 import 'package:horizon/presentation/common/usecase/write_local_transaction_usecase.dart';
 import 'package:horizon/presentation/screens/compose_movetoutxo/bloc/compose_movetoutxo_bloc.dart';
 import 'package:horizon/presentation/screens/compose_movetoutxo/bloc/compose_movetoutxo_state.dart';
+import 'package:horizon/presentation/screens/compose_movetoutxo/usecase/fetch_form_data.dart';
 
 import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart";
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
@@ -40,7 +40,8 @@ class ComposeMoveToUtxoPageWrapper extends StatelessWidget {
         key: Key(currentAddress),
         create: (context) => ComposeMoveToUtxoBloc(
           logger: GetIt.I.get<Logger>(),
-          getFeeEstimatesUseCase: GetIt.I.get<GetFeeEstimatesUseCase>(),
+          fetchComposeMoveToUtxoFormDataUseCase:
+              GetIt.I.get<FetchComposeMoveToUtxoFormDataUseCase>(),
           analyticsService: GetIt.I.get<AnalyticsService>(),
           composeTransactionUseCase: GetIt.I.get<ComposeTransactionUseCase>(),
           composeRepository: GetIt.I.get<ComposeRepository>(),
@@ -49,8 +50,7 @@ class ComposeMoveToUtxoPageWrapper extends StatelessWidget {
           writelocalTransactionUseCase:
               GetIt.I.get<WriteLocalTransactionUseCase>(),
           blockRepository: GetIt.I.get<BlockRepository>(),
-        )..add(FetchFormData(
-            currentAddress: currentAddress, assetName: assetName)),
+        )..add(FetchFormData(currentAddress: currentAddress)),
         child: ComposeMoveToUtxoPage(
           address: currentAddress,
           assetName: assetName,

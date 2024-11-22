@@ -17,7 +17,7 @@ ComposeMoveToUtxoResponseModel _$ComposeMoveToUtxoResponseModelFromJson(
       btcOut: (json['btc_out'] as num).toInt(),
       btcChange: (json['btc_change'] as num).toInt(),
       btcFee: (json['btc_fee'] as num).toInt(),
-      data: json['data'] as String,
+      data: json['data'] as String?,
     );
 
 Map<String, dynamic> _$ComposeMoveToUtxoResponseModelToJson(

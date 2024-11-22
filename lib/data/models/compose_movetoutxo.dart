@@ -6,7 +6,7 @@ part 'compose_movetoutxo.g.dart';
 @JsonSerializable(fieldRename: FieldRename.snake)
 class ComposeMoveToUtxoResponseModel {
   final String name;
-  final String data;
+  final String? data;
   final int btcIn;
   final int btcOut;
   final int btcChange;
@@ -24,7 +24,7 @@ class ComposeMoveToUtxoResponseModel {
     required this.btcOut,
     required this.btcChange,
     required this.btcFee,
-    required this.data,
+    this.data,
   });
 
   factory ComposeMoveToUtxoResponseModel.fromJson(Map<String, dynamic> json) =>

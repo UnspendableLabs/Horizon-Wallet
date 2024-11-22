@@ -1,10 +1,7 @@
 import 'package:horizon/domain/repositories/config_repository.dart';
-import 'package:horizon/domain/repositories/version_repository.dart';
 import 'package:horizon/data/sources/repositories/version_repository_extension_impl.dart';
 import 'package:horizon/core/logging/logger.dart';
-import 'package:horizon/domain/entities/version_info.dart';
 import 'package:pub_semver/pub_semver.dart';
-import 'package:fpdart/fpdart.dart';
 import 'package:dio/dio.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:test/test.dart';
@@ -75,10 +72,10 @@ void main() {
 
   test('should return error message when Dio throws an exception', () async {
     // Arrange
-    final dioError = DioError(
+    final dioError = DioException(
       requestOptions: RequestOptions(path: ''),
       error: 'Network error',
-      type: DioErrorType.unknown,
+      type: DioExceptionType.unknown,
     );
 
     when(() => mockDio.get('')).thenThrow(dioError);

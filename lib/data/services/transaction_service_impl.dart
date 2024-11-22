@@ -102,7 +102,8 @@ class TransactionServiceImpl implements TransactionService {
           final txHex = await bitcoinRepository.getTransactionHex(prev.txid);
 
           txHex.fold(
-            (l) => throw Exception('Failed to get transaction: ${l.message}'),
+            (l) => throw TransactionServiceException(
+                'Failed to get transaction: ${l.message}'),
             (tx) {
               input.nonWitnessUtxo =
                   Buffer.from(Uint8List.fromList(hex.decode(tx)).toJS);
@@ -111,7 +112,8 @@ class TransactionServiceImpl implements TransactionService {
           );
         }
       } else {
-        throw Exception('Invariant: No utxo found for txHash: $txHash');
+        throw TransactionServiceException(
+            'Insufficient funds: no utxos available');
       }
     }
 
@@ -159,7 +161,8 @@ class TransactionServiceImpl implements TransactionService {
       var txHash = HEX.encode(input.hash.toDart.reversed.toList());
       var prev = utxoMap[txHash];
       if (prev == null) {
-        throw Exception('Invariant: No utxo found for txHash: $txHash');
+        throw TransactionServiceException(
+            'Invariant: No utxo found for txHash: $txHash');
       }
       ins += prev.value;
     }
@@ -219,7 +222,8 @@ class TransactionServiceImpl implements TransactionService {
       required String destinationPrivKey,
       required int fee}) async {
     if (!addressIsSegwit(sourceAddress)) {
-      throw Exception('Cannot chain transaction with a legacy address');
+      throw TransactionServiceException(
+          'Cannot chain transaction with a legacy address');
     }
     bitcoinjs.Transaction transaction =
         bitcoinjs.Transaction.fromHex(unsignedTransaction);

@@ -108,6 +108,7 @@ import 'package:horizon/presentation/screens/compose_dispense/usecase/estimate_d
 import 'package:horizon/presentation/screens/compose_fairmint/usecase/fetch_form_data.dart';
 import 'package:horizon/presentation/screens/compose_fairminter/usecase/fetch_form_data.dart';
 import 'package:horizon/presentation/screens/compose_issuance/usecase/fetch_form_data.dart';
+import 'package:horizon/presentation/screens/compose_movetoutxo/usecase/fetch_form_data.dart';
 
 import 'package:logger/logger.dart' as logger;
 import 'package:horizon/core/logging/logger.dart';
@@ -404,6 +405,11 @@ Future<void> setup() async {
 
   injector.registerSingleton<FetchComposeAttachUtxoFormDataUseCase>(
       FetchComposeAttachUtxoFormDataUseCase(
+          getFeeEstimatesUseCase: GetIt.I.get<GetFeeEstimatesUseCase>(),
+          balanceRepository: injector.get<BalanceRepository>()));
+
+  injector.registerSingleton<FetchComposeMoveToUtxoFormDataUseCase>(
+      FetchComposeMoveToUtxoFormDataUseCase(
           getFeeEstimatesUseCase: GetIt.I.get<GetFeeEstimatesUseCase>(),
           balanceRepository: injector.get<BalanceRepository>()));
 

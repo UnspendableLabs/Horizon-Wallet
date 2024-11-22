@@ -19,7 +19,7 @@ class ComposeMoveToUtxoResponse implements ComposeResponse {
   final String rawtransaction;
   @override
   final int btcFee;
-  final String data;
+  final String? data;
   final String name;
 
   final ComposeMoveToUtxoResponseParams params;

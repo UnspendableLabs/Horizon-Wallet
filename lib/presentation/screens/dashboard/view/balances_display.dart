@@ -578,7 +578,7 @@ class BalancesSliverState extends State<BalancesSliver> {
                   ),
                   const PopupMenuItem<String>(
                     value: 'move',
-                    child: Text('Move to UTXO'),
+                    child: Text('Move to New Address'),
                   ),
                 ],
               ),

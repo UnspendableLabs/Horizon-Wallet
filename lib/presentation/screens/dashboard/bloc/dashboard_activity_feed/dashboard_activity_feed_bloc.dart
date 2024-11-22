@@ -582,11 +582,8 @@ class DashboardActivityFeedBloc
   }
 
   int _getConfirmations(int blockHeight, int blockIndex) {
-    print("blockHeight: $blockHeight, blockIndex: $blockIndex");
-
     // Number of confirmations = Current Bitcoin block height - Transaction block height + 1
     final confirmations = blockHeight - blockIndex + 1;
-    print("confirmations: $confirmations");
     return confirmations;
   }
 }

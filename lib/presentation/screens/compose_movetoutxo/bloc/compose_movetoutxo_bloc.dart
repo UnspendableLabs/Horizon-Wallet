@@ -10,16 +10,17 @@ import 'package:horizon/presentation/common/compose_base/bloc/compose_base_bloc.
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_event.dart';
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_state.dart';
 import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
-import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
 import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transaction_usecase.dart';
 import 'package:horizon/presentation/common/usecase/write_local_transaction_usecase.dart';
 import 'package:horizon/presentation/screens/compose_movetoutxo/bloc/compose_movetoutxo_state.dart';
+import 'package:horizon/presentation/screens/compose_movetoutxo/usecase/fetch_form_data.dart';
 
 class ComposeMoveToUtxoBloc extends ComposeBaseBloc<ComposeMoveToUtxoState> {
   final ComposeRepository composeRepository;
   final AnalyticsService analyticsService;
   final Logger logger;
-  final GetFeeEstimatesUseCase getFeeEstimatesUseCase;
+  final FetchComposeMoveToUtxoFormDataUseCase
+      fetchComposeMoveToUtxoFormDataUseCase;
   final ComposeTransactionUseCase composeTransactionUseCase;
   final SignAndBroadcastTransactionUseCase signAndBroadcastTransactionUseCase;
   final WriteLocalTransactionUseCase writelocalTransactionUseCase;
@@ -28,7 +29,7 @@ class ComposeMoveToUtxoBloc extends ComposeBaseBloc<ComposeMoveToUtxoState> {
 
   ComposeMoveToUtxoBloc({
     required this.logger,
-    required this.getFeeEstimatesUseCase,
+    required this.fetchComposeMoveToUtxoFormDataUseCase,
     required this.composeTransactionUseCase,
     required this.composeRepository,
     required this.analyticsService,
@@ -52,11 +53,13 @@ class ComposeMoveToUtxoBloc extends ComposeBaseBloc<ComposeMoveToUtxoState> {
     ));
 
     try {
-      final feeEstimates =
-          await getFeeEstimatesUseCase.call(targets: (1, 3, 6));
+      final (balances, feeEstimates) =
+          await fetchComposeMoveToUtxoFormDataUseCase
+              .call(event.currentAddress!);
 
       emit(state.copyWith(
         feeState: FeeState.success(feeEstimates),
+        balancesState: BalancesState.success(balances),
       ));
     } on FetchFeeEstimatesException catch (e) {
       emit(state.copyWith(
@@ -156,9 +159,19 @@ class ComposeMoveToUtxoBloc extends ComposeBaseBloc<ComposeMoveToUtxoState> {
       composeTransaction: compose,
     )));
 
+    // Access the balances from balancesState
+    final balances = state.balancesState.when(
+      initial: () => throw Exception('Balances not loaded'),
+      loading: () => throw Exception('Balances are still loading'),
+      error: (message) => throw Exception('Error loading balances: $message'),
+      success: (balances) => balances,
+    );
+
+    final utxoAddress = balances.first.address;
+
     await signAndBroadcastTransactionUseCase.call(
         password: event.password,
-        source: compose.params.source,
+        source: utxoAddress!,
         rawtransaction: compose.rawtransaction,
         onSuccess: (txHex, txHash) async {
           await writelocalTransactionUseCase.call(txHex, txHash);
