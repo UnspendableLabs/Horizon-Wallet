@@ -5520,6 +5520,7 @@ class _V2Api implements V2Api {
   Future<Response<ComposeDetachUtxoResponseModel>> composeDetachUtxo(
     String utxo, [
     String? destination,
+    int? quantity,
     bool? skipValidation,
     bool? allowUnconfirmedInputs,
     int? exactFee,
@@ -5529,6 +5530,7 @@ class _V2Api implements V2Api {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{
       r'destination': destination,
+      r'quantity': quantity,
       r'skip_validation': skipValidation,
       r'allow_unconfirmed_inputs': allowUnconfirmedInputs,
       r'exact_fee': exactFee,

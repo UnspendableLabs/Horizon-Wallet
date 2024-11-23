@@ -498,6 +498,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
       (currentInputSet) async {
         final utxo = params.utxo;
         final destination = params.destination;
+        final quantity = params.quantity;
 
         final inputsSetString =
             currentInputSet.map((e) => "${e.txid}:${e.vout}").join(',');
@@ -505,6 +506,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
         final response = await api.composeDetachUtxo(
           utxo,
           destination,
+          quantity,
           false,
           true, //  allow unconfirmed
           fee, //exect fee

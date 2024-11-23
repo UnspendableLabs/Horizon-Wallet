@@ -2,6 +2,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/domain/entities/asset.dart';
 import 'package:horizon/domain/entities/fairminter.dart';
+import 'package:horizon/domain/entities/utxo.dart';
 
 part "balances_state.freezed.dart";
 
@@ -19,6 +20,7 @@ class Result with _$Result {
       List<Balance> balances,
       Map<String, Balance> aggregated,
       List<Balance> utxoBalances,
+      List<Utxo> utxos,
       List<Asset> ownedAssets,
       List<Fairminter> fairminters) = _Ok;
   const factory Result.error(String error) = _Error;

@@ -14,12 +14,15 @@ import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
 import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transaction_usecase.dart';
 import 'package:horizon/presentation/common/usecase/write_local_transaction_usecase.dart';
 import 'package:horizon/presentation/screens/compose_detach_utxo/bloc/compose_detach_utxo_state.dart';
+import 'package:horizon/presentation/screens/compose_detach_utxo/usecase/fetch_form_data.dart';
 
 class ComposeDetachUtxoEventParams {
   final String utxo;
+  final int quantity;
 
   ComposeDetachUtxoEventParams({
     required this.utxo,
+    required this.quantity,
   });
 }
 
@@ -28,6 +31,8 @@ class ComposeDetachUtxoBloc extends ComposeBaseBloc<ComposeDetachUtxoState> {
   final AnalyticsService analyticsService;
   final Logger logger;
   final GetFeeEstimatesUseCase getFeeEstimatesUseCase;
+  final FetchComposeDetachUtxoFormDataUseCase
+      fetchComposeDetachUtxoFormDataUseCase;
   final ComposeTransactionUseCase composeTransactionUseCase;
   final SignAndBroadcastTransactionUseCase signAndBroadcastTransactionUseCase;
   final WriteLocalTransactionUseCase writelocalTransactionUseCase;
@@ -40,6 +45,7 @@ class ComposeDetachUtxoBloc extends ComposeBaseBloc<ComposeDetachUtxoState> {
     required this.composeTransactionUseCase,
     required this.composeRepository,
     required this.analyticsService,
+    required this.fetchComposeDetachUtxoFormDataUseCase,
     required this.signAndBroadcastTransactionUseCase,
     required this.writelocalTransactionUseCase,
     required this.blockRepository,
@@ -60,11 +66,13 @@ class ComposeDetachUtxoBloc extends ComposeBaseBloc<ComposeDetachUtxoState> {
     ));
 
     try {
-      final feeEstimates =
-          await getFeeEstimatesUseCase.call(targets: (1, 3, 6));
+      final (feeEstimates, balance) =
+          await fetchComposeDetachUtxoFormDataUseCase
+              .call(event.currentAddress!);
 
       emit(state.copyWith(
         feeState: FeeState.success(feeEstimates),
+        balancesState: BalancesState.success([balance]),
       ));
     } on FetchFeeEstimatesException catch (e) {
       emit(state.copyWith(
@@ -102,12 +110,13 @@ class ComposeDetachUtxoBloc extends ComposeBaseBloc<ComposeDetachUtxoState> {
       final feeRate = _getFeeRate();
       final source = event.sourceAddress;
       final utxo = event.params.utxo;
-
+      final quantity = event.params.quantity;
       final composeResponse = await composeTransactionUseCase
           .call<ComposeDetachUtxoParams, ComposeDetachUtxoResponse>(
               feeRate: feeRate,
               source: source,
-              params: ComposeDetachUtxoParams(utxo: utxo, destination: source),
+              params: ComposeDetachUtxoParams(
+                  utxo: utxo, destination: source, quantity: quantity),
               composeFn: composeRepository.composeDetachUtxo);
 
       final composed = composeResponse.$1;

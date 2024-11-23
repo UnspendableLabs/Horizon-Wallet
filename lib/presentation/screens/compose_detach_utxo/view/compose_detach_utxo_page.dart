@@ -1,7 +1,9 @@
+import 'package:decimal/decimal.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/core/logging/logger.dart';
+import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/domain/entities/compose_detach_utxo.dart';
 import 'package:horizon/domain/repositories/block_repository.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
@@ -14,6 +16,7 @@ import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transacti
 import 'package:horizon/presentation/common/usecase/write_local_transaction_usecase.dart';
 import 'package:horizon/presentation/screens/compose_detach_utxo/bloc/compose_detach_utxo_bloc.dart';
 import 'package:horizon/presentation/screens/compose_detach_utxo/bloc/compose_detach_utxo_state.dart';
+import 'package:horizon/presentation/screens/compose_detach_utxo/usecase/fetch_form_data.dart';
 
 import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart";
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
@@ -43,6 +46,8 @@ class ComposeDetachUtxoPageWrapper extends StatelessWidget {
           getFeeEstimatesUseCase: GetIt.I.get<GetFeeEstimatesUseCase>(),
           analyticsService: GetIt.I.get<AnalyticsService>(),
           composeTransactionUseCase: GetIt.I.get<ComposeTransactionUseCase>(),
+          fetchComposeDetachUtxoFormDataUseCase:
+              GetIt.I.get<FetchComposeDetachUtxoFormDataUseCase>(),
           composeRepository: GetIt.I.get<ComposeRepository>(),
           signAndBroadcastTransactionUseCase:
               GetIt.I.get<SignAndBroadcastTransactionUseCase>(),
@@ -50,7 +55,8 @@ class ComposeDetachUtxoPageWrapper extends StatelessWidget {
               GetIt.I.get<WriteLocalTransactionUseCase>(),
           blockRepository: GetIt.I.get<BlockRepository>(),
         )..add(FetchFormData(
-            currentAddress: currentAddress, assetName: assetName)),
+            currentAddress:
+                utxo)), // we need to fetch the utxo balance here rather than the address balance
         child: ComposeDetachUtxoPage(
           address: currentAddress,
           assetName: assetName,
@@ -102,25 +108,68 @@ class ComposeDetachUtxoPageState extends State<ComposeDetachUtxoPage> {
     return BlocConsumer<ComposeDetachUtxoBloc, ComposeDetachUtxoState>(
       listener: (context, state) {},
       builder: (context, state) {
-        return ComposeBasePage<ComposeDetachUtxoBloc, ComposeDetachUtxoState>(
-          dashboardActivityFeedBloc: widget.dashboardActivityFeedBloc,
-          onFeeChange: (fee) => context
-              .read<ComposeDetachUtxoBloc>()
-              .add(ChangeFeeOption(value: fee)),
-          buildInitialFormFields: (state, loading, formKey) =>
-              _buildInitialFormFields(state, loading, formKey),
-          onInitialCancel: () => _handleInitialCancel(),
-          onInitialSubmit: (formKey) => _handleInitialSubmit(formKey),
-          buildConfirmationFormFields: (state, composeTransaction, formKey) =>
-              _buildConfirmationDetails(composeTransaction),
-          onConfirmationBack: () => _onConfirmationBack(),
-          onConfirmationContinue: (composeTransaction, fee, formKey) {
-            _onConfirmationContinue(composeTransaction, fee, formKey);
-          },
-          onFinalizeSubmit: (password, formKey) {
-            _onFinalizeSubmit(password, formKey);
-          },
-          onFinalizeCancel: () => _onFinalizeCancel(),
+        return state.balancesState.maybeWhen(
+          loading: () =>
+              ComposeBasePage<ComposeDetachUtxoBloc, ComposeDetachUtxoState>(
+            dashboardActivityFeedBloc: widget.dashboardActivityFeedBloc,
+            onFeeChange: (fee) => {},
+            buildInitialFormFields: (state, loading, formKey) => [
+              HorizonUI.HorizonTextFormField(
+                controller: utxoController,
+                label: 'Utxo',
+                enabled: false,
+              ),
+              const SizedBox(height: 16),
+              HorizonUI.HorizonTextFormField(
+                controller: destinationController,
+                label: 'Destination',
+                enabled: false,
+              ),
+              const SizedBox(height: 16),
+              HorizonUI.HorizonTextFormField(
+                controller: quantityController,
+                label: 'Quantity to detach',
+                enabled: false,
+              ),
+              const SizedBox(height: 16),
+              HorizonUI.HorizonTextFormField(
+                controller: quantityController,
+                label: 'Quantity',
+                enabled: false,
+              ),
+            ],
+            onInitialCancel: () => _handleInitialCancel(),
+            onInitialSubmit: (formKey) {},
+            buildConfirmationFormFields: (state, composeTransaction, formKey) =>
+                [],
+            onConfirmationBack: () => _onConfirmationBack(),
+            onConfirmationContinue: (composeTransaction, fee, formKey) {},
+            onFinalizeSubmit: (password, formKey) {},
+            onFinalizeCancel: () => _onFinalizeCancel(),
+          ),
+          success: (balances) =>
+              ComposeBasePage<ComposeDetachUtxoBloc, ComposeDetachUtxoState>(
+            dashboardActivityFeedBloc: widget.dashboardActivityFeedBloc,
+            onFeeChange: (fee) => context
+                .read<ComposeDetachUtxoBloc>()
+                .add(ChangeFeeOption(value: fee)),
+            buildInitialFormFields: (state, loading, formKey) =>
+                _buildInitialFormFields(state, loading, formKey),
+            onInitialCancel: () => _handleInitialCancel(),
+            onInitialSubmit: (formKey) =>
+                _handleInitialSubmit(formKey, balances),
+            buildConfirmationFormFields: (state, composeTransaction, formKey) =>
+                _buildConfirmationDetails(composeTransaction),
+            onConfirmationBack: () => _onConfirmationBack(),
+            onConfirmationContinue: (composeTransaction, fee, formKey) {
+              _onConfirmationContinue(composeTransaction, fee, formKey);
+            },
+            onFinalizeSubmit: (password, formKey) {
+              _onFinalizeSubmit(password, formKey);
+            },
+            onFinalizeCancel: () => _onFinalizeCancel(),
+          ),
+          orElse: () => const SizedBox.shrink(),
         );
       },
     );
@@ -130,15 +179,27 @@ class ComposeDetachUtxoPageState extends State<ComposeDetachUtxoPage> {
     Navigator.of(context).pop();
   }
 
-  void _handleInitialSubmit(GlobalKey<FormState> formKey) {
+  void _handleInitialSubmit(
+      GlobalKey<FormState> formKey, List<Balance> balances) {
     setState(() {
       _submitted = true;
     });
+    Decimal input = Decimal.parse(quantityController.text);
+    Balance? balance = balances.first;
+    int quantity;
+
+    if (balance.assetInfo.divisible) {
+      quantity = (input * Decimal.fromInt(100000000)).toBigInt().toInt();
+    } else {
+      quantity = input.toBigInt().toInt();
+    }
+
     if (formKey.currentState!.validate()) {
       context.read<ComposeDetachUtxoBloc>().add(ComposeTransactionEvent(
             sourceAddress: destinationController.text,
             params: ComposeDetachUtxoEventParams(
               utxo: utxoController.text,
+              quantity: quantity,
             ),
           ));
     }
@@ -146,19 +207,40 @@ class ComposeDetachUtxoPageState extends State<ComposeDetachUtxoPage> {
 
   List<Widget> _buildInitialFormFields(ComposeDetachUtxoState state,
       bool loading, GlobalKey<FormState> formKey) {
-    return [
-      HorizonUI.HorizonTextFormField(
-        controller: utxoController,
-        label: 'Utxo',
-        enabled: false,
-      ),
-      const SizedBox(height: 16),
-      HorizonUI.HorizonTextFormField(
-        controller: destinationController,
-        label: 'Destination',
-        enabled: false,
-      ),
-    ];
+    return state.balancesState.maybeWhen(
+      success: (balances) => [
+        HorizonUI.HorizonTextFormField(
+          controller: utxoController,
+          label: 'Utxo',
+          enabled: false,
+        ),
+        const SizedBox(height: 16),
+        HorizonUI.HorizonTextFormField(
+          controller: destinationController,
+          label: 'Destination',
+          enabled: false,
+        ),
+        const SizedBox(height: 16),
+        HorizonUI.HorizonTextFormField(
+          controller: quantityController,
+          label: 'Quantity to detach',
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return 'Quantity is required';
+            }
+            return null;
+          },
+        ),
+        const SizedBox(height: 16),
+        HorizonUI.HorizonTextFormField(
+          controller: TextEditingController(
+              text: balances.first.quantityNormalized.toString()),
+          label: 'Quantity remaining',
+          enabled: false,
+        ),
+      ],
+      orElse: () => throw Exception("invariant: No balance found for asset"),
+    );
   }
 
   List<Widget> _buildConfirmationDetails(dynamic composeTransaction) {
@@ -179,9 +261,8 @@ class ComposeDetachUtxoPageState extends State<ComposeDetachUtxoPage> {
   }
 
   void _onConfirmationBack() {
-    context
-        .read<ComposeDetachUtxoBloc>()
-        .add(FetchFormData(currentAddress: widget.address));
+    context.read<ComposeDetachUtxoBloc>().add(FetchFormData(
+        currentAddress: widget.address, assetName: widget.assetName));
   }
 
   void _onConfirmationContinue(

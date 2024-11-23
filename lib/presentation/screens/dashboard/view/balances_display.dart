@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/common/constants.dart';
 import 'package:horizon/domain/entities/asset.dart';
+import 'package:horizon/domain/entities/utxo.dart';
 import 'package:horizon/domain/repositories/config_repository.dart';
 import 'package:horizon/presentation/common/colors.dart';
 import 'package:horizon/presentation/common/no_data.dart';
@@ -179,7 +180,8 @@ class BalancesSliverState extends State<BalancesSliver> {
 
   List<Widget> _buildBalanceList(Result result) {
     return result.when(
-      ok: (balances, aggregated, utxoBalances, ownedAssets, fairminters) {
+      ok: (balances, aggregated, utxoBalances, utxos, ownedAssets,
+          fairminters) {
         if (balances.isEmpty && ownedAssets.isEmpty) {
           return [
             const NoData(
@@ -203,6 +205,35 @@ class BalancesSliverState extends State<BalancesSliver> {
           if (xcpEntry != null) xcpEntry,
           ...entries,
         ];
+
+        // Calculate the unspendableAmount for BTC
+        double unspendableAmount = 0.0;
+        if (btcEntry != null) {
+          // Create a map of UTXOs keyed by 'txid:vout'
+          final utxoMap = <String, Utxo>{
+            for (var utxo in utxos) '${utxo.txid}:${utxo.vout}': utxo,
+          };
+
+          // Get the set of utxoKeys from utxoBalances where asset is not BTC
+          final utxoBalanceKeys = utxoBalances
+              .where((b) => b.utxo != null)
+              .map((b) => b.utxo)
+              .whereType<String>()
+              .toSet();
+
+          // Find the unspendable UTXOs
+          final unspendableUtxos = utxoBalanceKeys
+              .map((utxoKey) => utxoMap[utxoKey])
+              .whereType<Utxo>()
+              .toList();
+
+          // Sum their 'value' fields to get the unspendable amount in satoshis
+          final unspendableAmountSatoshi =
+              unspendableUtxos.fold<int>(0, (sum, utxo) => sum + utxo.value);
+
+          // Convert satoshis to BTC
+          unspendableAmount = unspendableAmountSatoshi / 100000000;
+        }
 
         final fairminterAssets =
             fairminters.map((fairminter) => fairminter.asset!).toList();
@@ -233,18 +264,26 @@ class BalancesSliverState extends State<BalancesSliver> {
 
           return TableRow(
             children: [
-              _buildTableCell1(entry.key, entry.value.assetInfo.assetLongname,
-                  isClickable, textColor),
+              _buildTableCell1(
+                entry.key,
+                entry.value.assetInfo.assetLongname,
+                isClickable,
+                textColor,
+                unspendableAmount: (entry.key == 'BTC' && unspendableAmount > 0)
+                    ? unspendableAmount
+                    : null,
+              ),
               _buildTableCell2(entry.value.quantityNormalized, textColor),
               _buildTableCell3(
-                  entry.key,
-                  textColor,
-                  isOwner,
-                  currentOwnedAsset,
-                  entry.value.quantity,
-                  fairminterAssets,
-                  entry.value.utxo,
-                  entry.value.utxoAddress)
+                entry.key,
+                textColor,
+                isOwner,
+                currentOwnedAsset,
+                entry.value.quantity,
+                fairminterAssets,
+                entry.value.utxo,
+                entry.value.utxoAddress,
+              ),
             ],
           );
         }).toList();
@@ -406,34 +445,53 @@ class BalancesSliverState extends State<BalancesSliver> {
     );
   }
 
-  TableCell _buildTableCell1(String assetName, String? assetLongname,
-      bool isClickable, Color textColor) {
+  TableCell _buildTableCell1(
+    String assetName,
+    String? assetLongname,
+    bool isClickable,
+    Color textColor, {
+    double? unspendableAmount,
+  }) {
     return TableCell(
-        verticalAlignment: TableCellVerticalAlignment.middle,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(16.0, 8.0, 4.0, 8.0),
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              return SelectableText.rich(
-                TextSpan(
-                  text: (assetLongname != '' && assetLongname != null)
-                      ? assetLongname
-                      : assetName,
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: textColor,
-                  ),
-                  recognizer: isClickable
-                      ? (TapGestureRecognizer()
-                        ..onTap = () => _launchAssetUrl(assetName))
-                      : null,
+      verticalAlignment: TableCellVerticalAlignment.middle,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16.0, 8.0, 4.0, 8.0),
+        child: SelectableText.rich(
+          TextSpan(
+            children: [
+              TextSpan(
+                text: (assetLongname != '' && assetLongname != null)
+                    ? assetLongname
+                    : assetName,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: textColor,
                 ),
-                key: Key('assetName_$assetName'),
-              );
-            },
+                recognizer: isClickable
+                    ? (TapGestureRecognizer()
+                      ..onTap = () => _launchAssetUrl(assetName))
+                    : null,
+              ),
+              if (unspendableAmount != null && unspendableAmount > 0)
+                WidgetSpan(
+                  alignment: PlaceholderAlignment.middle,
+                  child: Tooltip(
+                    message:
+                        'Some UTXOs have a balance, making part of the BTC balance unspendable. ${unspendableAmount.toStringAsFixed(8)} BTC unavailable',
+                    child: Icon(
+                      Icons.info_outline,
+                      size: 16.0,
+                      color: textColor,
+                    ),
+                  ),
+                ),
+            ],
           ),
-        ));
+          key: Key('assetName_$assetName'),
+        ),
+      ),
+    );
   }
 
   TableCell _buildTableCell2(String quantityNormalized, Color textColor) =>

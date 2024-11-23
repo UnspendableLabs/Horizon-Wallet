@@ -5,14 +5,15 @@ import "./compose_fn.dart";
 class ComposeDetachUtxoParams extends ComposeParams {
   final String utxo;
   final String destination;
-
+  final int quantity;
   ComposeDetachUtxoParams({
     required this.utxo,
     required this.destination,
+    required this.quantity,
   });
 
   @override
-  List<Object> get props => [utxo, destination];
+  List<Object> get props => [utxo, destination, quantity];
 }
 
 class ComposeDetachUtxoResponse implements ComposeResponse {

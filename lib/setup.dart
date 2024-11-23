@@ -101,6 +101,7 @@ import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.
 import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transaction_usecase.dart';
 import 'package:horizon/presentation/common/usecase/write_local_transaction_usecase.dart';
 import 'package:horizon/presentation/screens/compose_attach_utxo/usecase/fetch_form_data.dart';
+import 'package:horizon/presentation/screens/compose_detach_utxo/usecase/fetch_form_data.dart';
 import 'package:horizon/presentation/screens/compose_dispenser/usecase/fetch_form_data.dart';
 import 'package:horizon/presentation/screens/compose_dispense/usecase/fetch_form_data.dart';
 import 'package:horizon/presentation/screens/compose_dispense/usecase/fetch_open_dispensers_on_address.dart';
@@ -410,6 +411,11 @@ Future<void> setup() async {
 
   injector.registerSingleton<FetchComposeMoveToUtxoFormDataUseCase>(
       FetchComposeMoveToUtxoFormDataUseCase(
+          getFeeEstimatesUseCase: GetIt.I.get<GetFeeEstimatesUseCase>(),
+          balanceRepository: injector.get<BalanceRepository>()));
+
+  injector.registerSingleton<FetchComposeDetachUtxoFormDataUseCase>(
+      FetchComposeDetachUtxoFormDataUseCase(
           getFeeEstimatesUseCase: GetIt.I.get<GetFeeEstimatesUseCase>(),
           balanceRepository: injector.get<BalanceRepository>()));
 

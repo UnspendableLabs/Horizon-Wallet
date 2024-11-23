@@ -632,6 +632,7 @@ mixin _$Result {
             List<Balance> balances,
             Map<String, Balance> aggregated,
             List<Balance> utxoBalances,
+            List<Utxo> utxos,
             List<Asset> ownedAssets,
             List<Fairminter> fairminters)
         ok,
@@ -644,6 +645,7 @@ mixin _$Result {
             List<Balance> balances,
             Map<String, Balance> aggregated,
             List<Balance> utxoBalances,
+            List<Utxo> utxos,
             List<Asset> ownedAssets,
             List<Fairminter> fairminters)?
         ok,
@@ -656,6 +658,7 @@ mixin _$Result {
             List<Balance> balances,
             Map<String, Balance> aggregated,
             List<Balance> utxoBalances,
+            List<Utxo> utxos,
             List<Asset> ownedAssets,
             List<Fairminter> fairminters)?
         ok,
@@ -710,6 +713,7 @@ abstract class _$$OkImplCopyWith<$Res> {
       {List<Balance> balances,
       Map<String, Balance> aggregated,
       List<Balance> utxoBalances,
+      List<Utxo> utxos,
       List<Asset> ownedAssets,
       List<Fairminter> fairminters});
 }
@@ -726,6 +730,7 @@ class __$$OkImplCopyWithImpl<$Res> extends _$ResultCopyWithImpl<$Res, _$OkImpl>
     Object? balances = null,
     Object? aggregated = null,
     Object? utxoBalances = null,
+    Object? utxos = null,
     Object? ownedAssets = null,
     Object? fairminters = null,
   }) {
@@ -742,6 +747,10 @@ class __$$OkImplCopyWithImpl<$Res> extends _$ResultCopyWithImpl<$Res, _$OkImpl>
           ? _value._utxoBalances
           : utxoBalances // ignore: cast_nullable_to_non_nullable
               as List<Balance>,
+      null == utxos
+          ? _value._utxos
+          : utxos // ignore: cast_nullable_to_non_nullable
+              as List<Utxo>,
       null == ownedAssets
           ? _value._ownedAssets
           : ownedAssets // ignore: cast_nullable_to_non_nullable
@@ -761,11 +770,13 @@ class _$OkImpl implements _Ok {
       final List<Balance> balances,
       final Map<String, Balance> aggregated,
       final List<Balance> utxoBalances,
+      final List<Utxo> utxos,
       final List<Asset> ownedAssets,
       final List<Fairminter> fairminters)
       : _balances = balances,
         _aggregated = aggregated,
         _utxoBalances = utxoBalances,
+        _utxos = utxos,
         _ownedAssets = ownedAssets,
         _fairminters = fairminters;
 
@@ -793,6 +804,14 @@ class _$OkImpl implements _Ok {
     return EqualUnmodifiableListView(_utxoBalances);
   }
 
+  final List<Utxo> _utxos;
+  @override
+  List<Utxo> get utxos {
+    if (_utxos is EqualUnmodifiableListView) return _utxos;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_utxos);
+  }
+
   final List<Asset> _ownedAssets;
   @override
   List<Asset> get ownedAssets {
@@ -811,7 +830,7 @@ class _$OkImpl implements _Ok {
 
   @override
   String toString() {
-    return 'Result.ok(balances: $balances, aggregated: $aggregated, utxoBalances: $utxoBalances, ownedAssets: $ownedAssets, fairminters: $fairminters)';
+    return 'Result.ok(balances: $balances, aggregated: $aggregated, utxoBalances: $utxoBalances, utxos: $utxos, ownedAssets: $ownedAssets, fairminters: $fairminters)';
   }
 
   @override
@@ -824,6 +843,7 @@ class _$OkImpl implements _Ok {
                 .equals(other._aggregated, _aggregated) &&
             const DeepCollectionEquality()
                 .equals(other._utxoBalances, _utxoBalances) &&
+            const DeepCollectionEquality().equals(other._utxos, _utxos) &&
             const DeepCollectionEquality()
                 .equals(other._ownedAssets, _ownedAssets) &&
             const DeepCollectionEquality()
@@ -836,6 +856,7 @@ class _$OkImpl implements _Ok {
       const DeepCollectionEquality().hash(_balances),
       const DeepCollectionEquality().hash(_aggregated),
       const DeepCollectionEquality().hash(_utxoBalances),
+      const DeepCollectionEquality().hash(_utxos),
       const DeepCollectionEquality().hash(_ownedAssets),
       const DeepCollectionEquality().hash(_fairminters));
 
@@ -852,12 +873,14 @@ class _$OkImpl implements _Ok {
             List<Balance> balances,
             Map<String, Balance> aggregated,
             List<Balance> utxoBalances,
+            List<Utxo> utxos,
             List<Asset> ownedAssets,
             List<Fairminter> fairminters)
         ok,
     required TResult Function(String error) error,
   }) {
-    return ok(balances, aggregated, utxoBalances, ownedAssets, fairminters);
+    return ok(
+        balances, aggregated, utxoBalances, utxos, ownedAssets, fairminters);
   }
 
   @override
@@ -867,13 +890,14 @@ class _$OkImpl implements _Ok {
             List<Balance> balances,
             Map<String, Balance> aggregated,
             List<Balance> utxoBalances,
+            List<Utxo> utxos,
             List<Asset> ownedAssets,
             List<Fairminter> fairminters)?
         ok,
     TResult? Function(String error)? error,
   }) {
     return ok?.call(
-        balances, aggregated, utxoBalances, ownedAssets, fairminters);
+        balances, aggregated, utxoBalances, utxos, ownedAssets, fairminters);
   }
 
   @override
@@ -883,6 +907,7 @@ class _$OkImpl implements _Ok {
             List<Balance> balances,
             Map<String, Balance> aggregated,
             List<Balance> utxoBalances,
+            List<Utxo> utxos,
             List<Asset> ownedAssets,
             List<Fairminter> fairminters)?
         ok,
@@ -890,7 +915,8 @@ class _$OkImpl implements _Ok {
     required TResult orElse(),
   }) {
     if (ok != null) {
-      return ok(balances, aggregated, utxoBalances, ownedAssets, fairminters);
+      return ok(
+          balances, aggregated, utxoBalances, utxos, ownedAssets, fairminters);
     }
     return orElse();
   }
@@ -932,12 +958,14 @@ abstract class _Ok implements Result {
       final List<Balance> balances,
       final Map<String, Balance> aggregated,
       final List<Balance> utxoBalances,
+      final List<Utxo> utxos,
       final List<Asset> ownedAssets,
       final List<Fairminter> fairminters) = _$OkImpl;
 
   List<Balance> get balances;
   Map<String, Balance> get aggregated;
   List<Balance> get utxoBalances;
+  List<Utxo> get utxos;
   List<Asset> get ownedAssets;
   List<Fairminter> get fairminters;
   @JsonKey(ignore: true)
@@ -1013,6 +1041,7 @@ class _$ErrorImpl implements _Error {
             List<Balance> balances,
             Map<String, Balance> aggregated,
             List<Balance> utxoBalances,
+            List<Utxo> utxos,
             List<Asset> ownedAssets,
             List<Fairminter> fairminters)
         ok,
@@ -1028,6 +1057,7 @@ class _$ErrorImpl implements _Error {
             List<Balance> balances,
             Map<String, Balance> aggregated,
             List<Balance> utxoBalances,
+            List<Utxo> utxos,
             List<Asset> ownedAssets,
             List<Fairminter> fairminters)?
         ok,
@@ -1043,6 +1073,7 @@ class _$ErrorImpl implements _Error {
             List<Balance> balances,
             Map<String, Balance> aggregated,
             List<Balance> utxoBalances,
+            List<Utxo> utxos,
             List<Asset> ownedAssets,
             List<Fairminter> fairminters)?
         ok,
