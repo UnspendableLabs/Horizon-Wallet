@@ -3,7 +3,6 @@ import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/domain/entities/compose_detach_utxo.dart';
 import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/domain/entities/fee_option.dart' as FeeOption;
-import 'package:horizon/domain/repositories/block_repository.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_bloc.dart';
@@ -38,8 +37,6 @@ class ComposeDetachUtxoBloc extends ComposeBaseBloc<ComposeDetachUtxoState> {
   final ComposeTransactionUseCase composeTransactionUseCase;
   final SignAndBroadcastTransactionUseCase signAndBroadcastTransactionUseCase;
   final WriteLocalTransactionUseCase writelocalTransactionUseCase;
-  final BlockRepository blockRepository;
-  final String? initialFairminterTxHash;
 
   ComposeDetachUtxoBloc({
     required this.logger,
@@ -50,8 +47,6 @@ class ComposeDetachUtxoBloc extends ComposeBaseBloc<ComposeDetachUtxoState> {
     required this.fetchComposeDetachUtxoFormDataUseCase,
     required this.signAndBroadcastTransactionUseCase,
     required this.writelocalTransactionUseCase,
-    required this.blockRepository,
-    this.initialFairminterTxHash,
   }) : super(ComposeDetachUtxoState(
           submitState: const SubmitInitial(),
           feeOption: FeeOption.Medium(),

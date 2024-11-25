@@ -4,7 +4,6 @@ import 'package:get_it/get_it.dart';
 import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/domain/entities/compose_movetoutxo.dart';
-import 'package:horizon/domain/repositories/block_repository.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_event.dart';
@@ -50,7 +49,6 @@ class ComposeMoveToUtxoPageWrapper extends StatelessWidget {
               GetIt.I.get<SignAndBroadcastTransactionUseCase>(),
           writelocalTransactionUseCase:
               GetIt.I.get<WriteLocalTransactionUseCase>(),
-          blockRepository: GetIt.I.get<BlockRepository>(),
         )..add(FetchFormData(
             utxo: utxo,
             currentAddress:
@@ -174,7 +172,7 @@ class ComposeMoveToUtxoPageState extends State<ComposeMoveToUtxoPage> {
       final balance = balances.first;
       context.read<ComposeMoveToUtxoBloc>().add(ComposeTransactionEvent(
             sourceAddress: destinationController.text,
-            params: ComposeMoveToUtxoParams(
+            params: ComposeMoveToUtxoEventParams(
               utxo: utxoController.text,
               destination: destinationController.text,
               asset: widget.assetName,

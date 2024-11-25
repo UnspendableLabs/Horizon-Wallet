@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:horizon/domain/entities/asset_info.dart';
+import 'package:horizon/presentation/screens/compose_detach_utxo/usecase/fetch_form_data.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:horizon/presentation/screens/compose_attach_utxo/usecase/fetch_form_data.dart';
 import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
@@ -13,7 +13,7 @@ class MockGetFeeEstimatesUseCase extends Mock
 class MockBalanceRepository extends Mock implements BalanceRepository {}
 
 void main() {
-  late FetchComposeAttachUtxoFormDataUseCase useCase;
+  late FetchComposeDetachUtxoFormDataUseCase useCase;
   late MockGetFeeEstimatesUseCase mockGetFeeEstimatesUseCase;
   late MockBalanceRepository mockBalanceRepository;
 
@@ -21,13 +21,13 @@ void main() {
     mockGetFeeEstimatesUseCase = MockGetFeeEstimatesUseCase();
     mockBalanceRepository = MockBalanceRepository();
 
-    useCase = FetchComposeAttachUtxoFormDataUseCase(
+    useCase = FetchComposeDetachUtxoFormDataUseCase(
       getFeeEstimatesUseCase: mockGetFeeEstimatesUseCase,
       balanceRepository: mockBalanceRepository,
     );
   });
 
-  group('FetchComposeAttachUtxoFormDataUseCase', () {
+  group('FetchComposeMoveToUtxoFormDataUseCase', () {
     const testAddress = 'test-address';
     const testAssetName = 'ASSET_NAME';
     const feeEstimates = FeeEstimates(fast: 10, medium: 5, slow: 2);
@@ -41,9 +41,10 @@ void main() {
         description: testAssetName,
         divisible: true,
       ),
-      utxo: null,
-      utxoAddress: null,
+      utxo: 'some-utxo',
+      utxoAddress: 'some-utxo-address',
     );
+    const testUtxo = 'some-utxo';
 
     test('should return fee estimates and balance when both fetches succeed',
         () async {
@@ -51,13 +52,12 @@ void main() {
       when(() => mockGetFeeEstimatesUseCase.call(targets: (1, 3, 6)))
           .thenAnswer((_) async => feeEstimates);
 
-      when(() => mockBalanceRepository.getBalancesForAddressAndAssetVerbose(
-            testAddress,
-            testAssetName,
+      when(() => mockBalanceRepository.getBalancesForUTXO(
+            testUtxo,
           )).thenAnswer((_) async => [balance]);
 
       // Act
-      final result = await useCase.call(testAddress, testAssetName);
+      final result = await useCase.call(testUtxo);
 
       // Assert
       expect(result.$1, feeEstimates);
@@ -65,9 +65,8 @@ void main() {
 
       verify(() => mockGetFeeEstimatesUseCase.call(targets: (1, 3, 6)))
           .called(1);
-      verify(() => mockBalanceRepository.getBalancesForAddressAndAssetVerbose(
-            testAddress,
-            testAssetName,
+      verify(() => mockBalanceRepository.getBalancesForUTXO(
+            testUtxo,
           )).called(1);
     });
 
@@ -77,22 +76,65 @@ void main() {
       when(() => mockGetFeeEstimatesUseCase.call(targets: (1, 3, 6)))
           .thenAnswer((_) async => feeEstimates);
 
-      when(() => mockBalanceRepository.getBalancesForAddressAndAssetVerbose(
-            testAddress,
-            testAssetName,
+      when(() => mockBalanceRepository.getBalancesForUTXO(
+            testUtxo,
           )).thenThrow(Exception('Balance fetch failed'));
 
       // Act & Assert
       expect(
-        () => useCase.call(testAddress, testAssetName),
+        () => useCase.call(testUtxo),
         throwsA(isA<FetchBalanceException>()),
       );
 
       verify(() => mockGetFeeEstimatesUseCase.call(targets: (1, 3, 6)))
           .called(1);
-      verify(() => mockBalanceRepository.getBalancesForAddressAndAssetVerbose(
-            testAddress,
-            testAssetName,
+      verify(() => mockBalanceRepository.getBalancesForUTXO(
+            testUtxo,
+          )).called(1);
+    });
+
+    test('should throw FetchBalanceException when balance is empty', () async {
+      // Arrange
+      when(() => mockGetFeeEstimatesUseCase.call(targets: (1, 3, 6)))
+          .thenAnswer((_) async => feeEstimates);
+
+      when(() => mockBalanceRepository.getBalancesForUTXO(
+            testUtxo,
+          )).thenAnswer((_) async => []);
+
+      // Act & Assert
+      expect(
+        () => useCase.call(testUtxo),
+        throwsA(isA<FetchBalanceException>()),
+      );
+
+      verify(() => mockGetFeeEstimatesUseCase.call(targets: (1, 3, 6)))
+          .called(1);
+      verify(() => mockBalanceRepository.getBalancesForUTXO(
+            testUtxo,
+          )).called(1);
+    });
+
+    test('should throw FetchBalanceException when balance has multiple entries',
+        () async {
+      // Arrange
+      when(() => mockGetFeeEstimatesUseCase.call(targets: (1, 3, 6)))
+          .thenAnswer((_) async => feeEstimates);
+
+      when(() => mockBalanceRepository.getBalancesForUTXO(
+            testUtxo,
+          )).thenAnswer((_) async => [balance, balance]);
+
+      // Act & Assert
+      expect(
+        () => useCase.call(testUtxo),
+        throwsA(isA<FetchBalanceException>()),
+      );
+
+      verify(() => mockGetFeeEstimatesUseCase.call(targets: (1, 3, 6)))
+          .called(1);
+      verify(() => mockBalanceRepository.getBalancesForUTXO(
+            testUtxo,
           )).called(1);
     });
 
@@ -103,22 +145,20 @@ void main() {
       when(() => mockGetFeeEstimatesUseCase.call(targets: (1, 3, 6)))
           .thenThrow(Exception('Fee estimates fetch failed'));
 
-      when(() => mockBalanceRepository.getBalancesForAddressAndAssetVerbose(
-            testAddress,
-            testAssetName,
+      when(() => mockBalanceRepository.getBalancesForUTXO(
+            testUtxo,
           )).thenAnswer((_) async => [balance]);
 
       // Act & Assert
       expect(
-        () => useCase.call(testAddress, testAssetName),
+        () => useCase.call(testUtxo),
         throwsA(isA<FetchFeeEstimatesException>()),
       );
 
       verify(() => mockGetFeeEstimatesUseCase.call(targets: (1, 3, 6)))
           .called(1);
-      verify(() => mockBalanceRepository.getBalancesForAddressAndAssetVerbose(
-            testAddress,
-            testAssetName,
+      verify(() => mockBalanceRepository.getBalancesForUTXO(
+            testUtxo,
           )).called(1);
     });
   });

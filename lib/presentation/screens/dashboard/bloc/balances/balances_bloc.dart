@@ -10,7 +10,6 @@ import 'package:horizon/domain/repositories/address_tx_repository.dart';
 import 'package:horizon/domain/repositories/asset_repository.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/repositories/fairminter_repository.dart';
-import 'package:horizon/domain/repositories/utxo_repository.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_event.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_state.dart';
 
@@ -88,7 +87,6 @@ class BalancesBloc extends Bloc<BalancesEvent, BalancesState> {
   final AddressTxRepository addressTxRepository;
   final AssetRepository assetRepository;
   final FairminterRepository fairminterRepository;
-  final UtxoRepository utxoRepository;
   final String currentAddress;
 
   Timer? _timer;
@@ -100,7 +98,6 @@ class BalancesBloc extends Bloc<BalancesEvent, BalancesState> {
     required this.addressTxRepository,
     required this.assetRepository,
     required this.fairminterRepository,
-    required this.utxoRepository,
     required this.currentAddress,
   }) : super(const BalancesState.initial()) {
     on<Start>(_onStart);
