@@ -20,7 +20,9 @@ mixin _$ComposeMoveToUtxoState {
   FeeState get feeState => throw _privateConstructorUsedError;
   BalancesState get balancesState => throw _privateConstructorUsedError;
   FeeOption get feeOption => throw _privateConstructorUsedError;
-  SubmitState get submitState => throw _privateConstructorUsedError;
+  SubmitState get submitState =>
+      throw _privateConstructorUsedError; // Additional properties
+  String? get utxoAddress => throw _privateConstructorUsedError;
 
   @JsonKey(ignore: true)
   $ComposeMoveToUtxoStateCopyWith<ComposeMoveToUtxoState> get copyWith =>
@@ -37,7 +39,8 @@ abstract class $ComposeMoveToUtxoStateCopyWith<$Res> {
       {FeeState feeState,
       BalancesState balancesState,
       FeeOption feeOption,
-      SubmitState submitState});
+      SubmitState submitState,
+      String? utxoAddress});
 
   $FeeStateCopyWith<$Res> get feeState;
   $BalancesStateCopyWith<$Res> get balancesState;
@@ -61,6 +64,7 @@ class _$ComposeMoveToUtxoStateCopyWithImpl<$Res,
     Object? balancesState = null,
     Object? feeOption = null,
     Object? submitState = null,
+    Object? utxoAddress = freezed,
   }) {
     return _then(_value.copyWith(
       feeState: null == feeState
@@ -79,6 +83,10 @@ class _$ComposeMoveToUtxoStateCopyWithImpl<$Res,
           ? _value.submitState
           : submitState // ignore: cast_nullable_to_non_nullable
               as SubmitState,
+      utxoAddress: freezed == utxoAddress
+          ? _value.utxoAddress
+          : utxoAddress // ignore: cast_nullable_to_non_nullable
+              as String?,
     ) as $Val);
   }
 
@@ -112,7 +120,8 @@ abstract class _$$ComposeMoveToUtxoStateImplCopyWith<$Res>
       {FeeState feeState,
       BalancesState balancesState,
       FeeOption feeOption,
-      SubmitState submitState});
+      SubmitState submitState,
+      String? utxoAddress});
 
   @override
   $FeeStateCopyWith<$Res> get feeState;
@@ -137,6 +146,7 @@ class __$$ComposeMoveToUtxoStateImplCopyWithImpl<$Res>
     Object? balancesState = null,
     Object? feeOption = null,
     Object? submitState = null,
+    Object? utxoAddress = freezed,
   }) {
     return _then(_$ComposeMoveToUtxoStateImpl(
       feeState: null == feeState
@@ -155,6 +165,10 @@ class __$$ComposeMoveToUtxoStateImplCopyWithImpl<$Res>
           ? _value.submitState
           : submitState // ignore: cast_nullable_to_non_nullable
               as SubmitState,
+      utxoAddress: freezed == utxoAddress
+          ? _value.utxoAddress
+          : utxoAddress // ignore: cast_nullable_to_non_nullable
+              as String?,
     ));
   }
 }
@@ -166,7 +180,8 @@ class _$ComposeMoveToUtxoStateImpl extends _ComposeMoveToUtxoState {
       {required this.feeState,
       required this.balancesState,
       required this.feeOption,
-      required this.submitState})
+      required this.submitState,
+      required this.utxoAddress})
       : super._();
 
 // Inherited properties
@@ -178,10 +193,13 @@ class _$ComposeMoveToUtxoStateImpl extends _ComposeMoveToUtxoState {
   final FeeOption feeOption;
   @override
   final SubmitState submitState;
+// Additional properties
+  @override
+  final String? utxoAddress;
 
   @override
   String toString() {
-    return 'ComposeMoveToUtxoState(feeState: $feeState, balancesState: $balancesState, feeOption: $feeOption, submitState: $submitState)';
+    return 'ComposeMoveToUtxoState(feeState: $feeState, balancesState: $balancesState, feeOption: $feeOption, submitState: $submitState, utxoAddress: $utxoAddress)';
   }
 
   @override
@@ -196,12 +214,14 @@ class _$ComposeMoveToUtxoStateImpl extends _ComposeMoveToUtxoState {
             (identical(other.feeOption, feeOption) ||
                 other.feeOption == feeOption) &&
             (identical(other.submitState, submitState) ||
-                other.submitState == submitState));
+                other.submitState == submitState) &&
+            (identical(other.utxoAddress, utxoAddress) ||
+                other.utxoAddress == utxoAddress));
   }
 
   @override
-  int get hashCode =>
-      Object.hash(runtimeType, feeState, balancesState, feeOption, submitState);
+  int get hashCode => Object.hash(runtimeType, feeState, balancesState,
+      feeOption, submitState, utxoAddress);
 
   @JsonKey(ignore: true)
   @override
@@ -216,7 +236,8 @@ abstract class _ComposeMoveToUtxoState extends ComposeMoveToUtxoState {
       {required final FeeState feeState,
       required final BalancesState balancesState,
       required final FeeOption feeOption,
-      required final SubmitState submitState}) = _$ComposeMoveToUtxoStateImpl;
+      required final SubmitState submitState,
+      required final String? utxoAddress}) = _$ComposeMoveToUtxoStateImpl;
   const _ComposeMoveToUtxoState._() : super._();
 
   @override // Inherited properties
@@ -227,6 +248,8 @@ abstract class _ComposeMoveToUtxoState extends ComposeMoveToUtxoState {
   FeeOption get feeOption;
   @override
   SubmitState get submitState;
+  @override // Additional properties
+  String? get utxoAddress;
   @override
   @JsonKey(ignore: true)
   _$$ComposeMoveToUtxoStateImplCopyWith<_$ComposeMoveToUtxoStateImpl>

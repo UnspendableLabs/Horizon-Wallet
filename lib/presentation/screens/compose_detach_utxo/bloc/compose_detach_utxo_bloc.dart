@@ -19,10 +19,12 @@ import 'package:horizon/presentation/screens/compose_detach_utxo/usecase/fetch_f
 class ComposeDetachUtxoEventParams {
   final String utxo;
   final int quantity;
+  final String asset;
 
   ComposeDetachUtxoEventParams({
     required this.utxo,
     required this.quantity,
+    required this.asset,
   });
 }
 
@@ -111,12 +113,16 @@ class ComposeDetachUtxoBloc extends ComposeBaseBloc<ComposeDetachUtxoState> {
       final source = event.sourceAddress;
       final utxo = event.params.utxo;
       final quantity = event.params.quantity;
+      final asset = event.params.asset;
       final composeResponse = await composeTransactionUseCase
           .call<ComposeDetachUtxoParams, ComposeDetachUtxoResponse>(
               feeRate: feeRate,
               source: source,
               params: ComposeDetachUtxoParams(
-                  utxo: utxo, destination: source, quantity: quantity),
+                  utxo: utxo,
+                  destination: source,
+                  quantity: quantity,
+                  asset: asset),
               composeFn: composeRepository.composeDetachUtxo);
 
       final composed = composeResponse.$1;
@@ -175,7 +181,7 @@ class ComposeDetachUtxoBloc extends ComposeBaseBloc<ComposeDetachUtxoState> {
 
     await signAndBroadcastTransactionUseCase.call(
         password: event.password,
-        source: compose.params.source,
+        source: compose.params.destination,
         rawtransaction: compose.rawtransaction,
         onSuccess: (txHex, txHash) async {
           await writelocalTransactionUseCase.call(txHex, txHash);

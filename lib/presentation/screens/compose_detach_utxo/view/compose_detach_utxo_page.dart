@@ -1,4 +1,3 @@
-import 'package:decimal/decimal.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
@@ -55,7 +54,7 @@ class ComposeDetachUtxoPageWrapper extends StatelessWidget {
               GetIt.I.get<WriteLocalTransactionUseCase>(),
           blockRepository: GetIt.I.get<BlockRepository>(),
         )..add(FetchFormData(
-            currentAddress:
+            utxo:
                 utxo)), // we need to fetch the utxo balance here rather than the address balance
         child: ComposeDetachUtxoPage(
           address: currentAddress,
@@ -87,7 +86,6 @@ class ComposeDetachUtxoPage extends StatefulWidget {
 }
 
 class ComposeDetachUtxoPageState extends State<ComposeDetachUtxoPage> {
-  TextEditingController quantityController = TextEditingController();
   TextEditingController utxoController = TextEditingController();
   TextEditingController destinationController = TextEditingController();
 
@@ -123,18 +121,6 @@ class ComposeDetachUtxoPageState extends State<ComposeDetachUtxoPage> {
               HorizonUI.HorizonTextFormField(
                 controller: destinationController,
                 label: 'Destination',
-                enabled: false,
-              ),
-              const SizedBox(height: 16),
-              HorizonUI.HorizonTextFormField(
-                controller: quantityController,
-                label: 'Quantity to detach',
-                enabled: false,
-              ),
-              const SizedBox(height: 16),
-              HorizonUI.HorizonTextFormField(
-                controller: quantityController,
-                label: 'Quantity',
                 enabled: false,
               ),
             ],
@@ -184,22 +170,14 @@ class ComposeDetachUtxoPageState extends State<ComposeDetachUtxoPage> {
     setState(() {
       _submitted = true;
     });
-    Decimal input = Decimal.parse(quantityController.text);
-    Balance? balance = balances.first;
-    int quantity;
-
-    if (balance.assetInfo.divisible) {
-      quantity = (input * Decimal.fromInt(100000000)).toBigInt().toInt();
-    } else {
-      quantity = input.toBigInt().toInt();
-    }
-
+    final balance = balances.first;
     if (formKey.currentState!.validate()) {
       context.read<ComposeDetachUtxoBloc>().add(ComposeTransactionEvent(
             sourceAddress: destinationController.text,
             params: ComposeDetachUtxoEventParams(
               utxo: utxoController.text,
-              quantity: quantity,
+              quantity: balance.quantity,
+              asset: widget.assetName,
             ),
           ));
     }
@@ -218,24 +196,6 @@ class ComposeDetachUtxoPageState extends State<ComposeDetachUtxoPage> {
         HorizonUI.HorizonTextFormField(
           controller: destinationController,
           label: 'Destination',
-          enabled: false,
-        ),
-        const SizedBox(height: 16),
-        HorizonUI.HorizonTextFormField(
-          controller: quantityController,
-          label: 'Quantity to detach',
-          validator: (value) {
-            if (value == null || value.isEmpty) {
-              return 'Quantity is required';
-            }
-            return null;
-          },
-        ),
-        const SizedBox(height: 16),
-        HorizonUI.HorizonTextFormField(
-          controller: TextEditingController(
-              text: balances.first.quantityNormalized.toString()),
-          label: 'Quantity remaining',
           enabled: false,
         ),
       ],
@@ -261,8 +221,9 @@ class ComposeDetachUtxoPageState extends State<ComposeDetachUtxoPage> {
   }
 
   void _onConfirmationBack() {
-    context.read<ComposeDetachUtxoBloc>().add(FetchFormData(
-        currentAddress: widget.address, assetName: widget.assetName));
+    context
+        .read<ComposeDetachUtxoBloc>()
+        .add(FetchFormData(currentAddress: widget.utxo));
   }
 
   void _onConfirmationContinue(
@@ -288,6 +249,6 @@ class ComposeDetachUtxoPageState extends State<ComposeDetachUtxoPage> {
   void _onFinalizeCancel() {
     context
         .read<ComposeDetachUtxoBloc>()
-        .add(FetchFormData(currentAddress: widget.address));
+        .add(FetchFormData(currentAddress: widget.utxo));
   }
 }

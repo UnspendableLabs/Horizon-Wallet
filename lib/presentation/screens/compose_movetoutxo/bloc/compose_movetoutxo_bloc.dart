@@ -42,6 +42,7 @@ class ComposeMoveToUtxoBloc extends ComposeBaseBloc<ComposeMoveToUtxoState> {
           feeOption: FeeOption.Medium(),
           balancesState: const BalancesState.initial(),
           feeState: const FeeState.initial(),
+          utxoAddress: '',
         ));
 
   @override
@@ -53,13 +54,13 @@ class ComposeMoveToUtxoBloc extends ComposeBaseBloc<ComposeMoveToUtxoState> {
     ));
 
     try {
-      final (balances, feeEstimates) =
-          await fetchComposeMoveToUtxoFormDataUseCase
-              .call(event.currentAddress!);
+      final (feeEstimates, balance) =
+          await fetchComposeMoveToUtxoFormDataUseCase.call(event.utxo!);
 
       emit(state.copyWith(
         feeState: FeeState.success(feeEstimates),
-        balancesState: BalancesState.success(balances),
+        balancesState: BalancesState.success([balance]),
+        utxoAddress: event.currentAddress!,
       ));
     } on FetchFeeEstimatesException catch (e) {
       emit(state.copyWith(
@@ -97,12 +98,18 @@ class ComposeMoveToUtxoBloc extends ComposeBaseBloc<ComposeMoveToUtxoState> {
       final feeRate = _getFeeRate();
       final source = event.sourceAddress;
       final utxo = event.params.utxo;
+      final asset = event.params.asset;
+      final quantity = event.params.quantity;
 
       final composeResponse = await composeTransactionUseCase
           .call<ComposeMoveToUtxoParams, ComposeMoveToUtxoResponse>(
               feeRate: feeRate,
-              source: source,
-              params: ComposeMoveToUtxoParams(utxo: utxo, destination: source),
+              source: state.utxoAddress!,
+              params: ComposeMoveToUtxoParams(
+                  utxo: utxo,
+                  destination: source,
+                  asset: asset,
+                  quantity: quantity),
               composeFn: composeRepository.composeMoveToUtxo);
 
       final composed = composeResponse.$1;
@@ -159,19 +166,9 @@ class ComposeMoveToUtxoBloc extends ComposeBaseBloc<ComposeMoveToUtxoState> {
       composeTransaction: compose,
     )));
 
-    // Access the balances from balancesState
-    final balances = state.balancesState.when(
-      initial: () => throw Exception('Balances not loaded'),
-      loading: () => throw Exception('Balances are still loading'),
-      error: (message) => throw Exception('Error loading balances: $message'),
-      success: (balances) => balances,
-    );
-
-    final utxoAddress = balances.first.address;
-
     await signAndBroadcastTransactionUseCase.call(
         password: event.password,
-        source: utxoAddress!,
+        source: state.utxoAddress!,
         rawtransaction: compose.rawtransaction,
         onSuccess: (txHex, txHash) async {
           await writelocalTransactionUseCase.call(txHex, txHash);

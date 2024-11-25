@@ -16,7 +16,7 @@ class FetchComposeDetachUtxoFormDataUseCase {
     try {
       // Initiate both asynchronous calls
       final futures = await Future.wait([
-        _fetchAssetBalance(utxo),
+        _fetchBalanceForUtxo(utxo),
         _fetchFeeEstimates(),
       ]);
 
@@ -41,7 +41,7 @@ class FetchComposeDetachUtxoFormDataUseCase {
     }
   }
 
-  Future<Balance> _fetchAssetBalance(String utxo) async {
+  Future<Balance> _fetchBalanceForUtxo(String utxo) async {
     try {
       final balances = await balanceRepository.getBalancesForUTXO(utxo);
       if (balances.isEmpty) {

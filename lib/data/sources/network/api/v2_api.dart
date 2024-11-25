@@ -4456,6 +4456,7 @@ abstract class V2Api {
   Future<Response<ComposeDetachUtxoResponseModel>> composeDetachUtxo(
     @Path("utxo") String utxo, [
     @Query("destination") String? destination,
+    @Query("asset") String? asset,
     @Query("quantity") int? quantity,
     @Query("skip_validation") bool? skipValidation,
     @Query("allow_unconfirmed_inputs") bool? allowUnconfirmedInputs,
@@ -4468,6 +4469,8 @@ abstract class V2Api {
   Future<Response<ComposeMoveToUtxoResponseModel>> composeMoveToUtxo(
     @Path("utxo") String utxo, [
     @Query("destination") String? destination,
+    @Query("asset") String? asset,
+    @Query("quantity") int? quantity,
     @Query("skip_validation") bool? skipValidation,
     @Query("allow_unconfirmed_inputs") bool? allowUnconfirmedInputs,
     @Query("exact_fee") int? exactFee,

@@ -6,14 +6,16 @@ class ComposeDetachUtxoParams extends ComposeParams {
   final String utxo;
   final String destination;
   final int quantity;
+  final String asset;
   ComposeDetachUtxoParams({
     required this.utxo,
     required this.destination,
     required this.quantity,
+    required this.asset,
   });
 
   @override
-  List<Object> get props => [utxo, destination, quantity];
+  List<Object> get props => [utxo, destination, quantity, asset];
 }
 
 class ComposeDetachUtxoResponse implements ComposeResponse {

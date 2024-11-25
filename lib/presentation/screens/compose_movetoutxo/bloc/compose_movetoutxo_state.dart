@@ -15,6 +15,8 @@ class ComposeMoveToUtxoState with _$ComposeMoveToUtxoState, ComposeStateBase {
     required BalancesState balancesState,
     required FeeOption feeOption,
     required SubmitState submitState,
+    // Additional properties
+    required String? utxoAddress,
   }) = _ComposeMoveToUtxoState;
 
   factory ComposeMoveToUtxoState.initial() => ComposeMoveToUtxoState(
@@ -22,5 +24,6 @@ class ComposeMoveToUtxoState with _$ComposeMoveToUtxoState, ComposeStateBase {
         balancesState: const BalancesState.initial(),
         feeOption: Medium(),
         submitState: const SubmitInitial(),
+        utxoAddress: '',
       );
 }
