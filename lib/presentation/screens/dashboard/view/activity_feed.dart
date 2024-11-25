@@ -256,33 +256,27 @@ class ActivityFeedListItem extends StatelessWidget {
       }
     }
     if (params.assetEvents != null && params.assetEvents!.isNotEmpty) {
-      if (params.assetEvents == "reissuance") {
-        return SelectableText(
-            "Reissue ${displayAssetName(params.asset, params.assetLongname)}");
-      } else if (params.assetEvents == "lock_quantity reissuance") {
-        return SelectableText(
-            "Lock Quantity for ${displayAssetName(params.asset, params.assetLongname)}");
-      } else if (params.assetEvents == "change_description") {
-        return SelectableText(
-            "Change Description for ${displayAssetName(params.asset, params.assetLongname)}");
-      } else if (params.assetEvents == "lock_description") {
-        return SelectableText(
-            "Lock Description for ${displayAssetName(params.asset, params.assetLongname)}");
-      } else if (params.assetEvents == "open_fairminter") {
-        return SelectableText(
-            "New Fairminter for ${displayAssetName(params.asset, params.assetLongname)}");
-      } else if (params.assetEvents == "fairmint") {
-        return SelectableText(
-            "Fairmint for ${displayAssetName(params.asset, params.assetLongname)}");
-      } else if (params.assetEvents == "transfer") {
-        if (addresses.any((a) => a == params.source)) {
-          return SelectableText(
-              "Transfer Out of ${displayAssetName(params.asset, params.assetLongname)}");
-        } else {
-          return SelectableText(
-              "Transfer In of ${displayAssetName(params.asset, params.assetLongname)}");
-        }
-      }
+      return switch (params.assetEvents) {
+        "reissuance" => SelectableText(
+            "Reissue ${displayAssetName(params.asset, params.assetLongname)}"),
+        "lock_quantity" => SelectableText(
+            "Lock Quantity for ${displayAssetName(params.asset, params.assetLongname)}"),
+        "change_description" => SelectableText(
+            "Change Description for ${displayAssetName(params.asset, params.assetLongname)}"),
+        "lock_description" => SelectableText(
+            "Lock Description for ${displayAssetName(params.asset, params.assetLongname)}"),
+        "open_fairminter" => SelectableText(
+            "New Fairminter for ${displayAssetName(params.asset, params.assetLongname)}"),
+        "fairmint" => SelectableText(
+            "Fairmint for ${displayAssetName(params.asset, params.assetLongname)}"),
+        "transfer" => addresses.any((a) => a == params.source)
+            ? SelectableText(
+                "Transfer Out of ${displayAssetName(params.asset, params.assetLongname)}")
+            : SelectableText(
+                "Transfer In of ${displayAssetName(params.asset, params.assetLongname)}"),
+        _ => SelectableText(
+            "Issue ${params.quantityNormalized} ${displayAssetName(params.asset, params.assetLongname)}"),
+      };
     }
     if (params.asset == null || params.quantityNormalized == null) {
       return const SelectableText('Issue (INVALID)',
