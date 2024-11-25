@@ -4,7 +4,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:horizon/domain/entities/asset.dart';
 import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/domain/entities/fairminter.dart';
-import 'package:horizon/domain/entities/utxo.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/address_tx_repository.dart';
@@ -146,9 +145,6 @@ class BalancesBloc extends Bloc<BalancesEvent, BalancesState> {
       final Map<String, Balance> aggregated = allBalances.$1;
       final List<Balance> utxoBalances = allBalances.$2;
 
-      final List<Utxo> utxos =
-          await utxoRepository.getUnspentForAddress(currentAddress);
-
       final List<Asset> ownedAssets =
           await assetRepository.getValidAssetsByOwnerVerbose(currentAddress);
 
@@ -161,8 +157,8 @@ class BalancesBloc extends Bloc<BalancesEvent, BalancesState> {
                 (fairminters) => fairminters, // Handle success
               ));
 
-      emit(BalancesState.complete(Result.ok(balances, aggregated, utxoBalances,
-          utxos, ownedAssets, fairminters)));
+      emit(BalancesState.complete(Result.ok(
+          balances, aggregated, utxoBalances, ownedAssets, fairminters)));
     } on FetchFairmintersException catch (e) {
       emit(BalancesState.complete(Result.error(
           "Error fetching fairminters for $currentAddress: ${e.message}")));

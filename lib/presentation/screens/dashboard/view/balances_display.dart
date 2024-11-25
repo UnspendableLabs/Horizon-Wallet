@@ -5,7 +5,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/common/constants.dart';
 import 'package:horizon/domain/entities/asset.dart';
-import 'package:horizon/domain/entities/utxo.dart';
 import 'package:horizon/domain/repositories/config_repository.dart';
 import 'package:horizon/presentation/common/colors.dart';
 import 'package:horizon/presentation/common/no_data.dart';
@@ -180,8 +179,7 @@ class BalancesSliverState extends State<BalancesSliver> {
 
   List<Widget> _buildBalanceList(Result result) {
     return result.when(
-      ok: (balances, aggregated, utxoBalances, utxos, ownedAssets,
-          fairminters) {
+      ok: (balances, aggregated, utxoBalances, ownedAssets, fairminters) {
         if (balances.isEmpty && ownedAssets.isEmpty) {
           return [
             const NoData(
@@ -205,35 +203,6 @@ class BalancesSliverState extends State<BalancesSliver> {
           if (xcpEntry != null) xcpEntry,
           ...entries,
         ];
-
-        // Calculate the unspendableAmount for BTC
-        double unspendableAmount = 0.0;
-        if (btcEntry != null) {
-          // Create a map of UTXOs keyed by 'txid:vout'
-          final utxoMap = <String, Utxo>{
-            for (var utxo in utxos) '${utxo.txid}:${utxo.vout}': utxo,
-          };
-
-          // Get the set of utxoKeys from utxoBalances where asset is not BTC
-          final utxoBalanceKeys = utxoBalances
-              .where((b) => b.utxo != null)
-              .map((b) => b.utxo)
-              .whereType<String>()
-              .toSet();
-
-          // Find the unspendable UTXOs
-          final unspendableUtxos = utxoBalanceKeys
-              .map((utxoKey) => utxoMap[utxoKey])
-              .whereType<Utxo>()
-              .toList();
-
-          // Sum their 'value' fields to get the unspendable amount in satoshis
-          final unspendableAmountSatoshi =
-              unspendableUtxos.fold<int>(0, (sum, utxo) => sum + utxo.value);
-
-          // Convert satoshis to BTC
-          unspendableAmount = unspendableAmountSatoshi / 100000000;
-        }
 
         final fairminterAssets =
             fairminters.map((fairminter) => fairminter.asset!).toList();
@@ -269,9 +238,6 @@ class BalancesSliverState extends State<BalancesSliver> {
                 entry.value.assetInfo.assetLongname,
                 isClickable,
                 textColor,
-                unspendableAmount: (entry.key == 'BTC' && unspendableAmount > 0)
-                    ? unspendableAmount
-                    : null,
               ),
               _buildTableCell2(entry.value.quantityNormalized, textColor),
               _buildTableCell3(
@@ -449,9 +415,8 @@ class BalancesSliverState extends State<BalancesSliver> {
     String assetName,
     String? assetLongname,
     bool isClickable,
-    Color textColor, {
-    double? unspendableAmount,
-  }) {
+    Color textColor,
+  ) {
     return TableCell(
       verticalAlignment: TableCellVerticalAlignment.middle,
       child: Padding(
@@ -473,19 +438,6 @@ class BalancesSliverState extends State<BalancesSliver> {
                       ..onTap = () => _launchAssetUrl(assetName))
                     : null,
               ),
-              if (unspendableAmount != null && unspendableAmount > 0)
-                WidgetSpan(
-                  alignment: PlaceholderAlignment.middle,
-                  child: Tooltip(
-                    message:
-                        'Some UTXOs have a balance, making part of the BTC balance unspendable. ${unspendableAmount.toStringAsFixed(8)} BTC unavailable',
-                    child: Icon(
-                      Icons.info_outline,
-                      size: 16.0,
-                      color: textColor,
-                    ),
-                  ),
-                ),
             ],
           ),
           key: Key('assetName_$assetName'),
@@ -551,63 +503,13 @@ class BalancesSliverState extends State<BalancesSliver> {
                   icon: const Icon(Icons.attach_file, size: 16.0),
                 ),
               ),
-            // if (utxoAddress != null)
-            //   SizedBox(
-            //     width: 32,
-            //     height: 32,
-            //     child: IconButton(
-            //       padding: EdgeInsets.zero,
-            //       onPressed: () {
-            //         HorizonUI.HorizonDialog.show(
-            //           context: context,
-            //           body: HorizonUI.HorizonDialog(
-            //             title: 'Detach UTXO',
-            //             body: ComposeDetachUtxoPageWrapper(
-            //                 dashboardActivityFeedBloc:
-            //                     BlocProvider.of<DashboardActivityFeedBloc>(
-            //                         context),
-            //                 currentAddress: widget.currentAddress,
-            //                 assetName: assetName,
-            //                 utxo: utxo!,
-            //             ),
-            //             includeBackButton: false,
-            //             includeCloseButton: true,
-            //             onBackButtonPressed: () {
-            //               Navigator.of(context).pop();
-            //             },
-            //           ),
-            //         );
-            //       },
-            //       icon: const Icon(Icons.link_off, size: 16.0),
-            //     ),
-            //   ),
             if (utxo != null)
-              PopupMenuButton<String>(
-                padding: EdgeInsets.zero,
-                iconSize: 16.0,
-                icon: const Icon(Icons.link_off),
-                onSelected: (String result) {
-                  if (result == 'move') {
-                    HorizonUI.HorizonDialog.show(
-                      context: context,
-                      body: HorizonUI.HorizonDialog(
-                        title: "Move to Address",
-                        body: ComposeMoveToUtxoPageWrapper(
-                          dashboardActivityFeedBloc:
-                              BlocProvider.of<DashboardActivityFeedBloc>(
-                                  context),
-                          currentAddress: widget.currentAddress,
-                          assetName: assetName,
-                          utxo: utxo,
-                        ),
-                        includeBackButton: false,
-                        includeCloseButton: true,
-                        onBackButtonPressed: () {
-                          Navigator.of(context).pop();
-                        },
-                      ),
-                    );
-                  } else if (result == 'detach') {
+              SizedBox(
+                width: 32,
+                height: 32,
+                child: IconButton(
+                  padding: EdgeInsets.zero,
+                  onPressed: () {
                     HorizonUI.HorizonDialog.show(
                       context: context,
                       body: HorizonUI.HorizonDialog(
@@ -627,18 +529,9 @@ class BalancesSliverState extends State<BalancesSliver> {
                         },
                       ),
                     );
-                  }
-                },
-                itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-                  const PopupMenuItem<String>(
-                    value: 'detach',
-                    child: Text('Detach from UTXO'),
-                  ),
-                  const PopupMenuItem<String>(
-                    value: 'move',
-                    child: Text('Move to New Address'),
-                  ),
-                ],
+                  },
+                  icon: const Icon(Icons.link_off, size: 16.0),
+                ),
               ),
             if (quantity > 0)
               SizedBox(
@@ -649,21 +542,40 @@ class BalancesSliverState extends State<BalancesSliver> {
                   iconSize: 16.0,
                   icon: const Icon(Icons.send),
                   onPressed: () {
-                    HorizonUI.HorizonDialog.show(
-                      context: context,
-                      body: HorizonUI.HorizonDialog(
-                        title: 'Compose Send',
-                        body: ComposeSendPageWrapper(
-                          currentAddress: widget.currentAddress,
-                          dashboardActivityFeedBloc:
-                              BlocProvider.of<DashboardActivityFeedBloc>(
-                                  context),
-                          asset: assetName,
+                    if (utxo == null) {
+                      HorizonUI.HorizonDialog.show(
+                        context: context,
+                        body: HorizonUI.HorizonDialog(
+                          title: 'Compose Send',
+                          body: ComposeSendPageWrapper(
+                            currentAddress: widget.currentAddress,
+                            dashboardActivityFeedBloc:
+                                BlocProvider.of<DashboardActivityFeedBloc>(
+                                    context),
+                            asset: assetName,
+                          ),
+                          includeBackButton: false,
+                          includeCloseButton: true,
                         ),
-                        includeBackButton: false,
-                        includeCloseButton: true,
-                      ),
-                    );
+                      );
+                    } else {
+                      HorizonUI.HorizonDialog.show(
+                        context: context,
+                        body: HorizonUI.HorizonDialog(
+                          title: 'Move to UTXO',
+                          body: ComposeMoveToUtxoPageWrapper(
+                            currentAddress: widget.currentAddress,
+                            dashboardActivityFeedBloc:
+                                BlocProvider.of<DashboardActivityFeedBloc>(
+                                    context),
+                            assetName: assetName,
+                            utxo: utxo,
+                          ),
+                          includeBackButton: false,
+                          includeCloseButton: true,
+                        ),
+                      );
+                    }
                   },
                 ),
               ),

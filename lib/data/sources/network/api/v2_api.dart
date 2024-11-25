@@ -296,6 +296,8 @@ class Event {
         return AttachToUtxoEvent.fromJson(json);
       case "DETACH_FROM_UTXO":
         return DetachFromUtxoEvent.fromJson(json);
+      case "MOVE_TO_UTXO":
+        return MoveToUtxoEvent.fromJson(json);
       default:
         return _$EventFromJson(json);
     }
@@ -1304,6 +1306,107 @@ class OrderFilledEvent extends Event {
 }
 
 @JsonSerializable(fieldRename: FieldRename.snake)
+class MoveToUtxoEvent extends Event {
+  final MoveToUtxoParams params;
+
+  MoveToUtxoEvent({
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
+    required this.params,
+  });
+
+  factory MoveToUtxoEvent.fromJson(Map<String, dynamic> json) =>
+      _$MoveToUtxoEventFromJson(json);
+
+  Map<String, dynamic> toJson() => _$MoveToUtxoEventToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class MoveToUtxoParams {
+  final String asset;
+  final int blockIndex;
+  final String destination;
+  final int feePaid;
+  final int msgIndex;
+  final int quantity;
+  final String source;
+  final String status;
+  final String txHash;
+  final int txIndex;
+  final int blockTime;
+
+  MoveToUtxoParams({
+    required this.asset,
+    required this.blockIndex,
+    required this.destination,
+    required this.feePaid,
+    required this.msgIndex,
+    required this.quantity,
+    required this.source,
+    required this.status,
+    required this.txHash,
+    required this.txIndex,
+    required this.blockTime,
+  });
+
+  factory MoveToUtxoParams.fromJson(Map<String, dynamic> json) =>
+      _$MoveToUtxoParamsFromJson(json);
+
+  Map<String, dynamic> toJson() => _$MoveToUtxoParamsToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class VerboseMoveToUtxoEvent extends VerboseEvent {
+  final VerboseMoveToUtxoParams params;
+
+  VerboseMoveToUtxoEvent({
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
+    required super.blockTime,
+    required this.params,
+  });
+
+  factory VerboseMoveToUtxoEvent.fromJson(Map<String, dynamic> json) =>
+      _$VerboseMoveToUtxoEventFromJson(json);
+
+  Map<String, dynamic> toJson() => _$VerboseMoveToUtxoEventToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class VerboseMoveToUtxoParams extends MoveToUtxoParams {
+  final AssetInfoModel assetInfo;
+  final String quantityNormalized;
+  final String feePaidNormalized;
+
+  VerboseMoveToUtxoParams({
+    required super.asset,
+    required super.blockIndex,
+    required super.destination,
+    required super.feePaid,
+    required super.msgIndex,
+    required super.quantity,
+    required super.source,
+    required super.status,
+    required super.txHash,
+    required super.txIndex,
+    required super.blockTime,
+    required this.assetInfo,
+    required this.quantityNormalized,
+    required this.feePaidNormalized,
+  });
+
+  factory VerboseMoveToUtxoParams.fromJson(Map<String, dynamic> json) =>
+      _$VerboseMoveToUtxoParamsFromJson(json);
+
+  @override
+  Map<String, dynamic> toJson() => _$VerboseMoveToUtxoParamsToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
 class DetachFromUtxoEvent extends Event {
   final DetachFromUtxoParams params;
 
@@ -2196,6 +2299,8 @@ class VerboseEvent extends Event {
         return VerboseAttachToUtxoEvent.fromJson(json);
       case "DETACH_FROM_UTXO":
         return VerboseDetachFromUtxoEvent.fromJson(json);
+      case "MOVE_TO_UTXO":
+        return VerboseMoveToUtxoEvent.fromJson(json);
       default:
         return _$VerboseEventFromJson(json);
     }

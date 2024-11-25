@@ -547,7 +547,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
           asset,
           quantity,
           false,
-          true, //  allow unconfirmed
+          true, //  allow unconfirmed inputs
           fee, //exect fee
           inputsSetString,
         );

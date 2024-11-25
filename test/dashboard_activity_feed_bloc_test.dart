@@ -40,7 +40,8 @@ final DEFAULT_WHITELIST = [
   "CANCEL_ORDER",
   "ORDER_EXPIRATION",
   "ATTACH_TO_UTXO",
-  "DETACH_FROM_UTXO"
+  "DETACH_FROM_UTXO",
+  "MOVE_TO_UTXO",
 ];
 
 extension DateTimeExtension on DateTime {
