@@ -93,6 +93,10 @@ class FakeBalance extends Fake implements Balance {
   final String address;
   @override
   final AssetInfo assetInfo;
+  @override
+  final String? utxo;
+  @override
+  final String? utxoAddress;
 
   FakeBalance({
     required this.asset,
@@ -100,6 +104,8 @@ class FakeBalance extends Fake implements Balance {
     required this.quantityNormalized,
     required this.address,
     required this.assetInfo,
+    this.utxo,
+    this.utxoAddress,
   });
 }
 
@@ -108,6 +114,36 @@ class FakeFairminter extends Fake implements Fairminter {
   final String asset;
 
   FakeFairminter({required this.asset});
+}
+
+class FakeUtxoBalance extends Fake implements Balance {
+  @override
+  final String? address;
+  @override
+  final int quantity;
+  @override
+  final String quantityNormalized;
+  @override
+  final AssetInfo assetInfo;
+
+  @override
+  final String utxo;
+
+  @override
+  final String utxoAddress;
+
+  @override
+  final String asset;
+
+  FakeUtxoBalance({
+    this.address,
+    required this.quantity,
+    required this.quantityNormalized,
+    required this.assetInfo,
+    required this.utxo,
+    required this.utxoAddress,
+    required this.asset,
+  });
 }
 
 void main() {
@@ -119,6 +155,7 @@ void main() {
   late Map<String, Balance> aggregatedBalances;
   late List<Asset> ownedAssets;
   late List<Fairminter> fairminterAssets;
+  late List<Balance> utxoBalances;
 
   setUp(() {
     // Register mock Config
@@ -144,6 +181,8 @@ void main() {
         quantity: 0,
         quantityNormalized: '0',
         address: '',
+        utxo: null,
+        utxoAddress: '',
         assetInfo: FakeAssetInfo(
           assetLongname: '',
           issuer: '',
@@ -151,6 +190,19 @@ void main() {
         ),
       ),
     );
+    registerFallbackValue(FakeFairminter(asset: ''));
+    registerFallbackValue(FakeUtxoBalance(
+      utxo: '',
+      utxoAddress: '',
+      asset: '',
+      quantity: 0,
+      quantityNormalized: '0',
+      assetInfo: FakeAssetInfo(
+        assetLongname: '',
+        issuer: '',
+        divisible: false,
+      ),
+    ));
 
     // Create fake assets and balances
     final asset1 = FakeAsset(
@@ -167,6 +219,15 @@ void main() {
       assetLongname: '',
       owner: '1OtherAddress',
       issuer: '1IssuerAddress',
+      divisible: true,
+      locked: false,
+    );
+
+    final fairUtxoAsset = FakeAsset(
+      asset: 'FAIR_UTXO',
+      assetLongname: '',
+      owner: '1TestAddress',
+      issuer: '1TestAddress',
       divisible: true,
       locked: false,
     );
@@ -210,12 +271,41 @@ void main() {
     );
 
     fairminterAssets = [fairminterAsset1];
-    ownedAssets = [asset1];
+    ownedAssets = [asset1, fairUtxoAsset];
+
+    final utxoBalanceOwned = FakeUtxoBalance(
+      utxo: '1:1',
+      utxoAddress: '1TestAddress',
+      asset: fairUtxoAsset.asset,
+      quantity: 100000000,
+      quantityNormalized: '1.00000000',
+      assetInfo: FakeAssetInfo(
+        assetLongname: fairUtxoAsset.assetLongname!,
+        issuer: fairUtxoAsset.issuer!,
+        divisible: fairUtxoAsset.divisible,
+      ),
+    );
+
+    final utxoBalanceUnowned = FakeUtxoBalance(
+      utxo: '1:1',
+      utxoAddress: '1TestAddress',
+      asset: '80K',
+      quantity: 100000000,
+      quantityNormalized: '1.00000000',
+      assetInfo: FakeAssetInfo(
+        assetLongname: '80K',
+        issuer: 'differentIssuer',
+        divisible: true,
+      ),
+    );
+
+    utxoBalances = [utxoBalanceUnowned, utxoBalanceOwned];
 
     // Mock the state
     when(() => mockBalancesBloc.state).thenReturn(
       BalancesState.complete(
-        Result.ok(balances, aggregatedBalances, ownedAssets, fairminterAssets),
+        Result.ok(balances, aggregatedBalances, utxoBalances, ownedAssets,
+            fairminterAssets),
       ),
     );
 
@@ -223,8 +313,8 @@ void main() {
     when(() => mockBalancesBloc.stream).thenAnswer(
       (_) => Stream<BalancesState>.value(
         BalancesState.complete(
-          Result.ok(
-              balances, aggregatedBalances, ownedAssets, fairminterAssets),
+          Result.ok(balances, aggregatedBalances, utxoBalances, ownedAssets,
+              fairminterAssets),
         ),
       ),
     );
@@ -264,6 +354,8 @@ void main() {
       // Verify that both assets are displayed
       expect(find.byKey(const Key('assetName_PEPENARDO')), findsOneWidget);
       expect(find.byKey(const Key('assetName_MAXVOLUME')), findsOneWidget);
+      expect(find.byKey(const Key('assetName_FAIR_UTXO')), findsOneWidget);
+      expect(find.byKey(const Key('assetName_80K')), findsOneWidget);
 
       await tester.enterText(find.byKey(const Key('search_input')), 'pepe');
       await tester.pumpAndSettle();
@@ -271,6 +363,8 @@ void main() {
       // Verify that only 'PEPENARDO' is displayed
       expect(find.byKey(const Key('assetName_PEPENARDO')), findsOneWidget);
       expect(find.byKey(const Key('assetName_MAXVOLUME')), findsNothing);
+      expect(find.byKey(const Key('assetName_FAIR_UTXO')), findsNothing);
+      expect(find.byKey(const Key('assetName_80K')), findsNothing);
     });
 
     testWidgets('should search by subasset name', (WidgetTester tester) async {
@@ -301,6 +395,8 @@ void main() {
       // Verify that both assets are displayed
       expect(find.byKey(const Key('assetName_PEPENARDO')), findsOneWidget);
       expect(find.byKey(const Key('assetName_MAXVOLUME')), findsOneWidget);
+      expect(find.byKey(const Key('assetName_FAIR_UTXO')), findsOneWidget);
+      expect(find.byKey(const Key('assetName_80K')), findsOneWidget);
 
       await tester.enterText(find.byKey(const Key('search_input')), 'asdf');
       await tester.pumpAndSettle();
@@ -308,6 +404,8 @@ void main() {
       // Verify that only 'PEPENARDO' is displayed
       expect(find.byKey(const Key('assetName_PEPENARDO')), findsOneWidget);
       expect(find.byKey(const Key('assetName_MAXVOLUME')), findsNothing);
+      expect(find.byKey(const Key('assetName_FAIR_UTXO')), findsNothing);
+      expect(find.byKey(const Key('assetName_80K')), findsNothing);
     });
 
     testWidgets(
@@ -340,6 +438,8 @@ void main() {
       // Verify that both assets are displayed
       expect(find.byKey(const Key('assetName_PEPENARDO')), findsOneWidget);
       expect(find.byKey(const Key('assetName_MAXVOLUME')), findsOneWidget);
+      expect(find.byKey(const Key('assetName_FAIR_UTXO')), findsOneWidget);
+      expect(find.byKey(const Key('assetName_80K')), findsOneWidget);
 
       // Tap the "Owned" checkbox
       await tester.tap(find.byKey(const Key('owned_checkbox')));
@@ -348,6 +448,121 @@ void main() {
       // Verify that only the owned asset is displayed
       expect(find.byKey(const Key('assetName_PEPENARDO')), findsOneWidget);
       expect(find.byKey(const Key('assetName_MAXVOLUME')), findsNothing);
+      expect(find.byKey(const Key('assetName_FAIR_UTXO')), findsOneWidget);
+      expect(find.byKey(const Key('assetName_80K')), findsNothing);
+    });
+
+    testWidgets('should filter when "Utxo Attached" is selected',
+        (WidgetTester tester) async {
+      final address = FakeAddress(address: '1TestAddress');
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: BlocProvider<BalancesBloc>.value(
+            value: mockBalancesBloc,
+            child: Scaffold(
+              body: CustomScrollView(
+                slivers: [
+                  BalancesDisplay(
+                    isDarkTheme: false,
+                    currentAddress: address.address,
+                    initialItemCount: 10,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+
+      // Wait for the widget tree to build
+      await tester.pumpAndSettle();
+
+      // Verify that both assets are displayed
+      expect(find.byKey(const Key('assetName_PEPENARDO')), findsOneWidget);
+      expect(find.byKey(const Key('assetName_MAXVOLUME')), findsOneWidget);
+      expect(find.byKey(const Key('assetName_FAIR_UTXO')), findsOneWidget);
+      expect(find.byKey(const Key('assetName_80K')), findsOneWidget);
+
+      // Tap the "Utxo Attached" checkbox
+      await tester.tap(find.byKey(const Key('utxo_checkbox')));
+      await tester.pumpAndSettle();
+
+      // Verify that only the utxo asset is displayed
+      expect(find.byKey(const Key('assetName_PEPENARDO')), findsNothing);
+      expect(find.byKey(const Key('assetName_MAXVOLUME')), findsNothing);
+      expect(find.byKey(const Key('assetName_FAIR_UTXO')), findsOneWidget);
+      expect(find.byKey(const Key('assetName_80K')), findsOneWidget);
+    });
+
+    testWidgets('should filter based on search input and "Utxo Attached"',
+        (WidgetTester tester) async {
+      final address = FakeAddress(address: '1TestAddress');
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: BlocProvider<BalancesBloc>.value(
+            value: mockBalancesBloc,
+            child: Scaffold(
+              body: CustomScrollView(
+                slivers: [
+                  BalancesDisplay(
+                    isDarkTheme: false,
+                    currentAddress: address.address,
+                    initialItemCount: 10,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+
+      // Wait for the widget tree to build
+      await tester.pumpAndSettle();
+
+      // Verify that all assets are displayed
+      expect(find.byKey(const Key('assetName_PEPENARDO')), findsOneWidget);
+      expect(find.byKey(const Key('assetName_MAXVOLUME')), findsOneWidget);
+      expect(find.byKey(const Key('assetName_FAIR_UTXO')), findsOneWidget);
+      expect(find.byKey(const Key('assetName_80K')), findsOneWidget);
+
+      // Tap the "Utxo Attached" checkbox
+      await tester.tap(find.byKey(const Key('utxo_checkbox')));
+      await tester.pumpAndSettle();
+
+      // Verify that only the utxo assets are displayed
+      expect(find.byKey(const Key('assetName_PEPENARDO')), findsNothing);
+      expect(find.byKey(const Key('assetName_MAXVOLUME')), findsNothing);
+      expect(find.byKey(const Key('assetName_FAIR_UTXO')), findsOneWidget);
+      expect(find.byKey(const Key('assetName_80K')), findsOneWidget);
+
+      await tester.enterText(find.byKey(const Key('search_input')), 'fair');
+      await tester.pumpAndSettle();
+
+      // Verify that only the utxo searched asset is displayed
+      expect(find.byKey(const Key('assetName_PEPENARDO')), findsNothing);
+      expect(find.byKey(const Key('assetName_MAXVOLUME')), findsNothing);
+      expect(find.byKey(const Key('assetName_FAIR_UTXO')), findsOneWidget);
+      expect(find.byKey(const Key('assetName_80K')), findsNothing);
+
+      await tester.tap(find.byKey(const Key('owned_checkbox')));
+      await tester.pumpAndSettle();
+
+      // Verify that only searched, utxo, and owned asset is displayed
+      expect(find.byKey(const Key('assetName_PEPENARDO')), findsNothing);
+      expect(find.byKey(const Key('assetName_MAXVOLUME')), findsNothing);
+      expect(find.byKey(const Key('assetName_FAIR_UTXO')), findsOneWidget);
+      expect(find.byKey(const Key('assetName_80K')), findsNothing);
+
+      await tester.enterText(find.byKey(const Key('search_input')), '');
+      await tester.pumpAndSettle();
+
+      // Verify that owned and utxo asset is displayed
+      expect(find.byKey(const Key('assetName_PEPENARDO')), findsNothing);
+      expect(find.byKey(const Key('assetName_MAXVOLUME')), findsNothing);
+      expect(find.byKey(const Key('assetName_FAIR_UTXO')), findsOneWidget);
+      expect(find.byKey(const Key('assetName_80K')), findsNothing);
     });
 
     testWidgets(
@@ -372,6 +587,15 @@ void main() {
           assetLongname: 'ASSET2.LONG',
           owner: '1TestAddress',
           issuer: '1IssuerAddress',
+          divisible: true,
+          locked: false,
+        ),
+        // UTXO asset owned by current address
+        FakeAsset(
+          asset: 'FAIR_UTXO',
+          assetLongname: '',
+          owner: '1TestAddress',
+          issuer: '1TestAddress',
           divisible: true,
           locked: false,
         ),
@@ -469,21 +693,37 @@ void main() {
       final ownedAssets = [
         assets[0], // ASSET1: Owned by current address
         assets[1], // ASSET2: Owned by current address
+        assets[2], // FAIR_UTXO: Owned by current address
+      ];
+
+      utxoBalances = [
+        FakeUtxoBalance(
+          utxo: '1:1',
+          utxoAddress: '1TestAddress',
+          asset: assets[2].asset,
+          quantity: 100000000,
+          quantityNormalized: '1.00000000',
+          assetInfo: FakeAssetInfo(
+            assetLongname: assets[2].assetLongname!,
+            issuer: assets[2].issuer!,
+            divisible: assets[2].divisible,
+          ),
+        )
       ];
 
       // Mock the BalancesBloc state and stream with the new data
       when(() => mockBalancesBloc.state).thenReturn(
         BalancesState.complete(
-          Result.ok(
-              balances, aggregatedBalances, ownedAssets, fairminterAssets),
+          Result.ok(balances, aggregatedBalances, utxoBalances, ownedAssets,
+              fairminterAssets),
         ),
       );
 
       when(() => mockBalancesBloc.stream).thenAnswer(
         (_) => Stream<BalancesState>.value(
           BalancesState.complete(
-            Result.ok(
-                balances, aggregatedBalances, ownedAssets, fairminterAssets),
+            Result.ok(balances, aggregatedBalances, utxoBalances, ownedAssets,
+                fairminterAssets),
           ),
         ),
       );
@@ -516,6 +756,7 @@ void main() {
       expect(find.byKey(const Key('assetName_ASSET3')), findsOneWidget);
       expect(find.byKey(const Key('assetName_ASSET4')), findsOneWidget);
       expect(find.byKey(const Key('assetName_FILTERME')), findsOneWidget);
+      expect(find.byKey(const Key('assetName_FAIR_UTXO')), findsOneWidget);
 
       // Enter search term 'ASSET'
       await tester.enterText(find.byKey(const Key('search_input')), 'ASSET');
@@ -527,7 +768,7 @@ void main() {
       expect(find.byKey(const Key('assetName_ASSET3')), findsOneWidget);
       expect(find.byKey(const Key('assetName_ASSET4')), findsOneWidget);
       expect(find.byKey(const Key('assetName_FILTERME')), findsNothing);
-
+      expect(find.byKey(const Key('assetName_FAIR_UTXO')), findsNothing);
       // Tap the "Owned" checkbox
       await tester.tap(find.byKey(const Key('owned_checkbox')));
       await tester.pumpAndSettle();
@@ -538,7 +779,7 @@ void main() {
       expect(find.byKey(const Key('assetName_ASSET3')), findsNothing);
       expect(find.byKey(const Key('assetName_ASSET4')), findsNothing);
       expect(find.byKey(const Key('assetName_FILTERME')), findsNothing);
-
+      expect(find.byKey(const Key('assetName_FAIR_UTXO')), findsNothing);
       // Change the search term to 'FILTERME'
       await tester.enterText(find.byKey(const Key('search_input')), 'FILTERME');
       await tester.pumpAndSettle();
@@ -549,7 +790,7 @@ void main() {
       expect(find.byKey(const Key('assetName_ASSET3')), findsNothing);
       expect(find.byKey(const Key('assetName_ASSET4')), findsNothing);
       expect(find.byKey(const Key('assetName_FILTERME')), findsNothing);
-
+      expect(find.byKey(const Key('assetName_FAIR_UTXO')), findsNothing);
       // Uncheck "Owned" filter
       await tester.tap(find.byKey(const Key('owned_checkbox')));
       await tester.pumpAndSettle();
@@ -559,7 +800,7 @@ void main() {
       expect(find.byKey(const Key('assetName_ASSET2')), findsNothing);
       expect(find.byKey(const Key('assetName_ASSET3')), findsNothing);
       expect(find.byKey(const Key('assetName_ASSET4')), findsNothing);
-
+      expect(find.byKey(const Key('assetName_FAIR_UTXO')), findsNothing);
       // Verify that 'FILTERME' asset is displayed now that owned filter is removed
       expect(find.byKey(const Key('assetName_FILTERME')), findsOneWidget);
     });
@@ -617,14 +858,14 @@ void main() {
       // Mock the BalancesBloc to return an empty list of balances
       when(() => mockBalancesBloc.state).thenReturn(
         const BalancesState.complete(
-          Result.ok([], {}, [], []),
+          Result.ok([], {}, [], [], []),
         ),
       );
 
       when(() => mockBalancesBloc.stream).thenAnswer(
         (_) => Stream<BalancesState>.value(
           const BalancesState.complete(
-            Result.ok([], {}, [], []),
+            Result.ok([], {}, [], [], []),
           ),
         ),
       );
@@ -688,16 +929,16 @@ void main() {
       // Mock the BalancesBloc state and stream with the new data
       when(() => mockBalancesBloc.state).thenReturn(
         BalancesState.complete(
-          Result.ok(
-              balances, aggregatedBalances, ownedAssets, fairminterAssets),
+          Result.ok(balances, aggregatedBalances, utxoBalances, ownedAssets,
+              fairminterAssets),
         ),
       );
 
       when(() => mockBalancesBloc.stream).thenAnswer(
         (_) => Stream<BalancesState>.value(
           BalancesState.complete(
-            Result.ok(
-                balances, aggregatedBalances, ownedAssets, fairminterAssets),
+            Result.ok(balances, aggregatedBalances, utxoBalances, ownedAssets,
+                fairminterAssets),
           ),
         ),
       );
@@ -810,22 +1051,36 @@ void main() {
         'FAIRMINT': balances[2],
       };
 
+      final utxoBalance1 = FakeUtxoBalance(
+        utxo: '1:1',
+        utxoAddress: '1TestAddress',
+        asset: '80K',
+        quantity: 100000000,
+        quantityNormalized: '1.00000000',
+        assetInfo: FakeAssetInfo(
+          assetLongname: '80K',
+          issuer: 'differentIssuer',
+          divisible: true,
+        ),
+      );
+
+      final utxoBalances = [utxoBalance1];
       final ownedAssets = [unlockedAsset, lockedAsset, fairmintAsset];
       final fairminterAssets = [fairminter];
 
       // Mock the BalancesBloc state and stream
       when(() => mockBalancesBloc.state).thenReturn(
         BalancesState.complete(
-          Result.ok(
-              balances, aggregatedBalances, ownedAssets, fairminterAssets),
+          Result.ok(balances, aggregatedBalances, utxoBalances, ownedAssets,
+              fairminterAssets),
         ),
       );
 
       when(() => mockBalancesBloc.stream).thenAnswer(
         (_) => Stream<BalancesState>.value(
           BalancesState.complete(
-            Result.ok(
-                balances, aggregatedBalances, ownedAssets, fairminterAssets),
+            Result.ok(balances, aggregatedBalances, utxoBalances, ownedAssets,
+                fairminterAssets),
           ),
         ),
       );

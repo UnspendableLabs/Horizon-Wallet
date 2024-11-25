@@ -156,6 +156,8 @@ BalanceVerbose _$BalanceVerboseFromJson(Map<String, dynamic> json) =>
       assetInfo:
           AssetInfoModel.fromJson(json['asset_info'] as Map<String, dynamic>),
       quantityNormalized: json['quantity_normalized'] as String,
+      utxo: json['utxo'] as String?,
+      utxoAddress: json['utxo_address'] as String?,
     );
 
 Map<String, dynamic> _$BalanceVerboseToJson(BalanceVerbose instance) =>
@@ -165,6 +167,8 @@ Map<String, dynamic> _$BalanceVerboseToJson(BalanceVerbose instance) =>
       'asset': instance.asset,
       'quantity_normalized': instance.quantityNormalized,
       'asset_info': instance.assetInfo,
+      'utxo': instance.utxo,
+      'utxo_address': instance.utxoAddress,
     };
 
 MultiBalance _$MultiBalanceFromJson(Map<String, dynamic> json) => MultiBalance(
@@ -183,6 +187,8 @@ MultiBalanceVerbose _$MultiBalanceVerboseFromJson(Map<String, dynamic> json) =>
       address: json['address'] as String?,
       quantity: (json['quantity'] as num).toInt(),
       quantityNormalized: json['quantity_normalized'] as String,
+      utxo: json['utxo'] as String?,
+      utxoAddress: json['utxo_address'] as String?,
     );
 
 Map<String, dynamic> _$MultiBalanceVerboseToJson(
@@ -191,6 +197,8 @@ Map<String, dynamic> _$MultiBalanceVerboseToJson(
       'address': instance.address,
       'quantity': instance.quantity,
       'quantity_normalized': instance.quantityNormalized,
+      'utxo': instance.utxo,
+      'utxo_address': instance.utxoAddress,
     };
 
 MultiAddressBalance _$MultiAddressBalanceFromJson(Map<String, dynamic> json) =>
@@ -1352,6 +1360,279 @@ Map<String, dynamic> _$OrderFilledEventToJson(OrderFilledEvent instance) =>
       'params': instance.params,
     };
 
+MoveToUtxoEvent _$MoveToUtxoEventFromJson(Map<String, dynamic> json) =>
+    MoveToUtxoEvent(
+      eventIndex: (json['event_index'] as num?)?.toInt(),
+      event: json['event'] as String,
+      txHash: json['tx_hash'] as String?,
+      blockIndex: (json['block_index'] as num?)?.toInt(),
+      params: MoveToUtxoParams.fromJson(json['params'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$MoveToUtxoEventToJson(MoveToUtxoEvent instance) =>
+    <String, dynamic>{
+      'event_index': instance.eventIndex,
+      'event': instance.event,
+      'tx_hash': instance.txHash,
+      'block_index': instance.blockIndex,
+      'params': instance.params,
+    };
+
+MoveToUtxoParams _$MoveToUtxoParamsFromJson(Map<String, dynamic> json) =>
+    MoveToUtxoParams(
+      asset: json['asset'] as String,
+      blockIndex: (json['block_index'] as num).toInt(),
+      destination: json['destination'] as String,
+      feePaid: (json['fee_paid'] as num).toInt(),
+      msgIndex: (json['msg_index'] as num).toInt(),
+      quantity: (json['quantity'] as num).toInt(),
+      source: json['source'] as String,
+      status: json['status'] as String,
+      txHash: json['tx_hash'] as String,
+      txIndex: (json['tx_index'] as num).toInt(),
+      blockTime: (json['block_time'] as num).toInt(),
+    );
+
+Map<String, dynamic> _$MoveToUtxoParamsToJson(MoveToUtxoParams instance) =>
+    <String, dynamic>{
+      'asset': instance.asset,
+      'block_index': instance.blockIndex,
+      'destination': instance.destination,
+      'fee_paid': instance.feePaid,
+      'msg_index': instance.msgIndex,
+      'quantity': instance.quantity,
+      'source': instance.source,
+      'status': instance.status,
+      'tx_hash': instance.txHash,
+      'tx_index': instance.txIndex,
+      'block_time': instance.blockTime,
+    };
+
+VerboseMoveToUtxoEvent _$VerboseMoveToUtxoEventFromJson(
+        Map<String, dynamic> json) =>
+    VerboseMoveToUtxoEvent(
+      eventIndex: (json['event_index'] as num?)?.toInt(),
+      event: json['event'] as String,
+      txHash: json['tx_hash'] as String?,
+      blockIndex: (json['block_index'] as num?)?.toInt(),
+      blockTime: (json['block_time'] as num?)?.toInt(),
+      params: VerboseMoveToUtxoParams.fromJson(
+          json['params'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$VerboseMoveToUtxoEventToJson(
+        VerboseMoveToUtxoEvent instance) =>
+    <String, dynamic>{
+      'event_index': instance.eventIndex,
+      'event': instance.event,
+      'tx_hash': instance.txHash,
+      'block_index': instance.blockIndex,
+      'block_time': instance.blockTime,
+      'params': instance.params,
+    };
+
+VerboseMoveToUtxoParams _$VerboseMoveToUtxoParamsFromJson(
+        Map<String, dynamic> json) =>
+    VerboseMoveToUtxoParams(
+      asset: json['asset'] as String,
+      blockIndex: (json['block_index'] as num).toInt(),
+      destination: json['destination'] as String,
+      feePaid: (json['fee_paid'] as num).toInt(),
+      msgIndex: (json['msg_index'] as num).toInt(),
+      quantity: (json['quantity'] as num).toInt(),
+      source: json['source'] as String,
+      status: json['status'] as String,
+      txHash: json['tx_hash'] as String,
+      txIndex: (json['tx_index'] as num).toInt(),
+      blockTime: (json['block_time'] as num).toInt(),
+      assetInfo:
+          AssetInfoModel.fromJson(json['asset_info'] as Map<String, dynamic>),
+      quantityNormalized: json['quantity_normalized'] as String,
+      feePaidNormalized: json['fee_paid_normalized'] as String,
+    );
+
+Map<String, dynamic> _$VerboseMoveToUtxoParamsToJson(
+        VerboseMoveToUtxoParams instance) =>
+    <String, dynamic>{
+      'asset': instance.asset,
+      'block_index': instance.blockIndex,
+      'destination': instance.destination,
+      'fee_paid': instance.feePaid,
+      'msg_index': instance.msgIndex,
+      'quantity': instance.quantity,
+      'source': instance.source,
+      'status': instance.status,
+      'tx_hash': instance.txHash,
+      'tx_index': instance.txIndex,
+      'block_time': instance.blockTime,
+      'asset_info': instance.assetInfo,
+      'quantity_normalized': instance.quantityNormalized,
+      'fee_paid_normalized': instance.feePaidNormalized,
+    };
+
+DetachFromUtxoEvent _$DetachFromUtxoEventFromJson(Map<String, dynamic> json) =>
+    DetachFromUtxoEvent(
+      eventIndex: (json['event_index'] as num?)?.toInt(),
+      event: json['event'] as String,
+      txHash: json['tx_hash'] as String?,
+      blockIndex: (json['block_index'] as num?)?.toInt(),
+      params:
+          DetachFromUtxoParams.fromJson(json['params'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$DetachFromUtxoEventToJson(
+        DetachFromUtxoEvent instance) =>
+    <String, dynamic>{
+      'event_index': instance.eventIndex,
+      'event': instance.event,
+      'tx_hash': instance.txHash,
+      'block_index': instance.blockIndex,
+      'params': instance.params,
+    };
+
+DetachFromUtxoParams _$DetachFromUtxoParamsFromJson(
+        Map<String, dynamic> json) =>
+    DetachFromUtxoParams(
+      asset: json['asset'] as String,
+      blockIndex: (json['block_index'] as num).toInt(),
+      destination: json['destination'] as String,
+      feePaid: (json['fee_paid'] as num).toInt(),
+      msgIndex: (json['msg_index'] as num).toInt(),
+      quantity: (json['quantity'] as num).toInt(),
+      source: json['source'] as String,
+      status: json['status'] as String,
+      txHash: json['tx_hash'] as String,
+      txIndex: (json['tx_index'] as num).toInt(),
+      blockTime: (json['block_time'] as num).toInt(),
+    );
+
+Map<String, dynamic> _$DetachFromUtxoParamsToJson(
+        DetachFromUtxoParams instance) =>
+    <String, dynamic>{
+      'asset': instance.asset,
+      'block_index': instance.blockIndex,
+      'destination': instance.destination,
+      'fee_paid': instance.feePaid,
+      'msg_index': instance.msgIndex,
+      'quantity': instance.quantity,
+      'source': instance.source,
+      'status': instance.status,
+      'tx_hash': instance.txHash,
+      'tx_index': instance.txIndex,
+      'block_time': instance.blockTime,
+    };
+
+VerboseDetachFromUtxoEvent _$VerboseDetachFromUtxoEventFromJson(
+        Map<String, dynamic> json) =>
+    VerboseDetachFromUtxoEvent(
+      eventIndex: (json['event_index'] as num?)?.toInt(),
+      event: json['event'] as String,
+      txHash: json['tx_hash'] as String?,
+      blockIndex: (json['block_index'] as num?)?.toInt(),
+      blockTime: (json['block_time'] as num?)?.toInt(),
+      params: VerboseDetachFromUtxoParams.fromJson(
+          json['params'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$VerboseDetachFromUtxoEventToJson(
+        VerboseDetachFromUtxoEvent instance) =>
+    <String, dynamic>{
+      'event_index': instance.eventIndex,
+      'event': instance.event,
+      'tx_hash': instance.txHash,
+      'block_index': instance.blockIndex,
+      'block_time': instance.blockTime,
+      'params': instance.params,
+    };
+
+VerboseDetachFromUtxoParams _$VerboseDetachFromUtxoParamsFromJson(
+        Map<String, dynamic> json) =>
+    VerboseDetachFromUtxoParams(
+      asset: json['asset'] as String,
+      blockIndex: (json['block_index'] as num).toInt(),
+      destination: json['destination'] as String,
+      feePaid: (json['fee_paid'] as num).toInt(),
+      msgIndex: (json['msg_index'] as num).toInt(),
+      quantity: (json['quantity'] as num).toInt(),
+      source: json['source'] as String,
+      status: json['status'] as String,
+      txHash: json['tx_hash'] as String,
+      txIndex: (json['tx_index'] as num).toInt(),
+      blockTime: (json['block_time'] as num).toInt(),
+      assetInfo:
+          AssetInfoModel.fromJson(json['asset_info'] as Map<String, dynamic>),
+      quantityNormalized: json['quantity_normalized'] as String,
+      feePaidNormalized: json['fee_paid_normalized'] as String,
+    );
+
+Map<String, dynamic> _$VerboseDetachFromUtxoParamsToJson(
+        VerboseDetachFromUtxoParams instance) =>
+    <String, dynamic>{
+      'asset': instance.asset,
+      'block_index': instance.blockIndex,
+      'destination': instance.destination,
+      'fee_paid': instance.feePaid,
+      'msg_index': instance.msgIndex,
+      'quantity': instance.quantity,
+      'source': instance.source,
+      'status': instance.status,
+      'tx_hash': instance.txHash,
+      'tx_index': instance.txIndex,
+      'block_time': instance.blockTime,
+      'asset_info': instance.assetInfo,
+      'quantity_normalized': instance.quantityNormalized,
+      'fee_paid_normalized': instance.feePaidNormalized,
+    };
+
+AttachToUtxoEvent _$AttachToUtxoEventFromJson(Map<String, dynamic> json) =>
+    AttachToUtxoEvent(
+      eventIndex: (json['event_index'] as num?)?.toInt(),
+      event: json['event'] as String,
+      txHash: json['tx_hash'] as String?,
+      blockIndex: (json['block_index'] as num?)?.toInt(),
+      params:
+          AttachToUtxoParams.fromJson(json['params'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$AttachToUtxoEventToJson(AttachToUtxoEvent instance) =>
+    <String, dynamic>{
+      'event_index': instance.eventIndex,
+      'event': instance.event,
+      'tx_hash': instance.txHash,
+      'block_index': instance.blockIndex,
+      'params': instance.params,
+    };
+
+AttachToUtxoParams _$AttachToUtxoParamsFromJson(Map<String, dynamic> json) =>
+    AttachToUtxoParams(
+      asset: json['asset'] as String,
+      blockIndex: (json['block_index'] as num).toInt(),
+      destination: json['destination'] as String,
+      feePaid: (json['fee_paid'] as num).toInt(),
+      msgIndex: (json['msg_index'] as num).toInt(),
+      quantity: (json['quantity'] as num).toInt(),
+      source: json['source'] as String,
+      status: json['status'] as String,
+      txHash: json['tx_hash'] as String,
+      txIndex: (json['tx_index'] as num).toInt(),
+      blockTime: (json['block_time'] as num).toInt(),
+    );
+
+Map<String, dynamic> _$AttachToUtxoParamsToJson(AttachToUtxoParams instance) =>
+    <String, dynamic>{
+      'asset': instance.asset,
+      'block_index': instance.blockIndex,
+      'destination': instance.destination,
+      'fee_paid': instance.feePaid,
+      'msg_index': instance.msgIndex,
+      'quantity': instance.quantity,
+      'source': instance.source,
+      'status': instance.status,
+      'tx_hash': instance.txHash,
+      'tx_index': instance.txIndex,
+      'block_time': instance.blockTime,
+    };
+
 OrderFilledParams _$OrderFilledParamsFromJson(Map<String, dynamic> json) =>
     OrderFilledParams(
       status: json['status'] as String,
@@ -1563,6 +1844,68 @@ Map<String, dynamic> _$VerboseOrderExpirationParamsToJson(
       'order_hash': instance.orderHash,
       'source': instance.source,
       'block_time': instance.blockTime,
+    };
+
+VerboseAttachToUtxoEvent _$VerboseAttachToUtxoEventFromJson(
+        Map<String, dynamic> json) =>
+    VerboseAttachToUtxoEvent(
+      eventIndex: (json['event_index'] as num?)?.toInt(),
+      event: json['event'] as String,
+      txHash: json['tx_hash'] as String?,
+      blockIndex: (json['block_index'] as num?)?.toInt(),
+      blockTime: (json['block_time'] as num?)?.toInt(),
+      params: VerboseAttachToUtxoParams.fromJson(
+          json['params'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$VerboseAttachToUtxoEventToJson(
+        VerboseAttachToUtxoEvent instance) =>
+    <String, dynamic>{
+      'event_index': instance.eventIndex,
+      'event': instance.event,
+      'tx_hash': instance.txHash,
+      'block_index': instance.blockIndex,
+      'block_time': instance.blockTime,
+      'params': instance.params,
+    };
+
+VerboseAttachToUtxoParams _$VerboseAttachToUtxoParamsFromJson(
+        Map<String, dynamic> json) =>
+    VerboseAttachToUtxoParams(
+      asset: json['asset'] as String,
+      blockIndex: (json['block_index'] as num).toInt(),
+      destination: json['destination'] as String,
+      feePaid: (json['fee_paid'] as num).toInt(),
+      msgIndex: (json['msg_index'] as num).toInt(),
+      quantity: (json['quantity'] as num).toInt(),
+      source: json['source'] as String,
+      status: json['status'] as String,
+      txHash: json['tx_hash'] as String,
+      txIndex: (json['tx_index'] as num).toInt(),
+      blockTime: (json['block_time'] as num).toInt(),
+      assetInfo:
+          AssetInfoModel.fromJson(json['asset_info'] as Map<String, dynamic>),
+      quantityNormalized: json['quantity_normalized'] as String,
+      feePaidNormalized: json['fee_paid_normalized'] as String,
+    );
+
+Map<String, dynamic> _$VerboseAttachToUtxoParamsToJson(
+        VerboseAttachToUtxoParams instance) =>
+    <String, dynamic>{
+      'asset': instance.asset,
+      'block_index': instance.blockIndex,
+      'destination': instance.destination,
+      'fee_paid': instance.feePaid,
+      'msg_index': instance.msgIndex,
+      'quantity': instance.quantity,
+      'source': instance.source,
+      'status': instance.status,
+      'tx_hash': instance.txHash,
+      'tx_index': instance.txIndex,
+      'block_time': instance.blockTime,
+      'asset_info': instance.assetInfo,
+      'quantity_normalized': instance.quantityNormalized,
+      'fee_paid_normalized': instance.feePaidNormalized,
     };
 
 DispenserUpdateEvent _$DispenserUpdateEventFromJson(
@@ -3453,6 +3796,49 @@ class _V2Api implements V2Api {
   }
 
   @override
+  Future<Response<List<BalanceVerbose>>> getBalancesByUTXO(
+    String utxo, [
+    CursorModel? cursor,
+    int? limit,
+  ]) async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{
+      r'cursor': cursor?.toJson(),
+      r'limit': limit,
+    };
+    queryParameters.removeWhere((k, v) => v == null);
+    final _headers = <String, dynamic>{};
+    const Map<String, dynamic>? _data = null;
+    final _result = await _dio.fetch<Map<String, dynamic>>(
+        _setStreamType<Response<List<BalanceVerbose>>>(Options(
+      method: 'GET',
+      headers: _headers,
+      extra: _extra,
+    )
+            .compose(
+              _dio.options,
+              '/utxos/${utxo}/balances?verbose=true',
+              queryParameters: queryParameters,
+              data: _data,
+            )
+            .copyWith(
+                baseUrl: _combineBaseUrls(
+              _dio.options.baseUrl,
+              baseUrl,
+            ))));
+    final _value = Response<List<BalanceVerbose>>.fromJson(
+      _result.data!,
+      (json) => json is List<dynamic>
+          ? json
+              .map<BalanceVerbose>(
+                  (i) => BalanceVerbose.fromJson(i as Map<String, dynamic>))
+              .toList()
+          : List.empty(),
+    );
+    return _value;
+  }
+
+  @override
   Future<Response<List<Block>>> getBlocks(
     int limit,
     int last,
@@ -5190,6 +5576,159 @@ class _V2Api implements V2Api {
   }
 
   @override
+  Future<Response<ComposeAttachUtxoResponseModel>> composeAttachUtxo(
+    String address,
+    String asset,
+    int quantity, [
+    String? destinationVout,
+    bool? skipValidation,
+    bool? allowUnconfirmedInputs,
+    int? exactFee,
+    String? inputsSet,
+    bool? unconfirmed,
+  ]) async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{
+      r'asset': asset,
+      r'quantity': quantity,
+      r'destination_vout': destinationVout,
+      r'skip_validation': skipValidation,
+      r'allow_unconfirmed_inputs': allowUnconfirmedInputs,
+      r'exact_fee': exactFee,
+      r'inputs_set': inputsSet,
+      r'unconfirmed': unconfirmed,
+    };
+    queryParameters.removeWhere((k, v) => v == null);
+    final _headers = <String, dynamic>{};
+    const Map<String, dynamic>? _data = null;
+    final _result = await _dio.fetch<Map<String, dynamic>>(
+        _setStreamType<Response<ComposeAttachUtxoResponseModel>>(Options(
+      method: 'GET',
+      headers: _headers,
+      extra: _extra,
+    )
+            .compose(
+              _dio.options,
+              '/addresses/${address}/compose/attach?verbose=true',
+              queryParameters: queryParameters,
+              data: _data,
+            )
+            .copyWith(
+                baseUrl: _combineBaseUrls(
+              _dio.options.baseUrl,
+              baseUrl,
+            ))));
+    final _value = Response<ComposeAttachUtxoResponseModel>.fromJson(
+      _result.data!,
+      (json) =>
+          ComposeAttachUtxoResponseModel.fromJson(json as Map<String, dynamic>),
+    );
+    return _value;
+  }
+
+  @override
+  Future<Response<ComposeDetachUtxoResponseModel>> composeDetachUtxo(
+    String utxo, [
+    String? destination,
+    String? asset,
+    int? quantity,
+    bool? skipValidation,
+    bool? allowUnconfirmedInputs,
+    int? exactFee,
+    String? inputsSet,
+    bool? unconfirmed,
+  ]) async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{
+      r'destination': destination,
+      r'asset': asset,
+      r'quantity': quantity,
+      r'skip_validation': skipValidation,
+      r'allow_unconfirmed_inputs': allowUnconfirmedInputs,
+      r'exact_fee': exactFee,
+      r'inputs_set': inputsSet,
+      r'unconfirmed': unconfirmed,
+    };
+    queryParameters.removeWhere((k, v) => v == null);
+    final _headers = <String, dynamic>{};
+    const Map<String, dynamic>? _data = null;
+    final _result = await _dio.fetch<Map<String, dynamic>>(
+        _setStreamType<Response<ComposeDetachUtxoResponseModel>>(Options(
+      method: 'GET',
+      headers: _headers,
+      extra: _extra,
+    )
+            .compose(
+              _dio.options,
+              '/utxos/${utxo}/compose/detach?verbose=true',
+              queryParameters: queryParameters,
+              data: _data,
+            )
+            .copyWith(
+                baseUrl: _combineBaseUrls(
+              _dio.options.baseUrl,
+              baseUrl,
+            ))));
+    final _value = Response<ComposeDetachUtxoResponseModel>.fromJson(
+      _result.data!,
+      (json) =>
+          ComposeDetachUtxoResponseModel.fromJson(json as Map<String, dynamic>),
+    );
+    return _value;
+  }
+
+  @override
+  Future<Response<ComposeMoveToUtxoResponseModel>> composeMoveToUtxo(
+    String utxo, [
+    String? destination,
+    String? asset,
+    int? quantity,
+    bool? skipValidation,
+    bool? allowUnconfirmedInputs,
+    int? exactFee,
+    String? inputsSet,
+    bool? unconfirmed,
+  ]) async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{
+      r'destination': destination,
+      r'asset': asset,
+      r'quantity': quantity,
+      r'skip_validation': skipValidation,
+      r'allow_unconfirmed_inputs': allowUnconfirmedInputs,
+      r'exact_fee': exactFee,
+      r'inputs_set': inputsSet,
+      r'unconfirmed': unconfirmed,
+    };
+    queryParameters.removeWhere((k, v) => v == null);
+    final _headers = <String, dynamic>{};
+    const Map<String, dynamic>? _data = null;
+    final _result = await _dio.fetch<Map<String, dynamic>>(
+        _setStreamType<Response<ComposeMoveToUtxoResponseModel>>(Options(
+      method: 'GET',
+      headers: _headers,
+      extra: _extra,
+    )
+            .compose(
+              _dio.options,
+              '/utxos/${utxo}/compose/movetoutxo?verbose=true',
+              queryParameters: queryParameters,
+              data: _data,
+            )
+            .copyWith(
+                baseUrl: _combineBaseUrls(
+              _dio.options.baseUrl,
+              baseUrl,
+            ))));
+    final _value = Response<ComposeMoveToUtxoResponseModel>.fromJson(
+      _result.data!,
+      (json) =>
+          ComposeMoveToUtxoResponseModel.fromJson(json as Map<String, dynamic>),
+    );
+    return _value;
+  }
+
+  @override
   Future<Response<List<UTXO>>> getUnspentUTXOs(
     String address, [
     bool? unconfirmed,
@@ -5338,7 +5877,7 @@ class _V2Api implements V2Api {
   }
 
   @override
-  Future<Response<BalanceVerbose>> getBalanceForAddressAndAssetVerbose(
+  Future<Response<List<BalanceVerbose>>> getBalancesForAddressAndAssetVerbose(
     String address,
     String asset,
   ) async {
@@ -5347,7 +5886,7 @@ class _V2Api implements V2Api {
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
     final _result = await _dio.fetch<Map<String, dynamic>>(
-        _setStreamType<Response<BalanceVerbose>>(Options(
+        _setStreamType<Response<List<BalanceVerbose>>>(Options(
       method: 'GET',
       headers: _headers,
       extra: _extra,
@@ -5363,9 +5902,14 @@ class _V2Api implements V2Api {
               _dio.options.baseUrl,
               baseUrl,
             ))));
-    final _value = Response<BalanceVerbose>.fromJson(
+    final _value = Response<List<BalanceVerbose>>.fromJson(
       _result.data!,
-      (json) => BalanceVerbose.fromJson(json as Map<String, dynamic>),
+      (json) => json is List<dynamic>
+          ? json
+              .map<BalanceVerbose>(
+                  (i) => BalanceVerbose.fromJson(i as Map<String, dynamic>))
+              .toList()
+          : List.empty(),
     );
     return _value;
   }

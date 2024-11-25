@@ -3,8 +3,11 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:horizon/data/models/asset_info.dart';
 import 'package:horizon/data/models/bitcoin_decoded_tx.dart';
 import 'package:horizon/data/models/compose.dart';
+import 'package:horizon/data/models/compose_attach_utxo.dart';
+import 'package:horizon/data/models/compose_detach_utxo.dart';
 import 'package:horizon/data/models/compose_fairmint.dart';
 import 'package:horizon/data/models/compose_fairminter.dart';
+import 'package:horizon/data/models/compose_movetoutxo.dart';
 import 'package:horizon/data/models/compose_order.dart';
 import 'package:horizon/data/models/compose_cancel.dart';
 import 'package:horizon/data/models/cursor.dart';
@@ -162,13 +165,17 @@ class BalanceVerbose extends Balance {
   @override
   final String quantityNormalized;
   final AssetInfoModel assetInfo;
+  final String? utxo;
+  final String? utxoAddress;
 
   BalanceVerbose(
       {super.address,
       required super.quantity,
       required super.asset,
       required this.assetInfo,
-      required this.quantityNormalized});
+      required this.quantityNormalized,
+      this.utxo,
+      this.utxoAddress});
 
   factory BalanceVerbose.fromJson(Map<String, dynamic> json) =>
       _$BalanceVerboseFromJson(json);
@@ -189,8 +196,14 @@ class MultiBalanceVerbose {
   final String? address;
   final int quantity;
   final String quantityNormalized;
+  final String? utxo;
+  final String? utxoAddress;
   MultiBalanceVerbose(
-      {this.address, required this.quantity, required this.quantityNormalized});
+      {this.address,
+      required this.quantity,
+      required this.quantityNormalized,
+      this.utxo,
+      this.utxoAddress});
 
   factory MultiBalanceVerbose.fromJson(Map<String, dynamic> json) =>
       _$MultiBalanceVerboseFromJson(json);
@@ -279,6 +292,12 @@ class Event {
         return OrderExpirationEvent.fromJson(json);
       case "ORDER_FILLED":
         return OrderFilledEvent.fromJson(json);
+      case "ATTACH_TO_UTXO":
+        return AttachToUtxoEvent.fromJson(json);
+      case "DETACH_FROM_UTXO":
+        return DetachFromUtxoEvent.fromJson(json);
+      case "MOVE_TO_UTXO":
+        return MoveToUtxoEvent.fromJson(json);
       default:
         return _$EventFromJson(json);
     }
@@ -1287,6 +1306,260 @@ class OrderFilledEvent extends Event {
 }
 
 @JsonSerializable(fieldRename: FieldRename.snake)
+class MoveToUtxoEvent extends Event {
+  final MoveToUtxoParams params;
+
+  MoveToUtxoEvent({
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
+    required this.params,
+  });
+
+  factory MoveToUtxoEvent.fromJson(Map<String, dynamic> json) =>
+      _$MoveToUtxoEventFromJson(json);
+
+  Map<String, dynamic> toJson() => _$MoveToUtxoEventToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class MoveToUtxoParams {
+  final String asset;
+  final int blockIndex;
+  final String destination;
+  final int feePaid;
+  final int msgIndex;
+  final int quantity;
+  final String source;
+  final String status;
+  final String txHash;
+  final int txIndex;
+  final int blockTime;
+
+  MoveToUtxoParams({
+    required this.asset,
+    required this.blockIndex,
+    required this.destination,
+    required this.feePaid,
+    required this.msgIndex,
+    required this.quantity,
+    required this.source,
+    required this.status,
+    required this.txHash,
+    required this.txIndex,
+    required this.blockTime,
+  });
+
+  factory MoveToUtxoParams.fromJson(Map<String, dynamic> json) =>
+      _$MoveToUtxoParamsFromJson(json);
+
+  Map<String, dynamic> toJson() => _$MoveToUtxoParamsToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class VerboseMoveToUtxoEvent extends VerboseEvent {
+  final VerboseMoveToUtxoParams params;
+
+  VerboseMoveToUtxoEvent({
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
+    required super.blockTime,
+    required this.params,
+  });
+
+  factory VerboseMoveToUtxoEvent.fromJson(Map<String, dynamic> json) =>
+      _$VerboseMoveToUtxoEventFromJson(json);
+
+  Map<String, dynamic> toJson() => _$VerboseMoveToUtxoEventToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class VerboseMoveToUtxoParams extends MoveToUtxoParams {
+  final AssetInfoModel assetInfo;
+  final String quantityNormalized;
+  final String feePaidNormalized;
+
+  VerboseMoveToUtxoParams({
+    required super.asset,
+    required super.blockIndex,
+    required super.destination,
+    required super.feePaid,
+    required super.msgIndex,
+    required super.quantity,
+    required super.source,
+    required super.status,
+    required super.txHash,
+    required super.txIndex,
+    required super.blockTime,
+    required this.assetInfo,
+    required this.quantityNormalized,
+    required this.feePaidNormalized,
+  });
+
+  factory VerboseMoveToUtxoParams.fromJson(Map<String, dynamic> json) =>
+      _$VerboseMoveToUtxoParamsFromJson(json);
+
+  @override
+  Map<String, dynamic> toJson() => _$VerboseMoveToUtxoParamsToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class DetachFromUtxoEvent extends Event {
+  final DetachFromUtxoParams params;
+
+  DetachFromUtxoEvent({
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
+    required this.params,
+  });
+
+  factory DetachFromUtxoEvent.fromJson(Map<String, dynamic> json) =>
+      _$DetachFromUtxoEventFromJson(json);
+
+  Map<String, dynamic> toJson() => _$DetachFromUtxoEventToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class DetachFromUtxoParams {
+  final String asset;
+  final int blockIndex;
+  final String destination;
+  final int feePaid;
+  final int msgIndex;
+  final int quantity;
+  final String source;
+  final String status;
+  final String txHash;
+  final int txIndex;
+  final int blockTime;
+
+  DetachFromUtxoParams({
+    required this.asset,
+    required this.blockIndex,
+    required this.destination,
+    required this.feePaid,
+    required this.msgIndex,
+    required this.quantity,
+    required this.source,
+    required this.status,
+    required this.txHash,
+    required this.txIndex,
+    required this.blockTime,
+  });
+
+  factory DetachFromUtxoParams.fromJson(Map<String, dynamic> json) =>
+      _$DetachFromUtxoParamsFromJson(json);
+
+  Map<String, dynamic> toJson() => _$DetachFromUtxoParamsToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class VerboseDetachFromUtxoEvent extends VerboseEvent {
+  final VerboseDetachFromUtxoParams params;
+
+  VerboseDetachFromUtxoEvent({
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
+    required super.blockTime,
+    required this.params,
+  });
+
+  factory VerboseDetachFromUtxoEvent.fromJson(Map<String, dynamic> json) =>
+      _$VerboseDetachFromUtxoEventFromJson(json);
+
+  Map<String, dynamic> toJson() => _$VerboseDetachFromUtxoEventToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class VerboseDetachFromUtxoParams extends DetachFromUtxoParams {
+  final AssetInfoModel assetInfo;
+  final String quantityNormalized;
+  final String feePaidNormalized;
+
+  VerboseDetachFromUtxoParams({
+    required super.asset,
+    required super.blockIndex,
+    required super.destination,
+    required super.feePaid,
+    required super.msgIndex,
+    required super.quantity,
+    required super.source,
+    required super.status,
+    required super.txHash,
+    required super.txIndex,
+    required super.blockTime,
+    required this.assetInfo,
+    required this.quantityNormalized,
+    required this.feePaidNormalized,
+  });
+
+  factory VerboseDetachFromUtxoParams.fromJson(Map<String, dynamic> json) =>
+      _$VerboseDetachFromUtxoParamsFromJson(json);
+
+  @override
+  Map<String, dynamic> toJson() => _$VerboseDetachFromUtxoParamsToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class AttachToUtxoEvent extends Event {
+  final AttachToUtxoParams params;
+
+  AttachToUtxoEvent({
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
+    required this.params,
+  });
+
+  factory AttachToUtxoEvent.fromJson(Map<String, dynamic> json) =>
+      _$AttachToUtxoEventFromJson(json);
+
+  Map<String, dynamic> toJson() => _$AttachToUtxoEventToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class AttachToUtxoParams {
+  final String asset;
+  final int blockIndex;
+  final String destination;
+  final int feePaid;
+  final int msgIndex;
+  final int quantity;
+  final String source;
+  final String status;
+  final String txHash;
+  final int txIndex;
+  final int blockTime;
+
+  AttachToUtxoParams({
+    required this.asset,
+    required this.blockIndex,
+    required this.destination,
+    required this.feePaid,
+    required this.msgIndex,
+    required this.quantity,
+    required this.source,
+    required this.status,
+    required this.txHash,
+    required this.txIndex,
+    required this.blockTime,
+  });
+
+  factory AttachToUtxoParams.fromJson(Map<String, dynamic> json) =>
+      _$AttachToUtxoParamsFromJson(json);
+
+  Map<String, dynamic> toJson() => _$AttachToUtxoParamsToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
 class OrderFilledParams {
   final String status;
   final String txHash;
@@ -1485,6 +1758,54 @@ class VerboseOrderExpirationParams extends OrderExpirationParams {
 
   @override
   Map<String, dynamic> toJson() => _$VerboseOrderExpirationParamsToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class VerboseAttachToUtxoEvent extends VerboseEvent {
+  final VerboseAttachToUtxoParams params;
+
+  VerboseAttachToUtxoEvent({
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
+    required super.blockTime,
+    required this.params,
+  });
+
+  factory VerboseAttachToUtxoEvent.fromJson(Map<String, dynamic> json) =>
+      _$VerboseAttachToUtxoEventFromJson(json);
+
+  Map<String, dynamic> toJson() => _$VerboseAttachToUtxoEventToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class VerboseAttachToUtxoParams extends AttachToUtxoParams {
+  final AssetInfoModel assetInfo;
+  final String quantityNormalized;
+  final String feePaidNormalized;
+  VerboseAttachToUtxoParams({
+    required super.asset,
+    required super.blockIndex,
+    required super.destination,
+    required super.feePaid,
+    required super.msgIndex,
+    required super.quantity,
+    required super.source,
+    required super.status,
+    required super.txHash,
+    required super.txIndex,
+    required super.blockTime,
+    required this.assetInfo,
+    required this.quantityNormalized,
+    required this.feePaidNormalized,
+  });
+
+  factory VerboseAttachToUtxoParams.fromJson(Map<String, dynamic> json) =>
+      _$VerboseAttachToUtxoParamsFromJson(json);
+
+  @override
+  Map<String, dynamic> toJson() => _$VerboseAttachToUtxoParamsToJson(this);
 }
 
 // {
@@ -1974,7 +2295,12 @@ class VerboseEvent extends Event {
         return VerboseOrderExpirationEvent.fromJson(json);
       case "ORDER_FILLED":
         return VerboseOrderFilledEvent.fromJson(json);
-
+      case "ATTACH_TO_UTXO":
+        return VerboseAttachToUtxoEvent.fromJson(json);
+      case "DETACH_FROM_UTXO":
+        return VerboseDetachFromUtxoEvent.fromJson(json);
+      case "MOVE_TO_UTXO":
+        return VerboseMoveToUtxoEvent.fromJson(json);
       default:
         return _$VerboseEventFromJson(json);
     }
@@ -3802,6 +4128,12 @@ abstract class V2Api {
     @Query("limit") int? limit,
   ]);
 
+  @GET("/utxos/{utxo}/balances?verbose=true")
+  Future<Response<List<BalanceVerbose>>> getBalancesByUTXO(
+    @Path("utxo") String utxo, [
+    @Query("cursor") CursorModel? cursor,
+    @Query("limit") int? limit,
+  ]);
   // Counterparty API Root
   // Blocks
   //     Get Blocks
@@ -4212,6 +4544,45 @@ abstract class V2Api {
     @Query("event_name") String? eventName,
   ]);
 
+  @GET("/addresses/{address}/compose/attach?verbose=true")
+  Future<Response<ComposeAttachUtxoResponseModel>> composeAttachUtxo(
+    @Path("address") String address,
+    @Query("asset") String asset,
+    @Query("quantity") int quantity, [
+    @Query("destination_vout") String? destinationVout,
+    @Query("skip_validation") bool? skipValidation,
+    @Query("allow_unconfirmed_inputs") bool? allowUnconfirmedInputs,
+    @Query("exact_fee") int? exactFee,
+    @Query("inputs_set") String? inputsSet,
+    @Query("unconfirmed") bool? unconfirmed,
+  ]);
+
+  @GET("/utxos/{utxo}/compose/detach?verbose=true")
+  Future<Response<ComposeDetachUtxoResponseModel>> composeDetachUtxo(
+    @Path("utxo") String utxo, [
+    @Query("destination") String? destination,
+    @Query("asset") String? asset,
+    @Query("quantity") int? quantity,
+    @Query("skip_validation") bool? skipValidation,
+    @Query("allow_unconfirmed_inputs") bool? allowUnconfirmedInputs,
+    @Query("exact_fee") int? exactFee,
+    @Query("inputs_set") String? inputsSet,
+    @Query("unconfirmed") bool? unconfirmed,
+  ]);
+
+  @GET("/utxos/{utxo}/compose/movetoutxo?verbose=true")
+  Future<Response<ComposeMoveToUtxoResponseModel>> composeMoveToUtxo(
+    @Path("utxo") String utxo, [
+    @Query("destination") String? destination,
+    @Query("asset") String? asset,
+    @Query("quantity") int? quantity,
+    @Query("skip_validation") bool? skipValidation,
+    @Query("allow_unconfirmed_inputs") bool? allowUnconfirmedInputs,
+    @Query("exact_fee") int? exactFee,
+    @Query("inputs_set") String? inputsSet,
+    @Query("unconfirmed") bool? unconfirmed,
+  ]);
+
   // {
   //        "result": {
   //            "rawtransaction": "01000000017004c1186a4a6a11708e1739839488180dbb6dbf4a9bf52228faa5b3173cdb05000000001976a914818895f3dc2c178629d3d2d8fa3ec4a3f817982188acffffffff020000000000000000306a2e0d1e454cefefcbe167ffa672ce93608ec55d2594e5d1946a774e4e944f50dfb46943bffd3b68866791f7f496f8c270060406000000001976a914818895f3dc2c178629d3d2d8fa3ec4a3f817982188ac00000000",
@@ -4353,7 +4724,7 @@ abstract class V2Api {
   ]);
 
   @GET("/addresses/{address}/balances/{asset}?verbose=true")
-  Future<Response<BalanceVerbose>> getBalanceForAddressAndAssetVerbose(
+  Future<Response<List<BalanceVerbose>>> getBalancesForAddressAndAssetVerbose(
     @Path("address") String address,
     @Path("asset") String asset,
   );

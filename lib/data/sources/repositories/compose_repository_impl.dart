@@ -15,6 +15,12 @@ import 'package:horizon/domain/entities/compose_dispense.dart'
     as compose_dispense;
 import 'package:horizon/domain/entities/compose_order.dart' as compose_order;
 import 'package:horizon/domain/entities/compose_cancel.dart' as compose_cancel;
+import 'package:horizon/domain/entities/compose_attach_utxo.dart'
+    as compose_attach_utxo;
+import 'package:horizon/domain/entities/compose_detach_utxo.dart'
+    as compose_detach_utxo;
+import 'package:horizon/domain/entities/compose_movetoutxo.dart'
+    as compose_movetoutxo;
 import 'package:horizon/domain/entities/utxo.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
 
@@ -439,6 +445,115 @@ class ComposeRepositoryImpl extends ComposeRepository {
 
         if (response.result == null) {
           throw Exception('Failed to compose cancel');
+        }
+
+        return response.result!.toDomain();
+      },
+      inputsSet,
+    );
+  }
+
+  @override
+  Future<compose_attach_utxo.ComposeAttachUtxoResponse> composeAttachUtxo(
+      int fee,
+      List<Utxo> inputsSet,
+      compose_attach_utxo.ComposeAttachUtxoParams params) async {
+    return await _retryOnInvalidUtxo<
+        compose_attach_utxo.ComposeAttachUtxoResponse>(
+      (currentInputSet) async {
+        final address = params.address;
+        final asset = params.asset;
+        final quantity = params.quantity;
+
+        final inputsSetString =
+            currentInputSet.map((e) => "${e.txid}:${e.vout}").join(',');
+
+        final response = await api.composeAttachUtxo(
+            address,
+            asset,
+            quantity,
+            null,
+            false,
+            true, //  allow unconfirmed
+            fee, //exect fee
+            inputsSetString);
+
+        if (response.result == null) {
+          throw Exception('Failed to compose attach utxo');
+        }
+
+        return response.result!.toDomain();
+      },
+      inputsSet,
+    );
+  }
+
+  @override
+  Future<compose_detach_utxo.ComposeDetachUtxoResponse> composeDetachUtxo(
+      int fee,
+      List<Utxo> inputsSet,
+      compose_detach_utxo.ComposeDetachUtxoParams params) async {
+    return await _retryOnInvalidUtxo<
+        compose_detach_utxo.ComposeDetachUtxoResponse>(
+      (currentInputSet) async {
+        final utxo = params.utxo;
+        final destination = params.destination;
+        final quantity = params.quantity;
+        final asset = params.asset;
+
+        final inputsSetString =
+            currentInputSet.map((e) => "${e.txid}:${e.vout}").join(',');
+
+        final response = await api.composeDetachUtxo(
+          utxo,
+          destination,
+          asset,
+          quantity,
+          false,
+          true, //  allow unconfirmed
+          fee, //exect fee
+          inputsSetString,
+        );
+
+        if (response.result == null) {
+          throw Exception('Failed to compose detach utxo');
+        }
+
+        return response.result!.toDomain();
+      },
+      inputsSet,
+    );
+  }
+
+  @override
+  Future<compose_movetoutxo.ComposeMoveToUtxoResponse> composeMoveToUtxo(
+      int fee,
+      List<Utxo> inputsSet,
+      compose_movetoutxo.ComposeMoveToUtxoParams params) async {
+    return await _retryOnInvalidUtxo<
+        compose_movetoutxo.ComposeMoveToUtxoResponse>(
+      (currentInputSet) async {
+        final utxo = params.utxo;
+        final destination = params.destination;
+        final asset = params.asset;
+        final quantity = params.quantity;
+
+        final inputsSetString =
+            currentInputSet.map((e) => "${e.txid}:${e.vout}").join(',');
+
+        final response = await api.composeMoveToUtxo(
+          utxo,
+          destination,
+          asset,
+          quantity,
+          false,
+          true, //  allow unconfirmed inputs
+          fee, //exect fee
+          inputsSetString,
+        );
+
+        if (response.result == null) {
+          throw Exception('Failed to compose move to utxo');
         }
 
         return response.result!.toDomain();

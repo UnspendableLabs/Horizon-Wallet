@@ -18,6 +18,7 @@ class Result with _$Result {
   const factory Result.ok(
       List<Balance> balances,
       Map<String, Balance> aggregated,
+      List<Balance> utxoBalances,
       List<Asset> ownedAssets,
       List<Fairminter> fairminters) = _Ok;
   const factory Result.error(String error) = _Error;

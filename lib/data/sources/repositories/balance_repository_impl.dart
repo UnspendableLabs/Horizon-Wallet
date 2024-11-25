@@ -60,7 +60,9 @@ class BalanceRepositoryImpl implements BalanceRepository {
               // issuer: a.assetInfo.issuer,
               divisible: a.assetInfo.divisible,
               // locked: a.assetInfo.locked,
-            )));
+            ),
+            utxo: a.utxo,
+            utxoAddress: a.utxoAddress));
       }
       cursor = cursor_model.CursorMapper.toDomain(response.nextCursor);
     } while (cursor != null);
@@ -90,7 +92,9 @@ class BalanceRepositoryImpl implements BalanceRepository {
                 // issuer: a.assetInfo.issuer,
                 divisible: a.assetInfo.divisible,
                 // locked: a.assetInfo.locked,
-              )));
+              ),
+              utxo: balance.utxo,
+              utxoAddress: balance.utxoAddress));
         }
       }
       cursor = response.nextCursor;
@@ -123,15 +127,18 @@ class BalanceRepositoryImpl implements BalanceRepository {
   }
 
   @override
-  Future<b.Balance> getBalanceForAddressAndAssetVerbose(
+  Future<List<b.Balance>> getBalancesForAddressAndAssetVerbose(
       String address, String assetName) async {
     final response =
-        await api.getBalanceForAddressAndAssetVerbose(assetName, address);
-    final balance = response.result;
-    if (balance == null) {
+        await api.getBalancesForAddressAndAssetVerbose(address, assetName);
+    final balances = response.result;
+    if (balances == null) {
       throw Exception('Failed to get balance for $address and $assetName');
     }
-    return b.Balance(
+
+    final List<b.Balance> entityBalances = [];
+    for (var balance in balances) {
+      entityBalances.add(b.Balance(
         address: address,
         quantity: balance.quantity.toInt(),
         quantityNormalized: balance.quantityNormalized,
@@ -140,6 +147,37 @@ class BalanceRepositoryImpl implements BalanceRepository {
           assetLongname: balance.assetInfo.assetLongname,
           description: balance.assetInfo.description,
           divisible: balance.assetInfo.divisible,
-        ));
+        ),
+        utxo: balance.utxo,
+        utxoAddress: balance.utxoAddress,
+      ));
+    }
+    return entityBalances;
+  }
+
+  @override
+  Future<List<b.Balance>> getBalancesForUTXO(String utxo) async {
+    final response = await api.getBalancesByUTXO(utxo);
+    final balances = response.result;
+    if (balances == null) {
+      throw Exception('Failed to get balances for $utxo');
+    }
+    final List<b.Balance> entityBalances = [];
+    for (var balance in balances) {
+      entityBalances.add(b.Balance(
+        address: balance.address,
+        quantity: balance.quantity.toInt(),
+        quantityNormalized: balance.quantityNormalized,
+        asset: balance.asset,
+        utxo: utxo,
+        utxoAddress: balance.utxoAddress,
+        assetInfo: ai.AssetInfo(
+          assetLongname: balance.assetInfo.assetLongname,
+          description: balance.assetInfo.description,
+          divisible: balance.assetInfo.divisible,
+        ),
+      ));
+    }
+    return entityBalances;
   }
 }

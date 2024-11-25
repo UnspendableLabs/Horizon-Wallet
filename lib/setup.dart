@@ -100,6 +100,8 @@ import 'package:horizon/presentation/common/usecase/get_virtual_size_usecase.dar
 import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
 import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transaction_usecase.dart';
 import 'package:horizon/presentation/common/usecase/write_local_transaction_usecase.dart';
+import 'package:horizon/presentation/screens/compose_attach_utxo/usecase/fetch_form_data.dart';
+import 'package:horizon/presentation/screens/compose_detach_utxo/usecase/fetch_form_data.dart';
 import 'package:horizon/presentation/screens/compose_dispenser/usecase/fetch_form_data.dart';
 import 'package:horizon/presentation/screens/compose_dispense/usecase/fetch_form_data.dart';
 import 'package:horizon/presentation/screens/compose_dispense/usecase/fetch_open_dispensers_on_address.dart';
@@ -107,6 +109,7 @@ import 'package:horizon/presentation/screens/compose_dispense/usecase/estimate_d
 import 'package:horizon/presentation/screens/compose_fairmint/usecase/fetch_form_data.dart';
 import 'package:horizon/presentation/screens/compose_fairminter/usecase/fetch_form_data.dart';
 import 'package:horizon/presentation/screens/compose_issuance/usecase/fetch_form_data.dart';
+import 'package:horizon/presentation/screens/compose_movetoutxo/usecase/fetch_form_data.dart';
 
 import 'package:logger/logger.dart' as logger;
 import 'package:horizon/core/logging/logger.dart';
@@ -386,6 +389,7 @@ Future<void> setup() async {
   injector
       .registerSingleton<ComposeTransactionUseCase>(ComposeTransactionUseCase(
     utxoRepository: GetIt.I.get<UtxoRepository>(),
+    balanceRepository: injector.get<BalanceRepository>(),
     getVirtualSizeUseCase: GetIt.I.get<GetVirtualSizeUseCase>(),
   ));
 
@@ -399,6 +403,21 @@ Future<void> setup() async {
       FetchIssuanceFormDataUseCase(
           balanceRepository: injector.get<BalanceRepository>(),
           getFeeEstimatesUseCase: GetIt.I.get<GetFeeEstimatesUseCase>()));
+
+  injector.registerSingleton<FetchComposeAttachUtxoFormDataUseCase>(
+      FetchComposeAttachUtxoFormDataUseCase(
+          getFeeEstimatesUseCase: GetIt.I.get<GetFeeEstimatesUseCase>(),
+          balanceRepository: injector.get<BalanceRepository>()));
+
+  injector.registerSingleton<FetchComposeMoveToUtxoFormDataUseCase>(
+      FetchComposeMoveToUtxoFormDataUseCase(
+          getFeeEstimatesUseCase: GetIt.I.get<GetFeeEstimatesUseCase>(),
+          balanceRepository: injector.get<BalanceRepository>()));
+
+  injector.registerSingleton<FetchComposeDetachUtxoFormDataUseCase>(
+      FetchComposeDetachUtxoFormDataUseCase(
+          getFeeEstimatesUseCase: GetIt.I.get<GetFeeEstimatesUseCase>(),
+          balanceRepository: injector.get<BalanceRepository>()));
 
   injector.registerSingleton<SignAndBroadcastTransactionUseCase>(
       SignAndBroadcastTransactionUseCase(
@@ -513,8 +532,7 @@ class TimeoutInterceptor extends Interceptor {
         err.type == DioExceptionType.receiveTimeout ||
         err.type == DioExceptionType.sendTimeout) {
       // final requestPath = err.requestOptions.uri.toString();
-      final timeoutDuration =
-          err.requestOptions.connectTimeout ?? const Duration(seconds: 5);
+      const timeoutDuration = Duration(seconds: 15);
       final formattedError = CustomDioException(
         requestOptions: err.requestOptions,
         error:

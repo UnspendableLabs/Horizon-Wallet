@@ -8,6 +8,9 @@ import 'package:horizon/domain/entities/asset.dart';
 import 'package:horizon/domain/repositories/config_repository.dart';
 import 'package:horizon/presentation/common/colors.dart';
 import 'package:horizon/presentation/common/no_data.dart';
+import 'package:horizon/presentation/screens/compose_attach_utxo/view/compose_attach_utxo_page.dart';
+import 'package:horizon/presentation/screens/compose_detach_utxo/view/compose_detach_utxo_page.dart';
+import 'package:horizon/presentation/screens/compose_movetoutxo/view/compose_movetoutxo_page.dart';
 import 'package:horizon/presentation/screens/compose_send/view/compose_send_page.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_bloc.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_state.dart';
@@ -34,7 +37,7 @@ class BalancesDisplay extends StatefulWidget {
 class BalancesDisplayState extends State<BalancesDisplay> {
   final TextEditingController _searchController = TextEditingController();
   bool _showOwnedOnly = false;
-
+  bool _showUtxoOnly = false;
   @override
   void initState() {
     super.initState();
@@ -74,25 +77,49 @@ class BalancesDisplayState extends State<BalancesDisplay> {
                     ),
                   ),
                 ),
-                const SizedBox(width: 8),
-                Row(
+                // const SizedBox(width: 8),
+                Column(
                   children: [
-                    Checkbox(
-                      value: _showOwnedOnly,
-                      onChanged: (value) {
-                        setState(() {
-                          _showOwnedOnly = value ?? false;
-                        });
-                      },
-                      fillColor: WidgetStateProperty.resolveWith<Color>(
-                          (Set<WidgetState> states) {
-                        return widget.isDarkTheme
-                            ? darkThemeInputColor
-                            : whiteLightTheme; // Use transparent for unchecked state
-                      }),
-                      key: const Key('owned_checkbox'), // Add this line
+                    Row(
+                      children: [
+                        Checkbox(
+                          value: _showOwnedOnly,
+                          onChanged: (value) {
+                            setState(() {
+                              _showOwnedOnly = value ?? false;
+                            });
+                          },
+                          fillColor: WidgetStateProperty.resolveWith<Color>(
+                              (Set<WidgetState> states) {
+                            return widget.isDarkTheme
+                                ? darkThemeInputColor
+                                : whiteLightTheme; // Use transparent for unchecked state
+                          }),
+                          key: const Key('owned_checkbox'), // Add this line
+                        ),
+                        const Text('My issuances'),
+                      ],
                     ),
-                    const Text('My issuances'),
+                    Row(
+                      children: [
+                        Checkbox(
+                          value: _showUtxoOnly,
+                          onChanged: (value) {
+                            setState(() {
+                              _showUtxoOnly = value ?? false;
+                            });
+                          },
+                          fillColor: WidgetStateProperty.resolveWith<Color>(
+                              (Set<WidgetState> states) {
+                            return widget.isDarkTheme
+                                ? darkThemeInputColor
+                                : whiteLightTheme; // Use transparent for unchecked state
+                          }),
+                          key: const Key('utxo_checkbox'), // Add this line
+                        ),
+                        const Text('Utxo attached'),
+                      ],
+                    ),
                   ],
                 ),
               ],
@@ -104,6 +131,7 @@ class BalancesDisplayState extends State<BalancesDisplay> {
             initialItemCount: widget.initialItemCount,
             searchTerm: _searchController.text,
             showOwnedOnly: _showOwnedOnly,
+            showUtxoOnly: _showUtxoOnly,
           ),
         ],
       ),
@@ -117,7 +145,7 @@ class BalancesSliver extends StatefulWidget {
   final String currentAddress;
   final String searchTerm;
   final bool showOwnedOnly;
-
+  final bool showUtxoOnly;
   const BalancesSliver({
     super.key,
     required this.isDarkTheme,
@@ -125,6 +153,7 @@ class BalancesSliver extends StatefulWidget {
     required this.currentAddress,
     required this.searchTerm,
     required this.showOwnedOnly,
+    required this.showUtxoOnly,
   });
 
   @override
@@ -150,7 +179,7 @@ class BalancesSliverState extends State<BalancesSliver> {
 
   List<Widget> _buildBalanceList(Result result) {
     return result.when(
-      ok: (balances, aggregated, ownedAssets, fairminters) {
+      ok: (balances, aggregated, utxoBalances, ownedAssets, fairminters) {
         if (balances.isEmpty && ownedAssets.isEmpty) {
           return [
             const NoData(
@@ -174,11 +203,6 @@ class BalancesSliverState extends State<BalancesSliver> {
           if (xcpEntry != null) xcpEntry,
           ...entries,
         ];
-
-        final ownedAssetsNotIncludedInEntries = ownedAssets
-            .where((asset) =>
-                !orderedEntries.any((entry) => entry.key == asset.asset))
-            .toList();
 
         final fairminterAssets =
             fairminters.map((fairminter) => fairminter.asset!).toList();
@@ -209,14 +233,66 @@ class BalancesSliverState extends State<BalancesSliver> {
 
           return TableRow(
             children: [
-              _buildTableCell1(entry.key, entry.value.assetInfo.assetLongname,
-                  isClickable, textColor),
+              _buildTableCell1(
+                entry.key,
+                entry.value.assetInfo.assetLongname,
+                isClickable,
+                textColor,
+              ),
               _buildTableCell2(entry.value.quantityNormalized, textColor),
-              _buildTableCell3(entry.key, textColor, isOwner, currentOwnedAsset,
-                  entry.value.quantity, fairminterAssets)
+              _buildTableCell3(
+                entry.key,
+                textColor,
+                isOwner,
+                currentOwnedAsset,
+                entry.value.quantity,
+                fairminterAssets,
+                entry.value.utxo,
+                entry.value.utxoAddress,
+              ),
             ],
           );
         }).toList();
+
+        final utxoRows = utxoBalances
+            .where((balance) =>
+                _matchesSearch(balance.asset, balance.assetInfo.assetLongname))
+            .where((balance) => (widget.showOwnedOnly
+                ? _isOwned(ownedAssets
+                    .firstWhereOrNull((asset) => asset.asset == balance.asset))
+                : true))
+            .map((balance) {
+          final textColor = widget.isDarkTheme
+              ? darkThemeAssetLinkColor
+              : lightThemeAssetLinkColor;
+
+          Asset? currentOwnedAsset = ownedAssets
+              .firstWhereOrNull((asset) => asset.asset == balance.asset);
+
+          final bool isOwner = _isOwned(currentOwnedAsset);
+
+          return TableRow(children: [
+            _buildTableCell1(balance.asset, balance.assetInfo.assetLongname,
+                true, textColor),
+            _buildTableCell2(balance.quantityNormalized, textColor),
+            _buildTableCell3(
+                balance.asset,
+                textColor,
+                isOwner,
+                currentOwnedAsset,
+                balance.quantity,
+                fairminterAssets,
+                balance.utxo,
+                balance.utxoAddress)
+          ]);
+        }).toList();
+
+        final ownedAssetsNotIncludedInEntries = ownedAssets
+            .where((asset) =>
+                !orderedEntries.any((entry) => entry.key == asset.asset))
+            .where((asset) =>
+                !utxoBalances.any((balance) => balance.asset == asset.asset))
+            .toList();
 
         final ownedAssetRows = ownedAssetsNotIncludedInEntries
             .where((asset) => _matchesSearch(asset.asset, asset.assetLongname))
@@ -230,14 +306,19 @@ class BalancesSliverState extends State<BalancesSliver> {
                   asset.asset, asset.assetLongname, true, textColor),
               _buildTableCell2(asset.divisible == true ? '0.00000000' : '0',
                   textColor), // these are zero balances
-              _buildTableCell3(
-                  asset.asset, textColor, true, asset, 0, fairminterAssets)
+              _buildTableCell3(asset.asset, textColor, true, asset, 0,
+                  fairminterAssets, null, null)
             ],
           );
         }).toList();
 
-        rows.addAll(balanceRows);
-        rows.addAll(ownedAssetRows);
+        if (widget.showUtxoOnly) {
+          rows.addAll(utxoRows);
+        } else {
+          rows.addAll(balanceRows);
+          rows.addAll(utxoRows);
+          rows.addAll(ownedAssetRows);
+        }
 
         final displayedRows =
             _viewAll ? rows : rows.take(widget.initialItemCount).toList();
@@ -255,10 +336,9 @@ class BalancesSliverState extends State<BalancesSliver> {
                 ),
                 columnWidths: {
                   0: FlexColumnWidth(
-                      MediaQuery.of(context).size.width < 600 ? 1 : 2),
+                      MediaQuery.of(context).size.width < 600 ? 1.2 : 2),
                   1: const FlexColumnWidth(1),
-                  2: FlexColumnWidth(
-                      MediaQuery.of(context).size.width < 600 ? 1 : 1),
+                  2: const FlexColumnWidth(1.2),
                 },
                 children: displayedRows,
               ),
@@ -331,34 +411,39 @@ class BalancesSliverState extends State<BalancesSliver> {
     );
   }
 
-  TableCell _buildTableCell1(String assetName, String? assetLongname,
-      bool isClickable, Color textColor) {
+  TableCell _buildTableCell1(
+    String assetName,
+    String? assetLongname,
+    bool isClickable,
+    Color textColor,
+  ) {
     return TableCell(
-        verticalAlignment: TableCellVerticalAlignment.middle,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(16.0, 8.0, 4.0, 8.0),
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              return SelectableText.rich(
-                TextSpan(
-                  text: (assetLongname != '' && assetLongname != null)
-                      ? assetLongname
-                      : assetName,
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: textColor,
-                  ),
-                  recognizer: isClickable
-                      ? (TapGestureRecognizer()
-                        ..onTap = () => _launchAssetUrl(assetName))
-                      : null,
+      verticalAlignment: TableCellVerticalAlignment.middle,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16.0, 8.0, 4.0, 8.0),
+        child: SelectableText.rich(
+          TextSpan(
+            children: [
+              TextSpan(
+                text: (assetLongname != '' && assetLongname != null)
+                    ? assetLongname
+                    : assetName,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: textColor,
                 ),
-                key: Key('assetName_$assetName'),
-              );
-            },
+                recognizer: isClickable
+                    ? (TapGestureRecognizer()
+                      ..onTap = () => _launchAssetUrl(assetName))
+                    : null,
+              ),
+            ],
           ),
-        ));
+          key: Key('assetName_$assetName'),
+        ),
+      ),
+    );
   }
 
   TableCell _buildTableCell2(String quantityNormalized, Color textColor) =>
@@ -373,102 +458,199 @@ class BalancesSliverState extends State<BalancesSliver> {
         ),
       );
 
-  TableCell _buildTableCell3(String assetName, Color textColor, bool isOwner,
-      Asset? currentOwnedAsset, int quantity, List<String> fairminterAssets) {
+  TableCell _buildTableCell3(
+      String assetName,
+      Color textColor,
+      bool isOwner,
+      Asset? currentOwnedAsset,
+      int quantity,
+      List<String> fairminterAssets,
+      String? utxo,
+      String? utxoAddress) {
     return TableCell(
       verticalAlignment: TableCellVerticalAlignment.middle,
       child: Container(
-        padding: const EdgeInsets.fromLTRB(4.0, 8.0, 2.0, 8.0),
+        padding: const EdgeInsets.symmetric(vertical: 8.0),
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.end,
           children: [
-            if (quantity > 0)
-              IconButton(
-                iconSize: 16.0,
-                icon: const Icon(Icons.send),
-                onPressed: () {
-                  HorizonUI.HorizonDialog.show(
-                    context: context,
-                    body: HorizonUI.HorizonDialog(
-                      title: 'Compose Send',
-                      body: ComposeSendPageWrapper(
-                        currentAddress: widget.currentAddress,
-                        dashboardActivityFeedBloc:
-                            BlocProvider.of<DashboardActivityFeedBloc>(context),
-                        asset: assetName,
+            if (utxo == null && quantity > 0 && assetName != 'BTC')
+              SizedBox(
+                width: 32,
+                height: 32,
+                child: IconButton(
+                  padding: EdgeInsets.zero,
+                  onPressed: () {
+                    HorizonUI.HorizonDialog.show(
+                      context: context,
+                      body: HorizonUI.HorizonDialog(
+                        title: 'Attach UTXO',
+                        body: ComposeAttachUtxoPageWrapper(
+                            dashboardActivityFeedBloc:
+                                BlocProvider.of<DashboardActivityFeedBloc>(
+                                    context),
+                            currentAddress: widget.currentAddress,
+                            assetName: assetName),
+                        includeBackButton: false,
+                        includeCloseButton: true,
+                        onBackButtonPressed: () {
+                          Navigator.of(context).pop();
+                        },
                       ),
-                      includeBackButton: false,
-                      includeCloseButton: true,
-                    ),
-                  );
-                },
+                    );
+                  },
+                  icon: const Icon(Icons.attach_file, size: 16.0),
+                ),
               ),
-            if (!isOwner) const SizedBox(width: 38),
-            if (isOwner)
-              PopupMenuButton<IssuanceActionType>(
-                icon: const Icon(Icons.more_vert),
-                onSelected: (IssuanceActionType result) {
-                  HorizonUI.HorizonDialog.show(
-                    context: context,
-                    body: HorizonUI.HorizonDialog(
-                      title: "Update Issuance",
-                      body: UpdateIssuancePageWrapper(
-                        currentAddress: widget.currentAddress,
-                        assetName: currentOwnedAsset!.asset,
-                        assetLongname: currentOwnedAsset.assetLongname,
-                        actionType: result,
-                        dashboardActivityFeedBloc:
-                            BlocProvider.of<DashboardActivityFeedBloc>(context),
+            if (utxo != null)
+              SizedBox(
+                width: 32,
+                height: 32,
+                child: IconButton(
+                  padding: EdgeInsets.zero,
+                  onPressed: () {
+                    HorizonUI.HorizonDialog.show(
+                      context: context,
+                      body: HorizonUI.HorizonDialog(
+                        title: 'Detach UTXO',
+                        body: ComposeDetachUtxoPageWrapper(
+                          dashboardActivityFeedBloc:
+                              BlocProvider.of<DashboardActivityFeedBloc>(
+                                  context),
+                          currentAddress: widget.currentAddress,
+                          assetName: assetName,
+                          utxo: utxo,
+                        ),
+                        includeBackButton: false,
+                        includeCloseButton: true,
+                        onBackButtonPressed: () {
+                          Navigator.of(context).pop();
+                        },
                       ),
-                      includeBackButton: false,
-                      includeCloseButton: true,
-                      onBackButtonPressed: () {
-                        Navigator.of(context).pop();
-                      },
+                    );
+                  },
+                  icon: const Icon(Icons.link_off, size: 16.0),
+                ),
+              ),
+            if (quantity > 0)
+              SizedBox(
+                width: 32,
+                height: 32,
+                child: IconButton(
+                  padding: EdgeInsets.zero,
+                  iconSize: 16.0,
+                  icon: const Icon(Icons.send),
+                  onPressed: () {
+                    if (utxo == null) {
+                      HorizonUI.HorizonDialog.show(
+                        context: context,
+                        body: HorizonUI.HorizonDialog(
+                          title: 'Compose Send',
+                          body: ComposeSendPageWrapper(
+                            currentAddress: widget.currentAddress,
+                            dashboardActivityFeedBloc:
+                                BlocProvider.of<DashboardActivityFeedBloc>(
+                                    context),
+                            asset: assetName,
+                          ),
+                          includeBackButton: false,
+                          includeCloseButton: true,
+                        ),
+                      );
+                    } else {
+                      HorizonUI.HorizonDialog.show(
+                        context: context,
+                        body: HorizonUI.HorizonDialog(
+                          title: 'Move to UTXO',
+                          body: ComposeMoveToUtxoPageWrapper(
+                            currentAddress: widget.currentAddress,
+                            dashboardActivityFeedBloc:
+                                BlocProvider.of<DashboardActivityFeedBloc>(
+                                    context),
+                            assetName: assetName,
+                            utxo: utxo,
+                          ),
+                          includeBackButton: false,
+                          includeCloseButton: true,
+                        ),
+                      );
+                    }
+                  },
+                ),
+              ),
+            if (isOwner)
+              SizedBox(
+                width: 32,
+                height: 32,
+                child: PopupMenuButton<IssuanceActionType>(
+                  padding: EdgeInsets.zero,
+                  iconSize: 16.0,
+                  icon: const Icon(Icons.more_vert),
+                  onSelected: (IssuanceActionType result) {
+                    HorizonUI.HorizonDialog.show(
+                      context: context,
+                      body: HorizonUI.HorizonDialog(
+                        title: "Update Issuance",
+                        body: UpdateIssuancePageWrapper(
+                          currentAddress: widget.currentAddress,
+                          assetName: currentOwnedAsset!.asset,
+                          assetLongname: currentOwnedAsset.assetLongname,
+                          actionType: result,
+                          dashboardActivityFeedBloc:
+                              BlocProvider.of<DashboardActivityFeedBloc>(
+                                  context),
+                        ),
+                        includeBackButton: false,
+                        includeCloseButton: true,
+                        onBackButtonPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                      ),
+                    );
+                  },
+                  itemBuilder: (BuildContext context) =>
+                      <PopupMenuEntry<IssuanceActionType>>[
+                    PopupMenuItem<IssuanceActionType>(
+                      value: IssuanceActionType.reset,
+                      enabled: currentOwnedAsset?.locked != true &&
+                          !fairminterAssets.contains(currentOwnedAsset?.asset),
+                      child: const Text('Reset Asset'),
                     ),
-                  );
-                },
-                itemBuilder: (BuildContext context) =>
-                    <PopupMenuEntry<IssuanceActionType>>[
-                  PopupMenuItem<IssuanceActionType>(
-                    value: IssuanceActionType.reset,
-                    enabled: currentOwnedAsset?.locked != true &&
-                        !fairminterAssets.contains(currentOwnedAsset?.asset),
-                    child: const Text('Reset Asset'),
-                  ),
-                  PopupMenuItem<IssuanceActionType>(
-                    value: IssuanceActionType.lockQuantity,
-                    enabled: currentOwnedAsset?.locked != true &&
-                        !fairminterAssets.contains(currentOwnedAsset?.asset),
-                    child: const Text('Lock Quantity'),
-                  ),
-                  PopupMenuItem<IssuanceActionType>(
-                    value: IssuanceActionType.lockDescription,
-                    enabled: currentOwnedAsset?.locked != true &&
-                        !fairminterAssets.contains(currentOwnedAsset?.asset),
-                    child: const Text('Lock Description'),
-                  ),
-                  PopupMenuItem<IssuanceActionType>(
-                    value: IssuanceActionType.changeDescription,
-                    enabled: currentOwnedAsset?.locked != true &&
-                        !fairminterAssets.contains(currentOwnedAsset?.asset),
-                    child: const Text('Change Description'),
-                  ),
-                  PopupMenuItem<IssuanceActionType>(
-                    value: IssuanceActionType.issueMore,
-                    enabled: currentOwnedAsset?.locked != true &&
-                        !fairminterAssets.contains(currentOwnedAsset?.asset),
-                    child: const Text('Issue More'),
-                  ),
-                  const PopupMenuItem<IssuanceActionType>(
-                    value: IssuanceActionType.issueSubasset,
-                    child: Text('Issue Subasset'),
-                  ),
-                  const PopupMenuItem<IssuanceActionType>(
-                    value: IssuanceActionType.transferOwnership,
-                    child: Text('Transfer Ownership'),
-                  ),
-                ],
+                    PopupMenuItem<IssuanceActionType>(
+                      value: IssuanceActionType.lockQuantity,
+                      enabled: currentOwnedAsset?.locked != true &&
+                          !fairminterAssets.contains(currentOwnedAsset?.asset),
+                      child: const Text('Lock Quantity'),
+                    ),
+                    PopupMenuItem<IssuanceActionType>(
+                      value: IssuanceActionType.lockDescription,
+                      enabled: currentOwnedAsset?.locked != true &&
+                          !fairminterAssets.contains(currentOwnedAsset?.asset),
+                      child: const Text('Lock Description'),
+                    ),
+                    PopupMenuItem<IssuanceActionType>(
+                      value: IssuanceActionType.changeDescription,
+                      enabled: currentOwnedAsset?.locked != true &&
+                          !fairminterAssets.contains(currentOwnedAsset?.asset),
+                      child: const Text('Change Description'),
+                    ),
+                    PopupMenuItem<IssuanceActionType>(
+                      value: IssuanceActionType.issueMore,
+                      enabled: currentOwnedAsset?.locked != true &&
+                          !fairminterAssets.contains(currentOwnedAsset?.asset),
+                      child: const Text('Issue More'),
+                    ),
+                    const PopupMenuItem<IssuanceActionType>(
+                      value: IssuanceActionType.issueSubasset,
+                      child: Text('Issue Subasset'),
+                    ),
+                    const PopupMenuItem<IssuanceActionType>(
+                      value: IssuanceActionType.transferOwnership,
+                      child: Text('Transfer Ownership'),
+                    ),
+                  ],
+                ),
               ),
           ],
         ),

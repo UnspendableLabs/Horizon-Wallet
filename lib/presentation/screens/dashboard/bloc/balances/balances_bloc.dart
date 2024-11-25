@@ -10,58 +10,75 @@ import 'package:horizon/domain/repositories/address_tx_repository.dart';
 import 'package:horizon/domain/repositories/asset_repository.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/repositories/fairminter_repository.dart';
+import 'package:horizon/domain/repositories/utxo_repository.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_event.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_state.dart';
 
 // TODO: maybe abstract this away
 import 'package:decimal/decimal.dart';
 
-Map<String, Balance> aggregateBalancesByAsset(List<Balance> balances) {
+(Map<String, Balance>, List<Balance>) aggregateBalancesByAsset(
+    List<Balance> balances) {
   var aggregatedBalances = <String, Balance>{};
+  List<Balance> utxoBalances = [];
 
   for (var balance in balances) {
-    Balance agg = aggregatedBalances[balance.asset] ??
-        Balance(
-            asset: balance.asset,
-            quantity: 0,
-            quantityNormalized: '0',
-            address: balance.address,
-            assetInfo: balance.assetInfo);
-
-    int nextQuantity = agg.quantity + balance.quantity;
-
-    Decimal nextQuantityNormalizedDecimal =
-        Decimal.parse(agg.quantityNormalized) +
-            Decimal.parse(balance.quantityNormalized);
-
-    String nextQuantityNormalized;
-    if (balance.assetInfo.divisible) {
-      nextQuantityNormalized = nextQuantityNormalizedDecimal.toStringAsFixed(8);
+    if (balance.utxo != null) {
+      utxoBalances.add(balance);
     } else {
-      nextQuantityNormalized = nextQuantityNormalizedDecimal.toString();
+      Balance agg = aggregatedBalances[balance.asset] ??
+          Balance(
+              asset: balance.asset,
+              quantity: 0,
+              quantityNormalized: '0',
+              address: balance.address,
+              assetInfo: balance.assetInfo,
+              utxo: balance.utxo,
+              utxoAddress: balance.utxoAddress);
+
+      int nextQuantity = agg.quantity + balance.quantity;
+
+      Decimal nextQuantityNormalizedDecimal =
+          Decimal.parse(agg.quantityNormalized) +
+              Decimal.parse(balance.quantityNormalized);
+
+      String nextQuantityNormalized;
+      if (balance.assetInfo.divisible) {
+        nextQuantityNormalized =
+            nextQuantityNormalizedDecimal.toStringAsFixed(8);
+      } else {
+        nextQuantityNormalized = nextQuantityNormalizedDecimal.toString();
+      }
+
+      Balance next = Balance(
+          asset: balance.asset,
+          quantity: nextQuantity,
+          quantityNormalized: nextQuantityNormalized,
+          address: balance.address,
+          assetInfo: balance.assetInfo,
+          utxo: balance.utxo,
+          utxoAddress: balance.utxoAddress);
+
+      aggregatedBalances[balance.asset] = next;
     }
-
-    Balance next = Balance(
-        asset: balance.asset,
-        quantity: nextQuantity,
-        quantityNormalized: nextQuantityNormalized,
-        address: balance.address,
-        assetInfo: balance.assetInfo);
-
-    aggregatedBalances[balance.asset] = next;
   }
 
-  return aggregatedBalances;
+  return (aggregatedBalances, utxoBalances);
 }
 
-Map<String, Balance> aggregateAndSortBalancesByAsset(List<Balance> balances) {
-  var aggregated = aggregateBalancesByAsset(balances);
+(Map<String, Balance>, List<Balance>) aggregateAndSortBalancesByAsset(
+    List<Balance> balances) {
+  var (aggregated, utxoBalances) = aggregateBalancesByAsset(balances);
 
   var sortedEntries = aggregated.entries.toList()
     ..sort((a, b) => b.value.quantity
         .compareTo(a.value.quantity)); // Sort by quantity descending
 
-  return Map.fromEntries(sortedEntries);
+  var sortedUtxoBalances = utxoBalances.toList()
+    ..sort((a, b) =>
+        b.quantity.compareTo(a.quantity)); // Sort by quantity descending
+
+  return (Map.fromEntries(sortedEntries), sortedUtxoBalances);
 }
 
 class BalancesBloc extends Bloc<BalancesEvent, BalancesState> {
@@ -71,6 +88,7 @@ class BalancesBloc extends Bloc<BalancesEvent, BalancesState> {
   final AddressTxRepository addressTxRepository;
   final AssetRepository assetRepository;
   final FairminterRepository fairminterRepository;
+  final UtxoRepository utxoRepository;
   final String currentAddress;
 
   Timer? _timer;
@@ -82,6 +100,7 @@ class BalancesBloc extends Bloc<BalancesEvent, BalancesState> {
     required this.addressTxRepository,
     required this.assetRepository,
     required this.fairminterRepository,
+    required this.utxoRepository,
     required this.currentAddress,
   }) : super(const BalancesState.initial()) {
     on<Start>(_onStart);
@@ -120,8 +139,11 @@ class BalancesBloc extends Bloc<BalancesEvent, BalancesState> {
 
       final List<Balance> balances =
           await balanceRepository.getBalancesForAddresses(addresses);
-      final Map<String, Balance> aggregated =
+      final (Map<String, Balance>, List<Balance>) allBalances =
           aggregateAndSortBalancesByAsset(balances);
+
+      final Map<String, Balance> aggregated = allBalances.$1;
+      final List<Balance> utxoBalances = allBalances.$2;
 
       final List<Asset> ownedAssets =
           await assetRepository.getValidAssetsByOwnerVerbose(currentAddress);
@@ -135,8 +157,8 @@ class BalancesBloc extends Bloc<BalancesEvent, BalancesState> {
                 (fairminters) => fairminters, // Handle success
               ));
 
-      emit(BalancesState.complete(
-          Result.ok(balances, aggregated, ownedAssets, fairminters)));
+      emit(BalancesState.complete(Result.ok(
+          balances, aggregated, utxoBalances, ownedAssets, fairminters)));
     } on FetchFairmintersException catch (e) {
       emit(BalancesState.complete(Result.error(
           "Error fetching fairminters for $currentAddress: ${e.message}")));
