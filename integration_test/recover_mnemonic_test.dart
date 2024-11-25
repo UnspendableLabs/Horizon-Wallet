@@ -6,6 +6,7 @@ import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/main.dart';
 import 'package:horizon/setup.dart';
 import 'package:integration_test/integration_test.dart';
+import 'package:pub_semver/pub_semver.dart';
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
@@ -36,7 +37,10 @@ void main() {
         FlutterError.onError = originalOnError;
       });
 
-      await tester.pumpWidget(MyApp());
+      await tester.pumpWidget(MyApp(
+        currentVersion: Version(0, 0, 0),
+        latestVersion: Version(0, 0, 0),
+      ));
 
       // Wait for the app to settle
       await tester.pumpAndSettle();

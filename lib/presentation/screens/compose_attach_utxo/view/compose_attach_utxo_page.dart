@@ -98,11 +98,9 @@ class ComposeAttachUtxoPageState extends State<ComposeAttachUtxoPage> {
 
   @override
   Widget build(BuildContext context) {
-    print('BUILDING');
     return BlocConsumer<ComposeAttachUtxoBloc, ComposeAttachUtxoState>(
       listener: (context, state) {},
       builder: (context, state) {
-        print('STATE: ${state.balancesState}');
         return state.balancesState.maybeWhen(
           loading: () =>
               ComposeBasePage<ComposeAttachUtxoBloc, ComposeAttachUtxoState>(

@@ -206,11 +206,3 @@ class ComposeDetachUtxoBloc extends ComposeBaseBloc<ComposeDetachUtxoState> {
         });
   }
 }
-
-class FetchFeeEstimatesException implements Exception {
-  final String message;
-  FetchFeeEstimatesException(this.message);
-
-  @override
-  String toString() => 'FetchFeeEstimatesException: $message';
-}

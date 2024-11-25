@@ -1,6 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:horizon/domain/entities/balance.dart';
-import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:horizon/domain/repositories/utxo_repository.dart';
 import 'package:horizon/presentation/common/usecase/get_virtual_size_usecase.dart';
@@ -11,8 +10,6 @@ import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.
 
 // Define mock classes
 class MockUtxoRepository extends Mock implements UtxoRepository {}
-
-class MockBalanceRepository extends Mock implements BalanceRepository {}
 
 class MockGetVirtualSizeUseCase extends Mock implements GetVirtualSizeUseCase {}
 
@@ -37,12 +34,10 @@ void main() {
   late MockGetVirtualSizeUseCase mockGetVirtualSizeUseCase;
   late MockComposeFunction mockComposeFunction;
   late MockComposeParams mockComposeParams;
-  late MockBalanceRepository mockBalanceRepository;
 
   setUp(() {
     // Initialize mocks before each test
     mockUtxoRepository = MockUtxoRepository();
-    mockBalanceRepository = MockBalanceRepository();
     mockGetVirtualSizeUseCase = MockGetVirtualSizeUseCase();
     mockComposeFunction = MockComposeFunction();
     mockComposeParams = MockComposeParams();
@@ -53,7 +48,6 @@ void main() {
       // Create a fresh instance for this test
       final composeTransactionUseCase = ComposeTransactionUseCase(
         utxoRepository: mockUtxoRepository,
-        balanceRepository: mockBalanceRepository,
         getVirtualSizeUseCase: mockGetVirtualSizeUseCase,
       );
 
@@ -77,10 +71,6 @@ void main() {
 
       when(() => mockUtxoRepository.getUnspentForAddress(source))
           .thenAnswer((_) async => mockUtxos);
-
-      // Update to match the stubbed txid:vout values
-      when(() => mockBalanceRepository.getBalancesForUTXO(any()))
-          .thenAnswer((_) async => []);
 
       when(() => mockGetVirtualSizeUseCase.call(
               composeFunction: mockComposeFunction.call,
@@ -116,7 +106,6 @@ void main() {
       // Create a fresh instance for this test
       final composeTransactionUseCase = ComposeTransactionUseCase(
         utxoRepository: mockUtxoRepository,
-        balanceRepository: mockBalanceRepository,
         getVirtualSizeUseCase: mockGetVirtualSizeUseCase,
       );
 
@@ -147,7 +136,6 @@ void main() {
 
       final composeTransactionUseCase = ComposeTransactionUseCase(
         utxoRepository: mockUtxoRepository,
-        balanceRepository: mockBalanceRepository,
         getVirtualSizeUseCase: mockGetVirtualSizeUseCase,
       );
 
@@ -158,8 +146,6 @@ void main() {
 
       when(() => mockUtxoRepository.getUnspentForAddress(source))
           .thenAnswer((_) async => mockUtxos);
-      when(() => mockBalanceRepository.getBalancesForUTXO(source))
-          .thenAnswer((_) async => []);
 
       when(() => mockGetVirtualSizeUseCase.call(
             params: mockComposeParams,
@@ -185,7 +171,6 @@ void main() {
       // Create a fresh instance for this test
       final composeTransactionUseCase = ComposeTransactionUseCase(
         utxoRepository: mockUtxoRepository,
-        balanceRepository: mockBalanceRepository,
         getVirtualSizeUseCase: mockGetVirtualSizeUseCase,
       );
 
@@ -199,8 +184,6 @@ void main() {
 
       when(() => mockUtxoRepository.getUnspentForAddress(source))
           .thenAnswer((_) async => mockUtxos);
-      when(() => mockBalanceRepository.getBalancesForUTXO(source))
-          .thenAnswer((_) async => []);
 
       when(() => mockGetVirtualSizeUseCase.call(
             params: mockComposeParams,
@@ -221,95 +204,6 @@ void main() {
         ),
         throwsA(isA<ComposeTransactionException>()),
       );
-    });
-
-    test('should use only available UTXOs when some UTXOs are unavailable',
-        () async {
-      // Create a fresh instance for this test
-      final composeTransactionUseCase = ComposeTransactionUseCase(
-        utxoRepository: mockUtxoRepository,
-        balanceRepository: mockBalanceRepository,
-        getVirtualSizeUseCase: mockGetVirtualSizeUseCase,
-      );
-
-      // Arrange
-      const source = 'test_source_address';
-      const feeRate = 10;
-
-      // Mock UTXOs
-      final mockUtxo1 = MockUtxo();
-      final mockUtxo2 = MockUtxo();
-      final mockUtxos = [mockUtxo1, mockUtxo2];
-
-      // Stub txid and vout for both UTXOs
-      when(() => mockUtxo1.txid).thenReturn('mockTxId1');
-      when(() => mockUtxo1.vout).thenReturn(0);
-
-      when(() => mockUtxo2.txid).thenReturn('mockTxId2');
-      when(() => mockUtxo2.vout).thenReturn(1);
-
-      // Set up the virtual size and total fee calculations
-      const virtualSize = 100;
-      const adjustedVirtualSize = virtualSize * 5;
-      const totalFee = adjustedVirtualSize * feeRate;
-
-      final mockComposeResponse = MockComposeResponse();
-
-      // Mock the UTXO repository to return our mock UTXOs
-      when(() => mockUtxoRepository.getUnspentForAddress(source))
-          .thenAnswer((_) async => mockUtxos);
-
-      // Mock the balance repository to simulate that mockUtxo1 has an associated balance (unavailable)
-      when(() => mockBalanceRepository.getBalancesForUTXO('mockTxId1:0'))
-          .thenAnswer((_) async => [MockBalance()]); // Non-empty list
-
-      // Mock the balance repository to simulate that mockUtxo2 has no associated balances (available)
-      when(() => mockBalanceRepository.getBalancesForUTXO('mockTxId2:1'))
-          .thenAnswer((_) async => []); // Empty list
-
-      // Since only mockUtxo2 is available, it should be the only one used in subsequent calls
-      when(() => mockGetVirtualSizeUseCase.call(
-              composeFunction: mockComposeFunction.call,
-              inputsSet: [mockUtxo2], // Only mockUtxo2
-              params: mockComposeParams))
-          .thenAnswer((_) async => (virtualSize, adjustedVirtualSize));
-
-      when(() => mockComposeFunction(totalFee, [mockUtxo2], mockComposeParams))
-          .thenAnswer((_) async => mockComposeResponse);
-
-      // Act
-      final result = await composeTransactionUseCase.call(
-        feeRate: feeRate,
-        source: source,
-        params: mockComposeParams,
-        composeFn: mockComposeFunction.call,
-      );
-
-      // Assert
-      expect(result, (
-        mockComposeResponse,
-        const VirtualSize(virtualSize, adjustedVirtualSize)
-      ));
-
-      // Verify that getUnspentForAddress was called once
-      verify(() => mockUtxoRepository.getUnspentForAddress(source)).called(1);
-
-      // Verify that getBalancesForUTXO was called for each UTXO
-      verify(() => mockBalanceRepository.getBalancesForUTXO('mockTxId1:0'))
-          .called(1);
-      verify(() => mockBalanceRepository.getBalancesForUTXO('mockTxId2:1'))
-          .called(1);
-
-      // Verify that getVirtualSizeUseCase and composeFunction were called with only the available UTXO
-      verify(() => mockGetVirtualSizeUseCase.call(
-            composeFunction: mockComposeFunction.call,
-            inputsSet: [mockUtxo2], // Only the available UTXO
-            params: mockComposeParams,
-          )).called(1);
-
-      verify(() =>
-              mockComposeFunction(totalFee, [mockUtxo2], mockComposeParams))
-          .called(1);
     });
   });
 }
