@@ -91,7 +91,8 @@ class TransactionServiceImpl implements TransactionService {
 
       var txHash = HEX.encode(input.hash.toDart.reversed.toList());
 
-      var prev = utxoMap[txHash];
+
+      var prev = utxoMap["${txHash}:${input.index}"];
       if (prev != null) {
         if (isSegwit) {
           input.witnessUtxo =
