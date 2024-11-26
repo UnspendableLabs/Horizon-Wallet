@@ -1,4 +1,4 @@
-emport 'package:collection/collection.dart';
+import 'package:collection/collection.dart';
 import 'package:horizon/data/sources/network/api/v2_api.dart';
 import 'package:horizon/domain/entities/asset_info.dart' as asset_info;
 import 'package:horizon/domain/entities/bitcoin_decoded_tx.dart';
@@ -48,7 +48,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
     } catch (e) {
 
 
-  final error = extractInvalidUtxoErrors(e.toString());
+    final error = extractInvalidUtxoErrors(e.toString());
 
     return error.fold(() => throw e, (invalidUtxos) {
       // Remove all invalid UTXOs from the current input set
