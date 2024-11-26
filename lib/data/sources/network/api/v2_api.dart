@@ -1431,7 +1431,6 @@ class DetachFromUtxoParams {
   final String status;
   final String txHash;
   final int txIndex;
-  final int blockTime;
 
   DetachFromUtxoParams({
     required this.asset,
@@ -1444,7 +1443,6 @@ class DetachFromUtxoParams {
     required this.status,
     required this.txHash,
     required this.txIndex,
-    required this.blockTime,
   });
 
   factory DetachFromUtxoParams.fromJson(Map<String, dynamic> json) =>
@@ -1489,7 +1487,6 @@ class VerboseDetachFromUtxoParams extends DetachFromUtxoParams {
     required super.status,
     required super.txHash,
     required super.txIndex,
-    required super.blockTime,
     required this.assetInfo,
     required this.quantityNormalized,
     required this.feePaidNormalized,

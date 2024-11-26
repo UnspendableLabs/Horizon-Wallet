@@ -1497,7 +1497,6 @@ DetachFromUtxoParams _$DetachFromUtxoParamsFromJson(
       status: json['status'] as String,
       txHash: json['tx_hash'] as String,
       txIndex: (json['tx_index'] as num).toInt(),
-      blockTime: (json['block_time'] as num).toInt(),
     );
 
 Map<String, dynamic> _$DetachFromUtxoParamsToJson(
@@ -1513,7 +1512,6 @@ Map<String, dynamic> _$DetachFromUtxoParamsToJson(
       'status': instance.status,
       'tx_hash': instance.txHash,
       'tx_index': instance.txIndex,
-      'block_time': instance.blockTime,
     };
 
 VerboseDetachFromUtxoEvent _$VerboseDetachFromUtxoEventFromJson(
@@ -1552,7 +1550,6 @@ VerboseDetachFromUtxoParams _$VerboseDetachFromUtxoParamsFromJson(
       status: json['status'] as String,
       txHash: json['tx_hash'] as String,
       txIndex: (json['tx_index'] as num).toInt(),
-      blockTime: (json['block_time'] as num).toInt(),
       assetInfo:
           AssetInfoModel.fromJson(json['asset_info'] as Map<String, dynamic>),
       quantityNormalized: json['quantity_normalized'] as String,
@@ -1572,7 +1569,6 @@ Map<String, dynamic> _$VerboseDetachFromUtxoParamsToJson(
       'status': instance.status,
       'tx_hash': instance.txHash,
       'tx_index': instance.txIndex,
-      'block_time': instance.blockTime,
       'asset_info': instance.assetInfo,
       'quantity_normalized': instance.quantityNormalized,
       'fee_paid_normalized': instance.feePaidNormalized,

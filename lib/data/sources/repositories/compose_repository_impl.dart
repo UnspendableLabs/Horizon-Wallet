@@ -46,31 +46,32 @@ class ComposeRepositoryImpl extends ComposeRepository {
     try {
       return await apiCall(currentInputsSet);
     } catch (e) {
+      final error = extractInvalidUtxoErrors(e.toString());
 
+      return error.fold(() => throw e, (invalidUtxos) {
+        // Remove all invalid UTXOs from the current input set
+        final newInputsSet =
+            removeUtxosFromList(currentInputsSet, invalidUtxos);
 
-    final error = extractInvalidUtxoErrors(e.toString());
+        if (newInputsSet.isEmpty) {
+          throw Exception('No valid UTXOs left after removing invalid UTXOs');
+        }
 
-    return error.fold(() => throw e, (invalidUtxos) {
-      // Remove all invalid UTXOs from the current input set
-      final newInputsSet = removeUtxosFromList(currentInputsSet, invalidUtxos);
-
-      if (newInputsSet.isEmpty) {
-        throw Exception('No valid UTXOs left after removing invalid UTXOs');
-      }
-
-      // Retry with the updated input set
-      return _retryOnInvalidUtxo(apiCall, newInputsSet);
-    });
-
+        // Retry with the updated input set
+        return _retryOnInvalidUtxo(apiCall, newInputsSet);
+      });
     }
   }
 
-List<Utxo> removeUtxosFromList(List<Utxo> inputSet, List<InvalidUtxo> invalidUtxos) {
-  return inputSet.where((utxo) {
-    return !invalidUtxos.any((invalidUtxo) =>
-        utxo.txid == invalidUtxo.txHash && utxo.vout == invalidUtxo.outputIndex);
-  }).toList();
-}
+  List<Utxo> removeUtxosFromList(
+      List<Utxo> inputSet, List<InvalidUtxo> invalidUtxos) {
+    return inputSet.where((utxo) {
+      return !invalidUtxos.any((invalidUtxo) =>
+          utxo.txid == invalidUtxo.txHash &&
+          utxo.vout == invalidUtxo.outputIndex);
+    }).toList();
+  }
+
   @override
   Future<compose_send.ComposeSendResponse> composeSendVerbose(int fee,
       List<Utxo> inputsSet, compose_send.ComposeSendParams params) async {
