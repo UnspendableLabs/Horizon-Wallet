@@ -49,8 +49,10 @@ class FetchComposeAttachUtxoFormDataUseCase {
       final balanceForAddress = balances
           .where((balance) =>
               displayAssetName(
-                  balance.asset, balance.assetInfo.assetLongname) ==
-              assetName)
+                      balance.asset, balance.assetInfo.assetLongname) ==
+                  assetName &&
+              balance.address == address &&
+              balance.utxo == null)
           .toList();
       if (balanceForAddress.isEmpty) {
         throw FetchBalanceException('Balance not found for address: $address');
