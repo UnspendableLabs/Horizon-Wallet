@@ -563,21 +563,51 @@ class ComposeRepositoryImpl extends ComposeRepository {
   }
 }
 
-class InvalidUtxoError {
+class InvalidUtxo {
   final String txHash;
   final int outputIndex;
 
-  InvalidUtxoError(this.txHash, this.outputIndex);
+  InvalidUtxo(this.txHash, this.outputIndex);
 }
 
-Option<InvalidUtxoError> extractInvalidUtxoError(String errorMessage) {
+Option<List<InvalidUtxo>> extractInvalidUtxoErrors(String errorMessage) {
+  return _extractInvalidUtxoErrors(errorMessage).fold(
+      () => extractInvalidUtxoError(errorMessage).map((utxo) => [utxo]),
+      (utxos) => Option.of(utxos));
+}
+
+Option<List<InvalidUtxo>> _extractInvalidUtxoErrors(String errorMessage) {
+  // Match the new format: array of invalid UTXOs
+  final RegExp newFormatRegex = RegExp(r'invalid UTXOs: (.+)');
+  final match = newFormatRegex.firstMatch(errorMessage);
+
+  try {
+    final listStr = match!.group(1);
+
+    final List<String> utxoStrings =
+        listStr!.split(',').map((s) => s.trim()).toList();
+
+    final List<InvalidUtxo> utxos = utxoStrings.map((utxo) {
+      final parts = utxo.split(':');
+      final txHash = parts[0];
+      final outputIndex = int.parse(parts[1]);
+      return InvalidUtxo(txHash, outputIndex);
+    }).toList();
+
+    return Option.of(utxos);
+  } catch (e) {
+    return const Option.none();
+  }
+}
+
+Option<InvalidUtxo> extractInvalidUtxoError(String errorMessage) {
   final RegExp regex = RegExp(r'invalid UTXO: ([a-fA-F0-9]{64}):(\d+)');
   final match = regex.firstMatch(errorMessage);
 
   return Option.fromNullable(match).map((m) {
     final txHash = m.group(1)!;
     final outputIndex = int.parse(m.group(2)!);
-    return InvalidUtxoError(txHash, outputIndex);
+    return InvalidUtxo(txHash, outputIndex);
   });
 }
 
