@@ -232,6 +232,8 @@ class ComposeAttachUtxoPageState extends State<ComposeAttachUtxoPage> {
         onFieldSubmitted: (value) {
           _handleInitialSubmit(formKey, balance);
         },
+        autovalidateMode:
+            _submitted ? AutovalidateMode.always : AutovalidateMode.disabled,
       ),
       const SizedBox(height: 32),
       HorizonUI.HorizonTextFormField(

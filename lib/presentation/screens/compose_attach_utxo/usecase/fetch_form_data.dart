@@ -1,6 +1,7 @@
 import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
+import 'package:horizon/presentation/common/shared_util.dart';
 import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
 
 class FetchComposeAttachUtxoFormDataUseCase {
@@ -45,8 +46,12 @@ class FetchComposeAttachUtxoFormDataUseCase {
     try {
       final balances = await balanceRepository
           .getBalancesForAddressAndAssetVerbose(address, assetName);
-      final balanceForAddress =
-          balances.where((balance) => balance.address == address).toList();
+      final balanceForAddress = balances
+          .where((balance) =>
+              displayAssetName(
+                  balance.asset, balance.assetInfo.assetLongname) ==
+              assetName)
+          .toList();
       if (balanceForAddress.isEmpty) {
         throw FetchBalanceException('Balance not found for address: $address');
       }

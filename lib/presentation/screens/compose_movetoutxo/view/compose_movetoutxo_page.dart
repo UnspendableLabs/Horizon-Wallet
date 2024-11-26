@@ -131,7 +131,7 @@ class ComposeMoveToUtxoPageState extends State<ComposeMoveToUtxoPage> {
     });
     if (formKey.currentState!.validate()) {
       context.read<ComposeMoveToUtxoBloc>().add(ComposeTransactionEvent(
-            sourceAddress: destinationController.text,
+            sourceAddress: widget.address,
             params: ComposeMoveToUtxoEventParams(
               utxo: utxoController.text,
               destination: destinationController.text,
@@ -159,6 +159,11 @@ class ComposeMoveToUtxoPageState extends State<ComposeMoveToUtxoPage> {
           }
           return null;
         },
+        onFieldSubmitted: (value) {
+          _handleInitialSubmit(formKey);
+        },
+        autovalidateMode:
+            _submitted ? AutovalidateMode.always : AutovalidateMode.disabled,
       ),
     ];
   }

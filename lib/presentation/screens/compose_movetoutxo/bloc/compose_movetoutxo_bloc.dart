@@ -100,14 +100,16 @@ class ComposeMoveToUtxoBloc extends ComposeBaseBloc<ComposeMoveToUtxoState> {
 
     try {
       final feeRate = _getFeeRate();
-      final source = event.sourceAddress; // source is the destination here
+      final source = event.sourceAddress;
       final utxo = event.params.utxo;
+      final destination = event.params.destination;
 
       final composeResponse = await composeTransactionUseCase
           .call<ComposeMoveToUtxoParams, ComposeMoveToUtxoResponse>(
               feeRate: feeRate,
-              source: state.utxoAddress!,
-              params: ComposeMoveToUtxoParams(utxo: utxo, destination: source),
+              source: source,
+              params:
+                  ComposeMoveToUtxoParams(utxo: utxo, destination: destination),
               composeFn: composeRepository.composeMoveToUtxo);
 
       final composed = composeResponse.$1;

@@ -71,6 +71,57 @@ void main() {
           )).called(1);
     });
 
+    test(
+        'should throw FetchBalanceException when balance contains multiple asset balances',
+        () async {
+      // Arrange
+      when(() => mockGetFeeEstimatesUseCase.call(targets: (1, 3, 6)))
+          .thenAnswer((_) async => feeEstimates);
+
+      when(() => mockBalanceRepository.getBalancesForAddressAndAssetVerbose(
+            testAddress,
+            testAssetName,
+          )).thenAnswer((_) async => [balance, balance]);
+
+      // Act & Assert
+      expect(
+        () => useCase.call(testAddress, testAssetName),
+        throwsA(isA<FetchBalanceException>()),
+      );
+
+      verify(() => mockGetFeeEstimatesUseCase.call(targets: (1, 3, 6)))
+          .called(1);
+      verify(() => mockBalanceRepository.getBalancesForAddressAndAssetVerbose(
+            testAddress,
+            testAssetName,
+          )).called(1);
+    });
+
+    test('should throw FetchBalanceException when balance contains no balances',
+        () async {
+      // Arrange
+      when(() => mockGetFeeEstimatesUseCase.call(targets: (1, 3, 6)))
+          .thenAnswer((_) async => feeEstimates);
+
+      when(() => mockBalanceRepository.getBalancesForAddressAndAssetVerbose(
+            testAddress,
+            testAssetName,
+          )).thenAnswer((_) async => []);
+
+      // Act & Assert
+      expect(
+        () => useCase.call(testAddress, testAssetName),
+        throwsA(isA<FetchBalanceException>()),
+      );
+
+      verify(() => mockGetFeeEstimatesUseCase.call(targets: (1, 3, 6)))
+          .called(1);
+      verify(() => mockBalanceRepository.getBalancesForAddressAndAssetVerbose(
+            testAddress,
+            testAssetName,
+          )).called(1);
+    });
+
     test('should throw FetchBalanceException when balance fetch fails',
         () async {
       // Arrange

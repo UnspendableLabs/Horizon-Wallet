@@ -47,7 +47,6 @@ void main() {
 
     const currentAddress = 'mocked-address';
 
-    // Declare your variables here so they are accessible in both build and expect blocks
     late List<Balance> balances;
     late List<Balance> utxoBalances;
     late List<Balance> allBalances;
@@ -89,7 +88,6 @@ void main() {
     blocTest<BalancesBloc, BalancesState>(
       'emits [loading, complete] when Fetch is successful',
       setUp: () {
-        // Initialize your variables here
         balances = <Balance>[
           Balance(
             asset: 'ASSET1',
@@ -103,7 +101,6 @@ void main() {
             utxo: null,
             utxoAddress: null,
           ),
-          // Add more balances if needed
         ];
 
         utxoBalances = <Balance>[
@@ -150,7 +147,7 @@ void main() {
           ),
         ];
 
-        allBalances = [...balances, ...utxoBalances]; // Combine balances
+        allBalances = [...balances, ...utxoBalances];
 
         // Set up the mocks
         when(() => mockBalanceRepository.getBalancesForAddresses(any()))
@@ -182,7 +179,6 @@ void main() {
               return result.maybeWhen(
                 ok: (balancesResult, aggregatedResult, utxoBalancesResult,
                     ownedAssetsResult, fairmintersResult) {
-                  // Custom comparisons using helper functions
                   // Compare balances
                   if (balancesResult.length != allBalances.length) return false;
                   for (int i = 0; i < balancesResult.length; i++) {
@@ -291,7 +287,6 @@ void main() {
     blocTest<BalancesBloc, BalancesState>(
       'emits [loading, complete with error] when Fetch fails in getFairmintersByAddress',
       setUp: () {
-        // Initialize your variables and mocks as needed
         balances = <Balance>[
           Balance(
             asset: 'ASSET1',
@@ -362,7 +357,6 @@ void main() {
             complete: (result) {
               return result.maybeWhen(
                 error: (errorMessage) {
-                  // Adjust the assertion to match the actual error message
                   return errorMessage ==
                       'Error fetching balances for mocked-address';
                 },
@@ -384,18 +378,14 @@ void main() {
       },
     );
 
-    // Additional tests for Start and Stop events
     test('starts polling on Start event and stops on Stop event', () async {
-      // Mock the repository methods to return appropriate responses
       when(() => mockBalanceRepository.getBalancesForAddresses(any()))
-          .thenAnswer((_) async => []); // Return empty list
+          .thenAnswer((_) async => []);
       when(() => mockAssetRepository.getValidAssetsByOwnerVerbose(any()))
           .thenAnswer((_) async => []);
       when(() => mockFairminterRepository.getFairmintersByAddress(any(), any()))
-          .thenAnswer(
-              (_) => TaskEither.of([])); // Assuming it returns a TaskEither
+          .thenAnswer((_) => TaskEither.of([]));
 
-      // Collect the emitted states
       final emittedStates = <BalancesState>[];
       final subscription = balancesBloc.stream.listen(emittedStates.add);
 

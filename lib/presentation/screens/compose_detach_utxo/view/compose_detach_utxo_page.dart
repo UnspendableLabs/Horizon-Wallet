@@ -81,7 +81,6 @@ class ComposeDetachUtxoPageState extends State<ComposeDetachUtxoPage> {
   TextEditingController utxoController = TextEditingController();
   TextEditingController destinationController = TextEditingController();
 
-  bool _submitted = false;
   String? error;
   // Add a key for the dropdown
   bool showLockedOnly = false;
@@ -127,9 +126,6 @@ class ComposeDetachUtxoPageState extends State<ComposeDetachUtxoPage> {
   }
 
   void _handleInitialSubmit(GlobalKey<FormState> formKey) {
-    setState(() {
-      _submitted = true;
-    });
     if (formKey.currentState!.validate()) {
       context.read<ComposeDetachUtxoBloc>().add(ComposeTransactionEvent(
             sourceAddress: destinationController.text,
