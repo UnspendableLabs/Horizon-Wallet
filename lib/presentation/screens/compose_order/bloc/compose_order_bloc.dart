@@ -19,7 +19,7 @@ import "./compose_order_state.dart";
 // import "./compose_order_event.dart";
 
 class ComposeOrderEventParams {
-  final int feeRate;
+  final num feeRate;
   final String giveAsset;
   final int giveQuantity;
   final String getAsset;
@@ -148,7 +148,7 @@ class ComposeOrderBloc extends ComposeBaseBloc<ComposeOrderState> {
         });
   }
 
-  int _getFeeRate() {
+  num _getFeeRate() {
     FeeEstimates feeEstimates = state.feeState.feeEstimatesOrThrow();
     return switch (state.feeOption) {
       FeeOption.Fast() => feeEstimates.fast,

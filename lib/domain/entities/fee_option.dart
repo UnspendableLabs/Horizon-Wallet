@@ -16,12 +16,12 @@ sealed class FeeOption {
         Custom() => 'custom',
       };
 
-  static FeeOption fromString(String value, {int? customFee}) =>
+  static FeeOption fromString(String value, {num? customFee}) =>
       switch (value) {
         'fast' => Fast(),
         'medium' => Medium(),
         'slow' => Slow(),
-        'custom' => Custom(customFee ?? 0),
+        'custom' => Custom(customFee ?? 0.0),
         _ => Medium(),
       };
 }
@@ -42,7 +42,7 @@ class Slow extends FeeOption {
 }
 
 class Custom extends FeeOption {
-  final int fee;
+  final num fee;
   Custom(this.fee);
 
   @override
