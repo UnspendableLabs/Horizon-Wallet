@@ -5,17 +5,14 @@ import "./compose_fn.dart";
 class ComposeMoveToUtxoParams extends ComposeParams {
   final String utxo;
   final String destination;
-  final String asset;
-  final int quantity;
+
   ComposeMoveToUtxoParams({
     required this.utxo,
     required this.destination,
-    required this.asset,
-    required this.quantity,
   });
 
   @override
-  List<Object> get props => [utxo, destination, asset, quantity];
+  List<Object> get props => [utxo, destination];
 }
 
 class ComposeMoveToUtxoResponse implements ComposeResponse {

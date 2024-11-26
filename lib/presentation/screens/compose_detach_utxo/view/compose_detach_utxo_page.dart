@@ -13,7 +13,6 @@ import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transacti
 import 'package:horizon/presentation/common/usecase/write_local_transaction_usecase.dart';
 import 'package:horizon/presentation/screens/compose_detach_utxo/bloc/compose_detach_utxo_bloc.dart';
 import 'package:horizon/presentation/screens/compose_detach_utxo/bloc/compose_detach_utxo_state.dart';
-import 'package:horizon/presentation/screens/compose_detach_utxo/usecase/fetch_form_data.dart';
 
 import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart";
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
@@ -43,17 +42,12 @@ class ComposeDetachUtxoPageWrapper extends StatelessWidget {
           getFeeEstimatesUseCase: GetIt.I.get<GetFeeEstimatesUseCase>(),
           analyticsService: GetIt.I.get<AnalyticsService>(),
           composeTransactionUseCase: GetIt.I.get<ComposeTransactionUseCase>(),
-          fetchComposeDetachUtxoFormDataUseCase:
-              GetIt.I.get<FetchComposeDetachUtxoFormDataUseCase>(),
           composeRepository: GetIt.I.get<ComposeRepository>(),
           signAndBroadcastTransactionUseCase:
               GetIt.I.get<SignAndBroadcastTransactionUseCase>(),
           writelocalTransactionUseCase:
               GetIt.I.get<WriteLocalTransactionUseCase>(),
-        )..add(FetchFormData(
-            utxo: utxo,
-            assetName:
-                assetName)), // we need to fetch the utxo balance here rather than the address balance
+        )..add(FetchFormData()),
         child: ComposeDetachUtxoPage(
           address: currentAddress,
           assetName: assetName,
@@ -181,8 +175,7 @@ class ComposeDetachUtxoPageState extends State<ComposeDetachUtxoPage> {
   }
 
   void _onConfirmationBack() {
-    context.read<ComposeDetachUtxoBloc>().add(FetchFormData(
-        currentAddress: widget.utxo, assetName: widget.assetName));
+    context.read<ComposeDetachUtxoBloc>().add(FetchFormData());
   }
 
   void _onConfirmationContinue(
@@ -206,7 +199,6 @@ class ComposeDetachUtxoPageState extends State<ComposeDetachUtxoPage> {
   }
 
   void _onFinalizeCancel() {
-    context.read<ComposeDetachUtxoBloc>().add(FetchFormData(
-        currentAddress: widget.utxo, assetName: widget.assetName));
+    context.read<ComposeDetachUtxoBloc>().add(FetchFormData());
   }
 }

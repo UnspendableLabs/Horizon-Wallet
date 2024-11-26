@@ -360,6 +360,10 @@ class ActivityFeedListItem extends StatelessWidget {
       ) =>
         SelectableText(
             "Attach to UTXO ${unpackedData.quantityNormalized} ${unpackedData.asset}"),
+      TransactionInfoDetach(
+        unpackedData: var unpackedData,
+      ) =>
+        SelectableText("Detach from UTXO ${unpackedData.destination}"),
       _ => SelectableText(
           'Invariant: title unsupported TransactionInfo type: ${info.runtimeType}'),
     };

@@ -474,3 +474,44 @@ class TransactionInfoAttach extends TransactionInfo {
     );
   }
 }
+
+class TransactionInfoDetach extends TransactionInfo {
+  final DetachUnpackedVerbose unpackedData;
+  const TransactionInfoDetach({
+    required super.hash,
+    required super.source,
+    required super.destination,
+    required super.btcAmount,
+    required super.fee,
+    required super.data,
+    required super.domain,
+    required this.unpackedData,
+    required super.btcAmountNormalized,
+  });
+  @override
+  List<Object?> get props => [unpackedData, ...super.props];
+  @override
+  TransactionInfoDetach copyWith({
+    String? hash,
+    String? source,
+    String? destination,
+    int? btcAmount,
+    int? fee,
+    String? data,
+    TransactionInfoDomain? domain,
+    DetachUnpackedVerbose? unpackedData,
+    String? btcAmountNormalized,
+  }) {
+    return TransactionInfoDetach(
+      hash: hash ?? this.hash,
+      source: source ?? this.source,
+      destination: destination ?? this.destination,
+      btcAmount: btcAmount ?? this.btcAmount,
+      fee: fee ?? this.fee,
+      data: data ?? this.data,
+      domain: domain ?? this.domain,
+      unpackedData: unpackedData ?? this.unpackedData,
+      btcAmountNormalized: btcAmountNormalized ?? this.btcAmountNormalized,
+    );
+  }
+}

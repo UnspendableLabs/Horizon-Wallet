@@ -1,6 +1,5 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:horizon/domain/entities/asset_info.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:horizon/presentation/screens/compose_detach_utxo/bloc/compose_detach_utxo_bloc.dart';
 import 'package:horizon/presentation/screens/compose_detach_utxo/bloc/compose_detach_utxo_state.dart';
@@ -8,15 +7,12 @@ import 'package:horizon/domain/repositories/compose_repository.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
-import 'package:horizon/presentation/screens/compose_detach_utxo/usecase/fetch_form_data.dart';
 import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
 import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transaction_usecase.dart';
 import 'package:horizon/presentation/common/usecase/write_local_transaction_usecase.dart';
-import 'package:horizon/domain/repositories/block_repository.dart';
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_state.dart';
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_event.dart';
 
-import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/domain/entities/fee_option.dart' as FeeOption;
 import 'package:horizon/domain/entities/compose_detach_utxo.dart';
@@ -30,9 +26,6 @@ class MockLogger extends Mock implements Logger {}
 class MockGetFeeEstimatesUseCase extends Mock
     implements GetFeeEstimatesUseCase {}
 
-class MockFetchComposeDetachUtxoFormDataUseCase extends Mock
-    implements FetchComposeDetachUtxoFormDataUseCase {}
-
 class MockComposeTransactionUseCase extends Mock
     implements ComposeTransactionUseCase {}
 
@@ -41,8 +34,6 @@ class MockSignAndBroadcastTransactionUseCase extends Mock
 
 class MockWriteLocalTransactionUseCase extends Mock
     implements WriteLocalTransactionUseCase {}
-
-class MockBlockRepository extends Mock implements BlockRepository {}
 
 class MockComposeDetachUtxoResponse extends Mock
     implements ComposeDetachUtxoResponse {}
@@ -68,23 +59,13 @@ void main() {
   late MockAnalyticsService mockAnalyticsService;
   late MockLogger mockLogger;
   late MockGetFeeEstimatesUseCase mockGetFeeEstimatesUseCase;
-  late MockFetchComposeDetachUtxoFormDataUseCase
-      mockFetchComposeDetachUtxoFormDataUseCase;
   late MockComposeTransactionUseCase mockComposeTransactionUseCase;
   late MockSignAndBroadcastTransactionUseCase
       mockSignAndBroadcastTransactionUseCase;
   late MockWriteLocalTransactionUseCase mockWriteLocalTransactionUseCase;
 
   const mockFeeEstimates = FeeEstimates(fast: 5, medium: 3, slow: 1);
-  final mockBalance = Balance(
-    asset: 'ASSET_NAME',
-    quantity: 100,
-    address: 'ADDRESS',
-    quantityNormalized: '100',
-    assetInfo: const AssetInfo(
-      divisible: false,
-    ),
-  );
+
   final mockComposeDetachUtxoResponse = MockComposeDetachUtxoResponse();
 
   final composeTransactionParams = ComposeDetachUtxoEventParams(
@@ -107,6 +88,7 @@ void main() {
       utxo: 'some-utxo',
       destination: 'ADDRESS',
     ));
+    registerFallbackValue((1, 3, 6));
   });
 
   setUp(() {
@@ -114,8 +96,6 @@ void main() {
     mockAnalyticsService = MockAnalyticsService();
     mockLogger = MockLogger();
     mockGetFeeEstimatesUseCase = MockGetFeeEstimatesUseCase();
-    mockFetchComposeDetachUtxoFormDataUseCase =
-        MockFetchComposeDetachUtxoFormDataUseCase();
     mockComposeTransactionUseCase = MockComposeTransactionUseCase();
     mockSignAndBroadcastTransactionUseCase =
         MockSignAndBroadcastTransactionUseCase();
@@ -126,8 +106,6 @@ void main() {
       analyticsService: mockAnalyticsService,
       logger: mockLogger,
       getFeeEstimatesUseCase: mockGetFeeEstimatesUseCase,
-      fetchComposeDetachUtxoFormDataUseCase:
-          mockFetchComposeDetachUtxoFormDataUseCase,
       composeTransactionUseCase: mockComposeTransactionUseCase,
       signAndBroadcastTransactionUseCase:
           mockSignAndBroadcastTransactionUseCase,
@@ -143,13 +121,10 @@ void main() {
     blocTest<ComposeDetachUtxoBloc, ComposeDetachUtxoState>(
       'emits loading and then success states when data is fetched successfully',
       build: () {
-        when(() => mockFetchComposeDetachUtxoFormDataUseCase.call(
-              any(),
+        when(() => mockGetFeeEstimatesUseCase.call(
+              targets: any(named: 'targets'),
             )).thenAnswer(
-          (_) async => (
-            mockFeeEstimates,
-            mockBalance,
-          ),
+          (_) async => mockFeeEstimates,
         );
         return composeDetachUtxoBloc;
       },
@@ -166,7 +141,7 @@ void main() {
           submitState: const SubmitInitial(),
         ),
         composeDetachUtxoBloc.state.copyWith(
-          balancesState: BalancesState.success([mockBalance]),
+          balancesState: const BalancesState.success([]),
           feeState: const FeeState.success(mockFeeEstimates),
         ),
       ],
@@ -175,8 +150,8 @@ void main() {
     blocTest<ComposeDetachUtxoBloc, ComposeDetachUtxoState>(
       'emits error state when fetching fee estimates fails',
       build: () {
-        when(() => mockFetchComposeDetachUtxoFormDataUseCase.call(
-              any(),
+        when(() => mockGetFeeEstimatesUseCase.call(
+              targets: any(named: 'targets'),
             )).thenThrow(
           FetchFeeEstimatesException('Failed to fetch fee estimates'),
         );

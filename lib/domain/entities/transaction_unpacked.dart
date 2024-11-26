@@ -274,3 +274,9 @@ class AttachUnpackedVerbose extends TransactionUnpacked {
     // required this.assetInfo,
   }) : super(messageType: "attach");
 }
+
+class DetachUnpackedVerbose extends TransactionUnpacked {
+  final String destination;
+  const DetachUnpackedVerbose({required this.destination})
+      : super(messageType: "detach");
+}

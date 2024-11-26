@@ -10,12 +10,12 @@ import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_event.dart';
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_state.dart';
 import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
+import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
 import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transaction_usecase.dart';
 import 'package:horizon/presentation/common/usecase/write_local_transaction_usecase.dart';
 // Import necessary files
 import 'package:horizon/presentation/screens/compose_movetoutxo/bloc/compose_movetoutxo_bloc.dart';
 import 'package:horizon/presentation/screens/compose_movetoutxo/bloc/compose_movetoutxo_state.dart';
-import 'package:horizon/presentation/screens/compose_movetoutxo/usecase/fetch_form_data.dart';
 import 'package:mocktail/mocktail.dart';
 
 class MockComposeRepository extends Mock implements ComposeRepository {}
@@ -24,8 +24,8 @@ class MockAnalyticsService extends Mock implements AnalyticsService {}
 
 class MockLogger extends Mock implements Logger {}
 
-class MockFetchComposeMoveToUtxoFormDataUseCase extends Mock
-    implements FetchComposeMoveToUtxoFormDataUseCase {}
+class MockGetFeeEstimatesUseCase extends Mock
+    implements GetFeeEstimatesUseCase {}
 
 class MockComposeTransactionUseCase extends Mock
     implements ComposeTransactionUseCase {}
@@ -61,24 +61,18 @@ void main() {
   late MockComposeRepository mockComposeRepository;
   late MockAnalyticsService mockAnalyticsService;
   late MockLogger mockLogger;
-  late MockFetchComposeMoveToUtxoFormDataUseCase
-      mockFetchComposeMoveToUtxoFormDataUseCase;
+  late MockGetFeeEstimatesUseCase mockGetFeeEstimatesUseCase;
   late MockComposeTransactionUseCase mockComposeTransactionUseCase;
   late MockSignAndBroadcastTransactionUseCase
       mockSignAndBroadcastTransactionUseCase;
   late MockWriteLocalTransactionUseCase mockWriteLocalTransactionUseCase;
 
   const mockFeeEstimates = FeeEstimates(fast: 5, medium: 3, slow: 1);
-  final mockBalance = MockBalance();
   final mockComposeMoveToUtxoResponse = MockComposeMoveToUtxoResponse();
-  final mockComposeMoveToUtxoResponseParams =
-      MockComposeMoveToUtxoResponseParams();
 
   final composeTransactionParams = ComposeMoveToUtxoEventParams(
     utxo: 'some-utxo',
     destination: 'destination-address',
-    asset: 'ASSET_NAME',
-    quantity: 10,
   );
 
   setUpAll(() {
@@ -99,18 +93,16 @@ void main() {
       ComposeMoveToUtxoParams(
         utxo: 'some-utxo',
         destination: 'destination-address',
-        asset: 'ASSET_NAME',
-        quantity: 10,
       ),
     );
+    registerFallbackValue((1, 3, 6));
   });
 
   setUp(() {
     mockComposeRepository = MockComposeRepository();
     mockAnalyticsService = MockAnalyticsService();
     mockLogger = MockLogger();
-    mockFetchComposeMoveToUtxoFormDataUseCase =
-        MockFetchComposeMoveToUtxoFormDataUseCase();
+    mockGetFeeEstimatesUseCase = MockGetFeeEstimatesUseCase();
     mockComposeTransactionUseCase = MockComposeTransactionUseCase();
     mockSignAndBroadcastTransactionUseCase =
         MockSignAndBroadcastTransactionUseCase();
@@ -120,8 +112,7 @@ void main() {
       composeRepository: mockComposeRepository,
       analyticsService: mockAnalyticsService,
       logger: mockLogger,
-      fetchComposeMoveToUtxoFormDataUseCase:
-          mockFetchComposeMoveToUtxoFormDataUseCase,
+      getFeeEstimatesUseCase: mockGetFeeEstimatesUseCase,
       composeTransactionUseCase: mockComposeTransactionUseCase,
       signAndBroadcastTransactionUseCase:
           mockSignAndBroadcastTransactionUseCase,
@@ -137,13 +128,13 @@ void main() {
     blocTest<ComposeMoveToUtxoBloc, ComposeMoveToUtxoState>(
       'emits loading and then success states when data is fetched successfully',
       build: () {
-        when(() => mockFetchComposeMoveToUtxoFormDataUseCase.call(any()))
-            .thenAnswer((_) async => (mockFeeEstimates, mockBalance));
+        when(() =>
+                mockGetFeeEstimatesUseCase.call(targets: any(named: 'targets')))
+            .thenAnswer((_) async => mockFeeEstimates);
         return composeMoveToUtxoBloc;
       },
       act: (bloc) {
         bloc.add(FetchFormData(
-          utxo: 'some-utxo',
           currentAddress: 'source-address',
         ));
       },
@@ -156,7 +147,7 @@ void main() {
         ),
         composeMoveToUtxoBloc.state.copyWith(
           feeState: const FeeState.success(mockFeeEstimates),
-          balancesState: BalancesState.success([mockBalance]),
+          balancesState: const BalancesState.success([]),
           utxoAddress: 'source-address',
         ),
       ],
@@ -165,13 +156,14 @@ void main() {
     blocTest<ComposeMoveToUtxoBloc, ComposeMoveToUtxoState>(
       'emits error state when FetchFormData fails',
       build: () {
-        when(() => mockFetchComposeMoveToUtxoFormDataUseCase.call(any()))
-            .thenThrow(FetchBalanceException('Failed to fetch balance'));
+        when(() =>
+                mockGetFeeEstimatesUseCase.call(targets: any(named: 'targets')))
+            .thenThrow(
+                FetchFeeEstimatesException('Failed to fetch fee estimates'));
         return composeMoveToUtxoBloc;
       },
       act: (bloc) {
         bloc.add(FetchFormData(
-          utxo: 'some-utxo',
           currentAddress: 'source-address',
         ));
       },
@@ -182,7 +174,7 @@ void main() {
           submitState: const SubmitInitial(),
         ),
         composeMoveToUtxoBloc.state.copyWith(
-          balancesState: const BalancesState.error('Failed to fetch balance'),
+          feeState: const FeeState.error('Failed to fetch fee estimates'),
         ),
       ],
     );

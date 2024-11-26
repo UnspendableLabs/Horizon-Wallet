@@ -13,7 +13,6 @@ import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
 import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transaction_usecase.dart';
 import 'package:horizon/presentation/common/usecase/write_local_transaction_usecase.dart';
 import 'package:horizon/presentation/screens/compose_detach_utxo/bloc/compose_detach_utxo_state.dart';
-import 'package:horizon/presentation/screens/compose_detach_utxo/usecase/fetch_form_data.dart';
 
 class ComposeDetachUtxoEventParams {
   final String utxo;
@@ -28,8 +27,6 @@ class ComposeDetachUtxoBloc extends ComposeBaseBloc<ComposeDetachUtxoState> {
   final AnalyticsService analyticsService;
   final Logger logger;
   final GetFeeEstimatesUseCase getFeeEstimatesUseCase;
-  final FetchComposeDetachUtxoFormDataUseCase
-      fetchComposeDetachUtxoFormDataUseCase;
   final ComposeTransactionUseCase composeTransactionUseCase;
   final SignAndBroadcastTransactionUseCase signAndBroadcastTransactionUseCase;
   final WriteLocalTransactionUseCase writelocalTransactionUseCase;
@@ -40,7 +37,6 @@ class ComposeDetachUtxoBloc extends ComposeBaseBloc<ComposeDetachUtxoState> {
     required this.composeTransactionUseCase,
     required this.composeRepository,
     required this.analyticsService,
-    required this.fetchComposeDetachUtxoFormDataUseCase,
     required this.signAndBroadcastTransactionUseCase,
     required this.writelocalTransactionUseCase,
   }) : super(ComposeDetachUtxoState(
@@ -66,8 +62,6 @@ class ComposeDetachUtxoBloc extends ComposeBaseBloc<ComposeDetachUtxoState> {
         feeState: FeeState.success(feeEstimates),
         balancesState: const BalancesState.success([]),
       ));
-    } on FetchBalanceException catch (e) {
-      emit(state.copyWith(balancesState: BalancesState.error(e.message)));
     } on FetchFeeEstimatesException catch (e) {
       emit(state.copyWith(
         feeState: FeeState.error(e.message),
@@ -196,4 +190,12 @@ class ComposeDetachUtxoBloc extends ComposeBaseBloc<ComposeDetachUtxoState> {
           )));
         });
   }
+}
+
+class FetchFeeEstimatesException implements Exception {
+  final String message;
+  FetchFeeEstimatesException(this.message);
+
+  @override
+  String toString() => 'FetchFeeEstimatesException: $message';
 }

@@ -51,6 +51,8 @@ class FakeTransactionInfo extends Fake implements TransactionInfo {}
 class MockUtxo extends Mock implements Utxo {
   @override
   final txid = "test-txid";
+  @override
+  final vout = 0;
 }
 
 class MockAddress extends Mock implements Address {
@@ -178,11 +180,12 @@ void main() {
             index: mockAddress.index,
             importFormat: mockAccount.importFormat,
           )).thenAnswer((_) async => addressPrivKey);
+
       when(() => mockTransactionService.signTransaction(
             'rawtransaction',
             addressPrivKey,
             'source',
-            {mockUtxos[0].txid: mockUtxos[0]},
+            {"${mockUtxos[0].txid}:${mockUtxos[0].vout}": mockUtxos[0]},
           )).thenAnswer((_) async => txHex);
       when(() => mockBitcoindService.sendrawtransaction(txHex))
           .thenAnswer((_) async => txHash);
@@ -229,7 +232,7 @@ void main() {
             'rawtransaction',
             addressPrivKey,
             'source',
-            {mockUtxos[0].txid: mockUtxos[0]},
+            {"${mockUtxos[0].txid}:${mockUtxos[0].vout}": mockUtxos[0]},
           )).called(1);
       verify(() => mockBitcoindService.sendrawtransaction(txHex)).called(1);
     });
@@ -263,7 +266,7 @@ void main() {
             'rawtransaction',
             addressPrivKey,
             'source',
-            {mockUtxos[0].txid: mockUtxos[0]},
+            {"${mockUtxos[0].txid}:${mockUtxos[0].vout}": mockUtxos[0]},
           )).thenAnswer((_) async => txHex);
       when(() => mockBitcoindService.sendrawtransaction(txHex))
           .thenAnswer((_) async => txHash);
@@ -299,7 +302,7 @@ void main() {
             'rawtransaction',
             addressPrivKey,
             'source',
-            {mockUtxos[0].txid: mockUtxos[0]},
+            {"${mockUtxos[0].txid}:${mockUtxos[0].vout}": mockUtxos[0]},
           )).called(1);
       verify(() => mockBitcoindService.sendrawtransaction(txHex)).called(1);
     });
@@ -472,7 +475,7 @@ void main() {
             'rawtransaction',
             addressPrivKey,
             'source',
-            {mockUtxos[0].txid: mockUtxos[0]},
+            {"${mockUtxos[0].txid}:${mockUtxos[0].vout}": mockUtxos[0]},
           )).thenAnswer((_) async => txHex);
       when(() => mockBitcoindService.sendrawtransaction(txHex)).thenThrow(
           SignAndBroadcastTransactionException(
@@ -541,7 +544,7 @@ void main() {
               'rawtransaction',
               addressPrivKey,
               'source',
-              {mockUtxos[0].txid: mockUtxos[0]},
+              {"${mockUtxos[0].txid}:${mockUtxos[0].vout}": mockUtxos[0]},
             ))
         .thenThrow(
             TransactionServiceException('Failed to sign the transaction.'));

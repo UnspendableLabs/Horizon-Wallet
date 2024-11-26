@@ -3644,6 +3644,7 @@ class InfoVerbose extends Info {
         return AttachInfoVerbose.fromJson(json);
       case "detach":
         return DetachInfoVerbose.fromJson(json);
+      // TODO: parse moves
       default:
         return base;
     }

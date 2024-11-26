@@ -146,3 +146,9 @@ class AttachUnpackedVerboseMapper {
     );
   }
 }
+
+class DetachUnpackedVerboseMapper {
+  static DetachUnpackedVerbose toDomain(api.DetachUnpackedVerbose u) {
+    return DetachUnpackedVerbose(destination: u.destination);
+  }
+}
