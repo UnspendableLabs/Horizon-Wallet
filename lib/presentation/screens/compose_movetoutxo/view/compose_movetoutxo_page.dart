@@ -106,9 +106,7 @@ class ComposeMoveToUtxoPageState extends State<ComposeMoveToUtxoPage> {
           loading: () =>
               ComposeBasePage<ComposeMoveToUtxoBloc, ComposeMoveToUtxoState>(
             dashboardActivityFeedBloc: widget.dashboardActivityFeedBloc,
-            onFeeChange: (fee) => context
-                .read<ComposeMoveToUtxoBloc>()
-                .add(ChangeFeeOption(value: fee)),
+            onFeeChange: (fee) {},
             buildInitialFormFields: (state, loading, formKey) => [
               HorizonUI.HorizonTextFormField(
                 controller: utxoController,
@@ -153,6 +151,7 @@ class ComposeMoveToUtxoPageState extends State<ComposeMoveToUtxoPage> {
             },
             onFinalizeCancel: () => _onFinalizeCancel(),
           ),
+          error: (message) => SelectableText(message),
           orElse: () => const SizedBox.shrink(),
         );
       },
@@ -169,14 +168,11 @@ class ComposeMoveToUtxoPageState extends State<ComposeMoveToUtxoPage> {
       _submitted = true;
     });
     if (formKey.currentState!.validate()) {
-      final balance = balances.first;
       context.read<ComposeMoveToUtxoBloc>().add(ComposeTransactionEvent(
             sourceAddress: destinationController.text,
             params: ComposeMoveToUtxoEventParams(
               utxo: utxoController.text,
               destination: destinationController.text,
-              asset: widget.assetName,
-              quantity: balance.quantity,
             ),
           ));
     }

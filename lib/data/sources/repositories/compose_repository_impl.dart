@@ -1,31 +1,30 @@
 import 'package:collection/collection.dart';
+import 'package:fpdart/fpdart.dart';
 import 'package:horizon/data/sources/network/api/v2_api.dart';
 import 'package:horizon/domain/entities/asset_info.dart' as asset_info;
 import 'package:horizon/domain/entities/bitcoin_decoded_tx.dart';
-import 'package:horizon/domain/entities/compose_issuance.dart'
-    as compose_issuance;
-import 'package:horizon/domain/entities/compose_send.dart' as compose_send;
+import 'package:horizon/domain/entities/compose_attach_utxo.dart'
+    as compose_attach_utxo;
+import 'package:horizon/domain/entities/compose_cancel.dart' as compose_cancel;
+import 'package:horizon/domain/entities/compose_detach_utxo.dart'
+    as compose_detach_utxo;
+import 'package:horizon/domain/entities/compose_dispense.dart'
+    as compose_dispense;
 import 'package:horizon/domain/entities/compose_dispenser.dart'
     as compose_dispenser;
 import 'package:horizon/domain/entities/compose_fairmint.dart'
     as compose_fairmint;
 import 'package:horizon/domain/entities/compose_fairminter.dart'
     as compose_fairminter;
-import 'package:horizon/domain/entities/compose_dispense.dart'
-    as compose_dispense;
-import 'package:horizon/domain/entities/compose_order.dart' as compose_order;
-import 'package:horizon/domain/entities/compose_cancel.dart' as compose_cancel;
-import 'package:horizon/domain/entities/compose_attach_utxo.dart'
-    as compose_attach_utxo;
-import 'package:horizon/domain/entities/compose_detach_utxo.dart'
-    as compose_detach_utxo;
+import 'package:horizon/domain/entities/compose_issuance.dart'
+    as compose_issuance;
 import 'package:horizon/domain/entities/compose_movetoutxo.dart'
     as compose_movetoutxo;
+import 'package:horizon/domain/entities/compose_order.dart' as compose_order;
+import 'package:horizon/domain/entities/compose_send.dart' as compose_send;
 import 'package:horizon/domain/entities/utxo.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
-
 import 'package:logger/logger.dart';
-import 'package:fpdart/fpdart.dart';
 
 final logger = Logger();
 
@@ -73,7 +72,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
             currentInputSet.map((e) => "${e.txid}:${e.vout}").join(',');
 
         final response = await api.composeSendVerbose(source, destination,
-            asset, quantity, true, fee, null, inputsSetString);
+            asset, quantity, true, fee, null, inputsSetString, true);
 
         if (response.result == null) {
           throw Exception('Failed to compose send');
@@ -132,7 +131,8 @@ class ComposeRepositoryImpl extends ComposeRepository {
             description,
             unconfirmed,
             fee,
-            inputsSetString);
+            inputsSetString,
+            true);
         if (response.result == null) {
           throw Exception('Failed to compose issuance');
         }
@@ -189,7 +189,8 @@ class ComposeRepositoryImpl extends ComposeRepository {
             oracleAddress,
             allowUnconfirmedTx,
             fee,
-            inputsSetString);
+            inputsSetString,
+            true);
 
         if (response.result == null) {
           throw Exception('Failed to compose dispenser');
@@ -238,7 +239,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
             currentInputSet.map((e) => "${e.txid}:${e.vout}").join(',');
 
         final response = await api.composeDispense(sourceAddress, dispenser,
-            quantity, allowUnconfirmedTx, fee, inputsSetString);
+            quantity, allowUnconfirmedTx, fee, inputsSetString, true);
 
         if (response.result == null) {
           throw Exception('Failed to compose dispense');
@@ -264,7 +265,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
             currentInputSet.map((e) => "${e.txid}:${e.vout}").join(',');
 
         final response = await api.composeFairmintVerbose(
-            sourceAddress, asset, fee, inputsSetString);
+            sourceAddress, asset, fee, inputsSetString, true);
 
         if (response.result == null) {
           throw Exception('Failed to compose fairmint');
@@ -307,7 +308,8 @@ class ComposeRepositoryImpl extends ComposeRepository {
             endBlock,
             fee,
             lockQuantity,
-            inputsSetString);
+            inputsSetString,
+            true);
 
         if (response.result == null) {
           throw Exception('Failed to compose fairminter');
@@ -358,6 +360,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
         true,
         fee,
         newInputSet,
+        true,
         null,
         false,
         true);
@@ -413,7 +416,8 @@ class ComposeRepositoryImpl extends ComposeRepository {
             0, // fee required
             true, //  allow unconfirmed
             fee, //exect fee
-            inputsSetString);
+            inputsSetString,
+            true);
 
         if (response.result == null) {
           throw Exception('Failed to compose order');
@@ -441,7 +445,8 @@ class ComposeRepositoryImpl extends ComposeRepository {
             offerHash,
             true, //  allow unconfirmed
             fee, //exect fee
-            inputsSetString);
+            inputsSetString,
+            true);
 
         if (response.result == null) {
           throw Exception('Failed to compose cancel');
@@ -476,7 +481,8 @@ class ComposeRepositoryImpl extends ComposeRepository {
             false,
             true, //  allow unconfirmed
             fee, //exect fee
-            inputsSetString);
+            inputsSetString,
+            true);
 
         if (response.result == null) {
           throw Exception('Failed to compose attach utxo');
@@ -498,8 +504,6 @@ class ComposeRepositoryImpl extends ComposeRepository {
       (currentInputSet) async {
         final utxo = params.utxo;
         final destination = params.destination;
-        final quantity = params.quantity;
-        final asset = params.asset;
 
         final inputsSetString =
             currentInputSet.map((e) => "${e.txid}:${e.vout}").join(',');
@@ -507,12 +511,11 @@ class ComposeRepositoryImpl extends ComposeRepository {
         final response = await api.composeDetachUtxo(
           utxo,
           destination,
-          asset,
-          quantity,
           false,
           true, //  allow unconfirmed
           fee, //exect fee
           inputsSetString,
+          true,
         );
 
         if (response.result == null) {
@@ -535,8 +538,6 @@ class ComposeRepositoryImpl extends ComposeRepository {
       (currentInputSet) async {
         final utxo = params.utxo;
         final destination = params.destination;
-        final asset = params.asset;
-        final quantity = params.quantity;
 
         final inputsSetString =
             currentInputSet.map((e) => "${e.txid}:${e.vout}").join(',');
@@ -544,12 +545,11 @@ class ComposeRepositoryImpl extends ComposeRepository {
         final response = await api.composeMoveToUtxo(
           utxo,
           destination,
-          asset,
-          quantity,
           false,
           true, //  allow unconfirmed inputs
           fee, //exect fee
           inputsSetString,
+          true,
         );
 
         if (response.result == null) {

@@ -34,7 +34,7 @@ final DEFAULT_WHITELIST = [
   "ORDER_EXPIRATION",
   "ATTACH_TO_UTXO",
   "DETACH_FROM_UTXO",
-  "MOVE_TO_UTXO",
+  "UTXO_MOVE",
 ];
 
 class DashboardActivityFeedBloc

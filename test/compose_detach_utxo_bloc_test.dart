@@ -89,8 +89,6 @@ void main() {
 
   final composeTransactionParams = ComposeDetachUtxoEventParams(
     utxo: 'some-utxo',
-    quantity: 10,
-    asset: 'ASSET_NAME',
   );
 
   setUpAll(() {
@@ -108,8 +106,6 @@ void main() {
     registerFallbackValue(ComposeDetachUtxoParams(
       utxo: 'some-utxo',
       destination: 'ADDRESS',
-      quantity: 10,
-      asset: 'ASSET_NAME',
     ));
   });
 

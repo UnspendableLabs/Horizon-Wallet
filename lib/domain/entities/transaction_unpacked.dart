@@ -261,3 +261,16 @@ class CancelUnpacked extends TransactionUnpacked {
   @override
   List<Object?> get props => [orderHash, status];
 }
+
+class AttachUnpackedVerbose extends TransactionUnpacked {
+  final String asset;
+  final String? destinationVout;
+  final String quantityNormalized;
+  // final AssetInfo assetInfo;
+  const AttachUnpackedVerbose({
+    required this.asset,
+    required this.destinationVout,
+    required this.quantityNormalized,
+    // required this.assetInfo,
+  }) : super(messageType: "attach");
+}

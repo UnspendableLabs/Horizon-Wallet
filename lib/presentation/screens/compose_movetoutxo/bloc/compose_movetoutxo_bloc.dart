@@ -17,13 +17,10 @@ import 'package:horizon/presentation/screens/compose_movetoutxo/usecase/fetch_fo
 class ComposeMoveToUtxoEventParams {
   final String utxo;
   final String destination;
-  final String asset;
-  final int quantity;
+
   ComposeMoveToUtxoEventParams({
     required this.utxo,
     required this.destination,
-    required this.asset,
-    required this.quantity,
   });
 }
 

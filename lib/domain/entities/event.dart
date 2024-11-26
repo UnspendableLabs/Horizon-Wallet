@@ -1403,13 +1403,11 @@ class MoveToUtxoParams {
   final String asset;
   final int blockIndex;
   final String destination;
-  final int feePaid;
 
   MoveToUtxoParams({
     required this.asset,
     required this.blockIndex,
     required this.destination,
-    required this.feePaid,
   });
 }
 
@@ -1428,15 +1426,12 @@ class MoveToUtxoEvent extends Event {
 
 class VerboseMoveToUtxoParams extends MoveToUtxoParams {
   final String quantityNormalized;
-  final String feePaidNormalized;
 
   VerboseMoveToUtxoParams({
     required super.asset,
     required super.blockIndex,
     required super.destination,
-    required super.feePaid,
     required this.quantityNormalized,
-    required this.feePaidNormalized,
   });
 }
 

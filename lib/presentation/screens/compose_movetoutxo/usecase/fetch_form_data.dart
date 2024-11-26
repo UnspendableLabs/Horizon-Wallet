@@ -44,12 +44,14 @@ class FetchComposeMoveToUtxoFormDataUseCase {
   Future<Balance> _fetchBalanceForUtxo(String utxo) async {
     try {
       final balances = await balanceRepository.getBalancesForUTXO(utxo);
-      if (balances.isEmpty) {
-        throw FetchBalanceException('No balance found for UTXO: $utxo');
-      }
-      if (balances.length > 1) {
-        throw FetchBalanceException('Multiple balances found for UTXO: $utxo');
-      }
+      // if (balances.isEmpty) {
+      //   throw FetchBalanceException('No balance found for UTXO: $utxo');
+      // }
+      // final balanceForUtxo =
+      //     balances.where((balance) => balance.utxo == utxo).toList();
+      // if (balanceForUtxo.length > 1) {
+      //   throw FetchBalanceException('Multiple balances found for UTXO: $utxo');
+      // }
       return balances.first;
     } catch (e) {
       throw FetchBalanceException(e.toString());

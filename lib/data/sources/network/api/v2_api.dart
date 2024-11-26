@@ -296,7 +296,7 @@ class Event {
         return AttachToUtxoEvent.fromJson(json);
       case "DETACH_FROM_UTXO":
         return DetachFromUtxoEvent.fromJson(json);
-      case "MOVE_TO_UTXO":
+      case "UTXO_MOVE":
         return MoveToUtxoEvent.fromJson(json);
       default:
         return _$EventFromJson(json);
@@ -1328,7 +1328,6 @@ class MoveToUtxoParams {
   final String asset;
   final int blockIndex;
   final String destination;
-  final int feePaid;
   final int msgIndex;
   final int quantity;
   final String source;
@@ -1341,7 +1340,6 @@ class MoveToUtxoParams {
     required this.asset,
     required this.blockIndex,
     required this.destination,
-    required this.feePaid,
     required this.msgIndex,
     required this.quantity,
     required this.source,
@@ -1380,13 +1378,11 @@ class VerboseMoveToUtxoEvent extends VerboseEvent {
 class VerboseMoveToUtxoParams extends MoveToUtxoParams {
   final AssetInfoModel assetInfo;
   final String quantityNormalized;
-  final String feePaidNormalized;
 
   VerboseMoveToUtxoParams({
     required super.asset,
     required super.blockIndex,
     required super.destination,
-    required super.feePaid,
     required super.msgIndex,
     required super.quantity,
     required super.source,
@@ -1396,7 +1392,6 @@ class VerboseMoveToUtxoParams extends MoveToUtxoParams {
     required super.blockTime,
     required this.assetInfo,
     required this.quantityNormalized,
-    required this.feePaidNormalized,
   });
 
   factory VerboseMoveToUtxoParams.fromJson(Map<String, dynamic> json) =>
@@ -1537,7 +1532,7 @@ class AttachToUtxoParams {
   final String status;
   final String txHash;
   final int txIndex;
-  final int blockTime;
+  final int? blockTime;
 
   AttachToUtxoParams({
     required this.asset,
@@ -2299,7 +2294,7 @@ class VerboseEvent extends Event {
         return VerboseAttachToUtxoEvent.fromJson(json);
       case "DETACH_FROM_UTXO":
         return VerboseDetachFromUtxoEvent.fromJson(json);
-      case "MOVE_TO_UTXO":
+      case "UTXO_MOVE":
         return VerboseMoveToUtxoEvent.fromJson(json);
       default:
         return _$VerboseEventFromJson(json);
@@ -3645,6 +3640,10 @@ class InfoVerbose extends Info {
         return OrderInfoVerbose.fromJson(json);
       case "cancel":
         return CancelInfoVerbose.fromJson(json);
+      case "attach":
+        return AttachInfoVerbose.fromJson(json);
+      case "detach":
+        return DetachInfoVerbose.fromJson(json);
       default:
         return base;
     }
@@ -4000,6 +3999,94 @@ class CancelUnpackedVerbose extends TransactionUnpackedVerbose {
   Map<String, dynamic> toJson() => _$CancelUnpackedVerboseToJson(this);
 }
 
+@JsonSerializable(fieldRename: FieldRename.snake)
+class AttachInfoVerbose extends InfoVerbose {
+  final AttachUnpackedVerbose unpackedData;
+  const AttachInfoVerbose({
+    required super.data,
+    required super.source,
+    required super.destination,
+    required super.btcAmount,
+    required super.fee,
+    required super.btcAmountNormalized,
+    required this.unpackedData,
+  });
+  factory AttachInfoVerbose.fromJson(Map<String, dynamic> json) =>
+      _$AttachInfoVerboseFromJson(json);
+  @override
+  Map<String, dynamic> toJson() => _$AttachInfoVerboseToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class AttachUnpackedVerbose extends TransactionUnpackedVerbose {
+  final String asset;
+  final int quantity;
+  final AssetInfoModel assetInfo;
+  final String quantityNormalized;
+  final String? destinationVout;
+
+  const AttachUnpackedVerbose({
+    required this.asset,
+    required this.quantity,
+    required this.assetInfo,
+    required this.quantityNormalized,
+    this.destinationVout,
+  }) : super(messageType: "attach");
+
+  factory AttachUnpackedVerbose.fromJson(Map<String, dynamic> json) {
+    final messageData = json["message_data"];
+
+    return AttachUnpackedVerbose(
+      asset: messageData["asset"],
+      quantity: messageData["quantity"],
+      assetInfo: AssetInfoModel.fromJson(messageData["asset_info"]),
+      quantityNormalized: messageData["quantity_normalized"],
+      destinationVout: messageData["destination_vout"],
+    );
+  }
+
+  @override
+  Map<String, dynamic> toJson() => _$AttachUnpackedVerboseToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class DetachInfoVerbose extends InfoVerbose {
+  final DetachUnpackedVerbose unpackedData;
+  const DetachInfoVerbose({
+    required super.data,
+    required super.source,
+    required super.destination,
+    required super.btcAmount,
+    required super.fee,
+    required super.btcAmountNormalized,
+    required this.unpackedData,
+  });
+  factory DetachInfoVerbose.fromJson(Map<String, dynamic> json) =>
+      _$DetachInfoVerboseFromJson(json);
+  @override
+  Map<String, dynamic> toJson() => _$DetachInfoVerboseToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class DetachUnpackedVerbose extends TransactionUnpackedVerbose {
+  final String destination;
+
+  const DetachUnpackedVerbose({
+    required this.destination,
+  }) : super(messageType: "detach");
+
+  factory DetachUnpackedVerbose.fromJson(Map<String, dynamic> json) {
+    final messageData = json["message_data"];
+
+    return DetachUnpackedVerbose(
+      destination: messageData["destination"],
+    );
+  }
+
+  @override
+  Map<String, dynamic> toJson() => _$DetachUnpackedVerboseToJson(this);
+}
+
 // {
 //      "vout": 6,
 //      "height": 833559,
@@ -4283,9 +4370,9 @@ abstract class V2Api {
     @Query("exact_fee") int? fee,
     @Query("fee_per_kb") int? feePerKB,
     @Query("inputs_set") String? inputsSet,
+    @Query("exclude_utxos_with_balances") bool? excludeUtxosWithBalances,
     @Query("validate") bool? validate,
     @Query("disable_utxo_locks") bool? disableUtxoLocks,
-    @Query("exclude_utxos_with_balances") bool? excludeUtxosWithBalances,
   ]);
 
   @GET("/addresses/{address}/sends")
@@ -4395,10 +4482,10 @@ abstract class V2Api {
     @Query("allow_unconfirmed_inputs") bool? allowUnconfirmedInputs,
     @Query("exact_fee") int? exactFee,
     @Query("inputs_set") String? inputsSet,
+    @Query("exclude_utxos_with_balances") bool? excludeUtxosWithBalances,
     @Query("unconfirmed") bool? unconfirmed,
     @Query("validate") bool? validate,
     @Query("disable_utxo_locks") bool? disableUtxoLocks,
-    @Query("exclude_utxos_with_balances") bool? excludeUtxosWithBalances,
   ]);
 
   @GET("/addresses/{address}/compose/order?verbose=true")
@@ -4413,8 +4500,8 @@ abstract class V2Api {
     @Query("allow_unconfirmed_inputs") bool? allowUnconfirmedInputs,
     @Query("exact_fee") int? exactFee,
     @Query("inputs_set") String? inputsSet,
-    @Query("unconfirmed") bool? unconfirmed,
     @Query("exclude_utxos_with_balances") bool? excludeUtxosWithBalances,
+    @Query("unconfirmed") bool? unconfirmed,
   ]);
 
   @GET("/addresses/{address}/compose/cancel?verbose=true")
@@ -4424,8 +4511,8 @@ abstract class V2Api {
     @Query("allow_unconfirmed_inputs") bool? allowUnconfirmedInputs,
     @Query("exact_fee") int? exactFee,
     @Query("inputs_set") String? inputsSet,
-    @Query("unconfirmed") bool? unconfirmed,
     @Query("exclude_utxos_with_balances") bool? excludeUtxosWithBalances,
+    @Query("unconfirmed") bool? unconfirmed,
   ]);
 
   @GET("/addresses/{address}/dispensers")
@@ -4444,8 +4531,8 @@ abstract class V2Api {
     @Query("allow_unconfirmed_inputs") bool? allowUnconfirmedInputs,
     @Query("exact_fee") int? exactFee,
     @Query("inputs_set") String? inputsSet,
-    @Query("unconfirmed") bool? unconfirmed,
     @Query("exclude_utxos_with_balances") bool? excludeUtxosWithBalances,
+    @Query("unconfirmed") bool? unconfirmed,
   ]);
 
   @GET("/addresses/{address}/transactions")
@@ -4516,36 +4603,32 @@ abstract class V2Api {
     @Query("allow_unconfirmed_inputs") bool? allowUnconfirmedInputs,
     @Query("exact_fee") int? exactFee,
     @Query("inputs_set") String? inputsSet,
-    @Query("unconfirmed") bool? unconfirmed,
     @Query("exclude_utxos_with_balances") bool? excludeUtxosWithBalances,
+    @Query("unconfirmed") bool? unconfirmed,
   ]);
 
   @GET("/utxos/{utxo}/compose/detach?verbose=true")
   Future<Response<ComposeDetachUtxoResponseModel>> composeDetachUtxo(
     @Path("utxo") String utxo, [
     @Query("destination") String? destination,
-    @Query("asset") String? asset,
-    @Query("quantity") int? quantity,
     @Query("skip_validation") bool? skipValidation,
     @Query("allow_unconfirmed_inputs") bool? allowUnconfirmedInputs,
     @Query("exact_fee") int? exactFee,
     @Query("inputs_set") String? inputsSet,
-    @Query("unconfirmed") bool? unconfirmed,
     @Query("exclude_utxos_with_balances") bool? excludeUtxosWithBalances,
+    @Query("unconfirmed") bool? unconfirmed,
   ]);
 
   @GET("/utxos/{utxo}/compose/movetoutxo?verbose=true")
   Future<Response<ComposeMoveToUtxoResponseModel>> composeMoveToUtxo(
     @Path("utxo") String utxo, [
     @Query("destination") String? destination,
-    @Query("asset") String? asset,
-    @Query("quantity") int? quantity,
     @Query("skip_validation") bool? skipValidation,
     @Query("allow_unconfirmed_inputs") bool? allowUnconfirmedInputs,
     @Query("exact_fee") int? exactFee,
     @Query("inputs_set") String? inputsSet,
-    @Query("unconfirmed") bool? unconfirmed,
     @Query("exclude_utxos_with_balances") bool? excludeUtxosWithBalances,
+    @Query("unconfirmed") bool? unconfirmed,
   ]);
   @GET("/bitcoin/addresses/{address}/utxos")
   Future<Response<List<UTXO>>> getUnspentUTXOs(

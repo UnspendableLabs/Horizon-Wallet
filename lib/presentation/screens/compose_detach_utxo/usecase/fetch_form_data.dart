@@ -1,6 +1,7 @@
 import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
+import 'package:horizon/presentation/common/shared_util.dart';
 import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
 
 class FetchComposeDetachUtxoFormDataUseCase {
@@ -12,11 +13,11 @@ class FetchComposeDetachUtxoFormDataUseCase {
     required this.balanceRepository,
   });
 
-  Future<(FeeEstimates, Balance)> call(String utxo) async {
+  Future<(FeeEstimates, Balance)> call(String utxo, String assetName) async {
     try {
       // Initiate both asynchronous calls
       final futures = await Future.wait([
-        _fetchBalanceForUtxo(utxo),
+        _fetchBalanceForUtxo(utxo, assetName),
         _fetchFeeEstimates(),
       ]);
 
@@ -41,16 +42,22 @@ class FetchComposeDetachUtxoFormDataUseCase {
     }
   }
 
-  Future<Balance> _fetchBalanceForUtxo(String utxo) async {
+  Future<Balance> _fetchBalanceForUtxo(String utxo, String assetName) async {
     try {
       final balances = await balanceRepository.getBalancesForUTXO(utxo);
       if (balances.isEmpty) {
         throw FetchBalanceException('No balance found for UTXO: $utxo');
       }
-      if (balances.length > 1) {
+      final balanceForUtxo = balances
+          .where((balance) =>
+              displayAssetName(
+                  balance.asset, balance.assetInfo.assetLongname) ==
+              assetName)
+          .toList();
+      if (balanceForUtxo.length > 1) {
         throw FetchBalanceException('Multiple balances found for UTXO: $utxo');
       }
-      return balances.first;
+      return balanceForUtxo.first;
     } catch (e) {
       throw FetchBalanceException(e.toString());
     }

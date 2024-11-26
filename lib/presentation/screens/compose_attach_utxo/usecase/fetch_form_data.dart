@@ -43,9 +43,18 @@ class FetchComposeAttachUtxoFormDataUseCase {
 
   Future<Balance> _fetchAssetBalance(String address, String assetName) async {
     try {
-      return await balanceRepository
-          .getBalancesForAddressAndAssetVerbose(address, assetName)
-          .then((balances) => balances.first);
+      final balances = await balanceRepository
+          .getBalancesForAddressAndAssetVerbose(address, assetName);
+      final balanceForAddress =
+          balances.where((balance) => balance.address == address).toList();
+      if (balanceForAddress.isEmpty) {
+        throw FetchBalanceException('Balance not found for address: $address');
+      }
+      if (balanceForAddress.length > 1) {
+        throw FetchBalanceException(
+            'Multiple balances found for address: $address');
+      }
+      return balanceForAddress.first;
     } catch (e) {
       throw FetchBalanceException(e.toString());
     }

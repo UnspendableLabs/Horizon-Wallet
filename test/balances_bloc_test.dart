@@ -204,7 +204,8 @@ void main() {
                   }
 
                   // Compare UTXO balances
-                  if (utxoBalancesResult.length != expectedUtxoBalances.length) {
+                  if (utxoBalancesResult.length !=
+                      expectedUtxoBalances.length) {
                     return false;
                   }
                   for (int i = 0; i < utxoBalancesResult.length; i++) {

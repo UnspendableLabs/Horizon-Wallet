@@ -355,6 +355,11 @@ class ActivityFeedListItem extends StatelessWidget {
         unpackedData: var _,
       ) =>
         const SelectableText("Cancel Order"),
+      TransactionInfoAttach(
+        unpackedData: var unpackedData,
+      ) =>
+        SelectableText(
+            "Attach to UTXO ${unpackedData.quantityNormalized} ${unpackedData.asset}"),
       _ => SelectableText(
           'Invariant: title unsupported TransactionInfo type: ${info.runtimeType}'),
     };

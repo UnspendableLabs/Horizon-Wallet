@@ -135,3 +135,14 @@ class CancelUnpackedVerboseMapper {
     );
   }
 }
+
+class AttachUnpackedVerboseMapper {
+  static AttachUnpackedVerbose toDomain(api.AttachUnpackedVerbose u) {
+    return AttachUnpackedVerbose(
+      destinationVout: u.destinationVout,
+      quantityNormalized: u.quantityNormalized,
+      asset: u.asset,
+      // assetInfo: AssetInfoMapper.toDomain(u.assetInfo),
+    );
+  }
+}
