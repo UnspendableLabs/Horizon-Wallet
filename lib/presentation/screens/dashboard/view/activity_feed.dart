@@ -312,6 +312,12 @@ class ActivityFeedListItem extends StatelessWidget {
 
   Widget _buildTransactionInfoTitle(TransactionInfo info) {
     return switch (info) {
+      TransactionInfoAttach(
+        unpackedData: var unpackedData,
+      ) =>
+        SelectableText(
+            "Attach to UTXO ${unpackedData.quantityNormalized} ${unpackedData.asset}"),
+      TransactionInfoMoveToUtxo() => const SelectableText("Move to UTXO"),
       TransactionInfoEnhancedSend(
         unpackedData: var unpackedData,
       ) =>
@@ -355,11 +361,6 @@ class ActivityFeedListItem extends StatelessWidget {
         unpackedData: var _,
       ) =>
         const SelectableText("Cancel Order"),
-      TransactionInfoAttach(
-        unpackedData: var unpackedData,
-      ) =>
-        SelectableText(
-            "Attach to UTXO ${unpackedData.quantityNormalized} ${unpackedData.asset}"),
       TransactionInfoDetach(
         unpackedData: var unpackedData,
       ) =>
@@ -383,6 +384,11 @@ class ActivityFeedListItem extends StatelessWidget {
         const Icon(Icons.print, color: Colors.grey),
       TransactionInfoOrder() => const Icon(Icons.toc, color: Colors.grey),
       TransactionInfoCancel() => const Icon(Icons.toc, color: Colors.grey),
+      TransactionInfoAttach() =>
+        const Icon(Icons.attach_file, color: Colors.grey),
+      TransactionInfoDetach() => const Icon(Icons.link_off, color: Colors.grey),
+      TransactionInfoMoveToUtxo() =>
+        const Icon(Icons.swap_horiz, color: Colors.grey),
       TransactionInfo(btcAmount: var btcAmount) when btcAmount != null =>
         const Icon(Icons.arrow_back, color: Colors.grey),
       _ => const Icon(Icons.error),
@@ -529,7 +535,7 @@ class ActivityFeedListItem extends StatelessWidget {
       VerboseDetachFromUtxoEvent(params: var _) =>
         const Icon(Icons.link_off, color: Colors.grey),
       VerboseMoveToUtxoEvent(params: var _) =>
-        const Icon(Icons.arrow_back, color: Colors.grey),
+        const Icon(Icons.swap_horiz, color: Colors.grey),
       _ => const Icon(Icons.error),
     };
   }

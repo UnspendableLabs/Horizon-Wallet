@@ -280,3 +280,7 @@ class DetachUnpackedVerbose extends TransactionUnpacked {
   const DetachUnpackedVerbose({required this.destination})
       : super(messageType: "detach");
 }
+
+class MoveToUtxoUnpackedVerbose extends TransactionUnpacked {
+  const MoveToUtxoUnpackedVerbose() : super(messageType: "move_to_utxo");
+}

@@ -28,6 +28,12 @@ class UnpackedVerboseMapper {
       case "cancel":
         return CancelUnpackedVerboseMapper.toDomain(
             u as api.CancelUnpackedVerbose);
+      case "attach":
+        return AttachUnpackedVerboseMapper.toDomain(
+            u as api.AttachUnpackedVerbose);
+      case "detach":
+        return DetachUnpackedVerboseMapper.toDomain(
+            u as api.DetachUnpackedVerbose);
       default:
         return TransactionUnpacked(
           messageType: u.messageType,
@@ -150,5 +156,11 @@ class AttachUnpackedVerboseMapper {
 class DetachUnpackedVerboseMapper {
   static DetachUnpackedVerbose toDomain(api.DetachUnpackedVerbose u) {
     return DetachUnpackedVerbose(destination: u.destination);
+  }
+}
+
+class MoveToUtxoUnpackedVerboseMapper {
+  static MoveToUtxoUnpackedVerbose toDomain(api.MoveToUtxoUnpackedVerbose u) {
+    return const MoveToUtxoUnpackedVerbose();
   }
 }

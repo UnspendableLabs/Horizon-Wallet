@@ -515,3 +515,40 @@ class TransactionInfoDetach extends TransactionInfo {
     );
   }
 }
+
+class TransactionInfoMoveToUtxo extends TransactionInfo {
+  const TransactionInfoMoveToUtxo({
+    required super.hash,
+    required super.source,
+    required super.destination,
+    required super.btcAmount,
+    required super.fee,
+    required super.data,
+    required super.domain,
+    required super.btcAmountNormalized,
+  });
+  @override
+  List<Object?> get props => [...super.props];
+  @override
+  TransactionInfoMoveToUtxo copyWith({
+    String? hash,
+    String? source,
+    String? destination,
+    int? btcAmount,
+    int? fee,
+    String? data,
+    TransactionInfoDomain? domain,
+    String? btcAmountNormalized,
+  }) {
+    return TransactionInfoMoveToUtxo(
+      hash: hash ?? this.hash,
+      source: source ?? this.source,
+      destination: destination ?? this.destination,
+      btcAmount: btcAmount ?? this.btcAmount,
+      fee: fee ?? this.fee,
+      data: data ?? this.data,
+      domain: domain ?? this.domain,
+      btcAmountNormalized: btcAmountNormalized ?? this.btcAmountNormalized,
+    );
+  }
+}

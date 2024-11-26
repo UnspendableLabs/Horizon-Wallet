@@ -3298,6 +3298,12 @@ class TransactionUnpackedVerbose extends TransactionUnpacked {
         return OrderUnpackedVerbose.fromJson(json);
       case "cancel":
         return CancelUnpackedVerbose.fromJson(json);
+      case "attach":
+        return AttachUnpackedVerbose.fromJson(json);
+      case "detach":
+        return DetachUnpackedVerbose.fromJson(json);
+      case null:
+        return MoveToUtxoUnpackedVerbose.fromJson(json);
       default:
         return TransactionUnpackedVerbose(
           messageType: json["message_type"],
@@ -3596,7 +3602,7 @@ class IssuanceInfo extends Info {
 
 @JsonSerializable(fieldRename: FieldRename.snake)
 class InfoVerbose extends Info {
-  final String btcAmountNormalized;
+  final String? btcAmountNormalized;
 
   const InfoVerbose({
     required super.source,
@@ -3615,7 +3621,7 @@ class InfoVerbose extends Info {
     final unpackedData = json["unpacked_data"];
 
     if (unpackedData == null) {
-      return base;
+      return MoveToUtxoInfoVerbose.fromJson(json);
     }
 
     final messageType = unpackedData["message_type"];
@@ -3641,6 +3647,8 @@ class InfoVerbose extends Info {
         return AttachInfoVerbose.fromJson(json);
       case "detach":
         return DetachInfoVerbose.fromJson(json);
+      case null: // move to utxo is the only transaction type that does not have a message_type
+        return MoveToUtxoInfoVerbose.fromJson(json);
       // TODO: parse moves
       default:
         return base;
@@ -4018,15 +4026,11 @@ class AttachInfoVerbose extends InfoVerbose {
 @JsonSerializable(fieldRename: FieldRename.snake)
 class AttachUnpackedVerbose extends TransactionUnpackedVerbose {
   final String asset;
-  final int quantity;
-  final AssetInfoModel assetInfo;
   final String quantityNormalized;
   final String? destinationVout;
 
   const AttachUnpackedVerbose({
     required this.asset,
-    required this.quantity,
-    required this.assetInfo,
     required this.quantityNormalized,
     this.destinationVout,
   }) : super(messageType: "attach");
@@ -4036,8 +4040,6 @@ class AttachUnpackedVerbose extends TransactionUnpackedVerbose {
 
     return AttachUnpackedVerbose(
       asset: messageData["asset"],
-      quantity: messageData["quantity"],
-      assetInfo: AssetInfoModel.fromJson(messageData["asset_info"]),
       quantityNormalized: messageData["quantity_normalized"],
       destinationVout: messageData["destination_vout"],
     );
@@ -4085,14 +4087,34 @@ class DetachUnpackedVerbose extends TransactionUnpackedVerbose {
   Map<String, dynamic> toJson() => _$DetachUnpackedVerboseToJson(this);
 }
 
-// {
-//      "vout": 6,
-//      "height": 833559,
-//      "value": 34611,
-//      "confirmations": 7083,
-//      "amount": 0.00034611,
-//      "txid": "98bef616ef265dd2f6004683e908d7df97e0c5f322cdf2fb2ebea9a9131cfa79"
-//  },
+@JsonSerializable(fieldRename: FieldRename.snake)
+class MoveToUtxoInfoVerbose extends InfoVerbose {
+  const MoveToUtxoInfoVerbose({
+    required super.data,
+    required super.source,
+    required super.destination,
+    required super.btcAmount,
+    required super.fee,
+    required super.btcAmountNormalized,
+  });
+
+  factory MoveToUtxoInfoVerbose.fromJson(Map<String, dynamic> json) =>
+      _$MoveToUtxoInfoVerboseFromJson(json);
+  @override
+  Map<String, dynamic> toJson() => _$MoveToUtxoInfoVerboseToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class MoveToUtxoUnpackedVerbose extends TransactionUnpackedVerbose {
+  const MoveToUtxoUnpackedVerbose() : super(messageType: 'move_to_utxo');
+
+  factory MoveToUtxoUnpackedVerbose.fromJson(Map<String, dynamic> json) {
+    return const MoveToUtxoUnpackedVerbose();
+  }
+
+  @override
+  Map<String, dynamic> toJson() => _$MoveToUtxoUnpackedVerboseToJson(this);
+}
 
 @JsonSerializable(fieldRename: FieldRename.snake)
 class UTXO {

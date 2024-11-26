@@ -3148,15 +3148,26 @@ Map<String, dynamic> _$IssuanceInfoToJson(IssuanceInfo instance) =>
       'unpacked_data': instance.unpackedData,
     };
 
-InfoVerbose _$InfoVerboseFromJson(Map<String, dynamic> json) => InfoVerbose(
-      source: json['source'] as String,
-      destination: json['destination'] as String?,
-      btcAmount: (json['btc_amount'] as num?)?.toInt(),
-      fee: (json['fee'] as num?)?.toInt(),
-      data: json['data'] as String,
-      decodedTx: json['decoded_tx'] as Map<String, dynamic>?,
-      btcAmountNormalized: json['btc_amount_normalized'] as String,
-    );
+InfoVerbose _$InfoVerboseFromJson(Map<String, dynamic> json) {
+  final info = InfoVerbose(
+    source: json['source'] as String,
+    destination: json['destination'] as String?,
+    btcAmount: (json['btc_amount'] as num?)?.toInt(),
+    fee: (json['fee'] as num?)?.toInt(),
+    data: json['data'] as String,
+    decodedTx: json['decoded_tx'] as Map<String, dynamic>?,
+    btcAmountNormalized: json['btc_amount_normalized'] as String?,
+  );
+  return InfoVerbose(
+    source: json['source'] as String,
+    destination: json['destination'] as String?,
+    btcAmount: (json['btc_amount'] as num?)?.toInt(),
+    fee: (json['fee'] as num?)?.toInt(),
+    data: json['data'] as String,
+    decodedTx: json['decoded_tx'] as Map<String, dynamic>?,
+    btcAmountNormalized: json['btc_amount_normalized'] as String?,
+  );
+}
 
 Map<String, dynamic> _$InfoVerboseToJson(InfoVerbose instance) =>
     <String, dynamic>{
@@ -3178,7 +3189,7 @@ EnhancedSendInfoVerbose _$EnhancedSendInfoVerboseFromJson(
       fee: (json['fee'] as num?)?.toInt(),
       data: json['data'] as String,
       decodedTx: json['decoded_tx'] as Map<String, dynamic>?,
-      btcAmountNormalized: json['btc_amount_normalized'] as String,
+      btcAmountNormalized: json['btc_amount_normalized'] as String?,
       unpackedData: EnhancedSendUnpackedVerbose.fromJson(
           json['unpacked_data'] as Map<String, dynamic>),
     );
@@ -3240,7 +3251,7 @@ IssuanceInfoVerbose _$IssuanceInfoVerboseFromJson(Map<String, dynamic> json) =>
       fee: (json['fee'] as num?)?.toInt(),
       data: json['data'] as String,
       decodedTx: json['decoded_tx'] as Map<String, dynamic>?,
-      btcAmountNormalized: json['btc_amount_normalized'] as String,
+      btcAmountNormalized: json['btc_amount_normalized'] as String?,
       unpackedData: IssuanceUnpackedVerbose.fromJson(
           json['unpacked_data'] as Map<String, dynamic>),
     );
@@ -3280,7 +3291,7 @@ FairmintInfoVerbose _$FairmintInfoVerboseFromJson(Map<String, dynamic> json) =>
       fee: (json['fee'] as num?)?.toInt(),
       data: json['data'] as String,
       decodedTx: json['decoded_tx'] as Map<String, dynamic>?,
-      btcAmountNormalized: json['btc_amount_normalized'] as String,
+      btcAmountNormalized: json['btc_amount_normalized'] as String?,
       unpackedData: FairmintUnpackedVerbose.fromJson(
           json['unpacked_data'] as Map<String, dynamic>),
     );
@@ -3319,7 +3330,7 @@ FairminterInfoVerbose _$FairminterInfoVerboseFromJson(
       fee: (json['fee'] as num?)?.toInt(),
       data: json['data'] as String,
       decodedTx: json['decoded_tx'] as Map<String, dynamic>?,
-      btcAmountNormalized: json['btc_amount_normalized'] as String,
+      btcAmountNormalized: json['btc_amount_normalized'] as String?,
       unpackedData: FairminterUnpackedVerbose.fromJson(
           json['unpacked_data'] as Map<String, dynamic>),
     );
@@ -3345,7 +3356,7 @@ DispenserInfoVerbose _$DispenserInfoVerboseFromJson(
       btcAmount: (json['btc_amount'] as num?)?.toInt(),
       fee: (json['fee'] as num?)?.toInt(),
       data: json['data'] as String,
-      btcAmountNormalized: json['btc_amount_normalized'] as String,
+      btcAmountNormalized: json['btc_amount_normalized'] as String?,
       unpackedData: DispenserUnpackedVerbose.fromJson(
           json['unpacked_data'] as Map<String, dynamic>),
     );
@@ -3369,7 +3380,7 @@ DispenseInfoVerbose _$DispenseInfoVerboseFromJson(Map<String, dynamic> json) =>
       btcAmount: (json['btc_amount'] as num?)?.toInt(),
       fee: (json['fee'] as num?)?.toInt(),
       data: json['data'] as String,
-      btcAmountNormalized: json['btc_amount_normalized'] as String,
+      btcAmountNormalized: json['btc_amount_normalized'] as String?,
       unpackedData: DispenseUnpackedVerbose.fromJson(
           json['unpacked_data'] as Map<String, dynamic>),
     );
@@ -3424,7 +3435,7 @@ OrderInfoVerbose _$OrderInfoVerboseFromJson(Map<String, dynamic> json) =>
       fee: (json['fee'] as num?)?.toInt(),
       data: json['data'] as String,
       decodedTx: json['decoded_tx'] as Map<String, dynamic>?,
-      btcAmountNormalized: json['btc_amount_normalized'] as String,
+      btcAmountNormalized: json['btc_amount_normalized'] as String?,
       unpackedData: OrderUnpackedVerbose.fromJson(
           json['unpacked_data'] as Map<String, dynamic>),
     );
@@ -3448,7 +3459,7 @@ CancelInfoVerbose _$CancelInfoVerboseFromJson(Map<String, dynamic> json) =>
       btcAmount: (json['btc_amount'] as num?)?.toInt(),
       fee: (json['fee'] as num?)?.toInt(),
       data: json['data'] as String,
-      btcAmountNormalized: json['btc_amount_normalized'] as String,
+      btcAmountNormalized: json['btc_amount_normalized'] as String?,
       decodedTx: json['decoded_tx'] as Map<String, dynamic>?,
       unpackedData: CancelUnpackedVerbose.fromJson(
           json['unpacked_data'] as Map<String, dynamic>),
@@ -3487,7 +3498,7 @@ AttachInfoVerbose _$AttachInfoVerboseFromJson(Map<String, dynamic> json) =>
       destination: json['destination'] as String?,
       btcAmount: (json['btc_amount'] as num?)?.toInt(),
       fee: (json['fee'] as num?)?.toInt(),
-      btcAmountNormalized: json['btc_amount_normalized'] as String,
+      btcAmountNormalized: json['btc_amount_normalized'] as String?,
       unpackedData: AttachUnpackedVerbose.fromJson(
           json['unpacked_data'] as Map<String, dynamic>),
     );
@@ -3507,9 +3518,6 @@ AttachUnpackedVerbose _$AttachUnpackedVerboseFromJson(
         Map<String, dynamic> json) =>
     AttachUnpackedVerbose(
       asset: json['asset'] as String,
-      quantity: (json['quantity'] as num).toInt(),
-      assetInfo:
-          AssetInfoModel.fromJson(json['asset_info'] as Map<String, dynamic>),
       quantityNormalized: json['quantity_normalized'] as String,
       destinationVout: json['destination_vout'] as String?,
     );
@@ -3518,8 +3526,6 @@ Map<String, dynamic> _$AttachUnpackedVerboseToJson(
         AttachUnpackedVerbose instance) =>
     <String, dynamic>{
       'asset': instance.asset,
-      'quantity': instance.quantity,
-      'asset_info': instance.assetInfo,
       'quantity_normalized': instance.quantityNormalized,
       'destination_vout': instance.destinationVout,
     };
@@ -3531,7 +3537,7 @@ DetachInfoVerbose _$DetachInfoVerboseFromJson(Map<String, dynamic> json) =>
       destination: json['destination'] as String?,
       btcAmount: (json['btc_amount'] as num?)?.toInt(),
       fee: (json['fee'] as num?)?.toInt(),
-      btcAmountNormalized: json['btc_amount_normalized'] as String,
+      btcAmountNormalized: json['btc_amount_normalized'] as String?,
       unpackedData: DetachUnpackedVerbose.fromJson(
           json['unpacked_data'] as Map<String, dynamic>),
     );
@@ -3558,6 +3564,36 @@ Map<String, dynamic> _$DetachUnpackedVerboseToJson(
     <String, dynamic>{
       'destination': instance.destination,
     };
+
+MoveToUtxoInfoVerbose _$MoveToUtxoInfoVerboseFromJson(
+        Map<String, dynamic> json) =>
+    MoveToUtxoInfoVerbose(
+      data: json['data'] as String,
+      source: json['source'] as String,
+      destination: json['destination'] as String?,
+      btcAmount: (json['btc_amount'] as num?)?.toInt(),
+      fee: (json['fee'] as num?)?.toInt(),
+      btcAmountNormalized: json['btc_amount_normalized'] as String?,
+    );
+
+Map<String, dynamic> _$MoveToUtxoInfoVerboseToJson(
+        MoveToUtxoInfoVerbose instance) =>
+    <String, dynamic>{
+      'source': instance.source,
+      'destination': instance.destination,
+      'btc_amount': instance.btcAmount,
+      'fee': instance.fee,
+      'data': instance.data,
+      'btc_amount_normalized': instance.btcAmountNormalized,
+    };
+
+MoveToUtxoUnpackedVerbose _$MoveToUtxoUnpackedVerboseFromJson(
+        Map<String, dynamic> json) =>
+    MoveToUtxoUnpackedVerbose();
+
+Map<String, dynamic> _$MoveToUtxoUnpackedVerboseToJson(
+        MoveToUtxoUnpackedVerbose instance) =>
+    <String, dynamic>{};
 
 UTXO _$UTXOFromJson(Map<String, dynamic> json) => UTXO(
       vout: (json['vout'] as num).toInt(),

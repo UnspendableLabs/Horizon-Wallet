@@ -173,7 +173,7 @@ class ComposeMoveToUtxoBloc extends ComposeBaseBloc<ComposeMoveToUtxoState> {
         onSuccess: (txHex, txHash) async {
           await writelocalTransactionUseCase.call(txHex, txHash);
 
-          logger.info('detach utxo broadcasted txHash: $txHash');
+          logger.info('move to utxo broadcasted txHash: $txHash');
           analyticsService.trackAnonymousEvent('broadcast_tx_move_to_utxo',
               properties: {'distinct_id': uuid.v4()});
 
