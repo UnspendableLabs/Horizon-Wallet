@@ -72,7 +72,7 @@ void main() {
           value: (vout.value * 100000000).toInt(),
           address: vout.scriptPubKey.address!);
 
-      final utxoMap = {expectedUtxo.txid: expectedUtxo};
+      final utxoMap = {"${expectedUtxo.txid}:${expectedUtxo.vout}": expectedUtxo};
 
       when(() => mockTransactionService.signTransaction(
             rawtransaction,
@@ -188,7 +188,7 @@ void main() {
         address: expectedVout.scriptPubKey.address!,
       );
 
-      final utxoMap = {expectedUtxo.txid: expectedUtxo};
+      final utxoMap = {"${expectedUtxo.txid}:${expectedUtxo.vout}": expectedUtxo};
 
       when(() => mockTransactionService.signTransaction(
             rawtransaction,
@@ -274,7 +274,7 @@ void main() {
         address: expectedVout.scriptPubKey.address!,
       );
 
-      final utxoMap = {expectedUtxo.txid: expectedUtxo};
+      final utxoMap = {"${expectedUtxo.txid}:${expectedUtxo.vout}": expectedUtxo};
 
       when(() => mockTransactionService.signTransaction(
             rawtransaction,
