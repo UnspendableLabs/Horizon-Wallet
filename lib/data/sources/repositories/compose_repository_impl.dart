@@ -1,4 +1,4 @@
-import 'package:collection/collection.dart';
+emport 'package:collection/collection.dart';
 import 'package:horizon/data/sources/network/api/v2_api.dart';
 import 'package:horizon/domain/entities/asset_info.dart' as asset_info;
 import 'package:horizon/domain/entities/bitcoin_decoded_tx.dart';
@@ -46,19 +46,31 @@ class ComposeRepositoryImpl extends ComposeRepository {
     try {
       return await apiCall(currentInputsSet);
     } catch (e) {
-      final error = extractInvalidUtxoError(e.toString());
 
-      return error.fold(() => throw e, (invalidUtxo) {
-        final newInputsSet = removeUtxoFromList(
-            currentInputsSet, invalidUtxo.txHash, invalidUtxo.outputIndex);
-        if (newInputsSet.isEmpty) {
-          throw Exception('No valid UTXOs left after removing invalid UTXO');
-        }
-        return _retryOnInvalidUtxo(apiCall, newInputsSet);
-      });
+
+  final error = extractInvalidUtxoErrors(e.toString());
+
+    return error.fold(() => throw e, (invalidUtxos) {
+      // Remove all invalid UTXOs from the current input set
+      final newInputsSet = removeUtxosFromList(currentInputsSet, invalidUtxos);
+
+      if (newInputsSet.isEmpty) {
+        throw Exception('No valid UTXOs left after removing invalid UTXOs');
+      }
+
+      // Retry with the updated input set
+      return _retryOnInvalidUtxo(apiCall, newInputsSet);
+    });
+
     }
   }
 
+List<Utxo> removeUtxosFromList(List<Utxo> inputSet, List<InvalidUtxo> invalidUtxos) {
+  return inputSet.where((utxo) {
+    return !invalidUtxos.any((invalidUtxo) =>
+        utxo.txid == invalidUtxo.txHash && utxo.vout == invalidUtxo.outputIndex);
+  }).toList();
+}
   @override
   Future<compose_send.ComposeSendResponse> composeSendVerbose(int fee,
       List<Utxo> inputsSet, compose_send.ComposeSendParams params) async {
