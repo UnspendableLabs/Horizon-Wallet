@@ -70,7 +70,9 @@ class SignAndBroadcastTransactionUseCase<R extends ComposeResponse> {
 
       // Fetch UTXOs
       final utxos = await utxoRepository.getUnspentForAddress(source);
-      final Map<String, Utxo> utxoMap = {for (var e in utxos) e.txid: e};
+      final Map<String, Utxo> utxoMap = {
+        for (var e in utxos) "${e.txid}:${e.vout}": e
+      };
 
       // Fetch Address, Account, and Wallet
       address = await addressRepository.getAddress(source);
