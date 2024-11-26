@@ -131,7 +131,7 @@ class CloseDispenserBloc extends ComposeBaseBloc<CloseDispenserState> {
               SubmitComposingTransaction<ComposeDispenserResponseVerbose, void>(
         composeTransaction: composed,
         fee: composed.btcFee,
-        feeRate: feeRate,
+        feeRate: feeRate.toDouble(),
         virtualSize: virtualSize.virtualSize,
         adjustedVirtualSize: virtualSize.adjustedVirtualSize,
       )));
@@ -146,7 +146,7 @@ class CloseDispenserBloc extends ComposeBaseBloc<CloseDispenserState> {
     }
   }
 
-  int _getFeeRate() {
+  num _getFeeRate() {
     FeeEstimates feeEstimates = state.feeState.feeEstimatesOrThrow();
     return switch (state.feeOption) {
       FeeOption.Fast() => feeEstimates.fast,

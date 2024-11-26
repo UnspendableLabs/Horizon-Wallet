@@ -81,7 +81,7 @@ class ComposeDetachUtxoBloc extends ComposeBaseBloc<ComposeDetachUtxoState> {
     emit(state.copyWith(feeOption: value));
   }
 
-  int _getFeeRate() {
+  num _getFeeRate() {
     FeeEstimates feeEstimates = state.feeState.feeEstimatesOrThrow();
     return switch (state.feeOption) {
       FeeOption.Fast() => feeEstimates.fast,
@@ -101,7 +101,7 @@ class ComposeDetachUtxoBloc extends ComposeBaseBloc<ComposeDetachUtxoState> {
       final utxo = event.params.utxo;
       final composeResponse = await composeTransactionUseCase
           .call<ComposeDetachUtxoParams, ComposeDetachUtxoResponse>(
-              feeRate: feeRate,
+              feeRate: feeRate.toDouble(),
               source: source,
               params: ComposeDetachUtxoParams(
                 utxo: utxo,
@@ -117,7 +117,7 @@ class ComposeDetachUtxoBloc extends ComposeBaseBloc<ComposeDetachUtxoState> {
               SubmitComposingTransaction<ComposeDetachUtxoResponse, void>(
         composeTransaction: composed,
         fee: composed.btcFee,
-        feeRate: feeRate,
+        feeRate: feeRate.toDouble(),
         virtualSize: virtualSize.virtualSize,
         adjustedVirtualSize: virtualSize.adjustedVirtualSize,
       )));

@@ -251,7 +251,7 @@ class ComposeBaseInitialPageState<S extends ComposeStateBase>
 class ComposeBaseConfirmationPage extends StatefulWidget {
   final dynamic composeTransaction;
   final int fee;
-  final int feeRate;
+  final double feeRate;
   final int virtualSize;
   final int adjustedVirtualSize;
   final List<Widget> Function(dynamic, GlobalKey<FormState>)

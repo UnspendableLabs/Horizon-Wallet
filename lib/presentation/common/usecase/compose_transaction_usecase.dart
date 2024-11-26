@@ -34,7 +34,7 @@ class ComposeTransactionUseCase {
 
   Future<(R, VirtualSize)>
       call<P extends ComposeParams, R extends ComposeResponse>({
-    required int feeRate,
+    required num feeRate,
     required String source,
     required P params,
     required ComposeFunction<P, R> composeFn,
@@ -56,8 +56,8 @@ class ComposeTransactionUseCase {
       final int virtualSize = tuple.$1; // virtualSIze
       final int adjustedVirtualSize = tuple.$2;
 
-      // Calculate total fee
-      final int totalFee = adjustedVirtualSize * feeRate;
+      // Calculate total fee, aleays rounding up to nearest int
+      final int totalFee = (adjustedVirtualSize * feeRate).ceil();
 
       // Compose the final transaction with the calculated fee
       final R finalTx = await composeFn(totalFee, inputsSet, params);

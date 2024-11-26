@@ -383,7 +383,7 @@ class ComposeDispenserOnNewAddressBloc extends Bloc<
     });
   }
 
-  int _getFeeRate(FeeOption.FeeOption feeOption) {
+  num _getFeeRate(FeeOption.FeeOption feeOption) {
     FeeEstimates feeEstimates = state.feeState.feeEstimates;
     return switch (feeOption) {
       FeeOption.Fast() => feeEstimates.fast,

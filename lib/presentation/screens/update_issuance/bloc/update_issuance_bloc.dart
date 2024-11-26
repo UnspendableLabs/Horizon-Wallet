@@ -121,7 +121,7 @@ class UpdateIssuanceBloc extends ComposeBaseBloc<UpdateIssuanceState> {
       final composeResponse = await composeTransactionUseCase
           .call<ComposeIssuanceParams, ComposeIssuanceResponseVerbose>(
         source: source,
-        feeRate: feeRate,
+        feeRate: feeRate.toDouble(),
         params: ComposeIssuanceParams(
           source: source,
           name: name,
@@ -143,7 +143,7 @@ class UpdateIssuanceBloc extends ComposeBaseBloc<UpdateIssuanceState> {
               ComposeIssuanceResponseVerbose, ComposeIssuanceEventParams>(
         composeTransaction: composed,
         fee: composed.btcFee,
-        feeRate: feeRate,
+        feeRate: feeRate.toDouble(),
         virtualSize: virtualSize.virtualSize,
         adjustedVirtualSize: virtualSize.adjustedVirtualSize,
       )));
@@ -217,7 +217,7 @@ class UpdateIssuanceBloc extends ComposeBaseBloc<UpdateIssuanceState> {
         });
   }
 
-  int _getFeeRate() {
+  num _getFeeRate() {
     FeeEstimates feeEstimates = state.feeState.feeEstimatesOrThrow();
     return switch (state.feeOption) {
       FeeOption.Fast() => feeEstimates.fast,

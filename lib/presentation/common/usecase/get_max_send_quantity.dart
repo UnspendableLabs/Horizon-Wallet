@@ -7,7 +7,7 @@ class GetMaxSendQuantity {
   final String source;
   // final String destination;
   final String asset;
-  final int feeRate;
+  final num feeRate;
   final BalanceRepository balanceRepository;
   final ComposeRepository composeRepository;
   final TransactionService transactionService;

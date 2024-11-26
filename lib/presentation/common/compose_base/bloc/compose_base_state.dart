@@ -61,7 +61,7 @@ class SubmitComposingTransaction<T, O extends Object?> extends SubmitState {
   final T composeTransaction;
   // final int virtualSize;
   final int fee;
-  final int feeRate;
+  final num feeRate;
   final int virtualSize;
   final int adjustedVirtualSize;
   // final int virtualSize;
