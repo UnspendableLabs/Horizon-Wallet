@@ -10,6 +10,7 @@ import 'package:dio_smart_retry/dio_smart_retry.dart';
 import 'package:horizon/data/services/imported_address_service_impl.dart';
 import 'package:chrome_extension/tabs.dart';
 import "package:horizon/data/sources/repositories/address_repository_impl.dart";
+import 'package:horizon/data/sources/repositories/transaction_info_repository_mempool_space_impl.dart';
 import "package:horizon/domain/repositories/address_repository.dart";
 import 'package:horizon/data/sources/local/db_manager.dart';
 
@@ -37,6 +38,7 @@ import 'package:horizon/domain/repositories/compose_repository.dart';
 import 'package:horizon/domain/repositories/fairminter_repository.dart';
 import 'package:horizon/domain/repositories/imported_address_repository.dart';
 import 'package:horizon/domain/repositories/node_info_repository.dart';
+import 'package:horizon/domain/repositories/transaction_info_repository.dart';
 import 'package:horizon/domain/repositories/utxo_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/address_service.dart';
@@ -91,6 +93,7 @@ import 'package:horizon/data/sources/repositories/unified_address_repository_imp
 
 import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/data/services/analytics_service_impl.dart';
+import 'package:horizon/presentation/common/usecase/get_transaction_info_usecase.dart';
 import 'package:horizon/presentation/common/usecase/import_wallet_usecase.dart';
 import 'package:horizon/presentation/common/usecase/sign_chained_transaction_usecase.dart';
 import 'package:horizon/presentation/screens/close_dispenser/usecase/fetch_form_data.dart';
@@ -309,9 +312,6 @@ Future<void> setup() async {
   injector.registerSingleton<OrderRepository>(
       OrderRepositoryImpl(api: GetIt.I.get<V2Api>()));
 
-  injector.registerSingleton<EventsRepository>(
-      EventsRepositoryImpl(api_: GetIt.I.get<V2Api>()));
-
   injector.registerSingleton<TransactionRepository>(TransactionRepositoryImpl(
     addressRepository: GetIt.I.get<AddressRepository>(),
     api_: GetIt.I.get<V2Api>(),
@@ -352,6 +352,13 @@ Future<void> setup() async {
     configRepository: config,
   )));
 
+  injector.registerSingleton<TransactionInfoRepository>(
+      TransactionInfoRepositoryMempoolSpaceImpl(
+          mempoolSpaceApi: MempoolSpaceApi(
+    dio: mempoolspaceDio,
+    configRepository: config,
+  )));
+
   injector.registerSingleton<NodeInfoRepository>(
       NodeInfoRepositoryImpl(GetIt.I.get<V2Api>()));
 
@@ -361,6 +368,14 @@ Future<void> setup() async {
   injector.registerSingleton<GetVirtualSizeUseCase>(GetVirtualSizeUseCase(
     transactionService: GetIt.I.get<TransactionService>(),
   ));
+
+  injector.registerSingleton<GetTransactionInfoUseCase>(
+      GetTransactionInfoUseCase(
+          transactionInfoRepository: GetIt.I.get<TransactionInfoRepository>()));
+
+  injector.registerSingleton<EventsRepository>(EventsRepositoryImpl(
+      api_: GetIt.I.get<V2Api>(),
+      transactionInfoUseCase: GetIt.I.get<GetTransactionInfoUseCase>()));
 
   injector.registerSingleton<FetchDispenserFormDataUseCase>(
       FetchDispenserFormDataUseCase(

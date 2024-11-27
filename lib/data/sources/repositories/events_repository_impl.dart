@@ -5,6 +5,7 @@ import 'package:horizon/domain/entities/cursor.dart';
 import 'package:horizon/domain/entities/event.dart';
 import 'package:horizon/data/models/event.dart';
 import 'package:horizon/domain/repositories/events_repository.dart';
+import 'package:horizon/presentation/common/usecase/get_transaction_info_usecase.dart';
 
 class StateMapper {
   static EventState getVerbose(api.VerboseEvent apiEvent) {
@@ -16,7 +17,10 @@ class StateMapper {
 }
 
 class VerboseEventMapper {
-  static VerboseEvent toDomain(api.VerboseEvent apiEvent) {
+  final GetTransactionInfoUseCase transactionInfoUseCase;
+  VerboseEventMapper({required this.transactionInfoUseCase});
+
+  Future<VerboseEvent> toDomain(api.VerboseEvent apiEvent) async {
     switch (apiEvent.event) {
       case 'ENHANCED_SEND':
         return VerboseEnhancedSendEventMapper.toDomain(
@@ -79,6 +83,12 @@ class VerboseEventMapper {
         return VerboseDetachFromUtxoEventMapper.toDomain(
             apiEvent as api.VerboseDetachFromUtxoEvent);
       case "UTXO_MOVE":
+        if (apiEvent.txHash == null) {
+          return VerboseMoveToUtxoEventMapper.toDomain(
+              apiEvent as api.VerboseMoveToUtxoEvent);
+        }
+        final transactionInfo =
+            await transactionInfoUseCase.call(apiEvent.txHash!);
         return VerboseMoveToUtxoEventMapper.toDomain(
             apiEvent as api.VerboseMoveToUtxoEvent);
 
@@ -845,9 +855,10 @@ class VerboseMoveToUtxoEventMapper {
 
 class EventsRepositoryImpl implements EventsRepository {
   final api.V2Api api_;
-
+  final GetTransactionInfoUseCase transactionInfoUseCase;
   EventsRepositoryImpl({
     required this.api_,
+    required this.transactionInfoUseCase,
   });
 
   @override
@@ -879,9 +890,12 @@ class EventsRepositoryImpl implements EventsRepository {
     cursor_entity.Cursor? nextCursor =
         cursor_model.CursorMapper.toDomain(response.nextCursor);
 
-    List<VerboseEvent> events_ = response.result!.map((event) {
-      return VerboseEventMapper.toDomain(event);
-    }).toList();
+    List<VerboseEvent> events_ =
+        await Future.wait(response.result!.map((event) async {
+      return await VerboseEventMapper(
+              transactionInfoUseCase: transactionInfoUseCase)
+          .toDomain(event);
+    }).toList());
 
     events.addAll(events_);
 
@@ -968,9 +982,12 @@ class EventsRepositoryImpl implements EventsRepository {
     }
     cursor_entity.Cursor? nextCursor =
         cursor_model.CursorMapper.toDomain(response.nextCursor);
-    List<VerboseEvent> events = response.result!.map((event) {
-      return VerboseEventMapper.toDomain(event);
-    }).toList();
+    List<VerboseEvent> events =
+        await Future.wait(response.result!.map((event) async {
+      return await VerboseEventMapper(
+              transactionInfoUseCase: transactionInfoUseCase)
+          .toDomain(event);
+    }).toList());
 
     return (events, nextCursor, response.resultCount);
   }
