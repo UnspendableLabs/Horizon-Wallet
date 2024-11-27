@@ -78,7 +78,7 @@ class VerboseEventMapper {
       case "DETACH_FROM_UTXO":
         return VerboseDetachFromUtxoEventMapper.toDomain(
             apiEvent as api.VerboseDetachFromUtxoEvent);
-      case "MOVE_TO_UTXO":
+      case "UTXO_MOVE":
         return VerboseMoveToUtxoEventMapper.toDomain(
             apiEvent as api.VerboseMoveToUtxoEvent);
 
@@ -795,9 +795,7 @@ class VerboseMoveToUtxoParamsMapper {
       asset: apiParams.asset,
       blockIndex: apiParams.blockIndex,
       destination: apiParams.destination,
-      feePaid: apiParams.feePaid,
       quantityNormalized: apiParams.quantityNormalized,
-      feePaidNormalized: apiParams.feePaidNormalized,
     );
   }
 }

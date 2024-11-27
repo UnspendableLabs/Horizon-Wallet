@@ -46,31 +46,32 @@ class ComposeRepositoryImpl extends ComposeRepository {
     try {
       return await apiCall(currentInputsSet);
     } catch (e) {
+      final error = extractInvalidUtxoErrors(e.toString());
 
+      return error.fold(() => throw e, (invalidUtxos) {
+        // Remove all invalid UTXOs from the current input set
+        final newInputsSet =
+            removeUtxosFromList(currentInputsSet, invalidUtxos);
 
-    final error = extractInvalidUtxoErrors(e.toString());
+        if (newInputsSet.isEmpty) {
+          throw Exception('No valid UTXOs left after removing invalid UTXOs');
+        }
 
-    return error.fold(() => throw e, (invalidUtxos) {
-      // Remove all invalid UTXOs from the current input set
-      final newInputsSet = removeUtxosFromList(currentInputsSet, invalidUtxos);
-
-      if (newInputsSet.isEmpty) {
-        throw Exception('No valid UTXOs left after removing invalid UTXOs');
-      }
-
-      // Retry with the updated input set
-      return _retryOnInvalidUtxo(apiCall, newInputsSet);
-    });
-
+        // Retry with the updated input set
+        return _retryOnInvalidUtxo(apiCall, newInputsSet);
+      });
     }
   }
 
-List<Utxo> removeUtxosFromList(List<Utxo> inputSet, List<InvalidUtxo> invalidUtxos) {
-  return inputSet.where((utxo) {
-    return !invalidUtxos.any((invalidUtxo) =>
-        utxo.txid == invalidUtxo.txHash && utxo.vout == invalidUtxo.outputIndex);
-  }).toList();
-}
+  List<Utxo> removeUtxosFromList(
+      List<Utxo> inputSet, List<InvalidUtxo> invalidUtxos) {
+    return inputSet.where((utxo) {
+      return !invalidUtxos.any((invalidUtxo) =>
+          utxo.txid == invalidUtxo.txHash &&
+          utxo.vout == invalidUtxo.outputIndex);
+    }).toList();
+  }
+
   @override
   Future<compose_send.ComposeSendResponse> composeSendVerbose(int fee,
       List<Utxo> inputsSet, compose_send.ComposeSendParams params) async {
@@ -80,12 +81,21 @@ List<Utxo> removeUtxosFromList(List<Utxo> inputSet, List<InvalidUtxo> invalidUtx
         final destination = params.destination;
         final asset = params.asset;
         final quantity = params.quantity;
+        const excludeUtxosWithBalances = true;
 
         final inputsSetString =
             currentInputSet.map((e) => "${e.txid}:${e.vout}").join(',');
 
-        final response = await api.composeSendVerbose(source, destination,
-            asset, quantity, true, fee, null, inputsSetString);
+        final response = await api.composeSendVerbose(
+            source,
+            destination,
+            asset,
+            quantity,
+            true,
+            fee,
+            null,
+            inputsSetString,
+            excludeUtxosWithBalances);
 
         if (response.result == null) {
           throw Exception('Failed to compose send');
@@ -129,6 +139,7 @@ List<Utxo> removeUtxosFromList(List<Utxo> inputSet, List<InvalidUtxo> invalidUtx
         final reset = params.reset;
         final description = params.description;
         const unconfirmed = true;
+        const excludeUtxosWithBalances = true;
 
         final inputsSetString =
             currentInputSet.map((e) => "${e.txid}:${e.vout}").join(',');
@@ -144,7 +155,8 @@ List<Utxo> removeUtxosFromList(List<Utxo> inputSet, List<InvalidUtxo> invalidUtx
             description,
             unconfirmed,
             fee,
-            inputsSetString);
+            inputsSetString,
+            excludeUtxosWithBalances);
         if (response.result == null) {
           throw Exception('Failed to compose issuance');
         }
@@ -186,7 +198,7 @@ List<Utxo> removeUtxosFromList(List<Utxo> inputSet, List<InvalidUtxo> invalidUtx
         const openAddress = null;
         const oracleAddress = null;
         const allowUnconfirmedTx = true;
-
+        const excludeUtxosWithBalances = true;
         final inputsSetString =
             currentInputSet.map((e) => "${e.txid}:${e.vout}").join(',');
 
@@ -201,7 +213,8 @@ List<Utxo> removeUtxosFromList(List<Utxo> inputSet, List<InvalidUtxo> invalidUtx
             oracleAddress,
             allowUnconfirmedTx,
             fee,
-            inputsSetString);
+            inputsSetString,
+            excludeUtxosWithBalances);
 
         if (response.result == null) {
           throw Exception('Failed to compose dispenser');
@@ -245,12 +258,18 @@ List<Utxo> removeUtxosFromList(List<Utxo> inputSet, List<InvalidUtxo> invalidUtx
         final dispenser = params.dispenser;
         final quantity = params.quantity;
         const allowUnconfirmedTx = true;
-
+        const excludeUtxosWithBalances = true;
         final inputsSetString =
             currentInputSet.map((e) => "${e.txid}:${e.vout}").join(',');
 
-        final response = await api.composeDispense(sourceAddress, dispenser,
-            quantity, allowUnconfirmedTx, fee, inputsSetString);
+        final response = await api.composeDispense(
+            sourceAddress,
+            dispenser,
+            quantity,
+            allowUnconfirmedTx,
+            fee,
+            inputsSetString,
+            excludeUtxosWithBalances);
 
         if (response.result == null) {
           throw Exception('Failed to compose dispense');
@@ -271,12 +290,12 @@ List<Utxo> removeUtxosFromList(List<Utxo> inputSet, List<InvalidUtxo> invalidUtx
       (currentInputSet) async {
         final sourceAddress = params.source;
         final asset = params.asset;
-
+        const excludeUtxosWithBalances = true;
         final inputsSetString =
             currentInputSet.map((e) => "${e.txid}:${e.vout}").join(',');
 
-        final response = await api.composeFairmintVerbose(
-            sourceAddress, asset, fee, inputsSetString);
+        final response = await api.composeFairmintVerbose(sourceAddress, asset,
+            fee, inputsSetString, excludeUtxosWithBalances);
 
         if (response.result == null) {
           throw Exception('Failed to compose fairmint');
@@ -304,7 +323,7 @@ List<Utxo> removeUtxosFromList(List<Utxo> inputSet, List<InvalidUtxo> invalidUtx
         final endBlock = params.endBlock;
         final divisible = params.divisible;
         final lockQuantity = params.lockQuantity;
-
+        const excludeUtxosWithBalances = true;
         final inputsSetString =
             currentInputSet.map((e) => "${e.txid}:${e.vout}").join(',');
 
@@ -319,7 +338,8 @@ List<Utxo> removeUtxosFromList(List<Utxo> inputSet, List<InvalidUtxo> invalidUtx
             endBlock,
             fee,
             lockQuantity,
-            inputsSetString);
+            inputsSetString,
+            excludeUtxosWithBalances);
 
         if (response.result == null) {
           throw Exception('Failed to compose fairminter');
@@ -341,7 +361,9 @@ List<Utxo> removeUtxosFromList(List<Utxo> inputSet, List<InvalidUtxo> invalidUtx
     final escrowQuantity = params.escrowQuantity;
     final mainchainrate = params.mainchainrate;
     final status = params.status ?? 0;
-
+    const excludeUtxosWithBalances = true;
+    const validateCompose = false;
+    const disableUtxoLocks = true;
     final Vout? outputForChaining = prevDecodedTransaction.vout
         .firstWhereOrNull((vout) => vout.scriptPubKey.address == params.source);
 
@@ -359,20 +381,22 @@ List<Utxo> removeUtxosFromList(List<Utxo> inputSet, List<InvalidUtxo> invalidUtx
     final newInputSet = '$txid:$vout:$value:${scriptPubKey.hex}';
 
     final response = await api.composeDispenserVerbose(
-        source,
-        asset,
-        giveQuantity,
-        escrowQuantity,
-        mainchainrate,
-        status,
-        null,
-        null,
-        true,
-        fee,
-        newInputSet,
-        null,
-        false,
-        true);
+      source,
+      asset,
+      giveQuantity,
+      escrowQuantity,
+      mainchainrate,
+      status,
+      null,
+      null,
+      true,
+      fee,
+      newInputSet,
+      excludeUtxosWithBalances,
+      null,
+      validateCompose,
+      disableUtxoLocks,
+    );
 
     if (response.result == null) {
       throw Exception('Failed to compose send');
@@ -411,7 +435,7 @@ List<Utxo> removeUtxosFromList(List<Utxo> inputSet, List<InvalidUtxo> invalidUtx
         final giveAsset = params.giveAsset;
         final getQuantity = params.getQuantity;
         final getAsset = params.getAsset;
-
+        const excludeUtxosWithBalances = true;
         final inputsSetString =
             currentInputSet.map((e) => "${e.txid}:${e.vout}").join(',');
 
@@ -425,7 +449,8 @@ List<Utxo> removeUtxosFromList(List<Utxo> inputSet, List<InvalidUtxo> invalidUtx
             0, // fee required
             true, //  allow unconfirmed
             fee, //exect fee
-            inputsSetString);
+            inputsSetString,
+            excludeUtxosWithBalances);
 
         if (response.result == null) {
           throw Exception('Failed to compose order');
@@ -444,6 +469,7 @@ List<Utxo> removeUtxosFromList(List<Utxo> inputSet, List<InvalidUtxo> invalidUtx
       (currentInputSet) async {
         final source = params.source;
         final offerHash = params.offerHash;
+        const excludeUtxosWithBalances = true;
 
         final inputsSetString =
             currentInputSet.map((e) => "${e.txid}:${e.vout}").join(',');
@@ -453,7 +479,8 @@ List<Utxo> removeUtxosFromList(List<Utxo> inputSet, List<InvalidUtxo> invalidUtx
             offerHash,
             true, //  allow unconfirmed
             fee, //exect fee
-            inputsSetString);
+            inputsSetString,
+            excludeUtxosWithBalances);
 
         if (response.result == null) {
           throw Exception('Failed to compose cancel');
@@ -476,7 +503,7 @@ List<Utxo> removeUtxosFromList(List<Utxo> inputSet, List<InvalidUtxo> invalidUtx
         final address = params.address;
         final asset = params.asset;
         final quantity = params.quantity;
-
+        const excludeUtxosWithBalances = true;
         final inputsSetString =
             currentInputSet.map((e) => "${e.txid}:${e.vout}").join(',');
 
@@ -488,7 +515,8 @@ List<Utxo> removeUtxosFromList(List<Utxo> inputSet, List<InvalidUtxo> invalidUtx
             false,
             true, //  allow unconfirmed
             fee, //exect fee
-            inputsSetString);
+            inputsSetString,
+            excludeUtxosWithBalances);
 
         if (response.result == null) {
           throw Exception('Failed to compose attach utxo');
@@ -510,21 +538,18 @@ List<Utxo> removeUtxosFromList(List<Utxo> inputSet, List<InvalidUtxo> invalidUtx
       (currentInputSet) async {
         final utxo = params.utxo;
         final destination = params.destination;
-        final quantity = params.quantity;
-        final asset = params.asset;
-
+        const excludeUtxosWithBalances = true;
         final inputsSetString =
             currentInputSet.map((e) => "${e.txid}:${e.vout}").join(',');
 
         final response = await api.composeDetachUtxo(
           utxo,
           destination,
-          asset,
-          quantity,
           false,
           true, //  allow unconfirmed
           fee, //exect fee
           inputsSetString,
+          excludeUtxosWithBalances,
         );
 
         if (response.result == null) {
@@ -547,8 +572,7 @@ List<Utxo> removeUtxosFromList(List<Utxo> inputSet, List<InvalidUtxo> invalidUtx
       (currentInputSet) async {
         final utxo = params.utxo;
         final destination = params.destination;
-        final asset = params.asset;
-        final quantity = params.quantity;
+        const excludeUtxosWithBalances = true;
 
         final inputsSetString =
             currentInputSet.map((e) => "${e.txid}:${e.vout}").join(',');
@@ -556,12 +580,11 @@ List<Utxo> removeUtxosFromList(List<Utxo> inputSet, List<InvalidUtxo> invalidUtx
         final response = await api.composeMoveToUtxo(
           utxo,
           destination,
-          asset,
-          quantity,
           false,
           true, //  allow unconfirmed inputs
           fee, //exect fee
           inputsSetString,
+          excludeUtxosWithBalances,
         );
 
         if (response.result == null) {

@@ -1383,7 +1383,6 @@ MoveToUtxoParams _$MoveToUtxoParamsFromJson(Map<String, dynamic> json) =>
       asset: json['asset'] as String,
       blockIndex: (json['block_index'] as num).toInt(),
       destination: json['destination'] as String,
-      feePaid: (json['fee_paid'] as num).toInt(),
       msgIndex: (json['msg_index'] as num).toInt(),
       quantity: (json['quantity'] as num).toInt(),
       source: json['source'] as String,
@@ -1398,7 +1397,6 @@ Map<String, dynamic> _$MoveToUtxoParamsToJson(MoveToUtxoParams instance) =>
       'asset': instance.asset,
       'block_index': instance.blockIndex,
       'destination': instance.destination,
-      'fee_paid': instance.feePaid,
       'msg_index': instance.msgIndex,
       'quantity': instance.quantity,
       'source': instance.source,
@@ -1437,7 +1435,6 @@ VerboseMoveToUtxoParams _$VerboseMoveToUtxoParamsFromJson(
       asset: json['asset'] as String,
       blockIndex: (json['block_index'] as num).toInt(),
       destination: json['destination'] as String,
-      feePaid: (json['fee_paid'] as num).toInt(),
       msgIndex: (json['msg_index'] as num).toInt(),
       quantity: (json['quantity'] as num).toInt(),
       source: json['source'] as String,
@@ -1448,7 +1445,6 @@ VerboseMoveToUtxoParams _$VerboseMoveToUtxoParamsFromJson(
       assetInfo:
           AssetInfoModel.fromJson(json['asset_info'] as Map<String, dynamic>),
       quantityNormalized: json['quantity_normalized'] as String,
-      feePaidNormalized: json['fee_paid_normalized'] as String,
     );
 
 Map<String, dynamic> _$VerboseMoveToUtxoParamsToJson(
@@ -1457,7 +1453,6 @@ Map<String, dynamic> _$VerboseMoveToUtxoParamsToJson(
       'asset': instance.asset,
       'block_index': instance.blockIndex,
       'destination': instance.destination,
-      'fee_paid': instance.feePaid,
       'msg_index': instance.msgIndex,
       'quantity': instance.quantity,
       'source': instance.source,
@@ -1467,7 +1462,6 @@ Map<String, dynamic> _$VerboseMoveToUtxoParamsToJson(
       'block_time': instance.blockTime,
       'asset_info': instance.assetInfo,
       'quantity_normalized': instance.quantityNormalized,
-      'fee_paid_normalized': instance.feePaidNormalized,
     };
 
 DetachFromUtxoEvent _$DetachFromUtxoEventFromJson(Map<String, dynamic> json) =>
@@ -1503,7 +1497,6 @@ DetachFromUtxoParams _$DetachFromUtxoParamsFromJson(
       status: json['status'] as String,
       txHash: json['tx_hash'] as String,
       txIndex: (json['tx_index'] as num).toInt(),
-      blockTime: (json['block_time'] as num).toInt(),
     );
 
 Map<String, dynamic> _$DetachFromUtxoParamsToJson(
@@ -1519,7 +1512,6 @@ Map<String, dynamic> _$DetachFromUtxoParamsToJson(
       'status': instance.status,
       'tx_hash': instance.txHash,
       'tx_index': instance.txIndex,
-      'block_time': instance.blockTime,
     };
 
 VerboseDetachFromUtxoEvent _$VerboseDetachFromUtxoEventFromJson(
@@ -1558,7 +1550,6 @@ VerboseDetachFromUtxoParams _$VerboseDetachFromUtxoParamsFromJson(
       status: json['status'] as String,
       txHash: json['tx_hash'] as String,
       txIndex: (json['tx_index'] as num).toInt(),
-      blockTime: (json['block_time'] as num).toInt(),
       assetInfo:
           AssetInfoModel.fromJson(json['asset_info'] as Map<String, dynamic>),
       quantityNormalized: json['quantity_normalized'] as String,
@@ -1578,7 +1569,6 @@ Map<String, dynamic> _$VerboseDetachFromUtxoParamsToJson(
       'status': instance.status,
       'tx_hash': instance.txHash,
       'tx_index': instance.txIndex,
-      'block_time': instance.blockTime,
       'asset_info': instance.assetInfo,
       'quantity_normalized': instance.quantityNormalized,
       'fee_paid_normalized': instance.feePaidNormalized,
@@ -1615,7 +1605,7 @@ AttachToUtxoParams _$AttachToUtxoParamsFromJson(Map<String, dynamic> json) =>
       status: json['status'] as String,
       txHash: json['tx_hash'] as String,
       txIndex: (json['tx_index'] as num).toInt(),
-      blockTime: (json['block_time'] as num).toInt(),
+      blockTime: (json['block_time'] as num?)?.toInt(),
     );
 
 Map<String, dynamic> _$AttachToUtxoParamsToJson(AttachToUtxoParams instance) =>
@@ -1882,7 +1872,7 @@ VerboseAttachToUtxoParams _$VerboseAttachToUtxoParamsFromJson(
       status: json['status'] as String,
       txHash: json['tx_hash'] as String,
       txIndex: (json['tx_index'] as num).toInt(),
-      blockTime: (json['block_time'] as num).toInt(),
+      blockTime: (json['block_time'] as num?)?.toInt(),
       assetInfo:
           AssetInfoModel.fromJson(json['asset_info'] as Map<String, dynamic>),
       quantityNormalized: json['quantity_normalized'] as String,
@@ -3158,15 +3148,26 @@ Map<String, dynamic> _$IssuanceInfoToJson(IssuanceInfo instance) =>
       'unpacked_data': instance.unpackedData,
     };
 
-InfoVerbose _$InfoVerboseFromJson(Map<String, dynamic> json) => InfoVerbose(
-      source: json['source'] as String,
-      destination: json['destination'] as String?,
-      btcAmount: (json['btc_amount'] as num?)?.toInt(),
-      fee: (json['fee'] as num?)?.toInt(),
-      data: json['data'] as String,
-      decodedTx: json['decoded_tx'] as Map<String, dynamic>?,
-      btcAmountNormalized: json['btc_amount_normalized'] as String,
-    );
+InfoVerbose _$InfoVerboseFromJson(Map<String, dynamic> json) {
+  final info = InfoVerbose(
+    source: json['source'] as String,
+    destination: json['destination'] as String?,
+    btcAmount: (json['btc_amount'] as num?)?.toInt(),
+    fee: (json['fee'] as num?)?.toInt(),
+    data: json['data'] as String,
+    decodedTx: json['decoded_tx'] as Map<String, dynamic>?,
+    btcAmountNormalized: json['btc_amount_normalized'] as String?,
+  );
+  return InfoVerbose(
+    source: json['source'] as String,
+    destination: json['destination'] as String?,
+    btcAmount: (json['btc_amount'] as num?)?.toInt(),
+    fee: (json['fee'] as num?)?.toInt(),
+    data: json['data'] as String,
+    decodedTx: json['decoded_tx'] as Map<String, dynamic>?,
+    btcAmountNormalized: json['btc_amount_normalized'] as String?,
+  );
+}
 
 Map<String, dynamic> _$InfoVerboseToJson(InfoVerbose instance) =>
     <String, dynamic>{
@@ -3188,7 +3189,7 @@ EnhancedSendInfoVerbose _$EnhancedSendInfoVerboseFromJson(
       fee: (json['fee'] as num?)?.toInt(),
       data: json['data'] as String,
       decodedTx: json['decoded_tx'] as Map<String, dynamic>?,
-      btcAmountNormalized: json['btc_amount_normalized'] as String,
+      btcAmountNormalized: json['btc_amount_normalized'] as String?,
       unpackedData: EnhancedSendUnpackedVerbose.fromJson(
           json['unpacked_data'] as Map<String, dynamic>),
     );
@@ -3250,7 +3251,7 @@ IssuanceInfoVerbose _$IssuanceInfoVerboseFromJson(Map<String, dynamic> json) =>
       fee: (json['fee'] as num?)?.toInt(),
       data: json['data'] as String,
       decodedTx: json['decoded_tx'] as Map<String, dynamic>?,
-      btcAmountNormalized: json['btc_amount_normalized'] as String,
+      btcAmountNormalized: json['btc_amount_normalized'] as String?,
       unpackedData: IssuanceUnpackedVerbose.fromJson(
           json['unpacked_data'] as Map<String, dynamic>),
     );
@@ -3290,7 +3291,7 @@ FairmintInfoVerbose _$FairmintInfoVerboseFromJson(Map<String, dynamic> json) =>
       fee: (json['fee'] as num?)?.toInt(),
       data: json['data'] as String,
       decodedTx: json['decoded_tx'] as Map<String, dynamic>?,
-      btcAmountNormalized: json['btc_amount_normalized'] as String,
+      btcAmountNormalized: json['btc_amount_normalized'] as String?,
       unpackedData: FairmintUnpackedVerbose.fromJson(
           json['unpacked_data'] as Map<String, dynamic>),
     );
@@ -3329,7 +3330,7 @@ FairminterInfoVerbose _$FairminterInfoVerboseFromJson(
       fee: (json['fee'] as num?)?.toInt(),
       data: json['data'] as String,
       decodedTx: json['decoded_tx'] as Map<String, dynamic>?,
-      btcAmountNormalized: json['btc_amount_normalized'] as String,
+      btcAmountNormalized: json['btc_amount_normalized'] as String?,
       unpackedData: FairminterUnpackedVerbose.fromJson(
           json['unpacked_data'] as Map<String, dynamic>),
     );
@@ -3355,7 +3356,7 @@ DispenserInfoVerbose _$DispenserInfoVerboseFromJson(
       btcAmount: (json['btc_amount'] as num?)?.toInt(),
       fee: (json['fee'] as num?)?.toInt(),
       data: json['data'] as String,
-      btcAmountNormalized: json['btc_amount_normalized'] as String,
+      btcAmountNormalized: json['btc_amount_normalized'] as String?,
       unpackedData: DispenserUnpackedVerbose.fromJson(
           json['unpacked_data'] as Map<String, dynamic>),
     );
@@ -3379,7 +3380,7 @@ DispenseInfoVerbose _$DispenseInfoVerboseFromJson(Map<String, dynamic> json) =>
       btcAmount: (json['btc_amount'] as num?)?.toInt(),
       fee: (json['fee'] as num?)?.toInt(),
       data: json['data'] as String,
-      btcAmountNormalized: json['btc_amount_normalized'] as String,
+      btcAmountNormalized: json['btc_amount_normalized'] as String?,
       unpackedData: DispenseUnpackedVerbose.fromJson(
           json['unpacked_data'] as Map<String, dynamic>),
     );
@@ -3434,7 +3435,7 @@ OrderInfoVerbose _$OrderInfoVerboseFromJson(Map<String, dynamic> json) =>
       fee: (json['fee'] as num?)?.toInt(),
       data: json['data'] as String,
       decodedTx: json['decoded_tx'] as Map<String, dynamic>?,
-      btcAmountNormalized: json['btc_amount_normalized'] as String,
+      btcAmountNormalized: json['btc_amount_normalized'] as String?,
       unpackedData: OrderUnpackedVerbose.fromJson(
           json['unpacked_data'] as Map<String, dynamic>),
     );
@@ -3458,7 +3459,7 @@ CancelInfoVerbose _$CancelInfoVerboseFromJson(Map<String, dynamic> json) =>
       btcAmount: (json['btc_amount'] as num?)?.toInt(),
       fee: (json['fee'] as num?)?.toInt(),
       data: json['data'] as String,
-      btcAmountNormalized: json['btc_amount_normalized'] as String,
+      btcAmountNormalized: json['btc_amount_normalized'] as String?,
       decodedTx: json['decoded_tx'] as Map<String, dynamic>?,
       unpackedData: CancelUnpackedVerbose.fromJson(
           json['unpacked_data'] as Map<String, dynamic>),
@@ -3489,6 +3490,110 @@ Map<String, dynamic> _$CancelUnpackedVerboseToJson(
       'offer_hash': instance.offerHash,
       'status': instance.status,
     };
+
+AttachInfoVerbose _$AttachInfoVerboseFromJson(Map<String, dynamic> json) =>
+    AttachInfoVerbose(
+      data: json['data'] as String,
+      source: json['source'] as String,
+      destination: json['destination'] as String?,
+      btcAmount: (json['btc_amount'] as num?)?.toInt(),
+      fee: (json['fee'] as num?)?.toInt(),
+      btcAmountNormalized: json['btc_amount_normalized'] as String?,
+      unpackedData: AttachUnpackedVerbose.fromJson(
+          json['unpacked_data'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$AttachInfoVerboseToJson(AttachInfoVerbose instance) =>
+    <String, dynamic>{
+      'source': instance.source,
+      'destination': instance.destination,
+      'btc_amount': instance.btcAmount,
+      'fee': instance.fee,
+      'data': instance.data,
+      'btc_amount_normalized': instance.btcAmountNormalized,
+      'unpacked_data': instance.unpackedData,
+    };
+
+AttachUnpackedVerbose _$AttachUnpackedVerboseFromJson(
+        Map<String, dynamic> json) =>
+    AttachUnpackedVerbose(
+      asset: json['asset'] as String,
+      quantityNormalized: json['quantity_normalized'] as String,
+      destinationVout: json['destination_vout'] as String?,
+    );
+
+Map<String, dynamic> _$AttachUnpackedVerboseToJson(
+        AttachUnpackedVerbose instance) =>
+    <String, dynamic>{
+      'asset': instance.asset,
+      'quantity_normalized': instance.quantityNormalized,
+      'destination_vout': instance.destinationVout,
+    };
+
+DetachInfoVerbose _$DetachInfoVerboseFromJson(Map<String, dynamic> json) =>
+    DetachInfoVerbose(
+      data: json['data'] as String,
+      source: json['source'] as String,
+      destination: json['destination'] as String?,
+      btcAmount: (json['btc_amount'] as num?)?.toInt(),
+      fee: (json['fee'] as num?)?.toInt(),
+      btcAmountNormalized: json['btc_amount_normalized'] as String?,
+      unpackedData: DetachUnpackedVerbose.fromJson(
+          json['unpacked_data'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$DetachInfoVerboseToJson(DetachInfoVerbose instance) =>
+    <String, dynamic>{
+      'source': instance.source,
+      'destination': instance.destination,
+      'btc_amount': instance.btcAmount,
+      'fee': instance.fee,
+      'data': instance.data,
+      'btc_amount_normalized': instance.btcAmountNormalized,
+      'unpacked_data': instance.unpackedData,
+    };
+
+DetachUnpackedVerbose _$DetachUnpackedVerboseFromJson(
+        Map<String, dynamic> json) =>
+    DetachUnpackedVerbose(
+      destination: json['destination'] as String,
+    );
+
+Map<String, dynamic> _$DetachUnpackedVerboseToJson(
+        DetachUnpackedVerbose instance) =>
+    <String, dynamic>{
+      'destination': instance.destination,
+    };
+
+MoveToUtxoInfoVerbose _$MoveToUtxoInfoVerboseFromJson(
+        Map<String, dynamic> json) =>
+    MoveToUtxoInfoVerbose(
+      data: json['data'] as String,
+      source: json['source'] as String,
+      destination: json['destination'] as String?,
+      btcAmount: (json['btc_amount'] as num?)?.toInt(),
+      fee: (json['fee'] as num?)?.toInt(),
+      btcAmountNormalized: json['btc_amount_normalized'] as String?,
+    );
+
+Map<String, dynamic> _$MoveToUtxoInfoVerboseToJson(
+        MoveToUtxoInfoVerbose instance) =>
+    <String, dynamic>{
+      'source': instance.source,
+      'destination': instance.destination,
+      'btc_amount': instance.btcAmount,
+      'fee': instance.fee,
+      'data': instance.data,
+      'btc_amount_normalized': instance.btcAmountNormalized,
+    };
+
+MoveToUtxoUnpackedVerbose _$MoveToUtxoUnpackedVerboseFromJson(
+        Map<String, dynamic> json) =>
+    MoveToUtxoUnpackedVerbose();
+
+Map<String, dynamic> _$MoveToUtxoUnpackedVerboseToJson(
+        MoveToUtxoUnpackedVerbose instance) =>
+    <String, dynamic>{};
 
 UTXO _$UTXOFromJson(Map<String, dynamic> json) => UTXO(
       vout: (json['vout'] as num).toInt(),
@@ -4495,6 +4600,7 @@ class _V2Api implements V2Api {
     int quantity, [
     bool? allowUnconfirmedInputs,
     int? fee,
+    bool? excludeUtxosWithBalances,
   ]) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{
@@ -4503,6 +4609,7 @@ class _V2Api implements V2Api {
       r'quantity': quantity,
       r'allow_unconfirmed_inputs': allowUnconfirmedInputs,
       r'fee': fee,
+      r'exclude_utxos_with_balances': excludeUtxosWithBalances,
     };
     queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};
@@ -4541,6 +4648,7 @@ class _V2Api implements V2Api {
     int? fee,
     int? feePerKB,
     String? inputsSet,
+    bool? excludeUtxosWithBalances,
     bool? validate,
     bool? disableUtxoLocks,
   ]) async {
@@ -4553,6 +4661,7 @@ class _V2Api implements V2Api {
       r'exact_fee': fee,
       r'fee_per_kb': feePerKB,
       r'inputs_set': inputsSet,
+      r'exclude_utxos_with_balances': excludeUtxosWithBalances,
       r'validate': validate,
       r'disable_utxo_locks': disableUtxoLocks,
     };
@@ -4679,6 +4788,7 @@ class _V2Api implements V2Api {
     bool? reset,
     String? description,
     bool? unconfirmed,
+    bool? excludeUtxosWithBalances,
   ]) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{
@@ -4690,6 +4800,7 @@ class _V2Api implements V2Api {
       r'reset': reset,
       r'description': description,
       r'unconfirmed': unconfirmed,
+      r'exclude_utxos_with_balances': excludeUtxosWithBalances,
     };
     queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};
@@ -4731,6 +4842,7 @@ class _V2Api implements V2Api {
     bool? unconfirmed,
     int? fee,
     String? inputsSet,
+    bool? excludeUtxosWithBalances,
   ]) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{
@@ -4744,6 +4856,7 @@ class _V2Api implements V2Api {
       r'unconfirmed': unconfirmed,
       r'exact_fee': fee,
       r'inputs_set': inputsSet,
+      r'exclude_utxos_with_balances': excludeUtxosWithBalances,
     };
     queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};
@@ -4916,12 +5029,14 @@ class _V2Api implements V2Api {
     String asset, [
     int? fee,
     String? inputsSet,
+    bool? excludeUtxosWithBalances,
   ]) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{
       r'asset': asset,
       r'exact_fee': fee,
       r'inputs_set': inputsSet,
+      r'exclude_utxos_with_balances': excludeUtxosWithBalances,
     };
     queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};
@@ -4964,6 +5079,7 @@ class _V2Api implements V2Api {
     int? fee,
     bool? lockQuantity,
     String? inputsSet,
+    bool? excludeUtxosWithBalances,
   ]) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{
@@ -4977,6 +5093,7 @@ class _V2Api implements V2Api {
       r'exact_fee': fee,
       r'lock_quantity': lockQuantity,
       r'inputs_set': inputsSet,
+      r'exclude_utxos_with_balances': excludeUtxosWithBalances,
     };
     queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};
@@ -5019,6 +5136,7 @@ class _V2Api implements V2Api {
     bool? allowUnconfirmedInputs,
     int? exactFee,
     String? inputsSet,
+    bool? excludeUtxosWithBalances,
     bool? unconfirmed,
     bool? validate,
     bool? disableUtxoLocks,
@@ -5035,6 +5153,7 @@ class _V2Api implements V2Api {
       r'allow_unconfirmed_inputs': allowUnconfirmedInputs,
       r'exact_fee': exactFee,
       r'inputs_set': inputsSet,
+      r'exclude_utxos_with_balances': excludeUtxosWithBalances,
       r'unconfirmed': unconfirmed,
       r'validate': validate,
       r'disable_utxo_locks': disableUtxoLocks,
@@ -5078,6 +5197,7 @@ class _V2Api implements V2Api {
     bool? allowUnconfirmedInputs,
     int? exactFee,
     String? inputsSet,
+    bool? excludeUtxosWithBalances,
     bool? unconfirmed,
   ]) async {
     final _extra = <String, dynamic>{};
@@ -5091,6 +5211,7 @@ class _V2Api implements V2Api {
       r'allow_unconfirmed_inputs': allowUnconfirmedInputs,
       r'exact_fee': exactFee,
       r'inputs_set': inputsSet,
+      r'exclude_utxos_with_balances': excludeUtxosWithBalances,
       r'unconfirmed': unconfirmed,
     };
     queryParameters.removeWhere((k, v) => v == null);
@@ -5128,6 +5249,7 @@ class _V2Api implements V2Api {
     bool? allowUnconfirmedInputs,
     int? exactFee,
     String? inputsSet,
+    bool? excludeUtxosWithBalances,
     bool? unconfirmed,
   ]) async {
     final _extra = <String, dynamic>{};
@@ -5136,6 +5258,7 @@ class _V2Api implements V2Api {
       r'allow_unconfirmed_inputs': allowUnconfirmedInputs,
       r'exact_fee': exactFee,
       r'inputs_set': inputsSet,
+      r'exclude_utxos_with_balances': excludeUtxosWithBalances,
       r'unconfirmed': unconfirmed,
     };
     queryParameters.removeWhere((k, v) => v == null);
@@ -5219,6 +5342,7 @@ class _V2Api implements V2Api {
     bool? allowUnconfirmedInputs,
     int? exactFee,
     String? inputsSet,
+    bool? excludeUtxosWithBalances,
     bool? unconfirmed,
   ]) async {
     final _extra = <String, dynamic>{};
@@ -5228,6 +5352,7 @@ class _V2Api implements V2Api {
       r'allow_unconfirmed_inputs': allowUnconfirmedInputs,
       r'exact_fee': exactFee,
       r'inputs_set': inputsSet,
+      r'exclude_utxos_with_balances': excludeUtxosWithBalances,
       r'unconfirmed': unconfirmed,
     };
     queryParameters.removeWhere((k, v) => v == null);
@@ -5585,6 +5710,7 @@ class _V2Api implements V2Api {
     bool? allowUnconfirmedInputs,
     int? exactFee,
     String? inputsSet,
+    bool? excludeUtxosWithBalances,
     bool? unconfirmed,
   ]) async {
     final _extra = <String, dynamic>{};
@@ -5596,6 +5722,7 @@ class _V2Api implements V2Api {
       r'allow_unconfirmed_inputs': allowUnconfirmedInputs,
       r'exact_fee': exactFee,
       r'inputs_set': inputsSet,
+      r'exclude_utxos_with_balances': excludeUtxosWithBalances,
       r'unconfirmed': unconfirmed,
     };
     queryParameters.removeWhere((k, v) => v == null);
@@ -5630,23 +5757,21 @@ class _V2Api implements V2Api {
   Future<Response<ComposeDetachUtxoResponseModel>> composeDetachUtxo(
     String utxo, [
     String? destination,
-    String? asset,
-    int? quantity,
     bool? skipValidation,
     bool? allowUnconfirmedInputs,
     int? exactFee,
     String? inputsSet,
+    bool? excludeUtxosWithBalances,
     bool? unconfirmed,
   ]) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{
       r'destination': destination,
-      r'asset': asset,
-      r'quantity': quantity,
       r'skip_validation': skipValidation,
       r'allow_unconfirmed_inputs': allowUnconfirmedInputs,
       r'exact_fee': exactFee,
       r'inputs_set': inputsSet,
+      r'exclude_utxos_with_balances': excludeUtxosWithBalances,
       r'unconfirmed': unconfirmed,
     };
     queryParameters.removeWhere((k, v) => v == null);
@@ -5681,23 +5806,21 @@ class _V2Api implements V2Api {
   Future<Response<ComposeMoveToUtxoResponseModel>> composeMoveToUtxo(
     String utxo, [
     String? destination,
-    String? asset,
-    int? quantity,
     bool? skipValidation,
     bool? allowUnconfirmedInputs,
     int? exactFee,
     String? inputsSet,
+    bool? excludeUtxosWithBalances,
     bool? unconfirmed,
   ]) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{
       r'destination': destination,
-      r'asset': asset,
-      r'quantity': quantity,
       r'skip_validation': skipValidation,
       r'allow_unconfirmed_inputs': allowUnconfirmedInputs,
       r'exact_fee': exactFee,
       r'inputs_set': inputsSet,
+      r'exclude_utxos_with_balances': excludeUtxosWithBalances,
       r'unconfirmed': unconfirmed,
     };
     queryParameters.removeWhere((k, v) => v == null);

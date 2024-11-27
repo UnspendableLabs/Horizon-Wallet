@@ -3,7 +3,6 @@ import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/domain/entities/compose_detach_utxo.dart';
 import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/domain/entities/fee_option.dart' as FeeOption;
-import 'package:horizon/domain/repositories/block_repository.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_bloc.dart';
@@ -14,17 +13,12 @@ import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
 import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transaction_usecase.dart';
 import 'package:horizon/presentation/common/usecase/write_local_transaction_usecase.dart';
 import 'package:horizon/presentation/screens/compose_detach_utxo/bloc/compose_detach_utxo_state.dart';
-import 'package:horizon/presentation/screens/compose_detach_utxo/usecase/fetch_form_data.dart';
 
 class ComposeDetachUtxoEventParams {
   final String utxo;
-  final int quantity;
-  final String asset;
 
   ComposeDetachUtxoEventParams({
     required this.utxo,
-    required this.quantity,
-    required this.asset,
   });
 }
 
@@ -33,13 +27,9 @@ class ComposeDetachUtxoBloc extends ComposeBaseBloc<ComposeDetachUtxoState> {
   final AnalyticsService analyticsService;
   final Logger logger;
   final GetFeeEstimatesUseCase getFeeEstimatesUseCase;
-  final FetchComposeDetachUtxoFormDataUseCase
-      fetchComposeDetachUtxoFormDataUseCase;
   final ComposeTransactionUseCase composeTransactionUseCase;
   final SignAndBroadcastTransactionUseCase signAndBroadcastTransactionUseCase;
   final WriteLocalTransactionUseCase writelocalTransactionUseCase;
-  final BlockRepository blockRepository;
-  final String? initialFairminterTxHash;
 
   ComposeDetachUtxoBloc({
     required this.logger,
@@ -47,11 +37,8 @@ class ComposeDetachUtxoBloc extends ComposeBaseBloc<ComposeDetachUtxoState> {
     required this.composeTransactionUseCase,
     required this.composeRepository,
     required this.analyticsService,
-    required this.fetchComposeDetachUtxoFormDataUseCase,
     required this.signAndBroadcastTransactionUseCase,
     required this.writelocalTransactionUseCase,
-    required this.blockRepository,
-    this.initialFairminterTxHash,
   }) : super(ComposeDetachUtxoState(
           submitState: const SubmitInitial(),
           feeOption: FeeOption.Medium(),
@@ -68,13 +55,11 @@ class ComposeDetachUtxoBloc extends ComposeBaseBloc<ComposeDetachUtxoState> {
     ));
 
     try {
-      final (feeEstimates, balance) =
-          await fetchComposeDetachUtxoFormDataUseCase
-              .call(event.currentAddress!);
+      final feeEstimates = await getFeeEstimatesUseCase.call();
 
       emit(state.copyWith(
         feeState: FeeState.success(feeEstimates),
-        balancesState: BalancesState.success([balance]),
+        balancesState: const BalancesState.success([]),
       ));
     } on FetchFeeEstimatesException catch (e) {
       emit(state.copyWith(
@@ -82,6 +67,8 @@ class ComposeDetachUtxoBloc extends ComposeBaseBloc<ComposeDetachUtxoState> {
       ));
     } catch (e) {
       emit(state.copyWith(
+        balancesState:
+            BalancesState.error('An unexpected error occured: ${e.toString()}'),
         feeState:
             FeeState.error('An unexpected error occurred: ${e.toString()}'),
       ));
@@ -112,17 +99,14 @@ class ComposeDetachUtxoBloc extends ComposeBaseBloc<ComposeDetachUtxoState> {
       final feeRate = _getFeeRate();
       final source = event.sourceAddress;
       final utxo = event.params.utxo;
-      final quantity = event.params.quantity;
-      final asset = event.params.asset;
       final composeResponse = await composeTransactionUseCase
           .call<ComposeDetachUtxoParams, ComposeDetachUtxoResponse>(
               feeRate: feeRate,
               source: source,
               params: ComposeDetachUtxoParams(
-                  utxo: utxo,
-                  destination: source,
-                  quantity: quantity,
-                  asset: asset),
+                utxo: utxo,
+                destination: source,
+              ),
               composeFn: composeRepository.composeDetachUtxo);
 
       final composed = composeResponse.$1;

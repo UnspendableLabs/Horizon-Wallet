@@ -35,7 +35,7 @@ class FetchComposeAttachUtxoFormDataUseCase {
 
   Future<FeeEstimates> _fetchFeeEstimates() async {
     try {
-      return await getFeeEstimatesUseCase.call(targets: (1, 3, 6));
+      return await getFeeEstimatesUseCase.call();
     } catch (e) {
       throw FetchFeeEstimatesException(e.toString());
     }
@@ -43,9 +43,22 @@ class FetchComposeAttachUtxoFormDataUseCase {
 
   Future<Balance> _fetchAssetBalance(String address, String assetName) async {
     try {
-      return await balanceRepository
-          .getBalancesForAddressAndAssetVerbose(address, assetName)
-          .then((balances) => balances.first);
+      final balances = await balanceRepository
+          .getBalancesForAddressAndAssetVerbose(address, assetName);
+      final balanceForAddress = balances
+          .where((balance) =>
+              balance.asset == assetName &&
+              balance.address == address &&
+              balance.utxo == null)
+          .toList();
+      if (balanceForAddress.isEmpty) {
+        throw FetchBalanceException('Balance not found for address: $address');
+      }
+      if (balanceForAddress.length > 1) {
+        throw FetchBalanceException(
+            'Multiple balances found for address: $address');
+      }
+      return balanceForAddress.first;
     } catch (e) {
       throw FetchBalanceException(e.toString());
     }

@@ -221,9 +221,7 @@ class ComposeSendBloc extends ComposeBaseBloc<ComposeSendState> {
       return;
     }
     try {
-      feeEstimates = await getFeeEstimatesUseCase.call(
-        targets: (1, 3, 6),
-      );
+      feeEstimates = await getFeeEstimatesUseCase.call();
     } catch (e) {
       emit(state.copyWith(
           feeState: FeeState.error(e.toString()),

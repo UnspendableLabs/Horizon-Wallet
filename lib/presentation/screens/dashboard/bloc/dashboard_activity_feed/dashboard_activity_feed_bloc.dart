@@ -34,7 +34,7 @@ final DEFAULT_WHITELIST = [
   "ORDER_EXPIRATION",
   "ATTACH_TO_UTXO",
   "DETACH_FROM_UTXO",
-  "MOVE_TO_UTXO",
+  "UTXO_MOVE",
 ];
 
 class DashboardActivityFeedBloc
@@ -552,6 +552,16 @@ class DashboardActivityFeedBloc
                 ? counterpartyEvents[0].txHash
                 : null,
             transactions: transactions));
+
+        // final filteredTransactions = transactions.where((tx) => tx.hash == '1ecd07d026c889b56e9de2ecfa1cd8657158d88d91f15cf6a2c9e73d76b53f57').toList();
+
+        // emit(DashboardActivityFeedStateCompleteOk(
+        //     nextCursor: null,
+        //     newTransactionCount: 0,
+        //     mostRecentBitcoinTxHash:
+        //         null,
+        //     mostRecentCounterpartyEventHash:  null,
+        //     transactions: filteredTransactions));
       }
     } catch (e) {
       rethrow;

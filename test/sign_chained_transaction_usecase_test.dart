@@ -1,17 +1,71 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mocktail/mocktail.dart';
-import 'package:horizon/presentation/common/usecase/sign_chained_transaction_usecase.dart';
-import 'package:horizon/domain/services/transaction_service.dart';
 import 'package:horizon/domain/entities/bitcoin_decoded_tx.dart';
 import 'package:horizon/domain/entities/utxo.dart';
+import 'package:horizon/domain/services/transaction_service.dart';
+import 'package:horizon/presentation/common/usecase/sign_chained_transaction_usecase.dart';
+import 'package:mocktail/mocktail.dart';
 
 // Create mock classes for dependencies
 class MockTransactionService extends Mock implements TransactionService {}
 
-// Register fallback values for custom types
-class FakeUtxo extends Fake implements Utxo {}
+class FakeDecodedTx extends Mock implements DecodedTx {
+  @override
+  final version = 1;
+  @override
+  final txid;
+  @override
+  final hash = 'prevTxHash';
+  @override
+  final size = 1;
+  @override
+  final vsize = 1;
+  @override
+  final weight = 1;
+  @override
+  final locktime = 0;
+  @override
+  final List<Vin> vin = [];
+  @override
+  final List<Vout> vout;
 
-class FakeDecodedTx extends Fake implements DecodedTx {}
+  FakeDecodedTx({required this.vout, required this.txid});
+}
+
+class FakeVout extends Mock implements Vout {
+  @override
+  final int n;
+  @override
+  final double value;
+  @override
+  final ScriptPubKey scriptPubKey;
+
+  FakeVout({
+    required this.n,
+    required this.value,
+    required this.scriptPubKey,
+  });
+}
+
+class FakeScriptPubKey extends Mock implements ScriptPubKey {
+  @override
+  final String? address;
+  @override
+  final String asm;
+  @override
+  final String desc;
+  @override
+  final String hex;
+  @override
+  final String type;
+
+  FakeScriptPubKey({
+    this.address,
+    this.asm = 'asm',
+    this.desc = 'desc',
+    this.hex = 'hex',
+    this.type = 'type',
+  });
+}
 
 void main() {
   group('SignChainedTransactionUseCase', () {
@@ -20,7 +74,8 @@ void main() {
 
     setUpAll(() {
       // Register fallback values
-      registerFallbackValue(FakeUtxo());
+      registerFallbackValue(
+          Utxo(txid: '', vout: 0, height: 0, value: 0, address: ''));
       registerFallbackValue(<String, Utxo>{});
     });
 
@@ -39,47 +94,23 @@ void main() {
       const addressPrivKey = 'addressPrivateKey';
       const signedTransaction = 'signedTransactionData';
 
-      const prevDecodedTransaction = DecodedTx(
-        version: 1,
-        txid: 'prevTxId',
-        hash: 'prevTxHash',
-        size: 1,
-        vsize: 1,
-        weight: 1,
-        locktime: 0,
-        vin: [],
-        vout: [
-          Vout(
-            n: 0,
-            value: 0.001,
-            scriptPubKey: ScriptPubKey(
-              address: source,
-              asm: 'asm',
-              desc: 'desc',
-              hex: 'hex',
-              type: 'type',
-            ),
-          ),
-        ],
-      );
+      final scriptPubKey = FakeScriptPubKey(address: source);
+      final vout = FakeVout(n: 0, value: 0.001, scriptPubKey: scriptPubKey);
+      final prevDecodedTransaction =
+          FakeDecodedTx(vout: [vout], txid: 'prevTxId');
 
-      final vout = prevDecodedTransaction.vout.first;
-
-      final expectedUtxo = Utxo(
-          txid: prevDecodedTransaction.txid,
-          vout: vout.n,
-          height: null,
-          value: (vout.value * 100000000).toInt(),
-          address: vout.scriptPubKey.address!);
-
-      final utxoMap = {"${expectedUtxo.txid}:${expectedUtxo.vout}": expectedUtxo};
+      // Capture the actual map being passed
+      Map<String, Utxo>? capturedMap;
 
       when(() => mockTransactionService.signTransaction(
             rawtransaction,
             addressPrivKey,
             source,
             any(),
-          )).thenAnswer((_) async => signedTransaction);
+          )).thenAnswer((invocation) {
+        capturedMap = invocation.positionalArguments[3] as Map<String, Utxo>;
+        return Future.value(signedTransaction);
+      });
 
       // Act
       final result = await signChainedTransactionUseCase.call(
@@ -96,8 +127,19 @@ void main() {
             rawtransaction,
             addressPrivKey,
             source,
-            any(),
+            capturedMap!,
           )).called(1);
+
+      expect(capturedMap!.length, 1);
+      final mapKey = "${prevDecodedTransaction.txid}:${vout.n}";
+      expect(capturedMap!.containsKey(mapKey), true);
+
+      final capturedUtxo = capturedMap![mapKey]!;
+      expect(capturedUtxo.txid, prevDecodedTransaction.txid);
+      expect(capturedUtxo.vout, vout.n);
+      expect(capturedUtxo.height, null);
+      expect(capturedUtxo.value, (vout.value * 100000000).toInt());
+      expect(capturedUtxo.address, source);
     });
 
     test('should throw exception when source address not found in vout',
@@ -108,29 +150,10 @@ void main() {
       const rawtransaction = 'rawTransactionData';
       const addressPrivKey = 'addressPrivateKey';
 
-      const prevDecodedTransaction = DecodedTx(
-        version: 1,
-        txid: 'prevTxId',
-        hash: 'prevTxHash',
-        size: 1,
-        vsize: 1,
-        weight: 1,
-        locktime: 0,
-        vin: [],
-        vout: [
-          Vout(
-            n: 0,
-            value: 0.001,
-            scriptPubKey: ScriptPubKey(
-              address: 'otherAddress',
-              asm: 'asm',
-              desc: 'desc',
-              hex: 'hex',
-              type: 'type',
-            ),
-          ),
-        ],
-      );
+      final scriptPubKey = FakeScriptPubKey(address: 'otherAddress');
+      final vout = FakeVout(n: 0, value: 0.001, scriptPubKey: scriptPubKey);
+      final prevDecodedTransaction =
+          FakeDecodedTx(vout: [vout], txid: 'prevTxId');
 
       // Act & Assert
       expect(
@@ -154,48 +177,23 @@ void main() {
       const rawtransaction = 'rawTransactionData';
       const addressPrivKey = 'addressPrivateKey';
 
-      const prevDecodedTransaction = DecodedTx(
-        version: 1,
-        txid: 'prevTxId',
-        hash: 'prevTxHash',
-        size: 1,
-        vsize: 1,
-        weight: 1,
-        locktime: 0,
-        vin: [],
-        vout: [
-          Vout(
-            n: 0,
-            value: 0.001,
-            scriptPubKey: ScriptPubKey(
-              address: source,
-              asm: 'asm',
-              desc: 'desc',
-              hex: 'hex',
-              type: 'type',
-            ),
-          ),
-        ],
-      );
+      final scriptPubKey = FakeScriptPubKey(address: source);
+      final vout = FakeVout(n: 0, value: 0.001, scriptPubKey: scriptPubKey);
+      final prevDecodedTransaction =
+          FakeDecodedTx(vout: [vout], txid: 'prevTxId');
 
-      final expectedVout = prevDecodedTransaction.vout.first;
-
-      final expectedUtxo = Utxo(
-        txid: prevDecodedTransaction.txid,
-        vout: expectedVout.n,
-        height: null,
-        value: (expectedVout.value * 100000000).toInt(),
-        address: expectedVout.scriptPubKey.address!,
-      );
-
-      final utxoMap = {"${expectedUtxo.txid}:${expectedUtxo.vout}": expectedUtxo};
+      // Capture the actual map being passed
+      Map<String, Utxo>? capturedMap;
 
       when(() => mockTransactionService.signTransaction(
             rawtransaction,
             addressPrivKey,
             source,
-            utxoMap,
-          )).thenThrow(Exception('Signing error'));
+            any(),
+          )).thenAnswer((invocation) {
+        capturedMap = invocation.positionalArguments[3] as Map<String, Utxo>;
+        throw Exception('Signing error');
+      });
 
       // Act & Assert
       expect(
@@ -208,6 +206,22 @@ void main() {
         ),
         throwsA(isA<SignTransactionException>()),
       );
+      verify(() => mockTransactionService.signTransaction(
+            rawtransaction,
+            addressPrivKey,
+            source,
+            capturedMap!,
+          )).called(1);
+      expect(capturedMap!.length, 1);
+      final mapKey = "${prevDecodedTransaction.txid}:${vout.n}";
+      expect(capturedMap!.containsKey(mapKey), true);
+
+      final capturedUtxo = capturedMap![mapKey]!;
+      expect(capturedUtxo.txid, prevDecodedTransaction.txid);
+      expect(capturedUtxo.vout, vout.n);
+      expect(capturedUtxo.height, null);
+      expect(capturedUtxo.value, (vout.value * 100000000).toInt());
+      expect(capturedUtxo.address, source);
     });
 
     test('should handle multiple vouts and find correct source', () async {
@@ -218,70 +232,27 @@ void main() {
       const addressPrivKey = 'addressPrivateKey';
       const signedTransaction = 'signedTransactionData';
 
-      const prevDecodedTransaction = DecodedTx(
-        version: 1,
-        txid: 'prevTxId',
-        hash: 'prevTxHash',
-        size: 1,
-        vsize: 1,
-        weight: 1,
-        locktime: 0,
-        vin: [],
-        vout: [
-          Vout(
-            n: 0,
-            value: 0.001,
-            scriptPubKey: ScriptPubKey(
-              address: 'otherAddress1',
-              asm: 'asm',
-              desc: 'desc',
-              hex: 'hex',
-              type: 'type',
-            ),
-          ),
-          Vout(
-            n: 1,
-            value: 0.002,
-            scriptPubKey: ScriptPubKey(
-              address: source,
-              asm: 'asm',
-              desc: 'desc',
-              hex: 'hex',
-              type: 'type',
-            ),
-          ),
-          Vout(
-            n: 2,
-            value: 0.003,
-            scriptPubKey: ScriptPubKey(
-              address: 'otherAddress2',
-              asm: 'asm',
-              desc: 'desc',
-              hex: 'hex',
-              type: 'type',
-            ),
-          ),
-        ],
-      );
+      final scriptPubKey1 = FakeScriptPubKey(address: 'otherAddress1');
+      final vout1 = FakeVout(n: 0, value: 0.001, scriptPubKey: scriptPubKey1);
+      final scriptPubKey2 = FakeScriptPubKey(address: source);
+      final vout2 = FakeVout(n: 1, value: 0.002, scriptPubKey: scriptPubKey2);
+      final scriptPubKey3 = FakeScriptPubKey(address: 'otherAddress2');
+      final vout3 = FakeVout(n: 2, value: 0.003, scriptPubKey: scriptPubKey3);
+      final prevDecodedTransaction =
+          FakeDecodedTx(vout: [vout1, vout2, vout3], txid: 'prevTxId');
 
-      final expectedVout = prevDecodedTransaction.vout[1];
-
-      final expectedUtxo = Utxo(
-        txid: prevDecodedTransaction.txid,
-        vout: expectedVout.n,
-        height: null,
-        value: (expectedVout.value * 100000000).toInt(),
-        address: expectedVout.scriptPubKey.address!,
-      );
-
-      final utxoMap = {"${expectedUtxo.txid}:${expectedUtxo.vout}": expectedUtxo};
+      // Capture the actual map being passed
+      Map<String, Utxo>? capturedMap;
 
       when(() => mockTransactionService.signTransaction(
             rawtransaction,
             addressPrivKey,
             source,
             any(),
-          )).thenAnswer((_) async => signedTransaction);
+          )).thenAnswer((invocation) {
+        capturedMap = invocation.positionalArguments[3] as Map<String, Utxo>;
+        return Future.value(signedTransaction);
+      });
 
       // Act
       final result = await signChainedTransactionUseCase.call(
@@ -298,8 +269,18 @@ void main() {
             rawtransaction,
             addressPrivKey,
             source,
-            any(),
+            capturedMap!,
           )).called(1);
+      expect(capturedMap!.length, 1);
+      final mapKey = "${prevDecodedTransaction.txid}:${vout2.n}";
+      expect(capturedMap!.containsKey(mapKey), true);
+
+      final capturedUtxo = capturedMap![mapKey]!;
+      expect(capturedUtxo.txid, prevDecodedTransaction.txid);
+      expect(capturedUtxo.vout, vout2.n);
+      expect(capturedUtxo.height, null);
+      expect(capturedUtxo.value, (vout2.value * 100000000).toInt());
+      expect(capturedUtxo.address, source);
     });
 
     test('should handle empty vout list gracefully', () async {
@@ -309,17 +290,7 @@ void main() {
       const rawtransaction = 'rawTransactionData';
       const addressPrivKey = 'addressPrivateKey';
 
-      const prevDecodedTransaction = DecodedTx(
-        version: 1,
-        txid: 'prevTxId',
-        hash: 'prevTxHash',
-        size: 1,
-        vsize: 1,
-        weight: 1,
-        locktime: 0,
-        vin: [],
-        vout: [],
-      );
+      final prevDecodedTransaction = FakeDecodedTx(vout: [], txid: 'prevTxId');
 
       // Act & Assert
       expect(

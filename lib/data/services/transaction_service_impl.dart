@@ -90,9 +90,9 @@ class TransactionServiceImpl implements TransactionService {
       bitcoinjs.TxInput input = transaction.ins.toDart[i];
 
       var txHash = HEX.encode(input.hash.toDart.reversed.toList());
+      final txHashKey = "$txHash:${input.index}";
 
-
-      var prev = utxoMap["${txHash}:${input.index}"];
+      var prev = utxoMap[txHashKey];
       if (prev != null) {
         if (isSegwit) {
           input.witnessUtxo =
@@ -160,7 +160,8 @@ class TransactionServiceImpl implements TransactionService {
 
     for (final input in transaction.ins.toDart) {
       var txHash = HEX.encode(input.hash.toDart.reversed.toList());
-      var prev = utxoMap[txHash];
+      final txHashKey = "$txHash:${input.index}";
+      var prev = utxoMap[txHashKey];
       if (prev == null) {
         throw TransactionServiceException(
             'Invariant: No utxo found for txHash: $txHash');

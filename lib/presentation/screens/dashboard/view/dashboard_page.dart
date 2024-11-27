@@ -24,7 +24,6 @@ import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 import 'package:horizon/domain/repositories/events_repository.dart';
 import 'package:horizon/domain/repositories/fairminter_repository.dart';
 import 'package:horizon/domain/repositories/transaction_local_repository.dart';
-import 'package:horizon/domain/repositories/utxo_repository.dart';
 import 'package:horizon/presentation/common/colors.dart';
 import 'package:horizon/presentation/screens/close_dispenser/view/close_dispenser_page.dart';
 import 'package:horizon/presentation/screens/compose_dispense/view/compose_dispense_modal.dart';
@@ -1024,7 +1023,6 @@ class DashboardPageWrapper extends StatelessWidget {
                     addressTxRepository: GetIt.I.get<AddressTxRepository>(),
                     assetRepository: GetIt.I.get<AssetRepository>(),
                     fairminterRepository: GetIt.I.get<FairminterRepository>(),
-                    utxoRepository: GetIt.I.get<UtxoRepository>(),
                     currentAddress: data.currentAddress?.address ??
                         data.currentImportedAddress!.address,
                   )..add(Start(pollingInterval: const Duration(seconds: 60))),

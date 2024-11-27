@@ -36,7 +36,9 @@ class SignChainedTransactionUseCase {
             address: vout.scriptPubKey.address!)
       ];
 
-      final Map<String, Utxo> utxoMap = {for (var e in utxosToSign) "${e.txid}:${e.vout}": e};
+      final Map<String, Utxo> utxoMap = {
+        for (var e in utxosToSign) "${e.txid}:${e.vout}": e
+      };
 
       // Sign Transaction
       final signedTransaction = await transactionService.signTransaction(

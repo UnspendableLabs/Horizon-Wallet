@@ -2,19 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/core/logging/logger.dart';
-import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/domain/entities/compose_movetoutxo.dart';
-import 'package:horizon/domain/repositories/block_repository.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_event.dart';
 import 'package:horizon/presentation/common/compose_base/view/compose_base_page.dart';
 import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
+import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
 import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transaction_usecase.dart';
 import 'package:horizon/presentation/common/usecase/write_local_transaction_usecase.dart';
 import 'package:horizon/presentation/screens/compose_movetoutxo/bloc/compose_movetoutxo_bloc.dart';
 import 'package:horizon/presentation/screens/compose_movetoutxo/bloc/compose_movetoutxo_state.dart';
-import 'package:horizon/presentation/screens/compose_movetoutxo/usecase/fetch_form_data.dart';
 
 import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart";
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
@@ -41,8 +39,7 @@ class ComposeMoveToUtxoPageWrapper extends StatelessWidget {
         key: Key(currentAddress),
         create: (context) => ComposeMoveToUtxoBloc(
           logger: GetIt.I.get<Logger>(),
-          fetchComposeMoveToUtxoFormDataUseCase:
-              GetIt.I.get<FetchComposeMoveToUtxoFormDataUseCase>(),
+          getFeeEstimatesUseCase: GetIt.I.get<GetFeeEstimatesUseCase>(),
           analyticsService: GetIt.I.get<AnalyticsService>(),
           composeTransactionUseCase: GetIt.I.get<ComposeTransactionUseCase>(),
           composeRepository: GetIt.I.get<ComposeRepository>(),
@@ -50,11 +47,7 @@ class ComposeMoveToUtxoPageWrapper extends StatelessWidget {
               GetIt.I.get<SignAndBroadcastTransactionUseCase>(),
           writelocalTransactionUseCase:
               GetIt.I.get<WriteLocalTransactionUseCase>(),
-          blockRepository: GetIt.I.get<BlockRepository>(),
-        )..add(FetchFormData(
-            utxo: utxo,
-            currentAddress:
-                currentAddress)), // we need to fetch the utxo balance here rather than the address balance
+        )..add(FetchFormData(currentAddress: currentAddress)),
         child: ComposeMoveToUtxoPage(
           address: currentAddress,
           assetName: assetName,
@@ -104,58 +97,25 @@ class ComposeMoveToUtxoPageState extends State<ComposeMoveToUtxoPage> {
     return BlocConsumer<ComposeMoveToUtxoBloc, ComposeMoveToUtxoState>(
       listener: (context, state) {},
       builder: (context, state) {
-        return state.balancesState.maybeWhen(
-          loading: () =>
-              ComposeBasePage<ComposeMoveToUtxoBloc, ComposeMoveToUtxoState>(
-            dashboardActivityFeedBloc: widget.dashboardActivityFeedBloc,
-            onFeeChange: (fee) => context
-                .read<ComposeMoveToUtxoBloc>()
-                .add(ChangeFeeOption(value: fee)),
-            buildInitialFormFields: (state, loading, formKey) => [
-              HorizonUI.HorizonTextFormField(
-                controller: utxoController,
-                label: 'Utxo',
-                enabled: false,
-              ),
-              const SizedBox(height: 16),
-              HorizonUI.HorizonTextFormField(
-                controller: destinationController,
-                label: 'Destination Address',
-                enabled: false,
-              ),
-            ],
-            onInitialCancel: () => _handleInitialCancel(),
-            onInitialSubmit: (formKey) {},
-            buildConfirmationFormFields: (state, composeTransaction, formKey) =>
-                [],
-            onConfirmationBack: () {},
-            onConfirmationContinue: (composeTransaction, fee, formKey) {},
-            onFinalizeSubmit: (password, formKey) {},
-            onFinalizeCancel: () => {},
-          ),
-          success: (balances) =>
-              ComposeBasePage<ComposeMoveToUtxoBloc, ComposeMoveToUtxoState>(
-            dashboardActivityFeedBloc: widget.dashboardActivityFeedBloc,
-            onFeeChange: (fee) => context
-                .read<ComposeMoveToUtxoBloc>()
-                .add(ChangeFeeOption(value: fee)),
-            buildInitialFormFields: (state, loading, formKey) =>
-                _buildInitialFormFields(state, loading, formKey),
-            onInitialCancel: () => _handleInitialCancel(),
-            onInitialSubmit: (formKey) =>
-                _handleInitialSubmit(formKey, balances),
-            buildConfirmationFormFields: (state, composeTransaction, formKey) =>
-                _buildConfirmationDetails(composeTransaction),
-            onConfirmationBack: () => _onConfirmationBack(),
-            onConfirmationContinue: (composeTransaction, fee, formKey) {
-              _onConfirmationContinue(composeTransaction, fee, formKey);
-            },
-            onFinalizeSubmit: (password, formKey) {
-              _onFinalizeSubmit(password, formKey);
-            },
-            onFinalizeCancel: () => _onFinalizeCancel(),
-          ),
-          orElse: () => const SizedBox.shrink(),
+        return ComposeBasePage<ComposeMoveToUtxoBloc, ComposeMoveToUtxoState>(
+          dashboardActivityFeedBloc: widget.dashboardActivityFeedBloc,
+          onFeeChange: (fee) => context
+              .read<ComposeMoveToUtxoBloc>()
+              .add(ChangeFeeOption(value: fee)),
+          buildInitialFormFields: (state, loading, formKey) =>
+              _buildInitialFormFields(state, loading, formKey),
+          onInitialCancel: () => _handleInitialCancel(),
+          onInitialSubmit: (formKey) => _handleInitialSubmit(formKey),
+          buildConfirmationFormFields: (state, composeTransaction, formKey) =>
+              _buildConfirmationDetails(composeTransaction),
+          onConfirmationBack: () => _onConfirmationBack(),
+          onConfirmationContinue: (composeTransaction, fee, formKey) {
+            _onConfirmationContinue(composeTransaction, fee, formKey);
+          },
+          onFinalizeSubmit: (password, formKey) {
+            _onFinalizeSubmit(password, formKey);
+          },
+          onFinalizeCancel: () => _onFinalizeCancel(),
         );
       },
     );
@@ -165,20 +125,16 @@ class ComposeMoveToUtxoPageState extends State<ComposeMoveToUtxoPage> {
     Navigator.of(context).pop();
   }
 
-  void _handleInitialSubmit(
-      GlobalKey<FormState> formKey, List<Balance> balances) {
+  void _handleInitialSubmit(GlobalKey<FormState> formKey) {
     setState(() {
       _submitted = true;
     });
     if (formKey.currentState!.validate()) {
-      final balance = balances.first;
       context.read<ComposeMoveToUtxoBloc>().add(ComposeTransactionEvent(
-            sourceAddress: destinationController.text,
-            params: ComposeMoveToUtxoParams(
+            sourceAddress: widget.address,
+            params: ComposeMoveToUtxoEventParams(
               utxo: utxoController.text,
               destination: destinationController.text,
-              asset: widget.assetName,
-              quantity: balance.quantity,
             ),
           ));
     }
@@ -203,6 +159,11 @@ class ComposeMoveToUtxoPageState extends State<ComposeMoveToUtxoPage> {
           }
           return null;
         },
+        onFieldSubmitted: (value) {
+          _handleInitialSubmit(formKey);
+        },
+        autovalidateMode:
+            _submitted ? AutovalidateMode.always : AutovalidateMode.disabled,
       ),
     ];
   }
@@ -225,9 +186,9 @@ class ComposeMoveToUtxoPageState extends State<ComposeMoveToUtxoPage> {
   }
 
   void _onConfirmationBack() {
-    context.read<ComposeMoveToUtxoBloc>().add(FetchFormData(
-        currentAddress: widget
-            .utxo)); // we need to fetch the utxo balance here rather than the address balance
+    context
+        .read<ComposeMoveToUtxoBloc>()
+        .add(FetchFormData(currentAddress: widget.address));
   }
 
   void _onConfirmationContinue(
@@ -253,6 +214,6 @@ class ComposeMoveToUtxoPageState extends State<ComposeMoveToUtxoPage> {
   void _onFinalizeCancel() {
     context
         .read<ComposeMoveToUtxoBloc>()
-        .add(FetchFormData(currentAddress: widget.utxo));
+        .add(FetchFormData(currentAddress: widget.address));
   }
 }

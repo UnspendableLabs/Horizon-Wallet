@@ -144,9 +144,8 @@ void main() {
   blocTest<OpenOrderFormBloc, FormStateModel>(
     'defaults lock ratio to false',
     build: () {
-      when(() => getFeeEstimatesUseCase.call(targets: any(named: 'targets')))
-          .thenAnswer(
-              (_) async => const FeeEstimates(fast: 50, medium: 30, slow: 10));
+      when(() => getFeeEstimatesUseCase.call()).thenAnswer(
+          (_) async => const FeeEstimates(fast: 50, medium: 30, slow: 10));
 
       when(() => balanceRepository.getBalancesForAddress(any())).thenAnswer(
         (_) async => [
@@ -176,9 +175,8 @@ void main() {
   blocTest<OpenOrderFormBloc, FormStateModel>(
     'emits correct state when InitializeForm is added with empty params',
     build: () {
-      when(() => getFeeEstimatesUseCase.call(targets: any(named: 'targets')))
-          .thenAnswer(
-              (_) async => const FeeEstimates(fast: 50, medium: 30, slow: 10));
+      when(() => getFeeEstimatesUseCase.call()).thenAnswer(
+          (_) async => const FeeEstimates(fast: 50, medium: 30, slow: 10));
 
       when(() => balanceRepository.getBalancesForAddress(any())).thenAnswer(
         (_) async => [
@@ -246,9 +244,8 @@ void main() {
         ),
       );
 
-      when(() => getFeeEstimatesUseCase.call(targets: any(named: 'targets')))
-          .thenAnswer(
-              (_) async => const FeeEstimates(fast: 50, medium: 30, slow: 10));
+      when(() => getFeeEstimatesUseCase.call()).thenAnswer(
+          (_) async => const FeeEstimates(fast: 50, medium: 30, slow: 10));
 
       when(() => balanceRepository.getBalancesForAddress(any())).thenAnswer(
         (_) async => [
@@ -304,9 +301,8 @@ void main() {
         ),
       );
 
-      when(() => getFeeEstimatesUseCase.call(targets: any(named: 'targets')))
-          .thenAnswer(
-              (_) async => const FeeEstimates(fast: 50, medium: 30, slow: 10));
+      when(() => getFeeEstimatesUseCase.call()).thenAnswer(
+          (_) async => const FeeEstimates(fast: 50, medium: 30, slow: 10));
 
       when(() => balanceRepository.getBalancesForAddress(any())).thenAnswer(
         (_) async => [
@@ -385,9 +381,8 @@ void main() {
         ),
       );
 
-      when(() => getFeeEstimatesUseCase.call(targets: any(named: 'targets')))
-          .thenAnswer(
-              (_) async => const FeeEstimates(fast: 50, medium: 30, slow: 10));
+      when(() => getFeeEstimatesUseCase.call()).thenAnswer(
+          (_) async => const FeeEstimates(fast: 50, medium: 30, slow: 10));
 
       when(() => balanceRepository.getBalancesForAddress(any())).thenAnswer(
         (_) async => [
@@ -472,9 +467,8 @@ void main() {
         ),
       );
 
-      when(() => getFeeEstimatesUseCase.call(targets: any(named: 'targets')))
-          .thenAnswer(
-              (_) async => const FeeEstimates(fast: 50, medium: 30, slow: 10));
+      when(() => getFeeEstimatesUseCase.call()).thenAnswer(
+          (_) async => const FeeEstimates(fast: 50, medium: 30, slow: 10));
 
       when(() => balanceRepository.getBalancesForAddress(any())).thenAnswer(
         (_) async => [
@@ -566,9 +560,8 @@ void main() {
         ),
       );
 
-      when(() => getFeeEstimatesUseCase.call(targets: any(named: 'targets')))
-          .thenAnswer(
-              (_) async => const FeeEstimates(fast: 50, medium: 30, slow: 10));
+      when(() => getFeeEstimatesUseCase.call()).thenAnswer(
+          (_) async => const FeeEstimates(fast: 50, medium: 30, slow: 10));
 
       when(() => balanceRepository.getBalancesForAddress(any())).thenAnswer(
         (_) async => [
@@ -658,9 +651,8 @@ void main() {
         ),
       );
 
-      when(() => getFeeEstimatesUseCase.call(targets: any(named: 'targets')))
-          .thenAnswer(
-              (_) async => const FeeEstimates(fast: 50, medium: 30, slow: 10));
+      when(() => getFeeEstimatesUseCase.call()).thenAnswer(
+          (_) async => const FeeEstimates(fast: 50, medium: 30, slow: 10));
 
       when(() => balanceRepository.getBalancesForAddress(any())).thenAnswer(
         (_) async => [
@@ -751,9 +743,8 @@ void main() {
         ),
       );
 
-      when(() => getFeeEstimatesUseCase.call(targets: any(named: 'targets')))
-          .thenAnswer(
-              (_) async => const FeeEstimates(fast: 50, medium: 30, slow: 10));
+      when(() => getFeeEstimatesUseCase.call()).thenAnswer(
+          (_) async => const FeeEstimates(fast: 50, medium: 30, slow: 10));
 
       when(() => balanceRepository.getBalancesForAddress(any())).thenAnswer(
         (_) async => [
@@ -842,9 +833,8 @@ void main() {
         ),
       );
 
-      when(() => getFeeEstimatesUseCase.call(targets: any(named: 'targets')))
-          .thenAnswer(
-              (_) async => const FeeEstimates(fast: 50, medium: 30, slow: 10));
+      when(() => getFeeEstimatesUseCase.call()).thenAnswer(
+          (_) async => const FeeEstimates(fast: 50, medium: 30, slow: 10));
 
       when(() => balanceRepository.getBalancesForAddress(any())).thenAnswer(
         (_) async => [
@@ -933,9 +923,8 @@ void main() {
         ),
       );
 
-      when(() => getFeeEstimatesUseCase.call(targets: any(named: 'targets')))
-          .thenAnswer(
-              (_) async => const FeeEstimates(fast: 50, medium: 30, slow: 10));
+      when(() => getFeeEstimatesUseCase.call()).thenAnswer(
+          (_) async => const FeeEstimates(fast: 50, medium: 30, slow: 10));
 
       when(() => balanceRepository.getBalancesForAddress(any())).thenAnswer(
         (_) async => [
@@ -1026,9 +1015,8 @@ void main() {
         ),
       );
 
-      when(() => getFeeEstimatesUseCase.call(targets: any(named: 'targets')))
-          .thenAnswer(
-              (_) async => const FeeEstimates(fast: 50, medium: 30, slow: 10));
+      when(() => getFeeEstimatesUseCase.call()).thenAnswer(
+          (_) async => const FeeEstimates(fast: 50, medium: 30, slow: 10));
 
       when(() => balanceRepository.getBalancesForAddress(any())).thenAnswer(
         (_) async => [
@@ -1103,9 +1091,8 @@ void main() {
         ),
       );
 
-      when(() => getFeeEstimatesUseCase.call(targets: any(named: 'targets')))
-          .thenAnswer(
-              (_) async => const FeeEstimates(fast: 50, medium: 30, slow: 10));
+      when(() => getFeeEstimatesUseCase.call()).thenAnswer(
+          (_) async => const FeeEstimates(fast: 50, medium: 30, slow: 10));
 
       when(() => balanceRepository.getBalancesForAddress(any())).thenAnswer(
         (_) async => [
