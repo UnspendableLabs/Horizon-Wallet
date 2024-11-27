@@ -1,5 +1,5 @@
 import 'dart:async';
-
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:pub_semver/pub_semver.dart';
 import 'package:horizon/presentation/common/footer/view/footer.dart';
 import 'package:dio/dio.dart';
@@ -111,15 +111,7 @@ class LoadingScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => const Scaffold(
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              CircularProgressIndicator(),
-              Text('Loading...'),
-            ],
-          ),
-        ),
+        backgroundColor: Color(0x1e1e38),
       );
 }
 
@@ -284,7 +276,7 @@ class AppRouter {
                                 body: VersionWarningSnackbar(
                                     child: DashboardPageWrapper(key: key)));
                           },
-                          orElse: () => const SizedBox.shrink(),
+                          orElse: () => LoadingScreen(),
                         );
                       })
                 ],
@@ -377,6 +369,7 @@ void main() {
   // Catch uncaught asynchronous errors
   runZonedGuarded<Future<void>>(() async {
     WidgetsFlutterBinding.ensureInitialized();
+
     // await dotenv.load();
 
     await setup();
