@@ -1,7 +1,6 @@
 import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
-import 'package:horizon/presentation/common/shared_util.dart';
 import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
 
 class FetchComposeAttachUtxoFormDataUseCase {
@@ -36,7 +35,7 @@ class FetchComposeAttachUtxoFormDataUseCase {
 
   Future<FeeEstimates> _fetchFeeEstimates() async {
     try {
-      return await getFeeEstimatesUseCase.call(targets: (1, 3, 6));
+      return await getFeeEstimatesUseCase.call();
     } catch (e) {
       throw FetchFeeEstimatesException(e.toString());
     }
@@ -48,9 +47,7 @@ class FetchComposeAttachUtxoFormDataUseCase {
           .getBalancesForAddressAndAssetVerbose(address, assetName);
       final balanceForAddress = balances
           .where((balance) =>
-              displayAssetName(
-                      balance.asset, balance.assetInfo.assetLongname) ==
-                  assetName &&
+              balance.asset == assetName &&
               balance.address == address &&
               balance.utxo == null)
           .toList();

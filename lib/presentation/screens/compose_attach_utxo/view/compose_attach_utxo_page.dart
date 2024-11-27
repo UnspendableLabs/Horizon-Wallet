@@ -26,10 +26,12 @@ class ComposeAttachUtxoPageWrapper extends StatelessWidget {
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
   final String currentAddress;
   final String assetName;
+  final String? assetLongname;
   const ComposeAttachUtxoPageWrapper({
     required this.dashboardActivityFeedBloc,
     required this.currentAddress,
     required this.assetName,
+    this.assetLongname,
     super.key,
   });
 
@@ -56,6 +58,7 @@ class ComposeAttachUtxoPageWrapper extends StatelessWidget {
         child: ComposeAttachUtxoPage(
           address: currentAddress,
           assetName: assetName,
+          assetLongname: assetLongname,
           dashboardActivityFeedBloc: dashboardActivityFeedBloc,
         ),
       ),
@@ -68,11 +71,13 @@ class ComposeAttachUtxoPage extends StatefulWidget {
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
   final String address;
   final String assetName;
+  final String? assetLongname;
   const ComposeAttachUtxoPage({
     super.key,
     required this.dashboardActivityFeedBloc,
     required this.address,
     required this.assetName,
+    this.assetLongname,
   });
 
   @override
@@ -93,7 +98,8 @@ class ComposeAttachUtxoPageState extends State<ComposeAttachUtxoPage> {
   void initState() {
     super.initState();
     fromAddressController.text = widget.address;
-    assetController.text = widget.assetName;
+    assetController.text =
+        displayAssetName(widget.assetName, widget.assetLongname);
   }
 
   @override
@@ -246,25 +252,32 @@ class ComposeAttachUtxoPageState extends State<ComposeAttachUtxoPage> {
 
   List<Widget> _buildConfirmationDetails(dynamic composeTransaction) {
     final params = (composeTransaction as ComposeAttachUtxoResponse).params;
+    if (params.asset == widget.assetName) {
+      return [
+        HorizonUI.HorizonTextFormField(
+          controller: TextEditingController(
+              text: displayAssetName(widget.assetName, widget.assetLongname)),
+          label: 'Asset',
+          enabled: false,
+        ),
+        const SizedBox(height: 16),
+        HorizonUI.HorizonTextFormField(
+          controller: TextEditingController(text: params.quantityNormalized),
+          label: 'Quantity',
+          enabled: false,
+        ),
+      ];
+    }
     return [
-      HorizonUI.HorizonTextFormField(
-        controller: TextEditingController(text: params.asset),
-        label: 'Asset',
-        enabled: false,
-      ),
-      const SizedBox(height: 16),
-      HorizonUI.HorizonTextFormField(
-        controller: TextEditingController(text: params.quantityNormalized),
-        label: 'Quantity',
-        enabled: false,
-      ),
-    ];
+      const SelectableText('Unknown error occurred')
+    ]; // we will never get here
   }
 
   void _onConfirmationBack() {
-    context
-        .read<ComposeAttachUtxoBloc>()
-        .add(FetchFormData(currentAddress: widget.address));
+    context.read<ComposeAttachUtxoBloc>().add(FetchFormData(
+          currentAddress: widget.address,
+          assetName: widget.assetName,
+        ));
   }
 
   void _onConfirmationContinue(
@@ -288,8 +301,9 @@ class ComposeAttachUtxoPageState extends State<ComposeAttachUtxoPage> {
   }
 
   void _onFinalizeCancel() {
-    context
-        .read<ComposeAttachUtxoBloc>()
-        .add(FetchFormData(currentAddress: widget.address));
+    context.read<ComposeAttachUtxoBloc>().add(FetchFormData(
+          currentAddress: widget.address,
+          assetName: widget.assetName,
+        ));
   }
 }

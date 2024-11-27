@@ -62,7 +62,7 @@ void main() {
     when(() => mockBalanceRepository.getBalancesForAddress(address.address))
         .thenAnswer((_) async => balances);
 
-    when(() => mockGetFeeEstimatesUseCase.call(targets: any(named: 'targets')))
+    when(() => mockGetFeeEstimatesUseCase.call())
         .thenAnswer((_) async => feeEstimates);
 
     // Act
@@ -87,9 +87,8 @@ void main() {
     when(() => mockBalanceRepository.getBalancesForAddress(address.address))
         .thenThrow(FetchBalancesException('Balance error'));
 
-    when(() => mockGetFeeEstimatesUseCase.call(targets: any(named: 'targets')))
-        .thenAnswer(
-            (_) async => const FeeEstimates(fast: 10, medium: 5, slow: 2));
+    when(() => mockGetFeeEstimatesUseCase.call()).thenAnswer(
+        (_) async => const FeeEstimates(fast: 10, medium: 5, slow: 2));
 
     // Act & Assert
     expect(
@@ -126,7 +125,7 @@ void main() {
     when(() => mockBalanceRepository.getBalancesForAddress(address.address))
         .thenAnswer((_) async => balances);
 
-    when(() => mockGetFeeEstimatesUseCase.call(targets: any(named: 'targets')))
+    when(() => mockGetFeeEstimatesUseCase.call())
         .thenThrow(FetchFeeEstimatesException('Fee estimate error'));
 
     // Act & Assert

@@ -55,8 +55,7 @@ class ComposeDetachUtxoBloc extends ComposeBaseBloc<ComposeDetachUtxoState> {
     ));
 
     try {
-      final feeEstimates =
-          await getFeeEstimatesUseCase.call(targets: (1, 3, 6));
+      final feeEstimates = await getFeeEstimatesUseCase.call();
 
       emit(state.copyWith(
         feeState: FeeState.success(feeEstimates),

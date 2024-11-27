@@ -242,6 +242,7 @@ class BalancesSliverState extends State<BalancesSliver> {
               _buildTableCell2(entry.value.quantityNormalized, textColor),
               _buildTableCell3(
                 entry.key,
+                entry.value.assetInfo.assetLongname,
                 textColor,
                 isOwner,
                 currentOwnedAsset,
@@ -277,6 +278,7 @@ class BalancesSliverState extends State<BalancesSliver> {
             _buildTableCell2(balance.quantityNormalized, textColor),
             _buildTableCell3(
                 balance.asset,
+                balance.assetInfo.assetLongname,
                 textColor,
                 isOwner,
                 currentOwnedAsset,
@@ -306,8 +308,8 @@ class BalancesSliverState extends State<BalancesSliver> {
                   asset.asset, asset.assetLongname, true, textColor),
               _buildTableCell2(asset.divisible == true ? '0.00000000' : '0',
                   textColor), // these are zero balances
-              _buildTableCell3(asset.asset, textColor, true, asset, 0,
-                  fairminterAssets, null, null)
+              _buildTableCell3(asset.asset, asset.assetLongname, textColor,
+                  true, asset, 0, fairminterAssets, null, null)
             ],
           );
         }).toList();
@@ -460,6 +462,7 @@ class BalancesSliverState extends State<BalancesSliver> {
 
   TableCell _buildTableCell3(
       String assetName,
+      String? assetLongname,
       Color textColor,
       bool isOwner,
       Asset? currentOwnedAsset,
@@ -491,7 +494,8 @@ class BalancesSliverState extends State<BalancesSliver> {
                                 BlocProvider.of<DashboardActivityFeedBloc>(
                                     context),
                             currentAddress: widget.currentAddress,
-                            assetName: assetName),
+                            assetName: assetName,
+                            assetLongname: assetLongname),
                         includeBackButton: false,
                         includeCloseButton: true,
                         onBackButtonPressed: () {

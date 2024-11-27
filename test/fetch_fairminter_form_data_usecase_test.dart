@@ -53,7 +53,7 @@ void main() {
       when(() => mockAssetRepository.getValidAssetsByOwnerVerbose(testAddress))
           .thenAnswer((_) async => mockAssets);
 
-      when(() => mockGetFeeEstimatesUseCase.call(targets: (1, 3, 6)))
+      when(() => mockGetFeeEstimatesUseCase.call())
           .thenAnswer((_) async => mockFeeEstimates);
 
       when(() => mockFairminterRepository.getFairmintersByAddress(testAddress))
@@ -70,8 +70,7 @@ void main() {
       verify(() =>
               mockAssetRepository.getValidAssetsByOwnerVerbose(testAddress))
           .called(1);
-      verify(() => mockGetFeeEstimatesUseCase.call(targets: (1, 3, 6)))
-          .called(1);
+      verify(() => mockGetFeeEstimatesUseCase.call()).called(1);
       verify(() =>
               mockFairminterRepository.getFairmintersByAddress(testAddress))
           .called(1);
@@ -82,7 +81,7 @@ void main() {
       when(() => mockAssetRepository.getValidAssetsByOwnerVerbose(testAddress))
           .thenThrow(Exception('Asset fetch failed'));
 
-      when(() => mockGetFeeEstimatesUseCase.call(targets: (1, 3, 6)))
+      when(() => mockGetFeeEstimatesUseCase.call())
           .thenAnswer((_) async => mockFeeEstimates);
 
       when(() => mockFairminterRepository.getFairmintersByAddress(testAddress))
@@ -102,7 +101,7 @@ void main() {
       when(() => mockAssetRepository.getValidAssetsByOwnerVerbose(testAddress))
           .thenAnswer((_) async => mockAssets);
 
-      when(() => mockGetFeeEstimatesUseCase.call(targets: (1, 3, 6)))
+      when(() => mockGetFeeEstimatesUseCase.call())
           .thenThrow(Exception('Fee estimates fetch failed'));
 
       when(() => mockFairminterRepository.getFairmintersByAddress(testAddress))
@@ -121,7 +120,7 @@ void main() {
       when(() => mockAssetRepository.getValidAssetsByOwnerVerbose(testAddress))
           .thenAnswer((_) async => mockAssets);
 
-      when(() => mockGetFeeEstimatesUseCase.call(targets: (1, 3, 6)))
+      when(() => mockGetFeeEstimatesUseCase.call())
           .thenAnswer((_) async => mockFeeEstimates);
 
       when(() => mockFairminterRepository.getFairmintersByAddress(testAddress))

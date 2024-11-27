@@ -121,9 +121,7 @@ void main() {
     blocTest<ComposeDetachUtxoBloc, ComposeDetachUtxoState>(
       'emits loading and then success states when data is fetched successfully',
       build: () {
-        when(() => mockGetFeeEstimatesUseCase.call(
-              targets: any(named: 'targets'),
-            )).thenAnswer(
+        when(() => mockGetFeeEstimatesUseCase.call()).thenAnswer(
           (_) async => mockFeeEstimates,
         );
         return composeDetachUtxoBloc;
@@ -150,9 +148,7 @@ void main() {
     blocTest<ComposeDetachUtxoBloc, ComposeDetachUtxoState>(
       'emits error state when fetching fee estimates fails',
       build: () {
-        when(() => mockGetFeeEstimatesUseCase.call(
-              targets: any(named: 'targets'),
-            )).thenThrow(
+        when(() => mockGetFeeEstimatesUseCase.call()).thenThrow(
           FetchFeeEstimatesException('Failed to fetch fee estimates'),
         );
         return composeDetachUtxoBloc;

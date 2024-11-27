@@ -128,8 +128,7 @@ void main() {
     blocTest<ComposeMoveToUtxoBloc, ComposeMoveToUtxoState>(
       'emits loading and then success states when data is fetched successfully',
       build: () {
-        when(() =>
-                mockGetFeeEstimatesUseCase.call(targets: any(named: 'targets')))
+        when(() => mockGetFeeEstimatesUseCase.call())
             .thenAnswer((_) async => mockFeeEstimates);
         return composeMoveToUtxoBloc;
       },
@@ -156,10 +155,8 @@ void main() {
     blocTest<ComposeMoveToUtxoBloc, ComposeMoveToUtxoState>(
       'emits error state when FetchFormData fails',
       build: () {
-        when(() =>
-                mockGetFeeEstimatesUseCase.call(targets: any(named: 'targets')))
-            .thenThrow(
-                FetchFeeEstimatesException('Failed to fetch fee estimates'));
+        when(() => mockGetFeeEstimatesUseCase.call()).thenThrow(
+            FetchFeeEstimatesException('Failed to fetch fee estimates'));
         return composeMoveToUtxoBloc;
       },
       act: (bloc) {

@@ -97,7 +97,7 @@ void main() {
 
     const feeEstimates = FeeEstimates(fast: 10, medium: 5, slow: 2);
 
-    when(() => mockGetFeeEstimatesUseCase.call(targets: any(named: 'targets')))
+    when(() => mockGetFeeEstimatesUseCase.call())
         .thenAnswer((_) async => feeEstimates);
 
     when(() => mockDispenserRepository.getDispensersByAddress(dispenser.source))
@@ -123,9 +123,8 @@ void main() {
     when(() => mockDispenserRepository.getDispensersByAddress(address.address))
         .thenThrow(Exception('Dispenser error'));
 
-    when(() => mockGetFeeEstimatesUseCase.call(targets: any(named: 'targets')))
-        .thenAnswer(
-            (_) async => const FeeEstimates(fast: 10, medium: 5, slow: 2));
+    when(() => mockGetFeeEstimatesUseCase.call()).thenAnswer(
+        (_) async => const FeeEstimates(fast: 10, medium: 5, slow: 2));
 
     // Act & Assert
     expect(
@@ -146,7 +145,7 @@ void main() {
     when(() => mockDispenserRepository.getDispensersByAddress(address.address))
         .thenAnswer((_) => TaskEither.right([]));
 
-    when(() => mockGetFeeEstimatesUseCase.call(targets: any(named: 'targets')))
+    when(() => mockGetFeeEstimatesUseCase.call())
         .thenThrow(Exception('Fee estimate error'));
 
     // Act & Assert
