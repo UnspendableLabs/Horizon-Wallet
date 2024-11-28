@@ -1,9 +1,11 @@
+import 'package:horizon/common/format.dart';
 import 'package:horizon/data/models/cursor.dart' as cursor_model;
 import 'package:horizon/domain/entities/cursor.dart' as cursor_entity;
 import 'package:horizon/data/sources/network/api/v2_api.dart' as api;
 import 'package:horizon/domain/entities/cursor.dart';
 import 'package:horizon/domain/entities/event.dart';
 import 'package:horizon/data/models/event.dart';
+import 'package:horizon/domain/entities/transaction_info_mempool.dart';
 import 'package:horizon/domain/repositories/events_repository.dart';
 import 'package:horizon/presentation/common/usecase/get_transaction_info_usecase.dart';
 
@@ -20,7 +22,8 @@ class VerboseEventMapper {
   final GetTransactionInfoUseCase transactionInfoUseCase;
   VerboseEventMapper({required this.transactionInfoUseCase});
 
-  Future<VerboseEvent> toDomain(api.VerboseEvent apiEvent) async {
+  Future<VerboseEvent> toDomain(
+      api.VerboseEvent apiEvent, String address) async {
     switch (apiEvent.event) {
       case 'ENHANCED_SEND':
         return VerboseEnhancedSendEventMapper.toDomain(
@@ -89,6 +92,25 @@ class VerboseEventMapper {
         }
         final transactionInfo =
             await transactionInfoUseCase.call(apiEvent.txHash!);
+        final isAtomicSwap = _isAtomicSwap(transactionInfo);
+        if (isAtomicSwap) {
+          final bitcoinSwapOutputs = transactionInfo.outputs
+              .where((output) =>
+                  address != output.address &&
+                  output.value != 546 &&
+                  output.value != 547)
+              .toList();
+          if (bitcoinSwapOutputs.length > 1) {
+            throw Exception("Atomic swddrep must have only one bitcoin output");
+          }
+          final bitcoinSwapOutput = bitcoinSwapOutputs.first;
+          final bitcoinSwapAmount =
+              satoshisToBtc(bitcoinSwapOutput.value).toStringAsFixed(8);
+
+          return VerboseAtomicSwapEventMapper.toDomain(
+              apiEvent as api.VerboseMoveToUtxoEvent, bitcoinSwapAmount);
+        }
+
         return VerboseMoveToUtxoEventMapper.toDomain(
             apiEvent as api.VerboseMoveToUtxoEvent);
 
@@ -810,6 +832,19 @@ class VerboseMoveToUtxoParamsMapper {
   }
 }
 
+class AtomicSwapParamsMapper {
+  static AtomicSwapParams toDomain(
+      api.VerboseMoveToUtxoParams apiParams, String bitcoinSwapAmount) {
+    return AtomicSwapParams(
+      asset: apiParams.asset,
+      blockIndex: apiParams.blockIndex,
+      destination: apiParams.destination,
+      quantityNormalized: apiParams.quantityNormalized,
+      bitcoinSwapAmount: bitcoinSwapAmount,
+    );
+  }
+}
+
 class VerboseDetachFromUtxoParamsMapper {
   static VerboseDetachFromUtxoParams toDomain(
       api.VerboseDetachFromUtxoParams apiParams) {
@@ -849,6 +884,22 @@ class VerboseMoveToUtxoEventMapper {
       blockIndex: apiEvent.blockIndex,
       blockTime: apiEvent.blockTime,
       params: VerboseMoveToUtxoParamsMapper.toDomain(apiEvent.params),
+    );
+  }
+}
+
+class VerboseAtomicSwapEventMapper {
+  static AtomicSwapEvent toDomain(
+      api.VerboseMoveToUtxoEvent apiEvent, String bitcoinSwapAmount) {
+    return AtomicSwapEvent(
+      state: StateMapper.getVerbose(apiEvent),
+      eventIndex: apiEvent.eventIndex,
+      event: apiEvent.event,
+      txHash: apiEvent.txHash,
+      blockIndex: apiEvent.blockIndex,
+      blockTime: apiEvent.blockTime,
+      params:
+          AtomicSwapParamsMapper.toDomain(apiEvent.params, bitcoinSwapAmount),
     );
   }
 }
@@ -894,7 +945,7 @@ class EventsRepositoryImpl implements EventsRepository {
         await Future.wait(response.result!.map((event) async {
       return await VerboseEventMapper(
               transactionInfoUseCase: transactionInfoUseCase)
-          .toDomain(event);
+          .toDomain(event, address);
     }).toList());
 
     events.addAll(events_);
@@ -986,7 +1037,7 @@ class EventsRepositoryImpl implements EventsRepository {
         await Future.wait(response.result!.map((event) async {
       return await VerboseEventMapper(
               transactionInfoUseCase: transactionInfoUseCase)
-          .toDomain(event);
+          .toDomain(event, address);
     }).toList());
 
     return (events, nextCursor, response.resultCount);
@@ -1019,4 +1070,16 @@ class EventsRepositoryImpl implements EventsRepository {
 
     return allEvents;
   }
+}
+
+bool _isAtomicSwap(TransactionInfoMempool transactionInfo) {
+  // if a move has multiple inputs, then we can assume it is a swap
+  // this will cover most cases, except those were an address swaps with itself
+  // opting for simiplicity now, and we can improve later if needed
+  return transactionInfo.inputs
+          .map((input) => input.address)
+          .where((address) => address != null)
+          .toSet()
+          .length >
+      1;
 }

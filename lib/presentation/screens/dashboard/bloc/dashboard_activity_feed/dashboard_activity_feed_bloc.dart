@@ -553,7 +553,7 @@ class DashboardActivityFeedBloc
                 : null,
             transactions: transactions));
 
-        // final filteredTransactions = transactions.where((tx) => tx.hash == '1ecd07d026c889b56e9de2ecfa1cd8657158d88d91f15cf6a2c9e73d76b53f57').toList();
+        // final filteredTransactions = transactions.where((tx) => tx.hash == '').toList();
 
         // emit(DashboardActivityFeedStateCompleteOk(
         //     nextCursor: null,

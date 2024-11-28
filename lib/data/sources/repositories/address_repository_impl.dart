@@ -59,9 +59,9 @@ class AddressRepositoryImpl implements AddressRepository {
         .toList();
 
     entityAddresses.sort(addressSortComparator);
-
     return entityAddresses;
-    // return [entity.Address(accountUuid: "1", address: "bc1qgpnlp5y63l36hwgza64kltjj5nc3qdpr4p25ru", index: 1, encryptedPrivateKey: "1")];
+
+    // return [entity.Address(accountUuid: "1", address: "", index: 1, encryptedPrivateKey: "1")];
   }
 
   @override
