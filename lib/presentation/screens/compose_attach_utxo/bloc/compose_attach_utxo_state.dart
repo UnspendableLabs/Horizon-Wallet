@@ -15,6 +15,9 @@ class ComposeAttachUtxoState with _$ComposeAttachUtxoState, ComposeStateBase {
     required BalancesState balancesState,
     required FeeOption feeOption,
     required SubmitState submitState,
+
+    // Additional properties
+    required String xcpFeeEstimate,
   }) = _ComposeAttachUtxoState;
 
   factory ComposeAttachUtxoState.initial() => ComposeAttachUtxoState(
@@ -22,5 +25,6 @@ class ComposeAttachUtxoState with _$ComposeAttachUtxoState, ComposeStateBase {
         balancesState: const BalancesState.initial(),
         feeOption: Medium(),
         submitState: const SubmitInitial(),
+        xcpFeeEstimate: '',
       );
 }

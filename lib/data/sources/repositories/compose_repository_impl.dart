@@ -493,6 +493,12 @@ class ComposeRepositoryImpl extends ComposeRepository {
   }
 
   @override
+  Future<int> estimateComposeAttachXcpFees() async {
+    final response = await api.estimateAttachXcpFees();
+    return response.result!;
+  }
+
+  @override
   Future<compose_attach_utxo.ComposeAttachUtxoResponse> composeAttachUtxo(
       int fee,
       List<Utxo> inputsSet,

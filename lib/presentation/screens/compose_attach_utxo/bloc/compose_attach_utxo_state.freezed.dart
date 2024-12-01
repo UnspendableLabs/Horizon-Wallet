@@ -20,7 +20,9 @@ mixin _$ComposeAttachUtxoState {
   FeeState get feeState => throw _privateConstructorUsedError;
   BalancesState get balancesState => throw _privateConstructorUsedError;
   FeeOption get feeOption => throw _privateConstructorUsedError;
-  SubmitState get submitState => throw _privateConstructorUsedError;
+  SubmitState get submitState =>
+      throw _privateConstructorUsedError; // Additional properties
+  String get xcpFeeEstimate => throw _privateConstructorUsedError;
 
   @JsonKey(ignore: true)
   $ComposeAttachUtxoStateCopyWith<ComposeAttachUtxoState> get copyWith =>
@@ -37,7 +39,8 @@ abstract class $ComposeAttachUtxoStateCopyWith<$Res> {
       {FeeState feeState,
       BalancesState balancesState,
       FeeOption feeOption,
-      SubmitState submitState});
+      SubmitState submitState,
+      String xcpFeeEstimate});
 
   $FeeStateCopyWith<$Res> get feeState;
   $BalancesStateCopyWith<$Res> get balancesState;
@@ -61,6 +64,7 @@ class _$ComposeAttachUtxoStateCopyWithImpl<$Res,
     Object? balancesState = null,
     Object? feeOption = null,
     Object? submitState = null,
+    Object? xcpFeeEstimate = null,
   }) {
     return _then(_value.copyWith(
       feeState: null == feeState
@@ -79,6 +83,10 @@ class _$ComposeAttachUtxoStateCopyWithImpl<$Res,
           ? _value.submitState
           : submitState // ignore: cast_nullable_to_non_nullable
               as SubmitState,
+      xcpFeeEstimate: null == xcpFeeEstimate
+          ? _value.xcpFeeEstimate
+          : xcpFeeEstimate // ignore: cast_nullable_to_non_nullable
+              as String,
     ) as $Val);
   }
 
@@ -112,7 +120,8 @@ abstract class _$$ComposeAttachUtxoStateImplCopyWith<$Res>
       {FeeState feeState,
       BalancesState balancesState,
       FeeOption feeOption,
-      SubmitState submitState});
+      SubmitState submitState,
+      String xcpFeeEstimate});
 
   @override
   $FeeStateCopyWith<$Res> get feeState;
@@ -137,6 +146,7 @@ class __$$ComposeAttachUtxoStateImplCopyWithImpl<$Res>
     Object? balancesState = null,
     Object? feeOption = null,
     Object? submitState = null,
+    Object? xcpFeeEstimate = null,
   }) {
     return _then(_$ComposeAttachUtxoStateImpl(
       feeState: null == feeState
@@ -155,6 +165,10 @@ class __$$ComposeAttachUtxoStateImplCopyWithImpl<$Res>
           ? _value.submitState
           : submitState // ignore: cast_nullable_to_non_nullable
               as SubmitState,
+      xcpFeeEstimate: null == xcpFeeEstimate
+          ? _value.xcpFeeEstimate
+          : xcpFeeEstimate // ignore: cast_nullable_to_non_nullable
+              as String,
     ));
   }
 }
@@ -166,7 +180,8 @@ class _$ComposeAttachUtxoStateImpl extends _ComposeAttachUtxoState {
       {required this.feeState,
       required this.balancesState,
       required this.feeOption,
-      required this.submitState})
+      required this.submitState,
+      required this.xcpFeeEstimate})
       : super._();
 
 // Inherited properties
@@ -178,10 +193,13 @@ class _$ComposeAttachUtxoStateImpl extends _ComposeAttachUtxoState {
   final FeeOption feeOption;
   @override
   final SubmitState submitState;
+// Additional properties
+  @override
+  final String xcpFeeEstimate;
 
   @override
   String toString() {
-    return 'ComposeAttachUtxoState(feeState: $feeState, balancesState: $balancesState, feeOption: $feeOption, submitState: $submitState)';
+    return 'ComposeAttachUtxoState(feeState: $feeState, balancesState: $balancesState, feeOption: $feeOption, submitState: $submitState, xcpFeeEstimate: $xcpFeeEstimate)';
   }
 
   @override
@@ -196,12 +214,14 @@ class _$ComposeAttachUtxoStateImpl extends _ComposeAttachUtxoState {
             (identical(other.feeOption, feeOption) ||
                 other.feeOption == feeOption) &&
             (identical(other.submitState, submitState) ||
-                other.submitState == submitState));
+                other.submitState == submitState) &&
+            (identical(other.xcpFeeEstimate, xcpFeeEstimate) ||
+                other.xcpFeeEstimate == xcpFeeEstimate));
   }
 
   @override
-  int get hashCode =>
-      Object.hash(runtimeType, feeState, balancesState, feeOption, submitState);
+  int get hashCode => Object.hash(runtimeType, feeState, balancesState,
+      feeOption, submitState, xcpFeeEstimate);
 
   @JsonKey(ignore: true)
   @override
@@ -216,7 +236,8 @@ abstract class _ComposeAttachUtxoState extends ComposeAttachUtxoState {
       {required final FeeState feeState,
       required final BalancesState balancesState,
       required final FeeOption feeOption,
-      required final SubmitState submitState}) = _$ComposeAttachUtxoStateImpl;
+      required final SubmitState submitState,
+      required final String xcpFeeEstimate}) = _$ComposeAttachUtxoStateImpl;
   const _ComposeAttachUtxoState._() : super._();
 
   @override // Inherited properties
@@ -227,6 +248,8 @@ abstract class _ComposeAttachUtxoState extends ComposeAttachUtxoState {
   FeeOption get feeOption;
   @override
   SubmitState get submitState;
+  @override // Additional properties
+  String get xcpFeeEstimate;
   @override
   @JsonKey(ignore: true)
   _$$ComposeAttachUtxoStateImplCopyWith<_$ComposeAttachUtxoStateImpl>
