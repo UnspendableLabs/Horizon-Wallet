@@ -552,16 +552,6 @@ class DashboardActivityFeedBloc
                 ? counterpartyEvents[0].txHash
                 : null,
             transactions: transactions));
-
-        // final filteredTransactions = transactions.where((tx) => tx.hash == '').toList();
-
-        // emit(DashboardActivityFeedStateCompleteOk(
-        //     nextCursor: null,
-        //     newTransactionCount: 0,
-        //     mostRecentBitcoinTxHash:
-        //         null,
-        //     mostRecentCounterpartyEventHash:  null,
-        //     transactions: filteredTransactions));
       }
     } catch (e) {
       rethrow;

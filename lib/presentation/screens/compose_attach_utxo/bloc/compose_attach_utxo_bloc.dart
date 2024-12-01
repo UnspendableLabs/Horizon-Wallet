@@ -69,11 +69,14 @@ class ComposeAttachUtxoBloc extends ComposeBaseBloc<ComposeAttachUtxoState> {
           await fetchComposeAttachUtxoFormDataUseCase
               .call(event.currentAddress!);
 
+      // there is an xcp fee associated with attaching utxos
+      // we need to check that the user has enough xcp to pay for the fee
       final xcpBalance =
           balances.firstWhereOrNull((balance) => balance.asset == 'XCP');
       final String xcpFeeEstimateString = xcpFeeEstimate > 0
           ? (xcpFeeEstimate / 100000000).toStringAsFixed(8)
           : '0';
+
       if (xcpBalance == null && xcpFeeEstimate > 0) {
         emit(state.copyWith(
           balancesState: BalancesState.error(

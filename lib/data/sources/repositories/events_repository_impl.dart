@@ -23,7 +23,7 @@ class VerboseEventMapper {
   VerboseEventMapper({required this.transactionInfoUseCase});
 
   Future<VerboseEvent> toDomain(
-      api.VerboseEvent apiEvent, String address) async {
+      api.VerboseEvent apiEvent, String currentAddress) async {
     switch (apiEvent.event) {
       case 'ENHANCED_SEND':
         return VerboseEnhancedSendEventMapper.toDomain(
@@ -86,27 +86,35 @@ class VerboseEventMapper {
         return VerboseDetachFromUtxoEventMapper.toDomain(
             apiEvent as api.VerboseDetachFromUtxoEvent);
       case "UTXO_MOVE":
+        // Both moves and swaps are captured by the UTXO_MOVE event
+        // they can be distinguished by the input/output details of the transaction
         if (apiEvent.txHash == null) {
           return VerboseMoveToUtxoEventMapper.toDomain(
               apiEvent as api.VerboseMoveToUtxoEvent);
         }
         final transactionInfo =
             await transactionInfoUseCase.call(apiEvent.txHash!);
+
+        // atomic swaps will have at least 2 different input sources
         final isAtomicSwap = _isAtomicSwap(transactionInfo);
+
+        // the btc that was swapped for the asset is held in the vout of the _other_ holder's address
+        // the output with value 546 and 547 are the values for attaching utxos, so we exclude them
         if (isAtomicSwap) {
           final bitcoinSwapOutputs = transactionInfo.outputs
               .where((output) =>
-                  address != output.address &&
+                  currentAddress != output.address &&
                   output.value != 546 &&
                   output.value != 547)
               .toList();
           if (bitcoinSwapOutputs.length > 1) {
-            throw Exception("Atomic swddrep must have only one bitcoin output");
+            throw Exception("Atomic swap must have only one bitcoin output");
           }
           final bitcoinSwapOutput = bitcoinSwapOutputs.first;
           final bitcoinSwapAmount =
               satoshisToBtc(bitcoinSwapOutput.value).toStringAsFixed(8);
 
+          // construct the swap from the move event
           return VerboseAtomicSwapEventMapper.toDomain(
               apiEvent as api.VerboseMoveToUtxoEvent, bitcoinSwapAmount);
         }

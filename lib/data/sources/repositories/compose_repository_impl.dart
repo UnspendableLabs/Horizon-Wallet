@@ -495,6 +495,9 @@ class ComposeRepositoryImpl extends ComposeRepository {
   @override
   Future<int> estimateComposeAttachXcpFees() async {
     final response = await api.estimateAttachXcpFees();
+    if (response.result == null) {
+      throw Exception('Failed to estimate compose attach xcp fees');
+    }
     return response.result!;
   }
 
