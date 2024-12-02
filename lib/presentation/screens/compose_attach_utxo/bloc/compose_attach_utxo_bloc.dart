@@ -77,16 +77,24 @@ class ComposeAttachUtxoBloc extends ComposeBaseBloc<ComposeAttachUtxoState> {
           ? (xcpFeeEstimate / 100000000).toStringAsFixed(8)
           : '0';
 
-      if (xcpBalance == null && xcpFeeEstimate > 0) {
-        emit(state.copyWith(
-          balancesState: BalancesState.error(
-              'Insufficient XCP balance for attach. Required: $xcpFeeEstimateString. Current XCP balance: 0'),
-          xcpFeeEstimate: xcpFeeEstimateString,
-        ));
-        return;
+      if (xcpBalance == null) {
+        if (xcpFeeEstimate > 0) {
+          emit(state.copyWith(
+            balancesState: BalancesState.error(
+                'Insufficient XCP balance for attach. Required: $xcpFeeEstimateString. Current XCP balance: 0'),
+            xcpFeeEstimate: xcpFeeEstimateString,
+          ));
+          return;
+        } else {
+          emit(state.copyWith(
+            balancesState: BalancesState.success(balances),
+            feeState: FeeState.success(feeEstimates),
+            xcpFeeEstimate: xcpFeeEstimateString,
+          ));
+          return;
+        }
       }
-      if (xcpBalance?.quantityNormalized != null &&
-          xcpBalance!.quantity < xcpFeeEstimate) {
+      if (xcpBalance.quantity < xcpFeeEstimate) {
         emit(state.copyWith(
           balancesState: BalancesState.error(
               'Insufficient XCP balance for attach. Required: $xcpFeeEstimateString. Current XCP balance: ${xcpBalance.quantityNormalized}'),

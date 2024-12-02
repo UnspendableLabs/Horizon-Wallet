@@ -10,7 +10,6 @@ import 'package:dio_smart_retry/dio_smart_retry.dart';
 import 'package:horizon/data/services/imported_address_service_impl.dart';
 import 'package:chrome_extension/tabs.dart';
 import "package:horizon/data/sources/repositories/address_repository_impl.dart";
-import 'package:horizon/data/sources/repositories/transaction_info_repository_mempool_space_impl.dart';
 import "package:horizon/domain/repositories/address_repository.dart";
 import 'package:horizon/data/sources/local/db_manager.dart';
 

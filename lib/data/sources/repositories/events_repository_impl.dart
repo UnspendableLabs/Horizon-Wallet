@@ -86,49 +86,8 @@ class VerboseEventMapper {
         return VerboseDetachFromUtxoEventMapper.toDomain(
             apiEvent as api.VerboseDetachFromUtxoEvent);
       case "UTXO_MOVE":
-        // Both moves and swaps are captured by the UTXO_MOVE event
-        // they can be distinguished by the input/output details of the transaction
-        if (apiEvent.txHash == null) {
-          return VerboseMoveToUtxoEventMapper.toDomain(
-              apiEvent as api.VerboseMoveToUtxoEvent);
-        }
-        // final transactionInfo =
-        //     await transactionInfoUseCase.call(apiEvent.txHash!);
-
-        final BitcoinTx transactionInfo =
-            await bitcoinRepository.getTransaction(apiEvent.txHash!).then(
-                  (either) => either.fold(
-                    (error) => throw Exception("GetTransactionInfo failure"),
-                    (transactionInfo) => transactionInfo,
-                  ),
-                ); {}
-
-        // atomic swaps will have at least 2 different input sources
-        final isAtomicSwap = _isAtomicSwap(transactionInfo);
-
-        // the btc that was swapped for the asset is held in the vout of the _other_ holder's address
-        // the output with value 546 and 547 are the values for attaching utxos, so we exclude them
-        if (isAtomicSwap) {
-          final bitcoinSwapOutputs = transactionInfo.vout
-              .where((output) =>
-                  currentAddress != output.scriptpubkeyAddress &&
-                  output.value != 546 &&
-                  output.value != 547)
-              .toList();
-          if (bitcoinSwapOutputs.length > 1) {
-            throw Exception("Atomic swap must have only one bitcoin output");
-          }
-          final bitcoinSwapOutput = bitcoinSwapOutputs.first;
-          final bitcoinSwapAmount =
-              satoshisToBtc(bitcoinSwapOutput.value).toStringAsFixed(8);
-
-          // construct the swap from the move event
-          return VerboseAtomicSwapEventMapper.toDomain(
-              apiEvent as api.VerboseMoveToUtxoEvent, bitcoinSwapAmount);
-        }
-
-        return VerboseMoveToUtxoEventMapper.toDomain(
-            apiEvent as api.VerboseMoveToUtxoEvent);
+        return parseSwapFromMoveToUtxo(
+            apiEvent as api.VerboseMoveToUtxoEvent, currentAddress);
 
       // case 'NEW_TRANSACTION':
       //   return VerboseNewTransactionEventMapper.toDomain(
@@ -144,6 +103,60 @@ class VerboseEventMapper {
           blockTime: apiEvent.blockTime,
         );
     }
+  }
+
+  bool _isAtomicSwap(BitcoinTx transactionInfo) {
+    // if a move has multiple inputs, then we can assume it is a swap
+    // this will cover most cases, except those were an address swaps with itself
+    // opting for simiplicity now, and we can improve later if needed
+    return transactionInfo.vin
+            .map((input) => input.prevout?.scriptpubkeyAddress)
+            .where((address) => address != null)
+            .toSet()
+            .length >
+        1;
+  }
+
+  Future<VerboseEvent> parseSwapFromMoveToUtxo(
+      api.VerboseMoveToUtxoEvent apiEvent, String currentAddress) async {
+    // Both moves and swaps are captured by the UTXO_MOVE event
+    // they can be distinguished by the input/output details of the transaction
+    if (apiEvent.txHash == null) {
+      return VerboseMoveToUtxoEventMapper.toDomain(apiEvent);
+    }
+
+    final BitcoinTx transactionInfo =
+        await bitcoinRepository.getTransaction(apiEvent.txHash!).then(
+              (either) => either.fold(
+                (error) => throw Exception("GetTransactionInfo failure"),
+                (transactionInfo) => transactionInfo,
+              ),
+            );
+
+    // atomic swaps will have at least 2 different input sources
+    final isAtomicSwap = _isAtomicSwap(transactionInfo);
+
+    // the btc that was swapped for the asset is held in the vout of the _other_ holder's address
+    // the output with value 546 and 547 are the values for attaching utxos, so we exclude them
+    if (isAtomicSwap) {
+      final bitcoinSwapOutputs = transactionInfo.vout.where((output) {
+        return currentAddress != output.scriptpubkeyAddress &&
+            output.value != 546 &&
+            output.value != 547;
+      }).toList();
+      if (bitcoinSwapOutputs.length != 1) {
+        // if there is not exactly one bitcoin output to the other address, then it does not qualify as a swap
+        return VerboseMoveToUtxoEventMapper.toDomain(apiEvent);
+      }
+      final bitcoinSwapOutput = bitcoinSwapOutputs.first;
+      final bitcoinSwapAmount =
+          satoshisToBtc(bitcoinSwapOutput.value).toStringAsFixed(8);
+
+      // construct the swap from the move event
+      return VerboseAtomicSwapEventMapper.toDomain(apiEvent, bitcoinSwapAmount);
+    }
+
+    return VerboseMoveToUtxoEventMapper.toDomain(apiEvent);
   }
 }
 
@@ -1084,16 +1097,4 @@ class EventsRepositoryImpl implements EventsRepository {
 
     return allEvents;
   }
-}
-
-bool _isAtomicSwap(BitcoinTx transactionInfo) {
-  // if a move has multiple inputs, then we can assume it is a swap
-  // this will cover most cases, except those were an address swaps with itself
-  // opting for simiplicity now, and we can improve later if needed
-  return transactionInfo.vin
-          .map((input) => input.prevout?.scriptpubkeyAddress)
-          .where((address) => address != null)
-          .toSet()
-          .length >
-      1;
 }
