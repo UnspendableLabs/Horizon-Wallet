@@ -1,5 +1,5 @@
 import 'package:formz/formz.dart';
-import 'package:horizon/domain/entities/address.dart';
+import 'package:horizon/domain/entities/address_rpc.dart';
 import 'package:horizon/domain/entities/imported_address.dart';
 
 enum AddressSelectionMode { byAccount, importedAddresses }
@@ -29,17 +29,32 @@ class ImportedAddressInput
   }
 }
 
+
+enum PasswordValidationError { empty }
+
+class PasswordInput extends FormzInput<String, PasswordValidationError> {
+  const PasswordInput.pure() : super.pure('');
+  const PasswordInput.dirty([super.value = '']) : super.dirty();
+
+  @override
+  PasswordValidationError? validator(String value) {
+    return value.isNotEmpty ? null : PasswordValidationError.empty;
+  }
+}
+
 class GetAddressesState with FormzMixin {
+  final PasswordInput password;
   final AccountInput account;
   final ImportedAddressInput importedAddress; // New field
   final FormzSubmissionStatus submissionStatus;
-  final List<Address>? addresses;
+  final List<AddressRpc>? addresses;
   final String? error;
   final AddressSelectionMode addressSelectionMode;
   final List<ImportedAddress>?
       importedAddresses; // Holds imported addresses for dropdown
 
   GetAddressesState({
+    this.password = const PasswordInput.pure(),
     this.account = const AccountInput.pure(),
     this.importedAddress =
         const ImportedAddressInput.pure(), // Initialize as pure
@@ -51,18 +66,21 @@ class GetAddressesState with FormzMixin {
   });
 
   @override
-  List<FormzInput> get inputs => [account];
+  List<FormzInput> get inputs => [password, account];
 
   GetAddressesState copyWith({
+    
+  PasswordInput? password,
     AccountInput? account,
     ImportedAddressInput? importedAddress,
     FormzSubmissionStatus? submissionStatus,
-    List<Address>? addresses,
+    List<AddressRpc>? addresses,
     String? error,
     AddressSelectionMode? addressSelectionMode,
     List<ImportedAddress>? importedAddresses,
   }) {
     return GetAddressesState(
+      password: password ?? this.password,
       account: account ?? this.account,
       importedAddress: importedAddress ?? this.importedAddress,
       submissionStatus: submissionStatus ?? this.submissionStatus,

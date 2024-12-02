@@ -50,6 +50,7 @@ import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
 import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
 
+import 'package:horizon/domain/services/public_key_service.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:sliver_tools/sliver_tools.dart';
 import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
@@ -131,9 +132,21 @@ class GetAddressesModal extends StatelessWidget {
   final AddressRepository addressRepository;
   final ImportedAddressRepository importedAddressRepository;
   final RPCGetAddressesSuccessCallback onSuccess;
+  final AddressService addressService;
+  final ImportedAddressService importedAddressService;
+  final WalletRepository walletRepository;
+  final EncryptionService encryptionService;
+  final PublicKeyService publicKeyService;
+  final AccountRepository accountRepository;
 
   const GetAddressesModal(
       {super.key,
+      required this.accountRepository,
+      required this.publicKeyService,
+      required this.encryptionService,
+      required this.addressService,
+      required this.importedAddressService,
+      required this.walletRepository,
       required this.tabId,
       required this.requestId,
       required this.accounts,
@@ -145,6 +158,12 @@ class GetAddressesModal extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (_) => GetAddressesBloc(
+        accountRepository: accountRepository,
+        publicKeyService: publicKeyService,
+        encryptionService: encryptionService,
+        walletRepository: walletRepository,
+        importedAddressService: importedAddressService,
+        addressService: addressService,
         accounts: accounts,
         addressRepository: addressRepository,
         importedAddressRepository: importedAddressRepository,
@@ -1372,6 +1391,12 @@ class DashboardPageState extends State<DashboardPage> {
                       requestId: requestId,
                       accounts: state.accounts,
                       addressRepository: GetIt.I<AddressRepository>(),
+                      accountRepository: GetIt.I<AccountRepository>(),
+                      publicKeyService: GetIt.I<PublicKeyService>(),
+                      encryptionService: GetIt.I<EncryptionService>(),
+                      addressService: GetIt.I<AddressService>(),
+                      importedAddressService: GetIt.I<ImportedAddressService>(),
+                      walletRepository: GetIt.I<WalletRepository>(),
                       importedAddressRepository:
                           GetIt.I<ImportedAddressRepository>(),
                       onSuccess: GetIt.I<RPCGetAddressesSuccessCallback>());

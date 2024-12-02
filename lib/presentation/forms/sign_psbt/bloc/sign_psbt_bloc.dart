@@ -50,9 +50,6 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
 
     emit(state.copyWith(
       password: password,
-      submissionStatus: Formz.validate([password])
-          ? FormzSubmissionStatus.initial
-          : FormzSubmissionStatus.failure,
     ));
   }
 

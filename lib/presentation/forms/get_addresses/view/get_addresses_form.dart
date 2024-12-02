@@ -6,10 +6,11 @@ import 'package:horizon/presentation/forms/get_addresses/bloc/get_addresses_stat
 import 'package:horizon/presentation/forms/get_addresses/bloc/get_addresses_event.dart';
 import 'package:horizon/domain/entities/account.dart';
 import 'package:horizon/domain/entities/address.dart';
+import 'package:horizon/domain/entities/address_rpc.dart';
 
 class GetAddressesForm extends StatelessWidget {
   final List<Account> accounts;
-  final void Function(List<Address>) onSuccess;
+  final void Function(List<AddressRpc>) onSuccess;
 
   const GetAddressesForm({
     super.key,
@@ -110,6 +111,19 @@ class GetAddressesForm extends StatelessWidget {
                 ],
 
                 const SizedBox(height: 20),
+                TextField(
+                  onChanged: (password) => context
+                      .read<GetAddressesBloc>()
+                      .add(PasswordChanged(password)),
+                  decoration: InputDecoration(
+                    labelText: 'Password',
+                    errorText: state.password.displayError == null
+                        ? null
+                        : 'Password cannot be empty',
+                  ),
+                  obscureText: true,
+                ),
+                const SizedBox(height: 20), // Submit Button
 
                 ElevatedButton(
                   onPressed: state.submissionStatus.isInProgressOrSuccess
@@ -125,8 +139,16 @@ class GetAddressesForm extends StatelessWidget {
                 if (state.submissionStatus.isFailure) ...[
                   const SizedBox(height: 20),
                   Text(
-                    state.error!,
+                    state.error ?? 'An error occurred',
                     style: const TextStyle(color: Colors.red),
+                  ),
+                ],
+
+                if (state.submissionStatus.isSuccess) ...[
+                  const SizedBox(height: 20),
+                  const Text(
+                    'Success!',
+                    style: TextStyle(color: Colors.green),
                   ),
                 ],
               ],

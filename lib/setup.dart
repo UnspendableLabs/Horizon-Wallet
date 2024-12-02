@@ -48,6 +48,9 @@ import 'package:horizon/domain/services/mnemonic_service.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
 import 'package:horizon/domain/services/wallet_service.dart';
 
+import 'package:horizon/domain/services/public_key_service.dart';
+import 'package:horizon/data/services/public_key_service_impl.dart';
+
 import 'package:horizon/domain/repositories/version_repository.dart';
 import 'package:horizon/data/sources/repositories/version_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/version_repository_extension_impl.dart';
@@ -113,10 +116,13 @@ import 'package:logger/logger.dart' as logger;
 import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/data/logging/logger_impl.dart';
 import 'package:horizon/domain/entities/extension_rpc.dart';
+import 'package:horizon/domain/entities/address_rpc.dart';
 import 'dart:convert';
 
 // will need to move this import elsewhere for compile to native
 import 'dart:html' as html;
+
+import 'package:pointycastle/export.dart';
 
 Future<void> setup() async {
   GetIt injector = GetIt.I;
@@ -167,7 +173,7 @@ Future<void> setup() async {
     ConnectionErrorInterceptor(),
     BadResponseInterceptor(),
     BadCertificateInterceptor(),
-    SimpleLogInterceptor(),
+    // SimpleLogInterceptor(),
     RetryInterceptor(
       dio: dio, retries: 3,
       retryableExtraStatuses: {400}, // to handle backend bug with compose
@@ -193,7 +199,7 @@ Future<void> setup() async {
     ConnectionErrorInterceptor(),
     BadResponseInterceptor(),
     BadCertificateInterceptor(),
-    SimpleLogInterceptor(),
+    // SimpleLogInterceptor(),
     RetryInterceptor(
       dio: dio,
       retries: 4,
@@ -456,10 +462,11 @@ Future<void> setup() async {
                   "addresses": args.addresses.map((address) {
                     return {
                       "address": address.address,
-                      "type": address.address.startsWith("bc") ||
-                              address.address.startsWith("tb")
-                          ? "p2wpkh"
-                          : "p2pkh",
+                      "type": switch (address.type) {
+                        AddressRpcType.p2wpkh => "p2wpkh",
+                        AddressRpcType.p2pkh => "p2pkh"
+                      },
+                      "publicKey": address.publicKey,
                     };
                   }).toList(),
                 },
@@ -472,7 +479,7 @@ Future<void> setup() async {
                RPCGetAddressesSuccessCallback called with:
                   tabId: ${args.tabId}
                   requestId: ${args.requestId}
-                  addresses: ${args.addresses}
+                  addresses: ${args.addresses[0].publicKey}
           """));
 
   injector.registerLazySingleton<RPCSignPsbtSuccessCallback>(
@@ -497,6 +504,9 @@ Future<void> setup() async {
       ? VersionRepositoryExtensionImpl(
           config: config, logger: GetIt.I<Logger>())
       : VersionRepositoryImpl(config: config));
+
+  injector.registerSingleton<PublicKeyService>(
+      PublicKeyServiceImpl(config: config));
 }
 
 class CustomDioException extends DioException {

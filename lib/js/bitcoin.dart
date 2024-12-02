@@ -53,6 +53,9 @@ extension type Psbt._(JSObject _) implements JSObject {
   external void finalizeAllInputs();
 
   external Transaction extractTransaction();
+
+  external bool validateSignaturesOfInput(JSNumber inputIndex);
+
 }
 
 extension type Payment._(JSObject _) implements JSObject {
