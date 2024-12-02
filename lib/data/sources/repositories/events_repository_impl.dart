@@ -1,13 +1,13 @@
 import 'package:horizon/common/format.dart';
 import 'package:horizon/data/models/cursor.dart' as cursor_model;
+import 'package:horizon/domain/entities/bitcoin_tx.dart';
 import 'package:horizon/domain/entities/cursor.dart' as cursor_entity;
 import 'package:horizon/data/sources/network/api/v2_api.dart' as api;
 import 'package:horizon/domain/entities/cursor.dart';
 import 'package:horizon/domain/entities/event.dart';
 import 'package:horizon/data/models/event.dart';
-import 'package:horizon/domain/entities/transaction_info_mempool.dart';
+import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 import 'package:horizon/domain/repositories/events_repository.dart';
-import 'package:horizon/presentation/common/usecase/get_transaction_info_usecase.dart';
 
 class StateMapper {
   static EventState getVerbose(api.VerboseEvent apiEvent) {
@@ -19,8 +19,8 @@ class StateMapper {
 }
 
 class VerboseEventMapper {
-  final GetTransactionInfoUseCase transactionInfoUseCase;
-  VerboseEventMapper({required this.transactionInfoUseCase});
+  final BitcoinRepository bitcoinRepository;
+  VerboseEventMapper({required this.bitcoinRepository});
 
   Future<VerboseEvent> toDomain(
       api.VerboseEvent apiEvent, String currentAddress) async {
@@ -92,8 +92,16 @@ class VerboseEventMapper {
           return VerboseMoveToUtxoEventMapper.toDomain(
               apiEvent as api.VerboseMoveToUtxoEvent);
         }
-        final transactionInfo =
-            await transactionInfoUseCase.call(apiEvent.txHash!);
+        // final transactionInfo =
+        //     await transactionInfoUseCase.call(apiEvent.txHash!);
+
+        final BitcoinTx transactionInfo =
+            await bitcoinRepository.getTransaction(apiEvent.txHash!).then(
+                  (either) => either.fold(
+                    (error) => throw Exception("GetTransactionInfo failure"),
+                    (transactionInfo) => transactionInfo,
+                  ),
+                ); {}
 
         // atomic swaps will have at least 2 different input sources
         final isAtomicSwap = _isAtomicSwap(transactionInfo);
@@ -101,9 +109,9 @@ class VerboseEventMapper {
         // the btc that was swapped for the asset is held in the vout of the _other_ holder's address
         // the output with value 546 and 547 are the values for attaching utxos, so we exclude them
         if (isAtomicSwap) {
-          final bitcoinSwapOutputs = transactionInfo.outputs
+          final bitcoinSwapOutputs = transactionInfo.vout
               .where((output) =>
-                  currentAddress != output.address &&
+                  currentAddress != output.scriptpubkeyAddress &&
                   output.value != 546 &&
                   output.value != 547)
               .toList();
@@ -914,10 +922,10 @@ class VerboseAtomicSwapEventMapper {
 
 class EventsRepositoryImpl implements EventsRepository {
   final api.V2Api api_;
-  final GetTransactionInfoUseCase transactionInfoUseCase;
+  final BitcoinRepository bitcoinRepository;
   EventsRepositoryImpl({
     required this.api_,
-    required this.transactionInfoUseCase,
+    required this.bitcoinRepository,
   });
 
   @override
@@ -951,8 +959,7 @@ class EventsRepositoryImpl implements EventsRepository {
 
     List<VerboseEvent> events_ =
         await Future.wait(response.result!.map((event) async {
-      return await VerboseEventMapper(
-              transactionInfoUseCase: transactionInfoUseCase)
+      return await VerboseEventMapper(bitcoinRepository: bitcoinRepository)
           .toDomain(event, address);
     }).toList());
 
@@ -1043,8 +1050,7 @@ class EventsRepositoryImpl implements EventsRepository {
         cursor_model.CursorMapper.toDomain(response.nextCursor);
     List<VerboseEvent> events =
         await Future.wait(response.result!.map((event) async {
-      return await VerboseEventMapper(
-              transactionInfoUseCase: transactionInfoUseCase)
+      return await VerboseEventMapper(bitcoinRepository: bitcoinRepository)
           .toDomain(event, address);
     }).toList());
 
@@ -1080,12 +1086,12 @@ class EventsRepositoryImpl implements EventsRepository {
   }
 }
 
-bool _isAtomicSwap(TransactionInfoMempool transactionInfo) {
+bool _isAtomicSwap(BitcoinTx transactionInfo) {
   // if a move has multiple inputs, then we can assume it is a swap
   // this will cover most cases, except those were an address swaps with itself
   // opting for simiplicity now, and we can improve later if needed
-  return transactionInfo.inputs
-          .map((input) => input.address)
+  return transactionInfo.vin
+          .map((input) => input.prevout?.scriptpubkeyAddress)
           .where((address) => address != null)
           .toSet()
           .length >
