@@ -229,6 +229,11 @@ class ComposeDispenserOnNewAddressBloc extends Bloc<
         importFormat: sourceAccount.importFormat,
       );
 
+      final sendExtraBtcToDispenser = event.sendExtraBtcToDispenser;
+      final totalAdjustedVirtualSize = ADJUSTED_VIRTUAL_SIZE +
+          (sendExtraBtcToDispenser ? ADJUSTED_VIRTUAL_SIZE : 0);
+
+      print('totalAdjustedVirtualSize: $totalAdjustedVirtualSize');
       try {
         final source = event
             .originalAddress; // the current address which has the btc + asset to be dispensed
@@ -240,8 +245,7 @@ class ComposeDispenserOnNewAddressBloc extends Bloc<
             .escrowQuantity; // the total asset quantity to be sent to the new address for the dispenser
         final mainchainrate = event.mainchainrate;
 
-        final feeToCoverDispenser = event.feeRate *
-            ADJUSTED_VIRTUAL_SIZE; // estimated fee to cover the dispenser
+        final feeToCoverDispenser = event.feeRate * totalAdjustedVirtualSize;
 
         // 2. compose the asset send
         final assetSend = await composeTransactionUseCase
@@ -313,6 +317,10 @@ class ComposeDispenserOnNewAddressBloc extends Bloc<
                     btcQuantity: feeToCoverDispenser,
                     feeRate: event.feeRate)));
       } on SignTransactionException catch (e) {
+        emit(state.copyWith(
+            composeDispenserOnNewAddressState:
+                ComposeDispenserOnNewAddressState.error(e.message)));
+      } on TransactionServiceException catch (e) {
         emit(state.copyWith(
             composeDispenserOnNewAddressState:
                 ComposeDispenserOnNewAddressState.error(e.message)));

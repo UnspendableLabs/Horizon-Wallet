@@ -24,7 +24,7 @@ DispenserModel _$DispenserModelFromJson(Map<String, dynamic> json) =>
       origin: json['origin'] as String,
       dispenseCount: (json['dispense_count'] as num).toInt(),
       lastStatusTxSource: json['last_status_tx_source'] as String?,
-      confirmed: json['confirmed'] as bool,
+      confirmed: json['confirmed'] as bool?,
       blockTime: (json['block_time'] as num?)?.toInt(),
       giveQuantityNormalized: json['give_quantity_normalized'] as String,
       giveRemainingNormalized: json['give_remaining_normalized'] as String,

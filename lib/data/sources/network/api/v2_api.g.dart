@@ -3148,26 +3148,15 @@ Map<String, dynamic> _$IssuanceInfoToJson(IssuanceInfo instance) =>
       'unpacked_data': instance.unpackedData,
     };
 
-InfoVerbose _$InfoVerboseFromJson(Map<String, dynamic> json) {
-  final info = InfoVerbose(
-    source: json['source'] as String,
-    destination: json['destination'] as String?,
-    btcAmount: (json['btc_amount'] as num?)?.toInt(),
-    fee: (json['fee'] as num?)?.toInt(),
-    data: json['data'] as String,
-    decodedTx: json['decoded_tx'] as Map<String, dynamic>?,
-    btcAmountNormalized: json['btc_amount_normalized'] as String?,
-  );
-  return InfoVerbose(
-    source: json['source'] as String,
-    destination: json['destination'] as String?,
-    btcAmount: (json['btc_amount'] as num?)?.toInt(),
-    fee: (json['fee'] as num?)?.toInt(),
-    data: json['data'] as String,
-    decodedTx: json['decoded_tx'] as Map<String, dynamic>?,
-    btcAmountNormalized: json['btc_amount_normalized'] as String?,
-  );
-}
+InfoVerbose _$InfoVerboseFromJson(Map<String, dynamic> json) => InfoVerbose(
+      source: json['source'] as String,
+      destination: json['destination'] as String?,
+      btcAmount: (json['btc_amount'] as num?)?.toInt(),
+      fee: (json['fee'] as num?)?.toInt(),
+      data: json['data'] as String,
+      decodedTx: json['decoded_tx'] as Map<String, dynamic>?,
+      btcAmountNormalized: json['btc_amount_normalized'] as String?,
+    );
 
 Map<String, dynamic> _$InfoVerboseToJson(InfoVerbose instance) =>
     <String, dynamic>{

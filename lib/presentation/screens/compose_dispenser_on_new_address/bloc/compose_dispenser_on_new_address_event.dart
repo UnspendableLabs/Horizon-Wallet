@@ -16,7 +16,7 @@ class PasswordEntered extends ComposeDispenserOnNewAddressEvent {
   final int mainchainrate;
   final int status;
   final int feeRate;
-
+  final bool sendExtraBtcToDispenser;
   PasswordEntered({
     required this.password,
     required this.originalAddress,
@@ -27,6 +27,7 @@ class PasswordEntered extends ComposeDispenserOnNewAddressEvent {
     required this.mainchainrate,
     required this.status,
     required this.feeRate,
+    required this.sendExtraBtcToDispenser,
   });
 }
 

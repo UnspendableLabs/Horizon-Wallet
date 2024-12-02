@@ -88,7 +88,7 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
   bool _submitted = false;
   bool hideSubmitButtons = false;
   bool isCreateNewAddressFlow = false;
-
+  bool sendExtraBtcToDispenser = false;
   @override
   void initState() {
     super.initState();
@@ -138,6 +138,7 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
                   mainchainrate: mainchainrate,
                   dashboardActivityFeedBloc: widget.dashboardActivityFeedBloc,
                   feeRate: feeRate,
+                  sendExtraBtcToDispenser: sendExtraBtcToDispenser,
                 ),
               ),
             );
@@ -218,6 +219,7 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
               giveQuantity: giveQuantity,
               escrowQuantity: escrowQuantity,
               mainchainrate: mainchainrate,
+              sendExtraBtcToDispenser: sendExtraBtcToDispenser,
             ));
         return;
       }
@@ -244,8 +246,10 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
         success: (balances) {
           // the problem is here, somehow balances is being reset
           // to a single balance...
+          final addressBalances =
+              balances.where((balance) => balance.utxo == null).toList();
 
-          if (balances.isEmpty) {
+          if (addressBalances.isEmpty) {
             return const HorizonUI.HorizonTextFormField(
               enabled: false,
               label: "No assets",
@@ -255,7 +259,7 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
           WidgetsBinding.instance.addPostFrameCallback((_) {
             if (asset == null) {
               setState(() {
-                asset = balances[0].asset;
+                asset = addressBalances[0].asset;
               });
             }
           });
@@ -265,9 +269,9 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
               key: const Key('asset_dropdown'),
               loading: loading,
               label: label,
-              asset: asset ?? balances[0].asset,
+              asset: asset ?? addressBalances[0].asset,
               controller: assetController,
-              balances: balances,
+              balances: addressBalances,
               onSelected: (String? value) {
                 _onAssetChanged(value, balances);
               },
@@ -559,6 +563,7 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
 
   List<Widget> _buildInitialFormFields(
       ComposeDispenserState state, bool loading, GlobalKey<FormState> formKey) {
+    print(state.dialogState);
     return [
       state.dialogState.maybeWhen(orElse: () {
         return const SizedBox.shrink();
@@ -600,6 +605,25 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
             _buildEscrowQuantityInput(state, loading, formKey),
             const SizedBox(height: 16.0),
             _buildPricePerUnitInput(loading, formKey),
+            const SizedBox(height: 16.0),
+            Row(
+              children: [
+                Checkbox(
+                  value: sendExtraBtcToDispenser,
+                  onChanged: (value) {
+                    setState(() {
+                      sendExtraBtcToDispenser = value ?? false;
+                    });
+                  },
+                ),
+                Expanded(
+                  child: SelectableText(
+                    'Send extra BTC to dispenser address in order to close the address after the dispenser is closed.',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                ),
+              ],
+            ),
           ],
         );
       }, warning: (hasOpenDispensers) {

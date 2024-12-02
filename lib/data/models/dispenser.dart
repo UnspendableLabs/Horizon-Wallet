@@ -23,7 +23,7 @@ class DispenserModel {
   final String origin;
   final int dispenseCount;
   final String? lastStatusTxSource;
-  final bool confirmed;
+  final bool? confirmed;
   // Verbose fields
   final int? blockTime;
   final String giveQuantityNormalized;
@@ -49,7 +49,7 @@ class DispenserModel {
       required this.origin,
       required this.dispenseCount,
       this.lastStatusTxSource,
-      required this.confirmed,
+      this.confirmed,
       // Verbose fields
       this.blockTime,
       required this.giveQuantityNormalized,

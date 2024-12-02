@@ -134,6 +134,7 @@ class ComposeDispenserBloc extends ComposeBaseBloc<ComposeDispenserState> {
     try {
       final (balances, feeEstimates, dispensers) =
           await fetchDispenserFormDataUseCase.call(event.currentAddress!);
+      print(dispensers);
 
       // if the current address does not have any open dispensers, then we can proceed with the normal flow
       if (dispensers.isEmpty) {
@@ -151,6 +152,7 @@ class ComposeDispenserBloc extends ComposeBaseBloc<ComposeDispenserState> {
           ));
         }
       } else {
+        print('has open dispensers');
         //otherwise, allow the user to choose whether to proceed or open on a new address
         emit(state.copyWith(
           balancesState: BalancesState.success(balances),

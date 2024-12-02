@@ -35,7 +35,7 @@ class ComposeDispenserOnNewAddressPageWrapper extends StatelessWidget {
   final int mainchainrate;
   final bool divisible;
   final int feeRate;
-
+  final bool sendExtraBtcToDispenser;
   const ComposeDispenserOnNewAddressPageWrapper({
     required this.dashboardActivityFeedBloc,
     required this.originalAddress,
@@ -45,6 +45,7 @@ class ComposeDispenserOnNewAddressPageWrapper extends StatelessWidget {
     required this.escrowQuantity,
     required this.mainchainrate,
     required this.feeRate,
+    required this.sendExtraBtcToDispenser,
     super.key,
   });
 
@@ -78,6 +79,7 @@ class ComposeDispenserOnNewAddressPageWrapper extends StatelessWidget {
         mainchainrate: mainchainrate,
         divisible: divisible,
         feeRate: feeRate,
+        sendExtraBtcToDispenser: sendExtraBtcToDispenser,
       ),
     );
   }
@@ -91,6 +93,7 @@ class ComposeDispenserOnNewAddressPage extends StatefulWidget {
   final int mainchainrate;
   final bool divisible;
   final int feeRate;
+  final bool sendExtraBtcToDispenser;
   const ComposeDispenserOnNewAddressPage({
     required this.originalAddress,
     required this.asset,
@@ -99,6 +102,7 @@ class ComposeDispenserOnNewAddressPage extends StatefulWidget {
     required this.mainchainrate,
     required this.divisible,
     required this.feeRate,
+    required this.sendExtraBtcToDispenser,
     super.key,
   });
 
@@ -368,6 +372,7 @@ class _ComposeDispenserOnNewAddressPageState
             mainchainrate: widget.mainchainrate,
             status: 0,
             feeRate: widget.feeRate,
+            sendExtraBtcToDispenser: widget.sendExtraBtcToDispenser,
           ));
     }
   }
