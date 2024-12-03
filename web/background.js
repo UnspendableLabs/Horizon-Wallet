@@ -68,9 +68,15 @@ async function rpcSignPsbt(requestId, port, hex, signInputs, sighashTypes) {
   const origin = getOriginFromPort(port);
   const tabId = getTabIdFromPort(port);
   const encodedSignInputs = btoa(JSON.stringify(signInputs));
-  const encodedSighashTypes = btoa(JSON.stringify(sighashTypes));
+  let action;
 
-  const action = `signPsbt:ext,${tabId},${requestId},${hex},${encodedSignInputs},${encodedSighashTypes}`
+  // sighashTypes could be undefined
+  if (sighashTypes === undefined) {
+    action = `signPsbt:ext,${tabId},${requestId},${hex},${encodedSignInputs}`;
+  } else {
+    const encodedSighashTypes = btoa(JSON.stringify(sighashTypes));
+    action = `signPsbt:ext,${tabId},${requestId},${hex},${encodedSignInputs},${encodedSighashTypes}`;
+  }
 
   const window = await popup({
     url: `/index.html#?action=${action}`,

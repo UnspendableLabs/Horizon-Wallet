@@ -80,7 +80,7 @@ class SignPsbtModal extends StatelessWidget {
   final ImportedAddressService importedAddressService;
   final UnifiedAddressRepository addressRepository;
   final AccountRepository accountRepository;
-  final List<int> sighashTypes;
+  final List<int>? sighashTypes;
 
   const SignPsbtModal(
       {super.key,
@@ -1383,7 +1383,7 @@ class DashboardPageState extends State<DashboardPage> {
   }
 
   void _handleRPCSignPsbtAction(int tabId, String requestId, String psbt,
-      Map<String, List<int>> signInputs, List<int> sighashTypes) {
+      Map<String, List<int>> signInputs, List<int>? sighashTypes) {
     HorizonUI.HorizonDialog.show(
         context: context,
         body: HorizonUI.HorizonDialog(

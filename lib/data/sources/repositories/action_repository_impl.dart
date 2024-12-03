@@ -10,11 +10,13 @@ class ActionRepositoryImpl implements ActionRepository {
   Either<String, Action> fromString(String str) {
     return Either.tryCatch(() {
       return _parse(str);
-    }, (e, __) => e.toString());
+    }, (e, __) => "Failed to parse action");
   }
 
   Action _parse(String str) {
-    final arr = str.split(',').toList();
+
+
+    final arr = Uri.decodeComponent(str).split(',').toList();
 
     return switch (arr) {
       [
@@ -38,8 +40,7 @@ class ActionRepositoryImpl implements ActionRepository {
       ["fairmint:ext", String fairminterTxHash] =>
         FairmintAction(fairminterTxHash, CallerType.extension),
       ["getAddresses:ext", String tabId, String requestId] =>
-        RPCGetAddressesAction(
-            int.tryParse(tabId)!, requestId), // TODO:be more paranoid
+        RPCGetAddressesAction(int.tryParse(tabId)!, requestId),
       [
         "signPsbt:ext",
         String tabId,
@@ -50,6 +51,15 @@ class ActionRepositoryImpl implements ActionRepository {
       ] =>
         RPCSignPsbtAction(int.tryParse(tabId)!, requestId, psbt,
             _parseSignInputs(signInputs), _parseSighashTypes(sighashTypes)),
+      [
+        "signPsbt:ext",
+        String tabId,
+        String requestId,
+        String psbt,
+        String signInputs,
+      ] =>
+        RPCSignPsbtAction(int.tryParse(tabId)!, requestId, psbt,
+            _parseSignInputs(signInputs), null),
       _ => throw Exception()
     };
   }
@@ -64,16 +74,16 @@ class ActionRepositoryImpl implements ActionRepository {
     return Option.fromNullable(_currentAction);
   }
 
-  List<int> _parseSighashTypes(String sighashTypesStr) {
+  List<int>? _parseSighashTypes(String sighashTypesStr) {
     try {
       final value = json.decode(utf8.decode(base64.decode(sighashTypesStr)));
       if (value is List) {
         return value.cast<int>();
       } else {
-        throw Exception("Parsed data is not a List");
+        return null;
       }
     } catch (e) {
-      throw FormatException("Failed to parse sighashTypes: $e");
+      return null;
     }
   }
 

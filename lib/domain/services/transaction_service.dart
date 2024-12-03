@@ -2,7 +2,7 @@ import "package:horizon/domain/entities/utxo.dart";
 
 abstract class TransactionService {
   String signPsbt(String psbtHex, Map<int, String> inputPrivateKeyMap,
-      [List<int> sighashTypes]);
+      [List<int>? sighashTypes]);
 
   Future<String> signTransaction(String unsignedTransaction, String privateKey,
       String sourceAddress, Map<String, Utxo> utxoMap);

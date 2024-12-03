@@ -27,7 +27,7 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
   final UnifiedAddressRepository addressRepository;
   final AccountRepository accountRepository;
   final Map<String, List<int>> signInputs;
-  final List<int> sighashTypes;
+  final List<int>? sighashTypes;
 
   SignPsbtBloc({
     required this.unsignedPsbt,
