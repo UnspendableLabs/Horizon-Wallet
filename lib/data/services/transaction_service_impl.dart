@@ -36,13 +36,8 @@ class TransactionServiceImpl implements TransactionService {
   TransactionServiceImpl({required this.config});
 
   @override
-  String signPsbt(String psbtHex, Map<int, String> inputPrivateKeyMap) {
-    // We assume segwit for now
-    final sigHashTypes = [
-      (SIGHASH_SINGLE | SIGHASH_ANYONECANPAY).toJS,
-      (SIGHASH_ALL | SIGHASH_ANYONECANPAY).toJS
-    ].toJS;
-
+  String signPsbt(String psbtHex, Map<int, String> inputPrivateKeyMap,
+      [List<int>? sighashTypes]) {
     bitcoinjs.Psbt psbt = bitcoinjs.Psbt.fromHex(psbtHex);
 
     for (final entry in inputPrivateKeyMap.entries) {
@@ -54,7 +49,8 @@ class TransactionServiceImpl implements TransactionService {
       final network = _getNetwork();
       dynamic signer = ecpairFactory.fromPrivateKey(privKeyJS, network);
 
-      psbt.signInput(index, signer, sigHashTypes);
+      psbt.signInput(
+          index, signer, sighashTypes?.map((e) => e.toJS).toList().toJS);
     }
 
     return psbt.toHex();
@@ -92,7 +88,7 @@ class TransactionServiceImpl implements TransactionService {
       var txHash = HEX.encode(input.hash.toDart.reversed.toList());
       final txHashKey = "$txHash:${input.index}";
 
-      var prev = utxoMap[txHashKey];
+      var prev = utxoMap["$txHash:${input.index}"];
       if (prev != null) {
         if (isSegwit) {
           input.witnessUtxo =
