@@ -8,13 +8,13 @@ class ActionRepositoryImpl implements ActionRepository {
 
   @override
   Either<String, Action> fromString(String str) {
-    return Either.tryCatch(
-        () => _parse(str), (_, __) => "Failed to parse action");
+    return Either.tryCatch(() {
+      return _parse(str);
+    }, (e, __) => e.toString());
   }
 
   Action _parse(String str) {
-    final arr =
-        str.split(',').map((element) => Uri.decodeComponent(element)).toList();
+    final arr = str.split(',').toList();
 
     return switch (arr) {
       [
@@ -45,10 +45,11 @@ class ActionRepositoryImpl implements ActionRepository {
         String tabId,
         String requestId,
         String psbt,
-        String signInputs
+        String signInputs,
+        String sighashTypes,
       ] =>
         RPCSignPsbtAction(int.tryParse(tabId)!, requestId, psbt,
-            _parseSignInputs(signInputs)),
+            _parseSignInputs(signInputs), _parseSighashTypes(sighashTypes)),
       _ => throw Exception()
     };
   }
@@ -63,10 +64,23 @@ class ActionRepositoryImpl implements ActionRepository {
     return Option.fromNullable(_currentAction);
   }
 
+  List<int> _parseSighashTypes(String sighashTypesStr) {
+    try {
+      final value = json.decode(utf8.decode(base64.decode(sighashTypesStr)));
+      if (value is List) {
+        return value.cast<int>();
+      } else {
+        throw Exception("Parsed data is not a List");
+      }
+    } catch (e) {
+      throw FormatException("Failed to parse sighashTypes: $e");
+    }
+  }
+
   Map<String, List<int>> _parseSignInputs(String signInputsStr) {
     try {
-      final decoded = Uri.decodeComponent(signInputsStr);
-      final jsonMap = json.decode(decoded) as Map<String, dynamic>;
+      final str = utf8.decode(base64.decode(signInputsStr));
+      final jsonMap = json.decode(str) as Map<String, dynamic>;
 
       // Convert to Map<String, List<int>>
       return jsonMap.map((key, value) {

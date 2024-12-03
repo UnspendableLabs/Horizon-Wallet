@@ -80,6 +80,7 @@ class SignPsbtModal extends StatelessWidget {
   final ImportedAddressService importedAddressService;
   final UnifiedAddressRepository addressRepository;
   final AccountRepository accountRepository;
+  final List<int> sighashTypes;
 
   const SignPsbtModal(
       {super.key,
@@ -92,6 +93,7 @@ class SignPsbtModal extends StatelessWidget {
       required this.requestId,
       required this.onSuccess,
       required this.signInputs,
+      required this.sighashTypes,
       required this.importedAddressService,
       required this.addressRepository,
       required this.accountRepository});
@@ -103,6 +105,7 @@ class SignPsbtModal extends StatelessWidget {
         addressRepository: addressRepository,
         importedAddressService: importedAddressService,
         signInputs: signInputs,
+        sighashTypes: sighashTypes,
         unsignedPsbt: unsignedPsbt,
         transactionService: transactionService,
         walletRepository: walletRepository,
@@ -1284,9 +1287,11 @@ class DashboardPageState extends State<DashboardPage> {
         tabId: var tabId,
         requestId: var requestId,
         psbt: var psbt,
-        signInputs: var signInputs
+        signInputs: var signInputs,
+        sighashTypes: var sighashTypes
       ) =>
-        () => _handleRPCSignPsbtAction(tabId, requestId, psbt, signInputs),
+        () => _handleRPCSignPsbtAction(
+            tabId, requestId, psbt, signInputs, sighashTypes),
       _ => noop
     };
   }
@@ -1378,7 +1383,7 @@ class DashboardPageState extends State<DashboardPage> {
   }
 
   void _handleRPCSignPsbtAction(int tabId, String requestId, String psbt,
-      Map<String, List<int>> signInputs) {
+      Map<String, List<int>> signInputs, List<int> sighashTypes) {
     HorizonUI.HorizonDialog.show(
         context: context,
         body: HorizonUI.HorizonDialog(
@@ -1388,6 +1393,7 @@ class DashboardPageState extends State<DashboardPage> {
               requestId: requestId,
               unsignedPsbt: psbt,
               signInputs: signInputs,
+              sighashTypes: sighashTypes,
               accountRepository: GetIt.I<AccountRepository>(),
               addressRepository: GetIt.I<UnifiedAddressRepository>(),
               importedAddressService: GetIt.I.get<ImportedAddressService>(),

@@ -64,13 +64,16 @@ async function rpcGetAddresses(requestId, port) {
   });
 }
 
-async function rpcSignPsbt(requestId, port, hex, signInputs) {
+async function rpcSignPsbt(requestId, port, hex, signInputs, sighashTypes) {
   const origin = getOriginFromPort(port);
   const tabId = getTabIdFromPort(port);
-  const encodedSignInputs = encodeURIComponent(JSON.stringify(signInputs));
+  const encodedSignInputs = btoa(JSON.stringify(signInputs));
+  const encodedSighashTypes = btoa(JSON.stringify(sighashTypes));
+
+  const action = `signPsbt:ext,${tabId},${requestId},${hex},${encodedSignInputs},${encodedSighashTypes}`
 
   const window = await popup({
-    url: `/index.html#?action=signPsbt:ext,${tabId},${requestId},${hex},${encodedSignInputs}`,
+    url: `/index.html#?action=${action}`,
   });
 
   listenForPopupClose({
@@ -109,6 +112,7 @@ async function rpcMessageHandler(message, port) {
         port,
         message["params"]["hex"],
         message["params"]["signInputs"],
+        message["params"]["sighashTypes"],
       );
       break;
     case "fairmint":
