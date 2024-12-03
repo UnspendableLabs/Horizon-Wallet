@@ -74,6 +74,26 @@ const methodValidators = {
       }
     }
 
+    const sighashTypes = msg.params?.sighashTypes;
+    if (sighashTypes !== undefined) {
+      if (!Array.isArray(sighashTypes)) {
+        errors.push(
+          "Invalid 'sighashTypes' parameter for 'signPsbt'. Expected an array of integers.",
+        );
+      } else {
+        const invalidSighashTypes = sighashTypes.filter(
+          (type) => !Number.isInteger(type),
+        );
+        if (invalidSighashTypes.length > 0) {
+          errors.push(
+            `Invalid 'sighashTypes' values: [${invalidSighashTypes.join(
+              ", ",
+            )}]. All values must be integers.`,
+          );
+        }
+      }
+    }
+
     return errors;
   },
 

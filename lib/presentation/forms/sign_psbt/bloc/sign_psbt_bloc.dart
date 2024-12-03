@@ -27,6 +27,7 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
   final UnifiedAddressRepository addressRepository;
   final AccountRepository accountRepository;
   final Map<String, List<int>> signInputs;
+  final List<int>? sighashTypes;
 
   SignPsbtBloc({
     required this.unsignedPsbt,
@@ -38,6 +39,7 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
     required this.addressRepository,
     required this.accountRepository,
     required this.signInputs,
+    required this.sighashTypes,
   }) : super(SignPsbtState()) {
     on<PasswordChanged>(_handlePasswordChanged);
     on<SignPsbtSubmitted>(_handleSignPsbtSubmitted);
@@ -48,9 +50,6 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
 
     emit(state.copyWith(
       password: password,
-      submissionStatus: Formz.validate([password])
-          ? FormzSubmissionStatus.initial
-          : FormzSubmissionStatus.failure,
     ));
   }
 
@@ -91,8 +90,8 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
         });
       }
 
-      String signedHex =
-          transactionService.signPsbt(unsignedPsbt, inputPrivateKeyMap);
+      String signedHex = transactionService.signPsbt(
+          unsignedPsbt, inputPrivateKeyMap, sighashTypes);
 
       emit(state.copyWith(
         signedPsbt: signedHex,

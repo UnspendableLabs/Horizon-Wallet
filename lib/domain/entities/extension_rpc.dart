@@ -1,9 +1,9 @@
-import 'package:horizon/domain/entities/address.dart';
+import 'package:horizon/domain/entities/address_rpc.dart';
 
 class RPCGetAddressesSuccessCallbackArgs {
   final int tabId;
   final String requestId;
-  final List<Address> addresses;
+  final List<AddressRpc> addresses;
 
   RPCGetAddressesSuccessCallbackArgs(
       {required this.tabId, required this.requestId, required this.addresses});

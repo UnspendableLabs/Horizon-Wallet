@@ -48,11 +48,13 @@ extension type Psbt._(JSObject _) implements JSObject {
   external void signAllInputsHD(JSObject signer);
 
   external void signInput(int inputIndex, JSObject keyPair,
-      [JSArray<JSNumber> sighashTypes]);
+      [JSArray<JSNumber>? sighashTypes]);
 
   external void finalizeAllInputs();
 
   external Transaction extractTransaction();
+
+  external bool validateSignaturesOfInput(JSNumber inputIndex);
 }
 
 extension type Payment._(JSObject _) implements JSObject {
