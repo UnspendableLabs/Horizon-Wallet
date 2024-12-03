@@ -47,8 +47,6 @@ class GetAddressesBloc extends Bloc<GetAddressesEvent, GetAddressesState> {
 
   _handlePasswordChanged(
       PasswordChanged event, Emitter<GetAddressesState> emit) {
-
-
     final password = PasswordInput.dirty(event.password);
 
     emit(state.copyWith(
@@ -117,7 +115,7 @@ class GetAddressesBloc extends Bloc<GetAddressesEvent, GetAddressesState> {
             publicKey: publicKey));
       }
 
-      if (addresses.length == 0 &&
+      if (addresses.isEmpty &&
           state.addressSelectionMode == AddressSelectionMode.byAccount) {
         throw "No account selected";
       }
@@ -140,7 +138,10 @@ class GetAddressesBloc extends Bloc<GetAddressesEvent, GetAddressesState> {
       final importedAddresses = await importedAddressRepository.getAll();
       emit(state.copyWith(
           addressSelectionMode: event.mode,
-          importedAddresses: importedAddresses)); } else { emit(state.copyWith(addressSelectionMode: event.mode)); }
+          importedAddresses: importedAddresses));
+    } else {
+      emit(state.copyWith(addressSelectionMode: event.mode));
+    }
   }
 
   void _handleImportedAddressSelected(

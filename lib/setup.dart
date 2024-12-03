@@ -122,8 +122,6 @@ import 'dart:convert';
 // will need to move this import elsewhere for compile to native
 import 'dart:html' as html;
 
-import 'package:pointycastle/export.dart';
-
 Future<void> setup() async {
   GetIt injector = GetIt.I;
 

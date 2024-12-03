@@ -14,8 +14,6 @@ class ActionRepositoryImpl implements ActionRepository {
   }
 
   Action _parse(String str) {
-
-
     final arr = Uri.decodeComponent(str).split(',').toList();
 
     return switch (arr) {

@@ -41,9 +41,7 @@ class TransactionServiceImpl implements TransactionService {
     bitcoinjs.Psbt psbt = bitcoinjs.Psbt.fromHex(psbtHex);
 
     for (final entry in inputPrivateKeyMap.entries) {
-
       print("Entry: ${entry.key} ${entry.value}");
-
 
       final index = entry.key;
       final privateKey = entry.value;

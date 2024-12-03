@@ -29,7 +29,6 @@ class ImportedAddressInput
   }
 }
 
-
 enum PasswordValidationError { empty }
 
 class PasswordInput extends FormzInput<String, PasswordValidationError> {
@@ -69,8 +68,7 @@ class GetAddressesState with FormzMixin {
   List<FormzInput> get inputs => [password, account];
 
   GetAddressesState copyWith({
-    
-  PasswordInput? password,
+    PasswordInput? password,
     AccountInput? account,
     ImportedAddressInput? importedAddress,
     FormzSubmissionStatus? submissionStatus,
