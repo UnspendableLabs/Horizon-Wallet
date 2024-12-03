@@ -53,8 +53,7 @@ class ComposeAttachUtxoPageWrapper extends StatelessWidget {
           writelocalTransactionUseCase:
               GetIt.I.get<WriteLocalTransactionUseCase>(),
           blockRepository: GetIt.I.get<BlockRepository>(),
-        )..add(FetchFormData(
-            currentAddress: currentAddress, assetName: assetName)),
+        )..add(FetchFormData(currentAddress: currentAddress)),
         child: ComposeAttachUtxoPage(
           address: currentAddress,
           assetName: assetName,
@@ -135,6 +134,11 @@ class ComposeAttachUtxoPageState extends State<ComposeAttachUtxoPage> {
                 label: 'Available Supply',
                 enabled: false,
               ),
+              const SizedBox(height: 16),
+              const HorizonUI.HorizonTextFormField(
+                label: 'XCP Fee Estimate',
+                enabled: false,
+              ),
             ],
             onInitialCancel: () => _handleInitialCancel(),
             onInitialSubmit: (formKey) => () {},
@@ -156,7 +160,7 @@ class ComposeAttachUtxoPageState extends State<ComposeAttachUtxoPage> {
                 .read<ComposeAttachUtxoBloc>()
                 .add(ChangeFeeOption(value: fee)),
             buildInitialFormFields: (state, loading, formKey) =>
-                _buildInitialFormFields(state, loading, formKey, balances[0]),
+                _buildInitialFormFields(state, loading, formKey),
             onInitialCancel: () => _handleInitialCancel(),
             onInitialSubmit: (formKey) =>
                 _handleInitialSubmit(formKey, balances[0]),
@@ -207,7 +211,15 @@ class ComposeAttachUtxoPageState extends State<ComposeAttachUtxoPage> {
   }
 
   List<Widget> _buildInitialFormFields(ComposeAttachUtxoState state,
-      bool loading, GlobalKey<FormState> formKey, Balance balance) {
+      bool loading, GlobalKey<FormState> formKey) {
+    final Balance balance = state.balancesState.maybeWhen(
+      success: (balances) => balances
+          .where((balance) =>
+              balance.asset == widget.assetName && balance.utxo == null)
+          .first,
+      orElse: () => throw Exception('No balance found'),
+    );
+
     return [
       HorizonUI.HorizonTextFormField(
         controller: fromAddressController,
@@ -247,6 +259,12 @@ class ComposeAttachUtxoPageState extends State<ComposeAttachUtxoPage> {
         label: 'Available Supply',
         enabled: false,
       ),
+      const SizedBox(height: 16),
+      HorizonUI.HorizonTextFormField(
+        controller: TextEditingController(text: state.xcpFeeEstimate),
+        label: 'XCP Fee Estimate',
+        enabled: false,
+      ),
     ];
   }
 
@@ -276,7 +294,6 @@ class ComposeAttachUtxoPageState extends State<ComposeAttachUtxoPage> {
   void _onConfirmationBack() {
     context.read<ComposeAttachUtxoBloc>().add(FetchFormData(
           currentAddress: widget.address,
-          assetName: widget.assetName,
         ));
   }
 
@@ -303,7 +320,6 @@ class ComposeAttachUtxoPageState extends State<ComposeAttachUtxoPage> {
   void _onFinalizeCancel() {
     context.read<ComposeAttachUtxoBloc>().add(FetchFormData(
           currentAddress: widget.address,
-          assetName: widget.assetName,
         ));
   }
 }

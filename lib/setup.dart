@@ -313,9 +313,6 @@ Future<void> setup() async {
   injector.registerSingleton<OrderRepository>(
       OrderRepositoryImpl(api: GetIt.I.get<V2Api>()));
 
-  injector.registerSingleton<EventsRepository>(
-      EventsRepositoryImpl(api_: GetIt.I.get<V2Api>()));
-
   injector.registerSingleton<TransactionRepository>(TransactionRepositoryImpl(
     addressRepository: GetIt.I.get<AddressRepository>(),
     api_: GetIt.I.get<V2Api>(),
@@ -366,6 +363,10 @@ Future<void> setup() async {
     transactionService: GetIt.I.get<TransactionService>(),
   ));
 
+  injector.registerSingleton<EventsRepository>(EventsRepositoryImpl(
+      api_: GetIt.I.get<V2Api>(),
+      bitcoinRepository: GetIt.I.get<BitcoinRepository>()));
+
   injector.registerSingleton<FetchDispenserFormDataUseCase>(
       FetchDispenserFormDataUseCase(
           getFeeEstimatesUseCase: GetIt.I.get<GetFeeEstimatesUseCase>(),
@@ -408,6 +409,7 @@ Future<void> setup() async {
   injector.registerSingleton<FetchComposeAttachUtxoFormDataUseCase>(
       FetchComposeAttachUtxoFormDataUseCase(
           getFeeEstimatesUseCase: GetIt.I.get<GetFeeEstimatesUseCase>(),
+          composeRepository: GetIt.I.get<ComposeRepository>(),
           balanceRepository: injector.get<BalanceRepository>()));
 
   injector.registerSingleton<SignAndBroadcastTransactionUseCase>(

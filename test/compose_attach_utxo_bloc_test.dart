@@ -162,11 +162,11 @@ void main() {
       build: () {
         when(() => mockFetchComposeAttachUtxoFormDataUseCase.call(
               any(),
-              any(),
             )).thenAnswer(
           (_) async => (
             mockFeeEstimates,
-            mockBalance,
+            [mockBalance],
+            0,
           ),
         );
         return composeAttachUtxoBloc;
@@ -174,7 +174,6 @@ void main() {
       act: (bloc) {
         bloc.add(FetchFormData(
           currentAddress: 'test-address',
-          assetName: 'ASSET_NAME',
         ));
       },
       expect: () => [
@@ -182,10 +181,89 @@ void main() {
           balancesState: const BalancesState.loading(),
           feeState: const FeeState.loading(),
           submitState: const SubmitInitial(),
+          xcpFeeEstimate: '',
         ),
         composeAttachUtxoBloc.state.copyWith(
           balancesState: BalancesState.success([mockBalance]),
           feeState: const FeeState.success(mockFeeEstimates),
+          xcpFeeEstimate: '0',
+        ),
+      ],
+    );
+
+    blocTest<ComposeAttachUtxoBloc, ComposeAttachUtxoState>(
+      'emits error when balances do not include xcp and xcp fee > 0',
+      build: () {
+        when(() => mockFetchComposeAttachUtxoFormDataUseCase.call(
+              any(),
+            )).thenAnswer(
+          (_) async => (
+            mockFeeEstimates,
+            [mockBalance],
+            5,
+          ),
+        );
+        return composeAttachUtxoBloc;
+      },
+      act: (bloc) {
+        bloc.add(FetchFormData(
+          currentAddress: 'test-address',
+        ));
+      },
+      expect: () => [
+        composeAttachUtxoBloc.state.copyWith(
+          balancesState: const BalancesState.loading(),
+          feeState: const FeeState.loading(),
+          submitState: const SubmitInitial(),
+          xcpFeeEstimate: '',
+        ),
+        composeAttachUtxoBloc.state.copyWith(
+          balancesState: const BalancesState.error(
+              'Insufficient XCP balance for attach. Required: 0.00000005. Current XCP balance: 0'),
+          xcpFeeEstimate: '0.00000005',
+        ),
+      ],
+    );
+
+    blocTest<ComposeAttachUtxoBloc, ComposeAttachUtxoState>(
+      'emits error when xcp balance does not cover the xcp fee',
+      build: () {
+        when(() => mockFetchComposeAttachUtxoFormDataUseCase.call(
+              any(),
+            )).thenAnswer(
+          (_) async => (
+            mockFeeEstimates,
+            [
+              mockBalance,
+              Balance(
+                  asset: 'XCP',
+                  quantity: 5,
+                  address: 'ADDRESS',
+                  quantityNormalized: '0.00000005',
+                  assetInfo:
+                      const AssetInfo(divisible: true, assetLongname: 'XCP'))
+            ],
+            10,
+          ),
+        );
+        return composeAttachUtxoBloc;
+      },
+      act: (bloc) {
+        bloc.add(FetchFormData(
+          currentAddress: 'test-address',
+        ));
+      },
+      expect: () => [
+        composeAttachUtxoBloc.state.copyWith(
+          balancesState: const BalancesState.loading(),
+          feeState: const FeeState.loading(),
+          submitState: const SubmitInitial(),
+          xcpFeeEstimate: '',
+        ),
+        composeAttachUtxoBloc.state.copyWith(
+          balancesState: const BalancesState.error(
+              'Insufficient XCP balance for attach. Required: 0.00000010. Current XCP balance: 0.00000005'),
+          xcpFeeEstimate: '0.00000010',
         ),
       ],
     );
@@ -195,7 +273,6 @@ void main() {
       build: () {
         when(() => mockFetchComposeAttachUtxoFormDataUseCase.call(
               any(),
-              any(),
             )).thenThrow(
           FetchFeeEstimatesException('Failed to fetch fee estimates'),
         );
@@ -204,7 +281,6 @@ void main() {
       act: (bloc) {
         bloc.add(FetchFormData(
           currentAddress: 'test-address',
-          assetName: 'ASSET_NAME',
         ));
       },
       expect: () => [
@@ -215,6 +291,35 @@ void main() {
         ),
         composeAttachUtxoBloc.state.copyWith(
           feeState: const FeeState.error('Failed to fetch fee estimates'),
+        ),
+      ],
+    );
+
+    blocTest<ComposeAttachUtxoBloc, ComposeAttachUtxoState>(
+      'emits error state when fetching xcp estimate fails',
+      build: () {
+        when(() => mockFetchComposeAttachUtxoFormDataUseCase.call(
+              any(),
+            )).thenThrow(
+          FetchAttachXcpFeesException('Failed to fetch xcp estimate'),
+        );
+
+        return composeAttachUtxoBloc;
+      },
+      act: (bloc) {
+        bloc.add(FetchFormData(
+          currentAddress: 'test-address',
+        ));
+      },
+      expect: () => [
+        composeAttachUtxoBloc.state.copyWith(
+          balancesState: const BalancesState.loading(),
+          feeState: const FeeState.loading(),
+          submitState: const SubmitInitial(),
+        ),
+        composeAttachUtxoBloc.state.copyWith(
+          balancesState:
+              const BalancesState.error('Failed to fetch xcp estimate'),
         ),
       ],
     );

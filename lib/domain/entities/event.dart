@@ -1449,6 +1449,36 @@ class VerboseMoveToUtxoEvent extends VerboseEvent {
   });
 }
 
+class AtomicSwapParams {
+  final String asset;
+  final int blockIndex;
+  final String destination;
+  final String bitcoinSwapAmount;
+  final String quantityNormalized;
+
+  AtomicSwapParams({
+    required this.asset,
+    required this.blockIndex,
+    required this.destination,
+    required this.bitcoinSwapAmount,
+    required this.quantityNormalized,
+  });
+}
+
+class AtomicSwapEvent extends VerboseEvent {
+  final AtomicSwapParams params;
+
+  const AtomicSwapEvent({
+    required super.state,
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
+    required super.blockTime,
+    required this.params,
+  });
+}
+
 class DetachFromUtxoParams {
   final String asset;
   final int blockIndex;

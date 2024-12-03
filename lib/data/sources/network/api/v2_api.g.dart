@@ -3148,26 +3148,15 @@ Map<String, dynamic> _$IssuanceInfoToJson(IssuanceInfo instance) =>
       'unpacked_data': instance.unpackedData,
     };
 
-InfoVerbose _$InfoVerboseFromJson(Map<String, dynamic> json) {
-  final info = InfoVerbose(
-    source: json['source'] as String,
-    destination: json['destination'] as String?,
-    btcAmount: (json['btc_amount'] as num?)?.toInt(),
-    fee: (json['fee'] as num?)?.toInt(),
-    data: json['data'] as String,
-    decodedTx: json['decoded_tx'] as Map<String, dynamic>?,
-    btcAmountNormalized: json['btc_amount_normalized'] as String?,
-  );
-  return InfoVerbose(
-    source: json['source'] as String,
-    destination: json['destination'] as String?,
-    btcAmount: (json['btc_amount'] as num?)?.toInt(),
-    fee: (json['fee'] as num?)?.toInt(),
-    data: json['data'] as String,
-    decodedTx: json['decoded_tx'] as Map<String, dynamic>?,
-    btcAmountNormalized: json['btc_amount_normalized'] as String?,
-  );
-}
+InfoVerbose _$InfoVerboseFromJson(Map<String, dynamic> json) => InfoVerbose(
+      source: json['source'] as String,
+      destination: json['destination'] as String?,
+      btcAmount: (json['btc_amount'] as num?)?.toInt(),
+      fee: (json['fee'] as num?)?.toInt(),
+      data: json['data'] as String,
+      decodedTx: json['decoded_tx'] as Map<String, dynamic>?,
+      btcAmountNormalized: json['btc_amount_normalized'] as String?,
+    );
 
 Map<String, dynamic> _$InfoVerboseToJson(InfoVerbose instance) =>
     <String, dynamic>{
@@ -5696,6 +5685,36 @@ class _V2Api implements V2Api {
                   (i) => VerboseEvent.fromJson(i as Map<String, dynamic>))
               .toList()
           : List.empty(),
+    );
+    return _value;
+  }
+
+  @override
+  Future<Response<int>> estimateAttachXcpFees() async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{};
+    final _headers = <String, dynamic>{};
+    const Map<String, dynamic>? _data = null;
+    final _result = await _dio
+        .fetch<Map<String, dynamic>>(_setStreamType<Response<int>>(Options(
+      method: 'GET',
+      headers: _headers,
+      extra: _extra,
+    )
+            .compose(
+              _dio.options,
+              '/compose/attach/estimatexcpfees',
+              queryParameters: queryParameters,
+              data: _data,
+            )
+            .copyWith(
+                baseUrl: _combineBaseUrls(
+              _dio.options.baseUrl,
+              baseUrl,
+            ))));
+    final _value = Response<int>.fromJson(
+      _result.data!,
+      (json) => json as int,
     );
     return _value;
   }

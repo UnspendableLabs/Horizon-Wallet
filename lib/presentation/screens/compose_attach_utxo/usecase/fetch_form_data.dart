@@ -1,33 +1,40 @@
 import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
+import 'package:horizon/domain/repositories/compose_repository.dart';
 import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
 
 class FetchComposeAttachUtxoFormDataUseCase {
   final GetFeeEstimatesUseCase getFeeEstimatesUseCase;
   final BalanceRepository balanceRepository;
+  final ComposeRepository composeRepository;
 
   FetchComposeAttachUtxoFormDataUseCase({
     required this.getFeeEstimatesUseCase,
     required this.balanceRepository,
+    required this.composeRepository,
   });
 
-  Future<(FeeEstimates, Balance)> call(String address, String assetName) async {
+  Future<(FeeEstimates, List<Balance>, int)> call(String address) async {
     try {
       // Initiate both asynchronous calls
       final futures = await Future.wait([
-        _fetchAssetBalance(address, assetName),
+        _fetchBalances(address),
         _fetchFeeEstimates(),
+        _fetchAttachXcpFees(),
       ]);
 
-      final balance = futures[0] as Balance;
+      final balances = futures[0] as List<Balance>;
       final feeEstimates = futures[1] as FeeEstimates;
+      final attachXcpFees = futures[2] as int;
 
-      return (feeEstimates, balance);
+      return (feeEstimates, balances, attachXcpFees);
     } on FetchBalanceException catch (e) {
       throw FetchBalanceException(e.message);
     } on FetchFeeEstimatesException catch (e) {
       throw FetchFeeEstimatesException(e.message);
+    } on FetchAttachXcpFeesException catch (e) {
+      throw FetchAttachXcpFeesException(e.message);
     } catch (e) {
       throw Exception('An unexpected error occurred: ${e.toString()}');
     }
@@ -41,26 +48,20 @@ class FetchComposeAttachUtxoFormDataUseCase {
     }
   }
 
-  Future<Balance> _fetchAssetBalance(String address, String assetName) async {
+  Future<List<Balance>> _fetchBalances(String address) async {
     try {
-      final balances = await balanceRepository
-          .getBalancesForAddressAndAssetVerbose(address, assetName);
-      final balanceForAddress = balances
-          .where((balance) =>
-              balance.asset == assetName &&
-              balance.address == address &&
-              balance.utxo == null)
-          .toList();
-      if (balanceForAddress.isEmpty) {
-        throw FetchBalanceException('Balance not found for address: $address');
-      }
-      if (balanceForAddress.length > 1) {
-        throw FetchBalanceException(
-            'Multiple balances found for address: $address');
-      }
-      return balanceForAddress.first;
+      final balances = await balanceRepository.getBalancesForAddress(address);
+      return balances;
     } catch (e) {
       throw FetchBalanceException(e.toString());
+    }
+  }
+
+  Future<int> _fetchAttachXcpFees() async {
+    try {
+      return await composeRepository.estimateComposeAttachXcpFees();
+    } catch (e) {
+      throw FetchAttachXcpFeesException(e.toString());
     }
   }
 }
@@ -79,4 +80,12 @@ class FetchFeeEstimatesException implements Exception {
 
   @override
   String toString() => 'FetchFeeEstimatesException: $message';
+}
+
+class FetchAttachXcpFeesException implements Exception {
+  final String message;
+  FetchAttachXcpFeesException(this.message);
+
+  @override
+  String toString() => 'FetchAttachXcpFeesException: $message';
 }
