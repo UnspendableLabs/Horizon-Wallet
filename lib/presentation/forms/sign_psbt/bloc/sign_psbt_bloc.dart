@@ -41,8 +41,20 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
     required this.signInputs,
     required this.sighashTypes,
   }) : super(SignPsbtState()) {
+    on<FetchFormEvent>(_handleFetchForm);
     on<PasswordChanged>(_handlePasswordChanged);
     on<SignPsbtSubmitted>(_handleSignPsbtSubmitted);
+  }
+
+  Future<void> _handleFetchForm(
+    FetchFormEvent event,
+    Emitter<SignPsbtState> emit,
+  ) async {
+    final decoded =
+        transactionService.psbtToUnsignedTransactionHex(unsignedPsbt);
+
+    print("decoded: $decoded");
+
   }
 
   _handlePasswordChanged(PasswordChanged event, Emitter<SignPsbtState> emit) {

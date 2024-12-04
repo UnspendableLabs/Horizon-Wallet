@@ -5,17 +5,28 @@ import 'package:horizon/presentation/forms/sign_psbt/bloc/sign_psbt_bloc.dart';
 import 'package:horizon/presentation/forms/sign_psbt/bloc/sign_psbt_state.dart';
 import 'package:horizon/presentation/forms/sign_psbt/bloc/sign_psbt_event.dart';
 
-class SignPsbtForm extends StatelessWidget {
+class SignPsbtForm extends StatefulWidget {
   final void Function(String) onSuccess;
 
   const SignPsbtForm({super.key, required this.onSuccess});
+
+  @override
+  State<SignPsbtForm> createState() => _SignPsbtFormState();
+}
+
+class _SignPsbtFormState extends State<SignPsbtForm> {
+  @override
+  void initState() {
+    super.initState();
+    context.read<SignPsbtBloc>().add(FetchFormEvent());
+  }
 
   @override
   Widget build(BuildContext context) {
     return BlocListener<SignPsbtBloc, SignPsbtState>(
       listener: (context, state) {
         if (state.submissionStatus.isSuccess) {
-          onSuccess(state.signedPsbt!);
+          widget.onSuccess(state.signedPsbt!);
         }
       },
       child: BlocBuilder<SignPsbtBloc, SignPsbtState>(
