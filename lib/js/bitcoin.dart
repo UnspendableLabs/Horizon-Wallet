@@ -37,12 +37,10 @@ extension type Transaction._(JSObject _) implements JSObject {
 }
 
 extension type PsbtData._(JSObject _) implements JSObject {
-  // Getter for globalMap
   external GlobalMap get globalMap;
 }
 
 extension type GlobalMap._(JSObject _) implements JSObject {
-  // Getter for unsignedTx
   external Transaction get unsignedTx;
 }
 

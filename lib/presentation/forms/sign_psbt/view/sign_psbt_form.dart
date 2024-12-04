@@ -37,13 +37,12 @@ class _SignPsbtFormState extends State<SignPsbtForm> {
               child: CircularProgressIndicator(),
             );
           }
-          // Once data is loaded, display the form
+
           return Padding(
             padding: const EdgeInsets.all(16.0),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Transaction Details Section
                 const Text(
                   'Transaction Details',
                   style: TextStyle(
@@ -53,7 +52,6 @@ class _SignPsbtFormState extends State<SignPsbtForm> {
                 ),
                 const SizedBox(height: 16),
 
-                // Conditional display based on psbtSignType
                 if (state.psbtSignType == PsbtSignTypeEnum.buy) ...[
                   SelectableText(
                     'Swap ${state.bitcoinAmount!.toStringAsFixed(8)} BTC for ${state.getAmount} ${state.asset}',

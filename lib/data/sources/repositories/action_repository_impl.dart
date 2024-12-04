@@ -9,7 +9,6 @@ class ActionRepositoryImpl implements ActionRepository {
   @override
   Either<String, Action> fromString(String str) {
     return Either.tryCatch(() {
-      print("str!!!!!!!!!!!!! URL: $str");
       return _parse(str);
     }, (e, __) => "Failed to parse action");
   }
@@ -57,15 +56,8 @@ class ActionRepositoryImpl implements ActionRepository {
         String psbt,
         String signInputs,
       ] =>
-        () {
-          print('RPCSignPsbtAction params:');
-          print('tabId: $tabId');
-          print('requestId: $requestId');
-          print('psbt: $psbt');
-          print('signInputs: $signInputs');
-          return RPCSignPsbtAction(int.tryParse(tabId)!, requestId, psbt,
-              _parseSignInputs(signInputs), null);
-        }(),
+        RPCSignPsbtAction(int.tryParse(tabId)!, requestId, psbt,
+            _parseSignInputs(signInputs), null),
       _ => throw Exception()
     };
   }

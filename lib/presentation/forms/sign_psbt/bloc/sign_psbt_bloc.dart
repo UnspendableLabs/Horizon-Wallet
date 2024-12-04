@@ -60,86 +60,104 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
     FetchFormEvent event,
     Emitter<SignPsbtState> emit,
   ) async {
-    final transactionHex =
-        transactionService.psbtToUnsignedTransactionHex(unsignedPsbt);
+    try {
+      // decode the psbt transaction
+      final transactionHex =
+          transactionService.psbtToUnsignedTransactionHex(unsignedPsbt);
 
-    print("transactionHex: $transactionHex");
+      final decoded =
+          await bitcoindService.decoderawtransaction(transactionHex);
 
-    final decoded = await bitcoindService.decoderawtransaction(transactionHex);
+      // Initialize variables
+      PsbtSignTypeEnum psbtSignType = PsbtSignTypeEnum.buy;
+      String asset = '';
+      String getAmount = '';
+      double bitcoinAmount = 0;
+      double fee = 0;
 
-    // Initialize variables
-    PsbtSignTypeEnum psbtSignType = PsbtSignTypeEnum.buy;
-    String asset = '';
-    String getAmount = '';
-    double bitcoinAmount = 0;
-    double fee = 0;
+      if (decoded.vin.length > 1) {
+        // buys will have vin length of 2
+        psbtSignType = PsbtSignTypeEnum.buy;
 
-    if (decoded.vin.length > 1) {
-      final buyAssetInput = decoded.vin[1];
-      final utxo = "${buyAssetInput.txid}:${buyAssetInput.vout}";
+        final buyAssetInput = decoded.vin[1];
+        final utxo = "${buyAssetInput.txid}:${buyAssetInput.vout}";
 
-      final utxoBalances = await balanceRepository.getBalancesForUTXO(utxo);
-      if (utxoBalances.length > 1) {
-        throw Exception("invariant: more than one balance found for utxo");
+        // get the asset from the utxo balance
+        final utxoBalances = await balanceRepository.getBalancesForUTXO(utxo);
+        if (utxoBalances.length > 1) {
+          // we should never have more than one balance for a utxo
+          throw Exception("invariant: more than one balance found for utxo");
+        }
+
+        // fetch the tx info for each input to get the value of each vin
+        double totalInputValue = 0;
+        for (final vin in decoded.vin) {
+          final txDetails =
+              await bitcoinRepository.getTransaction(vin.txid).then(
+                    (either) => either.fold(
+                      (error) => throw Exception("GetTransactionInfo failure"),
+                      (transactionInfo) => transactionInfo,
+                    ),
+                  );
+          totalInputValue += txDetails.vout[vin.vout].value;
+        }
+
+        // the fee is the difference between the total input value and the total output value
+        double totalOutputValue =
+            decoded.vout.map((vout) => vout.value).fold(0, (a, b) => a + b);
+        fee = (((totalInputValue / 100000000) - totalOutputValue) * 100000000)
+                .truncate() /
+            100000000; // truncate to 8 decimal places
+
+        asset = displayAssetName(
+          utxoBalances[0].asset,
+          utxoBalances[0].assetInfo.assetLongname,
+        );
+        getAmount = utxoBalances[0].quantityNormalized;
+
+        final bitcoinAssetOutput = decoded.vout[1];
+        bitcoinAmount = bitcoinAssetOutput.value;
+      } else if (decoded.vin.length == 1) {
+        // sells will have vin length of 1
+        psbtSignType = PsbtSignTypeEnum.sell;
+
+        final sellAssetInput = decoded.vin[0];
+
+        // get the asset from the utxo balance
+        final utxo = "${sellAssetInput.txid}:${sellAssetInput.vout}";
+        final utxoBalances = await balanceRepository.getBalancesForUTXO(utxo);
+        if (utxoBalances.length > 1) {
+          // we should never have more than one balance for a utxo
+          throw Exception("invariant: more than one balance found for utxo");
+        }
+        asset = displayAssetName(
+          utxoBalances[0].asset,
+          utxoBalances[0].assetInfo.assetLongname,
+        );
+        getAmount = utxoBalances[0].quantityNormalized;
+        final bitcoinAssetOutput = decoded.vout[0];
+        bitcoinAmount = bitcoinAssetOutput.value;
+
+        // sells will not have a fee
+      } else {
+        // we should never get here; invalid psbt
+        throw Exception("invariant: invalid psbt");
       }
 
-      // Get input values using Esplora API
-      double totalInputValue = 0;
-      for (final vin in decoded.vin) {
-        final txDetails = await bitcoinRepository.getTransaction(vin.txid).then(
-              (either) => either.fold(
-                (error) => throw Exception("GetTransactionInfo failure"),
-                (transactionInfo) => transactionInfo,
-              ),
-            );
-        totalInputValue += txDetails.vout[vin.vout].value;
-      }
-
-      double totalOutputValue =
-          decoded.vout.map((vout) => vout.value).fold(0, (a, b) => a + b);
-      fee = (totalInputValue / 100000000) - totalOutputValue;
-
-      asset = displayAssetName(
-        utxoBalances[0].asset,
-        utxoBalances[0].assetInfo.assetLongname,
-      );
-      getAmount = utxoBalances[0].quantityNormalized;
-
-      final bitcoinAssetOutput = decoded.vout[1];
-      bitcoinAmount = bitcoinAssetOutput.value;
-
-      psbtSignType = PsbtSignTypeEnum.buy;
-
-      print("utxo: $utxo");
-    } else if (decoded.vin.length == 1) {
-      // Logic for 'sell' type (if applicable)
-      psbtSignType = PsbtSignTypeEnum.sell;
-      final sellAssetInput = decoded.vin[0];
-      final utxo = "${sellAssetInput.txid}:${sellAssetInput.vout}";
-      final utxoBalances = await balanceRepository.getBalancesForUTXO(utxo);
-      if (utxoBalances.length > 1) {
-        throw Exception("invariant: more than one balance found for utxo");
-      }
-      asset = displayAssetName(
-        utxoBalances[0].asset,
-        utxoBalances[0].assetInfo.assetLongname,
-      );
-      getAmount = utxoBalances[0].quantityNormalized;
-      final bitcoinAssetOutput = decoded.vout[0];
-      bitcoinAmount = bitcoinAssetOutput.value;
-      // Set asset, getAmount, bitcoinAmount accordingly
-    } else {
-      throw Exception("invariant: invalid psbt");
+      emit(state.copyWith(
+        psbtSignType: psbtSignType,
+        asset: asset,
+        getAmount: getAmount,
+        bitcoinAmount: bitcoinAmount,
+        fee: fee,
+        isFormDataLoaded: true,
+      ));
+    } catch (e) {
+      emit(state.copyWith(
+          isFormDataLoaded: true,
+          submissionStatus: FormzSubmissionStatus.failure,
+          error: e.toString()));
     }
-
-    emit(state.copyWith(
-      psbtSignType: psbtSignType,
-      asset: asset,
-      getAmount: getAmount,
-      bitcoinAmount: bitcoinAmount,
-      fee: fee,
-      isFormDataLoaded: true,
-    ));
   }
 
   _handlePasswordChanged(PasswordChanged event, Emitter<SignPsbtState> emit) {
