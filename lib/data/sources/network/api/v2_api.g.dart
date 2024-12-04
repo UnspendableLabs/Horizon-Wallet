@@ -2248,9 +2248,10 @@ VerboseCreditParams _$VerboseCreditParamsFromJson(Map<String, dynamic> json) =>
       quantity: (json['quantity'] as num).toInt(),
       txIndex: (json['tx_index'] as num).toInt(),
       blockTime: (json['block_time'] as num).toInt(),
-      assetInfo:
-          AssetInfoModel.fromJson(json['asset_info'] as Map<String, dynamic>),
-      quantityNormalized: json['quantity_normalized'] as String,
+      assetInfo: json['asset_info'] == null
+          ? null
+          : AssetInfoModel.fromJson(json['asset_info'] as Map<String, dynamic>),
+      quantityNormalized: json['quantity_normalized'] as String?,
     );
 
 Map<String, dynamic> _$VerboseCreditParamsToJson(
@@ -2278,9 +2279,10 @@ VerboseDebitParams _$VerboseDebitParamsFromJson(Map<String, dynamic> json) =>
       quantity: (json['quantity'] as num).toInt(),
       txIndex: (json['tx_index'] as num).toInt(),
       blockTime: (json['block_time'] as num).toInt(),
-      assetInfo:
-          AssetInfoModel.fromJson(json['asset_info'] as Map<String, dynamic>),
-      quantityNormalized: json['quantity_normalized'] as String,
+      assetInfo: json['asset_info'] == null
+          ? null
+          : AssetInfoModel.fromJson(json['asset_info'] as Map<String, dynamic>),
+      quantityNormalized: json['quantity_normalized'] as String?,
     );
 
 Map<String, dynamic> _$VerboseDebitParamsToJson(VerboseDebitParams instance) =>
