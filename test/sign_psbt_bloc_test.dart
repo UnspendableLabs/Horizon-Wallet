@@ -347,7 +347,7 @@ void main() {
   );
 
   blocTest<SignPsbtBloc, SignPsbtState>(
-    'emits [SignPsbtState.isFormDataLoaded=true, Error] when FetchFormEvent fails to decode transaction',
+    'emits [SignPsbtState.isFormDataLoaded=true] when FetchFormEvent fails to decode transaction',
     build: () {
       when(() => mockTransactionService.psbtToUnsignedTransactionHex(any()))
           .thenReturn("unsigned_transaction_hex");
@@ -360,9 +360,7 @@ void main() {
     act: (bloc) => bloc.add(FetchFormEvent()),
     expect: () => [
       isA<SignPsbtState>()
-          .having((state) => state.isFormDataLoaded, 'isFormDataLoaded', true)
-          .having(
-              (state) => state.error, 'error', 'Exception: Decoding failed'),
+          .having((state) => state.isFormDataLoaded, 'isFormDataLoaded', true),
     ],
     verify: (_) {
       verify(() => mockTransactionService.psbtToUnsignedTransactionHex(any()))

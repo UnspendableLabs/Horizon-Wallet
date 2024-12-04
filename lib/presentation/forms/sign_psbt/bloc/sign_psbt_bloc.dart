@@ -69,7 +69,7 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
           await bitcoindService.decoderawtransaction(transactionHex);
 
       // Initialize variables
-      PsbtSignTypeEnum psbtSignType = PsbtSignTypeEnum.buy;
+      PsbtSignTypeEnum? psbtSignType;
       String asset = '';
       String getAmount = '';
       double bitcoinAmount = 0;
@@ -85,8 +85,11 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
         // get the asset from the utxo balance
         final utxoBalances = await balanceRepository.getBalancesForUTXO(utxo);
         if (utxoBalances.length > 1) {
-          // we should never have more than one balance for a utxo
-          throw Exception("invariant: more than one balance found for utxo");
+          // psbt swap criteria not met, load form without transaction data
+          emit(state.copyWith(
+            isFormDataLoaded: true,
+          ));
+          return;
         }
 
         // fetch the tx info for each input to get the value of each vin
@@ -128,7 +131,10 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
         final utxoBalances = await balanceRepository.getBalancesForUTXO(utxo);
         if (utxoBalances.length > 1) {
           // we should never have more than one balance for a utxo
-          throw Exception("invariant: more than one balance found for utxo");
+          emit(state.copyWith(
+            isFormDataLoaded: true,
+          ));
+          return;
         }
         asset = displayAssetName(
           utxoBalances[0].asset,
@@ -140,8 +146,11 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
 
         // sells will not have a fee
       } else {
-        // we should never get here; invalid psbt
-        throw Exception("invariant: invalid psbt");
+        // psbt swap criteria not met, load form without transaction data
+        emit(state.copyWith(
+          isFormDataLoaded: true,
+        ));
+        return;
       }
 
       emit(state.copyWith(
@@ -153,10 +162,10 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
         isFormDataLoaded: true,
       ));
     } catch (e) {
+      // if any failures were thrown, then psbt does not fit the criteria of a swap, and we just load the form without transaction data
       emit(state.copyWith(
-          isFormDataLoaded: true,
-          submissionStatus: FormzSubmissionStatus.failure,
-          error: e.toString()));
+        isFormDataLoaded: true,
+      ));
     }
   }
 
