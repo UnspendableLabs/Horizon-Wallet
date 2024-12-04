@@ -37,7 +37,6 @@ class _SignPsbtFormState extends State<SignPsbtForm> {
               child: CircularProgressIndicator(),
             );
           }
-
           // Once data is loaded, display the form
           return Padding(
             padding: const EdgeInsets.all(16.0),
@@ -57,7 +56,7 @@ class _SignPsbtFormState extends State<SignPsbtForm> {
                 // Conditional display based on psbtSignType
                 if (state.psbtSignType == PsbtSignTypeEnum.buy) ...[
                   SelectableText(
-                    'Swap for ${state.getAmount} ${state.asset}',
+                    'Swap ${state.bitcoinAmount!.toStringAsFixed(8)} BTC for ${state.getAmount} ${state.asset}',
                     style: const TextStyle(fontSize: 16),
                   ),
                   const SizedBox(height: 16),
@@ -67,43 +66,14 @@ class _SignPsbtFormState extends State<SignPsbtForm> {
                   ),
                   const SizedBox(height: 8),
                   SelectableText(
-                    'Total BTC to be sent: ${state.bitcoinAmount} BTC',
+                    'Total BTC to be sent: ${(state.fee! + state.bitcoinAmount!).toStringAsFixed(8)} BTC',
                     style: const TextStyle(fontSize: 16),
                   ),
                 ] else ...[
-                  // Keep existing display for non-buy transactions
-                  if (state.psbtSignType != null) ...[
-                    SelectableText(
-                      'Transaction Type: ${state.psbtSignType == PsbtSignTypeEnum.buy ? 'Buy' : 'Sell'}',
-                      style: const TextStyle(fontSize: 16),
-                    ),
-                  ],
-                  if (state.asset != null && state.asset!.isNotEmpty) ...[
-                    SelectableText(
-                      'Asset: ${state.asset}',
-                      style: const TextStyle(fontSize: 16),
-                    ),
-                  ],
-                  if (state.getAmount != null &&
-                      state.getAmount!.isNotEmpty) ...[
-                    SelectableText(
-                      'Amount of Asset: ${state.getAmount}',
-                      style: const TextStyle(fontSize: 16),
-                    ),
-                  ],
-                  if (state.bitcoinAmount != null &&
-                      state.bitcoinAmount!.isNotEmpty) ...[
-                    SelectableText(
-                      'Bitcoin Amount: ${state.bitcoinAmount}',
-                      style: const TextStyle(fontSize: 16),
-                    ),
-                  ],
-                  if (state.fee != null) ...[
-                    SelectableText(
-                      'Fee: ${state.fee!.toStringAsFixed(8)}',
-                      style: const TextStyle(fontSize: 16),
-                    ),
-                  ],
+                  SelectableText(
+                    'Swap ${state.getAmount} ${state.asset} for ${state.bitcoinAmount!.toStringAsFixed(8)} BTC',
+                    style: const TextStyle(fontSize: 16),
+                  ),
                 ],
 
                 const SizedBox(height: 20),

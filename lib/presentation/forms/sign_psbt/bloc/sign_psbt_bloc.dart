@@ -71,7 +71,7 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
     PsbtSignTypeEnum psbtSignType = PsbtSignTypeEnum.buy;
     String asset = '';
     String getAmount = '';
-    String bitcoinAmount = '';
+    double bitcoinAmount = 0;
     double fee = 0;
 
     if (decoded.vin.length > 1) {
@@ -106,15 +106,30 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
       getAmount = utxoBalances[0].quantityNormalized;
 
       final bitcoinAssetOutput = decoded.vout[1];
-      bitcoinAmount = bitcoinAssetOutput.value.toStringAsFixed(8);
+      bitcoinAmount = bitcoinAssetOutput.value;
 
       psbtSignType = PsbtSignTypeEnum.buy;
 
       print("utxo: $utxo");
-    } else {
+    } else if (decoded.vin.length == 1) {
       // Logic for 'sell' type (if applicable)
       psbtSignType = PsbtSignTypeEnum.sell;
+      final sellAssetInput = decoded.vin[0];
+      final utxo = "${sellAssetInput.txid}:${sellAssetInput.vout}";
+      final utxoBalances = await balanceRepository.getBalancesForUTXO(utxo);
+      if (utxoBalances.length > 1) {
+        throw Exception("invariant: more than one balance found for utxo");
+      }
+      asset = displayAssetName(
+        utxoBalances[0].asset,
+        utxoBalances[0].assetInfo.assetLongname,
+      );
+      getAmount = utxoBalances[0].quantityNormalized;
+      final bitcoinAssetOutput = decoded.vout[0];
+      bitcoinAmount = bitcoinAssetOutput.value;
       // Set asset, getAmount, bitcoinAmount accordingly
+    } else {
+      throw Exception("invariant: invalid psbt");
     }
 
     emit(state.copyWith(

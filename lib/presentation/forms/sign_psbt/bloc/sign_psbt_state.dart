@@ -23,7 +23,7 @@ class SignPsbtState with FormzMixin {
   final PsbtSignTypeEnum? psbtSignType;
   final String? asset;
   final String? getAmount;
-  final String? bitcoinAmount;
+  final double? bitcoinAmount;
   final double? fee;
   final bool isFormDataLoaded;
 
@@ -51,7 +51,7 @@ class SignPsbtState with FormzMixin {
     PsbtSignTypeEnum? psbtSignType,
     String? asset,
     String? getAmount,
-    String? bitcoinAmount,
+    double? bitcoinAmount,
     double? fee,
     bool? isFormDataLoaded,
   }) {
