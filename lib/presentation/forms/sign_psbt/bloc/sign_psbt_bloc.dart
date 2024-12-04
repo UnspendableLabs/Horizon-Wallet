@@ -1,13 +1,13 @@
 import "package:fpdart/fpdart.dart";
 import 'package:formz/formz.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:horizon/common/format.dart';
 
 import 'package:horizon/domain/entities/wallet.dart';
 import 'package:horizon/domain/entities/unified_address.dart';
 import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/entities/imported_address.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
+import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 import 'package:horizon/domain/services/bitcoind_service.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
@@ -29,6 +29,7 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
   final AddressService addressService;
   final ImportedAddressService importedAddressService;
   final BitcoindService bitcoindService;
+  final BitcoinRepository bitcoinRepository;
   final BalanceRepository balanceRepository;
   final UnifiedAddressRepository addressRepository;
   final AccountRepository accountRepository;
@@ -44,6 +45,7 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
     required this.importedAddressService,
     required this.bitcoindService,
     required this.balanceRepository,
+    required this.bitcoinRepository,
     required this.addressRepository,
     required this.accountRepository,
     required this.signInputs,
@@ -63,14 +65,14 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
 
     print("transactionHex: $transactionHex");
 
-    final decoded =
-        await bitcoindService.decoderawtransaction(transactionHex);
+    final decoded = await bitcoindService.decoderawtransaction(transactionHex);
 
     // Initialize variables
     PsbtSignTypeEnum psbtSignType = PsbtSignTypeEnum.buy;
     String asset = '';
     String getAmount = '';
     String bitcoinAmount = '';
+    double fee = 0;
 
     if (decoded.vin.length > 1) {
       final buyAssetInput = decoded.vin[1];
@@ -81,6 +83,22 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
         throw Exception("invariant: more than one balance found for utxo");
       }
 
+      // Get input values using Esplora API
+      double totalInputValue = 0;
+      for (final vin in decoded.vin) {
+        final txDetails = await bitcoinRepository.getTransaction(vin.txid).then(
+              (either) => either.fold(
+                (error) => throw Exception("GetTransactionInfo failure"),
+                (transactionInfo) => transactionInfo,
+              ),
+            );
+        totalInputValue += txDetails.vout[vin.vout].value;
+      }
+
+      double totalOutputValue =
+          decoded.vout.map((vout) => vout.value).fold(0, (a, b) => a + b);
+      fee = (totalInputValue / 100000000) - totalOutputValue;
+
       asset = displayAssetName(
         utxoBalances[0].asset,
         utxoBalances[0].assetInfo.assetLongname,
@@ -88,8 +106,7 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
       getAmount = utxoBalances[0].quantityNormalized;
 
       final bitcoinAssetOutput = decoded.vout[1];
-      bitcoinAmount = satoshisToBtc(bitcoinAssetOutput.value.toInt())
-          .toStringAsFixed(8);
+      bitcoinAmount = bitcoinAssetOutput.value.toStringAsFixed(8);
 
       psbtSignType = PsbtSignTypeEnum.buy;
 
@@ -105,6 +122,8 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
       asset: asset,
       getAmount: getAmount,
       bitcoinAmount: bitcoinAmount,
+      fee: fee,
+      isFormDataLoaded: true,
     ));
   }
 

@@ -24,7 +24,6 @@ import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 import 'package:horizon/domain/repositories/events_repository.dart';
 import 'package:horizon/domain/repositories/fairminter_repository.dart';
 import 'package:horizon/domain/repositories/transaction_local_repository.dart';
-import 'package:horizon/domain/repositories/utxo_repository.dart';
 import 'package:horizon/domain/services/bitcoind_service.dart';
 import 'package:horizon/presentation/common/colors.dart';
 import 'package:horizon/presentation/screens/close_dispenser/view/close_dispenser_page.dart';
@@ -85,6 +84,7 @@ class SignPsbtModal extends StatelessWidget {
   final ImportedAddressService importedAddressService;
   final UnifiedAddressRepository addressRepository;
   final AccountRepository accountRepository;
+  final BitcoinRepository bitcoinRepository;
   final List<int>? sighashTypes;
 
   const SignPsbtModal(
@@ -103,7 +103,8 @@ class SignPsbtModal extends StatelessWidget {
       required this.sighashTypes,
       required this.importedAddressService,
       required this.addressRepository,
-      required this.accountRepository});
+      required this.accountRepository,
+      required this.bitcoinRepository});
 
   @override
   Widget build(BuildContext context) {
@@ -117,6 +118,7 @@ class SignPsbtModal extends StatelessWidget {
         transactionService: transactionService,
         bitcoindService: bitcoindService,
         balanceRepository: balanceRepository,
+        bitcoinRepository: bitcoinRepository,
         walletRepository: walletRepository,
         encryptionService: encryptionService,
         addressService: addressService,
@@ -1433,6 +1435,7 @@ class DashboardPageState extends State<DashboardPage> {
               transactionService: GetIt.I.get<TransactionService>(),
               bitcoindService: GetIt.I.get<BitcoindService>(),
               balanceRepository: GetIt.I.get<BalanceRepository>(),
+              bitcoinRepository: GetIt.I.get<BitcoinRepository>(),
               walletRepository: GetIt.I.get<WalletRepository>(),
               encryptionService: GetIt.I.get<EncryptionService>(),
               addressService: GetIt.I.get<AddressService>(),

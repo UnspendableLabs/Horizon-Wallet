@@ -31,37 +31,81 @@ class _SignPsbtFormState extends State<SignPsbtForm> {
       },
       child: BlocBuilder<SignPsbtBloc, SignPsbtState>(
         builder: (context, state) {
+          if (!state.isFormDataLoaded) {
+            // Display a loading indicator while data is being fetched
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          }
+
+          // Once data is loaded, display the form
           return Padding(
             padding: const EdgeInsets.all(16.0),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Display the new fields
-                if (state.psbtSignType != null) ...[
+                // Transaction Details Section
+                const Text(
+                  'Transaction Details',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                // Conditional display based on psbtSignType
+                if (state.psbtSignType == PsbtSignTypeEnum.buy) ...[
                   SelectableText(
-                    'Transaction Type: ${state.psbtSignType == PsbtSignTypeEnum.buy ? 'Buy' : 'Sell'}',
+                    'Swap for ${state.getAmount} ${state.asset}',
                     style: const TextStyle(fontSize: 16),
                   ),
-                ],
-                if (state.asset != null && state.asset!.isNotEmpty) ...[
+                  const SizedBox(height: 16),
                   SelectableText(
-                    'Asset: ${state.asset}',
+                    'TX fee: ${state.fee?.toStringAsFixed(8)} BTC',
                     style: const TextStyle(fontSize: 16),
                   ),
-                ],
-                if (state.getAmount != null && state.getAmount!.isNotEmpty) ...[
+                  const SizedBox(height: 8),
                   SelectableText(
-                    'Amount of Asset: ${state.getAmount}',
+                    'Total BTC to be sent: ${state.bitcoinAmount} BTC',
                     style: const TextStyle(fontSize: 16),
                   ),
+                ] else ...[
+                  // Keep existing display for non-buy transactions
+                  if (state.psbtSignType != null) ...[
+                    SelectableText(
+                      'Transaction Type: ${state.psbtSignType == PsbtSignTypeEnum.buy ? 'Buy' : 'Sell'}',
+                      style: const TextStyle(fontSize: 16),
+                    ),
+                  ],
+                  if (state.asset != null && state.asset!.isNotEmpty) ...[
+                    SelectableText(
+                      'Asset: ${state.asset}',
+                      style: const TextStyle(fontSize: 16),
+                    ),
+                  ],
+                  if (state.getAmount != null &&
+                      state.getAmount!.isNotEmpty) ...[
+                    SelectableText(
+                      'Amount of Asset: ${state.getAmount}',
+                      style: const TextStyle(fontSize: 16),
+                    ),
+                  ],
+                  if (state.bitcoinAmount != null &&
+                      state.bitcoinAmount!.isNotEmpty) ...[
+                    SelectableText(
+                      'Bitcoin Amount: ${state.bitcoinAmount}',
+                      style: const TextStyle(fontSize: 16),
+                    ),
+                  ],
+                  if (state.fee != null) ...[
+                    SelectableText(
+                      'Fee: ${state.fee!.toStringAsFixed(8)}',
+                      style: const TextStyle(fontSize: 16),
+                    ),
+                  ],
                 ],
-                if (state.bitcoinAmount != null &&
-                    state.bitcoinAmount!.isNotEmpty) ...[
-                  SelectableText(
-                    'Bitcoin Amount: ${state.bitcoinAmount}',
-                    style: const TextStyle(fontSize: 16),
-                  ),
-                ],
+
                 const SizedBox(height: 20),
                 // Password Field
                 TextField(
@@ -81,7 +125,8 @@ class _SignPsbtFormState extends State<SignPsbtForm> {
                 ElevatedButton(
                   onPressed: state.submissionStatus.isInProgressOrSuccess
                       ? null
-                      : () => context.read<SignPsbtBloc>().add(SignPsbtSubmitted()),
+                      : () =>
+                          context.read<SignPsbtBloc>().add(SignPsbtSubmitted()),
                   child: state.submissionStatus.isInProgress
                       ? const CircularProgressIndicator()
                       : const Text('Sign PSBT'),

@@ -24,6 +24,8 @@ class SignPsbtState with FormzMixin {
   final String? asset;
   final String? getAmount;
   final String? bitcoinAmount;
+  final double? fee;
+  final bool isFormDataLoaded;
 
   SignPsbtState({
     this.password = const PasswordInput.pure(),
@@ -34,6 +36,8 @@ class SignPsbtState with FormzMixin {
     this.asset,
     this.getAmount,
     this.bitcoinAmount,
+    this.fee,
+    this.isFormDataLoaded = false,
   });
 
   @override
@@ -48,6 +52,8 @@ class SignPsbtState with FormzMixin {
     String? asset,
     String? getAmount,
     String? bitcoinAmount,
+    double? fee,
+    bool? isFormDataLoaded,
   }) {
     return SignPsbtState(
       password: password ?? this.password,
@@ -58,6 +64,8 @@ class SignPsbtState with FormzMixin {
       asset: asset ?? this.asset,
       getAmount: getAmount ?? this.getAmount,
       bitcoinAmount: bitcoinAmount ?? this.bitcoinAmount,
+      fee: fee ?? this.fee,
+      isFormDataLoaded: isFormDataLoaded ?? this.isFormDataLoaded,
     );
   }
 }
