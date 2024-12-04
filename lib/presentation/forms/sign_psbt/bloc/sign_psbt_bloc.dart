@@ -1,11 +1,14 @@
 import "package:fpdart/fpdart.dart";
 import 'package:formz/formz.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:horizon/common/format.dart';
 
 import 'package:horizon/domain/entities/wallet.dart';
 import 'package:horizon/domain/entities/unified_address.dart';
 import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/entities/imported_address.dart';
+import 'package:horizon/domain/repositories/balance_repository.dart';
+import 'package:horizon/domain/services/bitcoind_service.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
@@ -13,6 +16,7 @@ import 'package:horizon/domain/repositories/unified_address_repository.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/imported_address_service.dart';
+import 'package:horizon/presentation/common/shared_util.dart';
 
 import "./sign_psbt_state.dart";
 import "./sign_psbt_event.dart";
@@ -24,6 +28,8 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
   final EncryptionService encryptionService;
   final AddressService addressService;
   final ImportedAddressService importedAddressService;
+  final BitcoindService bitcoindService;
+  final BalanceRepository balanceRepository;
   final UnifiedAddressRepository addressRepository;
   final AccountRepository accountRepository;
   final Map<String, List<int>> signInputs;
@@ -36,6 +42,8 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
     required this.encryptionService,
     required this.addressService,
     required this.importedAddressService,
+    required this.bitcoindService,
+    required this.balanceRepository,
     required this.addressRepository,
     required this.accountRepository,
     required this.signInputs,
@@ -50,11 +58,54 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
     FetchFormEvent event,
     Emitter<SignPsbtState> emit,
   ) async {
-    final decoded =
+    final transactionHex =
         transactionService.psbtToUnsignedTransactionHex(unsignedPsbt);
 
-    print("decoded: $decoded");
+    print("transactionHex: $transactionHex");
 
+    final decoded =
+        await bitcoindService.decoderawtransaction(transactionHex);
+
+    // Initialize variables
+    PsbtSignTypeEnum psbtSignType = PsbtSignTypeEnum.buy;
+    String asset = '';
+    String getAmount = '';
+    String bitcoinAmount = '';
+
+    if (decoded.vin.length > 1) {
+      final buyAssetInput = decoded.vin[1];
+      final utxo = "${buyAssetInput.txid}:${buyAssetInput.vout}";
+
+      final utxoBalances = await balanceRepository.getBalancesForUTXO(utxo);
+      if (utxoBalances.length > 1) {
+        throw Exception("invariant: more than one balance found for utxo");
+      }
+
+      asset = displayAssetName(
+        utxoBalances[0].asset,
+        utxoBalances[0].assetInfo.assetLongname,
+      );
+      getAmount = utxoBalances[0].quantityNormalized;
+
+      final bitcoinAssetOutput = decoded.vout[1];
+      bitcoinAmount = satoshisToBtc(bitcoinAssetOutput.value.toInt())
+          .toStringAsFixed(8);
+
+      psbtSignType = PsbtSignTypeEnum.buy;
+
+      print("utxo: $utxo");
+    } else {
+      // Logic for 'sell' type (if applicable)
+      psbtSignType = PsbtSignTypeEnum.sell;
+      // Set asset, getAmount, bitcoinAmount accordingly
+    }
+
+    emit(state.copyWith(
+      psbtSignType: psbtSignType,
+      asset: asset,
+      getAmount: getAmount,
+      bitcoinAmount: bitcoinAmount,
+    ));
   }
 
   _handlePasswordChanged(PasswordChanged event, Emitter<SignPsbtState> emit) {

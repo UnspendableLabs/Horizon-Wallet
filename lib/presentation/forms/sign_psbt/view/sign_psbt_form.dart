@@ -36,6 +36,33 @@ class _SignPsbtFormState extends State<SignPsbtForm> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
+                // Display the new fields
+                if (state.psbtSignType != null) ...[
+                  SelectableText(
+                    'Transaction Type: ${state.psbtSignType == PsbtSignTypeEnum.buy ? 'Buy' : 'Sell'}',
+                    style: const TextStyle(fontSize: 16),
+                  ),
+                ],
+                if (state.asset != null && state.asset!.isNotEmpty) ...[
+                  SelectableText(
+                    'Asset: ${state.asset}',
+                    style: const TextStyle(fontSize: 16),
+                  ),
+                ],
+                if (state.getAmount != null && state.getAmount!.isNotEmpty) ...[
+                  SelectableText(
+                    'Amount of Asset: ${state.getAmount}',
+                    style: const TextStyle(fontSize: 16),
+                  ),
+                ],
+                if (state.bitcoinAmount != null &&
+                    state.bitcoinAmount!.isNotEmpty) ...[
+                  SelectableText(
+                    'Bitcoin Amount: ${state.bitcoinAmount}',
+                    style: const TextStyle(fontSize: 16),
+                  ),
+                ],
+                const SizedBox(height: 20),
                 // Password Field
                 TextField(
                   onChanged: (password) => context
@@ -49,19 +76,17 @@ class _SignPsbtFormState extends State<SignPsbtForm> {
                   ),
                   obscureText: true,
                 ),
-                const SizedBox(height: 20), // Submit Button
+                const SizedBox(height: 20),
+                // Submit Button
                 ElevatedButton(
                   onPressed: state.submissionStatus.isInProgressOrSuccess
                       ? null
-                      : () =>
-                          context.read<SignPsbtBloc>().add(SignPsbtSubmitted()),
+                      : () => context.read<SignPsbtBloc>().add(SignPsbtSubmitted()),
                   child: state.submissionStatus.isInProgress
                       ? const CircularProgressIndicator()
                       : const Text('Sign PSBT'),
                 ),
-
                 const SizedBox(height: 20),
-
                 // Status/Error Message
                 if (state.submissionStatus.isFailure) ...[
                   Text(

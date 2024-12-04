@@ -24,6 +24,8 @@ import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 import 'package:horizon/domain/repositories/events_repository.dart';
 import 'package:horizon/domain/repositories/fairminter_repository.dart';
 import 'package:horizon/domain/repositories/transaction_local_repository.dart';
+import 'package:horizon/domain/repositories/utxo_repository.dart';
+import 'package:horizon/domain/services/bitcoind_service.dart';
 import 'package:horizon/presentation/common/colors.dart';
 import 'package:horizon/presentation/screens/close_dispenser/view/close_dispenser_page.dart';
 import 'package:horizon/presentation/screens/compose_dispense/view/compose_dispense_modal.dart';
@@ -76,6 +78,8 @@ class SignPsbtModal extends StatelessWidget {
   final WalletRepository walletRepository;
   final EncryptionService encryptionService;
   final AddressService addressService;
+  final BitcoindService bitcoindService;
+  final BalanceRepository balanceRepository;
   final RPCSignPsbtSuccessCallback onSuccess;
   final Map<String, List<int>> signInputs;
   final ImportedAddressService importedAddressService;
@@ -90,6 +94,8 @@ class SignPsbtModal extends StatelessWidget {
       required this.walletRepository,
       required this.encryptionService,
       required this.addressService,
+      required this.bitcoindService,
+      required this.balanceRepository,
       required this.tabId,
       required this.requestId,
       required this.onSuccess,
@@ -109,6 +115,8 @@ class SignPsbtModal extends StatelessWidget {
         sighashTypes: sighashTypes,
         unsignedPsbt: unsignedPsbt,
         transactionService: transactionService,
+        bitcoindService: bitcoindService,
+        balanceRepository: balanceRepository,
         walletRepository: walletRepository,
         encryptionService: encryptionService,
         addressService: addressService,
@@ -1423,6 +1431,8 @@ class DashboardPageState extends State<DashboardPage> {
               addressRepository: GetIt.I<UnifiedAddressRepository>(),
               importedAddressService: GetIt.I.get<ImportedAddressService>(),
               transactionService: GetIt.I.get<TransactionService>(),
+              bitcoindService: GetIt.I.get<BitcoindService>(),
+              balanceRepository: GetIt.I.get<BalanceRepository>(),
               walletRepository: GetIt.I.get<WalletRepository>(),
               encryptionService: GetIt.I.get<EncryptionService>(),
               addressService: GetIt.I.get<AddressService>(),

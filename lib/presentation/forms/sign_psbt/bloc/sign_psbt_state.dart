@@ -12,17 +12,28 @@ class PasswordInput extends FormzInput<String, PasswordValidationError> {
   }
 }
 
+enum PsbtSignTypeEnum { buy, sell }
+
 class SignPsbtState with FormzMixin {
   final PasswordInput password;
   final FormzSubmissionStatus submissionStatus;
   final String? signedPsbt;
   final String? error;
 
+  final PsbtSignTypeEnum? psbtSignType;
+  final String? asset;
+  final String? getAmount;
+  final String? bitcoinAmount;
+
   SignPsbtState({
     this.password = const PasswordInput.pure(),
     this.submissionStatus = FormzSubmissionStatus.initial,
     this.signedPsbt,
     this.error,
+    this.psbtSignType,
+    this.asset,
+    this.getAmount,
+    this.bitcoinAmount,
   });
 
   @override
@@ -33,11 +44,20 @@ class SignPsbtState with FormzMixin {
     FormzSubmissionStatus? submissionStatus,
     String? signedPsbt,
     String? error,
+    PsbtSignTypeEnum? psbtSignType,
+    String? asset,
+    String? getAmount,
+    String? bitcoinAmount,
   }) {
     return SignPsbtState(
-        password: password ?? this.password,
-        submissionStatus: submissionStatus ?? this.submissionStatus,
-        signedPsbt: signedPsbt ?? this.signedPsbt,
-        error: error ?? this.error);
+      password: password ?? this.password,
+      submissionStatus: submissionStatus ?? this.submissionStatus,
+      signedPsbt: signedPsbt ?? this.signedPsbt,
+      error: error ?? this.error,
+      psbtSignType: psbtSignType ?? this.psbtSignType,
+      asset: asset ?? this.asset,
+      getAmount: getAmount ?? this.getAmount,
+      bitcoinAmount: bitcoinAmount ?? this.bitcoinAmount,
+    );
   }
 }
