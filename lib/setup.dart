@@ -473,7 +473,8 @@ Future<void> setup() async {
                 null,
               );
 
-              Future.delayed(const Duration(seconds: 2), html.window.close);
+
+              Future.delayed(const Duration(seconds: 0), html.window.close);
             }
           : (args) => GetIt.I<Logger>().debug("""
                RPCGetAddressesSuccessCallback called with:
@@ -491,7 +492,7 @@ Future<void> setup() async {
                 null,
               );
 
-              Future.delayed(const Duration(seconds: 2), html.window.close);
+              Future.delayed(const Duration(seconds: 0), html.window.close);
             }
           : (args) => GetIt.I<Logger>().debug("""
                RPCGetSignPsbtSuccessCallback called with:
