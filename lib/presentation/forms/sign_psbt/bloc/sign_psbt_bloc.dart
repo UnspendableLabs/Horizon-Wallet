@@ -183,6 +183,8 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
 
     emit(state.copyWith(
       password: password,
+      error: null,
+      submissionStatus: FormzSubmissionStatus.initial,
     ));
   }
 
@@ -195,8 +197,17 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
         throw Exception("invariant: wallet not found");
       }
 
-      String privateKey = await encryptionService.decrypt(
-          wallet.encryptedPrivKey, state.password.value);
+      String privateKey = '';
+      try {
+        privateKey = await encryptionService.decrypt(
+            wallet.encryptedPrivKey, state.password.value);
+      } catch (e) {
+        emit(state.copyWith(
+          submissionStatus: FormzSubmissionStatus.failure,
+          error: "Incorrect password.",
+        ));
+        return;
+      }
 
       Map<int, String> inputPrivateKeyMap = {};
 

@@ -473,7 +473,6 @@ Future<void> setup() async {
                 null,
               );
 
-
               Future.delayed(const Duration(seconds: 0), html.window.close);
             }
           : (args) => GetIt.I<Logger>().debug("""
