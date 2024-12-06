@@ -244,8 +244,6 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
     return state.balancesState.maybeWhen(
         orElse: () => const AssetDropdownLoading(),
         success: (balances) {
-          // the problem is here, somehow balances is being reset
-          // to a single balance...
           final addressBalances =
               balances.where((balance) => balance.utxo == null).toList();
 
@@ -563,7 +561,6 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
 
   List<Widget> _buildInitialFormFields(
       ComposeDispenserState state, bool loading, GlobalKey<FormState> formKey) {
-    print(state.dialogState);
     return [
       state.dialogState.maybeWhen(orElse: () {
         return const SizedBox.shrink();
