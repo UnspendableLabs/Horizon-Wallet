@@ -442,7 +442,6 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
         controller: TextEditingController(text: _formatMintQuantity()),
         enabled: false,
       ),
-      const SizedBox(height: 16.0),
     ];
   }
 

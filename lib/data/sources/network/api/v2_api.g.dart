@@ -2248,9 +2248,10 @@ VerboseCreditParams _$VerboseCreditParamsFromJson(Map<String, dynamic> json) =>
       quantity: (json['quantity'] as num).toInt(),
       txIndex: (json['tx_index'] as num).toInt(),
       blockTime: (json['block_time'] as num).toInt(),
-      assetInfo:
-          AssetInfoModel.fromJson(json['asset_info'] as Map<String, dynamic>),
-      quantityNormalized: json['quantity_normalized'] as String,
+      assetInfo: json['asset_info'] == null
+          ? null
+          : AssetInfoModel.fromJson(json['asset_info'] as Map<String, dynamic>),
+      quantityNormalized: json['quantity_normalized'] as String?,
     );
 
 Map<String, dynamic> _$VerboseCreditParamsToJson(
@@ -2278,9 +2279,10 @@ VerboseDebitParams _$VerboseDebitParamsFromJson(Map<String, dynamic> json) =>
       quantity: (json['quantity'] as num).toInt(),
       txIndex: (json['tx_index'] as num).toInt(),
       blockTime: (json['block_time'] as num).toInt(),
-      assetInfo:
-          AssetInfoModel.fromJson(json['asset_info'] as Map<String, dynamic>),
-      quantityNormalized: json['quantity_normalized'] as String,
+      assetInfo: json['asset_info'] == null
+          ? null
+          : AssetInfoModel.fromJson(json['asset_info'] as Map<String, dynamic>),
+      quantityNormalized: json['quantity_normalized'] as String?,
     );
 
 Map<String, dynamic> _$VerboseDebitParamsToJson(VerboseDebitParams instance) =>
@@ -5685,6 +5687,36 @@ class _V2Api implements V2Api {
                   (i) => VerboseEvent.fromJson(i as Map<String, dynamic>))
               .toList()
           : List.empty(),
+    );
+    return _value;
+  }
+
+  @override
+  Future<Response<int>> estimateAttachXcpFees() async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{};
+    final _headers = <String, dynamic>{};
+    const Map<String, dynamic>? _data = null;
+    final _result = await _dio
+        .fetch<Map<String, dynamic>>(_setStreamType<Response<int>>(Options(
+      method: 'GET',
+      headers: _headers,
+      extra: _extra,
+    )
+            .compose(
+              _dio.options,
+              '/compose/attach/estimatexcpfees',
+              queryParameters: queryParameters,
+              data: _data,
+            )
+            .copyWith(
+                baseUrl: _combineBaseUrls(
+              _dio.options.baseUrl,
+              baseUrl,
+            ))));
+    final _value = Response<int>.fromJson(
+      _result.data!,
+      (json) => json as int,
     );
     return _value;
   }

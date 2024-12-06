@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:horizon/domain/entities/asset_info.dart';
+import 'package:horizon/domain/repositories/compose_repository.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:horizon/presentation/screens/compose_attach_utxo/usecase/fetch_form_data.dart';
 import 'package:horizon/domain/entities/fee_estimates.dart';
@@ -12,18 +13,22 @@ class MockGetFeeEstimatesUseCase extends Mock
 
 class MockBalanceRepository extends Mock implements BalanceRepository {}
 
+class MockComposeRepository extends Mock implements ComposeRepository {}
+
 void main() {
   late FetchComposeAttachUtxoFormDataUseCase useCase;
   late MockGetFeeEstimatesUseCase mockGetFeeEstimatesUseCase;
   late MockBalanceRepository mockBalanceRepository;
+  late MockComposeRepository mockComposeRepository;
 
   setUp(() {
     mockGetFeeEstimatesUseCase = MockGetFeeEstimatesUseCase();
     mockBalanceRepository = MockBalanceRepository();
-
+    mockComposeRepository = MockComposeRepository();
     useCase = FetchComposeAttachUtxoFormDataUseCase(
       getFeeEstimatesUseCase: mockGetFeeEstimatesUseCase,
       balanceRepository: mockBalanceRepository,
+      composeRepository: mockComposeRepository,
     );
   });
 
@@ -45,78 +50,34 @@ void main() {
       utxoAddress: null,
     );
 
+    const mockXcpFeeEstimate = 3;
+
     test('should return fee estimates and balance when both fetches succeed',
         () async {
       // Arrange
       when(() => mockGetFeeEstimatesUseCase.call())
           .thenAnswer((_) async => feeEstimates);
 
-      when(() => mockBalanceRepository.getBalancesForAddressAndAssetVerbose(
+      when(() => mockBalanceRepository.getBalancesForAddress(
             testAddress,
-            testAssetName,
           )).thenAnswer((_) async => [balance]);
 
+      when(() => mockComposeRepository.estimateComposeAttachXcpFees())
+          .thenAnswer((_) async => mockXcpFeeEstimate);
+
       // Act
-      final result = await useCase.call(testAddress, testAssetName);
+      final result = await useCase.call(testAddress);
 
       // Assert
       expect(result.$1, feeEstimates);
-      expect(result.$2, balance);
-
+      expect(result.$2, [balance]);
+      expect(result.$3, mockXcpFeeEstimate);
       verify(() => mockGetFeeEstimatesUseCase.call()).called(1);
-      verify(() => mockBalanceRepository.getBalancesForAddressAndAssetVerbose(
+      verify(() => mockBalanceRepository.getBalancesForAddress(
             testAddress,
-            testAssetName,
           )).called(1);
-    });
-
-    test(
-        'should throw FetchBalanceException when balance contains multiple asset balances',
-        () async {
-      // Arrange
-      when(() => mockGetFeeEstimatesUseCase.call())
-          .thenAnswer((_) async => feeEstimates);
-
-      when(() => mockBalanceRepository.getBalancesForAddressAndAssetVerbose(
-            testAddress,
-            testAssetName,
-          )).thenAnswer((_) async => [balance, balance]);
-
-      // Act & Assert
-      expect(
-        () => useCase.call(testAddress, testAssetName),
-        throwsA(isA<FetchBalanceException>()),
-      );
-
-      verify(() => mockGetFeeEstimatesUseCase.call()).called(1);
-      verify(() => mockBalanceRepository.getBalancesForAddressAndAssetVerbose(
-            testAddress,
-            testAssetName,
-          )).called(1);
-    });
-
-    test('should throw FetchBalanceException when balance contains no balances',
-        () async {
-      // Arrange
-      when(() => mockGetFeeEstimatesUseCase.call())
-          .thenAnswer((_) async => feeEstimates);
-
-      when(() => mockBalanceRepository.getBalancesForAddressAndAssetVerbose(
-            testAddress,
-            testAssetName,
-          )).thenAnswer((_) async => []);
-
-      // Act & Assert
-      expect(
-        () => useCase.call(testAddress, testAssetName),
-        throwsA(isA<FetchBalanceException>()),
-      );
-
-      verify(() => mockGetFeeEstimatesUseCase.call()).called(1);
-      verify(() => mockBalanceRepository.getBalancesForAddressAndAssetVerbose(
-            testAddress,
-            testAssetName,
-          )).called(1);
+      verify(() => mockComposeRepository.estimateComposeAttachXcpFees())
+          .called(1);
     });
 
     test('should throw FetchBalanceException when balance fetch fails',
@@ -125,21 +86,19 @@ void main() {
       when(() => mockGetFeeEstimatesUseCase.call())
           .thenAnswer((_) async => feeEstimates);
 
-      when(() => mockBalanceRepository.getBalancesForAddressAndAssetVerbose(
+      when(() => mockBalanceRepository.getBalancesForAddress(
             testAddress,
-            testAssetName,
           )).thenThrow(Exception('Balance fetch failed'));
 
       // Act & Assert
       expect(
-        () => useCase.call(testAddress, testAssetName),
+        () => useCase.call(testAddress),
         throwsA(isA<FetchBalanceException>()),
       );
 
       verify(() => mockGetFeeEstimatesUseCase.call()).called(1);
-      verify(() => mockBalanceRepository.getBalancesForAddressAndAssetVerbose(
+      verify(() => mockBalanceRepository.getBalancesForAddress(
             testAddress,
-            testAssetName,
           )).called(1);
     });
 
@@ -150,22 +109,60 @@ void main() {
       when(() => mockGetFeeEstimatesUseCase.call())
           .thenThrow(Exception('Fee estimates fetch failed'));
 
-      when(() => mockBalanceRepository.getBalancesForAddressAndAssetVerbose(
+      when(() => mockBalanceRepository.getBalancesForAddress(
             testAddress,
-            testAssetName,
           )).thenAnswer((_) async => [balance]);
 
       // Act & Assert
       expect(
-        () => useCase.call(testAddress, testAssetName),
+        () => useCase.call(testAddress),
         throwsA(isA<FetchFeeEstimatesException>()),
       );
 
       verify(() => mockGetFeeEstimatesUseCase.call()).called(1);
-      verify(() => mockBalanceRepository.getBalancesForAddressAndAssetVerbose(
+      verify(() => mockBalanceRepository.getBalancesForAddress(
             testAddress,
-            testAssetName,
           )).called(1);
     });
+  });
+
+  test(
+      'should throw FetchAttachXcpFeesException when an xcp fees estimate error occurs',
+      () async {
+    const testAddress = 'test-address';
+    const testAssetName = 'ASSET_NAME';
+    const feeEstimates = FeeEstimates(fast: 10, medium: 5, slow: 2);
+
+    final balance = Balance(
+      address: testAddress,
+      asset: testAssetName,
+      quantity: 1000,
+      quantityNormalized: '0.00001000',
+      assetInfo: const AssetInfo(
+        description: testAssetName,
+        divisible: true,
+      ),
+      utxo: null,
+      utxoAddress: null,
+    );
+
+    // Arrange
+    when(() => mockGetFeeEstimatesUseCase.call())
+        .thenAnswer((_) async => feeEstimates);
+    when(() => mockBalanceRepository.getBalancesForAddress(testAddress))
+        .thenAnswer((_) async => [balance]);
+    when(() => mockComposeRepository.estimateComposeAttachXcpFees())
+        .thenThrow(Exception('xcp fees estimate error'));
+
+    // Act & Assert
+    expect(
+      () => useCase.call(testAddress),
+      throwsA(isA<FetchAttachXcpFeesException>()),
+    );
+    verify(() => mockGetFeeEstimatesUseCase.call()).called(1);
+    verify(() => mockBalanceRepository.getBalancesForAddress(testAddress))
+        .called(1);
+    verify(() => mockComposeRepository.estimateComposeAttachXcpFees())
+        .called(1);
   });
 }

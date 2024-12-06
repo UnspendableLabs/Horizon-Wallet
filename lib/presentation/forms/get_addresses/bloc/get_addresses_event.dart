@@ -18,3 +18,8 @@ class ImportedAddressSelected extends GetAddressesEvent {
   final String address;
   ImportedAddressSelected(this.address);
 }
+
+class PasswordChanged extends GetAddressesEvent {
+  final String password;
+  PasswordChanged(this.password);
+}

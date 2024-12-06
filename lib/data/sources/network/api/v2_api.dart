@@ -2166,8 +2166,8 @@ class VerboseEnhancedSendParams extends EnhancedSendParams {
 @JsonSerializable(fieldRename: FieldRename.snake)
 class VerboseCreditParams extends CreditParams {
   final int blockTime;
-  final AssetInfoModel assetInfo;
-  final String quantityNormalized;
+  final AssetInfoModel? assetInfo;
+  final String? quantityNormalized;
 
   VerboseCreditParams({
     required super.address,
@@ -2178,8 +2178,8 @@ class VerboseCreditParams extends CreditParams {
     required super.quantity,
     required super.txIndex,
     required this.blockTime,
-    required this.assetInfo,
-    required this.quantityNormalized,
+    this.assetInfo,
+    this.quantityNormalized,
   });
 
   factory VerboseCreditParams.fromJson(Map<String, dynamic> json) =>
@@ -2189,8 +2189,8 @@ class VerboseCreditParams extends CreditParams {
 @JsonSerializable(fieldRename: FieldRename.snake)
 class VerboseDebitParams extends DebitParams {
   final int blockTime;
-  final AssetInfoModel assetInfo;
-  final String quantityNormalized;
+  final AssetInfoModel? assetInfo;
+  final String? quantityNormalized;
 
   VerboseDebitParams({
     required super.action,
@@ -2201,8 +2201,8 @@ class VerboseDebitParams extends DebitParams {
     required super.quantity,
     required super.txIndex,
     required this.blockTime,
-    required this.assetInfo,
-    required this.quantityNormalized,
+    this.assetInfo,
+    this.quantityNormalized,
   });
 
   factory VerboseDebitParams.fromJson(Map<String, dynamic> json) =>
@@ -4612,6 +4612,9 @@ abstract class V2Api {
     @Query("limit") int? limit,
     @Query("event_name") String? eventName,
   ]);
+
+  @GET("/compose/attach/estimatexcpfees")
+  Future<Response<int>> estimateAttachXcpFees();
 
   @GET("/addresses/{address}/compose/attach?verbose=true")
   Future<Response<ComposeAttachUtxoResponseModel>> composeAttachUtxo(

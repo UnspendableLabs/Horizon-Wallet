@@ -1,18 +1,19 @@
 import 'dart:js_interop';
 import 'dart:typed_data';
+
 import 'package:collection/collection.dart';
 import 'package:convert/convert.dart';
 import 'package:get_it/get_it.dart';
 import 'package:hex/hex.dart';
 import 'package:horizon/domain/entities/utxo.dart';
 import 'package:horizon/domain/repositories/bitcoin_repository.dart';
+import 'package:horizon/domain/repositories/config_repository.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
 import 'package:horizon/js/bitcoin.dart' as bitcoinjs;
 import 'package:horizon/js/buffer.dart';
 import 'package:horizon/js/ecpair.dart' as ecpair;
-import 'package:horizon/js/tiny_secp256k1.dart' as tinysecp256k1js;
 import 'package:horizon/js/horizon_utils.dart' as horizon_utils;
-import 'package:horizon/domain/repositories/config_repository.dart';
+import 'package:horizon/js/tiny_secp256k1.dart' as tinysecp256k1js;
 import 'package:horizon/presentation/common/shared_util.dart';
 
 const DEFAULT_SEQUENCE = 0xffffffff;
@@ -36,13 +37,8 @@ class TransactionServiceImpl implements TransactionService {
   TransactionServiceImpl({required this.config});
 
   @override
-  String signPsbt(String psbtHex, Map<int, String> inputPrivateKeyMap) {
-    // We assume segwit for now
-    final sigHashTypes = [
-      (SIGHASH_SINGLE | SIGHASH_ANYONECANPAY).toJS,
-      (SIGHASH_ALL | SIGHASH_ANYONECANPAY).toJS
-    ].toJS;
-
+  String signPsbt(String psbtHex, Map<int, String> inputPrivateKeyMap,
+      [List<int>? sighashTypes]) {
     bitcoinjs.Psbt psbt = bitcoinjs.Psbt.fromHex(psbtHex);
 
     for (final entry in inputPrivateKeyMap.entries) {
@@ -54,7 +50,8 @@ class TransactionServiceImpl implements TransactionService {
       final network = _getNetwork();
       dynamic signer = ecpairFactory.fromPrivateKey(privKeyJS, network);
 
-      psbt.signInput(index, signer, sigHashTypes);
+      psbt.signInput(
+          index, signer, sighashTypes?.map((e) => e.toJS).toList().toJS);
     }
 
     return psbt.toHex();
@@ -92,7 +89,7 @@ class TransactionServiceImpl implements TransactionService {
       var txHash = HEX.encode(input.hash.toDart.reversed.toList());
       final txHashKey = "$txHash:${input.index}";
 
-      var prev = utxoMap[txHashKey];
+      var prev = utxoMap["$txHash:${input.index}"];
       if (prev != null) {
         if (isSegwit) {
           input.witnessUtxo =
@@ -340,4 +337,23 @@ class TransactionServiceImpl implements TransactionService {
         Network.testnet => ecpair.testnet,
         Network.regtest => ecpair.regtest,
       };
+
+  @override
+  String psbtToUnsignedTransactionHex(String psbtHex) {
+    bitcoinjs.Psbt psbt = bitcoinjs.Psbt.fromHex(psbtHex);
+
+    // Access the unsigned transaction from the global map
+    bitcoinjs.Transaction tx = psbt.data.globalMap.unsignedTx;
+
+    // Get the serialized transaction buffer
+    Buffer txBuffer = tx.toBuffer();
+
+    // Convert the buffer to Uint8List
+    Uint8List txBytes = txBuffer.toDart;
+
+    // Convert the bytes to hex string
+    String txHex = hex.encode(txBytes);
+
+    return txHex;
+  }
 }

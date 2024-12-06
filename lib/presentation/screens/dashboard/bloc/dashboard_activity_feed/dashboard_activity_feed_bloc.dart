@@ -134,7 +134,9 @@ class DashboardActivityFeedBloc
         final (mempoolEvents, _, _) =
             await eventsRepository.getMempoolEventsByAddressVerbose(
                 address: address, whitelist: DEFAULT_WHITELIST);
-        newCounterpartyEvents.addAll(mempoolEvents);
+
+        newCounterpartyEvents
+            .addAll(_filterCounterpartyMempoolEvents(mempoolEvents));
       }
 
       // 2) compute all new btc transactions above last seen
@@ -405,7 +407,7 @@ class DashboardActivityFeedBloc
       // get most recent confirmed tx
       final addresses = [currentAddress];
 
-      // query local transactions above mose recent confirmed event
+      // query local transactions above most recent confirmed event
       final localTransactions =
           await transactionLocalRepository.getAllByAddresses(addresses);
 
@@ -414,16 +416,14 @@ class DashboardActivityFeedBloc
           unconfirmed: true,
           whitelist: DEFAULT_WHITELIST);
 
-      // factor out counterparty events by unconfirmed / confirmed
-      List<VerboseEvent> counterpartyMempool = [];
+      // Filter counterparty events
+      List<VerboseEvent> counterpartyMempool =
+          _filterCounterpartyMempoolEvents(counterpartyEvents);
       List<VerboseEvent> counterpartyConfirmed = [];
 
       for (final event in counterpartyEvents) {
-        switch (event.state) {
-          case EventStateMempool():
-            counterpartyMempool.add(event);
-          case EventStateConfirmed():
-            counterpartyConfirmed.add(event);
+        if (event.state is EventStateConfirmed) {
+          counterpartyConfirmed.add(event);
         }
       }
 
@@ -552,16 +552,6 @@ class DashboardActivityFeedBloc
                 ? counterpartyEvents[0].txHash
                 : null,
             transactions: transactions));
-
-        // final filteredTransactions = transactions.where((tx) => tx.hash == '1ecd07d026c889b56e9de2ecfa1cd8657158d88d91f15cf6a2c9e73d76b53f57').toList();
-
-        // emit(DashboardActivityFeedStateCompleteOk(
-        //     nextCursor: null,
-        //     newTransactionCount: 0,
-        //     mostRecentBitcoinTxHash:
-        //         null,
-        //     mostRecentCounterpartyEventHash:  null,
-        //     transactions: filteredTransactions));
       }
     } catch (e) {
       rethrow;
@@ -596,5 +586,32 @@ class DashboardActivityFeedBloc
     // Number of confirmations = Current Bitcoin block height - Transaction block height + 1
     final confirmations = blockHeight - blockIndex + 1;
     return confirmations;
+  }
+
+  List<VerboseEvent> _filterCounterpartyMempoolEvents(
+      List<VerboseEvent> events) {
+    final fairmintAssetIssuanceHashes = <String>{};
+    final filteredEvents = <VerboseEvent>[];
+
+    for (final event in events) {
+      if (event.state is EventStateMempool) {
+        if (event.event == 'ASSET_ISSUANCE' &&
+            (event as VerboseAssetIssuanceEvent).params.assetEvents ==
+                'fairmint') {
+          if (event.txHash != null) {
+            fairmintAssetIssuanceHashes.add(event.txHash!);
+          }
+          filteredEvents.add(event);
+        } else if (event.event == 'NEW_FAIRMINT' &&
+            fairmintAssetIssuanceHashes.contains(event.txHash)) {
+          // Skip adding NEW_FAIRMINT if corresponding ASSET_ISSUANCE with the same tx_hash is present
+          continue;
+        } else {
+          filteredEvents.add(event);
+        }
+      }
+    }
+
+    return filteredEvents;
   }
 }

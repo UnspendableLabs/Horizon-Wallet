@@ -43,6 +43,8 @@ abstract class ComposeRepository {
   Future<ComposeAttachUtxoResponse> composeAttachUtxo(
       int fee, List<Utxo> inputsSet, ComposeAttachUtxoParams params);
 
+  Future<int> estimateComposeAttachXcpFees();
+
   Future<ComposeDetachUtxoResponse> composeDetachUtxo(
       int fee, List<Utxo> inputsSet, ComposeDetachUtxoParams params);
 

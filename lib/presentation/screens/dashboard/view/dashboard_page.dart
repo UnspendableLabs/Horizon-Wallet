@@ -24,6 +24,7 @@ import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 import 'package:horizon/domain/repositories/events_repository.dart';
 import 'package:horizon/domain/repositories/fairminter_repository.dart';
 import 'package:horizon/domain/repositories/transaction_local_repository.dart';
+import 'package:horizon/domain/services/bitcoind_service.dart';
 import 'package:horizon/presentation/common/colors.dart';
 import 'package:horizon/presentation/screens/close_dispenser/view/close_dispenser_page.dart';
 import 'package:horizon/presentation/screens/compose_dispense/view/compose_dispense_modal.dart';
@@ -50,6 +51,7 @@ import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
 import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
 
+import 'package:horizon/domain/services/public_key_service.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:sliver_tools/sliver_tools.dart';
 import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
@@ -75,11 +77,15 @@ class SignPsbtModal extends StatelessWidget {
   final WalletRepository walletRepository;
   final EncryptionService encryptionService;
   final AddressService addressService;
+  final BitcoindService bitcoindService;
+  final BalanceRepository balanceRepository;
   final RPCSignPsbtSuccessCallback onSuccess;
   final Map<String, List<int>> signInputs;
   final ImportedAddressService importedAddressService;
   final UnifiedAddressRepository addressRepository;
   final AccountRepository accountRepository;
+  final BitcoinRepository bitcoinRepository;
+  final List<int>? sighashTypes;
 
   const SignPsbtModal(
       {super.key,
@@ -88,13 +94,17 @@ class SignPsbtModal extends StatelessWidget {
       required this.walletRepository,
       required this.encryptionService,
       required this.addressService,
+      required this.bitcoindService,
+      required this.balanceRepository,
       required this.tabId,
       required this.requestId,
       required this.onSuccess,
       required this.signInputs,
+      required this.sighashTypes,
       required this.importedAddressService,
       required this.addressRepository,
-      required this.accountRepository});
+      required this.accountRepository,
+      required this.bitcoinRepository});
 
   @override
   Widget build(BuildContext context) {
@@ -103,8 +113,12 @@ class SignPsbtModal extends StatelessWidget {
         addressRepository: addressRepository,
         importedAddressService: importedAddressService,
         signInputs: signInputs,
+        sighashTypes: sighashTypes,
         unsignedPsbt: unsignedPsbt,
         transactionService: transactionService,
+        bitcoindService: bitcoindService,
+        balanceRepository: balanceRepository,
+        bitcoinRepository: bitcoinRepository,
         walletRepository: walletRepository,
         encryptionService: encryptionService,
         addressService: addressService,
@@ -128,9 +142,21 @@ class GetAddressesModal extends StatelessWidget {
   final AddressRepository addressRepository;
   final ImportedAddressRepository importedAddressRepository;
   final RPCGetAddressesSuccessCallback onSuccess;
+  final AddressService addressService;
+  final ImportedAddressService importedAddressService;
+  final WalletRepository walletRepository;
+  final EncryptionService encryptionService;
+  final PublicKeyService publicKeyService;
+  final AccountRepository accountRepository;
 
   const GetAddressesModal(
       {super.key,
+      required this.accountRepository,
+      required this.publicKeyService,
+      required this.encryptionService,
+      required this.addressService,
+      required this.importedAddressService,
+      required this.walletRepository,
       required this.tabId,
       required this.requestId,
       required this.accounts,
@@ -142,6 +168,12 @@ class GetAddressesModal extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (_) => GetAddressesBloc(
+        accountRepository: accountRepository,
+        publicKeyService: publicKeyService,
+        encryptionService: encryptionService,
+        walletRepository: walletRepository,
+        importedAddressService: importedAddressService,
+        addressService: addressService,
         accounts: accounts,
         addressRepository: addressRepository,
         importedAddressRepository: importedAddressRepository,
@@ -1284,9 +1316,11 @@ class DashboardPageState extends State<DashboardPage> {
         tabId: var tabId,
         requestId: var requestId,
         psbt: var psbt,
-        signInputs: var signInputs
+        signInputs: var signInputs,
+        sighashTypes: var sighashTypes
       ) =>
-        () => _handleRPCSignPsbtAction(tabId, requestId, psbt, signInputs),
+        () => _handleRPCSignPsbtAction(
+            tabId, requestId, psbt, signInputs, sighashTypes),
       _ => noop
     };
   }
@@ -1367,6 +1401,12 @@ class DashboardPageState extends State<DashboardPage> {
                       requestId: requestId,
                       accounts: state.accounts,
                       addressRepository: GetIt.I<AddressRepository>(),
+                      accountRepository: GetIt.I<AccountRepository>(),
+                      publicKeyService: GetIt.I<PublicKeyService>(),
+                      encryptionService: GetIt.I<EncryptionService>(),
+                      addressService: GetIt.I<AddressService>(),
+                      importedAddressService: GetIt.I<ImportedAddressService>(),
+                      walletRepository: GetIt.I<WalletRepository>(),
                       importedAddressRepository:
                           GetIt.I<ImportedAddressRepository>(),
                       onSuccess: GetIt.I<RPCGetAddressesSuccessCallback>());
@@ -1378,7 +1418,7 @@ class DashboardPageState extends State<DashboardPage> {
   }
 
   void _handleRPCSignPsbtAction(int tabId, String requestId, String psbt,
-      Map<String, List<int>> signInputs) {
+      Map<String, List<int>> signInputs, List<int>? sighashTypes) {
     HorizonUI.HorizonDialog.show(
         context: context,
         body: HorizonUI.HorizonDialog(
@@ -1388,10 +1428,14 @@ class DashboardPageState extends State<DashboardPage> {
               requestId: requestId,
               unsignedPsbt: psbt,
               signInputs: signInputs,
+              sighashTypes: sighashTypes,
               accountRepository: GetIt.I<AccountRepository>(),
               addressRepository: GetIt.I<UnifiedAddressRepository>(),
               importedAddressService: GetIt.I.get<ImportedAddressService>(),
               transactionService: GetIt.I.get<TransactionService>(),
+              bitcoindService: GetIt.I.get<BitcoindService>(),
+              balanceRepository: GetIt.I.get<BalanceRepository>(),
+              bitcoinRepository: GetIt.I.get<BitcoinRepository>(),
               walletRepository: GetIt.I.get<WalletRepository>(),
               encryptionService: GetIt.I.get<EncryptionService>(),
               addressService: GetIt.I.get<AddressService>(),
