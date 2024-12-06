@@ -199,9 +199,6 @@ class ComposeDispenserOnNewAddressBloc extends Bloc<
                 (dispensers) => dispensers, // Handle success
               ));
 
-      print('newAddressBalances: $newAddressBalances');
-      print('newAddressDispensers: $newAddressDispensers');
-
       // the point of this flow is to open a dispenser on an unused address
       // if no balances are found, the balances repository returns only a BTC balance of 0
       if (newAddressBalances.length > 1 ||
@@ -340,10 +337,7 @@ class ComposeDispenserOnNewAddressBloc extends Bloc<
         emit(state.copyWith(
             composeDispenserOnNewAddressState:
                 ComposeDispenserOnNewAddressState.error(e.message)));
-      } catch (e, stackTrace) {
-        print('*****************');
-        print(stackTrace);
-        print('*****************');
+      } catch (e) {
         emit(state.copyWith(
             composeDispenserOnNewAddressState:
                 ComposeDispenserOnNewAddressState.error(
