@@ -51,27 +51,29 @@ class _SignPsbtFormState extends State<SignPsbtForm> {
                   ),
                 ),
                 const SizedBox(height: 16),
-
-                if (state.psbtSignType == PsbtSignTypeEnum.buy) ...[
-                  SelectableText(
-                    'Swap ${state.bitcoinAmount!.toStringAsFixed(8)} BTC for ${state.getAmount} ${state.asset}',
-                    style: const TextStyle(fontSize: 16),
-                  ),
-                  const SizedBox(height: 16),
-                  SelectableText(
-                    'TX fee: ${state.fee?.toStringAsFixed(8)} BTC',
-                    style: const TextStyle(fontSize: 16),
-                  ),
-                  const SizedBox(height: 8),
-                  SelectableText(
-                    'Total BTC to be sent: ${(state.fee! + state.bitcoinAmount!).toStringAsFixed(8)} BTC',
-                    style: const TextStyle(fontSize: 16),
-                  ),
-                ] else ...[
-                  SelectableText(
-                    'Swap ${state.getAmount} ${state.asset} for ${state.bitcoinAmount!.toStringAsFixed(8)} BTC',
-                    style: const TextStyle(fontSize: 16),
-                  ),
+                if (state.parsedPsbtState != null) ...[
+                  if (state.parsedPsbtState!.psbtSignType ==
+                      PsbtSignTypeEnum.buy) ...[
+                    SelectableText(
+                      'Swap ${state.parsedPsbtState!.bitcoinAmount!.toStringAsFixed(8)} BTC for ${state.parsedPsbtState!.getAmount} ${state.parsedPsbtState!.asset}',
+                      style: const TextStyle(fontSize: 16),
+                    ),
+                    const SizedBox(height: 16),
+                    SelectableText(
+                      'TX fee: ${state.parsedPsbtState!.fee?.toStringAsFixed(8)} BTC',
+                      style: const TextStyle(fontSize: 16),
+                    ),
+                    const SizedBox(height: 8),
+                    SelectableText(
+                      'Total BTC to be sent: ${(state.parsedPsbtState!.fee! + state.parsedPsbtState!.bitcoinAmount!).toStringAsFixed(8)} BTC',
+                      style: const TextStyle(fontSize: 16),
+                    ),
+                  ] else ...[
+                    SelectableText(
+                      'Swap ${state.parsedPsbtState!.getAmount} ${state.parsedPsbtState!.asset} for ${state.parsedPsbtState!.bitcoinAmount!.toStringAsFixed(8)} BTC',
+                      style: const TextStyle(fontSize: 16),
+                    ),
+                  ],
                 ],
 
                 const SizedBox(height: 20),

@@ -281,12 +281,14 @@ void main() {
     expect: () => [
       isA<SignPsbtState>()
           .having((state) => state.isFormDataLoaded, 'isFormDataLoaded', true)
-          .having((state) => state.psbtSignType, 'psbtSignType',
-              PsbtSignTypeEnum.buy)
-          .having((state) => state.asset, 'asset', 'ASSET')
-          .having((state) => state.getAmount, 'getAmount', '0.00500000')
-          .having((state) => state.bitcoinAmount, 'bitcoinAmount', 0.000006)
-          .having((state) => state.fee, 'fee', 0.00344607),
+          .having((state) => state.parsedPsbtState!.psbtSignType,
+              'psbtSignType', PsbtSignTypeEnum.buy)
+          .having((state) => state.parsedPsbtState!.asset, 'asset', 'ASSET')
+          .having((state) => state.parsedPsbtState!.getAmount, 'getAmount',
+              '0.00500000')
+          .having((state) => state.parsedPsbtState!.bitcoinAmount,
+              'bitcoinAmount', 0.000006)
+          .having((state) => state.parsedPsbtState!.fee, 'fee', 0.00344607),
     ],
     verify: (_) {
       verify(() => mockTransactionService.psbtToUnsignedTransactionHex(any()))
@@ -330,12 +332,15 @@ void main() {
     expect: () => [
       isA<SignPsbtState>()
           .having((state) => state.isFormDataLoaded, 'isFormDataLoaded', true)
-          .having((state) => state.psbtSignType, 'psbtSignType',
-              PsbtSignTypeEnum.sell)
-          .having((state) => state.asset, 'asset', 'ASSET')
-          .having((state) => state.getAmount, 'getAmount', '0.00300000')
-          .having((state) => state.bitcoinAmount, 'bitcoinAmount', 0.0000055)
-          .having((state) => state.fee, 'fee', 0.0), // Sells do not have a fee
+          .having((state) => state.parsedPsbtState!.psbtSignType,
+              'psbtSignType', PsbtSignTypeEnum.sell)
+          .having((state) => state.parsedPsbtState!.asset, 'asset', 'ASSET')
+          .having((state) => state.parsedPsbtState!.getAmount, 'getAmount',
+              '0.00300000')
+          .having((state) => state.parsedPsbtState!.bitcoinAmount,
+              'bitcoinAmount', 0.0000055)
+          .having((state) => state.parsedPsbtState!.fee, 'fee',
+              0.0), // Sells do not have a fee
     ],
     verify: (_) {
       verify(() => mockTransactionService.psbtToUnsignedTransactionHex(any()))

@@ -91,6 +91,13 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
           ));
           return;
         }
+        if (utxoBalances.isEmpty) {
+          // psbt swap criteria not met, load form without transaction data
+          emit(state.copyWith(
+            isFormDataLoaded: true,
+          ));
+          return;
+        }
 
         // fetch the tx info for each input to get the value of each vin
         double totalInputValue = 0;
@@ -154,11 +161,13 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
       }
 
       emit(state.copyWith(
-        psbtSignType: psbtSignType,
-        asset: asset,
-        getAmount: getAmount,
-        bitcoinAmount: bitcoinAmount,
-        fee: fee,
+        parsedPsbtState: ParsedPsbtState(
+          psbtSignType: psbtSignType,
+          asset: asset,
+          getAmount: getAmount,
+          bitcoinAmount: bitcoinAmount,
+          fee: fee,
+        ),
         isFormDataLoaded: true,
       ));
     } catch (e) {
