@@ -41,8 +41,8 @@ VinModel _$VinModelFromJson(Map<String, dynamic> json) => VinModel(
       vout: (json['vout'] as num).toInt(),
       scriptSig:
           ScriptSigModel.fromJson(json['scriptSig'] as Map<String, dynamic>),
-      txinwitness: (json['txinwitness'] as List<dynamic>)
-          .map((e) => e as String)
+      txinwitness: (json['txinwitness'] as List<dynamic>?)
+          ?.map((e) => e as String)
           .toList(),
       sequence: (json['sequence'] as num).toInt(),
     );

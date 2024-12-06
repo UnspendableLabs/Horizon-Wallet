@@ -26,14 +26,14 @@ class Vin {
   final String txid;
   final int vout;
   final ScriptSig scriptSig;
-  final List<String> txinwitness;
+  final List<String>? txinwitness;
   final int sequence;
 
   const Vin({
     required this.txid,
     required this.vout,
     required this.scriptSig,
-    required this.txinwitness,
+    this.txinwitness,
     required this.sequence,
   });
 }

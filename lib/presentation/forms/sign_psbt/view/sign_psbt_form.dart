@@ -5,26 +5,78 @@ import 'package:horizon/presentation/forms/sign_psbt/bloc/sign_psbt_bloc.dart';
 import 'package:horizon/presentation/forms/sign_psbt/bloc/sign_psbt_state.dart';
 import 'package:horizon/presentation/forms/sign_psbt/bloc/sign_psbt_event.dart';
 
-class SignPsbtForm extends StatelessWidget {
+class SignPsbtForm extends StatefulWidget {
   final void Function(String) onSuccess;
 
   const SignPsbtForm({super.key, required this.onSuccess});
+
+  @override
+  State<SignPsbtForm> createState() => _SignPsbtFormState();
+}
+
+class _SignPsbtFormState extends State<SignPsbtForm> {
+  @override
+  void initState() {
+    super.initState();
+    context.read<SignPsbtBloc>().add(FetchFormEvent());
+  }
 
   @override
   Widget build(BuildContext context) {
     return BlocListener<SignPsbtBloc, SignPsbtState>(
       listener: (context, state) {
         if (state.submissionStatus.isSuccess) {
-          onSuccess(state.signedPsbt!);
+          widget.onSuccess(state.signedPsbt!);
         }
       },
       child: BlocBuilder<SignPsbtBloc, SignPsbtState>(
         builder: (context, state) {
+          if (!state.isFormDataLoaded) {
+            // Display a loading indicator while data is being fetched
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          }
+
           return Padding(
             padding: const EdgeInsets.all(16.0),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
+                const Text(
+                  'Transaction Details',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                if (state.parsedPsbtState != null) ...[
+                  if (state.parsedPsbtState!.psbtSignType ==
+                      PsbtSignTypeEnum.buy) ...[
+                    SelectableText(
+                      'Swap ${state.parsedPsbtState!.bitcoinAmount!.toStringAsFixed(8)} BTC for ${state.parsedPsbtState!.getAmount} ${state.parsedPsbtState!.asset}',
+                      style: const TextStyle(fontSize: 16),
+                    ),
+                    const SizedBox(height: 16),
+                    SelectableText(
+                      'TX fee: ${state.parsedPsbtState!.fee?.toStringAsFixed(8)} BTC',
+                      style: const TextStyle(fontSize: 16),
+                    ),
+                    const SizedBox(height: 8),
+                    SelectableText(
+                      'Total BTC to be sent: ${(state.parsedPsbtState!.fee! + state.parsedPsbtState!.bitcoinAmount!).toStringAsFixed(8)} BTC',
+                      style: const TextStyle(fontSize: 16),
+                    ),
+                  ] else ...[
+                    SelectableText(
+                      'Swap ${state.parsedPsbtState!.getAmount} ${state.parsedPsbtState!.asset} for ${state.parsedPsbtState!.bitcoinAmount!.toStringAsFixed(8)} BTC',
+                      style: const TextStyle(fontSize: 16),
+                    ),
+                  ],
+                ],
+
+                const SizedBox(height: 20),
                 // Password Field
                 TextField(
                   onChanged: (password) => context
@@ -38,7 +90,8 @@ class SignPsbtForm extends StatelessWidget {
                   ),
                   obscureText: true,
                 ),
-                const SizedBox(height: 20), // Submit Button
+                const SizedBox(height: 20),
+                // Submit Button
                 ElevatedButton(
                   onPressed: state.submissionStatus.isInProgressOrSuccess
                       ? null
@@ -48,9 +101,7 @@ class SignPsbtForm extends StatelessWidget {
                       ? const CircularProgressIndicator()
                       : const Text('Sign PSBT'),
                 ),
-
                 const SizedBox(height: 20),
-
                 // Status/Error Message
                 if (state.submissionStatus.isFailure) ...[
                   Text(

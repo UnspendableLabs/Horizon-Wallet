@@ -32,6 +32,16 @@ extension type Transaction._(JSObject _) implements JSObject {
   external String toHex();
   external int virtualSize();
   external bool hasWitnesses();
+
+  external Buffer toBuffer([JSAny? initialBuffer, JSNumber? initialOffset]);
+}
+
+extension type PsbtData._(JSObject _) implements JSObject {
+  external GlobalMap get globalMap;
+}
+
+extension type GlobalMap._(JSObject _) implements JSObject {
+  external Transaction get unsignedTx;
 }
 
 extension type Psbt._(JSObject _) implements JSObject {
@@ -55,6 +65,10 @@ extension type Psbt._(JSObject _) implements JSObject {
   external Transaction extractTransaction();
 
   external bool validateSignaturesOfInput(JSNumber inputIndex);
+
+  external PsbtData get data;
+
+  external Transaction get tx;
 }
 
 extension type Payment._(JSObject _) implements JSObject {

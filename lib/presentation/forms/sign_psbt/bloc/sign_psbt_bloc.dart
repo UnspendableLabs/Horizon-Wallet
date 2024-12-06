@@ -6,6 +6,9 @@ import 'package:horizon/domain/entities/wallet.dart';
 import 'package:horizon/domain/entities/unified_address.dart';
 import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/entities/imported_address.dart';
+import 'package:horizon/domain/repositories/balance_repository.dart';
+import 'package:horizon/domain/repositories/bitcoin_repository.dart';
+import 'package:horizon/domain/services/bitcoind_service.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
@@ -13,6 +16,7 @@ import 'package:horizon/domain/repositories/unified_address_repository.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/imported_address_service.dart';
+import 'package:horizon/presentation/common/shared_util.dart';
 
 import "./sign_psbt_state.dart";
 import "./sign_psbt_event.dart";
@@ -24,6 +28,9 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
   final EncryptionService encryptionService;
   final AddressService addressService;
   final ImportedAddressService importedAddressService;
+  final BitcoindService bitcoindService;
+  final BitcoinRepository bitcoinRepository;
+  final BalanceRepository balanceRepository;
   final UnifiedAddressRepository addressRepository;
   final AccountRepository accountRepository;
   final Map<String, List<int>> signInputs;
@@ -36,13 +43,139 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
     required this.encryptionService,
     required this.addressService,
     required this.importedAddressService,
+    required this.bitcoindService,
+    required this.balanceRepository,
+    required this.bitcoinRepository,
     required this.addressRepository,
     required this.accountRepository,
     required this.signInputs,
     required this.sighashTypes,
   }) : super(SignPsbtState()) {
+    on<FetchFormEvent>(_handleFetchForm);
     on<PasswordChanged>(_handlePasswordChanged);
     on<SignPsbtSubmitted>(_handleSignPsbtSubmitted);
+  }
+
+  Future<void> _handleFetchForm(
+    FetchFormEvent event,
+    Emitter<SignPsbtState> emit,
+  ) async {
+    try {
+      // decode the psbt transaction
+      final transactionHex =
+          transactionService.psbtToUnsignedTransactionHex(unsignedPsbt);
+
+      final decoded =
+          await bitcoindService.decoderawtransaction(transactionHex);
+
+      // Initialize variables
+      PsbtSignTypeEnum? psbtSignType;
+      String asset = '';
+      String getAmount = '';
+      double bitcoinAmount = 0;
+      double fee = 0;
+
+      if (decoded.vin.length > 1) {
+        // buys will have vin length of 2
+        psbtSignType = PsbtSignTypeEnum.buy;
+
+        final buyAssetInput = decoded.vin[1];
+        final utxo = "${buyAssetInput.txid}:${buyAssetInput.vout}";
+
+        // get the asset from the utxo balance
+        final utxoBalances = await balanceRepository.getBalancesForUTXO(utxo);
+        if (utxoBalances.length > 1) {
+          // psbt swap criteria not met, load form without transaction data
+          emit(state.copyWith(
+            isFormDataLoaded: true,
+          ));
+          return;
+        }
+        if (utxoBalances.isEmpty) {
+          // psbt swap criteria not met, load form without transaction data
+          emit(state.copyWith(
+            isFormDataLoaded: true,
+          ));
+          return;
+        }
+
+        // fetch the tx info for each input to get the value of each vin
+        double totalInputValue = 0;
+        for (final vin in decoded.vin) {
+          final txDetails =
+              await bitcoinRepository.getTransaction(vin.txid).then(
+                    (either) => either.fold(
+                      (error) => throw Exception("GetTransactionInfo failure"),
+                      (transactionInfo) => transactionInfo,
+                    ),
+                  );
+          totalInputValue += txDetails.vout[vin.vout].value;
+        }
+
+        // the fee is the difference between the total input value and the total output value
+        double totalOutputValue =
+            decoded.vout.map((vout) => vout.value).fold(0, (a, b) => a + b);
+        fee = (((totalInputValue / 100000000) - totalOutputValue) * 100000000)
+                .truncate() /
+            100000000; // truncate to 8 decimal places
+
+        asset = displayAssetName(
+          utxoBalances[0].asset,
+          utxoBalances[0].assetInfo.assetLongname,
+        );
+        getAmount = utxoBalances[0].quantityNormalized;
+
+        final bitcoinAssetOutput = decoded.vout[1];
+        bitcoinAmount = bitcoinAssetOutput.value;
+      } else if (decoded.vin.length == 1) {
+        // sells will have vin length of 1
+        psbtSignType = PsbtSignTypeEnum.sell;
+
+        final sellAssetInput = decoded.vin[0];
+
+        // get the asset from the utxo balance
+        final utxo = "${sellAssetInput.txid}:${sellAssetInput.vout}";
+        final utxoBalances = await balanceRepository.getBalancesForUTXO(utxo);
+        if (utxoBalances.length > 1) {
+          // we should never have more than one balance for a utxo
+          emit(state.copyWith(
+            isFormDataLoaded: true,
+          ));
+          return;
+        }
+        asset = displayAssetName(
+          utxoBalances[0].asset,
+          utxoBalances[0].assetInfo.assetLongname,
+        );
+        getAmount = utxoBalances[0].quantityNormalized;
+        final bitcoinAssetOutput = decoded.vout[0];
+        bitcoinAmount = bitcoinAssetOutput.value;
+
+        // sells will not have a fee
+      } else {
+        // psbt swap criteria not met, load form without transaction data
+        emit(state.copyWith(
+          isFormDataLoaded: true,
+        ));
+        return;
+      }
+
+      emit(state.copyWith(
+        parsedPsbtState: ParsedPsbtState(
+          psbtSignType: psbtSignType,
+          asset: asset,
+          getAmount: getAmount,
+          bitcoinAmount: bitcoinAmount,
+          fee: fee,
+        ),
+        isFormDataLoaded: true,
+      ));
+    } catch (e) {
+      // if any failures were thrown, then psbt does not fit the criteria of a swap, and we just load the form without transaction data
+      emit(state.copyWith(
+        isFormDataLoaded: true,
+      ));
+    }
   }
 
   _handlePasswordChanged(PasswordChanged event, Emitter<SignPsbtState> emit) {
