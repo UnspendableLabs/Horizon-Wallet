@@ -8,6 +8,7 @@ import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
+import 'package:horizon/domain/repositories/dispenser_repository.dart';
 import 'package:horizon/domain/repositories/utxo_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/address_service.dart';
@@ -59,6 +60,7 @@ class ComposeDispenserOnNewAddressPageWrapper extends StatelessWidget {
         encryptionService: GetIt.I.get<EncryptionService>(),
         addressService: GetIt.I.get<AddressService>(),
         composeRepository: GetIt.I.get<ComposeRepository>(),
+        dispenserRepository: GetIt.I.get<DispenserRepository>(),
         bitcoindService: GetIt.I.get<BitcoindService>(),
         utxoRepository: GetIt.I.get<UtxoRepository>(),
         balanceRepository: GetIt.I.get<BalanceRepository>(),

@@ -134,7 +134,6 @@ class ComposeDispenserBloc extends ComposeBaseBloc<ComposeDispenserState> {
     try {
       final (balances, feeEstimates, dispensers) =
           await fetchDispenserFormDataUseCase.call(event.currentAddress!);
-      print(dispensers);
 
       // if the current address does not have any open dispensers, then we can proceed with the normal flow
       if (dispensers.isEmpty) {
