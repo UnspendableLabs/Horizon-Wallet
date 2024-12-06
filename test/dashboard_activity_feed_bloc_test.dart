@@ -1,13 +1,13 @@
-import 'package:decimal/decimal.dart';
-import 'package:horizon/domain/entities/cursor.dart';
-import 'package:test/test.dart';
 import 'dart:async';
 
 import 'package:bloc_test/bloc_test.dart';
+import 'package:decimal/decimal.dart';
 import "package:fpdart/src/either.dart";
+import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/domain/entities/activity_feed_item.dart';
 import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/entities/bitcoin_tx.dart';
+import 'package:horizon/domain/entities/cursor.dart';
 import 'package:horizon/domain/entities/event.dart';
 import 'package:horizon/domain/entities/transaction_info.dart';
 import 'package:horizon/domain/entities/transaction_unpacked.dart';
@@ -19,7 +19,7 @@ import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_f
 import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_event.dart";
 import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_state.dart";
 import 'package:mocktail/mocktail.dart';
-import 'package:horizon/core/logging/logger.dart';
+import 'package:test/test.dart';
 
 // ignore: non_constant_identifier_names
 final DEFAULT_WHITELIST = [
@@ -265,24 +265,33 @@ class MockEvent extends Mock implements VerboseEvent {
   @override
   final int? blockIndex;
 
+  @override
+  final String event;
+
   MockEvent(
-      {required this.txHash, required this.state, required this.blockIndex});
+      {required this.txHash,
+      required this.state,
+      required this.blockIndex,
+      required this.event});
 }
 
 class MockEventFactory {
   static MockEvent create({
     required String txHash,
     required EventState state,
+    required String event,
     int? blockIndex,
   }) {
-    return MockEvent(txHash: txHash, state: state, blockIndex: blockIndex);
+    return MockEvent(
+        txHash: txHash, state: state, blockIndex: blockIndex, event: event);
   }
 
   static List<MockEvent> createMultiple(
-    List<(String, EventState, int?)> eventSpecs,
+    List<(String, EventState, int?, String)> eventSpecs,
   ) {
     return eventSpecs.map((spec) {
-      return create(txHash: spec.$1, state: spec.$2, blockIndex: spec.$3);
+      return create(
+          txHash: spec.$1, state: spec.$2, blockIndex: spec.$3, event: spec.$4);
     }).toList();
   }
 }
@@ -609,9 +618,19 @@ void main() {
           ]);
 
           mockedRemote = MockEventFactory.createMultiple([
-            ("0004", EventStateMempool(), null),
-            ("0005", EventStateConfirmed(blockHeight: 1, blockTime: 1), 1),
-            ("0006", EventStateConfirmed(blockHeight: 1, blockTime: 1), 1),
+            ("0004", EventStateMempool(), null, 'ASSET_CREATION'),
+            (
+              "0005",
+              EventStateConfirmed(blockHeight: 1, blockTime: 1),
+              1,
+              'UTXO_MOVE'
+            ),
+            (
+              "0006",
+              EventStateConfirmed(blockHeight: 1, blockTime: 1),
+              1,
+              'ATTACH_UTXO'
+            ),
           ]);
 
           when(() => mockTransactionLocalRepository.getAllByAddresses(any()))
@@ -699,8 +718,13 @@ void main() {
           final mockEventsRepository = MockEventsRepository();
 
           mockedRemote = MockEventFactory.createMultiple([
-            ("0002", EventStateMempool(), null),
-            ("0003", EventStateConfirmed(blockHeight: 1, blockTime: 1), 1),
+            ("0002", EventStateMempool(), null, 'DISPENSER_UPDATE'),
+            (
+              "0003",
+              EventStateConfirmed(blockHeight: 1, blockTime: 1),
+              1,
+              'ASSET_CREATION'
+            ),
           ]);
 
           when(() => mockEventsRepository.getByAddressVerbose(
@@ -775,7 +799,7 @@ void main() {
               .thenAnswer((_) async => []);
 
           mockedRemote = MockEventFactory.createMultiple([
-            ("0005", EventStateMempool(), null),
+            ("0005", EventStateMempool(), null, 'OPEN_DISPENSER'),
             (
               "0004",
               EventStateConfirmed(
@@ -783,7 +807,8 @@ void main() {
                   blockTime: mostRecentConfirmedBlocktime
                       .toUtc()
                       .toIntDividedBy1000()),
-              1
+              1,
+              'ASSET_CREATION',
             ),
           ]);
 
@@ -875,13 +900,23 @@ void main() {
           final mockEventsRepository = MockEventsRepository();
 
           mockedRemote = MockEventFactory.createMultiple([
-            ("0005", EventStateConfirmed(blockHeight: 1, blockTime: 1), 1),
-            ("0003", EventStateConfirmed(blockHeight: 1, blockTime: 1), 1),
+            (
+              "0005",
+              EventStateConfirmed(blockHeight: 1, blockTime: 1),
+              1,
+              'ASSET_CREATION'
+            ),
+            (
+              "0003",
+              EventStateConfirmed(blockHeight: 1, blockTime: 1),
+              1,
+              'ASSET_CREATION'
+            ),
           ]);
 
           mockedMempool = MockEventFactory.createMultiple([
-            ("0004", EventStateMempool(), null),
-            ("0002", EventStateMempool(), null),
+            ("0004", EventStateMempool(), null, 'ASSET_CREATION'),
+            ("0002", EventStateMempool(), null, 'NEW_FAIRMINT'),
           ]);
 
           // `LoadMore`
@@ -982,12 +1017,13 @@ void main() {
               EventStateConfirmed(
                   blockHeight: 1,
                   blockTime: DateTime.now().toIntDividedBy1000()),
-              1
+              1,
+              'ASSET_CREATION'
             ),
           ]);
 
           mockedMempool = MockEventFactory.createMultiple([
-            ("0001", EventStateMempool(), null),
+            ("0001", EventStateMempool(), null, 'UPDATE_DISPENSER'),
           ]);
 
           // `LoadMore`
@@ -1084,21 +1120,24 @@ void main() {
               EventStateConfirmed(
                   blockHeight: 4,
                   blockTime: DateTime.now().toIntDividedBy1000()),
-              4
+              4,
+              'ASSET_CREATION'
             ),
             (
               "0002",
               EventStateConfirmed(
                   blockHeight: 5,
                   blockTime: DateTime.now().toIntDividedBy1000()),
-              5
+              5,
+              'DISPENSE'
             ),
             (
               "0003",
               EventStateConfirmed(
                   blockHeight: 6,
                   blockTime: DateTime.now().toIntDividedBy1000()),
-              6
+              6,
+              'UPDATE_DISPENSER'
             ),
           ]);
 
@@ -1185,6 +1224,81 @@ void main() {
                   .having((state) => state.mostRecentCounterpartyEventHash,
                       'mostRecentCounterpartyEventHash', '0001'),
             ]);
+    blocTest<DashboardActivityFeedBloc, DashboardActivityFeedState>(
+      'filters fairmint events correctly',
+      build: () {
+        final mockTransactionLocalRepository = MockTransactionLocalRepository();
+        final mockEventsRepository = MockEventsRepository();
+        final mockBitcoinRepository = MockBitcoinRepository();
+
+        when(() => mockTransactionLocalRepository.getAllByAddresses(any()))
+            .thenAnswer((_) async => []);
+
+        when(() => mockEventsRepository.getAllByAddressVerbose(
+              address: any(named: 'address'),
+              unconfirmed: any(named: 'unconfirmed'),
+              whitelist: any(named: 'whitelist'),
+            )).thenAnswer((_) async => [
+              VerboseAssetIssuanceEvent(
+                state: EventStateMempool(),
+                eventIndex: 1,
+                event: 'ASSET_ISSUANCE',
+                txHash:
+                    'a6a931dd17f83d9387caa0f72617544af607520566b062d794f9d9f8b382eef5',
+                blockIndex: 9999999,
+                blockTime: 1733496111,
+                params: VerboseAssetIssuanceParams(
+                  assetEvents: 'fairmint',
+                  asset: 'fairmint',
+                  assetLongname: 'fairmint',
+                  quantity: 1,
+                  source: 'fairmint',
+                  status: EventStatusValid(),
+                  transfer: true,
+                  feePaidNormalized: '0',
+                  blockTime: 1733496111,
+                ),
+              ),
+              VerboseEvent(
+                state: EventStateMempool(),
+                eventIndex: 2,
+                event: 'NEW_FAIRMINT',
+                txHash:
+                    'a6a931dd17f83d9387caa0f72617544af607520566b062d794f9d9f8b382eef5',
+                blockIndex: 9999999,
+                blockTime: 1733496111,
+              ),
+            ]);
+
+        when(() => mockBitcoinRepository.getMempoolTransactions(any()))
+            .thenAnswer((_) async => const Right([]));
+
+        when(() => mockBitcoinRepository.getConfirmedTransactionsPaginated(
+            any(), any())).thenAnswer((_) async => const Right([]));
+
+        when(() => mockBitcoinRepository.getBlockHeight())
+            .thenAnswer((_) async => const Right(100));
+
+        return DashboardActivityFeedBloc(
+          logger: LoggerFake(),
+          pageSize: 10,
+          currentAddress: AddressMock().address,
+          transactionLocalRepository: mockTransactionLocalRepository,
+          addressRepository: mockAddressRepository,
+          bitcoinRepository: mockBitcoinRepository,
+          eventsRepository: mockEventsRepository,
+        );
+      },
+      act: (bloc) => bloc.add(const LoadQuiet()),
+      expect: () => [
+        isA<DashboardActivityFeedStateLoading>(),
+        isA<DashboardActivityFeedStateCompleteOk>().having(
+          (state) => state.transactions.length,
+          'filtered transactions count',
+          1, // Only the ASSET_ISSUANCE event should be present
+        ),
+      ],
+    );
   });
 
   group("w bitcoin_tx", () {
