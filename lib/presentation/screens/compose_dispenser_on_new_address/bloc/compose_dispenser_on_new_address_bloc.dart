@@ -257,12 +257,10 @@ class ComposeDispenserOnNewAddressBloc extends Bloc<
 
         int feeToCoverDispenser = event.feeRate * ADJUSTED_VIRTUAL_SIZE;
         int extraBtcToSendToDispenser = 0;
-        print('fee before: $feeToCoverDispenser');
+
         if (event.sendExtraBtcToDispenser) {
           extraBtcToSendToDispenser = event.feeRate * ADJUSTED_VIRTUAL_SIZE;
         }
-
-        print('fee after: $feeToCoverDispenser');
 
         // 2. compose the asset send
         final assetSend = await composeTransactionUseCase

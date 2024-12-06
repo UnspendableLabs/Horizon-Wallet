@@ -151,7 +151,6 @@ class ComposeDispenserBloc extends ComposeBaseBloc<ComposeDispenserState> {
           ));
         }
       } else {
-        print('has open dispensers');
         //otherwise, allow the user to choose whether to proceed or open on a new address
         emit(state.copyWith(
           balancesState: BalancesState.success(balances),
