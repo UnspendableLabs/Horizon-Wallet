@@ -135,7 +135,8 @@ class DashboardActivityFeedBloc
             await eventsRepository.getMempoolEventsByAddressVerbose(
                 address: address, whitelist: DEFAULT_WHITELIST);
 
-        newCounterpartyEvents.addAll(_filterFairmintEvents(mempoolEvents));
+        newCounterpartyEvents
+            .addAll(_filterCounterpartyMempoolEvents(mempoolEvents));
       }
 
       // 2) compute all new btc transactions above last seen
@@ -585,28 +586,6 @@ class DashboardActivityFeedBloc
     // Number of confirmations = Current Bitcoin block height - Transaction block height + 1
     final confirmations = blockHeight - blockIndex + 1;
     return confirmations;
-  }
-
-  List<VerboseEvent> _filterFairmintEvents(List<VerboseEvent> events) {
-    final fairmintAssetIssuanceHashes = <String>{};
-    final filteredEvents = <VerboseEvent>[];
-
-    for (final event in events) {
-      if (event.event == 'ASSET_ISSUANCE' &&
-          (event as VerboseAssetIssuanceEvent).params.assetEvents ==
-              'fairmint') {
-        fairmintAssetIssuanceHashes.add(event.txHash!);
-        filteredEvents.add(event);
-      } else if (event.event == 'NEW_FAIRMINT' &&
-          fairmintAssetIssuanceHashes.contains(event.txHash)) {
-        // Skip adding NEW_FAIRMINT if corresponding ASSET_ISSUANCE with the same tx_hash is present
-        continue;
-      } else {
-        filteredEvents.add(event);
-      }
-    }
-
-    return filteredEvents;
   }
 
   List<VerboseEvent> _filterCounterpartyMempoolEvents(
