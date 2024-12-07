@@ -17,7 +17,7 @@ class Dispenser {
   final int dispenseCount;
   final String? lastStatusTxSource;
   final int? closeBlockIndex;
-  final bool confirmed;
+  final bool? confirmed;
 
   final int? blockTime;
   final String giveQuantityNormalized;
@@ -43,7 +43,7 @@ class Dispenser {
       required this.dispenseCount,
       this.lastStatusTxSource,
       this.closeBlockIndex,
-      required this.confirmed,
+      this.confirmed,
       // Verbose fields
       this.blockTime,
       // this.assetInfo,
