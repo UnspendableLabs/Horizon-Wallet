@@ -249,7 +249,7 @@ void main() {
           .thenAnswer((_) async => []);
 
       mockUtxos.sort((a, b) => b.value.compareTo(a.value));
-      final sortedUtxos = mockUtxos.take(10).toList();
+      final sortedUtxos = mockUtxos.take(20).toList();
       when(() => mockGetVirtualSizeUseCase.call(
               composeFunction: mockComposeFunction.call,
               inputsSet: sortedUtxos,
@@ -270,7 +270,7 @@ void main() {
       // Assert
       expect(result, (mockComposeResponse, const VirtualSize(100, 500)));
       verify(() => mockUtxoRepository.getUnspentForAddress(source)).called(1);
-      verify(() => mockBalanceRepository.getBalancesForUTXO(any())).called(10);
+      verify(() => mockBalanceRepository.getBalancesForUTXO(any())).called(20);
       verify(() => mockGetVirtualSizeUseCase.call(
             composeFunction: mockComposeFunction.call,
             inputsSet: sortedUtxos,
@@ -281,8 +281,8 @@ void main() {
           verify(() => mockComposeFunction(any(), captureAny(), any()))
               .captured
               .single as List<Utxo>;
-      expect(capturedInputs.length, equals(10));
-      // Check that the captured inputs are the largest 10 UTXOs
+      expect(capturedInputs.length, equals(20));
+      // Check that the captured inputs are the largest 20 UTXOs
       expect(capturedInputs, containsAllInOrder(sortedUtxos));
     });
 
@@ -329,7 +329,7 @@ void main() {
       }
 
       mockUtxos.sort((a, b) => b.value.compareTo(a.value));
-      final sortedUtxos = mockUtxos.skip(2).take(10).toList(); // Exclude top 2
+      final sortedUtxos = mockUtxos.skip(2).take(20).toList(); // Exclude top 2
 
       when(() => mockGetVirtualSizeUseCase.call(
               composeFunction: mockComposeFunction.call,
@@ -352,7 +352,7 @@ void main() {
       expect(result, (mockComposeResponse, const VirtualSize(100, 500)));
       verify(() => mockUtxoRepository.getUnspentForAddress(source)).called(1);
       verify(() => mockBalanceRepository.getBalancesForUTXO(any()))
-          .called(12); // 10 inputs calls without balances and 2 with balances
+          .called(22); // 20 inputs calls without balances and 2 with balances
       verify(() => mockGetVirtualSizeUseCase.call(
             composeFunction: mockComposeFunction.call,
             inputsSet: sortedUtxos,
@@ -364,7 +364,7 @@ void main() {
           verify(() => mockComposeFunction(any(), captureAny(), any()))
               .captured
               .single as List<Utxo>;
-      expect(capturedInputs.length, equals(10));
+      expect(capturedInputs.length, equals(20));
       // Check that the captured inputs exclude the top 2 UTXOs
       expect(capturedInputs, containsAllInOrder(sortedUtxos));
     });

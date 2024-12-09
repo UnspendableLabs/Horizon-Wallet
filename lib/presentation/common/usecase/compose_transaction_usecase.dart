@@ -69,11 +69,12 @@ class ComposeTransactionUseCase {
   }
 
   Future<List<Utxo>> _getLargeInputsSet(List<Utxo> inputsSet) async {
+    // if the inputsSet is larger than 20, we need to take 20 UTXOs with the highest values that have no balance
     inputsSet.sort((a, b) => b.value.compareTo(a.value));
     final List<Utxo> inputsForSet = [];
 
     for (var utxo in inputsSet) {
-      if (inputsForSet.length >= 10) {
+      if (inputsForSet.length >= 20) {
         break;
       }
       final utxoKey = "${utxo.txid}:${utxo.vout}";
