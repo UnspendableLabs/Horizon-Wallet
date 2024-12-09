@@ -1,3 +1,4 @@
+import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/repositories/utxo_repository.dart';
 import 'package:horizon/presentation/common/usecase/get_virtual_size_usecase.dart';
 import 'package:horizon/domain/entities/utxo.dart';
@@ -22,10 +23,12 @@ class ComposeTransactionException implements Exception {
 
 class ComposeTransactionUseCase {
   final UtxoRepository utxoRepository;
+  final BalanceRepository balanceRepository;
   final GetVirtualSizeUseCase getVirtualSizeUseCase;
 
   const ComposeTransactionUseCase({
     required this.utxoRepository,
+    required this.balanceRepository,
     required this.getVirtualSizeUseCase,
   });
 
@@ -37,8 +40,11 @@ class ComposeTransactionUseCase {
     required ComposeFunction<P, R> composeFn,
   }) async {
     try {
-      final List<Utxo> inputsSet =
-          await utxoRepository.getUnspentForAddress(source);
+      List<Utxo> inputsSet = await utxoRepository.getUnspentForAddress(source);
+
+      if (inputsSet.length > 20) {
+        inputsSet = await _getLargeInputsSet(inputsSet);
+      }
 
       // Get virtual size
       (int, int) tuple = await getVirtualSizeUseCase.call(
@@ -60,5 +66,23 @@ class ComposeTransactionUseCase {
     } catch (e, stackTrace) {
       throw ComposeTransactionException(e.toString(), stackTrace);
     }
+  }
+
+  Future<List<Utxo>> _getLargeInputsSet(List<Utxo> inputsSet) async {
+    inputsSet.sort((a, b) => b.value.compareTo(a.value));
+    final List<Utxo> inputsForSet = [];
+
+    for (var utxo in inputsSet) {
+      if (inputsForSet.length >= 10) {
+        break;
+      }
+      final utxoKey = "${utxo.txid}:${utxo.vout}";
+      final balance = await balanceRepository.getBalancesForUTXO(utxoKey);
+      if (balance.isEmpty) {
+        inputsForSet.add(utxo);
+      }
+    }
+
+    return inputsForSet;
   }
 }

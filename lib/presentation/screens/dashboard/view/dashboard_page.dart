@@ -592,6 +592,8 @@ class OrderButtonMenu extends StatelessWidget {
                     HorizonUI.HorizonDialog.show(
                       context: context,
                       body: HorizonUI.HorizonDialog(
+                        includeBackButton: false,
+                        includeCloseButton: true,
                         title: "Open Order",
                         body: ComposeOrderPageWrapper(
                           composeTransactionUseCase:
@@ -613,6 +615,8 @@ class OrderButtonMenu extends StatelessWidget {
                     HorizonUI.HorizonDialog.show(
                       context: context,
                       body: HorizonUI.HorizonDialog(
+                        includeBackButton: false,
+                        includeCloseButton: true,
                         title: "Cancel Order",
                         body: ComposeCancelPageWrapper(
                           composeTransactionUseCase:
@@ -1333,6 +1337,8 @@ class DashboardPageState extends State<DashboardPage> {
     HorizonUI.HorizonDialog.show(
       context: context,
       body: HorizonUI.HorizonDialog(
+        includeBackButton: false,
+        includeCloseButton: true,
         title: "Open Order",
         body: ComposeOrderPageWrapper(
           currentAddress: widget.currentAddress?.address ??
@@ -1359,6 +1365,8 @@ class DashboardPageState extends State<DashboardPage> {
     HorizonUI.HorizonDialog.show(
         context: context,
         body: HorizonUI.HorizonDialog(
+            includeBackButton: false,
+            includeCloseButton: true,
             title: "Trigger Dispense",
             body: ComposeDispensePageWrapper(
                 initialDispenserAddress: address,
