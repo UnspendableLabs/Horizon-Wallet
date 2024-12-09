@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:horizon/domain/entities/balance.dart';
+import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:horizon/domain/repositories/utxo_repository.dart';
 import 'package:horizon/presentation/common/usecase/get_virtual_size_usecase.dart';
@@ -16,6 +17,8 @@ class MockGetVirtualSizeUseCase extends Mock implements GetVirtualSizeUseCase {}
 class MockComposeParams extends Mock implements ComposeParams {}
 
 class MockComposeResponse extends Mock implements ComposeResponse {}
+
+class MockBalanceRepository extends Mock implements BalanceRepository {}
 
 class MockComposeFunction extends Mock {
   Future<MockComposeResponse> call(
@@ -34,13 +37,15 @@ void main() {
   late MockGetVirtualSizeUseCase mockGetVirtualSizeUseCase;
   late MockComposeFunction mockComposeFunction;
   late MockComposeParams mockComposeParams;
-
+  late MockBalanceRepository mockBalanceRepository;
   setUp(() {
     // Initialize mocks before each test
     mockUtxoRepository = MockUtxoRepository();
     mockGetVirtualSizeUseCase = MockGetVirtualSizeUseCase();
     mockComposeFunction = MockComposeFunction();
     mockComposeParams = MockComposeParams();
+    mockBalanceRepository = MockBalanceRepository();
+    registerFallbackValue(mockComposeParams);
   });
 
   group('ComposeTransactionUseCase', () {
@@ -48,6 +53,7 @@ void main() {
       // Create a fresh instance for this test
       final composeTransactionUseCase = ComposeTransactionUseCase(
         utxoRepository: mockUtxoRepository,
+        balanceRepository: mockBalanceRepository,
         getVirtualSizeUseCase: mockGetVirtualSizeUseCase,
       );
 
@@ -106,6 +112,7 @@ void main() {
       // Create a fresh instance for this test
       final composeTransactionUseCase = ComposeTransactionUseCase(
         utxoRepository: mockUtxoRepository,
+        balanceRepository: mockBalanceRepository,
         getVirtualSizeUseCase: mockGetVirtualSizeUseCase,
       );
 
@@ -136,6 +143,7 @@ void main() {
 
       final composeTransactionUseCase = ComposeTransactionUseCase(
         utxoRepository: mockUtxoRepository,
+        balanceRepository: mockBalanceRepository,
         getVirtualSizeUseCase: mockGetVirtualSizeUseCase,
       );
 
@@ -171,6 +179,7 @@ void main() {
       // Create a fresh instance for this test
       final composeTransactionUseCase = ComposeTransactionUseCase(
         utxoRepository: mockUtxoRepository,
+        balanceRepository: mockBalanceRepository,
         getVirtualSizeUseCase: mockGetVirtualSizeUseCase,
       );
 
@@ -204,6 +213,160 @@ void main() {
         ),
         throwsA(isA<ComposeTransactionException>()),
       );
+    });
+
+    test('should handle more than 20 UTXOs by invoking _getLargeInputsSet',
+        () async {
+      final composeTransactionUseCase = ComposeTransactionUseCase(
+        utxoRepository: mockUtxoRepository,
+        balanceRepository: mockBalanceRepository,
+        getVirtualSizeUseCase: mockGetVirtualSizeUseCase,
+      );
+
+      // Arrange
+      const source = 'test_source_address';
+      const feeRate = 10;
+
+      // Mock UTXOs with placeholder values
+      final mockUtxos = List.generate(25, (_) => MockUtxo());
+
+      // Stub txid, vout, and value for each UTXO
+      for (var i = 0; i < mockUtxos.length; i++) {
+        when(() => mockUtxos[i].txid).thenReturn('mockTxId$i');
+        when(() => mockUtxos[i].vout).thenReturn(i);
+        when(() => mockUtxos[i].value).thenReturn(1000 - i); // Decreasing value
+      }
+
+      const virtualSize = 100;
+      const adjustedVirtualSize = virtualSize * 5;
+      const totalFee = adjustedVirtualSize * feeRate;
+      final mockComposeResponse = MockComposeResponse();
+
+      when(() => mockUtxoRepository.getUnspentForAddress(source))
+          .thenAnswer((_) async => mockUtxos);
+
+      when(() => mockBalanceRepository.getBalancesForUTXO(any()))
+          .thenAnswer((_) async => []);
+
+      mockUtxos.sort((a, b) => b.value.compareTo(a.value));
+      final sortedUtxos = mockUtxos.take(20).toList();
+      when(() => mockGetVirtualSizeUseCase.call(
+              composeFunction: mockComposeFunction.call,
+              inputsSet: sortedUtxos,
+              params: mockComposeParams))
+          .thenAnswer((_) async => (virtualSize, adjustedVirtualSize));
+
+      when(() => mockComposeFunction(totalFee, sortedUtxos, mockComposeParams))
+          .thenAnswer((_) async => mockComposeResponse);
+
+      // Act
+      final result = await composeTransactionUseCase.call(
+        feeRate: feeRate,
+        source: source,
+        params: mockComposeParams,
+        composeFn: mockComposeFunction.call,
+      );
+
+      // Assert
+      expect(result, (mockComposeResponse, const VirtualSize(100, 500)));
+      verify(() => mockUtxoRepository.getUnspentForAddress(source)).called(1);
+      verify(() => mockBalanceRepository.getBalancesForUTXO(any())).called(20);
+      verify(() => mockGetVirtualSizeUseCase.call(
+            composeFunction: mockComposeFunction.call,
+            inputsSet: sortedUtxos,
+            params: mockComposeParams,
+          )).called(1);
+      // Verify that the compose function is called with the expected largest 10 UTXOs
+      final capturedInputs =
+          verify(() => mockComposeFunction(any(), captureAny(), any()))
+              .captured
+              .single as List<Utxo>;
+      expect(capturedInputs.length, equals(20));
+      // Check that the captured inputs are the largest 20 UTXOs
+      expect(capturedInputs, containsAllInOrder(sortedUtxos));
+    });
+
+    test('should exclude top 2 UTXOs with balances from the final inputs',
+        () async {
+      final composeTransactionUseCase = ComposeTransactionUseCase(
+        utxoRepository: mockUtxoRepository,
+        balanceRepository: mockBalanceRepository,
+        getVirtualSizeUseCase: mockGetVirtualSizeUseCase,
+      );
+
+      // Arrange
+      const source = 'test_source_address';
+      const feeRate = 10;
+
+      // Mock UTXOs with placeholder values
+      final mockUtxos = List.generate(25, (_) => MockUtxo());
+
+      // Stub txid, vout, and value for each UTXO
+      for (var i = 0; i < mockUtxos.length; i++) {
+        when(() => mockUtxos[i].txid).thenReturn('mockTxId$i');
+        when(() => mockUtxos[i].vout).thenReturn(i);
+        when(() => mockUtxos[i].value).thenReturn(1000 - i); // Decreasing value
+      }
+
+      const virtualSize = 100;
+      const adjustedVirtualSize = virtualSize * 5;
+      const totalFee = adjustedVirtualSize * feeRate;
+      final mockComposeResponse = MockComposeResponse();
+
+      when(() => mockUtxoRepository.getUnspentForAddress(source))
+          .thenAnswer((_) async => mockUtxos);
+
+      // Return a balance for the top 2 UTXOs
+      when(() => mockBalanceRepository.getBalancesForUTXO('mockTxId0:0'))
+          .thenAnswer((_) async => [MockBalance()]);
+      when(() => mockBalanceRepository.getBalancesForUTXO('mockTxId1:1'))
+          .thenAnswer((_) async => [MockBalance()]);
+
+      // Return no balance for other UTXOs
+      for (var i = 2; i < mockUtxos.length; i++) {
+        when(() => mockBalanceRepository.getBalancesForUTXO('mockTxId$i:$i'))
+            .thenAnswer((_) async => []);
+      }
+
+      mockUtxos.sort((a, b) => b.value.compareTo(a.value));
+      final sortedUtxos = mockUtxos.skip(2).take(20).toList(); // Exclude top 2
+
+      when(() => mockGetVirtualSizeUseCase.call(
+              composeFunction: mockComposeFunction.call,
+              inputsSet: sortedUtxos,
+              params: mockComposeParams))
+          .thenAnswer((_) async => (virtualSize, adjustedVirtualSize));
+
+      when(() => mockComposeFunction(totalFee, sortedUtxos, mockComposeParams))
+          .thenAnswer((_) async => mockComposeResponse);
+
+      // Act
+      final result = await composeTransactionUseCase.call(
+        feeRate: feeRate,
+        source: source,
+        params: mockComposeParams,
+        composeFn: mockComposeFunction.call,
+      );
+
+      // Assert
+      expect(result, (mockComposeResponse, const VirtualSize(100, 500)));
+      verify(() => mockUtxoRepository.getUnspentForAddress(source)).called(1);
+      verify(() => mockBalanceRepository.getBalancesForUTXO(any()))
+          .called(22); // 20 inputs calls without balances and 2 with balances
+      verify(() => mockGetVirtualSizeUseCase.call(
+            composeFunction: mockComposeFunction.call,
+            inputsSet: sortedUtxos,
+            params: mockComposeParams,
+          )).called(1);
+
+      // Verify that the compose function is called with the expected UTXOs
+      final capturedInputs =
+          verify(() => mockComposeFunction(any(), captureAny(), any()))
+              .captured
+              .single as List<Utxo>;
+      expect(capturedInputs.length, equals(20));
+      // Check that the captured inputs exclude the top 2 UTXOs
+      expect(capturedInputs, containsAllInOrder(sortedUtxos));
     });
   });
 }
