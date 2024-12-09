@@ -70,6 +70,7 @@ class ComposeTransactionUseCase {
 
   Future<List<Utxo>> _getLargeInputsSet(List<Utxo> inputsSet) async {
     // if the inputsSet is larger than 20, we need to take 20 UTXOs with the highest values that have no balance
+    // 20 is a random number that we know will not cause the load balancer to deny the request
     inputsSet.sort((a, b) => b.value.compareTo(a.value));
     final List<Utxo> inputsForSet = [];
 
