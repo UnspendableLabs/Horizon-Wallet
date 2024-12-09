@@ -351,9 +351,6 @@ class ComposeDispenserOnNewAddressBloc extends Bloc<
           composeDispenserOnNewAddressState:
               const ComposeDispenserOnNewAddressState.loading()));
       try {
-        await accountRepository.insert(state.newAccount!);
-        await addressRepository.insert(state.newAddress!);
-
         Future.delayed(const Duration(seconds: 1));
         final sendTxHash =
             await bitcoindService.sendrawtransaction(state.signedAssetSend!);
@@ -371,6 +368,8 @@ class ComposeDispenserOnNewAddressBloc extends Bloc<
           dispenserTxHash,
         );
 
+        await accountRepository.insert(state.newAccount!);
+        await addressRepository.insert(state.newAddress!);
         emit(state.copyWith(
             composeDispenserOnNewAddressState:
                 const ComposeDispenserOnNewAddressState.success()));
