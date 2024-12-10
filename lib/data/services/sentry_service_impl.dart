@@ -34,6 +34,7 @@ class SentryServiceImpl implements SentryService {
 
     try {
       Sentry.captureException(exception, stackTrace: stackTrace);
+      logger.info('Exception captured in Sentry');
     } catch (e) {
       logger.error('Failed to capture exception in Sentry', e as Error);
     }
@@ -57,6 +58,7 @@ class SentryServiceImpl implements SentryService {
           data: data,
         ),
       );
+      logger.info('Breadcrumb added to Sentry');
     } catch (e) {
       logger.error('Failed to add breadcrumb to Sentry', e as Error);
     }

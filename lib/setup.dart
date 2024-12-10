@@ -692,16 +692,9 @@ class SimpleLogInterceptor extends Interceptor {
     final errorInfo =
         '${err.requestOptions.method} ${err.requestOptions.uri} [Error] ${err.message}';
 
-    GetIt.I<SentryService>().addBreadcrumb(
-      type: 'http',
-      category: 'error',
-      message: errorInfo,
-      data: {
-        'url': err.requestOptions.uri.toString(),
-        'method': err.requestOptions.method,
-        'error': err.message,
-        'status': err.response?.statusCode,
-      },
+    GetIt.I<SentryService>().captureException(
+      errorInfo,
+      stackTrace: err.stackTrace,
     );
 
     GetIt.I<Logger>().debug('Error: $errorInfo');
