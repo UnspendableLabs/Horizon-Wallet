@@ -12,7 +12,10 @@ class SentryServiceImpl implements SentryService {
 
   @override
   Future<void> initialize() async {
-    if (!config.isSentryEnabled || _isInitialized) return;
+    if (!config.isSentryEnabled || _isInitialized) {
+      logger.info('Sentry is not enabled, skipping initialization');
+      return;
+    }
 
     try {
       await SentryFlutter.init(

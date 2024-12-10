@@ -129,7 +129,7 @@ class ConfigImpl implements Config {
   @override
   bool get isSentryEnabled {
     return const bool.fromEnvironment('HORIZON_SENTRY_ENABLED',
-        defaultValue: true);
+        defaultValue: false);
   }
 
   @override
