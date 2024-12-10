@@ -10,11 +10,11 @@ class ImportFormatChanged extends OnboardingImportEvent {
   ImportFormatChanged({required this.importFormat});
 }
 
-class ProceedToSeedInput extends OnboardingImportEvent {}
+class ImportFormatSubmitted extends OnboardingImportEvent {}
 
-class ProceedToPasswordInput extends OnboardingImportEvent {
+class MnemonicSubmitted extends OnboardingImportEvent {
   final String mnemonic;
-  ProceedToPasswordInput({required this.mnemonic});
+  MnemonicSubmitted({required this.mnemonic});
 }
 
 class ImportWallet extends OnboardingImportEvent {

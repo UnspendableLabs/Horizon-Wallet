@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:get_it/get_it.dart';
 import 'package:horizon/common/constants.dart';
+import 'package:horizon/domain/services/mnemonic_service.dart';
 import 'package:horizon/domain/services/wallet_service.dart';
+import 'package:horizon/presentation/common/colors.dart';
 import 'package:horizon/presentation/common/usecase/import_wallet_usecase.dart';
 import 'package:horizon/presentation/screens/onboarding/view/back_continue_buttons.dart';
 import 'package:horizon/presentation/screens/onboarding/view/import_format_dropdown.dart';
@@ -11,10 +14,7 @@ import 'package:horizon/presentation/screens/onboarding/view/password_prompt.dar
 import 'package:horizon/presentation/screens/onboarding_import/bloc/onboarding_import_bloc.dart';
 import 'package:horizon/presentation/screens/onboarding_import/bloc/onboarding_import_event.dart';
 import 'package:horizon/presentation/screens/onboarding_import/bloc/onboarding_import_state.dart';
-import 'package:horizon/presentation/common/colors.dart';
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
-import 'package:get_it/get_it.dart';
-import 'package:horizon/domain/services/mnemonic_service.dart';
 
 class OnboardingImportPageWrapper extends StatelessWidget {
   const OnboardingImportPageWrapper({super.key});
@@ -224,7 +224,7 @@ class _ChooseFormatState extends State<ChooseFormat> {
             shell.onOnboarding();
           },
           onPressedContinue: () {
-            context.read<OnboardingImportBloc>().add(ProceedToSeedInput());
+            context.read<OnboardingImportBloc>().add(ImportFormatSubmitted());
           },
         ),
       ],
@@ -322,7 +322,7 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
               shell.onOnboarding();
             },
             onPressedContinue: () {
-              context.read<OnboardingImportBloc>().add(ProceedToPasswordInput(
+              context.read<OnboardingImportBloc>().add(MnemonicSubmitted(
                     mnemonic: controllers
                         .map((controller) => controller.text)
                         .join(' ')

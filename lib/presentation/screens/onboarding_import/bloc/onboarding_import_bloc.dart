@@ -56,11 +56,11 @@ class OnboardingImportBloc
       emit(state.copyWith(importFormat: importFormat));
     });
 
-    on<ProceedToSeedInput>((event, emit) async {
+    on<ImportFormatSubmitted>((event, emit) async {
       emit(state.copyWith(currentStep: OnboardingImportStep.inputSeed));
     });
 
-    on<ProceedToPasswordInput>((event, emit) async {
+    on<MnemonicSubmitted>((event, emit) async {
       // Validate mnemonic before proceeding
       if (state.mnemonic.isEmpty) {
         emit(state.copyWith(mnemonicError: "Seed phrase is required"));
