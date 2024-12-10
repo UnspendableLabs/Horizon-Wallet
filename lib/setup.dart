@@ -122,6 +122,9 @@ import 'dart:convert';
 // will need to move this import elsewhere for compile to native
 import 'dart:html' as html;
 
+import 'package:horizon/domain/services/sentry_service.dart';
+import 'package:horizon/data/services/sentry_service_impl.dart';
+
 Future<void> setup() async {
   GetIt injector = GetIt.I;
 
@@ -508,6 +511,14 @@ Future<void> setup() async {
 
   injector.registerSingleton<PublicKeyService>(
       PublicKeyServiceImpl(config: config));
+
+  // Register SentryService before other services that might use it
+  injector.registerSingleton<SentryService>(
+    SentryServiceImpl(
+      GetIt.I<Config>(),
+      GetIt.I<Logger>(),
+    ),
+  );
 }
 
 class CustomDioException extends DioException {
@@ -529,7 +540,6 @@ class TimeoutInterceptor extends Interceptor {
     if (err.type == DioExceptionType.connectionTimeout ||
         err.type == DioExceptionType.receiveTimeout ||
         err.type == DioExceptionType.sendTimeout) {
-      // final requestPath = err.requestOptions.uri.toString();
       const timeoutDuration = Duration(seconds: 15);
       final formattedError = CustomDioException(
         requestOptions: err.requestOptions,
@@ -538,8 +548,18 @@ class TimeoutInterceptor extends Interceptor {
         type: DioExceptionType.connectionTimeout,
       );
 
-      GetIt.I<Logger>().debug(formattedError.toString());
+      GetIt.I<SentryService>().addBreadcrumb(
+        type: 'http',
+        category: 'timeout',
+        message: 'Request timeout',
+        data: {
+          'url': err.requestOptions.uri.toString(),
+          'method': err.requestOptions.method,
+          'duration': timeoutDuration.inSeconds,
+        },
+      );
 
+      GetIt.I<Logger>().debug(formattedError.toString());
       handler.next(formattedError);
     } else {
       handler.next(err);
@@ -552,13 +572,23 @@ class ConnectionErrorInterceptor extends Interceptor {
   void onError(DioException err, ErrorInterceptorHandler handler) {
     if (err.type == DioExceptionType.connectionError ||
         err.type == DioExceptionType.unknown) {
-      // final requestPath = err.requestOptions.uri.toString();
       final formattedError = CustomDioException(
         requestOptions: err.requestOptions,
         error:
             'Connection Error — Request Failed ${err.response?.data?['error'] != null ? "\n\n ${err.response?.data?['error']}" : ""}',
         type: DioExceptionType.connectionError,
       );
+
+      GetIt.I<SentryService>().addBreadcrumb(
+        type: 'http',
+        category: 'connection',
+        message: 'Connection error',
+        data: {
+          'url': err.requestOptions.uri.toString(),
+          'method': err.requestOptions.method,
+        },
+      );
+
       GetIt.I<Logger>().debug(formattedError.toString());
       handler.next(formattedError);
     } else {
@@ -571,7 +601,6 @@ class BadResponseInterceptor extends Interceptor {
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) {
     if (err.type == DioExceptionType.badResponse) {
-      // final requestPath = err.requestOptions.uri.toString();
       final formattedError = CustomDioException(
         requestOptions: err.requestOptions,
         error: err.response?.data?['error'] != null
@@ -579,6 +608,19 @@ class BadResponseInterceptor extends Interceptor {
             : "Bad Response",
         type: DioExceptionType.badResponse,
       );
+
+      GetIt.I<SentryService>().addBreadcrumb(
+        type: 'http',
+        category: 'response',
+        message: 'Bad response',
+        data: {
+          'url': err.requestOptions.uri.toString(),
+          'method': err.requestOptions.method,
+          'status': err.response?.statusCode,
+          'error': err.response?.data?['error'],
+        },
+      );
+
       GetIt.I<Logger>().debug(formattedError.toString());
       handler.next(formattedError);
     } else {
@@ -610,6 +652,17 @@ class SimpleLogInterceptor extends Interceptor {
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
     final requestInfo = '${options.method} ${options.uri}';
+
+    GetIt.I<SentryService>().addBreadcrumb(
+      type: 'http',
+      category: 'request',
+      message: requestInfo,
+      data: {
+        'url': options.uri.toString(),
+        'method': options.method,
+      },
+    );
+
     GetIt.I<Logger>().debug('Request: $requestInfo');
     handler.next(options);
   }
@@ -618,6 +671,18 @@ class SimpleLogInterceptor extends Interceptor {
   void onResponse(response, ResponseInterceptorHandler handler) {
     final responseInfo =
         '${response.requestOptions.method} ${response.requestOptions.uri} [${response.statusCode}]';
+
+    GetIt.I<SentryService>().addBreadcrumb(
+      type: 'http',
+      category: 'response',
+      message: responseInfo,
+      data: {
+        'url': response.requestOptions.uri.toString(),
+        'method': response.requestOptions.method,
+        'status': response.statusCode,
+      },
+    );
+
     GetIt.I<Logger>().debug('Response: $responseInfo');
     handler.next(response);
   }
@@ -626,6 +691,19 @@ class SimpleLogInterceptor extends Interceptor {
   void onError(DioException err, ErrorInterceptorHandler handler) {
     final errorInfo =
         '${err.requestOptions.method} ${err.requestOptions.uri} [Error] ${err.message}';
+
+    GetIt.I<SentryService>().addBreadcrumb(
+      type: 'http',
+      category: 'error',
+      message: errorInfo,
+      data: {
+        'url': err.requestOptions.uri.toString(),
+        'method': err.requestOptions.method,
+        'error': err.message,
+        'status': err.response?.statusCode,
+      },
+    );
+
     GetIt.I<Logger>().debug('Error: $errorInfo');
     if (err.response != null) {
       final responseData = err.response?.data;
