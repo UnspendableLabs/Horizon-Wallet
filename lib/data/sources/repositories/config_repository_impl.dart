@@ -115,9 +115,9 @@ class ConfigImpl implements Config {
   }
 
   String get _defaultSentryDsn => switch (network) {
-        Network.mainnet => '', // Your production Sentry DSN
-        Network.testnet => '', // Your staging/test Sentry DSN
-        Network.regtest => '', // Your development Sentry DSN or empty
+        Network.mainnet => '',
+        Network.testnet => '',
+        Network.regtest => '',
       };
 
   @override
