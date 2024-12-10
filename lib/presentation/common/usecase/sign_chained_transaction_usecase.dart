@@ -22,6 +22,7 @@ class SignChainedTransactionUseCase {
     required String rawtransaction,
     required DecodedTx prevDecodedTransaction,
     required String addressPrivKey,
+    required Map<String, String>? unsignedTransactionHexMap,
   }) async {
     try {
       // TODO: construct and pass utxoMap outside of this usecase and pass it in as a parameter
@@ -39,6 +40,7 @@ class SignChainedTransactionUseCase {
       final Map<String, Utxo> utxoMap = {
         for (var e in utxosToSign) "${e.txid}:${e.vout}": e
       };
+      final x = {prevDecodedTransaction.txid: rawtransaction};
 
       // Sign Transaction
       final signedTransaction = await transactionService.signTransaction(
@@ -46,6 +48,7 @@ class SignChainedTransactionUseCase {
         addressPrivKey,
         source,
         utxoMap,
+        x,
       );
 
       return signedTransaction;

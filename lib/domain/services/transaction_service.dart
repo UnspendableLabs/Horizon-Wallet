@@ -7,7 +7,8 @@ abstract class TransactionService {
   String psbtToUnsignedTransactionHex(String psbtHex);
 
   Future<String> signTransaction(String unsignedTransaction, String privateKey,
-      String sourceAddress, Map<String, Utxo> utxoMap);
+      String sourceAddress, Map<String, Utxo> utxoMap,
+      [Map<String, String>? unsignedTransactionHexMap]);
 
   int getVirtualSize(String unsignedTransaction);
 
@@ -32,6 +33,7 @@ abstract class TransactionService {
       required List<Utxo> utxos,
       required int btcQuantity,
       required String sourcePrivKey,
+      required String destinationAddress,
       required String destinationPrivKey,
       required int fee});
 }

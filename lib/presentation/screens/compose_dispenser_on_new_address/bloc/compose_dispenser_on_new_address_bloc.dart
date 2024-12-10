@@ -284,13 +284,21 @@ class ComposeDispenserOnNewAddressBloc extends Bloc<
           sourceAddress: source,
           utxos: utxos,
           sourcePrivKey: sourceAddressPrivKey,
+          destinationAddress: newAddress.address,
           destinationPrivKey: newAddressPrivKey,
           btcQuantity: feeToCoverDispenser + extraBtcToSendToDispenser,
           fee: feeForAssetSend,
         );
 
+        // Decode the signed transaction to get the txid
         final decodedConstructedAssetSend = await bitcoindService
             .decoderawtransaction(signedConstructedAssetSend);
+        final prevTxId = decodedConstructedAssetSend.txid;
+
+        // Build the unsignedTransactionHexMap
+        final unsignedTransactionHexMap = {
+          prevTxId: signedConstructedAssetSend,
+        };
 
         // 4. compose the dispenser
         final composeDispenserChain =
@@ -315,6 +323,8 @@ class ComposeDispenserOnNewAddressBloc extends Bloc<
           password: event.password,
           prevDecodedTransaction: decodedConstructedAssetSend,
           addressPrivKey: newAddressPrivKey,
+          unsignedTransactionHexMap:
+              unsignedTransactionHexMap, // Add this parameter
         );
 
         emit(state.copyWith(
