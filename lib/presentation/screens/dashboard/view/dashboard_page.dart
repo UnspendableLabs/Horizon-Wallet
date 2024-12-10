@@ -481,6 +481,7 @@ class AddressAction extends StatelessWidget {
   final IconData icon;
   final String text;
   final double? iconSize;
+  final String? tooltip;
   const AddressAction({
     super.key,
     required this.isDarkTheme,
@@ -488,6 +489,7 @@ class AddressAction extends StatelessWidget {
     required this.icon,
     required this.text,
     this.iconSize,
+    this.tooltip,
   });
   @override
   Widget build(BuildContext context) {
@@ -499,54 +501,58 @@ class AddressAction extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 4.0),
         child: SizedBox(
           height: 65,
-          child: ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor:
-                  isDarkTheme ? lightNavyDarkTheme : lightBlueLightTheme,
-              elevation: 0,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(24.0),
+          child: Tooltip(
+            message: tooltip ?? text,
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor:
+                    isDarkTheme ? lightNavyDarkTheme : lightBlueLightTheme,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(24.0),
+                ),
+                padding:
+                    EdgeInsets.symmetric(horizontal: isMobile ? 6.0 : 10.0),
               ),
-              padding: EdgeInsets.symmetric(horizontal: isMobile ? 6.0 : 10.0),
-            ),
-            onPressed: () {
-              HorizonUI.HorizonDialog.show(context: context, body: dialog);
-            },
-            child: isMobile
-                ? Icon(
-                    icon,
-                    size: iconSize ?? 24.0,
-                    color: isDarkTheme
-                        ? greyDashboardButtonTextDarkTheme
-                        : greyDashboardButtonTextLightTheme,
-                  )
-                : Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        icon,
-                        size: iconSize ?? 24.0,
-                        color: isDarkTheme
-                            ? greyDashboardButtonTextDarkTheme
-                            : greyDashboardButtonTextLightTheme,
-                      ),
-                      const SizedBox(width: 4.0),
-                      Flexible(
-                        child: Text(
-                          text,
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 12,
-                            color: isDarkTheme
-                                ? greyDashboardButtonTextDarkTheme
-                                : greyDashboardButtonTextLightTheme,
-                          ),
-                          overflow: TextOverflow.ellipsis,
-                          maxLines: 1,
+              onPressed: () {
+                HorizonUI.HorizonDialog.show(context: context, body: dialog);
+              },
+              child: isMobile
+                  ? Icon(
+                      icon,
+                      size: iconSize ?? 24.0,
+                      color: isDarkTheme
+                          ? greyDashboardButtonTextDarkTheme
+                          : greyDashboardButtonTextLightTheme,
+                    )
+                  : Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          icon,
+                          size: iconSize ?? 24.0,
+                          color: isDarkTheme
+                              ? greyDashboardButtonTextDarkTheme
+                              : greyDashboardButtonTextLightTheme,
                         ),
-                      ),
-                    ],
-                  ),
+                        const SizedBox(width: 4.0),
+                        Flexible(
+                          child: Text(
+                            text,
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
+                              color: isDarkTheme
+                                  ? greyDashboardButtonTextDarkTheme
+                                  : greyDashboardButtonTextLightTheme,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
+                          ),
+                        ),
+                      ],
+                    ),
+            ),
           ),
         ),
       ),
@@ -581,6 +587,7 @@ class OrderButtonMenu extends StatelessWidget {
         child: SizedBox(
           height: 65,
           child: PopupMenuButton(
+            tooltip: "Order Actions",
             color: isDarkTheme ? lightNavyDarkTheme : lightBlueLightTheme,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(24.0),
@@ -725,6 +732,7 @@ class DispenserButtonMenu extends StatelessWidget {
         child: SizedBox(
           height: 65,
           child: PopupMenuButton(
+            tooltip: "Dispenser Actions",
             color: isDarkTheme ? lightNavyDarkTheme : lightBlueLightTheme,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(24.0),
@@ -855,6 +863,7 @@ class MintMenu extends StatelessWidget {
         child: SizedBox(
           height: 65,
           child: PopupMenuButton(
+            tooltip: "Fairminter Actions",
             color: isDarkTheme ? lightNavyDarkTheme : lightBlueLightTheme,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(24.0),
@@ -963,6 +972,7 @@ class AddressActions extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             AddressAction(
+              tooltip: "Send Asset",
               isDarkTheme: isDarkTheme,
               dialog: HorizonUI.HorizonDialog(
                 title: "Compose Send",
@@ -978,6 +988,7 @@ class AddressActions extends StatelessWidget {
               iconSize: 18.0,
             ),
             AddressAction(
+              tooltip: "Issue Asset",
               isDarkTheme: isDarkTheme,
               dialog: HorizonUI.HorizonDialog(
                 title: "Compose Issuance",
@@ -993,6 +1004,7 @@ class AddressActions extends StatelessWidget {
               iconSize: 18.0,
             ),
             AddressAction(
+              tooltip: "Receive Asset",
               isDarkTheme: isDarkTheme,
               dialog: HorizonUI.HorizonDialog(
                 title: "Receive",
