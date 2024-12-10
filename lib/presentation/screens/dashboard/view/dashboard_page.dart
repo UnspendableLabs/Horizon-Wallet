@@ -1459,7 +1459,6 @@ class DashboardPageState extends State<DashboardPage> {
 
     final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
     final screenWidth = MediaQuery.of(context).size.width;
-    final height = MediaQuery.of(context).size.height;
 
     Color backgroundColor = isDarkTheme ? darkNavyDarkTheme : greyLightTheme;
     final backgroundColorInner =
