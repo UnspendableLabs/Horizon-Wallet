@@ -16,4 +16,7 @@ abstract class Config {
   bool get isDatabaseViewerEnabled;
   bool get isAnalyticsEnabled;
   bool get isWebExtension;
+  String get sentryDsn;
+  double get sentrySampleRate;
+  bool get isSentryEnabled;
 }

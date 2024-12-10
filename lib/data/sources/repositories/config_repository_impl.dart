@@ -109,7 +109,39 @@ class ConfigImpl implements Config {
   }
 
   @override
+  String get sentryDsn {
+    const envValue = String.fromEnvironment('HORIZON_SENTRY_DSN');
+    return envValue.isNotEmpty ? envValue : _defaultSentryDsn;
+  }
+
+  String get _defaultSentryDsn => switch (network) {
+        Network.mainnet => '',
+        Network.testnet => '',
+        Network.regtest => '',
+      };
+
+  @override
+  double get sentrySampleRate {
+    const envValue = String.fromEnvironment('HORIZON_SENTRY_SAMPLE_RATE');
+    return envValue.isNotEmpty ? double.parse(envValue) : 1.0;
+  }
+
+  @override
+  bool get isSentryEnabled {
+    return const bool.fromEnvironment('HORIZON_SENTRY_ENABLED',
+        defaultValue: false);
+  }
+
+  @override
   String toString() {
-    return 'EnvironmentConfig(network: $network, counterpartyApiBase: $counterpartyApiBase, esploraBase: $esploraBase, horizonExplorerBase: $horizonExplorerBase, btcExplorerBase: $btcExplorerBase, isDatabaseViewerEnabled: $isDatabaseViewerEnabled)';
+    return '''EnvironmentConfig(
+      network: $network,
+      counterpartyApiBase: $counterpartyApiBase,
+      esploraBase: $esploraBase,
+      horizonExplorerBase: $horizonExplorerBase,
+      btcExplorerBase: $btcExplorerBase,
+      isDatabaseViewerEnabled: $isDatabaseViewerEnabled,
+      isSentryEnabled: $isSentryEnabled
+    )''';
   }
 }
