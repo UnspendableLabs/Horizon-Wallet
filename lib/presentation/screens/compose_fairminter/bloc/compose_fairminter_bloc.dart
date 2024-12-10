@@ -77,12 +77,11 @@ class ComposeFairminterBloc extends ComposeBaseBloc<ComposeFairminterState> {
       final (assets, feeEstimates, fairminters) =
           await fetchFairminterFormDataUseCase.call(event.currentAddress!);
 
-     // fairminters can be opened on any owned asset
-     // however, we need to check the current fairminters and filter out owned assets if the asset is already minted
+      // fairminters can be opened on any owned asset
+      // however, we need to check the current fairminters and filter out owned assets if the asset is already minted
 
-
-     // we can compose a new fairminter on an asset that had previously been minted if the fairminter is closed and not locked
-     // grab the list of fairminters on which new fairminters cannot be composed
+      // we can compose a new fairminter on an asset that had previously been minted if the fairminter is closed and not locked
+      // grab the list of fairminters on which new fairminters cannot be composed
       final invalidFairminters = fairminters
           .where((fairminter) =>
               fairminter.status != 'closed' ||
@@ -95,7 +94,6 @@ class ComposeFairminterBloc extends ComposeBaseBloc<ComposeFairminterState> {
           .map((fairminter) {
             if (fairminter.asset != null) return fairminter.asset!;
 
-
             // some invalid fairminter statuses have this format: `invalid: Hard cap of asset `INVALID.ASSET` is already reached.`
             // we need to extract the invalid asset from this string
             final match =
@@ -104,7 +102,6 @@ class ComposeFairminterBloc extends ComposeBaseBloc<ComposeFairminterState> {
           })
           .where((asset) => asset.isNotEmpty)
           .toList();
-
 
       // filter out assets that have invalid fairminters
       final validAssets = assets
