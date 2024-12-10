@@ -188,12 +188,7 @@ void main() {
         await tester.tap(importSeedButton);
         await tester.pumpAndSettle();
 
-        // Enter the seed phrase into the first field
-        final seedPhrase = testCase['passphrase'] as String;
-        final firstWordField = find.byType(TextField).first;
-        await tester.enterText(firstWordField, seedPhrase);
-        await tester.pumpAndSettle();
-
+        // Now we should be on the "Choose the format of your seed phrase" screen
         // Open the dropdown for import format
         final dropdownFinder = find.byType(DropdownButton<String>);
         await tester.tap(dropdownFinder);
@@ -210,6 +205,18 @@ void main() {
         await tester.tap(continueButton);
         await tester.pumpAndSettle();
 
+        // Now we should be on the seed phrase input screen
+        final seedPhrase = testCase['passphrase'] as String;
+        final firstWordField = find.byType(TextField).first;
+        await tester.enterText(firstWordField, seedPhrase);
+        await tester.pumpAndSettle();
+
+        // Tap the "CONTINUE" button
+        final continueButtonAfterSeed = find.text('CONTINUE');
+        expect(continueButtonAfterSeed, findsOneWidget);
+        await tester.tap(continueButtonAfterSeed);
+        await tester.pumpAndSettle();
+
         // Now we should be on the password entry screen
         expect(find.text('Please create a password'), findsOneWidget);
 
@@ -223,9 +230,14 @@ void main() {
         await tester.enterText(confirmPasswordField, 'securepassword123');
         await tester.pumpAndSettle();
 
-        // Tap the "LOGIN" button
+        // Ensure the "LOGIN" button is visible
         final loginButton = find.text('LOGIN');
         expect(loginButton, findsOneWidget);
+
+        await tester.ensureVisible(loginButton);
+        await tester.pumpAndSettle();
+
+        // Now tap the "LOGIN" button
         await tester.tap(loginButton);
         await tester.pumpAndSettle();
 
@@ -236,6 +248,7 @@ void main() {
         final accountRepository = GetIt.instance<AccountRepository>();
         final walletRepository = GetIt.instance<WalletRepository>();
         final wallet = await walletRepository.getCurrentWallet();
+
         final account =
             await accountRepository.getAccountsByWalletUuid(wallet!.uuid);
         final addresses =

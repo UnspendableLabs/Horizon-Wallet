@@ -152,7 +152,8 @@ class OnboardingImportPageState extends State<OnboardingImportPage> {
                                           ),
                                         )
                                       : null),
-                            _ => const SelectableText("invariant: invalid onboarding step"),
+                            _ => const SelectableText(
+                                "invariant: invalid onboarding step"),
                           }),
                         ],
                       ),

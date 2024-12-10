@@ -266,12 +266,6 @@ void main() {
             await tester.tap(importSeedButton);
             await tester.pumpAndSettle();
 
-            // Enter the seed phrase into the first field
-            const seedPhrase = mnemonic;
-            final firstWordField = find.byType(TextField).first;
-            await tester.enterText(firstWordField, seedPhrase);
-            await tester.pumpAndSettle();
-
             // Open the dropdown for import format
             final dropdownFinder = find.byType(DropdownButton<String>);
             await tester.tap(dropdownFinder);
@@ -286,6 +280,18 @@ void main() {
             final continueButton = find.text('CONTINUE');
             expect(continueButton, findsOneWidget);
             await tester.tap(continueButton);
+            await tester.pumpAndSettle();
+
+            // Enter the seed phrase into the first field
+            const seedPhrase = mnemonic;
+            final firstWordField = find.byType(TextField).first;
+            await tester.enterText(firstWordField, seedPhrase);
+            await tester.pumpAndSettle();
+
+            // Tap the "CONTINUE" button
+            final continueButton2 = find.text('CONTINUE');
+            expect(continueButton2, findsOneWidget);
+            await tester.tap(continueButton2);
             await tester.pumpAndSettle();
 
             // Now we should be on the password entry screen
@@ -304,6 +310,10 @@ void main() {
             // Tap the "LOGIN" button
             final loginButton = find.text('LOGIN');
             expect(loginButton, findsOneWidget);
+
+            await tester.ensureVisible(loginButton);
+            await tester.pumpAndSettle();
+
             await tester.tap(loginButton);
             await tester.pumpAndSettle();
 
