@@ -262,7 +262,7 @@ class ComposeFairminterPageState extends State<ComposeFairminterPage> {
                 return true;
               }
               final subassetPart = asset.assetLongname!.split('.')[1];
-              if (subassetPart.length > 20) {
+              if (subassetPart.length > 20 || subassetPart.length < 4) {
                 return false;
               }
               return RegExp(r'^[A-Z]+$').hasMatch(subassetPart);
