@@ -1,14 +1,14 @@
 import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/domain/repositories/config_repository.dart';
-import 'package:horizon/domain/services/sentry_service.dart';
+import 'package:horizon/domain/services/error_service.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 
-class SentryServiceImpl implements SentryService {
+class ErrorServiceImpl implements ErrorService {
   final Config config;
   final Logger logger;
   bool _isInitialized = false;
 
-  SentryServiceImpl(this.config, this.logger);
+  ErrorServiceImpl(this.config, this.logger);
 
   @override
   Future<void> initialize() async {

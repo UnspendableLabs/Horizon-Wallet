@@ -46,7 +46,7 @@ import 'package:horizon/presentation/shell/theme/bloc/theme_bloc.dart';
 import 'package:horizon/presentation/version_cubit.dart';
 import 'package:horizon/setup.dart';
 import 'package:pub_semver/pub_semver.dart';
-import 'package:horizon/domain/services/sentry_service.dart';
+import 'package:horizon/domain/services/error_service.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 final _sectionNavigatorKey = GlobalKey<NavigatorState>();
@@ -365,7 +365,7 @@ void main() {
   // Catch synchronous errors in Flutter framework
   FlutterError.onError = (FlutterErrorDetails details) {
     FlutterError.dumpErrorToConsole(details);
-    GetIt.I<SentryService>()
+    GetIt.I<ErrorService>()
         .captureException(details.exception, stackTrace: details.stack);
   };
 
@@ -374,7 +374,7 @@ void main() {
     WidgetsFlutterBinding.ensureInitialized();
 
     await setup();
-    await GetIt.I<SentryService>().initialize();
+    await GetIt.I<ErrorService>().initialize();
 
     await setupRegtestWallet();
     await initSettings();
@@ -436,7 +436,7 @@ void main() {
     } else {
       logger.error(error.toString(), null, stackTrace);
     }
-    GetIt.I<SentryService>().captureException(error, stackTrace: stackTrace);
+    GetIt.I<ErrorService>().captureException(error, stackTrace: stackTrace);
   });
 }
 

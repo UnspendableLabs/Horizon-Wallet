@@ -1,4 +1,4 @@
-abstract class SentryService {
+abstract class ErrorService {
   Future<void> initialize();
   void captureException(dynamic exception, {StackTrace? stackTrace});
   void addBreadcrumb({
