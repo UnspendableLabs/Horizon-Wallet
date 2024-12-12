@@ -230,7 +230,8 @@ class ComposeSendBloc extends ComposeBaseBloc<ComposeSendState> {
     }
 
     emit(state.copyWith(
-        balancesState: BalancesState.success(balances),
+        balancesState: BalancesState.success(
+            balances.where((balance) => balance.utxo == null).toList()),
         feeState: FeeState.success(feeEstimates),
         submitState: const SubmitInitial()));
   }

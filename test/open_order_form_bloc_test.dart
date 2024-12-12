@@ -93,6 +93,8 @@ class FakeBalance extends Fake implements Balance {
   final String address;
   @override
   final AssetInfo assetInfo;
+  @override
+  final String? utxo;
 
   FakeBalance({
     required this.asset,
@@ -100,6 +102,7 @@ class FakeBalance extends Fake implements Balance {
     required this.quantityNormalized,
     required this.address,
     required this.assetInfo,
+    this.utxo,
   });
 }
 
@@ -1157,6 +1160,89 @@ void main() {
           .having((s) => s.lockRatio, 'lockRatio', false)
           .having((s) => s.ratio, 'ratio', const Option.none())
     ],
+  );
+
+  blocTest<OpenOrderFormBloc, FormStateModel>(
+    'filters out balances with non-null utxo when initializing',
+    build: () {
+      when(() => getFeeEstimatesUseCase.call()).thenAnswer(
+        (_) async => const FeeEstimates(fast: 50, medium: 30, slow: 10),
+      );
+
+      when(() => balanceRepository.getBalancesForAddress(any())).thenAnswer(
+        (_) async => [
+          // Balance with utxo == null
+          FakeBalance(
+            address: testAddress,
+            asset: 'ASSET1',
+            quantity: 100,
+            quantityNormalized: "100",
+            assetInfo: FakeAssetInfo(divisible: false),
+            utxo: null,
+          ),
+          // Balance with utxo != null (should be filtered out)
+          FakeBalance(
+            address: testAddress,
+            asset: 'ASSET2',
+            quantity: 200,
+            quantityNormalized: "200",
+            assetInfo: FakeAssetInfo(divisible: true),
+            utxo: "some_utxo_value",
+          ),
+          // Another balance with utxo == null
+          FakeBalance(
+            address: testAddress,
+            asset: 'ASSET3',
+            quantity: 300,
+            quantityNormalized: "300",
+            assetInfo: FakeAssetInfo(divisible: true),
+            utxo: null,
+          ),
+        ],
+      );
+      return bloc;
+    },
+    act: (bloc) => bloc.add(const InitializeForm()),
+    expect: () => [
+      isA<FormStateModel>()
+          .having(
+            (s) => s.giveAssets,
+            'giveAssets',
+            isA<Loading<List<Balance>>>(),
+          )
+          .having(
+            (s) => s.feeEstimates,
+            'feeEstimates',
+            isA<Loading<FeeEstimates>>(),
+          ),
+      isA<FormStateModel>()
+          .having(
+            (s) => s.giveAssets,
+            'giveAssets',
+            isA<Success<List<Balance>>>(),
+          )
+          .having(
+            (s) => (s.giveAssets as Success<List<Balance>>).data.length,
+            'filtered balances length',
+            2,
+          )
+          .having(
+            (s) => (s.giveAssets as Success<List<Balance>>).data,
+            'filtered balances',
+            containsAll([
+              isA<Balance>().having((b) => b.asset, 'asset', 'ASSET1'),
+              isA<Balance>().having((b) => b.asset, 'asset', 'ASSET3'),
+            ]),
+          ),
+    ],
+    verify: (_) {
+      final giveAssets = (bloc.state.giveAssets as Success<List<Balance>>).data;
+      expect(giveAssets.length, 2);
+      expect(
+        giveAssets.map((b) => b.asset),
+        containsAll(['ASSET1', 'ASSET3']),
+      );
+    },
   );
 }
 
