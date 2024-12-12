@@ -510,7 +510,7 @@ class NewTransactionEvent extends Event {
 }
 
 class VerboseNewTransactionParams extends NewTransactionParams {
-  final Map<String, dynamic> unpackedData;
+  final Map<String, dynamic>? unpackedData;
   final String btcAmountNormalized;
 
   VerboseNewTransactionParams({
