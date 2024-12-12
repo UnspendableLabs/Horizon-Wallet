@@ -2211,7 +2211,7 @@ class VerboseDebitParams extends DebitParams {
 
 @JsonSerializable(fieldRename: FieldRename.snake)
 class VerboseNewTransactionParams extends NewTransactionParams {
-  final Map<String, dynamic> unpackedData;
+  final Map<String, dynamic>? unpackedData;
   final String btcAmountNormalized;
 
   VerboseNewTransactionParams({
@@ -3620,7 +3620,9 @@ class InfoVerbose extends Info {
 
     final unpackedData = json["unpacked_data"];
 
-    if (unpackedData == null) {
+    if (unpackedData == null &&
+        base.decodedTx != null &&
+        base.decodedTx!["vin"].length > 1) {
       return MoveToUtxoInfoVerbose.fromJson(json);
     }
 
@@ -3649,7 +3651,6 @@ class InfoVerbose extends Info {
         return DetachInfoVerbose.fromJson(json);
       case null: // move to utxo is the only transaction type that does not have a message_type
         return MoveToUtxoInfoVerbose.fromJson(json);
-      // TODO: parse moves
       default:
         return base;
     }
