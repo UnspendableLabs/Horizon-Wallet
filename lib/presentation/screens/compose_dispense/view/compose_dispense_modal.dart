@@ -6,6 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/domain/entities/compose_dispense.dart';
 import 'package:horizon/domain/entities/balance.dart';
+import 'package:horizon/domain/entities/dispenser.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
 import 'package:horizon/domain/repositories/dispenser_repository.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
@@ -155,25 +156,65 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
     return state.dispensersState.when(
       initial: () => Container(),
       loading: () => const Center(child: CircularProgressIndicator()),
-      success: (dispensers) => SizedBox(
-        height: 100,
-        child: ListView.builder(
-          itemCount: dispensers.length,
-          itemBuilder: (context, index) {
-            final dispenser = dispensers[index];
-            return SizedBox(
-                height: 50,
-                child: ListTile(
-                  title: SelectableText(
-                      "${dispenser.satoshirateNormalized} BTC/${dispenser.asset}"),
-                  trailing:
-                      Text("${dispenser.giveRemainingNormalized} Remaining"),
-                ));
-          },
-        ),
-      ),
+      success: (dispensers) {
+        // Extract unique assets for the dropdown
+        final assets = dispensers.map((d) => d.asset).toSet().toList();
+        String selectedAsset = assets.isNotEmpty ? assets.first : '';
+
+        return SizedBox(
+          height: 100,
+          child: ListView.builder(
+            itemCount: dispensers.length,
+            itemBuilder: (context, index) {
+              final dispenser = dispensers[index];
+              return LayoutBuilder(
+                builder: (context, constraints) {
+                  return
+                        Column(
+                          children: _buildDispenserRowItems(dispenser, assets, selectedAsset),
+                        );
+                },
+              );
+            },
+          ),
+        );
+      },
       error: (error) => Text('Error: $error'),
     );
+  }
+
+  List<Widget> _buildDispenserRowItems(Dispenser dispenser, List<String> assets, String selectedAsset) {
+    return [
+      Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          DropdownButton<String>(
+            value: selectedAsset,
+            items: assets.map((String asset) {
+              return DropdownMenuItem<String>(
+                value: asset,
+                child: Text(asset),
+              );
+            }).toList(),
+            onChanged: (String? newValue) {
+              if (newValue != null) {
+                setState(() {
+                  selectedAsset = newValue;
+                });
+              }
+            },
+          ),
+          Text("${dispenser.giveQuantityNormalized} quantity per dispense"),
+        ],
+      ),
+      Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text("${dispenser.satoshirateNormalized} price per dispense"),
+          Text("${dispenser.giveRemainingNormalized} quantity available"),
+        ],
+      ),
+    ];
   }
 
   Widget _buildQuantityInput(ComposeDispenseState state,
