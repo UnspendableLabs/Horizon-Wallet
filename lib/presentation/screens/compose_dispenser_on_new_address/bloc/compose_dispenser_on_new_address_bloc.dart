@@ -323,8 +323,6 @@ class ComposeDispenserOnNewAddressBloc extends Bloc<
           password: event.password,
           prevDecodedTransaction: decodedConstructedAssetSend,
           addressPrivKey: newAddressPrivKey,
-          unsignedTransactionHexMap:
-              unsignedTransactionHexMap, // Add this parameter
         );
 
         emit(state.copyWith(

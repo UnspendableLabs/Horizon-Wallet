@@ -199,7 +199,7 @@ void main() {
         composeDispenserBloc.state.copyWith(
           balancesState: BalancesState.success(mockBalances),
           feeState: const FeeState.success(mockFeeEstimates),
-          dialogState: const DialogState.successNormalFlow(),
+          dialogState: const DialogState.warning(hasOpenDispensers: false),
           submitState: const SubmitInitial(),
         ),
       ],

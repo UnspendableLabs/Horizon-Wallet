@@ -136,13 +136,6 @@ class ComposeDispenserBloc extends ComposeBaseBloc<ComposeDispenserState> {
 
       // if the current address does not have any open dispensers, then we can proceed with the normal flow
       if (dispensers.isEmpty) {
-        // if (!addressIsSegwit(event.currentAddress!)) {
-        //   emit(state.copyWith(
-        //     balancesState: BalancesState.success(balances),
-        //     feeState: FeeState.success(feeEstimates),
-        //     dialogState: const DialogState.successNormalFlow(),
-        //   ));
-        // } else {
         emit(state.copyWith(
           balancesState: BalancesState.success(balances),
           feeState: FeeState.success(feeEstimates),
