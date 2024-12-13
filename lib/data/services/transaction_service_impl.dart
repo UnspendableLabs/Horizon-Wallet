@@ -338,6 +338,8 @@ class TransactionServiceImpl implements TransactionService {
         };
       } else {
         // For legacy inputs, fetch the full previous transaction
+        // TODO: for chaining transactions, the previous transaction may not exist yet. we will need to find another way to get the full tx
+        // for now, we will just throw an error if the previous transaction is not found
         final txHexResult =
             await bitcoinRepository.getTransactionHex(utxo.txid);
         txHexResult.fold(

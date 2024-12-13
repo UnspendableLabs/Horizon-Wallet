@@ -290,15 +290,8 @@ class ComposeDispenserOnNewAddressBloc extends Bloc<
           fee: feeForAssetSend,
         );
 
-        // Decode the signed transaction to get the txid
         final decodedConstructedAssetSend = await bitcoindService
             .decoderawtransaction(signedConstructedAssetSend);
-        final prevTxId = decodedConstructedAssetSend.txid;
-
-        // Build the unsignedTransactionHexMap
-        final unsignedTransactionHexMap = {
-          prevTxId: signedConstructedAssetSend,
-        };
 
         // 4. compose the dispenser
         final composeDispenserChain =

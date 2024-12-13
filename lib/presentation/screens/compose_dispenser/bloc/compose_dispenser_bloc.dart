@@ -141,7 +141,6 @@ class ComposeDispenserBloc extends ComposeBaseBloc<ComposeDispenserState> {
           feeState: FeeState.success(feeEstimates),
           dialogState: const DialogState.warning(hasOpenDispensers: false),
         ));
-        // }
       } else {
         //otherwise, allow the user to choose whether to proceed or open on a new address
         emit(state.copyWith(
