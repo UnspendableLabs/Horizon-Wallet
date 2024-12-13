@@ -225,187 +225,163 @@ class OnboardingScreenState extends State<OnboardingScreen> {
               ],
             );
           } else {
-            final mobileContent = Center(
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Container(
-                  padding: const EdgeInsets.all(8.0),
-                  decoration: BoxDecoration(
-                    color: leftSideBackgroundColor,
-                    borderRadius: BorderRadius.circular(30.0),
+            return SizedBox(
+              height: constraints.maxHeight,
+              width: constraints.maxWidth,
+              child: SingleChildScrollView(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    minHeight: constraints.maxHeight,
                   ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Stack(
-                        alignment: Alignment.center,
-                        clipBehavior: Clip.none, // Ensure ALPHA is not clipped
-                        children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              SizedBox(height: 50),
-                              Text(
-                                'Horizon',
-                                style: TextStyle(
-                                  color: mainTextWhite,
-                                  fontSize: 50,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                              Text(
-                                'Wallet',
-                                style: TextStyle(
-                                  color: neonBlueDarkTheme,
-                                  fontSize: 50,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                      constraints.maxHeight < 700
-                          ? AspectRatio(
-                              aspectRatio:
-                                  1, // This maintains a square aspect ratio
-                              child: LayoutBuilder(
-                                builder: (context, constraints) {
-                                  return Image.asset(
-                                    'assets/logo-blue-3d.png',
-                                    width: constraints.maxWidth,
-                                    height: constraints.maxWidth,
-                                    fit: BoxFit.contain,
-                                  );
-                                },
-                              ),
-                            )
-                          : Expanded(
-                              child: Image.asset(
-                                'assets/logo-blue-3d.png',
-                                width: constraints.maxWidth,
-                                height: constraints.maxWidth,
-                                fit: BoxFit.contain,
-                              ),
-                            ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 40),
+                  child: IntrinsicHeight(
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 16),
+                      child: Container(
                         decoration: BoxDecoration(
+                          color: leftSideBackgroundColor,
                           borderRadius: BorderRadius.circular(30.0),
                         ),
                         child: Column(
                           children: [
-                            SizedBox(
-                              width: double.infinity,
-                              child: ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  elevation: 0,
-                                  backgroundColor: isDarkMode
-                                      ? navyDarkTheme
-                                      : whiteLightTheme,
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 32, vertical: 16),
-                                  textStyle: const TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w700),
+                            const SizedBox(height: 12),
+                            const Column(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  'Horizon',
+                                  style: TextStyle(
+                                    color: mainTextWhite,
+                                    fontSize: 32.0,
+                                    fontWeight: FontWeight.w600,
+                                  ),
                                 ),
-                                onPressed: () {
-                                  final shell = context.read<ShellStateCubit>();
-                                  shell.onOnboardingCreate();
-                                },
-                                child: Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Text(
-                                    'CREATE A NEW WALLET',
-                                    style: TextStyle(
+                                Text(
+                                  'Wallet',
+                                  style: TextStyle(
+                                    color: neonBlueDarkTheme,
+                                    fontSize: 32.0,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            Expanded(
+                              child: Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 16),
+                                child: Image.asset(
+                                  'assets/logo-blue-3d.png',
+                                  fit: BoxFit.contain,
+                                ),
+                              ),
+                            ),
+                            Container(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 32),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                      elevation: 0,
+                                      backgroundColor: isDarkMode
+                                          ? navyDarkTheme
+                                          : whiteLightTheme,
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 32,
+                                        vertical: 16,
+                                      ),
+                                      textStyle: const TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                    onPressed: () {
+                                      final shell =
+                                          context.read<ShellStateCubit>();
+                                      shell.onOnboardingCreate();
+                                    },
+                                    child: Text(
+                                      'CREATE A NEW WALLET',
+                                      style: TextStyle(
                                         color: isDarkMode
                                             ? neonBlueDarkTheme
-                                            : mainTextBlack),
+                                            : mainTextBlack,
+                                      ),
+                                    ),
                                   ),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 20),
-                            SizedBox(
-                              width: 250,
-                              child: ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  overlayColor: Colors.transparent,
-                                  elevation: 0,
-                                  backgroundColor: Colors.transparent,
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 32, vertical: 16),
-                                  textStyle: const TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w700),
-                                ),
-                                onPressed: () {
-                                  final shell = context.read<ShellStateCubit>();
-                                  shell.onOnboardingImport();
-                                },
-                                child: Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Text(
-                                    'LOAD SEED PHRASE',
-                                    style: TextStyle(
-                                        color: isDarkMode
-                                            ? mainTextGrey
-                                            : mainTextWhite),
-                                  ),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 20),
-                            SizedBox(
-                              width: 250,
-                              child: Column(
-                                children: [
+                                  const SizedBox(height: 20),
                                   ElevatedButton(
                                     style: ElevatedButton.styleFrom(
                                       overlayColor: Colors.transparent,
                                       elevation: 0,
                                       backgroundColor: Colors.transparent,
                                       padding: const EdgeInsets.symmetric(
-                                          horizontal: 32, vertical: 16),
+                                        horizontal: 32,
+                                        vertical: 16,
+                                      ),
                                       textStyle: const TextStyle(
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w700),
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                    onPressed: () {
+                                      final shell =
+                                          context.read<ShellStateCubit>();
+                                      shell.onOnboardingImport();
+                                    },
+                                    child: Text(
+                                      'LOAD SEED PHRASE',
+                                      style: TextStyle(
+                                        color: isDarkMode
+                                            ? mainTextGrey
+                                            : mainTextWhite,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 20),
+                                  ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                      overlayColor: Colors.transparent,
+                                      elevation: 0,
+                                      backgroundColor: Colors.transparent,
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 32,
+                                        vertical: 16,
+                                      ),
+                                      textStyle: const TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w700,
+                                      ),
                                     ),
                                     onPressed: () {
                                       final shell =
                                           context.read<ShellStateCubit>();
                                       shell.onOnboardingImportPK();
                                     },
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(8.0),
-                                      child: Text(
-                                        'LOAD MASTER PRIVATE KEY',
-                                        textAlign: TextAlign.center,
-                                        style: TextStyle(
-                                            color: isDarkMode
-                                                ? mainTextGrey
-                                                : mainTextWhite),
+                                    child: Text(
+                                      'LOAD MASTER PRIVATE KEY',
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                        color: isDarkMode
+                                            ? mainTextGrey
+                                            : mainTextWhite,
                                       ),
                                     ),
                                   ),
                                 ],
                               ),
                             ),
+                            const SizedBox(height: 30),
                           ],
                         ),
                       ),
-                    ],
+                    ),
                   ),
                 ),
               ),
             );
-            if (constraints.maxHeight < 700) {
-              return SingleChildScrollView(child: mobileContent);
-            } else {
-              return mobileContent;
-            }
           }
         },
       ),

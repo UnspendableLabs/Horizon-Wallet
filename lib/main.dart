@@ -1,6 +1,5 @@
 import 'dart:async';
-import 'package:pub_semver/pub_semver.dart';
-import 'package:horizon/presentation/common/footer/view/footer.dart';
+
 import 'package:dio/dio.dart';
 import 'package:drift_db_viewer/drift_db_viewer.dart';
 import 'package:flutter/material.dart';
@@ -11,6 +10,7 @@ import 'package:go_router/go_router.dart';
 import 'package:horizon/common/constants.dart';
 import 'package:horizon/common/fn.dart';
 import 'package:horizon/common/uuid.dart';
+import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/data/services/regtest_utils.dart';
 import 'package:horizon/data/sources/local/db_manager.dart';
 import 'package:horizon/domain/entities/account.dart';
@@ -21,6 +21,7 @@ import 'package:horizon/domain/repositories/action_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/config_repository.dart';
 import 'package:horizon/domain/repositories/imported_address_repository.dart';
+import 'package:horizon/domain/repositories/version_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
@@ -28,6 +29,7 @@ import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/imported_address_service.dart';
 import 'package:horizon/domain/services/wallet_service.dart';
 import 'package:horizon/presentation/common/colors.dart';
+import 'package:horizon/presentation/common/footer/view/footer.dart';
 import 'package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_bloc.dart';
 import 'package:horizon/presentation/screens/dashboard/address_form/bloc/address_form_bloc.dart';
 import 'package:horizon/presentation/screens/dashboard/import_address_pk_form/bloc/import_address_pk_bloc.dart';
@@ -39,12 +41,12 @@ import 'package:horizon/presentation/screens/onboarding_import_pk/view/onboardin
 import 'package:horizon/presentation/screens/privacy_policy.dart';
 import 'package:horizon/presentation/screens/tos.dart';
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
-import 'package:horizon/presentation/version_cubit.dart';
 import 'package:horizon/presentation/shell/bloc/shell_state.dart';
 import 'package:horizon/presentation/shell/theme/bloc/theme_bloc.dart';
-import 'package:horizon/domain/repositories/version_repository.dart';
+import 'package:horizon/presentation/version_cubit.dart';
 import 'package:horizon/setup.dart';
-import 'package:horizon/core/logging/logger.dart';
+import 'package:pub_semver/pub_semver.dart';
+import 'package:horizon/domain/services/error_service.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 final _sectionNavigatorKey = GlobalKey<NavigatorState>();
@@ -363,18 +365,18 @@ void main() {
   // Catch synchronous errors in Flutter framework
   FlutterError.onError = (FlutterErrorDetails details) {
     FlutterError.dumpErrorToConsole(details);
+    GetIt.I<ErrorService>()
+        .captureException(details.exception, stackTrace: details.stack);
   };
 
   // Catch uncaught asynchronous errors
   runZonedGuarded<Future<void>>(() async {
     WidgetsFlutterBinding.ensureInitialized();
 
-    // await dotenv.load();
-
     await setup();
+    await GetIt.I<ErrorService>().initialize();
 
     await setupRegtestWallet();
-
     await initSettings();
 
     final version = GetIt.I<Config>().version;
@@ -434,7 +436,7 @@ void main() {
     } else {
       logger.error(error.toString(), null, stackTrace);
     }
-    // Log the error to a service or handle it accordingly
+    GetIt.I<ErrorService>().captureException(error, stackTrace: stackTrace);
   });
 }
 

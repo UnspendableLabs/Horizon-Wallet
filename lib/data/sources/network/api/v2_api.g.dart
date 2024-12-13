@@ -2312,7 +2312,7 @@ VerboseNewTransactionParams _$VerboseNewTransactionParamsFromJson(
       source: json['source'] as String,
       txHash: json['tx_hash'] as String,
       txIndex: (json['tx_index'] as num).toInt(),
-      unpackedData: json['unpacked_data'] as Map<String, dynamic>,
+      unpackedData: json['unpacked_data'] as Map<String, dynamic>?,
       btcAmountNormalized: json['btc_amount_normalized'] as String,
     );
 
