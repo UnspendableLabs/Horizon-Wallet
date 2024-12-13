@@ -32,12 +32,14 @@ class ErrorServiceImpl implements ErrorService {
   }
 
   @override
-  void captureException(dynamic exception, {StackTrace? stackTrace}) {
+  Future<void> captureException(dynamic exception,
+      {StackTrace? stackTrace}) async {
     if (!config.isSentryEnabled || !_isInitialized) return;
 
     try {
-      Sentry.captureException(exception, stackTrace: stackTrace);
-      logger.info('Exception captured in Sentry');
+      final result =
+          await Sentry.captureException(exception, stackTrace: stackTrace);
+      logger.info('Exception captured in Sentry: ${result.toString()}');
     } catch (e) {
       logger.error('Failed to capture exception in Sentry', e as Error);
     }
@@ -49,11 +51,11 @@ class ErrorServiceImpl implements ErrorService {
     required String category,
     required String message,
     Map<String, dynamic>? data,
-  }) {
+  }) async {
     if (!config.isSentryEnabled || !_isInitialized) return;
 
     try {
-      Sentry.addBreadcrumb(
+      await Sentry.addBreadcrumb(
         Breadcrumb(
           type: type,
           category: category,
