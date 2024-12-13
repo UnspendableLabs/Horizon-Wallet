@@ -461,6 +461,7 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
 
     final balances = balances_
         .where((balance) => balance.asset.toUpperCase() != "BTC")
+        .where((balance) => balance.utxo == null)
         .toList();
 
     emit(state.copyWith(
@@ -528,8 +529,12 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
       getGetAssetTaskEither.run(),
     ]);
 
-    nextGiveAssets = (results[0] as Either<String, List<Balance>>)
-        .fold((error) => Failure(error), (balances) => Success(balances));
+    nextGiveAssets = (results[0] as Either<String, List<Balance>>).fold(
+      (error) => Failure(error),
+      (balances) => Success(
+        balances.where((balance) => balance.utxo == null).toList(),
+      ),
+    );
 
     nextFeeEstimates = (results[1] as Either<String, FeeEstimates>).fold(
       (error) => Failure(error),
