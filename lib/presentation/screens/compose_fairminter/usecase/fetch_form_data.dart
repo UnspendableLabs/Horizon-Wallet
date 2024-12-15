@@ -44,7 +44,7 @@ class FetchFairminterFormDataUseCase {
   Future<List<Asset>> _fetchAssets(String currentAddress) async {
     try {
       final assets =
-          await assetRepository.getValidAssetsByOwnerVerbose(currentAddress);
+          await assetRepository.getAllValidAssetsByOwnerVerbose(currentAddress);
       return assets;
     } catch (e) {
       throw FetchAssetsException(e.toString());

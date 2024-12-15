@@ -143,7 +143,7 @@ class BalancesBloc extends Bloc<BalancesEvent, BalancesState> {
       final List<Balance> utxoBalances = allBalances.$2;
 
       final List<Asset> ownedAssets =
-          await assetRepository.getValidAssetsByOwnerVerbose(currentAddress);
+          await assetRepository.getAllValidAssetsByOwnerVerbose(currentAddress);
 
       final List<Fairminter> fairminters = await fairminterRepository
           .getFairmintersByAddress(currentAddress, 'open')
