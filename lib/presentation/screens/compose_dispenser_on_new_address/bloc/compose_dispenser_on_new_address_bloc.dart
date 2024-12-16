@@ -284,6 +284,7 @@ class ComposeDispenserOnNewAddressBloc extends Bloc<
           sourceAddress: source,
           utxos: utxos,
           sourcePrivKey: sourceAddressPrivKey,
+          destinationAddress: newAddress.address,
           destinationPrivKey: newAddressPrivKey,
           btcQuantity: feeToCoverDispenser + extraBtcToSendToDispenser,
           fee: feeForAssetSend,

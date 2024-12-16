@@ -30,6 +30,19 @@ class ActionRepositoryImpl implements ActionRepository {
             getQuantity: int.tryParse(getQuantity)!,
             getAsset: getAsset,
             caller: CallerType.app),
+      [
+        "openOrder:ext",
+        String giveAsset,
+        String giveQuantity,
+        String getAsset,
+        String getQuantity,
+      ] =>
+        OpenOrderAction(
+            giveQuantity: int.tryParse(giveQuantity)!,
+            giveAsset: giveAsset,
+            getQuantity: int.tryParse(getQuantity)!,
+            getAsset: getAsset,
+            caller: CallerType.extension),
       ["dispense", String address] => DispenseAction(address, CallerType.app),
       ["dispense:ext", String address] =>
         DispenseAction(address, CallerType.extension),

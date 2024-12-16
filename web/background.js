@@ -96,6 +96,12 @@ async function rpcDispense(address) {
   await popup({ url: `/index.html#?action=dispense:ext,${address}` });
 }
 
+async function rpcOpenOrder(giveAsset, giveQuantity, getAsset, getQuantity) {
+  await popup({
+    url: `/index.html#?action=openOrder:ext,${giveAsset},${giveQuantity},${getAsset},${getQuantity}`,
+  });
+}
+
 async function rpcFairmint(fairminterTxHash) {
   await popup({
     url: `/index.html#?action=fairmint:ext,${fairminterTxHash}`,
@@ -126,6 +132,14 @@ async function rpcMessageHandler(message, port) {
       break;
     case "dispense":
       await rpcDispense(message["params"]["address"]);
+      break;
+    case "openOrder":
+      await rpcOpenOrder(
+        message["params"]["give_asset"],
+        message["params"]["give_quantity"],
+        message["params"]["get_asset"],
+        message["params"]["get_quantity"],
+      );
       break;
     default:
       console.log(`Unknown method: ${message["method"]}`);

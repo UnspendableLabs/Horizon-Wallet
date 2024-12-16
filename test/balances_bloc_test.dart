@@ -153,7 +153,7 @@ void main() {
         when(() => mockBalanceRepository.getBalancesForAddresses(any()))
             .thenAnswer((_) async => allBalances);
 
-        when(() => mockAssetRepository.getValidAssetsByOwnerVerbose(any()))
+        when(() => mockAssetRepository.getAllValidAssetsByOwnerVerbose(any()))
             .thenAnswer((_) async => ownedAssets);
 
         when(() =>
@@ -242,7 +242,7 @@ void main() {
       verify: (bloc) {
         verify(() => mockBalanceRepository.getBalancesForAddresses(any()))
             .called(1);
-        verify(() => mockAssetRepository.getValidAssetsByOwnerVerbose(any()))
+        verify(() => mockAssetRepository.getAllValidAssetsByOwnerVerbose(any()))
             .called(1);
         verify(() =>
                 mockFairminterRepository.getFairmintersByAddress(any(), any()))
@@ -278,7 +278,7 @@ void main() {
         verify(() => mockBalanceRepository.getBalancesForAddresses(any()))
             .called(1);
         verifyNever(
-            () => mockAssetRepository.getValidAssetsByOwnerVerbose(any()));
+            () => mockAssetRepository.getAllValidAssetsByOwnerVerbose(any()));
         verifyNever(() =>
             mockFairminterRepository.getFairmintersByAddress(any(), any()));
       },
@@ -334,7 +334,7 @@ void main() {
         when(() => mockBalanceRepository.getBalancesForAddresses(any()))
             .thenAnswer((_) async => allBalances);
 
-        when(() => mockAssetRepository.getValidAssetsByOwnerVerbose(any()))
+        when(() => mockAssetRepository.getAllValidAssetsByOwnerVerbose(any()))
             .thenAnswer((_) async => ownedAssets);
 
         // Mock failure for getFairmintersByAddress
@@ -370,7 +370,7 @@ void main() {
       verify: (bloc) {
         verify(() => mockBalanceRepository.getBalancesForAddresses(any()))
             .called(1);
-        verify(() => mockAssetRepository.getValidAssetsByOwnerVerbose(any()))
+        verify(() => mockAssetRepository.getAllValidAssetsByOwnerVerbose(any()))
             .called(1);
         verify(() =>
                 mockFairminterRepository.getFairmintersByAddress(any(), any()))
@@ -381,7 +381,7 @@ void main() {
     test('starts polling on Start event and stops on Stop event', () async {
       when(() => mockBalanceRepository.getBalancesForAddresses(any()))
           .thenAnswer((_) async => []);
-      when(() => mockAssetRepository.getValidAssetsByOwnerVerbose(any()))
+      when(() => mockAssetRepository.getAllValidAssetsByOwnerVerbose(any()))
           .thenAnswer((_) async => []);
       when(() => mockFairminterRepository.getFairmintersByAddress(any(), any()))
           .thenAnswer((_) => TaskEither.of([]));
@@ -444,7 +444,7 @@ void main() {
       // Verify that the repositories' methods were called multiple times
       verify(() => mockBalanceRepository.getBalancesForAddresses(any()))
           .called(greaterThanOrEqualTo(3));
-      verify(() => mockAssetRepository.getValidAssetsByOwnerVerbose(any()))
+      verify(() => mockAssetRepository.getAllValidAssetsByOwnerVerbose(any()))
           .called(greaterThanOrEqualTo(3));
       verify(() =>
               mockFairminterRepository.getFairmintersByAddress(any(), any()))

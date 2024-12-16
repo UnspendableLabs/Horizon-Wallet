@@ -55,14 +55,15 @@ class AssetDropdown extends StatefulWidget {
   final bool loading;
   final String? label;
 
-  const AssetDropdown(
-      {super.key,
-      this.asset,
-      required this.balances,
-      required this.controller,
-      required this.onSelected,
-      required this.loading,
-      this.label});
+  const AssetDropdown({
+    super.key,
+    this.asset,
+    required this.balances,
+    required this.controller,
+    required this.onSelected,
+    required this.loading,
+    this.label,
+  });
 
   @override
   State<AssetDropdown> createState() => _AssetDropdownState();
@@ -107,16 +108,15 @@ class _AssetDropdownState extends State<AssetDropdown> {
 
   @override
   Widget build(BuildContext context) {
-    return HorizonUI.HorizonDropdownMenu<String>(
+    return HorizonUI.HorizonSearchableDropdownMenu<String>(
       enabled: !widget.loading,
-      controller: widget.controller,
       label: widget.label ?? 'Asset',
       onChanged: widget.onSelected,
       selectedValue: _getSelectedValue(),
       items: orderedBalances.map<DropdownMenuItem<String>>((balance) {
-        return HorizonUI.buildDropdownMenuItem(
-          balance.asset,
-          _getDisplayString(balance.asset),
+        return DropdownMenuItem(
+          value: balance.asset,
+          child: Text(_getDisplayString(balance.asset)),
         );
       }).toList(),
       displayStringForOption: _getDisplayString,

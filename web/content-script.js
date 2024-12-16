@@ -1,6 +1,12 @@
 const CONTENT_SCRIPT_PORT = "horizon-wallet-content-script";
 const MESSAGE_SOURCE = "horizon";
-const VALID_METHODS = ["getAddresses", "signPsbt", "fairmint", "dispense"];
+const VALID_METHODS = [
+  "getAddresses",
+  "signPsbt",
+  "fairmint",
+  "dispense",
+  "openOrder",
+];
 
 let backgroundPort = null;
 
@@ -114,6 +120,37 @@ const methodValidators = {
     ) {
       errors.push(
         "Missing or invalid 'fairminterTxHash' parameter for 'fairmint'. Expected a string.",
+      );
+    }
+    return errors;
+  },
+
+  openOrder: (msg) => {
+    const errors = [];
+    if (!msg.params?.give_asset || typeof msg.params.give_asset !== "string") {
+      errors.push(
+        "Missing or invalid 'giveAsset' parameter for 'openOrder'. Expected a string.",
+      );
+    }
+    if (
+      !msg.params?.give_quantity ||
+      typeof msg.params.give_quantity !== "number"
+    ) {
+      errors.push(
+        "Missing or invalid 'giveQuantity' parameter for 'openOrder'. Expected a number.",
+      );
+    }
+    if (!msg.params?.get_asset || typeof msg.params.get_asset !== "string") {
+      errors.push(
+        "Missing or invalid 'getAsset' parameter for 'openOrder'. Expected a string.",
+      );
+    }
+    if (
+      !msg.params?.get_quantity ||
+      typeof msg.params.get_quantity !== "number"
+    ) {
+      errors.push(
+        "Missing or invalid 'getQuantity' parameter for 'openOrder'. Expected a number.",
       );
     }
     return errors;

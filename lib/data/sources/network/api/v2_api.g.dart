@@ -5466,14 +5466,12 @@ class _V2Api implements V2Api {
   @override
   Future<Response<List<AssetVerbose>>> getValidAssetsByOwnerVerbose(
     String address, [
-    String? named,
     CursorModel? cursor,
     int? limit,
     int? offset,
   ]) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{
-      r'named': named,
       r'cursor': cursor?.toJson(),
       r'limit': limit,
       r'offset': offset,

@@ -66,7 +66,12 @@ class MockComposeDispenserResponseVerbose extends Mock
   String get rawtransaction => "rawtransaction";
 }
 
-class MockBalance extends Mock implements Balance {}
+class MockBalance extends Mock implements Balance {
+  @override
+  final String? utxo;
+
+  MockBalance({this.utxo});
+}
 
 class MockDispenser extends Mock implements Dispenser {}
 
@@ -112,6 +117,10 @@ void main() {
   const mockFeeEstimates = FeeEstimates(fast: 5, medium: 3, slow: 1);
   final mockAddress = FakeAddress().address;
   final mockBalances = [MockBalance()];
+  final mockBalancesWithUtxos = [
+    MockBalance(utxo: 'utxo'),
+    MockBalance(utxo: null)
+  ];
   final mockDispenser = [MockDispenser()];
   final mockComposeDispenserResponseVerbose =
       MockComposeDispenserResponseVerbose();
@@ -199,7 +208,7 @@ void main() {
         composeDispenserBloc.state.copyWith(
           balancesState: BalancesState.success(mockBalances),
           feeState: const FeeState.success(mockFeeEstimates),
-          dialogState: const DialogState.successNormalFlow(),
+          dialogState: const DialogState.warning(hasOpenDispensers: false),
           submitState: const SubmitInitial(),
         ),
       ],
@@ -224,6 +233,33 @@ void main() {
         ),
         composeDispenserBloc.state.copyWith(
           balancesState: BalancesState.success(mockBalances),
+          feeState: const FeeState.success(mockFeeEstimates),
+          dialogState: const DialogState.warning(hasOpenDispensers: false),
+          submitState: const SubmitInitial(),
+        ),
+      ],
+    );
+
+    blocTest<ComposeDispenserBloc, ComposeDispenserState>(
+      'filters out balances with non-null utxo when initializing',
+      build: () {
+        when(() => mockFetchDispenserFormDataUseCase.call(any())).thenAnswer(
+            (_) async =>
+                (mockBalancesWithUtxos, mockFeeEstimates, <Dispenser>[]));
+        return composeDispenserBloc;
+      },
+      act: (bloc) {
+        bloc.add(FetchFormData(currentAddress: 'bc1qxxxxxxxxxxxx'));
+      },
+      expect: () => [
+        composeDispenserBloc.state.copyWith(
+          feeState: const FeeState.loading(),
+          balancesState: const BalancesState.loading(),
+          submitState: const SubmitInitial(),
+          dialogState: const DialogState.loading(),
+        ),
+        composeDispenserBloc.state.copyWith(
+          balancesState: BalancesState.success([mockBalancesWithUtxos[1]]),
           feeState: const FeeState.success(mockFeeEstimates),
           dialogState: const DialogState.warning(hasOpenDispensers: false),
           submitState: const SubmitInitial(),
