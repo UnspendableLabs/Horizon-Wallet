@@ -1,11 +1,12 @@
 import 'package:collection/collection.dart';
-import 'package:horizon/common/format.dart';
 import 'package:decimal/decimal.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
-import 'package:horizon/domain/entities/compose_dispense.dart';
+import 'package:horizon/common/format.dart';
+import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/domain/entities/balance.dart';
+import 'package:horizon/domain/entities/compose_dispense.dart';
 import 'package:horizon/domain/entities/dispenser.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
 import 'package:horizon/domain/repositories/dispenser_repository.dart';
@@ -13,20 +14,18 @@ import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_event.dart';
 import 'package:horizon/presentation/common/compose_base/view/compose_base_page.dart';
 import 'package:horizon/presentation/common/shared_util.dart';
+import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
+import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transaction_usecase.dart';
+import 'package:horizon/presentation/common/usecase/write_local_transaction_usecase.dart';
 import 'package:horizon/presentation/screens/compose_dispense/bloc/compose_dispense_bloc.dart';
 import 'package:horizon/presentation/screens/compose_dispense/bloc/compose_dispense_event.dart';
 import 'package:horizon/presentation/screens/compose_dispense/bloc/compose_dispense_state.dart';
-import 'package:horizon/presentation/screens/compose_dispense/usecase/fetch_form_data.dart';
-import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart";
-import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transaction_usecase.dart';
-import 'package:horizon/presentation/common/usecase/write_local_transaction_usecase.dart';
-import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
-import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
-import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
-import 'package:horizon/presentation/screens/compose_dispense/usecase/fetch_open_dispensers_on_address.dart';
 import 'package:horizon/presentation/screens/compose_dispense/usecase/estimate_dispenses.dart';
-
-import 'package:horizon/core/logging/logger.dart';
+import 'package:horizon/presentation/screens/compose_dispense/usecase/fetch_form_data.dart';
+import 'package:horizon/presentation/screens/compose_dispense/usecase/fetch_open_dispensers_on_address.dart';
+import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart";
+import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
+import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 
 class ComposeDispensePageWrapper extends StatelessWidget {
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
@@ -94,10 +93,12 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
   TextEditingController dispenserController = TextEditingController();
   TextEditingController quantityController = TextEditingController();
   TextEditingController openAddressController = TextEditingController();
+  TextEditingController buyQuantityController = TextEditingController();
 
   String? _selectedAsset;
   Balance? balance_;
-  Dispenser? dispenser;
+  Dispenser? _selectedDispenser;
+  String? _buyQuantity;
 
   @override
   void initState() {
@@ -160,14 +161,29 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
       success: (dispensers) {
         // Extract unique assets for the dropdown
         final assets = dispensers.map((d) => d.asset).toSet().toList();
-        String selectedAsset = assets.isNotEmpty ? assets.first : '';
 
-        // Instead of ListView.builder, use a Column
-        List<Widget> dispenserWidgets = dispensers.map((dispenser) {
-          return Column(
-            children: _buildDispenserRowItems(dispenser, assets, selectedAsset),
-          );
-        }).toList();
+        // Set _selectedAsset to the first asset if it's null
+        if (_selectedAsset == null && assets.isNotEmpty) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            setState(() {
+              _selectedAsset = assets.first;
+              _selectedDispenser = dispensers.firstWhere(
+                (dispenser) => dispenser.asset == _selectedAsset,
+              );
+            });
+          });
+        }
+
+        // Use _selectedAsset for the selected value
+        String selectedAsset = _selectedAsset ?? assets.first;
+
+        // Build the dispenser widgets
+        List<Widget> dispenserWidgets = [
+          Column(
+            children:
+                _buildDispenserRowItems(dispensers, assets, selectedAsset),
+          ),
+        ];
 
         return Column(
           children: dispenserWidgets,
@@ -178,7 +194,7 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
   }
 
   List<Widget> _buildDispenserRowItems(
-      Dispenser dispenser, List<String> assets, String selectedAsset) {
+      List<Dispenser> dispensers, List<String> assets, String selectedAsset) {
     return [
       Row(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -196,6 +212,9 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
                   setState(() {
                     selectedAsset = newValue;
                     _selectedAsset = newValue;
+                    _selectedDispenser = dispensers.firstWhere(
+                      (dispenser) => dispenser.asset == newValue,
+                    );
                   });
                 }
               },
@@ -205,10 +224,10 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
           ),
           const SizedBox(width: 16.0),
           Expanded(
-            child: HorizonUI.HorizonTextField(
+            child: HorizonUI.HorizonTextFormField(
               label: "Quantity per dispense",
-              controller:
-                  TextEditingController(text: dispenser.giveQuantityNormalized),
+              controller: TextEditingController(
+                  text: _selectedDispenser?.giveQuantityNormalized),
               enabled: false,
             ),
           ),
@@ -219,19 +238,19 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Expanded(
-            child: HorizonUI.HorizonTextField(
+            child: HorizonUI.HorizonTextFormField(
               label: "Price per dispense",
-              controller:
-                  TextEditingController(text: dispenser.satoshirateNormalized),
+              controller: TextEditingController(
+                  text: _selectedDispenser?.satoshirateNormalized),
               enabled: false,
             ),
           ),
           const SizedBox(width: 16.0),
           Expanded(
-            child: HorizonUI.HorizonTextField(
+            child: HorizonUI.HorizonTextFormField(
               label: "Quantity available",
               controller: TextEditingController(
-                  text: dispenser.giveRemainingNormalized),
+                  text: _selectedDispenser?.giveRemainingNormalized),
               enabled: false,
             ),
           ),
@@ -239,6 +258,46 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
       ),
       const SizedBox(height: 16.0),
     ];
+  }
+
+  Widget _buildBuyQuantityInput(ComposeDispenseState state) {
+    if (_selectedDispenser == null) {
+      return const SizedBox.shrink();
+    }
+    return HorizonUI.HorizonTextFormField(
+      label: 'Buy Quantity',
+      controller: buyQuantityController,
+      autovalidateMode: AutovalidateMode.onUserInteraction,
+      onChanged: (value) {
+        setState(() {
+          _buyQuantity = value;
+        });
+      },
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Please enter an amount to buy';
+        }
+
+        // ignore_for_file: unnecessary_non_null_assertion
+        final buyQuantity = Decimal.parse(value!);
+        final remaining =
+            Decimal.parse(_selectedDispenser!.giveRemainingNormalized!);
+        final quantityPerDispense =
+            Decimal.parse(_selectedDispenser!.giveQuantityNormalized!);
+        if (buyQuantity > remaining) {
+          return 'Buy quantity exceeds available balance on dispenser';
+        }
+        if (buyQuantity < quantityPerDispense) {
+          return 'Buy quantity does not meet minimum';
+        }
+        if (buyQuantity >= quantityPerDispense &&
+            buyQuantity % quantityPerDispense != Decimal.fromInt(0)) {
+          return 'Buy quantity must be a multiple of the quantity per dispense';
+        }
+
+        return null;
+      },
+    );
   }
 
   Widget _buildQuantityInput(ComposeDispenseState state,
@@ -335,9 +394,10 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
       const SizedBox(height: 16.0),
       _buildOpenDispensersList(state),
       const SizedBox(height: 16.0),
-      _buildQuantityInput(state, () {
-        _handleInitialSubmit(formKey);
-      }, loading),
+      _buildBuyQuantityInput(state),
+      // _buildQuantityInput(state, () {
+      //   _handleInitialSubmit(formKey);
+      // }, loading),
       const SizedBox(height: 16.0),
     ];
   }
