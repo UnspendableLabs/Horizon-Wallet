@@ -95,8 +95,9 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
   TextEditingController quantityController = TextEditingController();
   TextEditingController openAddressController = TextEditingController();
 
-  String? asset;
+  String? _selectedAsset;
   Balance? balance_;
+  Dispenser? dispenser;
 
   @override
   void initState() {
@@ -161,59 +162,82 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
         final assets = dispensers.map((d) => d.asset).toSet().toList();
         String selectedAsset = assets.isNotEmpty ? assets.first : '';
 
-        return SizedBox(
-          height: 100,
-          child: ListView.builder(
-            itemCount: dispensers.length,
-            itemBuilder: (context, index) {
-              final dispenser = dispensers[index];
-              return LayoutBuilder(
-                builder: (context, constraints) {
-                  return
-                        Column(
-                          children: _buildDispenserRowItems(dispenser, assets, selectedAsset),
-                        );
-                },
-              );
-            },
-          ),
+        // Instead of ListView.builder, use a Column
+        List<Widget> dispenserWidgets = dispensers.map((dispenser) {
+          return Column(
+            children: _buildDispenserRowItems(dispenser, assets, selectedAsset),
+          );
+        }).toList();
+
+        return Column(
+          children: dispenserWidgets,
         );
       },
       error: (error) => Text('Error: $error'),
     );
   }
 
-  List<Widget> _buildDispenserRowItems(Dispenser dispenser, List<String> assets, String selectedAsset) {
+  List<Widget> _buildDispenserRowItems(
+      Dispenser dispenser, List<String> assets, String selectedAsset) {
     return [
       Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          DropdownButton<String>(
-            value: selectedAsset,
-            items: assets.map((String asset) {
-              return DropdownMenuItem<String>(
-                value: asset,
-                child: Text(asset),
-              );
-            }).toList(),
-            onChanged: (String? newValue) {
-              if (newValue != null) {
-                setState(() {
-                  selectedAsset = newValue;
-                });
-              }
-            },
+          Expanded(
+            child: HorizonUI.HorizonDropdownMenu<String>(
+              items: assets.map((String asset) {
+                return DropdownMenuItem<String>(
+                  value: asset,
+                  child: Text(asset),
+                );
+              }).toList(),
+              onChanged: (String? newValue) {
+                if (newValue != null) {
+                  setState(() {
+                    selectedAsset = newValue;
+                    _selectedAsset = newValue;
+                  });
+                }
+              },
+              label: 'Asset',
+              selectedValue: selectedAsset,
+            ),
           ),
-          Text("${dispenser.giveQuantityNormalized} quantity per dispense"),
+          const SizedBox(width: 16.0),
+          Expanded(
+            child: HorizonUI.HorizonTextField(
+              label: "Quantity per dispense",
+              controller:
+                  TextEditingController(text: dispenser.giveQuantityNormalized),
+              enabled: false,
+            ),
+          ),
         ],
       ),
+      const SizedBox(height: 16.0),
       Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text("${dispenser.satoshirateNormalized} price per dispense"),
-          Text("${dispenser.giveRemainingNormalized} quantity available"),
+          Expanded(
+            child: HorizonUI.HorizonTextField(
+              label: "Price per dispense",
+              controller:
+                  TextEditingController(text: dispenser.satoshirateNormalized),
+              enabled: false,
+            ),
+          ),
+          const SizedBox(width: 16.0),
+          Expanded(
+            child: HorizonUI.HorizonTextField(
+              label: "Quantity available",
+              controller: TextEditingController(
+                  text: dispenser.giveRemainingNormalized),
+              enabled: false,
+            ),
+          ),
         ],
       ),
+      const SizedBox(height: 16.0),
     ];
   }
 
@@ -279,7 +303,7 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
         state.balancesState.maybeWhen(orElse: () {
           return const SizedBox.shrink();
         }, success: (_) {
-          return asset != null
+          return _selectedAsset != null
               ? Positioned(
                   right: 0,
                   top: 0,
@@ -403,7 +427,7 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
                       Row(
                         children: [
                           Text(
-                              "${dispense.estimatedQuantityNormalized.toString()} ${dispense.dispenser.asset}"),
+                              "${dispense.estimatedQuantityNormalized} ${dispense.dispenser.asset}"),
                           const SizedBox(width: 8.0),
                           Text(
                               "( ${dispense.dispenser.giveQuantityNormalized}  x ${dispense.estimatedUnits} )"),
