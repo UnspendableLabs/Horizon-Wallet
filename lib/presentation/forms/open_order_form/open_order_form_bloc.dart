@@ -455,13 +455,12 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
 
     final [balances_ as List<Balance>, feeEstimates_ as FeeEstimates] =
         await Future.wait([
-      balanceRepository.getBalancesForAddress(currentAddress),
+      balanceRepository.getBalancesForAddress(currentAddress, true),
       _fetchFeeEstimates(),
     ]);
 
     final balances = balances_
         .where((balance) => balance.asset.toUpperCase() != "BTC")
-        .where((balance) => balance.utxo == null)
         .toList();
 
     emit(state.copyWith(
@@ -503,7 +502,7 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
     late RemoteData<Asset> nextGetAssetValidationStatus;
 
     final getBalancesTaskEither = TaskEither.tryCatch(
-      () => balanceRepository.getBalancesForAddress(currentAddress),
+      () => balanceRepository.getBalancesForAddress(currentAddress, true),
       (error, stacktrace) => 'Error fetching balances',
     );
 
@@ -531,9 +530,7 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
 
     nextGiveAssets = (results[0] as Either<String, List<Balance>>).fold(
       (error) => Failure(error),
-      (balances) => Success(
-        balances.where((balance) => balance.utxo == null).toList(),
-      ),
+      (balances) => Success(balances),
     );
 
     nextFeeEstimates = (results[1] as Either<String, FeeEstimates>).fold(

@@ -23,10 +23,16 @@ class BalanceRepositoryImpl implements BalanceRepository {
   });
 
   @override
-  Future<List<b.Balance>> getBalancesForAddress(String address) async {
+  Future<List<b.Balance>> getBalancesForAddress(String address,
+      [bool? excludeUtxoAttached]) async {
     final List<b.Balance> balances = [];
     balances.addAll([await _getBtcBalance(address: address)]);
-    balances.addAll(await _fetchBalances(address));
+    final balances_ = await _fetchBalances(address);
+    if (excludeUtxoAttached == null || excludeUtxoAttached == false) {
+      balances.addAll(balances_);
+    } else {
+      balances.addAll(balances_.where((balance) => balance.utxo == null));
+    }
     return balances;
   }
 

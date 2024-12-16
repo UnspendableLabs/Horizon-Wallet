@@ -36,7 +36,7 @@ class FetchDispenseFormDataUseCase {
   Future<List<Balance>> _fetchBalances(String currentAddress) async {
     try {
       final balances_ =
-          await balanceRepository.getBalancesForAddress(currentAddress);
+          await balanceRepository.getBalancesForAddress(currentAddress, true);
       return balances_.where((balance) => balance.asset == 'BTC').toList();
     } catch (e) {
       throw FetchBalancesException(e.toString());

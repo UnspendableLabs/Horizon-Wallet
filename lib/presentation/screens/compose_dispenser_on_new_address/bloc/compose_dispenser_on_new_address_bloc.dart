@@ -188,8 +188,8 @@ class ComposeDispenserOnNewAddressBloc extends Bloc<
               'Unsupported import format: ${newAccount.importFormat}');
       }
 
-      final newAddressBalances =
-          await balanceRepository.getBalancesForAddress(newAddress.address);
+      final newAddressBalances = await balanceRepository.getBalancesForAddress(
+          newAddress.address, true);
       final newAddressDispensers = await dispenserRepository
           .getDispensersByAddress(newAddress.address)
           .run()

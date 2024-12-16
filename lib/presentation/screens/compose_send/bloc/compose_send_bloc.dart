@@ -213,7 +213,8 @@ class ComposeSendBloc extends ComposeBaseBloc<ComposeSendState> {
     try {
       List<String> addresses = [event.currentAddress!];
 
-      balances = await balanceRepository.getBalancesForAddress(addresses[0]);
+      balances =
+          await balanceRepository.getBalancesForAddress(addresses[0], true);
     } catch (e) {
       emit(state.copyWith(
           balancesState: BalancesState.error(e.toString()),
@@ -230,8 +231,7 @@ class ComposeSendBloc extends ComposeBaseBloc<ComposeSendState> {
     }
 
     emit(state.copyWith(
-        balancesState: BalancesState.success(
-            balances.where((balance) => balance.utxo == null).toList()),
+        balancesState: BalancesState.success(balances),
         feeState: FeeState.success(feeEstimates),
         submitState: const SubmitInitial()));
   }

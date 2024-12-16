@@ -241,33 +241,6 @@ void main() {
     );
 
     blocTest<ComposeDispenserBloc, ComposeDispenserState>(
-      'filters out balances with non-null utxo when initializing',
-      build: () {
-        when(() => mockFetchDispenserFormDataUseCase.call(any())).thenAnswer(
-            (_) async =>
-                (mockBalancesWithUtxos, mockFeeEstimates, <Dispenser>[]));
-        return composeDispenserBloc;
-      },
-      act: (bloc) {
-        bloc.add(FetchFormData(currentAddress: 'bc1qxxxxxxxxxxxx'));
-      },
-      expect: () => [
-        composeDispenserBloc.state.copyWith(
-          feeState: const FeeState.loading(),
-          balancesState: const BalancesState.loading(),
-          submitState: const SubmitInitial(),
-          dialogState: const DialogState.loading(),
-        ),
-        composeDispenserBloc.state.copyWith(
-          balancesState: BalancesState.success([mockBalancesWithUtxos[1]]),
-          feeState: const FeeState.success(mockFeeEstimates),
-          dialogState: const DialogState.warning(hasOpenDispensers: false),
-          submitState: const SubmitInitial(),
-        ),
-      ],
-    );
-
-    blocTest<ComposeDispenserBloc, ComposeDispenserState>(
       'emits dispenser warning state when dispenser already exists at the current address',
       build: () {
         when(() => mockFetchDispenserFormDataUseCase.call(any())).thenAnswer(
