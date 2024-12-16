@@ -242,40 +242,42 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
   Widget _buildAssetInput(ComposeDispenserState state, bool loading,
       [String? label]) {
     return state.balancesState.maybeWhen(
-        orElse: () => const AssetDropdownLoading(),
-        success: (balances) {
-          final addressBalances =
-              balances.where((balance) => balance.utxo == null).toList();
+      orElse: () => const AssetDropdownLoading(),
+      success: (balances) {
+        final addressBalances =
+            balances.where((balance) => balance.utxo == null).toList();
 
-          if (addressBalances.isEmpty) {
-            return const HorizonUI.HorizonTextFormField(
-              enabled: false,
-              label: "No assets",
-            );
-          }
-
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (asset == null) {
-              setState(() {
-                asset = addressBalances[0].asset;
-              });
-            }
-          });
-          return SizedBox(
-            height: 48,
-            child: AssetDropdown(
-              key: const Key('asset_dropdown'),
-              loading: loading,
-              label: label,
-              asset: asset ?? addressBalances[0].asset,
-              controller: assetController,
-              balances: addressBalances,
-              onSelected: (String? value) {
-                _onAssetChanged(value, balances);
-              },
-            ),
+        if (addressBalances.isEmpty) {
+          return const HorizonUI.HorizonTextFormField(
+            enabled: false,
+            label: "No assets",
           );
+        }
+
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (asset == null) {
+            setState(() {
+              asset = addressBalances[0].asset;
+            });
+          }
         });
+
+        return SizedBox(
+          height: 48, // Set a fixed height for the dropdown
+          child: AssetDropdown(
+            key: const Key('asset_dropdown'),
+            loading: loading,
+            label: label,
+            asset: asset ?? addressBalances[0].asset,
+            controller: assetController,
+            balances: addressBalances,
+            onSelected: (String? value) {
+              _onAssetChanged(value, balances);
+            },
+          ),
+        );
+      },
+    );
   }
 
   void _onAssetChanged(String? value, List<Balance> balances) {
