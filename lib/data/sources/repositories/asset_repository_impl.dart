@@ -44,10 +44,8 @@ class AssetRepositoryImpl implements AssetRepository {
   }) async {
     final response = await api.getValidAssetsByOwnerVerbose(
       address,
-      null, // Named parameter 'named' set to null
       cursor_model.CursorMapper.toData(cursor),
       limit,
-      null, // Offset is optional
     );
 
     if (response.error != null) {
