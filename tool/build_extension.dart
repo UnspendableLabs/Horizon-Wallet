@@ -18,6 +18,12 @@ void main(List<String> args) async {
 
   final posthogApiHost = Platform.environment['HORIZON_POSTHOG_API_HOST'] ?? '';
 
+  final isSentryEnabled =
+      Platform.environment['HORIZON_SENTRY_ENABLED'] ?? 'false';
+  final sentryDsn = Platform.environment['HORIZON_SENTRY_DSN'] ?? '';
+  final sentrySampleRate =
+      Platform.environment['HORIZON_SENTRY_SAMPLE_RATE'] ?? '1.0';
+
   if (browser != "chromium") {
     print(
         'Chromium is only supported build target.  See https://bugzilla.mozilla.org/show_bug.cgi?id=1688314');
@@ -41,8 +47,17 @@ void main(List<String> args) async {
 
   final originalIndexHtml = await buildIndexHtml();
   final originalManifest = await buildManifest(browser);
-  await buildFlutter(network, apiBase, apiUsername, apiPassword,
-      analyticsEnabled, posthogApiKey, posthogApiHost);
+  await buildFlutter(
+      network,
+      apiBase,
+      apiUsername,
+      apiPassword,
+      analyticsEnabled,
+      posthogApiKey,
+      posthogApiHost,
+      isSentryEnabled,
+      sentryDsn,
+      sentrySampleRate);
 
   // reset index.html
   await resetFile('web/index.html', originalIndexHtml);
@@ -55,7 +70,10 @@ Future<void> buildFlutter(
     String password,
     String analyticsEnabled,
     String posthogApiKey,
-    String posthogApiHost) async {
+    String posthogApiHost,
+    String isSentryEnabled,
+    String sentryDsn,
+    String sentrySampleRate) async {
   // Run the Flutter build command with environment variables
   await _process.runProcess([
     'flutter',
@@ -75,6 +93,9 @@ Future<void> buildFlutter(
     '--dart-define=HORIZON_ANALYTICS_ENABLED=$analyticsEnabled',
     '--dart-define=HORIZON_POSTHOG_API_KEY=$posthogApiKey',
     '--dart-define=HORIZON_POSTHOG_API_HOST=$posthogApiHost',
+    '--dart-define=HORIZON_SENTRY_ENABLED=$isSentryEnabled',
+    '--dart-define=HORIZON_SENTRY_DSN=$sentryDsn',
+    '--dart-define=HORIZON_SENTRY_SAMPLE_RATE=$sentrySampleRate',
   ]);
   print('Flutter web build complete.');
 }
