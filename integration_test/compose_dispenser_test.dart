@@ -253,6 +253,10 @@ void main() {
       // Allow time for the Bloc to process and the UI to rebuild
       await tester.pumpAndSettle();
 
+      expect(find.text('Create Dispenser on a new address'), findsOneWidget);
+      await tester.tap(find.text('Create Dispenser on a new address'));
+      await tester.pumpAndSettle();
+
       // Verify that the widgets are present
       expect(find.byKey(const Key('give_quantity_input_ASSET1_DIVISIBLE')),
           findsOneWidget);
@@ -445,6 +449,13 @@ void main() {
       // Allow time for the Bloc to process and the UI to rebuild
       await tester.pumpAndSettle();
 
+      expect(find.text('Continue with existing address'), findsOneWidget);
+
+      await tester.tap(find.widgetWithText(
+          ElevatedButton, 'Continue with existing address'));
+
+      await tester.pumpAndSettle();
+
       // Test with divisible asset
       await tester.enterText(
           find.byKey(const Key('give_quantity_input_ASSET1_DIVISIBLE')),
@@ -576,6 +587,13 @@ void main() {
       // Allow time for the Bloc to process and the UI to rebuild
       await tester.pumpAndSettle();
 
+      expect(find.text('Continue with existing address'), findsOneWidget);
+
+      await tester.tap(find.widgetWithText(
+          ElevatedButton, 'Continue with existing address'));
+
+      await tester.pumpAndSettle();
+
       await tester.enterText(
           find.byKey(const Key('give_quantity_input_ASSET1_DIVISIBLE')), '1.1');
       await tester.pumpAndSettle();
@@ -671,6 +689,13 @@ void main() {
       // Allow time for the Bloc to process and the UI to rebuild
       await tester.pumpAndSettle();
 
+      expect(find.text('Continue with existing address'), findsOneWidget);
+
+      await tester.tap(find.widgetWithText(
+          ElevatedButton, 'Continue with existing address'));
+
+      await tester.pumpAndSettle();
+
       await tester.enterText(
           find.byKey(const Key('price_per_unit_input')), '0.000005');
 
@@ -753,6 +778,13 @@ void main() {
           .add(FetchFormData(currentAddress: FakeAddress().address));
 
       // Allow time for the Bloc to process and the UI to rebuild
+      await tester.pumpAndSettle();
+
+      expect(find.text('Continue with existing address'), findsOneWidget);
+
+      await tester.tap(find.widgetWithText(
+          ElevatedButton, 'Continue with existing address'));
+
       await tester.pumpAndSettle();
 
       await tester.enterText(
@@ -854,18 +886,20 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: MediaQuery(
-              data: const MediaQueryData(size: Size(900, 1300)),
-              child: MultiBlocProvider(
-                providers: [
-                  BlocProvider<ComposeDispenserBloc>.value(
-                      value: composeDispenserBloc),
-                  BlocProvider<DashboardActivityFeedBloc>.value(
-                      value: mockDashboardActivityFeedBloc),
-                ],
-                child: ComposeDispenserPage(
-                  address: FakeAddress().address,
-                  dashboardActivityFeedBloc: mockDashboardActivityFeedBloc,
+            body: SingleChildScrollView(
+              child: MediaQuery(
+                data: const MediaQueryData(size: Size(900, 1300)),
+                child: MultiBlocProvider(
+                  providers: [
+                    BlocProvider<ComposeDispenserBloc>.value(
+                        value: composeDispenserBloc),
+                    BlocProvider<DashboardActivityFeedBloc>.value(
+                        value: mockDashboardActivityFeedBloc),
+                  ],
+                  child: ComposeDispenserPage(
+                    address: FakeAddress().address,
+                    dashboardActivityFeedBloc: mockDashboardActivityFeedBloc,
+                  ),
                 ),
               ),
             ),
@@ -878,6 +912,13 @@ void main() {
           .add(FetchFormData(currentAddress: FakeAddress().address));
 
       // Allow time for the Bloc to process and the UI to rebuild
+      await tester.pumpAndSettle();
+
+      expect(find.text('Continue with existing address'), findsOneWidget);
+
+      await tester.tap(find.widgetWithText(
+          ElevatedButton, 'Continue with existing address'));
+
       await tester.pumpAndSettle();
 
       await tester.enterText(

@@ -4575,7 +4575,6 @@ abstract class V2Api {
   @GET("/addresses/{address}/assets/owned?verbose=true")
   Future<Response<List<AssetVerbose>>> getValidAssetsByOwnerVerbose(
     @Path("address") String address, [
-    @Query("named") String? named,
     @Query("cursor") CursorModel? cursor,
     @Query("limit") int? limit,
     @Query("offset") int? offset,

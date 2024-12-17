@@ -23,7 +23,7 @@ class GetMaxSendQuantity {
 
   Future<int> call() async {
     List<Balance> balances =
-        await balanceRepository.getBalancesForAddress(source);
+        await balanceRepository.getBalancesForAddress(source, true);
 
     Balance sendAsset =
         balances.firstWhere((element) => element.asset == asset);

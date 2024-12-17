@@ -500,11 +500,10 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    if (addressIsSegwit(widget.address))
-                      _buildWarningButton(
-                        'Create Dispenser on a new address',
-                        true,
-                      ),
+                    _buildWarningButton(
+                      'Create Dispenser on a new address',
+                      true,
+                    ),
                     const SizedBox(height: 8.0),
                     _buildWarningButton(
                       'Continue with existing address',

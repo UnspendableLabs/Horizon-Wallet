@@ -50,7 +50,8 @@ void main() {
 
     test('should fetch all data successfully', () async {
       // Arrange
-      when(() => mockAssetRepository.getValidAssetsByOwnerVerbose(testAddress))
+      when(() =>
+              mockAssetRepository.getAllValidAssetsByOwnerVerbose(testAddress))
           .thenAnswer((_) async => mockAssets);
 
       when(() => mockGetFeeEstimatesUseCase.call())
@@ -68,7 +69,7 @@ void main() {
       expect(result.$3, equals(mockFairminters));
 
       verify(() =>
-              mockAssetRepository.getValidAssetsByOwnerVerbose(testAddress))
+              mockAssetRepository.getAllValidAssetsByOwnerVerbose(testAddress))
           .called(1);
       verify(() => mockGetFeeEstimatesUseCase.call()).called(1);
       verify(() =>
@@ -78,7 +79,8 @@ void main() {
 
     test('should throw FetchAssetsException when asset fetch fails', () async {
       // Arrange
-      when(() => mockAssetRepository.getValidAssetsByOwnerVerbose(testAddress))
+      when(() =>
+              mockAssetRepository.getAllValidAssetsByOwnerVerbose(testAddress))
           .thenThrow(Exception('Asset fetch failed'));
 
       when(() => mockGetFeeEstimatesUseCase.call())
@@ -98,7 +100,8 @@ void main() {
         'should throw FetchFeeEstimatesException when fee estimates fetch fails',
         () async {
       // Arrange
-      when(() => mockAssetRepository.getValidAssetsByOwnerVerbose(testAddress))
+      when(() =>
+              mockAssetRepository.getAllValidAssetsByOwnerVerbose(testAddress))
           .thenAnswer((_) async => mockAssets);
 
       when(() => mockGetFeeEstimatesUseCase.call())
@@ -117,7 +120,8 @@ void main() {
     test('should throw FetchFairmintersException when fairminters fetch fails',
         () async {
       // Arrange
-      when(() => mockAssetRepository.getValidAssetsByOwnerVerbose(testAddress))
+      when(() =>
+              mockAssetRepository.getAllValidAssetsByOwnerVerbose(testAddress))
           .thenAnswer((_) async => mockAssets);
 
       when(() => mockGetFeeEstimatesUseCase.call())
