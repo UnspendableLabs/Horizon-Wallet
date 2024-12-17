@@ -460,6 +460,23 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
   List<Widget> _buildConfirmationDetails(state_, dynamic composeTransaction) {
     final estimatedDispenses = state_.otherParams as List<EstimatedDispense>;
     final params = (composeTransaction as ComposeDispenseResponse).params;
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final labelColor = isDarkMode ? Colors.white : Colors.black;
+
+    final selectedDispense = estimatedDispenses
+        .where((d) => d.dispenser.asset == _selectedAsset)
+        .firstOrNull;
+
+    final labelStyle = TextStyle(
+      fontWeight: FontWeight.bold,
+      fontSize: 16,
+      color: labelColor,
+    );
+
+    final assetTextStyle = TextStyle(
+      fontSize: 16,
+      color: labelColor,
+    );
 
     return [
       HorizonUI.HorizonTextFormField(
@@ -475,63 +492,70 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
       ),
       const SizedBox(height: 16.0),
       HorizonUI.HorizonTextFormField(
-        label: "Quantity",
+        label: "BTC Paid",
         controller: TextEditingController(
           text: "${satoshisToBtc(params.quantity).toStringAsFixed(8)} BTC",
         ),
         enabled: false,
       ),
       const SizedBox(height: 16.0),
-      const Text(
-        "Estimated Dispenses",
-        style: TextStyle(fontWeight: FontWeight.bold),
-      ),
-      Padding(
-        padding: const EdgeInsets.fromLTRB(8.0, 0, 8.0, 0),
-        child: SizedBox(
-          height: 200, // Set appropriate height
-          child: ListView.builder(
-            itemCount: estimatedDispenses.length,
-            itemBuilder: (context, index) {
-              final dispense = estimatedDispenses[index];
-              final hasOverpay = dispense.annotations
-                  .contains(EstimatedDispenseAnnotations.overpay);
-
-              return Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8.0),
-                child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Column(
-                        children: [
-                          Text(
-                            dispense.dispenser.asset,
-                            style: const TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          hasOverpay
-                              ? const Text(
-                                  "Overpay",
-                                  style: TextStyle(color: Colors.orange),
-                                )
-                              : const Text(" "),
-                        ],
-                      ),
-                      const SizedBox(height: 8.0),
-                      Row(
-                        children: [
-                          Text(
-                              "${dispense.estimatedQuantityNormalized} ${dispense.dispenser.asset}"),
-                          const SizedBox(width: 8.0),
-                          Text(
-                              "( ${dispense.dispenser.giveQuantityNormalized}  x ${dispense.estimatedUnits} )"),
-                        ],
-                      ),
-                    ]),
-              );
-            },
-          ),
+      Align(
+        alignment: Alignment.centerLeft,
+        child: Text(
+          "Dispense:",
+          style: labelStyle,
         ),
       ),
+      Padding(
+        padding: const EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 16.0),
+        child: selectedDispense == null
+            ? Text(
+                "Error: $_selectedAsset will not be dispensed",
+                style: const TextStyle(color: Colors.red),
+              )
+            : Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(selectedDispense.dispenser.asset, style: assetTextStyle),
+                  Text(
+                    "${selectedDispense.estimatedQuantityNormalized} ${selectedDispense.dispenser.asset} (${selectedDispense.dispenser.giveQuantityNormalized} x ${selectedDispense.estimatedUnits})",
+                    style: assetTextStyle,
+                  ),
+                ],
+              ),
+      ),
+      if (estimatedDispenses
+          .where((d) => d.dispenser.asset != _selectedAsset)
+          .isNotEmpty) ...[
+        Align(
+          alignment: Alignment.centerLeft,
+          child: Text(
+            "Other dispenses:",
+            style: labelStyle,
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 0),
+          child: Column(
+            children: estimatedDispenses
+                .where((d) => d.dispenser.asset != _selectedAsset)
+                .map((dispense) => Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(dispense.dispenser.asset, style: assetTextStyle),
+                          Text(
+                            "${dispense.estimatedQuantityNormalized} ${dispense.dispenser.asset} (${dispense.dispenser.giveQuantityNormalized} x ${dispense.estimatedUnits})",
+                            style: assetTextStyle,
+                          ),
+                        ],
+                      ),
+                    ))
+                .toList(),
+          ),
+        ),
+      ],
       const SizedBox(height: 16.0),
     ];
   }

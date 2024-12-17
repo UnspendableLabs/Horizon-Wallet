@@ -340,24 +340,14 @@ void main() {
         await tester.pumpAndSettle();
 
         // Find the dropdown menu item and tap it
-        final dropdownItem =
+        final dropdownItemCantReach =
             find.byKey(const Key('asset_dropdown_item_CANTREACH'));
-        expect(dropdownItem, findsOneWidget);
-        await tester.tap(dropdownItem);
+        expect(dropdownItemCantReach, findsOneWidget);
+        await tester.tap(dropdownItemCantReach);
         await tester.pumpAndSettle();
 
         // Verify that 'CANTREACH' is now selected
         expect(find.text('CANTREACH'), findsOneWidget);
-
-        // Proceed to interact with the quantity input and other UI elements
-        // final addButton = find.byIcon(Icons.add);
-        // await tester.tap(addButton);
-        // await tester.pumpAndSettle();
-
-        // // Verify that the dispensers are displayed in the dropdown
-        // expect(find.text('A4630460187535670455'), findsOneWidget);
-        // expect(find.text('CANTREACH'), findsOneWidget);
-        // expect(find.text('A12256739633266178981'), findsOneWidget);
 
         // Enter quantity
         expect(find.text('1'), findsWidgets);
@@ -370,7 +360,6 @@ void main() {
         final Text buyQuantityTextWidget =
             tester.widget<Text>(buyQuantityTextFinder);
         final String displayedQuantity = buyQuantityTextWidget.data!;
-        print('Displayed quantity: $displayedQuantity');
 
         expect(displayedQuantity, '1');
 
@@ -387,7 +376,6 @@ void main() {
         final SelectableText priceTextWidget =
             tester.widget<SelectableText>(selectableTextFinder);
         final String displayedPrice = priceTextWidget.data!;
-        print('Displayed price: $displayedPrice');
 
         expect(displayedPrice, '0.00000600');
 
@@ -398,20 +386,153 @@ void main() {
 
         // After tapping the add button, verify the updated quantity and price
 
-        // Verify that 'buy_quantity_text' now displays '2.00000000'
-        final Text updatedQuantityTextWidget =
+        // Verify that 'buy_quantity_text' now displays '2'
+        final Text updatedQuantityTextWidgetCantReach2 =
             tester.widget<Text>(buyQuantityTextFinder);
-        final String updatedQuantity = updatedQuantityTextWidget.data!;
-        print('Updated quantity: $updatedQuantity');
-        expect(updatedQuantity, '2');
+        final String updatedQuantityCantReach2 =
+            updatedQuantityTextWidgetCantReach2.data!;
+        expect(updatedQuantityCantReach2, '2');
 
         // Verify that 'price_input' now displays the updated price '0.00001200'
-        final SelectableText updatedPriceTextWidget =
+        final SelectableText updatedPriceTextWidgetCantReach2 =
             tester.widget<SelectableText>(selectableTextFinder);
-        final String updatedPrice = updatedPriceTextWidget.data!;
-        print('Updated price: $updatedPrice');
-        expect(updatedPrice, '0.00001200');
+        final String updatedPriceCantReach2 =
+            updatedPriceTextWidgetCantReach2.data!;
+        expect(updatedPriceCantReach2, '0.00001200');
 
+        await tester.tap(addButton);
+        await tester.pumpAndSettle();
+
+        // After tapping the add button, verify the updated quantity and price
+
+        // Verify that 'buy_quantity_text' now displays '2'
+        final Text updatedQuantityTextWidgetCantReach3 =
+            tester.widget<Text>(buyQuantityTextFinder);
+        final String updatedQuantityCantReach3 =
+            updatedQuantityTextWidgetCantReach3.data!;
+        expect(updatedQuantityCantReach3, '3');
+
+        // Verify that 'price_input' now displays the updated price '0.00001200'
+        final SelectableText updatedPriceTextWidgetCantReach3 =
+            tester.widget<SelectableText>(selectableTextFinder);
+        final String updatedPriceCantReach3 =
+            updatedPriceTextWidgetCantReach3.data!;
+        expect(updatedPriceCantReach3, '0.00001800');
+
+        final removeButton = find.byIcon(Icons.remove);
+        await tester.tap(removeButton);
+        await tester.pumpAndSettle();
+
+        // Verify that 'buy_quantity_text' now displays '2'
+        final Text updatedQuantityTextWidgetCantReach4 =
+            tester.widget<Text>(buyQuantityTextFinder);
+        final String updatedQuantityCantReach4 =
+            updatedQuantityTextWidgetCantReach4.data!;
+        expect(updatedQuantityCantReach4, '2');
+
+        // Verify that 'price_input' now displays the updated price '0.00001200'
+        final SelectableText updatedPriceTextWidgetCantReach4 =
+            tester.widget<SelectableText>(selectableTextFinder);
+        final String updatedPriceCantReach4 =
+            updatedPriceTextWidgetCantReach4.data!;
+        expect(updatedPriceCantReach4, '0.00001200');
+
+        expect(assetDropdownMenu, findsOneWidget);
+        await tester.tap(assetDropdownMenu);
+        await tester.pumpAndSettle();
+
+        // Find the dropdown menu item and tap it
+        final dropdownItem70455 =
+            find.byKey(const Key('asset_dropdown_item_A4630460187535670455'));
+        expect(dropdownItem70455, findsOneWidget);
+        await tester.tap(dropdownItem70455);
+        await tester.pumpAndSettle();
+
+        // Verify that 'A4630460187535670455' is now selected
+        expect(find.text('A4630460187535670455'), findsOneWidget);
+
+        // Verify that 'buy_quantity_text' displays the expected quantity
+        final buyQuantityTextFinder70455 =
+            find.byKey(const Key('buy_quantity_text'));
+        expect(buyQuantityTextFinder70455, findsOneWidget);
+
+        final Text buyQuantityTextWidget70455 =
+            tester.widget<Text>(buyQuantityTextFinder70455);
+        final String displayedQuantity70455 = buyQuantityTextWidget70455.data!;
+
+        expect(displayedQuantity70455, '1.5');
+
+        // Verify that 'price_input' displays the expected price
+        final priceInputFinder70455 = find.byKey(const Key('price_input'));
+        expect(priceInputFinder70455, findsOneWidget);
+
+        final selectableTextFinder70455 = find.descendant(
+          of: priceInputFinder70455,
+          matching: find.byType(SelectableText),
+        );
+        expect(selectableTextFinder70455, findsOneWidget);
+
+        final SelectableText priceTextWidget70455 =
+            tester.widget<SelectableText>(selectableTextFinder70455);
+        final String displayedPrice70455 = priceTextWidget70455.data!;
+
+        expect(displayedPrice70455, '0.00006000');
+
+        // Interact with the UI by tapping the add button
+        final addButton70455 = find.byIcon(Icons.add);
+        await tester.tap(addButton70455);
+        await tester.pumpAndSettle();
+
+        // After tapping the add button, verify the updated quantity and price
+
+        // Verify that 'buy_quantity_text' now displays '2'
+        final Text updatedQuantityTextWidget70455_2 =
+            tester.widget<Text>(buyQuantityTextFinder70455);
+        final String updatedQuantity70455_2 =
+            updatedQuantityTextWidget70455_2.data!;
+        expect(updatedQuantity70455_2, '3');
+
+        // Verify that 'price_input' now displays the updated price '0.00001200'
+        final SelectableText updatedPriceTextWidget70455_2 =
+            tester.widget<SelectableText>(selectableTextFinder70455);
+        final String updatedPrice70455_2 = updatedPriceTextWidget70455_2.data!;
+        expect(updatedPrice70455_2, '0.00012000');
+
+        await tester.tap(addButton);
+        await tester.pumpAndSettle();
+
+        // After tapping the add button, verify the updated quantity and price
+
+        // Verify that 'buy_quantity_text' now displays '2'
+        final Text updatedQuantityTextWidget3 =
+            tester.widget<Text>(buyQuantityTextFinder);
+        final String updatedQuantity3 = updatedQuantityTextWidget3.data!;
+        expect(updatedQuantity3, '4.5');
+
+        // Verify that 'price_input' now displays the updated price '0.00001200'
+        final SelectableText updatedPriceTextWidget3 =
+            tester.widget<SelectableText>(selectableTextFinder);
+        final String updatedPrice3 = updatedPriceTextWidget3.data!;
+        expect(updatedPrice3, '0.00018000');
+
+        final removeButton70455 = find.byIcon(Icons.remove);
+        await tester.tap(removeButton70455);
+        await tester.pumpAndSettle();
+
+        // Verify that 'buy_quantity_text' now displays '2'
+        final Text updatedQuantityTextWidget70455_3 =
+            tester.widget<Text>(buyQuantityTextFinder70455);
+        final String updatedQuantity70455_3 =
+            updatedQuantityTextWidget70455_3.data!;
+        expect(updatedQuantity70455_3, '3');
+
+        // Verify that 'price_input' now displays the updated price '0.00001200'
+        final SelectableText updatedPriceTextWidget70455_3 =
+            tester.widget<SelectableText>(selectableTextFinder70455);
+        final String updatedPrice70455_3 = updatedPriceTextWidget70455_3.data!;
+        expect(updatedPrice70455_3, '0.00012000');
+
+        //   // Tap on the CONTINUE button
         //   // Tap on the CONTINUE button
         //   await tester.tap(find.widgetWithText(ElevatedButton, 'CONTINUE'));
         //   await tester.pumpAndSettle();
