@@ -200,8 +200,10 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
         children: [
           Expanded(
             child: HorizonUI.HorizonDropdownMenu<String>(
+              key: const Key('asset_dropdown_menu'),
               items: assets.map((String asset) {
                 return DropdownMenuItem<String>(
+                  key: Key('asset_dropdown_item_$asset'),
                   value: asset,
                   child: Text(asset),
                 );
@@ -303,6 +305,7 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
     }
 
     return Container(
+      key: const Key('dispense_quantity_input'),
       decoration: BoxDecoration(
         border: Border.all(
           color: Theme.of(context).dividerColor,
@@ -326,6 +329,7 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
           ),
           Expanded(
             child: Text(
+              key: const Key('buy_quantity_text'),
               '${values[currentIndex]}',
               textAlign: TextAlign.center,
               style: TextStyle(
@@ -367,6 +371,7 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
 
     priceController.text = price;
     return HorizonUI.HorizonTextFormField(
+      key: const Key('price_input'),
       label: 'Price',
       controller: priceController,
       enabled: false,
@@ -431,7 +436,7 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
 
   Widget _buildDispenserInput(GlobalKey<FormState> formKey) {
     return HorizonUI.HorizonTextFormField(
-      key: const Key('dispense_dispenesr_input'),
+      key: const Key('dispense_dispenser_input'),
       controller: dispenserController,
       label: 'Dispenser Address',
       onChanged: (value) {
@@ -440,8 +445,6 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
             .read<ComposeDispenseBloc>()
             .add(DispenserAddressChanged(address: value));
       },
-      // keyboardType: const TextInputType.numberWithOptions(
-      //     decimal: false, signed: false), // No decimal allowed
       validator: (value) {
         if (value == null || value.isEmpty) {
           return 'Dispener Address is required';

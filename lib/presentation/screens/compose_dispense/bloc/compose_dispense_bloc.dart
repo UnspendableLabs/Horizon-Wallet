@@ -86,7 +86,7 @@ class ComposeDispenseBloc extends ComposeBaseBloc<ComposeDispenseState> {
         dispensersState: DispensersState.success(dispensers),
       ));
     } on FetchOpenDispensersOnAddressException catch (e) {
-      logger.error("what the heck  ${e.toString()}");
+      logger.error("An unexpected error occurred: ${e.toString()}");
 
       emit(state.copyWith(
         dispensersState: DispensersState.error(e.message),
