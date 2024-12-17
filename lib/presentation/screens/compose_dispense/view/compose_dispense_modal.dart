@@ -1,11 +1,9 @@
-import 'package:collection/collection.dart';
 import 'package:decimal/decimal.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/common/format.dart';
 import 'package:horizon/core/logging/logger.dart';
-import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/domain/entities/compose_dispense.dart';
 import 'package:horizon/domain/entities/dispenser.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
@@ -26,6 +24,7 @@ import 'package:horizon/presentation/screens/compose_dispense/usecase/fetch_open
 import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart";
 import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
+import 'package:rational/rational.dart';
 
 class ComposeDispensePageWrapper extends StatelessWidget {
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
@@ -95,14 +94,12 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
   TextEditingController buyQuantityController = TextEditingController();
   TextEditingController priceController = TextEditingController();
   String? _selectedAsset;
-  Balance? balance_;
   Dispenser? _selectedDispenser;
   String? _buyQuantity;
 
   @override
   void initState() {
     super.initState();
-    // TODO: not sure why we are doing this.
     openAddressController.text = widget.address;
     dispenserController.text = widget.initialDispenserAddress ?? "";
   }
@@ -217,6 +214,7 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
                     _selectedDispenser = dispensers.firstWhere(
                       (dispenser) => dispenser.asset == newValue,
                     );
+                    _buyQuantity = null;
                   });
                 }
               },
@@ -353,14 +351,17 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
     );
   }
 
-  Widget _buildPriceInput() {
+  Widget _buildPriceInput(ComposeDispenseState state) {
     if (_selectedDispenser == null) {
       return const SizedBox.shrink();
     }
 
     final String price = _buyQuantity != null && _buyQuantity!.isNotEmpty
-        ? (Decimal.parse(_buyQuantity!) *
-                Decimal.parse(_selectedDispenser!.priceNormalized!))
+        ? ((Decimal.parse(_buyQuantity!) /
+                    Decimal.parse(
+                        _selectedDispenser!.giveQuantityNormalized!)) *
+                Rational.parse(_selectedDispenser!.satoshiPriceNormalized!))
+            .toDouble()
             .toStringAsFixed(8)
         : '';
 
@@ -372,7 +373,8 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
     );
   }
 
-  Widget _buildBuyQuantityAndPrice(GlobalKey<FormState> formKey) {
+  Widget _buildBuyQuantityAndPrice(
+      GlobalKey<FormState> formKey, ComposeDispenseState state) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     if (_selectedDispenser == null) {
       return const SizedBox.shrink();
@@ -403,7 +405,7 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
         ),
         const SizedBox(width: 16),
         Expanded(
-          child: _buildPriceInput(),
+          child: _buildPriceInput(state),
         ),
       ],
     );
@@ -422,7 +424,7 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
       const SizedBox(height: 16.0),
       _buildOpenDispensersList(state),
       const SizedBox(height: 16.0),
-      _buildBuyQuantityAndPrice(formKey),
+      _buildBuyQuantityAndPrice(formKey, state),
       const SizedBox(height: 16.0),
     ];
   }
@@ -566,13 +568,4 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
           initialDispenserAddress: dispenserController.text,
         ));
   }
-}
-
-_getBalanceForSelectedAsset(List<Balance> balances, String asset) {
-  if (balances.isEmpty) {
-    return null;
-  }
-
-  return balances.firstWhereOrNull((balance) => balance.asset == asset) ??
-      balances[0];
 }

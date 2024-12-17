@@ -174,7 +174,7 @@ Future<void> setup() async {
     ConnectionErrorInterceptor(),
     BadResponseInterceptor(),
     BadCertificateInterceptor(),
-    SimpleLogInterceptor(),
+    // SimpleLogInterceptor(),
     RetryInterceptor(
       dio: dio, retries: 3,
       retryableExtraStatuses: {400}, // to handle backend bug with compose
@@ -200,7 +200,7 @@ Future<void> setup() async {
     ConnectionErrorInterceptor(),
     BadResponseInterceptor(),
     BadCertificateInterceptor(),
-    SimpleLogInterceptor(),
+    // SimpleLogInterceptor(),
     RetryInterceptor(
       dio: dio,
       retries: 4,
@@ -378,8 +378,7 @@ Future<void> setup() async {
 
   injector.registerSingleton<FetchDispenseFormDataUseCase>(
       FetchDispenseFormDataUseCase(
-          getFeeEstimatesUseCase: GetIt.I.get<GetFeeEstimatesUseCase>(),
-          balanceRepository: injector.get<BalanceRepository>()));
+          getFeeEstimatesUseCase: GetIt.I.get<GetFeeEstimatesUseCase>()));
 
   injector.registerSingleton(FetchCloseDispenserFormDataUseCase(
       getFeeEstimatesUseCase: GetIt.I.get<GetFeeEstimatesUseCase>(),
