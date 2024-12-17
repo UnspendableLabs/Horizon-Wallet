@@ -509,15 +509,16 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
       Padding(
         padding: const EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 16.0),
         child: selectedDispense == null
-            ? Text(
+            ? SelectableText(
                 "Error: $_selectedAsset will not be dispensed",
                 style: const TextStyle(color: Colors.red),
               )
             : Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(selectedDispense.dispenser.asset, style: assetTextStyle),
-                  Text(
+                  SelectableText(selectedDispense.dispenser.asset,
+                      style: assetTextStyle),
+                  SelectableText(
                     "${selectedDispense.estimatedQuantityNormalized} ${selectedDispense.dispenser.asset} (${selectedDispense.dispenser.giveQuantityNormalized} x ${selectedDispense.estimatedUnits})",
                     style: assetTextStyle,
                   ),
@@ -544,8 +545,9 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(dispense.dispenser.asset, style: assetTextStyle),
-                          Text(
+                          SelectableText(dispense.dispenser.asset,
+                              style: assetTextStyle),
+                          SelectableText(
                             "${dispense.estimatedQuantityNormalized} ${dispense.dispenser.asset} (${dispense.dispenser.giveQuantityNormalized} x ${dispense.estimatedUnits})",
                             style: assetTextStyle,
                           ),
