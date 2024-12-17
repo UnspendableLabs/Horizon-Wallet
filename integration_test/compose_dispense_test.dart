@@ -255,6 +255,72 @@ void main() {
             confirmed: true,
             blockTime: 1728499156,
           ),
+          Dispenser(
+            txIndex: 2977567,
+            txHash: "txHash4",
+            blockIndex: 875193,
+            source: "test_address",
+            asset: "XCP",
+            giveQuantity: 500000,
+            escrowQuantity: 50000000,
+            satoshirate: 650,
+            status: 0,
+            giveRemaining: 50000000,
+            oracleAddress: null,
+            lastStatusTxHash: null,
+            origin: "test_address",
+            dispenseCount: 0,
+            lastStatusTxSource: null,
+            closeBlockIndex: null,
+            price: 1300,
+            assetInfo: const AssetInfo(
+              assetLongname: null,
+              description: "The Counterparty protocol native currency",
+              issuer: null,
+              divisible: true,
+            ),
+            giveQuantityNormalized: "0.00500000",
+            giveRemainingNormalized: "0.50000000",
+            escrowQuantityNormalized: "0.50000000",
+            satoshirateNormalized: "0.00000650",
+            satoshiPriceNormalized: "0.00000650",
+            priceNormalized: "0.0013000000000000",
+            confirmed: true,
+            blockTime: 1734463560,
+          ),
+          Dispenser(
+            txIndex: 2977566,
+            txHash: "txHash5",
+            blockIndex: 875192,
+            source: "test_address",
+            asset: "A7805927145042695546",
+            giveQuantity: 2,
+            escrowQuantity: 18,
+            satoshirate: 700,
+            status: 0,
+            giveRemaining: 18,
+            oracleAddress: null,
+            lastStatusTxHash: null,
+            origin: "test_address",
+            dispenseCount: 0,
+            lastStatusTxSource: null,
+            closeBlockIndex: null,
+            price: 350000,
+            assetInfo: const AssetInfo(
+              assetLongname: "USMINT.GOV",
+              description: "",
+              issuer: "bc1qtke38j72qv4d8eljn7pccaykypw8luytfwdn7q",
+              divisible: false,
+            ),
+            giveQuantityNormalized: "2",
+            giveRemainingNormalized: "18",
+            escrowQuantityNormalized: "18",
+            satoshirateNormalized: "0.00000700",
+            satoshiPriceNormalized: "0.00000700",
+            priceNormalized: "350.0000000000000000",
+            confirmed: true,
+            blockTime: 1734463101,
+          ),
         ];
 
         // Mock the fee estimates
@@ -532,14 +598,155 @@ void main() {
         final String updatedPrice70455_3 = updatedPriceTextWidget70455_3.data!;
         expect(updatedPrice70455_3, '0.00012000');
 
-        //   // Tap on the CONTINUE button
-        //   // Tap on the CONTINUE button
-        //   await tester.tap(find.widgetWithText(ElevatedButton, 'CONTINUE'));
-        //   await tester.pumpAndSettle();
+        // Find the dropdown menu item and tap it
+        await tester.tap(assetDropdownMenu);
+        await tester.pumpAndSettle();
 
-        //   // Since we haven't implemented the next steps, just verify that we reach this point
-        //   expect(find.textContaining('Please review your transaction details.'),
-        //       findsOneWidget);
+        final dropdownItemXcp =
+            find.byKey(const Key('asset_dropdown_item_XCP'));
+        expect(dropdownItemXcp, findsOneWidget);
+        await tester.tap(dropdownItemXcp);
+        await tester.pumpAndSettle();
+
+        // Verify that 'XCP' is now selected
+        expect(find.text('XCP'), findsOneWidget);
+
+        // Verify initial quantity and price
+        final Text initialQuantityTextXcp =
+            tester.widget<Text>(buyQuantityTextFinder);
+        expect(initialQuantityTextXcp.data!, '0.005');
+
+        final SelectableText initialPriceTextXcp =
+            tester.widget<SelectableText>(selectableTextFinder);
+        expect(initialPriceTextXcp.data!, '0.00000650');
+
+        // Test increment
+        await tester.tap(addButton);
+        await tester.pumpAndSettle();
+
+        final Text updatedQuantityTextXcp =
+            tester.widget<Text>(buyQuantityTextFinder);
+        expect(updatedQuantityTextXcp.data!, '0.01');
+
+        final SelectableText updatedPriceTextXcp =
+            tester.widget<SelectableText>(selectableTextFinder);
+        expect(updatedPriceTextXcp.data!, '0.00001300');
+
+        // Test another increment
+        await tester.tap(addButton);
+        await tester.pumpAndSettle();
+
+        final Text updatedQuantityTextXcp2 =
+            tester.widget<Text>(buyQuantityTextFinder);
+        expect(updatedQuantityTextXcp2.data!, '0.015');
+
+        final SelectableText updatedPriceTextXcp2 =
+            tester.widget<SelectableText>(selectableTextFinder);
+        expect(updatedPriceTextXcp2.data!, '0.00001950');
+
+        // Test decrement
+        await tester.tap(removeButton);
+        await tester.pumpAndSettle();
+
+        final Text decrementedQuantityTextXcp =
+            tester.widget<Text>(buyQuantityTextFinder);
+        expect(decrementedQuantityTextXcp.data!, '0.01');
+
+        final SelectableText decrementedPriceTextXcp =
+            tester.widget<SelectableText>(selectableTextFinder);
+        expect(decrementedPriceTextXcp.data!, '0.00001300');
+
+        // Test USMINT.GOV
+        await tester.tap(assetDropdownMenu);
+        await tester.pumpAndSettle();
+
+        final dropdownItemUsmint =
+            find.byKey(const Key('asset_dropdown_item_A7805927145042695546'));
+        expect(dropdownItemUsmint, findsOneWidget);
+        await tester.tap(dropdownItemUsmint);
+        await tester.pumpAndSettle();
+
+        // Verify that 'USMINT.GOV' is selected
+        expect(find.text('A7805927145042695546'), findsOneWidget);
+
+        // Verify initial quantity and price
+        final Text initialQuantityTextUsmint =
+            tester.widget<Text>(buyQuantityTextFinder);
+        expect(initialQuantityTextUsmint.data!, '2');
+
+        final SelectableText initialPriceTextUsmint =
+            tester.widget<SelectableText>(selectableTextFinder);
+        expect(initialPriceTextUsmint.data!, '0.00000700');
+
+        // Test increment
+        await tester.tap(addButton);
+        await tester.pumpAndSettle();
+
+        final Text updatedQuantityTextUsmint =
+            tester.widget<Text>(buyQuantityTextFinder);
+        expect(updatedQuantityTextUsmint.data!, '4');
+
+        final SelectableText updatedPriceTextUsmint =
+            tester.widget<SelectableText>(selectableTextFinder);
+        expect(updatedPriceTextUsmint.data!, '0.00001400');
+
+        // Test another increment
+        await tester.tap(addButton);
+        await tester.pumpAndSettle();
+
+        final Text updatedQuantityTextUsmint2 =
+            tester.widget<Text>(buyQuantityTextFinder);
+        expect(updatedQuantityTextUsmint2.data!, '6');
+
+        final SelectableText updatedPriceTextUsmint2 =
+            tester.widget<SelectableText>(selectableTextFinder);
+        expect(updatedPriceTextUsmint2.data!, '0.00002100');
+
+        // Test decrement
+        await tester.tap(removeButton);
+        await tester.pumpAndSettle();
+
+        final Text decrementedQuantityTextUsmint =
+            tester.widget<Text>(buyQuantityTextFinder);
+        expect(decrementedQuantityTextUsmint.data!, '4');
+
+        final SelectableText decrementedPriceTextUsmint =
+            tester.widget<SelectableText>(selectableTextFinder);
+        expect(decrementedPriceTextUsmint.data!, '0.00001400');
+
+        // Test A12256739633266178981
+        await tester.tap(assetDropdownMenu);
+        await tester.pumpAndSettle();
+
+        final dropdownItemA12256739633266178981 =
+            find.byKey(const Key('asset_dropdown_item_A12256739633266178981'));
+        expect(dropdownItemA12256739633266178981, findsOneWidget);
+        await tester.tap(dropdownItemA12256739633266178981);
+        await tester.pumpAndSettle();
+
+        // Verify that 'A12256739633266178981' is selected
+        expect(find.text('A12256739633266178981'), findsOneWidget);
+
+        // Verify initial quantity and price
+        final Text initialQuantityTextA12256739633266178981 =
+            tester.widget<Text>(buyQuantityTextFinder);
+        expect(initialQuantityTextA12256739633266178981.data!, '0.1');
+
+        final SelectableText initialPriceTextA12256739633266178981 =
+            tester.widget<SelectableText>(selectableTextFinder);
+        expect(initialPriceTextA12256739633266178981.data!, '0.00010000');
+
+        // Verify tapping add button does nothing
+        await tester.tap(find.byIcon(Icons.add));
+        await tester.pumpAndSettle();
+
+        final Text unchangedQuantityText =
+            tester.widget<Text>(buyQuantityTextFinder);
+        expect(unchangedQuantityText.data!, '0.1');
+
+        final SelectableText unchangedPriceText =
+            tester.widget<SelectableText>(selectableTextFinder);
+        expect(unchangedPriceText.data!, '0.00010000');
       }, (error, stackTrace) {
         print('Caught error: $error\n$stackTrace');
       });
