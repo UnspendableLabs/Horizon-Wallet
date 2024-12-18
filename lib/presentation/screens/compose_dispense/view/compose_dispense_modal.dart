@@ -12,6 +12,7 @@ import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/presentation/common/colors.dart';
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_event.dart';
 import 'package:horizon/presentation/common/compose_base/view/compose_base_page.dart';
+import 'package:horizon/presentation/common/shared_util.dart';
 import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
 import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transaction_usecase.dart';
 import 'package:horizon/presentation/common/usecase/write_local_transaction_usecase.dart';
@@ -106,6 +107,7 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
 
   @override
   Widget build(BuildContext context) {
+    print('SELECTED ASSET: $_selectedAsset');
     return ComposeBasePage<ComposeDispenseBloc, ComposeDispenseState>(
       dashboardActivityFeedBloc: widget.dashboardActivityFeedBloc,
       onFeeChange: (fee) =>
@@ -193,7 +195,6 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
       List<Dispenser> dispensers, List<String> assets, String selectedAsset) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final disabledTextColor = isDarkMode ? Colors.grey[500] : Colors.grey[400];
-    final screenWidth = MediaQuery.of(context).size.width;
 
     return [
       Row(
@@ -203,10 +204,14 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
             child: HorizonUI.HorizonDropdownMenu<String>(
               key: const Key('asset_dropdown_menu'),
               items: assets.map((String asset) {
+                final dispenserForAsset = dispensers.firstWhere(
+                  (dispenser) => dispenser.asset == asset,
+                );
                 return DropdownMenuItem<String>(
                   key: Key('asset_dropdown_item_$asset'),
                   value: asset,
-                  child: Text(asset),
+                  child: Text(displayAssetName(dispenserForAsset.asset,
+                      dispenserForAsset.assetInfo.assetLongname)),
                 );
               }).toList(),
               onChanged: (String? newValue) {
@@ -225,15 +230,13 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
               selectedValue: selectedAsset,
               selectedItemBuilder: (BuildContext context) {
                 return assets.map((String asset) {
+                  final dispenserForAsset = dispensers.firstWhere(
+                    (dispenser) => dispenser.asset == asset,
+                  );
                   return DropdownMenuItem<String>(
                     value: asset,
-                    child: screenWidth < 700
-                        ? Text(
-                            asset,
-                            overflow: TextOverflow.ellipsis,
-                            maxLines: 1,
-                          )
-                        : Text(asset),
+                    child: Text(displayAssetName(dispenserForAsset.asset,
+                        dispenserForAsset.assetInfo.assetLongname)),
                   );
                 }).toList();
               },
@@ -242,9 +245,9 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
           const SizedBox(width: 16.0),
           Expanded(
             child: HorizonUI.HorizonTextFormField(
-              label: "Quantity per dispense",
+              label: "Unit price",
               controller: TextEditingController(
-                  text: _selectedDispenser?.giveQuantityNormalized),
+                  text: _selectedDispenser?.priceNormalized),
               enabled: false,
               textColor: disabledTextColor,
             ),
@@ -252,29 +255,90 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
         ],
       ),
       const SizedBox(height: 16.0),
-      Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Expanded(
-            child: HorizonUI.HorizonTextFormField(
-              label: "Price per dispense",
-              controller: TextEditingController(
-                  text: _selectedDispenser?.satoshirateNormalized),
-              enabled: false,
-              textColor: disabledTextColor,
+      IntrinsicHeight(
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Expanded(
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "Quantity per dispense",
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: disabledTextColor,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      _selectedDispenser?.giveQuantityNormalized ?? '',
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: isDarkMode ? Colors.white : Colors.black,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
-          ),
-          const SizedBox(width: 16.0),
-          Expanded(
-            child: HorizonUI.HorizonTextFormField(
-              label: "Quantity available",
-              controller: TextEditingController(
-                  text: _selectedDispenser?.giveRemainingNormalized),
-              enabled: false,
-              textColor: disabledTextColor,
+            const SizedBox(width: 16.0),
+            Expanded(
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "Price per dispense",
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: disabledTextColor,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      _selectedDispenser?.satoshirateNormalized ?? '',
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: isDarkMode ? Colors.white : Colors.black,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
-          ),
-        ],
+            const SizedBox(width: 16.0),
+            Expanded(
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "Quantity available",
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: disabledTextColor,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      _selectedDispenser?.giveRemainingNormalized ?? '',
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: isDarkMode ? Colors.white : Colors.black,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     ];
   }
@@ -501,7 +565,7 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             SelectableText(
-              "${dispense.estimatedQuantityNormalized} ${dispense.dispenser.asset}",
+              "${dispense.estimatedQuantityNormalized} ${displayAssetName(dispense.dispenser.asset, dispense.dispenser.assetInfo.assetLongname)}",
               style: assetTextStyle,
             ),
             const SizedBox(height: 4),
@@ -520,12 +584,13 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             SelectableText(
-              dispense.dispenser.asset,
+              displayAssetName(dispense.dispenser.asset,
+                  dispense.dispenser.assetInfo.assetLongname),
               style: assetTextStyle,
             ),
             const SizedBox(width: 8),
             SelectableText(
-              "${dispense.estimatedQuantityNormalized} ${dispense.dispenser.asset} (${dispense.dispenser.giveQuantityNormalized} x ${dispense.estimatedUnits})",
+              "${dispense.estimatedQuantityNormalized} ${displayAssetName(dispense.dispenser.asset, dispense.dispenser.assetInfo.assetLongname)} (${dispense.dispenser.giveQuantityNormalized} x ${dispense.estimatedUnits})",
               style: assetTextStyle,
               textAlign: TextAlign.end,
             ),
