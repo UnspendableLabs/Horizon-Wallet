@@ -86,7 +86,6 @@ Future<void> buildFlutter(
     '--release',
     '--dart-define=HORIZON_IS_EXTENSION=true',
     '--dart-define=HORIZON_NETWORK=$network',
-    '--dart-define=HORIZON_ENABLE_DB_VIEWER=true',
     '--dart-define=HORIZON_COUNTERPARTY_API_BASE=$apiBase',
     '--dart-define=HORIZON_COUNTERPARTY_API_USERNAME=$username',
     '--dart-define=HORIZON_COUNTERPARTY_API_PASSWORD=$password',
