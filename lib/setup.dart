@@ -9,6 +9,8 @@ import 'package:horizon/data/services/encryption_service_web_worker_impl.dart';
 import 'package:dio_smart_retry/dio_smart_retry.dart';
 import 'package:horizon/data/services/imported_address_service_impl.dart';
 import 'package:chrome_extension/tabs.dart';
+import 'package:horizon/data/services/platform_service_extension_impl.dart';
+import 'package:horizon/data/services/platform_service_web_impl.dart';
 import "package:horizon/data/sources/repositories/address_repository_impl.dart";
 import "package:horizon/domain/repositories/address_repository.dart";
 import 'package:horizon/data/sources/local/db_manager.dart';
@@ -45,6 +47,7 @@ import 'package:horizon/domain/services/bitcoind_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/imported_address_service.dart';
 import 'package:horizon/domain/services/mnemonic_service.dart';
+import 'package:horizon/domain/services/platform_service.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
 import 'package:horizon/domain/services/wallet_service.dart';
 
@@ -517,6 +520,12 @@ Future<void> setup() async {
       GetIt.I<Logger>(),
     ),
   );
+  // Register the appropriate platform service
+  if (GetIt.I.get<Config>().isWebExtension) {
+    GetIt.I.registerSingleton<PlatformService>(PlatformServiceExtensionImpl());
+  } else {
+    GetIt.I.registerSingleton<PlatformService>(PlatformServiceWebImpl());
+  }
 }
 
 class CustomDioException extends DioException {
