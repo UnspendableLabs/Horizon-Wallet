@@ -414,6 +414,7 @@ void main() {
 
         // Verify that 'CANTREACH' is now selected
         expect(find.text('CANTREACH'), findsOneWidget);
+        expect(find.text('600.0000000000000000'), findsOneWidget);
 
         // Enter quantity
         expect(find.text('1'), findsWidgets);
@@ -516,6 +517,7 @@ void main() {
 
         // Verify that 'A4630460187535670455' is now selected
         expect(find.text('A4630460187535670455'), findsOneWidget);
+        expect(find.text('0.0000400000000000'), findsOneWidget);
 
         // Verify that 'buy_quantity_text' displays the expected quantity
         final buyQuantityTextFinder70455 =
@@ -610,6 +612,7 @@ void main() {
 
         // Verify that 'XCP' is now selected
         expect(find.text('XCP'), findsOneWidget);
+        expect(find.text('0.0013000000000000'), findsOneWidget);
 
         // Verify initial quantity and price
         final Text initialQuantityTextXcp =
@@ -667,7 +670,8 @@ void main() {
         await tester.pumpAndSettle();
 
         // Verify that 'USMINT.GOV' is selected
-        expect(find.text('A7805927145042695546'), findsOneWidget);
+        expect(find.text('USMINT.GOV'), findsOneWidget);
+        expect(find.text('350.0000000000000000'), findsOneWidget);
 
         // Verify initial quantity and price
         final Text initialQuantityTextUsmint =
@@ -726,6 +730,7 @@ void main() {
 
         // Verify that 'A12256739633266178981' is selected
         expect(find.text('A12256739633266178981'), findsOneWidget);
+        expect(find.text('0.0010000000000000'), findsOneWidget);
 
         // Verify initial quantity and price
         final Text initialQuantityTextA12256739633266178981 =
