@@ -324,7 +324,7 @@ class HorizonAppBarContent extends StatelessWidget {
   Widget build(BuildContext context) {
     final shell = context.watch<ShellStateCubit>();
     final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
-    final isSmallScreen = MediaQuery.of(context).size.width < 600;
+    final isSmallScreen = MediaQuery.of(context).size.width < 700;
 
     final backgroundColor = isDarkTheme ? lightNavyDarkTheme : greyLightTheme;
     final selectedColor =
@@ -379,12 +379,13 @@ class HorizonAppBarContent extends StatelessWidget {
                         fontWeight: FontWeight.w700,
                       )),
                   if (!isSmallScreen) const SizedBox(width: 8),
-                  const Text('Wallet',
-                      style: TextStyle(
-                        color: neonBlueDarkTheme,
-                        fontSize: 30,
-                        fontWeight: FontWeight.w700,
-                      )),
+                  if (!isSmallScreen)
+                    const Text('Wallet',
+                        style: TextStyle(
+                          color: neonBlueDarkTheme,
+                          fontSize: 30,
+                          fontWeight: FontWeight.w700,
+                        )),
                   const SizedBox(width: 12),
                   if (!isSmallScreen && account != null)
                     shell.state.maybeWhen(

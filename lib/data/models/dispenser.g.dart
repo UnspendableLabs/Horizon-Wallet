@@ -18,6 +18,7 @@ DispenserModel _$DispenserModelFromJson(Map<String, dynamic> json) =>
       satoshirate: (json['satoshirate'] as num).toInt(),
       status: (json['status'] as num).toInt(),
       giveRemaining: (json['give_remaining'] as num).toInt(),
+      price: (json['price'] as num?)?.toInt(),
       oracleAddress: json['oracle_address'] as String?,
       lastStatusTxHash: json['last_status_tx_hash'] as String?,
       closeBlockIndex: json['close_block_index'] as String?,
@@ -30,6 +31,8 @@ DispenserModel _$DispenserModelFromJson(Map<String, dynamic> json) =>
       giveRemainingNormalized: json['give_remaining_normalized'] as String,
       escrowQuantityNormalized: json['escrow_quantity_normalized'] as String,
       satoshirateNormalized: json['satoshirate_normalized'] as String,
+      satoshiPriceNormalized: json['satoshi_price_normalized'] as String?,
+      priceNormalized: json['price_normalized'] as String?,
       assetInfo:
           AssetInfoModel.fromJson(json['asset_info'] as Map<String, dynamic>),
     );
@@ -46,6 +49,7 @@ Map<String, dynamic> _$DispenserModelToJson(DispenserModel instance) =>
       'satoshirate': instance.satoshirate,
       'status': instance.status,
       'give_remaining': instance.giveRemaining,
+      'price': instance.price,
       'oracle_address': instance.oracleAddress,
       'last_status_tx_hash': instance.lastStatusTxHash,
       'close_block_index': instance.closeBlockIndex,
@@ -58,5 +62,7 @@ Map<String, dynamic> _$DispenserModelToJson(DispenserModel instance) =>
       'give_remaining_normalized': instance.giveRemainingNormalized,
       'escrow_quantity_normalized': instance.escrowQuantityNormalized,
       'satoshirate_normalized': instance.satoshirateNormalized,
+      'satoshi_price_normalized': instance.satoshiPriceNormalized,
+      'price_normalized': instance.priceNormalized,
       'asset_info': instance.assetInfo,
     };

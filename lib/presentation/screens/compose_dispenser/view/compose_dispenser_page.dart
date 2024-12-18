@@ -571,7 +571,7 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
             HorizonUI.HorizonTextFormField(
               enabled: false,
               controller: openAddressController,
-              label: "Open Address",
+              label: "Opening Dispenser on",
             ),
             const SizedBox(height: 16.0),
             _buildAssetInput(state, loading),
@@ -590,7 +590,7 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
           children: [
             HorizonUI.HorizonTextFormField(
               enabled: false,
-              label: "Open Address",
+              label: "Opening Dispenser on",
               controller: TextEditingController(text: 'To be created'),
             ),
             const SizedBox(height: 16.0),
@@ -630,7 +630,7 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
             HorizonUI.HorizonTextFormField(
               enabled: false,
               controller: openAddressController,
-              label: "Open Address",
+              label: "Opening Dispenser on",
             ),
             _displayDispensersWarning(state, loading, hasOpenDispensers!),
           ],

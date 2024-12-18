@@ -345,22 +345,28 @@ class HorizonDropdownMenu<T> extends StatelessWidget {
           child: DropdownButtonHideUnderline(
             child: ButtonTheme(
               alignedDropdown: true,
-              child: DropdownButton<T>(
-                isExpanded: isExpanded,
-                value: state.value,
-                onChanged: enabled
-                    ? (T? newValue) {
-                        state.didChange(newValue);
-                        onChanged(newValue);
-                      }
-                    : null,
-                items: items,
-                borderRadius: BorderRadius.circular(borderRadius ?? 10),
-                icon: icon,
-                selectedItemBuilder: selectedItemBuilder,
-                isDense: isDense,
-                hint: Text(label ?? ''),
-                underline: const SizedBox(),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(minHeight: 48.0),
+                child: DropdownButton<T>(
+                  isExpanded: true,
+                  value: state.value,
+                  onChanged: enabled
+                      ? (T? newValue) {
+                          state.didChange(newValue);
+                          onChanged(newValue);
+                        }
+                      : null,
+                  items: items,
+                  borderRadius: BorderRadius.circular(borderRadius ?? 10),
+                  icon: icon,
+                  selectedItemBuilder: selectedItemBuilder,
+                  isDense: isDense,
+                  hint: Text(
+                    label ?? '',
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  underline: const SizedBox(),
+                ),
               ),
             ),
           ),

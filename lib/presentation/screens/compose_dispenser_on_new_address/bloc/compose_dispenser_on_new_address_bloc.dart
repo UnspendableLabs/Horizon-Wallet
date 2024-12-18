@@ -72,7 +72,7 @@ class ComposeDispenserOnNewAddressBloc extends Bloc<
       emit(state.copyWith(feeState: const FeeState.loading()));
 
       try {
-        final (balances, feeEstimates) =
+        final feeEstimates =
             await fetchDispenseFormDataUseCase.call(event.originalAddress);
 
         emit(state.copyWith(
