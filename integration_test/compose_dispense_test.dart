@@ -483,12 +483,6 @@ void main() {
         expect(quantityBuyText, findsOneWidget);
         expect(priceInput, findsOneWidget);
 
-        // // Tap on the dropdown menu to open it
-        // final assetDropdownMenu = find.byKey(const Key('asset_dropdown_menu'));
-        // expect(assetDropdownMenu, findsOneWidget);
-        // await tester.tap(assetDropdownMenu);
-        // await tester.pumpAndSettle();
-
         // Test CANTREACH dispenser
         await _verifyDispenserDetails(
           tester: tester,
