@@ -82,7 +82,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
         final asset = params.asset;
         final quantity = params.quantity;
         const excludeUtxosWithBalances = true;
-
+        const disableUtxoLocks = true;
         final inputsSetString =
             currentInputSet.map((e) => "${e.txid}:${e.vout}").join(',');
 
@@ -95,7 +95,8 @@ class ComposeRepositoryImpl extends ComposeRepository {
             fee,
             null,
             inputsSetString,
-            excludeUtxosWithBalances);
+            excludeUtxosWithBalances,
+            disableUtxoLocks);
 
         if (response.result == null) {
           throw Exception('Failed to compose send');
@@ -140,7 +141,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
         final description = params.description;
         const unconfirmed = true;
         const excludeUtxosWithBalances = true;
-
+        const disableUtxoLocks = true;
         final inputsSetString =
             currentInputSet.map((e) => "${e.txid}:${e.vout}").join(',');
 
@@ -156,7 +157,8 @@ class ComposeRepositoryImpl extends ComposeRepository {
             unconfirmed,
             fee,
             inputsSetString,
-            excludeUtxosWithBalances);
+            excludeUtxosWithBalances,
+            disableUtxoLocks);
         if (response.result == null) {
           throw Exception('Failed to compose issuance');
         }
@@ -199,6 +201,8 @@ class ComposeRepositoryImpl extends ComposeRepository {
         const oracleAddress = null;
         const allowUnconfirmedTx = true;
         const excludeUtxosWithBalances = true;
+        const disableUtxoLocks = true;
+
         final inputsSetString =
             currentInputSet.map((e) => "${e.txid}:${e.vout}").join(',');
 
@@ -214,7 +218,8 @@ class ComposeRepositoryImpl extends ComposeRepository {
             allowUnconfirmedTx,
             fee,
             inputsSetString,
-            excludeUtxosWithBalances);
+            excludeUtxosWithBalances,
+            disableUtxoLocks);
 
         if (response.result == null) {
           throw Exception('Failed to compose dispenser');
@@ -259,6 +264,8 @@ class ComposeRepositoryImpl extends ComposeRepository {
         final quantity = params.quantity;
         const allowUnconfirmedTx = true;
         const excludeUtxosWithBalances = true;
+        const disableUtxoLocks = true;
+
         final inputsSetString =
             currentInputSet.map((e) => "${e.txid}:${e.vout}").join(',');
 
@@ -269,7 +276,8 @@ class ComposeRepositoryImpl extends ComposeRepository {
             allowUnconfirmedTx,
             fee,
             inputsSetString,
-            excludeUtxosWithBalances);
+            excludeUtxosWithBalances,
+            disableUtxoLocks);
 
         if (response.result == null) {
           throw Exception('Failed to compose dispense');
@@ -291,11 +299,13 @@ class ComposeRepositoryImpl extends ComposeRepository {
         final sourceAddress = params.source;
         final asset = params.asset;
         const excludeUtxosWithBalances = true;
+        const disableUtxoLocks = true;
+
         final inputsSetString =
             currentInputSet.map((e) => "${e.txid}:${e.vout}").join(',');
 
         final response = await api.composeFairmintVerbose(sourceAddress, asset,
-            fee, inputsSetString, excludeUtxosWithBalances);
+            fee, inputsSetString, excludeUtxosWithBalances, disableUtxoLocks);
 
         if (response.result == null) {
           throw Exception('Failed to compose fairmint');
@@ -324,6 +334,8 @@ class ComposeRepositoryImpl extends ComposeRepository {
         final divisible = params.divisible;
         final lockQuantity = params.lockQuantity;
         const excludeUtxosWithBalances = true;
+        const disableUtxoLocks = true;
+
         final inputsSetString =
             currentInputSet.map((e) => "${e.txid}:${e.vout}").join(',');
 
@@ -339,7 +351,8 @@ class ComposeRepositoryImpl extends ComposeRepository {
             fee,
             lockQuantity,
             inputsSetString,
-            excludeUtxosWithBalances);
+            excludeUtxosWithBalances,
+            disableUtxoLocks);
 
         if (response.result == null) {
           throw Exception('Failed to compose fairminter');
@@ -364,6 +377,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
     const excludeUtxosWithBalances = true;
     const validateCompose = false;
     const disableUtxoLocks = true;
+
     final Vout? outputForChaining = prevDecodedTransaction.vout
         .firstWhereOrNull((vout) => vout.scriptPubKey.address == params.source);
 
@@ -436,6 +450,8 @@ class ComposeRepositoryImpl extends ComposeRepository {
         final getQuantity = params.getQuantity;
         final getAsset = params.getAsset;
         const excludeUtxosWithBalances = true;
+        const disableUtxoLocks = true;
+
         final inputsSetString =
             currentInputSet.map((e) => "${e.txid}:${e.vout}").join(',');
 
@@ -450,7 +466,8 @@ class ComposeRepositoryImpl extends ComposeRepository {
             true, //  allow unconfirmed
             fee, //exect fee
             inputsSetString,
-            excludeUtxosWithBalances);
+            excludeUtxosWithBalances,
+            disableUtxoLocks);
 
         if (response.result == null) {
           throw Exception('Failed to compose order');
@@ -470,7 +487,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
         final source = params.source;
         final offerHash = params.offerHash;
         const excludeUtxosWithBalances = true;
-
+        const disableUtxoLocks = true;
         final inputsSetString =
             currentInputSet.map((e) => "${e.txid}:${e.vout}").join(',');
 
@@ -480,7 +497,8 @@ class ComposeRepositoryImpl extends ComposeRepository {
             true, //  allow unconfirmed
             fee, //exect fee
             inputsSetString,
-            excludeUtxosWithBalances);
+            excludeUtxosWithBalances,
+            disableUtxoLocks);
 
         if (response.result == null) {
           throw Exception('Failed to compose cancel');
@@ -513,6 +531,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
         final asset = params.asset;
         final quantity = params.quantity;
         const excludeUtxosWithBalances = true;
+        const disableUtxoLocks = true;
         final inputsSetString =
             currentInputSet.map((e) => "${e.txid}:${e.vout}").join(',');
 
@@ -525,7 +544,8 @@ class ComposeRepositoryImpl extends ComposeRepository {
             true, //  allow unconfirmed
             fee, //exect fee
             inputsSetString,
-            excludeUtxosWithBalances);
+            excludeUtxosWithBalances,
+            disableUtxoLocks);
 
         if (response.result == null) {
           throw Exception('Failed to compose attach utxo');
@@ -548,6 +568,8 @@ class ComposeRepositoryImpl extends ComposeRepository {
         final utxo = params.utxo;
         final destination = params.destination;
         const excludeUtxosWithBalances = true;
+        const disableUtxoLocks = true;
+
         final inputsSetString =
             currentInputSet.map((e) => "${e.txid}:${e.vout}").join(',');
 
@@ -559,6 +581,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
           fee, //exect fee
           inputsSetString,
           excludeUtxosWithBalances,
+          disableUtxoLocks,
         );
 
         if (response.result == null) {
@@ -582,7 +605,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
         final utxo = params.utxo;
         final destination = params.destination;
         const excludeUtxosWithBalances = true;
-
+        const disableUtxoLocks = true;
         final inputsSetString =
             currentInputSet.map((e) => "${e.txid}:${e.vout}").join(',');
 
@@ -594,6 +617,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
           fee, //exect fee
           inputsSetString,
           excludeUtxosWithBalances,
+          disableUtxoLocks,
         );
 
         if (response.result == null) {

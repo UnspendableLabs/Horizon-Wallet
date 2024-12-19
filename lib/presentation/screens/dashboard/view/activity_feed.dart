@@ -714,9 +714,15 @@ class DashboardActivityFeedScreenState
       final filteredTransactions = transactions.where((t) {
         if (t.event != null && t.event is VerboseAssetIssuanceEvent) {
           final assetIssuanceEvent = t.event as VerboseAssetIssuanceEvent;
-          return !(assetIssuanceEvent.params.assetEvents == "fairmint" &&
-              !widget.addresses
-                  .any((a) => a == assetIssuanceEvent.params.source));
+          final isFairmintIssuance =
+              (assetIssuanceEvent.params.assetEvents == "fairmint" &&
+                  !widget.addresses
+                      .any((a) => a == assetIssuanceEvent.params.source));
+          final isOpenFairminterIssuance =
+              assetIssuanceEvent.params.assetEvents == "open_fairminter";
+          // asset issuance events for fairmints on the source address and fairminters are already captured by NEW_FAIRMINT and NEW_FAIRMINTER events
+          // we filter out ASSET_ISSUANCE for these cases so they don't display as duplicates in the activity feed
+          return !isFairmintIssuance && !isOpenFairminterIssuance;
         }
         return true;
       }).toList();
