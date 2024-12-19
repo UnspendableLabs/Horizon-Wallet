@@ -4,17 +4,17 @@ import 'package:horizon/data/models/asset_info.dart';
 import 'package:horizon/data/models/bitcoin_decoded_tx.dart';
 import 'package:horizon/data/models/compose.dart';
 import 'package:horizon/data/models/compose_attach_utxo.dart';
+import 'package:horizon/data/models/compose_cancel.dart';
 import 'package:horizon/data/models/compose_detach_utxo.dart';
 import 'package:horizon/data/models/compose_fairmint.dart';
 import 'package:horizon/data/models/compose_fairminter.dart';
 import 'package:horizon/data/models/compose_movetoutxo.dart';
 import 'package:horizon/data/models/compose_order.dart';
-import 'package:horizon/data/models/compose_cancel.dart';
 import 'package:horizon/data/models/cursor.dart';
 import 'package:horizon/data/models/dispenser.dart';
 import 'package:horizon/data/models/fairminter.dart';
-import 'package:horizon/data/models/order.dart';
 import 'package:horizon/data/models/node_info.dart';
+import 'package:horizon/data/models/order.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:retrofit/retrofit.dart';
 
@@ -4392,8 +4392,8 @@ abstract class V2Api {
     @Query("fee_per_kb") int? feePerKB,
     @Query("inputs_set") String? inputsSet,
     @Query("exclude_utxos_with_balances") bool? excludeUtxosWithBalances,
-    @Query("validate") bool? validate,
     @Query("disable_utxo_locks") bool? disableUtxoLocks,
+    @Query("validate") bool? validate,
   ]);
 
   @GET("/addresses/{address}/sends")
@@ -4438,6 +4438,7 @@ abstract class V2Api {
     @Query("exact_fee") int? fee,
     @Query("inputs_set") String? inputsSet,
     @Query("exclude_utxos_with_balances") bool? excludeUtxosWithBalances,
+    @Query("disable_utxo_locks") bool? disableUtxoLocks,
   ]);
 
   @GET("/addresses/{address}/orders?verbose=true")
@@ -4472,6 +4473,7 @@ abstract class V2Api {
     @Query("exact_fee") int? fee,
     @Query("inputs_set") String? inputsSet,
     @Query("exclude_utxos_with_balances") bool? excludeUtxosWithBalances,
+    @Query("disable_utxo_locks") bool? disableUtxoLocks,
   ]);
 
   @GET("/addresses/{address}/compose/fairminter?verbose=true")
@@ -4488,6 +4490,7 @@ abstract class V2Api {
     @Query("lock_quantity") bool? lockQuantity,
     @Query("inputs_set") String? inputsSet,
     @Query("exclude_utxos_with_balances") bool? excludeUtxosWithBalances,
+    @Query("disable_utxo_locks") bool? disableUtxoLocks,
   ]);
 
   @GET("/addresses/{address}/compose/dispenser?verbose=true")
@@ -4522,6 +4525,7 @@ abstract class V2Api {
     @Query("exact_fee") int? exactFee,
     @Query("inputs_set") String? inputsSet,
     @Query("exclude_utxos_with_balances") bool? excludeUtxosWithBalances,
+    @Query("disable_utxo_locks") bool? disableUtxoLocks,
     @Query("unconfirmed") bool? unconfirmed,
   ]);
 
@@ -4533,6 +4537,7 @@ abstract class V2Api {
     @Query("exact_fee") int? exactFee,
     @Query("inputs_set") String? inputsSet,
     @Query("exclude_utxos_with_balances") bool? excludeUtxosWithBalances,
+    @Query("disable_utxo_locks") bool? disableUtxoLocks,
     @Query("unconfirmed") bool? unconfirmed,
   ]);
 
@@ -4553,6 +4558,7 @@ abstract class V2Api {
     @Query("exact_fee") int? exactFee,
     @Query("inputs_set") String? inputsSet,
     @Query("exclude_utxos_with_balances") bool? excludeUtxosWithBalances,
+    @Query("disable_utxo_locks") bool? disableUtxoLocks,
     @Query("unconfirmed") bool? unconfirmed,
   ]);
 
@@ -4627,6 +4633,7 @@ abstract class V2Api {
     @Query("exact_fee") int? exactFee,
     @Query("inputs_set") String? inputsSet,
     @Query("exclude_utxos_with_balances") bool? excludeUtxosWithBalances,
+    @Query("disable_utxo_locks") bool? disableUtxoLocks,
     @Query("unconfirmed") bool? unconfirmed,
   ]);
 
@@ -4639,6 +4646,7 @@ abstract class V2Api {
     @Query("exact_fee") int? exactFee,
     @Query("inputs_set") String? inputsSet,
     @Query("exclude_utxos_with_balances") bool? excludeUtxosWithBalances,
+    @Query("disable_utxo_locks") bool? disableUtxoLocks,
     @Query("unconfirmed") bool? unconfirmed,
   ]);
 
@@ -4651,6 +4659,7 @@ abstract class V2Api {
     @Query("exact_fee") int? exactFee,
     @Query("inputs_set") String? inputsSet,
     @Query("exclude_utxos_with_balances") bool? excludeUtxosWithBalances,
+    @Query("disable_utxo_locks") bool? disableUtxoLocks,
     @Query("unconfirmed") bool? unconfirmed,
   ]);
   @GET("/bitcoin/addresses/{address}/utxos")

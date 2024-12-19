@@ -9,7 +9,7 @@ class ComposeDetachUtxoResponseModel {
   final String data;
   final int btcIn;
   final int btcOut;
-  final int btcChange;
+  final int? btcChange;
   final int btcFee;
   final String rawtransaction;
   final ComposeDetachUtxoResponseParamsModel params;
