@@ -22,6 +22,7 @@ import 'package:horizon/presentation/screens/compose_dispense/usecase/fetch_form
 import 'package:horizon/presentation/screens/compose_dispense/usecase/fetch_open_dispensers_on_address.dart';
 import 'package:horizon/presentation/screens/compose_dispense/view/compose_dispense_modal.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart';
+import 'package:horizon/presentation/screens/horizon/ui.dart';
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 import 'package:horizon/presentation/shell/bloc/shell_state.dart';
 import 'package:integration_test/integration_test.dart';
@@ -100,6 +101,7 @@ Future<void> _verifyDispenserDetails({
   required List<String> incrementPrices,
   String? decrementQuantity,
   String? decrementPrice,
+  int? maxLots,
 }) async {
   // Select the dispenser from dropdown
   final assetDropdownMenu = find.byKey(const Key('asset_dropdown_menu'));
@@ -114,9 +116,10 @@ Future<void> _verifyDispenserDetails({
   // Verify asset is selected
   expect(find.text(assetName), findsOneWidget);
 
-  // Verify initial quantity and price
+  // Verify initial quantity, price, and lots
   final buyQuantityTextFinder = find.byKey(const Key('buy_quantity_text'));
   final priceInputFinder = find.byKey(const Key('price_input'));
+  final lotInputFinder = find.byKey(const Key('lot_input'));
   final selectableTextFinder = find.descendant(
     of: priceInputFinder,
     matching: find.byType(SelectableText),
@@ -126,27 +129,47 @@ Future<void> _verifyDispenserDetails({
   expect(
       tester.widget<SelectableText>(selectableTextFinder).data!, initialPrice);
 
-  // Test increments
-  final addButton = find.byIcon(Icons.add);
-  for (int i = 0; i < incrementQuantities.length; i++) {
-    await tester.tap(addButton);
-    await tester.pumpAndSettle();
+  // Get the HorizonTextFormField widget and check its controller
+  final lotInput = tester.widget<HorizonTextFormField>(lotInputFinder);
+  expect(lotInput.controller!.text, '1');
 
-    expect(tester.widget<Text>(buyQuantityTextFinder).data!,
-        incrementQuantities[i]);
-    expect(tester.widget<SelectableText>(selectableTextFinder).data!,
-        incrementPrices[i]);
-  }
+  // Only test increments if we haven't reached maxLots
+  if (maxLots == null || maxLots > 1) {
+    final addButton = find.byIcon(Icons.add);
+    for (int i = 0;
+        i < incrementQuantities.length && (maxLots == null || i + 2 <= maxLots);
+        i++) {
+      await tester.tap(addButton);
+      await tester.pumpAndSettle();
 
-  // Test decrement if provided
-  if (decrementQuantity != null && decrementPrice != null) {
-    final removeButton = find.byIcon(Icons.remove);
-    await tester.tap(removeButton);
-    await tester.pumpAndSettle();
+      expect(tester.widget<Text>(buyQuantityTextFinder).data!,
+          incrementQuantities[i]);
+      expect(tester.widget<SelectableText>(selectableTextFinder).data!,
+          incrementPrices[i]);
 
-    expect(tester.widget<Text>(buyQuantityTextFinder).data!, decrementQuantity);
-    expect(tester.widget<SelectableText>(selectableTextFinder).data!,
-        decrementPrice);
+      // Verify lot count increased
+      final updatedLotInput =
+          tester.widget<HorizonTextFormField>(lotInputFinder);
+      expect(updatedLotInput.controller!.text, '${i + 2}');
+    }
+
+    // Test decrement if provided and we've incremented at least once
+    if (decrementQuantity != null && decrementPrice != null) {
+      final removeButton = find.byIcon(Icons.remove);
+      await tester.tap(removeButton);
+      await tester.pumpAndSettle();
+
+      expect(
+          tester.widget<Text>(buyQuantityTextFinder).data!, decrementQuantity);
+      expect(tester.widget<SelectableText>(selectableTextFinder).data!,
+          decrementPrice);
+
+      // Verify lot count decreased
+      final decrementedLotInput =
+          tester.widget<HorizonTextFormField>(lotInputFinder);
+      expect(decrementedLotInput.controller!.text,
+          '${incrementQuantities.length}');
+    }
   }
 }
 
@@ -527,6 +550,7 @@ void main() {
           assetId: 'A12256739633266178981',
           incrementQuantities: ['0.1', '0.1'],
           incrementPrices: ['0.00010000', '0.00010000'],
+          maxLots: 1,
         );
       }, (error, stackTrace) {
         print('Caught error: $error\n$stackTrace');
