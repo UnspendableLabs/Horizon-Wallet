@@ -93,7 +93,7 @@ class ComposeDispensePage extends StatefulWidget {
 // Define an enum to represent the input method
 enum InputMethod {
   Quantity,
-  Units,
+  Lots,
 }
 
 class ComposeDispensePageState extends State<ComposeDispensePage> {
@@ -101,15 +101,17 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
   TextEditingController openAddressController = TextEditingController();
   TextEditingController buyQuantityController = TextEditingController();
   TextEditingController priceController = TextEditingController();
-  TextEditingController unitController = TextEditingController();
+  TextEditingController lotController = TextEditingController();
 
   String? _selectedAsset;
   Dispenser? _selectedDispenser;
   String? _buyQuantity;
-  String? _giveQuantityHint;
 
   // Variable to hold the selected input method
   InputMethod _inputMethod = InputMethod.Quantity;
+
+  // Add variable to hold the error message for lot input
+  String? _lotInputError;
 
   @override
   void initState() {
@@ -124,7 +126,7 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
     openAddressController.dispose();
     buyQuantityController.dispose();
     priceController.dispose();
-    unitController.dispose();
+    lotController.dispose();
     super.dispose();
   }
 
@@ -245,6 +247,7 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
                       (dispenser) => dispenser.asset == newValue,
                     );
                     _buyQuantity = null;
+                    _lotInputError = null;
                   });
                 }
               },
@@ -394,7 +397,7 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         setState(() {
           _buyQuantity = values.first.toString();
-          _updateUnitFromQuantity();
+          _updateLotFromQuantity();
         });
       });
     }
@@ -422,10 +425,9 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
                     setState(() {
                       _inputMethod = value!;
                       _buyQuantity = values[currentIndex].toString();
-                      unitController.clear();
-                      _updateUnitFromQuantity();
-                      _giveQuantityHint = null;
-                      // Clear unit input
+                      lotController.clear();
+                      _updateLotFromQuantity();
+                      _lotInputError = null;
                     });
                   },
                 ),
@@ -433,16 +435,16 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
             ),
             Expanded(
               child: ListTile(
-                title: const Text('Units'),
+                title: const Text('Lots'),
                 leading: Radio<InputMethod>(
-                  value: InputMethod.Units,
+                  value: InputMethod.Lots,
                   groupValue: _inputMethod,
                   onChanged: (InputMethod? value) {
                     setState(() {
                       _inputMethod = value!;
                       // Clear quantity input
                       _buyQuantity = '';
-                      _giveQuantityHint = null;
+                      _lotInputError = null;
                     });
                   },
                 ),
@@ -480,7 +482,8 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
                                     currentIndex--;
                                     _buyQuantity =
                                         values[currentIndex].toString();
-                                    _updateUnitFromQuantity();
+                                    _updateLotFromQuantity();
+                                    _lotInputError = null;
                                   });
                                 }
                               : null,
@@ -506,7 +509,8 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
                                     currentIndex++;
                                     _buyQuantity =
                                         values[currentIndex].toString();
-                                    _updateUnitFromQuantity();
+                                    _updateLotFromQuantity();
+                                    _lotInputError = null;
                                   });
                                 }
                               : null,
@@ -518,27 +522,48 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
               ),
             ),
             const SizedBox(width: 16),
-            // Unit Input Field
+            // Lot Input Field
             Expanded(
               child: HorizonUI.HorizonTextFormField(
-                key: const Key('unit_input'),
-                label: 'Units',
-                controller: unitController,
-                enabled: _inputMethod == InputMethod.Units,
+                key: const Key('lot_input'),
+                label: 'Lots',
+                controller: lotController,
+                enabled: _inputMethod == InputMethod.Lots,
                 keyboardType: TextInputType.number,
                 inputFormatters: [
                   FilteringTextInputFormatter.digitsOnly,
                 ],
                 validator: (value) {
-                  if (_inputMethod == InputMethod.Units &&
-                      (value == null || value.isEmpty)) {
-                    return 'Units are required';
+                  if (_selectedDispenser == null) return null;
+                  if (_inputMethod == InputMethod.Lots) {
+                    if (value == null || value.isEmpty) {
+                      return 'Lots are required';
+                    } else {
+                      if (int.tryParse(value) != null &&
+                          int.tryParse(value)! >
+                              (Decimal.parse(_selectedDispenser!
+                                          .giveRemainingNormalized!) /
+                                      Decimal.parse(_selectedDispenser!
+                                          .giveQuantityNormalized!))
+                                  .floor()
+                                  .toInt()) {
+                        return 'Lots entered are greater than lots available.\nMax: ${(Decimal.parse(_selectedDispenser!.giveRemainingNormalized!) / Decimal.parse(_selectedDispenser!.giveQuantityNormalized!)).floor()}';
+                      }
+                    }
+                    if (_lotInputError != null) {
+                      return _lotInputError;
+                    }
                   }
                   return null;
                 },
+                autovalidateMode: AutovalidateMode.onUserInteraction,
                 onChanged: (value) {
-                  _onUnitChanged(value);
+                  _onLotChanged(value);
                 },
+                // Add the hint for max lots available
+                helperText: _inputMethod == InputMethod.Lots
+                    ? 'Max Lots available: ${(Decimal.parse(_selectedDispenser!.giveRemainingNormalized!) / Decimal.parse(_selectedDispenser!.giveQuantityNormalized!)).floor()}'
+                    : null,
               ),
             ),
           ],
@@ -547,39 +572,53 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
     );
   }
 
-  void _updateUnitFromQuantity() {
+  void _updateLotFromQuantity() {
     if (_selectedDispenser == null || _buyQuantity == null) return;
 
     final quantityPerDispense =
         Decimal.parse(_selectedDispenser!.giveQuantityNormalized!);
 
     final totalQuantity = Decimal.parse(_buyQuantity!);
-    final units = (totalQuantity / quantityPerDispense);
+    final lots = (totalQuantity / quantityPerDispense);
 
-    unitController.text = units.toString();
+    lotController.text = lots.toString();
   }
 
-  void _onUnitChanged(String unitsStr) {
+  void _onLotChanged(String lotsStr) {
     if (_selectedDispenser == null) return;
 
-    if (unitsStr.isEmpty) {
+    if (lotsStr.isEmpty) {
       setState(() {
         _buyQuantity = '0';
-        _giveQuantityHint = null;
+        _lotInputError = null;
       });
       return;
     }
-    if (_inputMethod == InputMethod.Units) {
-      int units = int.tryParse(unitsStr) ?? 0;
+    if (_inputMethod == InputMethod.Lots) {
+      int lots = int.tryParse(lotsStr) ?? 0;
 
       final quantityPerDispense =
           Decimal.parse(_selectedDispenser!.giveQuantityNormalized!);
 
-      final totalQuantity = quantityPerDispense * Decimal.fromInt(units);
+      final totalQuantity = quantityPerDispense * Decimal.fromInt(lots);
+
+      // Calculate giveRemaining
+      final giveRemaining =
+          Decimal.parse(_selectedDispenser!.giveRemainingNormalized!);
+
+      // Check if totalQuantity exceeds giveRemaining
+      if (totalQuantity > giveRemaining) {
+        setState(() {
+          _lotInputError = 'Lots entered are greater than lots available.';
+        });
+      } else {
+        setState(() {
+          _lotInputError = null;
+        });
+      }
 
       setState(() {
         _buyQuantity = totalQuantity.toString();
-        _giveQuantityHint = 'Give quantity: $_buyQuantity';
       });
     }
   }
@@ -805,21 +844,6 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
       const SizedBox(height: 16.0),
     ];
   }
-
-  // Widget _buildGiveQuantityHint() {
-  //   if (_giveQuantityHint == null) return const SizedBox.shrink();
-
-  //   return Padding(
-  //     padding: const EdgeInsets.only(top: 8.0),
-  //     child: Text(
-  //       _giveQuantityHint!,
-  //       style: TextStyle(
-  //         fontSize: 12,
-  //         color: Theme.of(context).hintColor,
-  //       ),
-  //     ),
-  //   );
-  // }
 
   void _onConfirmationBack() {
     context.read<ComposeDispenseBloc>().add(FetchFormData(
