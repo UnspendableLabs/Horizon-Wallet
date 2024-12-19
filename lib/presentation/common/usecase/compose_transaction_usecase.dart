@@ -1,10 +1,12 @@
 import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/repositories/utxo_repository.dart';
+import 'package:horizon/domain/services/transaction_service.dart';
 import 'package:horizon/presentation/common/usecase/get_virtual_size_usecase.dart';
 import 'package:horizon/domain/entities/utxo.dart';
 import 'package:horizon/domain/entities/compose_response.dart';
 import 'package:horizon/domain/entities/compose_fn.dart';
 import "package:equatable/equatable.dart";
+import 'dart:math';
 
 class VirtualSize extends Equatable {
   final int virtualSize;
@@ -25,11 +27,13 @@ class ComposeTransactionUseCase {
   final UtxoRepository utxoRepository;
   final BalanceRepository balanceRepository;
   final GetVirtualSizeUseCase getVirtualSizeUseCase;
+  final TransactionService transactionService;
 
   const ComposeTransactionUseCase({
     required this.utxoRepository,
     required this.balanceRepository,
     required this.getVirtualSizeUseCase,
+    required this.transactionService,
   });
 
   Future<(R, VirtualSize)>
@@ -47,20 +51,34 @@ class ComposeTransactionUseCase {
       }
 
       // Get virtual size
-      (int, int) tuple = await getVirtualSizeUseCase.call(
-        params: params,
-        composeFunction: composeFn,
-        inputsSet: inputsSet,
-      );
+      // (int, int) tuple = await getVirtualSizeUseCase.call(
+      //   params: params,
+      //   composeFunction: composeFn,
+      //   inputsSet: inputsSet,
+      // );
 
-      final int virtualSize = tuple.$1; // virtualSIze
-      final int adjustedVirtualSize = tuple.$2;
+      // final int virtualSize = tuple.$1; // virtualSIze
+      // final int adjustedVirtualSize = tuple.$2;
 
       // Calculate total fee
-      final int totalFee = adjustedVirtualSize * feeRate;
+      // final int totalFee = adjustedVirtualSize * feeRate;
+
+      final int feePerKb = feeRate * 1000; // feeRate is in satoshis per vbyte
 
       // Compose the final transaction with the calculated fee
-      final R finalTx = await composeFn(totalFee, inputsSet, params);
+      final R finalTx = await composeFn(feePerKb, inputsSet, params);
+
+      // Calculate the virtual size
+      final virtualSize =
+          transactionService.getVirtualSize(finalTx.rawtransaction);
+
+      final sigops = transactionService.countSigOps(
+        rawtransaction: finalTx.rawtransaction,
+      );
+
+      final adjustedVirtualSize = max(virtualSize, sigops * 5);
+
+      // return (virtualSize, adjustedVirtualSize);
 
       return (finalTx, VirtualSize(virtualSize, adjustedVirtualSize));
     } catch (e, stackTrace) {

@@ -174,7 +174,7 @@ Future<void> setup() async {
     ConnectionErrorInterceptor(),
     BadResponseInterceptor(),
     BadCertificateInterceptor(),
-    SimpleLogInterceptor(),
+    // SimpleLogInterceptor(),
     RetryInterceptor(
       dio: dio, retries: 3,
       retryableExtraStatuses: {400}, // to handle backend bug with compose
@@ -200,7 +200,7 @@ Future<void> setup() async {
     ConnectionErrorInterceptor(),
     BadResponseInterceptor(),
     BadCertificateInterceptor(),
-    SimpleLogInterceptor(),
+    // SimpleLogInterceptor(),
     RetryInterceptor(
       dio: dio,
       retries: 4,
@@ -395,6 +395,7 @@ Future<void> setup() async {
       .registerSingleton<ComposeTransactionUseCase>(ComposeTransactionUseCase(
     utxoRepository: GetIt.I.get<UtxoRepository>(),
     balanceRepository: injector.get<BalanceRepository>(),
+    transactionService: GetIt.I.get<TransactionService>(),
     getVirtualSizeUseCase: GetIt.I.get<GetVirtualSizeUseCase>(),
   ));
 

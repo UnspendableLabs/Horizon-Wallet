@@ -73,7 +73,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
   }
 
   @override
-  Future<compose_send.ComposeSendResponse> composeSendVerbose(int fee,
+  Future<compose_send.ComposeSendResponse> composeSendVerbose(int feeRatePerKb,
       List<Utxo> inputsSet, compose_send.ComposeSendParams params) async {
     return await _retryOnInvalidUtxo<compose_send.ComposeSendResponse>(
       (currentInputSet) async {
@@ -91,9 +91,9 @@ class ComposeRepositoryImpl extends ComposeRepository {
             destination,
             asset,
             quantity,
-            true,
-            fee,
-            null,
+            true, // allowUnconfirmedInputs
+            null, // null fee since we specify fee_per_kb
+            feeRatePerKb,
             inputsSetString,
             excludeUtxosWithBalances);
 
@@ -125,7 +125,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
 
   @override
   Future<compose_issuance.ComposeIssuanceResponseVerbose>
-      composeIssuanceVerbose(int fee, List<Utxo> inputsSet,
+      composeIssuanceVerbose(int feeRatePerKb, List<Utxo> inputsSet,
           compose_issuance.ComposeIssuanceParams params) async {
     return await _retryOnInvalidUtxo<
         compose_issuance.ComposeIssuanceResponseVerbose>(
@@ -154,7 +154,8 @@ class ComposeRepositoryImpl extends ComposeRepository {
             reset,
             description,
             unconfirmed,
-            fee,
+            null, // null fee since we specify fee_per_kb
+            feeRatePerKb,
             inputsSetString,
             excludeUtxosWithBalances);
         if (response.result == null) {
@@ -184,7 +185,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
 
   @override
   Future<compose_dispenser.ComposeDispenserResponseVerbose>
-      composeDispenserVerbose(int fee, List<Utxo> inputsSet,
+      composeDispenserVerbose(int feeRatePerKb, List<Utxo> inputsSet,
           compose_dispenser.ComposeDispenserParams params) async {
     return await _retryOnInvalidUtxo<
         compose_dispenser.ComposeDispenserResponseVerbose>(
@@ -212,7 +213,8 @@ class ComposeRepositoryImpl extends ComposeRepository {
             openAddress,
             oracleAddress,
             allowUnconfirmedTx,
-            fee,
+            null, // null fee since we specify fee_per_kb
+            feeRatePerKb,
             inputsSetString,
             excludeUtxosWithBalances);
 
@@ -249,7 +251,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
 
   @override
   Future<compose_dispense.ComposeDispenseResponse> composeDispense(
-      int fee,
+      int feeRatePerKb,
       List<Utxo> inputsSet,
       compose_dispense.ComposeDispenseParams params) async {
     return await _retryOnInvalidUtxo<compose_dispense.ComposeDispenseResponse>(
@@ -267,7 +269,8 @@ class ComposeRepositoryImpl extends ComposeRepository {
             dispenser,
             quantity,
             allowUnconfirmedTx,
-            fee,
+            null, // null fee since we specify fee_per_kb
+            feeRatePerKb,
             inputsSetString,
             excludeUtxosWithBalances);
 
@@ -283,7 +286,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
 
   @override
   Future<compose_fairmint.ComposeFairmintResponse> composeFairmintVerbose(
-      int fee,
+      int feeRatePerKb,
       List<Utxo> inputsSet,
       compose_fairmint.ComposeFairmintParams params) async {
     return await _retryOnInvalidUtxo<compose_fairmint.ComposeFairmintResponse>(
@@ -294,8 +297,13 @@ class ComposeRepositoryImpl extends ComposeRepository {
         final inputsSetString =
             currentInputSet.map((e) => "${e.txid}:${e.vout}").join(',');
 
-        final response = await api.composeFairmintVerbose(sourceAddress, asset,
-            fee, inputsSetString, excludeUtxosWithBalances);
+        final response = await api.composeFairmintVerbose(
+            sourceAddress,
+            asset,
+            null, // null fee since we specify fee_per_kb
+            feeRatePerKb,
+            inputsSetString,
+            excludeUtxosWithBalances);
 
         if (response.result == null) {
           throw Exception('Failed to compose fairmint');
@@ -308,7 +316,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
 
   @override
   Future<compose_fairminter.ComposeFairminterResponse> composeFairminterVerbose(
-      int fee,
+      int feeRatePerKb,
       List<Utxo> inputsSet,
       compose_fairminter.ComposeFairminterParams params) async {
     return await _retryOnInvalidUtxo<
@@ -336,7 +344,8 @@ class ComposeRepositoryImpl extends ComposeRepository {
             hardCap,
             startBlock,
             endBlock,
-            fee,
+            null, // null fee since we specify fee_per_kb
+            feeRatePerKb,
             lockQuantity,
             inputsSetString,
             excludeUtxosWithBalances);
@@ -353,7 +362,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
 
   @override
   Future<compose_dispenser.ComposeDispenserResponseVerbose>
-      composeDispenserChain(int fee, DecodedTx prevDecodedTransaction,
+      composeDispenserChain(int feeRatePerKb, DecodedTx prevDecodedTransaction,
           compose_dispenser.ComposeDispenserParams params) async {
     final source = params.source;
     final asset = params.asset;
@@ -387,13 +396,14 @@ class ComposeRepositoryImpl extends ComposeRepository {
       escrowQuantity,
       mainchainrate,
       status,
-      null,
-      null,
-      true,
-      fee,
+      null, // openAddress
+      null, // oracleAddress
+      true, // allowUnconfirmedInputs
+      null, // null fee since we specify fee_per_kb
+      feeRatePerKb,
       newInputSet,
       excludeUtxosWithBalances,
-      null,
+      null, // unconfirmed
       validateCompose,
       disableUtxoLocks,
     );
@@ -426,7 +436,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
   }
 
   @override
-  Future<compose_order.ComposeOrderResponse> composeOrder(int fee,
+  Future<compose_order.ComposeOrderResponse> composeOrder(int feeRatePerKb,
       List<Utxo> inputsSet, compose_order.ComposeOrderParams params) async {
     return await _retryOnInvalidUtxo<compose_order.ComposeOrderResponse>(
       (currentInputSet) async {
@@ -448,7 +458,8 @@ class ComposeRepositoryImpl extends ComposeRepository {
             4 * 2016, // Two months,
             0, // fee required
             true, //  allow unconfirmed
-            fee, //exect fee
+            null, // null fee since we specify fee_per_kb
+            feeRatePerKb,
             inputsSetString,
             excludeUtxosWithBalances);
 
@@ -463,7 +474,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
   }
 
   @override
-  Future<compose_cancel.ComposeCancelResponse> composeCancel(int fee,
+  Future<compose_cancel.ComposeCancelResponse> composeCancel(int feeRatePerKb,
       List<Utxo> inputsSet, compose_cancel.ComposeCancelParams params) async {
     return await _retryOnInvalidUtxo<compose_cancel.ComposeCancelResponse>(
       (currentInputSet) async {
@@ -478,7 +489,8 @@ class ComposeRepositoryImpl extends ComposeRepository {
             source,
             offerHash,
             true, //  allow unconfirmed
-            fee, //exect fee
+            null, // null fee since we specify fee_per_kb
+            feeRatePerKb,
             inputsSetString,
             excludeUtxosWithBalances);
 
@@ -503,7 +515,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
 
   @override
   Future<compose_attach_utxo.ComposeAttachUtxoResponse> composeAttachUtxo(
-      int fee,
+      int feeRatePerKb,
       List<Utxo> inputsSet,
       compose_attach_utxo.ComposeAttachUtxoParams params) async {
     return await _retryOnInvalidUtxo<
@@ -520,10 +532,11 @@ class ComposeRepositoryImpl extends ComposeRepository {
             address,
             asset,
             quantity,
-            null,
-            false,
+            null, // destination vout
+            false, // skip validation
             true, //  allow unconfirmed
-            fee, //exect fee
+            null, // null fee since we specify fee_per_kb
+            feeRatePerKb,
             inputsSetString,
             excludeUtxosWithBalances);
 
@@ -539,7 +552,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
 
   @override
   Future<compose_detach_utxo.ComposeDetachUtxoResponse> composeDetachUtxo(
-      int fee,
+      int feeRatePerKb,
       List<Utxo> inputsSet,
       compose_detach_utxo.ComposeDetachUtxoParams params) async {
     return await _retryOnInvalidUtxo<
@@ -554,9 +567,10 @@ class ComposeRepositoryImpl extends ComposeRepository {
         final response = await api.composeDetachUtxo(
           utxo,
           destination,
-          false,
+          false, // skip validation
           true, //  allow unconfirmed
-          fee, //exect fee
+          null, // null fee since we specify fee_per_kb
+          feeRatePerKb,
           inputsSetString,
           excludeUtxosWithBalances,
         );
@@ -573,7 +587,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
 
   @override
   Future<compose_movetoutxo.ComposeMoveToUtxoResponse> composeMoveToUtxo(
-      int fee,
+      int feeRatePerKb,
       List<Utxo> inputsSet,
       compose_movetoutxo.ComposeMoveToUtxoParams params) async {
     return await _retryOnInvalidUtxo<
@@ -589,9 +603,10 @@ class ComposeRepositoryImpl extends ComposeRepository {
         final response = await api.composeMoveToUtxo(
           utxo,
           destination,
-          false,
+          false, // skip validation
           true, //  allow unconfirmed inputs
-          fee, //exect fee
+          null, // null fee since we specify fee_per_kb
+          feeRatePerKb,
           inputsSetString,
           excludeUtxosWithBalances,
         );

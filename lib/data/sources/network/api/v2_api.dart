@@ -4436,6 +4436,7 @@ abstract class V2Api {
     @Query("description") String? description,
     @Query("unconfirmed") bool? unconfirmed,
     @Query("exact_fee") int? fee,
+    @Query("fee_per_kb") int? feePerKB,
     @Query("inputs_set") String? inputsSet,
     @Query("exclude_utxos_with_balances") bool? excludeUtxosWithBalances,
   ]);
@@ -4470,6 +4471,7 @@ abstract class V2Api {
     @Path("address") String address,
     @Query("asset") String asset, [
     @Query("exact_fee") int? fee,
+    @Query("fee_per_kb") int? feePerKB,
     @Query("inputs_set") String? inputsSet,
     @Query("exclude_utxos_with_balances") bool? excludeUtxosWithBalances,
   ]);
@@ -4485,6 +4487,7 @@ abstract class V2Api {
     @Query("start_block") int? startBlock,
     @Query("end_block") int? endBlock,
     @Query("exact_fee") int? fee,
+    @Query("fee_per_kb") int? feePerKB,
     @Query("lock_quantity") bool? lockQuantity,
     @Query("inputs_set") String? inputsSet,
     @Query("exclude_utxos_with_balances") bool? excludeUtxosWithBalances,
@@ -4502,6 +4505,7 @@ abstract class V2Api {
     @Query("oracle_address") String? oracleAddress,
     @Query("allow_unconfirmed_inputs") bool? allowUnconfirmedInputs,
     @Query("exact_fee") int? exactFee,
+    @Query("fee_per_kb") int? feePerKB,
     @Query("inputs_set") String? inputsSet,
     @Query("exclude_utxos_with_balances") bool? excludeUtxosWithBalances,
     @Query("unconfirmed") bool? unconfirmed,
@@ -4520,6 +4524,7 @@ abstract class V2Api {
     @Query("fee_required") int feeRequired, [
     @Query("allow_unconfirmed_inputs") bool? allowUnconfirmedInputs,
     @Query("exact_fee") int? exactFee,
+    @Query("fee_per_kb") int? feePerKB,
     @Query("inputs_set") String? inputsSet,
     @Query("exclude_utxos_with_balances") bool? excludeUtxosWithBalances,
     @Query("unconfirmed") bool? unconfirmed,
@@ -4531,6 +4536,7 @@ abstract class V2Api {
     @Query("offer_hash") String giveAsset, [
     @Query("allow_unconfirmed_inputs") bool? allowUnconfirmedInputs,
     @Query("exact_fee") int? exactFee,
+    @Query("fee_per_kb") int? feePerKB,
     @Query("inputs_set") String? inputsSet,
     @Query("exclude_utxos_with_balances") bool? excludeUtxosWithBalances,
     @Query("unconfirmed") bool? unconfirmed,
@@ -4551,6 +4557,7 @@ abstract class V2Api {
     @Query("quantity") int quantity, [
     @Query("allow_unconfirmed_inputs") bool? allowUnconfirmedInputs,
     @Query("exact_fee") int? exactFee,
+    @Query("fee_per_kb") int? feePerKB,
     @Query("inputs_set") String? inputsSet,
     @Query("exclude_utxos_with_balances") bool? excludeUtxosWithBalances,
     @Query("unconfirmed") bool? unconfirmed,
@@ -4625,6 +4632,7 @@ abstract class V2Api {
     @Query("skip_validation") bool? skipValidation,
     @Query("allow_unconfirmed_inputs") bool? allowUnconfirmedInputs,
     @Query("exact_fee") int? exactFee,
+    @Query("fee_per_kb") int? feePerKB,
     @Query("inputs_set") String? inputsSet,
     @Query("exclude_utxos_with_balances") bool? excludeUtxosWithBalances,
     @Query("unconfirmed") bool? unconfirmed,
@@ -4637,6 +4645,7 @@ abstract class V2Api {
     @Query("skip_validation") bool? skipValidation,
     @Query("allow_unconfirmed_inputs") bool? allowUnconfirmedInputs,
     @Query("exact_fee") int? exactFee,
+    @Query("fee_per_kb") int? feePerKB,
     @Query("inputs_set") String? inputsSet,
     @Query("exclude_utxos_with_balances") bool? excludeUtxosWithBalances,
     @Query("unconfirmed") bool? unconfirmed,
@@ -4649,6 +4658,7 @@ abstract class V2Api {
     @Query("skip_validation") bool? skipValidation,
     @Query("allow_unconfirmed_inputs") bool? allowUnconfirmedInputs,
     @Query("exact_fee") int? exactFee,
+    @Query("fee_per_kb") int? feePerKB,
     @Query("inputs_set") String? inputsSet,
     @Query("exclude_utxos_with_balances") bool? excludeUtxosWithBalances,
     @Query("unconfirmed") bool? unconfirmed,
