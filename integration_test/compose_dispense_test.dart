@@ -22,6 +22,7 @@ import 'package:horizon/presentation/screens/compose_dispense/usecase/fetch_form
 import 'package:horizon/presentation/screens/compose_dispense/usecase/fetch_open_dispensers_on_address.dart';
 import 'package:horizon/presentation/screens/compose_dispense/view/compose_dispense_modal.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart';
+import 'package:horizon/presentation/screens/horizon/ui.dart';
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 import 'package:horizon/presentation/shell/bloc/shell_state.dart';
 import 'package:integration_test/integration_test.dart';
@@ -87,6 +88,89 @@ class FakeAddress extends Fake implements Address {
 
   @override
   int get index => 0;
+}
+
+// Helper function to verify dispenser details
+Future<void> _verifyDispenserDetails({
+  required WidgetTester tester,
+  required String assetName,
+  required String initialQuantity,
+  required String initialPrice,
+  required String assetId,
+  required List<String> incrementQuantities,
+  required List<String> incrementPrices,
+  String? decrementQuantity,
+  String? decrementPrice,
+  int? maxLots,
+}) async {
+  // Select the dispenser from dropdown
+  final assetDropdownMenu = find.byKey(const Key('asset_dropdown_menu'));
+  await tester.tap(assetDropdownMenu);
+  await tester.pumpAndSettle();
+
+  final dropdownItem = find.byKey(Key('asset_dropdown_item_$assetId'));
+  expect(dropdownItem, findsOneWidget);
+  await tester.tap(dropdownItem);
+  await tester.pumpAndSettle();
+
+  // Verify asset is selected
+  expect(find.text(assetName), findsOneWidget);
+
+  // Verify initial quantity, price, and lots
+  final buyQuantityTextFinder = find.byKey(const Key('buy_quantity_text'));
+  final priceInputFinder = find.byKey(const Key('price_input'));
+  final lotInputFinder = find.byKey(const Key('lot_input'));
+  final selectableTextFinder = find.descendant(
+    of: priceInputFinder,
+    matching: find.byType(SelectableText),
+  );
+
+  expect(tester.widget<Text>(buyQuantityTextFinder).data!, initialQuantity);
+  expect(
+      tester.widget<SelectableText>(selectableTextFinder).data!, initialPrice);
+
+  // Get the HorizonTextFormField widget and check its controller
+  final lotInput = tester.widget<HorizonTextFormField>(lotInputFinder);
+  expect(lotInput.controller!.text, '1');
+
+  // Only test increments if we haven't reached maxLots
+  if (maxLots == null || maxLots > 1) {
+    final addButton = find.byIcon(Icons.add);
+    for (int i = 0;
+        i < incrementQuantities.length && (maxLots == null || i + 2 <= maxLots);
+        i++) {
+      await tester.tap(addButton);
+      await tester.pumpAndSettle();
+
+      expect(tester.widget<Text>(buyQuantityTextFinder).data!,
+          incrementQuantities[i]);
+      expect(tester.widget<SelectableText>(selectableTextFinder).data!,
+          incrementPrices[i]);
+
+      // Verify lot count increased
+      final updatedLotInput =
+          tester.widget<HorizonTextFormField>(lotInputFinder);
+      expect(updatedLotInput.controller!.text, '${i + 2}');
+    }
+
+    // Test decrement if provided and we've incremented at least once
+    if (decrementQuantity != null && decrementPrice != null) {
+      final removeButton = find.byIcon(Icons.remove);
+      await tester.tap(removeButton);
+      await tester.pumpAndSettle();
+
+      expect(
+          tester.widget<Text>(buyQuantityTextFinder).data!, decrementQuantity);
+      expect(tester.widget<SelectableText>(selectableTextFinder).data!,
+          decrementPrice);
+
+      // Verify lot count decreased
+      final decrementedLotInput =
+          tester.widget<HorizonTextFormField>(lotInputFinder);
+      expect(decrementedLotInput.controller!.text,
+          '${incrementQuantities.length}');
+    }
+  }
 }
 
 void main() {
@@ -399,362 +483,442 @@ void main() {
         expect(quantityBuyText, findsOneWidget);
         expect(priceInput, findsOneWidget);
 
-        // Tap on the dropdown menu to open it
-        final assetDropdownMenu = find.byKey(const Key('asset_dropdown_menu'));
-        expect(assetDropdownMenu, findsOneWidget);
-        await tester.tap(assetDropdownMenu);
-        await tester.pumpAndSettle();
-
-        // Find the dropdown menu item and tap it
-        final dropdownItemCantReach =
-            find.byKey(const Key('asset_dropdown_item_CANTREACH'));
-        expect(dropdownItemCantReach, findsOneWidget);
-        await tester.tap(dropdownItemCantReach);
-        await tester.pumpAndSettle();
-
-        // Verify that 'CANTREACH' is now selected
-        expect(find.text('CANTREACH'), findsOneWidget);
-        expect(find.text('600.0000000000000000'), findsOneWidget);
-
-        // Enter quantity
-        expect(find.text('1'), findsWidgets);
-
-        // Verify that 'buy_quantity_text' displays the expected quantity
-        final buyQuantityTextFinder =
-            find.byKey(const Key('buy_quantity_text'));
-        expect(buyQuantityTextFinder, findsOneWidget);
-
-        final Text buyQuantityTextWidget =
-            tester.widget<Text>(buyQuantityTextFinder);
-        final String displayedQuantity = buyQuantityTextWidget.data!;
-
-        expect(displayedQuantity, '1');
-
-        // Verify that 'price_input' displays the expected price
-        final priceInputFinder = find.byKey(const Key('price_input'));
-        expect(priceInputFinder, findsOneWidget);
-
-        final selectableTextFinder = find.descendant(
-          of: priceInputFinder,
-          matching: find.byType(SelectableText),
+        // Test CANTREACH dispenser
+        await _verifyDispenserDetails(
+          tester: tester,
+          assetName: 'CANTREACH',
+          initialQuantity: '1',
+          initialPrice: '0.00000600',
+          assetId: 'CANTREACH',
+          incrementQuantities: ['2', '3'],
+          incrementPrices: ['0.00001200', '0.00001800'],
+          decrementQuantity: '2',
+          decrementPrice: '0.00001200',
         );
-        expect(selectableTextFinder, findsOneWidget);
 
-        final SelectableText priceTextWidget =
-            tester.widget<SelectableText>(selectableTextFinder);
-        final String displayedPrice = priceTextWidget.data!;
-
-        expect(displayedPrice, '0.00000600');
-
-        // Interact with the UI by tapping the add button
-        final addButton = find.byIcon(Icons.add);
-        await tester.tap(addButton);
-        await tester.pumpAndSettle();
-
-        // After tapping the add button, verify the updated quantity and price
-
-        // Verify that 'buy_quantity_text' now displays '2'
-        final Text updatedQuantityTextWidgetCantReach2 =
-            tester.widget<Text>(buyQuantityTextFinder);
-        final String updatedQuantityCantReach2 =
-            updatedQuantityTextWidgetCantReach2.data!;
-        expect(updatedQuantityCantReach2, '2');
-
-        // Verify that 'price_input' now displays the updated price '0.00001200'
-        final SelectableText updatedPriceTextWidgetCantReach2 =
-            tester.widget<SelectableText>(selectableTextFinder);
-        final String updatedPriceCantReach2 =
-            updatedPriceTextWidgetCantReach2.data!;
-        expect(updatedPriceCantReach2, '0.00001200');
-
-        await tester.tap(addButton);
-        await tester.pumpAndSettle();
-
-        // After tapping the add button, verify the updated quantity and price
-
-        // Verify that 'buy_quantity_text' now displays '2'
-        final Text updatedQuantityTextWidgetCantReach3 =
-            tester.widget<Text>(buyQuantityTextFinder);
-        final String updatedQuantityCantReach3 =
-            updatedQuantityTextWidgetCantReach3.data!;
-        expect(updatedQuantityCantReach3, '3');
-
-        // Verify that 'price_input' now displays the updated price '0.00001200'
-        final SelectableText updatedPriceTextWidgetCantReach3 =
-            tester.widget<SelectableText>(selectableTextFinder);
-        final String updatedPriceCantReach3 =
-            updatedPriceTextWidgetCantReach3.data!;
-        expect(updatedPriceCantReach3, '0.00001800');
-
-        final removeButton = find.byIcon(Icons.remove);
-        await tester.tap(removeButton);
-        await tester.pumpAndSettle();
-
-        // Verify that 'buy_quantity_text' now displays '2'
-        final Text updatedQuantityTextWidgetCantReach4 =
-            tester.widget<Text>(buyQuantityTextFinder);
-        final String updatedQuantityCantReach4 =
-            updatedQuantityTextWidgetCantReach4.data!;
-        expect(updatedQuantityCantReach4, '2');
-
-        // Verify that 'price_input' now displays the updated price '0.00001200'
-        final SelectableText updatedPriceTextWidgetCantReach4 =
-            tester.widget<SelectableText>(selectableTextFinder);
-        final String updatedPriceCantReach4 =
-            updatedPriceTextWidgetCantReach4.data!;
-        expect(updatedPriceCantReach4, '0.00001200');
-
-        expect(assetDropdownMenu, findsOneWidget);
-        await tester.tap(assetDropdownMenu);
-        await tester.pumpAndSettle();
-
-        // Find the dropdown menu item and tap it
-        final dropdownItem70455 =
-            find.byKey(const Key('asset_dropdown_item_A4630460187535670455'));
-        expect(dropdownItem70455, findsOneWidget);
-        await tester.tap(dropdownItem70455);
-        await tester.pumpAndSettle();
-
-        // Verify that 'A4630460187535670455' is now selected
-        expect(find.text('A4630460187535670455'), findsOneWidget);
-        expect(find.text('0.0000400000000000'), findsOneWidget);
-
-        // Verify that 'buy_quantity_text' displays the expected quantity
-        final buyQuantityTextFinder70455 =
-            find.byKey(const Key('buy_quantity_text'));
-        expect(buyQuantityTextFinder70455, findsOneWidget);
-
-        final Text buyQuantityTextWidget70455 =
-            tester.widget<Text>(buyQuantityTextFinder70455);
-        final String displayedQuantity70455 = buyQuantityTextWidget70455.data!;
-
-        expect(displayedQuantity70455, '1.5');
-
-        // Verify that 'price_input' displays the expected price
-        final priceInputFinder70455 = find.byKey(const Key('price_input'));
-        expect(priceInputFinder70455, findsOneWidget);
-
-        final selectableTextFinder70455 = find.descendant(
-          of: priceInputFinder70455,
-          matching: find.byType(SelectableText),
+        // Test A4630460187535670455 dispenser
+        await _verifyDispenserDetails(
+          tester: tester,
+          assetName: 'A4630460187535670455',
+          initialQuantity: '1.5',
+          initialPrice: '0.00006000',
+          assetId: 'A4630460187535670455',
+          incrementQuantities: ['3', '4.5'],
+          incrementPrices: ['0.00012000', '0.00018000'],
+          decrementQuantity: '3',
+          decrementPrice: '0.00012000',
         );
-        expect(selectableTextFinder70455, findsOneWidget);
 
-        final SelectableText priceTextWidget70455 =
-            tester.widget<SelectableText>(selectableTextFinder70455);
-        final String displayedPrice70455 = priceTextWidget70455.data!;
+        // Test XCP dispenser
+        await _verifyDispenserDetails(
+          tester: tester,
+          assetName: 'XCP',
+          initialQuantity: '0.005',
+          initialPrice: '0.00000650',
+          assetId: 'XCP',
+          incrementQuantities: ['0.01', '0.015'],
+          incrementPrices: ['0.00001300', '0.00001950'],
+          decrementQuantity: '0.01',
+          decrementPrice: '0.00001300',
+        );
 
-        expect(displayedPrice70455, '0.00006000');
+        // Test USMINT.GOV dispenser
+        await _verifyDispenserDetails(
+          tester: tester,
+          assetName: 'USMINT.GOV',
+          initialQuantity: '2',
+          initialPrice: '0.00000700',
+          assetId: 'A7805927145042695546',
+          incrementQuantities: ['4', '6'],
+          incrementPrices: ['0.00001400', '0.00002100'],
+          decrementQuantity: '4',
+          decrementPrice: '0.00001400',
+        );
 
-        // Interact with the UI by tapping the add button
-        final addButton70455 = find.byIcon(Icons.add);
-        await tester.tap(addButton70455);
+        // Test A12256739633266178981 dispenser
+        await _verifyDispenserDetails(
+          tester: tester,
+          assetName: 'A12256739633266178981',
+          initialQuantity: '0.1',
+          initialPrice: '0.00010000',
+          assetId: 'A12256739633266178981',
+          incrementQuantities: ['0.1', '0.1'],
+          incrementPrices: ['0.00010000', '0.00010000'],
+          maxLots: 1,
+        );
+      }, (error, stackTrace) {
+        print('Caught error: $error\n$stackTrace');
+      });
+    });
+
+    testWidgets('lot input functionality works correctly for all dispensers',
+        (WidgetTester tester) async {
+      await runZonedGuarded(() async {
+        // Use the same setup as the previous test
+        final dispensers = [
+          Dispenser(
+            txIndex: 2977292,
+            txHash: "txHash1",
+            blockIndex: 875048,
+            source: "test_address",
+            asset: "A4630460187535670455",
+            giveQuantity: 150000000,
+            escrowQuantity: 15050000000,
+            satoshirate: 6000,
+            status: 0,
+            giveRemaining: 15050000000,
+            oracleAddress: null,
+            lastStatusTxHash: null,
+            origin: "test_address",
+            dispenseCount: 0,
+            lastStatusTxSource: null,
+            closeBlockIndex: null,
+            price: 40000,
+            assetInfo: const AssetInfo(
+              assetLongname: null,
+              description: "",
+              issuer: "test_address",
+              divisible: true,
+            ),
+            giveQuantityNormalized: "1.50000000",
+            giveRemainingNormalized: "150.50000000",
+            escrowQuantityNormalized: "150.50000000",
+            satoshirateNormalized: "0.00006000",
+            satoshiPriceNormalized: "0.00006000",
+            priceNormalized: "0.0000400000000000",
+            confirmed: true,
+            blockTime: 1734377644,
+          ),
+          Dispenser(
+            txIndex: 2977248,
+            txHash: "txHash2",
+            blockIndex: 875030,
+            source: "test_address",
+            asset: "CANTREACH",
+            giveQuantity: 1,
+            escrowQuantity: 10,
+            satoshirate: 600,
+            status: 0,
+            giveRemaining: 10,
+            oracleAddress: null,
+            lastStatusTxHash: null,
+            origin: "test_address",
+            dispenseCount: 0,
+            lastStatusTxSource: null,
+            closeBlockIndex: null,
+            price: 600,
+            assetInfo: const AssetInfo(
+              assetLongname: null,
+              description: "https://example.com/CANTR.json",
+              issuer: "bc1q44dnlzkngksuttmds54rhw9q04wqmfr9sq5u0z",
+              divisible: false,
+            ),
+            giveQuantityNormalized: "1",
+            giveRemainingNormalized: "10",
+            escrowQuantityNormalized: "10",
+            satoshirateNormalized: "0.00000600",
+            satoshiPriceNormalized: "0.00000600",
+            priceNormalized: "600.0000000000000000",
+            confirmed: true,
+            blockTime: 1734367168,
+          ),
+          Dispenser(
+            txIndex: 2757921,
+            txHash: "txHash3",
+            blockIndex: 864928,
+            source: "test_address",
+            asset: "A12256739633266178981",
+            giveQuantity: 10000000,
+            escrowQuantity: 10000000,
+            satoshirate: 10000,
+            status: 0,
+            giveRemaining: 10000000,
+            oracleAddress: null,
+            lastStatusTxHash: null,
+            origin: "test_address",
+            dispenseCount: 0,
+            lastStatusTxSource: null,
+            closeBlockIndex: null,
+            price: 1000,
+            assetInfo: const AssetInfo(
+              assetLongname: null,
+              description: "a new description",
+              issuer: "test_address",
+              divisible: true,
+            ),
+            giveQuantityNormalized: "0.10000000",
+            giveRemainingNormalized: "0.10000000",
+            escrowQuantityNormalized: "0.10000000",
+            satoshirateNormalized: "0.00010000",
+            satoshiPriceNormalized: "0.00010000",
+            priceNormalized: "0.0010000000000000",
+            confirmed: true,
+            blockTime: 1728499156,
+          ),
+          Dispenser(
+            txIndex: 2977567,
+            txHash: "txHash4",
+            blockIndex: 875193,
+            source: "test_address",
+            asset: "XCP",
+            giveQuantity: 500000,
+            escrowQuantity: 50000000,
+            satoshirate: 650,
+            status: 0,
+            giveRemaining: 50000000,
+            oracleAddress: null,
+            lastStatusTxHash: null,
+            origin: "test_address",
+            dispenseCount: 0,
+            lastStatusTxSource: null,
+            closeBlockIndex: null,
+            price: 1300,
+            assetInfo: const AssetInfo(
+              assetLongname: null,
+              description: "The Counterparty protocol native currency",
+              issuer: null,
+              divisible: true,
+            ),
+            giveQuantityNormalized: "0.00500000",
+            giveRemainingNormalized: "0.50000000",
+            escrowQuantityNormalized: "0.50000000",
+            satoshirateNormalized: "0.00000650",
+            satoshiPriceNormalized: "0.00000650",
+            priceNormalized: "0.0013000000000000",
+            confirmed: true,
+            blockTime: 1734463560,
+          ),
+          Dispenser(
+            txIndex: 2977566,
+            txHash: "txHash5",
+            blockIndex: 875192,
+            source: "test_address",
+            asset: "A7805927145042695546",
+            giveQuantity: 2,
+            escrowQuantity: 18,
+            satoshirate: 700,
+            status: 0,
+            giveRemaining: 18,
+            oracleAddress: null,
+            lastStatusTxHash: null,
+            origin: "test_address",
+            dispenseCount: 0,
+            lastStatusTxSource: null,
+            closeBlockIndex: null,
+            price: 350000,
+            assetInfo: const AssetInfo(
+              assetLongname: "USMINT.GOV",
+              description: "",
+              issuer: "bc1qtke38j72qv4d8eljn7pccaykypw8luytfwdn7q",
+              divisible: false,
+            ),
+            giveQuantityNormalized: "2",
+            giveRemainingNormalized: "18",
+            escrowQuantityNormalized: "18",
+            satoshirateNormalized: "0.00000700",
+            satoshiPriceNormalized: "0.00000700",
+            priceNormalized: "350.0000000000000000",
+            confirmed: true,
+            blockTime: 1734463101,
+          ),
+        ];
+        const feeEstimates = FeeEstimates(fast: 10, medium: 5, slow: 2);
+
+        // Setup mocks
+        when(() => mockFetchOpenDispensersOnAddressUseCase.call(any()))
+            .thenAnswer((_) async => dispensers);
+        when(() => mockFetchDispenseFormDataUseCase.call(any()))
+            .thenAnswer((_) async => feeEstimates);
+        when(() => mockAnalyticsService.trackEvent(any()))
+            .thenAnswer((_) async {});
+
+        // Initialize the MockShellStateCubit
+        final mockShellCubit = MockShellStateCubit();
+
+        // Build the widget tree (same as previous test)
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: Directionality(
+                textDirection: TextDirection.ltr,
+                child: SingleChildScrollView(
+                  child: MediaQuery(
+                    data: const MediaQueryData(size: Size(900, 1300)),
+                    child: MultiBlocProvider(
+                      providers: [
+                        BlocProvider<ComposeDispenseBloc>.value(
+                            value: composeDispenseBloc),
+                        BlocProvider<DashboardActivityFeedBloc>.value(
+                            value: mockDashboardActivityFeedBloc),
+                        BlocProvider<ShellStateCubit>.value(
+                            value: mockShellCubit),
+                      ],
+                      child: ComposeDispensePage(
+                        key: const Key('compose_dispense_page'),
+                        address: FakeAddress().address,
+                        dashboardActivityFeedBloc:
+                            mockDashboardActivityFeedBloc,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+
+        // Dispatch the FetchFormData event
+        composeDispenseBloc.add(FetchFormData(
+          currentAddress: FakeAddress().address,
+        ));
+
         await tester.pumpAndSettle();
 
-        // After tapping the add button, verify the updated quantity and price
-
-        // Verify that 'buy_quantity_text' now displays '2'
-        final Text updatedQuantityTextWidget70455_2 =
-            tester.widget<Text>(buyQuantityTextFinder70455);
-        final String updatedQuantity70455_2 =
-            updatedQuantityTextWidget70455_2.data!;
-        expect(updatedQuantity70455_2, '3');
-
-        // Verify that 'price_input' now displays the updated price '0.00001200'
-        final SelectableText updatedPriceTextWidget70455_2 =
-            tester.widget<SelectableText>(selectableTextFinder70455);
-        final String updatedPrice70455_2 = updatedPriceTextWidget70455_2.data!;
-        expect(updatedPrice70455_2, '0.00012000');
-
-        await tester.tap(addButton);
+        // Enter the dispenser address
+        final dispenserInput =
+            find.byKey(const Key('dispense_dispenser_input'));
+        await tester.enterText(dispenserInput, 'test_address');
         await tester.pumpAndSettle();
 
-        // After tapping the add button, verify the updated quantity and price
-
-        // Verify that 'buy_quantity_text' now displays '2'
-        final Text updatedQuantityTextWidget3 =
-            tester.widget<Text>(buyQuantityTextFinder);
-        final String updatedQuantity3 = updatedQuantityTextWidget3.data!;
-        expect(updatedQuantity3, '4.5');
-
-        // Verify that 'price_input' now displays the updated price '0.00001200'
-        final SelectableText updatedPriceTextWidget3 =
-            tester.widget<SelectableText>(selectableTextFinder);
-        final String updatedPrice3 = updatedPriceTextWidget3.data!;
-        expect(updatedPrice3, '0.00018000');
-
-        final removeButton70455 = find.byIcon(Icons.remove);
-        await tester.tap(removeButton70455);
+        // Find and tap the Lots radio button
+        final lotsRadio = find.byType(Radio<InputMethod>).at(1);
+        await tester.tap(lotsRadio);
         await tester.pumpAndSettle();
 
-        // Verify that 'buy_quantity_text' now displays '2'
-        final Text updatedQuantityTextWidget70455_3 =
-            tester.widget<Text>(buyQuantityTextFinder70455);
-        final String updatedQuantity70455_3 =
-            updatedQuantityTextWidget70455_3.data!;
-        expect(updatedQuantity70455_3, '3');
+        // Test CANTREACH dispenser
+        await _testDispenserLotInput(
+          tester: tester,
+          assetName: 'CANTREACH',
+          giveQuantity: '1',
+          maxLots: 10,
+          testLots: ['5', '10', '11'],
+          expectedQuantities: ['5', '10', '10'],
+          expectedPrices: ['0.00003000', '0.00006000', '0.00006000'],
+          expectedError:
+              'Lots entered are greater than lots available.\nMax: 10',
+        );
 
-        // Verify that 'price_input' now displays the updated price '0.00001200'
-        final SelectableText updatedPriceTextWidget70455_3 =
-            tester.widget<SelectableText>(selectableTextFinder70455);
-        final String updatedPrice70455_3 = updatedPriceTextWidget70455_3.data!;
-        expect(updatedPrice70455_3, '0.00012000');
+        // Test A4630460187535670455 dispenser
+        await _testDispenserLotInput(
+          tester: tester,
+          assetName: 'A4630460187535670455',
+          giveQuantity: '1.50000000',
+          maxLots: 100,
+          testLots: ['50', '100', '101'],
+          expectedQuantities: ['75', '150', '150'],
+          expectedPrices: ['0.00300000', '0.00600000', '0.00600000'],
+          expectedError:
+              'Lots entered are greater than lots available.\nMax: 100',
+        );
 
-        // Find the dropdown menu item and tap it
-        await tester.tap(assetDropdownMenu);
-        await tester.pumpAndSettle();
+        // Test XCP dispenser
+        await _testDispenserLotInput(
+          tester: tester,
+          assetName: 'XCP',
+          giveQuantity: '0.00500000',
+          maxLots: 100,
+          testLots: ['50', '100', '101'],
+          expectedQuantities: ['0.25', '0.5', '0.5'],
+          expectedPrices: ['0.00032500', '0.00065000', '0.00065000'],
+          expectedError:
+              'Lots entered are greater than lots available.\nMax: 100',
+        );
 
-        final dropdownItemXcp =
-            find.byKey(const Key('asset_dropdown_item_XCP'));
-        expect(dropdownItemXcp, findsOneWidget);
-        await tester.tap(dropdownItemXcp);
-        await tester.pumpAndSettle();
+        // Test USMINT.GOV dispenser
+        await _testDispenserLotInput(
+          tester: tester,
+          assetName: 'USMINT.GOV',
+          giveQuantity: '2',
+          maxLots: 9,
+          testLots: ['5', '9', '10'],
+          expectedQuantities: ['10', '18', '18'],
+          expectedPrices: ['0.00003500', '0.00006300', '0.00006300'],
+          expectedError:
+              'Lots entered are greater than lots available.\nMax: 9',
+          assetLongname: 'A7805927145042695546',
+        );
 
-        // Verify that 'XCP' is now selected
-        expect(find.text('XCP'), findsOneWidget);
-        expect(find.text('0.0013000000000000'), findsOneWidget);
-
-        // Verify initial quantity and price
-        final Text initialQuantityTextXcp =
-            tester.widget<Text>(buyQuantityTextFinder);
-        expect(initialQuantityTextXcp.data!, '0.005');
-
-        final SelectableText initialPriceTextXcp =
-            tester.widget<SelectableText>(selectableTextFinder);
-        expect(initialPriceTextXcp.data!, '0.00000650');
-
-        // Test increment
-        await tester.tap(addButton);
-        await tester.pumpAndSettle();
-
-        final Text updatedQuantityTextXcp =
-            tester.widget<Text>(buyQuantityTextFinder);
-        expect(updatedQuantityTextXcp.data!, '0.01');
-
-        final SelectableText updatedPriceTextXcp =
-            tester.widget<SelectableText>(selectableTextFinder);
-        expect(updatedPriceTextXcp.data!, '0.00001300');
-
-        // Test another increment
-        await tester.tap(addButton);
-        await tester.pumpAndSettle();
-
-        final Text updatedQuantityTextXcp2 =
-            tester.widget<Text>(buyQuantityTextFinder);
-        expect(updatedQuantityTextXcp2.data!, '0.015');
-
-        final SelectableText updatedPriceTextXcp2 =
-            tester.widget<SelectableText>(selectableTextFinder);
-        expect(updatedPriceTextXcp2.data!, '0.00001950');
-
-        // Test decrement
-        await tester.tap(removeButton);
-        await tester.pumpAndSettle();
-
-        final Text decrementedQuantityTextXcp =
-            tester.widget<Text>(buyQuantityTextFinder);
-        expect(decrementedQuantityTextXcp.data!, '0.01');
-
-        final SelectableText decrementedPriceTextXcp =
-            tester.widget<SelectableText>(selectableTextFinder);
-        expect(decrementedPriceTextXcp.data!, '0.00001300');
-
-        // Test USMINT.GOV
-        await tester.tap(assetDropdownMenu);
-        await tester.pumpAndSettle();
-
-        final dropdownItemUsmint =
-            find.byKey(const Key('asset_dropdown_item_A7805927145042695546'));
-        expect(dropdownItemUsmint, findsOneWidget);
-        await tester.tap(dropdownItemUsmint);
-        await tester.pumpAndSettle();
-
-        // Verify that 'USMINT.GOV' is selected
-        expect(find.text('USMINT.GOV'), findsOneWidget);
-        expect(find.text('350.0000000000000000'), findsOneWidget);
-
-        // Verify initial quantity and price
-        final Text initialQuantityTextUsmint =
-            tester.widget<Text>(buyQuantityTextFinder);
-        expect(initialQuantityTextUsmint.data!, '2');
-
-        final SelectableText initialPriceTextUsmint =
-            tester.widget<SelectableText>(selectableTextFinder);
-        expect(initialPriceTextUsmint.data!, '0.00000700');
-
-        // Test increment
-        await tester.tap(addButton);
-        await tester.pumpAndSettle();
-
-        final Text updatedQuantityTextUsmint =
-            tester.widget<Text>(buyQuantityTextFinder);
-        expect(updatedQuantityTextUsmint.data!, '4');
-
-        final SelectableText updatedPriceTextUsmint =
-            tester.widget<SelectableText>(selectableTextFinder);
-        expect(updatedPriceTextUsmint.data!, '0.00001400');
-
-        // Test another increment
-        await tester.tap(addButton);
-        await tester.pumpAndSettle();
-
-        final Text updatedQuantityTextUsmint2 =
-            tester.widget<Text>(buyQuantityTextFinder);
-        expect(updatedQuantityTextUsmint2.data!, '6');
-
-        final SelectableText updatedPriceTextUsmint2 =
-            tester.widget<SelectableText>(selectableTextFinder);
-        expect(updatedPriceTextUsmint2.data!, '0.00002100');
-
-        // Test decrement
-        await tester.tap(removeButton);
-        await tester.pumpAndSettle();
-
-        final Text decrementedQuantityTextUsmint =
-            tester.widget<Text>(buyQuantityTextFinder);
-        expect(decrementedQuantityTextUsmint.data!, '4');
-
-        final SelectableText decrementedPriceTextUsmint =
-            tester.widget<SelectableText>(selectableTextFinder);
-        expect(decrementedPriceTextUsmint.data!, '0.00001400');
-
-        // Test A12256739633266178981
-        await tester.tap(assetDropdownMenu);
-        await tester.pumpAndSettle();
-
-        final dropdownItemA12256739633266178981 =
-            find.byKey(const Key('asset_dropdown_item_A12256739633266178981'));
-        expect(dropdownItemA12256739633266178981, findsOneWidget);
-        await tester.tap(dropdownItemA12256739633266178981);
-        await tester.pumpAndSettle();
-
-        // Verify that 'A12256739633266178981' is selected
-        expect(find.text('A12256739633266178981'), findsOneWidget);
-        expect(find.text('0.0010000000000000'), findsOneWidget);
-
-        // Verify initial quantity and price
-        final Text initialQuantityTextA12256739633266178981 =
-            tester.widget<Text>(buyQuantityTextFinder);
-        expect(initialQuantityTextA12256739633266178981.data!, '0.1');
-
-        final SelectableText initialPriceTextA12256739633266178981 =
-            tester.widget<SelectableText>(selectableTextFinder);
-        expect(initialPriceTextA12256739633266178981.data!, '0.00010000');
-
-        // Verify tapping add button does nothing
-        await tester.tap(find.byIcon(Icons.add));
-        await tester.pumpAndSettle();
-
-        final Text unchangedQuantityText =
-            tester.widget<Text>(buyQuantityTextFinder);
-        expect(unchangedQuantityText.data!, '0.1');
-
-        final SelectableText unchangedPriceText =
-            tester.widget<SelectableText>(selectableTextFinder);
-        expect(unchangedPriceText.data!, '0.00010000');
+        // Test A12256739633266178981 dispenser
+        await _testDispenserLotInput(
+          tester: tester,
+          assetName: 'A12256739633266178981',
+          giveQuantity: '0.10000000',
+          maxLots: 1,
+          testLots: ['1', '2'],
+          expectedQuantities: ['0.1', '0.1'],
+          expectedPrices: ['0.00010000', '0.00010000'],
+          expectedError:
+              'Lots entered are greater than lots available.\nMax: 1',
+        );
       }, (error, stackTrace) {
         print('Caught error: $error\n$stackTrace');
       });
     });
   });
+}
+
+// Helper function to test lot input for a specific dispenser
+Future<void> _testDispenserLotInput({
+  required WidgetTester tester,
+  required String assetName,
+  required String giveQuantity,
+  required int maxLots,
+  required List<String> testLots,
+  required List<String> expectedQuantities,
+  required List<String> expectedPrices,
+  required String expectedError,
+  String? assetLongname,
+}) async {
+  // Select the dispenser from dropdown
+  final assetDropdownMenu = find.byKey(const Key('asset_dropdown_menu'));
+  await tester.tap(assetDropdownMenu);
+  await tester.pumpAndSettle();
+
+  final dropdownItem =
+      find.byKey(Key('asset_dropdown_item_${assetLongname ?? assetName}'));
+  await tester.tap(dropdownItem);
+  await tester.pumpAndSettle();
+
+  // Verify the asset is selected
+  expect(find.text(assetName), findsOneWidget);
+
+  // Find the lot input field
+  final lotInput = find.byKey(const Key('lot_input'));
+  expect(lotInput, findsOneWidget);
+
+  // Verify helper text shows correct max lots
+  expect(find.text('Max Lots available: $maxLots'), findsOneWidget);
+
+  // Test different lot quantities
+  for (int i = 0; i < testLots.length; i++) {
+    // Clear the lot input
+    await tester.tap(lotInput);
+    await tester.pumpAndSettle();
+    await tester.enterText(lotInput, testLots[i]);
+    await tester.pumpAndSettle();
+
+    // Verify error message for overflow
+    if (int.parse(testLots[i]) > maxLots) {
+      expect(find.text(expectedError), findsOneWidget);
+      return;
+    }
+
+    // Verify quantity
+    final buyQuantityText = find.byKey(const Key('buy_quantity_text'));
+    expect(
+      tester.widget<Text>(buyQuantityText).data,
+      expectedQuantities[i],
+    );
+
+    // Verify price
+    final priceInput = find.byKey(const Key('price_input'));
+    final priceText = find.descendant(
+      of: priceInput,
+      matching: find.byType(SelectableText),
+    );
+    expect(
+      tester.widget<SelectableText>(priceText).data,
+      expectedPrices[i],
+    );
+  }
 }

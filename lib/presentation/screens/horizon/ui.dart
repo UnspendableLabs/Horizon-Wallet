@@ -481,6 +481,7 @@ class HorizonTextFormField extends StatelessWidget {
   final Color? textColor;
   final AutovalidateMode? autovalidateMode;
   final bool fitText;
+  final String? helperText;
 
   const HorizonTextFormField({
     super.key,
@@ -505,6 +506,7 @@ class HorizonTextFormField extends StatelessWidget {
     this.textColor,
     this.autovalidateMode,
     this.fitText = false,
+    this.helperText,
   });
 
   @override
@@ -520,6 +522,7 @@ class HorizonTextFormField extends StatelessWidget {
           fillColor: fillColor,
           labelText: label,
           suffix: suffix,
+          helperText: helperText,
         ),
         child: obscureText == true
             ? FittedBox(
@@ -569,6 +572,7 @@ class HorizonTextFormField extends StatelessWidget {
             floatingLabelBehavior ?? FloatingLabelBehavior.auto,
         labelText: label,
         suffix: suffix,
+        helperText: helperText,
       ),
       style: const TextStyle(
         fontSize: 16,
@@ -578,7 +582,10 @@ class HorizonTextFormField extends StatelessWidget {
   }
 
   //  create a copy with updated properties
-  HorizonTextFormField copyWith({bool? enabled}) {
+  HorizonTextFormField copyWith({
+    bool? enabled,
+    String? helperText,
+  }) {
     return HorizonTextFormField(
       label: label,
       hint: hint,
@@ -598,6 +605,7 @@ class HorizonTextFormField extends StatelessWidget {
       enabled: enabled ?? this.enabled,
       initialValue: initialValue,
       autovalidateMode: autovalidateMode ?? AutovalidateMode.disabled,
+      helperText: helperText ?? this.helperText,
     );
   }
 }
