@@ -1,5 +1,6 @@
 import 'package:decimal/decimal.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/common/format.dart';
@@ -89,14 +90,26 @@ class ComposeDispensePage extends StatefulWidget {
   ComposeDispensePageState createState() => ComposeDispensePageState();
 }
 
+// Define an enum to represent the input method
+enum InputMethod {
+  Quantity,
+  Units,
+}
+
 class ComposeDispensePageState extends State<ComposeDispensePage> {
   TextEditingController dispenserController = TextEditingController();
   TextEditingController openAddressController = TextEditingController();
   TextEditingController buyQuantityController = TextEditingController();
   TextEditingController priceController = TextEditingController();
+  TextEditingController unitController = TextEditingController();
+
   String? _selectedAsset;
   Dispenser? _selectedDispenser;
   String? _buyQuantity;
+  String? _giveQuantityHint;
+
+  // Variable to hold the selected input method
+  InputMethod _inputMethod = InputMethod.Quantity;
 
   @override
   void initState() {
@@ -106,8 +119,17 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
   }
 
   @override
+  void dispose() {
+    dispenserController.dispose();
+    openAddressController.dispose();
+    buyQuantityController.dispose();
+    priceController.dispose();
+    unitController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    print('SELECTED ASSET: $_selectedAsset');
     return ComposeBasePage<ComposeDispenseBloc, ComposeDispenseState>(
       dashboardActivityFeedBloc: widget.dashboardActivityFeedBloc,
       onFeeChange: (fee) =>
@@ -372,6 +394,7 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         setState(() {
           _buyQuantity = values.first.toString();
+          _updateUnitFromQuantity();
         });
       });
     }
@@ -383,62 +406,188 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
       if (currentIndex == -1) currentIndex = 0;
     }
 
-    return Container(
-      key: const Key('dispense_quantity_input'),
-      decoration: BoxDecoration(
-        border: Border.all(
-          color: Theme.of(context).dividerColor,
-          width: 1.0,
-        ),
-        borderRadius: BorderRadius.circular(8.0),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          IconButton(
-            icon: const Icon(Icons.remove),
-            onPressed: currentIndex > 0
-                ? () {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Radio buttons to select input method
+        Row(
+          children: [
+            Expanded(
+              child: ListTile(
+                title: const Text('Quantity'),
+                leading: Radio<InputMethod>(
+                  value: InputMethod.Quantity,
+                  groupValue: _inputMethod,
+                  onChanged: (InputMethod? value) {
                     setState(() {
-                      currentIndex--;
+                      _inputMethod = value!;
                       _buyQuantity = values[currentIndex].toString();
+                      unitController.clear();
+                      _updateUnitFromQuantity();
+                      _giveQuantityHint = null;
+                      // Clear unit input
                     });
-                  }
-                : null,
-          ),
-          Expanded(
-            child: Text(
-              key: const Key('buy_quantity_text'),
-              '${values[currentIndex]}',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: isDarkMode ? Colors.white : Colors.black,
-                fontWeight: FontWeight.w500,
-                fontSize: 16,
+                  },
+                ),
               ),
             ),
-          ),
-          IconButton(
-            icon: const Icon(Icons.add),
-            onPressed: currentIndex < values.length - 1
-                ? () {
+            Expanded(
+              child: ListTile(
+                title: const Text('Units'),
+                leading: Radio<InputMethod>(
+                  value: InputMethod.Units,
+                  groupValue: _inputMethod,
+                  onChanged: (InputMethod? value) {
                     setState(() {
-                      currentIndex++;
-                      _buyQuantity = values[currentIndex].toString();
+                      _inputMethod = value!;
+                      // Clear quantity input
+                      _buyQuantity = '';
+                      _giveQuantityHint = null;
                     });
+                  },
+                ),
+              ),
+            ),
+          ],
+        ),
+        // Inputs based on selected method
+        Row(
+          children: [
+            // Dispense Quantity Input
+            Expanded(
+              child: AbsorbPointer(
+                absorbing: _inputMethod != InputMethod.Quantity,
+                child: Opacity(
+                  opacity: _inputMethod == InputMethod.Quantity ? 1.0 : 0.5,
+                  child: Container(
+                    key: const Key('dispense_quantity_input'),
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: Theme.of(context).dividerColor,
+                        width: 1.0,
+                      ),
+                      borderRadius: BorderRadius.circular(8.0),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.remove),
+                          onPressed: _inputMethod == InputMethod.Quantity &&
+                                  currentIndex > 0
+                              ? () {
+                                  setState(() {
+                                    currentIndex--;
+                                    _buyQuantity =
+                                        values[currentIndex].toString();
+                                    _updateUnitFromQuantity();
+                                  });
+                                }
+                              : null,
+                        ),
+                        Expanded(
+                          child: Text(
+                            key: const Key('buy_quantity_text'),
+                            '${values[currentIndex]}',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: isDarkMode ? Colors.white : Colors.black,
+                              fontWeight: FontWeight.w500,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.add),
+                          onPressed: _inputMethod == InputMethod.Quantity &&
+                                  currentIndex < values.length - 1
+                              ? () {
+                                  setState(() {
+                                    currentIndex++;
+                                    _buyQuantity =
+                                        values[currentIndex].toString();
+                                    _updateUnitFromQuantity();
+                                  });
+                                }
+                              : null,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 16),
+            // Unit Input Field
+            Expanded(
+              child: HorizonUI.HorizonTextFormField(
+                key: const Key('unit_input'),
+                label: 'Units',
+                controller: unitController,
+                enabled: _inputMethod == InputMethod.Units,
+                keyboardType: TextInputType.number,
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                ],
+                validator: (value) {
+                  if (_inputMethod == InputMethod.Units &&
+                      (value == null || value.isEmpty)) {
+                    return 'Units are required';
                   }
-                : null,
-          ),
-        ],
-      ),
+                  return null;
+                },
+                onChanged: (value) {
+                  _onUnitChanged(value);
+                },
+              ),
+            ),
+          ],
+        ),
+      ],
     );
+  }
+
+  void _updateUnitFromQuantity() {
+    if (_selectedDispenser == null || _buyQuantity == null) return;
+
+    final quantityPerDispense =
+        Decimal.parse(_selectedDispenser!.giveQuantityNormalized!);
+
+    final totalQuantity = Decimal.parse(_buyQuantity!);
+    final units = (totalQuantity / quantityPerDispense);
+
+    unitController.text = units.toString();
+  }
+
+  void _onUnitChanged(String unitsStr) {
+    if (_selectedDispenser == null) return;
+
+    if (unitsStr.isEmpty) {
+      setState(() {
+        _buyQuantity = '0';
+        _giveQuantityHint = null;
+      });
+      return;
+    }
+    if (_inputMethod == InputMethod.Units) {
+      int units = int.tryParse(unitsStr) ?? 0;
+
+      final quantityPerDispense =
+          Decimal.parse(_selectedDispenser!.giveQuantityNormalized!);
+
+      final totalQuantity = quantityPerDispense * Decimal.fromInt(units);
+
+      setState(() {
+        _buyQuantity = totalQuantity.toString();
+        _giveQuantityHint = 'Give quantity: $_buyQuantity';
+      });
+    }
   }
 
   Widget _buildPriceInput(ComposeDispenseState state) {
     if (_selectedDispenser == null) {
       return const SizedBox.shrink();
     }
-
     final String price = _buyQuantity != null && _buyQuantity!.isNotEmpty
         ? ((Decimal.parse(_buyQuantity!) /
                     Decimal.parse(
@@ -463,33 +612,30 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
     if (_selectedDispenser == null) {
       return const SizedBox.shrink();
     }
-    return Row(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Label styled like HorizonTextFormField
-              Text(
-                "Quantity to be dispensed",
-                style: TextStyle(
-                  fontSize: 12,
-                  color: isDarkMode
-                      ? darkThemeInputLabelColor
-                      : lightThemeInputLabelColor,
-                ),
-              ),
-              const SizedBox(height: 8),
-              SizedBox(
-                height: 48, // Standard input field height
-                child: _buildBuyQuantityInput(formKey),
-              ),
-            ],
+        Text(
+          "Quantity to be dispensed",
+          style: TextStyle(
+            fontSize: 12,
+            color: isDarkMode
+                ? darkThemeInputLabelColor
+                : lightThemeInputLabelColor,
           ),
         ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: _buildPriceInput(state),
+        const SizedBox(height: 8),
+        _buildBuyQuantityInput(formKey),
+        // _buildGiveQuantityHint(),
+        const SizedBox(height: 16.0),
+        // Price Input Centered Below
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Expanded(
+              child: _buildPriceInput(state),
+            ),
+          ],
         ),
       ],
     );
@@ -659,6 +805,21 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
       const SizedBox(height: 16.0),
     ];
   }
+
+  // Widget _buildGiveQuantityHint() {
+  //   if (_giveQuantityHint == null) return const SizedBox.shrink();
+
+  //   return Padding(
+  //     padding: const EdgeInsets.only(top: 8.0),
+  //     child: Text(
+  //       _giveQuantityHint!,
+  //       style: TextStyle(
+  //         fontSize: 12,
+  //         color: Theme.of(context).hintColor,
+  //       ),
+  //     ),
+  //   );
+  // }
 
   void _onConfirmationBack() {
     context.read<ComposeDispenseBloc>().add(FetchFormData(
