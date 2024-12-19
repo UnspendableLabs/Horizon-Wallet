@@ -9,6 +9,7 @@ import 'package:horizon/presentation/common/footer/bloc/footer_bloc.dart';
 import 'package:horizon/presentation/common/footer/bloc/footer_event.dart';
 import 'package:horizon/presentation/common/footer/bloc/footer_state.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:horizon/domain/services/platform_service.dart';
 
 class Footer extends StatelessWidget {
   const Footer({super.key});
@@ -35,6 +36,12 @@ class _FooterState extends State<_Footer> {
   void initState() {
     super.initState();
     context.read<FooterBloc>().add(NodeInfoRequested());
+  }
+
+  void _openInNewTab() {
+    if (GetIt.I.get<Config>().isWebExtension) {
+      GetIt.I.get<PlatformService>().openInNewTab();
+    }
   }
 
   @override
@@ -133,6 +140,21 @@ class _FooterState extends State<_Footer> {
                       ),
                     ),
                   ),
+                  if (config.isWebExtension)
+                    TextButton(
+                      style: TextButton.styleFrom(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: screenWidth < 600 ? 4 : 16,
+                        ),
+                        minimumSize: Size.zero,
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
+                      onPressed: _openInNewTab,
+                      child: Text(
+                        'Open in Tab',
+                        style: textStyle(),
+                      ),
+                    ),
                 ],
               ),
             ),
