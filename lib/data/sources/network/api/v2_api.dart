@@ -3152,6 +3152,52 @@ class SendTxVerbose extends SendTx {
   // Map<String, dynamic> toJson() => _$SendTxVerboseToJson(this);
 }
 
+@JsonSerializable(fieldRename: FieldRename.snake)
+class ComposeMpmaSend {
+  final String name;
+  final String data;
+  final String rawtransaction;
+  final int btcIn;
+  final int btcOut;
+  final int btcFee;
+  final int btcChange;
+  final MpmaSendParams params;
+
+  const ComposeMpmaSend({
+    required this.name,
+    required this.data,
+    required this.rawtransaction,
+    required this.btcIn,
+    required this.btcOut,
+    required this.btcFee,
+    required this.btcChange,
+    required this.params,
+  });
+
+  factory ComposeMpmaSend.fromJson(Map<String, dynamic> json) =>
+      _$ComposeMpmaSendFromJson(json);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class MpmaSendParams {
+  final String source;
+  final List<dynamic> assetDestQuantList;
+  final String? memo;
+  final bool? memoIsHex;
+  final bool? skipValidation;
+
+  const MpmaSendParams({
+    required this.source,
+    required this.assetDestQuantList,
+    this.memo,
+    this.memoIsHex,
+    this.skipValidation,
+  });
+
+  factory MpmaSendParams.fromJson(Map<String, dynamic> json) =>
+      _$MpmaSendParamsFromJson(json);
+}
+
 // @JsonSerializable(fieldRename: FieldRename.snake)
 // class Unpack {
 //   final String messageType;
@@ -4394,6 +4440,20 @@ abstract class V2Api {
     @Query("exclude_utxos_with_balances") bool? excludeUtxosWithBalances,
     @Query("disable_utxo_locks") bool? disableUtxoLocks,
     @Query("validate") bool? validate,
+  ]);
+
+  @GET("/addresses/{address}/compose/mpma?verbose=true")
+  Future<Response<ComposeMpmaSend>> composeMpmaSend(
+    @Path("address") String address,
+    @Query("destinations") String? destinations,
+    @Query("assets") String? assets,
+    @Query("quantities") String? quantities, [
+    @Query("allow_unconfirmed_inputs") bool? allowUnconfirmedInputs,
+    @Query("exact_fee") int? fee,
+    @Query("fee_per_kb") int? feePerKB,
+    @Query("inputs_set") String? inputsSet,
+    @Query("exclude_utxos_with_balances") bool? excludeUtxosWithBalances,
+    @Query("disable_utxo_locks") bool? disableUtxoLocks,
   ]);
 
   @GET("/addresses/{address}/sends")

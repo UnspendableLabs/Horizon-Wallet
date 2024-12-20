@@ -3037,6 +3037,48 @@ Map<String, dynamic> _$SendTxVerboseToJson(SendTxVerbose instance) =>
       'btc_fee': instance.btcFee,
     };
 
+ComposeMpmaSend _$ComposeMpmaSendFromJson(Map<String, dynamic> json) =>
+    ComposeMpmaSend(
+      name: json['name'] as String,
+      data: json['data'] as String,
+      rawtransaction: json['rawtransaction'] as String,
+      btcIn: (json['btc_in'] as num).toInt(),
+      btcOut: (json['btc_out'] as num).toInt(),
+      btcFee: (json['btc_fee'] as num).toInt(),
+      btcChange: (json['btc_change'] as num).toInt(),
+      params: MpmaSendParams.fromJson(json['params'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$ComposeMpmaSendToJson(ComposeMpmaSend instance) =>
+    <String, dynamic>{
+      'name': instance.name,
+      'data': instance.data,
+      'rawtransaction': instance.rawtransaction,
+      'btc_in': instance.btcIn,
+      'btc_out': instance.btcOut,
+      'btc_fee': instance.btcFee,
+      'btc_change': instance.btcChange,
+      'params': instance.params,
+    };
+
+MpmaSendParams _$MpmaSendParamsFromJson(Map<String, dynamic> json) =>
+    MpmaSendParams(
+      source: json['source'] as String,
+      assetDestQuantList: json['asset_dest_quant_list'] as List<dynamic>,
+      memo: json['memo'] as String?,
+      memoIsHex: json['memo_is_hex'] as bool?,
+      skipValidation: json['skip_validation'] as bool?,
+    );
+
+Map<String, dynamic> _$MpmaSendParamsToJson(MpmaSendParams instance) =>
+    <String, dynamic>{
+      'source': instance.source,
+      'asset_dest_quant_list': instance.assetDestQuantList,
+      'memo': instance.memo,
+      'memo_is_hex': instance.memoIsHex,
+      'skip_validation': instance.skipValidation,
+    };
+
 Info _$InfoFromJson(Map<String, dynamic> json) => Info(
       source: json['source'] as String,
       destination: json['destination'] as String?,
@@ -4679,6 +4721,58 @@ class _V2Api implements V2Api {
     final _value = Response<SendTxVerbose>.fromJson(
       _result.data!,
       (json) => SendTxVerbose.fromJson(json as Map<String, dynamic>),
+    );
+    return _value;
+  }
+
+  @override
+  Future<Response<ComposeMpmaSend>> composeMpmaSend(
+    String address,
+    String? destinations,
+    String? assets,
+    String? quantities, [
+    bool? allowUnconfirmedInputs,
+    int? fee,
+    int? feePerKB,
+    String? inputsSet,
+    bool? excludeUtxosWithBalances,
+    bool? disableUtxoLocks,
+  ]) async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{
+      r'destinations': destinations,
+      r'assets': assets,
+      r'quantities': quantities,
+      r'allow_unconfirmed_inputs': allowUnconfirmedInputs,
+      r'exact_fee': fee,
+      r'fee_per_kb': feePerKB,
+      r'inputs_set': inputsSet,
+      r'exclude_utxos_with_balances': excludeUtxosWithBalances,
+      r'disable_utxo_locks': disableUtxoLocks,
+    };
+    queryParameters.removeWhere((k, v) => v == null);
+    final _headers = <String, dynamic>{};
+    const Map<String, dynamic>? _data = null;
+    final _result = await _dio.fetch<Map<String, dynamic>>(
+        _setStreamType<Response<ComposeMpmaSend>>(Options(
+      method: 'GET',
+      headers: _headers,
+      extra: _extra,
+    )
+            .compose(
+              _dio.options,
+              '/addresses/${address}/compose/mpma?verbose=true',
+              queryParameters: queryParameters,
+              data: _data,
+            )
+            .copyWith(
+                baseUrl: _combineBaseUrls(
+              _dio.options.baseUrl,
+              baseUrl,
+            ))));
+    final _value = Response<ComposeMpmaSend>.fromJson(
+      _result.data!,
+      (json) => ComposeMpmaSend.fromJson(json as Map<String, dynamic>),
     );
     return _value;
   }
