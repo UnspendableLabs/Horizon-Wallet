@@ -7,7 +7,6 @@ part 'compose_mpma_state.freezed.dart';
 @freezed
 class MpmaEntry with _$MpmaEntry {
   const factory MpmaEntry({
-    required MaxValueState maxValue,
     required bool sendMax,
     String? source,
     String? destination,
@@ -16,7 +15,6 @@ class MpmaEntry with _$MpmaEntry {
   }) = _MpmaEntry;
 
   factory MpmaEntry.initial() => const MpmaEntry(
-        maxValue: MaxValueState.initial(),
         sendMax: false,
         quantity: '',
       );
@@ -45,13 +43,4 @@ class ComposeMpmaState with _$ComposeMpmaState, ComposeStateBase {
         submitState: const SubmitInitial(),
         entries: [MpmaEntry.initial()],
       );
-}
-
-/// MaxValueState represents the state for calculating maximum transferable value.
-@freezed
-class MaxValueState with _$MaxValueState {
-  const factory MaxValueState.initial() = _MaxValueInitial;
-  const factory MaxValueState.loading() = _MaxValueLoading;
-  const factory MaxValueState.success(int maxValue) = _MaxValueSuccess;
-  const factory MaxValueState.error(String error) = _MaxValueError;
 }

@@ -16,7 +16,6 @@ final _privateConstructorUsedError = UnsupportedError(
 
 /// @nodoc
 mixin _$MpmaEntry {
-  MaxValueState get maxValue => throw _privateConstructorUsedError;
   bool get sendMax => throw _privateConstructorUsedError;
   String? get source => throw _privateConstructorUsedError;
   String? get destination => throw _privateConstructorUsedError;
@@ -34,14 +33,11 @@ abstract class $MpmaEntryCopyWith<$Res> {
       _$MpmaEntryCopyWithImpl<$Res, MpmaEntry>;
   @useResult
   $Res call(
-      {MaxValueState maxValue,
-      bool sendMax,
+      {bool sendMax,
       String? source,
       String? destination,
       String? asset,
       String quantity});
-
-  $MaxValueStateCopyWith<$Res> get maxValue;
 }
 
 /// @nodoc
@@ -57,7 +53,6 @@ class _$MpmaEntryCopyWithImpl<$Res, $Val extends MpmaEntry>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? maxValue = null,
     Object? sendMax = null,
     Object? source = freezed,
     Object? destination = freezed,
@@ -65,10 +60,6 @@ class _$MpmaEntryCopyWithImpl<$Res, $Val extends MpmaEntry>
     Object? quantity = null,
   }) {
     return _then(_value.copyWith(
-      maxValue: null == maxValue
-          ? _value.maxValue
-          : maxValue // ignore: cast_nullable_to_non_nullable
-              as MaxValueState,
       sendMax: null == sendMax
           ? _value.sendMax
           : sendMax // ignore: cast_nullable_to_non_nullable
@@ -91,14 +82,6 @@ class _$MpmaEntryCopyWithImpl<$Res, $Val extends MpmaEntry>
               as String,
     ) as $Val);
   }
-
-  @override
-  @pragma('vm:prefer-inline')
-  $MaxValueStateCopyWith<$Res> get maxValue {
-    return $MaxValueStateCopyWith<$Res>(_value.maxValue, (value) {
-      return _then(_value.copyWith(maxValue: value) as $Val);
-    });
-  }
 }
 
 /// @nodoc
@@ -110,15 +93,11 @@ abstract class _$$MpmaEntryImplCopyWith<$Res>
   @override
   @useResult
   $Res call(
-      {MaxValueState maxValue,
-      bool sendMax,
+      {bool sendMax,
       String? source,
       String? destination,
       String? asset,
       String quantity});
-
-  @override
-  $MaxValueStateCopyWith<$Res> get maxValue;
 }
 
 /// @nodoc
@@ -132,7 +111,6 @@ class __$$MpmaEntryImplCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? maxValue = null,
     Object? sendMax = null,
     Object? source = freezed,
     Object? destination = freezed,
@@ -140,10 +118,6 @@ class __$$MpmaEntryImplCopyWithImpl<$Res>
     Object? quantity = null,
   }) {
     return _then(_$MpmaEntryImpl(
-      maxValue: null == maxValue
-          ? _value.maxValue
-          : maxValue // ignore: cast_nullable_to_non_nullable
-              as MaxValueState,
       sendMax: null == sendMax
           ? _value.sendMax
           : sendMax // ignore: cast_nullable_to_non_nullable
@@ -172,15 +146,12 @@ class __$$MpmaEntryImplCopyWithImpl<$Res>
 
 class _$MpmaEntryImpl implements _MpmaEntry {
   const _$MpmaEntryImpl(
-      {required this.maxValue,
-      required this.sendMax,
+      {required this.sendMax,
       this.source,
       this.destination,
       this.asset,
       required this.quantity});
 
-  @override
-  final MaxValueState maxValue;
   @override
   final bool sendMax;
   @override
@@ -194,7 +165,7 @@ class _$MpmaEntryImpl implements _MpmaEntry {
 
   @override
   String toString() {
-    return 'MpmaEntry(maxValue: $maxValue, sendMax: $sendMax, source: $source, destination: $destination, asset: $asset, quantity: $quantity)';
+    return 'MpmaEntry(sendMax: $sendMax, source: $source, destination: $destination, asset: $asset, quantity: $quantity)';
   }
 
   @override
@@ -202,8 +173,6 @@ class _$MpmaEntryImpl implements _MpmaEntry {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$MpmaEntryImpl &&
-            (identical(other.maxValue, maxValue) ||
-                other.maxValue == maxValue) &&
             (identical(other.sendMax, sendMax) || other.sendMax == sendMax) &&
             (identical(other.source, source) || other.source == source) &&
             (identical(other.destination, destination) ||
@@ -214,8 +183,8 @@ class _$MpmaEntryImpl implements _MpmaEntry {
   }
 
   @override
-  int get hashCode => Object.hash(
-      runtimeType, maxValue, sendMax, source, destination, asset, quantity);
+  int get hashCode =>
+      Object.hash(runtimeType, sendMax, source, destination, asset, quantity);
 
   @JsonKey(ignore: true)
   @override
@@ -226,15 +195,12 @@ class _$MpmaEntryImpl implements _MpmaEntry {
 
 abstract class _MpmaEntry implements MpmaEntry {
   const factory _MpmaEntry(
-      {required final MaxValueState maxValue,
-      required final bool sendMax,
+      {required final bool sendMax,
       final String? source,
       final String? destination,
       final String? asset,
       required final String quantity}) = _$MpmaEntryImpl;
 
-  @override
-  MaxValueState get maxValue;
   @override
   bool get sendMax;
   @override
@@ -520,597 +486,5 @@ abstract class _ComposeMpmaState extends ComposeMpmaState {
   @override
   @JsonKey(ignore: true)
   _$$ComposeMpmaStateImplCopyWith<_$ComposeMpmaStateImpl> get copyWith =>
-      throw _privateConstructorUsedError;
-}
-
-/// @nodoc
-mixin _$MaxValueState {
-  @optionalTypeArgs
-  TResult when<TResult extends Object?>({
-    required TResult Function() initial,
-    required TResult Function() loading,
-    required TResult Function(int maxValue) success,
-    required TResult Function(String error) error,
-  }) =>
-      throw _privateConstructorUsedError;
-  @optionalTypeArgs
-  TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function()? initial,
-    TResult? Function()? loading,
-    TResult? Function(int maxValue)? success,
-    TResult? Function(String error)? error,
-  }) =>
-      throw _privateConstructorUsedError;
-  @optionalTypeArgs
-  TResult maybeWhen<TResult extends Object?>({
-    TResult Function()? initial,
-    TResult Function()? loading,
-    TResult Function(int maxValue)? success,
-    TResult Function(String error)? error,
-    required TResult orElse(),
-  }) =>
-      throw _privateConstructorUsedError;
-  @optionalTypeArgs
-  TResult map<TResult extends Object?>({
-    required TResult Function(_MaxValueInitial value) initial,
-    required TResult Function(_MaxValueLoading value) loading,
-    required TResult Function(_MaxValueSuccess value) success,
-    required TResult Function(_MaxValueError value) error,
-  }) =>
-      throw _privateConstructorUsedError;
-  @optionalTypeArgs
-  TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(_MaxValueInitial value)? initial,
-    TResult? Function(_MaxValueLoading value)? loading,
-    TResult? Function(_MaxValueSuccess value)? success,
-    TResult? Function(_MaxValueError value)? error,
-  }) =>
-      throw _privateConstructorUsedError;
-  @optionalTypeArgs
-  TResult maybeMap<TResult extends Object?>({
-    TResult Function(_MaxValueInitial value)? initial,
-    TResult Function(_MaxValueLoading value)? loading,
-    TResult Function(_MaxValueSuccess value)? success,
-    TResult Function(_MaxValueError value)? error,
-    required TResult orElse(),
-  }) =>
-      throw _privateConstructorUsedError;
-}
-
-/// @nodoc
-abstract class $MaxValueStateCopyWith<$Res> {
-  factory $MaxValueStateCopyWith(
-          MaxValueState value, $Res Function(MaxValueState) then) =
-      _$MaxValueStateCopyWithImpl<$Res, MaxValueState>;
-}
-
-/// @nodoc
-class _$MaxValueStateCopyWithImpl<$Res, $Val extends MaxValueState>
-    implements $MaxValueStateCopyWith<$Res> {
-  _$MaxValueStateCopyWithImpl(this._value, this._then);
-
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
-}
-
-/// @nodoc
-abstract class _$$MaxValueInitialImplCopyWith<$Res> {
-  factory _$$MaxValueInitialImplCopyWith(_$MaxValueInitialImpl value,
-          $Res Function(_$MaxValueInitialImpl) then) =
-      __$$MaxValueInitialImplCopyWithImpl<$Res>;
-}
-
-/// @nodoc
-class __$$MaxValueInitialImplCopyWithImpl<$Res>
-    extends _$MaxValueStateCopyWithImpl<$Res, _$MaxValueInitialImpl>
-    implements _$$MaxValueInitialImplCopyWith<$Res> {
-  __$$MaxValueInitialImplCopyWithImpl(
-      _$MaxValueInitialImpl _value, $Res Function(_$MaxValueInitialImpl) _then)
-      : super(_value, _then);
-}
-
-/// @nodoc
-
-class _$MaxValueInitialImpl implements _MaxValueInitial {
-  const _$MaxValueInitialImpl();
-
-  @override
-  String toString() {
-    return 'MaxValueState.initial()';
-  }
-
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType && other is _$MaxValueInitialImpl);
-  }
-
-  @override
-  int get hashCode => runtimeType.hashCode;
-
-  @override
-  @optionalTypeArgs
-  TResult when<TResult extends Object?>({
-    required TResult Function() initial,
-    required TResult Function() loading,
-    required TResult Function(int maxValue) success,
-    required TResult Function(String error) error,
-  }) {
-    return initial();
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function()? initial,
-    TResult? Function()? loading,
-    TResult? Function(int maxValue)? success,
-    TResult? Function(String error)? error,
-  }) {
-    return initial?.call();
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeWhen<TResult extends Object?>({
-    TResult Function()? initial,
-    TResult Function()? loading,
-    TResult Function(int maxValue)? success,
-    TResult Function(String error)? error,
-    required TResult orElse(),
-  }) {
-    if (initial != null) {
-      return initial();
-    }
-    return orElse();
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult map<TResult extends Object?>({
-    required TResult Function(_MaxValueInitial value) initial,
-    required TResult Function(_MaxValueLoading value) loading,
-    required TResult Function(_MaxValueSuccess value) success,
-    required TResult Function(_MaxValueError value) error,
-  }) {
-    return initial(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(_MaxValueInitial value)? initial,
-    TResult? Function(_MaxValueLoading value)? loading,
-    TResult? Function(_MaxValueSuccess value)? success,
-    TResult? Function(_MaxValueError value)? error,
-  }) {
-    return initial?.call(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeMap<TResult extends Object?>({
-    TResult Function(_MaxValueInitial value)? initial,
-    TResult Function(_MaxValueLoading value)? loading,
-    TResult Function(_MaxValueSuccess value)? success,
-    TResult Function(_MaxValueError value)? error,
-    required TResult orElse(),
-  }) {
-    if (initial != null) {
-      return initial(this);
-    }
-    return orElse();
-  }
-}
-
-abstract class _MaxValueInitial implements MaxValueState {
-  const factory _MaxValueInitial() = _$MaxValueInitialImpl;
-}
-
-/// @nodoc
-abstract class _$$MaxValueLoadingImplCopyWith<$Res> {
-  factory _$$MaxValueLoadingImplCopyWith(_$MaxValueLoadingImpl value,
-          $Res Function(_$MaxValueLoadingImpl) then) =
-      __$$MaxValueLoadingImplCopyWithImpl<$Res>;
-}
-
-/// @nodoc
-class __$$MaxValueLoadingImplCopyWithImpl<$Res>
-    extends _$MaxValueStateCopyWithImpl<$Res, _$MaxValueLoadingImpl>
-    implements _$$MaxValueLoadingImplCopyWith<$Res> {
-  __$$MaxValueLoadingImplCopyWithImpl(
-      _$MaxValueLoadingImpl _value, $Res Function(_$MaxValueLoadingImpl) _then)
-      : super(_value, _then);
-}
-
-/// @nodoc
-
-class _$MaxValueLoadingImpl implements _MaxValueLoading {
-  const _$MaxValueLoadingImpl();
-
-  @override
-  String toString() {
-    return 'MaxValueState.loading()';
-  }
-
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType && other is _$MaxValueLoadingImpl);
-  }
-
-  @override
-  int get hashCode => runtimeType.hashCode;
-
-  @override
-  @optionalTypeArgs
-  TResult when<TResult extends Object?>({
-    required TResult Function() initial,
-    required TResult Function() loading,
-    required TResult Function(int maxValue) success,
-    required TResult Function(String error) error,
-  }) {
-    return loading();
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function()? initial,
-    TResult? Function()? loading,
-    TResult? Function(int maxValue)? success,
-    TResult? Function(String error)? error,
-  }) {
-    return loading?.call();
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeWhen<TResult extends Object?>({
-    TResult Function()? initial,
-    TResult Function()? loading,
-    TResult Function(int maxValue)? success,
-    TResult Function(String error)? error,
-    required TResult orElse(),
-  }) {
-    if (loading != null) {
-      return loading();
-    }
-    return orElse();
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult map<TResult extends Object?>({
-    required TResult Function(_MaxValueInitial value) initial,
-    required TResult Function(_MaxValueLoading value) loading,
-    required TResult Function(_MaxValueSuccess value) success,
-    required TResult Function(_MaxValueError value) error,
-  }) {
-    return loading(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(_MaxValueInitial value)? initial,
-    TResult? Function(_MaxValueLoading value)? loading,
-    TResult? Function(_MaxValueSuccess value)? success,
-    TResult? Function(_MaxValueError value)? error,
-  }) {
-    return loading?.call(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeMap<TResult extends Object?>({
-    TResult Function(_MaxValueInitial value)? initial,
-    TResult Function(_MaxValueLoading value)? loading,
-    TResult Function(_MaxValueSuccess value)? success,
-    TResult Function(_MaxValueError value)? error,
-    required TResult orElse(),
-  }) {
-    if (loading != null) {
-      return loading(this);
-    }
-    return orElse();
-  }
-}
-
-abstract class _MaxValueLoading implements MaxValueState {
-  const factory _MaxValueLoading() = _$MaxValueLoadingImpl;
-}
-
-/// @nodoc
-abstract class _$$MaxValueSuccessImplCopyWith<$Res> {
-  factory _$$MaxValueSuccessImplCopyWith(_$MaxValueSuccessImpl value,
-          $Res Function(_$MaxValueSuccessImpl) then) =
-      __$$MaxValueSuccessImplCopyWithImpl<$Res>;
-  @useResult
-  $Res call({int maxValue});
-}
-
-/// @nodoc
-class __$$MaxValueSuccessImplCopyWithImpl<$Res>
-    extends _$MaxValueStateCopyWithImpl<$Res, _$MaxValueSuccessImpl>
-    implements _$$MaxValueSuccessImplCopyWith<$Res> {
-  __$$MaxValueSuccessImplCopyWithImpl(
-      _$MaxValueSuccessImpl _value, $Res Function(_$MaxValueSuccessImpl) _then)
-      : super(_value, _then);
-
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? maxValue = null,
-  }) {
-    return _then(_$MaxValueSuccessImpl(
-      null == maxValue
-          ? _value.maxValue
-          : maxValue // ignore: cast_nullable_to_non_nullable
-              as int,
-    ));
-  }
-}
-
-/// @nodoc
-
-class _$MaxValueSuccessImpl implements _MaxValueSuccess {
-  const _$MaxValueSuccessImpl(this.maxValue);
-
-  @override
-  final int maxValue;
-
-  @override
-  String toString() {
-    return 'MaxValueState.success(maxValue: $maxValue)';
-  }
-
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$MaxValueSuccessImpl &&
-            (identical(other.maxValue, maxValue) ||
-                other.maxValue == maxValue));
-  }
-
-  @override
-  int get hashCode => Object.hash(runtimeType, maxValue);
-
-  @JsonKey(ignore: true)
-  @override
-  @pragma('vm:prefer-inline')
-  _$$MaxValueSuccessImplCopyWith<_$MaxValueSuccessImpl> get copyWith =>
-      __$$MaxValueSuccessImplCopyWithImpl<_$MaxValueSuccessImpl>(
-          this, _$identity);
-
-  @override
-  @optionalTypeArgs
-  TResult when<TResult extends Object?>({
-    required TResult Function() initial,
-    required TResult Function() loading,
-    required TResult Function(int maxValue) success,
-    required TResult Function(String error) error,
-  }) {
-    return success(maxValue);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function()? initial,
-    TResult? Function()? loading,
-    TResult? Function(int maxValue)? success,
-    TResult? Function(String error)? error,
-  }) {
-    return success?.call(maxValue);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeWhen<TResult extends Object?>({
-    TResult Function()? initial,
-    TResult Function()? loading,
-    TResult Function(int maxValue)? success,
-    TResult Function(String error)? error,
-    required TResult orElse(),
-  }) {
-    if (success != null) {
-      return success(maxValue);
-    }
-    return orElse();
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult map<TResult extends Object?>({
-    required TResult Function(_MaxValueInitial value) initial,
-    required TResult Function(_MaxValueLoading value) loading,
-    required TResult Function(_MaxValueSuccess value) success,
-    required TResult Function(_MaxValueError value) error,
-  }) {
-    return success(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(_MaxValueInitial value)? initial,
-    TResult? Function(_MaxValueLoading value)? loading,
-    TResult? Function(_MaxValueSuccess value)? success,
-    TResult? Function(_MaxValueError value)? error,
-  }) {
-    return success?.call(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeMap<TResult extends Object?>({
-    TResult Function(_MaxValueInitial value)? initial,
-    TResult Function(_MaxValueLoading value)? loading,
-    TResult Function(_MaxValueSuccess value)? success,
-    TResult Function(_MaxValueError value)? error,
-    required TResult orElse(),
-  }) {
-    if (success != null) {
-      return success(this);
-    }
-    return orElse();
-  }
-}
-
-abstract class _MaxValueSuccess implements MaxValueState {
-  const factory _MaxValueSuccess(final int maxValue) = _$MaxValueSuccessImpl;
-
-  int get maxValue;
-  @JsonKey(ignore: true)
-  _$$MaxValueSuccessImplCopyWith<_$MaxValueSuccessImpl> get copyWith =>
-      throw _privateConstructorUsedError;
-}
-
-/// @nodoc
-abstract class _$$MaxValueErrorImplCopyWith<$Res> {
-  factory _$$MaxValueErrorImplCopyWith(
-          _$MaxValueErrorImpl value, $Res Function(_$MaxValueErrorImpl) then) =
-      __$$MaxValueErrorImplCopyWithImpl<$Res>;
-  @useResult
-  $Res call({String error});
-}
-
-/// @nodoc
-class __$$MaxValueErrorImplCopyWithImpl<$Res>
-    extends _$MaxValueStateCopyWithImpl<$Res, _$MaxValueErrorImpl>
-    implements _$$MaxValueErrorImplCopyWith<$Res> {
-  __$$MaxValueErrorImplCopyWithImpl(
-      _$MaxValueErrorImpl _value, $Res Function(_$MaxValueErrorImpl) _then)
-      : super(_value, _then);
-
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? error = null,
-  }) {
-    return _then(_$MaxValueErrorImpl(
-      null == error
-          ? _value.error
-          : error // ignore: cast_nullable_to_non_nullable
-              as String,
-    ));
-  }
-}
-
-/// @nodoc
-
-class _$MaxValueErrorImpl implements _MaxValueError {
-  const _$MaxValueErrorImpl(this.error);
-
-  @override
-  final String error;
-
-  @override
-  String toString() {
-    return 'MaxValueState.error(error: $error)';
-  }
-
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$MaxValueErrorImpl &&
-            (identical(other.error, error) || other.error == error));
-  }
-
-  @override
-  int get hashCode => Object.hash(runtimeType, error);
-
-  @JsonKey(ignore: true)
-  @override
-  @pragma('vm:prefer-inline')
-  _$$MaxValueErrorImplCopyWith<_$MaxValueErrorImpl> get copyWith =>
-      __$$MaxValueErrorImplCopyWithImpl<_$MaxValueErrorImpl>(this, _$identity);
-
-  @override
-  @optionalTypeArgs
-  TResult when<TResult extends Object?>({
-    required TResult Function() initial,
-    required TResult Function() loading,
-    required TResult Function(int maxValue) success,
-    required TResult Function(String error) error,
-  }) {
-    return error(this.error);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function()? initial,
-    TResult? Function()? loading,
-    TResult? Function(int maxValue)? success,
-    TResult? Function(String error)? error,
-  }) {
-    return error?.call(this.error);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeWhen<TResult extends Object?>({
-    TResult Function()? initial,
-    TResult Function()? loading,
-    TResult Function(int maxValue)? success,
-    TResult Function(String error)? error,
-    required TResult orElse(),
-  }) {
-    if (error != null) {
-      return error(this.error);
-    }
-    return orElse();
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult map<TResult extends Object?>({
-    required TResult Function(_MaxValueInitial value) initial,
-    required TResult Function(_MaxValueLoading value) loading,
-    required TResult Function(_MaxValueSuccess value) success,
-    required TResult Function(_MaxValueError value) error,
-  }) {
-    return error(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(_MaxValueInitial value)? initial,
-    TResult? Function(_MaxValueLoading value)? loading,
-    TResult? Function(_MaxValueSuccess value)? success,
-    TResult? Function(_MaxValueError value)? error,
-  }) {
-    return error?.call(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeMap<TResult extends Object?>({
-    TResult Function(_MaxValueInitial value)? initial,
-    TResult Function(_MaxValueLoading value)? loading,
-    TResult Function(_MaxValueSuccess value)? success,
-    TResult Function(_MaxValueError value)? error,
-    required TResult orElse(),
-  }) {
-    if (error != null) {
-      return error(this);
-    }
-    return orElse();
-  }
-}
-
-abstract class _MaxValueError implements MaxValueState {
-  const factory _MaxValueError(final String error) = _$MaxValueErrorImpl;
-
-  String get error;
-  @JsonKey(ignore: true)
-  _$$MaxValueErrorImplCopyWith<_$MaxValueErrorImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

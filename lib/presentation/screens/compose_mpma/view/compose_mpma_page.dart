@@ -80,12 +80,44 @@ class ComposeMpmaPage extends StatefulWidget {
 
 class ComposeMpmaPageState extends State<ComposeMpmaPage> {
   final TextEditingController fromAddressController = TextEditingController();
+  final Map<int, TextEditingController> destinationControllers = {};
+  final Map<int, TextEditingController> quantityControllers = {};
   bool _submitted = false;
 
   @override
   void initState() {
     super.initState();
     fromAddressController.text = widget.address;
+  }
+
+  @override
+  void dispose() {
+    fromAddressController.dispose();
+    for (var controller in destinationControllers.values) {
+      controller.dispose();
+    }
+    for (var controller in quantityControllers.values) {
+      controller.dispose();
+    }
+    super.dispose();
+  }
+
+  TextEditingController _getDestinationController(int index, String? text) {
+    if (!destinationControllers.containsKey(index)) {
+      destinationControllers[index] = TextEditingController(text: text);
+    } else if (text != null && destinationControllers[index]?.text != text) {
+      destinationControllers[index]?.text = text;
+    }
+    return destinationControllers[index]!;
+  }
+
+  TextEditingController _getQuantityController(int index, String? text) {
+    if (!quantityControllers.containsKey(index)) {
+      quantityControllers[index] = TextEditingController(text: text);
+    } else if (text != null && quantityControllers[index]?.text != text) {
+      quantityControllers[index]?.text = text;
+    }
+    return quantityControllers[index]!;
   }
 
   Widget _buildQuantityInput(ComposeMpmaState state,
@@ -114,7 +146,7 @@ class ComposeMpmaPageState extends State<ComposeMpmaPage> {
   Widget _buildQuantityInputField(ComposeMpmaState state, Balance? balance,
       void Function() handleInitialSubmit, bool loading, int entryIndex) {
     final entry = state.entries[entryIndex];
-    final controller = TextEditingController(text: entry.quantity);
+    final controller = _getQuantityController(entryIndex, entry.quantity);
 
     return Stack(
       children: [
@@ -141,19 +173,78 @@ class ComposeMpmaPageState extends State<ComposeMpmaPage> {
             if (value == null || value.isEmpty) {
               return 'Please enter a quantity';
             }
-            Decimal input = Decimal.parse(value);
-            Decimal max = Decimal.parse(balance?.quantityNormalized ?? '0');
-            if (input > max) {
-              return "quantity exceeds max";
+            try {
+              Decimal input = Decimal.parse(value);
+              Decimal max = Decimal.parse(balance?.quantityNormalized ?? '0');
+              if (input > max) {
+                return "quantity is greater than asset balance";
+              }
+            } catch (e) {
+              return "Invalid number format";
             }
             return null;
           },
           onFieldSubmitted: (value) {
             handleInitialSubmit();
           },
-          autovalidateMode: _submitted
-              ? AutovalidateMode.onUserInteraction
-              : AutovalidateMode.disabled,
+          autovalidateMode: AutovalidateMode.onUserInteraction,
+        ),
+        state.balancesState.maybeWhen(
+          orElse: () {
+            return const SizedBox.shrink();
+          },
+          success: (_) {
+            return entry.asset != "BTC" && entry.asset != null
+                ? Positioned(
+                    right: 0,
+                    top: 0,
+                    bottom: 0,
+                    child: Row(
+                      children: [
+                        Container(
+                          margin: const EdgeInsets.only(top: 2.0),
+                          child: const Text(
+                            'MAX',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                        Transform.scale(
+                          scale: 0.8,
+                          child: Switch(
+                            activeColor: Colors.blue,
+                            value: entry.sendMax,
+                            onChanged: loading
+                                ? null
+                                : (value) {
+                                    if (value) {
+                                      controller.text =
+                                          balance?.quantityNormalized ?? '0';
+                                      context.read<ComposeMpmaBloc>().add(
+                                            UpdateEntryQuantity(
+                                              quantity:
+                                                  balance?.quantityNormalized ??
+                                                      '0',
+                                              entryIndex: entryIndex,
+                                            ),
+                                          );
+                                    }
+                                    context.read<ComposeMpmaBloc>().add(
+                                          ToggleEntrySendMax(
+                                            value: value,
+                                            entryIndex: entryIndex,
+                                          ),
+                                        );
+                                  },
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                : const SizedBox.shrink();
+          },
         ),
       ],
     );
@@ -218,7 +309,8 @@ class ComposeMpmaPageState extends State<ComposeMpmaPage> {
             if (entryIndex > 0) const Divider(height: 32),
             HorizonUI.HorizonTextFormField(
               enabled: !loading,
-              controller: TextEditingController(text: entry.destination),
+              controller:
+                  _getDestinationController(entryIndex, entry.destination),
               label: "Destination",
               validator: (value) {
                 if (value == null || value.isEmpty) {
@@ -388,6 +480,28 @@ class ComposeMpmaPageState extends State<ComposeMpmaPage> {
     //     ],
     //   ),
     // ];
+  }
+
+  @override
+  void didUpdateWidget(ComposeMpmaPage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    final state = context.read<ComposeMpmaBloc>().state;
+    final validIndices = state.entries.asMap().keys.toSet();
+
+    destinationControllers.keys.toList().forEach((index) {
+      if (!validIndices.contains(index)) {
+        destinationControllers[index]?.dispose();
+        destinationControllers.remove(index);
+      }
+    });
+
+    quantityControllers.keys.toList().forEach((index) {
+      if (!validIndices.contains(index)) {
+        quantityControllers[index]?.dispose();
+        quantityControllers.remove(index);
+      }
+    });
   }
 }
 

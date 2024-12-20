@@ -83,7 +83,6 @@ class ComposeMpmaBloc extends ComposeBaseBloc<ComposeMpmaState> {
       asset: event.asset,
       sendMax: false,
       quantity: '',
-      maxValue: const MaxValueState.initial(),
     );
 
     emit(state.copyWith(
@@ -99,7 +98,6 @@ class ComposeMpmaBloc extends ComposeBaseBloc<ComposeMpmaState> {
         updatedEntries[event.entryIndex].copyWith(
       quantity: event.quantity,
       sendMax: false,
-      maxValue: const MaxValueState.initial(),
     );
 
     emit(state.copyWith(
@@ -122,9 +120,6 @@ class ComposeMpmaBloc extends ComposeBaseBloc<ComposeMpmaState> {
 
     updatedEntries[event.entryIndex] = entry.copyWith(
       sendMax: event.value,
-      maxValue: event.value
-          ? const MaxValueState.loading()
-          : const MaxValueState.initial(),
     );
 
     emit(state.copyWith(
@@ -149,16 +144,13 @@ class ComposeMpmaBloc extends ComposeBaseBloc<ComposeMpmaState> {
       ).call();
 
       updatedEntries[event.entryIndex] =
-          updatedEntries[event.entryIndex].copyWith(
-        maxValue: MaxValueState.success(max),
-      );
+          updatedEntries[event.entryIndex].copyWith();
 
       emit(state.copyWith(entries: updatedEntries));
     } catch (e) {
       updatedEntries[event.entryIndex] =
           updatedEntries[event.entryIndex].copyWith(
         sendMax: false,
-        maxValue: MaxValueState.error(e.toString()),
       );
 
       emit(state.copyWith(
