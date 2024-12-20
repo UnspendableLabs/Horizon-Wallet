@@ -1044,6 +1044,8 @@ class SendMenu extends StatelessWidget {
                       dashboardActivityFeedBloc: dashboardActivityFeedBloc,
                       currentAddress: currentAddress,
                     ),
+                    includeBackButton: false,
+                    includeCloseButton: true,
                   ),
                 );
               }

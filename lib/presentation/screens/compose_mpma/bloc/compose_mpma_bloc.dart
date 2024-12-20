@@ -1,3 +1,4 @@
+import 'package:decimal/decimal.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/domain/entities/balance.dart';
@@ -13,23 +14,12 @@ import 'package:horizon/presentation/common/compose_base/bloc/compose_base_event
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_state.dart';
 import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
 import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
-import 'package:horizon/presentation/common/usecase/get_max_send_quantity.dart';
 import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transaction_usecase.dart';
 import 'package:horizon/presentation/common/usecase/write_local_transaction_usecase.dart';
 import 'package:horizon/presentation/screens/compose_mpma/bloc/compose_mpma_event.dart';
 import 'package:horizon/presentation/screens/compose_mpma/bloc/compose_mpma_state.dart';
 
-class ComposeMpmaEventParams {
-  final String destinationAddresses;
-  final List<int> quantities;
-  final List<String> assets;
-
-  ComposeMpmaEventParams({
-    required this.destinationAddresses,
-    required this.quantities,
-    required this.assets,
-  });
-}
+class ComposeMpmaEventParams {}
 
 class ComposeMpmaBloc extends ComposeBaseBloc<ComposeMpmaState> {
   final BalanceRepository balanceRepository;
@@ -59,6 +49,7 @@ class ComposeMpmaBloc extends ComposeBaseBloc<ComposeMpmaState> {
     on<UpdateEntryQuantity>(_onUpdateEntryQuantity);
     on<ToggleEntrySendMax>(_onToggleEntrySendMax);
     on<AddNewEntry>(_onAddNewEntry);
+    on<RemoveEntry>(_onRemoveEntry);
   }
 
   void _onUpdateEntryDestination(
@@ -130,19 +121,6 @@ class ComposeMpmaBloc extends ComposeBaseBloc<ComposeMpmaState> {
     if (!event.value) return;
 
     try {
-      final source = entry.source!;
-      final asset = entry.asset ?? "BTC";
-      final feeRate = _getFeeRate();
-
-      final max = await GetMaxSendQuantity(
-        source: source,
-        asset: asset,
-        feeRate: feeRate,
-        balanceRepository: balanceRepository,
-        composeRepository: composeRepository,
-        transactionService: transactionService,
-      ).call();
-
       updatedEntries[event.entryIndex] =
           updatedEntries[event.entryIndex].copyWith();
 
@@ -163,6 +141,20 @@ class ComposeMpmaBloc extends ComposeBaseBloc<ComposeMpmaState> {
   void _onAddNewEntry(AddNewEntry event, Emitter<ComposeMpmaState> emit) {
     final updatedEntries = List<MpmaEntry>.from(state.entries)
       ..add(MpmaEntry.initial());
+    emit(state.copyWith(
+      entries: updatedEntries,
+      submitState: const SubmitInitial(),
+    ));
+  }
+
+  void _onRemoveEntry(RemoveEntry event, Emitter<ComposeMpmaState> emit) {
+    if (event.entryIndex <= 0 || event.entryIndex >= state.entries.length) {
+      return;
+    }
+
+    final updatedEntries = List<MpmaEntry>.from(state.entries);
+    updatedEntries.removeAt(event.entryIndex);
+
     emit(state.copyWith(
       entries: updatedEntries,
       submitState: const SubmitInitial(),
@@ -222,46 +214,100 @@ class ComposeMpmaBloc extends ComposeBaseBloc<ComposeMpmaState> {
 
   @override
   onComposeTransaction(event, emit) async {
-    // emit((state).copyWith(submitState: const SubmitInitial(loading: true)));
+    emit((state).copyWith(submitState: const SubmitInitial(loading: true)));
 
-    // try {
-    //   final feeRate = _getFeeRate();
-    //   final source = event.sourceAddress;
-    //   final destination = event.params.destinationAddress;
-    //   final asset = event.params.asset;
-    //   final quantity = event.params.quantity;
+    try {
+      final source = event.sourceAddress;
+      final feeRate = _getFeeRate();
+      final entries = (state).entries;
 
-    //   final composeResponse = await composeTransactionUseCase.call<ComposeMpmaSendParams, ComposeMpmaSendResponse>(
-    //     feeRate: feeRate,
-    //     source: source,
-    //     params: ComposeMpmaSendParams(
-    //       source: source,
-    //       destinations: destination,
-    //       assets: asset,
-    //       quantities: quantity,
-    //     ),
-    //     composeFn: composeRepository.composeMpmaSend,
-    //   );
+      // Validate all entries are complete
+      for (var i = 0; i < entries.length; i++) {
+        final entry = entries[i];
+        if (entry.destination == null || entry.destination!.isEmpty) {
+          throw ComposeTransactionException(
+              'Destination address is required for entry ${i + 1}');
+        }
+        if (entry.asset == null || entry.asset!.isEmpty) {
+          throw ComposeTransactionException(
+              'Asset is required for entry ${i + 1}');
+        }
+        if (entry.quantity.isEmpty) {
+          throw ComposeTransactionException(
+              'Quantity is required for entry ${i + 1}');
+        }
+      }
 
-    //   final composed = composeResponse.$1;
-    //   final virtualSize = composeResponse.$2;
+      // Create parallel arrays ensuring index alignment
+      final destinations = List<String>.filled(entries.length, '');
+      final assets = List<String>.filled(entries.length, '');
+      final quantities = List<int>.filled(entries.length, 0);
 
-    //   emit(state.copyWith(
-    //       submitState: SubmitComposingTransaction<ComposeMpmaSendResponse, void>(
-    //     composeTransaction: composed,
-    //     fee: composed.btcFee,
-    //     feeRate: feeRate,
-    //     virtualSize: virtualSize.virtualSize,
-    //     adjustedVirtualSize: virtualSize.adjustedVirtualSize,
-    //   )));
-    // } on ComposeTransactionException catch (e) {
-    //   emit(state.copyWith(submitState: SubmitInitial(loading: false, error: e.message)));
-    // } catch (e) {
-    //   emit(state.copyWith(
-    //       submitState: SubmitInitial(
-    //           loading: false,
-    //           error: e is ComposeTransactionException ? e.message : 'An unexpected error occurred: ${e.toString()}')));
-    // }
+      final balances = (state).balancesState.maybeWhen(
+            success: (value) => value,
+            orElse: () => null,
+          );
+
+      // Fill arrays maintaining index correlation
+      for (var i = 0; i < entries.length; i++) {
+        destinations[i] = entries[i].destination!;
+        assets[i] = entries[i].asset!;
+        final balance = balances
+            ?.firstWhere((element) => element.asset == entries[i].asset);
+        if (balance == null) {
+          throw ComposeTransactionException(
+              'Balance not found for asset ${entries[i].asset}');
+        }
+        int quantity;
+        if (balance.assetInfo.divisible) {
+          quantity =
+              (Decimal.parse(entries[i].quantity) * Decimal.fromInt(100000000))
+                  .toBigInt()
+                  .toInt();
+        } else {
+          quantity = Decimal.parse(entries[i].quantity).toBigInt().toInt();
+        }
+        quantities[i] = quantity;
+      }
+
+      final composeResponse = await composeTransactionUseCase
+          .call<ComposeMpmaSendParams, ComposeMpmaSendResponse>(
+        feeRate: feeRate,
+        source: source,
+        params: ComposeMpmaSendParams(
+          source: source,
+          destinations: destinations.join(','),
+          assets: assets.join(','),
+          quantities: quantities.join(','),
+        ),
+        composeFn: composeRepository.composeMpmaSend,
+      );
+
+      final composed = composeResponse.$1;
+      final virtualSize = composeResponse.$2;
+
+      emit(state.copyWith(
+        submitState: SubmitComposingTransaction<ComposeMpmaSendResponse, void>(
+          composeTransaction: composed,
+          fee: composed.btcFee,
+          feeRate: feeRate,
+          virtualSize: virtualSize.virtualSize,
+          adjustedVirtualSize: virtualSize.adjustedVirtualSize,
+        ),
+      ));
+    } on ComposeTransactionException catch (e) {
+      emit(state.copyWith(
+          submitState: SubmitInitial(loading: false, error: e.message)));
+    } catch (e) {
+      emit(state.copyWith(
+        submitState: SubmitInitial(
+          loading: false,
+          error: e is ComposeTransactionException
+              ? e.message
+              : 'An unexpected error occurred: ${e.toString()}',
+        ),
+      ));
+    }
   }
 
   @override

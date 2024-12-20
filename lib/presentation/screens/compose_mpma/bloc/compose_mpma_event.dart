@@ -41,3 +41,11 @@ class ToggleEntrySendMax extends ComposeBaseEvent {
 }
 
 class AddNewEntry extends ComposeBaseEvent {}
+
+class RemoveEntry extends ComposeBaseEvent {
+  final int entryIndex;
+
+  RemoveEntry({
+    required this.entryIndex,
+  });
+}

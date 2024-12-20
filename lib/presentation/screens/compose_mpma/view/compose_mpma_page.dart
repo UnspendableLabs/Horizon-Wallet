@@ -148,6 +148,17 @@ class ComposeMpmaPageState extends State<ComposeMpmaPage> {
     final entry = state.entries[entryIndex];
     final controller = _getQuantityController(entryIndex, entry.quantity);
 
+    bool isMax = false;
+    if (balance != null && entry.quantity.isNotEmpty) {
+      try {
+        final currentQuantity = Decimal.parse(entry.quantity);
+        final maxQuantity = Decimal.parse(balance.quantityNormalized);
+        isMax = currentQuantity == maxQuantity;
+      } catch (_) {
+        isMax = false;
+      }
+    }
+
     return Stack(
       children: [
         HorizonUI.HorizonTextFormField(
@@ -215,7 +226,7 @@ class ComposeMpmaPageState extends State<ComposeMpmaPage> {
                           scale: 0.8,
                           child: Switch(
                             activeColor: Colors.blue,
-                            value: entry.sendMax,
+                            value: isMax,
                             onChanged: loading
                                 ? null
                                 : (value) {
@@ -307,28 +318,44 @@ class ComposeMpmaPageState extends State<ComposeMpmaPage> {
         return Column(
           children: [
             if (entryIndex > 0) const Divider(height: 32),
-            HorizonUI.HorizonTextFormField(
-              enabled: !loading,
-              controller:
-                  _getDestinationController(entryIndex, entry.destination),
-              label: "Destination",
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter a destination address';
-                }
-                return null;
-              },
-              onChanged: (value) {
-                context.read<ComposeMpmaBloc>().add(
-                      UpdateEntryDestination(
-                        destination: value,
-                        entryIndex: entryIndex,
-                      ),
-                    );
-              },
-              autovalidateMode: _submitted
-                  ? AutovalidateMode.onUserInteraction
-                  : AutovalidateMode.disabled,
+            Row(
+              children: [
+                Expanded(
+                  child: HorizonUI.HorizonTextFormField(
+                    enabled: !loading,
+                    controller: _getDestinationController(
+                        entryIndex, entry.destination),
+                    label: "Destination",
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter a destination address';
+                      }
+                      return null;
+                    },
+                    onChanged: (value) {
+                      context.read<ComposeMpmaBloc>().add(
+                            UpdateEntryDestination(
+                              destination: value,
+                              entryIndex: entryIndex,
+                            ),
+                          );
+                    },
+                    autovalidateMode: _submitted
+                        ? AutovalidateMode.onUserInteraction
+                        : AutovalidateMode.disabled,
+                  ),
+                ),
+                if (entryIndex > 0)
+                  IconButton(
+                    icon: const Icon(Icons.remove_circle_outline),
+                    color: Colors.red,
+                    onPressed: loading
+                        ? null
+                        : () => context.read<ComposeMpmaBloc>().add(
+                              RemoveEntry(entryIndex: entryIndex),
+                            ),
+                  ),
+              ],
             ),
             const SizedBox(height: 16.0),
             if (width > 768)
@@ -418,30 +445,26 @@ class ComposeMpmaPageState extends State<ComposeMpmaPage> {
     setState(() {
       _submitted = true;
     });
-    // if (formKey.currentState!.validate()) {
-    //   Decimal input = Decimal.parse(quantityController.text);
-    //   Balance? balance = balance_;
-    //   int quantity;
+    if (formKey.currentState!.validate()) {
+      //   Decimal input = Decimal.parse(quantityController.text);
+      //   Balance? balance = balance_;
+      //   int quantity;
 
-    //   if (balance == null) {
-    //     throw Exception("invariant: No balance found for asset");
-    //   }
+      //   if (balance == null) {
+      //     throw Exception("invariant: No balance found for asset");
+      //   }
 
-    //   if (balance.assetInfo.divisible) {
-    //     quantity = (input * Decimal.fromInt(100000000)).toBigInt().toInt();
-    //   } else {
-    //     quantity = input.toBigInt().toInt();
-    //   }
+      //   if (balance.assetInfo.divisible) {
+      //     quantity = (input * Decimal.fromInt(100000000)).toBigInt().toInt();
+      //   } else {
+      //     quantity = input.toBigInt().toInt();
+      //   }
 
-    //   context.read<ComposeSendBloc>().add(ComposeTransactionEvent(
-    //         sourceAddress: widget.address,
-    //         params: ComposeSendEventParams(
-    //           destinationAddress: destinationAddressController.text,
-    //           asset: asset!,
-    //           quantity: quantity,
-    //         ),
-    //       ));
-    // }
+      context.read<ComposeMpmaBloc>().add(ComposeTransactionEvent(
+            sourceAddress: widget.address,
+            params: ComposeMpmaEventParams(),
+          ));
+    }
   }
 
   List<Widget> _buildConfirmationDetails(dynamic composeTransaction) {
