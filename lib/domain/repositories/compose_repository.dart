@@ -10,12 +10,16 @@ import 'package:horizon/domain/entities/compose_dispenser.dart';
 import 'package:horizon/domain/entities/compose_dispense.dart';
 import 'package:horizon/domain/entities/compose_order.dart';
 import 'package:horizon/domain/entities/compose_cancel.dart';
-
+import 'package:horizon/domain/entities/compose_mpma_send.dart';
 import 'package:horizon/domain/entities/utxo.dart';
 
 abstract class ComposeRepository {
   Future<ComposeSendResponse> composeSendVerbose(
       int fee, List<Utxo> inputsSet, ComposeSendParams params);
+
+  Future<ComposeMpmaSendResponse> composeMpmaSend(
+      int fee, List<Utxo> inputsSet, ComposeMpmaSendParams params);
+
   Future<ComposeIssuanceResponseVerbose> composeIssuanceVerbose(
       int fee, List<Utxo> inputsSet, ComposeIssuanceParams params);
 
