@@ -6,6 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/domain/entities/balance.dart';
+import 'package:horizon/domain/entities/compose_mpma_send.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
@@ -395,46 +396,47 @@ class ComposeMpmaPageState extends State<ComposeMpmaPage> {
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<ComposeMpmaBloc, ComposeMpmaState>(
-        listener: (context, state) {},
-        builder: (context, state) {
-          return ComposeBasePage<ComposeMpmaBloc, ComposeMpmaState>(
-            dashboardActivityFeedBloc: widget.dashboardActivityFeedBloc,
-            onFeeChange: (fee) => context
-                .read<ComposeMpmaBloc>()
-                .add(ChangeFeeOption(value: fee)),
-            buildInitialFormFields: (state, loading, formKey) =>
-                _buildInitialFormFields(state, loading, formKey),
-            onInitialCancel: () => _handleInitialCancel(),
-            onInitialSubmit: (formKey) => _handleInitialSubmit(formKey),
-            buildConfirmationFormFields: (state, composeTransaction, formKey) =>
-                _buildConfirmationDetails(composeTransaction),
-            onConfirmationBack: () => context
-                .read<ComposeMpmaBloc>()
-                .add(FetchFormData(currentAddress: widget.address)),
-            onConfirmationContinue: (composeSend, fee, formKey) {
-              // if (formKey.currentState!.validate()) {
-              //   context.read<ComposeSendBloc>().add(
-              //         FinalizeTransactionEvent<ComposeSendResponse>(
-              //           composeTransaction: composeSend,
-              //           fee: fee,
-              //         ),
-              //       );
-              // }
-            },
-            onFinalizeSubmit: (password, formKey) {
-              // if (formKey.currentState!.validate()) {
-              //   context.read<ComposeSendBloc>().add(
-              //         SignAndBroadcastTransactionEvent(
-              //           password: password,
-              //         ),
-              //       );
-              // }
-            },
-            onFinalizeCancel: () => context
-                .read<ComposeMpmaBloc>()
-                .add(FetchFormData(currentAddress: widget.address)),
-          );
-        });
+      listener: (context, state) {},
+      builder: (context, state) {
+        return ComposeBasePage<ComposeMpmaBloc, ComposeMpmaState>(
+          dashboardActivityFeedBloc: widget.dashboardActivityFeedBloc,
+          onFeeChange: (fee) =>
+              context.read<ComposeMpmaBloc>().add(ChangeFeeOption(value: fee)),
+          buildInitialFormFields: (state, loading, formKey) =>
+              _buildInitialFormFields(state, loading, formKey),
+          onInitialCancel: () => _handleInitialCancel(),
+          onInitialSubmit: (formKey) => _handleInitialSubmit(formKey),
+          buildConfirmationFormFields: (_, composeTransaction, __) =>
+              _buildConfirmationDetails(context.read<ComposeMpmaBloc>().state,
+                  composeTransaction as ComposeMpmaSendResponse),
+          onConfirmationBack: () => context
+              .read<ComposeMpmaBloc>()
+              .add(FetchFormData(currentAddress: widget.address)),
+          onConfirmationContinue: (composeSend, fee, formKey) {
+            if (formKey.currentState!.validate()) {
+              context.read<ComposeMpmaBloc>().add(
+                    FinalizeTransactionEvent<ComposeMpmaSendResponse>(
+                      composeTransaction: composeSend,
+                      fee: fee,
+                    ),
+                  );
+            }
+          },
+          onFinalizeSubmit: (password, formKey) {
+            if (formKey.currentState!.validate()) {
+              context.read<ComposeMpmaBloc>().add(
+                    SignAndBroadcastTransactionEvent(
+                      password: password,
+                    ),
+                  );
+            }
+          },
+          onFinalizeCancel: () => context
+              .read<ComposeMpmaBloc>()
+              .add(FetchFormData(currentAddress: widget.address)),
+        );
+      },
+    );
   }
 
   void _handleInitialCancel() {
@@ -446,20 +448,6 @@ class ComposeMpmaPageState extends State<ComposeMpmaPage> {
       _submitted = true;
     });
     if (formKey.currentState!.validate()) {
-      //   Decimal input = Decimal.parse(quantityController.text);
-      //   Balance? balance = balance_;
-      //   int quantity;
-
-      //   if (balance == null) {
-      //     throw Exception("invariant: No balance found for asset");
-      //   }
-
-      //   if (balance.assetInfo.divisible) {
-      //     quantity = (input * Decimal.fromInt(100000000)).toBigInt().toInt();
-      //   } else {
-      //     quantity = input.toBigInt().toInt();
-      //   }
-
       context.read<ComposeMpmaBloc>().add(ComposeTransactionEvent(
             sourceAddress: widget.address,
             params: ComposeMpmaEventParams(),
@@ -467,42 +455,75 @@ class ComposeMpmaPageState extends State<ComposeMpmaPage> {
     }
   }
 
-  List<Widget> _buildConfirmationDetails(dynamic composeTransaction) {
-    return [];
-    // final params = (composeTransaction as ComposeSendResponse).params;
-    // return [
-    //   HorizonUI.HorizonTextFormField(
-    //     label: "Source Address",
-    //     controller: TextEditingController(text: params.source),
-    //     enabled: false,
-    //   ),
-    //   const SizedBox(height: 16.0),
-    //   HorizonUI.HorizonTextFormField(
-    //     label: "Destination Address",
-    //     controller: TextEditingController(text: params.destination),
-    //     enabled: false,
-    //   ),
-    //   const SizedBox(height: 16.0),
-    //   Row(
-    //     children: [
-    //       Expanded(
-    //         child: HorizonUI.HorizonTextFormField(
-    //           label: "Quantity",
-    //           controller: TextEditingController(text: params.quantityNormalized),
-    //           enabled: false,
-    //         ),
-    //       ),
-    //       const SizedBox(width: 16.0), // Spacing between inputs
-    //       Expanded(
-    //         child: HorizonUI.HorizonTextFormField(
-    //           label: "Asset",
-    //           controller: TextEditingController(text: params.asset),
-    //           enabled: false,
-    //         ),
-    //       ),
-    //     ],
-    //   ),
-    // ];
+  List<Widget> _buildConfirmationDetails(
+      ComposeMpmaState state, ComposeMpmaSendResponse composeTransaction) {
+    final params = composeTransaction.params;
+
+    final balances = state.balancesState.maybeWhen(
+      success: (balances) => balances,
+      orElse: () => <Balance>[],
+    );
+
+    return [
+      HorizonUI.HorizonTextFormField(
+        label: "Source Address",
+        controller: TextEditingController(text: params.source),
+        enabled: false,
+      ),
+      const SizedBox(height: 16.0),
+      ...params.assetDestQuantList.asMap().entries.map((entry) {
+        final asset = entry.value[0];
+        final destination = entry.value[1];
+        final quantityInSats = int.parse(entry.value[2].toString());
+
+        final balance = balances.firstWhereOrNull(
+          (balance) => balance.asset == asset,
+        );
+        final assetName =
+            displayAssetName(asset, balance?.assetInfo.assetLongname);
+
+        // Convert quantity based on asset divisibility
+        final displayQuantity = balance?.assetInfo.divisible == true
+            ? (Decimal.fromInt(quantityInSats) / Decimal.fromInt(100000000))
+                .toDouble()
+                .toStringAsFixed(8)
+            : quantityInSats.toString();
+
+        return Column(
+          children: [
+            const Divider(height: 32),
+            HorizonUI.HorizonTextFormField(
+              label: "Destination Address",
+              controller: TextEditingController(text: destination),
+              enabled: false,
+            ),
+            const SizedBox(height: 16.0),
+            Row(
+              children: [
+                Expanded(
+                  child: HorizonUI.HorizonTextFormField(
+                    label: "Quantity",
+                    controller: TextEditingController(text: displayQuantity),
+                    enabled: false,
+                  ),
+                ),
+                const SizedBox(width: 16.0),
+                Expanded(
+                  child: HorizonUI.HorizonTextFormField(
+                    label: "Asset",
+                    controller: TextEditingController(text: assetName),
+                    enabled: false,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16.0),
+            if (entry.key == params.assetDestQuantList.length - 1)
+              const Divider(height: 32),
+          ],
+        );
+      }),
+    ];
   }
 
   @override
@@ -533,6 +554,5 @@ Balance? _getBalanceForSelectedAsset(List<Balance> balances, String asset) {
     return null;
   }
 
-  return balances.firstWhereOrNull((balance) => balance.asset == asset) ??
-      balances[0];
+  return balances.firstWhereOrNull((balance) => balance.asset == asset);
 }

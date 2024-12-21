@@ -1,5 +1,6 @@
 import 'package:decimal/decimal.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:horizon/common/uuid.dart';
 import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/domain/entities/compose_mpma_send.dart';
@@ -139,8 +140,19 @@ class ComposeMpmaBloc extends ComposeBaseBloc<ComposeMpmaState> {
   }
 
   void _onAddNewEntry(AddNewEntry event, Emitter<ComposeMpmaState> emit) {
-    final updatedEntries = List<MpmaEntry>.from(state.entries)
-      ..add(MpmaEntry.initial());
+    // Get the first available non-BTC asset from balances
+    final firstAsset = state.balancesState.maybeWhen(
+      success: (balances) => balances.isNotEmpty ? balances[0].asset : null,
+      orElse: () => null,
+    );
+
+    // Create new entry with the first available asset
+    final newEntry = MpmaEntry.initial().copyWith(
+      asset: firstAsset,
+    );
+
+    final updatedEntries = List<MpmaEntry>.from(state.entries)..add(newEntry);
+
     emit(state.copyWith(
       entries: updatedEntries,
       submitState: const SubmitInitial(),
@@ -178,7 +190,6 @@ class ComposeMpmaBloc extends ComposeBaseBloc<ComposeMpmaState> {
     late FeeEstimates feeEstimates;
     try {
       List<String> addresses = [event.currentAddress!];
-
       balances =
           await balanceRepository.getBalancesForAddress(addresses[0], true);
     } catch (e) {
@@ -196,10 +207,23 @@ class ComposeMpmaBloc extends ComposeBaseBloc<ComposeMpmaState> {
       return;
     }
 
+    final nonBtcBalances =
+        balances.where((balance) => balance.asset != 'BTC').toList();
+
+    // Set initial asset for the first entry if balances exist
+    final updatedEntries = List<MpmaEntry>.from(state.entries);
+    if (nonBtcBalances.isNotEmpty) {
+      updatedEntries[0] = updatedEntries[0].copyWith(
+        asset: nonBtcBalances[0].asset,
+      );
+    }
+
     emit(state.copyWith(
-        balancesState: BalancesState.success(balances),
-        feeState: FeeState.success(feeEstimates),
-        submitState: const SubmitInitial()));
+      entries: updatedEntries,
+      balancesState: BalancesState.success(nonBtcBalances),
+      feeState: FeeState.success(feeEstimates),
+      submitState: const SubmitInitial(),
+    ));
   }
 
   @override
@@ -313,43 +337,47 @@ class ComposeMpmaBloc extends ComposeBaseBloc<ComposeMpmaState> {
   @override
   void onSignAndBroadcastTransaction(
       SignAndBroadcastTransactionEvent event, emit) async {
-    // if (state.submitState is! SubmitFinalizing<ComposeMpmaSendResponse>) {
-    //   return;
-    // }
+    if (state.submitState is! SubmitFinalizing<ComposeMpmaSendResponse>) {
+      return;
+    }
 
-    // final s = (state.submitState as SubmitFinalizing<ComposeMpmaSendResponse>);
-    // final compose = s.composeTransaction;
-    // final fee = s.fee;
+    final s = (state.submitState as SubmitFinalizing<ComposeMpmaSendResponse>);
+    final compose = s.composeTransaction;
+    final fee = s.fee;
 
-    // emit(state.copyWith(
-    //     submitState: SubmitFinalizing<ComposeMpmaSendResponse>(
-    //   loading: true,
-    //   error: null,
-    //   fee: fee,
-    //   composeTransaction: compose,
-    // )));
+    emit(state.copyWith(
+        submitState: SubmitFinalizing<ComposeMpmaSendResponse>(
+      loading: true,
+      error: null,
+      fee: fee,
+      composeTransaction: compose,
+    )));
 
-    // await signAndBroadcastTransactionUseCase.call(
-    //     password: event.password,
-    //     source: compose.params.source,
-    //     rawtransaction: compose.rawtransaction,
-    //     onSuccess: (txHex, txHash) async {
-    //       await writelocalTransactionUseCase.call(txHex, txHash);
+    await signAndBroadcastTransactionUseCase.call(
+        password: event.password,
+        source: compose.params.source,
+        rawtransaction: compose.rawtransaction,
+        onSuccess: (txHex, txHash) async {
+          await writelocalTransactionUseCase.call(txHex, txHash);
 
-    //       logger.info('mpma broadcasted txHash: $txHash');
-    //       analyticsService.trackAnonymousEvent('broadcast_tx_mpma', properties: {'distinct_id': uuid.v4()});
+          logger.info('mpma broadcasted txHash: $txHash');
+          analyticsService.trackAnonymousEvent('broadcast_tx_mpma',
+              properties: {'distinct_id': uuid.v4()});
 
-    //       emit(state.copyWith(submitState: SubmitSuccess(transactionHex: txHex, sourceAddress: compose.params.source)));
-    //     },
-    //     onError: (msg) {
-    //       emit(state.copyWith(
-    //           submitState: SubmitFinalizing<ComposeMpmaSendResponse>(
-    //         loading: false,
-    //         error: msg,
-    //         fee: fee,
-    //         composeTransaction: compose,
-    //       )));
-    //     });
+          emit(state.copyWith(
+              submitState: SubmitSuccess(
+                  transactionHex: txHex,
+                  sourceAddress: compose.params.source)));
+        },
+        onError: (msg) {
+          emit(state.copyWith(
+              submitState: SubmitFinalizing<ComposeMpmaSendResponse>(
+            loading: false,
+            error: msg,
+            fee: fee,
+            composeTransaction: compose,
+          )));
+        });
   }
 
   int _getFeeRate() {
