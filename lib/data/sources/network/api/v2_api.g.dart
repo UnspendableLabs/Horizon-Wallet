@@ -372,6 +372,54 @@ Map<String, dynamic> _$EnhancedSendEventToJson(EnhancedSendEvent instance) =>
       'params': instance.params,
     };
 
+MpmaSendEvent _$MpmaSendEventFromJson(Map<String, dynamic> json) =>
+    MpmaSendEvent(
+      eventIndex: (json['event_index'] as num?)?.toInt(),
+      event: json['event'] as String,
+      txHash: json['tx_hash'] as String?,
+      blockIndex: (json['block_index'] as num?)?.toInt(),
+      params:
+          MpmaSendEventParams.fromJson(json['params'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$MpmaSendEventToJson(MpmaSendEvent instance) =>
+    <String, dynamic>{
+      'event_index': instance.eventIndex,
+      'event': instance.event,
+      'tx_hash': instance.txHash,
+      'block_index': instance.blockIndex,
+      'params': instance.params,
+    };
+
+MpmaSendEventParams _$MpmaSendEventParamsFromJson(Map<String, dynamic> json) =>
+    MpmaSendEventParams(
+      asset: json['asset'] as String,
+      blockIndex: (json['block_index'] as num).toInt(),
+      destination: json['destination'] as String,
+      source: json['source'] as String,
+      memo: json['memo'] as String?,
+      msgIndex: (json['msg_index'] as num?)?.toInt(),
+      quantity: (json['quantity'] as num).toInt(),
+      status: json['status'] as String,
+      txHash: json['tx_hash'] as String,
+      txIndex: (json['tx_index'] as num).toInt(),
+    );
+
+Map<String, dynamic> _$MpmaSendEventParamsToJson(
+        MpmaSendEventParams instance) =>
+    <String, dynamic>{
+      'asset': instance.asset,
+      'block_index': instance.blockIndex,
+      'destination': instance.destination,
+      'source': instance.source,
+      'memo': instance.memo,
+      'msg_index': instance.msgIndex,
+      'quantity': instance.quantity,
+      'status': instance.status,
+      'tx_hash': instance.txHash,
+      'tx_index': instance.txIndex,
+    };
+
 CreditEvent _$CreditEventFromJson(Map<String, dynamic> json) => CreditEvent(
       eventIndex: (json['event_index'] as num?)?.toInt(),
       event: json['event'] as String,
@@ -2371,6 +2419,66 @@ Map<String, dynamic> _$VerboseEnhancedSendEventToJson(
       'block_index': instance.blockIndex,
       'block_time': instance.blockTime,
       'params': instance.params,
+    };
+
+VerboseMpmaSendEvent _$VerboseMpmaSendEventFromJson(
+        Map<String, dynamic> json) =>
+    VerboseMpmaSendEvent(
+      eventIndex: (json['event_index'] as num?)?.toInt(),
+      event: json['event'] as String,
+      txHash: json['tx_hash'] as String?,
+      blockIndex: (json['block_index'] as num?)?.toInt(),
+      blockTime: (json['block_time'] as num?)?.toInt(),
+      params: VerboseMpmaSendParams.fromJson(
+          json['params'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$VerboseMpmaSendEventToJson(
+        VerboseMpmaSendEvent instance) =>
+    <String, dynamic>{
+      'event_index': instance.eventIndex,
+      'event': instance.event,
+      'tx_hash': instance.txHash,
+      'block_index': instance.blockIndex,
+      'block_time': instance.blockTime,
+      'params': instance.params,
+    };
+
+VerboseMpmaSendParams _$VerboseMpmaSendParamsFromJson(
+        Map<String, dynamic> json) =>
+    VerboseMpmaSendParams(
+      asset: json['asset'] as String,
+      blockIndex: (json['block_index'] as num).toInt(),
+      destination: json['destination'] as String,
+      memo: json['memo'] as String?,
+      msgIndex: (json['msg_index'] as num?)?.toInt(),
+      quantity: (json['quantity'] as num).toInt(),
+      source: json['source'] as String,
+      status: json['status'] as String,
+      txHash: json['tx_hash'] as String,
+      txIndex: (json['tx_index'] as num).toInt(),
+      blockTime: (json['block_time'] as num?)?.toInt(),
+      assetInfo:
+          AssetInfoModel.fromJson(json['asset_info'] as Map<String, dynamic>),
+      quantityNormalized: json['quantity_normalized'] as String,
+    );
+
+Map<String, dynamic> _$VerboseMpmaSendParamsToJson(
+        VerboseMpmaSendParams instance) =>
+    <String, dynamic>{
+      'asset': instance.asset,
+      'block_index': instance.blockIndex,
+      'destination': instance.destination,
+      'source': instance.source,
+      'memo': instance.memo,
+      'msg_index': instance.msgIndex,
+      'quantity': instance.quantity,
+      'status': instance.status,
+      'tx_hash': instance.txHash,
+      'tx_index': instance.txIndex,
+      'block_time': instance.blockTime,
+      'asset_info': instance.assetInfo,
+      'quantity_normalized': instance.quantityNormalized,
     };
 
 VerboseCreditEvent _$VerboseCreditEventFromJson(Map<String, dynamic> json) =>

@@ -16,30 +16,38 @@ import 'package:horizon/presentation/common/colors.dart';
 class SendTitle extends StatelessWidget {
   final String quantityNormalized;
   final String asset;
+  final bool? isMpma;
   const SendTitle({
     super.key,
     required this.quantityNormalized,
     required this.asset,
+    this.isMpma,
   });
 
   @override
   Widget build(BuildContext context) {
-    return SelectableText("Send $quantityNormalized $asset");
+    return SelectableText(isMpma == true
+        ? "MPMA Send $quantityNormalized $asset"
+        : "Send $quantityNormalized $asset");
   }
 }
 
 class ReceiveTitle extends StatelessWidget {
   final String quantityNormalized;
   final String asset;
+  final bool? isMpma;
   const ReceiveTitle({
     super.key,
     required this.quantityNormalized,
     required this.asset,
+    this.isMpma,
   });
 
   @override
   Widget build(BuildContext context) {
-    return SelectableText("Receive $quantityNormalized $asset");
+    return SelectableText(isMpma == true
+        ? "MPMA Receive $quantityNormalized $asset"
+        : "Receive $quantityNormalized $asset");
   }
 }
 
@@ -204,6 +212,20 @@ class ActivityFeedListItem extends StatelessWidget {
         ReceiveTitle(
           quantityNormalized: params.quantityNormalized,
           asset: params.asset,
+        ),
+      VerboseMpmaSendEvent(params: var params)
+          when _getSendSide(params.source) == SendSide.source =>
+        SendTitle(
+          quantityNormalized: params.quantityNormalized,
+          asset: params.asset,
+          isMpma: true,
+        ),
+      VerboseMpmaSendEvent(params: var params)
+          when _getSendSide(params.source) == SendSide.destination =>
+        ReceiveTitle(
+          quantityNormalized: params.quantityNormalized,
+          asset: params.asset,
+          isMpma: true,
         ),
       VerboseAssetIssuanceEvent(params: var params) =>
         _buildAssetIssuanceTitle(params),
@@ -503,6 +525,12 @@ class ActivityFeedListItem extends StatelessWidget {
           when _getSendSide(params.source) == SendSide.source =>
         const Icon(Icons.arrow_back, color: Colors.red),
       VerboseEnhancedSendEvent(params: var params)
+          when _getSendSide(params.source) == SendSide.destination =>
+        const Icon(Icons.arrow_forward, color: Colors.green),
+      VerboseMpmaSendEvent(params: var params)
+          when _getSendSide(params.source) == SendSide.source =>
+        const Icon(Icons.arrow_back, color: Colors.red),
+      VerboseMpmaSendEvent(params: var params)
           when _getSendSide(params.source) == SendSide.destination =>
         const Icon(Icons.arrow_forward, color: Colors.green),
       VerboseAssetIssuanceEvent(params: var _) =>

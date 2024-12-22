@@ -258,6 +258,8 @@ class Event {
     switch (eventType) {
       case 'ENHANCED_SEND':
         return EnhancedSendEvent.fromJson(json);
+      case 'MPMA_SEND':
+        return MpmaSendEvent.fromJson(json);
       case 'CREDIT':
         return CreditEvent.fromJson(json);
       case 'DEBIT':
@@ -425,6 +427,52 @@ class EnhancedSendEvent extends Event {
 
   factory EnhancedSendEvent.fromJson(Map<String, dynamic> json) =>
       _$EnhancedSendEventFromJson(json);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class MpmaSendEvent extends Event {
+  final MpmaSendEventParams params;
+
+  MpmaSendEvent({
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
+    required this.params,
+  });
+
+  factory MpmaSendEvent.fromJson(Map<String, dynamic> json) =>
+      _$MpmaSendEventFromJson(json);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class MpmaSendEventParams {
+  final String asset;
+  final int blockIndex;
+  final String destination;
+  final String source;
+  final String? memo;
+  final int? msgIndex;
+  final int quantity;
+  final String status;
+  final String txHash;
+  final int txIndex;
+
+  MpmaSendEventParams({
+    required this.asset,
+    required this.blockIndex,
+    required this.destination,
+    required this.source,
+    this.memo,
+    this.msgIndex,
+    required this.quantity,
+    required this.status,
+    required this.txHash,
+    required this.txIndex,
+  });
+
+  factory MpmaSendEventParams.fromJson(Map<String, dynamic> json) =>
+      _$MpmaSendEventParamsFromJson(json);
 }
 
 @JsonSerializable(fieldRename: FieldRename.snake)
@@ -2251,6 +2299,8 @@ class VerboseEvent extends Event {
     switch (eventType) {
       case 'ENHANCED_SEND':
         return VerboseEnhancedSendEvent.fromJson(json);
+      case 'MPMA_SEND':
+        return VerboseMpmaSendEvent.fromJson(json);
       case 'CREDIT':
         return VerboseCreditEvent.fromJson(json);
       case 'DEBIT':
@@ -2315,6 +2365,49 @@ class VerboseEnhancedSendEvent extends VerboseEvent {
 
   factory VerboseEnhancedSendEvent.fromJson(Map<String, dynamic> json) =>
       _$VerboseEnhancedSendEventFromJson(json);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class VerboseMpmaSendEvent extends VerboseEvent {
+  final VerboseMpmaSendParams params;
+
+  VerboseMpmaSendEvent({
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
+    required super.blockTime,
+    required this.params,
+  });
+
+  factory VerboseMpmaSendEvent.fromJson(Map<String, dynamic> json) =>
+      _$VerboseMpmaSendEventFromJson(json);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class VerboseMpmaSendParams extends MpmaSendEventParams {
+  final int? blockTime;
+  final AssetInfoModel assetInfo;
+  final String quantityNormalized;
+
+  VerboseMpmaSendParams({
+    required super.asset,
+    required super.blockIndex,
+    required super.destination,
+    required super.memo,
+    required super.msgIndex,
+    required super.quantity,
+    required super.source,
+    required super.status,
+    required super.txHash,
+    required super.txIndex,
+    this.blockTime,
+    required this.assetInfo,
+    required this.quantityNormalized,
+  });
+
+  factory VerboseMpmaSendParams.fromJson(Map<String, dynamic> json) =>
+      _$VerboseMpmaSendParamsFromJson(json);
 }
 
 @JsonSerializable(fieldRename: FieldRename.snake)

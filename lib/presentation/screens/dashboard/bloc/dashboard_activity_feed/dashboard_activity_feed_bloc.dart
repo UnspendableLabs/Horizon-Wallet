@@ -17,6 +17,7 @@ import 'package:horizon/core/logging/logger.dart';
 // ignore: non_constant_identifier_names
 final DEFAULT_WHITELIST = [
   "ENHANCED_SEND",
+  "MPMA_SEND",
   "ASSET_ISSUANCE",
   "DISPENSE",
   "OPEN_DISPENSER",
@@ -506,7 +507,9 @@ class DashboardActivityFeedBloc
         List<ActivityFeedItem> confirmedActivityFeedItems = [];
         final seenHashes = <String>{};
         for (final event in counterpartyConfirmed) {
-          if (!seenHashes.contains(event.txHash)) {
+          if (!seenHashes.contains(event.txHash) ||
+              event.event == 'MPMA_SEND') {
+            // MPMA sends will have multiple entries for each sent asset
             final activityFeedItem = ActivityFeedItem(
                 id: event.txHash ?? event.hashCode.toString(),
                 hash: event.txHash,
