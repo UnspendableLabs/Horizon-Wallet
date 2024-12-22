@@ -341,6 +341,9 @@ class ComposeMpmaPageState extends State<ComposeMpmaPage> {
                             ),
                           );
                     },
+                    onFieldSubmitted: (value) {
+                      _handleInitialSubmit(formKey);
+                    },
                     autovalidateMode: _submitted
                         ? AutovalidateMode.onUserInteraction
                         : AutovalidateMode.disabled,

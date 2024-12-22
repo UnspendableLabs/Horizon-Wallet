@@ -3348,6 +3348,67 @@ Map<String, dynamic> _$EnhancedSendInfoVerboseToJson(
       'unpacked_data': instance.unpackedData,
     };
 
+MpmaSendInfoVerbose _$MpmaSendInfoVerboseFromJson(Map<String, dynamic> json) =>
+    MpmaSendInfoVerbose(
+      source: json['source'] as String,
+      destination: json['destination'] as String?,
+      btcAmount: (json['btc_amount'] as num?)?.toInt(),
+      fee: (json['fee'] as num?)?.toInt(),
+      data: json['data'] as String,
+      decodedTx: json['decoded_tx'] as Map<String, dynamic>?,
+      btcAmountNormalized: json['btc_amount_normalized'] as String?,
+      unpackedData: MpmaSendUnpackedVerbose.fromJson(
+          json['unpacked_data'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$MpmaSendInfoVerboseToJson(
+        MpmaSendInfoVerbose instance) =>
+    <String, dynamic>{
+      'source': instance.source,
+      'destination': instance.destination,
+      'btc_amount': instance.btcAmount,
+      'fee': instance.fee,
+      'data': instance.data,
+      'decoded_tx': instance.decodedTx,
+      'btc_amount_normalized': instance.btcAmountNormalized,
+      'unpacked_data': instance.unpackedData,
+    };
+
+MpmaSendUnpackedVerbose _$MpmaSendUnpackedVerboseFromJson(
+        Map<String, dynamic> json) =>
+    MpmaSendUnpackedVerbose(
+      messageData: (json['message_data'] as List<dynamic>)
+          .map((e) => MpmaSendDestination.fromJson(e as Map<String, dynamic>))
+          .toList(),
+    );
+
+Map<String, dynamic> _$MpmaSendUnpackedVerboseToJson(
+        MpmaSendUnpackedVerbose instance) =>
+    <String, dynamic>{
+      'message_data': instance.messageData,
+    };
+
+MpmaSendDestination _$MpmaSendDestinationFromJson(Map<String, dynamic> json) =>
+    MpmaSendDestination(
+      asset: json['asset'] as String,
+      destination: json['destination'] as String,
+      quantity: (json['quantity'] as num).toInt(),
+      memo: json['memo'] as String?,
+      memoIsHex: json['memo_is_hex'] as bool?,
+      quantityNormalized: json['quantity_normalized'] as String?,
+    );
+
+Map<String, dynamic> _$MpmaSendDestinationToJson(
+        MpmaSendDestination instance) =>
+    <String, dynamic>{
+      'asset': instance.asset,
+      'destination': instance.destination,
+      'quantity': instance.quantity,
+      'memo': instance.memo,
+      'memo_is_hex': instance.memoIsHex,
+      'quantity_normalized': instance.quantityNormalized,
+    };
+
 IssuanceUnpackedVerbose _$IssuanceUnpackedVerboseFromJson(
         Map<String, dynamic> json) =>
     IssuanceUnpackedVerbose(

@@ -182,7 +182,9 @@ class DashboardActivityFeedBloc
       final seenHashes = <String>{};
 
       for (final event in newCounterpartyEvents) {
-        if (!seenHashes.contains(event.txHash)) {
+        if (!seenHashes.contains(event.txHash)
+            //  || event.event == 'MPMA_SEND'
+            ) {
           final activityFeedItem = ActivityFeedItem(
               id: event.txHash ?? event.hashCode.toString(),
               hash: event.txHash,
@@ -597,6 +599,9 @@ class DashboardActivityFeedBloc
     final filteredEvents = <VerboseEvent>[];
 
     for (final event in events) {
+      if (!DEFAULT_WHITELIST.contains(event.event)) {
+        continue;
+      }
       if (event.state is EventStateMempool) {
         if (event.event == 'ASSET_ISSUANCE' &&
             (event as VerboseAssetIssuanceEvent).params.assetEvents ==

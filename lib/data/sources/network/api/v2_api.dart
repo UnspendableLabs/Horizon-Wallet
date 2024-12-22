@@ -3423,6 +3423,8 @@ class TransactionUnpackedVerbose extends TransactionUnpacked {
     switch (messageType) {
       case "enhanced_send":
         return EnhancedSendUnpackedVerbose.fromJson(json);
+      case "mpma_send":
+        return MpmaSendUnpackedVerbose.fromJson(json);
       case "issuance":
         return IssuanceUnpackedVerbose.fromJson(json);
       case "dispenser":
@@ -3770,6 +3772,8 @@ class InfoVerbose extends Info {
     switch (messageType) {
       case "enhanced_send":
         return EnhancedSendInfoVerbose.fromJson(json);
+      case "mpma_send":
+        return MpmaSendInfoVerbose.fromJson(json);
       case "issuance":
         return IssuanceInfoVerbose.fromJson(json);
       case "dispenser":
@@ -3838,6 +3842,76 @@ class EnhancedSendInfoVerbose extends InfoVerbose {
 
   @override
   Map<String, dynamic> toJson() => _$EnhancedSendInfoVerboseToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class MpmaSendInfoVerbose extends InfoVerbose {
+  final MpmaSendUnpackedVerbose unpackedData;
+  const MpmaSendInfoVerbose({
+    required super.source,
+    super.destination,
+    super.btcAmount,
+    super.fee,
+    required super.data,
+    super.decodedTx,
+    required super.btcAmountNormalized,
+    required this.unpackedData,
+  });
+
+  factory MpmaSendInfoVerbose.fromJson(Map<String, dynamic> json) =>
+      _$MpmaSendInfoVerboseFromJson(json);
+
+  @override
+  Map<String, dynamic> toJson() => _$MpmaSendInfoVerboseToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class MpmaSendUnpackedVerbose extends TransactionUnpackedVerbose {
+  final List<MpmaSendDestination> messageData;
+
+  const MpmaSendUnpackedVerbose({
+    required this.messageData,
+  }) : super(messageType: "mpma_send");
+
+  factory MpmaSendUnpackedVerbose.fromJson(Map<String, dynamic> json) {
+    final messageDataList = (json["message_data"] as List)
+        .map((data) => MpmaSendDestination.fromJson(data))
+        .toList();
+
+    return MpmaSendUnpackedVerbose(
+      messageData: messageDataList,
+    );
+  }
+
+  @override
+  Map<String, dynamic> toJson() => {
+        "message_type": "mpma_send",
+        "message_data": messageData.map((d) => d.toJson()).toList(),
+      };
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class MpmaSendDestination {
+  final String asset;
+  final String destination;
+  final int quantity;
+  final String? memo;
+  final bool? memoIsHex;
+  final String? quantityNormalized;
+
+  const MpmaSendDestination({
+    required this.asset,
+    required this.destination,
+    required this.quantity,
+    this.memo,
+    this.memoIsHex,
+    this.quantityNormalized,
+  });
+
+  factory MpmaSendDestination.fromJson(Map<String, dynamic> json) =>
+      _$MpmaSendDestinationFromJson(json);
+
+  Map<String, dynamic> toJson() => _$MpmaSendDestinationToJson(this);
 }
 
 @JsonSerializable(fieldRename: FieldRename.snake)

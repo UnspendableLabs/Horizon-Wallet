@@ -336,6 +336,16 @@ class ActivityFeedListItem extends StatelessWidget {
 
   Widget _buildTransactionInfoTitle(TransactionInfo info) {
     return switch (info) {
+      TransactionInfoMpmaSend(unpackedData: var unpackedData) => Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: unpackedData.messageData
+              .map((data) => SendTitle(
+                    quantityNormalized: data.quantityNormalized!,
+                    asset: data.asset,
+                    isMpma: true,
+                  ))
+              .toList(),
+        ),
       TransactionInfoAttach(
         unpackedData: var unpackedData,
       ) =>
@@ -396,7 +406,8 @@ class ActivityFeedListItem extends StatelessWidget {
 
   Icon _getTransactionInfoLeading(TransactionInfo info) {
     return switch (info) {
-      // local can only ever be a send
+      TransactionInfoMpmaSend() =>
+        const Icon(Icons.arrow_back, color: Colors.grey),
       TransactionInfoEnhancedSend() =>
         const Icon(Icons.arrow_back, color: Colors.grey),
       TransactionInfoIssuance() => const Icon(Icons.toll, color: Colors.grey),
