@@ -182,8 +182,9 @@ class DashboardActivityFeedBloc
       final seenHashes = <String>{};
 
       for (final event in newCounterpartyEvents) {
-        if (!seenHashes.contains(event.txHash)
-            //  || event.event == 'MPMA_SEND'
+        if (!seenHashes.contains(event.txHash) ||
+                event.event ==
+                    'MPMA_SEND' // MPMA sends will have multiple event entries with the same tx_hash
             ) {
           final activityFeedItem = ActivityFeedItem(
               id: event.txHash ?? event.hashCode.toString(),

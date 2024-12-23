@@ -149,12 +149,19 @@ class ComposeMpmaPageState extends State<ComposeMpmaPage> {
     final entry = state.entries[entryIndex];
     final controller = _getQuantityController(entryIndex, entry.quantity);
 
+    // Get remaining balance for this asset at this entry
+    Decimal remainingBalance = Decimal.zero;
+    if (balance != null && entry.asset != null) {
+      remainingBalance = context
+          .read<ComposeMpmaBloc>()
+          .getRemainingBalanceForAsset(entry.asset!, entryIndex);
+    }
+
     bool isMax = false;
     if (balance != null && entry.quantity.isNotEmpty) {
       try {
         final currentQuantity = Decimal.parse(entry.quantity);
-        final maxQuantity = Decimal.parse(balance.quantityNormalized);
-        isMax = currentQuantity == maxQuantity;
+        isMax = currentQuantity == remainingBalance;
       } catch (_) {
         isMax = false;
       }
@@ -164,7 +171,7 @@ class ComposeMpmaPageState extends State<ComposeMpmaPage> {
       children: [
         HorizonUI.HorizonTextFormField(
           controller: controller,
-          enabled: !loading,
+          enabled: !loading && remainingBalance > Decimal.zero,
           onChanged: (value) {
             context.read<ComposeMpmaBloc>().add(
                   UpdateEntryQuantity(
@@ -187,9 +194,8 @@ class ComposeMpmaPageState extends State<ComposeMpmaPage> {
             }
             try {
               Decimal input = Decimal.parse(value);
-              Decimal max = Decimal.parse(balance?.quantityNormalized ?? '0');
-              if (input > max) {
-                return "quantity is greater than asset balance";
+              if (input > remainingBalance) {
+                return "Quantity exceeds available balance";
               }
             } catch (e) {
               return "Invalid number format";
@@ -213,13 +219,16 @@ class ComposeMpmaPageState extends State<ComposeMpmaPage> {
                     bottom: 0,
                     child: Row(
                       children: [
-                        Container(
-                          margin: const EdgeInsets.only(top: 2.0),
-                          child: const Text(
-                            'MAX',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w700,
+                        Opacity(
+                          opacity: remainingBalance > Decimal.zero ? 1.0 : 0.5,
+                          child: Container(
+                            margin: const EdgeInsets.only(top: 2.0),
+                            child: const Text(
+                              'MAX',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
+                              ),
                             ),
                           ),
                         ),
@@ -228,17 +237,17 @@ class ComposeMpmaPageState extends State<ComposeMpmaPage> {
                           child: Switch(
                             activeColor: Colors.blue,
                             value: isMax,
-                            onChanged: loading
+                            onChanged: (loading ||
+                                    remainingBalance <= Decimal.zero)
                                 ? null
                                 : (value) {
                                     if (value) {
                                       controller.text =
-                                          balance?.quantityNormalized ?? '0';
+                                          remainingBalance.toString();
                                       context.read<ComposeMpmaBloc>().add(
                                             UpdateEntryQuantity(
                                               quantity:
-                                                  balance?.quantityNormalized ??
-                                                      '0',
+                                                  remainingBalance.toString(),
                                               entryIndex: entryIndex,
                                             ),
                                           );

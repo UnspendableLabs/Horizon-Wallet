@@ -177,7 +177,7 @@ Future<void> setup() async {
     ConnectionErrorInterceptor(),
     BadResponseInterceptor(),
     BadCertificateInterceptor(),
-    // SimpleLogInterceptor(),
+    SimpleLogInterceptor(),
     RetryInterceptor(
       dio: dio, retries: 3,
       retryableExtraStatuses: {400}, // to handle backend bug with compose
@@ -203,7 +203,7 @@ Future<void> setup() async {
     ConnectionErrorInterceptor(),
     BadResponseInterceptor(),
     BadCertificateInterceptor(),
-    // SimpleLogInterceptor(),
+    SimpleLogInterceptor(),
     RetryInterceptor(
       dio: dio,
       retries: 4,

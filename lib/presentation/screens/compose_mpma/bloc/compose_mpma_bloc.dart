@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:decimal/decimal.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:horizon/common/uuid.dart';
@@ -86,8 +87,29 @@ class ComposeMpmaBloc extends ComposeBaseBloc<ComposeMpmaState> {
   void _onUpdateEntryQuantity(
       UpdateEntryQuantity event, Emitter<ComposeMpmaState> emit) {
     final updatedEntries = List<MpmaEntry>.from(state.entries);
-    updatedEntries[event.entryIndex] =
-        updatedEntries[event.entryIndex].copyWith(
+    final entry = updatedEntries[event.entryIndex];
+
+    if (entry.asset != null && event.quantity.isNotEmpty) {
+      try {
+        final inputQuantity = Decimal.parse(event.quantity);
+        final remainingBalance = getRemainingBalanceForAsset(
+          entry.asset!,
+          event.entryIndex,
+        );
+
+        // Validate that input doesn't exceed remaining balance
+        if (inputQuantity > remainingBalance) {
+          emit(state.copyWith(
+            composeSendError: "Quantity exceeds available balance",
+          ));
+          return;
+        }
+      } catch (_) {
+        // Handle invalid number format
+      }
+    }
+
+    updatedEntries[event.entryIndex] = entry.copyWith(
       quantity: event.quantity,
       sendMax: false,
     );
@@ -95,48 +117,36 @@ class ComposeMpmaBloc extends ComposeBaseBloc<ComposeMpmaState> {
     emit(state.copyWith(
       entries: updatedEntries,
       submitState: const SubmitInitial(),
+      composeSendError: null,
     ));
   }
 
   void _onToggleEntrySendMax(
       ToggleEntrySendMax event, Emitter<ComposeMpmaState> emit) async {
-    // return early if fee estimates haven't loaded
-    FeeEstimates? feeEstimates = state.feeState.maybeWhen(
-      success: (value) => value,
-      orElse: () => null,
-    );
-    if (feeEstimates == null) return;
-
     final updatedEntries = List<MpmaEntry>.from(state.entries);
     final entry = updatedEntries[event.entryIndex];
 
+    if (!event.value || entry.asset == null) {
+      updatedEntries[event.entryIndex] = entry.copyWith(sendMax: event.value);
+      emit(state.copyWith(entries: updatedEntries));
+      return;
+    }
+
+    final remainingBalance = getRemainingBalanceForAsset(
+      entry.asset!,
+      event.entryIndex,
+    );
+
     updatedEntries[event.entryIndex] = entry.copyWith(
       sendMax: event.value,
+      quantity: remainingBalance.toString(),
     );
 
     emit(state.copyWith(
       entries: updatedEntries,
       submitState: const SubmitInitial(),
+      composeSendError: null,
     ));
-
-    if (!event.value) return;
-
-    try {
-      updatedEntries[event.entryIndex] =
-          updatedEntries[event.entryIndex].copyWith();
-
-      emit(state.copyWith(entries: updatedEntries));
-    } catch (e) {
-      updatedEntries[event.entryIndex] =
-          updatedEntries[event.entryIndex].copyWith(
-        sendMax: false,
-      );
-
-      emit(state.copyWith(
-        entries: updatedEntries,
-        composeSendError: "Insufficient funds",
-      ));
-    }
   }
 
   void _onAddNewEntry(AddNewEntry event, Emitter<ComposeMpmaState> emit) {
@@ -388,5 +398,36 @@ class ComposeMpmaBloc extends ComposeBaseBloc<ComposeMpmaState> {
       FeeOption.Slow() => feeEstimates.slow,
       FeeOption.Custom(fee: var fee) => fee,
     };
+  }
+
+  Decimal getRemainingBalanceForAsset(String asset, int currentEntryIndex) {
+    final balances = state.balancesState.maybeWhen(
+      success: (balances) => balances,
+      orElse: () => <Balance>[],
+    );
+
+    final balance = balances.firstWhereOrNull((b) => b.asset == asset);
+    if (balance == null) return Decimal.zero;
+
+    var totalUsed = Decimal.zero;
+
+    // Sum up quantities used in previous entries for this asset
+    for (var i = 0; i < state.entries.length; i++) {
+      if (i == currentEntryIndex) continue; // Skip current entry
+
+      final entry = state.entries[i];
+      if (entry.asset == asset && entry.quantity.isNotEmpty) {
+        try {
+          totalUsed += Decimal.parse(entry.quantity);
+        } catch (_) {
+          // Handle invalid number format
+        }
+      }
+    }
+
+    // Calculate remaining balance
+    final totalBalance = Decimal.parse(balance.quantityNormalized);
+    final remaining = totalBalance - totalUsed;
+    return remaining > Decimal.zero ? remaining : Decimal.zero;
   }
 }
