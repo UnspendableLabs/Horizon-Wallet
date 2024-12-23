@@ -289,6 +289,7 @@ class ComposeMpmaPageState extends State<ComposeMpmaPage> {
           return SizedBox(
             height: 48,
             child: AssetDropdown(
+              key: ValueKey('asset_dropdown_$entryIndex'),
               loading: loading,
               asset: entry.asset ?? balances[0].asset,
               balances: balances,
