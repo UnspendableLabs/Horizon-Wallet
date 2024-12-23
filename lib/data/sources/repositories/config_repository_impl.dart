@@ -34,7 +34,7 @@ class ConfigImpl implements Config {
 
   String get _defaultCounterpartyApiBase => switch (network) {
         Network.mainnet => 'https://api.unspendablelabs.com:4000/v2',
-        Network.testnet => 'https://api.counterparty.io:14000/v2',
+        Network.testnet => 'https://api.unspendablelabs.com:14000/v2',
         Network.regtest => 'http://localhost:24000/v2'
       };
 
@@ -71,8 +71,8 @@ class ConfigImpl implements Config {
   }
 
   String get _defaultEsploraBase => switch (network) {
-        Network.mainnet => "https://api.counterparty.io:3000",
-        Network.testnet => "https://api.counterparty.io:13000",
+        Network.mainnet => "https://api.unspendablelabs.com:3000",
+        Network.testnet => "https://api.unspendablelabs.com:13000",
         Network.regtest => "http://127.0.0.1:3002",
       };
 
