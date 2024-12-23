@@ -1,6 +1,10 @@
 import 'package:bloc_test/bloc_test.dart';
+import 'package:decimal/decimal.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:horizon/core/logging/logger.dart';
+// import 'package:horizon/data/sources/network/api/v2_api.dart';
+import 'package:horizon/domain/entities/asset_info.dart';
+import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/domain/entities/compose_mpma_send.dart';
 import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/domain/entities/fee_option.dart';
@@ -230,6 +234,203 @@ void main() {
               .having((s) => s.entries, 'entries', [
             MpmaEntry.initial()
           ]).having((s) => s.composeSendError, 'composeSendError', null),
+        ],
+      );
+    });
+
+    group('Balance validation', () {
+      final mockBalances = [
+        Balance(
+          asset: 'TEST_ASSET',
+          address: 'test-address',
+          quantity: 1200000000, // 12 TEST_ASSET (divisible)
+          quantityNormalized: '12',
+          assetInfo: const AssetInfo(
+            assetLongname: null,
+            divisible: true,
+          ),
+        ),
+        Balance(
+          asset: 'INDIVISIBLE',
+          address: 'test-address',
+          quantity: 10, // 10 INDIVISIBLE (non-divisible)
+          quantityNormalized: '10',
+          assetInfo: const AssetInfo(
+            assetLongname: null,
+            divisible: false,
+          ),
+        ),
+      ];
+
+      blocTest<ComposeMpmaBloc, ComposeMpmaState>(
+        'getRemainingBalanceForAsset correctly calculates remaining balance',
+        build: () => bloc,
+        seed: () => ComposeMpmaState.initial().copyWith(
+          balancesState: BalancesState.success(mockBalances),
+          entries: [
+            MpmaEntry.initial().copyWith(
+              asset: 'TEST_ASSET',
+              quantity: '5',
+            ),
+            MpmaEntry.initial().copyWith(
+              asset: 'TEST_ASSET',
+              quantity: '3',
+            ),
+          ],
+        ),
+        verify: (bloc) {
+          // Should have 4 TEST_ASSET remaining (12 - 5 - 3 = 4)
+          expect(
+            bloc.getRemainingBalanceForAsset('TEST_ASSET', 2),
+            Decimal.parse('4'),
+          );
+
+          // When checking entry 0, should exclude its own quantity from total used
+          expect(
+            bloc.getRemainingBalanceForAsset('TEST_ASSET', 0),
+            Decimal.parse(
+                '9'), // 12 - 3 = 9 (excluding entry 0's quantity of 5)
+          );
+
+          // For unused asset, should return full balance
+          expect(
+            bloc.getRemainingBalanceForAsset('INDIVISIBLE', 0),
+            Decimal.parse('10'),
+          );
+
+          // For non-existent asset, should return zero
+          expect(
+            bloc.getRemainingBalanceForAsset('NONEXISTENT', 0),
+            Decimal.zero,
+          );
+        },
+      );
+
+      blocTest<ComposeMpmaBloc, ComposeMpmaState>(
+        'UpdateEntryQuantity validates against remaining balance',
+        build: () => bloc,
+        seed: () => ComposeMpmaState.initial().copyWith(
+          balancesState: BalancesState.success(mockBalances),
+          entries: [
+            MpmaEntry.initial().copyWith(
+              asset: 'TEST_ASSET',
+              quantity: '5',
+            ),
+            MpmaEntry.initial().copyWith(
+              asset: 'TEST_ASSET',
+              quantity: '',
+            ),
+          ],
+        ),
+        act: (bloc) => bloc.add(UpdateEntryQuantity(
+          quantity: '8',
+          entryIndex: 1,
+        )),
+        expect: () => [
+          isA<ComposeMpmaState>()
+              .having(
+                (state) => state.composeSendError,
+                'composeSendError',
+                "Quantity exceeds available balance",
+              )
+              .having(
+                (state) => state.entries[1].quantity,
+                'second entry quantity',
+                '',
+              ),
+        ],
+      );
+
+      blocTest<ComposeMpmaBloc, ComposeMpmaState>(
+        'ToggleEntrySendMax sets maximum available quantity',
+        build: () => bloc,
+        seed: () => ComposeMpmaState.initial().copyWith(
+          balancesState: BalancesState.success(mockBalances),
+          entries: [
+            MpmaEntry.initial().copyWith(
+              asset: 'TEST_ASSET',
+              quantity: '5',
+            ),
+            MpmaEntry.initial().copyWith(
+              asset: 'TEST_ASSET',
+              quantity: '',
+            ),
+          ],
+        ),
+        act: (bloc) => bloc.add(ToggleEntrySendMax(
+          value: true,
+          entryIndex: 1,
+        )),
+        expect: () => [
+          predicate<ComposeMpmaState>((state) =>
+              state.entries[1].quantity == '7' && // 12 - 5 = 7 remaining
+              state.entries[1].sendMax == true),
+        ],
+      );
+
+      blocTest<ComposeMpmaBloc, ComposeMpmaState>(
+        'UpdateEntryQuantity allows valid remaining balance',
+        build: () => bloc,
+        seed: () => ComposeMpmaState.initial().copyWith(
+          balancesState: BalancesState.success(mockBalances),
+          entries: [
+            MpmaEntry.initial().copyWith(
+              asset: 'TEST_ASSET',
+              quantity: '5',
+            ),
+            MpmaEntry.initial().copyWith(
+              asset: 'TEST_ASSET',
+              quantity: '',
+            ),
+          ],
+        ),
+        act: (bloc) => bloc.add(UpdateEntryQuantity(
+          quantity: '6',
+          entryIndex: 1,
+        )),
+        expect: () => [
+          isA<ComposeMpmaState>()
+              .having(
+                (state) => state.entries[1].quantity,
+                'second entry quantity',
+                '6',
+              )
+              .having(
+                (state) => state.composeSendError,
+                'composeSendError',
+                null,
+              ),
+        ],
+      );
+
+      blocTest<ComposeMpmaBloc, ComposeMpmaState>(
+        'UpdateEntryQuantity handles empty and invalid quantities',
+        build: () => bloc,
+        seed: () => ComposeMpmaState.initial().copyWith(
+          balancesState: BalancesState.success(mockBalances),
+          entries: [
+            MpmaEntry.initial().copyWith(
+              asset: 'TEST_ASSET',
+              quantity: '',
+            ),
+          ],
+        ),
+        act: (bloc) => bloc.add(UpdateEntryQuantity(
+          quantity: 'invalid',
+          entryIndex: 0,
+        )),
+        expect: () => [
+          isA<ComposeMpmaState>()
+              .having(
+                (state) => state.entries[0].quantity,
+                'entry quantity',
+                'invalid',
+              )
+              .having(
+                (state) => state.composeSendError,
+                'composeSendError',
+                null,
+              ),
         ],
       );
     });
