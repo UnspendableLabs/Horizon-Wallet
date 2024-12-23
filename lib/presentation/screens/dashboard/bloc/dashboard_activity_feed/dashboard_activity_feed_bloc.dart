@@ -601,6 +601,13 @@ class DashboardActivityFeedBloc
 
     for (final event in events) {
       if (!DEFAULT_WHITELIST.contains(event.event)) {
+        // This filter ensures events like NEW_TRANSACTION or DEBIT do not get emitted in success state. This is a bit of an edge case but does sometimes occur
+        // Activity feed does not parse these events
+        // An example when this if block may be reached:
+        // 1. User composes a move to utxo
+        // 2. NEW_TRANSACTION is registered in counterparty mempool for the move but the UTXO_MOVE event has not yet been registered
+        // 3. NEW_TRANSACTION is filtered out so that it does not get added to activity feed
+        // then we wait for UTXO_MOVE to be registered in mempool and the activity feed will be updated
         continue;
       }
       if (event.state is EventStateMempool) {

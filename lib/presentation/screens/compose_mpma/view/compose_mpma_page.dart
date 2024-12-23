@@ -105,19 +105,25 @@ class ComposeMpmaPageState extends State<ComposeMpmaPage> {
 
   TextEditingController _getDestinationController(int index, String? text) {
     if (!destinationControllers.containsKey(index)) {
-      destinationControllers[index] = TextEditingController(text: text);
-    } else if (text != null && destinationControllers[index]?.text != text) {
-      destinationControllers[index]?.text = text;
+      destinationControllers[index] = TextEditingController();
     }
+
+    if (destinationControllers[index]?.text != text) {
+      destinationControllers[index]?.text = text ?? '';
+    }
+
     return destinationControllers[index]!;
   }
 
   TextEditingController _getQuantityController(int index, String? text) {
     if (!quantityControllers.containsKey(index)) {
-      quantityControllers[index] = TextEditingController(text: text);
-    } else if (text != null && quantityControllers[index]?.text != text) {
-      quantityControllers[index]?.text = text;
+      quantityControllers[index] = TextEditingController();
     }
+
+    if (quantityControllers[index]?.text != text) {
+      quantityControllers[index]?.text = text ?? '';
+    }
+
     return quantityControllers[index]!;
   }
 
@@ -174,7 +180,7 @@ class ComposeMpmaPageState extends State<ComposeMpmaPage> {
           enabled: !loading && remainingBalance > Decimal.zero,
           onChanged: (value) {
             context.read<ComposeMpmaBloc>().add(
-                  UpdateEntryQuantity(
+                  EntryQuantityUpdated(
                     quantity: value,
                     entryIndex: entryIndex,
                   ),
@@ -245,7 +251,7 @@ class ComposeMpmaPageState extends State<ComposeMpmaPage> {
                                       controller.text =
                                           remainingBalance.toString();
                                       context.read<ComposeMpmaBloc>().add(
-                                            UpdateEntryQuantity(
+                                            EntryQuantityUpdated(
                                               quantity:
                                                   remainingBalance.toString(),
                                               entryIndex: entryIndex,
@@ -253,7 +259,7 @@ class ComposeMpmaPageState extends State<ComposeMpmaPage> {
                                           );
                                     }
                                     context.read<ComposeMpmaBloc>().add(
-                                          ToggleEntrySendMax(
+                                          EntrySendMaxToggled(
                                             value: value,
                                             entryIndex: entryIndex,
                                           ),
@@ -298,7 +304,7 @@ class ComposeMpmaPageState extends State<ComposeMpmaPage> {
                 if (value == null) return;
 
                 context.read<ComposeMpmaBloc>().add(
-                      UpdateEntryAsset(
+                      EntryAssetUpdated(
                         asset: value,
                         entryIndex: entryIndex,
                       ),
@@ -345,7 +351,7 @@ class ComposeMpmaPageState extends State<ComposeMpmaPage> {
                     },
                     onChanged: (value) {
                       context.read<ComposeMpmaBloc>().add(
-                            UpdateEntryDestination(
+                            EntryDestinationUpdated(
                               destination: value,
                               entryIndex: entryIndex,
                             ),
@@ -363,11 +369,8 @@ class ComposeMpmaPageState extends State<ComposeMpmaPage> {
                   IconButton(
                     icon: const Icon(Icons.remove_circle_outline),
                     color: Colors.red,
-                    onPressed: loading
-                        ? null
-                        : () => context.read<ComposeMpmaBloc>().add(
-                              RemoveEntry(entryIndex: entryIndex),
-                            ),
+                    onPressed:
+                        loading ? null : () => _handleEntryRemoved(entryIndex),
                   ),
               ],
             ),
@@ -398,7 +401,7 @@ class ComposeMpmaPageState extends State<ComposeMpmaPage> {
         child: TextButton.icon(
           onPressed: loading
               ? null
-              : () => context.read<ComposeMpmaBloc>().add(AddNewEntry()),
+              : () => context.read<ComposeMpmaBloc>().add(NewEntryAdded()),
           icon: const Icon(Icons.add),
           label: const Text('Add another entry'),
         ),
@@ -559,6 +562,17 @@ class ComposeMpmaPageState extends State<ComposeMpmaPage> {
         quantityControllers.remove(index);
       }
     });
+  }
+
+  void _handleEntryRemoved(int index) {
+    destinationControllers[index]?.dispose();
+    destinationControllers.remove(index);
+    quantityControllers[index]?.dispose();
+    quantityControllers.remove(index);
+
+    context.read<ComposeMpmaBloc>().add(
+          EntryRemoved(entryIndex: index),
+        );
   }
 }
 

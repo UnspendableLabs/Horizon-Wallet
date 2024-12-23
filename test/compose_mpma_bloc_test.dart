@@ -110,9 +110,9 @@ void main() {
     );
 
     blocTest<ComposeMpmaBloc, ComposeMpmaState>(
-      'adds new entry when AddNewEntry is added',
+      'adds new entry when NewEntryAdded is added',
       build: () => bloc,
-      act: (bloc) => bloc.add(AddNewEntry()),
+      act: (bloc) => bloc.add(NewEntryAdded()),
       expect: () => [
         predicate<ComposeMpmaState>((state) =>
             state.entries.length == 2 &&
@@ -121,9 +121,9 @@ void main() {
     );
 
     blocTest<ComposeMpmaBloc, ComposeMpmaState>(
-      'updates entry destination when UpdateEntryDestination is added',
+      'updates entry destination when EntryDestinationUpdated is added',
       build: () => bloc,
-      act: (bloc) => bloc.add(UpdateEntryDestination(
+      act: (bloc) => bloc.add(EntryDestinationUpdated(
         destination: 'new_destination',
         entryIndex: 0,
       )),
@@ -134,9 +134,9 @@ void main() {
     );
 
     blocTest<ComposeMpmaBloc, ComposeMpmaState>(
-      'updates entry asset when UpdateEntryAsset is added',
+      'updates entry asset when EntryAssetUpdated is added',
       build: () => bloc,
-      act: (bloc) => bloc.add(UpdateEntryAsset(
+      act: (bloc) => bloc.add(EntryAssetUpdated(
         asset: 'new_asset',
         entryIndex: 0,
       )),
@@ -147,7 +147,7 @@ void main() {
     );
 
     blocTest<ComposeMpmaBloc, ComposeMpmaState>(
-      'removes entry when RemoveEntry is added',
+      'removes entry when EntryRemoved is added',
       seed: () => ComposeMpmaState.initial().copyWith(
         entries: [
           MpmaEntry.initial(),
@@ -155,7 +155,7 @@ void main() {
         ],
       ),
       build: () => bloc,
-      act: (bloc) => bloc.add(RemoveEntry(entryIndex: 1)),
+      act: (bloc) => bloc.add(EntryRemoved(entryIndex: 1)),
       expect: () => [
         predicate<ComposeMpmaState>((state) => state.entries.length == 1),
       ],
@@ -307,7 +307,7 @@ void main() {
       );
 
       blocTest<ComposeMpmaBloc, ComposeMpmaState>(
-        'UpdateEntryQuantity validates against remaining balance',
+        'EntryQuantityUpdated validates against remaining balance',
         build: () => bloc,
         seed: () => ComposeMpmaState.initial().copyWith(
           balancesState: BalancesState.success(mockBalances),
@@ -322,7 +322,7 @@ void main() {
             ),
           ],
         ),
-        act: (bloc) => bloc.add(UpdateEntryQuantity(
+        act: (bloc) => bloc.add(EntryQuantityUpdated(
           quantity: '8',
           entryIndex: 1,
         )),
@@ -342,7 +342,7 @@ void main() {
       );
 
       blocTest<ComposeMpmaBloc, ComposeMpmaState>(
-        'ToggleEntrySendMax sets maximum available quantity',
+        'EntrySendMaxToggled sets maximum available quantity',
         build: () => bloc,
         seed: () => ComposeMpmaState.initial().copyWith(
           balancesState: BalancesState.success(mockBalances),
@@ -357,7 +357,7 @@ void main() {
             ),
           ],
         ),
-        act: (bloc) => bloc.add(ToggleEntrySendMax(
+        act: (bloc) => bloc.add(EntrySendMaxToggled(
           value: true,
           entryIndex: 1,
         )),
@@ -369,7 +369,7 @@ void main() {
       );
 
       blocTest<ComposeMpmaBloc, ComposeMpmaState>(
-        'UpdateEntryQuantity allows valid remaining balance',
+        'EntryQuantityUpdated allows valid remaining balance',
         build: () => bloc,
         seed: () => ComposeMpmaState.initial().copyWith(
           balancesState: BalancesState.success(mockBalances),
@@ -384,7 +384,7 @@ void main() {
             ),
           ],
         ),
-        act: (bloc) => bloc.add(UpdateEntryQuantity(
+        act: (bloc) => bloc.add(EntryQuantityUpdated(
           quantity: '6',
           entryIndex: 1,
         )),
@@ -404,7 +404,7 @@ void main() {
       );
 
       blocTest<ComposeMpmaBloc, ComposeMpmaState>(
-        'UpdateEntryQuantity handles empty and invalid quantities',
+        'EntryQuantityUpdated handles empty and invalid quantities',
         build: () => bloc,
         seed: () => ComposeMpmaState.initial().copyWith(
           balancesState: BalancesState.success(mockBalances),
@@ -415,7 +415,7 @@ void main() {
             ),
           ],
         ),
-        act: (bloc) => bloc.add(UpdateEntryQuantity(
+        act: (bloc) => bloc.add(EntryQuantityUpdated(
           quantity: 'invalid',
           entryIndex: 0,
         )),

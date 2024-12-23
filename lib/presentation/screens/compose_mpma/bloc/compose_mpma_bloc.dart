@@ -46,16 +46,16 @@ class ComposeMpmaBloc extends ComposeBaseBloc<ComposeMpmaState> {
     required this.logger,
   }) : super(ComposeMpmaState.initial()) {
     // Register event handlers for entry updates
-    on<UpdateEntryDestination>(_onUpdateEntryDestination);
-    on<UpdateEntryAsset>(_onUpdateEntryAsset);
-    on<UpdateEntryQuantity>(_onUpdateEntryQuantity);
-    on<ToggleEntrySendMax>(_onToggleEntrySendMax);
-    on<AddNewEntry>(_onAddNewEntry);
-    on<RemoveEntry>(_onRemoveEntry);
+    on<EntryDestinationUpdated>(_onUpdateEntryDestination);
+    on<EntryAssetUpdated>(_onUpdateEntryAsset);
+    on<EntryQuantityUpdated>(_onUpdateEntryQuantity);
+    on<EntrySendMaxToggled>(_onToggleEntrySendMax);
+    on<NewEntryAdded>(_onAddNewEntry);
+    on<EntryRemoved>(_onRemoveEntry);
   }
 
   void _onUpdateEntryDestination(
-      UpdateEntryDestination event, Emitter<ComposeMpmaState> emit) {
+      EntryDestinationUpdated event, Emitter<ComposeMpmaState> emit) {
     final updatedEntries = List<MpmaEntry>.from(state.entries);
     updatedEntries[event.entryIndex] =
         updatedEntries[event.entryIndex].copyWith(
@@ -69,7 +69,7 @@ class ComposeMpmaBloc extends ComposeBaseBloc<ComposeMpmaState> {
   }
 
   void _onUpdateEntryAsset(
-      UpdateEntryAsset event, Emitter<ComposeMpmaState> emit) {
+      EntryAssetUpdated event, Emitter<ComposeMpmaState> emit) {
     final updatedEntries = List<MpmaEntry>.from(state.entries);
     updatedEntries[event.entryIndex] =
         updatedEntries[event.entryIndex].copyWith(
@@ -85,7 +85,7 @@ class ComposeMpmaBloc extends ComposeBaseBloc<ComposeMpmaState> {
   }
 
   void _onUpdateEntryQuantity(
-      UpdateEntryQuantity event, Emitter<ComposeMpmaState> emit) {
+      EntryQuantityUpdated event, Emitter<ComposeMpmaState> emit) {
     final updatedEntries = List<MpmaEntry>.from(state.entries);
     final entry = updatedEntries[event.entryIndex];
 
@@ -122,7 +122,7 @@ class ComposeMpmaBloc extends ComposeBaseBloc<ComposeMpmaState> {
   }
 
   void _onToggleEntrySendMax(
-      ToggleEntrySendMax event, Emitter<ComposeMpmaState> emit) async {
+      EntrySendMaxToggled event, Emitter<ComposeMpmaState> emit) async {
     final updatedEntries = List<MpmaEntry>.from(state.entries);
     final entry = updatedEntries[event.entryIndex];
 
@@ -149,16 +149,19 @@ class ComposeMpmaBloc extends ComposeBaseBloc<ComposeMpmaState> {
     ));
   }
 
-  void _onAddNewEntry(AddNewEntry event, Emitter<ComposeMpmaState> emit) {
+  void _onAddNewEntry(NewEntryAdded event, Emitter<ComposeMpmaState> emit) {
     // Get the first available non-BTC asset from balances
     final firstAsset = state.balancesState.maybeWhen(
       success: (balances) => balances.isNotEmpty ? balances[0].asset : null,
       orElse: () => null,
     );
 
-    // Create new entry with the first available asset
+    // Create a completely fresh entry using the initial factory
     final newEntry = MpmaEntry.initial().copyWith(
       asset: firstAsset,
+      destination: null, // Explicitly set to null to ensure clean state
+      quantity: '', // Ensure empty quantity
+      sendMax: false, // Ensure sendMax is false
     );
 
     final updatedEntries = List<MpmaEntry>.from(state.entries)..add(newEntry);
@@ -169,7 +172,7 @@ class ComposeMpmaBloc extends ComposeBaseBloc<ComposeMpmaState> {
     ));
   }
 
-  void _onRemoveEntry(RemoveEntry event, Emitter<ComposeMpmaState> emit) {
+  void _onRemoveEntry(EntryRemoved event, Emitter<ComposeMpmaState> emit) {
     if (event.entryIndex <= 0 || event.entryIndex >= state.entries.length) {
       return;
     }
