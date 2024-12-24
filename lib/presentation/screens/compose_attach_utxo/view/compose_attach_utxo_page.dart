@@ -191,11 +191,13 @@ class ComposeAttachUtxoPageState extends State<ComposeAttachUtxoPage> {
     setState(() {
       _submitted = true;
     });
+    if (balance.asset != widget.assetName) {
+      // we should never reach this point but this is a safeguard against submitting the wrong asset
+      throw Exception('Balance not found for asset ${widget.assetName}');
+    }
     if (formKey.currentState!.validate()) {
       Decimal input = Decimal.parse(quantityController.text);
-      print('INPUT: $input');
       int quantity;
-      // print('BALANCE: ${balance.a}');
       if (balance.assetInfo.divisible) {
         quantity = (input * Decimal.fromInt(100000000)).toBigInt().toInt();
       } else {
@@ -216,8 +218,7 @@ class ComposeAttachUtxoPageState extends State<ComposeAttachUtxoPage> {
       bool loading, GlobalKey<FormState> formKey) {
     final Balance? balance = state.balancesState.maybeWhen(
       success: (balances) => balances
-          .firstWhereOrNull((balance) =>
-              balance.asset == widget.assetName),
+          .firstWhereOrNull((balance) => balance.asset == widget.assetName),
       orElse: () => throw Exception('No balance found'),
     );
 
