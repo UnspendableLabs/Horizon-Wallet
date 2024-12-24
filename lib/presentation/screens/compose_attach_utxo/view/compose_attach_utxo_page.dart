@@ -164,7 +164,7 @@ class ComposeAttachUtxoPageState extends State<ComposeAttachUtxoPage> {
                 _buildInitialFormFields(state, loading, formKey),
             onInitialCancel: () => _handleInitialCancel(),
             onInitialSubmit: (formKey) =>
-                _handleInitialSubmit(formKey, balances[0]),
+                _handleInitialSubmit(formKey, balances),
             buildConfirmationFormFields: (state, composeTransaction, formKey) =>
                 _buildConfirmationDetails(composeTransaction),
             onConfirmationBack: () => _onConfirmationBack(),
@@ -187,11 +187,13 @@ class ComposeAttachUtxoPageState extends State<ComposeAttachUtxoPage> {
     Navigator.of(context).pop();
   }
 
-  void _handleInitialSubmit(GlobalKey<FormState> formKey, Balance balance) {
+  void _handleInitialSubmit(GlobalKey<FormState> formKey, List<Balance> balances) {
     setState(() {
       _submitted = true;
     });
-    if (balance.asset != widget.assetName) {
+
+    final balance = balances.firstWhereOrNull((balance) => balance.asset == widget.assetName);
+    if (balance == null) {
       // we should never reach this point but this is a safeguard against submitting the wrong asset
       throw Exception('Balance not found for asset ${widget.assetName}');
     }
@@ -216,58 +218,62 @@ class ComposeAttachUtxoPageState extends State<ComposeAttachUtxoPage> {
 
   List<Widget> _buildInitialFormFields(ComposeAttachUtxoState state,
       bool loading, GlobalKey<FormState> formKey) {
-    final Balance? balance = state.balancesState.maybeWhen(
-      success: (balances) => balances
-          .firstWhereOrNull((balance) => balance.asset == widget.assetName),
-      orElse: () => throw Exception('No balance found'),
-    );
+    return state.balancesState.maybeWhen(
+      success: (balances) {
+        final balance = balances
+            .firstWhereOrNull((balance) => balance.asset == widget.assetName);
+        if (balance == null) {
+          throw Exception('No balance found');
+        }
 
-    return [
-      HorizonUI.HorizonTextFormField(
-        controller: fromAddressController,
-        label: 'From Address',
-        enabled: false,
-      ),
-      const SizedBox(height: 16),
-      HorizonUI.HorizonTextFormField(
-        controller: assetController,
-        label: 'Asset',
-        enabled: false,
-      ),
-      const SizedBox(height: 16),
-      HorizonUI.HorizonTextFormField(
-        controller: quantityController,
-        label: 'Quantity to attach',
-        inputFormatters: [
-          balance!.assetInfo.divisible == true
-              ? DecimalTextInputFormatter(decimalRange: 20)
-              : FilteringTextInputFormatter.digitsOnly,
-        ],
-        validator: (value) {
-          if (value == null || value.isEmpty) {
-            return 'Quantity is required';
-          }
-          return null;
-        },
-        onFieldSubmitted: (value) {
-          _handleInitialSubmit(formKey, balance);
-        },
-        autovalidateMode:
-            _submitted ? AutovalidateMode.always : AutovalidateMode.disabled,
-      ),
-      const SizedBox(height: 32),
-      HorizonUI.HorizonTextFormField(
-        controller: TextEditingController(text: balance.quantityNormalized),
-        label: 'Available Supply',
-        enabled: false,
-      ),
-      const SizedBox(height: 16),
-      HorizonUI.HorizonTextFormField(
-        controller: TextEditingController(text: state.xcpFeeEstimate),
-        label: 'XCP Fee Estimate',
-        enabled: false,
-      ),
-    ];
+           return [
+          HorizonUI.HorizonTextFormField(
+            controller: fromAddressController,
+            label: 'From Address',
+            enabled: false,
+          ),
+          const SizedBox(height: 16),
+          HorizonUI.HorizonTextFormField(
+            controller: assetController,
+            label: 'Asset',
+            enabled: false,
+          ),
+          const SizedBox(height: 16),
+          HorizonUI.HorizonTextFormField(
+            controller: quantityController,
+            label: 'Quantity to attach',
+            inputFormatters: [
+              balance!.assetInfo.divisible == true
+                  ? DecimalTextInputFormatter(decimalRange: 20)
+                  : FilteringTextInputFormatter.digitsOnly,
+            ],
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Quantity is required';
+              }
+              return null;
+            },
+            onFieldSubmitted: (value) {
+              _handleInitialSubmit(formKey, balances);
+            },
+            autovalidateMode: _submitted ? AutovalidateMode.always : AutovalidateMode.disabled,
+          ),
+          const SizedBox(height: 32),
+          HorizonUI.HorizonTextFormField(
+            controller: TextEditingController(text: balance.quantityNormalized),
+            label: 'Available Supply',
+            enabled: false,
+          ),
+          const SizedBox(height: 16),
+          HorizonUI.HorizonTextFormField(
+            controller: TextEditingController(text: state.xcpFeeEstimate),
+            label: 'XCP Fee Estimate',
+            enabled: false,
+          ),
+        ];
+      },
+      orElse: () => [],
+    );
   }
 
   List<Widget> _buildConfirmationDetails(dynamic composeTransaction) {
@@ -276,7 +282,7 @@ class ComposeAttachUtxoPageState extends State<ComposeAttachUtxoPage> {
       return [
         HorizonUI.HorizonTextFormField(
           controller: TextEditingController(
-              text: displayAssetName(widget.assetName, widget.assetLongname)),
+              text: displayAssetName(params.asset, params.assetInfo.assetLongname)),
           label: 'Asset',
           enabled: false,
         ),
