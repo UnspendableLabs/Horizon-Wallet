@@ -50,8 +50,9 @@ class FetchComposeAttachUtxoFormDataUseCase {
 
   Future<List<Balance>> _fetchBalances(String address) async {
     try {
-      final balances = await balanceRepository.getBalancesForAddress(address);
-      return balances;
+      final balances = await balanceRepository.getBalancesForAddress(address, true);
+      final nonBtcBalances = balances.where((balance) => balance.asset != 'BTC').toList();
+      return nonBtcBalances;
     } catch (e) {
       throw FetchBalanceException(e.toString());
     }

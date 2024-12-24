@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:decimal/decimal.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -192,8 +193,9 @@ class ComposeAttachUtxoPageState extends State<ComposeAttachUtxoPage> {
     });
     if (formKey.currentState!.validate()) {
       Decimal input = Decimal.parse(quantityController.text);
+      print('INPUT: $input');
       int quantity;
-
+      // print('BALANCE: ${balance.a}');
       if (balance.assetInfo.divisible) {
         quantity = (input * Decimal.fromInt(100000000)).toBigInt().toInt();
       } else {
@@ -212,11 +214,10 @@ class ComposeAttachUtxoPageState extends State<ComposeAttachUtxoPage> {
 
   List<Widget> _buildInitialFormFields(ComposeAttachUtxoState state,
       bool loading, GlobalKey<FormState> formKey) {
-    final Balance balance = state.balancesState.maybeWhen(
+    final Balance? balance = state.balancesState.maybeWhen(
       success: (balances) => balances
-          .where((balance) =>
-              balance.asset == widget.assetName && balance.utxo == null)
-          .first,
+          .firstWhereOrNull((balance) =>
+              balance.asset == widget.assetName),
       orElse: () => throw Exception('No balance found'),
     );
 
@@ -237,7 +238,7 @@ class ComposeAttachUtxoPageState extends State<ComposeAttachUtxoPage> {
         controller: quantityController,
         label: 'Quantity to attach',
         inputFormatters: [
-          balance.assetInfo.divisible == true
+          balance!.assetInfo.divisible == true
               ? DecimalTextInputFormatter(decimalRange: 20)
               : FilteringTextInputFormatter.digitsOnly,
         ],
