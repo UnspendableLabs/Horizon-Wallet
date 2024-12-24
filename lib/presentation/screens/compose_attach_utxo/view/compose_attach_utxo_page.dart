@@ -187,12 +187,14 @@ class ComposeAttachUtxoPageState extends State<ComposeAttachUtxoPage> {
     Navigator.of(context).pop();
   }
 
-  void _handleInitialSubmit(GlobalKey<FormState> formKey, List<Balance> balances) {
+  void _handleInitialSubmit(
+      GlobalKey<FormState> formKey, List<Balance> balances) {
     setState(() {
       _submitted = true;
     });
 
-    final balance = balances.firstWhereOrNull((balance) => balance.asset == widget.assetName);
+    final balance = balances
+        .firstWhereOrNull((balance) => balance.asset == widget.assetName);
     if (balance == null) {
       // we should never reach this point but this is a safeguard against submitting the wrong asset
       throw Exception('Balance not found for asset ${widget.assetName}');
@@ -226,7 +228,7 @@ class ComposeAttachUtxoPageState extends State<ComposeAttachUtxoPage> {
           throw Exception('No balance found');
         }
 
-           return [
+        return [
           HorizonUI.HorizonTextFormField(
             controller: fromAddressController,
             label: 'From Address',
@@ -243,7 +245,7 @@ class ComposeAttachUtxoPageState extends State<ComposeAttachUtxoPage> {
             controller: quantityController,
             label: 'Quantity to attach',
             inputFormatters: [
-              balance!.assetInfo.divisible == true
+              balance.assetInfo.divisible == true
                   ? DecimalTextInputFormatter(decimalRange: 20)
                   : FilteringTextInputFormatter.digitsOnly,
             ],
@@ -256,7 +258,9 @@ class ComposeAttachUtxoPageState extends State<ComposeAttachUtxoPage> {
             onFieldSubmitted: (value) {
               _handleInitialSubmit(formKey, balances);
             },
-            autovalidateMode: _submitted ? AutovalidateMode.always : AutovalidateMode.disabled,
+            autovalidateMode: _submitted
+                ? AutovalidateMode.always
+                : AutovalidateMode.disabled,
           ),
           const SizedBox(height: 32),
           HorizonUI.HorizonTextFormField(
@@ -282,7 +286,8 @@ class ComposeAttachUtxoPageState extends State<ComposeAttachUtxoPage> {
       return [
         HorizonUI.HorizonTextFormField(
           controller: TextEditingController(
-              text: displayAssetName(params.asset, params.assetInfo.assetLongname)),
+              text: displayAssetName(
+                  params.asset, params.assetInfo.assetLongname)),
           label: 'Asset',
           enabled: false,
         ),
