@@ -78,7 +78,7 @@ class ConfigImpl implements Config {
 
   @override
   String get horizonExplorerBase => switch (network) {
-        Network.mainnet => "https://explorer.unspendablelabs.com",
+        Network.mainnet => "https://horizon.market/explorer",
         Network.testnet => "https://testnet-explorer.unspendablelabs.com",
         Network.regtest => "http://127.0.0.1:3000",
       };
