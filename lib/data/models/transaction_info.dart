@@ -127,6 +127,18 @@ class InfoVerboseMapper {
               raw: "", submittedAt: DateTime.now()), // TODO: this is wrong
           unpackedData: DetachUnpackedVerboseMapper.toDomain(u),
         ),
+      api.MpmaSendInfoVerbose(unpackedData: var u) => TransactionInfoMpmaSend(
+          btcAmountNormalized: info.btcAmountNormalized ?? "",
+          hash: "",
+          source: info.source,
+          destination: info.destination,
+          btcAmount: info.btcAmount,
+          fee: info.fee,
+          data: info.data,
+          domain: TransactionInfoDomainLocal(
+              raw: "", submittedAt: DateTime.now()), // TODO: this is wrong
+          unpackedData: MpmaSendUnpackedVerboseMapper.toDomain(u),
+        ),
       api.MoveToUtxoInfoVerbose() => TransactionInfoMoveToUtxo(
           btcAmountNormalized: info.btcAmountNormalized ?? "",
           hash: "",

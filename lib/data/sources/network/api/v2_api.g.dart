@@ -372,6 +372,54 @@ Map<String, dynamic> _$EnhancedSendEventToJson(EnhancedSendEvent instance) =>
       'params': instance.params,
     };
 
+MpmaSendEvent _$MpmaSendEventFromJson(Map<String, dynamic> json) =>
+    MpmaSendEvent(
+      eventIndex: (json['event_index'] as num?)?.toInt(),
+      event: json['event'] as String,
+      txHash: json['tx_hash'] as String?,
+      blockIndex: (json['block_index'] as num?)?.toInt(),
+      params:
+          MpmaSendEventParams.fromJson(json['params'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$MpmaSendEventToJson(MpmaSendEvent instance) =>
+    <String, dynamic>{
+      'event_index': instance.eventIndex,
+      'event': instance.event,
+      'tx_hash': instance.txHash,
+      'block_index': instance.blockIndex,
+      'params': instance.params,
+    };
+
+MpmaSendEventParams _$MpmaSendEventParamsFromJson(Map<String, dynamic> json) =>
+    MpmaSendEventParams(
+      asset: json['asset'] as String,
+      blockIndex: (json['block_index'] as num).toInt(),
+      destination: json['destination'] as String,
+      source: json['source'] as String,
+      memo: json['memo'] as String?,
+      msgIndex: (json['msg_index'] as num?)?.toInt(),
+      quantity: (json['quantity'] as num).toInt(),
+      status: json['status'] as String,
+      txHash: json['tx_hash'] as String,
+      txIndex: (json['tx_index'] as num).toInt(),
+    );
+
+Map<String, dynamic> _$MpmaSendEventParamsToJson(
+        MpmaSendEventParams instance) =>
+    <String, dynamic>{
+      'asset': instance.asset,
+      'block_index': instance.blockIndex,
+      'destination': instance.destination,
+      'source': instance.source,
+      'memo': instance.memo,
+      'msg_index': instance.msgIndex,
+      'quantity': instance.quantity,
+      'status': instance.status,
+      'tx_hash': instance.txHash,
+      'tx_index': instance.txIndex,
+    };
+
 CreditEvent _$CreditEventFromJson(Map<String, dynamic> json) => CreditEvent(
       eventIndex: (json['event_index'] as num?)?.toInt(),
       event: json['event'] as String,
@@ -2373,6 +2421,66 @@ Map<String, dynamic> _$VerboseEnhancedSendEventToJson(
       'params': instance.params,
     };
 
+VerboseMpmaSendEvent _$VerboseMpmaSendEventFromJson(
+        Map<String, dynamic> json) =>
+    VerboseMpmaSendEvent(
+      eventIndex: (json['event_index'] as num?)?.toInt(),
+      event: json['event'] as String,
+      txHash: json['tx_hash'] as String?,
+      blockIndex: (json['block_index'] as num?)?.toInt(),
+      blockTime: (json['block_time'] as num?)?.toInt(),
+      params: VerboseMpmaSendParams.fromJson(
+          json['params'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$VerboseMpmaSendEventToJson(
+        VerboseMpmaSendEvent instance) =>
+    <String, dynamic>{
+      'event_index': instance.eventIndex,
+      'event': instance.event,
+      'tx_hash': instance.txHash,
+      'block_index': instance.blockIndex,
+      'block_time': instance.blockTime,
+      'params': instance.params,
+    };
+
+VerboseMpmaSendParams _$VerboseMpmaSendParamsFromJson(
+        Map<String, dynamic> json) =>
+    VerboseMpmaSendParams(
+      asset: json['asset'] as String,
+      blockIndex: (json['block_index'] as num).toInt(),
+      destination: json['destination'] as String,
+      memo: json['memo'] as String?,
+      msgIndex: (json['msg_index'] as num?)?.toInt(),
+      quantity: (json['quantity'] as num).toInt(),
+      source: json['source'] as String,
+      status: json['status'] as String,
+      txHash: json['tx_hash'] as String,
+      txIndex: (json['tx_index'] as num).toInt(),
+      blockTime: (json['block_time'] as num?)?.toInt(),
+      assetInfo:
+          AssetInfoModel.fromJson(json['asset_info'] as Map<String, dynamic>),
+      quantityNormalized: json['quantity_normalized'] as String,
+    );
+
+Map<String, dynamic> _$VerboseMpmaSendParamsToJson(
+        VerboseMpmaSendParams instance) =>
+    <String, dynamic>{
+      'asset': instance.asset,
+      'block_index': instance.blockIndex,
+      'destination': instance.destination,
+      'source': instance.source,
+      'memo': instance.memo,
+      'msg_index': instance.msgIndex,
+      'quantity': instance.quantity,
+      'status': instance.status,
+      'tx_hash': instance.txHash,
+      'tx_index': instance.txIndex,
+      'block_time': instance.blockTime,
+      'asset_info': instance.assetInfo,
+      'quantity_normalized': instance.quantityNormalized,
+    };
+
 VerboseCreditEvent _$VerboseCreditEventFromJson(Map<String, dynamic> json) =>
     VerboseCreditEvent(
       eventIndex: (json['event_index'] as num?)?.toInt(),
@@ -3037,6 +3145,48 @@ Map<String, dynamic> _$SendTxVerboseToJson(SendTxVerbose instance) =>
       'btc_fee': instance.btcFee,
     };
 
+ComposeMpmaSend _$ComposeMpmaSendFromJson(Map<String, dynamic> json) =>
+    ComposeMpmaSend(
+      name: json['name'] as String,
+      data: json['data'] as String,
+      rawtransaction: json['rawtransaction'] as String,
+      btcIn: (json['btc_in'] as num).toInt(),
+      btcOut: (json['btc_out'] as num).toInt(),
+      btcFee: (json['btc_fee'] as num).toInt(),
+      btcChange: (json['btc_change'] as num).toInt(),
+      params: MpmaSendParams.fromJson(json['params'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$ComposeMpmaSendToJson(ComposeMpmaSend instance) =>
+    <String, dynamic>{
+      'name': instance.name,
+      'data': instance.data,
+      'rawtransaction': instance.rawtransaction,
+      'btc_in': instance.btcIn,
+      'btc_out': instance.btcOut,
+      'btc_fee': instance.btcFee,
+      'btc_change': instance.btcChange,
+      'params': instance.params,
+    };
+
+MpmaSendParams _$MpmaSendParamsFromJson(Map<String, dynamic> json) =>
+    MpmaSendParams(
+      source: json['source'] as String,
+      assetDestQuantList: json['asset_dest_quant_list'] as List<dynamic>,
+      memo: json['memo'] as String?,
+      memoIsHex: json['memo_is_hex'] as bool?,
+      skipValidation: json['skip_validation'] as bool?,
+    );
+
+Map<String, dynamic> _$MpmaSendParamsToJson(MpmaSendParams instance) =>
+    <String, dynamic>{
+      'source': instance.source,
+      'asset_dest_quant_list': instance.assetDestQuantList,
+      'memo': instance.memo,
+      'memo_is_hex': instance.memoIsHex,
+      'skip_validation': instance.skipValidation,
+    };
+
 Info _$InfoFromJson(Map<String, dynamic> json) => Info(
       source: json['source'] as String,
       destination: json['destination'] as String?,
@@ -3196,6 +3346,67 @@ Map<String, dynamic> _$EnhancedSendInfoVerboseToJson(
       'decoded_tx': instance.decodedTx,
       'btc_amount_normalized': instance.btcAmountNormalized,
       'unpacked_data': instance.unpackedData,
+    };
+
+MpmaSendInfoVerbose _$MpmaSendInfoVerboseFromJson(Map<String, dynamic> json) =>
+    MpmaSendInfoVerbose(
+      source: json['source'] as String,
+      destination: json['destination'] as String?,
+      btcAmount: (json['btc_amount'] as num?)?.toInt(),
+      fee: (json['fee'] as num?)?.toInt(),
+      data: json['data'] as String,
+      decodedTx: json['decoded_tx'] as Map<String, dynamic>?,
+      btcAmountNormalized: json['btc_amount_normalized'] as String?,
+      unpackedData: MpmaSendUnpackedVerbose.fromJson(
+          json['unpacked_data'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$MpmaSendInfoVerboseToJson(
+        MpmaSendInfoVerbose instance) =>
+    <String, dynamic>{
+      'source': instance.source,
+      'destination': instance.destination,
+      'btc_amount': instance.btcAmount,
+      'fee': instance.fee,
+      'data': instance.data,
+      'decoded_tx': instance.decodedTx,
+      'btc_amount_normalized': instance.btcAmountNormalized,
+      'unpacked_data': instance.unpackedData,
+    };
+
+MpmaSendUnpackedVerbose _$MpmaSendUnpackedVerboseFromJson(
+        Map<String, dynamic> json) =>
+    MpmaSendUnpackedVerbose(
+      messageData: (json['message_data'] as List<dynamic>)
+          .map((e) => MpmaSendDestination.fromJson(e as Map<String, dynamic>))
+          .toList(),
+    );
+
+Map<String, dynamic> _$MpmaSendUnpackedVerboseToJson(
+        MpmaSendUnpackedVerbose instance) =>
+    <String, dynamic>{
+      'message_data': instance.messageData,
+    };
+
+MpmaSendDestination _$MpmaSendDestinationFromJson(Map<String, dynamic> json) =>
+    MpmaSendDestination(
+      asset: json['asset'] as String,
+      destination: json['destination'] as String,
+      quantity: (json['quantity'] as num).toInt(),
+      memo: json['memo'] as String?,
+      memoIsHex: json['memo_is_hex'] as bool?,
+      quantityNormalized: json['quantity_normalized'] as String?,
+    );
+
+Map<String, dynamic> _$MpmaSendDestinationToJson(
+        MpmaSendDestination instance) =>
+    <String, dynamic>{
+      'asset': instance.asset,
+      'destination': instance.destination,
+      'quantity': instance.quantity,
+      'memo': instance.memo,
+      'memo_is_hex': instance.memoIsHex,
+      'quantity_normalized': instance.quantityNormalized,
     };
 
 IssuanceUnpackedVerbose _$IssuanceUnpackedVerboseFromJson(
@@ -4679,6 +4890,58 @@ class _V2Api implements V2Api {
     final _value = Response<SendTxVerbose>.fromJson(
       _result.data!,
       (json) => SendTxVerbose.fromJson(json as Map<String, dynamic>),
+    );
+    return _value;
+  }
+
+  @override
+  Future<Response<ComposeMpmaSend>> composeMpmaSend(
+    String address,
+    String? destinations,
+    String? assets,
+    String? quantities, [
+    bool? allowUnconfirmedInputs,
+    int? fee,
+    int? feePerKB,
+    String? inputsSet,
+    bool? excludeUtxosWithBalances,
+    bool? disableUtxoLocks,
+  ]) async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{
+      r'destinations': destinations,
+      r'assets': assets,
+      r'quantities': quantities,
+      r'allow_unconfirmed_inputs': allowUnconfirmedInputs,
+      r'exact_fee': fee,
+      r'fee_per_kb': feePerKB,
+      r'inputs_set': inputsSet,
+      r'exclude_utxos_with_balances': excludeUtxosWithBalances,
+      r'disable_utxo_locks': disableUtxoLocks,
+    };
+    queryParameters.removeWhere((k, v) => v == null);
+    final _headers = <String, dynamic>{};
+    const Map<String, dynamic>? _data = null;
+    final _result = await _dio.fetch<Map<String, dynamic>>(
+        _setStreamType<Response<ComposeMpmaSend>>(Options(
+      method: 'GET',
+      headers: _headers,
+      extra: _extra,
+    )
+            .compose(
+              _dio.options,
+              '/addresses/${address}/compose/mpma?verbose=true',
+              queryParameters: queryParameters,
+              data: _data,
+            )
+            .copyWith(
+                baseUrl: _combineBaseUrls(
+              _dio.options.baseUrl,
+              baseUrl,
+            ))));
+    final _value = Response<ComposeMpmaSend>.fromJson(
+      _result.data!,
+      (json) => ComposeMpmaSend.fromJson(json as Map<String, dynamic>),
     );
     return _value;
   }

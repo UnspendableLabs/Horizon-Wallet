@@ -552,3 +552,47 @@ class TransactionInfoMoveToUtxo extends TransactionInfo {
     );
   }
 }
+
+class TransactionInfoMpmaSend extends TransactionInfo {
+  final MpmaSendUnpackedVerbose unpackedData;
+
+  const TransactionInfoMpmaSend({
+    required super.hash,
+    required super.source,
+    required super.destination,
+    required super.btcAmount,
+    required super.fee,
+    required super.data,
+    required super.domain,
+    required super.btcAmountNormalized,
+    required this.unpackedData,
+  });
+
+  @override
+  List<Object?> get props => [unpackedData, ...super.props];
+
+  @override
+  TransactionInfoMpmaSend copyWith({
+    String? hash,
+    String? source,
+    String? destination,
+    int? btcAmount,
+    int? fee,
+    String? data,
+    TransactionInfoDomain? domain,
+    MpmaSendUnpackedVerbose? unpackedData,
+    String? btcAmountNormalized,
+  }) {
+    return TransactionInfoMpmaSend(
+      hash: hash ?? this.hash,
+      source: source ?? this.source,
+      destination: destination ?? this.destination,
+      btcAmount: btcAmount ?? this.btcAmount,
+      fee: fee ?? this.fee,
+      data: data ?? this.data,
+      domain: domain ?? this.domain,
+      unpackedData: unpackedData ?? this.unpackedData,
+      btcAmountNormalized: btcAmountNormalized ?? this.btcAmountNormalized,
+    );
+  }
+}

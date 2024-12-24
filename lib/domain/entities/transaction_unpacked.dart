@@ -284,3 +284,45 @@ class DetachUnpackedVerbose extends TransactionUnpacked {
 class MoveToUtxoUnpackedVerbose extends TransactionUnpacked {
   const MoveToUtxoUnpackedVerbose() : super(messageType: "utxo_move");
 }
+
+class MpmaSendDestination extends Equatable {
+  final String asset;
+  final String destination;
+  final int quantity;
+  final String? memo;
+  final bool? memoIsHex;
+  // final AssetInfo assetInfo;
+  final String? quantityNormalized;
+
+  const MpmaSendDestination({
+    required this.asset,
+    required this.destination,
+    required this.quantity,
+    this.memo,
+    this.memoIsHex,
+    // required this.assetInfo,
+    this.quantityNormalized,
+  });
+
+  @override
+  List<Object?> get props => [
+        asset,
+        destination,
+        quantity,
+        memo,
+        memoIsHex,
+        // assetInfo,
+        quantityNormalized,
+      ];
+}
+
+class MpmaSendUnpackedVerbose extends TransactionUnpacked {
+  final List<MpmaSendDestination> messageData;
+
+  const MpmaSendUnpackedVerbose({
+    required this.messageData,
+  }) : super(messageType: "mpma_send");
+
+  @override
+  List<Object?> get props => [messageType, messageData];
+}

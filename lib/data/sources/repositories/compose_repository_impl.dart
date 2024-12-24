@@ -5,6 +5,8 @@ import 'package:horizon/domain/entities/bitcoin_decoded_tx.dart';
 import 'package:horizon/domain/entities/compose_issuance.dart'
     as compose_issuance;
 import 'package:horizon/domain/entities/compose_send.dart' as compose_send;
+import 'package:horizon/domain/entities/compose_mpma_send.dart'
+    as compose_mpma_send;
 import 'package:horizon/domain/entities/compose_dispenser.dart'
     as compose_dispenser;
 import 'package:horizon/domain/entities/compose_fairmint.dart'
@@ -118,6 +120,55 @@ class ComposeRepositoryImpl extends ComposeRepository {
             ),
             btcFee: txVerbose.btcFee,
             rawtransaction: txVerbose.rawtransaction,
+            name: txVerbose.name);
+      },
+      inputsSet,
+    );
+  }
+
+  @override
+  Future<compose_mpma_send.ComposeMpmaSendResponse> composeMpmaSend(
+      int fee,
+      List<Utxo> inputsSet,
+      compose_mpma_send.ComposeMpmaSendParams params) async {
+    return await _retryOnInvalidUtxo<compose_mpma_send.ComposeMpmaSendResponse>(
+      (currentInputSet) async {
+        final source = params.source;
+        final destinations = params.destinations;
+        final assets = params.assets;
+        final quantities = params.quantities;
+        const excludeUtxosWithBalances = true;
+        const disableUtxoLocks = true;
+        final inputsSetString =
+            currentInputSet.map((e) => "${e.txid}:${e.vout}").join(',');
+
+        final response = await api.composeMpmaSend(
+            source,
+            destinations,
+            assets,
+            quantities,
+            true,
+            fee,
+            null,
+            inputsSetString,
+            excludeUtxosWithBalances,
+            disableUtxoLocks);
+
+        if (response.result == null) {
+          throw Exception('Failed to compose mpma send');
+        }
+
+        final txVerbose = response.result!;
+        return compose_mpma_send.ComposeMpmaSendResponse(
+            rawtransaction: txVerbose.rawtransaction,
+            btcFee: txVerbose.btcFee,
+            params: compose_mpma_send.ComposeMpmaSendResponseParams(
+              source: txVerbose.params.source,
+              assetDestQuantList: txVerbose.params.assetDestQuantList,
+              memo: txVerbose.params.memo,
+              memoIsHex: txVerbose.params.memoIsHex,
+              skipValidation: txVerbose.params.skipValidation,
+            ),
             name: txVerbose.name);
       },
       inputsSet,

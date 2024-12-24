@@ -28,6 +28,9 @@ class VerboseEventMapper {
       case 'ENHANCED_SEND':
         return VerboseEnhancedSendEventMapper.toDomain(
             apiEvent as api.VerboseEnhancedSendEvent);
+      case 'MPMA_SEND':
+        return VerboseMpmaSendEventMapper.toDomain(
+            apiEvent as api.VerboseMpmaSendEvent);
       case 'CREDIT':
         return VerboseCreditEventMapper.toDomain(
             apiEvent as api.VerboseCreditEvent);
@@ -192,6 +195,38 @@ class VerboseEnhancedSendParamsMapper {
       // assetInfo: AssetInfoMapper.toDomain(apiParams.assetInfo),
       quantityNormalized: apiParams.quantityNormalized,
       blockTime: apiParams.blockTime,
+    );
+  }
+}
+
+class VerboseMpmaSendEventMapper {
+  static VerboseMpmaSendEvent toDomain(api.VerboseMpmaSendEvent apiEvent) {
+    return VerboseMpmaSendEvent(
+      state: StateMapper.getVerbose(apiEvent),
+      event: "MPMA_SEND",
+      eventIndex: apiEvent.eventIndex,
+      txHash: apiEvent.txHash,
+      blockIndex: apiEvent.blockIndex,
+      blockTime: apiEvent.blockTime,
+      params: VerboseMpmaSendParamsMapper.toDomain(apiEvent.params),
+    );
+  }
+}
+
+class VerboseMpmaSendParamsMapper {
+  static VerboseMpmaSendParams toDomain(api.VerboseMpmaSendParams apiParams) {
+    return VerboseMpmaSendParams(
+      asset: apiParams.asset,
+      blockIndex: apiParams.blockIndex,
+      destination: apiParams.destination,
+      memo: apiParams.memo,
+      msgIndex: apiParams.msgIndex,
+      quantity: apiParams.quantity,
+      source: apiParams.source,
+      status: apiParams.status,
+      txHash: apiParams.txHash,
+      txIndex: apiParams.txIndex,
+      quantityNormalized: apiParams.quantityNormalized,
     );
   }
 }

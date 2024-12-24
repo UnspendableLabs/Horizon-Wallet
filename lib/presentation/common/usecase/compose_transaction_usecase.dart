@@ -17,8 +17,8 @@ class VirtualSize extends Equatable {
 
 class ComposeTransactionException implements Exception {
   final String message;
-  final StackTrace stackTrace;
-  ComposeTransactionException(this.message, this.stackTrace);
+  final StackTrace? stackTrace;
+  ComposeTransactionException(this.message, [this.stackTrace]);
 }
 
 class ComposeTransactionUseCase {

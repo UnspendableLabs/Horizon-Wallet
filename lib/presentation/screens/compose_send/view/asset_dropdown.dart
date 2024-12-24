@@ -78,13 +78,17 @@ class _AssetDropdownState extends State<AssetDropdown> {
     orderedBalances = _orderBalances(widget.balances);
   }
 
+  @override
+  void didUpdateWidget(AssetDropdown oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    orderedBalances = _orderBalances(widget.balances);
+  }
+
   List<Balance> _orderBalances(List<Balance> balances) {
     final Balance? btcBalance =
         balances.where((b) => b.asset == 'BTC').firstOrNull;
-
     final Balance? xcpBalance =
         balances.where((b) => b.asset == 'XCP').firstOrNull;
-
     final otherBalances =
         balances.where((b) => b.asset != 'BTC' && b.asset != 'XCP').toList();
 
@@ -101,18 +105,16 @@ class _AssetDropdownState extends State<AssetDropdown> {
     return displayAssetName(balance.asset, balance.assetInfo.assetLongname);
   }
 
-  String _getSelectedValue() {
-    if (widget.asset == null) return orderedBalances[0].asset;
-    return widget.asset!;
-  }
-
   @override
   Widget build(BuildContext context) {
+    final currentAsset = widget.asset ?? orderedBalances[0].asset;
     return HorizonUI.HorizonSearchableDropdownMenu<String>(
       enabled: !widget.loading,
       label: widget.label ?? 'Asset',
-      onChanged: widget.onSelected,
-      selectedValue: _getSelectedValue(),
+      onChanged: (String? value) {
+        widget.onSelected(value);
+      },
+      selectedValue: currentAsset,
       items: orderedBalances.map<DropdownMenuItem<String>>((balance) {
         return DropdownMenuItem(
           value: balance.asset,

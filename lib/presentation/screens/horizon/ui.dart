@@ -629,14 +629,14 @@ class HorizonSearchableDropdownMenu<T> extends StatefulWidget {
   final List<DropdownMenuItem<T>> items;
   final Function(T?)? onChanged;
   final String? label;
-  final T? selectedValue;
+  T? selectedValue;
   final bool enabled;
   final String? Function(T?)? validator;
   final AutovalidateMode autovalidateMode;
   final String Function(T) displayStringForOption;
   final Widget? suffixIcon;
 
-  const HorizonSearchableDropdownMenu({
+  HorizonSearchableDropdownMenu({
     super.key,
     required this.items,
     required this.onChanged,
@@ -659,14 +659,18 @@ class _HorizonSearchableDropdownMenuState<T>
   final TextEditingController _searchController = TextEditingController();
   final LayerLink _layerLink = LayerLink();
   OverlayEntry? _overlayEntry;
-  T? _selectedValue;
   List<DropdownMenuItem<T>> _filteredItems = [];
   bool _isOpen = false;
 
   @override
   void initState() {
     super.initState();
-    _selectedValue = widget.selectedValue;
+    _filteredItems = widget.items;
+  }
+
+  @override
+  void didUpdateWidget(HorizonSearchableDropdownMenu<T> oldWidget) {
+    super.didUpdateWidget(oldWidget);
     _filteredItems = widget.items;
   }
 
@@ -710,7 +714,7 @@ class _HorizonSearchableDropdownMenuState<T>
 
   void _selectItem(T? value) {
     setState(() {
-      _selectedValue = value;
+      widget.selectedValue = value;
       widget.onChanged?.call(value);
       _removeOverlay();
       _isOpen = false;
@@ -796,11 +800,12 @@ class _HorizonSearchableDropdownMenuState<T>
                 children: [
                   Expanded(
                     child: Text(
-                      _selectedValue != null
-                          ? widget.displayStringForOption(_selectedValue as T)
+                      widget.selectedValue != null
+                          ? widget
+                              .displayStringForOption(widget.selectedValue as T)
                           : widget.label ?? '',
                       style: TextStyle(
-                        color: _selectedValue != null
+                        color: widget.selectedValue != null
                             ? Theme.of(context).textTheme.bodyLarge?.color
                             : Theme.of(context).hintColor,
                       ),
