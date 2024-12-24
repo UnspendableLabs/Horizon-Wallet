@@ -508,6 +508,5 @@ Balance? _getBalanceForSelectedAsset(List<Balance> balances, String asset) {
     return null;
   }
 
-  return balances.firstWhereOrNull((balance) => balance.asset == asset) ??
-      balances[0];
+  return balances.firstWhereOrNull((balance) => balance.asset == asset);
 }
