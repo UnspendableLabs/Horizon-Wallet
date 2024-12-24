@@ -10,6 +10,7 @@ import 'package:go_router/go_router.dart';
 import 'package:horizon/common/constants.dart';
 import 'package:horizon/common/fn.dart';
 import 'package:horizon/common/uuid.dart';
+import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/data/services/regtest_utils.dart';
 import 'package:horizon/data/sources/local/db_manager.dart';
 import 'package:horizon/domain/entities/account.dart';
@@ -20,6 +21,7 @@ import 'package:horizon/domain/repositories/action_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/config_repository.dart';
 import 'package:horizon/domain/repositories/imported_address_repository.dart';
+import 'package:horizon/domain/repositories/version_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
@@ -27,6 +29,7 @@ import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/imported_address_service.dart';
 import 'package:horizon/domain/services/wallet_service.dart';
 import 'package:horizon/presentation/common/colors.dart';
+import 'package:horizon/presentation/common/footer/view/footer.dart';
 import 'package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_bloc.dart';
 import 'package:horizon/presentation/screens/dashboard/address_form/bloc/address_form_bloc.dart';
 import 'package:horizon/presentation/screens/dashboard/import_address_pk_form/bloc/import_address_pk_bloc.dart';
@@ -40,8 +43,10 @@ import 'package:horizon/presentation/screens/tos.dart';
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 import 'package:horizon/presentation/shell/bloc/shell_state.dart';
 import 'package:horizon/presentation/shell/theme/bloc/theme_bloc.dart';
+import 'package:horizon/presentation/version_cubit.dart';
 import 'package:horizon/setup.dart';
-import 'package:logger/logger.dart';
+import 'package:pub_semver/pub_semver.dart';
+import 'package:horizon/domain/services/error_service.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 final _sectionNavigatorKey = GlobalKey<NavigatorState>();
@@ -107,16 +112,72 @@ class LoadingScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => const Scaffold(
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              CircularProgressIndicator(),
-              Text('Loading...'),
-            ],
-          ),
-        ),
+        backgroundColor: Color(0x001e1e38),
       );
+}
+
+class VersionWarningSnackbar extends StatefulWidget {
+  final Widget child;
+
+  const VersionWarningSnackbar({required this.child, super.key});
+
+  @override
+  VersionWarningState createState() => VersionWarningState();
+}
+
+class VersionWarningState extends State<VersionWarningSnackbar> {
+  bool _hasShownSnackbar = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    final versionInfo = context
+        .read<VersionCubit>()
+        .state; // we should only ever get to this page if shell is success
+
+    if (!_hasShownSnackbar && versionInfo.warning != null) {
+      switch (versionInfo.warning!) {
+        case NewVersionAvailable():
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                  content: Text(
+                'There is a new version of Horizon Wallet: ${versionInfo.latest}.  Your version is ${versionInfo.current} ',
+              )),
+            );
+            _hasShownSnackbar = true;
+          });
+          break;
+        case VersionServiceUnreachable():
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                  content: Text(
+                'Version service unreachable.  Horizon Wallet may be out of date. Your version is ${versionInfo.current} ',
+              )),
+            );
+            _hasShownSnackbar = true;
+          });
+          break;
+      }
+    }
+
+    if (!_hasShownSnackbar && versionInfo.current < versionInfo.latest) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text(
+            'There is a new version of Horizon Wallet: ${versionInfo.latest}.  Your version is ${versionInfo.current} ',
+          )),
+        );
+        _hasShownSnackbar = true;
+      });
+    }
+  }
+
+  @override
+  Widget build(context) => widget.child;
 }
 
 class AppRouter {
@@ -211,9 +272,12 @@ class AppRouter {
                             } else if (state.currentImportedAddress != null) {
                               key = Key(state.currentImportedAddress!.address);
                             }
-                            return DashboardPageWrapper(key: key);
+                            return Scaffold(
+                                bottomNavigationBar: const Footer(),
+                                body: VersionWarningSnackbar(
+                                    child: DashboardPageWrapper(key: key)));
                           },
-                          orElse: () => const SizedBox.shrink(),
+                          orElse: () => const LoadingScreen(),
                         );
                       })
                 ],
@@ -298,32 +362,81 @@ class ErrorScreen extends StatelessWidget {
 }
 
 void main() {
-  final logger = Logger();
   // Catch synchronous errors in Flutter framework
   FlutterError.onError = (FlutterErrorDetails details) {
     FlutterError.dumpErrorToConsole(details);
+    GetIt.I<ErrorService>()
+        .captureException(details.exception, stackTrace: details.stack);
   };
 
   // Catch uncaught asynchronous errors
   runZonedGuarded<Future<void>>(() async {
     WidgetsFlutterBinding.ensureInitialized();
-    // await dotenv.load();
 
     await setup();
+    await GetIt.I<ErrorService>().initialize();
 
     await setupRegtestWallet();
-
     await initSettings();
 
-    runApp(MyApp());
+    final version = GetIt.I<Config>().version;
+    final versionInfo = GetIt.I<VersionRepository>().get();
+
+    versionInfo.match((failure) {
+      runApp(MyApp(
+        currentVersion: version,
+        latestVersion: version,
+        warning: VersionServiceUnreachable(),
+      ));
+    }, (versionInfo) {
+      if (version < versionInfo.min) {
+        runApp(MaterialApp(
+          home: Scaffold(
+            body: Center(
+                child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                  const Icon(Icons.warning_amber_rounded,
+                      size: 60.0, color: Colors.redAccent),
+                  const SizedBox(height: 16),
+                  const Text(
+                    "Upgrade Required!",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold, // Bold font weight
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                      "Your version ($version) is below the minimum supported version (${versionInfo.min})",
+                      style: const TextStyle(
+                        fontSize: 18.0, // Standard readable font size
+                        color: Colors.black87,
+                      )),
+                ])),
+          ),
+        ));
+      } else if (version < versionInfo.latest) {
+        runApp(MyApp(
+          currentVersion: version,
+          latestVersion: versionInfo.latest,
+          warning: NewVersionAvailable(),
+        ));
+      } else {
+        runApp(MyApp(
+          currentVersion: version,
+          latestVersion: versionInfo.latest,
+        ));
+      }
+    }).run();
   }, (Object error, StackTrace stackTrace) {
+    final logger = GetIt.I<Logger>();
     if (error is DioException) {
-      logger.e({'error': error.message, 'stackTrace': stackTrace.toString()});
+      logger.error(error.message ?? "", null, stackTrace);
     } else {
-      logger
-          .e({'error': error.toString(), 'stackTrace': stackTrace.toString()});
+      logger.error(error.toString(), null, stackTrace);
     }
-    // Log the error to a service or handle it accordingly
+    GetIt.I<ErrorService>().captureException(error, stackTrace: stackTrace);
   });
 }
 
@@ -336,7 +449,14 @@ Future<ValueNotifier<Color>> initSettings() async {
 }
 
 class MyApp extends StatelessWidget {
+  final Version currentVersion;
+  final Version latestVersion;
+  final VersionWarning? warning;
+
   MyApp({
+    required this.currentVersion,
+    required this.latestVersion,
+    this.warning,
     super.key,
   });
 
@@ -577,8 +697,17 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // if showWarning, just display a one off toast here?
+
     return MultiBlocProvider(
       providers: [
+        BlocProvider<VersionCubit>(
+          create: (context) => VersionCubit(VersionCubitState(
+            latest: latestVersion,
+            current: currentVersion,
+            warning: warning,
+          )),
+        ),
         BlocProvider<ShellStateCubit>(
           create: (context) => ShellStateCubit(
               walletRepository: GetIt.I<WalletRepository>(),

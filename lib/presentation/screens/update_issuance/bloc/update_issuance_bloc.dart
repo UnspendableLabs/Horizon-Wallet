@@ -90,9 +90,7 @@ class UpdateIssuanceBloc extends ComposeBaseBloc<UpdateIssuanceState> {
     }
 
     try {
-      feeEstimates = await getFeeEstimatesUseCase.call(
-        targets: (1, 3, 6),
-      );
+      feeEstimates = await getFeeEstimatesUseCase.call();
     } catch (e) {
       emit(state.copyWith(feeState: FeeState.error(e.toString())));
       return;

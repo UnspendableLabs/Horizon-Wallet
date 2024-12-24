@@ -1,27 +1,31 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
-import 'package:horizon/data/services/encryption_service_impl.dart';
+import 'package:horizon/data/services/encryption_service_web_worker_impl.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/main.dart';
 import 'package:horizon/setup.dart';
 import 'package:integration_test/integration_test.dart';
+import 'package:pub_semver/pub_semver.dart';
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   group('EncryptionService Integration Tests -- web worker', () {
     late EncryptionService encryptionService;
-    late EncryptionServiceImpl fallbackEncryptionService;
+    late EncryptionServiceWebWorkerImpl fallbackEncryptionService;
 
     setUpAll(() async {
       await setup();
       encryptionService = GetIt.instance<EncryptionService>();
-      fallbackEncryptionService = EncryptionServiceImpl();
+      fallbackEncryptionService = EncryptionServiceWebWorkerImpl();
     });
 
     testWidgets('Encrypt and decrypt with new Argon2 method',
         (WidgetTester tester) async {
-      await tester.pumpWidget(MyApp());
+      await tester.pumpWidget(MyApp(
+        currentVersion: Version(0, 0, 0),
+        latestVersion: Version(0, 0, 0),
+      ));
 
       const originalData = 'Sensitive data to encrypt';
       const password = 'strongPassword123';
@@ -34,28 +38,12 @@ void main() {
       await tester.pumpAndSettle();
     });
 
-    testWidgets('Decrypt legacy encrypted data', (WidgetTester tester) async {
-      await tester.pumpWidget(MyApp());
-
-      const originalData = 'Original legacy data';
-      const password = 'oldPassword123';
-
-      // Create a legacy encrypted string
-      final legacyEncrypted =
-          await fallbackEncryptionService.encryptLegacy(originalData, password);
-
-      // Ensure the legacy encrypted string doesn't start with the Argon2 prefix
-      expect(legacyEncrypted.startsWith('A2::'), isFalse);
-
-      final decrypted =
-          await encryptionService.decrypt(legacyEncrypted, password);
-      expect(decrypted, originalData);
-      await tester.pumpAndSettle();
-    });
-
     testWidgets('Encrypting same data twice produces different results',
         (WidgetTester tester) async {
-      await tester.pumpWidget(MyApp());
+      await tester.pumpWidget(MyApp(
+        currentVersion: Version(0, 0, 0),
+        latestVersion: Version(0, 0, 0),
+      ));
 
       const originalData = 'Sensitive data to encrypt';
       const password = 'strongPassword123';
@@ -70,7 +58,10 @@ void main() {
     });
     testWidgets('Decrypting invalid format throws exception',
         (WidgetTester tester) async {
-      await tester.pumpWidget(MyApp());
+      await tester.pumpWidget(MyApp(
+        currentVersion: Version(0, 0, 0),
+        latestVersion: Version(0, 0, 0),
+      ));
       const invalidEncrypted = 'A2::InvalidFormat::NotEnoughParts';
       const password = 'somePassword123';
 
@@ -82,7 +73,10 @@ void main() {
     });
     testWidgets('Argon2 encryption uses correct memory and parallelism',
         (WidgetTester tester) async {
-      await tester.pumpWidget(MyApp());
+      await tester.pumpWidget(MyApp(
+        currentVersion: Version(0, 0, 0),
+        latestVersion: Version(0, 0, 0),
+      ));
       const originalData = 'Test data';
       const password = 'testPassword123';
 
@@ -93,15 +87,18 @@ void main() {
   });
 
   group('EncryptionService Integration Tests -- mainThread worker', () {
-    late EncryptionServiceImpl fallbackEncryptionService;
+    late EncryptionServiceWebWorkerImpl fallbackEncryptionService;
 
     setUpAll(() async {
-      fallbackEncryptionService = EncryptionServiceImpl();
+      fallbackEncryptionService = EncryptionServiceWebWorkerImpl();
     });
 
     testWidgets('Encrypt and decrypt with new Argon2 method',
         (WidgetTester tester) async {
-      await tester.pumpWidget(MyApp());
+      await tester.pumpWidget(MyApp(
+        currentVersion: Version(0, 0, 0),
+        latestVersion: Version(0, 0, 0),
+      ));
 
       const originalData = 'Sensitive data to encrypt';
       const password = 'strongPassword123';
@@ -117,14 +114,17 @@ void main() {
     });
 
     testWidgets('Decrypt legacy encrypted data', (WidgetTester tester) async {
-      await tester.pumpWidget(MyApp());
+      await tester.pumpWidget(MyApp(
+        currentVersion: Version(0, 0, 0),
+        latestVersion: Version(0, 0, 0),
+      ));
 
       const originalData = 'Original legacy data';
       const password = 'oldPassword123';
 
       // Create a legacy encrypted string
       final legacyEncrypted =
-          await fallbackEncryptionService.encryptLegacy(originalData, password);
+          await fallbackEncryptionService.encrypt(originalData, password);
 
       // Ensure the legacy encrypted string doesn't start with the Argon2 prefix
       expect(legacyEncrypted.startsWith('A2::'), isFalse);
@@ -137,7 +137,10 @@ void main() {
 
     testWidgets('Encrypting same data twice produces different results',
         (WidgetTester tester) async {
-      await tester.pumpWidget(MyApp());
+      await tester.pumpWidget(MyApp(
+        currentVersion: Version(0, 0, 0),
+        latestVersion: Version(0, 0, 0),
+      ));
 
       const originalData = 'Sensitive data to encrypt';
       const password = 'strongPassword123';
@@ -152,7 +155,10 @@ void main() {
     });
     testWidgets('Decrypting invalid format throws exception',
         (WidgetTester tester) async {
-      await tester.pumpWidget(MyApp());
+      await tester.pumpWidget(MyApp(
+        currentVersion: Version(0, 0, 0),
+        latestVersion: Version(0, 0, 0),
+      ));
       const invalidEncrypted = 'A2::InvalidFormat::NotEnoughParts';
       const password = 'somePassword123';
 
@@ -164,7 +170,10 @@ void main() {
     });
     testWidgets('Argon2 encryption uses correct memory and parallelism',
         (WidgetTester tester) async {
-      await tester.pumpWidget(MyApp());
+      await tester.pumpWidget(MyApp(
+        currentVersion: Version(0, 0, 0),
+        latestVersion: Version(0, 0, 0),
+      ));
       const originalData = 'Test data';
       const password = 'testPassword123';
 

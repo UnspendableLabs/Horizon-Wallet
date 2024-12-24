@@ -1,31 +1,32 @@
-import 'package:collection/collection.dart';
-import 'package:horizon/common/format.dart';
 import 'package:decimal/decimal.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
+import 'package:horizon/common/format.dart';
+import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/domain/entities/compose_dispense.dart';
-import 'package:horizon/domain/entities/balance.dart';
+import 'package:horizon/domain/entities/dispenser.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
 import 'package:horizon/domain/repositories/dispenser_repository.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
+import 'package:horizon/presentation/common/colors.dart';
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_event.dart';
 import 'package:horizon/presentation/common/compose_base/view/compose_base_page.dart';
 import 'package:horizon/presentation/common/shared_util.dart';
+import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
+import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transaction_usecase.dart';
+import 'package:horizon/presentation/common/usecase/write_local_transaction_usecase.dart';
 import 'package:horizon/presentation/screens/compose_dispense/bloc/compose_dispense_bloc.dart';
 import 'package:horizon/presentation/screens/compose_dispense/bloc/compose_dispense_event.dart';
 import 'package:horizon/presentation/screens/compose_dispense/bloc/compose_dispense_state.dart';
-import 'package:horizon/presentation/screens/compose_dispense/usecase/fetch_form_data.dart';
-import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart";
-import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transaction_usecase.dart';
-import 'package:horizon/presentation/common/usecase/write_local_transaction_usecase.dart';
-import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
-import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
-import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
-import 'package:horizon/presentation/screens/compose_dispense/usecase/fetch_open_dispensers_on_address.dart';
 import 'package:horizon/presentation/screens/compose_dispense/usecase/estimate_dispenses.dart';
-
-import 'package:horizon/core/logging/logger.dart';
+import 'package:horizon/presentation/screens/compose_dispense/usecase/fetch_form_data.dart';
+import 'package:horizon/presentation/screens/compose_dispense/usecase/fetch_open_dispensers_on_address.dart';
+import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart";
+import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
+import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
+import 'package:rational/rational.dart';
 
 class ComposeDispensePageWrapper extends StatelessWidget {
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
@@ -89,20 +90,44 @@ class ComposeDispensePage extends StatefulWidget {
   ComposeDispensePageState createState() => ComposeDispensePageState();
 }
 
+// Define an enum to represent the input method
+enum InputMethod {
+  Quantity,
+  Lots,
+}
+
 class ComposeDispensePageState extends State<ComposeDispensePage> {
   TextEditingController dispenserController = TextEditingController();
-  TextEditingController quantityController = TextEditingController();
   TextEditingController openAddressController = TextEditingController();
+  TextEditingController buyQuantityController = TextEditingController();
+  TextEditingController priceController = TextEditingController();
+  TextEditingController lotController = TextEditingController();
 
-  String? asset;
-  Balance? balance_;
+  String? _selectedAsset;
+  Dispenser? _selectedDispenser;
+  String? _buyQuantity;
+
+  // Variable to hold the selected input method
+  InputMethod _inputMethod = InputMethod.Quantity;
+
+  // Add variable to hold the error message for lot input
+  String? _lotInputError;
 
   @override
   void initState() {
     super.initState();
-    // TODO: not sure why we are doing this.
     openAddressController.text = widget.address;
     dispenserController.text = widget.initialDispenserAddress ?? "";
+  }
+
+  @override
+  void dispose() {
+    dispenserController.dispose();
+    openAddressController.dispose();
+    buyQuantityController.dispose();
+    priceController.dispose();
+    lotController.dispose();
+    super.dispose();
   }
 
   @override
@@ -135,7 +160,7 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
   void _handleInitialSubmit(GlobalKey<FormState> formKey) {
     if (formKey.currentState!.validate()) {
       int quantity =
-          (Decimal.parse(quantityController.text) * Decimal.fromInt(100000000))
+          (Decimal.parse(priceController.text) * Decimal.fromInt(100000000))
               .toBigInt()
               .toInt();
       String dispenser = dispenserController.text;
@@ -155,104 +180,502 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
     return state.dispensersState.when(
       initial: () => Container(),
       loading: () => const Center(child: CircularProgressIndicator()),
-      success: (dispensers) => SizedBox(
-        height: 100,
-        child: ListView.builder(
-          itemCount: dispensers.length,
-          itemBuilder: (context, index) {
-            final dispenser = dispensers[index];
-            return SizedBox(
-                height: 50,
-                child: ListTile(
-                  title: SelectableText(
-                      "${dispenser.satoshirateNormalized} BTC/${dispenser.asset}"),
-                  trailing:
-                      Text("${dispenser.giveRemainingNormalized} Remaining"),
-                ));
-          },
-        ),
-      ),
+      success: (dispensers) {
+        // Extract unique assets for the dropdown
+        final assets = dispensers.map((d) => d.asset).toSet().toList();
+
+        // Set _selectedAsset to the first asset if it's null
+        if (_selectedAsset == null && assets.isNotEmpty) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            setState(() {
+              _selectedAsset = assets.first;
+              _selectedDispenser = dispensers.firstWhere(
+                (dispenser) => dispenser.asset == _selectedAsset,
+              );
+            });
+          });
+        }
+
+        // Use _selectedAsset for the selected value
+        String selectedAsset = _selectedAsset ?? assets.first;
+
+        // Build the dispenser widgets
+        List<Widget> dispenserWidgets = [
+          Column(
+            children:
+                _buildDispenserRowItems(dispensers, assets, selectedAsset),
+          ),
+        ];
+
+        return Column(
+          children: dispenserWidgets,
+        );
+      },
       error: (error) => Text('Error: $error'),
     );
   }
 
-  Widget _buildQuantityInput(ComposeDispenseState state,
-      void Function() handleInitialSubmit, bool loading) {
-    return state.balancesState.maybeWhen(orElse: () {
-      return _buildQuantityInputField(
-          state,
-          null,
-          // handleInitialSubmit,
-          loading);
-    }, success: (balances) {
-      if (balances.isEmpty) {
-        return const HorizonUI.HorizonTextFormField(
-          enabled: false,
-        );
-      }
+  List<Widget> _buildDispenserRowItems(
+      List<Dispenser> dispensers, List<String> assets, String selectedAsset) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final disabledTextColor = isDarkMode ? Colors.grey[500] : Colors.grey[400];
 
-      Balance? balance = _getBalanceForSelectedAsset(balances, "BTC");
-
-      if (balance == null) {
-        return const HorizonUI.HorizonTextFormField(
-          enabled: false,
-        );
-      }
-
-      return _buildQuantityInputField(
-          state,
-          balance,
-          // handleInitialSubmit,
-          loading);
-    });
+    return [
+      Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Expanded(
+            child: HorizonUI.HorizonDropdownMenu<String>(
+              key: const Key('asset_dropdown_menu'),
+              items: assets.map((String asset) {
+                final dispenserForAsset = dispensers.firstWhere(
+                  (dispenser) => dispenser.asset == asset,
+                );
+                return DropdownMenuItem<String>(
+                  key: Key('asset_dropdown_item_$asset'),
+                  value: asset,
+                  child: Text(displayAssetName(dispenserForAsset.asset,
+                      dispenserForAsset.assetInfo.assetLongname)),
+                );
+              }).toList(),
+              onChanged: (String? newValue) {
+                if (newValue != null) {
+                  setState(() {
+                    selectedAsset = newValue;
+                    _selectedAsset = newValue;
+                    _selectedDispenser = dispensers.firstWhere(
+                      (dispenser) => dispenser.asset == newValue,
+                    );
+                    _buyQuantity = null;
+                    _lotInputError = null;
+                  });
+                }
+              },
+              label: 'Asset',
+              selectedValue: selectedAsset,
+              selectedItemBuilder: (BuildContext context) {
+                return assets.map((String asset) {
+                  final dispenserForAsset = dispensers.firstWhere(
+                    (dispenser) => dispenser.asset == asset,
+                  );
+                  return DropdownMenuItem<String>(
+                    value: asset,
+                    child: Text(displayAssetName(dispenserForAsset.asset,
+                        dispenserForAsset.assetInfo.assetLongname)),
+                  );
+                }).toList();
+              },
+            ),
+          ),
+          const SizedBox(width: 16.0),
+          Expanded(
+            child: HorizonUI.HorizonTextFormField(
+              label: "Unit price",
+              controller: TextEditingController(
+                  text: _selectedDispenser?.priceNormalized),
+              enabled: false,
+              textColor: disabledTextColor,
+            ),
+          ),
+        ],
+      ),
+      const SizedBox(height: 16.0),
+      IntrinsicHeight(
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Expanded(
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "Quantity per dispense",
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: disabledTextColor,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      _selectedDispenser?.giveQuantityNormalized ?? '',
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: isDarkMode ? Colors.white : Colors.black,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(width: 16.0),
+            Expanded(
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "Price per dispense",
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: disabledTextColor,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      _selectedDispenser?.satoshirateNormalized ?? '',
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: isDarkMode ? Colors.white : Colors.black,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(width: 16.0),
+            Expanded(
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "Quantity available",
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: disabledTextColor,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      _selectedDispenser?.giveRemainingNormalized ?? '',
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: isDarkMode ? Colors.white : Colors.black,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    ];
   }
 
-  Widget _buildQuantityInputField(ComposeDispenseState state, Balance? balance,
-      /* void Function() handleInitialSubmit, */ bool loading) {
-    return Stack(
+  Widget _buildBuyQuantityInput(GlobalKey<FormState> formKey) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
+    if (_selectedDispenser == null) {
+      return const SizedBox.shrink();
+    }
+
+    // ignore_for_file: unnecessary_non_null_assertion
+    final quantityPerDispense =
+        Decimal.parse(_selectedDispenser!.giveQuantityNormalized!);
+    final remaining =
+        Decimal.parse(_selectedDispenser!.giveRemainingNormalized!);
+    final maxFullDispenses = (remaining / quantityPerDispense).floor().toInt();
+
+    List<Decimal> values = [];
+    for (int i = 1; i <= maxFullDispenses; i++) {
+      values.add(quantityPerDispense * Decimal.fromInt(i));
+    }
+
+    if (remaining > values.last &&
+        remaining < values.last + quantityPerDispense) {
+      values.add(remaining);
+    }
+
+    // Initialize _buyQuantity with the first value if it's not set
+    if (_buyQuantity == null || _buyQuantity!.isEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        setState(() {
+          _buyQuantity = values.first.toString();
+          _updateLotFromQuantity();
+        });
+      });
+    }
+
+    int currentIndex = 0;
+    if (_buyQuantity != null && _buyQuantity!.isNotEmpty) {
+      final currentValue = Decimal.parse(_buyQuantity!);
+      currentIndex = values.indexWhere((value) => value == currentValue);
+      if (currentIndex == -1) currentIndex = 0;
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        HorizonUI.HorizonTextFormField(
-          key: const Key('dispense_btc_quantity_input'),
-          controller: quantityController,
-          enabled: !loading,
-          label: 'Quantity ( BTC )',
-          inputFormatters: [DecimalTextInputFormatter(decimalRange: 8)],
-          keyboardType: const TextInputType.numberWithOptions(
-              decimal: true, signed: false),
-          validator: (value) {
-            if (value == null || value.isEmpty) {
-              return 'Please enter a quantity';
-            }
-            Decimal input = Decimal.parse(value);
-            Decimal max = Decimal.parse(balance?.quantityNormalized ?? '0');
-            if (input > max) {
-              return "give quantity exceeds available balance";
-            }
-            // why are we doing this?
-            setState(() {
-              balance_ = balance;
-            });
-            return null;
-          },
+        // Radio buttons to select input method
+        Row(
+          children: [
+            Expanded(
+              child: ListTile(
+                title: const Text('Quantity'),
+                leading: Radio<InputMethod>(
+                  value: InputMethod.Quantity,
+                  groupValue: _inputMethod,
+                  onChanged: (InputMethod? value) {
+                    setState(() {
+                      _inputMethod = value!;
+                      _buyQuantity = values[currentIndex].toString();
+                      lotController.clear();
+                      _updateLotFromQuantity();
+                      _lotInputError = null;
+                    });
+                  },
+                ),
+              ),
+            ),
+            Expanded(
+              child: ListTile(
+                title: const Text('Lots'),
+                leading: Radio<InputMethod>(
+                  value: InputMethod.Lots,
+                  groupValue: _inputMethod,
+                  onChanged: (InputMethod? value) {
+                    setState(() {
+                      _inputMethod = value!;
+                      // Clear quantity input
+                      _buyQuantity = '';
+                      _lotInputError = null;
+                    });
+                  },
+                ),
+              ),
+            ),
+          ],
         ),
-        state.balancesState.maybeWhen(orElse: () {
-          return const SizedBox.shrink();
-        }, success: (_) {
-          return asset != null
-              ? Positioned(
-                  right: 0,
-                  top: 0,
-                  bottom: 0,
-                  child: Row(
-                    children: [
-                      Container(
-                        margin: const EdgeInsets.only(top: 2.0),
+        // Inputs based on selected method
+        Row(
+          children: [
+            // Dispense Quantity Input
+            Expanded(
+              child: AbsorbPointer(
+                absorbing: _inputMethod != InputMethod.Quantity,
+                child: Opacity(
+                  opacity: _inputMethod == InputMethod.Quantity ? 1.0 : 0.5,
+                  child: Container(
+                    key: const Key('dispense_quantity_input'),
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: Theme.of(context).dividerColor,
+                        width: 1.0,
                       ),
-                    ],
+                      borderRadius: BorderRadius.circular(8.0),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.remove),
+                          onPressed: _inputMethod == InputMethod.Quantity &&
+                                  currentIndex > 0
+                              ? () {
+                                  setState(() {
+                                    currentIndex--;
+                                    _buyQuantity =
+                                        values[currentIndex].toString();
+                                    _updateLotFromQuantity();
+                                    _lotInputError = null;
+                                  });
+                                }
+                              : null,
+                        ),
+                        Expanded(
+                          child: Text(
+                            key: const Key('buy_quantity_text'),
+                            '${values[currentIndex]}',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: isDarkMode ? Colors.white : Colors.black,
+                              fontWeight: FontWeight.w500,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.add),
+                          onPressed: _inputMethod == InputMethod.Quantity &&
+                                  currentIndex < values.length - 1
+                              ? () {
+                                  setState(() {
+                                    currentIndex++;
+                                    _buyQuantity =
+                                        values[currentIndex].toString();
+                                    _updateLotFromQuantity();
+                                    _lotInputError = null;
+                                  });
+                                }
+                              : null,
+                        ),
+                      ],
+                    ),
                   ),
-                )
-              : const SizedBox.shrink();
-        }),
+                ),
+              ),
+            ),
+            const SizedBox(width: 16),
+            // Lot Input Field
+            Expanded(
+              child: HorizonUI.HorizonTextFormField(
+                key: const Key('lot_input'),
+                label: 'Lots',
+                controller: lotController,
+                enabled: _inputMethod == InputMethod.Lots,
+                keyboardType: TextInputType.number,
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                ],
+                validator: (value) {
+                  if (_selectedDispenser == null) return null;
+                  if (_inputMethod == InputMethod.Lots) {
+                    if (value == null || value.isEmpty) {
+                      return 'Lots are required';
+                    } else {
+                      if (int.tryParse(value) != null &&
+                          int.tryParse(value)! >
+                              (Decimal.parse(_selectedDispenser!
+                                          .giveRemainingNormalized!) /
+                                      Decimal.parse(_selectedDispenser!
+                                          .giveQuantityNormalized!))
+                                  .floor()
+                                  .toInt()) {
+                        return 'Lots entered are greater than lots available.\nMax: ${(Decimal.parse(_selectedDispenser!.giveRemainingNormalized!) / Decimal.parse(_selectedDispenser!.giveQuantityNormalized!)).floor()}';
+                      }
+                    }
+                    if (_lotInputError != null) {
+                      return _lotInputError;
+                    }
+                  }
+                  return null;
+                },
+                autovalidateMode: AutovalidateMode.onUserInteraction,
+                onChanged: (value) {
+                  _onLotChanged(value);
+                },
+                // Add the hint for max lots available
+                helperText: _inputMethod == InputMethod.Lots
+                    ? 'Max Lots available: ${(Decimal.parse(_selectedDispenser!.giveRemainingNormalized!) / Decimal.parse(_selectedDispenser!.giveQuantityNormalized!)).floor()}'
+                    : null,
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  void _updateLotFromQuantity() {
+    if (_selectedDispenser == null || _buyQuantity == null) return;
+
+    final quantityPerDispense =
+        Decimal.parse(_selectedDispenser!.giveQuantityNormalized!);
+
+    final totalQuantity = Decimal.parse(_buyQuantity!);
+    final lots = (totalQuantity / quantityPerDispense);
+
+    lotController.text = lots.toString();
+  }
+
+  void _onLotChanged(String lotsStr) {
+    if (_selectedDispenser == null) return;
+
+    if (lotsStr.isEmpty) {
+      setState(() {
+        _buyQuantity = '0';
+        _lotInputError = null;
+      });
+      return;
+    }
+    if (_inputMethod == InputMethod.Lots) {
+      int lots = int.tryParse(lotsStr) ?? 0;
+
+      final quantityPerDispense =
+          Decimal.parse(_selectedDispenser!.giveQuantityNormalized!);
+
+      final totalQuantity = quantityPerDispense * Decimal.fromInt(lots);
+
+      // Calculate giveRemaining
+      final giveRemaining =
+          Decimal.parse(_selectedDispenser!.giveRemainingNormalized!);
+
+      // Check if totalQuantity exceeds giveRemaining
+      if (totalQuantity > giveRemaining) {
+        setState(() {
+          _lotInputError = 'Lots entered are greater than lots available.';
+        });
+      } else {
+        setState(() {
+          _lotInputError = null;
+        });
+      }
+
+      setState(() {
+        _buyQuantity = totalQuantity.toString();
+      });
+    }
+  }
+
+  Widget _buildPriceInput(ComposeDispenseState state) {
+    if (_selectedDispenser == null) {
+      return const SizedBox.shrink();
+    }
+    final String price = _buyQuantity != null && _buyQuantity!.isNotEmpty
+        ? ((Decimal.parse(_buyQuantity!) /
+                    Decimal.parse(
+                        _selectedDispenser!.giveQuantityNormalized!)) *
+                Rational.parse(_selectedDispenser!.satoshiPriceNormalized!))
+            .toDouble()
+            .toStringAsFixed(8)
+        : '';
+
+    priceController.text = price;
+    return HorizonUI.HorizonTextFormField(
+      key: const Key('price_input'),
+      label: 'Price',
+      controller: priceController,
+      enabled: false,
+    );
+  }
+
+  Widget _buildBuyQuantityAndPrice(
+      GlobalKey<FormState> formKey, ComposeDispenseState state) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    if (_selectedDispenser == null) {
+      return const SizedBox.shrink();
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          "Quantity to be dispensed",
+          style: TextStyle(
+            fontSize: 12,
+            color: isDarkMode
+                ? darkThemeInputLabelColor
+                : lightThemeInputLabelColor,
+          ),
+        ),
+        const SizedBox(height: 8),
+        _buildBuyQuantityInput(formKey),
+        // _buildGiveQuantityHint(),
+        const SizedBox(height: 16.0),
+        // Price Input Centered Below
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Expanded(
+              child: _buildPriceInput(state),
+            ),
+          ],
+        ),
       ],
     );
   }
@@ -266,20 +689,18 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
         label: "Source Address",
       ),
       const SizedBox(height: 16.0),
-      _buildDispenserInput(),
+      _buildDispenserInput(formKey),
       const SizedBox(height: 16.0),
       _buildOpenDispensersList(state),
       const SizedBox(height: 16.0),
-      _buildQuantityInput(state, () {
-        _handleInitialSubmit(formKey);
-      }, loading),
+      _buildBuyQuantityAndPrice(formKey, state),
       const SizedBox(height: 16.0),
     ];
   }
 
-  Widget _buildDispenserInput() {
+  Widget _buildDispenserInput(GlobalKey<FormState> formKey) {
     return HorizonUI.HorizonTextFormField(
-      key: const Key('dispense_dispenesr_input'),
+      key: const Key('dispense_dispenser_input'),
       controller: dispenserController,
       label: 'Dispenser Address',
       onChanged: (value) {
@@ -288,13 +709,14 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
             .read<ComposeDispenseBloc>()
             .add(DispenserAddressChanged(address: value));
       },
-      // keyboardType: const TextInputType.numberWithOptions(
-      //     decimal: false, signed: false), // No decimal allowed
       validator: (value) {
         if (value == null || value.isEmpty) {
           return 'Dispener Address is required';
         }
         return null;
+      },
+      onFieldSubmitted: (value) {
+        _handleInitialSubmit(formKey);
       },
     );
   }
@@ -302,6 +724,65 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
   List<Widget> _buildConfirmationDetails(state_, dynamic composeTransaction) {
     final estimatedDispenses = state_.otherParams as List<EstimatedDispense>;
     final params = (composeTransaction as ComposeDispenseResponse).params;
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final labelColor = isDarkMode ? Colors.white : Colors.black;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmallScreen = screenWidth < 700;
+
+    final selectedDispense = estimatedDispenses
+        .where((d) => d.dispenser.asset == _selectedAsset)
+        .firstOrNull;
+
+    final labelStyle = TextStyle(
+      fontWeight: FontWeight.bold,
+      fontSize: 16,
+      color: labelColor,
+    );
+
+    final assetTextStyle = TextStyle(
+      fontSize: 16,
+      color: labelColor,
+    );
+
+    Widget buildDispenseRow(EstimatedDispense dispense) {
+      if (isSmallScreen) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SelectableText(
+              "${dispense.estimatedQuantityNormalized} ${displayAssetName(dispense.dispenser.asset, dispense.dispenser.assetInfo.assetLongname)}",
+              style: assetTextStyle,
+            ),
+            const SizedBox(height: 4),
+            SelectableText(
+              "(${dispense.dispenser.giveQuantityNormalized} x ${dispense.estimatedUnits})",
+              style: assetTextStyle,
+            ),
+            const Divider(height: 16),
+          ],
+        );
+      }
+
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            SelectableText(
+              displayAssetName(dispense.dispenser.asset,
+                  dispense.dispenser.assetInfo.assetLongname),
+              style: assetTextStyle,
+            ),
+            const SizedBox(width: 8),
+            SelectableText(
+              "${dispense.estimatedQuantityNormalized} ${displayAssetName(dispense.dispenser.asset, dispense.dispenser.assetInfo.assetLongname)} (${dispense.dispenser.giveQuantityNormalized} x ${dispense.estimatedUnits})",
+              style: assetTextStyle,
+              textAlign: TextAlign.end,
+            ),
+          ],
+        ),
+      );
+    }
 
     return [
       HorizonUI.HorizonTextFormField(
@@ -317,63 +798,49 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
       ),
       const SizedBox(height: 16.0),
       HorizonUI.HorizonTextFormField(
-        label: "Quantity",
+        label: "BTC Paid",
         controller: TextEditingController(
           text: "${satoshisToBtc(params.quantity).toStringAsFixed(8)} BTC",
         ),
         enabled: false,
       ),
       const SizedBox(height: 16.0),
-      const Text(
-        "Estimated Dispenses",
-        style: TextStyle(fontWeight: FontWeight.bold),
-      ),
-      Padding(
-        padding: const EdgeInsets.fromLTRB(8.0, 0, 8.0, 0),
-        child: SizedBox(
-          height: 200, // Set appropriate height
-          child: ListView.builder(
-            itemCount: estimatedDispenses.length,
-            itemBuilder: (context, index) {
-              final dispense = estimatedDispenses[index];
-              final hasOverpay = dispense.annotations
-                  .contains(EstimatedDispenseAnnotations.overpay);
-
-              return Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8.0),
-                child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Column(
-                        children: [
-                          Text(
-                            dispense.dispenser.asset,
-                            style: const TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          hasOverpay
-                              ? const Text(
-                                  "Overpay",
-                                  style: TextStyle(color: Colors.orange),
-                                )
-                              : const Text(" "),
-                        ],
-                      ),
-                      const SizedBox(height: 8.0),
-                      Row(
-                        children: [
-                          Text(
-                              "${dispense.estimatedQuantityNormalized.toString()} ${dispense.dispenser.asset}"),
-                          const SizedBox(width: 8.0),
-                          Text(
-                              "( ${dispense.dispenser.giveQuantityNormalized}  x ${dispense.estimatedUnits} )"),
-                        ],
-                      ),
-                    ]),
-              );
-            },
-          ),
+      Align(
+        alignment: Alignment.centerLeft,
+        child: Text(
+          "Dispense:",
+          style: labelStyle,
         ),
       ),
+      Padding(
+        padding: const EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 16.0),
+        child: selectedDispense == null
+            ? SelectableText(
+                "Error: $_selectedAsset will not be dispensed",
+                style: const TextStyle(color: Colors.red),
+              )
+            : buildDispenseRow(selectedDispense),
+      ),
+      if (estimatedDispenses
+          .where((d) => d.dispenser.asset != _selectedAsset)
+          .isNotEmpty) ...[
+        Align(
+          alignment: Alignment.centerLeft,
+          child: Text(
+            "Other dispenses:",
+            style: labelStyle,
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 0),
+          child: Column(
+            children: estimatedDispenses
+                .where((d) => d.dispenser.asset != _selectedAsset)
+                .map((dispense) => buildDispenseRow(dispense))
+                .toList(),
+          ),
+        ),
+      ],
       const SizedBox(height: 16.0),
     ];
   }
@@ -413,13 +880,4 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
           initialDispenserAddress: dispenserController.text,
         ));
   }
-}
-
-_getBalanceForSelectedAsset(List<Balance> balances, String asset) {
-  if (balances.isEmpty) {
-    return null;
-  }
-
-  return balances.firstWhereOrNull((balance) => balance.asset == asset) ??
-      balances[0];
 }

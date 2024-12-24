@@ -11,19 +11,22 @@ class Dispenser {
   final int satoshirate;
   final int status;
   final int giveRemaining;
+  final int? price;
   final String? oracleAddress;
   final String? lastStatusTxHash;
   final String origin;
   final int dispenseCount;
   final String? lastStatusTxSource;
   final int? closeBlockIndex;
-  final bool confirmed;
+  final bool? confirmed;
 
   final int? blockTime;
   final String giveQuantityNormalized;
   final String giveRemainingNormalized;
   final String escrowQuantityNormalized;
   final String satoshirateNormalized;
+  final String? satoshiPriceNormalized;
+  final String? priceNormalized;
   final AssetInfo assetInfo;
 
   Dispenser(
@@ -37,13 +40,14 @@ class Dispenser {
       required this.satoshirate,
       required this.status,
       required this.giveRemaining,
+      this.price,
       this.oracleAddress,
       this.lastStatusTxHash,
       required this.origin,
       required this.dispenseCount,
       this.lastStatusTxSource,
       this.closeBlockIndex,
-      required this.confirmed,
+      this.confirmed,
       // Verbose fields
       this.blockTime,
       // this.assetInfo,
@@ -51,5 +55,7 @@ class Dispenser {
       required this.giveRemainingNormalized,
       required this.escrowQuantityNormalized,
       required this.satoshirateNormalized,
+      this.satoshiPriceNormalized,
+      this.priceNormalized,
       required this.assetInfo});
 }

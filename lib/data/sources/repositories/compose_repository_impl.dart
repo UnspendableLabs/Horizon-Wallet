@@ -15,6 +15,12 @@ import 'package:horizon/domain/entities/compose_dispense.dart'
     as compose_dispense;
 import 'package:horizon/domain/entities/compose_order.dart' as compose_order;
 import 'package:horizon/domain/entities/compose_cancel.dart' as compose_cancel;
+import 'package:horizon/domain/entities/compose_attach_utxo.dart'
+    as compose_attach_utxo;
+import 'package:horizon/domain/entities/compose_detach_utxo.dart'
+    as compose_detach_utxo;
+import 'package:horizon/domain/entities/compose_movetoutxo.dart'
+    as compose_movetoutxo;
 import 'package:horizon/domain/entities/utxo.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
 
@@ -40,17 +46,30 @@ class ComposeRepositoryImpl extends ComposeRepository {
     try {
       return await apiCall(currentInputsSet);
     } catch (e) {
-      final error = extractInvalidUtxoError(e.toString());
+      final error = extractInvalidUtxoErrors(e.toString());
 
-      return error.fold(() => throw e, (invalidUtxo) {
-        final newInputsSet = removeUtxoFromList(
-            currentInputsSet, invalidUtxo.txHash, invalidUtxo.outputIndex);
+      return error.fold(() => throw e, (invalidUtxos) {
+        // Remove all invalid UTXOs from the current input set
+        final newInputsSet =
+            removeUtxosFromList(currentInputsSet, invalidUtxos);
+
         if (newInputsSet.isEmpty) {
-          throw Exception('No valid UTXOs left after removing invalid UTXO');
+          throw Exception('No valid UTXOs left after removing invalid UTXOs');
         }
+
+        // Retry with the updated input set
         return _retryOnInvalidUtxo(apiCall, newInputsSet);
       });
     }
+  }
+
+  List<Utxo> removeUtxosFromList(
+      List<Utxo> inputSet, List<InvalidUtxo> invalidUtxos) {
+    return inputSet.where((utxo) {
+      return !invalidUtxos.any((invalidUtxo) =>
+          utxo.txid == invalidUtxo.txHash &&
+          utxo.vout == invalidUtxo.outputIndex);
+    }).toList();
   }
 
   @override
@@ -62,12 +81,22 @@ class ComposeRepositoryImpl extends ComposeRepository {
         final destination = params.destination;
         final asset = params.asset;
         final quantity = params.quantity;
-
+        const excludeUtxosWithBalances = true;
+        const disableUtxoLocks = true;
         final inputsSetString =
             currentInputSet.map((e) => "${e.txid}:${e.vout}").join(',');
 
-        final response = await api.composeSendVerbose(source, destination,
-            asset, quantity, true, fee, null, inputsSetString);
+        final response = await api.composeSendVerbose(
+            source,
+            destination,
+            asset,
+            quantity,
+            true,
+            fee,
+            null,
+            inputsSetString,
+            excludeUtxosWithBalances,
+            disableUtxoLocks);
 
         if (response.result == null) {
           throw Exception('Failed to compose send');
@@ -111,7 +140,8 @@ class ComposeRepositoryImpl extends ComposeRepository {
         final reset = params.reset;
         final description = params.description;
         const unconfirmed = true;
-
+        const excludeUtxosWithBalances = true;
+        const disableUtxoLocks = true;
         final inputsSetString =
             currentInputSet.map((e) => "${e.txid}:${e.vout}").join(',');
 
@@ -126,7 +156,9 @@ class ComposeRepositoryImpl extends ComposeRepository {
             description,
             unconfirmed,
             fee,
-            inputsSetString);
+            inputsSetString,
+            excludeUtxosWithBalances,
+            disableUtxoLocks);
         if (response.result == null) {
           throw Exception('Failed to compose issuance');
         }
@@ -168,6 +200,8 @@ class ComposeRepositoryImpl extends ComposeRepository {
         const openAddress = null;
         const oracleAddress = null;
         const allowUnconfirmedTx = true;
+        const excludeUtxosWithBalances = true;
+        const disableUtxoLocks = true;
 
         final inputsSetString =
             currentInputSet.map((e) => "${e.txid}:${e.vout}").join(',');
@@ -183,7 +217,9 @@ class ComposeRepositoryImpl extends ComposeRepository {
             oracleAddress,
             allowUnconfirmedTx,
             fee,
-            inputsSetString);
+            inputsSetString,
+            excludeUtxosWithBalances,
+            disableUtxoLocks);
 
         if (response.result == null) {
           throw Exception('Failed to compose dispenser');
@@ -227,12 +263,21 @@ class ComposeRepositoryImpl extends ComposeRepository {
         final dispenser = params.dispenser;
         final quantity = params.quantity;
         const allowUnconfirmedTx = true;
+        const excludeUtxosWithBalances = true;
+        const disableUtxoLocks = true;
 
         final inputsSetString =
             currentInputSet.map((e) => "${e.txid}:${e.vout}").join(',');
 
-        final response = await api.composeDispense(sourceAddress, dispenser,
-            quantity, allowUnconfirmedTx, fee, inputsSetString);
+        final response = await api.composeDispense(
+            sourceAddress,
+            dispenser,
+            quantity,
+            allowUnconfirmedTx,
+            fee,
+            inputsSetString,
+            excludeUtxosWithBalances,
+            disableUtxoLocks);
 
         if (response.result == null) {
           throw Exception('Failed to compose dispense');
@@ -253,12 +298,14 @@ class ComposeRepositoryImpl extends ComposeRepository {
       (currentInputSet) async {
         final sourceAddress = params.source;
         final asset = params.asset;
+        const excludeUtxosWithBalances = true;
+        const disableUtxoLocks = true;
 
         final inputsSetString =
             currentInputSet.map((e) => "${e.txid}:${e.vout}").join(',');
 
-        final response = await api.composeFairmintVerbose(
-            sourceAddress, asset, fee, inputsSetString);
+        final response = await api.composeFairmintVerbose(sourceAddress, asset,
+            fee, inputsSetString, excludeUtxosWithBalances, disableUtxoLocks);
 
         if (response.result == null) {
           throw Exception('Failed to compose fairmint');
@@ -286,6 +333,8 @@ class ComposeRepositoryImpl extends ComposeRepository {
         final endBlock = params.endBlock;
         final divisible = params.divisible;
         final lockQuantity = params.lockQuantity;
+        const excludeUtxosWithBalances = true;
+        const disableUtxoLocks = true;
 
         final inputsSetString =
             currentInputSet.map((e) => "${e.txid}:${e.vout}").join(',');
@@ -301,7 +350,9 @@ class ComposeRepositoryImpl extends ComposeRepository {
             endBlock,
             fee,
             lockQuantity,
-            inputsSetString);
+            inputsSetString,
+            excludeUtxosWithBalances,
+            disableUtxoLocks);
 
         if (response.result == null) {
           throw Exception('Failed to compose fairminter');
@@ -323,6 +374,9 @@ class ComposeRepositoryImpl extends ComposeRepository {
     final escrowQuantity = params.escrowQuantity;
     final mainchainrate = params.mainchainrate;
     final status = params.status ?? 0;
+    const excludeUtxosWithBalances = true;
+    const validateCompose = false;
+    const disableUtxoLocks = true;
 
     final Vout? outputForChaining = prevDecodedTransaction.vout
         .firstWhereOrNull((vout) => vout.scriptPubKey.address == params.source);
@@ -341,20 +395,22 @@ class ComposeRepositoryImpl extends ComposeRepository {
     final newInputSet = '$txid:$vout:$value:${scriptPubKey.hex}';
 
     final response = await api.composeDispenserVerbose(
-        source,
-        asset,
-        giveQuantity,
-        escrowQuantity,
-        mainchainrate,
-        status,
-        null,
-        null,
-        true,
-        fee,
-        newInputSet,
-        null,
-        false,
-        true);
+      source,
+      asset,
+      giveQuantity,
+      escrowQuantity,
+      mainchainrate,
+      status,
+      null,
+      null,
+      true,
+      fee,
+      newInputSet,
+      excludeUtxosWithBalances,
+      null,
+      validateCompose,
+      disableUtxoLocks,
+    );
 
     if (response.result == null) {
       throw Exception('Failed to compose send');
@@ -393,6 +449,8 @@ class ComposeRepositoryImpl extends ComposeRepository {
         final giveAsset = params.giveAsset;
         final getQuantity = params.getQuantity;
         final getAsset = params.getAsset;
+        const excludeUtxosWithBalances = true;
+        const disableUtxoLocks = true;
 
         final inputsSetString =
             currentInputSet.map((e) => "${e.txid}:${e.vout}").join(',');
@@ -407,7 +465,9 @@ class ComposeRepositoryImpl extends ComposeRepository {
             0, // fee required
             true, //  allow unconfirmed
             fee, //exect fee
-            inputsSetString);
+            inputsSetString,
+            excludeUtxosWithBalances,
+            disableUtxoLocks);
 
         if (response.result == null) {
           throw Exception('Failed to compose order');
@@ -426,7 +486,8 @@ class ComposeRepositoryImpl extends ComposeRepository {
       (currentInputSet) async {
         final source = params.source;
         final offerHash = params.offerHash;
-
+        const excludeUtxosWithBalances = true;
+        const disableUtxoLocks = true;
         final inputsSetString =
             currentInputSet.map((e) => "${e.txid}:${e.vout}").join(',');
 
@@ -435,7 +496,9 @@ class ComposeRepositoryImpl extends ComposeRepository {
             offerHash,
             true, //  allow unconfirmed
             fee, //exect fee
-            inputsSetString);
+            inputsSetString,
+            excludeUtxosWithBalances,
+            disableUtxoLocks);
 
         if (response.result == null) {
           throw Exception('Failed to compose cancel');
@@ -446,23 +509,173 @@ class ComposeRepositoryImpl extends ComposeRepository {
       inputsSet,
     );
   }
+
+  @override
+  Future<int> estimateComposeAttachXcpFees() async {
+    final response = await api.estimateAttachXcpFees();
+    if (response.result == null) {
+      throw Exception('Failed to estimate compose attach xcp fees');
+    }
+    return response.result!;
+  }
+
+  @override
+  Future<compose_attach_utxo.ComposeAttachUtxoResponse> composeAttachUtxo(
+      int fee,
+      List<Utxo> inputsSet,
+      compose_attach_utxo.ComposeAttachUtxoParams params) async {
+    return await _retryOnInvalidUtxo<
+        compose_attach_utxo.ComposeAttachUtxoResponse>(
+      (currentInputSet) async {
+        final address = params.address;
+        final asset = params.asset;
+        final quantity = params.quantity;
+        const excludeUtxosWithBalances = true;
+        const disableUtxoLocks = true;
+        final inputsSetString =
+            currentInputSet.map((e) => "${e.txid}:${e.vout}").join(',');
+
+        final response = await api.composeAttachUtxo(
+            address,
+            asset,
+            quantity,
+            null,
+            false,
+            true, //  allow unconfirmed
+            fee, //exect fee
+            inputsSetString,
+            excludeUtxosWithBalances,
+            disableUtxoLocks);
+
+        if (response.result == null) {
+          throw Exception('Failed to compose attach utxo');
+        }
+
+        return response.result!.toDomain();
+      },
+      inputsSet,
+    );
+  }
+
+  @override
+  Future<compose_detach_utxo.ComposeDetachUtxoResponse> composeDetachUtxo(
+      int fee,
+      List<Utxo> inputsSet,
+      compose_detach_utxo.ComposeDetachUtxoParams params) async {
+    return await _retryOnInvalidUtxo<
+        compose_detach_utxo.ComposeDetachUtxoResponse>(
+      (currentInputSet) async {
+        final utxo = params.utxo;
+        final destination = params.destination;
+        const excludeUtxosWithBalances = true;
+        const disableUtxoLocks = true;
+
+        final inputsSetString =
+            currentInputSet.map((e) => "${e.txid}:${e.vout}").join(',');
+
+        final response = await api.composeDetachUtxo(
+          utxo,
+          destination,
+          false,
+          true, //  allow unconfirmed
+          fee, //exect fee
+          inputsSetString,
+          excludeUtxosWithBalances,
+          disableUtxoLocks,
+        );
+
+        if (response.result == null) {
+          throw Exception('Failed to compose detach utxo');
+        }
+
+        return response.result!.toDomain();
+      },
+      inputsSet,
+    );
+  }
+
+  @override
+  Future<compose_movetoutxo.ComposeMoveToUtxoResponse> composeMoveToUtxo(
+      int fee,
+      List<Utxo> inputsSet,
+      compose_movetoutxo.ComposeMoveToUtxoParams params) async {
+    return await _retryOnInvalidUtxo<
+        compose_movetoutxo.ComposeMoveToUtxoResponse>(
+      (currentInputSet) async {
+        final utxo = params.utxo;
+        final destination = params.destination;
+        const excludeUtxosWithBalances = true;
+        const disableUtxoLocks = true;
+        final inputsSetString =
+            currentInputSet.map((e) => "${e.txid}:${e.vout}").join(',');
+
+        final response = await api.composeMoveToUtxo(
+          utxo,
+          destination,
+          false,
+          true, //  allow unconfirmed inputs
+          fee, //exect fee
+          inputsSetString,
+          excludeUtxosWithBalances,
+          disableUtxoLocks,
+        );
+
+        if (response.result == null) {
+          throw Exception('Failed to compose move to utxo');
+        }
+
+        return response.result!.toDomain();
+      },
+      inputsSet,
+    );
+  }
 }
 
-class InvalidUtxoError {
+class InvalidUtxo {
   final String txHash;
   final int outputIndex;
 
-  InvalidUtxoError(this.txHash, this.outputIndex);
+  InvalidUtxo(this.txHash, this.outputIndex);
 }
 
-Option<InvalidUtxoError> extractInvalidUtxoError(String errorMessage) {
+Option<List<InvalidUtxo>> extractInvalidUtxoErrors(String errorMessage) {
+  return _extractInvalidUtxoErrors(errorMessage).fold(
+      () => extractInvalidUtxoError(errorMessage).map((utxo) => [utxo]),
+      (utxos) => Option.of(utxos));
+}
+
+Option<List<InvalidUtxo>> _extractInvalidUtxoErrors(String errorMessage) {
+  // Match the new format: array of invalid UTXOs
+  final RegExp newFormatRegex = RegExp(r'invalid UTXOs: (.+)');
+  final match = newFormatRegex.firstMatch(errorMessage);
+
+  try {
+    final listStr = match!.group(1);
+
+    final List<String> utxoStrings =
+        listStr!.split(',').map((s) => s.trim()).toList();
+
+    final List<InvalidUtxo> utxos = utxoStrings.map((utxo) {
+      final parts = utxo.split(':');
+      final txHash = parts[0];
+      final outputIndex = int.parse(parts[1]);
+      return InvalidUtxo(txHash, outputIndex);
+    }).toList();
+
+    return Option.of(utxos);
+  } catch (e) {
+    return const Option.none();
+  }
+}
+
+Option<InvalidUtxo> extractInvalidUtxoError(String errorMessage) {
   final RegExp regex = RegExp(r'invalid UTXO: ([a-fA-F0-9]{64}):(\d+)');
   final match = regex.firstMatch(errorMessage);
 
   return Option.fromNullable(match).map((m) {
     final txHash = m.group(1)!;
     final outputIndex = int.parse(m.group(2)!);
-    return InvalidUtxoError(txHash, outputIndex);
+    return InvalidUtxo(txHash, outputIndex);
   });
 }
 

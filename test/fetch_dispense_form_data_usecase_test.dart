@@ -16,7 +16,6 @@ class MockGetFeeEstimatesUseCase extends Mock
 
 void main() {
   late FetchDispenseFormDataUseCase useCase;
-  late MockBalanceRepository mockBalanceRepository;
   late MockGetFeeEstimatesUseCase mockGetFeeEstimatesUseCase;
 
   setUpAll(() {
@@ -24,10 +23,8 @@ void main() {
   });
 
   setUp(() {
-    mockBalanceRepository = MockBalanceRepository();
     mockGetFeeEstimatesUseCase = MockGetFeeEstimatesUseCase();
     useCase = FetchDispenseFormDataUseCase(
-      balanceRepository: mockBalanceRepository,
       getFeeEstimatesUseCase: mockGetFeeEstimatesUseCase,
     );
   });
@@ -59,43 +56,14 @@ void main() {
 
     const feeEstimates = FeeEstimates(fast: 10, medium: 5, slow: 2);
 
-    when(() => mockBalanceRepository.getBalancesForAddress(address.address))
-        .thenAnswer((_) async => balances);
-
-    when(() => mockGetFeeEstimatesUseCase.call(targets: any(named: 'targets')))
+    when(() => mockGetFeeEstimatesUseCase.call())
         .thenAnswer((_) async => feeEstimates);
 
     // Act
     final result = await useCase.call(address.address);
 
     // Assert
-    expect(result.$1, balances);
-    expect(result.$2, feeEstimates);
-    expect(result.$1.first.assetInfo,
-        assetInfo); // Verifying assetInfo is returned correctly
-  });
-
-  test('should throw FetchBalancesException when balance fetch fails',
-      () async {
-    // Arrange
-    const address = Address(
-      accountUuid: 'test-account-uuid',
-      address: 'test-address',
-      index: 0,
-    );
-
-    when(() => mockBalanceRepository.getBalancesForAddress(address.address))
-        .thenThrow(FetchBalancesException('Balance error'));
-
-    when(() => mockGetFeeEstimatesUseCase.call(targets: any(named: 'targets')))
-        .thenAnswer(
-            (_) async => const FeeEstimates(fast: 10, medium: 5, slow: 2));
-
-    // Act & Assert
-    expect(
-      () => useCase.call(address.address),
-      throwsA(isA<FetchBalancesException>()),
-    );
+    expect(result, feeEstimates);
   });
 
   test('should throw FetchFeeEstimatesException when fee estimate fetch fails',
@@ -107,26 +75,7 @@ void main() {
       index: 0,
     );
 
-    const assetInfo = AssetInfo(
-      assetLongname: "BTC_LONGNAME",
-      divisible: true,
-      description: "Bitcoin Description",
-    );
-
-    final balances = [
-      Balance(
-        address: address.address,
-        asset: 'BTC',
-        quantity: 1000,
-        quantityNormalized: '0.00001000',
-        assetInfo: assetInfo, // Adding assetInfo to the balance entity
-      ),
-    ];
-
-    when(() => mockBalanceRepository.getBalancesForAddress(address.address))
-        .thenAnswer((_) async => balances);
-
-    when(() => mockGetFeeEstimatesUseCase.call(targets: any(named: 'targets')))
+    when(() => mockGetFeeEstimatesUseCase.call())
         .thenThrow(FetchFeeEstimatesException('Fee estimate error'));
 
     // Act & Assert
@@ -144,9 +93,6 @@ void main() {
       address: 'test-address',
       index: 0,
     );
-
-    when(() => mockBalanceRepository.getBalancesForAddress(address.address))
-        .thenThrow(Exception('Unexpected error'));
 
     // Act & Assert
     expect(

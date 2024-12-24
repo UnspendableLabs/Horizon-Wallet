@@ -3,13 +3,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 import 'package:horizon/domain/repositories/node_info_repository.dart';
+import 'package:horizon/domain/repositories/config_repository.dart';
 import 'package:horizon/presentation/common/colors.dart';
 import 'package:horizon/presentation/common/footer/bloc/footer_bloc.dart';
 import 'package:horizon/presentation/common/footer/bloc/footer_event.dart';
 import 'package:horizon/presentation/common/footer/bloc/footer_state.dart';
 import 'package:url_launcher/url_launcher.dart';
-
-const TAG = "v1.3.11";
+import 'package:horizon/domain/services/platform_service.dart';
 
 class Footer extends StatelessWidget {
   const Footer({super.key});
@@ -38,6 +38,12 @@ class _FooterState extends State<_Footer> {
     context.read<FooterBloc>().add(NodeInfoRequested());
   }
 
+  void _openInNewTab() {
+    if (GetIt.I.get<Config>().isWebExtension) {
+      GetIt.I.get<PlatformService>().openInNewTab();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
@@ -47,6 +53,8 @@ class _FooterState extends State<_Footer> {
           color: neonBlueDarkTheme,
           fontSize: screenWidth < 600 ? 10 : 16,
         );
+
+    final config = GetIt.I.get<Config>();
 
     return Material(
       elevation: 0,
@@ -103,10 +111,10 @@ class _FooterState extends State<_Footer> {
                     ),
                     onPressed: () {
                       launchUrl(Uri.parse(
-                          "https://github.com/UnspendableLabs/Horizon-Wallet/releases/tag/$TAG"));
+                          "https://github.com/UnspendableLabs/Horizon-Wallet/releases/tag/v${config.version.toString()}"));
                     },
                     child: Text(
-                      TAG,
+                      config.version.toString(),
                       style: textStyle(),
                     ),
                   ),
@@ -132,6 +140,21 @@ class _FooterState extends State<_Footer> {
                       ),
                     ),
                   ),
+                  if (config.isWebExtension)
+                    TextButton(
+                      style: TextButton.styleFrom(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: screenWidth < 600 ? 4 : 16,
+                        ),
+                        minimumSize: Size.zero,
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
+                      onPressed: _openInNewTab,
+                      child: Text(
+                        'Open in Tab',
+                        style: textStyle(),
+                      ),
+                    ),
                 ],
               ),
             ),

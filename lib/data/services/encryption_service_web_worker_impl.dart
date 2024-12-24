@@ -3,11 +3,29 @@ import 'dart:typed_data';
 import 'dart:math';
 import 'dart:async';
 import 'package:horizon/domain/services/encryption_service.dart';
-import "encryption_service_impl.dart";
 import 'dart:convert';
-import 'package:dargon2_flutter/dargon2_flutter.dart';
 import 'package:encrypt/encrypt.dart';
 import 'package:horizon/common/normalize_b64.dart';
+
+class Salt {
+  /// Internal List of salt bytes
+  final List<int> _bytes;
+
+  Salt(this._bytes);
+
+  factory Salt.newSalt({int length = 16}) {
+    return Salt(_getRandomBytes(length));
+  }
+
+  static List<int> _getRandomBytes([int length = 16]) {
+    final random = Random.secure();
+    return List<int>.generate(length, (i) => random.nextInt(256));
+  }
+
+  List<int> get bytes {
+    return _bytes;
+  }
+}
 
 const String _argon2Prefix = 'A2::';
 final _secureRandom = Random.secure();
@@ -20,12 +38,10 @@ String _generateRandomIV() {
 class EncryptionServiceWebWorkerImpl implements EncryptionService {
   late html.Worker? _worker;
   bool _useWorker = true;
-  late EncryptionService fallback;
   final Map<int, Completer<String>> _pendingRequests = {};
   int _messageId = 0;
 
   EncryptionServiceWebWorkerImpl() {
-    fallback = EncryptionServiceImpl();
     if (html.Worker.supported) {
       try {
         var worker = html.Worker('encryption_worker.js');
@@ -68,10 +84,10 @@ class EncryptionServiceWebWorkerImpl implements EncryptionService {
 
         return result;
       } catch (e) {
-        return fallback.encrypt(data, password);
+        rethrow;
       }
     } else {
-      return fallback.encrypt(data, password);
+      throw Exception('Web Worker not supported');
     }
   }
 
@@ -106,10 +122,10 @@ class EncryptionServiceWebWorkerImpl implements EncryptionService {
         final encrypter = Encrypter(AES(key));
         return encrypter.decrypt64(cipher, iv: iv);
       } catch (e) {
-        return fallback.decrypt(data_, password);
+        rethrow;
       }
     } else {
-      return fallback.decrypt(data_, password);
+      throw Exception('Web Worker not supported');
     }
   }
 

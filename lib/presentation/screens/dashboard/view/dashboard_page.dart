@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -18,6 +16,7 @@ import 'package:horizon/domain/repositories/account_settings_repository.dart';
 import 'package:horizon/domain/repositories/action_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/imported_address_repository.dart';
+import 'package:horizon/domain/repositories/unified_address_repository.dart';
 import 'package:horizon/domain/repositories/address_tx_repository.dart';
 import 'package:horizon/domain/repositories/asset_repository.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
@@ -25,8 +24,8 @@ import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 import 'package:horizon/domain/repositories/events_repository.dart';
 import 'package:horizon/domain/repositories/fairminter_repository.dart';
 import 'package:horizon/domain/repositories/transaction_local_repository.dart';
+import 'package:horizon/domain/services/bitcoind_service.dart';
 import 'package:horizon/presentation/common/colors.dart';
-import 'package:horizon/presentation/common/footer/view/footer.dart';
 import 'package:horizon/presentation/screens/close_dispenser/view/close_dispenser_page.dart';
 import 'package:horizon/presentation/screens/compose_dispense/view/compose_dispense_modal.dart';
 import 'package:horizon/presentation/screens/compose_dispenser/view/compose_dispenser_page.dart';
@@ -52,6 +51,7 @@ import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
 import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
 
+import 'package:horizon/domain/services/public_key_service.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:sliver_tools/sliver_tools.dart';
 import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
@@ -67,6 +67,7 @@ import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/entities/extension_rpc.dart';
+import 'package:horizon/domain/services/imported_address_service.dart';
 
 class SignPsbtModal extends StatelessWidget {
   final int tabId;
@@ -76,7 +77,15 @@ class SignPsbtModal extends StatelessWidget {
   final WalletRepository walletRepository;
   final EncryptionService encryptionService;
   final AddressService addressService;
+  final BitcoindService bitcoindService;
+  final BalanceRepository balanceRepository;
   final RPCSignPsbtSuccessCallback onSuccess;
+  final Map<String, List<int>> signInputs;
+  final ImportedAddressService importedAddressService;
+  final UnifiedAddressRepository addressRepository;
+  final AccountRepository accountRepository;
+  final BitcoinRepository bitcoinRepository;
+  final List<int>? sighashTypes;
 
   const SignPsbtModal(
       {super.key,
@@ -85,19 +94,35 @@ class SignPsbtModal extends StatelessWidget {
       required this.walletRepository,
       required this.encryptionService,
       required this.addressService,
+      required this.bitcoindService,
+      required this.balanceRepository,
       required this.tabId,
       required this.requestId,
-      required this.onSuccess});
+      required this.onSuccess,
+      required this.signInputs,
+      required this.sighashTypes,
+      required this.importedAddressService,
+      required this.addressRepository,
+      required this.accountRepository,
+      required this.bitcoinRepository});
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (_) => SignPsbtBloc(
+        addressRepository: addressRepository,
+        importedAddressService: importedAddressService,
+        signInputs: signInputs,
+        sighashTypes: sighashTypes,
         unsignedPsbt: unsignedPsbt,
         transactionService: transactionService,
+        bitcoindService: bitcoindService,
+        balanceRepository: balanceRepository,
+        bitcoinRepository: bitcoinRepository,
         walletRepository: walletRepository,
         encryptionService: encryptionService,
         addressService: addressService,
+        accountRepository: accountRepository,
       ),
       child: SignPsbtForm(
         key: Key(unsignedPsbt),
@@ -117,9 +142,21 @@ class GetAddressesModal extends StatelessWidget {
   final AddressRepository addressRepository;
   final ImportedAddressRepository importedAddressRepository;
   final RPCGetAddressesSuccessCallback onSuccess;
+  final AddressService addressService;
+  final ImportedAddressService importedAddressService;
+  final WalletRepository walletRepository;
+  final EncryptionService encryptionService;
+  final PublicKeyService publicKeyService;
+  final AccountRepository accountRepository;
 
   const GetAddressesModal(
       {super.key,
+      required this.accountRepository,
+      required this.publicKeyService,
+      required this.encryptionService,
+      required this.addressService,
+      required this.importedAddressService,
+      required this.walletRepository,
       required this.tabId,
       required this.requestId,
       required this.accounts,
@@ -131,6 +168,12 @@ class GetAddressesModal extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (_) => GetAddressesBloc(
+        accountRepository: accountRepository,
+        publicKeyService: publicKeyService,
+        encryptionService: encryptionService,
+        walletRepository: walletRepository,
+        importedAddressService: importedAddressService,
+        addressService: addressService,
         accounts: accounts,
         addressRepository: addressRepository,
         importedAddressRepository: importedAddressRepository,
@@ -438,6 +481,7 @@ class AddressAction extends StatelessWidget {
   final IconData icon;
   final String text;
   final double? iconSize;
+  final String? tooltip;
   const AddressAction({
     super.key,
     required this.isDarkTheme,
@@ -445,6 +489,7 @@ class AddressAction extends StatelessWidget {
     required this.icon,
     required this.text,
     this.iconSize,
+    this.tooltip,
   });
   @override
   Widget build(BuildContext context) {
@@ -456,54 +501,58 @@ class AddressAction extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 4.0),
         child: SizedBox(
           height: 65,
-          child: ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor:
-                  isDarkTheme ? lightNavyDarkTheme : lightBlueLightTheme,
-              elevation: 0,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(24.0),
+          child: Tooltip(
+            message: tooltip ?? text,
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor:
+                    isDarkTheme ? lightNavyDarkTheme : lightBlueLightTheme,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(24.0),
+                ),
+                padding:
+                    EdgeInsets.symmetric(horizontal: isMobile ? 6.0 : 10.0),
               ),
-              padding: EdgeInsets.symmetric(horizontal: isMobile ? 6.0 : 10.0),
-            ),
-            onPressed: () {
-              HorizonUI.HorizonDialog.show(context: context, body: dialog);
-            },
-            child: isMobile
-                ? Icon(
-                    icon,
-                    size: iconSize ?? 24.0,
-                    color: isDarkTheme
-                        ? greyDashboardButtonTextDarkTheme
-                        : greyDashboardButtonTextLightTheme,
-                  )
-                : Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        icon,
-                        size: iconSize ?? 24.0,
-                        color: isDarkTheme
-                            ? greyDashboardButtonTextDarkTheme
-                            : greyDashboardButtonTextLightTheme,
-                      ),
-                      const SizedBox(width: 4.0),
-                      Flexible(
-                        child: Text(
-                          text,
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 12,
-                            color: isDarkTheme
-                                ? greyDashboardButtonTextDarkTheme
-                                : greyDashboardButtonTextLightTheme,
-                          ),
-                          overflow: TextOverflow.ellipsis,
-                          maxLines: 1,
+              onPressed: () {
+                HorizonUI.HorizonDialog.show(context: context, body: dialog);
+              },
+              child: isMobile
+                  ? Icon(
+                      icon,
+                      size: iconSize ?? 24.0,
+                      color: isDarkTheme
+                          ? greyDashboardButtonTextDarkTheme
+                          : greyDashboardButtonTextLightTheme,
+                    )
+                  : Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          icon,
+                          size: iconSize ?? 24.0,
+                          color: isDarkTheme
+                              ? greyDashboardButtonTextDarkTheme
+                              : greyDashboardButtonTextLightTheme,
                         ),
-                      ),
-                    ],
-                  ),
+                        const SizedBox(width: 4.0),
+                        Flexible(
+                          child: Text(
+                            text,
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
+                              color: isDarkTheme
+                                  ? greyDashboardButtonTextDarkTheme
+                                  : greyDashboardButtonTextLightTheme,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
+                          ),
+                        ),
+                      ],
+                    ),
+            ),
           ),
         ),
       ),
@@ -538,6 +587,7 @@ class OrderButtonMenu extends StatelessWidget {
         child: SizedBox(
           height: 65,
           child: PopupMenuButton(
+            tooltip: "Order Actions",
             color: isDarkTheme ? lightNavyDarkTheme : lightBlueLightTheme,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(24.0),
@@ -549,6 +599,8 @@ class OrderButtonMenu extends StatelessWidget {
                     HorizonUI.HorizonDialog.show(
                       context: context,
                       body: HorizonUI.HorizonDialog(
+                        includeBackButton: false,
+                        includeCloseButton: true,
                         title: "Open Order",
                         body: ComposeOrderPageWrapper(
                           composeTransactionUseCase:
@@ -570,6 +622,8 @@ class OrderButtonMenu extends StatelessWidget {
                     HorizonUI.HorizonDialog.show(
                       context: context,
                       body: HorizonUI.HorizonDialog(
+                        includeBackButton: false,
+                        includeCloseButton: true,
                         title: "Cancel Order",
                         body: ComposeCancelPageWrapper(
                           composeTransactionUseCase:
@@ -678,6 +732,7 @@ class DispenserButtonMenu extends StatelessWidget {
         child: SizedBox(
           height: 65,
           child: PopupMenuButton(
+            tooltip: "Dispenser Actions",
             color: isDarkTheme ? lightNavyDarkTheme : lightBlueLightTheme,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(24.0),
@@ -808,6 +863,7 @@ class MintMenu extends StatelessWidget {
         child: SizedBox(
           height: 65,
           child: PopupMenuButton(
+            tooltip: "Fairminter Actions",
             color: isDarkTheme ? lightNavyDarkTheme : lightBlueLightTheme,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(24.0),
@@ -916,6 +972,7 @@ class AddressActions extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             AddressAction(
+              tooltip: "Send Asset",
               isDarkTheme: isDarkTheme,
               dialog: HorizonUI.HorizonDialog(
                 title: "Compose Send",
@@ -931,6 +988,7 @@ class AddressActions extends StatelessWidget {
               iconSize: 18.0,
             ),
             AddressAction(
+              tooltip: "Issue Asset",
               isDarkTheme: isDarkTheme,
               dialog: HorizonUI.HorizonDialog(
                 title: "Compose Issuance",
@@ -946,6 +1004,7 @@ class AddressActions extends StatelessWidget {
               iconSize: 18.0,
             ),
             AddressAction(
+              tooltip: "Receive Asset",
               isDarkTheme: isDarkTheme,
               dialog: HorizonUI.HorizonDialog(
                 title: "Receive",
@@ -999,6 +1058,7 @@ class DashboardPageWrapper extends StatelessWidget {
     final shell = context
         .watch<ShellStateCubit>()
         .state; // we should only ever get to this page if shell is success
+
     return shell.maybeWhen(
         success: (data) => MultiBlocProvider(
               key: key,
@@ -1230,6 +1290,7 @@ class DashboardPage extends StatefulWidget {
 class DashboardPageState extends State<DashboardPage> {
   final accountSettingsRepository = GetIt.I.get<AccountSettingsRepository>();
   final _scrollController = ScrollController();
+  bool shown = false;
 
   @override
   void initState() {
@@ -1270,9 +1331,12 @@ class DashboardPageState extends State<DashboardPage> {
       URLAction.RPCSignPsbtAction(
         tabId: var tabId,
         requestId: var requestId,
-        psbt: var psbt
+        psbt: var psbt,
+        signInputs: var signInputs,
+        sighashTypes: var sighashTypes
       ) =>
-        () => _handleRPCSignPsbtAction(tabId, requestId, psbt),
+        () => _handleRPCSignPsbtAction(
+            tabId, requestId, psbt, signInputs, sighashTypes),
       _ => noop
     };
   }
@@ -1285,6 +1349,8 @@ class DashboardPageState extends State<DashboardPage> {
     HorizonUI.HorizonDialog.show(
       context: context,
       body: HorizonUI.HorizonDialog(
+        includeBackButton: false,
+        includeCloseButton: true,
         title: "Open Order",
         body: ComposeOrderPageWrapper(
           currentAddress: widget.currentAddress?.address ??
@@ -1311,6 +1377,8 @@ class DashboardPageState extends State<DashboardPage> {
     HorizonUI.HorizonDialog.show(
         context: context,
         body: HorizonUI.HorizonDialog(
+            includeBackButton: false,
+            includeCloseButton: true,
             title: "Trigger Dispense",
             body: ComposeDispensePageWrapper(
                 initialDispenserAddress: address,
@@ -1353,6 +1421,12 @@ class DashboardPageState extends State<DashboardPage> {
                       requestId: requestId,
                       accounts: state.accounts,
                       addressRepository: GetIt.I<AddressRepository>(),
+                      accountRepository: GetIt.I<AccountRepository>(),
+                      publicKeyService: GetIt.I<PublicKeyService>(),
+                      encryptionService: GetIt.I<EncryptionService>(),
+                      addressService: GetIt.I<AddressService>(),
+                      importedAddressService: GetIt.I<ImportedAddressService>(),
+                      walletRepository: GetIt.I<WalletRepository>(),
                       importedAddressRepository:
                           GetIt.I<ImportedAddressRepository>(),
                       onSuccess: GetIt.I<RPCGetAddressesSuccessCallback>());
@@ -1363,7 +1437,8 @@ class DashboardPageState extends State<DashboardPage> {
         ));
   }
 
-  void _handleRPCSignPsbtAction(int tabId, String requestId, String psbt) {
+  void _handleRPCSignPsbtAction(int tabId, String requestId, String psbt,
+      Map<String, List<int>> signInputs, List<int>? sighashTypes) {
     HorizonUI.HorizonDialog.show(
         context: context,
         body: HorizonUI.HorizonDialog(
@@ -1372,7 +1447,15 @@ class DashboardPageState extends State<DashboardPage> {
               tabId: tabId,
               requestId: requestId,
               unsignedPsbt: psbt,
+              signInputs: signInputs,
+              sighashTypes: sighashTypes,
+              accountRepository: GetIt.I<AccountRepository>(),
+              addressRepository: GetIt.I<UnifiedAddressRepository>(),
+              importedAddressService: GetIt.I.get<ImportedAddressService>(),
               transactionService: GetIt.I.get<TransactionService>(),
+              bitcoindService: GetIt.I.get<BitcoindService>(),
+              balanceRepository: GetIt.I.get<BalanceRepository>(),
+              bitcoinRepository: GetIt.I.get<BitcoinRepository>(),
               walletRepository: GetIt.I.get<WalletRepository>(),
               encryptionService: GetIt.I.get<EncryptionService>(),
               addressService: GetIt.I.get<AddressService>(),
@@ -1388,7 +1471,6 @@ class DashboardPageState extends State<DashboardPage> {
 
     final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
     final screenWidth = MediaQuery.of(context).size.width;
-    final height = MediaQuery.of(context).size.height;
 
     Color backgroundColor = isDarkTheme ? darkNavyDarkTheme : greyLightTheme;
     final backgroundColorInner =
@@ -1399,40 +1481,204 @@ class DashboardPageState extends State<DashboardPage> {
 
     final isSmallScreen = screenWidth < 600;
 
-    final Account? account = context.read<ShellStateCubit>().state.maybeWhen(
-          success: (state) => state.accounts.firstWhereOrNull(
-            (account) => account.uuid == state.currentAccountUuid,
-          ),
-          orElse: () => null,
-        );
+    final state = context.watch<ShellStateCubit>().state;
+
+    final Account? account = state.maybeWhen(
+      success: (state) => state.accounts.firstWhereOrNull(
+        (account) => account.uuid == state.currentAccountUuid,
+      ),
+      orElse: () => null,
+    );
 
     if (!isSmallScreen) {
       // Scaffold for desktop
-      return Scaffold(
-          bottomNavigationBar: const Footer(),
-          body: Container(
-            // padding: const EdgeInsets.fromLTRB(4, 8, 8, 16),
-            decoration: BoxDecoration(
-              color: backgroundColor,
-              gradient: isDarkTheme
-                  ? RadialGradient(
-                      center: Alignment.topRight,
-                      radius: 2.0,
-                      colors: [
-                        blueDarkThemeGradiantColor,
-                        backgroundColor,
-                      ],
-                    )
-                  : null,
+      return Container(
+        // padding: const EdgeInsets.fromLTRB(4, 8, 8, 16),
+        decoration: BoxDecoration(
+          color: backgroundColor,
+          gradient: isDarkTheme
+              ? RadialGradient(
+                  center: Alignment.topRight,
+                  radius: 2.0,
+                  colors: [
+                    blueDarkThemeGradiantColor,
+                    backgroundColor,
+                  ],
+                )
+              : null,
+        ),
+        child: Builder(builder: (context) {
+          return Container(
+            margin: const EdgeInsets.fromLTRB(8, 0, 8, 8),
+            child: CustomScrollView(
+              controller: _scrollController,
+              slivers: [
+                const SliverCrossAxisConstrained(
+                    maxCrossAxisExtent: maxWidth,
+                    child: TransparentHorizonSliverAppBar(
+                      expandedHeight: kToolbarHeight,
+                    )),
+                SliverCrossAxisConstrained(
+                    maxCrossAxisExtent: maxWidth,
+                    child: SliverStack(children: [
+                      SliverPositioned.fill(
+                        child: Container(
+                          margin: const EdgeInsets.fromLTRB(8, 8, 8, 0),
+                          decoration: BoxDecoration(
+                            color: backgroundColor,
+                            borderRadius: BorderRadius.circular(30.0),
+                          ),
+                        ),
+                      ),
+                    ])),
+                SliverCrossAxisConstrained(
+                  maxCrossAxisExtent: maxWidth,
+                  child: SliverStack(
+                    children: [
+                      SliverPadding(
+                          padding:
+                              const EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 8.0),
+                          sliver: SliverToBoxAdapter(
+                              child: Row(children: [
+                            Expanded(
+                                child: Container(
+                                    decoration: BoxDecoration(
+                                      color: backgroundColorWrapper,
+                                      borderRadius: BorderRadius.circular(30.0),
+                                    ),
+                                    child: const WalletItemSidebar())),
+                            const SizedBox(width: 8),
+                            Expanded(
+                                flex: 3,
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: backgroundColorWrapper,
+                                    borderRadius: BorderRadius.circular(30.0),
+                                  ),
+                                  child: Column(
+                                    children: [
+                                      Builder(builder: (context) {
+                                        final dashboardActivityFeedBloc =
+                                            BlocProvider.of<
+                                                    DashboardActivityFeedBloc>(
+                                                context);
+                                        return AddressActions(
+                                          isDarkTheme: isDarkTheme,
+                                          dashboardActivityFeedBloc:
+                                              dashboardActivityFeedBloc,
+                                          currentAddress:
+                                              widget.currentAddress?.address ??
+                                                  widget.currentImportedAddress!
+                                                      .address,
+                                          screenWidth: screenWidth,
+                                          currentAccountUuid:
+                                              widget.accountUuid,
+                                        );
+                                      }),
+                                      SizedBox(
+                                        height: 258,
+                                        child: Container(
+                                          margin: const EdgeInsets.fromLTRB(
+                                              8, 4, 8, 8),
+                                          decoration: BoxDecoration(
+                                            color: backgroundColorInner,
+                                            borderRadius:
+                                                BorderRadius.circular(30.0),
+                                          ),
+                                          child: CustomScrollView(
+                                            slivers: [
+                                              SliverPadding(
+                                                padding:
+                                                    const EdgeInsets.all(8.0),
+                                                sliver: BalancesDisplay(
+                                                    isDarkTheme: isDarkTheme,
+                                                    currentAddress: widget
+                                                            .currentAddress
+                                                            ?.address ??
+                                                        widget
+                                                            .currentImportedAddress!
+                                                            .address,
+                                                    initialItemCount: 3),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                      SizedBox(
+                                        height: 352,
+                                        child: Container(
+                                          margin: const EdgeInsets.fromLTRB(
+                                              8, 4, 8, 8),
+                                          decoration: BoxDecoration(
+                                            color: backgroundColorInner,
+                                            borderRadius:
+                                                BorderRadius.circular(30.0),
+                                          ),
+                                          child: CustomScrollView(
+                                            slivers: [
+                                              SliverPadding(
+                                                padding:
+                                                    const EdgeInsets.all(8.0),
+                                                sliver:
+                                                    DashboardActivityFeedScreen(
+                                                        key: Key(
+                                                          widget.currentAddress
+                                                                  ?.address ??
+                                                              widget
+                                                                  .currentImportedAddress!
+                                                                  .address,
+                                                        ),
+                                                        addresses: [
+                                                          widget.currentAddress
+                                                                  ?.address ??
+                                                              widget
+                                                                  .currentImportedAddress!
+                                                                  .address
+                                                        ],
+                                                        initialItemCount: 4),
+                                              )
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                )),
+                          ])))
+                    ],
+                  ),
+                ),
+              ],
             ),
+          );
+        }),
+      );
+    }
+
+    // Scaffold for mobile
+    return Container(
+      // padding: const EdgeInsets.fromLTRB(4, 8, 8, 16),
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        gradient: isDarkTheme
+            ? RadialGradient(
+                center: Alignment.topRight,
+                radius: 1.0,
+                colors: [
+                  blueDarkThemeGradiantColor,
+                  backgroundColor,
+                ],
+              )
+            : null,
+      ),
+      child: Row(
+        children: [
+          Expanded(
             child: Container(
               margin: const EdgeInsets.fromLTRB(8, 0, 8, 8),
               child: CustomScrollView(
                 controller: _scrollController,
                 slivers: [
-                  SliverToBoxAdapter(
-                    child: SizedBox(height: max(0, ((height / 2 - 560)))),
-                  ),
                   const SliverCrossAxisConstrained(
                       maxCrossAxisExtent: maxWidth,
                       child: TransparentHorizonSliverAppBar(
@@ -1455,299 +1701,121 @@ class DashboardPageState extends State<DashboardPage> {
                     maxCrossAxisExtent: maxWidth,
                     child: SliverStack(
                       children: [
+                        SliverPositioned.fill(
+                          child: Container(
+                            margin: const EdgeInsets.fromLTRB(8, 8, 8, 0),
+                            decoration: BoxDecoration(
+                              color: backgroundColorWrapper,
+                              borderRadius: BorderRadius.circular(30.0),
+                            ),
+                          ),
+                        ),
                         SliverPadding(
-                            padding:
-                                const EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 8.0),
-                            sliver: SliverToBoxAdapter(
-                                child: Row(children: [
-                              Expanded(
-                                  child: Container(
-                                      decoration: BoxDecoration(
-                                        color: backgroundColorWrapper,
-                                        borderRadius:
-                                            BorderRadius.circular(30.0),
-                                      ),
-                                      child: const WalletItemSidebar())),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                  flex: 3,
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      color: backgroundColorWrapper,
-                                      borderRadius: BorderRadius.circular(30.0),
-                                    ),
-                                    child: Column(
-                                      children: [
-                                        Builder(builder: (context) {
-                                          final dashboardActivityFeedBloc =
-                                              BlocProvider.of<
-                                                      DashboardActivityFeedBloc>(
-                                                  context);
-                                          return AddressActions(
-                                            isDarkTheme: isDarkTheme,
-                                            dashboardActivityFeedBloc:
-                                                dashboardActivityFeedBloc,
-                                            currentAddress: widget
-                                                    .currentAddress?.address ??
-                                                widget.currentImportedAddress!
-                                                    .address,
-                                            screenWidth: screenWidth,
-                                            currentAccountUuid:
-                                                widget.accountUuid,
-                                          );
-                                        }),
-                                        SizedBox(
-                                          height: 258,
-                                          child: Container(
-                                            margin: const EdgeInsets.fromLTRB(
-                                                8, 4, 8, 8),
-                                            decoration: BoxDecoration(
-                                              color: backgroundColorInner,
-                                              borderRadius:
-                                                  BorderRadius.circular(30.0),
-                                            ),
-                                            child: CustomScrollView(
-                                              slivers: [
-                                                SliverPadding(
-                                                  padding:
-                                                      const EdgeInsets.all(8.0),
-                                                  sliver: BalancesDisplay(
-                                                      isDarkTheme: isDarkTheme,
-                                                      currentAddress: widget
-                                                              .currentAddress
-                                                              ?.address ??
-                                                          widget
-                                                              .currentImportedAddress!
-                                                              .address,
-                                                      initialItemCount: 3),
+                          padding:
+                              const EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 8.0),
+                          sliver: MultiSliver(children: [
+                            SliverToBoxAdapter(
+                              child: WalletItemSelectionButton(
+                                isDarkTheme: isDarkTheme,
+                                onPressed: () =>
+                                    showAccountList(context, isDarkTheme),
+                              ),
+                            ),
+                            if (account != null)
+                              Builder(builder: (context) {
+                                return context
+                                    .read<ShellStateCubit>()
+                                    .state
+                                    .maybeWhen(
+                                        success: (state) => state
+                                                    .addresses.length >
+                                                1
+                                            ? SliverToBoxAdapter(
+                                                child: Padding(
+                                                padding:
+                                                    const EdgeInsets.fromLTRB(
+                                                        8.0, 8.0, 8.0, 0.0),
+                                                child: AddressSelectionButton(
+                                                  isDarkTheme: isDarkTheme,
+                                                  onPressed: () =>
+                                                      showAddressList(context,
+                                                          isDarkTheme, account),
                                                 ),
-                                              ],
-                                            ),
-                                          ),
-                                        ),
-                                        SizedBox(
-                                          height: 352,
-                                          child: Container(
-                                            margin: const EdgeInsets.fromLTRB(
-                                                8, 4, 8, 8),
-                                            decoration: BoxDecoration(
-                                              color: backgroundColorInner,
-                                              borderRadius:
-                                                  BorderRadius.circular(30.0),
-                                            ),
-                                            child: CustomScrollView(
-                                              slivers: [
-                                                SliverPadding(
-                                                  padding:
-                                                      const EdgeInsets.all(8.0),
-                                                  sliver:
-                                                      DashboardActivityFeedScreen(
-                                                          key: Key(
-                                                            widget.currentAddress
-                                                                    ?.address ??
-                                                                widget
-                                                                    .currentImportedAddress!
-                                                                    .address,
-                                                          ),
-                                                          addresses: [
-                                                            widget.currentAddress
-                                                                    ?.address ??
-                                                                widget
-                                                                    .currentImportedAddress!
-                                                                    .address
-                                                          ],
-                                                          initialItemCount: 4),
-                                                )
-                                              ],
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  )),
-                            ])))
+                                              ))
+                                            : const SliverToBoxAdapter(
+                                                child: SizedBox.shrink()),
+                                        orElse: () => const SliverToBoxAdapter(
+                                            child: SizedBox.shrink()));
+                              }),
+                            SliverToBoxAdapter(
+                                child: Builder(builder: (context) {
+                              final dashboardActivityFeedBloc =
+                                  BlocProvider.of<DashboardActivityFeedBloc>(
+                                      context);
+                              return AddressActions(
+                                isDarkTheme: isDarkTheme,
+                                dashboardActivityFeedBloc:
+                                    dashboardActivityFeedBloc,
+                                currentAddress:
+                                    widget.currentAddress?.address ??
+                                        widget.currentImportedAddress!.address,
+                                screenWidth: screenWidth,
+                              );
+                            })),
+                            SliverStack(children: [
+                              SliverPositioned.fill(
+                                child: Container(
+                                  margin: const EdgeInsets.fromLTRB(8, 4, 8, 0),
+                                  decoration: BoxDecoration(
+                                    color: backgroundColorInner,
+                                    borderRadius: BorderRadius.circular(30.0),
+                                  ),
+                                ),
+                              ),
+                              SliverPadding(
+                                padding: const EdgeInsets.all(8.0),
+                                sliver: BalancesDisplay(
+                                    isDarkTheme: isDarkTheme,
+                                    currentAddress: widget
+                                            .currentAddress?.address ??
+                                        widget.currentImportedAddress!.address,
+                                    initialItemCount: 5),
+                              ),
+                            ]),
+                            SliverStack(children: [
+                              SliverPositioned.fill(
+                                child: Container(
+                                  margin: const EdgeInsets.fromLTRB(8, 8, 8, 0),
+                                  decoration: BoxDecoration(
+                                    color: backgroundColorInner,
+                                    borderRadius: BorderRadius.circular(30.0),
+                                  ),
+                                ),
+                              ),
+                              SliverPadding(
+                                padding: const EdgeInsets.all(8.0),
+                                sliver: DashboardActivityFeedScreen(
+                                  key: Key(widget.currentAddress?.address ??
+                                      widget.currentImportedAddress!.address),
+                                  addresses: [
+                                    widget.currentAddress?.address ??
+                                        widget.currentImportedAddress!.address
+                                  ],
+                                  initialItemCount: 3,
+                                ),
+                              ),
+                            ])
+                          ]),
+                        )
                       ],
                     ),
                   ),
                 ],
               ),
             ),
-          ));
-    }
-
-    // Scaffold for mobile
-    return Scaffold(
-        bottomNavigationBar: const Footer(),
-        body: Container(
-          // padding: const EdgeInsets.fromLTRB(4, 8, 8, 16),
-          decoration: BoxDecoration(
-            color: backgroundColor,
-            gradient: isDarkTheme
-                ? RadialGradient(
-                    center: Alignment.topRight,
-                    radius: 1.0,
-                    colors: [
-                      blueDarkThemeGradiantColor,
-                      backgroundColor,
-                    ],
-                  )
-                : null,
           ),
-          child: Row(
-            children: [
-              Expanded(
-                child: Container(
-                  margin: const EdgeInsets.fromLTRB(8, 0, 8, 8),
-                  child: CustomScrollView(
-                    controller: _scrollController,
-                    slivers: [
-                      const SliverCrossAxisConstrained(
-                          maxCrossAxisExtent: maxWidth,
-                          child: TransparentHorizonSliverAppBar(
-                            expandedHeight: kToolbarHeight,
-                          )),
-                      SliverCrossAxisConstrained(
-                          maxCrossAxisExtent: maxWidth,
-                          child: SliverStack(children: [
-                            SliverPositioned.fill(
-                              child: Container(
-                                margin: const EdgeInsets.fromLTRB(8, 8, 8, 0),
-                                decoration: BoxDecoration(
-                                  color: backgroundColor,
-                                  borderRadius: BorderRadius.circular(30.0),
-                                ),
-                              ),
-                            ),
-                          ])),
-                      SliverCrossAxisConstrained(
-                        maxCrossAxisExtent: maxWidth,
-                        child: SliverStack(
-                          children: [
-                            SliverPositioned.fill(
-                              child: Container(
-                                margin: const EdgeInsets.fromLTRB(8, 8, 8, 0),
-                                decoration: BoxDecoration(
-                                  color: backgroundColorWrapper,
-                                  borderRadius: BorderRadius.circular(30.0),
-                                ),
-                              ),
-                            ),
-                            SliverPadding(
-                              padding:
-                                  const EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 8.0),
-                              sliver: MultiSliver(children: [
-                                SliverToBoxAdapter(
-                                  child: WalletItemSelectionButton(
-                                    isDarkTheme: isDarkTheme,
-                                    onPressed: () =>
-                                        showAccountList(context, isDarkTheme),
-                                  ),
-                                ),
-                                if (account != null)
-                                  Builder(builder: (context) {
-                                    return context
-                                        .read<ShellStateCubit>()
-                                        .state
-                                        .maybeWhen(
-                                            success: (state) => state
-                                                        .addresses.length >
-                                                    1
-                                                ? SliverToBoxAdapter(
-                                                    child: Padding(
-                                                    padding: const EdgeInsets
-                                                        .fromLTRB(
-                                                        8.0, 8.0, 8.0, 0.0),
-                                                    child:
-                                                        AddressSelectionButton(
-                                                      isDarkTheme: isDarkTheme,
-                                                      onPressed: () =>
-                                                          showAddressList(
-                                                              context,
-                                                              isDarkTheme,
-                                                              account),
-                                                    ),
-                                                  ))
-                                                : const SliverToBoxAdapter(
-                                                    child: SizedBox.shrink()),
-                                            orElse: () =>
-                                                const SliverToBoxAdapter(
-                                                    child: SizedBox.shrink()));
-                                  }),
-                                SliverToBoxAdapter(
-                                    child: Builder(builder: (context) {
-                                  final dashboardActivityFeedBloc = BlocProvider
-                                      .of<DashboardActivityFeedBloc>(context);
-                                  return AddressActions(
-                                    isDarkTheme: isDarkTheme,
-                                    dashboardActivityFeedBloc:
-                                        dashboardActivityFeedBloc,
-                                    currentAddress: widget
-                                            .currentAddress?.address ??
-                                        widget.currentImportedAddress!.address,
-                                    screenWidth: screenWidth,
-                                  );
-                                })),
-                                SliverStack(children: [
-                                  SliverPositioned.fill(
-                                    child: Container(
-                                      margin:
-                                          const EdgeInsets.fromLTRB(8, 4, 8, 0),
-                                      decoration: BoxDecoration(
-                                        color: backgroundColorInner,
-                                        borderRadius:
-                                            BorderRadius.circular(30.0),
-                                      ),
-                                    ),
-                                  ),
-                                  SliverPadding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    sliver: BalancesDisplay(
-                                        isDarkTheme: isDarkTheme,
-                                        currentAddress:
-                                            widget.currentAddress?.address ??
-                                                widget.currentImportedAddress!
-                                                    .address,
-                                        initialItemCount: 5),
-                                  ),
-                                ]),
-                                SliverStack(children: [
-                                  SliverPositioned.fill(
-                                    child: Container(
-                                      margin:
-                                          const EdgeInsets.fromLTRB(8, 8, 8, 0),
-                                      decoration: BoxDecoration(
-                                        color: backgroundColorInner,
-                                        borderRadius:
-                                            BorderRadius.circular(30.0),
-                                      ),
-                                    ),
-                                  ),
-                                  SliverPadding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    sliver: DashboardActivityFeedScreen(
-                                      key: Key(widget.currentAddress?.address ??
-                                          widget
-                                              .currentImportedAddress!.address),
-                                      addresses: [
-                                        widget.currentAddress?.address ??
-                                            widget
-                                                .currentImportedAddress!.address
-                                      ],
-                                      initialItemCount: 3,
-                                    ),
-                                  ),
-                                ])
-                              ]),
-                            )
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ));
+        ],
+      ),
+    );
   }
 }

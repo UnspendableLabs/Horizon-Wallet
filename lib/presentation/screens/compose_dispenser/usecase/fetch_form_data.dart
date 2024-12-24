@@ -46,7 +46,7 @@ class FetchDispenserFormDataUseCase {
   Future<List<Balance>> _fetchBalances(String currentAddress) async {
     try {
       final balances_ =
-          await balanceRepository.getBalancesForAddress(currentAddress);
+          await balanceRepository.getBalancesForAddress(currentAddress, true);
       return balances_.where((balance) => balance.asset != 'BTC').toList();
     } catch (e) {
       throw FetchBalancesException(e.toString());
@@ -55,7 +55,7 @@ class FetchDispenserFormDataUseCase {
 
   Future<FeeEstimates> _fetchFeeEstimates() async {
     try {
-      return await getFeeEstimatesUseCase.call(targets: (1, 3, 6));
+      return await getFeeEstimatesUseCase.call();
     } catch (e) {
       throw FetchFeeEstimatesException(e.toString());
     }

@@ -7,7 +7,7 @@ class InfoVerboseMapper {
     return switch (info) {
       api.EnhancedSendInfoVerbose(unpackedData: var u) =>
         TransactionInfoEnhancedSend(
-          btcAmountNormalized: info.btcAmountNormalized,
+          btcAmountNormalized: info.btcAmountNormalized ?? "",
           hash: "",
           source: info.source,
           destination: info.destination,
@@ -19,7 +19,7 @@ class InfoVerboseMapper {
           unpackedData: EnhancedSendUnpackedVerboseMapper.toDomain(u),
         ),
       api.IssuanceInfoVerbose(unpackedData: var u) => TransactionInfoIssuance(
-          btcAmountNormalized: info.btcAmountNormalized,
+          btcAmountNormalized: info.btcAmountNormalized ?? "",
           hash: "",
           source: info.source,
           destination: info.destination,
@@ -31,7 +31,7 @@ class InfoVerboseMapper {
           unpackedData: IssuanceUnpackedVerboseMapper.toDomain(u),
         ),
       api.DispenserInfoVerbose(unpackedData: var u) => TransactionInfoDispenser(
-          btcAmountNormalized: info.btcAmountNormalized,
+          btcAmountNormalized: info.btcAmountNormalized ?? "",
           hash: "",
           source: info.source,
           destination: info.destination,
@@ -43,7 +43,7 @@ class InfoVerboseMapper {
           unpackedData: DispenserUnpackedVerboseMapper.toDomain(u),
         ),
       api.DispenseInfoVerbose(unpackedData: var u) => TransactionInfoDispense(
-          btcAmountNormalized: info.btcAmountNormalized,
+          btcAmountNormalized: info.btcAmountNormalized ?? "",
           hash: "",
           source: info.source,
           destination: info.destination,
@@ -55,7 +55,7 @@ class InfoVerboseMapper {
           unpackedData: DispenseUnpackedVerboseMapper.toDomain(u),
         ),
       api.FairmintInfoVerbose(unpackedData: var u) => TransactionInfoFairmint(
-          btcAmountNormalized: info.btcAmountNormalized,
+          btcAmountNormalized: info.btcAmountNormalized ?? "",
           hash: "",
           source: info.source,
           destination: info.destination,
@@ -68,7 +68,7 @@ class InfoVerboseMapper {
         ),
       api.FairminterInfoVerbose(unpackedData: var u) =>
         TransactionInfoFairminter(
-          btcAmountNormalized: info.btcAmountNormalized,
+          btcAmountNormalized: info.btcAmountNormalized ?? "",
           hash: "",
           source: info.source,
           destination: info.destination,
@@ -80,7 +80,7 @@ class InfoVerboseMapper {
           unpackedData: FairminterUnpackedVerboseMapper.toDomain(u),
         ),
       api.OrderInfoVerbose(unpackedData: var u) => TransactionInfoOrder(
-          btcAmountNormalized: info.btcAmountNormalized,
+          btcAmountNormalized: info.btcAmountNormalized ?? "",
           hash: "",
           source: info.source,
           destination: info.destination,
@@ -92,7 +92,7 @@ class InfoVerboseMapper {
           unpackedData: OrderUnpackedVerboseMapper.toDomain(u),
         ),
       api.CancelInfoVerbose(unpackedData: var u) => TransactionInfoCancel(
-          btcAmountNormalized: info.btcAmountNormalized,
+          btcAmountNormalized: info.btcAmountNormalized ?? "",
           hash: "",
           source: info.source,
           destination: info.destination,
@@ -103,8 +103,43 @@ class InfoVerboseMapper {
               raw: "", submittedAt: DateTime.now()), // TODO: this is wrong
           unpackedData: CancelUnpackedVerboseMapper.toDomain(u),
         ),
+      api.AttachInfoVerbose(unpackedData: var u) => TransactionInfoAttach(
+          btcAmountNormalized: info.btcAmountNormalized ?? "",
+          hash: "",
+          source: info.source,
+          destination: info.destination,
+          btcAmount: info.btcAmount,
+          fee: info.fee,
+          data: info.data,
+          domain: TransactionInfoDomainLocal(
+              raw: "", submittedAt: DateTime.now()), // TODO: this is wrong
+          unpackedData: AttachUnpackedVerboseMapper.toDomain(u),
+        ),
+      api.DetachInfoVerbose(unpackedData: var u) => TransactionInfoDetach(
+          btcAmountNormalized: info.btcAmountNormalized ?? "",
+          hash: "",
+          source: info.source,
+          destination: info.destination,
+          btcAmount: info.btcAmount,
+          fee: info.fee,
+          data: info.data,
+          domain: TransactionInfoDomainLocal(
+              raw: "", submittedAt: DateTime.now()), // TODO: this is wrong
+          unpackedData: DetachUnpackedVerboseMapper.toDomain(u),
+        ),
+      api.MoveToUtxoInfoVerbose() => TransactionInfoMoveToUtxo(
+          btcAmountNormalized: info.btcAmountNormalized ?? "",
+          hash: "",
+          source: info.source,
+          destination: info.destination,
+          btcAmount: info.btcAmount,
+          fee: info.fee,
+          data: info.data,
+          domain: TransactionInfoDomainLocal(
+              raw: "", submittedAt: DateTime.now()), // TODO: this is wrong
+        ),
       _ => TransactionInfo(
-          btcAmountNormalized: info.btcAmountNormalized,
+          btcAmountNormalized: info.btcAmountNormalized ?? "",
           hash: "",
           domain: TransactionInfoDomainLocal(
               raw: "", submittedAt: DateTime.now()), // TODO: this is wrong

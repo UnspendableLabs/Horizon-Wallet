@@ -66,7 +66,12 @@ class MockComposeDispenserResponseVerbose extends Mock
   String get rawtransaction => "rawtransaction";
 }
 
-class MockBalance extends Mock implements Balance {}
+class MockBalance extends Mock implements Balance {
+  @override
+  final String? utxo;
+
+  MockBalance({this.utxo});
+}
 
 class MockDispenser extends Mock implements Dispenser {}
 
@@ -112,6 +117,10 @@ void main() {
   const mockFeeEstimates = FeeEstimates(fast: 5, medium: 3, slow: 1);
   final mockAddress = FakeAddress().address;
   final mockBalances = [MockBalance()];
+  final mockBalancesWithUtxos = [
+    MockBalance(utxo: 'utxo'),
+    MockBalance(utxo: null)
+  ];
   final mockDispenser = [MockDispenser()];
   final mockComposeDispenserResponseVerbose =
       MockComposeDispenserResponseVerbose();
@@ -199,7 +208,7 @@ void main() {
         composeDispenserBloc.state.copyWith(
           balancesState: BalancesState.success(mockBalances),
           feeState: const FeeState.success(mockFeeEstimates),
-          dialogState: const DialogState.successNormalFlow(),
+          dialogState: const DialogState.warning(hasOpenDispensers: false),
           submitState: const SubmitInitial(),
         ),
       ],

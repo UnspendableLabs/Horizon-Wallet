@@ -121,6 +121,25 @@ class TransactionLocalRepositoryImpl implements TransactionLocalRepository {
             "status": unpacked.status,
           }
         }),
+      TransactionInfoAttach(unpackedData: AttachUnpackedVerbose unpacked) =>
+        jsonEncode({
+          "message_type": "attach",
+          "message_data": {
+            "asset": unpacked.asset,
+            "quantity_normalized": unpacked.quantityNormalized,
+            "destination_vout": unpacked.destinationVout,
+          },
+        }),
+      TransactionInfoDetach(unpackedData: DetachUnpackedVerbose unpacked) =>
+        jsonEncode({
+          "message_type": "detach",
+          "message_data": {
+            "destination": unpacked.destination,
+          },
+        }),
+      TransactionInfoMoveToUtxo() => jsonEncode({
+          "message_data": {},
+        }),
       _ => null
     };
 
@@ -152,6 +171,20 @@ class TransactionLocalRepositoryImpl implements TransactionLocalRepository {
 
       TransactionUnpacked? unpacked =
           unpacked_ != null ? UnpackedVerboseMapper.toDomain(unpacked_) : null;
+
+      if (unpacked == null) {
+        return TransactionInfoMoveToUtxo(
+          btcAmountNormalized: "", // TODO: fix this
+          hash: tx.hash,
+          source: tx.source,
+          destination: tx.destination,
+          btcAmount: tx.btcAmount,
+          fee: tx.fee,
+          data: tx.data,
+          domain: TransactionInfoDomainLocal(
+              raw: tx.raw, submittedAt: tx.submittedAt),
+        );
+      }
 
       return switch (unpacked) {
         EnhancedSendUnpackedVerbose() => TransactionInfoEnhancedSend(
@@ -232,6 +265,28 @@ class TransactionLocalRepositoryImpl implements TransactionLocalRepository {
                 raw: tx.raw, submittedAt: tx.submittedAt),
             unpackedData: unpacked),
         CancelUnpacked() => TransactionInfoCancel(
+            btcAmountNormalized: "", // TODO: fix this
+            hash: tx.hash,
+            source: tx.source,
+            destination: tx.destination,
+            btcAmount: tx.btcAmount,
+            fee: tx.fee,
+            data: tx.data,
+            domain: TransactionInfoDomainLocal(
+                raw: tx.raw, submittedAt: tx.submittedAt),
+            unpackedData: unpacked),
+        AttachUnpackedVerbose() => TransactionInfoAttach(
+            btcAmountNormalized: "", // TODO: fix this
+            hash: tx.hash,
+            source: tx.source,
+            destination: tx.destination,
+            btcAmount: tx.btcAmount,
+            fee: tx.fee,
+            data: tx.data,
+            domain: TransactionInfoDomainLocal(
+                raw: tx.raw, submittedAt: tx.submittedAt),
+            unpackedData: unpacked),
+        DetachUnpackedVerbose() => TransactionInfoDetach(
             btcAmountNormalized: "", // TODO: fix this
             hash: tx.hash,
             source: tx.source,
@@ -350,6 +405,39 @@ class TransactionLocalRepositoryImpl implements TransactionLocalRepository {
             domain: TransactionInfoDomainLocal(
                 raw: tx.raw, submittedAt: tx.submittedAt),
             unpackedData: unpacked),
+        AttachUnpackedVerbose() => TransactionInfoAttach(
+            btcAmountNormalized: "", // TODO: fix this
+            hash: tx.hash,
+            source: tx.source,
+            destination: tx.destination,
+            btcAmount: tx.btcAmount,
+            fee: tx.fee,
+            data: tx.data,
+            domain: TransactionInfoDomainLocal(
+                raw: tx.raw, submittedAt: tx.submittedAt),
+            unpackedData: unpacked),
+        DetachUnpackedVerbose() => TransactionInfoDetach(
+            btcAmountNormalized: "", // TODO: fix this
+            hash: tx.hash,
+            source: tx.source,
+            destination: tx.destination,
+            btcAmount: tx.btcAmount,
+            fee: tx.fee,
+            data: tx.data,
+            domain: TransactionInfoDomainLocal(
+                raw: tx.raw, submittedAt: tx.submittedAt),
+            unpackedData: unpacked),
+        MoveToUtxoUnpackedVerbose() => TransactionInfoMoveToUtxo(
+            btcAmountNormalized: "", // TODO: fix this
+            hash: tx.hash,
+            source: tx.source,
+            destination: tx.destination,
+            btcAmount: tx.btcAmount,
+            fee: tx.fee,
+            data: tx.data,
+            domain: TransactionInfoDomainLocal(
+                raw: tx.raw, submittedAt: tx.submittedAt),
+          ),
         _ => TransactionInfo(
             btcAmountNormalized: "", // TODO: fix this
             hash: tx.hash,

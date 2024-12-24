@@ -5,6 +5,8 @@ import 'package:horizon/domain/entities/wallet.dart';
 import 'package:horizon/domain/entities/account.dart';
 import 'package:horizon/domain/entities/address.dart';
 
+import 'package:pub_semver/pub_semver.dart';
+
 part 'shell_state.freezed.dart';
 
 @freezed
@@ -54,6 +56,9 @@ class ShellStateSuccess with _$ShellStateSuccess {
 
   // Factory for imported address state
   factory ShellStateSuccess.withImportedAddress({
+    required Version current,
+    required Version latest,
+    required bool shouldShowUpgradeWarning,
     required bool redirect,
     required Wallet wallet,
     required List<Account> accounts,

@@ -93,6 +93,8 @@ class FakeBalance extends Fake implements Balance {
   final String address;
   @override
   final AssetInfo assetInfo;
+  @override
+  final String? utxo;
 
   FakeBalance({
     required this.asset,
@@ -100,6 +102,7 @@ class FakeBalance extends Fake implements Balance {
     required this.quantityNormalized,
     required this.address,
     required this.assetInfo,
+    this.utxo,
   });
 }
 
@@ -144,11 +147,11 @@ void main() {
   blocTest<OpenOrderFormBloc, FormStateModel>(
     'defaults lock ratio to false',
     build: () {
-      when(() => getFeeEstimatesUseCase.call(targets: any(named: 'targets')))
-          .thenAnswer(
-              (_) async => const FeeEstimates(fast: 50, medium: 30, slow: 10));
+      when(() => getFeeEstimatesUseCase.call()).thenAnswer(
+          (_) async => const FeeEstimates(fast: 50, medium: 30, slow: 10));
 
-      when(() => balanceRepository.getBalancesForAddress(any())).thenAnswer(
+      when(() => balanceRepository.getBalancesForAddress(any(), true))
+          .thenAnswer(
         (_) async => [
           FakeBalance(
               address: testAddress,
@@ -176,11 +179,11 @@ void main() {
   blocTest<OpenOrderFormBloc, FormStateModel>(
     'emits correct state when InitializeForm is added with empty params',
     build: () {
-      when(() => getFeeEstimatesUseCase.call(targets: any(named: 'targets')))
-          .thenAnswer(
-              (_) async => const FeeEstimates(fast: 50, medium: 30, slow: 10));
+      when(() => getFeeEstimatesUseCase.call()).thenAnswer(
+          (_) async => const FeeEstimates(fast: 50, medium: 30, slow: 10));
 
-      when(() => balanceRepository.getBalancesForAddress(any())).thenAnswer(
+      when(() => balanceRepository.getBalancesForAddress(any(), true))
+          .thenAnswer(
         (_) async => [
           FakeBalance(
               address: testAddress,
@@ -246,11 +249,11 @@ void main() {
         ),
       );
 
-      when(() => getFeeEstimatesUseCase.call(targets: any(named: 'targets')))
-          .thenAnswer(
-              (_) async => const FeeEstimates(fast: 50, medium: 30, slow: 10));
+      when(() => getFeeEstimatesUseCase.call()).thenAnswer(
+          (_) async => const FeeEstimates(fast: 50, medium: 30, slow: 10));
 
-      when(() => balanceRepository.getBalancesForAddress(any())).thenAnswer(
+      when(() => balanceRepository.getBalancesForAddress(any(), true))
+          .thenAnswer(
         (_) async => [
           FakeBalance(
               address: testAddress,
@@ -304,11 +307,11 @@ void main() {
         ),
       );
 
-      when(() => getFeeEstimatesUseCase.call(targets: any(named: 'targets')))
-          .thenAnswer(
-              (_) async => const FeeEstimates(fast: 50, medium: 30, slow: 10));
+      when(() => getFeeEstimatesUseCase.call()).thenAnswer(
+          (_) async => const FeeEstimates(fast: 50, medium: 30, slow: 10));
 
-      when(() => balanceRepository.getBalancesForAddress(any())).thenAnswer(
+      when(() => balanceRepository.getBalancesForAddress(any(), true))
+          .thenAnswer(
         (_) async => [
           FakeBalance(
               address: testAddress,
@@ -385,11 +388,11 @@ void main() {
         ),
       );
 
-      when(() => getFeeEstimatesUseCase.call(targets: any(named: 'targets')))
-          .thenAnswer(
-              (_) async => const FeeEstimates(fast: 50, medium: 30, slow: 10));
+      when(() => getFeeEstimatesUseCase.call()).thenAnswer(
+          (_) async => const FeeEstimates(fast: 50, medium: 30, slow: 10));
 
-      when(() => balanceRepository.getBalancesForAddress(any())).thenAnswer(
+      when(() => balanceRepository.getBalancesForAddress(any(), true))
+          .thenAnswer(
         (_) async => [
           FakeBalance(
               address: testAddress,
@@ -472,11 +475,11 @@ void main() {
         ),
       );
 
-      when(() => getFeeEstimatesUseCase.call(targets: any(named: 'targets')))
-          .thenAnswer(
-              (_) async => const FeeEstimates(fast: 50, medium: 30, slow: 10));
+      when(() => getFeeEstimatesUseCase.call()).thenAnswer(
+          (_) async => const FeeEstimates(fast: 50, medium: 30, slow: 10));
 
-      when(() => balanceRepository.getBalancesForAddress(any())).thenAnswer(
+      when(() => balanceRepository.getBalancesForAddress(any(), true))
+          .thenAnswer(
         (_) async => [
           FakeBalance(
               address: testAddress,
@@ -566,11 +569,11 @@ void main() {
         ),
       );
 
-      when(() => getFeeEstimatesUseCase.call(targets: any(named: 'targets')))
-          .thenAnswer(
-              (_) async => const FeeEstimates(fast: 50, medium: 30, slow: 10));
+      when(() => getFeeEstimatesUseCase.call()).thenAnswer(
+          (_) async => const FeeEstimates(fast: 50, medium: 30, slow: 10));
 
-      when(() => balanceRepository.getBalancesForAddress(any())).thenAnswer(
+      when(() => balanceRepository.getBalancesForAddress(any(), true))
+          .thenAnswer(
         (_) async => [
           FakeBalance(
               address: testAddress,
@@ -658,11 +661,11 @@ void main() {
         ),
       );
 
-      when(() => getFeeEstimatesUseCase.call(targets: any(named: 'targets')))
-          .thenAnswer(
-              (_) async => const FeeEstimates(fast: 50, medium: 30, slow: 10));
+      when(() => getFeeEstimatesUseCase.call()).thenAnswer(
+          (_) async => const FeeEstimates(fast: 50, medium: 30, slow: 10));
 
-      when(() => balanceRepository.getBalancesForAddress(any())).thenAnswer(
+      when(() => balanceRepository.getBalancesForAddress(any(), true))
+          .thenAnswer(
         (_) async => [
           FakeBalance(
               address: testAddress,
@@ -751,11 +754,11 @@ void main() {
         ),
       );
 
-      when(() => getFeeEstimatesUseCase.call(targets: any(named: 'targets')))
-          .thenAnswer(
-              (_) async => const FeeEstimates(fast: 50, medium: 30, slow: 10));
+      when(() => getFeeEstimatesUseCase.call()).thenAnswer(
+          (_) async => const FeeEstimates(fast: 50, medium: 30, slow: 10));
 
-      when(() => balanceRepository.getBalancesForAddress(any())).thenAnswer(
+      when(() => balanceRepository.getBalancesForAddress(any(), true))
+          .thenAnswer(
         (_) async => [
           FakeBalance(
               address: testAddress,
@@ -842,11 +845,11 @@ void main() {
         ),
       );
 
-      when(() => getFeeEstimatesUseCase.call(targets: any(named: 'targets')))
-          .thenAnswer(
-              (_) async => const FeeEstimates(fast: 50, medium: 30, slow: 10));
+      when(() => getFeeEstimatesUseCase.call()).thenAnswer(
+          (_) async => const FeeEstimates(fast: 50, medium: 30, slow: 10));
 
-      when(() => balanceRepository.getBalancesForAddress(any())).thenAnswer(
+      when(() => balanceRepository.getBalancesForAddress(any(), true))
+          .thenAnswer(
         (_) async => [
           FakeBalance(
               address: testAddress,
@@ -933,11 +936,11 @@ void main() {
         ),
       );
 
-      when(() => getFeeEstimatesUseCase.call(targets: any(named: 'targets')))
-          .thenAnswer(
-              (_) async => const FeeEstimates(fast: 50, medium: 30, slow: 10));
+      when(() => getFeeEstimatesUseCase.call()).thenAnswer(
+          (_) async => const FeeEstimates(fast: 50, medium: 30, slow: 10));
 
-      when(() => balanceRepository.getBalancesForAddress(any())).thenAnswer(
+      when(() => balanceRepository.getBalancesForAddress(any(), true))
+          .thenAnswer(
         (_) async => [
           FakeBalance(
               address: testAddress,
@@ -1026,11 +1029,11 @@ void main() {
         ),
       );
 
-      when(() => getFeeEstimatesUseCase.call(targets: any(named: 'targets')))
-          .thenAnswer(
-              (_) async => const FeeEstimates(fast: 50, medium: 30, slow: 10));
+      when(() => getFeeEstimatesUseCase.call()).thenAnswer(
+          (_) async => const FeeEstimates(fast: 50, medium: 30, slow: 10));
 
-      when(() => balanceRepository.getBalancesForAddress(any())).thenAnswer(
+      when(() => balanceRepository.getBalancesForAddress(any(), true))
+          .thenAnswer(
         (_) async => [
           FakeBalance(
               address: testAddress,
@@ -1075,7 +1078,6 @@ void main() {
     ),
     act: (bloc) => bloc.add(GiveAssetBlurred()),
     expect: () => [
-
       isA<FormStateModel>().having((s) => s.giveAssetValidationStatus,
           'giveAssetValidationStatus', isA<Loading<Asset>>()),
       isA<FormStateModel>().having((s) => s.giveAssetValidationStatus,
@@ -1104,11 +1106,11 @@ void main() {
         ),
       );
 
-      when(() => getFeeEstimatesUseCase.call(targets: any(named: 'targets')))
-          .thenAnswer(
-              (_) async => const FeeEstimates(fast: 50, medium: 30, slow: 10));
+      when(() => getFeeEstimatesUseCase.call()).thenAnswer(
+          (_) async => const FeeEstimates(fast: 50, medium: 30, slow: 10));
 
-      when(() => balanceRepository.getBalancesForAddress(any())).thenAnswer(
+      when(() => balanceRepository.getBalancesForAddress(any(), true))
+          .thenAnswer(
         (_) async => [
           FakeBalance(
               address: testAddress,

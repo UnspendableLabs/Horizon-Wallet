@@ -44,7 +44,7 @@ class FetchFairminterFormDataUseCase {
   Future<List<Asset>> _fetchAssets(String currentAddress) async {
     try {
       final assets =
-          await assetRepository.getValidAssetsByOwnerVerbose(currentAddress);
+          await assetRepository.getAllValidAssetsByOwnerVerbose(currentAddress);
       return assets;
     } catch (e) {
       throw FetchAssetsException(e.toString());
@@ -53,7 +53,7 @@ class FetchFairminterFormDataUseCase {
 
   Future<FeeEstimates> _fetchFeeEstimates() async {
     try {
-      return await getFeeEstimatesUseCase.call(targets: (1, 3, 6));
+      return await getFeeEstimatesUseCase.call();
     } catch (e) {
       throw FetchFeeEstimatesException(e.toString());
     }

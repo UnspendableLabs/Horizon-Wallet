@@ -19,8 +19,7 @@ mixin _$OnboardingImportState {
   String get mnemonic => throw _privateConstructorUsedError;
   String? get mnemonicError => throw _privateConstructorUsedError;
   ImportFormat get importFormat => throw _privateConstructorUsedError;
-  dynamic get getAddressesState => throw _privateConstructorUsedError;
-  Map<Address, bool> get isCheckedMap => throw _privateConstructorUsedError;
+  dynamic get currentStep => throw _privateConstructorUsedError;
   dynamic get importState => throw _privateConstructorUsedError;
 
   @JsonKey(ignore: true)
@@ -38,8 +37,7 @@ abstract class $OnboardingImportStateCopyWith<$Res> {
       {String mnemonic,
       String? mnemonicError,
       ImportFormat importFormat,
-      dynamic getAddressesState,
-      Map<Address, bool> isCheckedMap,
+      dynamic currentStep,
       dynamic importState});
 }
 
@@ -60,8 +58,7 @@ class _$OnboardingImportStateCopyWithImpl<$Res,
     Object? mnemonic = null,
     Object? mnemonicError = freezed,
     Object? importFormat = null,
-    Object? getAddressesState = freezed,
-    Object? isCheckedMap = null,
+    Object? currentStep = freezed,
     Object? importState = freezed,
   }) {
     return _then(_value.copyWith(
@@ -77,14 +74,10 @@ class _$OnboardingImportStateCopyWithImpl<$Res,
           ? _value.importFormat
           : importFormat // ignore: cast_nullable_to_non_nullable
               as ImportFormat,
-      getAddressesState: freezed == getAddressesState
-          ? _value.getAddressesState
-          : getAddressesState // ignore: cast_nullable_to_non_nullable
+      currentStep: freezed == currentStep
+          ? _value.currentStep
+          : currentStep // ignore: cast_nullable_to_non_nullable
               as dynamic,
-      isCheckedMap: null == isCheckedMap
-          ? _value.isCheckedMap
-          : isCheckedMap // ignore: cast_nullable_to_non_nullable
-              as Map<Address, bool>,
       importState: freezed == importState
           ? _value.importState
           : importState // ignore: cast_nullable_to_non_nullable
@@ -106,8 +99,7 @@ abstract class _$$OnboardingImportStateImplCopyWith<$Res>
       {String mnemonic,
       String? mnemonicError,
       ImportFormat importFormat,
-      dynamic getAddressesState,
-      Map<Address, bool> isCheckedMap,
+      dynamic currentStep,
       dynamic importState});
 }
 
@@ -126,8 +118,7 @@ class __$$OnboardingImportStateImplCopyWithImpl<$Res>
     Object? mnemonic = null,
     Object? mnemonicError = freezed,
     Object? importFormat = null,
-    Object? getAddressesState = freezed,
-    Object? isCheckedMap = null,
+    Object? currentStep = freezed,
     Object? importState = freezed,
   }) {
     return _then(_$OnboardingImportStateImpl(
@@ -143,13 +134,7 @@ class __$$OnboardingImportStateImplCopyWithImpl<$Res>
           ? _value.importFormat
           : importFormat // ignore: cast_nullable_to_non_nullable
               as ImportFormat,
-      getAddressesState: freezed == getAddressesState
-          ? _value.getAddressesState!
-          : getAddressesState,
-      isCheckedMap: null == isCheckedMap
-          ? _value._isCheckedMap
-          : isCheckedMap // ignore: cast_nullable_to_non_nullable
-              as Map<Address, bool>,
+      currentStep: freezed == currentStep ? _value.currentStep! : currentStep,
       importState: freezed == importState ? _value.importState! : importState,
     ));
   }
@@ -160,41 +145,29 @@ class __$$OnboardingImportStateImplCopyWithImpl<$Res>
 class _$OnboardingImportStateImpl implements _OnboardingImportState {
   const _$OnboardingImportStateImpl(
       {this.mnemonic = "",
-      this.mnemonicError = null,
+      this.mnemonicError,
       this.importFormat = ImportFormat.horizon,
-      this.getAddressesState = GetAddressesStateNotAsked,
-      final Map<Address, bool> isCheckedMap = const {},
-      this.importState = ImportStateNotAsked})
-      : _isCheckedMap = isCheckedMap;
+      this.currentStep = OnboardingImportStep.chooseFormat,
+      this.importState = ImportStateNotAsked});
 
   @override
   @JsonKey()
   final String mnemonic;
   @override
-  @JsonKey()
   final String? mnemonicError;
   @override
   @JsonKey()
   final ImportFormat importFormat;
   @override
   @JsonKey()
-  final dynamic getAddressesState;
-  final Map<Address, bool> _isCheckedMap;
-  @override
-  @JsonKey()
-  Map<Address, bool> get isCheckedMap {
-    if (_isCheckedMap is EqualUnmodifiableMapView) return _isCheckedMap;
-    // ignore: implicit_dynamic_type
-    return EqualUnmodifiableMapView(_isCheckedMap);
-  }
-
+  final dynamic currentStep;
   @override
   @JsonKey()
   final dynamic importState;
 
   @override
   String toString() {
-    return 'OnboardingImportState(mnemonic: $mnemonic, mnemonicError: $mnemonicError, importFormat: $importFormat, getAddressesState: $getAddressesState, isCheckedMap: $isCheckedMap, importState: $importState)';
+    return 'OnboardingImportState(mnemonic: $mnemonic, mnemonicError: $mnemonicError, importFormat: $importFormat, currentStep: $currentStep, importState: $importState)';
   }
 
   @override
@@ -209,9 +182,7 @@ class _$OnboardingImportStateImpl implements _OnboardingImportState {
             (identical(other.importFormat, importFormat) ||
                 other.importFormat == importFormat) &&
             const DeepCollectionEquality()
-                .equals(other.getAddressesState, getAddressesState) &&
-            const DeepCollectionEquality()
-                .equals(other._isCheckedMap, _isCheckedMap) &&
+                .equals(other.currentStep, currentStep) &&
             const DeepCollectionEquality()
                 .equals(other.importState, importState));
   }
@@ -222,8 +193,7 @@ class _$OnboardingImportStateImpl implements _OnboardingImportState {
       mnemonic,
       mnemonicError,
       importFormat,
-      const DeepCollectionEquality().hash(getAddressesState),
-      const DeepCollectionEquality().hash(_isCheckedMap),
+      const DeepCollectionEquality().hash(currentStep),
       const DeepCollectionEquality().hash(importState));
 
   @JsonKey(ignore: true)
@@ -239,8 +209,7 @@ abstract class _OnboardingImportState implements OnboardingImportState {
       {final String mnemonic,
       final String? mnemonicError,
       final ImportFormat importFormat,
-      final dynamic getAddressesState,
-      final Map<Address, bool> isCheckedMap,
+      final dynamic currentStep,
       final dynamic importState}) = _$OnboardingImportStateImpl;
 
   @override
@@ -250,9 +219,7 @@ abstract class _OnboardingImportState implements OnboardingImportState {
   @override
   ImportFormat get importFormat;
   @override
-  dynamic get getAddressesState;
-  @override
-  Map<Address, bool> get isCheckedMap;
+  dynamic get currentStep;
   @override
   dynamic get importState;
   @override

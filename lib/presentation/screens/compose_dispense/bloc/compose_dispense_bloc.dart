@@ -86,7 +86,7 @@ class ComposeDispenseBloc extends ComposeBaseBloc<ComposeDispenseState> {
         dispensersState: DispensersState.success(dispensers),
       ));
     } on FetchOpenDispensersOnAddressException catch (e) {
-      logger.error("what the heck  ${e.toString()}");
+      logger.error("An unexpected error occurred: ${e.toString()}");
 
       emit(state.copyWith(
         dispensersState: DispensersState.error(e.message),
@@ -116,10 +116,10 @@ class ComposeDispenseBloc extends ComposeBaseBloc<ComposeDispenseState> {
         feeState: const FeeState.loading(),
         submitState: const SubmitInitial()));
 
-    logger.warn("fetchf form data ${event.initialDispenserAddress}");
+    logger.warn("fetch form data ${event.initialDispenserAddress}");
 
     try {
-      final (balances, feeEstimates) =
+      final feeEstimates =
           await fetchDispenseFormDataUseCase.call(event.currentAddress!);
 
       // default to initial of there is no dispenser addy
@@ -132,13 +132,8 @@ class ComposeDispenseBloc extends ComposeBaseBloc<ComposeDispenseState> {
       }
 
       emit(state.copyWith(
-          balancesState: BalancesState.success(balances),
           feeState: FeeState.success(feeEstimates),
           dispensersState: nextDispensersState));
-    } on FetchBalancesException catch (e) {
-      emit(state.copyWith(
-        balancesState: BalancesState.error(e.message),
-      ));
     } on FetchFeeEstimatesException catch (e) {
       emit(state.copyWith(
         feeState: FeeState.error(e.message),
@@ -150,8 +145,6 @@ class ComposeDispenseBloc extends ComposeBaseBloc<ComposeDispenseState> {
     } catch (e) {
       emit(state.copyWith(
         dispensersState: DispensersState.error(
-            'An unexpected error occurred: ${e.toString()}'),
-        balancesState: BalancesState.error(
             'An unexpected error occurred: ${e.toString()}'),
         feeState:
             FeeState.error('An unexpected error occurred: ${e.toString()}'),

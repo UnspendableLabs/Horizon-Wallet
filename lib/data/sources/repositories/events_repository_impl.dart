@@ -1,9 +1,12 @@
+import 'package:horizon/common/format.dart';
 import 'package:horizon/data/models/cursor.dart' as cursor_model;
+import 'package:horizon/domain/entities/bitcoin_tx.dart';
 import 'package:horizon/domain/entities/cursor.dart' as cursor_entity;
 import 'package:horizon/data/sources/network/api/v2_api.dart' as api;
 import 'package:horizon/domain/entities/cursor.dart';
 import 'package:horizon/domain/entities/event.dart';
 import 'package:horizon/data/models/event.dart';
+import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 import 'package:horizon/domain/repositories/events_repository.dart';
 
 class StateMapper {
@@ -16,7 +19,11 @@ class StateMapper {
 }
 
 class VerboseEventMapper {
-  static VerboseEvent toDomain(api.VerboseEvent apiEvent) {
+  final BitcoinRepository bitcoinRepository;
+  VerboseEventMapper({required this.bitcoinRepository});
+
+  Future<VerboseEvent> toDomain(
+      api.VerboseEvent apiEvent, String currentAddress) async {
     switch (apiEvent.event) {
       case 'ENHANCED_SEND':
         return VerboseEnhancedSendEventMapper.toDomain(
@@ -72,6 +79,15 @@ class VerboseEventMapper {
       case "ORDER_EXPIRATION":
         return VerboseOrderExpirationEventMapper.toDomain(
             apiEvent as api.VerboseOrderExpirationEvent);
+      case "ATTACH_TO_UTXO":
+        return VerboseAttachToUtxoEventMapper.toDomain(
+            apiEvent as api.VerboseAttachToUtxoEvent);
+      case "DETACH_FROM_UTXO":
+        return VerboseDetachFromUtxoEventMapper.toDomain(
+            apiEvent as api.VerboseDetachFromUtxoEvent);
+      case "UTXO_MOVE":
+        return parseSwapFromMoveToUtxo(
+            apiEvent as api.VerboseMoveToUtxoEvent, currentAddress);
 
       // case 'NEW_TRANSACTION':
       //   return VerboseNewTransactionEventMapper.toDomain(
@@ -87,6 +103,60 @@ class VerboseEventMapper {
           blockTime: apiEvent.blockTime,
         );
     }
+  }
+
+  bool _isAtomicSwap(BitcoinTx transactionInfo) {
+    // if a move has multiple inputs, then we can assume it is a swap
+    // this will cover most cases, except those were an address swaps with itself
+    // opting for simiplicity now, and we can improve later if needed
+    return transactionInfo.vin
+            .map((input) => input.prevout?.scriptpubkeyAddress)
+            .where((address) => address != null)
+            .toSet()
+            .length >
+        1;
+  }
+
+  Future<VerboseEvent> parseSwapFromMoveToUtxo(
+      api.VerboseMoveToUtxoEvent apiEvent, String currentAddress) async {
+    // Both moves and swaps are captured by the UTXO_MOVE event
+    // they can be distinguished by the input/output details of the transaction
+    if (apiEvent.txHash == null) {
+      return VerboseMoveToUtxoEventMapper.toDomain(apiEvent);
+    }
+
+    final BitcoinTx transactionInfo =
+        await bitcoinRepository.getTransaction(apiEvent.txHash!).then(
+              (either) => either.fold(
+                (error) => throw Exception("GetTransactionInfo failure"),
+                (transactionInfo) => transactionInfo,
+              ),
+            );
+
+    // atomic swaps will have at least 2 different input sources
+    final isAtomicSwap = _isAtomicSwap(transactionInfo);
+
+    // the btc that was swapped for the asset is held in the vout of the _other_ holder's address
+    // the output with value 546 and 547 are the values for attaching utxos, so we exclude them
+    if (isAtomicSwap) {
+      final bitcoinSwapOutputs = transactionInfo.vout.where((output) {
+        return currentAddress != output.scriptpubkeyAddress &&
+            output.value != 546 &&
+            output.value != 547;
+      }).toList();
+      if (bitcoinSwapOutputs.length != 1) {
+        // if there is not exactly one bitcoin output to the other address, then it does not qualify as a swap
+        return VerboseMoveToUtxoEventMapper.toDomain(apiEvent);
+      }
+      final bitcoinSwapOutput = bitcoinSwapOutputs.first;
+      final bitcoinSwapAmount =
+          satoshisToBtc(bitcoinSwapOutput.value).toStringAsFixed(8);
+
+      // construct the swap from the move event
+      return VerboseAtomicSwapEventMapper.toDomain(apiEvent, bitcoinSwapAmount);
+    }
+
+    return VerboseMoveToUtxoEventMapper.toDomain(apiEvent);
   }
 }
 
@@ -750,11 +820,125 @@ class VerboseOrderExpirationParamsMapper {
   }
 }
 
+class VerboseAttachToUtxoParamsMapper {
+  static VerboseAttachToUtxoParams toDomain(
+      api.VerboseAttachToUtxoParams apiParams) {
+    return VerboseAttachToUtxoParams(
+      asset: apiParams.asset,
+      blockIndex: apiParams.blockIndex,
+      destination: apiParams.destination,
+      feePaid: apiParams.feePaid,
+      quantityNormalized: apiParams.quantityNormalized,
+      feePaidNormalized: apiParams.feePaidNormalized,
+    );
+  }
+}
+
+class VerboseAttachToUtxoEventMapper {
+  static VerboseAttachToUtxoEvent toDomain(
+      api.VerboseAttachToUtxoEvent apiEvent) {
+    return VerboseAttachToUtxoEvent(
+      state: StateMapper.getVerbose(apiEvent),
+      eventIndex: apiEvent.eventIndex,
+      event: apiEvent.event,
+      txHash: apiEvent.txHash,
+      blockIndex: apiEvent.blockIndex,
+      blockTime: apiEvent.blockTime,
+      params: VerboseAttachToUtxoParamsMapper.toDomain(apiEvent.params),
+    );
+  }
+}
+
+class VerboseMoveToUtxoParamsMapper {
+  static VerboseMoveToUtxoParams toDomain(
+      api.VerboseMoveToUtxoParams apiParams) {
+    return VerboseMoveToUtxoParams(
+      asset: apiParams.asset,
+      blockIndex: apiParams.blockIndex,
+      destination: apiParams.destination,
+      quantityNormalized: apiParams.quantityNormalized,
+    );
+  }
+}
+
+class AtomicSwapParamsMapper {
+  static AtomicSwapParams toDomain(
+      api.VerboseMoveToUtxoParams apiParams, String bitcoinSwapAmount) {
+    return AtomicSwapParams(
+      asset: apiParams.asset,
+      blockIndex: apiParams.blockIndex,
+      destination: apiParams.destination,
+      quantityNormalized: apiParams.quantityNormalized,
+      bitcoinSwapAmount: bitcoinSwapAmount,
+    );
+  }
+}
+
+class VerboseDetachFromUtxoParamsMapper {
+  static VerboseDetachFromUtxoParams toDomain(
+      api.VerboseDetachFromUtxoParams apiParams) {
+    return VerboseDetachFromUtxoParams(
+      asset: apiParams.asset,
+      blockIndex: apiParams.blockIndex,
+      destination: apiParams.destination,
+      feePaid: apiParams.feePaid,
+      quantityNormalized: apiParams.quantityNormalized,
+      feePaidNormalized: apiParams.feePaidNormalized,
+    );
+  }
+}
+
+class VerboseDetachFromUtxoEventMapper {
+  static VerboseDetachFromUtxoEvent toDomain(
+      api.VerboseDetachFromUtxoEvent apiEvent) {
+    return VerboseDetachFromUtxoEvent(
+      state: StateMapper.getVerbose(apiEvent),
+      eventIndex: apiEvent.eventIndex,
+      event: apiEvent.event,
+      txHash: apiEvent.txHash,
+      blockIndex: apiEvent.blockIndex,
+      blockTime: apiEvent.blockTime,
+      params: VerboseDetachFromUtxoParamsMapper.toDomain(apiEvent.params),
+    );
+  }
+}
+
+class VerboseMoveToUtxoEventMapper {
+  static VerboseMoveToUtxoEvent toDomain(api.VerboseMoveToUtxoEvent apiEvent) {
+    return VerboseMoveToUtxoEvent(
+      state: StateMapper.getVerbose(apiEvent),
+      eventIndex: apiEvent.eventIndex,
+      event: apiEvent.event,
+      txHash: apiEvent.txHash,
+      blockIndex: apiEvent.blockIndex,
+      blockTime: apiEvent.blockTime,
+      params: VerboseMoveToUtxoParamsMapper.toDomain(apiEvent.params),
+    );
+  }
+}
+
+class VerboseAtomicSwapEventMapper {
+  static AtomicSwapEvent toDomain(
+      api.VerboseMoveToUtxoEvent apiEvent, String bitcoinSwapAmount) {
+    return AtomicSwapEvent(
+      state: StateMapper.getVerbose(apiEvent),
+      eventIndex: apiEvent.eventIndex,
+      event: apiEvent.event,
+      txHash: apiEvent.txHash,
+      blockIndex: apiEvent.blockIndex,
+      blockTime: apiEvent.blockTime,
+      params:
+          AtomicSwapParamsMapper.toDomain(apiEvent.params, bitcoinSwapAmount),
+    );
+  }
+}
+
 class EventsRepositoryImpl implements EventsRepository {
   final api.V2Api api_;
-
+  final BitcoinRepository bitcoinRepository;
   EventsRepositoryImpl({
     required this.api_,
+    required this.bitcoinRepository,
   });
 
   @override
@@ -772,23 +956,12 @@ class EventsRepositoryImpl implements EventsRepository {
   }) async {
     List<VerboseEvent> events = [];
 
-    /// if unconfirmed, get mempool events
-    if (unconfirmed == true) {
-      final mempoolEvents =
-          await _getAllMempoolVerboseEventsForAddress(address, whitelist);
-      events.addAll(mempoolEvents);
-    }
-
     final addressesParam = address;
 
     final whitelist_ = whitelist?.join(",");
 
-    final response = await api_.getEventsByAddressesVerbose(
-        addressesParam,
-        cursor_model.CursorMapper.toData(cursor),
-        limit,
-        unconfirmed,
-        whitelist_);
+    final response = await api_.getEventsByAddressesVerbose(addressesParam,
+        cursor_model.CursorMapper.toData(cursor), limit, whitelist_);
 
     if (response.error != null) {
       throw Exception("Error getting events by addresses: ${response.error}");
@@ -797,9 +970,11 @@ class EventsRepositoryImpl implements EventsRepository {
     cursor_entity.Cursor? nextCursor =
         cursor_model.CursorMapper.toDomain(response.nextCursor);
 
-    List<VerboseEvent> events_ = response.result!.map((event) {
-      return VerboseEventMapper.toDomain(event);
-    }).toList();
+    List<VerboseEvent> events_ =
+        await Future.wait(response.result!.map((event) async {
+      return await VerboseEventMapper(bitcoinRepository: bitcoinRepository)
+          .toDomain(event, address);
+    }).toList());
 
     events.addAll(events_);
 
@@ -813,15 +988,22 @@ class EventsRepositoryImpl implements EventsRepository {
     List<String>? whitelist,
   }) async {
     final addresses = [address];
-    final results = <List<VerboseEvent>>[];
+    final List<VerboseEvent> events = [];
+
+    if (unconfirmed == true) {
+      final mempoolEvents =
+          await _getAllMempoolVerboseEventsForAddress(address, whitelist);
+      events.addAll(mempoolEvents);
+    }
 
     final futures = addresses.map((address) =>
         _getAllVerboseEventsForAddress(address, unconfirmed, whitelist));
 
     final eventResults = await Future.wait(futures);
-    results.addAll(eventResults);
+    final allEvents = eventResults.expand((events) => events).toList();
+    events.addAll(allEvents);
 
-    return results.expand((events) => events).toList();
+    return events;
   }
 
   Future<List<VerboseEvent>> _getAllVerboseEventsForAddress(
@@ -879,9 +1061,11 @@ class EventsRepositoryImpl implements EventsRepository {
     }
     cursor_entity.Cursor? nextCursor =
         cursor_model.CursorMapper.toDomain(response.nextCursor);
-    List<VerboseEvent> events = response.result!.map((event) {
-      return VerboseEventMapper.toDomain(event);
-    }).toList();
+    List<VerboseEvent> events =
+        await Future.wait(response.result!.map((event) async {
+      return await VerboseEventMapper(bitcoinRepository: bitcoinRepository)
+          .toDomain(event, address);
+    }).toList());
 
     return (events, nextCursor, response.resultCount);
   }

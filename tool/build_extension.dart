@@ -5,39 +5,75 @@ import 'package:process_runner/process_runner.dart';
 final _process = ProcessRunner(printOutputDefault: true);
 
 void main(List<String> args) async {
-  final browser = Platform.environment['TARGET_BROWSER']?.toLowerCase();
+  final browser =
+      Platform.environment['TARGET_BROWSER']?.toLowerCase() ?? "chromium";
   final network = Platform.environment['HORIZON_NETWORK'] ?? 'mainnet';
+  final apiBase = Platform.environment['HORIZON_COUNTERPARTY_API_BASE'];
   final apiUsername = Platform.environment['HORIZON_COUNTERPARTY_API_USERNAME'];
   final apiPassword = Platform.environment['HORIZON_COUNTERPARTY_API_PASSWORD'];
+  final analyticsEnabled =
+      Platform.environment['HORIZON_ANALYTICS_ENABLED'] ?? 'false';
 
-  if (browser == "firefox") {
+  final posthogApiKey = Platform.environment['HORIZON_POSTHOG_API_KEY'] ?? '';
+
+  final posthogApiHost = Platform.environment['HORIZON_POSTHOG_API_HOST'] ?? '';
+
+  final isSentryEnabled =
+      Platform.environment['HORIZON_SENTRY_ENABLED'] ?? 'false';
+  final sentryDsn = Platform.environment['HORIZON_SENTRY_DSN'] ?? '';
+  final sentrySampleRate =
+      Platform.environment['HORIZON_SENTRY_SAMPLE_RATE'] ?? '1.0';
+
+  if (browser != "chromium") {
     print(
-        'Firefox is not supported for extension build. See https://bugzilla.mozilla.org/show_bug.cgi?id=1688314');
+        'Chromium is only supported build target.  See https://bugzilla.mozilla.org/show_bug.cgi?id=1688314');
     exit(1);
   }
 
-  if (browser == null || (browser != 'chromium' && browser != 'firefox')) {
-    print(
-        'Please set the TARGET_BROWSER environment variable to "chromium" or "firefox".');
+  if (apiBase == null) {
+    print('HORIZON_COUNTERPARTY_API_BASE is required.');
     exit(1);
   }
 
-  if (apiUsername == null || apiPassword == null) {
-    print(
-        'Please set both HORIZON_COUNTERPARTY_API_USERNAME and HORIZON_COUNTERPARTY_API_PASSWORD environment variables.');
+  if (apiUsername == null) {
+    print('HORIZON_COUNTERPARTY_API_USERNAME is required.');
+    exit(1);
+  }
+
+  if (apiPassword == null) {
+    print('HORIZON_COUNTERPARTY_API_PASSWORD is required.');
     exit(1);
   }
 
   final originalIndexHtml = await buildIndexHtml();
   final originalManifest = await buildManifest(browser);
-  await buildFlutter(network, apiUsername, apiPassword);
+  await buildFlutter(
+      network,
+      apiBase,
+      apiUsername,
+      apiPassword,
+      analyticsEnabled,
+      posthogApiKey,
+      posthogApiHost,
+      isSentryEnabled,
+      sentryDsn,
+      sentrySampleRate);
 
   // reset index.html
   await resetFile('web/index.html', originalIndexHtml);
 }
 
 Future<void> buildFlutter(
-    String network, String username, String password) async {
+    String network,
+    String apiBase,
+    String username,
+    String password,
+    String analyticsEnabled,
+    String posthogApiKey,
+    String posthogApiHost,
+    String isSentryEnabled,
+    String sentryDsn,
+    String sentrySampleRate) async {
   // Run the Flutter build command with environment variables
   await _process.runProcess([
     'flutter',
@@ -50,9 +86,15 @@ Future<void> buildFlutter(
     '--release',
     '--dart-define=HORIZON_IS_EXTENSION=true',
     '--dart-define=HORIZON_NETWORK=$network',
-    '--dart-define=HORIZON_ENABLE_DB_VIEWER=true',
+    '--dart-define=HORIZON_COUNTERPARTY_API_BASE=$apiBase',
     '--dart-define=HORIZON_COUNTERPARTY_API_USERNAME=$username',
     '--dart-define=HORIZON_COUNTERPARTY_API_PASSWORD=$password',
+    '--dart-define=HORIZON_ANALYTICS_ENABLED=$analyticsEnabled',
+    '--dart-define=HORIZON_POSTHOG_API_KEY=$posthogApiKey',
+    '--dart-define=HORIZON_POSTHOG_API_HOST=$posthogApiHost',
+    '--dart-define=HORIZON_SENTRY_ENABLED=$isSentryEnabled',
+    '--dart-define=HORIZON_SENTRY_DSN=$sentryDsn',
+    '--dart-define=HORIZON_SENTRY_SAMPLE_RATE=$sentrySampleRate',
   ]);
   print('Flutter web build complete.');
 }

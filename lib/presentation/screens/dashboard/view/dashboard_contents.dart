@@ -10,6 +10,7 @@ import 'package:horizon/domain/entities/imported_address.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/imported_address_repository.dart';
+import 'package:horizon/domain/repositories/config_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/logout/view/logout_dialog.dart';
@@ -23,6 +24,7 @@ import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
 import 'package:horizon/presentation/screens/dashboard/bloc/logout/logout_bloc.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/logout/logout_state.dart';
 import 'package:horizon/presentation/common/colors.dart';
+import 'package:horizon/presentation/common/link.dart';
 import 'package:horizon/presentation/screens/dashboard/account_form/view/account_form.dart';
 import 'package:horizon/presentation/screens/dashboard/address_form/view/address_form.dart';
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
@@ -322,7 +324,7 @@ class HorizonAppBarContent extends StatelessWidget {
   Widget build(BuildContext context) {
     final shell = context.watch<ShellStateCubit>();
     final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
-    final isSmallScreen = MediaQuery.of(context).size.width < 768;
+    final isSmallScreen = MediaQuery.of(context).size.width < 700;
 
     final backgroundColor = isDarkTheme ? lightNavyDarkTheme : greyLightTheme;
     final selectedColor =
@@ -342,6 +344,9 @@ class HorizonAppBarContent extends StatelessWidget {
           state.currentImportedAddress?.address,
       orElse: () => null,
     );
+
+    final addressURL =
+        '${GetIt.I<Config>().horizonExplorerBase}/addresses/$address';
 
     return SafeArea(
       child: Padding(
@@ -373,35 +378,33 @@ class HorizonAppBarContent extends StatelessWidget {
                         fontSize: isSmallScreen ? 25 : 30,
                         fontWeight: FontWeight.w700,
                       )),
-                  if (!isSmallScreen) ...[
-                    const SizedBox(width: 8),
+                  if (!isSmallScreen) const SizedBox(width: 8),
+                  if (!isSmallScreen)
                     const Text('Wallet',
                         style: TextStyle(
                           color: neonBlueDarkTheme,
                           fontSize: 30,
                           fontWeight: FontWeight.w700,
                         )),
-                    const SizedBox(width: 12),
-                    if (!isSmallScreen && account != null)
-                      shell.state.maybeWhen(
-                        success: (state) => state.addresses.length > 1
-                            ? Flexible(
-                                child: Container(
-                                  padding:
-                                      const EdgeInsets.fromLTRB(7, 7, 7, 7),
-                                  child: AddressSelectionButton(
-                                    isDarkTheme: isDarkTheme,
-                                    onPressed: () {
-                                      showAddressList(
-                                          context, isDarkTheme, account);
-                                    },
-                                  ),
+                  const SizedBox(width: 12),
+                  if (!isSmallScreen && account != null)
+                    shell.state.maybeWhen(
+                      success: (state) => state.addresses.length > 1
+                          ? Flexible(
+                              child: Container(
+                                padding: const EdgeInsets.fromLTRB(7, 7, 7, 7),
+                                child: AddressSelectionButton(
+                                  isDarkTheme: isDarkTheme,
+                                  onPressed: () {
+                                    showAddressList(
+                                        context, isDarkTheme, account);
+                                  },
                                 ),
-                              )
-                            : const SizedBox.shrink(),
-                        orElse: () => const SizedBox.shrink(),
-                      ),
-                  ],
+                              ),
+                            )
+                          : const SizedBox.shrink(),
+                      orElse: () => const SizedBox.shrink(),
+                    ),
                 ],
               ),
             ),
@@ -580,6 +583,18 @@ class HorizonAppBarContent extends StatelessWidget {
                           },
                           itemBuilder: (BuildContext context) =>
                               <PopupMenuEntry<String>>[
+                            PopupMenuItem<String>(
+                              value: 'view_current_address_in_explorer',
+                              child: Link(
+                                  display: const Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text('View address in explorer'),
+                                        Icon(Icons.open_in_new, size: 16)
+                                      ]),
+                                  href: addressURL),
+                            ),
                             const PopupMenuItem<String>(
                               value: 'view_seed_phrase',
                               child: Text('View wallet seed phrase'),

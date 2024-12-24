@@ -169,7 +169,7 @@ class CreditParams {
 class VerboseCreditParams extends CreditParams {
   final int blockTime;
   // final AssetInfo assetInfo;
-  final String quantityNormalized;
+  final String? quantityNormalized;
 
   VerboseCreditParams({
     required super.address,
@@ -181,7 +181,7 @@ class VerboseCreditParams extends CreditParams {
     required super.txIndex,
     required this.blockTime,
     // required this.assetInfo,
-    required this.quantityNormalized,
+    this.quantityNormalized,
   });
 }
 
@@ -237,7 +237,7 @@ class DebitParams {
 class VerboseDebitParams extends DebitParams {
   final int blockTime;
   // final AssetInfo assetInfo;
-  final String quantityNormalized;
+  final String? quantityNormalized;
 
   VerboseDebitParams({
     required super.action,
@@ -249,7 +249,7 @@ class VerboseDebitParams extends DebitParams {
     required super.txIndex,
     required this.blockTime,
     // required this.assetInfo,
-    required this.quantityNormalized,
+    this.quantityNormalized,
   });
 }
 
@@ -510,7 +510,7 @@ class NewTransactionEvent extends Event {
 }
 
 class VerboseNewTransactionParams extends NewTransactionParams {
-  final Map<String, dynamic> unpackedData;
+  final Map<String, dynamic>? unpackedData;
   final String btcAmountNormalized;
 
   VerboseNewTransactionParams({
@@ -1395,6 +1395,186 @@ class VerboseOrderExpirationEvent extends VerboseEvent {
     required super.txHash,
     required super.blockIndex,
     required super.blockTime,
+    required this.params,
+  });
+}
+
+class MoveToUtxoParams {
+  final String asset;
+  final int blockIndex;
+  final String destination;
+
+  MoveToUtxoParams({
+    required this.asset,
+    required this.blockIndex,
+    required this.destination,
+  });
+}
+
+class MoveToUtxoEvent extends Event {
+  final MoveToUtxoParams params;
+
+  const MoveToUtxoEvent({
+    required super.state,
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
+    required this.params,
+  });
+}
+
+class VerboseMoveToUtxoParams extends MoveToUtxoParams {
+  final String quantityNormalized;
+
+  VerboseMoveToUtxoParams({
+    required super.asset,
+    required super.blockIndex,
+    required super.destination,
+    required this.quantityNormalized,
+  });
+}
+
+class VerboseMoveToUtxoEvent extends VerboseEvent {
+  final VerboseMoveToUtxoParams params;
+
+  const VerboseMoveToUtxoEvent({
+    required super.state,
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
+    required super.blockTime,
+    required this.params,
+  });
+}
+
+class AtomicSwapParams {
+  final String asset;
+  final int blockIndex;
+  final String destination;
+  final String bitcoinSwapAmount;
+  final String quantityNormalized;
+
+  AtomicSwapParams({
+    required this.asset,
+    required this.blockIndex,
+    required this.destination,
+    required this.bitcoinSwapAmount,
+    required this.quantityNormalized,
+  });
+}
+
+class AtomicSwapEvent extends VerboseEvent {
+  final AtomicSwapParams params;
+
+  const AtomicSwapEvent({
+    required super.state,
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
+    required super.blockTime,
+    required this.params,
+  });
+}
+
+class DetachFromUtxoParams {
+  final String asset;
+  final int blockIndex;
+  final String destination;
+  final int feePaid;
+
+  DetachFromUtxoParams({
+    required this.asset,
+    required this.blockIndex,
+    required this.destination,
+    required this.feePaid,
+  });
+}
+
+class VerboseDetachFromUtxoParams extends DetachFromUtxoParams {
+  // final AssetInfo assetInfo;
+  final String quantityNormalized;
+  final String feePaidNormalized;
+
+  VerboseDetachFromUtxoParams({
+    required super.asset,
+    required super.blockIndex,
+    required super.destination,
+    required super.feePaid,
+    required this.quantityNormalized,
+    required this.feePaidNormalized,
+  });
+}
+
+class VerboseDetachFromUtxoEvent extends VerboseEvent {
+  final VerboseDetachFromUtxoParams params;
+
+  const VerboseDetachFromUtxoEvent({
+    required super.state,
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
+    required super.blockTime,
+    required this.params,
+  });
+}
+
+class VerboseAttachToUtxoEvent extends VerboseEvent {
+  final VerboseAttachToUtxoParams params;
+
+  const VerboseAttachToUtxoEvent({
+    required super.state,
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
+    required super.blockTime,
+    required this.params,
+  });
+}
+
+class VerboseAttachToUtxoParams extends AttachToUtxoEventParams {
+  // final AssetInfo assetInfo;
+  final String quantityNormalized;
+  final String feePaidNormalized;
+
+  VerboseAttachToUtxoParams({
+    required super.asset,
+    required super.blockIndex,
+    required super.destination,
+    required super.feePaid,
+    // required this.assetInfo,
+    required this.quantityNormalized,
+    required this.feePaidNormalized,
+  });
+}
+
+class AttachToUtxoEventParams {
+  final String asset;
+  final int blockIndex;
+  final String destination;
+  final int feePaid;
+
+  AttachToUtxoEventParams({
+    required this.asset,
+    required this.blockIndex,
+    required this.destination,
+    required this.feePaid,
+  });
+}
+
+class AttachToUtxoEvent extends Event {
+  final AttachToUtxoEventParams params;
+
+  const AttachToUtxoEvent({
+    required super.state,
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
     required this.params,
   });
 }

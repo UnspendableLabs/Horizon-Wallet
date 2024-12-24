@@ -50,10 +50,11 @@ void main() {
 
     test('should fetch all data successfully', () async {
       // Arrange
-      when(() => mockAssetRepository.getValidAssetsByOwnerVerbose(testAddress))
+      when(() =>
+              mockAssetRepository.getAllValidAssetsByOwnerVerbose(testAddress))
           .thenAnswer((_) async => mockAssets);
 
-      when(() => mockGetFeeEstimatesUseCase.call(targets: (1, 3, 6)))
+      when(() => mockGetFeeEstimatesUseCase.call())
           .thenAnswer((_) async => mockFeeEstimates);
 
       when(() => mockFairminterRepository.getFairmintersByAddress(testAddress))
@@ -68,10 +69,9 @@ void main() {
       expect(result.$3, equals(mockFairminters));
 
       verify(() =>
-              mockAssetRepository.getValidAssetsByOwnerVerbose(testAddress))
+              mockAssetRepository.getAllValidAssetsByOwnerVerbose(testAddress))
           .called(1);
-      verify(() => mockGetFeeEstimatesUseCase.call(targets: (1, 3, 6)))
-          .called(1);
+      verify(() => mockGetFeeEstimatesUseCase.call()).called(1);
       verify(() =>
               mockFairminterRepository.getFairmintersByAddress(testAddress))
           .called(1);
@@ -79,10 +79,11 @@ void main() {
 
     test('should throw FetchAssetsException when asset fetch fails', () async {
       // Arrange
-      when(() => mockAssetRepository.getValidAssetsByOwnerVerbose(testAddress))
+      when(() =>
+              mockAssetRepository.getAllValidAssetsByOwnerVerbose(testAddress))
           .thenThrow(Exception('Asset fetch failed'));
 
-      when(() => mockGetFeeEstimatesUseCase.call(targets: (1, 3, 6)))
+      when(() => mockGetFeeEstimatesUseCase.call())
           .thenAnswer((_) async => mockFeeEstimates);
 
       when(() => mockFairminterRepository.getFairmintersByAddress(testAddress))
@@ -99,10 +100,11 @@ void main() {
         'should throw FetchFeeEstimatesException when fee estimates fetch fails',
         () async {
       // Arrange
-      when(() => mockAssetRepository.getValidAssetsByOwnerVerbose(testAddress))
+      when(() =>
+              mockAssetRepository.getAllValidAssetsByOwnerVerbose(testAddress))
           .thenAnswer((_) async => mockAssets);
 
-      when(() => mockGetFeeEstimatesUseCase.call(targets: (1, 3, 6)))
+      when(() => mockGetFeeEstimatesUseCase.call())
           .thenThrow(Exception('Fee estimates fetch failed'));
 
       when(() => mockFairminterRepository.getFairmintersByAddress(testAddress))
@@ -118,10 +120,11 @@ void main() {
     test('should throw FetchFairmintersException when fairminters fetch fails',
         () async {
       // Arrange
-      when(() => mockAssetRepository.getValidAssetsByOwnerVerbose(testAddress))
+      when(() =>
+              mockAssetRepository.getAllValidAssetsByOwnerVerbose(testAddress))
           .thenAnswer((_) async => mockAssets);
 
-      when(() => mockGetFeeEstimatesUseCase.call(targets: (1, 3, 6)))
+      when(() => mockGetFeeEstimatesUseCase.call())
           .thenAnswer((_) async => mockFeeEstimates);
 
       when(() => mockFairminterRepository.getFairmintersByAddress(testAddress))

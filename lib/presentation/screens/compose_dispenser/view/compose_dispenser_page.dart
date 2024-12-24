@@ -88,7 +88,7 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
   bool _submitted = false;
   bool hideSubmitButtons = false;
   bool isCreateNewAddressFlow = false;
-
+  bool sendExtraBtcToDispenser = false;
   @override
   void initState() {
     super.initState();
@@ -138,6 +138,7 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
                   mainchainrate: mainchainrate,
                   dashboardActivityFeedBloc: widget.dashboardActivityFeedBloc,
                   feeRate: feeRate,
+                  sendExtraBtcToDispenser: sendExtraBtcToDispenser,
                 ),
               ),
             );
@@ -218,6 +219,7 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
               giveQuantity: giveQuantity,
               escrowQuantity: escrowQuantity,
               mainchainrate: mainchainrate,
+              sendExtraBtcToDispenser: sendExtraBtcToDispenser,
             ));
         return;
       }
@@ -240,40 +242,42 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
   Widget _buildAssetInput(ComposeDispenserState state, bool loading,
       [String? label]) {
     return state.balancesState.maybeWhen(
-        orElse: () => const AssetDropdownLoading(),
-        success: (balances) {
-          // the problem is here, somehow balances is being reset
-          // to a single balance...
+      orElse: () => const AssetDropdownLoading(),
+      success: (balances) {
+        final addressBalances =
+            balances.where((balance) => balance.utxo == null).toList();
 
-          if (balances.isEmpty) {
-            return const HorizonUI.HorizonTextFormField(
-              enabled: false,
-              label: "No assets",
-            );
-          }
-
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (asset == null) {
-              setState(() {
-                asset = balances[0].asset;
-              });
-            }
-          });
-          return SizedBox(
-            height: 48,
-            child: AssetDropdown(
-              key: const Key('asset_dropdown'),
-              loading: loading,
-              label: label,
-              asset: asset ?? balances[0].asset,
-              controller: assetController,
-              balances: balances,
-              onSelected: (String? value) {
-                _onAssetChanged(value, balances);
-              },
-            ),
+        if (addressBalances.isEmpty) {
+          return const HorizonUI.HorizonTextFormField(
+            enabled: false,
+            label: "No assets",
           );
+        }
+
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (asset == null) {
+            setState(() {
+              asset = addressBalances[0].asset;
+            });
+          }
         });
+
+        return SizedBox(
+          height: 48, // Set a fixed height for the dropdown
+          child: AssetDropdown(
+            key: const Key('asset_dropdown'),
+            loading: loading,
+            label: label,
+            asset: asset ?? addressBalances[0].asset,
+            controller: assetController,
+            balances: addressBalances,
+            onSelected: (String? value) {
+              _onAssetChanged(value, balances);
+            },
+          ),
+        );
+      },
+    );
   }
 
   void _onAssetChanged(String? value, List<Balance> balances) {
@@ -496,11 +500,10 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    if (addressIsSegwit(widget.address))
-                      _buildWarningButton(
-                        'Create Dispenser on a new address',
-                        true,
-                      ),
+                    _buildWarningButton(
+                      'Create Dispenser on a new address',
+                      true,
+                    ),
                     const SizedBox(height: 8.0),
                     _buildWarningButton(
                       'Continue with existing address',
@@ -568,7 +571,7 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
             HorizonUI.HorizonTextFormField(
               enabled: false,
               controller: openAddressController,
-              label: "Open Address",
+              label: "Opening Dispenser on",
             ),
             const SizedBox(height: 16.0),
             _buildAssetInput(state, loading),
@@ -587,7 +590,7 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
           children: [
             HorizonUI.HorizonTextFormField(
               enabled: false,
-              label: "Open Address",
+              label: "Opening Dispenser on",
               controller: TextEditingController(text: 'To be created'),
             ),
             const SizedBox(height: 16.0),
@@ -600,6 +603,25 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
             _buildEscrowQuantityInput(state, loading, formKey),
             const SizedBox(height: 16.0),
             _buildPricePerUnitInput(loading, formKey),
+            const SizedBox(height: 16.0),
+            Row(
+              children: [
+                Checkbox(
+                  value: sendExtraBtcToDispenser,
+                  onChanged: (value) {
+                    setState(() {
+                      sendExtraBtcToDispenser = value ?? false;
+                    });
+                  },
+                ),
+                Expanded(
+                  child: SelectableText(
+                    'Send extra BTC to dispenser address in order to close the address after the dispenser is closed.',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                ),
+              ],
+            ),
           ],
         );
       }, warning: (hasOpenDispensers) {
@@ -608,7 +630,7 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
             HorizonUI.HorizonTextFormField(
               enabled: false,
               controller: openAddressController,
-              label: "Open Address",
+              label: "Opening Dispenser on",
             ),
             _displayDispensersWarning(state, loading, hasOpenDispensers!),
           ],

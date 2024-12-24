@@ -4,14 +4,16 @@ import 'package:horizon/domain/entities/address.dart';
 
 part 'onboarding_import_state.freezed.dart';
 
+/// Enum to represent the current step in the import flow
+enum OnboardingImportStep { chooseFormat, inputSeed, inputPassword }
+
 @freezed
 class OnboardingImportState with _$OnboardingImportState {
   const factory OnboardingImportState({
     @Default("") String mnemonic,
-    @Default(null) String? mnemonicError,
+    String? mnemonicError,
     @Default(ImportFormat.horizon) ImportFormat importFormat,
-    @Default(GetAddressesStateNotAsked) getAddressesState,
-    @Default({}) Map<Address, bool> isCheckedMap,
+    @Default(OnboardingImportStep.chooseFormat) currentStep,
     @Default(ImportStateNotAsked) importState,
   }) = _OnboardingImportState;
 }

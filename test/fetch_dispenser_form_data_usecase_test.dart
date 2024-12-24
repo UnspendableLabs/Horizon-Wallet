@@ -88,10 +88,11 @@ void main() {
 
     const feeEstimates = FeeEstimates(fast: 10, medium: 5, slow: 2);
 
-    when(() => mockBalanceRepository.getBalancesForAddress(address.address))
+    when(() =>
+            mockBalanceRepository.getBalancesForAddress(address.address, true))
         .thenAnswer((_) async => balances);
 
-    when(() => mockGetFeeEstimatesUseCase.call(targets: any(named: 'targets')))
+    when(() => mockGetFeeEstimatesUseCase.call())
         .thenAnswer((_) async => feeEstimates);
 
     when(() => mockDispenserRepository.getDispensersByAddress(address.address))
@@ -115,12 +116,12 @@ void main() {
       index: 0,
     );
 
-    when(() => mockBalanceRepository.getBalancesForAddress(address.address))
+    when(() =>
+            mockBalanceRepository.getBalancesForAddress(address.address, true))
         .thenThrow(Exception('Balance error'));
 
-    when(() => mockGetFeeEstimatesUseCase.call(targets: any(named: 'targets')))
-        .thenAnswer(
-            (_) async => const FeeEstimates(fast: 10, medium: 5, slow: 2));
+    when(() => mockGetFeeEstimatesUseCase.call()).thenAnswer(
+        (_) async => const FeeEstimates(fast: 10, medium: 5, slow: 2));
 
     // Act & Assert
     expect(
@@ -154,10 +155,11 @@ void main() {
       ),
     ];
 
-    when(() => mockBalanceRepository.getBalancesForAddress(address.address))
+    when(() =>
+            mockBalanceRepository.getBalancesForAddress(address.address, true))
         .thenAnswer((_) async => balances);
 
-    when(() => mockGetFeeEstimatesUseCase.call(targets: any(named: 'targets')))
+    when(() => mockGetFeeEstimatesUseCase.call())
         .thenThrow(Exception('Fee estimate error'));
 
     // Act & Assert
@@ -176,12 +178,12 @@ void main() {
       index: 0,
     );
 
-    when(() => mockBalanceRepository.getBalancesForAddress(address.address))
+    when(() =>
+            mockBalanceRepository.getBalancesForAddress(address.address, true))
         .thenAnswer((_) async => []);
 
-    when(() => mockGetFeeEstimatesUseCase.call(targets: any(named: 'targets')))
-        .thenAnswer(
-            (_) async => const FeeEstimates(fast: 10, medium: 5, slow: 2));
+    when(() => mockGetFeeEstimatesUseCase.call()).thenAnswer(
+        (_) async => const FeeEstimates(fast: 10, medium: 5, slow: 2));
 
     when(() => mockDispenserRepository.getDispensersByAddress(address.address))
         .thenThrow(Exception('Dispenser error'));

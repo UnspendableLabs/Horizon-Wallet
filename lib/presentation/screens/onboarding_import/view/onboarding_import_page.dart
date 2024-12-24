@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:get_it/get_it.dart';
 import 'package:horizon/common/constants.dart';
-import 'package:horizon/domain/entities/address.dart';
+import 'package:horizon/domain/services/mnemonic_service.dart';
 import 'package:horizon/domain/services/wallet_service.dart';
+import 'package:horizon/presentation/common/colors.dart';
 import 'package:horizon/presentation/common/usecase/import_wallet_usecase.dart';
 import 'package:horizon/presentation/screens/onboarding/view/back_continue_buttons.dart';
 import 'package:horizon/presentation/screens/onboarding/view/import_format_dropdown.dart';
@@ -12,10 +14,7 @@ import 'package:horizon/presentation/screens/onboarding/view/password_prompt.dar
 import 'package:horizon/presentation/screens/onboarding_import/bloc/onboarding_import_bloc.dart';
 import 'package:horizon/presentation/screens/onboarding_import/bloc/onboarding_import_event.dart';
 import 'package:horizon/presentation/screens/onboarding_import/bloc/onboarding_import_state.dart';
-import 'package:horizon/presentation/common/colors.dart';
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
-import 'package:get_it/get_it.dart';
-import 'package:horizon/domain/services/mnemonic_service.dart';
 
 class OnboardingImportPageWrapper extends StatelessWidget {
   const OnboardingImportPageWrapper({super.key});
@@ -105,52 +104,57 @@ class OnboardingImportPageState extends State<OnboardingImportPage> {
                       Column(
                         children: [
                           Flexible(
-                            child: state.importState == ImportStateNotAsked
-                                ? SeedInputFields(
-                                    mnemonicErrorState: state.mnemonicError,
-                                  )
-                                : PasswordPrompt(
-                                    state: state,
-                                    onPressedBack: () {
-                                      final shell =
-                                          context.read<ShellStateCubit>();
-                                      shell.onOnboarding();
-                                    },
-                                    onPressedContinue: (password) {
-                                      context.read<OnboardingImportBloc>().add(
-                                          ImportWallet(password: password));
-                                    },
-                                    backButtonText: 'CANCEL',
-                                    continueButtonText: 'LOGIN',
-                                    optionalErrorWidget: state.importState
-                                            is ImportStateError
-                                        ? Align(
-                                            alignment: Alignment.center,
-                                            child: Container(
-                                              padding:
-                                                  const EdgeInsets.all(8.0),
-                                              decoration: BoxDecoration(
-                                                color: redErrorTextTransparent,
-                                                borderRadius:
-                                                    BorderRadius.circular(40.0),
-                                              ),
-                                              child: Row(
-                                                mainAxisSize: MainAxisSize.min,
-                                                children: [
-                                                  const Icon(Icons.info,
-                                                      color: redErrorText),
-                                                  const SizedBox(width: 4),
-                                                  SelectableText(
-                                                    state.importState.message,
-                                                    style: const TextStyle(
-                                                        color: redErrorText),
-                                                  ),
-                                                ],
-                                              ),
+                              child: switch (state.currentStep) {
+                            OnboardingImportStep.chooseFormat =>
+                              const ChooseFormat(),
+                            OnboardingImportStep.inputSeed => SeedInputFields(
+                                mnemonicErrorState: state.mnemonicError,
+                              ),
+                            OnboardingImportStep.inputPassword =>
+                              PasswordPrompt(
+                                  state: state,
+                                  onPressedBack: () {
+                                    final shell =
+                                        context.read<ShellStateCubit>();
+                                    shell.onOnboarding();
+                                  },
+                                  onPressedContinue: (password) {
+                                    context
+                                        .read<OnboardingImportBloc>()
+                                        .add(ImportWallet(password: password));
+                                  },
+                                  backButtonText: 'CANCEL',
+                                  continueButtonText: 'LOGIN',
+                                  optionalErrorWidget: state.importState
+                                          is ImportStateError
+                                      ? Align(
+                                          alignment: Alignment.center,
+                                          child: Container(
+                                            padding: const EdgeInsets.all(8.0),
+                                            decoration: BoxDecoration(
+                                              color: redErrorTextTransparent,
+                                              borderRadius:
+                                                  BorderRadius.circular(40.0),
                                             ),
-                                          )
-                                        : null),
-                          ),
+                                            child: Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                const Icon(Icons.info,
+                                                    color: redErrorText),
+                                                const SizedBox(width: 4),
+                                                SelectableText(
+                                                  state.importState.message,
+                                                  style: const TextStyle(
+                                                      color: redErrorText),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        )
+                                      : null),
+                            _ => const SelectableText(
+                                "invariant: invalid onboarding step"),
+                          }),
                         ],
                       ),
                       if (state.importState is ImportStateLoading)
@@ -168,6 +172,62 @@ class OnboardingImportPageState extends State<OnboardingImportPage> {
           ),
         ),
       ),
+    );
+  }
+}
+
+class ChooseFormat extends StatefulWidget {
+  const ChooseFormat({super.key});
+  @override
+  State<ChooseFormat> createState() => _ChooseFormatState();
+}
+
+class _ChooseFormatState extends State<ChooseFormat> {
+  String selectedFormat = ImportFormat.horizon.name;
+
+  @override
+  void initState() {
+    super.initState();
+    context
+        .read<OnboardingImportBloc>()
+        .add(ImportFormatChanged(importFormat: selectedFormat));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final isSmallScreen = MediaQuery.of(context).size.width < 768;
+    return Column(
+      children: [
+        const SelectableText("Choose the format of your seed phrase"),
+        const SizedBox(height: 16),
+        if (isSmallScreen) const SizedBox(height: 16),
+        ImportFormatDropdown(
+          onChanged: (String? newValue) {
+            setState(() {
+              selectedFormat = newValue!;
+            });
+            context
+                .read<OnboardingImportBloc>()
+                .add(ImportFormatChanged(importFormat: selectedFormat));
+          },
+          selectedFormat: selectedFormat,
+        ),
+        const SizedBox(height: 16),
+        BackContinueButtons(
+          isDarkMode: isDarkMode,
+          isSmallScreenWidth: isSmallScreen,
+          backButtonText: 'CANCEL',
+          continueButtonText: 'CONTINUE',
+          onPressedBack: () {
+            final shell = context.read<ShellStateCubit>();
+            shell.onOnboarding();
+          },
+          onPressedContinue: () {
+            context.read<OnboardingImportBloc>().add(ImportFormatSubmitted());
+          },
+        ),
+      ],
     );
   }
 }
@@ -198,9 +258,6 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
         return KeyEventResult.ignored;
       };
     }
-    context
-        .read<OnboardingImportBloc>()
-        .add(ImportFormatChanged(importFormat: selectedFormat!));
   }
 
   @override
@@ -255,19 +312,6 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
                   )
                 : buildInputFields(isSmallScreen, isDarkMode),
           ),
-          if (isSmallScreen) const SizedBox(height: 16),
-          ImportFormatDropdown(
-            onChanged: (String? newValue) {
-              setState(() {
-                selectedFormat = newValue;
-              });
-              context
-                  .read<OnboardingImportBloc>()
-                  .add(ImportFormatChanged(importFormat: newValue!));
-              updateMnemonic();
-            },
-            selectedFormat: selectedFormat!,
-          ),
           BackContinueButtons(
             isDarkMode: isDarkMode,
             isSmallScreenWidth: isSmallScreen,
@@ -278,12 +322,11 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
               shell.onOnboarding();
             },
             onPressedContinue: () {
-              context.read<OnboardingImportBloc>().add(MnemonicSubmit(
+              context.read<OnboardingImportBloc>().add(MnemonicSubmitted(
                     mnemonic: controllers
                         .map((controller) => controller.text)
                         .join(' ')
                         .trim(),
-                    importFormat: selectedFormat!,
                   ));
             },
             errorWidget: !isSmallScreen && widget.mnemonicErrorState != null
@@ -507,77 +550,5 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
     context
         .read<OnboardingImportBloc>()
         .add(MnemonicChanged(mnemonic: mnemonic));
-  }
-}
-
-class AddressListView extends StatelessWidget {
-  final List<Address> addresses;
-  final Map<Address, bool> isCheckedMap;
-  final void Function(Address, bool) onCheckedChanged;
-
-  const AddressListView({
-    super.key,
-    required this.addresses,
-    required this.isCheckedMap,
-    required this.onCheckedChanged,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      child: SingleChildScrollView(
-        child: ListView.builder(
-          shrinkWrap: true,
-          // physics: const NeverScrollableScrollPhysics(),
-          itemCount: addresses.length,
-          itemBuilder: (context, index) {
-            final address = addresses[index];
-            return AddressListItem(
-              address: address,
-              isChecked: isCheckedMap[address] ?? false,
-              onCheckedChanged: (isChecked) {
-                onCheckedChanged(address, isChecked);
-              },
-            );
-          },
-        ),
-      ),
-    );
-  }
-}
-
-class AddressListItem extends StatelessWidget {
-  final Address address;
-  final bool isChecked;
-  final ValueChanged<bool> onCheckedChanged;
-
-  const AddressListItem({
-    super.key,
-    required this.address,
-    required this.isChecked,
-    required this.onCheckedChanged,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return ListTile(
-      leading: Checkbox(
-        value: isChecked,
-        onChanged: (value) {
-          onCheckedChanged(value!);
-        },
-      ),
-      title: Row(
-        children: [
-          Expanded(
-            child: Text(
-              address.address,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-        ],
-      ),
-      // subtitle: Text(address.derivationPath),
-    );
   }
 }

@@ -8,7 +8,7 @@ class GetFeeEstimatesUseCase {
     required this.feeEstimatesRepository,
   });
 
-  Future<FeeEstimates> call({required (int, int, int) targets}) async {
+  Future<FeeEstimates> call() async {
     return feeEstimatesRepository.getFeeEstimates().run().then(
           (either) => either.fold(
             (error) => throw Exception("GetFeeEstimates failure"),

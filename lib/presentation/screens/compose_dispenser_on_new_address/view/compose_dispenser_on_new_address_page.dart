@@ -8,6 +8,7 @@ import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
+import 'package:horizon/domain/repositories/dispenser_repository.dart';
 import 'package:horizon/domain/repositories/utxo_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/address_service.dart';
@@ -35,7 +36,7 @@ class ComposeDispenserOnNewAddressPageWrapper extends StatelessWidget {
   final int mainchainrate;
   final bool divisible;
   final int feeRate;
-
+  final bool sendExtraBtcToDispenser;
   const ComposeDispenserOnNewAddressPageWrapper({
     required this.dashboardActivityFeedBloc,
     required this.originalAddress,
@@ -45,6 +46,7 @@ class ComposeDispenserOnNewAddressPageWrapper extends StatelessWidget {
     required this.escrowQuantity,
     required this.mainchainrate,
     required this.feeRate,
+    required this.sendExtraBtcToDispenser,
     super.key,
   });
 
@@ -58,6 +60,7 @@ class ComposeDispenserOnNewAddressPageWrapper extends StatelessWidget {
         encryptionService: GetIt.I.get<EncryptionService>(),
         addressService: GetIt.I.get<AddressService>(),
         composeRepository: GetIt.I.get<ComposeRepository>(),
+        dispenserRepository: GetIt.I.get<DispenserRepository>(),
         bitcoindService: GetIt.I.get<BitcoindService>(),
         utxoRepository: GetIt.I.get<UtxoRepository>(),
         balanceRepository: GetIt.I.get<BalanceRepository>(),
@@ -78,6 +81,7 @@ class ComposeDispenserOnNewAddressPageWrapper extends StatelessWidget {
         mainchainrate: mainchainrate,
         divisible: divisible,
         feeRate: feeRate,
+        sendExtraBtcToDispenser: sendExtraBtcToDispenser,
       ),
     );
   }
@@ -91,6 +95,7 @@ class ComposeDispenserOnNewAddressPage extends StatefulWidget {
   final int mainchainrate;
   final bool divisible;
   final int feeRate;
+  final bool sendExtraBtcToDispenser;
   const ComposeDispenserOnNewAddressPage({
     required this.originalAddress,
     required this.asset,
@@ -99,6 +104,7 @@ class ComposeDispenserOnNewAddressPage extends StatefulWidget {
     required this.mainchainrate,
     required this.divisible,
     required this.feeRate,
+    required this.sendExtraBtcToDispenser,
     super.key,
   });
 
@@ -368,6 +374,7 @@ class _ComposeDispenserOnNewAddressPageState
             mainchainrate: widget.mainchainrate,
             status: 0,
             feeRate: widget.feeRate,
+            sendExtraBtcToDispenser: widget.sendExtraBtcToDispenser,
           ));
     }
   }

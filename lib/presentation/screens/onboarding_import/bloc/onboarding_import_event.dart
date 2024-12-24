@@ -1,5 +1,3 @@
-import 'package:horizon/domain/entities/address.dart';
-
 abstract class OnboardingImportEvent {}
 
 class MnemonicChanged extends OnboardingImportEvent {
@@ -12,16 +10,11 @@ class ImportFormatChanged extends OnboardingImportEvent {
   ImportFormatChanged({required this.importFormat});
 }
 
-class MnemonicSubmit extends OnboardingImportEvent {
-  final String importFormat;
-  final String mnemonic;
-  MnemonicSubmit({required this.importFormat, required this.mnemonic});
-}
+class ImportFormatSubmitted extends OnboardingImportEvent {}
 
-class AddressMapChanged extends OnboardingImportEvent {
-  final Address address;
-  final bool isChecked;
-  AddressMapChanged({required this.address, required this.isChecked});
+class MnemonicSubmitted extends OnboardingImportEvent {
+  final String mnemonic;
+  MnemonicSubmitted({required this.mnemonic});
 }
 
 class ImportWallet extends OnboardingImportEvent {

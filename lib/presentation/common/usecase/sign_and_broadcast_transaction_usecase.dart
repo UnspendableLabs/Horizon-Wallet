@@ -70,7 +70,9 @@ class SignAndBroadcastTransactionUseCase<R extends ComposeResponse> {
 
       // Fetch UTXOs
       final utxos = await utxoRepository.getUnspentForAddress(source);
-      final Map<String, Utxo> utxoMap = {for (var e in utxos) e.txid: e};
+      final Map<String, Utxo> utxoMap = {
+        for (var e in utxos) "${e.txid}:${e.vout}": e
+      };
 
       // Fetch Address, Account, and Wallet
       address = await addressRepository.getAddress(source);
@@ -107,10 +109,12 @@ class SignAndBroadcastTransactionUseCase<R extends ComposeResponse> {
         final String errorMessage = 'Failed to broadcast the transaction: $e';
         throw SignAndBroadcastTransactionException(errorMessage);
       }
+    } on SignAndBroadcastTransactionException catch (e) {
+      onError(e.message);
+    } on TransactionServiceException catch (e) {
+      onError(e.message);
     } catch (e) {
-      onError(e is SignAndBroadcastTransactionException
-          ? e.message
-          : 'An unexpected error occurred.');
+      onError('An unexpected error occurred.');
     }
   }
 

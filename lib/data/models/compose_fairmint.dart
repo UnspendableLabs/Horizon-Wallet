@@ -10,7 +10,7 @@ class ComposeFairmintVerboseModel {
   final String data;
   final int btcIn;
   final int btcOut;
-  final int btcChange;
+  final int? btcChange;
   final int btcFee;
   final String rawtransaction;
   final ComposeFairmintVerboseParamsModel params;
@@ -23,7 +23,7 @@ class ComposeFairmintVerboseModel {
     // required this.unpackedData,
     required this.btcIn,
     required this.btcOut,
-    required this.btcChange,
+    this.btcChange,
     required this.btcFee,
     required this.data,
   });

@@ -56,10 +56,10 @@ void main() {
 
     test('should fetch all data successfully', () async {
       // Arrange
-      when(() => mockBalanceRepository.getBalancesForAddress(testAddress))
+      when(() => mockBalanceRepository.getBalancesForAddress(testAddress, true))
           .thenAnswer((_) async => balances);
 
-      when(() => mockGetFeeEstimatesUseCase.call(targets: (1, 3, 6)))
+      when(() => mockGetFeeEstimatesUseCase.call())
           .thenAnswer((_) async => feeEstimates);
 
       // Act
@@ -69,19 +69,19 @@ void main() {
       expect(result.$1, equals(balances));
       expect(result.$2, equals(feeEstimates));
 
-      verify(() => mockBalanceRepository.getBalancesForAddress(testAddress))
+      verify(() =>
+              mockBalanceRepository.getBalancesForAddress(testAddress, true))
           .called(1);
-      verify(() => mockGetFeeEstimatesUseCase.call(targets: (1, 3, 6)))
-          .called(1);
+      verify(() => mockGetFeeEstimatesUseCase.call()).called(1);
     });
 
     test('should throw FetchBalancesException when balance fetch fails',
         () async {
       // Arrange
-      when(() => mockBalanceRepository.getBalancesForAddress(testAddress))
+      when(() => mockBalanceRepository.getBalancesForAddress(testAddress, true))
           .thenThrow(Exception('Balance fetch failed'));
 
-      when(() => mockGetFeeEstimatesUseCase.call(targets: (1, 3, 6)))
+      when(() => mockGetFeeEstimatesUseCase.call())
           .thenAnswer((_) async => feeEstimates);
 
       // Act & Assert
@@ -95,10 +95,10 @@ void main() {
         'should throw FetchFeeEstimatesException when fee estimates fetch fails',
         () async {
       // Arrange
-      when(() => mockBalanceRepository.getBalancesForAddress(testAddress))
+      when(() => mockBalanceRepository.getBalancesForAddress(testAddress, true))
           .thenAnswer((_) async => balances);
 
-      when(() => mockGetFeeEstimatesUseCase.call(targets: (1, 3, 6)))
+      when(() => mockGetFeeEstimatesUseCase.call())
           .thenThrow(Exception('Fee estimates fetch failed'));
 
       // Act & Assert

@@ -41,7 +41,7 @@ class FairminterRepositoryImpl implements FairminterRepository {
     cursor_model.CursorModel? cursor;
 
     do {
-      final response = await api.getAllFairminters(true, cursor, limit);
+      final response = await api.getAllFairminters(cursor, limit);
       for (FairminterModel a in response.result ?? []) {
         fairminters.add(a.toDomain());
       }
@@ -68,8 +68,8 @@ class FairminterRepositoryImpl implements FairminterRepository {
     cursor_model.CursorModel? cursor;
     final List<e.Fairminter> fairminters = [];
     do {
-      final response = await api.getFairmintersByAddress(
-          address, status, null, cursor, limit);
+      final response =
+          await api.getFairmintersByAddress(address, status, cursor, limit);
       for (FairminterModel a in response.result ?? []) {
         fairminters.add(a.toDomain());
       }

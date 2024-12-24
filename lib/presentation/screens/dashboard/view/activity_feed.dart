@@ -234,6 +234,14 @@ class ActivityFeedListItem extends StatelessWidget {
         const SelectableText("Order Expiration"),
       VerboseNewFairminterEvent(params: var params) =>
         _buildNewFairminterTitle(params),
+      VerboseAttachToUtxoEvent(params: var params) => SelectableText(
+          "Attach to UTXO ${params.asset} ${params.quantityNormalized}"),
+      VerboseDetachFromUtxoEvent(params: var params) => SelectableText(
+          "Detach from UTXO ${params.asset} ${params.quantityNormalized}"),
+      VerboseMoveToUtxoEvent(params: var params) => SelectableText(
+          "Move to UTXO ${params.asset} ${params.quantityNormalized}"),
+      AtomicSwapEvent(params: var params) => SelectableText(
+          "Swap ${params.quantityNormalized} ${params.asset} for ${params.bitcoinSwapAmount} BTC"),
       _ => SelectableText(
           'Invariant: title unsupported event type: ${event.runtimeType}'),
     };
@@ -250,30 +258,27 @@ class ActivityFeedListItem extends StatelessWidget {
       }
     }
     if (params.assetEvents != null && params.assetEvents!.isNotEmpty) {
-      if (params.assetEvents == "reissuance") {
-        return SelectableText(
-            "Reissue ${displayAssetName(params.asset, params.assetLongname)}");
-      } else if (params.assetEvents == "lock_quantity reissuance") {
-        return SelectableText(
-            "Lock Quantity for ${displayAssetName(params.asset, params.assetLongname)}");
-      } else if (params.assetEvents == "lock_description reissuance") {
-        return SelectableText(
-            "Lock Description for ${displayAssetName(params.asset, params.assetLongname)}");
-      } else if (params.assetEvents == "open_fairminter") {
-        return SelectableText(
-            "New Fairminter for ${displayAssetName(params.asset, params.assetLongname)}");
-      } else if (params.assetEvents == "fairmint") {
-        return SelectableText(
-            "Fairmint for ${displayAssetName(params.asset, params.assetLongname)}");
-      } else if (params.assetEvents == "transfer") {
-        if (addresses.any((a) => a == params.source)) {
-          return SelectableText(
-              "Transfer Out of ${displayAssetName(params.asset, params.assetLongname)}");
-        } else {
-          return SelectableText(
-              "Transfer In of ${displayAssetName(params.asset, params.assetLongname)}");
-        }
-      }
+      return switch (params.assetEvents) {
+        "reissuance" => SelectableText(
+            "Reissue ${displayAssetName(params.asset, params.assetLongname)}"),
+        "lock_quantity" => SelectableText(
+            "Lock Quantity for ${displayAssetName(params.asset, params.assetLongname)}"),
+        "change_description" => SelectableText(
+            "Change Description for ${displayAssetName(params.asset, params.assetLongname)}"),
+        "lock_description" => SelectableText(
+            "Lock Description for ${displayAssetName(params.asset, params.assetLongname)}"),
+        "open_fairminter" => SelectableText(
+            "New Fairminter for ${displayAssetName(params.asset, params.assetLongname)}"),
+        "fairmint" => SelectableText(
+            "Fairmint for ${displayAssetName(params.asset, params.assetLongname)}"),
+        "transfer" => addresses.any((a) => a == params.source)
+            ? SelectableText(
+                "Transfer Out of ${displayAssetName(params.asset, params.assetLongname)}")
+            : SelectableText(
+                "Transfer In of ${displayAssetName(params.asset, params.assetLongname)}"),
+        _ => SelectableText(
+            "Issue ${params.quantityNormalized} ${displayAssetName(params.asset, params.assetLongname)}"),
+      };
     }
     if (params.asset == null || params.quantityNormalized == null) {
       return const SelectableText('Issue (INVALID)',
@@ -309,6 +314,12 @@ class ActivityFeedListItem extends StatelessWidget {
 
   Widget _buildTransactionInfoTitle(TransactionInfo info) {
     return switch (info) {
+      TransactionInfoAttach(
+        unpackedData: var unpackedData,
+      ) =>
+        SelectableText(
+            "Attach to UTXO ${unpackedData.quantityNormalized} ${unpackedData.asset}"),
+      TransactionInfoMoveToUtxo() => const SelectableText("Move to UTXO"),
       TransactionInfoEnhancedSend(
         unpackedData: var unpackedData,
       ) =>
@@ -320,22 +331,21 @@ class ActivityFeedListItem extends StatelessWidget {
       ) =>
         SelectableText(
             "Issue ${unpackedData.quantityNormalized} ${unpackedData.asset}"),
-      TransactionInfoDispense(
-        unpackedData: var unpackedData,
-      ) =>
-        const SelectableText("Trigger Dispense"),
-      // btc send
       TransactionInfo(btcAmount: var btcAmount)
           when btcAmount != null && btcAmount > 0 =>
         SendTitle(
           quantityNormalized: satoshisToBtc(btcAmount).toStringAsFixed(8),
           asset: 'BTC',
         ),
+      TransactionInfoDispense(
+        unpackedData: var unpackedData,
+      ) =>
+        const SelectableText("Trigger Dispense"),
+      // btc send
       TransactionInfoDispenser(
         unpackedData: var unpackedData,
       ) =>
         SelectableText("Open or Update Dispenser for ${unpackedData.asset}"),
-      TransactionInfoDispense() => const SelectableText("Trigger Dispense"),
       TransactionInfoFairmint(
         unpackedData: var unpackedData,
       ) =>
@@ -353,6 +363,10 @@ class ActivityFeedListItem extends StatelessWidget {
         unpackedData: var _,
       ) =>
         const SelectableText("Cancel Order"),
+      TransactionInfoDetach(
+        unpackedData: var unpackedData,
+      ) =>
+        SelectableText("Detach from UTXO ${unpackedData.destination}"),
       _ => SelectableText(
           'Invariant: title unsupported TransactionInfo type: ${info.runtimeType}'),
     };
@@ -372,6 +386,11 @@ class ActivityFeedListItem extends StatelessWidget {
         const Icon(Icons.print, color: Colors.grey),
       TransactionInfoOrder() => const Icon(Icons.toc, color: Colors.grey),
       TransactionInfoCancel() => const Icon(Icons.toc, color: Colors.grey),
+      TransactionInfoAttach() =>
+        const Icon(Icons.attach_file, color: Colors.grey),
+      TransactionInfoDetach() => const Icon(Icons.link_off, color: Colors.grey),
+      TransactionInfoMoveToUtxo() =>
+        const Icon(Icons.swap_horiz, color: Colors.grey),
       TransactionInfo(btcAmount: var btcAmount) when btcAmount != null =>
         const Icon(Icons.arrow_back, color: Colors.grey),
       _ => const Icon(Icons.error),
@@ -513,6 +532,14 @@ class ActivityFeedListItem extends StatelessWidget {
         const Icon(Icons.toc, color: Colors.grey),
       VerboseOrderExpirationEvent(params: var _) =>
         const Icon(Icons.toc, color: Colors.grey),
+      VerboseAttachToUtxoEvent(params: var _) =>
+        const Icon(Icons.attach_file, color: Colors.grey),
+      VerboseDetachFromUtxoEvent(params: var _) =>
+        const Icon(Icons.link_off, color: Colors.grey),
+      VerboseMoveToUtxoEvent(params: var _) =>
+        const Icon(Icons.swap_horiz, color: Colors.grey),
+      AtomicSwapEvent(params: var _) =>
+        const Icon(Icons.swap_horiz, color: Colors.grey),
       _ => const Icon(Icons.error),
     };
   }
@@ -687,9 +714,15 @@ class DashboardActivityFeedScreenState
       final filteredTransactions = transactions.where((t) {
         if (t.event != null && t.event is VerboseAssetIssuanceEvent) {
           final assetIssuanceEvent = t.event as VerboseAssetIssuanceEvent;
-          return !(assetIssuanceEvent.params.assetEvents == "fairmint" &&
-              !widget.addresses
-                  .any((a) => a == assetIssuanceEvent.params.source));
+          final isFairmintIssuance =
+              (assetIssuanceEvent.params.assetEvents == "fairmint" &&
+                  !widget.addresses
+                      .any((a) => a == assetIssuanceEvent.params.source));
+          final isOpenFairminterIssuance =
+              assetIssuanceEvent.params.assetEvents == "open_fairminter";
+          // asset issuance events for fairmints on the source address and fairminters are already captured by NEW_FAIRMINT and NEW_FAIRMINTER events
+          // we filter out ASSET_ISSUANCE for these cases so they don't display as duplicates in the activity feed
+          return !isFairmintIssuance && !isOpenFairminterIssuance;
         }
         return true;
       }).toList();

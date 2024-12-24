@@ -4,6 +4,7 @@ import 'package:horizon/domain/services/transaction_service.dart';
 import 'package:horizon/main.dart';
 import 'package:horizon/setup.dart';
 import 'package:integration_test/integration_test.dart';
+import 'package:pub_semver/pub_semver.dart';
 
 class Case {
   String addressType;
@@ -72,7 +73,10 @@ void main() {
       testWidgets(
           'getVirtualSize - ${testCase.addressType} (${testCase.ins} in, ${testCase.outs} out)',
           (WidgetTester tester) async {
-        await tester.pumpWidget(MyApp());
+        await tester.pumpWidget(MyApp(
+          currentVersion: Version(0, 0, 0),
+          latestVersion: Version(0, 0, 0),
+        ));
 
         final virtualSize =
             transactionService.getVirtualSize(testCase.rawTransaction);

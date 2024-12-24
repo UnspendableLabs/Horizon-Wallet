@@ -28,15 +28,13 @@ class OnboardingImportBloc
             mnemonic: event.mnemonic));
         return;
       } else {
-        bool validMnemonic = false;
-
-        if (state.importFormat == ImportFormat.counterwallet) {
-          validMnemonic =
-              mnemonicService.validateCounterwalletMnemonic(event.mnemonic);
-        } else if (state.importFormat == ImportFormat.horizon ||
-            state.importFormat == ImportFormat.freewallet) {
-          validMnemonic = mnemonicService.validateMnemonic(event.mnemonic);
-        }
+        bool validMnemonic = switch (state.importFormat) {
+          ImportFormat.counterwallet =>
+            mnemonicService.validateCounterwalletMnemonic(event.mnemonic),
+          ImportFormat.horizon ||
+          ImportFormat.freewallet =>
+            mnemonicService.validateMnemonic(event.mnemonic),
+        };
 
         if (!validMnemonic) {
           emit(state.copyWith(
@@ -58,7 +56,12 @@ class OnboardingImportBloc
       emit(state.copyWith(importFormat: importFormat));
     });
 
-    on<MnemonicSubmit>((event, emit) async {
+    on<ImportFormatSubmitted>((event, emit) async {
+      emit(state.copyWith(currentStep: OnboardingImportStep.inputSeed));
+    });
+
+    on<MnemonicSubmitted>((event, emit) async {
+      // Validate mnemonic before proceeding
       if (state.mnemonic.isEmpty) {
         emit(state.copyWith(mnemonicError: "Seed phrase is required"));
         return;
@@ -83,16 +86,11 @@ class OnboardingImportBloc
         }
       }
 
-      ImportFormat importFormat = switch (event.importFormat) {
-        "Horizon" => ImportFormat.horizon,
-        "Freewallet" => ImportFormat.freewallet,
-        "Counterwallet" => ImportFormat.counterwallet,
-        _ => throw Exception('Invariant: Invalid import format')
-      };
       emit(state.copyWith(
-          importState: ImportStateMnemonicCollected(),
-          importFormat: importFormat,
-          mnemonic: event.mnemonic));
+        mnemonicError: null,
+        currentStep: OnboardingImportStep.inputPassword,
+        mnemonic: event.mnemonic,
+      ));
     });
 
     on<ImportWallet>((event, emit) async {

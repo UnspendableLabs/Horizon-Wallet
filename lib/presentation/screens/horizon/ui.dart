@@ -345,22 +345,28 @@ class HorizonDropdownMenu<T> extends StatelessWidget {
           child: DropdownButtonHideUnderline(
             child: ButtonTheme(
               alignedDropdown: true,
-              child: DropdownButton<T>(
-                isExpanded: isExpanded,
-                value: state.value,
-                onChanged: enabled
-                    ? (T? newValue) {
-                        state.didChange(newValue);
-                        onChanged(newValue);
-                      }
-                    : null,
-                items: items,
-                borderRadius: BorderRadius.circular(borderRadius ?? 10),
-                icon: icon,
-                selectedItemBuilder: selectedItemBuilder,
-                isDense: isDense,
-                hint: Text(label ?? ''),
-                underline: const SizedBox(),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(minHeight: 48.0),
+                child: DropdownButton<T>(
+                  isExpanded: true,
+                  value: state.value,
+                  onChanged: enabled
+                      ? (T? newValue) {
+                          state.didChange(newValue);
+                          onChanged(newValue);
+                        }
+                      : null,
+                  items: items,
+                  borderRadius: BorderRadius.circular(borderRadius ?? 10),
+                  icon: icon,
+                  selectedItemBuilder: selectedItemBuilder,
+                  isDense: isDense,
+                  hint: Text(
+                    label ?? '',
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  underline: const SizedBox(),
+                ),
               ),
             ),
           ),
@@ -475,6 +481,7 @@ class HorizonTextFormField extends StatelessWidget {
   final Color? textColor;
   final AutovalidateMode? autovalidateMode;
   final bool fitText;
+  final String? helperText;
 
   const HorizonTextFormField({
     super.key,
@@ -499,6 +506,7 @@ class HorizonTextFormField extends StatelessWidget {
     this.textColor,
     this.autovalidateMode,
     this.fitText = false,
+    this.helperText,
   });
 
   @override
@@ -514,6 +522,7 @@ class HorizonTextFormField extends StatelessWidget {
           fillColor: fillColor,
           labelText: label,
           suffix: suffix,
+          helperText: helperText,
         ),
         child: obscureText == true
             ? FittedBox(
@@ -563,6 +572,7 @@ class HorizonTextFormField extends StatelessWidget {
             floatingLabelBehavior ?? FloatingLabelBehavior.auto,
         labelText: label,
         suffix: suffix,
+        helperText: helperText,
       ),
       style: const TextStyle(
         fontSize: 16,
@@ -572,7 +582,10 @@ class HorizonTextFormField extends StatelessWidget {
   }
 
   //  create a copy with updated properties
-  HorizonTextFormField copyWith({bool? enabled}) {
+  HorizonTextFormField copyWith({
+    bool? enabled,
+    String? helperText,
+  }) {
     return HorizonTextFormField(
       label: label,
       hint: hint,
@@ -592,6 +605,7 @@ class HorizonTextFormField extends StatelessWidget {
       enabled: enabled ?? this.enabled,
       initialValue: initialValue,
       autovalidateMode: autovalidateMode ?? AutovalidateMode.disabled,
+      helperText: helperText ?? this.helperText,
     );
   }
 }
@@ -620,6 +634,7 @@ class HorizonSearchableDropdownMenu<T> extends StatefulWidget {
   final String? Function(T?)? validator;
   final AutovalidateMode autovalidateMode;
   final String Function(T) displayStringForOption;
+  final Widget? suffixIcon;
 
   const HorizonSearchableDropdownMenu({
     super.key,
@@ -631,6 +646,7 @@ class HorizonSearchableDropdownMenu<T> extends StatefulWidget {
     this.enabled = true,
     this.validator,
     this.autovalidateMode = AutovalidateMode.disabled,
+    this.suffixIcon,
   });
 
   @override
@@ -641,10 +657,11 @@ class HorizonSearchableDropdownMenu<T> extends StatefulWidget {
 class _HorizonSearchableDropdownMenuState<T>
     extends State<HorizonSearchableDropdownMenu<T>> {
   final TextEditingController _searchController = TextEditingController();
-  final FocusNode _focusNode = FocusNode();
-  bool _isOpen = false;
-  List<DropdownMenuItem<T>> _filteredItems = [];
+  final LayerLink _layerLink = LayerLink();
+  OverlayEntry? _overlayEntry;
   T? _selectedValue;
+  List<DropdownMenuItem<T>> _filteredItems = [];
+  bool _isOpen = false;
 
   @override
   void initState() {
@@ -655,23 +672,30 @@ class _HorizonSearchableDropdownMenuState<T>
 
   @override
   void dispose() {
+    _removeOverlay();
     _searchController.dispose();
-    _focusNode.dispose();
     super.dispose();
   }
 
   void _toggleDropdown() {
+    if (_isOpen) {
+      _removeOverlay();
+    } else {
+      _insertOverlay();
+    }
     setState(() {
       _isOpen = !_isOpen;
-      if (_isOpen) {
-        _focusNode.requestFocus();
-        // Reset filtered items and clear search when opening the dropdown
-        _filteredItems = widget.items;
-        _searchController.clear();
-      } else {
-        _focusNode.unfocus();
-      }
     });
+  }
+
+  void _insertOverlay() {
+    _overlayEntry = _createOverlayEntry();
+    Overlay.of(context, debugRequiredFor: widget).insert(_overlayEntry!);
+  }
+
+  void _removeOverlay() {
+    _overlayEntry?.remove();
+    _overlayEntry = null;
   }
 
   void _filterItems(String query) {
@@ -681,17 +705,67 @@ class _HorizonSearchableDropdownMenuState<T>
         return itemText.contains(query.toLowerCase());
       }).toList();
     });
+    _updateOverlay();
   }
 
   void _selectItem(T? value) {
     setState(() {
       _selectedValue = value;
+      widget.onChanged?.call(value);
+      _removeOverlay();
       _isOpen = false;
-      _searchController.clear();
-      // Reset filtered items when an item is selected
-      _filteredItems = widget.items;
     });
-    widget.onChanged?.call(value);
+  }
+
+  void _updateOverlay() {
+    _overlayEntry?.markNeedsBuild();
+  }
+
+  OverlayEntry _createOverlayEntry() {
+    RenderBox renderBox = context.findRenderObject() as RenderBox;
+    final size = renderBox.size;
+    final offset = renderBox.localToGlobal(Offset.zero);
+
+    return OverlayEntry(
+      builder: (context) {
+        return Positioned(
+          width: size.width,
+          child: CompositedTransformFollower(
+            link: _layerLink,
+            showWhenUnlinked: false,
+            offset: Offset(0.0, size.height + 5.0), // Position below the field
+            child: Material(
+              elevation: 4.0,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: _searchController,
+                    decoration: const InputDecoration(
+                      hintText: 'Search...',
+                      contentPadding: EdgeInsets.symmetric(horizontal: 8.0),
+                    ),
+                    onChanged: _filterItems,
+                  ),
+                  SizedBox(
+                    height: 200,
+                    child: ListView(
+                      padding: EdgeInsets.zero,
+                      children: _filteredItems.map((item) {
+                        return ListTile(
+                          title: item.child,
+                          onTap: () => _selectItem(item.value),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
   }
 
   @override
@@ -701,72 +775,42 @@ class _HorizonSearchableDropdownMenuState<T>
       autovalidateMode: widget.autovalidateMode,
       initialValue: widget.selectedValue,
       builder: (FormFieldState<T> state) {
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            GestureDetector(
-              onTap: widget.enabled ? _toggleDropdown : null,
-              child: InputDecorator(
-                decoration: InputDecoration(
-                  labelText: widget.label,
-                  floatingLabelBehavior: FloatingLabelBehavior.never,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 4.0),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8.0),
-                    borderSide: BorderSide.none,
-                  ),
-                  errorText: state.errorText,
+        return CompositedTransformTarget(
+          link: _layerLink,
+          child: GestureDetector(
+            onTap: widget.enabled ? _toggleDropdown : null,
+            child: InputDecorator(
+              decoration: InputDecoration(
+                labelText: widget.label,
+                floatingLabelBehavior: FloatingLabelBehavior.never,
+                contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 12.0, vertical: 16.0),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8.0),
                 ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: Text(
-                        _selectedValue != null
-                            ? widget.displayStringForOption(_selectedValue as T)
-                            : widget.label ?? '',
-                        style: TextStyle(
-                          color: _selectedValue != null
-                              ? Theme.of(context).textTheme.bodyLarge?.color
-                              : Theme.of(context).hintColor,
-                        ),
+                errorText: state.errorText,
+                suffixIcon: widget.suffixIcon,
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Text(
+                      _selectedValue != null
+                          ? widget.displayStringForOption(_selectedValue as T)
+                          : widget.label ?? '',
+                      style: TextStyle(
+                        color: _selectedValue != null
+                            ? Theme.of(context).textTheme.bodyLarge?.color
+                            : Theme.of(context).hintColor,
                       ),
                     ),
-                    Icon(_isOpen ? Icons.arrow_drop_up : Icons.arrow_drop_down),
-                  ],
-                ),
+                  ),
+                  Icon(_isOpen ? Icons.arrow_drop_up : Icons.arrow_drop_down),
+                ],
               ),
             ),
-            if (_isOpen)
-              Container(
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                child: Column(
-                  children: [
-                    TextField(
-                      controller: _searchController,
-                      focusNode: _focusNode,
-                      decoration: const InputDecoration(
-                        hintText: 'Search...',
-                        contentPadding: EdgeInsets.symmetric(horizontal: 8),
-                        border: OutlineInputBorder(),
-                      ),
-                      onChanged: _filterItems,
-                    ),
-                    SizedBox(
-                      height: 200,
-                      child: ListView(
-                        children: _filteredItems
-                            .map((item) => ListTile(
-                                  title: item.child,
-                                  onTap: () => _selectItem(item.value),
-                                ))
-                            .toList(),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-          ],
+          ),
         );
       },
     );

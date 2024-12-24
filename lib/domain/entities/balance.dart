@@ -4,6 +4,8 @@ class Balance {
   final String? address;
   final int quantity;
   final String quantityNormalized;
+  final String? utxo;
+  final String? utxoAddress;
   final String asset;
   final AssetInfo assetInfo;
 
@@ -12,5 +14,7 @@ class Balance {
       required this.quantity,
       required this.asset,
       required this.assetInfo,
-      required this.quantityNormalized});
+      required this.quantityNormalized,
+      this.utxo,
+      this.utxoAddress});
 }

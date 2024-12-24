@@ -5,7 +5,6 @@ import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_bloc.dart';
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_state.dart';
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_event.dart';
-import 'package:horizon/presentation/common/shared_util.dart';
 import 'package:horizon/presentation/screens/compose_dispenser/bloc/compose_dispenser_event.dart';
 import 'package:horizon/presentation/screens/compose_dispenser/bloc/compose_dispenser_state.dart';
 import 'package:horizon/domain/entities/fee_option.dart' as FeeOption;
@@ -135,21 +134,12 @@ class ComposeDispenserBloc extends ComposeBaseBloc<ComposeDispenserState> {
       final (balances, feeEstimates, dispensers) =
           await fetchDispenserFormDataUseCase.call(event.currentAddress!);
 
-      // if the current address does not have any open dispensers, then we can proceed with the normal flow
       if (dispensers.isEmpty) {
-        if (!addressIsSegwit(event.currentAddress!)) {
-          emit(state.copyWith(
-            balancesState: BalancesState.success(balances),
-            feeState: FeeState.success(feeEstimates),
-            dialogState: const DialogState.successNormalFlow(),
-          ));
-        } else {
-          emit(state.copyWith(
-            balancesState: BalancesState.success(balances),
-            feeState: FeeState.success(feeEstimates),
-            dialogState: const DialogState.warning(hasOpenDispensers: false),
-          ));
-        }
+        emit(state.copyWith(
+          balancesState: BalancesState.success(balances),
+          feeState: FeeState.success(feeEstimates),
+          dialogState: const DialogState.warning(hasOpenDispensers: false),
+        ));
       } else {
         //otherwise, allow the user to choose whether to proceed or open on a new address
         emit(state.copyWith(

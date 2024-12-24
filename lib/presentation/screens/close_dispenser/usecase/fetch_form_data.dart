@@ -35,7 +35,7 @@ class FetchCloseDispenserFormDataUseCase {
 
   Future<FeeEstimates> _fetchFeeEstimates() async {
     try {
-      return await getFeeEstimatesUseCase.call(targets: (1, 3, 6));
+      return await getFeeEstimatesUseCase.call();
     } catch (e) {
       throw FetchFeeEstimatesException(e.toString());
     }

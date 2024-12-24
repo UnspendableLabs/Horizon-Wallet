@@ -455,7 +455,7 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
 
     final [balances_ as List<Balance>, feeEstimates_ as FeeEstimates] =
         await Future.wait([
-      balanceRepository.getBalancesForAddress(currentAddress),
+      balanceRepository.getBalancesForAddress(currentAddress, true),
       _fetchFeeEstimates(),
     ]);
 
@@ -502,7 +502,7 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
     late RemoteData<Asset> nextGetAssetValidationStatus;
 
     final getBalancesTaskEither = TaskEither.tryCatch(
-      () => balanceRepository.getBalancesForAddress(currentAddress),
+      () => balanceRepository.getBalancesForAddress(currentAddress, true),
       (error, stacktrace) => 'Error fetching balances',
     );
 
@@ -528,8 +528,10 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
       getGetAssetTaskEither.run(),
     ]);
 
-    nextGiveAssets = (results[0] as Either<String, List<Balance>>)
-        .fold((error) => Failure(error), (balances) => Success(balances));
+    nextGiveAssets = (results[0] as Either<String, List<Balance>>).fold(
+      (error) => Failure(error),
+      (balances) => Success(balances),
+    );
 
     nextFeeEstimates = (results[1] as Either<String, FeeEstimates>).fold(
       (error) => Failure(error),
@@ -609,7 +611,6 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
       GiveAssetChanged event, Emitter<FormStateModel> emit) {
     final giveAssetInput = GiveAssetInput.dirty(event.giveAssetId);
 
-
     emit(state.copyWith(
       ratio: const Option.none(),
       lockRatio: false,
@@ -663,17 +664,15 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
     ));
 
     try {
-
       final asset =
           await assetRepository.getAssetVerbose(state.giveAsset.value);
-     
+
       final balance = _getBalanceForAsset(state.giveAsset.value);
 
       final giveQuantityInput = GiveQuantityInput.dirty(
-        state.giveQuantity.value,
-        isDivisible: asset.divisible ?? false,
-        balance: balance?.quantity ?? 0
-      );
+          state.giveQuantity.value,
+          isDivisible: asset.divisible ?? false,
+          balance: balance?.quantity ?? 0);
 
       emit(state.copyWith(
         giveQuantity: giveQuantityInput,
@@ -913,7 +912,7 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
 
   Future<FeeEstimates> _fetchFeeEstimates() async {
     try {
-      return await getFeeEstimatesUseCase.call(targets: (1, 3, 6));
+      return await getFeeEstimatesUseCase.call();
     } catch (e) {
       throw FetchFeeEstimatesException(e.toString());
     }

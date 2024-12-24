@@ -1,8 +1,22 @@
+@JS('posthog')
+library;
+
+import 'dart:js_interop';
+
 import 'package:horizon/core/logging/logger.dart';
-import 'package:posthog_flutter/posthog_flutter.dart';
-import 'dart:js' as js;
+
+import 'package:horizon/js/crypto.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/domain/repositories/config_repository.dart';
+
+@JS("posthog.init")
+external void posthogInit(String apiKey, JSObject config);
+
+@JS("posthog.capture")
+external void posthogCapture(String eventName, JSObject properties);
+
+@JS("posthog.reset")
+external void posthogReset();
 
 // PostHog Web Implementation
 class PostHogWebAnalyticsService implements AnalyticsService {
@@ -28,61 +42,42 @@ class PostHogWebAnalyticsService implements AnalyticsService {
         logger.info('Analytics already initialized. Skipping.');
         return;
       }
-
       if (apiKey == null || host == null) {
         logger.info(
             'Posthog configuration missing. Analytics initialization failed.');
         return;
       }
-
-      js.context.callMethod('eval', [
-        '''
-        !function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.async=!0,p.src=s.api_host+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+".people (stub)"},o="capture identify alias people.set people.set_once set_config register register_once unregister opt_out_capturing has_opted_out_capturing opt_in_capturing reset isFeatureEnabled onFeatureFlags getFeatureFlag getFeatureFlagPayload reloadFeatureFlags group updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures getActiveMatchingSurveys getSurveys".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
-
-        // Custom web vitals handler
-        let webVitalsHandler = {
-          handleWebVitals: function(metric) {
-            posthog.capture('web_vital_' + metric.name, {
-              value: metric.value,
-              rating: metric.rating,
-              distinct_id: crypto.randomUUID(),
-              timestamp: Date.now()
-            });
-          }
-        };
-
-        posthog.init('$apiKey', {
-          api_host: '$host',
-          autocapture: false,
-          capture_pageview: false,
-          capture_pageleave: false,
-          disable_session_recording: true,
-          persistence: 'memory',
-          bootstrap: {
-            distinctID: crypto.randomUUID()
-          },
-          loaded: function(posthog) {
-            posthog._webVitalsHandler = webVitalsHandler;
-          }
-        });
-        '''
-      ]);
+      posthogInit(
+          apiKey!,
+          ({
+            "api_host": host,
+            "autocapture": false,
+            "capture_pageview": false,
+            "capture_pageleave": false,
+            "disable_session_recording": true,
+            "persistence": 'memory',
+            "bootstrap": {"distinctID": randomUUID()},
+          }).jsify() as JSObject);
 
       _isInitialized = true;
       logger.info('Analytics initialized successfully.');
-    } catch (e) {
-      logger.error("Error initializing analytics: $e");
+    } catch (e, callstack) {
+      logger.error("Error initializing analytics: $e", null, callstack);
     }
   }
 
   @override
   void trackEvent(String eventName, {Map<String, Object>? properties}) async {
     if (!config.isAnalyticsEnabled || !_isInitialized) return;
+
     try {
-      await Posthog().capture(eventName: eventName, properties: properties);
-      logger.info('Event capture: $eventName, $properties');
-    } catch (e) {
-      logger.error("Error tracking event: $e");
+      posthogCapture(
+          eventName,
+          ({
+            "distinct_id": properties?["distinct_id"],
+          }).jsify() as JSObject);
+    } catch (e, callstack) {
+      logger.error("Error tracking event: $e", null, callstack);
     }
   }
 
@@ -90,10 +85,10 @@ class PostHogWebAnalyticsService implements AnalyticsService {
   void reset() async {
     if (!config.isAnalyticsEnabled || !_isInitialized) return;
     try {
-      await Posthog().reset();
+      posthogReset();
       logger.info('Analytics reset.');
-    } catch (e) {
-      logger.error("Error resetting analytics: $e");
+    } catch (e, callstack) {
+      logger.error("Error resetting analytics: $e", null, callstack);
     }
   }
 
@@ -101,12 +96,17 @@ class PostHogWebAnalyticsService implements AnalyticsService {
   void trackAnonymousEvent(String eventName,
       {Map<String, Object>? properties}) async {
     if (!config.isAnalyticsEnabled || !_isInitialized) return;
+
     try {
-      await Posthog().reset();
-      await Posthog().capture(eventName: eventName, properties: properties);
+      posthogReset();
+      posthogCapture(
+          eventName,
+          ({
+            "distinct_id": properties?["distinct_id"],
+          }).jsify() as JSObject);
       logger.info('Anonymous event capture: $eventName, $properties');
-    } catch (e) {
-      logger.error("Error tracking anonymous event: $e");
+    } catch (e, callstack) {
+      logger.error("Error tracking anonymous event: $e", null, callstack);
     }
   }
 }

@@ -9,6 +9,8 @@ import 'package:horizon/data/services/encryption_service_web_worker_impl.dart';
 import 'package:dio_smart_retry/dio_smart_retry.dart';
 import 'package:horizon/data/services/imported_address_service_impl.dart';
 import 'package:chrome_extension/tabs.dart';
+import 'package:horizon/data/services/platform_service_extension_impl.dart';
+import 'package:horizon/data/services/platform_service_web_impl.dart';
 import "package:horizon/data/sources/repositories/address_repository_impl.dart";
 import "package:horizon/domain/repositories/address_repository.dart";
 import 'package:horizon/data/sources/local/db_manager.dart';
@@ -45,8 +47,16 @@ import 'package:horizon/domain/services/bitcoind_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/imported_address_service.dart';
 import 'package:horizon/domain/services/mnemonic_service.dart';
+import 'package:horizon/domain/services/platform_service.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
 import 'package:horizon/domain/services/wallet_service.dart';
+
+import 'package:horizon/domain/services/public_key_service.dart';
+import 'package:horizon/data/services/public_key_service_impl.dart';
+
+import 'package:horizon/domain/repositories/version_repository.dart';
+import 'package:horizon/data/sources/repositories/version_repository_impl.dart';
+import 'package:horizon/data/sources/repositories/version_repository_extension_impl.dart';
 
 import 'package:horizon/domain/repositories/asset_repository.dart';
 import 'package:horizon/data/sources/repositories/asset_repository_impl.dart';
@@ -82,6 +92,9 @@ import 'package:horizon/data/sources/repositories/fee_estimates_repository_mempo
 import 'package:horizon/data/sources/network/esplora_client.dart';
 import 'package:horizon/data/sources/network/mempool_space_client.dart';
 
+import 'package:horizon/domain/repositories/unified_address_repository.dart';
+import 'package:horizon/data/sources/repositories/unified_address_repository_impl.dart';
+
 import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/data/services/analytics_service_impl.dart';
 import 'package:horizon/presentation/common/usecase/import_wallet_usecase.dart';
@@ -93,6 +106,7 @@ import 'package:horizon/presentation/common/usecase/get_virtual_size_usecase.dar
 import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
 import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transaction_usecase.dart';
 import 'package:horizon/presentation/common/usecase/write_local_transaction_usecase.dart';
+import 'package:horizon/presentation/screens/compose_attach_utxo/usecase/fetch_form_data.dart';
 import 'package:horizon/presentation/screens/compose_dispenser/usecase/fetch_form_data.dart';
 import 'package:horizon/presentation/screens/compose_dispense/usecase/fetch_form_data.dart';
 import 'package:horizon/presentation/screens/compose_dispense/usecase/fetch_open_dispensers_on_address.dart';
@@ -105,10 +119,14 @@ import 'package:logger/logger.dart' as logger;
 import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/data/logging/logger_impl.dart';
 import 'package:horizon/domain/entities/extension_rpc.dart';
+import 'package:horizon/domain/entities/address_rpc.dart';
 import 'dart:convert';
 
 // will need to move this import elsewhere for compile to native
 import 'dart:html' as html;
+
+import 'package:horizon/domain/services/error_service.dart';
+import 'package:horizon/data/services/error_service_impl.dart';
 
 Future<void> setup() async {
   GetIt injector = GetIt.I;
@@ -291,11 +309,15 @@ Future<void> setup() async {
   injector.registerSingleton<ImportedAddressRepository>(
       ImportedAddressRepositoryImpl(injector.get<DatabaseManager>().database));
 
+  injector.registerSingleton<UnifiedAddressRepository>(
+    UnifiedAddressRepositoryImpl(
+      addressRepository: GetIt.I.get<AddressRepository>(),
+      importedAddressRepository: GetIt.I.get<ImportedAddressRepository>(),
+    ),
+  );
+
   injector.registerSingleton<OrderRepository>(
       OrderRepositoryImpl(api: GetIt.I.get<V2Api>()));
-
-  injector.registerSingleton<EventsRepository>(
-      EventsRepositoryImpl(api_: GetIt.I.get<V2Api>()));
 
   injector.registerSingleton<TransactionRepository>(TransactionRepositoryImpl(
     addressRepository: GetIt.I.get<AddressRepository>(),
@@ -347,6 +369,10 @@ Future<void> setup() async {
     transactionService: GetIt.I.get<TransactionService>(),
   ));
 
+  injector.registerSingleton<EventsRepository>(EventsRepositoryImpl(
+      api_: GetIt.I.get<V2Api>(),
+      bitcoinRepository: GetIt.I.get<BitcoinRepository>()));
+
   injector.registerSingleton<FetchDispenserFormDataUseCase>(
       FetchDispenserFormDataUseCase(
           getFeeEstimatesUseCase: GetIt.I.get<GetFeeEstimatesUseCase>(),
@@ -355,8 +381,7 @@ Future<void> setup() async {
 
   injector.registerSingleton<FetchDispenseFormDataUseCase>(
       FetchDispenseFormDataUseCase(
-          getFeeEstimatesUseCase: GetIt.I.get<GetFeeEstimatesUseCase>(),
-          balanceRepository: injector.get<BalanceRepository>()));
+          getFeeEstimatesUseCase: GetIt.I.get<GetFeeEstimatesUseCase>()));
 
   injector.registerSingleton(FetchCloseDispenserFormDataUseCase(
       getFeeEstimatesUseCase: GetIt.I.get<GetFeeEstimatesUseCase>(),
@@ -372,6 +397,7 @@ Future<void> setup() async {
   injector
       .registerSingleton<ComposeTransactionUseCase>(ComposeTransactionUseCase(
     utxoRepository: GetIt.I.get<UtxoRepository>(),
+    balanceRepository: injector.get<BalanceRepository>(),
     getVirtualSizeUseCase: GetIt.I.get<GetVirtualSizeUseCase>(),
   ));
 
@@ -385,6 +411,12 @@ Future<void> setup() async {
       FetchIssuanceFormDataUseCase(
           balanceRepository: injector.get<BalanceRepository>(),
           getFeeEstimatesUseCase: GetIt.I.get<GetFeeEstimatesUseCase>()));
+
+  injector.registerSingleton<FetchComposeAttachUtxoFormDataUseCase>(
+      FetchComposeAttachUtxoFormDataUseCase(
+          getFeeEstimatesUseCase: GetIt.I.get<GetFeeEstimatesUseCase>(),
+          composeRepository: GetIt.I.get<ComposeRepository>(),
+          balanceRepository: injector.get<BalanceRepository>()));
 
   injector.registerSingleton<SignAndBroadcastTransactionUseCase>(
       SignAndBroadcastTransactionUseCase(
@@ -436,17 +468,18 @@ Future<void> setup() async {
                   "addresses": args.addresses.map((address) {
                     return {
                       "address": address.address,
-                      "type": address.address.startsWith("bc") ||
-                              address.address.startsWith("tb")
-                          ? "p2wpkh"
-                          : "p2pkh",
+                      "type": switch (address.type) {
+                        AddressRpcType.p2wpkh => "p2wpkh",
+                        AddressRpcType.p2pkh => "p2pkh"
+                      },
+                      "publicKey": address.publicKey,
                     };
                   }).toList(),
                 },
                 null,
               );
 
-              Future.delayed(const Duration(seconds: 1), html.window.close);
+              Future.delayed(const Duration(seconds: 0), html.window.close);
             }
           : (args) => GetIt.I<Logger>().debug("""
                RPCGetAddressesSuccessCallback called with:
@@ -464,7 +497,7 @@ Future<void> setup() async {
                 null,
               );
 
-              Future.delayed(const Duration(seconds: 1), html.window.close);
+              Future.delayed(const Duration(seconds: 0), html.window.close);
             }
           : (args) => GetIt.I<Logger>().debug("""
                RPCGetSignPsbtSuccessCallback called with:
@@ -472,6 +505,27 @@ Future<void> setup() async {
                   requestId: ${args.requestId}
                   signedPsbt: ${args.signedPsbt}
           """));
+
+  injector.registerLazySingleton<VersionRepository>(() => config.isWebExtension
+      ? VersionRepositoryExtensionImpl(
+          config: config, logger: GetIt.I<Logger>())
+      : VersionRepositoryImpl(config: config));
+
+  injector.registerSingleton<PublicKeyService>(
+      PublicKeyServiceImpl(config: config));
+
+  injector.registerSingleton<ErrorService>(
+    ErrorServiceImpl(
+      GetIt.I<Config>(),
+      GetIt.I<Logger>(),
+    ),
+  );
+  // Register the appropriate platform service
+  if (GetIt.I.get<Config>().isWebExtension) {
+    GetIt.I.registerSingleton<PlatformService>(PlatformServiceExtensionImpl());
+  } else {
+    GetIt.I.registerSingleton<PlatformService>(PlatformServiceWebImpl());
+  }
 }
 
 class CustomDioException extends DioException {
@@ -493,9 +547,7 @@ class TimeoutInterceptor extends Interceptor {
     if (err.type == DioExceptionType.connectionTimeout ||
         err.type == DioExceptionType.receiveTimeout ||
         err.type == DioExceptionType.sendTimeout) {
-      // final requestPath = err.requestOptions.uri.toString();
-      final timeoutDuration =
-          err.requestOptions.connectTimeout ?? const Duration(seconds: 5);
+      const timeoutDuration = Duration(seconds: 15);
       final formattedError = CustomDioException(
         requestOptions: err.requestOptions,
         error:
@@ -503,8 +555,12 @@ class TimeoutInterceptor extends Interceptor {
         type: DioExceptionType.connectionTimeout,
       );
 
-      GetIt.I<Logger>().debug(formattedError.toString());
+      GetIt.I<ErrorService>().captureException(
+        formattedError,
+        stackTrace: err.stackTrace,
+      );
 
+      GetIt.I<Logger>().debug(formattedError.toString());
       handler.next(formattedError);
     } else {
       handler.next(err);
@@ -517,13 +573,18 @@ class ConnectionErrorInterceptor extends Interceptor {
   void onError(DioException err, ErrorInterceptorHandler handler) {
     if (err.type == DioExceptionType.connectionError ||
         err.type == DioExceptionType.unknown) {
-      // final requestPath = err.requestOptions.uri.toString();
       final formattedError = CustomDioException(
         requestOptions: err.requestOptions,
         error:
             'Connection Error — Request Failed ${err.response?.data?['error'] != null ? "\n\n ${err.response?.data?['error']}" : ""}',
         type: DioExceptionType.connectionError,
       );
+
+      GetIt.I<ErrorService>().captureException(
+        formattedError,
+        stackTrace: err.stackTrace,
+      );
+
       GetIt.I<Logger>().debug(formattedError.toString());
       handler.next(formattedError);
     } else {
@@ -536,7 +597,6 @@ class BadResponseInterceptor extends Interceptor {
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) {
     if (err.type == DioExceptionType.badResponse) {
-      // final requestPath = err.requestOptions.uri.toString();
       final formattedError = CustomDioException(
         requestOptions: err.requestOptions,
         error: err.response?.data?['error'] != null
@@ -544,6 +604,14 @@ class BadResponseInterceptor extends Interceptor {
             : "Bad Response",
         type: DioExceptionType.badResponse,
       );
+
+      GetIt.I<ErrorService>().captureException(
+        formattedError,
+        stackTrace: err.stackTrace,
+      );
+
+      GetIt.I<Logger>().debug(formattedError.toString());
+
       GetIt.I<Logger>().debug(formattedError.toString());
       handler.next(formattedError);
     } else {
@@ -575,6 +643,17 @@ class SimpleLogInterceptor extends Interceptor {
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
     final requestInfo = '${options.method} ${options.uri}';
+
+    GetIt.I<ErrorService>().addBreadcrumb(
+      type: 'http',
+      category: 'request',
+      message: requestInfo,
+      data: {
+        'url': options.uri.toString(),
+        'method': options.method,
+      },
+    );
+
     GetIt.I<Logger>().debug('Request: $requestInfo');
     handler.next(options);
   }
@@ -583,6 +662,18 @@ class SimpleLogInterceptor extends Interceptor {
   void onResponse(response, ResponseInterceptorHandler handler) {
     final responseInfo =
         '${response.requestOptions.method} ${response.requestOptions.uri} [${response.statusCode}]';
+
+    GetIt.I<ErrorService>().addBreadcrumb(
+      type: 'http',
+      category: 'response',
+      message: responseInfo,
+      data: {
+        'url': response.requestOptions.uri.toString(),
+        'method': response.requestOptions.method,
+        'status': response.statusCode,
+      },
+    );
+
     GetIt.I<Logger>().debug('Response: $responseInfo');
     handler.next(response);
   }
@@ -591,6 +682,12 @@ class SimpleLogInterceptor extends Interceptor {
   void onError(DioException err, ErrorInterceptorHandler handler) {
     final errorInfo =
         '${err.requestOptions.method} ${err.requestOptions.uri} [Error] ${err.message}';
+
+    GetIt.I<ErrorService>().captureException(
+      errorInfo,
+      stackTrace: err.stackTrace,
+    );
+
     GetIt.I<Logger>().debug('Error: $errorInfo');
     if (err.response != null) {
       final responseData = err.response?.data;

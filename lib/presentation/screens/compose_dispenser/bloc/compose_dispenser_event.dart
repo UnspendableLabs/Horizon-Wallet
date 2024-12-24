@@ -31,6 +31,7 @@ class ConfirmTransactionOnNewAddress extends ComposeDispenserEvent {
   final int giveQuantity;
   final int escrowQuantity;
   final int mainchainrate;
+  final bool sendExtraBtcToDispenser;
 
   ConfirmTransactionOnNewAddress({
     required this.originalAddress,
@@ -39,5 +40,6 @@ class ConfirmTransactionOnNewAddress extends ComposeDispenserEvent {
     required this.giveQuantity,
     required this.escrowQuantity,
     required this.mainchainrate,
+    required this.sendExtraBtcToDispenser,
   });
 }

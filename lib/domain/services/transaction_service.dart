@@ -1,10 +1,10 @@
 import "package:horizon/domain/entities/utxo.dart";
 
 abstract class TransactionService {
-  String signPsbt(
-    String psbtHex,
-    String privateKey,
-  );
+  String signPsbt(String psbtHex, Map<int, String> inputPrivateKeyMap,
+      [List<int>? sighashTypes]);
+
+  String psbtToUnsignedTransactionHex(String psbtHex);
 
   Future<String> signTransaction(String unsignedTransaction, String privateKey,
       String sourceAddress, Map<String, Utxo> utxoMap);
@@ -32,6 +32,12 @@ abstract class TransactionService {
       required List<Utxo> utxos,
       required int btcQuantity,
       required String sourcePrivKey,
+      required String destinationAddress,
       required String destinationPrivKey,
       required int fee});
+}
+
+class TransactionServiceException implements Exception {
+  final String message;
+  TransactionServiceException(this.message);
 }

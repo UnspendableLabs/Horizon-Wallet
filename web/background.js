@@ -64,12 +64,22 @@ async function rpcGetAddresses(requestId, port) {
   });
 }
 
-async function rpcSignPsbt(requestId, port, psbt) {
+async function rpcSignPsbt(requestId, port, hex, signInputs, sighashTypes) {
   const origin = getOriginFromPort(port);
   const tabId = getTabIdFromPort(port);
+  const encodedSignInputs = btoa(JSON.stringify(signInputs));
+  let action;
+
+  // sighashTypes could be undefined
+  if (sighashTypes === undefined) {
+    action = `signPsbt:ext,${tabId},${requestId},${hex},${encodedSignInputs}`;
+  } else {
+    const encodedSighashTypes = btoa(JSON.stringify(sighashTypes));
+    action = `signPsbt:ext,${tabId},${requestId},${hex},${encodedSignInputs},${encodedSighashTypes}`;
+  }
 
   const window = await popup({
-    url: `/index.html#?action=signPsbt:ext,${tabId},${requestId},${psbt}`,
+    url: `/index.html#?action=${action}`,
   });
 
   listenForPopupClose({
@@ -84,6 +94,12 @@ async function rpcSignPsbt(requestId, port, psbt) {
 
 async function rpcDispense(address) {
   await popup({ url: `/index.html#?action=dispense:ext,${address}` });
+}
+
+async function rpcOpenOrder(giveAsset, giveQuantity, getAsset, getQuantity) {
+  await popup({
+    url: `/index.html#?action=openOrder:ext,${giveAsset},${giveQuantity},${getAsset},${getQuantity}`,
+  });
 }
 
 async function rpcFairmint(fairminterTxHash) {
@@ -103,7 +119,13 @@ async function rpcMessageHandler(message, port) {
       await rpcGetAddresses(message["id"], port);
       break;
     case "signPsbt":
-      await rpcSignPsbt(message["id"], port, message["params"]["hex"]);
+      await rpcSignPsbt(
+        message["id"],
+        port,
+        message["params"]["hex"],
+        message["params"]["signInputs"],
+        message["params"]["sighashTypes"],
+      );
       break;
     case "fairmint":
       await rpcFairmint(message["params"]["fairminterTxHash"]);
@@ -111,17 +133,23 @@ async function rpcMessageHandler(message, port) {
     case "dispense":
       await rpcDispense(message["params"]["address"]);
       break;
+    case "openOrder":
+      await rpcOpenOrder(
+        message["params"]["give_asset"],
+        message["params"]["give_quantity"],
+        message["params"]["get_asset"],
+        message["params"]["get_quantity"],
+      );
+      break;
     default:
       console.log(`Unknown method: ${message["method"]}`);
   }
 }
 
 chrome.runtime.onConnect.addListener((port) => {
-
   if (port.name !== CONTENT_SCRIPT_PORT) return;
 
   port.onMessage.addListener((event) => {
-
     if (!port.sender?.tab?.id) {
       console.warn("Received message from content script with no tab ID");
       return;

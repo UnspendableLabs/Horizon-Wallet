@@ -11,6 +11,7 @@ import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
+import 'package:horizon/domain/repositories/dispenser_repository.dart';
 import 'package:horizon/domain/repositories/utxo_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/address_service.dart';
@@ -36,6 +37,7 @@ class ComposeDispenserOnNewAddressBloc extends Bloc<
   final EncryptionService encryptionService;
   final AddressService addressService;
   final ComposeRepository composeRepository;
+  final DispenserRepository dispenserRepository;
   final BitcoindService bitcoindService;
   final UtxoRepository utxoRepository;
   final BalanceRepository balanceRepository;
@@ -52,6 +54,7 @@ class ComposeDispenserOnNewAddressBloc extends Bloc<
     required this.encryptionService,
     required this.addressService,
     required this.composeRepository,
+    required this.dispenserRepository,
     required this.bitcoindService,
     required this.utxoRepository,
     required this.balanceRepository,
@@ -69,7 +72,7 @@ class ComposeDispenserOnNewAddressBloc extends Bloc<
       emit(state.copyWith(feeState: const FeeState.loading()));
 
       try {
-        final (balances, feeEstimates) =
+        final feeEstimates =
             await fetchDispenseFormDataUseCase.call(event.originalAddress);
 
         emit(state.copyWith(
@@ -185,15 +188,24 @@ class ComposeDispenserOnNewAddressBloc extends Bloc<
               'Unsupported import format: ${newAccount.importFormat}');
       }
 
-      final newAddressBalances =
-          await balanceRepository.getBalancesForAddress(newAddress.address);
+      final newAddressBalances = await balanceRepository.getBalancesForAddress(
+          newAddress.address, true);
+      final newAddressDispensers = await dispenserRepository
+          .getDispensersByAddress(newAddress.address)
+          .run()
+          .then((either) => either.fold(
+                (error) => throw Exception(
+                    'unable to fetch dispensers for new address'), // Handle failure
+                (dispensers) => dispensers, // Handle success
+              ));
 
       // the point of this flow is to open a dispenser on an unused address
       // if no balances are found, the balances repository returns only a BTC balance of 0
       if (newAddressBalances.length > 1 ||
           (newAddressBalances.length == 1 &&
               newAddressBalances.first.asset == 'BTC' &&
-              newAddressBalances.first.quantity > 0)) {
+              newAddressBalances.first.quantity > 0) ||
+          newAddressDispensers.isNotEmpty) {
         emit(state.copyWith(
             composeDispenserOnNewAddressState:
                 const ComposeDispenserOnNewAddressState.error(
@@ -240,8 +252,12 @@ class ComposeDispenserOnNewAddressBloc extends Bloc<
             .escrowQuantity; // the total asset quantity to be sent to the new address for the dispenser
         final mainchainrate = event.mainchainrate;
 
-        final feeToCoverDispenser = event.feeRate *
-            ADJUSTED_VIRTUAL_SIZE; // estimated fee to cover the dispenser
+        int feeToCoverDispenser = event.feeRate * ADJUSTED_VIRTUAL_SIZE;
+        int extraBtcToSendToDispenser = 0;
+
+        if (event.sendExtraBtcToDispenser) {
+          extraBtcToSendToDispenser = event.feeRate * ADJUSTED_VIRTUAL_SIZE;
+        }
 
         // 2. compose the asset send
         final assetSend = await composeTransactionUseCase
@@ -268,8 +284,9 @@ class ComposeDispenserOnNewAddressBloc extends Bloc<
           sourceAddress: source,
           utxos: utxos,
           sourcePrivKey: sourceAddressPrivKey,
+          destinationAddress: newAddress.address,
           destinationPrivKey: newAddressPrivKey,
-          btcQuantity: feeToCoverDispenser,
+          btcQuantity: feeToCoverDispenser + extraBtcToSendToDispenser,
           fee: feeForAssetSend,
         );
 
@@ -310,9 +327,14 @@ class ComposeDispenserOnNewAddressBloc extends Bloc<
                     composeDispenserTransaction: composeDispenserChain,
                     newAccountName: state.newAccount!.name,
                     newAddress: state.newAddress!.address,
-                    btcQuantity: feeToCoverDispenser,
+                    btcQuantity:
+                        feeToCoverDispenser + extraBtcToSendToDispenser,
                     feeRate: event.feeRate)));
       } on SignTransactionException catch (e) {
+        emit(state.copyWith(
+            composeDispenserOnNewAddressState:
+                ComposeDispenserOnNewAddressState.error(e.message)));
+      } on TransactionServiceException catch (e) {
         emit(state.copyWith(
             composeDispenserOnNewAddressState:
                 ComposeDispenserOnNewAddressState.error(e.message)));
@@ -330,9 +352,6 @@ class ComposeDispenserOnNewAddressBloc extends Bloc<
           composeDispenserOnNewAddressState:
               const ComposeDispenserOnNewAddressState.loading()));
       try {
-        await accountRepository.insert(state.newAccount!);
-        await addressRepository.insert(state.newAddress!);
-
         Future.delayed(const Duration(seconds: 1));
         final sendTxHash =
             await bitcoindService.sendrawtransaction(state.signedAssetSend!);
@@ -350,6 +369,8 @@ class ComposeDispenserOnNewAddressBloc extends Bloc<
           dispenserTxHash,
         );
 
+        await accountRepository.insert(state.newAccount!);
+        await addressRepository.insert(state.newAddress!);
         emit(state.copyWith(
             composeDispenserOnNewAddressState:
                 const ComposeDispenserOnNewAddressState.success()));
