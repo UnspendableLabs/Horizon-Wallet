@@ -10,31 +10,45 @@ import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/domain/entities/account.dart';
 import 'package:horizon/domain/entities/action.dart' as URLAction;
 import 'package:horizon/domain/entities/address.dart';
+import 'package:horizon/domain/entities/extension_rpc.dart';
 import 'package:horizon/domain/entities/imported_address.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/account_settings_repository.dart';
 import 'package:horizon/domain/repositories/action_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
-import 'package:horizon/domain/repositories/imported_address_repository.dart';
-import 'package:horizon/domain/repositories/unified_address_repository.dart';
 import 'package:horizon/domain/repositories/address_tx_repository.dart';
 import 'package:horizon/domain/repositories/asset_repository.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 import 'package:horizon/domain/repositories/events_repository.dart';
 import 'package:horizon/domain/repositories/fairminter_repository.dart';
+import 'package:horizon/domain/repositories/imported_address_repository.dart';
 import 'package:horizon/domain/repositories/transaction_local_repository.dart';
+import 'package:horizon/domain/repositories/unified_address_repository.dart';
+import 'package:horizon/domain/repositories/wallet_repository.dart';
+import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/bitcoind_service.dart';
+import 'package:horizon/domain/services/encryption_service.dart';
+import 'package:horizon/domain/services/imported_address_service.dart';
+import 'package:horizon/domain/services/public_key_service.dart';
+import 'package:horizon/domain/services/transaction_service.dart';
 import 'package:horizon/presentation/common/colors.dart';
+import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
+import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
+import 'package:horizon/presentation/forms/get_addresses/bloc/get_addresses_bloc.dart';
+import 'package:horizon/presentation/forms/get_addresses/view/get_addresses_form.dart';
+import 'package:horizon/presentation/forms/sign_psbt/bloc/sign_psbt_bloc.dart';
+import 'package:horizon/presentation/forms/sign_psbt/view/sign_psbt_form.dart';
 import 'package:horizon/presentation/screens/close_dispenser/view/close_dispenser_page.dart';
+import 'package:horizon/presentation/screens/compose_cancel/view/compose_cancel_view.dart';
 import 'package:horizon/presentation/screens/compose_dispense/view/compose_dispense_modal.dart';
 import 'package:horizon/presentation/screens/compose_dispenser/view/compose_dispenser_page.dart';
 import 'package:horizon/presentation/screens/compose_fairmint/view/compose_fairmint_page.dart';
 import 'package:horizon/presentation/screens/compose_fairminter/view/compose_fairminter_page.dart';
 import 'package:horizon/presentation/screens/compose_issuance/view/compose_issuance_page.dart';
-import 'package:horizon/presentation/screens/compose_send/view/compose_send_page.dart';
+import 'package:horizon/presentation/screens/compose_mpma/view/compose_mpma_page.dart';
 import 'package:horizon/presentation/screens/compose_order/view/compose_order_view.dart';
-import 'package:horizon/presentation/screens/compose_cancel/view/compose_cancel_view.dart';
+import 'package:horizon/presentation/screens/compose_send/view/compose_send_page.dart';
 import "package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_bloc.dart";
 import "package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_event.dart";
 import "package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_state.dart";
@@ -48,26 +62,9 @@ import 'package:horizon/presentation/screens/dashboard/view/balances_display.dar
 import 'package:horizon/presentation/screens/dashboard/view/dashboard_contents.dart';
 import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
-import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
-import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
-
-import 'package:horizon/domain/services/public_key_service.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:sliver_tools/sliver_tools.dart';
 import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
-
-import 'package:horizon/presentation/forms/sign_psbt/view/sign_psbt_form.dart';
-import 'package:horizon/presentation/forms/sign_psbt/bloc/sign_psbt_bloc.dart';
-
-import 'package:horizon/presentation/forms/get_addresses/view/get_addresses_form.dart';
-import 'package:horizon/presentation/forms/get_addresses/bloc/get_addresses_bloc.dart';
-
-import 'package:horizon/domain/services/transaction_service.dart';
-import 'package:horizon/domain/services/encryption_service.dart';
-import 'package:horizon/domain/services/address_service.dart';
-import 'package:horizon/domain/repositories/wallet_repository.dart';
-import 'package:horizon/domain/entities/extension_rpc.dart';
-import 'package:horizon/domain/services/imported_address_service.dart';
 
 class SignPsbtModal extends StatelessWidget {
   final int tabId;
@@ -950,6 +947,126 @@ class MintMenu extends StatelessWidget {
   }
 }
 
+class SendMenu extends StatelessWidget {
+  final bool isDarkTheme;
+  final IconData icon;
+  final String text;
+  final double? iconSize;
+  final DashboardActivityFeedBloc dashboardActivityFeedBloc;
+  final String currentAddress;
+
+  const SendMenu({
+    super.key,
+    required this.isDarkTheme,
+    required this.icon,
+    required this.text,
+    this.iconSize,
+    required this.dashboardActivityFeedBloc,
+    required this.currentAddress,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth < 600;
+    return Expanded(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4.0),
+        child: SizedBox(
+          height: 65,
+          child: PopupMenuButton<String>(
+            tooltip: "Send Options",
+            color: isDarkTheme ? lightNavyDarkTheme : lightBlueLightTheme,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(24.0),
+            ),
+            child: Container(
+              decoration: BoxDecoration(
+                color: isDarkTheme ? lightNavyDarkTheme : lightBlueLightTheme,
+                borderRadius: BorderRadius.circular(24.0),
+              ),
+              child: isMobile
+                  ? Icon(
+                      icon,
+                      size: iconSize ?? 24.0,
+                      color: isDarkTheme
+                          ? greyDashboardButtonTextDarkTheme
+                          : greyDashboardButtonTextLightTheme,
+                    )
+                  : Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          icon,
+                          size: iconSize ?? 24.0,
+                          color: isDarkTheme
+                              ? greyDashboardButtonTextDarkTheme
+                              : greyDashboardButtonTextLightTheme,
+                        ),
+                        const SizedBox(width: 4.0),
+                        Flexible(
+                          child: Text(
+                            text,
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
+                              color: isDarkTheme
+                                  ? greyDashboardButtonTextDarkTheme
+                                  : greyDashboardButtonTextLightTheme,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
+                          ),
+                        ),
+                      ],
+                    ),
+            ),
+            onSelected: (String result) {
+              if (result == 'send') {
+                HorizonUI.HorizonDialog.show(
+                  context: context,
+                  body: HorizonUI.HorizonDialog(
+                    title: "Compose Send",
+                    body: ComposeSendPageWrapper(
+                      currentAddress: currentAddress,
+                      dashboardActivityFeedBloc: dashboardActivityFeedBloc,
+                    ),
+                    includeBackButton: false,
+                    includeCloseButton: true,
+                  ),
+                );
+              } else if (result == 'mpma') {
+                HorizonUI.HorizonDialog.show(
+                  context: context,
+                  body: HorizonUI.HorizonDialog(
+                    title: "Compose MPMA",
+                    body: ComposeMpmaPageWrapper(
+                      dashboardActivityFeedBloc: dashboardActivityFeedBloc,
+                      currentAddress: currentAddress,
+                    ),
+                    includeBackButton: false,
+                    includeCloseButton: true,
+                  ),
+                );
+              }
+            },
+            itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+              const PopupMenuItem<String>(
+                value: 'send',
+                child: Text('Compose Send'),
+              ),
+              const PopupMenuItem<String>(
+                value: 'mpma',
+                child: Text('Compose MPMA Send'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class AddressActions extends StatelessWidget {
   final bool isDarkTheme;
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
@@ -971,21 +1088,13 @@ class AddressActions extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            AddressAction(
-              tooltip: "Send Asset",
+            SendMenu(
+              currentAddress: currentAddress,
               isDarkTheme: isDarkTheme,
-              dialog: HorizonUI.HorizonDialog(
-                title: "Compose Send",
-                body: ComposeSendPageWrapper(
-                  currentAddress: currentAddress,
-                  dashboardActivityFeedBloc: dashboardActivityFeedBloc,
-                ),
-                includeBackButton: false,
-                includeCloseButton: true,
-              ),
               icon: Icons.send,
               text: "SEND",
               iconSize: 18.0,
+              dashboardActivityFeedBloc: dashboardActivityFeedBloc,
             ),
             AddressAction(
               tooltip: "Issue Asset",

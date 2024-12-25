@@ -146,6 +146,48 @@ class VerboseEnhancedSendEvent extends VerboseEvent {
   });
 }
 
+class VerboseMpmaSendParams {
+  final String asset;
+  final int blockIndex;
+  final String? memo;
+  final int? msgIndex;
+  final int quantity;
+  final String destination;
+  final String status;
+  final String source;
+  final String quantityNormalized;
+  final String txHash;
+  final int txIndex;
+
+  VerboseMpmaSendParams({
+    required this.asset,
+    required this.blockIndex,
+    this.memo,
+    this.msgIndex,
+    required this.quantity,
+    required this.destination,
+    required this.status,
+    required this.source,
+    required this.txHash,
+    required this.txIndex,
+    required this.quantityNormalized,
+  });
+}
+
+class VerboseMpmaSendEvent extends VerboseEvent {
+  final VerboseMpmaSendParams params;
+
+  const VerboseMpmaSendEvent({
+    required super.state,
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
+    required super.blockTime,
+    required this.params,
+  });
+}
+
 class CreditParams {
   final String address;
   final String asset;

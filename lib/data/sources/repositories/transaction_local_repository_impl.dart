@@ -140,6 +140,20 @@ class TransactionLocalRepositoryImpl implements TransactionLocalRepository {
       TransactionInfoMoveToUtxo() => jsonEncode({
           "message_data": {},
         }),
+      TransactionInfoMpmaSend(unpackedData: MpmaSendUnpackedVerbose unpacked) =>
+        jsonEncode({
+          "message_type": "mpma_send",
+          "message_data": unpacked.messageData
+              .map((d) => {
+                    "asset": d.asset,
+                    "destination": d.destination,
+                    "quantity": d.quantity,
+                    "memo": d.memo,
+                    "memo_is_hex": d.memoIsHex,
+                    "quantity_normalized": d.quantityNormalized,
+                  })
+              .toList(),
+        }),
       _ => null
     };
 
@@ -297,6 +311,28 @@ class TransactionLocalRepositoryImpl implements TransactionLocalRepository {
             domain: TransactionInfoDomainLocal(
                 raw: tx.raw, submittedAt: tx.submittedAt),
             unpackedData: unpacked),
+        MoveToUtxoUnpackedVerbose() => TransactionInfoMoveToUtxo(
+            btcAmountNormalized: "", // TODO: fix this
+            hash: tx.hash,
+            source: tx.source,
+            destination: tx.destination,
+            btcAmount: tx.btcAmount,
+            fee: tx.fee,
+            data: tx.data,
+            domain: TransactionInfoDomainLocal(
+                raw: tx.raw, submittedAt: tx.submittedAt),
+          ),
+        MpmaSendUnpackedVerbose() => TransactionInfoMpmaSend(
+            btcAmountNormalized: "", // TODO: fix this
+            hash: tx.hash,
+            source: tx.source,
+            destination: tx.destination,
+            btcAmount: tx.btcAmount,
+            fee: tx.fee,
+            data: tx.data,
+            domain: TransactionInfoDomainLocal(
+                raw: tx.raw, submittedAt: tx.submittedAt),
+            unpackedData: unpacked),
         _ => TransactionInfo(
             btcAmountNormalized: "", // TODO: fix this
             hash: tx.hash,
@@ -438,6 +474,17 @@ class TransactionLocalRepositoryImpl implements TransactionLocalRepository {
             domain: TransactionInfoDomainLocal(
                 raw: tx.raw, submittedAt: tx.submittedAt),
           ),
+        MpmaSendUnpackedVerbose() => TransactionInfoMpmaSend(
+            btcAmountNormalized: "", // TODO: fix this
+            hash: tx.hash,
+            source: tx.source,
+            destination: tx.destination,
+            btcAmount: tx.btcAmount,
+            fee: tx.fee,
+            data: tx.data,
+            domain: TransactionInfoDomainLocal(
+                raw: tx.raw, submittedAt: tx.submittedAt),
+            unpackedData: unpacked),
         _ => TransactionInfo(
             btcAmountNormalized: "", // TODO: fix this
             hash: tx.hash,

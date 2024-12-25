@@ -17,6 +17,7 @@ import 'package:horizon/core/logging/logger.dart';
 // ignore: non_constant_identifier_names
 final DEFAULT_WHITELIST = [
   "ENHANCED_SEND",
+  "MPMA_SEND",
   "ASSET_ISSUANCE",
   "DISPENSE",
   "OPEN_DISPENSER",
@@ -181,7 +182,10 @@ class DashboardActivityFeedBloc
       final seenHashes = <String>{};
 
       for (final event in newCounterpartyEvents) {
-        if (!seenHashes.contains(event.txHash)) {
+        if (!seenHashes.contains(event.txHash) ||
+                event.event ==
+                    'MPMA_SEND' // MPMA sends will have multiple event entries with the same tx_hash
+            ) {
           final activityFeedItem = ActivityFeedItem(
               id: event.txHash ?? event.hashCode.toString(),
               hash: event.txHash,
@@ -506,7 +510,9 @@ class DashboardActivityFeedBloc
         List<ActivityFeedItem> confirmedActivityFeedItems = [];
         final seenHashes = <String>{};
         for (final event in counterpartyConfirmed) {
-          if (!seenHashes.contains(event.txHash)) {
+          if (!seenHashes.contains(event.txHash) ||
+              event.event == 'MPMA_SEND') {
+            // MPMA sends will have multiple entries for each sent asset
             final activityFeedItem = ActivityFeedItem(
                 id: event.txHash ?? event.hashCode.toString(),
                 hash: event.txHash,
@@ -594,6 +600,16 @@ class DashboardActivityFeedBloc
     final filteredEvents = <VerboseEvent>[];
 
     for (final event in events) {
+      if (!DEFAULT_WHITELIST.contains(event.event)) {
+        // This filter ensures events like NEW_TRANSACTION or DEBIT do not get emitted in success state. This is a bit of an edge case but does sometimes occur
+        // Activity feed does not parse these events
+        // An example when this if block may be reached:
+        // 1. User composes a move to utxo
+        // 2. NEW_TRANSACTION is registered in counterparty mempool for the move but the UTXO_MOVE event has not yet been registered
+        // 3. NEW_TRANSACTION is filtered out so that it does not get added to activity feed
+        // then we wait for UTXO_MOVE to be registered in mempool and the activity feed will be updated
+        continue;
+      }
       if (event.state is EventStateMempool) {
         if (event.event == 'ASSET_ISSUANCE' &&
             (event as VerboseAssetIssuanceEvent).params.assetEvents ==
