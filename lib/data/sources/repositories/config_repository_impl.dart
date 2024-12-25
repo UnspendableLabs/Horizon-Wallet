@@ -3,7 +3,7 @@ import 'package:pub_semver/pub_semver.dart';
 
 class ConfigImpl implements Config {
   @override
-  Version get version => Version.parse('1.5.1');
+  Version get version => Version.parse('1.5.2');
 
   @override
   String get versionInfoEndpoint {
@@ -34,7 +34,7 @@ class ConfigImpl implements Config {
 
   String get _defaultCounterpartyApiBase => switch (network) {
         Network.mainnet => 'https://api.unspendablelabs.com:4000/v2',
-        Network.testnet => 'https://api.counterparty.io:14000/v2',
+        Network.testnet => 'https://api.unspendablelabs.com:14000/v2',
         Network.regtest => 'http://localhost:24000/v2'
       };
 
@@ -71,14 +71,14 @@ class ConfigImpl implements Config {
   }
 
   String get _defaultEsploraBase => switch (network) {
-        Network.mainnet => "https://api.counterparty.io:3000",
-        Network.testnet => "https://api.counterparty.io:13000",
+        Network.mainnet => "https://api.unspendablelabs.com:3000",
+        Network.testnet => "https://api.unspendablelabs.com:13000",
         Network.regtest => "http://127.0.0.1:3002",
       };
 
   @override
   String get horizonExplorerBase => switch (network) {
-        Network.mainnet => "https://explorer.unspendablelabs.com",
+        Network.mainnet => "https://horizon.market/explorer",
         Network.testnet => "https://testnet-explorer.unspendablelabs.com",
         Network.regtest => "http://127.0.0.1:3000",
       };

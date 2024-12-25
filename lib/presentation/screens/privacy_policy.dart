@@ -31,7 +31,7 @@ class PrivacyPolicy extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Last Updated: November 18, 2024',
+                  'Last Updated: December 25, 2024',
                   style: TextStyle(
                       color: isDarkTheme ? Colors.grey : Colors.grey[600]),
                 ),
@@ -49,29 +49,35 @@ class PrivacyPolicy extends StatelessWidget {
                       style: TextStyle(color: fontColor),
                     ),
                     const SizedBox(height: 16),
+                    const SizedBox(height: 16),
                     _buildSubsection(
-                      'Contextual Metadata:',
+                      'Analytics Data:',
                       [],
                       fontColor,
                     ),
                     _buildSubsection(
-                      'Each event includes metadata such as:',
+                      'Collected to monitor usage patterns and performance:',
                       [
                         _buildBulletPoint(
-                          'User agent (browser and operating system details)',
+                          'Web Vitals',
                           fontColor,
+                          subPoints: [
+                            'Metrics such as page load time, input delay, and visual stability. A random UUID is assigned to sessions to group metrics, and it resets periodically.',
+                          ],
                         ),
                         _buildBulletPoint(
-                          'Timestamp',
+                          'Broadcasted Transactions:',
                           fontColor,
+                          subPoints: [
+                            'Logs of transaction occurrences and their types (e.g., broadcast_tx_issue, broadcast_tx_send). Each event is assigned a unique, random UUID that is not linked to wallet UUIDs, session IDs, or other events.',
+                          ],
                         ),
                         _buildBulletPoint(
-                          'Timezone',
+                          'Wallet Sessions:',
                           fontColor,
-                        ),
-                        _buildBulletPoint(
-                          'URL',
-                          fontColor,
+                          subPoints: [
+                            'Logs of wallet access events (e.g., opening, refreshing, or logging in). Each wallet is assigned a persistent, anonymous UUID tied to local storage. If a wallet is deleted locally and re-imported, a new UUID is generated.',
+                          ],
                         ),
                       ],
                       fontColor,
@@ -80,35 +86,25 @@ class PrivacyPolicy extends StatelessWidget {
                     ),
                     const SizedBox(height: 16),
                     _buildSubsection(
-                      'Event Types:',
+                      'Debugging Data:',
                       [],
                       fontColor,
                     ),
                     _buildSubsection(
-                      'We log the following types of events:',
+                      'Collected to identify and resolve errors:',
                       [
                         _buildBulletPoint(
-                          'Web Vitals',
+                          'Error Diagnostics:',
                           fontColor,
                           subPoints: [
-                            'Data: Metrics such as page load time, input delay, and visual stability are collected throughout the session.',
-                            'UUID: A random UUID is assigned to each session to group all Web Vitals. This UUID resets periodically.',
+                            'Context from the user session from the moment an application error occurs, including error messages, stack traces, application state, runtime settings, and system metadata (e.g., device type, browser configuration).',
                           ],
                         ),
                         _buildBulletPoint(
-                          'Broadcasted Transactions:',
+                          'API Request Breadcrumbs: ',
                           fontColor,
                           subPoints: [
-                            'Data: We log when a transaction occurs and its type (e.g., broadcast_tx_issue, broadcast_tx_send).',
-                            'UUID: Each broadcast_tx_* event is assigned a random, unique UUID to ensure it is not linked to any wallet UUID, session ID, or other events.',
-                          ],
-                        ),
-                        _buildBulletPoint(
-                          'Wallet Sessions:',
-                          fontColor,
-                          subPoints: [
-                            'Data: A wallet_opened event is logged whenever a wallet is accessed (opened, refreshed, or logged into).',
-                            'UUID: Each wallet is assigned a persistent, anonymous UUID tied to local storage. If a wallet is deleted locally and re-imported, a new UUID is generated.',
+                            'A list of API requests from the session that have led up to an error. This information helps identify which preceding calls (e.g., fetching balances, fee estimates, and other relevant data) may have contributed to the issue.',
                           ],
                         ),
                       ],
@@ -132,7 +128,7 @@ class PrivacyPolicy extends StatelessWidget {
                       fontColor,
                     ),
                     _buildBulletPoint(
-                      'Track aggregated usage patterns, such as the total number of active wallets.',
+                      'Track aggregated usage patterns, such as the total number of active wallets, and number and types of transactions made.',
                       fontColor,
                     ),
                   ],
@@ -141,9 +137,17 @@ class PrivacyPolicy extends StatelessWidget {
                 _buildSection(
                   '3. Data Handling',
                   [
-                    Text(
-                      'We do not sell, share, or rent the data we collect. Data is processed by third-party service providers solely for analytics and debugging. We retain data for as long as it is needed to fulfill the purposes described in this policy.',
-                      style: TextStyle(color: fontColor),
+                    _buildBulletPoint(
+                      'We do not sell, share, or rent the data we collect.',
+                      fontColor,
+                    ),
+                    _buildBulletPoint(
+                      'Data is processed by third-party service providers solely for analytics and debugging.',
+                      fontColor,
+                    ),
+                    _buildBulletPoint(
+                      'We retain data for as long as it is needed to fulfill the purposes described in this policy.',
+                      fontColor,
                     ),
                   ],
                   fontColor,
