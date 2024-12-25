@@ -258,6 +258,8 @@ class Event {
     switch (eventType) {
       case 'ENHANCED_SEND':
         return EnhancedSendEvent.fromJson(json);
+      case 'MPMA_SEND':
+        return MpmaSendEvent.fromJson(json);
       case 'CREDIT':
         return CreditEvent.fromJson(json);
       case 'DEBIT':
@@ -425,6 +427,52 @@ class EnhancedSendEvent extends Event {
 
   factory EnhancedSendEvent.fromJson(Map<String, dynamic> json) =>
       _$EnhancedSendEventFromJson(json);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class MpmaSendEvent extends Event {
+  final MpmaSendEventParams params;
+
+  MpmaSendEvent({
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
+    required this.params,
+  });
+
+  factory MpmaSendEvent.fromJson(Map<String, dynamic> json) =>
+      _$MpmaSendEventFromJson(json);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class MpmaSendEventParams {
+  final String asset;
+  final int blockIndex;
+  final String destination;
+  final String source;
+  final String? memo;
+  final int? msgIndex;
+  final int quantity;
+  final String status;
+  final String txHash;
+  final int txIndex;
+
+  MpmaSendEventParams({
+    required this.asset,
+    required this.blockIndex,
+    required this.destination,
+    required this.source,
+    this.memo,
+    this.msgIndex,
+    required this.quantity,
+    required this.status,
+    required this.txHash,
+    required this.txIndex,
+  });
+
+  factory MpmaSendEventParams.fromJson(Map<String, dynamic> json) =>
+      _$MpmaSendEventParamsFromJson(json);
 }
 
 @JsonSerializable(fieldRename: FieldRename.snake)
@@ -2251,6 +2299,8 @@ class VerboseEvent extends Event {
     switch (eventType) {
       case 'ENHANCED_SEND':
         return VerboseEnhancedSendEvent.fromJson(json);
+      case 'MPMA_SEND':
+        return VerboseMpmaSendEvent.fromJson(json);
       case 'CREDIT':
         return VerboseCreditEvent.fromJson(json);
       case 'DEBIT':
@@ -2315,6 +2365,49 @@ class VerboseEnhancedSendEvent extends VerboseEvent {
 
   factory VerboseEnhancedSendEvent.fromJson(Map<String, dynamic> json) =>
       _$VerboseEnhancedSendEventFromJson(json);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class VerboseMpmaSendEvent extends VerboseEvent {
+  final VerboseMpmaSendParams params;
+
+  VerboseMpmaSendEvent({
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
+    required super.blockTime,
+    required this.params,
+  });
+
+  factory VerboseMpmaSendEvent.fromJson(Map<String, dynamic> json) =>
+      _$VerboseMpmaSendEventFromJson(json);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class VerboseMpmaSendParams extends MpmaSendEventParams {
+  final int? blockTime;
+  final AssetInfoModel assetInfo;
+  final String quantityNormalized;
+
+  VerboseMpmaSendParams({
+    required super.asset,
+    required super.blockIndex,
+    required super.destination,
+    required super.memo,
+    required super.msgIndex,
+    required super.quantity,
+    required super.source,
+    required super.status,
+    required super.txHash,
+    required super.txIndex,
+    this.blockTime,
+    required this.assetInfo,
+    required this.quantityNormalized,
+  });
+
+  factory VerboseMpmaSendParams.fromJson(Map<String, dynamic> json) =>
+      _$VerboseMpmaSendParamsFromJson(json);
 }
 
 @JsonSerializable(fieldRename: FieldRename.snake)
@@ -3152,6 +3245,52 @@ class SendTxVerbose extends SendTx {
   // Map<String, dynamic> toJson() => _$SendTxVerboseToJson(this);
 }
 
+@JsonSerializable(fieldRename: FieldRename.snake)
+class ComposeMpmaSend {
+  final String name;
+  final String data;
+  final String rawtransaction;
+  final int btcIn;
+  final int btcOut;
+  final int btcFee;
+  final int btcChange;
+  final MpmaSendParams params;
+
+  const ComposeMpmaSend({
+    required this.name,
+    required this.data,
+    required this.rawtransaction,
+    required this.btcIn,
+    required this.btcOut,
+    required this.btcFee,
+    required this.btcChange,
+    required this.params,
+  });
+
+  factory ComposeMpmaSend.fromJson(Map<String, dynamic> json) =>
+      _$ComposeMpmaSendFromJson(json);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class MpmaSendParams {
+  final String source;
+  final List<dynamic> assetDestQuantList;
+  final String? memo;
+  final bool? memoIsHex;
+  final bool? skipValidation;
+
+  const MpmaSendParams({
+    required this.source,
+    required this.assetDestQuantList,
+    this.memo,
+    this.memoIsHex,
+    this.skipValidation,
+  });
+
+  factory MpmaSendParams.fromJson(Map<String, dynamic> json) =>
+      _$MpmaSendParamsFromJson(json);
+}
+
 // @JsonSerializable(fieldRename: FieldRename.snake)
 // class Unpack {
 //   final String messageType;
@@ -3284,6 +3423,8 @@ class TransactionUnpackedVerbose extends TransactionUnpacked {
     switch (messageType) {
       case "enhanced_send":
         return EnhancedSendUnpackedVerbose.fromJson(json);
+      case "mpma_send":
+        return MpmaSendUnpackedVerbose.fromJson(json);
       case "issuance":
         return IssuanceUnpackedVerbose.fromJson(json);
       case "dispenser":
@@ -3631,6 +3772,8 @@ class InfoVerbose extends Info {
     switch (messageType) {
       case "enhanced_send":
         return EnhancedSendInfoVerbose.fromJson(json);
+      case "mpma_send":
+        return MpmaSendInfoVerbose.fromJson(json);
       case "issuance":
         return IssuanceInfoVerbose.fromJson(json);
       case "dispenser":
@@ -3699,6 +3842,76 @@ class EnhancedSendInfoVerbose extends InfoVerbose {
 
   @override
   Map<String, dynamic> toJson() => _$EnhancedSendInfoVerboseToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class MpmaSendInfoVerbose extends InfoVerbose {
+  final MpmaSendUnpackedVerbose unpackedData;
+  const MpmaSendInfoVerbose({
+    required super.source,
+    super.destination,
+    super.btcAmount,
+    super.fee,
+    required super.data,
+    super.decodedTx,
+    required super.btcAmountNormalized,
+    required this.unpackedData,
+  });
+
+  factory MpmaSendInfoVerbose.fromJson(Map<String, dynamic> json) =>
+      _$MpmaSendInfoVerboseFromJson(json);
+
+  @override
+  Map<String, dynamic> toJson() => _$MpmaSendInfoVerboseToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class MpmaSendUnpackedVerbose extends TransactionUnpackedVerbose {
+  final List<MpmaSendDestination> messageData;
+
+  const MpmaSendUnpackedVerbose({
+    required this.messageData,
+  }) : super(messageType: "mpma_send");
+
+  factory MpmaSendUnpackedVerbose.fromJson(Map<String, dynamic> json) {
+    final messageDataList = (json["message_data"] as List)
+        .map((data) => MpmaSendDestination.fromJson(data))
+        .toList();
+
+    return MpmaSendUnpackedVerbose(
+      messageData: messageDataList,
+    );
+  }
+
+  @override
+  Map<String, dynamic> toJson() => {
+        "message_type": "mpma_send",
+        "message_data": messageData.map((d) => d.toJson()).toList(),
+      };
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class MpmaSendDestination {
+  final String asset;
+  final String destination;
+  final int quantity;
+  final String? memo;
+  final bool? memoIsHex;
+  final String? quantityNormalized;
+
+  const MpmaSendDestination({
+    required this.asset,
+    required this.destination,
+    required this.quantity,
+    this.memo,
+    this.memoIsHex,
+    this.quantityNormalized,
+  });
+
+  factory MpmaSendDestination.fromJson(Map<String, dynamic> json) =>
+      _$MpmaSendDestinationFromJson(json);
+
+  Map<String, dynamic> toJson() => _$MpmaSendDestinationToJson(this);
 }
 
 @JsonSerializable(fieldRename: FieldRename.snake)
@@ -4394,6 +4607,20 @@ abstract class V2Api {
     @Query("exclude_utxos_with_balances") bool? excludeUtxosWithBalances,
     @Query("disable_utxo_locks") bool? disableUtxoLocks,
     @Query("validate") bool? validate,
+  ]);
+
+  @GET("/addresses/{address}/compose/mpma?verbose=true")
+  Future<Response<ComposeMpmaSend>> composeMpmaSend(
+    @Path("address") String address,
+    @Query("destinations") String? destinations,
+    @Query("assets") String? assets,
+    @Query("quantities") String? quantities, [
+    @Query("allow_unconfirmed_inputs") bool? allowUnconfirmedInputs,
+    @Query("exact_fee") int? fee,
+    @Query("fee_per_kb") int? feePerKB,
+    @Query("inputs_set") String? inputsSet,
+    @Query("exclude_utxos_with_balances") bool? excludeUtxosWithBalances,
+    @Query("disable_utxo_locks") bool? disableUtxoLocks,
   ]);
 
   @GET("/addresses/{address}/sends")

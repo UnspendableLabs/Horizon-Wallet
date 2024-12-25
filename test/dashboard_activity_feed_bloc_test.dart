@@ -24,6 +24,7 @@ import 'package:test/test.dart';
 // ignore: non_constant_identifier_names
 final DEFAULT_WHITELIST = [
   "ENHANCED_SEND",
+  "MPMA_SEND",
   "ASSET_ISSUANCE",
   "DISPENSE",
   "OPEN_DISPENSER",
@@ -1018,12 +1019,12 @@ void main() {
                   blockHeight: 1,
                   blockTime: DateTime.now().toIntDividedBy1000()),
               1,
-              'ASSET_CREATION'
+              'ASSET_ISSUANCE'
             ),
           ]);
 
           mockedMempool = MockEventFactory.createMultiple([
-            ("0001", EventStateMempool(), null, 'UPDATE_DISPENSER'),
+            ("0001", EventStateMempool(), null, 'DISPENSER_UPDATE'),
           ]);
 
           // `LoadMore`

@@ -34,6 +34,9 @@ class UnpackedVerboseMapper {
       case "detach":
         return DetachUnpackedVerboseMapper.toDomain(
             u as api.DetachUnpackedVerbose);
+      case "mpma_send":
+        return MpmaSendUnpackedVerboseMapper.toDomain(
+            u as api.MpmaSendUnpackedVerbose);
       default:
         return TransactionUnpacked(
           messageType: u.messageType,
@@ -162,5 +165,24 @@ class DetachUnpackedVerboseMapper {
 class MoveToUtxoUnpackedVerboseMapper {
   static MoveToUtxoUnpackedVerbose toDomain(api.MoveToUtxoUnpackedVerbose u) {
     return const MoveToUtxoUnpackedVerbose();
+  }
+}
+
+class MpmaSendUnpackedVerboseMapper {
+  static MpmaSendUnpackedVerbose toDomain(
+      api.MpmaSendUnpackedVerbose unpacked) {
+    return MpmaSendUnpackedVerbose(
+      messageData: unpacked.messageData
+          .map((d) => MpmaSendDestination(
+                asset: d.asset,
+                destination: d.destination,
+                quantity: d.quantity,
+                memo: d.memo,
+                memoIsHex: d.memoIsHex,
+                // assetInfo: AssetInfoMapper.toDomain(d.assetInfo),
+                quantityNormalized: d.quantityNormalized,
+              ))
+          .toList(),
+    );
   }
 }
