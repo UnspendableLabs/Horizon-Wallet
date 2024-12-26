@@ -331,7 +331,11 @@ Future<void> setup() async {
           transactionDao:
               TransactionsDao(injector.get<DatabaseManager>().database)));
 
-  injector.registerSingleton<CacheProvider>(HiveCache());
+  // Initialize the cache provider
+  final cacheProvider = HiveCache();
+  await cacheProvider.init();
+
+  injector.registerSingleton<CacheProvider>(cacheProvider);
 
   injector.registerSingleton<AccountSettingsRepository>(
       AccountSettingsRepositoryImpl(
