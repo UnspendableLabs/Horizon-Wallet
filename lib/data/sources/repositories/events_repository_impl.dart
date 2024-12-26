@@ -1,3 +1,4 @@
+import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:horizon/common/format.dart';
 import 'package:horizon/data/models/cursor.dart' as cursor_model;
 import 'package:horizon/domain/entities/bitcoin_tx.dart';
@@ -971,9 +972,12 @@ class VerboseAtomicSwapEventMapper {
 class EventsRepositoryImpl implements EventsRepository {
   final api.V2Api api_;
   final BitcoinRepository bitcoinRepository;
+  final CacheProvider cacheProvider;
+
   EventsRepositoryImpl({
     required this.api_,
     required this.bitcoinRepository,
+    required this.cacheProvider,
   });
 
   @override
@@ -1010,8 +1014,9 @@ class EventsRepositoryImpl implements EventsRepository {
       return await VerboseEventMapper(bitcoinRepository: bitcoinRepository)
           .toDomain(event, address);
     }).toList());
-
     events.addAll(events_);
+    // Invalidate cache for AttachToUtxoEvent
+    await _invalidateCacheForAttachToUtxo(events, address);
 
     return (events, nextCursor, response.resultCount);
   }
@@ -1065,7 +1070,35 @@ class EventsRepositoryImpl implements EventsRepository {
       }
     }
 
+    // Invalidate cache for AttachToUtxoEvent
+    await _invalidateCacheForAttachToUtxo(allEvents, address);
+
     return allEvents;
+  }
+
+  Future<void> _invalidateCacheForAttachToUtxo(
+      List<VerboseEvent> events, String address) async {
+    for (final event in events) {
+      if (event is VerboseAttachToUtxoEvent &&
+          event.state is EventStateConfirmed) {
+        // Fetch existing tx hashes for the source address
+        List<String> txHashes =
+            cacheProvider.getValue<List<String>>(address) ?? [];
+
+        final txHash = event.txHash;
+        if (txHash != null && txHashes.contains(txHash)) {
+          txHashes.remove(txHash);
+
+          // Update the cache
+          if (txHashes.isEmpty) {
+            // Remove the key if the list is empty
+            await cacheProvider.remove(address);
+          } else {
+            await cacheProvider.setObject<List<String>>(address, txHashes);
+          }
+        }
+      }
+    }
   }
 
   @override
