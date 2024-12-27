@@ -21,7 +21,8 @@ class MockApiVerboseEvent extends Mock implements api.VerboseEvent {}
 
 class MockCursorModel extends Mock implements cursor_model.CursorModel {}
 
-class MockResponse extends Mock implements api.Response<List<api.VerboseEvent>> {}
+class MockResponse extends Mock
+    implements api.Response<List<api.VerboseEvent>> {}
 
 void main() {
   late EventsRepositoryImpl repository;
@@ -43,8 +44,10 @@ void main() {
     when(() => mockCursor.intValue).thenReturn(1);
     registerFallbackValue(mockCursor);
 
-    when(() => mockCacheProvider.setObject(any(), any())).thenAnswer((_) async => Future<void>.value());
-    when(() => mockCacheProvider.remove(any())).thenAnswer((_) async => Future<void>.value());
+    when(() => mockCacheProvider.setObject(any(), any()))
+        .thenAnswer((_) async => Future<void>.value());
+    when(() => mockCacheProvider.remove(any()))
+        .thenAnswer((_) async => Future<void>.value());
   });
 
   group('getByAddressVerbose', () {
@@ -158,10 +161,18 @@ void main() {
       verify(() => mockCacheProvider.getValue('test_address')).called(1);
     });
 
-    test('should properly invalidate cache for multiple confirmed AttachToUtxo events', () async {
+    test(
+        'should properly invalidate cache for multiple confirmed AttachToUtxo events',
+        () async {
       // Arrange
-      final existingTxHashes = ['keep_hash', 'remove_hash1', 'remove_hash2', 'another_keep_hash'];
-      when(() => mockCacheProvider.getValue('test_address')).thenReturn(existingTxHashes);
+      final existingTxHashes = [
+        'keep_hash',
+        'remove_hash1',
+        'remove_hash2',
+        'another_keep_hash'
+      ];
+      when(() => mockCacheProvider.getValue('test_address'))
+          .thenReturn(existingTxHashes);
 
       final apiEvents = [
         api.VerboseAttachToUtxoEvent(
