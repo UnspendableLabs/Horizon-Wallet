@@ -19,7 +19,6 @@ class HiveCache extends CacheProvider {
     if (Hive.isBoxOpen(keyName)) {
       _preferences = Hive.box(keyName);
     } else {
-      print("Opening Hive box $keyName");
       _preferences = await Hive.openBox(keyName);
     }
   }

@@ -1,12 +1,12 @@
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:horizon/common/format.dart';
 import 'package:horizon/data/models/cursor.dart' as cursor_model;
+import 'package:horizon/data/models/event.dart';
+import 'package:horizon/data/sources/network/api/v2_api.dart' as api;
 import 'package:horizon/domain/entities/bitcoin_tx.dart';
 import 'package:horizon/domain/entities/cursor.dart' as cursor_entity;
-import 'package:horizon/data/sources/network/api/v2_api.dart' as api;
 import 'package:horizon/domain/entities/cursor.dart';
 import 'package:horizon/domain/entities/event.dart';
-import 'package:horizon/data/models/event.dart';
 import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 import 'package:horizon/domain/repositories/events_repository.dart';
 
@@ -969,6 +969,35 @@ class VerboseAtomicSwapEventMapper {
   }
 }
 
+class CacheInvalidator {
+  static Future<void> invalidateAttachToUtxoCache(
+    List<VerboseEvent> events,
+    String address,
+    CacheProvider cacheProvider,
+  ) async {
+    for (final event in events) {
+      if (event is VerboseAttachToUtxoEvent &&
+          event.state is EventStateConfirmed) {
+        // Fetch existing tx hashes for the source address
+        final txHashes = cacheProvider.getValue(address) ?? [];
+
+        final txHash = event.txHash;
+        if (txHash != null && txHashes.contains(txHash)) {
+          txHashes.remove(txHash);
+
+          // Update the cache
+          if (txHashes.isEmpty) {
+            // Remove the key if the list is empty
+            await cacheProvider.remove(address);
+          } else {
+            await cacheProvider.setObject(address, txHashes);
+          }
+        }
+      }
+    }
+  }
+}
+
 class EventsRepositoryImpl implements EventsRepository {
   final api.V2Api api_;
   final BitcoinRepository bitcoinRepository;
@@ -1078,26 +1107,8 @@ class EventsRepositoryImpl implements EventsRepository {
 
   Future<void> _invalidateCacheForAttachToUtxo(
       List<VerboseEvent> events, String address) async {
-    for (final event in events) {
-      if (event is VerboseAttachToUtxoEvent &&
-          event.state is EventStateConfirmed) {
-        // Fetch existing tx hashes for the source address
-        final txHashes = cacheProvider.getValue(address) ?? [];
-
-        final txHash = event.txHash;
-        if (txHash != null && txHashes.contains(txHash)) {
-          txHashes.remove(txHash);
-
-          // Update the cache
-          if (txHashes.isEmpty) {
-            // Remove the key if the list is empty
-            await cacheProvider.remove(address);
-          } else {
-            await cacheProvider.setObject(address, txHashes);
-          }
-        }
-      }
-    }
+    await CacheInvalidator.invalidateAttachToUtxoCache(
+        events, address, cacheProvider);
   }
 
   @override
