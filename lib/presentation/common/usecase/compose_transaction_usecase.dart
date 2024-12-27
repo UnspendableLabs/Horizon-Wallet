@@ -47,14 +47,13 @@ class ComposeTransactionUseCase {
 
       // Fetch cached tx hashes for the source address
       final cacheProvider = GetIt.I<CacheProvider>();
-      List<String> cachedTxHashes =
-          cacheProvider.getValue<List<String>>(source) ?? [];
+      final cachedTxHashes = cacheProvider.getValue(source);
 
-      if (cachedTxHashes.isNotEmpty) {
+      if (cachedTxHashes != null && cachedTxHashes.isNotEmpty) {
         // Exclude UTXOs from unconfirmed attach transactions
         inputsSet = inputsSet.where((utxo) {
           // Exclude UTXOs if their txid is in the cached tx hashes
-          return !cachedTxHashes.contains(utxo.txid);
+          return !(cachedTxHashes.contains(utxo.txid) && utxo.vout == 0);
         }).toList();
       }
 

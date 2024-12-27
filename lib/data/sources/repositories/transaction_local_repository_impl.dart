@@ -182,14 +182,13 @@ class TransactionLocalRepositoryImpl implements TransactionLocalRepository {
       final txHash = transactionInfo.hash;
 
       // Fetch existing tx hashes for the source address
-      List<String> txHashes =
-          cacheProvider.getValue<List<String>>(sourceAddress) ?? [];
+      final txHashes = cacheProvider.getValue(sourceAddress) ?? [];
 
       // Add the new tx hash
       txHashes.add(txHash);
 
       // Save back to the cache
-      await cacheProvider.setObject<List<String>>(sourceAddress, txHashes);
+      await cacheProvider.setObject(sourceAddress, txHashes);
     }
   }
 

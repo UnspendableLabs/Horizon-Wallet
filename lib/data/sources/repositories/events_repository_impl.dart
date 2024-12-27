@@ -1082,8 +1082,7 @@ class EventsRepositoryImpl implements EventsRepository {
       if (event is VerboseAttachToUtxoEvent &&
           event.state is EventStateConfirmed) {
         // Fetch existing tx hashes for the source address
-        List<String> txHashes =
-            cacheProvider.getValue<List<String>>(address) ?? [];
+        final txHashes = cacheProvider.getValue(address) ?? [];
 
         final txHash = event.txHash;
         if (txHash != null && txHashes.contains(txHash)) {
@@ -1094,7 +1093,7 @@ class EventsRepositoryImpl implements EventsRepository {
             // Remove the key if the list is empty
             await cacheProvider.remove(address);
           } else {
-            await cacheProvider.setObject<List<String>>(address, txHashes);
+            await cacheProvider.setObject(address, txHashes);
           }
         }
       }

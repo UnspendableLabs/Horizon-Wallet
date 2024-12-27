@@ -375,7 +375,8 @@ Future<void> setup() async {
 
   injector.registerSingleton<EventsRepository>(EventsRepositoryImpl(
       api_: GetIt.I.get<V2Api>(),
-      bitcoinRepository: GetIt.I.get<BitcoinRepository>()));
+      bitcoinRepository: GetIt.I.get<BitcoinRepository>(),
+      cacheProvider: GetIt.I.get<CacheProvider>()));
 
   injector.registerSingleton<FetchDispenserFormDataUseCase>(
       FetchDispenserFormDataUseCase(
