@@ -1,24 +1,24 @@
+import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:bloc_test/bloc_test.dart';
+import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/domain/entities/asset_info.dart';
-import 'package:horizon/presentation/common/compose_base/bloc/compose_base_state.dart';
-import 'package:mocktail/mocktail.dart';
-import 'package:horizon/presentation/screens/compose_attach_utxo/bloc/compose_attach_utxo_bloc.dart';
-import 'package:horizon/presentation/screens/compose_attach_utxo/bloc/compose_attach_utxo_state.dart';
-import 'package:horizon/presentation/common/compose_base/bloc/compose_base_event.dart';
-import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
-import 'package:horizon/presentation/screens/compose_attach_utxo/usecase/fetch_form_data.dart';
+import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/domain/entities/compose_attach_utxo.dart';
 import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/domain/entities/fee_option.dart' as FeeOption;
-import 'package:horizon/domain/entities/balance.dart';
+import 'package:horizon/domain/repositories/block_repository.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
-import 'package:horizon/core/logging/logger.dart';
-import 'package:horizon/domain/repositories/block_repository.dart';
+import 'package:horizon/presentation/common/compose_base/bloc/compose_base_event.dart';
+import 'package:horizon/presentation/common/compose_base/bloc/compose_base_state.dart';
+import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
 import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transaction_usecase.dart';
 import 'package:horizon/presentation/common/usecase/write_local_transaction_usecase.dart';
+import 'package:horizon/presentation/screens/compose_attach_utxo/bloc/compose_attach_utxo_bloc.dart';
+import 'package:horizon/presentation/screens/compose_attach_utxo/bloc/compose_attach_utxo_state.dart';
+import 'package:horizon/presentation/screens/compose_attach_utxo/usecase/fetch_form_data.dart';
+import 'package:mocktail/mocktail.dart';
 
 class MockComposeRepository extends Mock implements ComposeRepository {}
 
@@ -472,12 +472,14 @@ void main() {
             )).thenAnswer((invocation) async {
           final onSuccess =
               invocation.namedArguments[const Symbol('onSuccess')] as Function;
-          onSuccess(txHex, txHash);
+          await onSuccess(txHex, txHash);
         });
-
         when(() => mockWriteLocalTransactionUseCase.call(txHex, txHash))
             .thenAnswer((_) async {});
-
+        when(() => mockCacheProvider.getValue(sourceAddress))
+            .thenReturn(['existing_hash']);
+        when(() => mockCacheProvider.setObject(sourceAddress, any()))
+            .thenAnswer((_) async {});
         when(() => mockAnalyticsService.trackAnonymousEvent(
               'broadcast_tx_attach_utxo',
               properties: any(named: 'properties'),
@@ -496,6 +498,7 @@ void main() {
       act: (bloc) => bloc.add(SignAndBroadcastTransactionEvent(
         password: password,
       )),
+      wait: const Duration(milliseconds: 100),
       expect: () => [
         isA<ComposeAttachUtxoState>().having(
           (state) => state.submitState,
@@ -519,6 +522,16 @@ void main() {
         verify(() => mockAnalyticsService.trackAnonymousEvent(
               'broadcast_tx_attach_utxo',
               properties: any(named: 'properties'),
+            )).called(1);
+
+        verify(() => mockCacheProvider.getValue(sourceAddress)).called(1);
+        verify(() => mockCacheProvider.setObject(
+              sourceAddress,
+              any(
+                  that: predicate<List<dynamic>>((list) =>
+                      list.length == 2 &&
+                      list.contains('existing_hash') &&
+                      list.contains(txHash))),
             )).called(1);
       },
     );
@@ -573,6 +586,114 @@ void main() {
               .having((s) => s.fee, 'fee', 250),
         ),
       ],
+    );
+  });
+
+  group('SignAndBroadcastTransaction', () {
+    blocTest<ComposeAttachUtxoBloc, ComposeAttachUtxoState>(
+      'should update cache when broadcasting an attach transaction',
+      build: () {
+        // const source = 'source-address';
+        when(() => mockSignAndBroadcastTransactionUseCase.call(
+              password: any(named: 'password'),
+              source: any(named: 'source'),
+              rawtransaction: any(named: 'rawtransaction'),
+              onSuccess: any(named: 'onSuccess'),
+              onError: any(named: 'onError'),
+            )).thenAnswer((invocation) async {
+          final onSuccess = invocation.namedArguments[const Symbol('onSuccess')]
+              as Function(String, String);
+          await onSuccess('txHex', 'test_hash');
+        });
+
+        when(() => mockWriteLocalTransactionUseCase.call(any(), any()))
+            .thenAnswer((_) async {});
+
+        // Setup cache behavior
+        when(() => mockCacheProvider.getValue('source'))
+            .thenReturn(['existing_hash']);
+        when(() => mockCacheProvider.setObject('source', any()))
+            .thenAnswer((_) async {});
+
+        return composeAttachUtxoBloc;
+      },
+      seed: () => ComposeAttachUtxoState(
+        submitState: SubmitFinalizing<ComposeAttachUtxoResponse>(
+          loading: false,
+          error: null,
+          composeTransaction: mockComposeAttachUtxoResponse,
+          fee: 1000,
+        ),
+        feeOption: FeeOption.Medium(),
+        balancesState: const BalancesState.initial(),
+        feeState: const FeeState.initial(),
+        xcpFeeEstimate: '',
+      ),
+      act: (bloc) => bloc.add(
+        SignAndBroadcastTransactionEvent(password: 'password'),
+      ),
+      verify: (_) {
+        verify(() => mockCacheProvider.getValue('source')).called(1);
+        verify(() => mockCacheProvider.setObject(
+              'source',
+              any(
+                  that: predicate<List<dynamic>>((list) =>
+                      list.length == 2 &&
+                      list.contains('existing_hash') &&
+                      list.contains('test_hash'))),
+            )).called(1);
+      },
+    );
+
+    blocTest<ComposeAttachUtxoBloc, ComposeAttachUtxoState>(
+      'should initialize cache when no previous hashes exist',
+      build: () {
+        when(() => mockSignAndBroadcastTransactionUseCase.call(
+              password: any(named: 'password'),
+              source: any(named: 'source'),
+              rawtransaction: any(named: 'rawtransaction'),
+              onSuccess: any(named: 'onSuccess'),
+              onError: any(named: 'onError'),
+            )).thenAnswer((invocation) async {
+          final onSuccess = invocation.namedArguments[const Symbol('onSuccess')]
+              as Function(String, String);
+          await onSuccess('txHex', 'test_hash');
+        });
+
+        when(() => mockWriteLocalTransactionUseCase.call(any(), any()))
+            .thenAnswer((_) async {});
+
+        // Setup cache behavior for empty initial state
+        when(() => mockCacheProvider.getValue('source')).thenReturn(null);
+        when(() => mockCacheProvider.setObject('source', any()))
+            .thenAnswer((_) async {});
+
+        return composeAttachUtxoBloc;
+      },
+      seed: () => ComposeAttachUtxoState(
+        submitState: SubmitFinalizing<ComposeAttachUtxoResponse>(
+          loading: false,
+          error: null,
+          composeTransaction: mockComposeAttachUtxoResponse,
+          fee: 1000,
+        ),
+        feeOption: FeeOption.Medium(),
+        balancesState: const BalancesState.initial(),
+        feeState: const FeeState.initial(),
+        xcpFeeEstimate: '',
+      ),
+      act: (bloc) => bloc.add(
+        SignAndBroadcastTransactionEvent(password: 'password'),
+      ),
+      verify: (_) {
+        verify(() => mockCacheProvider.getValue('source')).called(1);
+        verify(() => mockCacheProvider.setObject(
+              'source',
+              any(
+                  that: predicate<List<dynamic>>((list) =>
+                      list.length == 1 && list.contains('test_hash'))),
+            )).called(1);
+      },
     );
   });
 }

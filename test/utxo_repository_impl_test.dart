@@ -148,6 +148,108 @@ void main() {
       verify(() => mockCacheProvider.getValue(address)).called(1);
       _verifyUtxoList(result, mockUtxos);
     });
+
+    test(
+        'should correctly filter multiple cached transactions from a large UTXO set',
+        () async {
+      // Arrange
+      const address = 'test_address';
+
+      // Create 30 mock UTXOs
+      final mockEsploraUtxos = List.generate(30, (i) {
+        String txid;
+        int vout;
+
+        // First 6 UTXOs: 3 pairs of cached transactions with vout 0 and 1
+        if (i < 6) {
+          txid = 'cached_tx_${i ~/ 2}'; // Same txid for pairs
+          vout = i % 2; // Alternating vout 0 and 1
+        } else {
+          // Remaining UTXOs: non-cached transactions
+          txid = 'normal_tx_$i';
+          vout = i % 2;
+        }
+
+        return EsploraUtxo(
+          txid: txid,
+          vout: vout,
+          status: EsploraUtxoStatus(
+            confirmed: true,
+            blockHeight: 100 + i,
+            blockHash: 'hash_$i',
+            blockTime: 1000000 + i,
+          ),
+          value: 1000 + i,
+        );
+      });
+
+      // Setup cached transaction hashes (first 3 transactions)
+      final cachedTxHashes = ['cached_tx_0', 'cached_tx_1', 'cached_tx_2'];
+
+      when(() => mockEsploraApi.getUtxosForAddress(address))
+          .thenAnswer((_) async => mockEsploraUtxos);
+      when(() => mockCacheProvider.getValue(address))
+          .thenReturn(cachedTxHashes);
+
+      // Act
+      final result = await repository.getUnspentForAddress(
+        address,
+        excludeCached: true,
+      );
+
+      // Assert
+      // 1. Verify total count (30 original - 3 excluded with vout 0)
+      expect(result.length, equals(27));
+
+      // 2. Verify excluded UTXOs (cached with vout 0)
+      for (var i = 0; i < 6; i += 2) {
+        final excludedTxid = 'cached_tx_${i ~/ 2}';
+        expect(
+          result
+              .where((utxo) => utxo.txid == excludedTxid && utxo.vout == 0)
+              .isEmpty,
+          isTrue,
+          reason: 'UTXO with txid $excludedTxid and vout 0 should be excluded',
+        );
+      }
+
+      // 3. Verify included UTXOs (cached with vout 1)
+      for (var i = 1; i < 6; i += 2) {
+        final includedTxid = 'cached_tx_${i ~/ 2}';
+        expect(
+          result
+              .where((utxo) => utxo.txid == includedTxid && utxo.vout == 1)
+              .length,
+          equals(1),
+          reason: 'UTXO with txid $includedTxid and vout 1 should be included',
+        );
+      }
+
+      // 4. Verify all non-cached UTXOs are included
+      for (var i = 6; i < 30; i++) {
+        final normalTxid = 'normal_tx_$i';
+        expect(
+          result.where((utxo) => utxo.txid == normalTxid).length,
+          equals(1),
+          reason: 'Normal UTXO with txid $normalTxid should be included',
+        );
+      }
+
+      // 5. Verify correct mapping of properties
+      for (final utxo in result) {
+        final esploraUtxo = mockEsploraUtxos.firstWhere(
+          (e) => e.txid == utxo.txid && e.vout == utxo.vout,
+        );
+
+        expect(utxo.value, equals(esploraUtxo.value));
+        expect(utxo.height, equals(esploraUtxo.status.blockHeight));
+        expect(utxo.address, equals(address));
+      }
+
+      // 6. Verify API and cache calls
+      verify(() => mockEsploraApi.getUtxosForAddress(address)).called(1);
+      verify(() => mockCacheProvider.getValue(address)).called(1);
+    });
   });
 }
 
