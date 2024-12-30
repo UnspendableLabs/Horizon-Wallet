@@ -644,16 +644,6 @@ class SimpleLogInterceptor extends Interceptor {
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
     final requestInfo = '${options.method} ${options.uri}';
 
-    GetIt.I<ErrorService>().addBreadcrumb(
-      type: 'http',
-      category: 'request',
-      message: requestInfo,
-      data: {
-        'url': options.uri.toString(),
-        'method': options.method,
-      },
-    );
-
     GetIt.I<Logger>().debug('Request: $requestInfo');
     handler.next(options);
   }
@@ -662,18 +652,6 @@ class SimpleLogInterceptor extends Interceptor {
   void onResponse(response, ResponseInterceptorHandler handler) {
     final responseInfo =
         '${response.requestOptions.method} ${response.requestOptions.uri} [${response.statusCode}]';
-
-    GetIt.I<ErrorService>().addBreadcrumb(
-      type: 'http',
-      category: 'response',
-      message: responseInfo,
-      data: {
-        'url': response.requestOptions.uri.toString(),
-        'method': response.requestOptions.method,
-        'status': response.statusCode,
-      },
-    );
-
     GetIt.I<Logger>().debug('Response: $responseInfo');
     handler.next(response);
   }
