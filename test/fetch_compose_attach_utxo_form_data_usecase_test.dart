@@ -58,8 +58,10 @@ void main() {
       when(() => mockGetFeeEstimatesUseCase.call())
           .thenAnswer((_) async => feeEstimates);
 
-      when(() => mockBalanceRepository.getBalancesForAddress(testAddress, true))
-          .thenAnswer((_) async => [balance]);
+      when(() => mockBalanceRepository.getBalancesForAddress(
+            testAddress,
+            true,
+          )).thenAnswer((_) async => [balance]);
 
       when(() => mockComposeRepository.estimateComposeAttachXcpFees())
           .thenAnswer((_) async => mockXcpFeeEstimate);
@@ -85,8 +87,10 @@ void main() {
       when(() => mockGetFeeEstimatesUseCase.call())
           .thenAnswer((_) async => feeEstimates);
 
-      when(() => mockBalanceRepository.getBalancesForAddress(testAddress, true))
-          .thenThrow(Exception('Balance fetch failed'));
+      when(() => mockBalanceRepository.getBalancesForAddress(
+            testAddress,
+            true,
+          )).thenThrow(Exception('Balance fetch failed'));
 
       // Act & Assert
       expect(
@@ -107,8 +111,10 @@ void main() {
       when(() => mockGetFeeEstimatesUseCase.call())
           .thenThrow(Exception('Fee estimates fetch failed'));
 
-      when(() => mockBalanceRepository.getBalancesForAddress(testAddress, true))
-          .thenAnswer((_) async => [balance]);
+      when(() => mockBalanceRepository.getBalancesForAddress(
+            testAddress,
+            true,
+          )).thenAnswer((_) async => [balance]);
 
       // Act & Assert
       expect(

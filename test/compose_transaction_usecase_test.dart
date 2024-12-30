@@ -1,13 +1,15 @@
+import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:get_it/get_it.dart';
 import 'package:horizon/domain/entities/balance.dart';
-import 'package:horizon/domain/repositories/balance_repository.dart';
-import 'package:mocktail/mocktail.dart';
-import 'package:horizon/domain/repositories/utxo_repository.dart';
-import 'package:horizon/presentation/common/usecase/get_virtual_size_usecase.dart';
-import 'package:horizon/domain/entities/utxo.dart';
-import 'package:horizon/domain/entities/compose_response.dart';
 import 'package:horizon/domain/entities/compose_fn.dart';
+import 'package:horizon/domain/entities/compose_response.dart';
+import 'package:horizon/domain/entities/utxo.dart';
+import 'package:horizon/domain/repositories/balance_repository.dart';
+import 'package:horizon/domain/repositories/utxo_repository.dart';
 import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
+import 'package:horizon/presentation/common/usecase/get_virtual_size_usecase.dart';
+import 'package:mocktail/mocktail.dart';
 
 // Define mock classes
 class MockUtxoRepository extends Mock implements UtxoRepository {}
@@ -32,12 +34,15 @@ class MockUtxo extends Mock implements Utxo {}
 
 class MockBalance extends Mock implements Balance {}
 
+class MockCacheProvider extends Mock implements CacheProvider {}
+
 void main() {
   late MockUtxoRepository mockUtxoRepository;
   late MockGetVirtualSizeUseCase mockGetVirtualSizeUseCase;
   late MockComposeFunction mockComposeFunction;
   late MockComposeParams mockComposeParams;
   late MockBalanceRepository mockBalanceRepository;
+  late MockCacheProvider mockCacheProvider;
   setUp(() {
     // Initialize mocks before each test
     mockUtxoRepository = MockUtxoRepository();
@@ -45,7 +50,13 @@ void main() {
     mockComposeFunction = MockComposeFunction();
     mockComposeParams = MockComposeParams();
     mockBalanceRepository = MockBalanceRepository();
+    mockCacheProvider = MockCacheProvider();
+    GetIt.I.registerSingleton<CacheProvider>(mockCacheProvider);
     registerFallbackValue(mockComposeParams);
+  });
+
+  tearDown(() {
+    GetIt.I.unregister<CacheProvider>();
   });
 
   group('ComposeTransactionUseCase', () {
@@ -75,8 +86,8 @@ void main() {
       const totalFee = adjustedVirtualSize * feeRate;
       final mockComposeResponse = MockComposeResponse();
 
-      when(() => mockUtxoRepository.getUnspentForAddress(source))
-          .thenAnswer((_) async => mockUtxos);
+      when(() => mockUtxoRepository.getUnspentForAddress(source,
+          excludeCached: true)).thenAnswer((_) async => mockUtxos);
 
       when(() => mockGetVirtualSizeUseCase.call(
               composeFunction: mockComposeFunction.call,
@@ -97,7 +108,8 @@ void main() {
 
       // Assert
       expect(result, (mockComposeResponse, const VirtualSize(100, 500)));
-      verify(() => mockUtxoRepository.getUnspentForAddress(source)).called(1);
+      verify(() => mockUtxoRepository.getUnspentForAddress(source,
+          excludeCached: true)).called(1);
       verify(() => mockGetVirtualSizeUseCase.call(
             composeFunction: mockComposeFunction.call,
             inputsSet: mockUtxos,
@@ -120,8 +132,8 @@ void main() {
       const source = 'test_source_address';
       const feeRate = 10;
 
-      when(() => mockUtxoRepository.getUnspentForAddress(source))
-          .thenThrow(Exception('Failed to fetch UTXOs'));
+      when(() => mockUtxoRepository.getUnspentForAddress(source,
+          excludeCached: true)).thenThrow(Exception('Failed to fetch UTXOs'));
 
       // Act & Assert
       expect(
@@ -133,7 +145,8 @@ void main() {
         ),
         throwsA(isA<ComposeTransactionException>()),
       );
-      verify(() => mockUtxoRepository.getUnspentForAddress(source)).called(1);
+      verify(() => mockUtxoRepository.getUnspentForAddress(source,
+          excludeCached: true)).called(1);
     });
 
     test(
@@ -152,8 +165,8 @@ void main() {
       const feeRate = 10;
       final mockUtxos = [MockUtxo(), MockUtxo()];
 
-      when(() => mockUtxoRepository.getUnspentForAddress(source))
-          .thenAnswer((_) async => mockUtxos);
+      when(() => mockUtxoRepository.getUnspentForAddress(source,
+          excludeCached: true)).thenAnswer((_) async => mockUtxos);
 
       when(() => mockGetVirtualSizeUseCase.call(
             params: mockComposeParams,
@@ -191,8 +204,8 @@ void main() {
       const adjustedVirtualSize = 5 * virtualSize;
       const totalFee = adjustedVirtualSize * feeRate;
 
-      when(() => mockUtxoRepository.getUnspentForAddress(source))
-          .thenAnswer((_) async => mockUtxos);
+      when(() => mockUtxoRepository.getUnspentForAddress(source,
+          excludeCached: true)).thenAnswer((_) async => mockUtxos);
 
       when(() => mockGetVirtualSizeUseCase.call(
             params: mockComposeParams,
@@ -242,8 +255,8 @@ void main() {
       const totalFee = adjustedVirtualSize * feeRate;
       final mockComposeResponse = MockComposeResponse();
 
-      when(() => mockUtxoRepository.getUnspentForAddress(source))
-          .thenAnswer((_) async => mockUtxos);
+      when(() => mockUtxoRepository.getUnspentForAddress(source,
+          excludeCached: true)).thenAnswer((_) async => mockUtxos);
 
       when(() => mockBalanceRepository.getBalancesForUTXO(any()))
           .thenAnswer((_) async => []);
@@ -269,7 +282,8 @@ void main() {
 
       // Assert
       expect(result, (mockComposeResponse, const VirtualSize(100, 500)));
-      verify(() => mockUtxoRepository.getUnspentForAddress(source)).called(1);
+      verify(() => mockUtxoRepository.getUnspentForAddress(source,
+          excludeCached: true)).called(1);
       verify(() => mockBalanceRepository.getBalancesForUTXO(any())).called(20);
       verify(() => mockGetVirtualSizeUseCase.call(
             composeFunction: mockComposeFunction.call,
@@ -313,8 +327,8 @@ void main() {
       const totalFee = adjustedVirtualSize * feeRate;
       final mockComposeResponse = MockComposeResponse();
 
-      when(() => mockUtxoRepository.getUnspentForAddress(source))
-          .thenAnswer((_) async => mockUtxos);
+      when(() => mockUtxoRepository.getUnspentForAddress(source,
+          excludeCached: true)).thenAnswer((_) async => mockUtxos);
 
       // Return a balance for the top 2 UTXOs
       when(() => mockBalanceRepository.getBalancesForUTXO('mockTxId0:0'))
@@ -350,7 +364,8 @@ void main() {
 
       // Assert
       expect(result, (mockComposeResponse, const VirtualSize(100, 500)));
-      verify(() => mockUtxoRepository.getUnspentForAddress(source)).called(1);
+      verify(() => mockUtxoRepository.getUnspentForAddress(source,
+          excludeCached: true)).called(1);
       verify(() => mockBalanceRepository.getBalancesForUTXO(any()))
           .called(22); // 20 inputs calls without balances and 2 with balances
       verify(() => mockGetVirtualSizeUseCase.call(

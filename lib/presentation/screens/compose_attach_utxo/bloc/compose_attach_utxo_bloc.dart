@@ -1,5 +1,6 @@
 import 'package:collection/collection.dart';
 import 'package:horizon/common/format.dart';
+import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:horizon/common/uuid.dart';
 import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/domain/entities/compose_attach_utxo.dart';
@@ -37,6 +38,7 @@ class ComposeAttachUtxoBloc extends ComposeBaseBloc<ComposeAttachUtxoState> {
   final SignAndBroadcastTransactionUseCase signAndBroadcastTransactionUseCase;
   final WriteLocalTransactionUseCase writelocalTransactionUseCase;
   final BlockRepository blockRepository;
+  final CacheProvider cacheProvider;
   final String? initialFairminterTxHash;
 
   ComposeAttachUtxoBloc({
@@ -48,6 +50,7 @@ class ComposeAttachUtxoBloc extends ComposeBaseBloc<ComposeAttachUtxoState> {
     required this.signAndBroadcastTransactionUseCase,
     required this.writelocalTransactionUseCase,
     required this.blockRepository,
+    required this.cacheProvider,
     this.initialFairminterTxHash,
   }) : super(ComposeAttachUtxoState(
           submitState: const SubmitInitial(),
@@ -224,6 +227,18 @@ class ComposeAttachUtxoBloc extends ComposeBaseBloc<ComposeAttachUtxoState> {
         rawtransaction: compose.rawtransaction,
         onSuccess: (txHex, txHash) async {
           await writelocalTransactionUseCase.call(txHex, txHash);
+
+          // Use the source address as the key and tx hash as the value
+          final sourceAddress = compose.params.source;
+
+          // Fetch existing tx hashes for the source address
+          final txHashes = cacheProvider.getValue(sourceAddress) ?? [];
+
+          // Add the new tx hash
+          txHashes.add(txHash);
+
+          // Save back to the cache
+          await cacheProvider.setObject(sourceAddress, txHashes);
 
           logger.info('attach utxo broadcasted txHash: $txHash');
           analyticsService.trackAnonymousEvent('broadcast_tx_attach_utxo',

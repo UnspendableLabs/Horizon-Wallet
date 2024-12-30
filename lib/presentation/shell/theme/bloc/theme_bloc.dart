@@ -21,8 +21,7 @@ class ThemeBloc extends Bloc<ThemeEvent, ThemeMode> {
 
   void _loadTheme() async {
     final isDarkMode = cacheProvider.getBool('isDarkMode') ?? false;
-    add(ThemeEvent.toggle);
-    if (isDarkMode) {
+    if (isDarkMode != (state == ThemeMode.dark)) {
       add(ThemeEvent.toggle);
     }
   }
