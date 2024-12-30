@@ -1016,7 +1016,7 @@ class EventsRepositoryImpl implements EventsRepository {
     }).toList());
     events.addAll(events_);
     // Invalidate cache for AttachToUtxoEvent
-    await invalidateAttachToUtxoCache(events, address, cacheProvider);
+    await updateAttachToUtxoCache(events, address, cacheProvider);
 
     return (events, nextCursor, response.resultCount);
   }
@@ -1071,7 +1071,7 @@ class EventsRepositoryImpl implements EventsRepository {
     }
 
     // Invalidate cache for AttachToUtxoEvent
-    await invalidateAttachToUtxoCache(allEvents, address, cacheProvider);
+    await updateAttachToUtxoCache(allEvents, address, cacheProvider);
 
     return allEvents;
   }
@@ -1141,7 +1141,7 @@ class EventsRepositoryImpl implements EventsRepository {
     return allEvents;
   }
 
-  static Future<void> invalidateAttachToUtxoCache(
+  static Future<void> updateAttachToUtxoCache(
     List<VerboseEvent> events,
     String address,
     CacheProvider cacheProvider,

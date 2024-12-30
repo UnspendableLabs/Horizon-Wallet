@@ -237,7 +237,7 @@ void main() {
     });
   });
 
-  group('invalidateAttachToUtxoCache', () {
+  group('updateAttachToUtxoCache', () {
     test('should not modify cache for non-AttachToUtxo events', () async {
       // Arrange
       final events = [
@@ -254,7 +254,7 @@ void main() {
       when(() => mockCacheProvider.getValue(any())).thenReturn(['hash1']);
 
       // Act
-      await EventsRepositoryImpl.invalidateAttachToUtxoCache(
+      await EventsRepositoryImpl.updateAttachToUtxoCache(
         events,
         address,
         mockCacheProvider,
@@ -298,7 +298,7 @@ void main() {
       when(() => mockCacheProvider.getValue(address)).thenReturn(cachedHashes);
 
       // Act
-      await EventsRepositoryImpl.invalidateAttachToUtxoCache(
+      await EventsRepositoryImpl.updateAttachToUtxoCache(
         events,
         address,
         mockCacheProvider,
@@ -336,7 +336,7 @@ void main() {
       when(() => mockCacheProvider.getValue(address)).thenReturn(['hash1']);
 
       // Act
-      await EventsRepositoryImpl.invalidateAttachToUtxoCache(
+      await EventsRepositoryImpl.updateAttachToUtxoCache(
         events,
         address,
         mockCacheProvider,
@@ -365,7 +365,7 @@ void main() {
       when(() => mockCacheProvider.getValue(address)).thenReturn(['hash1']);
 
       // Act
-      await EventsRepositoryImpl.invalidateAttachToUtxoCache(
+      await EventsRepositoryImpl.updateAttachToUtxoCache(
         events,
         address,
         mockCacheProvider,
