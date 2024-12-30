@@ -86,8 +86,8 @@ void main() {
       const totalFee = adjustedVirtualSize * feeRate;
       final mockComposeResponse = MockComposeResponse();
 
-      when(() => mockUtxoRepository.getUnspentForAddress(source))
-          .thenAnswer((_) async => mockUtxos);
+      when(() => mockUtxoRepository.getUnspentForAddress(source,
+          excludeCached: true)).thenAnswer((_) async => mockUtxos);
 
       when(() => mockGetVirtualSizeUseCase.call(
               composeFunction: mockComposeFunction.call,
@@ -108,7 +108,8 @@ void main() {
 
       // Assert
       expect(result, (mockComposeResponse, const VirtualSize(100, 500)));
-      verify(() => mockUtxoRepository.getUnspentForAddress(source)).called(1);
+      verify(() => mockUtxoRepository.getUnspentForAddress(source,
+          excludeCached: true)).called(1);
       verify(() => mockGetVirtualSizeUseCase.call(
             composeFunction: mockComposeFunction.call,
             inputsSet: mockUtxos,
@@ -131,8 +132,8 @@ void main() {
       const source = 'test_source_address';
       const feeRate = 10;
 
-      when(() => mockUtxoRepository.getUnspentForAddress(source))
-          .thenThrow(Exception('Failed to fetch UTXOs'));
+      when(() => mockUtxoRepository.getUnspentForAddress(source,
+          excludeCached: true)).thenThrow(Exception('Failed to fetch UTXOs'));
 
       // Act & Assert
       expect(
@@ -144,7 +145,8 @@ void main() {
         ),
         throwsA(isA<ComposeTransactionException>()),
       );
-      verify(() => mockUtxoRepository.getUnspentForAddress(source)).called(1);
+      verify(() => mockUtxoRepository.getUnspentForAddress(source,
+          excludeCached: true)).called(1);
     });
 
     test(
@@ -163,8 +165,8 @@ void main() {
       const feeRate = 10;
       final mockUtxos = [MockUtxo(), MockUtxo()];
 
-      when(() => mockUtxoRepository.getUnspentForAddress(source))
-          .thenAnswer((_) async => mockUtxos);
+      when(() => mockUtxoRepository.getUnspentForAddress(source,
+          excludeCached: true)).thenAnswer((_) async => mockUtxos);
 
       when(() => mockGetVirtualSizeUseCase.call(
             params: mockComposeParams,
@@ -202,8 +204,8 @@ void main() {
       const adjustedVirtualSize = 5 * virtualSize;
       const totalFee = adjustedVirtualSize * feeRate;
 
-      when(() => mockUtxoRepository.getUnspentForAddress(source))
-          .thenAnswer((_) async => mockUtxos);
+      when(() => mockUtxoRepository.getUnspentForAddress(source,
+          excludeCached: true)).thenAnswer((_) async => mockUtxos);
 
       when(() => mockGetVirtualSizeUseCase.call(
             params: mockComposeParams,
@@ -253,8 +255,8 @@ void main() {
       const totalFee = adjustedVirtualSize * feeRate;
       final mockComposeResponse = MockComposeResponse();
 
-      when(() => mockUtxoRepository.getUnspentForAddress(source))
-          .thenAnswer((_) async => mockUtxos);
+      when(() => mockUtxoRepository.getUnspentForAddress(source,
+          excludeCached: true)).thenAnswer((_) async => mockUtxos);
 
       when(() => mockBalanceRepository.getBalancesForUTXO(any()))
           .thenAnswer((_) async => []);
@@ -280,7 +282,8 @@ void main() {
 
       // Assert
       expect(result, (mockComposeResponse, const VirtualSize(100, 500)));
-      verify(() => mockUtxoRepository.getUnspentForAddress(source)).called(1);
+      verify(() => mockUtxoRepository.getUnspentForAddress(source,
+          excludeCached: true)).called(1);
       verify(() => mockBalanceRepository.getBalancesForUTXO(any())).called(20);
       verify(() => mockGetVirtualSizeUseCase.call(
             composeFunction: mockComposeFunction.call,
@@ -324,8 +327,8 @@ void main() {
       const totalFee = adjustedVirtualSize * feeRate;
       final mockComposeResponse = MockComposeResponse();
 
-      when(() => mockUtxoRepository.getUnspentForAddress(source))
-          .thenAnswer((_) async => mockUtxos);
+      when(() => mockUtxoRepository.getUnspentForAddress(source,
+          excludeCached: true)).thenAnswer((_) async => mockUtxos);
 
       // Return a balance for the top 2 UTXOs
       when(() => mockBalanceRepository.getBalancesForUTXO('mockTxId0:0'))
@@ -361,7 +364,8 @@ void main() {
 
       // Assert
       expect(result, (mockComposeResponse, const VirtualSize(100, 500)));
-      verify(() => mockUtxoRepository.getUnspentForAddress(source)).called(1);
+      verify(() => mockUtxoRepository.getUnspentForAddress(source,
+          excludeCached: true)).called(1);
       verify(() => mockBalanceRepository.getBalancesForUTXO(any()))
           .called(22); // 20 inputs calls without balances and 2 with balances
       verify(() => mockGetVirtualSizeUseCase.call(
@@ -416,8 +420,8 @@ void main() {
           .thenReturn(['cached_tx_1']);
 
       // Setup repository responses
-      when(() => mockUtxoRepository.getUnspentForAddress(source))
-          .thenAnswer((_) async => mockUtxos);
+      when(() => mockUtxoRepository.getUnspentForAddress(source,
+          excludeCached: true)).thenAnswer((_) async => mockUtxos);
 
       final expectedFilteredUtxos = [mockUtxos[1], mockUtxos[2]];
 
@@ -494,8 +498,8 @@ void main() {
 
       when(() => mockCacheProvider.getValue(source)).thenReturn(cachedTxHashes);
 
-      when(() => mockUtxoRepository.getUnspentForAddress(source))
-          .thenAnswer((_) async => mockUtxos);
+      when(() => mockUtxoRepository.getUnspentForAddress(source,
+          excludeCached: true)).thenAnswer((_) async => mockUtxos);
 
       const virtualSize = 100;
       const adjustedVirtualSize = virtualSize * 5;

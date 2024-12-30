@@ -969,35 +969,6 @@ class VerboseAtomicSwapEventMapper {
   }
 }
 
-class CacheInvalidator {
-  static Future<void> invalidateAttachToUtxoCache(
-    List<VerboseEvent> events,
-    String address,
-    CacheProvider cacheProvider,
-  ) async {
-    for (final event in events) {
-      if (event is VerboseAttachToUtxoEvent &&
-          event.state is EventStateConfirmed) {
-        // Fetch existing tx hashes for the source address
-        final txHashes = cacheProvider.getValue(address) ?? [];
-
-        final txHash = event.txHash;
-        if (txHash != null && txHashes.contains(txHash)) {
-          txHashes.remove(txHash);
-
-          // Update the cache
-          if (txHashes.isEmpty) {
-            // Remove the key if the list is empty
-            await cacheProvider.remove(address);
-          } else {
-            await cacheProvider.setObject(address, txHashes);
-          }
-        }
-      }
-    }
-  }
-}
-
 class EventsRepositoryImpl implements EventsRepository {
   final api.V2Api api_;
   final BitcoinRepository bitcoinRepository;
@@ -1045,7 +1016,7 @@ class EventsRepositoryImpl implements EventsRepository {
     }).toList());
     events.addAll(events_);
     // Invalidate cache for AttachToUtxoEvent
-    await _invalidateCacheForAttachToUtxo(events, address);
+    await invalidateAttachToUtxoCache(events, address, cacheProvider);
 
     return (events, nextCursor, response.resultCount);
   }
@@ -1100,15 +1071,9 @@ class EventsRepositoryImpl implements EventsRepository {
     }
 
     // Invalidate cache for AttachToUtxoEvent
-    await _invalidateCacheForAttachToUtxo(allEvents, address);
+    await invalidateAttachToUtxoCache(allEvents, address, cacheProvider);
 
     return allEvents;
-  }
-
-  Future<void> _invalidateCacheForAttachToUtxo(
-      List<VerboseEvent> events, String address) async {
-    await CacheInvalidator.invalidateAttachToUtxoCache(
-        events, address, cacheProvider);
   }
 
   @override
@@ -1174,5 +1139,39 @@ class EventsRepositoryImpl implements EventsRepository {
     }
 
     return allEvents;
+  }
+
+  static Future<void> invalidateAttachToUtxoCache(
+    List<VerboseEvent> events,
+    String address,
+    CacheProvider cacheProvider,
+  ) async {
+    // 1. get all unconfirmed attaches
+    final txHashes = cacheProvider.getValue(address) ?? [];
+    final confirmedTxHashes = <String>[];
+
+    // 2. get all confirmed attaches
+    for (final event in events) {
+      if (event is VerboseAttachToUtxoEvent &&
+          event.state is EventStateConfirmed) {
+        final txHash = event.txHash;
+        if (txHash != null && txHashes.contains(txHash)) {
+          // 3. remove the txHashes as the events confirm
+          confirmedTxHashes.add(txHash);
+        }
+      }
+    }
+    if (confirmedTxHashes.isEmpty) {
+      return;
+    } else {
+      txHashes.removeWhere((txHash) => confirmedTxHashes.contains(txHash));
+    }
+    // 4. Update the cache outside of the loop, all at once
+    if (txHashes.isEmpty) {
+      // Remove the key if the list is empty
+      await cacheProvider.remove(address);
+    } else {
+      await cacheProvider.setObject(address, txHashes);
+    }
   }
 }

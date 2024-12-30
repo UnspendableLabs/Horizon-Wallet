@@ -1,3 +1,4 @@
+import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:bloc_test/bloc_test.dart';
 import 'package:horizon/domain/entities/asset_info.dart';
@@ -63,6 +64,8 @@ class MockComposeAttachUtxoResponseParams extends Mock
   // Include other necessary overrides if needed
 }
 
+class MockCacheProvider extends Mock implements CacheProvider {}
+
 class FakeVirtualSize extends Fake implements VirtualSize {
   @override
   final int virtualSize;
@@ -87,7 +90,7 @@ void main() {
       mockSignAndBroadcastTransactionUseCase;
   late MockWriteLocalTransactionUseCase mockWriteLocalTransactionUseCase;
   late MockBlockRepository mockBlockRepository;
-
+  late MockCacheProvider mockCacheProvider;
   const mockFeeEstimates = FeeEstimates(fast: 5, medium: 3, slow: 1);
   final mockBalance = Balance(
     asset: 'ASSET_NAME',
@@ -136,7 +139,7 @@ void main() {
         MockSignAndBroadcastTransactionUseCase();
     mockWriteLocalTransactionUseCase = MockWriteLocalTransactionUseCase();
     mockBlockRepository = MockBlockRepository();
-
+    mockCacheProvider = MockCacheProvider();
     composeAttachUtxoBloc = ComposeAttachUtxoBloc(
       composeRepository: mockComposeRepository,
       analyticsService: mockAnalyticsService,
@@ -148,6 +151,7 @@ void main() {
           mockSignAndBroadcastTransactionUseCase,
       writelocalTransactionUseCase: mockWriteLocalTransactionUseCase,
       blockRepository: mockBlockRepository,
+      cacheProvider: mockCacheProvider,
       initialFairminterTxHash: null,
     );
   });

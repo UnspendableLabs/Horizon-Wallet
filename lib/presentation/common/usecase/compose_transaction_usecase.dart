@@ -1,5 +1,3 @@
-import 'package:flutter_settings_screens/flutter_settings_screens.dart';
-import 'package:get_it/get_it.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/repositories/utxo_repository.dart';
 import 'package:horizon/presentation/common/usecase/get_virtual_size_usecase.dart';
@@ -43,19 +41,8 @@ class ComposeTransactionUseCase {
   }) async {
     try {
       // Fetch UTXOs
-      List<Utxo> inputsSet = await utxoRepository.getUnspentForAddress(source);
-
-      // Fetch cached tx hashes for the source address
-      final cacheProvider = GetIt.I<CacheProvider>();
-      final cachedTxHashes = cacheProvider.getValue(source);
-
-      if (cachedTxHashes != null && cachedTxHashes.isNotEmpty) {
-        // Exclude UTXOs from unconfirmed attach transactions
-        inputsSet = inputsSet.where((utxo) {
-          // Exclude UTXOs if their txid is in the cached tx hashes
-          return !(cachedTxHashes.contains(utxo.txid) && utxo.vout == 0);
-        }).toList();
-      }
+      List<Utxo> inputsSet = await utxoRepository.getUnspentForAddress(source,
+          excludeCached: true);
 
       if (inputsSet.length > 20) {
         inputsSet = await _getLargeInputsSet(inputsSet);

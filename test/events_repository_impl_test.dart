@@ -50,6 +50,30 @@ void main() {
         .thenAnswer((_) async => Future<void>.value());
   });
 
+  // Helper function
+  api.VerboseAttachToUtxoParams createMockParams(String txHash) {
+    return api.VerboseAttachToUtxoParams(
+      asset: 'TEST',
+      blockIndex: 1,
+      destination: 'dest',
+      feePaid: 100,
+      quantityNormalized: '100',
+      feePaidNormalized: '100',
+      msgIndex: 1,
+      blockTime: 1,
+      source: 'source',
+      status: 'valid',
+      txHash: txHash,
+      txIndex: 1,
+      quantity: 100,
+      assetInfo: AssetInfoModel(
+        divisible: true,
+        description: 'description',
+        locked: true,
+      ),
+    );
+  }
+
   group('getByAddressVerbose', () {
     test('should call API with correct parameters and return events', () async {
       // Arrange
@@ -111,54 +135,6 @@ void main() {
       expect(result.$1.length, 1);
       expect(result.$2, null);
       expect(result.$3, 1);
-    });
-
-    test('should invalidate cache for confirmed AttachToUtxo events', () async {
-      // Arrange
-      final apiEvent = api.VerboseAttachToUtxoEvent(
-        eventIndex: 1,
-        event: 'ATTACH_TO_UTXO',
-        txHash: 'hash',
-        blockIndex: 1,
-        blockTime: 1,
-        params: api.VerboseAttachToUtxoParams(
-          asset: 'TEST',
-          blockIndex: 1,
-          destination: 'dest',
-          feePaid: 100,
-          quantityNormalized: '100',
-          feePaidNormalized: '100',
-          msgIndex: 1,
-          blockTime: 1,
-          source: 'source',
-          status: 'valid',
-          txHash: 'hash',
-          txIndex: 1,
-          quantity: 100,
-          assetInfo: AssetInfoModel(
-            divisible: true,
-            description: 'description',
-            locked: true,
-          ),
-        ),
-      );
-
-      final response = MockResponse();
-      when(() => response.result).thenReturn([apiEvent]);
-      when(() => response.nextCursor).thenReturn(null);
-
-      when(() => mockApi.getEventsByAddressesVerbose(
-            any(),
-            any(),
-            any(),
-            any(),
-          )).thenAnswer((_) async => response);
-
-      // Act
-      await repository.getByAddressVerbose(address: 'test_address');
-
-      // Assert
-      verify(() => mockCacheProvider.getValue('test_address')).called(1);
     });
 
     test(
@@ -247,7 +223,7 @@ void main() {
       await repository.getByAddressVerbose(address: 'test_address');
 
       // Assert
-      verify(() => mockCacheProvider.getValue('test_address')).called(2);
+      verify(() => mockCacheProvider.getValue('test_address')).called(1);
       verify(() => mockCacheProvider.setObject(
             'test_address',
             any(
@@ -257,7 +233,148 @@ void main() {
                     list.contains('another_keep_hash') &&
                     !list.contains('remove_hash1') &&
                     !list.contains('remove_hash2'))),
-          )).called(2);
+          )).called(1);
+    });
+  });
+
+  group('invalidateAttachToUtxoCache', () {
+    test('should not modify cache for non-AttachToUtxo events', () async {
+      // Arrange
+      final events = [
+        VerboseEvent(
+          state: EventStateConfirmed(blockHeight: 1, blockTime: 1),
+          eventIndex: 1,
+          event: 'OTHER_EVENT',
+          txHash: 'hash1',
+          blockIndex: 1,
+          blockTime: 1,
+        )
+      ];
+      const address = 'test_address';
+      when(() => mockCacheProvider.getValue(any())).thenReturn(['hash1']);
+
+      // Act
+      await EventsRepositoryImpl.invalidateAttachToUtxoCache(
+        events,
+        address,
+        mockCacheProvider,
+      );
+
+      // Assert
+      verify(() => mockCacheProvider.getValue(address)).called(1);
+      verifyNever(() => mockCacheProvider.setObject(any(), any()));
+      verifyNever(() => mockCacheProvider.remove(any()));
+    });
+
+    test('should update cache once when multiple confirmed events are found',
+        () async {
+      // Arrange
+      final events = [
+        api.VerboseAttachToUtxoEvent(
+          eventIndex: 1,
+          event: 'ATTACH_TO_UTXO',
+          txHash: 'remove_hash1',
+          blockIndex: 1,
+          blockTime: 1,
+          params: createMockParams('remove_hash1'),
+        ),
+        api.VerboseAttachToUtxoEvent(
+          eventIndex: 2,
+          event: 'ATTACH_TO_UTXO',
+          txHash: 'remove_hash2',
+          blockIndex: 2,
+          blockTime: 2,
+          params: createMockParams('remove_hash2'),
+        ),
+      ].map((e) => VerboseAttachToUtxoEventMapper.toDomain(e)).toList();
+
+      const address = 'test_address';
+      final cachedHashes = [
+        'keep_hash',
+        'remove_hash1',
+        'remove_hash2',
+        'another_keep_hash'
+      ];
+      when(() => mockCacheProvider.getValue(address)).thenReturn(cachedHashes);
+
+      // Act
+      await EventsRepositoryImpl.invalidateAttachToUtxoCache(
+        events,
+        address,
+        mockCacheProvider,
+      );
+
+      // Assert
+      verify(() => mockCacheProvider.getValue(address)).called(1);
+      verify(() => mockCacheProvider.setObject(
+            address,
+            any(
+                that: predicate<List<dynamic>>((list) =>
+                    list.length == 2 &&
+                    list.contains('keep_hash') &&
+                    list.contains('another_keep_hash') &&
+                    !list.contains('remove_hash1') &&
+                    !list.contains('remove_hash2'))),
+          )).called(1);
+      verifyNever(() => mockCacheProvider.remove(any()));
+    });
+
+    test('should remove cache entry when all txHashes are confirmed', () async {
+      // Arrange
+      final events = [
+        api.VerboseAttachToUtxoEvent(
+          eventIndex: 1,
+          event: 'ATTACH_TO_UTXO',
+          txHash: 'hash1',
+          blockIndex: 1,
+          blockTime: 1,
+          params: createMockParams('hash1'),
+        ),
+      ].map((e) => VerboseAttachToUtxoEventMapper.toDomain(e)).toList();
+
+      const address = 'test_address';
+      when(() => mockCacheProvider.getValue(address)).thenReturn(['hash1']);
+
+      // Act
+      await EventsRepositoryImpl.invalidateAttachToUtxoCache(
+        events,
+        address,
+        mockCacheProvider,
+      );
+
+      // Assert
+      verify(() => mockCacheProvider.getValue(address)).called(1);
+      verify(() => mockCacheProvider.remove(address)).called(1);
+      verifyNever(() => mockCacheProvider.setObject(any(), any()));
+    });
+
+    test('should early return when no confirmed txHashes are found', () async {
+      // Arrange
+      final events = [
+        api.VerboseAttachToUtxoEvent(
+          eventIndex: 1,
+          event: 'ATTACH_TO_UTXO',
+          txHash: 'hash1',
+          blockIndex: null, // Makes it a mempool event
+          blockTime: null,
+          params: createMockParams('hash1'),
+        ),
+      ].map((e) => VerboseAttachToUtxoEventMapper.toDomain(e)).toList();
+
+      const address = 'test_address';
+      when(() => mockCacheProvider.getValue(address)).thenReturn(['hash1']);
+
+      // Act
+      await EventsRepositoryImpl.invalidateAttachToUtxoCache(
+        events,
+        address,
+        mockCacheProvider,
+      );
+
+      // Assert
+      verify(() => mockCacheProvider.getValue(address)).called(1);
+      verifyNever(() => mockCacheProvider.setObject(any(), any()));
+      verifyNever(() => mockCacheProvider.remove(any()));
     });
   });
 }

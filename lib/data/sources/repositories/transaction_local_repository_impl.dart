@@ -1,7 +1,5 @@
 import "dart:convert";
 
-import 'package:flutter_settings_screens/flutter_settings_screens.dart';
-import 'package:get_it/get_it.dart';
 import 'package:horizon/data/sources/network/api/v2_api.dart' as api;
 import 'package:horizon/domain/entities/transaction_info.dart';
 import 'package:horizon/domain/entities/transaction_unpacked.dart';
@@ -172,24 +170,6 @@ class TransactionLocalRepositoryImpl implements TransactionLocalRepository {
     );
 
     await transactionDao.insert(tx);
-
-    // Check if the transaction is an 'attach' transaction
-    if (transactionInfo is TransactionInfoAttach) {
-      final cacheProvider = GetIt.I<CacheProvider>();
-
-      // Use the source address as the key and tx hash as the value
-      final sourceAddress = transactionInfo.source;
-      final txHash = transactionInfo.hash;
-
-      // Fetch existing tx hashes for the source address
-      final txHashes = cacheProvider.getValue(sourceAddress) ?? [];
-
-      // Add the new tx hash
-      txHashes.add(txHash);
-
-      // Save back to the cache
-      await cacheProvider.setObject(sourceAddress, txHashes);
-    }
   }
 
   @override

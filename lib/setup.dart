@@ -264,6 +264,8 @@ Future<void> setup() async {
     // blockCypherApi: BlockCypherApi(dio: blockCypherDio)
   ));
 
+  injector.registerSingleton<CacheProvider>(HiveCache());
+
   injector.registerSingleton<DatabaseManager>(DatabaseManager());
 
   injector.registerSingleton<AddressTxRepository>(
@@ -271,7 +273,9 @@ Future<void> setup() async {
   injector.registerSingleton<ComposeRepository>(
       ComposeRepositoryImpl(api: GetIt.I.get<V2Api>()));
   injector.registerSingleton<UtxoRepository>(UtxoRepositoryImpl(
-      api: GetIt.I.get<V2Api>(), esploraApi: EsploraApi(dio: esploraDio)));
+      api: GetIt.I.get<V2Api>(),
+      esploraApi: EsploraApi(dio: esploraDio),
+      cacheProvider: GetIt.I.get<CacheProvider>()));
   injector.registerSingleton<BalanceRepository>(BalanceRepositoryImpl(
       api: GetIt.I.get<V2Api>(),
       utxoRepository: GetIt.I.get<UtxoRepository>(),
@@ -330,12 +334,6 @@ Future<void> setup() async {
           api_: GetIt.I.get<V2Api>(),
           transactionDao:
               TransactionsDao(injector.get<DatabaseManager>().database)));
-
-  // Initialize the cache provider
-  final cacheProvider = HiveCache();
-  await cacheProvider.init();
-
-  injector.registerSingleton<CacheProvider>(cacheProvider);
 
   injector.registerSingleton<AccountSettingsRepository>(
       AccountSettingsRepositoryImpl(
