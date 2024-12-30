@@ -1,4 +1,5 @@
 import 'package:collection/collection.dart';
+import 'package:horizon/common/format.dart';
 import 'package:horizon/common/uuid.dart';
 import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/domain/entities/compose_attach_utxo.dart';
@@ -74,7 +75,7 @@ class ComposeAttachUtxoBloc extends ComposeBaseBloc<ComposeAttachUtxoState> {
       final xcpBalance =
           balances.firstWhereOrNull((balance) => balance.asset == 'XCP');
       final String xcpFeeEstimateString = xcpFeeEstimate > 0
-          ? (xcpFeeEstimate / 100000000).toStringAsFixed(8)
+          ? (xcpFeeEstimate / SATOSHI_RATE).toStringAsFixed(8)
           : '0';
 
       if (xcpBalance == null) {

@@ -189,27 +189,24 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
         throw Exception("No balance found for selected asset");
       }
 
-      Decimal giveInput = Decimal.parse(giveQuantityController.text);
-      Decimal escrowInput = Decimal.parse(escrowQuantityController.text);
-      Decimal mainchainrateBtc =
-          Decimal.parse(mainchainrateController.text); // Price in BTC
-
       int giveQuantity;
       int escrowQuantity;
 
       // Handle divisibility for the give quantity
       if (balance.assetInfo.divisible) {
         giveQuantity =
-            (giveInput * Decimal.fromInt(100000000)).toBigInt().toInt();
+            getQuantityForDivisibility(true, giveQuantityController.text);
         escrowQuantity =
-            (escrowInput * Decimal.fromInt(100000000)).toBigInt().toInt();
+            getQuantityForDivisibility(true, escrowQuantityController.text);
       } else {
-        giveQuantity = giveInput.toBigInt().toInt();
-        escrowQuantity = escrowInput.toBigInt().toInt();
+        giveQuantity =
+            getQuantityForDivisibility(false, giveQuantityController.text);
+        escrowQuantity =
+            getQuantityForDivisibility(false, escrowQuantityController.text);
       }
 
-      int mainchainrate =
-          (mainchainrateBtc * Decimal.fromInt(100000000)).toBigInt().toInt();
+      int mainchainrate = getQuantityForDivisibility(
+          true, mainchainrateController.text); // Price in BTC
 
       if (isCreateNewAddressFlow) {
         context.read<ComposeDispenserBloc>().add(ConfirmTransactionOnNewAddress(

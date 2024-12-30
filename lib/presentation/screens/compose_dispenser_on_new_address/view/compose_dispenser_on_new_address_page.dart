@@ -273,7 +273,8 @@ class _ComposeDispenserOnNewAddressPageState
                       HorizonUI.HorizonTextFormField(
                         label: "BTC Quantity",
                         controller: TextEditingController(
-                            text: (btcQuantity / 100000000).toStringAsFixed(8)),
+                            text:
+                                satoshisToBtc(btcQuantity).toStringAsFixed(8)),
                         enabled: false,
                       ),
                       const SizedBox(height: 16.0),

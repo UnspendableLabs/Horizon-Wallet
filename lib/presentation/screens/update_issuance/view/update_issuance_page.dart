@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/common/constants.dart';
+import 'package:horizon/common/format.dart';
 import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/domain/entities/asset.dart';
 import 'package:horizon/domain/entities/compose_issuance.dart';
@@ -836,15 +837,9 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
 
   int _updateQuantity(
       bool isDivisible, TextEditingController quantityController) {
-    Decimal input = Decimal.parse(quantityController.text);
+    int quantity =
+        getQuantityForDivisibility(isDivisible, quantityController.text);
 
-    int quantity;
-
-    if (isDivisible) {
-      quantity = (input * Decimal.fromInt(100000000)).toBigInt().toInt();
-    } else {
-      quantity = (input).toBigInt().toInt();
-    }
     return quantity;
   }
 }

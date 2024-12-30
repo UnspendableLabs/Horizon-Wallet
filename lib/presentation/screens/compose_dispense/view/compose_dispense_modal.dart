@@ -159,10 +159,8 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
 
   void _handleInitialSubmit(GlobalKey<FormState> formKey) {
     if (formKey.currentState!.validate()) {
-      int quantity =
-          (Decimal.parse(priceController.text) * Decimal.fromInt(100000000))
-              .toBigInt()
-              .toInt();
+      int priceQuantity =
+          getQuantityForDivisibility(true, priceController.text);
       String dispenser = dispenserController.text;
 
       // Dispatch the event with the calculated values
@@ -171,7 +169,7 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
             params: ComposeDispenseEventParams(
                 address: widget.address,
                 dispenser: dispenser,
-                quantity: quantity),
+                quantity: priceQuantity),
           ));
     }
   }

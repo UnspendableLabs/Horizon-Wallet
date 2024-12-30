@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:collection/collection.dart';
+import 'package:horizon/common/format.dart';
 import 'package:horizon/domain/entities/asset.dart';
 import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/domain/entities/remote_data.dart';
@@ -84,7 +85,7 @@ class GiveQuantityInput extends FormzInput<String, GiveQuantityValidationError>
 
     try {
       final quantity = isDivisible
-          ? (double.tryParse(value)! * 100000000)
+          ? (double.tryParse(value)! * SATOSHI_RATE)
           : int.tryParse(value);
 
       if (quantity == null || quantity <= 0) {
@@ -124,7 +125,7 @@ class GetQuantityInput extends FormzInput<String, GetQuantityValidationError>
 
     try {
       final quantity = isDivisible
-          ? (double.tryParse(value)! * 100000000)
+          ? (double.tryParse(value)! * SATOSHI_RATE)
           : int.tryParse(value);
 
       if (quantity == null || quantity <= 0) {
@@ -553,7 +554,7 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
       nextGiveAsset = GiveAssetInput.dirty(params.initialGiveAsset);
       nextGiveAssetValidationStatus = Success(initialGiveAsset);
       String nextGiveQuantityNormalized = (initialGiveAsset.divisible ?? false
-              ? (params.initialGiveQuantity / 100000000)
+              ? (params.initialGiveQuantity / SATOSHI_RATE)
               : params.initialGiveQuantity)
           .toString();
 
@@ -578,7 +579,7 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
       nextGetAsset = GetAssetInput.dirty(params.initialGetAsset);
       nextGetAssetValidationStatus = Success(initialGetAsset);
       String nextGetQuantityNormalized = (initialGetAsset.divisible ?? false
-              ? (params.initialGetQuantity / 100000000)
+              ? (params.initialGetQuantity / SATOSHI_RATE)
               : params.initialGetQuantity)
           .toString();
       nextGetQuantity = GetQuantityInput.dirty(nextGetQuantityNormalized,
@@ -853,10 +854,10 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
       final String getAsset = state.getAsset.value;
       final String giveAsset = state.giveAsset.value;
       final int getQuantity = (state.getQuantity.isDivisible
-          ? (double.parse(state.getQuantity.value) * 100000000).round()
+          ? (double.parse(state.getQuantity.value) * SATOSHI_RATE).round()
           : int.parse(state.getQuantity.value));
       final int giveQuantity = (state.giveQuantity.isDivisible
-          ? (double.parse(state.giveQuantity.value) * 100000000).round()
+          ? (double.parse(state.giveQuantity.value) * SATOSHI_RATE).round()
           : int.parse(state.giveQuantity.value));
 
       // Making the compose transaction call

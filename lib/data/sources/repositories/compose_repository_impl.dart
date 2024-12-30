@@ -1,4 +1,5 @@
 import 'package:collection/collection.dart';
+import 'package:horizon/common/format.dart';
 import 'package:horizon/data/sources/network/api/v2_api.dart';
 import 'package:horizon/domain/entities/asset_info.dart' as asset_info;
 import 'package:horizon/domain/entities/bitcoin_decoded_tx.dart';
@@ -438,7 +439,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
 
     final scriptPubKey = outputForChaining.scriptPubKey;
     final int value =
-        (outputForChaining.value * 100000000).toInt(); // convert to sats
+        (outputForChaining.value * SATOSHI_RATE).toInt(); // convert to sats
     final String txid = prevDecodedTransaction.txid;
     final int vout = outputForChaining.n;
 

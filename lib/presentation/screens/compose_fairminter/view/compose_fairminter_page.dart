@@ -203,9 +203,10 @@ class ComposeFairminterPageState extends State<ComposeFairminterPage> {
       }
 
       int maxMintPerTxDivisible =
-          (maxMintPerTxInput * Decimal.fromInt(100000000)).toBigInt().toInt();
+          getQuantityForDivisibility(true, maxMintPerTxController.text);
       int hardcapDivisible =
-          (hardcapInput * Decimal.fromInt(100000000)).toBigInt().toInt();
+          getQuantityForDivisibility(true, hardcapController.text);
+
       String? parent;
       String? subAsset;
       final fullAssetName =

@@ -58,9 +58,8 @@ void main() {
       when(() => mockGetFeeEstimatesUseCase.call())
           .thenAnswer((_) async => feeEstimates);
 
-      when(() => mockBalanceRepository.getBalancesForAddress(
-            testAddress,
-          )).thenAnswer((_) async => [balance]);
+      when(() => mockBalanceRepository.getBalancesForAddress(testAddress, true))
+          .thenAnswer((_) async => [balance]);
 
       when(() => mockComposeRepository.estimateComposeAttachXcpFees())
           .thenAnswer((_) async => mockXcpFeeEstimate);
@@ -73,9 +72,9 @@ void main() {
       expect(result.$2, [balance]);
       expect(result.$3, mockXcpFeeEstimate);
       verify(() => mockGetFeeEstimatesUseCase.call()).called(1);
-      verify(() => mockBalanceRepository.getBalancesForAddress(
-            testAddress,
-          )).called(1);
+      verify(() =>
+              mockBalanceRepository.getBalancesForAddress(testAddress, true))
+          .called(1);
       verify(() => mockComposeRepository.estimateComposeAttachXcpFees())
           .called(1);
     });
@@ -86,9 +85,8 @@ void main() {
       when(() => mockGetFeeEstimatesUseCase.call())
           .thenAnswer((_) async => feeEstimates);
 
-      when(() => mockBalanceRepository.getBalancesForAddress(
-            testAddress,
-          )).thenThrow(Exception('Balance fetch failed'));
+      when(() => mockBalanceRepository.getBalancesForAddress(testAddress, true))
+          .thenThrow(Exception('Balance fetch failed'));
 
       // Act & Assert
       expect(
@@ -97,9 +95,9 @@ void main() {
       );
 
       verify(() => mockGetFeeEstimatesUseCase.call()).called(1);
-      verify(() => mockBalanceRepository.getBalancesForAddress(
-            testAddress,
-          )).called(1);
+      verify(() =>
+              mockBalanceRepository.getBalancesForAddress(testAddress, true))
+          .called(1);
     });
 
     test(
@@ -109,9 +107,8 @@ void main() {
       when(() => mockGetFeeEstimatesUseCase.call())
           .thenThrow(Exception('Fee estimates fetch failed'));
 
-      when(() => mockBalanceRepository.getBalancesForAddress(
-            testAddress,
-          )).thenAnswer((_) async => [balance]);
+      when(() => mockBalanceRepository.getBalancesForAddress(testAddress, true))
+          .thenAnswer((_) async => [balance]);
 
       // Act & Assert
       expect(
@@ -120,9 +117,9 @@ void main() {
       );
 
       verify(() => mockGetFeeEstimatesUseCase.call()).called(1);
-      verify(() => mockBalanceRepository.getBalancesForAddress(
-            testAddress,
-          )).called(1);
+      verify(() =>
+              mockBalanceRepository.getBalancesForAddress(testAddress, true))
+          .called(1);
     });
   });
 
@@ -149,7 +146,7 @@ void main() {
     // Arrange
     when(() => mockGetFeeEstimatesUseCase.call())
         .thenAnswer((_) async => feeEstimates);
-    when(() => mockBalanceRepository.getBalancesForAddress(testAddress))
+    when(() => mockBalanceRepository.getBalancesForAddress(testAddress, true))
         .thenAnswer((_) async => [balance]);
     when(() => mockComposeRepository.estimateComposeAttachXcpFees())
         .thenThrow(Exception('xcp fees estimate error'));
@@ -160,7 +157,7 @@ void main() {
       throwsA(isA<FetchAttachXcpFeesException>()),
     );
     verify(() => mockGetFeeEstimatesUseCase.call()).called(1);
-    verify(() => mockBalanceRepository.getBalancesForAddress(testAddress))
+    verify(() => mockBalanceRepository.getBalancesForAddress(testAddress, true))
         .called(1);
     verify(() => mockComposeRepository.estimateComposeAttachXcpFees())
         .called(1);
