@@ -40,7 +40,9 @@ class ComposeTransactionUseCase {
     required ComposeFunction<P, R> composeFn,
   }) async {
     try {
-      List<Utxo> inputsSet = await utxoRepository.getUnspentForAddress(source);
+      // Fetch UTXOs
+      List<Utxo> inputsSet = await utxoRepository.getUnspentForAddress(source,
+          excludeCached: true);
 
       if (inputsSet.length > 20) {
         inputsSet = await _getLargeInputsSet(inputsSet);

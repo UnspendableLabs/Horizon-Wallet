@@ -264,6 +264,8 @@ Future<void> setup() async {
     // blockCypherApi: BlockCypherApi(dio: blockCypherDio)
   ));
 
+  injector.registerSingleton<CacheProvider>(HiveCache());
+
   injector.registerSingleton<DatabaseManager>(DatabaseManager());
 
   injector.registerSingleton<AddressTxRepository>(
@@ -271,7 +273,9 @@ Future<void> setup() async {
   injector.registerSingleton<ComposeRepository>(
       ComposeRepositoryImpl(api: GetIt.I.get<V2Api>()));
   injector.registerSingleton<UtxoRepository>(UtxoRepositoryImpl(
-      api: GetIt.I.get<V2Api>(), esploraApi: EsploraApi(dio: esploraDio)));
+      api: GetIt.I.get<V2Api>(),
+      esploraApi: EsploraApi(dio: esploraDio),
+      cacheProvider: GetIt.I.get<CacheProvider>()));
   injector.registerSingleton<BalanceRepository>(BalanceRepositoryImpl(
       api: GetIt.I.get<V2Api>(),
       utxoRepository: GetIt.I.get<UtxoRepository>(),
@@ -331,8 +335,6 @@ Future<void> setup() async {
           transactionDao:
               TransactionsDao(injector.get<DatabaseManager>().database)));
 
-  injector.registerSingleton<CacheProvider>(HiveCache());
-
   injector.registerSingleton<AccountSettingsRepository>(
       AccountSettingsRepositoryImpl(
     cacheProvider: GetIt.I.get<CacheProvider>(),
@@ -371,7 +373,8 @@ Future<void> setup() async {
 
   injector.registerSingleton<EventsRepository>(EventsRepositoryImpl(
       api_: GetIt.I.get<V2Api>(),
-      bitcoinRepository: GetIt.I.get<BitcoinRepository>()));
+      bitcoinRepository: GetIt.I.get<BitcoinRepository>(),
+      cacheProvider: GetIt.I.get<CacheProvider>()));
 
   injector.registerSingleton<FetchDispenserFormDataUseCase>(
       FetchDispenserFormDataUseCase(
