@@ -7,29 +7,36 @@ class ThemeBloc extends Bloc<ThemeEvent, ThemeMode> {
   final CacheProvider cacheProvider;
 
   ThemeBloc(this.cacheProvider) : super(ThemeMode.dark) {
-    on<ThemeEvent>((event, emit) async {
-      switch (event) {
-        case ThemeEvent.initialize:
-          final isDarkMode = cacheProvider.getBool('isDarkMode');
+    on<ThemeInitialized>(_onInitialized);
+    on<ThemeToggled>(_onToggled);
 
-          // If not set, default to dark mode
-          if (isDarkMode == null) {
-            await cacheProvider.setBool('isDarkMode', true);
-            emit(ThemeMode.dark);
-            return;
-          }
+    add(ThemeInitialized());
+  }
 
-          // Otherwise use the stored preference
-          emit(isDarkMode ? ThemeMode.dark : ThemeMode.light);
+  Future<void> _onInitialized(
+    ThemeInitialized event,
+    Emitter<ThemeMode> emit,
+  ) async {
+    final isDarkMode = cacheProvider.getBool('isDarkMode');
 
-        case ThemeEvent.toggle:
-          final isDarkMode = cacheProvider.getBool('isDarkMode') ?? false;
-          final newTheme = isDarkMode ? ThemeMode.light : ThemeMode.dark;
-          await cacheProvider.setBool('isDarkMode', !isDarkMode);
-          emit(newTheme);
-      }
-    });
+    // If not set, default to dark mode
+    if (isDarkMode == null) {
+      await cacheProvider.setBool('isDarkMode', true);
+      emit(ThemeMode.dark);
+      return;
+    }
 
-    add(ThemeEvent.initialize);
+    // Otherwise use the stored preference
+    emit(isDarkMode ? ThemeMode.dark : ThemeMode.light);
+  }
+
+  Future<void> _onToggled(
+    ThemeToggled event,
+    Emitter<ThemeMode> emit,
+  ) async {
+    final isDarkMode = cacheProvider.getBool('isDarkMode') ?? false;
+    final newTheme = isDarkMode ? ThemeMode.light : ThemeMode.dark;
+    await cacheProvider.setBool('isDarkMode', !isDarkMode);
+    emit(newTheme);
   }
 }

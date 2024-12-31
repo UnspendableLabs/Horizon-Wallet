@@ -60,7 +60,7 @@ void main() {
             .thenAnswer((_) async {});
         return ThemeBloc(mockCacheProvider);
       },
-      act: (bloc) => bloc.add(ThemeEvent.toggle),
+      act: (bloc) => bloc.add(ThemeToggled()),
       expect: () => [ThemeMode.light, ThemeMode.dark],
       verify: (bloc) {
         verify(() => mockCacheProvider.getBool('isDarkMode')).called(2);
@@ -76,7 +76,7 @@ void main() {
             .thenAnswer((_) async {});
         return ThemeBloc(mockCacheProvider);
       },
-      act: (bloc) => bloc.add(ThemeEvent.toggle),
+      act: (bloc) => bloc.add(ThemeToggled()),
       expect: () => [ThemeMode.dark, ThemeMode.light],
       verify: (bloc) {
         verify(() => mockCacheProvider.getBool('isDarkMode')).called(2);
