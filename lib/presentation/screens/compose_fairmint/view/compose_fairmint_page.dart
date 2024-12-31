@@ -2,7 +2,6 @@ import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
-import 'package:horizon/common/format.dart';
 import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/domain/entities/compose_fairmint.dart';
 import 'package:horizon/domain/entities/fairminter.dart';
@@ -450,17 +449,11 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
     final fairminter =
         context.read<ComposeFairmintBloc>().state.selectedFairminter;
 
-    if (fairminter == null || fairminter.maxMintPerTx == null) {
+    if (fairminter == null || fairminter.maxMintPerTxNormalized == null) {
       return '';
     }
 
-    final quantity = fairminter.maxMintPerTx! / SATOSHI_RATE;
-
-    if (fairminter.divisible == true) {
-      return quantity.toStringAsFixed(8);
-    } else {
-      return fairminter.maxMintPerTx!.toString();
-    }
+    return fairminter.maxMintPerTxNormalized!;
   }
 
   void _onConfirmationBack() {

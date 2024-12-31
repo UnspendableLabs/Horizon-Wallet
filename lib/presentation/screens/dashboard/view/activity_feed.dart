@@ -751,7 +751,9 @@ class DashboardActivityFeedScreenState
           (state as dynamic).transactions as List<ActivityFeedItem>;
 
       final filteredTransactions = transactions.where((t) {
-        if (t.event != null && t.event is VerboseAssetIssuanceEvent) {
+        if (t.event != null &&
+            t.event is VerboseAssetIssuanceEvent &&
+            t.event?.state is EventStateMempool) {
           final assetIssuanceEvent = t.event as VerboseAssetIssuanceEvent;
           final isFairmintIssuance =
               (assetIssuanceEvent.params.assetEvents == "fairmint" &&

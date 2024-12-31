@@ -202,11 +202,6 @@ class ComposeFairminterPageState extends State<ComposeFairminterPage> {
         return;
       }
 
-      int maxMintPerTxDivisible = getQuantityForDivisibility(
-          divisible: true, inputQuantity: maxMintPerTxController.text);
-      int hardcapDivisible = getQuantityForDivisibility(
-          divisible: true, inputQuantity: hardcapController.text);
-
       String? parent;
       String? subAsset;
       final fullAssetName =
@@ -225,12 +220,12 @@ class ComposeFairminterPageState extends State<ComposeFairminterPage> {
             params: ComposeFairminterEventParams(
               parent: parent,
               asset: subAsset ?? asset!.asset,
-              maxMintPerTx: asset!.divisible!
-                  ? maxMintPerTxDivisible
-                  : int.parse(maxMintPerTxController.text),
-              hardCap: asset!.divisible!
-                  ? hardcapDivisible
-                  : int.parse(hardcapController.text),
+              maxMintPerTx: getQuantityForDivisibility(
+                  divisible: asset!.divisible!,
+                  inputQuantity: maxMintPerTxController.text),
+              hardCap: getQuantityForDivisibility(
+                  divisible: asset!.divisible!,
+                  inputQuantity: hardcapController.text),
               divisible: asset!.divisible!,
               startBlock: startBlockController.text.isEmpty
                   ? null
@@ -383,10 +378,6 @@ class ComposeFairminterPageState extends State<ComposeFairminterPage> {
 
   List<Widget> _buildConfirmationDetails(dynamic composeTransaction) {
     final params = (composeTransaction as ComposeFairminterResponse).params;
-    final Decimal maxMintPerTxNormalized = quantityToQuantityNormalized(
-        quantity: params.maxMintPerTx!, divisible: params.divisible!);
-    final Decimal hardcapNormalized = quantityToQuantityNormalized(
-        quantity: params.hardCap!, divisible: params.divisible!);
     final String assetName =
         (params.assetParent == null || params.assetParent == '')
             ? params.asset
@@ -406,19 +397,13 @@ class ComposeFairminterPageState extends State<ComposeFairminterPage> {
       const SizedBox(height: 16.0),
       HorizonUI.HorizonTextFormField(
         label: "Max mint per transaction",
-        controller: TextEditingController(
-            text: params.divisible!
-                ? maxMintPerTxNormalized.toStringAsFixed(8)
-                : maxMintPerTxNormalized.toString()),
+        controller: TextEditingController(text: params.maxMintPerTxNormalized),
         enabled: false,
       ),
       const SizedBox(height: 16.0),
       HorizonUI.HorizonTextFormField(
         label: "Hard cap",
-        controller: TextEditingController(
-            text: params.divisible!
-                ? hardcapNormalized.toStringAsFixed(8)
-                : hardcapNormalized.toString()),
+        controller: TextEditingController(text: params.hardCapNormalized),
         enabled: false,
       ),
       const SizedBox(height: 16.0),

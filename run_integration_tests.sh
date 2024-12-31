@@ -3,7 +3,7 @@
 # Start ChromeDriver
 start_chromedriver() {
     echo "Starting ChromeDriver..."
-    /opt/homebrew/bin/chromedriver --port=4444 &
+    ./chromedriver/linux-128.0.6613.84/chromedriver-linux64/chromedriver --port=4444 &
     CHROMEDRIVER_PID=$!
     sleep 2  # Give ChromeDriver a moment to start
 }

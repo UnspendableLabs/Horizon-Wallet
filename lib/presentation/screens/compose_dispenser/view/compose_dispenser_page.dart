@@ -189,21 +189,12 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
         throw Exception("No balance found for selected asset");
       }
 
-      int giveQuantity;
-      int escrowQuantity;
-
-      // Handle divisibility for the give quantity
-      if (balance.assetInfo.divisible) {
-        giveQuantity = getQuantityForDivisibility(
-            divisible: true, inputQuantity: giveQuantityController.text);
-        escrowQuantity = getQuantityForDivisibility(
-            divisible: true, inputQuantity: escrowQuantityController.text);
-      } else {
-        giveQuantity = getQuantityForDivisibility(
-            divisible: false, inputQuantity: giveQuantityController.text);
-        escrowQuantity = getQuantityForDivisibility(
-            divisible: false, inputQuantity: escrowQuantityController.text);
-      }
+      int giveQuantity = getQuantityForDivisibility(
+          divisible: balance.assetInfo.divisible,
+          inputQuantity: giveQuantityController.text);
+      int escrowQuantity = getQuantityForDivisibility(
+          divisible: balance.assetInfo.divisible,
+          inputQuantity: escrowQuantityController.text);
 
       int mainchainrate = getQuantityForDivisibility(
           divisible: true,

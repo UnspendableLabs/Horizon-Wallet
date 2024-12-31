@@ -1,4 +1,3 @@
-import "package:decimal/decimal.dart";
 import "package:horizon/domain/entities/dispenser.dart";
 import "package:horizon/common/format.dart";
 
@@ -9,7 +8,7 @@ enum EstimatedDispenseAnnotations {
 class EstimatedDispense {
   final int estimatedUnits;
   final int estimatedQuantity;
-  final Decimal estimatedQuantityNormalized;
+  final String estimatedQuantityNormalized;
   final List<EstimatedDispenseAnnotations> annotations;
   final Dispenser dispenser;
 
@@ -65,7 +64,7 @@ EstimatedDispense estimatedDispenseForDispenserAndQuantity(
         dispenser: dispenser,
         estimatedUnits: unitsToDispense,
         estimatedQuantity: quantityToDispense,
-        estimatedQuantityNormalized: quantityToQuantityNormalized(
+        estimatedQuantityNormalized: quantityToQuantityNormalizedString(
             quantity: quantityToDispense,
             divisible: dispenser.assetInfo.divisible));
   } else {
@@ -74,7 +73,8 @@ EstimatedDispense estimatedDispenseForDispenserAndQuantity(
         dispenser: dispenser,
         estimatedUnits: 0,
         estimatedQuantity: 0,
-        estimatedQuantityNormalized: quantityToQuantityNormalized(
-            quantity: 0, divisible: dispenser.assetInfo.divisible));
+        estimatedQuantityNormalized: quantityToQuantityNormalizedString(
+            quantity: quantityToDispense,
+            divisible: dispenser.assetInfo.divisible));
   }
 }
