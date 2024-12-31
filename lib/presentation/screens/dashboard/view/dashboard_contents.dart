@@ -429,7 +429,7 @@ class HorizonAppBarContent extends StatelessWidget {
                         child: GestureDetector(
                           onTap: () {
                             if (isDarkTheme) {
-                              context.read<ThemeBloc>().add(ThemeEvent.toggle);
+                              context.read<ThemeBloc>().add(ThemeToggled());
                             }
                           },
                           child: Container(
@@ -454,7 +454,7 @@ class HorizonAppBarContent extends StatelessWidget {
                         child: GestureDetector(
                           onTap: () {
                             if (!isDarkTheme) {
-                              context.read<ThemeBloc>().add(ThemeEvent.toggle);
+                              context.read<ThemeBloc>().add(ThemeToggled());
                             }
                           },
                           child: Container(
