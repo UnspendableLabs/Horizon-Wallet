@@ -297,7 +297,8 @@ class ComposeMpmaBloc extends ComposeBaseBloc<ComposeMpmaState> {
               'Balance not found for asset ${entries[i].asset}');
         }
         int quantity = getQuantityForDivisibility(
-            balance.assetInfo.divisible, entries[i].quantity);
+            divisible: balance.assetInfo.divisible,
+            inputQuantity: entries[i].quantity);
         quantities[i] = quantity;
       }
 

@@ -60,14 +60,14 @@ EstimatedDispense estimatedDispenseForDispenserAndQuantity(
   }
 
   if (quantityToDispense > 0) {
-    print(annotations);
     return EstimatedDispense(
         annotations: annotations,
         dispenser: dispenser,
         estimatedUnits: unitsToDispense,
         estimatedQuantity: quantityToDispense,
         estimatedQuantityNormalized: quantityToQuantityNormalized(
-            quantityToDispense, dispenser.assetInfo.divisible));
+            quantity: quantityToDispense,
+            divisible: dispenser.assetInfo.divisible));
   } else {
     return EstimatedDispense(
         annotations: annotations,
@@ -75,6 +75,6 @@ EstimatedDispense estimatedDispenseForDispenserAndQuantity(
         estimatedUnits: 0,
         estimatedQuantity: 0,
         estimatedQuantityNormalized: quantityToQuantityNormalized(
-            quantityToDispense, dispenser.assetInfo.divisible));
+            quantity: 0, divisible: dispenser.assetInfo.divisible));
   }
 }

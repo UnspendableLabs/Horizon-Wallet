@@ -505,7 +505,7 @@ class ComposeMpmaPageState extends State<ComposeMpmaPage> {
         // Convert quantity based on asset divisibility
 
         final displayQuantity = quantityToQuantityNormalizedString(
-            quantityInSats, balance.assetInfo.divisible);
+            quantity: quantityInSats, divisible: balance.assetInfo.divisible);
 
         return Column(
           children: [

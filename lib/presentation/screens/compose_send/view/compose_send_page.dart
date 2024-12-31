@@ -117,7 +117,7 @@ class ComposeSendPageState extends State<ComposeSendPage> {
     }
 
     String maxQuantityNormalized = quantityToQuantityNormalizedString(
-        maxValue, balance.assetInfo.divisible);
+        quantity: maxValue, divisible: balance.assetInfo.divisible);
     return maxQuantityNormalized;
   }
 
@@ -202,7 +202,8 @@ class ComposeSendPageState extends State<ComposeSendPage> {
       }
 
       int quantity = getQuantityForDivisibility(
-          balance.assetInfo.divisible, quantityController.text);
+          divisible: balance.assetInfo.divisible,
+          inputQuantity: quantityController.text);
 
       if (asset == null) {
         throw Exception("no asset");

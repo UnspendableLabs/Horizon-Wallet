@@ -136,8 +136,8 @@ class ComposeIssuancePageState extends State<ComposeIssuancePage> {
       _submitted = true;
     });
     if (formKey.currentState!.validate()) {
-      int quantity =
-          getQuantityForDivisibility(isDivisible, quantityController.text);
+      int quantity = getQuantityForDivisibility(
+          divisible: isDivisible, inputQuantity: quantityController.text);
 
       context.read<ComposeIssuanceBloc>().add(ComposeTransactionEvent(
             sourceAddress: widget.address,

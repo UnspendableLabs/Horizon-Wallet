@@ -194,19 +194,20 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
 
       // Handle divisibility for the give quantity
       if (balance.assetInfo.divisible) {
-        giveQuantity =
-            getQuantityForDivisibility(true, giveQuantityController.text);
-        escrowQuantity =
-            getQuantityForDivisibility(true, escrowQuantityController.text);
+        giveQuantity = getQuantityForDivisibility(
+            divisible: true, inputQuantity: giveQuantityController.text);
+        escrowQuantity = getQuantityForDivisibility(
+            divisible: true, inputQuantity: escrowQuantityController.text);
       } else {
-        giveQuantity =
-            getQuantityForDivisibility(false, giveQuantityController.text);
-        escrowQuantity =
-            getQuantityForDivisibility(false, escrowQuantityController.text);
+        giveQuantity = getQuantityForDivisibility(
+            divisible: false, inputQuantity: giveQuantityController.text);
+        escrowQuantity = getQuantityForDivisibility(
+            divisible: false, inputQuantity: escrowQuantityController.text);
       }
 
       int mainchainrate = getQuantityForDivisibility(
-          true, mainchainrateController.text); // Price in BTC
+          divisible: true,
+          inputQuantity: mainchainrateController.text); // Price in BTC
 
       if (isCreateNewAddressFlow) {
         context.read<ComposeDispenserBloc>().add(ConfirmTransactionOnNewAddress(

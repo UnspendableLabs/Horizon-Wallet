@@ -203,7 +203,8 @@ class ComposeAttachUtxoPageState extends State<ComposeAttachUtxoPage> {
     }
     if (formKey.currentState!.validate()) {
       int quantity = getQuantityForDivisibility(
-          balance.assetInfo.divisible, quantityController.text);
+          divisible: balance.assetInfo.divisible,
+          inputQuantity: quantityController.text);
 
       context.read<ComposeAttachUtxoBloc>().add(ComposeTransactionEvent(
             sourceAddress: fromAddressController.text,

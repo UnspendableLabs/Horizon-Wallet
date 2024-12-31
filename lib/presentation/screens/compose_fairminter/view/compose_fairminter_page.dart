@@ -202,10 +202,10 @@ class ComposeFairminterPageState extends State<ComposeFairminterPage> {
         return;
       }
 
-      int maxMintPerTxDivisible =
-          getQuantityForDivisibility(true, maxMintPerTxController.text);
-      int hardcapDivisible =
-          getQuantityForDivisibility(true, hardcapController.text);
+      int maxMintPerTxDivisible = getQuantityForDivisibility(
+          divisible: true, inputQuantity: maxMintPerTxController.text);
+      int hardcapDivisible = getQuantityForDivisibility(
+          divisible: true, inputQuantity: hardcapController.text);
 
       String? parent;
       String? subAsset;
@@ -395,10 +395,10 @@ class ComposeFairminterPageState extends State<ComposeFairminterPage> {
 
   List<Widget> _buildConfirmationDetails(dynamic composeTransaction) {
     final params = (composeTransaction as ComposeFairminterResponse).params;
-    final Decimal maxMintPerTxNormalized =
-        quantityToQuantityNormalized(params.maxMintPerTx!, params.divisible!);
-    final Decimal hardcapNormalized =
-        quantityToQuantityNormalized(params.hardCap!, params.divisible!);
+    final Decimal maxMintPerTxNormalized = quantityToQuantityNormalized(
+        quantity: params.maxMintPerTx!, divisible: params.divisible!);
+    final Decimal hardcapNormalized = quantityToQuantityNormalized(
+        quantity: params.hardCap!, divisible: params.divisible!);
     final String assetName =
         (params.assetParent == null || params.assetParent == '')
             ? params.asset

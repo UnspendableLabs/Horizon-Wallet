@@ -159,8 +159,8 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
 
   void _handleInitialSubmit(GlobalKey<FormState> formKey) {
     if (formKey.currentState!.validate()) {
-      int priceQuantity =
-          getQuantityForDivisibility(true, priceController.text);
+      int priceQuantity = getQuantityForDivisibility(
+          divisible: true, inputQuantity: priceController.text);
       String dispenser = dispenserController.text;
 
       // Dispatch the event with the calculated values

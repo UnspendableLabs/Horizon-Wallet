@@ -836,9 +836,9 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
   }
 
   int _updateQuantity(
-      bool isDivisible, TextEditingController quantityController) {
-    int quantity =
-        getQuantityForDivisibility(isDivisible, quantityController.text);
+      bool divisible, TextEditingController quantityController) {
+    int quantity = getQuantityForDivisibility(
+        divisible: divisible, inputQuantity: quantityController.text);
 
     return quantity;
   }

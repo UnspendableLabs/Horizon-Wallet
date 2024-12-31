@@ -17,7 +17,10 @@ Decimal satoshisToBtc(int satoshis) {
 
 final numberWithCommas = NumberFormat('#,###');
 
-Decimal quantityToQuantityNormalized(int quantity, bool divisible) {
+Decimal quantityToQuantityNormalized({
+  required int quantity,
+  required bool divisible,
+}) {
   if (divisible) {
     final rational = Decimal.fromInt(quantity) / Decimal.fromInt(SATOSHI_RATE);
     return rational.toDecimal(scaleOnInfinitePrecision: 8);
@@ -26,7 +29,10 @@ Decimal quantityToQuantityNormalized(int quantity, bool divisible) {
   }
 }
 
-int getQuantityForDivisibility(bool divisible, String inputQuantity) {
+int getQuantityForDivisibility({
+  required bool divisible,
+  required String inputQuantity,
+}) {
   Decimal input = Decimal.parse(inputQuantity);
   int quantity;
   if (divisible) {
@@ -37,9 +43,14 @@ int getQuantityForDivisibility(bool divisible, String inputQuantity) {
   return quantity;
 }
 
-String quantityToQuantityNormalizedString(int quantity, bool divisible) {
-  Decimal quantityNormalized =
-      quantityToQuantityNormalized(quantity, divisible);
+String quantityToQuantityNormalizedString({
+  required int quantity,
+  required bool divisible,
+}) {
+  Decimal quantityNormalized = quantityToQuantityNormalized(
+    quantity: quantity,
+    divisible: divisible,
+  );
   if (divisible) {
     return quantityNormalized.toStringAsFixed(8);
   } else {
