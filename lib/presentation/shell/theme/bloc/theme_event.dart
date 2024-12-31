@@ -1,1 +1,1 @@
-enum ThemeEvent { toggle }
+enum ThemeEvent { toggle, initialize }
