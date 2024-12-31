@@ -69,7 +69,8 @@ class SignAndBroadcastTransactionUseCase<R extends ComposeResponse> {
       late ImportedAddress? importedAddress;
 
       // Fetch UTXOs
-      final utxos = await utxoRepository.getUnspentForAddress(source);
+      final utxos = await utxoRepository.getUnspentForAddress(source,
+          excludeCached: true);
       final Map<String, Utxo> utxoMap = {
         for (var e in utxos) "${e.txid}:${e.vout}": e
       };

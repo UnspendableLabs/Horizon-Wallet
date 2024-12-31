@@ -1,11 +1,12 @@
+import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:horizon/common/format.dart';
 import 'package:horizon/data/models/cursor.dart' as cursor_model;
+import 'package:horizon/data/models/event.dart';
+import 'package:horizon/data/sources/network/api/v2_api.dart' as api;
 import 'package:horizon/domain/entities/bitcoin_tx.dart';
 import 'package:horizon/domain/entities/cursor.dart' as cursor_entity;
-import 'package:horizon/data/sources/network/api/v2_api.dart' as api;
 import 'package:horizon/domain/entities/cursor.dart';
 import 'package:horizon/domain/entities/event.dart';
-import 'package:horizon/data/models/event.dart';
 import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 import 'package:horizon/domain/repositories/events_repository.dart';
 
@@ -971,9 +972,12 @@ class VerboseAtomicSwapEventMapper {
 class EventsRepositoryImpl implements EventsRepository {
   final api.V2Api api_;
   final BitcoinRepository bitcoinRepository;
+  final CacheProvider cacheProvider;
+
   EventsRepositoryImpl({
     required this.api_,
     required this.bitcoinRepository,
+    required this.cacheProvider,
   });
 
   @override
@@ -1010,8 +1014,9 @@ class EventsRepositoryImpl implements EventsRepository {
       return await VerboseEventMapper(bitcoinRepository: bitcoinRepository)
           .toDomain(event, address);
     }).toList());
-
     events.addAll(events_);
+    // Invalidate cache for AttachToUtxoEvent
+    await updateAttachToUtxoCache(events, address, cacheProvider);
 
     return (events, nextCursor, response.resultCount);
   }
@@ -1064,6 +1069,9 @@ class EventsRepositoryImpl implements EventsRepository {
         cursor = nextCursor;
       }
     }
+
+    // Invalidate cache for AttachToUtxoEvent
+    await updateAttachToUtxoCache(allEvents, address, cacheProvider);
 
     return allEvents;
   }
@@ -1131,5 +1139,39 @@ class EventsRepositoryImpl implements EventsRepository {
     }
 
     return allEvents;
+  }
+
+  static Future<void> updateAttachToUtxoCache(
+    List<VerboseEvent> events,
+    String address,
+    CacheProvider cacheProvider,
+  ) async {
+    // 1. get all unconfirmed attaches
+    final txHashes = cacheProvider.getValue(address) ?? [];
+    final confirmedTxHashes = <String>[];
+
+    // 2. get all confirmed attaches
+    for (final event in events) {
+      if (event is VerboseAttachToUtxoEvent &&
+          event.state is EventStateConfirmed) {
+        final txHash = event.txHash;
+        if (txHash != null && txHashes.contains(txHash)) {
+          // 3. remove the txHashes as the events confirm
+          confirmedTxHashes.add(txHash);
+        }
+      }
+    }
+    if (confirmedTxHashes.isEmpty) {
+      return;
+    } else {
+      txHashes.removeWhere((txHash) => confirmedTxHashes.contains(txHash));
+    }
+    // 4. Update the cache outside of the loop, all at once
+    if (txHashes.isEmpty) {
+      // Remove the key if the list is empty
+      await cacheProvider.remove(address);
+    } else {
+      await cacheProvider.setObject(address, txHashes);
+    }
   }
 }

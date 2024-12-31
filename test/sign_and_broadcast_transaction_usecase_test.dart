@@ -158,8 +158,8 @@ void main() {
       const String txHash = 'transaction_hash';
 
       // Mock behaviors
-      when(() => mockUtxoRepository.getUnspentForAddress('source'))
-          .thenAnswer((_) async => mockUtxos);
+      when(() => mockUtxoRepository.getUnspentForAddress('source',
+          excludeCached: true)).thenAnswer((_) async => mockUtxos);
       when(() => mockAddressRepository.getAddress('source'))
           .thenAnswer((_) async => mockAddress);
       when(() =>
@@ -209,7 +209,8 @@ void main() {
 
       // Assert
       expect(successCallbackInvoked, true);
-      verify(() => mockUtxoRepository.getUnspentForAddress('source')).called(1);
+      verify(() => mockUtxoRepository.getUnspentForAddress('source',
+          excludeCached: true)).called(1);
       verify(() => mockAddressRepository.getAddress('source')).called(1);
       verify(() =>
               mockAccountRepository.getAccountByUuid(mockAddress.accountUuid))
@@ -250,8 +251,8 @@ void main() {
       const String txHash = 'transaction_hash';
 
       // Mock behaviors
-      when(() => mockUtxoRepository.getUnspentForAddress('source'))
-          .thenAnswer((_) async => mockUtxos);
+      when(() => mockUtxoRepository.getUnspentForAddress('source',
+          excludeCached: true)).thenAnswer((_) async => mockUtxos);
       when(() => mockAddressRepository.getAddress('source'))
           .thenAnswer((_) async => null);
       when(() => mockImportedAddressRepository.getImportedAddress('source'))
@@ -290,7 +291,8 @@ void main() {
 
       // Assert
       expect(successCallbackInvoked, true);
-      verify(() => mockUtxoRepository.getUnspentForAddress('source')).called(1);
+      verify(() => mockUtxoRepository.getUnspentForAddress('source',
+          excludeCached: true)).called(1);
       verify(() => mockAddressRepository.getAddress('source')).called(1);
       verify(() => mockImportedAddressRepository.getImportedAddress('source'))
           .called(1);
@@ -312,8 +314,8 @@ void main() {
 
       final mockUtxos = [MockUtxo()];
 
-      when(() => mockUtxoRepository.getUnspentForAddress('source'))
-          .thenAnswer((_) async => mockUtxos);
+      when(() => mockUtxoRepository.getUnspentForAddress('source',
+          excludeCached: true)).thenAnswer((_) async => mockUtxos);
 
       when(() => mockAddressRepository.getAddress('source'))
           .thenAnswer((_) async => null);
@@ -352,8 +354,8 @@ void main() {
 
       final mockUtxos = [MockUtxo()];
 
-      when(() => mockUtxoRepository.getUnspentForAddress('source'))
-          .thenAnswer((_) async => mockUtxos);
+      when(() => mockUtxoRepository.getUnspentForAddress('source',
+          excludeCached: true)).thenAnswer((_) async => mockUtxos);
 
       when(() => mockAddressRepository.getAddress('source'))
           .thenAnswer((_) async => mockAddress);
@@ -400,8 +402,8 @@ void main() {
 
       final mockUtxos = [MockUtxo()];
 
-      when(() => mockUtxoRepository.getUnspentForAddress('source'))
-          .thenAnswer((_) async => mockUtxos);
+      when(() => mockUtxoRepository.getUnspentForAddress('source',
+          excludeCached: true)).thenAnswer((_) async => mockUtxos);
 
       when(() => mockAddressRepository.getAddress('source'))
           .thenAnswer((_) async => null);
@@ -449,8 +451,8 @@ void main() {
       const String txHex = 'transaction_hex';
 
       // Mock behaviors
-      when(() => mockUtxoRepository.getUnspentForAddress('source'))
-          .thenAnswer((_) async => mockUtxos);
+      when(() => mockUtxoRepository.getUnspentForAddress('source',
+          excludeCached: true)).thenAnswer((_) async => mockUtxos);
       when(() => mockAddressRepository.getAddress('source'))
           .thenAnswer((_) async => mockAddress);
       when(() =>
@@ -519,8 +521,8 @@ void main() {
     const String txHex = 'transaction_hex';
 
     // Mock behaviors
-    when(() => mockUtxoRepository.getUnspentForAddress('source'))
-        .thenAnswer((_) async => mockUtxos);
+    when(() => mockUtxoRepository.getUnspentForAddress('source',
+        excludeCached: true)).thenAnswer((_) async => mockUtxos);
     when(() => mockAddressRepository.getAddress('source'))
         .thenAnswer((_) async => mockAddress);
     when(() => mockAccountRepository.getAccountByUuid(mockAddress.accountUuid))

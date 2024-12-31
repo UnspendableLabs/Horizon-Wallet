@@ -275,7 +275,8 @@ class ComposeDispenserOnNewAddressBloc extends Bloc<
         );
         final feeForAssetSend = assetSend.$1.btcFee;
 
-        final utxos = await utxoRepository.getUnspentForAddress(source);
+        final utxos = await utxoRepository.getUnspentForAddress(source,
+            excludeCached: true);
 
         // 3. re-construct the asset send
         final signedConstructedAssetSend =
