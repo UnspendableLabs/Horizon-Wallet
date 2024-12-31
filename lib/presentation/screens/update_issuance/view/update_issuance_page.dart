@@ -397,8 +397,6 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
               }
               return null;
             },
-            onFieldSubmitted: (_) =>
-                _handleInitialSubmit(formKey, originalAsset),
             autovalidateMode: _submitted
                 ? AutovalidateMode.onUserInteraction
                 : AutovalidateMode.disabled,
@@ -429,8 +427,6 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
           HorizonUI.HorizonTextFormField(
             controller: _newDescriptionController,
             label: 'Description (optional)',
-            onFieldSubmitted: (_) =>
-                _handleInitialSubmit(formKey, originalAsset),
             autovalidateMode: _submitted
                 ? AutovalidateMode.onUserInteraction
                 : AutovalidateMode.disabled,
@@ -462,8 +458,6 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
           HorizonUI.HorizonTextFormField(
             label: 'Destination Address',
             controller: _destinationAddressController,
-            onFieldSubmitted: (_) =>
-                _handleInitialSubmit(formKey, originalAsset),
             autovalidateMode: _submitted
                 ? AutovalidateMode.onUserInteraction
                 : AutovalidateMode.disabled,
@@ -490,7 +484,6 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
         }
         return null;
       },
-      onFieldSubmitted: (_) => _handleInitialSubmit(formKey, originalAsset),
       autovalidateMode: _submitted
           ? AutovalidateMode.onUserInteraction
           : AutovalidateMode.disabled,

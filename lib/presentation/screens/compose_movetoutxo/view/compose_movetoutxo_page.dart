@@ -159,9 +159,6 @@ class ComposeMoveToUtxoPageState extends State<ComposeMoveToUtxoPage> {
           }
           return null;
         },
-        onFieldSubmitted: (value) {
-          _handleInitialSubmit(formKey);
-        },
         autovalidateMode:
             _submitted ? AutovalidateMode.always : AutovalidateMode.disabled,
       ),

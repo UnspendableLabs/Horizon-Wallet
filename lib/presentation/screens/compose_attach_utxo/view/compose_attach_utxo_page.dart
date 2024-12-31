@@ -253,9 +253,6 @@ class ComposeAttachUtxoPageState extends State<ComposeAttachUtxoPage> {
               }
               return null;
             },
-            onFieldSubmitted: (value) {
-              _handleInitialSubmit(formKey, balances);
-            },
             autovalidateMode: _submitted
                 ? AutovalidateMode.always
                 : AutovalidateMode.disabled,

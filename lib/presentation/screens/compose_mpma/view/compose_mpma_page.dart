@@ -324,9 +324,6 @@ class ComposeMpmaPageState extends State<ComposeMpmaPage> {
         enabled: false,
         controller: fromAddressController,
         label: "Source",
-        onFieldSubmitted: (value) {
-          _handleInitialSubmit(formKey);
-        },
       ),
       const SizedBox(height: 16.0),
       ...state.entries.asMap().entries.map((mapEntry) {

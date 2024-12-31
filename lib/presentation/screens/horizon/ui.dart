@@ -585,6 +585,7 @@ class HorizonTextFormField extends StatelessWidget {
   HorizonTextFormField copyWith({
     bool? enabled,
     String? helperText,
+    void Function(String)? onFieldSubmitted,
   }) {
     return HorizonTextFormField(
       label: label,
@@ -594,7 +595,7 @@ class HorizonTextFormField extends StatelessWidget {
       suffix: suffix,
       onChanged: onChanged,
       onEditingComplete: onEditingComplete,
-      onFieldSubmitted: onFieldSubmitted,
+      onFieldSubmitted: onFieldSubmitted ?? this.onFieldSubmitted,
       validator: validator,
       obscureText: obscureText,
       enableSuggestions: enableSuggestions,

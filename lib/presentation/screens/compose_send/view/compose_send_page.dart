@@ -228,9 +228,6 @@ class ComposeSendPageState extends State<ComposeSendPage> {
         enabled: false,
         controller: fromAddressController,
         label: "Source",
-        onFieldSubmitted: (value) {
-          _handleInitialSubmit(formKey);
-        },
       ),
       const SizedBox(height: 16.0),
       HorizonUI.HorizonTextFormField(
@@ -245,9 +242,6 @@ class ComposeSendPageState extends State<ComposeSendPage> {
             return 'Please enter a destination address';
           }
           return null;
-        },
-        onFieldSubmitted: (value) {
-          _handleInitialSubmit(formKey);
         },
         autovalidateMode: _submitted
             ? AutovalidateMode.onUserInteraction

@@ -303,9 +303,6 @@ class ComposeFairminterPageState extends State<ComposeFairminterPage> {
           }
           return null;
         },
-        onFieldSubmitted: (value) {
-          _handleInitialSubmit(formKey, assets);
-        },
       ),
       const SizedBox(height: 16.0),
       HorizonUI.HorizonTextFormField(
@@ -328,9 +325,6 @@ class ComposeFairminterPageState extends State<ComposeFairminterPage> {
             return 'Please enter a hardcap';
           }
           return null;
-        },
-        onFieldSubmitted: (value) {
-          _handleInitialSubmit(formKey, assets);
         },
       ),
       const SizedBox(height: 16.0),
@@ -370,9 +364,6 @@ class ComposeFairminterPageState extends State<ComposeFairminterPage> {
         inputFormatters: [
           FilteringTextInputFormatter.digitsOnly,
         ],
-        onFieldSubmitted: (value) {
-          _handleInitialSubmit(formKey, assets);
-        },
       ),
       const SizedBox(height: 16.0),
       HorizonUI.HorizonTextFormField(
@@ -381,9 +372,6 @@ class ComposeFairminterPageState extends State<ComposeFairminterPage> {
         inputFormatters: [
           FilteringTextInputFormatter.digitsOnly,
         ],
-        onFieldSubmitted: (value) {
-          _handleInitialSubmit(formKey, assets);
-        },
       ),
       if (error != null)
         SelectableText(

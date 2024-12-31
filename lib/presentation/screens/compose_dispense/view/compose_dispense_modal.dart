@@ -713,9 +713,6 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
         }
         return null;
       },
-      onFieldSubmitted: (value) {
-        _handleInitialSubmit(formKey);
-      },
     );
   }
 
