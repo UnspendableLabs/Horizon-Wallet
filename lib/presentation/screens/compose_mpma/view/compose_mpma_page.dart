@@ -486,9 +486,9 @@ class ComposeMpmaPageState extends State<ComposeMpmaPage> {
       ),
       const SizedBox(height: 16.0),
       ...params.assetDestQuantList.asMap().entries.map((entry) {
-        final asset = entry.value[0];
-        final destination = entry.value[1];
-        final quantityInSats = int.parse(entry.value[2].toString());
+        final String asset = entry.value[0];
+        final String destination = entry.value[1];
+        final int quantityInSats = entry.value[2];
 
         final balance = balances.firstWhereOrNull(
           (balance) => balance.asset == asset,
