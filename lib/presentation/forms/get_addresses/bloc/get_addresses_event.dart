@@ -23,3 +23,8 @@ class PasswordChanged extends GetAddressesEvent {
   final String password;
   PasswordChanged(this.password);
 }
+
+class WarningAcceptedChanged extends GetAddressesEvent {
+  final bool accepted;
+  WarningAcceptedChanged(this.accepted);
+}

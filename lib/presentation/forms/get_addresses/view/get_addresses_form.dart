@@ -91,7 +91,6 @@ class GetAddressesForm extends StatelessWidget {
                         ? null
                         : state.importedAddress.value,
                     onChanged: (address) {
-                      print("coool $address");
                       if (address != null) {
                         context
                             .read<GetAddressesBloc>()
@@ -122,10 +121,32 @@ class GetAddressesForm extends StatelessWidget {
                   ),
                   obscureText: true,
                 ),
-                const SizedBox(height: 20), // Submit Button
+                const SizedBox(height: 20),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Checkbox(
+                      value: state.warningAccepted,
+                      onChanged: (value) {
+                        context
+                            .read<GetAddressesBloc>()
+                            .add(WarningAcceptedChanged(value ?? false));
+                      },
+                    ),
+                    Expanded(
+                      child: Text(
+                        'If you use the address you are connecting to Horizon Market to in a wallet that does not support Counterparty there is a very high risk of losing your Counterparty assets. Confirm that you will not use this address outside of Counterparty wallets or understand the risks of doing so.',
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
 
+                // Submit Button
                 ElevatedButton(
-                  onPressed: state.submissionStatus.isInProgressOrSuccess
+                  onPressed: state.submissionStatus.isInProgressOrSuccess ||
+                          !state.warningAccepted
                       ? null
                       : () => context
                           .read<GetAddressesBloc>()
