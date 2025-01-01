@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:horizon/domain/entities/fee_option.dart';
-import 'package:horizon/presentation/common/fee_estimation_v2.dart';
+import 'package:horizon/presentation/common/colors.dart';
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_bloc.dart';
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_state.dart';
-import 'package:horizon/presentation/common/colors.dart';
-import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
+import 'package:horizon/presentation/common/fee_estimation_v2.dart';
 import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart";
 import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_event.dart";
+import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
 
 class ComposeBasePage<B extends ComposeBaseBloc<S>, S extends ComposeStateBase>
     extends StatefulWidget {
@@ -182,8 +182,15 @@ class ComposeBaseInitialPageState<S extends ComposeStateBase>
                 .map((formWidget) {
               if (formWidget is HorizonUI.HorizonTextFormField) {
                 return widget.loading
-                    ? formWidget.copyWith(enabled: false)
-                    : formWidget;
+                    ? formWidget.copyWith(
+                        enabled: false,
+                        onFieldSubmitted: formWidget.onFieldSubmitted ??
+                            ((_) => widget.onSubmit(_formKey)),
+                      )
+                    : formWidget.copyWith(
+                        onFieldSubmitted: formWidget.onFieldSubmitted ??
+                            ((_) => widget.onSubmit(_formKey)),
+                      );
               } else if (formWidget is HorizonUI.HorizonDropdownMenu<dynamic>) {
                 return widget.loading
                     ? formWidget.copyWith(enabled: false)

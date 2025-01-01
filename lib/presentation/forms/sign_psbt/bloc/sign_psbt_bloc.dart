@@ -1,6 +1,7 @@
 import "package:fpdart/fpdart.dart";
 import 'package:formz/formz.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:horizon/common/format.dart';
 
 import 'package:horizon/domain/entities/wallet.dart';
 import 'package:horizon/domain/entities/unified_address.dart';
@@ -115,9 +116,10 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
         // the fee is the difference between the total input value and the total output value
         double totalOutputValue =
             decoded.vout.map((vout) => vout.value).fold(0, (a, b) => a + b);
-        fee = (((totalInputValue / 100000000) - totalOutputValue) * 100000000)
+        fee = (((totalInputValue / SATOSHI_RATE) - totalOutputValue) *
+                    SATOSHI_RATE)
                 .truncate() /
-            100000000; // truncate to 8 decimal places
+            SATOSHI_RATE; // truncate to 8 decimal places
 
         asset = displayAssetName(
           utxoBalances[0].asset,

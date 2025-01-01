@@ -585,6 +585,7 @@ class HorizonTextFormField extends StatelessWidget {
   HorizonTextFormField copyWith({
     bool? enabled,
     String? helperText,
+    void Function(String)? onFieldSubmitted,
   }) {
     return HorizonTextFormField(
       label: label,
@@ -594,7 +595,7 @@ class HorizonTextFormField extends StatelessWidget {
       suffix: suffix,
       onChanged: onChanged,
       onEditingComplete: onEditingComplete,
-      onFieldSubmitted: onFieldSubmitted,
+      onFieldSubmitted: onFieldSubmitted ?? this.onFieldSubmitted,
       validator: validator,
       obscureText: obscureText,
       enableSuggestions: enableSuggestions,
@@ -714,7 +715,9 @@ class _HorizonSearchableDropdownMenuState<T>
 
   void _selectItem(T? value) {
     setState(() {
-      widget.selectedValue = value;
+      if (widget.selectedValue != null) {
+        widget.selectedValue = value;
+      }
       widget.onChanged?.call(value);
       _removeOverlay();
       _isOpen = false;
@@ -803,7 +806,7 @@ class _HorizonSearchableDropdownMenuState<T>
                       widget.selectedValue != null
                           ? widget
                               .displayStringForOption(widget.selectedValue as T)
-                          : widget.label ?? '',
+                          : 'Select ${widget.label ?? 'an option'}',
                       style: TextStyle(
                         color: widget.selectedValue != null
                             ? Theme.of(context).textTheme.bodyLarge?.color

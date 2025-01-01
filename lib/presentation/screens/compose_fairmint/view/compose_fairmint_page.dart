@@ -449,17 +449,11 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
     final fairminter =
         context.read<ComposeFairmintBloc>().state.selectedFairminter;
 
-    if (fairminter == null || fairminter.maxMintPerTx == null) {
+    if (fairminter == null || fairminter.maxMintPerTxNormalized == null) {
       return '';
     }
 
-    final quantity = fairminter.maxMintPerTx! / 100000000;
-
-    if (fairminter.divisible == true) {
-      return quantity.toStringAsFixed(8);
-    } else {
-      return fairminter.maxMintPerTx!.toString();
-    }
+    return fairminter.maxMintPerTxNormalized!;
   }
 
   void _onConfirmationBack() {

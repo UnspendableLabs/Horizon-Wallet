@@ -1,6 +1,5 @@
 import 'package:test/test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:decimal/decimal.dart';
 import 'package:horizon/domain/entities/dispenser.dart';
 import 'package:horizon/domain/entities/asset_info.dart';
 import 'package:horizon/presentation/screens/compose_dispense/usecase/estimate_dispenses.dart';
@@ -71,11 +70,7 @@ void main() {
       expect(estimatedDispense.estimatedUnits, 5); // 25000 / 5000 = 5 units
       expect(estimatedDispense.estimatedQuantity, 500); // 5 * 100 = 500
       expect(estimatedDispense.annotations.isEmpty, true); // No overpay
-      expect(
-          estimatedDispense.estimatedQuantityNormalized,
-          (Decimal.fromInt(500) / Decimal.fromInt(100000000))
-              .toDecimal()
-              .round(scale: 8));
+      expect(estimatedDispense.estimatedQuantityNormalized, '0.00000500');
     });
 
     test("divisible: false", () {
@@ -98,8 +93,7 @@ void main() {
       expect(estimatedDispense.estimatedUnits, 5); // 25000 / 5000 = 5 units
       expect(estimatedDispense.estimatedQuantity, 500); // 5 * 100 = 500
       expect(estimatedDispense.annotations.isEmpty, true); // No overpay
-      expect(
-          estimatedDispense.estimatedQuantityNormalized, Decimal.fromInt(500));
+      expect(estimatedDispense.estimatedQuantityNormalized, '500');
     });
   });
 
@@ -125,11 +119,7 @@ void main() {
       expect(estimatedDispense.estimatedQuantity, 200); // Max remaining
       expect(estimatedDispense.annotations,
           contains(EstimatedDispenseAnnotations.overpay));
-      expect(
-          estimatedDispense.estimatedQuantityNormalized,
-          (Decimal.fromInt(200) / Decimal.fromInt(100000000))
-              .toDecimal()
-              .round(scale: 8));
+      expect(estimatedDispense.estimatedQuantityNormalized, '0.00000200');
     });
 
     test("divisible: false", () {
@@ -153,8 +143,7 @@ void main() {
       expect(estimatedDispense.estimatedQuantity, 200); // Max remaining
       expect(estimatedDispense.annotations,
           contains(EstimatedDispenseAnnotations.overpay));
-      expect(
-          estimatedDispense.estimatedQuantityNormalized, Decimal.fromInt(200));
+      expect(estimatedDispense.estimatedQuantityNormalized, '200');
     });
     test("divisible: true", () {
       // Arrange
@@ -177,11 +166,7 @@ void main() {
       expect(estimatedDispense.estimatedQuantity, 200); // Max remaining
       expect(estimatedDispense.annotations,
           contains(EstimatedDispenseAnnotations.overpay));
-      expect(
-          estimatedDispense.estimatedQuantityNormalized,
-          (Decimal.fromInt(200) / Decimal.fromInt(100000000))
-              .toDecimal()
-              .round(scale: 8));
+      expect(estimatedDispense.estimatedQuantityNormalized, '0.00000200');
     });
 
     test("divisible: false", () {
@@ -205,8 +190,7 @@ void main() {
       expect(estimatedDispense.estimatedQuantity, 200); // Max remaining
       expect(estimatedDispense.annotations,
           contains(EstimatedDispenseAnnotations.overpay));
-      expect(
-          estimatedDispense.estimatedQuantityNormalized, Decimal.fromInt(200));
+      expect(estimatedDispense.estimatedQuantityNormalized, '200');
     });
   });
 
@@ -232,7 +216,7 @@ void main() {
       // expect(estimatedDispense.annotations,
       //     contains(EstimatedDispenseAnnotations.dispenserIsEmpty));
       expect(estimatedDispense.estimatedQuantityNormalized,
-          Decimal.zero); // Zero normalized
+          '0.00000000'); // Zero normalized
     });
 
     test("divisible: false", () {
@@ -256,7 +240,7 @@ void main() {
       // expect(estimatedDispense.annotations,
       //     contains(EstimatedDispenseAnnotations.dispenserIsEmpty));
       expect(estimatedDispense.estimatedQuantityNormalized,
-          Decimal.zero); // Zero normalized
+          '0'); // Zero normalized
     });
   });
 }

@@ -30,7 +30,8 @@ class Fairminter extends Equatable {
   final int? paidQuantity;
   final bool? confirmed;
   final int? blockTime;
-
+  final String? maxMintPerTxNormalized;
+  final String? hardCapNormalized;
   const Fairminter({
     required this.txHash,
     required this.txIndex,
@@ -61,6 +62,8 @@ class Fairminter extends Equatable {
     this.paidQuantity,
     this.confirmed,
     this.blockTime,
+    this.maxMintPerTxNormalized,
+    this.hardCapNormalized,
   });
 
   @override

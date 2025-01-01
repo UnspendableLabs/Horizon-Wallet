@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
+import 'package:horizon/common/format.dart';
 import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/domain/entities/compose_send.dart';
@@ -111,18 +112,13 @@ class ComposeSendPageState extends State<ComposeSendPage> {
           orElse: () => [],
         ),
         asset ?? '');
-
-    if (balance?.assetInfo.divisible == true) {
-      final maxDecimal = Decimal.fromInt(maxValue);
-      final maxDecimalNormalized = maxDecimal / Decimal.fromInt(100000000);
-
-      return (Decimal.fromInt(maxValue) / Decimal.fromInt(100000000))
-          .toDecimal()
-          .round(scale: 8)
-          .toString();
-    } else {
-      return maxValue.toString();
+    if (balance == null) {
+      throw Exception("invariant: No balance found for asset");
     }
+
+    String maxQuantityNormalized = quantityToQuantityNormalizedString(
+        quantity: maxValue, divisible: balance.assetInfo.divisible);
+    return maxQuantityNormalized;
   }
 
   @override
@@ -199,19 +195,15 @@ class ComposeSendPageState extends State<ComposeSendPage> {
       _submitted = true;
     });
     if (formKey.currentState!.validate()) {
-      Decimal input = Decimal.parse(quantityController.text);
       Balance? balance = balance_;
-      int quantity;
 
       if (balance == null) {
         throw Exception("invariant: No balance found for asset");
       }
 
-      if (balance.assetInfo.divisible) {
-        quantity = (input * Decimal.fromInt(100000000)).toBigInt().toInt();
-      } else {
-        quantity = input.toBigInt().toInt();
-      }
+      int quantity = getQuantityForDivisibility(
+          divisible: balance.assetInfo.divisible,
+          inputQuantity: quantityController.text);
 
       if (asset == null) {
         throw Exception("no asset");
@@ -236,9 +228,6 @@ class ComposeSendPageState extends State<ComposeSendPage> {
         enabled: false,
         controller: fromAddressController,
         label: "Source",
-        onFieldSubmitted: (value) {
-          _handleInitialSubmit(formKey);
-        },
       ),
       const SizedBox(height: 16.0),
       HorizonUI.HorizonTextFormField(
@@ -253,9 +242,6 @@ class ComposeSendPageState extends State<ComposeSendPage> {
             return 'Please enter a destination address';
           }
           return null;
-        },
-        onFieldSubmitted: (value) {
-          _handleInitialSubmit(formKey);
         },
         autovalidateMode: _submitted
             ? AutovalidateMode.onUserInteraction

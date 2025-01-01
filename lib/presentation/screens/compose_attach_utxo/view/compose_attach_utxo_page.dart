@@ -1,10 +1,10 @@
 import 'package:collection/collection.dart';
-import 'package:decimal/decimal.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:get_it/get_it.dart';
+import 'package:horizon/common/format.dart';
 import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/domain/entities/compose_attach_utxo.dart';
@@ -202,13 +202,9 @@ class ComposeAttachUtxoPageState extends State<ComposeAttachUtxoPage> {
       throw Exception('Balance not found for asset ${widget.assetName}');
     }
     if (formKey.currentState!.validate()) {
-      Decimal input = Decimal.parse(quantityController.text);
-      int quantity;
-      if (balance.assetInfo.divisible) {
-        quantity = (input * Decimal.fromInt(100000000)).toBigInt().toInt();
-      } else {
-        quantity = input.toBigInt().toInt();
-      }
+      int quantity = getQuantityForDivisibility(
+          divisible: balance.assetInfo.divisible,
+          inputQuantity: quantityController.text);
 
       context.read<ComposeAttachUtxoBloc>().add(ComposeTransactionEvent(
             sourceAddress: fromAddressController.text,
@@ -256,9 +252,6 @@ class ComposeAttachUtxoPageState extends State<ComposeAttachUtxoPage> {
                 return 'Quantity is required';
               }
               return null;
-            },
-            onFieldSubmitted: (value) {
-              _handleInitialSubmit(formKey, balances);
             },
             autovalidateMode: _submitted
                 ? AutovalidateMode.always

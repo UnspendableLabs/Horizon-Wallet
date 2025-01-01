@@ -1,6 +1,7 @@
 import 'package:collection/collection.dart';
 import 'package:decimal/decimal.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:horizon/common/format.dart';
 import 'package:horizon/common/uuid.dart';
 import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/domain/entities/balance.dart';
@@ -295,15 +296,9 @@ class ComposeMpmaBloc extends ComposeBaseBloc<ComposeMpmaState> {
           throw ComposeTransactionException(
               'Balance not found for asset ${entries[i].asset}');
         }
-        int quantity;
-        if (balance.assetInfo.divisible) {
-          quantity =
-              (Decimal.parse(entries[i].quantity) * Decimal.fromInt(100000000))
-                  .toBigInt()
-                  .toInt();
-        } else {
-          quantity = Decimal.parse(entries[i].quantity).toBigInt().toInt();
-        }
+        int quantity = getQuantityForDivisibility(
+            divisible: balance.assetInfo.divisible,
+            inputQuantity: entries[i].quantity);
         quantities[i] = quantity;
       }
 
