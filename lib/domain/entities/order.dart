@@ -18,7 +18,7 @@ class Order {
   final String status;
   final int givePrice;
   final int getPrice;
-  final bool confirmed;
+  final bool? confirmed;
   final String giveQuantityNormalized;
   final String getQuantityNormalized;
   final String getRemainingNormalized;
@@ -50,7 +50,7 @@ class Order {
     required this.status,
     required this.givePrice,
     required this.getPrice,
-    required this.confirmed,
+    this.confirmed,
     required this.giveQuantityNormalized,
     required this.getQuantityNormalized,
     required this.getRemainingNormalized,
