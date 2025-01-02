@@ -301,7 +301,7 @@ class ComposeAttachUtxoPageState extends State<ComposeAttachUtxoPage> {
               ),
               Expanded(
                 child: SelectableText(
-                  'If you use this address in a wallet that does not support Counterparty there is a very high risk of losing your UTXO-attached asset.',
+                  'If you use this address in a wallet that does not support Counterparty there is a very high risk of losing your UTXO-attached asset. Please confirm that you understand the risks.',
                   style: Theme.of(context).textTheme.bodyMedium,
                 ),
               ),
