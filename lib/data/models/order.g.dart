@@ -26,7 +26,7 @@ Order _$OrderFromJson(Map<String, dynamic> json) => Order(
       status: json['status'] as String,
       givePrice: (json['give_price'] as num).toInt(),
       getPrice: (json['get_price'] as num).toInt(),
-      confirmed: json['confirmed'] as bool,
+      confirmed: json['confirmed'] as bool?,
     );
 
 Map<String, dynamic> _$OrderToJson(Order instance) => <String, dynamic>{
@@ -72,7 +72,7 @@ OrderVerbose _$OrderVerboseFromJson(Map<String, dynamic> json) => OrderVerbose(
       status: json['status'] as String,
       givePrice: (json['give_price'] as num).toInt(),
       getPrice: (json['get_price'] as num).toInt(),
-      confirmed: json['confirmed'] as bool,
+      confirmed: json['confirmed'] as bool?,
       giveQuantityNormalized: json['give_quantity_normalized'] as String,
       getQuantityNormalized: json['get_quantity_normalized'] as String,
       getRemainingNormalized: json['get_remaining_normalized'] as String,

@@ -95,13 +95,23 @@ class ComposeAttachUtxoPageState extends State<ComposeAttachUtxoPage> {
   String? error;
   // Add a key for the dropdown
   bool showLockedOnly = false;
-
+  bool warningAccepted = false;
+  bool errorWarningAccepted = false;
   @override
   void initState() {
     super.initState();
+    warningAccepted = false;
     fromAddressController.text = widget.address;
     assetController.text =
         displayAssetName(widget.assetName, widget.assetLongname);
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    quantityController.dispose();
+    fromAddressController.dispose();
+    assetController.dispose();
   }
 
   @override
@@ -201,6 +211,13 @@ class ComposeAttachUtxoPageState extends State<ComposeAttachUtxoPage> {
       // we should never reach this point but this is a safeguard against submitting the wrong asset
       throw Exception('Balance not found for asset ${widget.assetName}');
     }
+
+    if (!warningAccepted) {
+      setState(() {
+        errorWarningAccepted = true;
+      });
+      return;
+    }
     if (formKey.currentState!.validate()) {
       int quantity = getQuantityForDivisibility(
           divisible: balance.assetInfo.divisible,
@@ -269,6 +286,32 @@ class ComposeAttachUtxoPageState extends State<ComposeAttachUtxoPage> {
             label: 'XCP Fee Estimate',
             enabled: false,
           ),
+          const SizedBox(height: 16),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Checkbox(
+                value: warningAccepted,
+                onChanged: (value) {
+                  setState(() {
+                    warningAccepted = value ?? false;
+                    errorWarningAccepted = false;
+                  });
+                },
+              ),
+              Expanded(
+                child: SelectableText(
+                  'If you use this address in a wallet that does not support Counterparty there is a very high risk of losing your UTXO-attached asset. Please confirm that you understand the risks.',
+                  style: Theme.of(context).textTheme.bodyMedium,
+                ),
+              ),
+            ],
+          ),
+          if (errorWarningAccepted)
+            const SelectableText(
+              'You must accept the warning to continue',
+              style: TextStyle(color: Colors.red),
+            ),
         ];
       },
       orElse: () => [],
