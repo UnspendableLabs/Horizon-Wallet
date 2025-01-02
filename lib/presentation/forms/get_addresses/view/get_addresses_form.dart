@@ -134,8 +134,8 @@ class GetAddressesForm extends StatelessWidget {
                       },
                     ),
                     Expanded(
-                      child: Text(
-                        'If you use the address you are connecting to Horizon Market to in a wallet that does not support Counterparty there is a very high risk of losing your Counterparty assets. Confirm that you will not use this address outside of Counterparty wallets or understand the risks of doing so.',
+                      child: SelectableText(
+                        'If you use this address in a wallet that does not support Counterparty there is a very high risk of losing your UTXO-attached asset.',
                         style: Theme.of(context).textTheme.bodyMedium,
                       ),
                     ),

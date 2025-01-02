@@ -76,6 +76,7 @@ class GetAddressesBloc extends Bloc<GetAddressesEvent, GetAddressesState> {
       ));
       return;
     }
+    emit(state.copyWith(submissionStatus: FormzSubmissionStatus.inProgress));
     try {
       Wallet? wallet = await walletRepository.getCurrentWallet();
 
