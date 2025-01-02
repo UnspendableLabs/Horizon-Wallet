@@ -43,6 +43,7 @@ class GetAddressesBloc extends Bloc<GetAddressesEvent, GetAddressesState> {
     on<AddressSelectionModeChanged>(_handleAddressSelectionModeChanged);
     on<ImportedAddressSelected>(_handleImportedAddressSelected);
     on<PasswordChanged>(_handlePasswordChanged);
+    on<WarningAcceptedChanged>(_handleWarningAcceptedChanged);
   }
 
   _handlePasswordChanged(
@@ -68,6 +69,14 @@ class GetAddressesBloc extends Bloc<GetAddressesEvent, GetAddressesState> {
 
   Future<void> _handleGetAddressesSubmitted(
       GetAddressesSubmitted event, Emitter<GetAddressesState> emit) async {
+    if (!state.warningAccepted) {
+      emit(state.copyWith(
+        submissionStatus: FormzSubmissionStatus.failure,
+        error: 'Please accept the warning before continuing.',
+      ));
+      return;
+    }
+    emit(state.copyWith(submissionStatus: FormzSubmissionStatus.inProgress));
     try {
       Wallet? wallet = await walletRepository.getCurrentWallet();
 
@@ -211,6 +220,11 @@ class GetAddressesBloc extends Bloc<GetAddressesEvent, GetAddressesState> {
     } else {
       return AddressRpcType.p2pkh;
     }
+  }
+
+  void _handleWarningAcceptedChanged(
+      WarningAcceptedChanged event, Emitter<GetAddressesState> emit) {
+    emit(state.copyWith(warningAccepted: event.accepted));
   }
 }
 

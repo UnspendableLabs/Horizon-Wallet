@@ -25,6 +25,8 @@ class _ImportAddressPkFormState extends State<ImportAddressPkForm> {
   final passwordFormKey = GlobalKey<FormState>();
 
   ImportAddressPkFormat? selectedFormat = ImportAddressPkFormat.segwit;
+  bool warningAccepted = false;
+  bool errorWarningAccepted = false;
 
   @override
   void initState() {
@@ -66,6 +68,13 @@ class _ImportAddressPkFormState extends State<ImportAddressPkForm> {
         return switch (state) {
           ImportAddressPkStep1() => Builder(builder: (context) {
               void handleSubmit() {
+                if (!warningAccepted) {
+                  setState(() {
+                    errorWarningAccepted = true;
+                  });
+                  return;
+                }
+
                 // Validate will return true if the form is valid, or false if
                 // the form is invalid.
                 if (_formKey.currentState!.validate()) {
@@ -90,6 +99,7 @@ class _ImportAddressPkFormState extends State<ImportAddressPkForm> {
                             return null;
                           },
                           onEditingComplete: handleSubmit,
+                          autovalidateMode: AutovalidateMode.onUserInteraction,
                         ),
                         const SizedBox(height: 16),
                         HorizonUI.HorizonTextFormField(
@@ -102,6 +112,7 @@ class _ImportAddressPkFormState extends State<ImportAddressPkForm> {
                             return null;
                           },
                           onEditingComplete: handleSubmit,
+                          autovalidateMode: AutovalidateMode.onUserInteraction,
                         ),
                         const SizedBox(height: 16),
                         HorizonUI.HorizonDropdownMenu(
@@ -119,6 +130,36 @@ class _ImportAddressPkFormState extends State<ImportAddressPkForm> {
                             });
                           },
                         ),
+                        const SizedBox(height: 16),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Checkbox(
+                              value: warningAccepted,
+                              onChanged: (value) {
+                                setState(() {
+                                  warningAccepted = value ?? false;
+                                  errorWarningAccepted = false;
+                                });
+                              },
+                            ),
+                            Expanded(
+                              child: SelectableText(
+                                'If you use this address in a wallet that does not support Counterparty there is a very high risk of losing your UTXO-attached asset. Please confirm that you understand the risks.',
+                                style: Theme.of(context).textTheme.bodyMedium,
+                              ),
+                            ),
+                          ],
+                        ),
+                        if (errorWarningAccepted)
+                          const Center(
+                            child: SelectableText(
+                              'You must accept the warning to continue',
+                              style: TextStyle(
+                                color: Colors.red,
+                              ),
+                            ),
+                          ),
                         HorizonUI.HorizonDialogSubmitButton(
                           textChild: const Text('CONTINUE'),
                           onPressed: handleSubmit,
