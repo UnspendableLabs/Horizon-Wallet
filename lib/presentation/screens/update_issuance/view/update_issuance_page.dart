@@ -284,6 +284,7 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
             enabled: false,
           ),
         ],
+      _ => []
     };
   }
 
@@ -463,6 +464,7 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
                 : AutovalidateMode.disabled,
           ),
         ],
+      _ => []
     };
   }
 
@@ -721,6 +723,7 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
           const SizedBox(height: 16),
           ..._buildBoolFields(params, originalAsset),
         ],
+      _ => []
     };
   }
 
