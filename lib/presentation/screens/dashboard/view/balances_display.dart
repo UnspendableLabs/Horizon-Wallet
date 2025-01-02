@@ -603,6 +603,8 @@ class BalancesSliverState extends State<BalancesSliver> {
                                 BlocProvider.of<DashboardActivityFeedBloc>(
                                     context),
                             currentAddress: widget.currentAddress,
+                            assetName: currentOwnedAsset!.asset,
+                            assetLongname: currentOwnedAsset.assetLongname,
                           ),
                           includeBackButton: false,
                           includeCloseButton: true,

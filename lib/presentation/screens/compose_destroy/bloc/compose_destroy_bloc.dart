@@ -1,20 +1,51 @@
+import 'package:horizon/core/logging/logger.dart';
+import 'package:horizon/domain/entities/asset.dart';
 import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/domain/entities/fee_option.dart' as FeeOption;
+import 'package:horizon/domain/repositories/asset_repository.dart';
+import 'package:horizon/domain/repositories/compose_repository.dart';
+import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_bloc.dart';
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_event.dart';
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_state.dart';
+import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
+import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
+import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transaction_usecase.dart';
+import 'package:horizon/presentation/common/usecase/write_local_transaction_usecase.dart';
 import 'package:horizon/presentation/screens/compose_destroy/bloc/compose_destroy_state.dart';
-import 'package:logger/logger.dart';
+
+class ComposeDestroyEventParams {
+  final String assetName;
+  final int quantity;
+
+  ComposeDestroyEventParams({required this.assetName, required this.quantity});
+}
 
 class ComposeDestroyBloc extends ComposeBaseBloc<ComposeDestroyState> {
-  final Logger logger = Logger();
+  final AssetRepository assetRepository;
+  final ComposeRepository composeRepository;
+  final AnalyticsService analyticsService;
+  final GetFeeEstimatesUseCase getFeeEstimatesUseCase;
+  final ComposeTransactionUseCase composeTransactionUseCase;
+  final SignAndBroadcastTransactionUseCase signAndBroadcastTransactionUseCase;
+  final WriteLocalTransactionUseCase writelocalTransactionUseCase;
+  final Logger logger;
 
-  ComposeDestroyBloc()
-      : super(ComposeDestroyState(
+  ComposeDestroyBloc({
+    required this.assetRepository,
+    required this.composeRepository,
+    required this.analyticsService,
+    required this.getFeeEstimatesUseCase,
+    required this.composeTransactionUseCase,
+    required this.signAndBroadcastTransactionUseCase,
+    required this.writelocalTransactionUseCase,
+    required this.logger,
+  }) : super(ComposeDestroyState(
           submitState: const SubmitInitial(),
           feeOption: FeeOption.Medium(),
           balancesState: const BalancesState.initial(),
           feeState: const FeeState.initial(),
+          assetState: const AssetState.initial(),
         ));
 
   @override
@@ -22,7 +53,30 @@ class ComposeDestroyBloc extends ComposeBaseBloc<ComposeDestroyState> {
     emit(state.copyWith(
         balancesState: const BalancesState.loading(),
         feeState: const FeeState.loading(),
-        submitState: const SubmitInitial()));
+        submitState: const SubmitInitial(),
+        assetState: const AssetState.loading()));
+
+    Asset asset;
+    FeeEstimates feeEstimates;
+
+    try {
+      asset = await assetRepository.getAssetVerbose(event.assetName!);
+    } catch (e) {
+      emit(state.copyWith(assetState: AssetState.error(e.toString())));
+      return;
+    }
+
+    try {
+      feeEstimates = await getFeeEstimatesUseCase.call();
+    } catch (e) {
+      emit(state.copyWith(feeState: FeeState.error(e.toString())));
+      return;
+    }
+    emit(state.copyWith(
+      assetState: AssetState.success(asset),
+      balancesState: const BalancesState.success([]),
+      feeState: FeeState.success(feeEstimates),
+    ));
   }
 
   @override
