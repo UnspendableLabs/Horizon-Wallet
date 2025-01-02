@@ -44,24 +44,24 @@ class PasswordInput extends FormzInput<String, PasswordValidationError> {
 class GetAddressesState with FormzMixin {
   final PasswordInput password;
   final AccountInput account;
-  final ImportedAddressInput importedAddress; // New field
+  final ImportedAddressInput importedAddress;
   final FormzSubmissionStatus submissionStatus;
   final List<AddressRpc>? addresses;
   final String? error;
   final AddressSelectionMode addressSelectionMode;
-  final List<ImportedAddress>?
-      importedAddresses; // Holds imported addresses for dropdown
+  final List<ImportedAddress>? importedAddresses;
+  final bool warningAccepted;
 
   GetAddressesState({
     this.password = const PasswordInput.pure(),
     this.account = const AccountInput.pure(),
-    this.importedAddress =
-        const ImportedAddressInput.pure(), // Initialize as pure
+    this.importedAddress = const ImportedAddressInput.pure(),
     this.submissionStatus = FormzSubmissionStatus.initial,
     this.addresses,
     this.error,
     this.addressSelectionMode = AddressSelectionMode.byAccount,
     this.importedAddresses,
+    this.warningAccepted = false,
   });
 
   @override
@@ -76,6 +76,7 @@ class GetAddressesState with FormzMixin {
     String? error,
     AddressSelectionMode? addressSelectionMode,
     List<ImportedAddress>? importedAddresses,
+    bool? warningAccepted,
   }) {
     return GetAddressesState(
       password: password ?? this.password,
@@ -86,6 +87,7 @@ class GetAddressesState with FormzMixin {
       error: error ?? this.error,
       addressSelectionMode: addressSelectionMode ?? this.addressSelectionMode,
       importedAddresses: importedAddresses ?? this.importedAddresses,
+      warningAccepted: warningAccepted ?? this.warningAccepted,
     );
   }
 }
