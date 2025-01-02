@@ -604,7 +604,6 @@ class BalancesSliverState extends State<BalancesSliver> {
                                     context),
                             currentAddress: widget.currentAddress,
                             assetName: currentOwnedAsset!.asset,
-                            assetLongname: currentOwnedAsset.assetLongname,
                           ),
                           includeBackButton: false,
                           includeCloseButton: true,
@@ -676,10 +675,11 @@ class BalancesSliverState extends State<BalancesSliver> {
                       value: IssuanceActionType.transferOwnership,
                       child: Text('Transfer Ownership'),
                     ),
-                    const PopupMenuItem<IssuanceActionType>(
-                      value: IssuanceActionType.destroy,
-                      child: Text('Destroy'),
-                    ),
+                    if (utxo == null)
+                      const PopupMenuItem<IssuanceActionType>(
+                        value: IssuanceActionType.destroy,
+                        child: Text('Destroy'),
+                      ),
                   ],
                 ),
               ),

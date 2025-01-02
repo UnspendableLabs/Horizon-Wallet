@@ -5,6 +5,7 @@ import 'package:horizon/data/models/bitcoin_decoded_tx.dart';
 import 'package:horizon/data/models/compose.dart';
 import 'package:horizon/data/models/compose_attach_utxo.dart';
 import 'package:horizon/data/models/compose_cancel.dart';
+import 'package:horizon/data/models/compose_destroy.dart';
 import 'package:horizon/data/models/compose_detach_utxo.dart';
 import 'package:horizon/data/models/compose_fairmint.dart';
 import 'package:horizon/data/models/compose_fairminter.dart';
@@ -4922,4 +4923,16 @@ abstract class V2Api {
   );
   @GET("/")
   Future<Response<NodeInfoModel>> getNodeInfo();
+
+  @GET("/addresses/{address}/compose/destroy?verbose=true")
+  Future<Response<ComposeDestroyResponseModel>> composeDestroy(
+    @Path("address") String address,
+    @Query("asset") String asset,
+    @Query("quantity") int quantity,
+    @Query("tag") String tag, [
+    @Query("exact_fee") int? exactFee,
+    @Query("inputs_set") String? inputsSet,
+    @Query("exclude_utxos_with_balances") bool? excludeUtxosWithBalances,
+    @Query("disable_utxo_locks") bool? disableUtxoLocks,
+  ]);
 }

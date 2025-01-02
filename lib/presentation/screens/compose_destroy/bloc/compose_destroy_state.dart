@@ -1,5 +1,4 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:horizon/domain/entities/asset.dart';
 
 import 'package:horizon/domain/entities/fee_option.dart';
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_state.dart';
@@ -16,9 +15,6 @@ class ComposeDestroyState with _$ComposeDestroyState, ComposeStateBase {
     required BalancesState balancesState,
     required FeeOption feeOption,
     required SubmitState submitState,
-
-    // Destroy-specific properties
-    required AssetState assetState,
   }) = _ComposeDestroyState;
 
   factory ComposeDestroyState.initial() => ComposeDestroyState(
@@ -26,14 +22,5 @@ class ComposeDestroyState with _$ComposeDestroyState, ComposeStateBase {
         balancesState: const BalancesState.initial(),
         feeOption: Medium(),
         submitState: const SubmitInitial(),
-        assetState: const AssetState.initial(),
       );
-}
-
-@freezed
-class AssetState with _$AssetState {
-  const factory AssetState.initial() = _AssetStateInitial;
-  const factory AssetState.loading() = _AssetStateLoading;
-  const factory AssetState.success(Asset asset) = _AssetStateSuccess;
-  const factory AssetState.error(String error) = _AssetStateError;
 }

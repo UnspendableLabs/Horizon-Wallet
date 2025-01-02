@@ -1,8 +1,9 @@
 import 'package:horizon/core/logging/logger.dart';
-import 'package:horizon/domain/entities/asset.dart';
+import 'package:horizon/domain/entities/balance.dart';
+import 'package:horizon/domain/entities/compose_destroy.dart';
 import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/domain/entities/fee_option.dart' as FeeOption;
-import 'package:horizon/domain/repositories/asset_repository.dart';
+import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_bloc.dart';
@@ -17,12 +18,17 @@ import 'package:horizon/presentation/screens/compose_destroy/bloc/compose_destro
 class ComposeDestroyEventParams {
   final String assetName;
   final int quantity;
+  final String tag;
 
-  ComposeDestroyEventParams({required this.assetName, required this.quantity});
+  ComposeDestroyEventParams({
+    required this.assetName,
+    required this.quantity,
+    required this.tag,
+  });
 }
 
 class ComposeDestroyBloc extends ComposeBaseBloc<ComposeDestroyState> {
-  final AssetRepository assetRepository;
+  final BalanceRepository balanceRepository;
   final ComposeRepository composeRepository;
   final AnalyticsService analyticsService;
   final GetFeeEstimatesUseCase getFeeEstimatesUseCase;
@@ -32,7 +38,7 @@ class ComposeDestroyBloc extends ComposeBaseBloc<ComposeDestroyState> {
   final Logger logger;
 
   ComposeDestroyBloc({
-    required this.assetRepository,
+    required this.balanceRepository,
     required this.composeRepository,
     required this.analyticsService,
     required this.getFeeEstimatesUseCase,
@@ -45,24 +51,24 @@ class ComposeDestroyBloc extends ComposeBaseBloc<ComposeDestroyState> {
           feeOption: FeeOption.Medium(),
           balancesState: const BalancesState.initial(),
           feeState: const FeeState.initial(),
-          assetState: const AssetState.initial(),
         ));
 
   @override
   void onFetchFormData(FetchFormData event, emit) async {
     emit(state.copyWith(
-        balancesState: const BalancesState.loading(),
-        feeState: const FeeState.loading(),
-        submitState: const SubmitInitial(),
-        assetState: const AssetState.loading()));
+      balancesState: const BalancesState.loading(),
+      feeState: const FeeState.loading(),
+      submitState: const SubmitInitial(),
+    ));
 
-    Asset asset;
+    List<Balance> balances;
     FeeEstimates feeEstimates;
 
     try {
-      asset = await assetRepository.getAssetVerbose(event.assetName!);
+      balances = await balanceRepository.getBalancesForAddressAndAssetVerbose(
+          event.currentAddress!, event.assetName!);
     } catch (e) {
-      emit(state.copyWith(assetState: AssetState.error(e.toString())));
+      emit(state.copyWith(balancesState: BalancesState.error(e.toString())));
       return;
     }
 
@@ -72,9 +78,10 @@ class ComposeDestroyBloc extends ComposeBaseBloc<ComposeDestroyState> {
       emit(state.copyWith(feeState: FeeState.error(e.toString())));
       return;
     }
+
+    final balance = balances.where((balance) => balance.utxo == null).first;
     emit(state.copyWith(
-      assetState: AssetState.success(asset),
-      balancesState: const BalancesState.success([]),
+      balancesState: BalancesState.success([balance]),
       feeState: FeeState.success(feeEstimates),
     ));
   }
@@ -88,44 +95,43 @@ class ComposeDestroyBloc extends ComposeBaseBloc<ComposeDestroyState> {
   @override
   void onComposeTransaction(ComposeTransactionEvent event, emit) async {
     emit((state).copyWith(submitState: const SubmitInitial(loading: true)));
+    final ComposeDestroyEventParams params = event.params;
 
-    // try {
-    //   final feeRate = _getFeeRate();
-    //   final source = event.sourceAddress;
-    //   final asset = event.params.asset;
-    //   final giveQuantity = event.params.giveQuantity;
-    //   final escrowQuantity = event.params.escrowQuantity;
-    //   final mainchainrate = event.params.mainchainrate;
+    try {
+      final feeRate = _getFeeRate();
+      final source = event.sourceAddress;
+      final asset = params.assetName;
+      final quantity = params.quantity;
+      final tag = params.tag;
 
-    //   final composeResponse = await composeTransactionUseCase.call<ComposeDispenserParams, ComposeDispenserResponseVerbose>(
-    //       feeRate: feeRate,
-    //       source: source,
-    //       params: ComposeDispenserParams(
-    //           source: source,
-    //           asset: asset,
-    //           giveQuantity: giveQuantity,
-    //           escrowQuantity: escrowQuantity,
-    //           mainchainrate: mainchainrate,
-    //           status: 10),
-    //       composeFn: composeRepository.composeDispenserVerbose);
+      final composeResponse = await composeTransactionUseCase
+          .call<ComposeDestroyParams, ComposeDestroyResponse>(
+              feeRate: feeRate,
+              source: source,
+              params: ComposeDestroyParams(
+                  source: source, asset: asset, quantity: quantity, tag: tag),
+              composeFn: composeRepository.composeDestroy);
 
-    //   final composed = composeResponse.$1;
-    //   final virtualSize = composeResponse.$2;
+      final composed = composeResponse.$1;
+      final virtualSize = composeResponse.$2;
 
-    //   emit(state.copyWith(
-    //       submitState: SubmitComposingTransaction<ComposeDispenserResponseVerbose, void>(
-    //     composeTransaction: composed,
-    //     fee: composed.btcFee,
-    //     feeRate: feeRate,
-    //     virtualSize: virtualSize.virtualSize,
-    //     adjustedVirtualSize: virtualSize.adjustedVirtualSize,
-    //   )));
-    // } on ComposeTransactionException catch (e) {
-    //   emit(state.copyWith(submitState: SubmitInitial(loading: false, error: e.message)));
-    // } catch (e) {
-    //   emit(state.copyWith(
-    //       submitState: SubmitInitial(loading: false, error: 'An unexpected error occurred: ${e.toString()}')));
-    // }
+      emit(state.copyWith(
+          submitState: SubmitComposingTransaction<ComposeDestroyResponse, void>(
+        composeTransaction: composed,
+        fee: composed.btcFee,
+        feeRate: feeRate,
+        virtualSize: virtualSize.virtualSize,
+        adjustedVirtualSize: virtualSize.adjustedVirtualSize,
+      )));
+    } on ComposeTransactionException catch (e) {
+      emit(state.copyWith(
+          submitState: SubmitInitial(loading: false, error: e.message)));
+    } catch (e) {
+      emit(state.copyWith(
+          submitState: SubmitInitial(
+              loading: false,
+              error: 'An unexpected error occurred: ${e.toString()}')));
+    }
   }
 
   int _getFeeRate() {

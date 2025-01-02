@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/common/format.dart';
 import 'package:horizon/core/logging/logger.dart';
-import 'package:horizon/domain/repositories/asset_repository.dart';
+import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_event.dart';
@@ -23,13 +23,11 @@ class ComposeDestroyPageWrapper extends StatelessWidget {
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
   final String currentAddress;
   final String assetName;
-  final String? assetLongname;
 
   const ComposeDestroyPageWrapper({
     required this.dashboardActivityFeedBloc,
     required this.currentAddress,
     required this.assetName,
-    required this.assetLongname,
     super.key,
   });
 
@@ -40,7 +38,7 @@ class ComposeDestroyPageWrapper extends StatelessWidget {
       success: (state) => BlocProvider(
         key: Key(currentAddress),
         create: (context) => ComposeDestroyBloc(
-          assetRepository: GetIt.I.get<AssetRepository>(),
+          balanceRepository: GetIt.I.get<BalanceRepository>(),
           composeRepository: GetIt.I.get<ComposeRepository>(),
           analyticsService: GetIt.I.get<AnalyticsService>(),
           getFeeEstimatesUseCase: GetIt.I.get<GetFeeEstimatesUseCase>(),
@@ -56,7 +54,6 @@ class ComposeDestroyPageWrapper extends StatelessWidget {
           address: currentAddress,
           dashboardActivityFeedBloc: dashboardActivityFeedBloc,
           assetName: assetName,
-          assetLongname: assetLongname,
         ),
       ),
       orElse: () => const SizedBox.shrink(),
@@ -68,14 +65,12 @@ class ComposeDestroyPage extends StatefulWidget {
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
   final String address;
   final String assetName;
-  final String? assetLongname;
 
   const ComposeDestroyPage({
     super.key,
     required this.dashboardActivityFeedBloc,
     required this.address,
     required this.assetName,
-    required this.assetLongname,
   });
 
   @override
@@ -84,7 +79,7 @@ class ComposeDestroyPage extends StatefulWidget {
 
 class ComposeDestroyPageState extends State<ComposeDestroyPage> {
   TextEditingController quantityController = TextEditingController();
-
+  TextEditingController tagController = TextEditingController();
   bool _submitted = false;
 
   @override
@@ -95,6 +90,7 @@ class ComposeDestroyPageState extends State<ComposeDestroyPage> {
   @override
   void dispose() {
     quantityController.dispose();
+    tagController.dispose();
     super.dispose();
   }
 
@@ -129,13 +125,14 @@ class ComposeDestroyPageState extends State<ComposeDestroyPage> {
 
   List<Widget> _buildInitialFormFields(
       ComposeDestroyState state, bool loading, GlobalKey<FormState> formKey) {
-    return state.assetState.maybeWhen(
-      success: (asset) => [
+    return state.balancesState.maybeWhen(
+      success: (balances) => [
         HorizonUI.HorizonTextFormField(
           label: 'Destroy',
           enabled: false,
           controller: TextEditingController(
-              text: displayAssetName(asset.asset, asset.assetLongname)),
+              text: displayAssetName(
+                  balances[0].asset, balances[0].assetInfo.assetLongname)),
         ),
         const SizedBox(height: 16),
         HorizonUI.HorizonTextFormField(
@@ -150,7 +147,8 @@ class ComposeDestroyPageState extends State<ComposeDestroyPage> {
         ),
         const SizedBox(height: 16),
         HorizonUI.HorizonTextFormField(
-          controller: TextEditingController(text: asset.supplyNormalized),
+          controller:
+              TextEditingController(text: balances[0].quantityNormalized),
           enabled: false,
           label: 'Available supply',
         )
@@ -169,6 +167,11 @@ class ComposeDestroyPageState extends State<ComposeDestroyPage> {
         const HorizonUI.HorizonTextFormField(
           enabled: false,
           label: 'Available supply',
+        ),
+        const SizedBox(height: 16),
+        HorizonUI.HorizonTextFormField(
+          label: 'Tag',
+          controller: tagController,
         )
       ],
     );
@@ -183,22 +186,24 @@ class ComposeDestroyPageState extends State<ComposeDestroyPage> {
       _submitted = true;
     });
     if (formKey.currentState!.validate()) {
-      final asset =
-          context.read<ComposeDestroyBloc>().state.assetState.maybeWhen(
+      final balances =
+          context.read<ComposeDestroyBloc>().state.balancesState.maybeWhen(
                 loading: () {},
-                success: (asset) => asset,
-                orElse: () => throw Exception('Asset not found'),
+                success: (balances) => balances,
+                orElse: () => throw Exception('Balances not found'),
               );
-      if (asset == null) {
-        throw Exception('invariant:Asset not found');
+      if (balances == null) {
+        throw Exception('invariant:Balances not found');
       }
       final quantity = getQuantityForDivisibility(
-          inputQuantity: quantityController.text, divisible: asset.divisible!);
+          inputQuantity: quantityController.text,
+          divisible: balances[0].assetInfo.divisible);
       context.read<ComposeDestroyBloc>().add(ComposeTransactionEvent(
             sourceAddress: widget.address,
             params: ComposeDestroyEventParams(
               assetName: widget.assetName,
               quantity: quantity,
+              tag: tagController.text,
             ),
           ));
     }

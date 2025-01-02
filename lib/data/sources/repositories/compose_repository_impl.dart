@@ -24,6 +24,8 @@ import 'package:horizon/domain/entities/compose_detach_utxo.dart'
     as compose_detach_utxo;
 import 'package:horizon/domain/entities/compose_movetoutxo.dart'
     as compose_movetoutxo;
+import 'package:horizon/domain/entities/compose_destroy.dart'
+    as compose_destroy;
 import 'package:horizon/domain/entities/utxo.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
 
@@ -674,6 +676,41 @@ class ComposeRepositoryImpl extends ComposeRepository {
 
         if (response.result == null) {
           throw Exception('Failed to compose move to utxo');
+        }
+
+        return response.result!.toDomain();
+      },
+      inputsSet,
+    );
+  }
+
+  @override
+  Future<compose_destroy.ComposeDestroyResponse> composeDestroy(int fee,
+      List<Utxo> inputsSet, compose_destroy.ComposeDestroyParams params) async {
+    return await _retryOnInvalidUtxo<compose_destroy.ComposeDestroyResponse>(
+      (currentInputSet) async {
+        final source = params.source;
+        final asset = params.asset;
+        final quantity = params.quantity;
+        final tag = params.tag;
+        const excludeUtxosWithBalances = true;
+        const disableUtxoLocks = true;
+        final inputsSetString =
+            currentInputSet.map((e) => "${e.txid}:${e.vout}").join(',');
+
+        final response = await api.composeDestroy(
+          source,
+          asset,
+          quantity,
+          tag,
+          fee,
+          inputsSetString,
+          excludeUtxosWithBalances,
+          disableUtxoLocks,
+        );
+
+        if (response.result == null) {
+          throw Exception('Failed to compose destroy');
         }
 
         return response.result!.toDomain();
