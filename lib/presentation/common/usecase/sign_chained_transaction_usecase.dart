@@ -1,3 +1,4 @@
+import 'package:horizon/common/format.dart';
 import 'package:horizon/domain/entities/bitcoin_decoded_tx.dart';
 import 'package:horizon/domain/entities/utxo.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
@@ -32,7 +33,7 @@ class SignChainedTransactionUseCase {
             txid: prevDecodedTransaction.txid,
             vout: vout.n,
             height: null,
-            value: (vout.value * 100000000).toInt(),
+            value: (vout.value * SATOSHI_RATE).toInt(),
             address: vout.scriptPubKey.address!)
       ];
 

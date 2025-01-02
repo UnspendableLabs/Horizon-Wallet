@@ -34,6 +34,8 @@ class FairminterModel {
   final int? paidQuantity;
   final bool? confirmed;
   final int? blockTime;
+  final String? maxMintPerTxNormalized;
+  final String? hardCapNormalized;
 
   const FairminterModel({
     required this.txHash,
@@ -65,6 +67,8 @@ class FairminterModel {
     this.paidQuantity,
     this.confirmed,
     this.blockTime,
+    required this.maxMintPerTxNormalized,
+    required this.hardCapNormalized,
   });
 
   factory FairminterModel.fromJson(Map<String, dynamic> json) =>
@@ -101,6 +105,8 @@ class FairminterModel {
       paidQuantity: paidQuantity,
       confirmed: confirmed,
       blockTime: blockTime,
+      maxMintPerTxNormalized: maxMintPerTxNormalized,
+      hardCapNormalized: hardCapNormalized,
     );
   }
 }

@@ -370,8 +370,7 @@ class GiveAssetInputField extends StatelessWidget {
               context.read<OpenOrderFormBloc>().add(GiveAssetChanged(newValue));
             }
           },
-          selectedValue:
-              selectedValue.isNotEmpty ? selectedValue : giveAssets.first.asset,
+          selectedValue: selectedValue.isNotEmpty ? selectedValue : null,
           items: giveAssets.map((balance) {
             return DropdownMenuItem<String>(
               value: balance.asset,

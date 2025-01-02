@@ -20,6 +20,8 @@ class ComposeFairminterParams extends ComposeParams {
   final bool? lockQuantity;
   final bool? divisible;
   final String? description;
+  final String? maxMintPerTxNormalized;
+  final String? hardCapNormalized;
 
   ComposeFairminterParams({
     required this.source,
@@ -40,6 +42,8 @@ class ComposeFairminterParams extends ComposeParams {
     this.lockQuantity,
     this.divisible,
     this.description,
+    this.maxMintPerTxNormalized,
+    this.hardCapNormalized,
   });
 
   @override
@@ -51,6 +55,8 @@ class ComposeFairminterParams extends ComposeParams {
         quantityByPrice,
         maxMintPerTx,
         hardCap,
+        maxMintPerTxNormalized,
+        hardCapNormalized,
       ];
 }
 

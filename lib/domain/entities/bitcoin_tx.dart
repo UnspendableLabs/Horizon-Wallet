@@ -1,4 +1,5 @@
 import 'package:decimal/decimal.dart';
+import 'package:horizon/common/format.dart';
 import 'package:simple_rc4/simple_rc4.dart';
 import 'dart:typed_data';
 import 'package:convert/convert.dart';
@@ -10,7 +11,7 @@ String encodeHex(Uint8List bytes) {
 
 const String PREFIX = 'CNTRPRTY';
 
-final Decimal btcFactor = Decimal.fromInt(100000000);
+final Decimal btcFactor = Decimal.fromInt(SATOSHI_RATE);
 
 class Prevout {
   final String scriptpubkey;

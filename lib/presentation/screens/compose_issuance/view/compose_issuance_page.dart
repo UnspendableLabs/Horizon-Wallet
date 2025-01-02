@@ -1,8 +1,8 @@
-import 'package:decimal/decimal.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
+import 'package:horizon/common/format.dart';
 import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/domain/entities/compose_issuance.dart';
@@ -136,16 +136,8 @@ class ComposeIssuancePageState extends State<ComposeIssuancePage> {
       _submitted = true;
     });
     if (formKey.currentState!.validate()) {
-      // TODO: wrap this in function and write some tests
-      Decimal input = Decimal.parse(quantityController.text);
-
-      int quantity;
-
-      if (isDivisible) {
-        quantity = (input * Decimal.fromInt(100000000)).toBigInt().toInt();
-      } else {
-        quantity = (input).toBigInt().toInt();
-      }
+      int quantity = getQuantityForDivisibility(
+          divisible: isDivisible, inputQuantity: quantityController.text);
 
       context.read<ComposeIssuanceBloc>().add(ComposeTransactionEvent(
             sourceAddress: widget.address,

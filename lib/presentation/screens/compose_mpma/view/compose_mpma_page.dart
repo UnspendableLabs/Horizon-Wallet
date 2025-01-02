@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
+import 'package:horizon/common/format.dart';
 import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/domain/entities/compose_mpma_send.dart';
@@ -323,9 +324,6 @@ class ComposeMpmaPageState extends State<ComposeMpmaPage> {
         enabled: false,
         controller: fromAddressController,
         label: "Source",
-        onFieldSubmitted: (value) {
-          _handleInitialSubmit(formKey);
-        },
       ),
       const SizedBox(height: 16.0),
       ...state.entries.asMap().entries.map((mapEntry) {
@@ -488,22 +486,23 @@ class ComposeMpmaPageState extends State<ComposeMpmaPage> {
       ),
       const SizedBox(height: 16.0),
       ...params.assetDestQuantList.asMap().entries.map((entry) {
-        final asset = entry.value[0];
-        final destination = entry.value[1];
-        final quantityInSats = int.parse(entry.value[2].toString());
+        final String asset = entry.value[0];
+        final String destination = entry.value[1];
+        final int quantityInSats = entry.value[2];
 
         final balance = balances.firstWhereOrNull(
           (balance) => balance.asset == asset,
         );
+        if (balance == null) {
+          throw Exception("invariant: No balance found for asset");
+        }
         final assetName =
-            displayAssetName(asset, balance?.assetInfo.assetLongname);
+            displayAssetName(asset, balance.assetInfo.assetLongname);
 
         // Convert quantity based on asset divisibility
-        final displayQuantity = balance?.assetInfo.divisible == true
-            ? (Decimal.fromInt(quantityInSats) / Decimal.fromInt(100000000))
-                .toDouble()
-                .toStringAsFixed(8)
-            : quantityInSats.toString();
+
+        final displayQuantity = quantityToQuantityNormalizedString(
+            quantity: quantityInSats, divisible: balance.assetInfo.divisible);
 
         return Column(
           children: [

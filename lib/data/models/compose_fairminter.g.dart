@@ -56,6 +56,8 @@ ComposeFairminterVerboseParamsModel
           lockQuantity: json['lock_quantity'] as bool?,
           divisible: json['divisible'] as bool?,
           description: json['description'] as String?,
+          maxMintPerTxNormalized: json['max_mint_per_tx_normalized'] as String?,
+          hardCapNormalized: json['hard_cap_normalized'] as String?,
         );
 
 Map<String, dynamic> _$ComposeFairminterVerboseParamsModelToJson(
@@ -79,4 +81,6 @@ Map<String, dynamic> _$ComposeFairminterVerboseParamsModelToJson(
       'lock_quantity': instance.lockQuantity,
       'divisible': instance.divisible,
       'description': instance.description,
+      'max_mint_per_tx_normalized': instance.maxMintPerTxNormalized,
+      'hard_cap_normalized': instance.hardCapNormalized,
     };

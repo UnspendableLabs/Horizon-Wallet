@@ -159,10 +159,8 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
 
   void _handleInitialSubmit(GlobalKey<FormState> formKey) {
     if (formKey.currentState!.validate()) {
-      int quantity =
-          (Decimal.parse(priceController.text) * Decimal.fromInt(100000000))
-              .toBigInt()
-              .toInt();
+      int priceQuantity = getQuantityForDivisibility(
+          divisible: true, inputQuantity: priceController.text);
       String dispenser = dispenserController.text;
 
       // Dispatch the event with the calculated values
@@ -171,7 +169,7 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
             params: ComposeDispenseEventParams(
                 address: widget.address,
                 dispenser: dispenser,
-                quantity: quantity),
+                quantity: priceQuantity),
           ));
     }
   }
@@ -715,9 +713,6 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
         }
         return null;
       },
-      onFieldSubmitted: (value) {
-        _handleInitialSubmit(formKey);
-      },
     );
   }
 
@@ -726,8 +721,6 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
     final params = (composeTransaction as ComposeDispenseResponse).params;
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final labelColor = isDarkMode ? Colors.white : Colors.black;
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isSmallScreen = screenWidth < 700;
 
     final selectedDispense = estimatedDispenses
         .where((d) => d.dispenser.asset == _selectedAsset)
@@ -745,42 +738,20 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
     );
 
     Widget buildDispenseRow(EstimatedDispense dispense) {
-      if (isSmallScreen) {
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SelectableText(
-              "${dispense.estimatedQuantityNormalized} ${displayAssetName(dispense.dispenser.asset, dispense.dispenser.assetInfo.assetLongname)}",
-              style: assetTextStyle,
-            ),
-            const SizedBox(height: 4),
-            SelectableText(
-              "(${dispense.dispenser.giveQuantityNormalized} x ${dispense.estimatedUnits})",
-              style: assetTextStyle,
-            ),
-            const Divider(height: 16),
-          ],
-        );
-      }
-
-      return Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8.0),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            SelectableText(
-              displayAssetName(dispense.dispenser.asset,
-                  dispense.dispenser.assetInfo.assetLongname),
-              style: assetTextStyle,
-            ),
-            const SizedBox(width: 8),
-            SelectableText(
-              "${dispense.estimatedQuantityNormalized} ${displayAssetName(dispense.dispenser.asset, dispense.dispenser.assetInfo.assetLongname)} (${dispense.dispenser.giveQuantityNormalized} x ${dispense.estimatedUnits})",
-              style: assetTextStyle,
-              textAlign: TextAlign.end,
-            ),
-          ],
-        ),
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SelectableText(
+            "${dispense.estimatedQuantityNormalized} ${displayAssetName(dispense.dispenser.asset, dispense.dispenser.assetInfo.assetLongname)}",
+            style: assetTextStyle,
+          ),
+          const SizedBox(height: 4),
+          SelectableText(
+            "(${dispense.dispenser.giveQuantityNormalized} x ${dispense.estimatedUnits})",
+            style: assetTextStyle,
+          ),
+          const Divider(height: 16),
+        ],
       );
     }
 

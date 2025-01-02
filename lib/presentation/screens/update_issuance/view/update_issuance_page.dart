@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/common/constants.dart';
+import 'package:horizon/common/format.dart';
 import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/domain/entities/asset.dart';
 import 'package:horizon/domain/entities/compose_issuance.dart';
@@ -396,8 +397,6 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
               }
               return null;
             },
-            onFieldSubmitted: (_) =>
-                _handleInitialSubmit(formKey, originalAsset),
             autovalidateMode: _submitted
                 ? AutovalidateMode.onUserInteraction
                 : AutovalidateMode.disabled,
@@ -428,8 +427,6 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
           HorizonUI.HorizonTextFormField(
             controller: _newDescriptionController,
             label: 'Description (optional)',
-            onFieldSubmitted: (_) =>
-                _handleInitialSubmit(formKey, originalAsset),
             autovalidateMode: _submitted
                 ? AutovalidateMode.onUserInteraction
                 : AutovalidateMode.disabled,
@@ -461,8 +458,6 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
           HorizonUI.HorizonTextFormField(
             label: 'Destination Address',
             controller: _destinationAddressController,
-            onFieldSubmitted: (_) =>
-                _handleInitialSubmit(formKey, originalAsset),
             autovalidateMode: _submitted
                 ? AutovalidateMode.onUserInteraction
                 : AutovalidateMode.disabled,
@@ -489,7 +484,6 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
         }
         return null;
       },
-      onFieldSubmitted: (_) => _handleInitialSubmit(formKey, originalAsset),
       autovalidateMode: _submitted
           ? AutovalidateMode.onUserInteraction
           : AutovalidateMode.disabled,
@@ -835,16 +829,10 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
   }
 
   int _updateQuantity(
-      bool isDivisible, TextEditingController quantityController) {
-    Decimal input = Decimal.parse(quantityController.text);
+      bool divisible, TextEditingController quantityController) {
+    int quantity = getQuantityForDivisibility(
+        divisible: divisible, inputQuantity: quantityController.text);
 
-    int quantity;
-
-    if (isDivisible) {
-      quantity = (input * Decimal.fromInt(100000000)).toBigInt().toInt();
-    } else {
-      quantity = (input).toBigInt().toInt();
-    }
     return quantity;
   }
 }

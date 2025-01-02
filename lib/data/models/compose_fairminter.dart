@@ -62,6 +62,8 @@ class ComposeFairminterVerboseParamsModel {
   final bool? lockQuantity;
   final bool? divisible;
   final String? description;
+  final String? maxMintPerTxNormalized;
+  final String? hardCapNormalized;
 
   ComposeFairminterVerboseParamsModel({
     required this.source,
@@ -82,6 +84,8 @@ class ComposeFairminterVerboseParamsModel {
     this.lockQuantity,
     this.divisible,
     this.description,
+    this.maxMintPerTxNormalized,
+    this.hardCapNormalized,
   });
 
   factory ComposeFairminterVerboseParamsModel.fromJson(
@@ -105,5 +109,7 @@ class ComposeFairminterVerboseParamsModel {
         burnPayment: burnPayment,
         lockQuantity: lockQuantity,
         divisible: divisible,
+        maxMintPerTxNormalized: maxMintPerTxNormalized,
+        hardCapNormalized: hardCapNormalized,
       );
 }

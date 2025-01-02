@@ -202,10 +202,6 @@ class ComposeFairminterPageState extends State<ComposeFairminterPage> {
         return;
       }
 
-      int maxMintPerTxDivisible =
-          (maxMintPerTxInput * Decimal.fromInt(100000000)).toBigInt().toInt();
-      int hardcapDivisible =
-          (hardcapInput * Decimal.fromInt(100000000)).toBigInt().toInt();
       String? parent;
       String? subAsset;
       final fullAssetName =
@@ -224,12 +220,12 @@ class ComposeFairminterPageState extends State<ComposeFairminterPage> {
             params: ComposeFairminterEventParams(
               parent: parent,
               asset: subAsset ?? asset!.asset,
-              maxMintPerTx: asset!.divisible!
-                  ? maxMintPerTxDivisible
-                  : int.parse(maxMintPerTxController.text),
-              hardCap: asset!.divisible!
-                  ? hardcapDivisible
-                  : int.parse(hardcapController.text),
+              maxMintPerTx: getQuantityForDivisibility(
+                  divisible: asset!.divisible!,
+                  inputQuantity: maxMintPerTxController.text),
+              hardCap: getQuantityForDivisibility(
+                  divisible: asset!.divisible!,
+                  inputQuantity: hardcapController.text),
               divisible: asset!.divisible!,
               startBlock: startBlockController.text.isEmpty
                   ? null
@@ -302,9 +298,6 @@ class ComposeFairminterPageState extends State<ComposeFairminterPage> {
           }
           return null;
         },
-        onFieldSubmitted: (value) {
-          _handleInitialSubmit(formKey, assets);
-        },
       ),
       const SizedBox(height: 16.0),
       HorizonUI.HorizonTextFormField(
@@ -327,9 +320,6 @@ class ComposeFairminterPageState extends State<ComposeFairminterPage> {
             return 'Please enter a hardcap';
           }
           return null;
-        },
-        onFieldSubmitted: (value) {
-          _handleInitialSubmit(formKey, assets);
         },
       ),
       const SizedBox(height: 16.0),
@@ -369,9 +359,6 @@ class ComposeFairminterPageState extends State<ComposeFairminterPage> {
         inputFormatters: [
           FilteringTextInputFormatter.digitsOnly,
         ],
-        onFieldSubmitted: (value) {
-          _handleInitialSubmit(formKey, assets);
-        },
       ),
       const SizedBox(height: 16.0),
       HorizonUI.HorizonTextFormField(
@@ -380,9 +367,6 @@ class ComposeFairminterPageState extends State<ComposeFairminterPage> {
         inputFormatters: [
           FilteringTextInputFormatter.digitsOnly,
         ],
-        onFieldSubmitted: (value) {
-          _handleInitialSubmit(formKey, assets);
-        },
       ),
       if (error != null)
         SelectableText(
@@ -394,10 +378,6 @@ class ComposeFairminterPageState extends State<ComposeFairminterPage> {
 
   List<Widget> _buildConfirmationDetails(dynamic composeTransaction) {
     final params = (composeTransaction as ComposeFairminterResponse).params;
-    final Decimal maxMintPerTxNormalized =
-        quantityToQuantityNormalized(params.maxMintPerTx!, params.divisible!);
-    final Decimal hardcapNormalized =
-        quantityToQuantityNormalized(params.hardCap!, params.divisible!);
     final String assetName =
         (params.assetParent == null || params.assetParent == '')
             ? params.asset
@@ -417,19 +397,13 @@ class ComposeFairminterPageState extends State<ComposeFairminterPage> {
       const SizedBox(height: 16.0),
       HorizonUI.HorizonTextFormField(
         label: "Max mint per transaction",
-        controller: TextEditingController(
-            text: params.divisible!
-                ? maxMintPerTxNormalized.toStringAsFixed(8)
-                : maxMintPerTxNormalized.toString()),
+        controller: TextEditingController(text: params.maxMintPerTxNormalized),
         enabled: false,
       ),
       const SizedBox(height: 16.0),
       HorizonUI.HorizonTextFormField(
         label: "Hard cap",
-        controller: TextEditingController(
-            text: params.divisible!
-                ? hardcapNormalized.toStringAsFixed(8)
-                : hardcapNormalized.toString()),
+        controller: TextEditingController(text: params.hardCapNormalized),
         enabled: false,
       ),
       const SizedBox(height: 16.0),
