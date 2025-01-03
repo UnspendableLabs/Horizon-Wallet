@@ -1,3 +1,4 @@
+import 'package:decimal/decimal.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -128,6 +129,7 @@ class ComposeDestroyPageState extends State<ComposeDestroyPage> {
   List<Widget> _buildInitialFormFields(
       ComposeDestroyState state, bool loading, GlobalKey<FormState> formKey) {
     return state.balancesState.maybeWhen(
+      // only a single balance is emitted by the compose destroy bloc
       success: (balances) => [
         HorizonUI.HorizonTextFormField(
           label: 'Destroy',
@@ -151,8 +153,20 @@ class ComposeDestroyPageState extends State<ComposeDestroyPage> {
             if (value == null || value.isEmpty) {
               return 'Please enter a quantity';
             }
+            if (Decimal.parse(value) >
+                Decimal.parse(balances[0].quantityNormalized)) {
+              return 'Quantity to destroy cannot be greater than available supply';
+            }
             return null;
           },
+          autovalidateMode: _submitted
+              ? AutovalidateMode.onUserInteraction
+              : AutovalidateMode.disabled,
+          inputFormatters: [
+            balances[0].assetInfo.divisible == true
+                ? DecimalTextInputFormatter(decimalRange: 8)
+                : FilteringTextInputFormatter.digitsOnly,
+          ],
         ),
         const SizedBox(height: 16),
         HorizonUI.HorizonTextFormField(
@@ -164,6 +178,9 @@ class ComposeDestroyPageState extends State<ComposeDestroyPage> {
             }
             return null;
           },
+          autovalidateMode: _submitted
+              ? AutovalidateMode.onUserInteraction
+              : AutovalidateMode.disabled,
           inputFormatters: [
             FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9 ]')),
           ],
@@ -209,7 +226,7 @@ class ComposeDestroyPageState extends State<ComposeDestroyPage> {
                 orElse: () => throw Exception('Balances not found'),
               );
       if (balances == null) {
-        throw Exception('invariant:Balances not found');
+        throw Exception('invariant: Balances not found');
       }
       final quantity = getQuantityForDivisibility(
           inputQuantity: quantityController.text,
