@@ -7,6 +7,7 @@ import 'package:horizon/data/models/compose_attach_utxo.dart';
 import 'package:horizon/data/models/compose_cancel.dart';
 import 'package:horizon/data/models/compose_destroy.dart';
 import 'package:horizon/data/models/compose_detach_utxo.dart';
+import 'package:horizon/data/models/compose_dividend.dart';
 import 'package:horizon/data/models/compose_fairmint.dart';
 import 'package:horizon/data/models/compose_fairminter.dart';
 import 'package:horizon/data/models/compose_movetoutxo.dart';
@@ -5094,6 +5095,18 @@ abstract class V2Api {
     @Query("asset") String asset,
     @Query("quantity") int quantity,
     @Query("tag") String tag, [
+    @Query("exact_fee") int? exactFee,
+    @Query("inputs_set") String? inputsSet,
+    @Query("exclude_utxos_with_balances") bool? excludeUtxosWithBalances,
+    @Query("disable_utxo_locks") bool? disableUtxoLocks,
+  ]);
+
+  @GET("/addresses/{address}/compose/dividend?verbose=true")
+  Future<Response<ComposeDividendResponseModel>> composeDividend(
+    @Path("address") String address,
+    @Query("asset") String asset,
+    @Query("quantity_per_unit") int quantityPerUnit,
+    @Query("dividend_asset") String dividendAsset, [
     @Query("exact_fee") int? exactFee,
     @Query("inputs_set") String? inputsSet,
     @Query("exclude_utxos_with_balances") bool? excludeUtxosWithBalances,

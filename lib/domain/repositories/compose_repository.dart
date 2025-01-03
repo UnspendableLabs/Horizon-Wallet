@@ -2,6 +2,7 @@ import 'package:horizon/domain/entities/bitcoin_decoded_tx.dart';
 import 'package:horizon/domain/entities/compose_attach_utxo.dart';
 import 'package:horizon/domain/entities/compose_destroy.dart';
 import 'package:horizon/domain/entities/compose_detach_utxo.dart';
+import 'package:horizon/domain/entities/compose_dividend.dart';
 import 'package:horizon/domain/entities/compose_fairmint.dart';
 import 'package:horizon/domain/entities/compose_fairminter.dart';
 import 'package:horizon/domain/entities/compose_issuance.dart';
@@ -58,4 +59,7 @@ abstract class ComposeRepository {
 
   Future<ComposeDestroyResponse> composeDestroy(
       int fee, List<Utxo> inputsSet, ComposeDestroyParams params);
+
+  Future<ComposeDividendResponse> composeDividend(
+      int fee, List<Utxo> inputsSet, ComposeDividendParams params);
 }

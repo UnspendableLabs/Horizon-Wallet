@@ -6568,6 +6568,55 @@ class _V2Api implements V2Api {
     return _value;
   }
 
+  @override
+  Future<Response<ComposeDividendResponseModel>> composeDividend(
+    String address,
+    String asset,
+    int quantityPerUnit,
+    String dividendAsset, [
+    int? exactFee,
+    String? inputsSet,
+    bool? excludeUtxosWithBalances,
+    bool? disableUtxoLocks,
+  ]) async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{
+      r'asset': asset,
+      r'quantity_per_unit': quantityPerUnit,
+      r'dividend_asset': dividendAsset,
+      r'exact_fee': exactFee,
+      r'inputs_set': inputsSet,
+      r'exclude_utxos_with_balances': excludeUtxosWithBalances,
+      r'disable_utxo_locks': disableUtxoLocks,
+    };
+    queryParameters.removeWhere((k, v) => v == null);
+    final _headers = <String, dynamic>{};
+    const Map<String, dynamic>? _data = null;
+    final _result = await _dio.fetch<Map<String, dynamic>>(
+        _setStreamType<Response<ComposeDividendResponseModel>>(Options(
+      method: 'GET',
+      headers: _headers,
+      extra: _extra,
+    )
+            .compose(
+              _dio.options,
+              '/addresses/${address}/compose/dividend?verbose=true',
+              queryParameters: queryParameters,
+              data: _data,
+            )
+            .copyWith(
+                baseUrl: _combineBaseUrls(
+              _dio.options.baseUrl,
+              baseUrl,
+            ))));
+    final _value = Response<ComposeDividendResponseModel>.fromJson(
+      _result.data!,
+      (json) =>
+          ComposeDividendResponseModel.fromJson(json as Map<String, dynamic>),
+    );
+    return _value;
+  }
+
   RequestOptions newRequestOptions(Object? options) {
     if (options is RequestOptions) {
       return options as RequestOptions;
