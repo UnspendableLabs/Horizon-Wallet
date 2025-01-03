@@ -209,7 +209,7 @@ class CreditParams {
 }
 
 class VerboseCreditParams extends CreditParams {
-  final int blockTime;
+  final int? blockTime;
   // final AssetInfo assetInfo;
   final String? quantityNormalized;
 
@@ -221,7 +221,7 @@ class VerboseCreditParams extends CreditParams {
     required super.event,
     required super.quantity,
     required super.txIndex,
-    required this.blockTime,
+    this.blockTime,
     // required this.assetInfo,
     this.quantityNormalized,
   });
@@ -277,7 +277,7 @@ class DebitParams {
 }
 
 class VerboseDebitParams extends DebitParams {
-  final int blockTime;
+  final int? blockTime;
   // final AssetInfo assetInfo;
   final String? quantityNormalized;
 
@@ -289,7 +289,7 @@ class VerboseDebitParams extends DebitParams {
     required super.event,
     required super.quantity,
     required super.txIndex,
-    required this.blockTime,
+    this.blockTime,
     // required this.assetInfo,
     this.quantityNormalized,
   });
@@ -1608,7 +1608,7 @@ class AttachToUtxoEventParams {
   });
 }
 
-class AttachToUtxoEvent extends Event {
+class AttachToUtxoEvent extends VerboseEvent {
   final AttachToUtxoEventParams params;
 
   const AttachToUtxoEvent({
@@ -1617,6 +1617,45 @@ class AttachToUtxoEvent extends Event {
     required super.event,
     required super.txHash,
     required super.blockIndex,
+    required super.blockTime,
     required this.params,
+  });
+}
+
+class AssetDestructionEvent extends VerboseEvent {
+  final AssetDestructionParams params;
+
+  const AssetDestructionEvent({
+    required super.state,
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
+    required super.blockTime,
+    required this.params,
+  });
+}
+
+class AssetDestructionParams {
+  final String asset;
+  final int blockIndex;
+  final int quantity;
+  final String source;
+  final String status;
+  final String tag;
+  final String txHash;
+  final int txIndex;
+  final String quantityNormalized;
+
+  AssetDestructionParams({
+    required this.asset,
+    required this.blockIndex,
+    required this.quantity,
+    required this.source,
+    required this.status,
+    required this.tag,
+    required this.txHash,
+    required this.txIndex,
+    required this.quantityNormalized,
   });
 }

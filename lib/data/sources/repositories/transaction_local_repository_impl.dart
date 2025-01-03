@@ -154,6 +154,19 @@ class TransactionLocalRepositoryImpl implements TransactionLocalRepository {
                   })
               .toList(),
         }),
+      TransactionInfoAssetDestruction(
+        unpackedData: AssetDestructionUnpackedVerbose unpacked
+      ) =>
+        jsonEncode({
+          "message_type": "destroy",
+          "message_data": {
+            "asset": unpacked.asset,
+            "quantity_normalized": unpacked.quantityNormalized,
+            "tag": unpacked.tag,
+            "quantity": unpacked.quantity,
+            // "asset_info": unpacked.assetInfo,
+          }
+        }),
       _ => null
     };
 
@@ -333,6 +346,17 @@ class TransactionLocalRepositoryImpl implements TransactionLocalRepository {
             domain: TransactionInfoDomainLocal(
                 raw: tx.raw, submittedAt: tx.submittedAt),
             unpackedData: unpacked),
+        AssetDestructionUnpackedVerbose() => TransactionInfoAssetDestruction(
+            btcAmountNormalized: "", // TODO: fix this
+            hash: tx.hash,
+            source: tx.source,
+            destination: tx.destination,
+            btcAmount: tx.btcAmount,
+            fee: tx.fee,
+            data: tx.data,
+            domain: TransactionInfoDomainLocal(
+                raw: tx.raw, submittedAt: tx.submittedAt),
+            unpackedData: unpacked),
         _ => TransactionInfo(
             btcAmountNormalized: "", // TODO: fix this
             hash: tx.hash,
@@ -475,6 +499,17 @@ class TransactionLocalRepositoryImpl implements TransactionLocalRepository {
                 raw: tx.raw, submittedAt: tx.submittedAt),
           ),
         MpmaSendUnpackedVerbose() => TransactionInfoMpmaSend(
+            btcAmountNormalized: "", // TODO: fix this
+            hash: tx.hash,
+            source: tx.source,
+            destination: tx.destination,
+            btcAmount: tx.btcAmount,
+            fee: tx.fee,
+            data: tx.data,
+            domain: TransactionInfoDomainLocal(
+                raw: tx.raw, submittedAt: tx.submittedAt),
+            unpackedData: unpacked),
+        AssetDestructionUnpackedVerbose() => TransactionInfoAssetDestruction(
             btcAmountNormalized: "", // TODO: fix this
             hash: tx.hash,
             source: tx.source,

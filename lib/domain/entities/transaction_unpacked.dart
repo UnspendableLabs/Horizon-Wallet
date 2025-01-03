@@ -326,3 +326,19 @@ class MpmaSendUnpackedVerbose extends TransactionUnpacked {
   @override
   List<Object?> get props => [messageType, messageData];
 }
+
+class AssetDestructionUnpackedVerbose extends TransactionUnpacked {
+  final String asset;
+  final String quantityNormalized;
+  final String tag;
+  final int quantity;
+  // final AssetInfo assetInfo;
+
+  const AssetDestructionUnpackedVerbose({
+    required this.asset,
+    required this.quantityNormalized,
+    required this.tag,
+    required this.quantity,
+    // required this.assetInfo,
+  }) : super(messageType: "destroy");
+}

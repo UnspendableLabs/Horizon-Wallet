@@ -37,6 +37,9 @@ class UnpackedVerboseMapper {
       case "mpma_send":
         return MpmaSendUnpackedVerboseMapper.toDomain(
             u as api.MpmaSendUnpackedVerbose);
+      case "destroy":
+        return AssetDestructionUnpackedVerboseMapper.toDomain(
+            u as api.AssetDestructionUnpackedVerbose);
       default:
         return TransactionUnpacked(
           messageType: u.messageType,
@@ -183,6 +186,19 @@ class MpmaSendUnpackedVerboseMapper {
                 quantityNormalized: d.quantityNormalized,
               ))
           .toList(),
+    );
+  }
+}
+
+class AssetDestructionUnpackedVerboseMapper {
+  static AssetDestructionUnpackedVerbose toDomain(
+      api.AssetDestructionUnpackedVerbose u) {
+    return AssetDestructionUnpackedVerbose(
+      asset: u.asset,
+      quantityNormalized: u.quantityNormalized,
+      tag: u.tag,
+      quantity: u.quantity,
+      // assetInfo: AssetInfoMapper.toDomain(u.assetInfo),
     );
   }
 }

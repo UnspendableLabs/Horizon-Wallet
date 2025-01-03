@@ -92,6 +92,9 @@ class VerboseEventMapper {
       case "UTXO_MOVE":
         return parseSwapFromMoveToUtxo(
             apiEvent as api.VerboseMoveToUtxoEvent, currentAddress);
+      case "ASSET_DESTRUCTION":
+        return AssetDestructionEventMapper.toDomain(
+            apiEvent as api.VerboseAssetDestructionEvent);
 
       // case 'NEW_TRANSACTION':
       //   return VerboseNewTransactionEventMapper.toDomain(
@@ -965,6 +968,38 @@ class VerboseAtomicSwapEventMapper {
       blockTime: apiEvent.blockTime,
       params:
           AtomicSwapParamsMapper.toDomain(apiEvent.params, bitcoinSwapAmount),
+    );
+  }
+}
+
+class AssetDestructionEventMapper {
+  static AssetDestructionEvent toDomain(
+      api.VerboseAssetDestructionEvent apiEvent) {
+    return AssetDestructionEvent(
+      state: StateMapper.getVerbose(apiEvent),
+      eventIndex: apiEvent.eventIndex,
+      event: apiEvent.event,
+      txHash: apiEvent.txHash,
+      blockIndex: apiEvent.blockIndex,
+      blockTime: apiEvent.blockTime,
+      params: AssetDestructionParamsMapper.toDomain(apiEvent.params),
+    );
+  }
+}
+
+class AssetDestructionParamsMapper {
+  static AssetDestructionParams toDomain(
+      api.VerboseAssetDestructionParams apiParams) {
+    return AssetDestructionParams(
+      asset: apiParams.asset,
+      blockIndex: apiParams.blockIndex,
+      quantity: apiParams.quantity,
+      source: apiParams.source,
+      status: apiParams.status,
+      tag: apiParams.tag,
+      txHash: apiParams.txHash,
+      txIndex: apiParams.txIndex,
+      quantityNormalized: apiParams.quantityNormalized,
     );
   }
 }
