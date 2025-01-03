@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/common/format.dart';
 import 'package:horizon/core/logging/logger.dart';
+import 'package:horizon/domain/entities/compose_destroy.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
@@ -136,6 +137,13 @@ class ComposeDestroyPageState extends State<ComposeDestroyPage> {
         ),
         const SizedBox(height: 16),
         HorizonUI.HorizonTextFormField(
+          controller:
+              TextEditingController(text: balances[0].quantityNormalized),
+          enabled: false,
+          label: 'Available supply',
+        ),
+        const SizedBox(height: 16),
+        HorizonUI.HorizonTextFormField(
           label: 'Quantity to destroy',
           controller: quantityController,
           validator: (value) {
@@ -147,10 +155,14 @@ class ComposeDestroyPageState extends State<ComposeDestroyPage> {
         ),
         const SizedBox(height: 16),
         HorizonUI.HorizonTextFormField(
-          controller:
-              TextEditingController(text: balances[0].quantityNormalized),
-          enabled: false,
-          label: 'Available supply',
+          label: 'Tag',
+          controller: tagController,
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return 'Please enter a tag';
+            }
+            return null;
+          },
         )
       ],
       orElse: () => [
@@ -169,9 +181,9 @@ class ComposeDestroyPageState extends State<ComposeDestroyPage> {
           label: 'Available supply',
         ),
         const SizedBox(height: 16),
-        HorizonUI.HorizonTextFormField(
+        const HorizonUI.HorizonTextFormField(
           label: 'Tag',
-          controller: tagController,
+          enabled: false,
         )
       ],
     );
@@ -210,39 +222,64 @@ class ComposeDestroyPageState extends State<ComposeDestroyPage> {
   }
 
   List<Widget> _buildConfirmationDetails(dynamic composeTransaction) {
-    // final params = (composeTransaction as ComposeDispenserResponseVerbose).params;
-    return [];
+    final params = (composeTransaction as ComposeDestroyResponse).params;
+    return [
+      HorizonUI.HorizonTextFormField(
+        label: 'Source',
+        controller: TextEditingController(text: params.source),
+        enabled: false,
+      ),
+      const SizedBox(height: 16),
+      HorizonUI.HorizonTextFormField(
+        label: 'Asset',
+        controller: TextEditingController(text: params.asset),
+        enabled: false,
+      ),
+      const SizedBox(height: 16),
+      HorizonUI.HorizonTextFormField(
+        label: 'Quantity to destroy',
+        controller: TextEditingController(text: params.quantityNormalized),
+        enabled: false,
+      ),
+      const SizedBox(height: 16),
+      HorizonUI.HorizonTextFormField(
+        label: 'Tag',
+        controller: TextEditingController(text: params.tag),
+        keyboardType: TextInputType.text,
+        enabled: false,
+      ),
+    ];
   }
 
-  void _onConfirmationBack() {}
+  void _onConfirmationBack() {
+    context.read<ComposeDestroyBloc>().add(FetchFormData(
+        currentAddress: widget.address, assetName: widget.assetName));
+  }
 
   void _onConfirmationContinue(
       dynamic composeTransaction, int fee, GlobalKey<FormState> formKey) {
     if (formKey.currentState!.validate()) {
-      // context.read<ComposeDestroyBloc>().add(
-      //       FinalizeTransactionEvent<ComposeDispenserResponseVerbose>(
-      //         composeTransaction: composeTransaction,
-      //         fee: fee,
-      //       ),
-      // );
+      context.read<ComposeDestroyBloc>().add(
+            FinalizeTransactionEvent<ComposeDestroyResponse>(
+              composeTransaction: composeTransaction,
+              fee: fee,
+            ),
+          );
     }
   }
 
   void _onFinalizeSubmit(String password, GlobalKey<FormState> formKey) {
-    // if (formKey.currentState!.validate()) {
-    //   context.read<CloseDispenserBloc>().add(
-    //         SignAndBroadcastTransactionEvent(
-    //           password: password,
-    // ),
-    // );
-    // }
+    if (formKey.currentState!.validate()) {
+      context.read<ComposeDestroyBloc>().add(
+            SignAndBroadcastTransactionEvent(
+              password: password,
+            ),
+          );
+    }
   }
 
   void _onFinalizeCancel() {
-    //   setState(() {
-    //     selectedDispenser = null;
-    //     dispenserController.clear();
-    //   });
-    //   context.read<CloseDispenserBloc>().add(FetchFormData(currentAddress: widget.address));
+    context.read<ComposeDestroyBloc>().add(FetchFormData(
+        currentAddress: widget.address, assetName: widget.assetName));
   }
 }

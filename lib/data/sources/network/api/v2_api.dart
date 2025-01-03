@@ -301,6 +301,8 @@ class Event {
         return DetachFromUtxoEvent.fromJson(json);
       case "UTXO_MOVE":
         return MoveToUtxoEvent.fromJson(json);
+      case "ASSET_DESTRUCTION":
+        return AssetDestructionEvent.fromJson(json);
       default:
         return _$EventFromJson(json);
     }
@@ -1355,6 +1357,99 @@ class OrderFilledEvent extends Event {
 }
 
 @JsonSerializable(fieldRename: FieldRename.snake)
+class AssetDestructionEvent extends Event {
+  final AssetDestructionParams params;
+
+  AssetDestructionEvent({
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
+    required this.params,
+  });
+
+  factory AssetDestructionEvent.fromJson(Map<String, dynamic> json) =>
+      _$AssetDestructionEventFromJson(json);
+
+  Map<String, dynamic> toJson() => _$AssetDestructionEventToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class AssetDestructionParams {
+  final String asset;
+  final int blockIndex;
+  final int quantity;
+  final String source;
+  final String status;
+  final String tag;
+  final String txHash;
+  final int txIndex;
+  final int blockTime;
+
+  AssetDestructionParams({
+    required this.asset,
+    required this.blockIndex,
+    required this.quantity,
+    required this.source,
+    required this.status,
+    required this.tag,
+    required this.txHash,
+    required this.txIndex,
+    required this.blockTime,
+  });
+
+  factory AssetDestructionParams.fromJson(Map<String, dynamic> json) =>
+      _$AssetDestructionParamsFromJson(json);
+
+  Map<String, dynamic> toJson() => _$AssetDestructionParamsToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class VerboseAssetDestructionEvent extends VerboseEvent {
+  final VerboseAssetDestructionParams params;
+
+  VerboseAssetDestructionEvent({
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
+    required super.blockTime,
+    required this.params,
+  });
+
+  factory VerboseAssetDestructionEvent.fromJson(Map<String, dynamic> json) =>
+      _$VerboseAssetDestructionEventFromJson(json);
+
+  Map<String, dynamic> toJson() => _$VerboseAssetDestructionEventToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class VerboseAssetDestructionParams extends AssetDestructionParams {
+  final AssetInfoModel assetInfo;
+  final String quantityNormalized;
+
+  VerboseAssetDestructionParams({
+    required super.asset,
+    required super.blockIndex,
+    required super.quantity,
+    required super.source,
+    required super.status,
+    required super.tag,
+    required super.txHash,
+    required super.txIndex,
+    required super.blockTime,
+    required this.assetInfo,
+    required this.quantityNormalized,
+  });
+
+  factory VerboseAssetDestructionParams.fromJson(Map<String, dynamic> json) =>
+      _$VerboseAssetDestructionParamsFromJson(json);
+
+  @override
+  Map<String, dynamic> toJson() => _$VerboseAssetDestructionParamsToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
 class MoveToUtxoEvent extends Event {
   final MoveToUtxoParams params;
 
@@ -2344,6 +2439,8 @@ class VerboseEvent extends Event {
         return VerboseDetachFromUtxoEvent.fromJson(json);
       case "UTXO_MOVE":
         return VerboseMoveToUtxoEvent.fromJson(json);
+      case "ASSET_DESTRUCTION":
+        return VerboseAssetDestructionEvent.fromJson(json);
       default:
         return _$VerboseEventFromJson(json);
     }

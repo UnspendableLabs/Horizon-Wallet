@@ -1408,6 +1408,111 @@ Map<String, dynamic> _$OrderFilledEventToJson(OrderFilledEvent instance) =>
       'params': instance.params,
     };
 
+AssetDestructionEvent _$AssetDestructionEventFromJson(
+        Map<String, dynamic> json) =>
+    AssetDestructionEvent(
+      eventIndex: (json['event_index'] as num?)?.toInt(),
+      event: json['event'] as String,
+      txHash: json['tx_hash'] as String?,
+      blockIndex: (json['block_index'] as num?)?.toInt(),
+      params: AssetDestructionParams.fromJson(
+          json['params'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$AssetDestructionEventToJson(
+        AssetDestructionEvent instance) =>
+    <String, dynamic>{
+      'event_index': instance.eventIndex,
+      'event': instance.event,
+      'tx_hash': instance.txHash,
+      'block_index': instance.blockIndex,
+      'params': instance.params,
+    };
+
+AssetDestructionParams _$AssetDestructionParamsFromJson(
+        Map<String, dynamic> json) =>
+    AssetDestructionParams(
+      asset: json['asset'] as String,
+      blockIndex: (json['block_index'] as num).toInt(),
+      quantity: (json['quantity'] as num).toInt(),
+      source: json['source'] as String,
+      status: json['status'] as String,
+      tag: json['tag'] as String,
+      txHash: json['tx_hash'] as String,
+      txIndex: (json['tx_index'] as num).toInt(),
+      blockTime: (json['block_time'] as num).toInt(),
+    );
+
+Map<String, dynamic> _$AssetDestructionParamsToJson(
+        AssetDestructionParams instance) =>
+    <String, dynamic>{
+      'asset': instance.asset,
+      'block_index': instance.blockIndex,
+      'quantity': instance.quantity,
+      'source': instance.source,
+      'status': instance.status,
+      'tag': instance.tag,
+      'tx_hash': instance.txHash,
+      'tx_index': instance.txIndex,
+      'block_time': instance.blockTime,
+    };
+
+VerboseAssetDestructionEvent _$VerboseAssetDestructionEventFromJson(
+        Map<String, dynamic> json) =>
+    VerboseAssetDestructionEvent(
+      eventIndex: (json['event_index'] as num?)?.toInt(),
+      event: json['event'] as String,
+      txHash: json['tx_hash'] as String?,
+      blockIndex: (json['block_index'] as num?)?.toInt(),
+      blockTime: (json['block_time'] as num?)?.toInt(),
+      params: VerboseAssetDestructionParams.fromJson(
+          json['params'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$VerboseAssetDestructionEventToJson(
+        VerboseAssetDestructionEvent instance) =>
+    <String, dynamic>{
+      'event_index': instance.eventIndex,
+      'event': instance.event,
+      'tx_hash': instance.txHash,
+      'block_index': instance.blockIndex,
+      'block_time': instance.blockTime,
+      'params': instance.params,
+    };
+
+VerboseAssetDestructionParams _$VerboseAssetDestructionParamsFromJson(
+        Map<String, dynamic> json) =>
+    VerboseAssetDestructionParams(
+      asset: json['asset'] as String,
+      blockIndex: (json['block_index'] as num).toInt(),
+      quantity: (json['quantity'] as num).toInt(),
+      source: json['source'] as String,
+      status: json['status'] as String,
+      tag: json['tag'] as String,
+      txHash: json['tx_hash'] as String,
+      txIndex: (json['tx_index'] as num).toInt(),
+      blockTime: (json['block_time'] as num).toInt(),
+      assetInfo:
+          AssetInfoModel.fromJson(json['asset_info'] as Map<String, dynamic>),
+      quantityNormalized: json['quantity_normalized'] as String,
+    );
+
+Map<String, dynamic> _$VerboseAssetDestructionParamsToJson(
+        VerboseAssetDestructionParams instance) =>
+    <String, dynamic>{
+      'asset': instance.asset,
+      'block_index': instance.blockIndex,
+      'quantity': instance.quantity,
+      'source': instance.source,
+      'status': instance.status,
+      'tag': instance.tag,
+      'tx_hash': instance.txHash,
+      'tx_index': instance.txIndex,
+      'block_time': instance.blockTime,
+      'asset_info': instance.assetInfo,
+      'quantity_normalized': instance.quantityNormalized,
+    };
+
 MoveToUtxoEvent _$MoveToUtxoEventFromJson(Map<String, dynamic> json) =>
     MoveToUtxoEvent(
       eventIndex: (json['event_index'] as num?)?.toInt(),

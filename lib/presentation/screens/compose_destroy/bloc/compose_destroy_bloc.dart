@@ -1,3 +1,4 @@
+import 'package:horizon/common/uuid.dart';
 import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/domain/entities/compose_destroy.dart';
@@ -146,54 +147,58 @@ class ComposeDestroyBloc extends ComposeBaseBloc<ComposeDestroyState> {
 
   @override
   void onFinalizeTransaction(FinalizeTransactionEvent event, emit) async {
-    // emit(state.copyWith(
-    //     submitState: SubmitFinalizing<ComposeDispenserResponseVerbose>(
-    //   loading: false,
-    //   error: null,
-    //   composeTransaction: event.composeTransaction,
-    //   fee: event.fee,
-    // )));
+    emit(state.copyWith(
+        submitState: SubmitFinalizing<ComposeDestroyResponse>(
+      loading: false,
+      error: null,
+      composeTransaction: event.composeTransaction,
+      fee: event.fee,
+    )));
   }
 
   @override
   void onSignAndBroadcastTransaction(
       SignAndBroadcastTransactionEvent event, emit) async {
-    // if (state.submitState is! SubmitFinalizing<ComposeDispenserResponseVerbose>) {
-    //   return;
-    // }
+    if (state.submitState is! SubmitFinalizing<ComposeDestroyResponse>) {
+      return;
+    }
 
-    // final s = (state.submitState as SubmitFinalizing<ComposeDispenserResponseVerbose>);
-    // final compose = s.composeTransaction;
-    // final fee = s.fee;
+    final s = (state.submitState as SubmitFinalizing<ComposeDestroyResponse>);
+    final compose = s.composeTransaction;
+    final fee = s.fee;
 
-    // emit(state.copyWith(
-    //     submitState: SubmitFinalizing<ComposeDispenserResponseVerbose>(
-    //   loading: true,
-    //   error: null,
-    //   fee: fee,
-    //   composeTransaction: compose,
-    // )));
+    emit(state.copyWith(
+        submitState: SubmitFinalizing<ComposeDestroyResponse>(
+      loading: true,
+      error: null,
+      fee: fee,
+      composeTransaction: compose,
+    )));
 
-    // await signAndBroadcastTransactionUseCase.call(
-    //     password: event.password,
-    //     source: compose.params.source,
-    //     rawtransaction: compose.rawtransaction,
-    //     onSuccess: (txHex, txHash) async {
-    //       await writelocalTransactionUseCase.call(txHex, txHash);
+    await signAndBroadcastTransactionUseCase.call(
+        password: event.password,
+        source: compose.params.source,
+        rawtransaction: compose.rawtransaction,
+        onSuccess: (txHex, txHash) async {
+          await writelocalTransactionUseCase.call(txHex, txHash);
 
-    //       logger.d('dispenser broadcasted txHash: $txHash');
-    //       analyticsService.trackAnonymousEvent('broadcast_tx_dispenser_close', properties: {'distinct_id': uuid.v4()});
+          logger.debug('destroy broadcasted txHash: $txHash');
+          analyticsService.trackAnonymousEvent('broadcast_tx_destroy',
+              properties: {'distinct_id': uuid.v4()});
 
-    //       emit(state.copyWith(submitState: SubmitSuccess(transactionHex: txHex, sourceAddress: compose.params.source)));
-    //     },
-    //     onError: (msg) {
-    //       emit(state.copyWith(
-    //           submitState: SubmitFinalizing<ComposeDispenserResponseVerbose>(
-    //         loading: false,
-    //         error: msg,
-    //         fee: fee,
-    //         composeTransaction: compose,
-    //       )));
-    //     });
+          emit(state.copyWith(
+              submitState: SubmitSuccess(
+                  transactionHex: txHex,
+                  sourceAddress: compose.params.source)));
+        },
+        onError: (msg) {
+          emit(state.copyWith(
+              submitState: SubmitFinalizing<ComposeDestroyResponse>(
+            loading: false,
+            error: msg,
+            fee: fee,
+            composeTransaction: compose,
+          )));
+        });
   }
 }

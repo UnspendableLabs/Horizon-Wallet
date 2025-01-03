@@ -264,6 +264,8 @@ class ActivityFeedListItem extends StatelessWidget {
           "Move to UTXO ${params.asset} ${params.quantityNormalized}"),
       AtomicSwapEvent(params: var params) => SelectableText(
           "Swap ${params.quantityNormalized} ${params.asset} for ${params.bitcoinSwapAmount} BTC"),
+      AssetDestructionEvent(params: var params) =>
+        SelectableText("Destroy ${params.quantityNormalized} ${params.asset}"),
       _ => SelectableText(
           'Invariant: title unsupported event type: ${event.runtimeType}'),
     };
@@ -579,6 +581,8 @@ class ActivityFeedListItem extends StatelessWidget {
         const Icon(Icons.swap_horiz, color: Colors.grey),
       AtomicSwapEvent(params: var _) =>
         const Icon(Icons.swap_horiz, color: Colors.grey),
+      AssetDestructionEvent(params: var _) =>
+        const Icon(Icons.delete_forever, color: Colors.grey),
       _ => const Icon(Icons.error),
     };
   }
