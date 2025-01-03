@@ -4457,15 +4457,15 @@ class AssetDestructionUnpackedVerbose extends TransactionUnpackedVerbose {
   final String asset;
   final String quantityNormalized;
   final String tag;
-  final String quantity;
-  final AssetInfoModel assetInfo;
+  final int quantity;
+  final AssetInfoModel? assetInfo;
 
   const AssetDestructionUnpackedVerbose({
     required this.asset,
     required this.quantityNormalized,
     required this.tag,
     required this.quantity,
-    required this.assetInfo,
+    this.assetInfo,
   }) : super(messageType: "destroy");
   factory AssetDestructionUnpackedVerbose.fromJson(Map<String, dynamic> json) {
     final messageData = json["message_data"];
@@ -4474,7 +4474,9 @@ class AssetDestructionUnpackedVerbose extends TransactionUnpackedVerbose {
       quantityNormalized: messageData["quantity_normalized"],
       tag: messageData["tag"],
       quantity: messageData["quantity"],
-      assetInfo: AssetInfoModel.fromJson(messageData["asset_info"]),
+      assetInfo: messageData["asset_info"] != null
+          ? AssetInfoModel.fromJson(messageData["asset_info"])
+          : null,
     );
   }
 
@@ -4487,7 +4489,7 @@ class AssetDestructionUnpackedVerbose extends TransactionUnpackedVerbose {
         "quantity_normalized": quantityNormalized,
         "tag": tag,
         "quantity": quantity,
-        "asset_info": assetInfo.toJson(),
+        "asset_info": assetInfo?.toJson(),
       }
     };
   }

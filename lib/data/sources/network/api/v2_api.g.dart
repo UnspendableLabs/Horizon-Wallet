@@ -3933,9 +3933,10 @@ AssetDestructionUnpackedVerbose _$AssetDestructionUnpackedVerboseFromJson(
       asset: json['asset'] as String,
       quantityNormalized: json['quantity_normalized'] as String,
       tag: json['tag'] as String,
-      quantity: json['quantity'] as String,
-      assetInfo:
-          AssetInfoModel.fromJson(json['asset_info'] as Map<String, dynamic>),
+      quantity: (json['quantity'] as num).toInt(),
+      assetInfo: json['asset_info'] == null
+          ? null
+          : AssetInfoModel.fromJson(json['asset_info'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$AssetDestructionUnpackedVerboseToJson(

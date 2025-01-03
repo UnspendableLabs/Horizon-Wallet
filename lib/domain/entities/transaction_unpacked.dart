@@ -331,7 +331,7 @@ class AssetDestructionUnpackedVerbose extends TransactionUnpacked {
   final String asset;
   final String quantityNormalized;
   final String tag;
-  final String quantity;
+  final int quantity;
   // final AssetInfo assetInfo;
 
   const AssetDestructionUnpackedVerbose({

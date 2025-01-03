@@ -1,4 +1,3 @@
-
 import "transaction_unpacked.dart";
 import "package:equatable/equatable.dart";
 
