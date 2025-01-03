@@ -21,6 +21,8 @@ class AssetInfoModel {
   factory AssetInfoModel.fromJson(Map<String, dynamic> json) =>
       _$AssetInfoModelFromJson(json);
 
+  Map<String, dynamic> toJson() => _$AssetInfoModelToJson(this);
+
   e.AssetInfo toDomain() {
     return e.AssetInfo(
         divisible: divisible,

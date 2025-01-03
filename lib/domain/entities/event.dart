@@ -209,7 +209,7 @@ class CreditParams {
 }
 
 class VerboseCreditParams extends CreditParams {
-  final int blockTime;
+  final int? blockTime;
   // final AssetInfo assetInfo;
   final String? quantityNormalized;
 
@@ -221,7 +221,7 @@ class VerboseCreditParams extends CreditParams {
     required super.event,
     required super.quantity,
     required super.txIndex,
-    required this.blockTime,
+    this.blockTime,
     // required this.assetInfo,
     this.quantityNormalized,
   });
@@ -277,7 +277,7 @@ class DebitParams {
 }
 
 class VerboseDebitParams extends DebitParams {
-  final int blockTime;
+  final int? blockTime;
   // final AssetInfo assetInfo;
   final String? quantityNormalized;
 
@@ -289,7 +289,7 @@ class VerboseDebitParams extends DebitParams {
     required super.event,
     required super.quantity,
     required super.txIndex,
-    required this.blockTime,
+    this.blockTime,
     // required this.assetInfo,
     this.quantityNormalized,
   });

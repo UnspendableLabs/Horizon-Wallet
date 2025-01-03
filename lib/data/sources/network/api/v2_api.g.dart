@@ -1440,7 +1440,7 @@ AssetDestructionParams _$AssetDestructionParamsFromJson(
       tag: json['tag'] as String,
       txHash: json['tx_hash'] as String,
       txIndex: (json['tx_index'] as num).toInt(),
-      blockTime: (json['block_time'] as num).toInt(),
+      blockTime: (json['block_time'] as num?)?.toInt(),
     );
 
 Map<String, dynamic> _$AssetDestructionParamsToJson(
@@ -1491,7 +1491,7 @@ VerboseAssetDestructionParams _$VerboseAssetDestructionParamsFromJson(
       tag: json['tag'] as String,
       txHash: json['tx_hash'] as String,
       txIndex: (json['tx_index'] as num).toInt(),
-      blockTime: (json['block_time'] as num).toInt(),
+      blockTime: (json['block_time'] as num?)?.toInt(),
       assetInfo:
           AssetInfoModel.fromJson(json['asset_info'] as Map<String, dynamic>),
       quantityNormalized: json['quantity_normalized'] as String,
@@ -1542,7 +1542,7 @@ MoveToUtxoParams _$MoveToUtxoParamsFromJson(Map<String, dynamic> json) =>
       status: json['status'] as String,
       txHash: json['tx_hash'] as String,
       txIndex: (json['tx_index'] as num).toInt(),
-      blockTime: (json['block_time'] as num).toInt(),
+      blockTime: (json['block_time'] as num?)?.toInt(),
     );
 
 Map<String, dynamic> _$MoveToUtxoParamsToJson(MoveToUtxoParams instance) =>
@@ -1594,7 +1594,7 @@ VerboseMoveToUtxoParams _$VerboseMoveToUtxoParamsFromJson(
       status: json['status'] as String,
       txHash: json['tx_hash'] as String,
       txIndex: (json['tx_index'] as num).toInt(),
-      blockTime: (json['block_time'] as num).toInt(),
+      blockTime: (json['block_time'] as num?)?.toInt(),
       assetInfo:
           AssetInfoModel.fromJson(json['asset_info'] as Map<String, dynamic>),
       quantityNormalized: json['quantity_normalized'] as String,
@@ -2400,7 +2400,7 @@ VerboseCreditParams _$VerboseCreditParamsFromJson(Map<String, dynamic> json) =>
       event: json['event'] as String,
       quantity: (json['quantity'] as num).toInt(),
       txIndex: (json['tx_index'] as num).toInt(),
-      blockTime: (json['block_time'] as num).toInt(),
+      blockTime: (json['block_time'] as num?)?.toInt(),
       assetInfo: json['asset_info'] == null
           ? null
           : AssetInfoModel.fromJson(json['asset_info'] as Map<String, dynamic>),
@@ -2431,7 +2431,7 @@ VerboseDebitParams _$VerboseDebitParamsFromJson(Map<String, dynamic> json) =>
       event: json['event'] as String,
       quantity: (json['quantity'] as num).toInt(),
       txIndex: (json['tx_index'] as num).toInt(),
-      blockTime: (json['block_time'] as num).toInt(),
+      blockTime: (json['block_time'] as num?)?.toInt(),
       assetInfo: json['asset_info'] == null
           ? null
           : AssetInfoModel.fromJson(json['asset_info'] as Map<String, dynamic>),
@@ -3901,6 +3901,52 @@ MoveToUtxoUnpackedVerbose _$MoveToUtxoUnpackedVerboseFromJson(
 Map<String, dynamic> _$MoveToUtxoUnpackedVerboseToJson(
         MoveToUtxoUnpackedVerbose instance) =>
     <String, dynamic>{};
+
+AssetDestructionInfoVerbose _$AssetDestructionInfoVerboseFromJson(
+        Map<String, dynamic> json) =>
+    AssetDestructionInfoVerbose(
+      data: json['data'] as String,
+      source: json['source'] as String,
+      destination: json['destination'] as String?,
+      btcAmount: (json['btc_amount'] as num?)?.toInt(),
+      fee: (json['fee'] as num?)?.toInt(),
+      btcAmountNormalized: json['btc_amount_normalized'] as String?,
+      unpackedData: AssetDestructionUnpackedVerbose.fromJson(
+          json['unpacked_data'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$AssetDestructionInfoVerboseToJson(
+        AssetDestructionInfoVerbose instance) =>
+    <String, dynamic>{
+      'source': instance.source,
+      'destination': instance.destination,
+      'btc_amount': instance.btcAmount,
+      'fee': instance.fee,
+      'data': instance.data,
+      'btc_amount_normalized': instance.btcAmountNormalized,
+      'unpacked_data': instance.unpackedData,
+    };
+
+AssetDestructionUnpackedVerbose _$AssetDestructionUnpackedVerboseFromJson(
+        Map<String, dynamic> json) =>
+    AssetDestructionUnpackedVerbose(
+      asset: json['asset'] as String,
+      quantityNormalized: json['quantity_normalized'] as String,
+      tag: json['tag'] as String,
+      quantity: json['quantity'] as String,
+      assetInfo:
+          AssetInfoModel.fromJson(json['asset_info'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$AssetDestructionUnpackedVerboseToJson(
+        AssetDestructionUnpackedVerbose instance) =>
+    <String, dynamic>{
+      'asset': instance.asset,
+      'quantity_normalized': instance.quantityNormalized,
+      'tag': instance.tag,
+      'quantity': instance.quantity,
+      'asset_info': instance.assetInfo,
+    };
 
 UTXO _$UTXOFromJson(Map<String, dynamic> json) => UTXO(
       vout: (json['vout'] as num).toInt(),

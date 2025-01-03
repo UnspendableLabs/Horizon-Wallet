@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/common/format.dart';
@@ -17,8 +18,8 @@ import 'package:horizon/presentation/common/usecase/write_local_transaction_usec
 import 'package:horizon/presentation/screens/compose_destroy/bloc/compose_destroy_bloc.dart';
 import 'package:horizon/presentation/screens/compose_destroy/bloc/compose_destroy_state.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart';
-import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
+import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 
 class ComposeDestroyPageWrapper extends StatelessWidget {
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
@@ -163,6 +164,9 @@ class ComposeDestroyPageState extends State<ComposeDestroyPage> {
             }
             return null;
           },
+          inputFormatters: [
+            FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9]')),
+          ],
         )
       ],
       orElse: () => [
@@ -232,7 +236,9 @@ class ComposeDestroyPageState extends State<ComposeDestroyPage> {
       const SizedBox(height: 16),
       HorizonUI.HorizonTextFormField(
         label: 'Asset',
-        controller: TextEditingController(text: params.asset),
+        controller: TextEditingController(
+            text:
+                displayAssetName(params.asset, params.assetInfo.assetLongname)),
         enabled: false,
       ),
       const SizedBox(height: 16),

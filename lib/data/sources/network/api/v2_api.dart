@@ -1384,7 +1384,7 @@ class AssetDestructionParams {
   final String tag;
   final String txHash;
   final int txIndex;
-  final int blockTime;
+  final int? blockTime;
 
   AssetDestructionParams({
     required this.asset,
@@ -1395,7 +1395,7 @@ class AssetDestructionParams {
     required this.tag,
     required this.txHash,
     required this.txIndex,
-    required this.blockTime,
+    this.blockTime,
   });
 
   factory AssetDestructionParams.fromJson(Map<String, dynamic> json) =>
@@ -1437,7 +1437,7 @@ class VerboseAssetDestructionParams extends AssetDestructionParams {
     required super.tag,
     required super.txHash,
     required super.txIndex,
-    required super.blockTime,
+    super.blockTime,
     required this.assetInfo,
     required this.quantityNormalized,
   });
@@ -1478,7 +1478,7 @@ class MoveToUtxoParams {
   final String status;
   final String txHash;
   final int txIndex;
-  final int blockTime;
+  final int? blockTime;
 
   MoveToUtxoParams({
     required this.asset,
@@ -1490,7 +1490,7 @@ class MoveToUtxoParams {
     required this.status,
     required this.txHash,
     required this.txIndex,
-    required this.blockTime,
+    this.blockTime,
   });
 
   factory MoveToUtxoParams.fromJson(Map<String, dynamic> json) =>
@@ -2309,7 +2309,7 @@ class VerboseEnhancedSendParams extends EnhancedSendParams {
 
 @JsonSerializable(fieldRename: FieldRename.snake)
 class VerboseCreditParams extends CreditParams {
-  final int blockTime;
+  final int? blockTime;
   final AssetInfoModel? assetInfo;
   final String? quantityNormalized;
 
@@ -2332,7 +2332,7 @@ class VerboseCreditParams extends CreditParams {
 
 @JsonSerializable(fieldRename: FieldRename.snake)
 class VerboseDebitParams extends DebitParams {
-  final int blockTime;
+  final int? blockTime;
   final AssetInfoModel? assetInfo;
   final String? quantityNormalized;
 
@@ -3543,6 +3543,8 @@ class TransactionUnpackedVerbose extends TransactionUnpacked {
         return DetachUnpackedVerbose.fromJson(json);
       case null:
         return MoveToUtxoUnpackedVerbose.fromJson(json);
+      case "destroy":
+        return AssetDestructionUnpackedVerbose.fromJson(json);
       default:
         return TransactionUnpackedVerbose(
           messageType: json["message_type"],
@@ -3892,6 +3894,8 @@ class InfoVerbose extends Info {
         return DetachInfoVerbose.fromJson(json);
       case null: // move to utxo is the only transaction type that does not have a message_type
         return MoveToUtxoInfoVerbose.fromJson(json);
+      case "destroy":
+        return AssetDestructionInfoVerbose.fromJson(json);
       default:
         return base;
     }
@@ -4426,6 +4430,67 @@ class MoveToUtxoUnpackedVerbose extends TransactionUnpackedVerbose {
 
   @override
   Map<String, dynamic> toJson() => _$MoveToUtxoUnpackedVerboseToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class AssetDestructionInfoVerbose extends InfoVerbose {
+  final AssetDestructionUnpackedVerbose unpackedData;
+  const AssetDestructionInfoVerbose({
+    required super.data,
+    required super.source,
+    required super.destination,
+    required super.btcAmount,
+    required super.fee,
+    required super.btcAmountNormalized,
+    required this.unpackedData,
+  });
+
+  factory AssetDestructionInfoVerbose.fromJson(Map<String, dynamic> json) =>
+      _$AssetDestructionInfoVerboseFromJson(json);
+
+  @override
+  Map<String, dynamic> toJson() => _$AssetDestructionInfoVerboseToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class AssetDestructionUnpackedVerbose extends TransactionUnpackedVerbose {
+  final String asset;
+  final String quantityNormalized;
+  final String tag;
+  final String quantity;
+  final AssetInfoModel assetInfo;
+
+  const AssetDestructionUnpackedVerbose({
+    required this.asset,
+    required this.quantityNormalized,
+    required this.tag,
+    required this.quantity,
+    required this.assetInfo,
+  }) : super(messageType: "destroy");
+  factory AssetDestructionUnpackedVerbose.fromJson(Map<String, dynamic> json) {
+    final messageData = json["message_data"];
+    return AssetDestructionUnpackedVerbose(
+      asset: messageData["asset"],
+      quantityNormalized: messageData["quantity_normalized"],
+      tag: messageData["tag"],
+      quantity: messageData["quantity"],
+      assetInfo: AssetInfoModel.fromJson(messageData["asset_info"]),
+    );
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    return {
+      "message_type": "destroy",
+      "message_data": {
+        "asset": asset,
+        "quantity_normalized": quantityNormalized,
+        "tag": tag,
+        "quantity": quantity,
+        "asset_info": assetInfo.toJson(),
+      }
+    };
+  }
 }
 
 @JsonSerializable(fieldRename: FieldRename.snake)

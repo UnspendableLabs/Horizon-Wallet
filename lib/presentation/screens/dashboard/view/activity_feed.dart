@@ -401,6 +401,9 @@ class ActivityFeedListItem extends StatelessWidget {
         unpackedData: var unpackedData,
       ) =>
         SelectableText("Detach from UTXO ${unpackedData.destination}"),
+      TransactionInfoAssetDestruction(unpackedData: var unpackedData) =>
+        SelectableText(
+            "Destroy ${unpackedData.quantityNormalized} ${unpackedData.asset}"),
       _ => SelectableText(
           'Invariant: title unsupported TransactionInfo type: ${info.runtimeType}'),
     };
@@ -426,6 +429,8 @@ class ActivityFeedListItem extends StatelessWidget {
       TransactionInfoDetach() => const Icon(Icons.link_off, color: Colors.grey),
       TransactionInfoMoveToUtxo() =>
         const Icon(Icons.swap_horiz, color: Colors.grey),
+      TransactionInfoAssetDestruction() =>
+        const Icon(Icons.delete_forever, color: Colors.grey),
       TransactionInfo(btcAmount: var btcAmount) when btcAmount != null =>
         const Icon(Icons.arrow_back, color: Colors.grey),
       _ => const Icon(Icons.error),
