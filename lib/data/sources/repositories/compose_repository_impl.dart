@@ -26,6 +26,8 @@ import 'package:horizon/domain/entities/compose_movetoutxo.dart'
     as compose_movetoutxo;
 import 'package:horizon/domain/entities/compose_destroy.dart'
     as compose_destroy;
+import 'package:horizon/domain/entities/compose_dividend.dart'
+    as compose_dividend;
 import 'package:horizon/domain/entities/utxo.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
 
@@ -711,6 +713,43 @@ class ComposeRepositoryImpl extends ComposeRepository {
 
         if (response.result == null) {
           throw Exception('Failed to compose destroy');
+        }
+
+        return response.result!.toDomain();
+      },
+      inputsSet,
+    );
+  }
+
+  @override
+  Future<compose_dividend.ComposeDividendResponse> composeDividend(
+      int fee,
+      List<Utxo> inputsSet,
+      compose_dividend.ComposeDividendParams params) async {
+    return await _retryOnInvalidUtxo<compose_dividend.ComposeDividendResponse>(
+      (currentInputSet) async {
+        final source = params.source;
+        final asset = params.asset;
+        final quantityPerUnit = params.quantityPerUnit;
+        final dividendAsset = params.dividendAsset;
+        const excludeUtxosWithBalances = true;
+        const disableUtxoLocks = true;
+        final inputsSetString =
+            currentInputSet.map((e) => "${e.txid}:${e.vout}").join(',');
+
+        final response = await api.composeDividend(
+          source,
+          asset,
+          quantityPerUnit,
+          dividendAsset,
+          fee,
+          inputsSetString,
+          excludeUtxosWithBalances,
+          disableUtxoLocks,
+        );
+
+        if (response.result == null) {
+          throw Exception('Failed to compose dividend');
         }
 
         return response.result!.toDomain();

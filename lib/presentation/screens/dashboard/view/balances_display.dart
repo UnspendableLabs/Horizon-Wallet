@@ -11,6 +11,7 @@ import 'package:horizon/presentation/common/no_data.dart';
 import 'package:horizon/presentation/screens/compose_attach_utxo/view/compose_attach_utxo_page.dart';
 import 'package:horizon/presentation/screens/compose_destroy/view/compose_destroy_page.dart';
 import 'package:horizon/presentation/screens/compose_detach_utxo/view/compose_detach_utxo_page.dart';
+import 'package:horizon/presentation/screens/compose_dividend/view/compose_dividend_page.dart';
 import 'package:horizon/presentation/screens/compose_movetoutxo/view/compose_movetoutxo_page.dart';
 import 'package:horizon/presentation/screens/compose_send/view/compose_send_page.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_bloc.dart';
@@ -612,6 +613,25 @@ class BalancesSliverState extends State<BalancesSliver> {
                           },
                         ),
                       );
+                    } else if (result == IssuanceActionType.dividend) {
+                      HorizonUI.HorizonDialog.show(
+                        context: context,
+                        body: HorizonUI.HorizonDialog(
+                          title: "Dividend",
+                          body: ComposeDividendPageWrapper(
+                            currentAddress: widget.currentAddress,
+                            dashboardActivityFeedBloc:
+                                BlocProvider.of<DashboardActivityFeedBloc>(
+                                    context),
+                            assetName: currentOwnedAsset!.asset,
+                          ),
+                          includeBackButton: false,
+                          includeCloseButton: true,
+                          onBackButtonPressed: () {
+                            Navigator.of(context).pop();
+                          },
+                        ),
+                      );
                     } else {
                       HorizonUI.HorizonDialog.show(
                         context: context,
@@ -679,6 +699,11 @@ class BalancesSliverState extends State<BalancesSliver> {
                       const PopupMenuItem<IssuanceActionType>(
                         value: IssuanceActionType.destroy,
                         child: Text('Destroy'),
+                      ),
+                    if (utxo == null)
+                      const PopupMenuItem<IssuanceActionType>(
+                        value: IssuanceActionType.dividend,
+                        child: Text('Dividend'),
                       ),
                   ],
                 ),
