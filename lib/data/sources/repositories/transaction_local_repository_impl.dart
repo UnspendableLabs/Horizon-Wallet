@@ -167,6 +167,18 @@ class TransactionLocalRepositoryImpl implements TransactionLocalRepository {
             // "asset_info": unpacked.assetInfo,
           }
         }),
+      TransactionInfoAssetDividend(
+        unpackedData: AssetDividendUnpackedVerbose unpacked
+      ) =>
+        jsonEncode({
+          "message_type": "dividend",
+          "message_data": {
+            "asset": unpacked.asset,
+            "quantity_per_unit": unpacked.quantityPerUnit,
+            "dividend_asset": unpacked.dividendAsset,
+            "status": unpacked.status,
+          }
+        }),
       _ => null
     };
 
@@ -357,6 +369,17 @@ class TransactionLocalRepositoryImpl implements TransactionLocalRepository {
             domain: TransactionInfoDomainLocal(
                 raw: tx.raw, submittedAt: tx.submittedAt),
             unpackedData: unpacked),
+        AssetDividendUnpackedVerbose() => TransactionInfoAssetDividend(
+            btcAmountNormalized: "", // TODO: fix this
+            hash: tx.hash,
+            source: tx.source,
+            destination: tx.destination,
+            btcAmount: tx.btcAmount,
+            fee: tx.fee,
+            data: tx.data,
+            domain: TransactionInfoDomainLocal(
+                raw: tx.raw, submittedAt: tx.submittedAt),
+            unpackedData: unpacked),
         _ => TransactionInfo(
             btcAmountNormalized: "", // TODO: fix this
             hash: tx.hash,
@@ -510,6 +533,17 @@ class TransactionLocalRepositoryImpl implements TransactionLocalRepository {
                 raw: tx.raw, submittedAt: tx.submittedAt),
             unpackedData: unpacked),
         AssetDestructionUnpackedVerbose() => TransactionInfoAssetDestruction(
+            btcAmountNormalized: "", // TODO: fix this
+            hash: tx.hash,
+            source: tx.source,
+            destination: tx.destination,
+            btcAmount: tx.btcAmount,
+            fee: tx.fee,
+            data: tx.data,
+            domain: TransactionInfoDomainLocal(
+                raw: tx.raw, submittedAt: tx.submittedAt),
+            unpackedData: unpacked),
+        AssetDividendUnpackedVerbose() => TransactionInfoAssetDividend(
             btcAmountNormalized: "", // TODO: fix this
             hash: tx.hash,
             source: tx.source,

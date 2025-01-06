@@ -266,6 +266,8 @@ class ActivityFeedListItem extends StatelessWidget {
           "Swap ${params.quantityNormalized} ${params.asset} for ${params.bitcoinSwapAmount} BTC"),
       AssetDestructionEvent(params: var params) =>
         SelectableText("Destroy ${params.quantityNormalized} ${params.asset}"),
+      AssetDividendEvent(params: var params) => SelectableText(
+          "Dividend ${params.asset} - ${params.dividendAsset} ${params.quantityPerUnitNormalized} per unit"),
       _ => SelectableText(
           'Invariant: title unsupported event type: ${event.runtimeType}'),
     };
@@ -404,6 +406,8 @@ class ActivityFeedListItem extends StatelessWidget {
       TransactionInfoAssetDestruction(unpackedData: var unpackedData) =>
         SelectableText(
             "Destroy ${unpackedData.quantityNormalized} ${unpackedData.asset}"),
+      TransactionInfoAssetDividend(unpackedData: var unpackedData) =>
+        SelectableText("Dividend ${unpackedData.asset}"),
       _ => SelectableText(
           'Invariant: title unsupported TransactionInfo type: ${info.runtimeType}'),
     };
@@ -431,6 +435,8 @@ class ActivityFeedListItem extends StatelessWidget {
         const Icon(Icons.swap_horiz, color: Colors.grey),
       TransactionInfoAssetDestruction() =>
         const Icon(Icons.delete_forever, color: Colors.grey),
+      TransactionInfoAssetDividend() =>
+        const Icon(Icons.currency_exchange, color: Colors.grey),
       TransactionInfo(btcAmount: var btcAmount) when btcAmount != null =>
         const Icon(Icons.arrow_back, color: Colors.grey),
       _ => const Icon(Icons.error),
@@ -588,6 +594,8 @@ class ActivityFeedListItem extends StatelessWidget {
         const Icon(Icons.swap_horiz, color: Colors.grey),
       AssetDestructionEvent(params: var _) =>
         const Icon(Icons.delete_forever, color: Colors.grey),
+      AssetDividendEvent(params: var _) =>
+        const Icon(Icons.currency_exchange, color: Colors.grey),
       _ => const Icon(Icons.error),
     };
   }

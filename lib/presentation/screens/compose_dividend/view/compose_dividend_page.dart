@@ -18,8 +18,8 @@ import 'package:horizon/presentation/screens/compose_dividend/bloc/compose_divid
 import 'package:horizon/presentation/screens/compose_dividend/bloc/compose_dividend_state.dart';
 import 'package:horizon/presentation/screens/compose_dividend/usecase/fetch_form_data.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart';
-import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
+import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 
 class ComposeDividendPageWrapper extends StatelessWidget {
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
@@ -84,6 +84,7 @@ class ComposeDividendPageState extends State<ComposeDividendPage> {
   TextEditingController assetController = TextEditingController();
   bool _submitted = false;
   Balance? dividendBalance;
+  bool assetError = false;
 
   @override
   void initState() {
@@ -130,18 +131,30 @@ class ComposeDividendPageState extends State<ComposeDividendPage> {
     return state.assetState.maybeWhen(
       success: (asset) => [
         HorizonUI.HorizonTextFormField(
-          label: 'Asset name',
+          label: 'Source Address',
+          enabled: false,
+          controller: TextEditingController(text: widget.address),
+        ),
+        const SizedBox(height: 16),
+        HorizonUI.HorizonTextFormField(
+          label: 'Target Asset (holders will receive dividend)',
           enabled: false,
           controller: TextEditingController(
               text: displayAssetName(asset.asset, asset.assetLongname)),
         ),
         const SizedBox(height: 16),
-        _buildAssetInput(state, loading, formKey, 'Dividend asset'),
+        _buildAssetInput(state, loading, formKey, 'Dividend Payment Asset'),
       ],
       error: (error) => [
         SelectableText('Error fetching asset ${widget.assetName}: $error'),
       ],
       loading: () => [
+        HorizonUI.HorizonTextFormField(
+          enabled: false,
+          label: 'Source',
+          controller: TextEditingController(text: widget.address),
+        ),
+        const SizedBox(height: 16),
         const HorizonUI.HorizonTextFormField(
           enabled: false,
           label: 'Asset name',
@@ -182,7 +195,8 @@ class ComposeDividendPageState extends State<ComposeDividendPage> {
         return Column(
           children: [
             HorizonUI.HorizonSearchableDropdownMenu<Balance>(
-              label: "Select a dividend asset",
+              floatingLabelBehavior: FloatingLabelBehavior.always,
+              label: "Dividend Payment Asset",
               items: balances
                   .where((balance) => balance.asset != widget.assetName)
                   .map((balance) => DropdownMenuItem(
@@ -193,14 +207,20 @@ class ComposeDividendPageState extends State<ComposeDividendPage> {
               onChanged: (Balance? value) => setState(() {
                 dividendBalance = value;
                 quantityPerUnitController.text = '';
+                assetError = false;
               }),
               selectedValue: dividendBalance,
               displayStringForOption: (Balance balance) => displayAssetName(
                   balance.asset, balance.assetInfo.assetLongname),
             ),
+            if (assetError)
+              const Text(
+                'Please select a dividend payment asset',
+                style: TextStyle(color: Colors.red),
+              ),
             const SizedBox(height: 20),
             HorizonUI.HorizonTextFormField(
-              label: 'Quantity per unit',
+              label: 'Payment Amount (per unit of target asset)',
               enabled: dividendBalance != null,
               controller: quantityPerUnitController,
               validator: (value) {
@@ -209,6 +229,9 @@ class ComposeDividendPageState extends State<ComposeDividendPage> {
                 }
                 return null;
               },
+              autovalidateMode: _submitted
+                  ? AutovalidateMode.onUserInteraction
+                  : AutovalidateMode.disabled,
               inputFormatters: [
                 dividendBalance?.assetInfo.divisible == true
                     ? DecimalTextInputFormatter(decimalRange: 8)
@@ -233,6 +256,12 @@ class ComposeDividendPageState extends State<ComposeDividendPage> {
     setState(() {
       _submitted = true;
     });
+    if (dividendBalance == null) {
+      setState(() {
+        assetError = true;
+      });
+      return;
+    }
     if (formKey.currentState!.validate()) {
       final quantity = getQuantityForDivisibility(
           inputQuantity: quantityPerUnitController.text,

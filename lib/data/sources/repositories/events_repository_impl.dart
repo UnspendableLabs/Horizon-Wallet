@@ -95,6 +95,9 @@ class VerboseEventMapper {
       case "ASSET_DESTRUCTION":
         return AssetDestructionEventMapper.toDomain(
             apiEvent as api.VerboseAssetDestructionEvent);
+      case "ASSET_DIVIDEND":
+        return AssetDividendEventMapper.toDomain(
+            apiEvent as api.VerboseAssetDividendEvent);
 
       // case 'NEW_TRANSACTION':
       //   return VerboseNewTransactionEventMapper.toDomain(
@@ -1000,6 +1003,39 @@ class AssetDestructionParamsMapper {
       txHash: apiParams.txHash,
       txIndex: apiParams.txIndex,
       quantityNormalized: apiParams.quantityNormalized,
+    );
+  }
+}
+
+class AssetDividendEventMapper {
+  static AssetDividendEvent toDomain(api.VerboseAssetDividendEvent apiEvent) {
+    return AssetDividendEvent(
+      state: StateMapper.getVerbose(apiEvent),
+      eventIndex: apiEvent.eventIndex,
+      event: apiEvent.event,
+      txHash: apiEvent.txHash,
+      blockIndex: apiEvent.blockIndex,
+      blockTime: apiEvent.blockTime,
+      params: AssetDividendParamsMapper.toDomain(apiEvent.params),
+    );
+  }
+}
+
+class AssetDividendParamsMapper {
+  static AssetDividendParams toDomain(
+      api.VerboseAssetDividendParams apiParams) {
+    return AssetDividendParams(
+      asset: apiParams.asset,
+      blockIndex: apiParams.blockIndex,
+      dividendAsset: apiParams.dividendAsset,
+      quantityPerUnit: apiParams.quantityPerUnit,
+      feePaid: apiParams.feePaid,
+      source: apiParams.source,
+      status: apiParams.status,
+      txHash: apiParams.txHash,
+      txIndex: apiParams.txIndex,
+      quantityPerUnitNormalized: apiParams.quantityPerUnitNormalized,
+      feePaidNormalized: apiParams.feePaidNormalized,
     );
   }
 }

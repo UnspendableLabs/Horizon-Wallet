@@ -1513,6 +1513,117 @@ Map<String, dynamic> _$VerboseAssetDestructionParamsToJson(
       'quantity_normalized': instance.quantityNormalized,
     };
 
+AssetDividendEvent _$AssetDividendEventFromJson(Map<String, dynamic> json) =>
+    AssetDividendEvent(
+      eventIndex: (json['event_index'] as num?)?.toInt(),
+      event: json['event'] as String,
+      txHash: json['tx_hash'] as String?,
+      blockIndex: (json['block_index'] as num?)?.toInt(),
+      params:
+          AssetDividendParams.fromJson(json['params'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$AssetDividendEventToJson(AssetDividendEvent instance) =>
+    <String, dynamic>{
+      'event_index': instance.eventIndex,
+      'event': instance.event,
+      'tx_hash': instance.txHash,
+      'block_index': instance.blockIndex,
+      'params': instance.params,
+    };
+
+AssetDividendParams _$AssetDividendParamsFromJson(Map<String, dynamic> json) =>
+    AssetDividendParams(
+      asset: json['asset'] as String,
+      blockIndex: (json['block_index'] as num).toInt(),
+      dividendAsset: json['dividend_asset'] as String,
+      feePaid: (json['fee_paid'] as num).toInt(),
+      quantityPerUnit: (json['quantity_per_unit'] as num).toInt(),
+      source: json['source'] as String,
+      status: json['status'] as String,
+      txHash: json['tx_hash'] as String,
+      txIndex: (json['tx_index'] as num).toInt(),
+      blockTime: (json['block_time'] as num?)?.toInt(),
+    );
+
+Map<String, dynamic> _$AssetDividendParamsToJson(
+        AssetDividendParams instance) =>
+    <String, dynamic>{
+      'asset': instance.asset,
+      'block_index': instance.blockIndex,
+      'dividend_asset': instance.dividendAsset,
+      'fee_paid': instance.feePaid,
+      'quantity_per_unit': instance.quantityPerUnit,
+      'source': instance.source,
+      'status': instance.status,
+      'tx_hash': instance.txHash,
+      'tx_index': instance.txIndex,
+      'block_time': instance.blockTime,
+    };
+
+VerboseAssetDividendEvent _$VerboseAssetDividendEventFromJson(
+        Map<String, dynamic> json) =>
+    VerboseAssetDividendEvent(
+      eventIndex: (json['event_index'] as num?)?.toInt(),
+      event: json['event'] as String,
+      txHash: json['tx_hash'] as String?,
+      blockIndex: (json['block_index'] as num?)?.toInt(),
+      blockTime: (json['block_time'] as num?)?.toInt(),
+      params: VerboseAssetDividendParams.fromJson(
+          json['params'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$VerboseAssetDividendEventToJson(
+        VerboseAssetDividendEvent instance) =>
+    <String, dynamic>{
+      'event_index': instance.eventIndex,
+      'event': instance.event,
+      'tx_hash': instance.txHash,
+      'block_index': instance.blockIndex,
+      'block_time': instance.blockTime,
+      'params': instance.params,
+    };
+
+VerboseAssetDividendParams _$VerboseAssetDividendParamsFromJson(
+        Map<String, dynamic> json) =>
+    VerboseAssetDividendParams(
+      asset: json['asset'] as String,
+      blockIndex: (json['block_index'] as num).toInt(),
+      dividendAsset: json['dividend_asset'] as String,
+      feePaid: (json['fee_paid'] as num).toInt(),
+      quantityPerUnit: (json['quantity_per_unit'] as num).toInt(),
+      source: json['source'] as String,
+      status: json['status'] as String,
+      txHash: json['tx_hash'] as String,
+      txIndex: (json['tx_index'] as num).toInt(),
+      blockTime: (json['block_time'] as num?)?.toInt(),
+      assetInfo:
+          AssetInfoModel.fromJson(json['asset_info'] as Map<String, dynamic>),
+      dividendAssetInfo: DividendAssetInfoModel.fromJson(
+          json['dividend_asset_info'] as Map<String, dynamic>),
+      quantityPerUnitNormalized: json['quantity_per_unit_normalized'] as String,
+      feePaidNormalized: json['fee_paid_normalized'] as String,
+    );
+
+Map<String, dynamic> _$VerboseAssetDividendParamsToJson(
+        VerboseAssetDividendParams instance) =>
+    <String, dynamic>{
+      'asset': instance.asset,
+      'block_index': instance.blockIndex,
+      'dividend_asset': instance.dividendAsset,
+      'fee_paid': instance.feePaid,
+      'quantity_per_unit': instance.quantityPerUnit,
+      'source': instance.source,
+      'status': instance.status,
+      'tx_hash': instance.txHash,
+      'tx_index': instance.txIndex,
+      'block_time': instance.blockTime,
+      'asset_info': instance.assetInfo,
+      'dividend_asset_info': instance.dividendAssetInfo,
+      'quantity_per_unit_normalized': instance.quantityPerUnitNormalized,
+      'fee_paid_normalized': instance.feePaidNormalized,
+    };
+
 MoveToUtxoEvent _$MoveToUtxoEventFromJson(Map<String, dynamic> json) =>
     MoveToUtxoEvent(
       eventIndex: (json['event_index'] as num?)?.toInt(),
@@ -3896,7 +4007,7 @@ Map<String, dynamic> _$MoveToUtxoInfoVerboseToJson(
 
 MoveToUtxoUnpackedVerbose _$MoveToUtxoUnpackedVerboseFromJson(
         Map<String, dynamic> json) =>
-    MoveToUtxoUnpackedVerbose();
+    const MoveToUtxoUnpackedVerbose();
 
 Map<String, dynamic> _$MoveToUtxoUnpackedVerboseToJson(
         MoveToUtxoUnpackedVerbose instance) =>
@@ -3947,6 +4058,49 @@ Map<String, dynamic> _$AssetDestructionUnpackedVerboseToJson(
       'tag': instance.tag,
       'quantity': instance.quantity,
       'asset_info': instance.assetInfo,
+    };
+
+AssetDividendInfoVerbose _$AssetDividendInfoVerboseFromJson(
+        Map<String, dynamic> json) =>
+    AssetDividendInfoVerbose(
+      data: json['data'] as String,
+      source: json['source'] as String,
+      destination: json['destination'] as String?,
+      btcAmount: (json['btc_amount'] as num?)?.toInt(),
+      fee: (json['fee'] as num?)?.toInt(),
+      btcAmountNormalized: json['btc_amount_normalized'] as String?,
+      unpackedData: AssetDividendUnpackedVerbose.fromJson(
+          json['unpacked_data'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$AssetDividendInfoVerboseToJson(
+        AssetDividendInfoVerbose instance) =>
+    <String, dynamic>{
+      'source': instance.source,
+      'destination': instance.destination,
+      'btc_amount': instance.btcAmount,
+      'fee': instance.fee,
+      'data': instance.data,
+      'btc_amount_normalized': instance.btcAmountNormalized,
+      'unpacked_data': instance.unpackedData,
+    };
+
+AssetDividendUnpackedVerbose _$AssetDividendUnpackedVerboseFromJson(
+        Map<String, dynamic> json) =>
+    AssetDividendUnpackedVerbose(
+      asset: json['asset'] as String,
+      quantityPerUnit: (json['quantity_per_unit'] as num).toInt(),
+      dividendAsset: json['dividend_asset'] as String,
+      status: json['status'] as String,
+    );
+
+Map<String, dynamic> _$AssetDividendUnpackedVerboseToJson(
+        AssetDividendUnpackedVerbose instance) =>
+    <String, dynamic>{
+      'asset': instance.asset,
+      'quantity_per_unit': instance.quantityPerUnit,
+      'dividend_asset': instance.dividendAsset,
+      'status': instance.status,
     };
 
 UTXO _$UTXOFromJson(Map<String, dynamic> json) => UTXO(
@@ -6619,7 +6773,7 @@ class _V2Api implements V2Api {
 
   RequestOptions newRequestOptions(Object? options) {
     if (options is RequestOptions) {
-      return options as RequestOptions;
+      return options;
     }
     if (options is Options) {
       return RequestOptions(

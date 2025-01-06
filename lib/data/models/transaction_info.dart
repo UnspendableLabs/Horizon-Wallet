@@ -163,6 +163,19 @@ class InfoVerboseMapper {
               raw: "", submittedAt: DateTime.now()), // TODO: this is wrong
           unpackedData: AssetDestructionUnpackedVerboseMapper.toDomain(u),
         ),
+      api.AssetDividendInfoVerbose(unpackedData: var u) =>
+        TransactionInfoAssetDividend(
+          btcAmountNormalized: info.btcAmountNormalized ?? "",
+          hash: "",
+          source: info.source,
+          destination: info.destination,
+          btcAmount: info.btcAmount,
+          fee: info.fee,
+          data: info.data,
+          domain: TransactionInfoDomainLocal(
+              raw: "", submittedAt: DateTime.now()), // TODO: this is wrong
+          unpackedData: AssetDividendUnpackedVerboseMapper.toDomain(u),
+        ),
       _ => TransactionInfo(
           btcAmountNormalized: info.btcAmountNormalized ?? "",
           hash: "",

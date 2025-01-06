@@ -40,6 +40,9 @@ class UnpackedVerboseMapper {
       case "destroy":
         return AssetDestructionUnpackedVerboseMapper.toDomain(
             u as api.AssetDestructionUnpackedVerbose);
+      case "dividend":
+        return AssetDividendUnpackedVerboseMapper.toDomain(
+            u as api.AssetDividendUnpackedVerbose);
       default:
         return TransactionUnpacked(
           messageType: u.messageType,
@@ -199,6 +202,18 @@ class AssetDestructionUnpackedVerboseMapper {
       tag: u.tag,
       quantity: u.quantity,
       // assetInfo: AssetInfoMapper.toDomain(u.assetInfo),
+    );
+  }
+}
+
+class AssetDividendUnpackedVerboseMapper {
+  static AssetDividendUnpackedVerbose toDomain(
+      api.AssetDividendUnpackedVerbose u) {
+    return AssetDividendUnpackedVerbose(
+      asset: u.asset,
+      quantityPerUnit: u.quantityPerUnit,
+      dividendAsset: u.dividendAsset,
+      status: u.status,
     );
   }
 }

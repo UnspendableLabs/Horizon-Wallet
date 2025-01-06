@@ -1659,3 +1659,47 @@ class AssetDestructionParams {
     required this.quantityNormalized,
   });
 }
+
+class AssetDividendEvent extends VerboseEvent {
+  final AssetDividendParams params;
+
+  const AssetDividendEvent({
+    required super.state,
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
+    super.blockTime,
+    required this.params,
+  });
+}
+
+class AssetDividendParams {
+  final String asset;
+  final int blockIndex;
+  final String dividendAsset;
+  final int feePaid;
+  final int quantityPerUnit;
+  final String source;
+  final String status;
+  final String txHash;
+  final int txIndex;
+  final int? blockTime;
+  final String quantityPerUnitNormalized;
+  final String feePaidNormalized;
+
+  AssetDividendParams({
+    required this.asset,
+    required this.blockIndex,
+    required this.dividendAsset,
+    required this.feePaid,
+    required this.quantityPerUnit,
+    required this.source,
+    required this.status,
+    required this.txHash,
+    required this.txIndex,
+    this.blockTime,
+    required this.quantityPerUnitNormalized,
+    required this.feePaidNormalized,
+  });
+}

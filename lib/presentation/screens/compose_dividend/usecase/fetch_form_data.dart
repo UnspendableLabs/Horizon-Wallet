@@ -30,6 +30,8 @@ class FetchDividendFormDataUseCase {
       final feeEstimates = futures[2] as FeeEstimates;
 
       return (balances, asset, feeEstimates);
+    } on FetchAssetException catch (e) {
+      throw FetchAssetException(e.message);
     } on FetchBalancesException catch (e) {
       throw FetchBalancesException(e.message);
     } on FetchFeeEstimatesException catch (e) {
