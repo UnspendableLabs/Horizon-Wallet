@@ -1,22 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/common/format.dart';
 import 'package:horizon/core/logging/logger.dart';
+import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/domain/entities/compose_dividend.dart';
-import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_event.dart';
 import 'package:horizon/presentation/common/compose_base/view/compose_base_page.dart';
+import 'package:horizon/presentation/common/shared_util.dart';
 import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
-import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
 import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transaction_usecase.dart';
 import 'package:horizon/presentation/common/usecase/write_local_transaction_usecase.dart';
 import 'package:horizon/presentation/screens/compose_dividend/bloc/compose_dividend_bloc.dart';
 import 'package:horizon/presentation/screens/compose_dividend/bloc/compose_dividend_state.dart';
+import 'package:horizon/presentation/screens/compose_dividend/usecase/fetch_form_data.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart';
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
+import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
 
 class ComposeDividendPageWrapper extends StatelessWidget {
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
@@ -37,10 +40,10 @@ class ComposeDividendPageWrapper extends StatelessWidget {
       success: (state) => BlocProvider(
         key: Key(currentAddress),
         create: (context) => ComposeDividendBloc(
-          balanceRepository: GetIt.I.get<BalanceRepository>(),
           composeRepository: GetIt.I.get<ComposeRepository>(),
           analyticsService: GetIt.I.get<AnalyticsService>(),
-          getFeeEstimatesUseCase: GetIt.I.get<GetFeeEstimatesUseCase>(),
+          fetchDividendFormDataUseCase:
+              GetIt.I.get<FetchDividendFormDataUseCase>(),
           composeTransactionUseCase: GetIt.I.get<ComposeTransactionUseCase>(),
           signAndBroadcastTransactionUseCase:
               GetIt.I.get<SignAndBroadcastTransactionUseCase>(),
@@ -77,9 +80,10 @@ class ComposeDividendPage extends StatefulWidget {
 }
 
 class ComposeDividendPageState extends State<ComposeDividendPage> {
-  TextEditingController quantityController = TextEditingController();
-  TextEditingController tagController = TextEditingController();
+  TextEditingController quantityPerUnitController = TextEditingController();
+  TextEditingController assetController = TextEditingController();
   bool _submitted = false;
+  Balance? dividendBalance;
 
   @override
   void initState() {
@@ -88,8 +92,7 @@ class ComposeDividendPageState extends State<ComposeDividendPage> {
 
   @override
   void dispose() {
-    quantityController.dispose();
-    tagController.dispose();
+    quantityPerUnitController.dispose();
     super.dispose();
   }
 
@@ -124,9 +127,101 @@ class ComposeDividendPageState extends State<ComposeDividendPage> {
 
   List<Widget> _buildInitialFormFields(
       ComposeDividendState state, bool loading, GlobalKey<FormState> formKey) {
-    return state.balancesState.maybeWhen(
-      success: (balances) => [],
+    return state.assetState.maybeWhen(
+      success: (asset) => [
+        HorizonUI.HorizonTextFormField(
+          label: 'Asset name',
+          enabled: false,
+          controller: TextEditingController(
+              text: displayAssetName(asset.asset, asset.assetLongname)),
+        ),
+        const SizedBox(height: 16),
+        _buildAssetInput(state, loading, formKey, 'Dividend asset'),
+      ],
+      error: (error) => [
+        SelectableText('Error fetching asset ${widget.assetName}: $error'),
+      ],
+      loading: () => [
+        const HorizonUI.HorizonTextFormField(
+          enabled: false,
+          label: 'Asset name',
+        ),
+        const SizedBox(height: 16),
+        const Column(
+          children: [
+            HorizonUI.HorizonTextFormField(
+              enabled: false,
+              label: 'Dividend Asset',
+            ),
+            SizedBox(height: 16),
+            HorizonUI.HorizonTextFormField(
+              enabled: false,
+              label: 'Quantity per unit',
+            ),
+          ],
+        ),
+      ],
       orElse: () => [],
+    );
+  }
+
+  Widget _buildAssetInput(
+      ComposeDividendState state, bool loading, GlobalKey<FormState> formKey,
+      [String? label]) {
+    return state.balancesState.maybeWhen(
+      loading: () => const CircularProgressIndicator(),
+      error: (error) => Text('Error fetching balances: $error'),
+      success: (balances) {
+        if (balances.isEmpty) {
+          return const HorizonUI.HorizonTextFormField(
+            enabled: false,
+            label: "No assets",
+          );
+        }
+
+        return Column(
+          children: [
+            HorizonUI.HorizonSearchableDropdownMenu<Balance>(
+              label: "Select a dividend asset",
+              items: balances
+                  .where((balance) => balance.asset != widget.assetName)
+                  .map((balance) => DropdownMenuItem(
+                      value: balance,
+                      child: Text(displayAssetName(
+                          balance.asset, balance.assetInfo.assetLongname))))
+                  .toList(),
+              onChanged: (Balance? value) => setState(() {
+                dividendBalance = value;
+                quantityPerUnitController.text = '';
+              }),
+              selectedValue: dividendBalance,
+              displayStringForOption: (Balance balance) => displayAssetName(
+                  balance.asset, balance.assetInfo.assetLongname),
+            ),
+            const SizedBox(height: 20),
+            HorizonUI.HorizonTextFormField(
+              label: 'Quantity per unit',
+              enabled: dividendBalance != null,
+              controller: quantityPerUnitController,
+              validator: (value) {
+                if (value!.isEmpty) {
+                  return 'Please enter a quantity per unit';
+                }
+                return null;
+              },
+              inputFormatters: [
+                dividendBalance?.assetInfo.divisible == true
+                    ? DecimalTextInputFormatter(decimalRange: 8)
+                    : FilteringTextInputFormatter.digitsOnly,
+              ],
+              onFieldSubmitted: (value) {
+                _handleInitialSubmit(formKey);
+              },
+            ),
+          ],
+        );
+      },
+      orElse: () => const SizedBox.shrink(),
     );
   }
 
@@ -139,32 +234,52 @@ class ComposeDividendPageState extends State<ComposeDividendPage> {
       _submitted = true;
     });
     if (formKey.currentState!.validate()) {
-      final balances =
-          context.read<ComposeDividendBloc>().state.balancesState.maybeWhen(
-                loading: () {},
-                success: (balances) => balances,
-                orElse: () => throw Exception('Balances not found'),
-              );
-      if (balances == null) {
-        throw Exception('invariant: Balances not found');
-      }
       final quantity = getQuantityForDivisibility(
-          inputQuantity: quantityController.text,
-          divisible: balances[0].assetInfo.divisible);
-      // context.read<ComposeDividendBloc>().add(ComposeTransactionEvent(
-      //       sourceAddress: widget.address,
-      //       params: ComposeDividendEventParams(
-      //         assetName: widget.assetName,
-      //         quantity: quantity,
-      //         tag: tagController.text,
-      //       ),
-      // ));
+          inputQuantity: quantityPerUnitController.text,
+          divisible: dividendBalance!.assetInfo.divisible);
+      context.read<ComposeDividendBloc>().add(ComposeTransactionEvent(
+            sourceAddress: widget.address,
+            params: ComposeDividendEventParams(
+              assetName: widget.assetName,
+              quantityPerUnit: quantity,
+              dividendAsset: dividendBalance!.asset,
+            ),
+          ));
     }
   }
 
   List<Widget> _buildConfirmationDetails(dynamic composeTransaction) {
     final params = (composeTransaction as ComposeDividendResponse).params;
-    return [];
+    return [
+      HorizonUI.HorizonTextFormField(
+        enabled: false,
+        label: 'Source',
+        controller: TextEditingController(text: params.source),
+      ),
+      const SizedBox(height: 16),
+      HorizonUI.HorizonTextFormField(
+        enabled: false,
+        label: 'Asset name',
+        controller: TextEditingController(
+            text:
+                displayAssetName(params.asset, params.assetInfo.assetLongname)),
+      ),
+      const SizedBox(height: 16),
+      HorizonUI.HorizonTextFormField(
+        enabled: false,
+        label: 'Dividend asset',
+        controller: TextEditingController(
+            text: displayAssetName(
+                params.dividendAsset, params.dividendAssetInfo.assetLongname)),
+      ),
+      const SizedBox(height: 16),
+      HorizonUI.HorizonTextFormField(
+        enabled: false,
+        label: 'Quantity per unit of dividend asset',
+        controller:
+            TextEditingController(text: params.quantityPerUnitNormalized),
+      ),
+    ];
 //
   }
 

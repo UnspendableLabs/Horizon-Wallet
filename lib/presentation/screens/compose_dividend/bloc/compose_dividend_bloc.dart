@@ -1,20 +1,18 @@
 import 'package:horizon/common/uuid.dart';
 import 'package:horizon/core/logging/logger.dart';
-import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/domain/entities/compose_dividend.dart';
 import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/domain/entities/fee_option.dart' as FeeOption;
-import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_bloc.dart';
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_event.dart';
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_state.dart';
 import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
-import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
 import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transaction_usecase.dart';
 import 'package:horizon/presentation/common/usecase/write_local_transaction_usecase.dart';
 import 'package:horizon/presentation/screens/compose_dividend/bloc/compose_dividend_state.dart';
+import 'package:horizon/presentation/screens/compose_dividend/usecase/fetch_form_data.dart';
 
 class ComposeDividendEventParams {
   final String assetName;
@@ -29,20 +27,18 @@ class ComposeDividendEventParams {
 }
 
 class ComposeDividendBloc extends ComposeBaseBloc<ComposeDividendState> {
-  final BalanceRepository balanceRepository;
   final ComposeRepository composeRepository;
   final AnalyticsService analyticsService;
-  final GetFeeEstimatesUseCase getFeeEstimatesUseCase;
+  final FetchDividendFormDataUseCase fetchDividendFormDataUseCase;
   final ComposeTransactionUseCase composeTransactionUseCase;
   final SignAndBroadcastTransactionUseCase signAndBroadcastTransactionUseCase;
   final WriteLocalTransactionUseCase writelocalTransactionUseCase;
   final Logger logger;
 
   ComposeDividendBloc({
-    required this.balanceRepository,
     required this.composeRepository,
     required this.analyticsService,
-    required this.getFeeEstimatesUseCase,
+    required this.fetchDividendFormDataUseCase,
     required this.composeTransactionUseCase,
     required this.signAndBroadcastTransactionUseCase,
     required this.writelocalTransactionUseCase,
@@ -52,38 +48,48 @@ class ComposeDividendBloc extends ComposeBaseBloc<ComposeDividendState> {
           feeOption: FeeOption.Medium(),
           balancesState: const BalancesState.initial(),
           feeState: const FeeState.initial(),
+          assetState: const AssetState.initial(),
         ));
 
   @override
   void onFetchFormData(FetchFormData event, emit) async {
     emit(state.copyWith(
-      balancesState: const BalancesState.loading(),
-      feeState: const FeeState.loading(),
-      submitState: const SubmitInitial(),
-    ));
-
-    List<Balance> balances;
-    FeeEstimates feeEstimates;
+        balancesState: const BalancesState.loading(),
+        feeState: const FeeState.loading(),
+        submitState: const SubmitInitial(),
+        assetState: const AssetState.loading()));
 
     try {
-      // balances = await balanceRepository.getBalancesForAddressAndAssetVerbose(event.currentAddress!, event.assetName!);
-    } catch (e) {
-      emit(state.copyWith(balancesState: BalancesState.error(e.toString())));
-      return;
-    }
+      final (balances, asset, feeEstimates) = await fetchDividendFormDataUseCase
+          .call(event.currentAddress!, event.assetName!);
 
-    try {
-      feeEstimates = await getFeeEstimatesUseCase.call();
+      emit(state.copyWith(
+        balancesState: BalancesState.success(balances),
+        feeState: FeeState.success(feeEstimates),
+        assetState: AssetState.success(asset),
+      ));
+    } on FetchFeeEstimatesException catch (e) {
+      emit(state.copyWith(
+        feeState: FeeState.error(e.message),
+      ));
+    } on FetchAssetException catch (e) {
+      emit(state.copyWith(
+        assetState: AssetState.error(e.message),
+      ));
+    } on FetchBalancesException catch (e) {
+      emit(state.copyWith(
+        balancesState: BalancesState.error(e.message),
+      ));
     } catch (e) {
-      emit(state.copyWith(feeState: FeeState.error(e.toString())));
-      return;
+      emit(state.copyWith(
+        balancesState: BalancesState.error(
+            'An unexpected error occurred: ${e.toString()}'),
+        feeState:
+            FeeState.error('An unexpected error occurred: ${e.toString()}'),
+        assetState:
+            AssetState.error('An unexpected error occurred: ${e.toString()}'),
+      ));
     }
-
-    // final balance = balances.where((balance) => balance.utxo == null).first;
-    emit(state.copyWith(
-      balancesState: const BalancesState.success([]),
-      feeState: FeeState.success(feeEstimates),
-    ));
   }
 
   @override
