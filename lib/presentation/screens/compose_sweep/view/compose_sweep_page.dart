@@ -1,0 +1,171 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:get_it/get_it.dart';
+import 'package:horizon/core/logging/logger.dart';
+import 'package:horizon/domain/entities/compose_sweep.dart';
+import 'package:horizon/domain/repositories/compose_repository.dart';
+import 'package:horizon/domain/services/analytics_service.dart';
+import 'package:horizon/presentation/common/compose_base/bloc/compose_base_event.dart';
+import 'package:horizon/presentation/common/compose_base/view/compose_base_page.dart';
+import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
+import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
+import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transaction_usecase.dart';
+import 'package:horizon/presentation/common/usecase/write_local_transaction_usecase.dart';
+import 'package:horizon/presentation/screens/compose_sweep/bloc/compose_sweep_bloc.dart';
+import 'package:horizon/presentation/screens/compose_sweep/bloc/compose_sweep_state.dart';
+import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart';
+import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
+
+class ComposeSweepPageWrapper extends StatelessWidget {
+  final DashboardActivityFeedBloc dashboardActivityFeedBloc;
+  final String currentAddress;
+
+  const ComposeSweepPageWrapper({
+    required this.dashboardActivityFeedBloc,
+    required this.currentAddress,
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final shell = context.watch<ShellStateCubit>();
+    return shell.state.maybeWhen(
+      success: (state) => BlocProvider(
+        key: Key(currentAddress),
+        create: (context) => ComposeSweepBloc(
+          composeRepository: GetIt.I.get<ComposeRepository>(),
+          analyticsService: GetIt.I.get<AnalyticsService>(),
+          getFeeEstimatesUseCase: GetIt.I.get<GetFeeEstimatesUseCase>(),
+          composeTransactionUseCase: GetIt.I.get<ComposeTransactionUseCase>(),
+          signAndBroadcastTransactionUseCase:
+              GetIt.I.get<SignAndBroadcastTransactionUseCase>(),
+          writelocalTransactionUseCase:
+              GetIt.I.get<WriteLocalTransactionUseCase>(),
+          logger: GetIt.I.get<Logger>(),
+        )..add(FetchFormData(currentAddress: currentAddress)),
+        child: ComposeSweepPage(
+          address: currentAddress,
+          dashboardActivityFeedBloc: dashboardActivityFeedBloc,
+        ),
+      ),
+      orElse: () => const SizedBox.shrink(),
+    );
+  }
+}
+
+class ComposeSweepPage extends StatefulWidget {
+  final DashboardActivityFeedBloc dashboardActivityFeedBloc;
+  final String address;
+
+  const ComposeSweepPage({
+    super.key,
+    required this.dashboardActivityFeedBloc,
+    required this.address,
+  });
+
+  @override
+  ComposeSweepPageState createState() => ComposeSweepPageState();
+}
+
+class ComposeSweepPageState extends State<ComposeSweepPage> {
+  TextEditingController destinationController = TextEditingController();
+  TextEditingController flagsController = TextEditingController();
+  TextEditingController memoController = TextEditingController();
+  bool _submitted = false;
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    destinationController.dispose();
+    flagsController.dispose();
+    memoController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocConsumer<ComposeSweepBloc, ComposeSweepState>(
+      listener: (context, state) {},
+      builder: (context, state) {
+        return ComposeBasePage<ComposeSweepBloc, ComposeSweepState>(
+          dashboardActivityFeedBloc: widget.dashboardActivityFeedBloc,
+          onFeeChange: (fee) =>
+              context.read<ComposeSweepBloc>().add(ChangeFeeOption(value: fee)),
+          buildInitialFormFields: (state, loading, formKey) =>
+              _buildInitialFormFields(state, loading, formKey),
+          onInitialCancel: () => _handleInitialCancel(),
+          onInitialSubmit: (formKey) => _handleInitialSubmit(formKey),
+          buildConfirmationFormFields: (_, composeTransaction, formKey) =>
+              _buildConfirmationDetails(composeTransaction),
+          onConfirmationBack: () => _onConfirmationBack(),
+          onConfirmationContinue: (composeTransaction, fee, formKey) {
+            _onConfirmationContinue(composeTransaction, fee, formKey);
+          },
+          onFinalizeSubmit: (password, formKey) {
+            _onFinalizeSubmit(password, formKey);
+          },
+          onFinalizeCancel: () => _onFinalizeCancel(),
+        );
+      },
+    );
+  }
+
+  List<Widget> _buildInitialFormFields(
+      ComposeSweepState state, bool loading, GlobalKey<FormState> formKey) {
+    return [];
+  }
+
+  void _handleInitialCancel() {
+    Navigator.of(context).pop();
+  }
+
+  void _handleInitialSubmit(GlobalKey<FormState> formKey) {
+    setState(() {
+      _submitted = true;
+    });
+    if (formKey.currentState!.validate()) {}
+  }
+
+  List<Widget> _buildConfirmationDetails(dynamic composeTransaction) {
+    final params = (composeTransaction as ComposeSweepResponse).params;
+    return [];
+  }
+
+  void _onConfirmationBack() {
+    context
+        .read<ComposeSweepBloc>()
+        .add(FetchFormData(currentAddress: widget.address));
+  }
+
+  void _onConfirmationContinue(
+      dynamic composeTransaction, int fee, GlobalKey<FormState> formKey) {
+    if (formKey.currentState!.validate()) {
+      context.read<ComposeSweepBloc>().add(
+            FinalizeTransactionEvent<ComposeSweepResponse>(
+              composeTransaction: composeTransaction,
+              fee: fee,
+            ),
+          );
+    }
+  }
+
+  void _onFinalizeSubmit(String password, GlobalKey<FormState> formKey) {
+    if (formKey.currentState!.validate()) {
+      context.read<ComposeSweepBloc>().add(
+            SignAndBroadcastTransactionEvent(
+              password: password,
+            ),
+          );
+    }
+  }
+
+  void _onFinalizeCancel() {
+    context
+        .read<ComposeSweepBloc>()
+        .add(FetchFormData(currentAddress: widget.address));
+  }
+}

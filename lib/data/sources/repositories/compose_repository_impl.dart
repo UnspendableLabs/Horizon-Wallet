@@ -26,6 +26,7 @@ import 'package:horizon/domain/entities/compose_movetoutxo.dart'
     as compose_movetoutxo;
 import 'package:horizon/domain/entities/compose_destroy.dart'
     as compose_destroy;
+import 'package:horizon/domain/entities/compose_sweep.dart' as compose_sweep;
 import 'package:horizon/domain/entities/utxo.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
 
@@ -711,6 +712,41 @@ class ComposeRepositoryImpl extends ComposeRepository {
 
         if (response.result == null) {
           throw Exception('Failed to compose destroy');
+        }
+
+        return response.result!.toDomain();
+      },
+      inputsSet,
+    );
+  }
+
+  @override
+  Future<compose_sweep.ComposeSweepResponse> composeSweep(int fee,
+      List<Utxo> inputsSet, compose_sweep.ComposeSweepParams params) async {
+    return await _retryOnInvalidUtxo<compose_sweep.ComposeSweepResponse>(
+      (currentInputSet) async {
+        final source = params.source;
+        final destination = params.destination;
+        final flags = params.flags;
+        final memo = params.memo;
+        const skipValidation = true;
+        const disableUtxoLocks = true;
+        final inputsSetString =
+            currentInputSet.map((e) => "${e.txid}:${e.vout}").join(',');
+
+        final response = await api.composeSweep(
+          source,
+          destination,
+          flags,
+          memo,
+          fee,
+          inputsSetString,
+          skipValidation,
+          disableUtxoLocks,
+        );
+
+        if (response.result == null) {
+          throw Exception('Failed to compose sweep');
         }
 
         return response.result!.toDomain();

@@ -11,6 +11,7 @@ import 'package:horizon/data/models/compose_fairmint.dart';
 import 'package:horizon/data/models/compose_fairminter.dart';
 import 'package:horizon/data/models/compose_movetoutxo.dart';
 import 'package:horizon/data/models/compose_order.dart';
+import 'package:horizon/data/models/compose_sweep.dart';
 import 'package:horizon/data/models/cursor.dart';
 import 'package:horizon/data/models/dispenser.dart';
 import 'package:horizon/data/models/fairminter.dart';
@@ -5094,6 +5095,18 @@ abstract class V2Api {
     @Query("asset") String asset,
     @Query("quantity") int quantity,
     @Query("tag") String tag, [
+    @Query("exact_fee") int? exactFee,
+    @Query("inputs_set") String? inputsSet,
+    @Query("exclude_utxos_with_balances") bool? excludeUtxosWithBalances,
+    @Query("disable_utxo_locks") bool? disableUtxoLocks,
+  ]);
+
+  @GET("/addresses/{address}/compose/sweep?verbose=true")
+  Future<Response<ComposeSweepResponseModel>> composeSweep(
+    @Path("address") String address,
+    @Query("destination") String destination,
+    @Query("flags") int flags,
+    @Query("memo") String memo, [
     @Query("exact_fee") int? exactFee,
     @Query("inputs_set") String? inputsSet,
     @Query("exclude_utxos_with_balances") bool? excludeUtxosWithBalances,
