@@ -260,8 +260,18 @@ Future<void> setup() async {
     GetIt.I.get<Logger>(),
   ));
 
+  injector.registerSingleton<ErrorService>(
+    ErrorServiceImpl(
+      GetIt.I<Config>(),
+      GetIt.I<Logger>(),
+    ),
+  );
+
   injector.registerSingleton<BitcoinRepository>(BitcoinRepositoryImpl(
-    esploraApi: EsploraApi(dio: esploraDio),
+    esploraApi: EsploraApi(
+      dio: esploraDio,
+      errorService: GetIt.I.get<ErrorService>(),
+    ),
     // blockCypherApi: BlockCypherApi(dio: blockCypherDio)
   ));
 
@@ -275,7 +285,10 @@ Future<void> setup() async {
       ComposeRepositoryImpl(api: GetIt.I.get<V2Api>()));
   injector.registerSingleton<UtxoRepository>(UtxoRepositoryImpl(
       api: GetIt.I.get<V2Api>(),
-      esploraApi: EsploraApi(dio: esploraDio),
+      esploraApi: EsploraApi(
+        dio: esploraDio,
+        errorService: GetIt.I.get<ErrorService>(),
+      ),
       cacheProvider: GetIt.I.get<CacheProvider>()));
   injector.registerSingleton<BalanceRepository>(BalanceRepositoryImpl(
       api: GetIt.I.get<V2Api>(),
@@ -523,12 +536,6 @@ Future<void> setup() async {
   injector.registerSingleton<PublicKeyService>(
       PublicKeyServiceImpl(config: config));
 
-  injector.registerSingleton<ErrorService>(
-    ErrorServiceImpl(
-      GetIt.I<Config>(),
-      GetIt.I<Logger>(),
-    ),
-  );
   // Register the appropriate platform service
   if (GetIt.I.get<Config>().isWebExtension) {
     GetIt.I.registerSingleton<PlatformService>(PlatformServiceExtensionImpl());

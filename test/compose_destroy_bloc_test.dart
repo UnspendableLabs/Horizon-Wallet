@@ -1,5 +1,6 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:get_it/get_it.dart';
 import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/domain/entities/asset_info.dart';
 import 'package:horizon/domain/entities/balance.dart';
@@ -9,6 +10,7 @@ import 'package:horizon/domain/entities/fee_option.dart' as FeeOption;
 import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
+import 'package:horizon/domain/services/error_service.dart';
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_event.dart';
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_state.dart';
 import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
@@ -39,6 +41,8 @@ class MockSignAndBroadcastTransactionUseCase extends Mock
 
 class MockWriteLocalTransactionUseCase extends Mock
     implements WriteLocalTransactionUseCase {}
+
+class MockErrorService extends Mock implements ErrorService {}
 
 class MockComposeDestroyResponse extends Mock
     implements ComposeDestroyResponse {
@@ -76,6 +80,7 @@ void main() {
   late MockSignAndBroadcastTransactionUseCase
       mockSignAndBroadcastTransactionUseCase;
   late MockWriteLocalTransactionUseCase mockWriteLocalTransactionUseCase;
+  late MockErrorService mockErrorService;
 
   const mockFeeEstimates = FeeEstimates(fast: 5, medium: 3, slow: 1);
   final mockComposeDestroyResponse = MockComposeDestroyResponse();
@@ -125,6 +130,10 @@ void main() {
     mockSignAndBroadcastTransactionUseCase =
         MockSignAndBroadcastTransactionUseCase();
     mockWriteLocalTransactionUseCase = MockWriteLocalTransactionUseCase();
+    mockErrorService = MockErrorService();
+
+    // Register the ErrorService mock with GetIt
+    GetIt.I.registerSingleton<ErrorService>(mockErrorService);
 
     composeDestroyBloc = ComposeDestroyBloc(
       balanceRepository: mockBalanceRepository,
@@ -141,6 +150,8 @@ void main() {
 
   tearDown(() {
     composeDestroyBloc.close();
+    // Reset GetIt instance after each test
+    GetIt.I.reset();
   });
 
   group('FetchFormData', () {

@@ -1,5 +1,6 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:get_it/get_it.dart';
 import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/domain/entities/asset.dart';
 import 'package:horizon/domain/entities/asset_info.dart';
@@ -9,6 +10,7 @@ import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/domain/entities/fee_option.dart' as FeeOption;
 import 'package:horizon/domain/repositories/compose_repository.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
+import 'package:horizon/domain/services/error_service.dart';
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_event.dart';
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_state.dart';
 import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
@@ -44,6 +46,8 @@ class MockLogger extends Mock implements Logger {}
 class MockComposeDividendResponseParams extends Mock
     implements ComposeDividendResponseParams {}
 
+class MockErrorService extends Mock implements ErrorService {}
+
 class FakeVirtualSize extends Fake implements VirtualSize {
   @override
   final int virtualSize;
@@ -64,6 +68,7 @@ void main() {
       mockSignAndBroadcastTransactionUseCase;
   late MockWriteLocalTransactionUseCase mockWriteLocalTransactionUseCase;
   late MockLogger mockLogger;
+  late MockErrorService mockErrorService;
 
   const mockFeeEstimates = FeeEstimates(fast: 5, medium: 3, slow: 1);
   final mockBalance = Balance(
@@ -102,6 +107,11 @@ void main() {
         MockSignAndBroadcastTransactionUseCase();
     mockWriteLocalTransactionUseCase = MockWriteLocalTransactionUseCase();
     mockLogger = MockLogger();
+    mockErrorService = MockErrorService();
+
+    // Register the ErrorService mock with GetIt
+    GetIt.I.registerSingleton<ErrorService>(mockErrorService);
+
     composeDividendBloc = ComposeDividendBloc(
       fetchDividendFormDataUseCase: mockFetchDividendFormDataUseCase,
       composeTransactionUseCase: mockComposeTransactionUseCase,
@@ -116,6 +126,8 @@ void main() {
 
   tearDown(() {
     composeDividendBloc.close();
+    // Reset GetIt instance after each test
+    GetIt.I.reset();
   });
 
   group('FetchFormData', () {

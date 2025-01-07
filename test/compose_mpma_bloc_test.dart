@@ -1,6 +1,7 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:decimal/decimal.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:get_it/get_it.dart';
 import 'package:horizon/core/logging/logger.dart';
 // import 'package:horizon/data/sources/network/api/v2_api.dart';
 import 'package:horizon/domain/entities/asset_info.dart';
@@ -11,6 +12,7 @@ import 'package:horizon/domain/entities/fee_option.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
+import 'package:horizon/domain/services/error_service.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_event.dart';
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_state.dart';
@@ -49,6 +51,8 @@ class MockTransactionService extends Mock implements TransactionService {}
 
 class MockLogger extends Mock implements Logger {}
 
+class MockErrorService extends Mock implements ErrorService {}
+
 void main() {
   late ComposeMpmaBloc bloc;
   late MockBalanceRepository balanceRepository;
@@ -61,6 +65,7 @@ void main() {
   late MockWriteLocalTransactionUseCase writeLocalTransactionUseCase;
   late MockTransactionService transactionService;
   late MockLogger logger;
+  late MockErrorService mockErrorService;
 
   const testAddress = 'test_address';
   const mockFeeEstimates = FeeEstimates(fast: 5, medium: 3, slow: 1);
@@ -76,6 +81,10 @@ void main() {
     writeLocalTransactionUseCase = MockWriteLocalTransactionUseCase();
     transactionService = MockTransactionService();
     logger = MockLogger();
+    mockErrorService = MockErrorService();
+
+    // Register the ErrorService mock with GetIt
+    GetIt.I.registerSingleton<ErrorService>(mockErrorService);
 
     bloc = ComposeMpmaBloc(
       balanceRepository: balanceRepository,
@@ -92,6 +101,8 @@ void main() {
 
   tearDown(() {
     bloc.close();
+    // Reset GetIt instance after each test
+    GetIt.I.reset();
   });
 
   group('ComposeMpmaBloc', () {
