@@ -52,17 +52,20 @@ class ComposeDispenserBloc extends ComposeBaseBloc<ComposeDispenserState> {
     required this.analyticsService,
     required this.signAndBroadcastTransactionUseCase,
     required this.writelocalTransactionUseCase,
-  }) : super(ComposeDispenserState(
-          submitState: const SubmitInitial(),
-          feeOption: FeeOption.Medium(),
-          balancesState: const BalancesState.initial(),
-          feeState: const FeeState.initial(),
-          giveQuantity: '',
-          escrowQuantity: '',
-          mainchainrate: '',
-          status: 0,
-          dialogState: const DialogState.initial(),
-        )) {
+  }) : super(
+          ComposeDispenserState(
+            submitState: const SubmitInitial(),
+            feeOption: FeeOption.Medium(),
+            balancesState: const BalancesState.initial(),
+            feeState: const FeeState.initial(),
+            giveQuantity: '',
+            escrowQuantity: '',
+            mainchainrate: '',
+            status: 0,
+            dialogState: const DialogState.initial(),
+          ),
+          composePage: 'compose_dispenser',
+        ) {
     // Event handlers specific to the dispenser
     on<ChangeAsset>(_onChangeAsset);
     on<ChangeGiveQuantity>(_onChangeGiveQuantity);
@@ -123,7 +126,7 @@ class ComposeDispenserBloc extends ComposeBaseBloc<ComposeDispenserState> {
   }
 
   @override
-  void onFetchFormData(FetchFormData event, emit) async {
+  Future<void> onFetchFormData(FetchFormData event, emit) async {
     emit(state.copyWith(
         balancesState: const BalancesState.loading(),
         feeState: const FeeState.loading(),

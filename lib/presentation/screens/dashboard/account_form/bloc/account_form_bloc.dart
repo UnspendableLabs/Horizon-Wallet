@@ -9,6 +9,7 @@ import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
+import 'package:horizon/domain/services/error_service.dart';
 import 'package:horizon/domain/services/wallet_service.dart';
 import "package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_event.dart";
 import 'package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_state.dart';
@@ -20,6 +21,7 @@ class AccountFormBloc extends Bloc<AccountFormEvent, AccountFormState> {
   final EncryptionService encryptionService;
   final AddressService addressService;
   final AddressRepository addressRepository;
+  final ErrorService errorService;
 
   AccountFormBloc({
     required this.accountRepository,
@@ -28,6 +30,7 @@ class AccountFormBloc extends Bloc<AccountFormEvent, AccountFormState> {
     required this.encryptionService,
     required this.addressService,
     required this.addressRepository,
+    required this.errorService,
   }) : super(AccountFormStep1()) {
     on<Finalize>((event, emit) async {
       emit(AccountFormStep2(state: Step2Initial()));
@@ -150,6 +153,8 @@ class AccountFormBloc extends Bloc<AccountFormEvent, AccountFormState> {
     });
 
     on<Reset>((event, emit) {
+      errorService.addBreadcrumb(
+          type: 'navigation', category: 'Form', message: 'account_form_opened');
       emit(AccountFormStep1());
     });
   }

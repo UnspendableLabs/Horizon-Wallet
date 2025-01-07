@@ -58,6 +58,7 @@ class UpdateIssuancePageWrapper extends StatelessWidget {
           writelocalTransactionUseCase:
               GetIt.I.get<WriteLocalTransactionUseCase>(),
           logger: GetIt.I.get<Logger>(),
+          issuanceActionType: actionType,
         )..add(FetchFormData(
             assetName: assetName, currentAddress: currentAddress)),
         child: UpdateIssuancePage(

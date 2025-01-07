@@ -10,6 +10,7 @@ import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
+import 'package:horizon/domain/services/error_service.dart';
 import 'package:horizon/domain/services/wallet_service.dart';
 import 'package:horizon/presentation/screens/dashboard/address_form/bloc/address_form_bloc.dart';
 import 'package:horizon/presentation/screens/dashboard/address_form/bloc/address_form_event.dart';
@@ -28,6 +29,8 @@ class MockAccountRepository extends Mock implements AccountRepository {}
 
 class MockAddressRepository extends Mock implements AddressRepository {}
 
+class MockErrorService extends Mock implements ErrorService {}
+
 class FakeWallet extends Fake implements Wallet {}
 
 class FakeAccount extends Fake implements Account {}
@@ -45,7 +48,7 @@ void main() {
   late MockWalletRepository mockWalletRepository;
   late MockAccountRepository mockAccountRepository;
   late MockAddressRepository mockAddressRepository;
-
+  late MockErrorService mockErrorService;
   setUpAll(() {
     registerFallbackValue(FakeWallet());
     registerFallbackValue(FakeAccount());
@@ -59,13 +62,14 @@ void main() {
     mockWalletRepository = MockWalletRepository();
     mockAccountRepository = MockAccountRepository();
     mockAddressRepository = MockAddressRepository();
-
+    mockErrorService = MockErrorService();
     GetIt.I.registerSingleton<WalletService>(mockWalletService);
     GetIt.I.registerSingleton<EncryptionService>(mockEncryptionService);
     GetIt.I.registerSingleton<AddressService>(mockAddressService);
     GetIt.I.registerSingleton<WalletRepository>(mockWalletRepository);
     GetIt.I.registerSingleton<AccountRepository>(mockAccountRepository);
     GetIt.I.registerSingleton<AddressRepository>(mockAddressRepository);
+    GetIt.I.registerSingleton<ErrorService>(mockErrorService);
   });
 
   tearDown(() {
@@ -131,6 +135,7 @@ void main() {
           addressRepository: mockAddressRepository,
           accountRepository: mockAccountRepository,
           addressService: mockAddressService,
+          errorService: mockErrorService,
         );
       },
       act: (bloc) => bloc.add(Submit(
@@ -199,6 +204,7 @@ void main() {
           addressRepository: mockAddressRepository,
           accountRepository: mockAccountRepository,
           addressService: mockAddressService,
+          errorService: mockErrorService,
         );
       },
       act: (bloc) => bloc.add(Submit(
@@ -287,6 +293,7 @@ void main() {
           addressRepository: mockAddressRepository,
           accountRepository: mockAccountRepository,
           addressService: mockAddressService,
+          errorService: mockErrorService,
         );
       },
       act: (bloc) => bloc.add(Submit(

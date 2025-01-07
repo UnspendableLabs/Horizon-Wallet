@@ -47,15 +47,18 @@ class ComposeDestroyBloc extends ComposeBaseBloc<ComposeDestroyState> {
     required this.signAndBroadcastTransactionUseCase,
     required this.writelocalTransactionUseCase,
     required this.logger,
-  }) : super(ComposeDestroyState(
-          submitState: const SubmitInitial(),
-          feeOption: FeeOption.Medium(),
-          balancesState: const BalancesState.initial(),
-          feeState: const FeeState.initial(),
-        ));
+  }) : super(
+          ComposeDestroyState(
+            submitState: const SubmitInitial(),
+            feeOption: FeeOption.Medium(),
+            balancesState: const BalancesState.initial(),
+            feeState: const FeeState.initial(),
+          ),
+          composePage: 'compose_destroy',
+        );
 
   @override
-  void onFetchFormData(FetchFormData event, emit) async {
+  Future<void> onFetchFormData(FetchFormData event, emit) async {
     emit(state.copyWith(
       balancesState: const BalancesState.loading(),
       feeState: const FeeState.loading(),

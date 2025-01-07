@@ -566,6 +566,8 @@ class TimeoutInterceptor extends Interceptor {
 
       GetIt.I<ErrorService>().captureException(
         formattedError,
+        message:
+            " ${err.response?.statusCode} \n ${formattedError.error.toString()} \n ${err.requestOptions.uri}",
         stackTrace: err.stackTrace,
       );
 
@@ -591,6 +593,8 @@ class ConnectionErrorInterceptor extends Interceptor {
 
       GetIt.I<ErrorService>().captureException(
         formattedError,
+        message:
+            " ${err.response?.statusCode} \n ${formattedError.error.toString()} \n ${err.requestOptions.uri}",
         stackTrace: err.stackTrace,
       );
 
@@ -616,6 +620,8 @@ class BadResponseInterceptor extends Interceptor {
 
       GetIt.I<ErrorService>().captureException(
         formattedError,
+        message:
+            "${err.response?.statusCode} \n ${formattedError.error.toString()} \n${err.requestOptions.uri}",
         stackTrace: err.stackTrace,
       );
 

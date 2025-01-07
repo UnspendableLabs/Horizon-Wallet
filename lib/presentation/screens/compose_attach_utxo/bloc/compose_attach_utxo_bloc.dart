@@ -52,16 +52,19 @@ class ComposeAttachUtxoBloc extends ComposeBaseBloc<ComposeAttachUtxoState> {
     required this.blockRepository,
     required this.cacheProvider,
     this.initialFairminterTxHash,
-  }) : super(ComposeAttachUtxoState(
-          submitState: const SubmitInitial(),
-          feeOption: FeeOption.Medium(),
-          balancesState: const BalancesState.initial(),
-          feeState: const FeeState.initial(),
-          xcpFeeEstimate: '',
-        ));
+  }) : super(
+          ComposeAttachUtxoState(
+            submitState: const SubmitInitial(),
+            feeOption: FeeOption.Medium(),
+            balancesState: const BalancesState.initial(),
+            feeState: const FeeState.initial(),
+            xcpFeeEstimate: '',
+          ),
+          composePage: 'compose_attach_utxo',
+        );
 
   @override
-  void onFetchFormData(FetchFormData event, emit) async {
+  Future<void> onFetchFormData(FetchFormData event, emit) async {
     emit(state.copyWith(
       balancesState: const BalancesState.loading(),
       feeState: const FeeState.loading(),

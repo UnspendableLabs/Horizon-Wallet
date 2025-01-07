@@ -43,7 +43,7 @@ class UpdateIssuanceBloc extends ComposeBaseBloc<UpdateIssuanceState> {
   final SignAndBroadcastTransactionUseCase signAndBroadcastTransactionUseCase;
   final WriteLocalTransactionUseCase writelocalTransactionUseCase;
   final Logger logger;
-
+  final IssuanceActionType issuanceActionType;
   UpdateIssuanceBloc({
     required this.assetRepository,
     required this.composeRepository,
@@ -53,13 +53,17 @@ class UpdateIssuanceBloc extends ComposeBaseBloc<UpdateIssuanceState> {
     required this.signAndBroadcastTransactionUseCase,
     required this.writelocalTransactionUseCase,
     required this.logger,
-  }) : super(UpdateIssuanceState(
-          submitState: const SubmitInitial(),
-          feeOption: FeeOption.Medium(),
-          balancesState: const BalancesState.initial(),
-          feeState: const FeeState.initial(),
-          assetState: const AssetState.initial(),
-        ));
+    required this.issuanceActionType,
+  }) : super(
+          UpdateIssuanceState(
+            submitState: const SubmitInitial(),
+            feeOption: FeeOption.Medium(),
+            balancesState: const BalancesState.initial(),
+            feeState: const FeeState.initial(),
+            assetState: const AssetState.initial(),
+          ),
+          composePage: 'update_issuance_${issuanceActionType.name}',
+        );
 
   @override
   void onChangeFeeOption(ChangeFeeOption event, emit) async {
@@ -68,7 +72,7 @@ class UpdateIssuanceBloc extends ComposeBaseBloc<UpdateIssuanceState> {
   }
 
   @override
-  void onFetchFormData(FetchFormData event, emit) async {
+  Future<void> onFetchFormData(FetchFormData event, emit) async {
     if (event.assetName == null || event.currentAddress == null) {
       return;
     }
