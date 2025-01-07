@@ -40,6 +40,9 @@ class UnpackedVerboseMapper {
       case "destroy":
         return AssetDestructionUnpackedVerboseMapper.toDomain(
             u as api.AssetDestructionUnpackedVerbose);
+      case "sweep":
+        return SweepUnpackedVerboseMapper.toDomain(
+            u as api.SweepUnpackedVerbose);
       default:
         return TransactionUnpacked(
           messageType: u.messageType,
@@ -199,6 +202,16 @@ class AssetDestructionUnpackedVerboseMapper {
       tag: u.tag,
       quantity: u.quantity,
       // assetInfo: AssetInfoMapper.toDomain(u.assetInfo),
+    );
+  }
+}
+
+class SweepUnpackedVerboseMapper {
+  static SweepUnpackedVerbose toDomain(api.SweepUnpackedVerbose u) {
+    return SweepUnpackedVerbose(
+      destination: u.destination,
+      flags: u.flags,
+      memo: u.memo,
     );
   }
 }

@@ -342,3 +342,14 @@ class AssetDestructionUnpackedVerbose extends TransactionUnpacked {
     // required this.assetInfo,
   }) : super(messageType: "destroy");
 }
+
+class SweepUnpackedVerbose extends TransactionUnpacked {
+  final String destination;
+  final int flags;
+  final String memo;
+  const SweepUnpackedVerbose({
+    required this.destination,
+    required this.flags,
+    required this.memo,
+  }) : super(messageType: "sweep");
+}

@@ -266,6 +266,14 @@ class ActivityFeedListItem extends StatelessWidget {
           "Swap ${params.quantityNormalized} ${params.asset} for ${params.bitcoinSwapAmount} BTC"),
       AssetDestructionEvent(params: var params) =>
         SelectableText("Destroy ${params.quantityNormalized} ${params.asset}"),
+      SweepEvent(params: var params)
+          when _getSendSide(params.source) == SendSide.source =>
+        SelectableText(
+            "Sweep ${flagMapper[params.flags]} to ${params.destination}"),
+      SweepEvent(params: var params)
+          when _getSendSide(params.source) == SendSide.destination =>
+        SelectableText(
+            "Sweep ${flagMapper[params.flags]} from ${params.source}"),
       _ => SelectableText(
           'Invariant: title unsupported event type: ${event.runtimeType}'),
     };
@@ -404,6 +412,8 @@ class ActivityFeedListItem extends StatelessWidget {
       TransactionInfoAssetDestruction(unpackedData: var unpackedData) =>
         SelectableText(
             "Destroy ${unpackedData.quantityNormalized} ${unpackedData.asset}"),
+      TransactionInfoSweep(unpackedData: var unpackedData) => SelectableText(
+          "Sweep ${flagMapper[unpackedData.flags]} to ${unpackedData.destination}"),
       _ => SelectableText(
           'Invariant: title unsupported TransactionInfo type: ${info.runtimeType}'),
     };
@@ -431,6 +441,8 @@ class ActivityFeedListItem extends StatelessWidget {
         const Icon(Icons.swap_horiz, color: Colors.grey),
       TransactionInfoAssetDestruction() =>
         const Icon(Icons.delete_forever, color: Colors.grey),
+      TransactionInfoSweep() =>
+        const Icon(Icons.cleaning_services, color: Colors.grey),
       TransactionInfo(btcAmount: var btcAmount) when btcAmount != null =>
         const Icon(Icons.arrow_back, color: Colors.grey),
       _ => const Icon(Icons.error),
@@ -588,6 +600,8 @@ class ActivityFeedListItem extends StatelessWidget {
         const Icon(Icons.swap_horiz, color: Colors.grey),
       AssetDestructionEvent(params: var _) =>
         const Icon(Icons.delete_forever, color: Colors.grey),
+      SweepEvent(params: var _) =>
+        const Icon(Icons.cleaning_services, color: Colors.grey),
       _ => const Icon(Icons.error),
     };
   }

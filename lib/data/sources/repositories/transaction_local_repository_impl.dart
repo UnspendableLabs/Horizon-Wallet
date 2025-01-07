@@ -167,6 +167,15 @@ class TransactionLocalRepositoryImpl implements TransactionLocalRepository {
             // "asset_info": unpacked.assetInfo,
           }
         }),
+      TransactionInfoSweep(unpackedData: SweepUnpackedVerbose unpacked) =>
+        jsonEncode({
+          "message_type": "sweep",
+          "message_data": {
+            "destination": unpacked.destination,
+            "flags": unpacked.flags,
+            "memo": unpacked.memo,
+          }
+        }),
       _ => null
     };
 
@@ -357,6 +366,17 @@ class TransactionLocalRepositoryImpl implements TransactionLocalRepository {
             domain: TransactionInfoDomainLocal(
                 raw: tx.raw, submittedAt: tx.submittedAt),
             unpackedData: unpacked),
+        SweepUnpackedVerbose() => TransactionInfoSweep(
+            btcAmountNormalized: "", // TODO: fix this
+            hash: tx.hash,
+            source: tx.source,
+            destination: tx.destination,
+            btcAmount: tx.btcAmount,
+            fee: tx.fee,
+            data: tx.data,
+            domain: TransactionInfoDomainLocal(
+                raw: tx.raw, submittedAt: tx.submittedAt),
+            unpackedData: unpacked),
         _ => TransactionInfo(
             btcAmountNormalized: "", // TODO: fix this
             hash: tx.hash,
@@ -510,6 +530,17 @@ class TransactionLocalRepositoryImpl implements TransactionLocalRepository {
                 raw: tx.raw, submittedAt: tx.submittedAt),
             unpackedData: unpacked),
         AssetDestructionUnpackedVerbose() => TransactionInfoAssetDestruction(
+            btcAmountNormalized: "", // TODO: fix this
+            hash: tx.hash,
+            source: tx.source,
+            destination: tx.destination,
+            btcAmount: tx.btcAmount,
+            fee: tx.fee,
+            data: tx.data,
+            domain: TransactionInfoDomainLocal(
+                raw: tx.raw, submittedAt: tx.submittedAt),
+            unpackedData: unpacked),
+        SweepUnpackedVerbose() => TransactionInfoSweep(
             btcAmountNormalized: "", // TODO: fix this
             hash: tx.hash,
             source: tx.source,

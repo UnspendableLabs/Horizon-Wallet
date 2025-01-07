@@ -73,11 +73,14 @@ class ComposeSweepPageState extends State<ComposeSweepPage> {
   TextEditingController destinationController = TextEditingController();
   TextEditingController memoController = TextEditingController();
   bool _submitted = false;
+  bool warningAccepted = false;
+  bool errorWarningAccepted = false;
   int flags = 1;
 
   @override
   void initState() {
     super.initState();
+    warningAccepted = false;
   }
 
   @override
@@ -176,6 +179,32 @@ class ComposeSweepPageState extends State<ComposeSweepPage> {
             ? AutovalidateMode.onUserInteraction
             : AutovalidateMode.disabled,
       ),
+      const SizedBox(height: 16),
+      Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Checkbox(
+            value: warningAccepted,
+            onChanged: (value) {
+              setState(() {
+                warningAccepted = value ?? false;
+                errorWarningAccepted = false;
+              });
+            },
+          ),
+          Expanded(
+            child: SelectableText(
+              'Escrowed and UTXO-attached assets will not be included in the sweep. Please confirm that you understand.',
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
+          ),
+        ],
+      ),
+      if (errorWarningAccepted)
+        const SelectableText(
+          'You must accept the warning to continue',
+          style: TextStyle(color: Colors.red),
+        ),
     ];
   }
 
@@ -187,6 +216,14 @@ class ComposeSweepPageState extends State<ComposeSweepPage> {
     setState(() {
       _submitted = true;
     });
+
+    if (!warningAccepted) {
+      setState(() {
+        errorWarningAccepted = true;
+      });
+      return;
+    }
+
     if (formKey.currentState!.validate()) {
       context.read<ComposeSweepBloc>().add(
             ComposeTransactionEvent(
