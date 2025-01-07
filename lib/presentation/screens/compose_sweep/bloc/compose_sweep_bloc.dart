@@ -60,15 +60,7 @@ class ComposeSweepBloc extends ComposeBaseBloc<ComposeSweepState> {
       submitState: const SubmitInitial(),
     ));
 
-    // List<Balance> balances;
     FeeEstimates feeEstimates;
-
-    // try {
-    //   balances = await balanceRepository.getBalancesForAddressAndAssetVerbose(event.currentAddress!, event.assetName!);
-    // } catch (e) {
-    //   emit(state.copyWith(balancesState: BalancesState.error(e.toString())));
-    //   return;
-    // }
 
     try {
       feeEstimates = await getFeeEstimatesUseCase.call();
@@ -77,7 +69,6 @@ class ComposeSweepBloc extends ComposeBaseBloc<ComposeSweepState> {
       return;
     }
 
-    // final balance = balances.where((balance) => balance.utxo == null).first;
     emit(state.copyWith(
       balancesState: const BalancesState.success([]),
       feeState: FeeState.success(feeEstimates),
