@@ -1703,3 +1703,51 @@ class AssetDividendParams {
     required this.feePaidNormalized,
   });
 }
+
+class SweepEvent extends VerboseEvent {
+  final SweepParams params;
+
+  const SweepEvent({
+    required super.state,
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
+    super.blockTime,
+    required this.params,
+  });
+}
+
+class SweepParams {
+  final String destination;
+  final int flags;
+  final String memo;
+  final String source;
+  final String status;
+  final String txHash;
+  final int txIndex;
+  final int? blockTime;
+  final String feePaidNormalized;
+
+  SweepParams({
+    required this.destination,
+    required this.flags,
+    required this.memo,
+    required this.source,
+    required this.status,
+    required this.txHash,
+    required this.txIndex,
+    this.blockTime,
+    required this.feePaidNormalized,
+  });
+}
+
+final Map<int, String> flagMapper = {
+  1: 'balance',
+  2: 'ownership',
+  3: 'ownership and balance',
+  4: 'binary memo', // Historical only - not supported
+  5: 'binary memo+sweep balance', // Historical only - not supported
+  6: 'binary memo+sweep ownership', // Historical only - not supported
+  7: 'binary memo+sweep balance+sweep ownership', // Historical only - not supported
+};

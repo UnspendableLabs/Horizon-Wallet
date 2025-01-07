@@ -12,6 +12,7 @@ import 'package:horizon/data/models/compose_fairmint.dart';
 import 'package:horizon/data/models/compose_fairminter.dart';
 import 'package:horizon/data/models/compose_movetoutxo.dart';
 import 'package:horizon/data/models/compose_order.dart';
+import 'package:horizon/data/models/compose_sweep.dart';
 import 'package:horizon/data/models/cursor.dart';
 import 'package:horizon/data/models/dispenser.dart';
 import 'package:horizon/data/models/dividend_asset_info.dart';
@@ -1554,6 +1555,99 @@ class VerboseAssetDividendParams extends AssetDividendParams {
 }
 
 @JsonSerializable(fieldRename: FieldRename.snake)
+class SweepEvent extends Event {
+  final SweepParams params;
+
+  SweepEvent({
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
+    required this.params,
+  });
+
+  factory SweepEvent.fromJson(Map<String, dynamic> json) =>
+      _$SweepEventFromJson(json);
+
+  Map<String, dynamic> toJson() => _$SweepEventToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class SweepParams {
+  final int blockIndex;
+  final int feePaid;
+  final String destination;
+  final int flags;
+  final String memo;
+  final String source;
+  final String status;
+  final String txHash;
+  final int txIndex;
+  final int? blockTime;
+
+  SweepParams({
+    required this.blockIndex,
+    required this.feePaid,
+    required this.destination,
+    required this.flags,
+    required this.memo,
+    required this.source,
+    required this.status,
+    required this.txHash,
+    required this.txIndex,
+    this.blockTime,
+  });
+
+  factory SweepParams.fromJson(Map<String, dynamic> json) =>
+      _$SweepParamsFromJson(json);
+
+  Map<String, dynamic> toJson() => _$SweepParamsToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class VerboseSweepEvent extends VerboseEvent {
+  final VerboseSweepParams params;
+
+  VerboseSweepEvent({
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
+    required super.blockTime,
+    required this.params,
+  });
+
+  factory VerboseSweepEvent.fromJson(Map<String, dynamic> json) =>
+      _$VerboseSweepEventFromJson(json);
+
+  Map<String, dynamic> toJson() => _$VerboseSweepEventToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class VerboseSweepParams extends SweepParams {
+  final String feePaidNormalized;
+
+  VerboseSweepParams({
+    required super.blockIndex,
+    required super.feePaid,
+    required super.destination,
+    required super.flags,
+    required super.memo,
+    required super.source,
+    required super.status,
+    required super.txHash,
+    required super.txIndex,
+    required this.feePaidNormalized,
+  });
+
+  factory VerboseSweepParams.fromJson(Map<String, dynamic> json) =>
+      _$VerboseSweepParamsFromJson(json);
+
+  @override
+  Map<String, dynamic> toJson() => _$VerboseSweepParamsToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
 class MoveToUtxoEvent extends Event {
   final MoveToUtxoParams params;
 
@@ -2547,6 +2641,8 @@ class VerboseEvent extends Event {
         return VerboseAssetDestructionEvent.fromJson(json);
       case "ASSET_DIVIDEND":
         return VerboseAssetDividendEvent.fromJson(json);
+      case "SWEEP":
+        return VerboseSweepEvent.fromJson(json);
       default:
         return _$VerboseEventFromJson(json);
     }
@@ -3653,6 +3749,8 @@ class TransactionUnpackedVerbose extends TransactionUnpacked {
         return AssetDestructionUnpackedVerbose.fromJson(json);
       case "dividend":
         return AssetDividendUnpackedVerbose.fromJson(json);
+      case "sweep":
+        return SweepUnpackedVerbose.fromJson(json);
       default:
         return TransactionUnpackedVerbose(
           messageType: json["message_type"],
@@ -4006,6 +4104,8 @@ class InfoVerbose extends Info {
         return AssetDestructionInfoVerbose.fromJson(json);
       case "dividend":
         return AssetDividendInfoVerbose.fromJson(json);
+      case "sweep":
+        return SweepInfoVerbose.fromJson(json);
       default:
         return base;
     }
@@ -4663,6 +4763,59 @@ class AssetDividendUnpackedVerbose extends TransactionUnpackedVerbose {
 }
 
 @JsonSerializable(fieldRename: FieldRename.snake)
+class SweepInfoVerbose extends InfoVerbose {
+  final SweepUnpackedVerbose unpackedData;
+  const SweepInfoVerbose({
+    required super.data,
+    required super.source,
+    required super.destination,
+    required super.btcAmount,
+    required super.fee,
+    required super.btcAmountNormalized,
+    required this.unpackedData,
+  });
+
+  factory SweepInfoVerbose.fromJson(Map<String, dynamic> json) =>
+      _$SweepInfoVerboseFromJson(json);
+
+  @override
+  Map<String, dynamic> toJson() => _$SweepInfoVerboseToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class SweepUnpackedVerbose extends TransactionUnpackedVerbose {
+  final String destination;
+  final int flags;
+  final String memo;
+  const SweepUnpackedVerbose({
+    required this.destination,
+    required this.flags,
+    required this.memo,
+  }) : super(messageType: "sweep");
+
+  factory SweepUnpackedVerbose.fromJson(Map<String, dynamic> json) {
+    final messageData = json["message_data"];
+    return SweepUnpackedVerbose(
+      destination: messageData["destination"],
+      flags: messageData["flags"],
+      memo: messageData["memo"],
+    );
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    return {
+      "message_type": "sweep",
+      "message_data": {
+        "destination": destination,
+        "flags": flags,
+        "memo": memo,
+      }
+    };
+  }
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
 class UTXO {
   final int vout;
   final int height;
@@ -5273,6 +5426,18 @@ abstract class V2Api {
     @Query("asset") String asset,
     @Query("quantity_per_unit") int quantityPerUnit,
     @Query("dividend_asset") String dividendAsset, [
+    @Query("exact_fee") int? exactFee,
+    @Query("inputs_set") String? inputsSet,
+    @Query("exclude_utxos_with_balances") bool? excludeUtxosWithBalances,
+    @Query("disable_utxo_locks") bool? disableUtxoLocks,
+  ]);
+
+  @GET("/addresses/{address}/compose/sweep?verbose=true")
+  Future<Response<ComposeSweepResponseModel>> composeSweep(
+    @Path("address") String address,
+    @Query("destination") String destination,
+    @Query("flags") int flags,
+    @Query("memo") String memo, [
     @Query("exact_fee") int? exactFee,
     @Query("inputs_set") String? inputsSet,
     @Query("exclude_utxos_with_balances") bool? excludeUtxosWithBalances,

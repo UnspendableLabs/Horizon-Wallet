@@ -268,6 +268,14 @@ class ActivityFeedListItem extends StatelessWidget {
         SelectableText("Destroy ${params.quantityNormalized} ${params.asset}"),
       AssetDividendEvent(params: var params) => SelectableText(
           "Dividend ${params.asset} - ${params.dividendAsset} ${params.quantityPerUnitNormalized} per unit"),
+      SweepEvent(params: var params)
+          when _getSendSide(params.source) == SendSide.source =>
+        SelectableText(
+            "Sweep ${flagMapper[params.flags]} to ${params.destination}"),
+      SweepEvent(params: var params)
+          when _getSendSide(params.source) == SendSide.destination =>
+        SelectableText(
+            "Sweep ${flagMapper[params.flags]} from ${params.source}"),
       _ => SelectableText(
           'Invariant: title unsupported event type: ${event.runtimeType}'),
     };
@@ -408,6 +416,8 @@ class ActivityFeedListItem extends StatelessWidget {
             "Destroy ${unpackedData.quantityNormalized} ${unpackedData.asset}"),
       TransactionInfoAssetDividend(unpackedData: var unpackedData) =>
         SelectableText("Dividend ${unpackedData.asset}"),
+      TransactionInfoSweep(unpackedData: var unpackedData) => SelectableText(
+          "Sweep ${flagMapper[unpackedData.flags]} to ${unpackedData.destination}"),
       _ => SelectableText(
           'Invariant: title unsupported TransactionInfo type: ${info.runtimeType}'),
     };
@@ -439,6 +449,8 @@ class ActivityFeedListItem extends StatelessWidget {
         const Icon(Icons.currency_exchange, color: Colors.grey),
       TransactionInfo(btcAmount: var btcAmount) when btcAmount != null =>
         const Icon(Icons.arrow_back, color: Colors.grey),
+      TransactionInfoSweep() =>
+        const Icon(Icons.cleaning_services, color: Colors.grey),
       _ => const Icon(Icons.error),
     };
   }
@@ -596,6 +608,8 @@ class ActivityFeedListItem extends StatelessWidget {
         const Icon(Icons.delete_forever, color: Colors.grey),
       AssetDividendEvent(params: var _) =>
         const Icon(Icons.currency_exchange, color: Colors.grey),
+      SweepEvent(params: var _) =>
+        const Icon(Icons.cleaning_services, color: Colors.grey),
       _ => const Icon(Icons.error),
     };
   }
