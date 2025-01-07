@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/domain/entities/compose_sweep.dart';
+import 'package:horizon/domain/entities/event.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_event.dart';
@@ -254,7 +255,9 @@ class ComposeSweepPageState extends State<ComposeSweepPage> {
       ),
       const SizedBox(height: 16),
       HorizonUI.HorizonTextFormField(
-        controller: TextEditingController(text: params.flags.toString()),
+        controller: TextEditingController(
+            text:
+                "${params.flags.toString()} - Sweep ${flagMapper[params.flags]}"),
         label: 'Flags',
         enabled: false,
       ),
