@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 import 'package:horizon/presentation/common/shared_util.dart';
+import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_event.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_state.dart';
@@ -12,6 +15,50 @@ import 'package:horizon/domain/entities/bitcoin_tx.dart';
 import 'package:horizon/presentation/common/tx_hash_display.dart';
 import 'package:horizon/common/format.dart';
 import 'package:horizon/presentation/common/colors.dart';
+import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
+import 'package:get_it/get_it.dart';
+
+import 'package:horizon/presentation/screens/compose_rbf/view/compose_rbf_view.dart';
+import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
+
+class RBF extends StatelessWidget {
+  final String txHash;
+  final String currentAddress;
+  final DashboardActivityFeedBloc dashboardActivityFeedBloc;
+
+  const RBF(
+      {super.key,
+      required this.txHash,
+      required this.currentAddress,
+      required this.dashboardActivityFeedBloc});
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        TextButton(
+          onPressed: () {
+            HorizonUI.HorizonDialog.show(
+                context: context,
+                body: HorizonUI.HorizonDialog(
+                    title: "Accelerate this transaction",
+                    body: ComposeRBFPageWrapper(
+                        bitcoinRepository: GetIt.I<BitcoinRepository>(),
+                        balanceRepository: GetIt.I<BalanceRepository>(),
+                        composeTransactionUseCase:
+                            GetIt.I<ComposeTransactionUseCase>(),
+                        dashboardActivityFeedBloc: dashboardActivityFeedBloc,
+                        currentAddress: currentAddress,
+                        getFeeEstimatesUseCase:
+                            GetIt.I<GetFeeEstimatesUseCase>(),
+                        txHash: txHash)));
+          },
+          child: const Text("View More"),
+        ),
+      ],
+    );
+  }
+}
 
 class SendTitle extends StatelessWidget {
   final String quantityNormalized;
@@ -141,12 +188,15 @@ class ActivityFeedListItem extends StatelessWidget {
   final ActivityFeedItem item;
   final List<String> addresses;
   final bool isMobile;
+  final DashboardActivityFeedBloc bloc;
 
-  const ActivityFeedListItem(
-      {super.key,
-      required this.item,
-      required this.addresses,
-      required this.isMobile});
+  const ActivityFeedListItem({
+    super.key,
+    required this.item,
+    required this.addresses,
+    required this.isMobile,
+    required this.bloc,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -535,7 +585,8 @@ class ActivityFeedListItem extends StatelessWidget {
 
   Widget _buildTrailing() {
     if (item.event != null) {
-      return _getEventTrailing(item.event!.state);
+      return _getEventTrailing(item.event!.state,
+          item.event!.txHash!); // todo: validate always defined
     } else if (item.info != null) {
       return _getTransactionTrailing(item.info!.domain);
     } else if (item.bitcoinTx != null) {
@@ -634,9 +685,19 @@ class ActivityFeedListItem extends StatelessWidget {
     };
   }
 
-  Widget _getEventTrailing(EventState state) => switch (state) {
-        EventStateMempool() =>
-          const TransactionStatusPill(status: TransactionStatus.mempool),
+  Widget _getEventTrailing(EventState state, String txHash) => switch (state) {
+        EventStateMempool() => Column(
+            children: [
+              const TransactionStatusPill(
+                status: TransactionStatus.mempool,
+              ),
+              RBF(
+                dashboardActivityFeedBloc: bloc,
+                currentAddress: addresses.first, // smell
+                txHash: txHash,
+              )
+            ],
+          ),
         EventStateConfirmed(blockHeight: var blockHeight) =>
           TransactionStatusPill(
               status: TransactionStatus.confirmed,
@@ -817,6 +878,7 @@ class DashboardActivityFeedScreenState
                 item: transaction,
                 addresses: widget.addresses,
                 isMobile: isMobile,
+                bloc: _bloc!,
               ))
           .toList();
     }
