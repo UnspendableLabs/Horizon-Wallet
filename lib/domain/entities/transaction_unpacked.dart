@@ -342,3 +342,16 @@ class AssetDestructionUnpackedVerbose extends TransactionUnpacked {
     // required this.assetInfo,
   }) : super(messageType: "destroy");
 }
+
+class AssetDividendUnpackedVerbose extends TransactionUnpacked {
+  final String asset;
+  final int quantityPerUnit;
+  final String dividendAsset;
+  final String status;
+  const AssetDividendUnpackedVerbose({
+    required this.asset,
+    required this.quantityPerUnit,
+    required this.dividendAsset,
+    required this.status,
+  }) : super(messageType: "dividend");
+}

@@ -7,12 +7,14 @@ import 'package:horizon/data/models/compose_attach_utxo.dart';
 import 'package:horizon/data/models/compose_cancel.dart';
 import 'package:horizon/data/models/compose_destroy.dart';
 import 'package:horizon/data/models/compose_detach_utxo.dart';
+import 'package:horizon/data/models/compose_dividend.dart';
 import 'package:horizon/data/models/compose_fairmint.dart';
 import 'package:horizon/data/models/compose_fairminter.dart';
 import 'package:horizon/data/models/compose_movetoutxo.dart';
 import 'package:horizon/data/models/compose_order.dart';
 import 'package:horizon/data/models/cursor.dart';
 import 'package:horizon/data/models/dispenser.dart';
+import 'package:horizon/data/models/dividend_asset_info.dart';
 import 'package:horizon/data/models/fairminter.dart';
 import 'package:horizon/data/models/node_info.dart';
 import 'package:horizon/data/models/order.dart';
@@ -303,6 +305,8 @@ class Event {
         return MoveToUtxoEvent.fromJson(json);
       case "ASSET_DESTRUCTION":
         return AssetDestructionEvent.fromJson(json);
+      case "ASSET_DIVIDEND":
+        return AssetDividendEvent.fromJson(json);
       default:
         return _$EventFromJson(json);
     }
@@ -1450,6 +1454,106 @@ class VerboseAssetDestructionParams extends AssetDestructionParams {
 }
 
 @JsonSerializable(fieldRename: FieldRename.snake)
+class AssetDividendEvent extends Event {
+  final AssetDividendParams params;
+
+  AssetDividendEvent({
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
+    required this.params,
+  });
+
+  factory AssetDividendEvent.fromJson(Map<String, dynamic> json) =>
+      _$AssetDividendEventFromJson(json);
+
+  Map<String, dynamic> toJson() => _$AssetDividendEventToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class AssetDividendParams {
+  final String asset;
+  final int blockIndex;
+  final String dividendAsset;
+  final int feePaid;
+  final int quantityPerUnit;
+  final String source;
+  final String status;
+  final String txHash;
+  final int txIndex;
+  final int? blockTime;
+
+  AssetDividendParams({
+    required this.asset,
+    required this.blockIndex,
+    required this.dividendAsset,
+    required this.feePaid,
+    required this.quantityPerUnit,
+    required this.source,
+    required this.status,
+    required this.txHash,
+    required this.txIndex,
+    this.blockTime,
+  });
+
+  factory AssetDividendParams.fromJson(Map<String, dynamic> json) =>
+      _$AssetDividendParamsFromJson(json);
+
+  Map<String, dynamic> toJson() => _$AssetDividendParamsToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class VerboseAssetDividendEvent extends VerboseEvent {
+  final VerboseAssetDividendParams params;
+
+  VerboseAssetDividendEvent({
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
+    required super.blockTime,
+    required this.params,
+  });
+
+  factory VerboseAssetDividendEvent.fromJson(Map<String, dynamic> json) =>
+      _$VerboseAssetDividendEventFromJson(json);
+
+  Map<String, dynamic> toJson() => _$VerboseAssetDividendEventToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class VerboseAssetDividendParams extends AssetDividendParams {
+  final AssetInfoModel assetInfo;
+  final DividendAssetInfoModel dividendAssetInfo;
+  final String quantityPerUnitNormalized;
+  final String feePaidNormalized;
+
+  VerboseAssetDividendParams({
+    required super.asset,
+    required super.blockIndex,
+    required super.dividendAsset,
+    required super.feePaid,
+    required super.quantityPerUnit,
+    required super.source,
+    required super.status,
+    required super.txHash,
+    required super.txIndex,
+    super.blockTime,
+    required this.assetInfo,
+    required this.dividendAssetInfo,
+    required this.quantityPerUnitNormalized,
+    required this.feePaidNormalized,
+  });
+
+  factory VerboseAssetDividendParams.fromJson(Map<String, dynamic> json) =>
+      _$VerboseAssetDividendParamsFromJson(json);
+
+  @override
+  Map<String, dynamic> toJson() => _$VerboseAssetDividendParamsToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
 class MoveToUtxoEvent extends Event {
   final MoveToUtxoParams params;
 
@@ -2441,6 +2545,8 @@ class VerboseEvent extends Event {
         return VerboseMoveToUtxoEvent.fromJson(json);
       case "ASSET_DESTRUCTION":
         return VerboseAssetDestructionEvent.fromJson(json);
+      case "ASSET_DIVIDEND":
+        return VerboseAssetDividendEvent.fromJson(json);
       default:
         return _$VerboseEventFromJson(json);
     }
@@ -3545,6 +3651,8 @@ class TransactionUnpackedVerbose extends TransactionUnpacked {
         return MoveToUtxoUnpackedVerbose.fromJson(json);
       case "destroy":
         return AssetDestructionUnpackedVerbose.fromJson(json);
+      case "dividend":
+        return AssetDividendUnpackedVerbose.fromJson(json);
       default:
         return TransactionUnpackedVerbose(
           messageType: json["message_type"],
@@ -3896,6 +4004,8 @@ class InfoVerbose extends Info {
         return MoveToUtxoInfoVerbose.fromJson(json);
       case "destroy":
         return AssetDestructionInfoVerbose.fromJson(json);
+      case "dividend":
+        return AssetDividendInfoVerbose.fromJson(json);
       default:
         return base;
     }
@@ -4490,6 +4600,63 @@ class AssetDestructionUnpackedVerbose extends TransactionUnpackedVerbose {
         "tag": tag,
         "quantity": quantity,
         "asset_info": assetInfo?.toJson(),
+      }
+    };
+  }
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class AssetDividendInfoVerbose extends InfoVerbose {
+  final AssetDividendUnpackedVerbose unpackedData;
+  const AssetDividendInfoVerbose({
+    required super.data,
+    required super.source,
+    required super.destination,
+    required super.btcAmount,
+    required super.fee,
+    required super.btcAmountNormalized,
+    required this.unpackedData,
+  });
+
+  factory AssetDividendInfoVerbose.fromJson(Map<String, dynamic> json) =>
+      _$AssetDividendInfoVerboseFromJson(json);
+
+  @override
+  Map<String, dynamic> toJson() => _$AssetDividendInfoVerboseToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class AssetDividendUnpackedVerbose extends TransactionUnpackedVerbose {
+  final String asset;
+  final int quantityPerUnit;
+  final String dividendAsset;
+  final String status;
+  const AssetDividendUnpackedVerbose({
+    required this.asset,
+    required this.quantityPerUnit,
+    required this.dividendAsset,
+    required this.status,
+  }) : super(messageType: "dividend");
+
+  factory AssetDividendUnpackedVerbose.fromJson(Map<String, dynamic> json) {
+    final messageData = json["message_data"];
+    return AssetDividendUnpackedVerbose(
+      asset: messageData["asset"],
+      quantityPerUnit: messageData["quantity_per_unit"],
+      dividendAsset: messageData["dividend_asset"],
+      status: messageData["status"],
+    );
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    return {
+      "message_type": "dividend",
+      "message_data": {
+        "asset": asset,
+        "quantity_per_unit": quantityPerUnit,
+        "dividend_asset": dividendAsset,
+        "status": status,
       }
     };
   }
@@ -5094,6 +5261,18 @@ abstract class V2Api {
     @Query("asset") String asset,
     @Query("quantity") int quantity,
     @Query("tag") String tag, [
+    @Query("exact_fee") int? exactFee,
+    @Query("inputs_set") String? inputsSet,
+    @Query("exclude_utxos_with_balances") bool? excludeUtxosWithBalances,
+    @Query("disable_utxo_locks") bool? disableUtxoLocks,
+  ]);
+
+  @GET("/addresses/{address}/compose/dividend?verbose=true")
+  Future<Response<ComposeDividendResponseModel>> composeDividend(
+    @Path("address") String address,
+    @Query("asset") String asset,
+    @Query("quantity_per_unit") int quantityPerUnit,
+    @Query("dividend_asset") String dividendAsset, [
     @Query("exact_fee") int? exactFee,
     @Query("inputs_set") String? inputsSet,
     @Query("exclude_utxos_with_balances") bool? excludeUtxosWithBalances,

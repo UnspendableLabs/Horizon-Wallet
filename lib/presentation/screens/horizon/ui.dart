@@ -636,6 +636,7 @@ class HorizonSearchableDropdownMenu<T> extends StatefulWidget {
   final AutovalidateMode autovalidateMode;
   final String Function(T) displayStringForOption;
   final Widget? suffixIcon;
+  final FloatingLabelBehavior? floatingLabelBehavior;
 
   HorizonSearchableDropdownMenu({
     super.key,
@@ -648,6 +649,7 @@ class HorizonSearchableDropdownMenu<T> extends StatefulWidget {
     this.validator,
     this.autovalidateMode = AutovalidateMode.disabled,
     this.suffixIcon,
+    this.floatingLabelBehavior,
   });
 
   @override
@@ -789,7 +791,8 @@ class _HorizonSearchableDropdownMenuState<T>
             child: InputDecorator(
               decoration: InputDecoration(
                 labelText: widget.label,
-                floatingLabelBehavior: FloatingLabelBehavior.never,
+                floatingLabelBehavior:
+                    widget.floatingLabelBehavior ?? FloatingLabelBehavior.never,
                 contentPadding: const EdgeInsets.symmetric(
                     horizontal: 12.0, vertical: 16.0),
                 border: OutlineInputBorder(
