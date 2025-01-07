@@ -13,6 +13,7 @@ import 'package:horizon/domain/entities/compose_dispense.dart';
 import 'package:horizon/domain/entities/compose_order.dart';
 import 'package:horizon/domain/entities/compose_cancel.dart';
 import 'package:horizon/domain/entities/compose_mpma_send.dart';
+import 'package:horizon/domain/entities/compose_sweep.dart';
 import 'package:horizon/domain/entities/utxo.dart';
 
 abstract class ComposeRepository {
@@ -62,4 +63,7 @@ abstract class ComposeRepository {
 
   Future<ComposeDividendResponse> composeDividend(
       int fee, List<Utxo> inputsSet, ComposeDividendParams params);
+
+  Future<ComposeSweepResponse> composeSweep(
+      int fee, List<Utxo> inputsSet, ComposeSweepParams params);
 }

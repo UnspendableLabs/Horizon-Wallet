@@ -355,3 +355,14 @@ class AssetDividendUnpackedVerbose extends TransactionUnpacked {
     required this.status,
   }) : super(messageType: "dividend");
 }
+
+class SweepUnpackedVerbose extends TransactionUnpacked {
+  final String destination;
+  final int flags;
+  final String memo;
+  const SweepUnpackedVerbose({
+    required this.destination,
+    required this.flags,
+    required this.memo,
+  }) : super(messageType: "sweep");
+}

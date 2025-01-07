@@ -43,6 +43,9 @@ class UnpackedVerboseMapper {
       case "dividend":
         return AssetDividendUnpackedVerboseMapper.toDomain(
             u as api.AssetDividendUnpackedVerbose);
+      case "sweep":
+        return SweepUnpackedVerboseMapper.toDomain(
+            u as api.SweepUnpackedVerbose);
       default:
         return TransactionUnpacked(
           messageType: u.messageType,
@@ -214,6 +217,16 @@ class AssetDividendUnpackedVerboseMapper {
       quantityPerUnit: u.quantityPerUnit,
       dividendAsset: u.dividendAsset,
       status: u.status,
+    );
+  }
+}
+
+class SweepUnpackedVerboseMapper {
+  static SweepUnpackedVerbose toDomain(api.SweepUnpackedVerbose u) {
+    return SweepUnpackedVerbose(
+      destination: u.destination,
+      flags: u.flags,
+      memo: u.memo,
     );
   }
 }

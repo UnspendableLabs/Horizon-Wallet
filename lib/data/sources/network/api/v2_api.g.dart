@@ -1624,6 +1624,99 @@ Map<String, dynamic> _$VerboseAssetDividendParamsToJson(
       'fee_paid_normalized': instance.feePaidNormalized,
     };
 
+SweepEvent _$SweepEventFromJson(Map<String, dynamic> json) => SweepEvent(
+      eventIndex: (json['event_index'] as num?)?.toInt(),
+      event: json['event'] as String,
+      txHash: json['tx_hash'] as String?,
+      blockIndex: (json['block_index'] as num?)?.toInt(),
+      params: SweepParams.fromJson(json['params'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$SweepEventToJson(SweepEvent instance) =>
+    <String, dynamic>{
+      'event_index': instance.eventIndex,
+      'event': instance.event,
+      'tx_hash': instance.txHash,
+      'block_index': instance.blockIndex,
+      'params': instance.params,
+    };
+
+SweepParams _$SweepParamsFromJson(Map<String, dynamic> json) => SweepParams(
+      blockIndex: (json['block_index'] as num).toInt(),
+      feePaid: (json['fee_paid'] as num).toInt(),
+      destination: json['destination'] as String,
+      flags: (json['flags'] as num).toInt(),
+      memo: json['memo'] as String,
+      source: json['source'] as String,
+      status: json['status'] as String,
+      txHash: json['tx_hash'] as String,
+      txIndex: (json['tx_index'] as num).toInt(),
+      blockTime: (json['block_time'] as num?)?.toInt(),
+    );
+
+Map<String, dynamic> _$SweepParamsToJson(SweepParams instance) =>
+    <String, dynamic>{
+      'block_index': instance.blockIndex,
+      'fee_paid': instance.feePaid,
+      'destination': instance.destination,
+      'flags': instance.flags,
+      'memo': instance.memo,
+      'source': instance.source,
+      'status': instance.status,
+      'tx_hash': instance.txHash,
+      'tx_index': instance.txIndex,
+      'block_time': instance.blockTime,
+    };
+
+VerboseSweepEvent _$VerboseSweepEventFromJson(Map<String, dynamic> json) =>
+    VerboseSweepEvent(
+      eventIndex: (json['event_index'] as num?)?.toInt(),
+      event: json['event'] as String,
+      txHash: json['tx_hash'] as String?,
+      blockIndex: (json['block_index'] as num?)?.toInt(),
+      blockTime: (json['block_time'] as num?)?.toInt(),
+      params:
+          VerboseSweepParams.fromJson(json['params'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$VerboseSweepEventToJson(VerboseSweepEvent instance) =>
+    <String, dynamic>{
+      'event_index': instance.eventIndex,
+      'event': instance.event,
+      'tx_hash': instance.txHash,
+      'block_index': instance.blockIndex,
+      'block_time': instance.blockTime,
+      'params': instance.params,
+    };
+
+VerboseSweepParams _$VerboseSweepParamsFromJson(Map<String, dynamic> json) =>
+    VerboseSweepParams(
+      blockIndex: (json['block_index'] as num).toInt(),
+      feePaid: (json['fee_paid'] as num).toInt(),
+      destination: json['destination'] as String,
+      flags: (json['flags'] as num).toInt(),
+      memo: json['memo'] as String,
+      source: json['source'] as String,
+      status: json['status'] as String,
+      txHash: json['tx_hash'] as String,
+      txIndex: (json['tx_index'] as num).toInt(),
+      feePaidNormalized: json['fee_paid_normalized'] as String,
+    );
+
+Map<String, dynamic> _$VerboseSweepParamsToJson(VerboseSweepParams instance) =>
+    <String, dynamic>{
+      'block_index': instance.blockIndex,
+      'fee_paid': instance.feePaid,
+      'destination': instance.destination,
+      'flags': instance.flags,
+      'memo': instance.memo,
+      'source': instance.source,
+      'status': instance.status,
+      'tx_hash': instance.txHash,
+      'tx_index': instance.txIndex,
+      'fee_paid_normalized': instance.feePaidNormalized,
+    };
+
 MoveToUtxoEvent _$MoveToUtxoEventFromJson(Map<String, dynamic> json) =>
     MoveToUtxoEvent(
       eventIndex: (json['event_index'] as num?)?.toInt(),
@@ -4007,7 +4100,7 @@ Map<String, dynamic> _$MoveToUtxoInfoVerboseToJson(
 
 MoveToUtxoUnpackedVerbose _$MoveToUtxoUnpackedVerboseFromJson(
         Map<String, dynamic> json) =>
-    const MoveToUtxoUnpackedVerbose();
+    MoveToUtxoUnpackedVerbose();
 
 Map<String, dynamic> _$MoveToUtxoUnpackedVerboseToJson(
         MoveToUtxoUnpackedVerbose instance) =>
@@ -4101,6 +4194,45 @@ Map<String, dynamic> _$AssetDividendUnpackedVerboseToJson(
       'quantity_per_unit': instance.quantityPerUnit,
       'dividend_asset': instance.dividendAsset,
       'status': instance.status,
+    };
+
+SweepInfoVerbose _$SweepInfoVerboseFromJson(Map<String, dynamic> json) =>
+    SweepInfoVerbose(
+      data: json['data'] as String,
+      source: json['source'] as String,
+      destination: json['destination'] as String?,
+      btcAmount: (json['btc_amount'] as num?)?.toInt(),
+      fee: (json['fee'] as num?)?.toInt(),
+      btcAmountNormalized: json['btc_amount_normalized'] as String?,
+      unpackedData: SweepUnpackedVerbose.fromJson(
+          json['unpacked_data'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$SweepInfoVerboseToJson(SweepInfoVerbose instance) =>
+    <String, dynamic>{
+      'source': instance.source,
+      'destination': instance.destination,
+      'btc_amount': instance.btcAmount,
+      'fee': instance.fee,
+      'data': instance.data,
+      'btc_amount_normalized': instance.btcAmountNormalized,
+      'unpacked_data': instance.unpackedData,
+    };
+
+SweepUnpackedVerbose _$SweepUnpackedVerboseFromJson(
+        Map<String, dynamic> json) =>
+    SweepUnpackedVerbose(
+      destination: json['destination'] as String,
+      flags: (json['flags'] as num).toInt(),
+      memo: json['memo'] as String,
+    );
+
+Map<String, dynamic> _$SweepUnpackedVerboseToJson(
+        SweepUnpackedVerbose instance) =>
+    <String, dynamic>{
+      'destination': instance.destination,
+      'flags': instance.flags,
+      'memo': instance.memo,
     };
 
 UTXO _$UTXOFromJson(Map<String, dynamic> json) => UTXO(
@@ -6771,9 +6903,58 @@ class _V2Api implements V2Api {
     return _value;
   }
 
+  @override
+  Future<Response<ComposeSweepResponseModel>> composeSweep(
+    String address,
+    String destination,
+    int flags,
+    String memo, [
+    int? exactFee,
+    String? inputsSet,
+    bool? excludeUtxosWithBalances,
+    bool? disableUtxoLocks,
+  ]) async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{
+      r'destination': destination,
+      r'flags': flags,
+      r'memo': memo,
+      r'exact_fee': exactFee,
+      r'inputs_set': inputsSet,
+      r'exclude_utxos_with_balances': excludeUtxosWithBalances,
+      r'disable_utxo_locks': disableUtxoLocks,
+    };
+    queryParameters.removeWhere((k, v) => v == null);
+    final _headers = <String, dynamic>{};
+    const Map<String, dynamic>? _data = null;
+    final _result = await _dio.fetch<Map<String, dynamic>>(
+        _setStreamType<Response<ComposeSweepResponseModel>>(Options(
+      method: 'GET',
+      headers: _headers,
+      extra: _extra,
+    )
+            .compose(
+              _dio.options,
+              '/addresses/${address}/compose/sweep?verbose=true',
+              queryParameters: queryParameters,
+              data: _data,
+            )
+            .copyWith(
+                baseUrl: _combineBaseUrls(
+              _dio.options.baseUrl,
+              baseUrl,
+            ))));
+    final _value = Response<ComposeSweepResponseModel>.fromJson(
+      _result.data!,
+      (json) =>
+          ComposeSweepResponseModel.fromJson(json as Map<String, dynamic>),
+    );
+    return _value;
+  }
+
   RequestOptions newRequestOptions(Object? options) {
     if (options is RequestOptions) {
-      return options;
+      return options as RequestOptions;
     }
     if (options is Options) {
       return RequestOptions(
