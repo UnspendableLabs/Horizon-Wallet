@@ -302,6 +302,7 @@ class HorizonDropdownMenu<T> extends StatelessWidget {
   final AutovalidateMode autovalidateMode;
   final String? errorText;
   final String? helperText;
+  final FloatingLabelBehavior? floatingLabelBehavior;
   const HorizonDropdownMenu(
       {super.key,
       required this.items,
@@ -320,7 +321,8 @@ class HorizonDropdownMenu<T> extends StatelessWidget {
       this.validator,
       this.autovalidateMode = AutovalidateMode.disabled,
       this.errorText,
-      this.helperText});
+      this.helperText,
+      this.floatingLabelBehavior});
 
   @override
   Widget build(BuildContext context) {
@@ -335,7 +337,8 @@ class HorizonDropdownMenu<T> extends StatelessWidget {
             labelText: label,
             errorText: errorText ?? state.errorText,
             helperText: helperText,
-            floatingLabelBehavior: FloatingLabelBehavior.never,
+            floatingLabelBehavior:
+                floatingLabelBehavior ?? FloatingLabelBehavior.never,
             contentPadding: const EdgeInsets.symmetric(horizontal: 4.0),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8.0),

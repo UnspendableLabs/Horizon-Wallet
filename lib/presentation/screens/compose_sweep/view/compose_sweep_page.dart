@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/core/logging/logger.dart';
@@ -14,6 +15,7 @@ import 'package:horizon/presentation/common/usecase/write_local_transaction_usec
 import 'package:horizon/presentation/screens/compose_sweep/bloc/compose_sweep_bloc.dart';
 import 'package:horizon/presentation/screens/compose_sweep/bloc/compose_sweep_state.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart';
+import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 
 class ComposeSweepPageWrapper extends StatelessWidget {
@@ -69,9 +71,9 @@ class ComposeSweepPage extends StatefulWidget {
 
 class ComposeSweepPageState extends State<ComposeSweepPage> {
   TextEditingController destinationController = TextEditingController();
-  TextEditingController flagsController = TextEditingController();
   TextEditingController memoController = TextEditingController();
   bool _submitted = false;
+  int flags = 1;
 
   @override
   void initState() {
@@ -81,7 +83,6 @@ class ComposeSweepPageState extends State<ComposeSweepPage> {
   @override
   void dispose() {
     destinationController.dispose();
-    flagsController.dispose();
     memoController.dispose();
     super.dispose();
   }
@@ -116,7 +117,66 @@ class ComposeSweepPageState extends State<ComposeSweepPage> {
 
   List<Widget> _buildInitialFormFields(
       ComposeSweepState state, bool loading, GlobalKey<FormState> formKey) {
-    return [];
+    return [
+      HorizonUI.HorizonTextFormField(
+        controller: TextEditingController(text: widget.address),
+        label: 'Source',
+        enabled: false,
+      ),
+      const SizedBox(height: 16),
+      HorizonUI.HorizonTextFormField(
+        controller: destinationController,
+        label: 'Destination',
+        validator: (value) {
+          if (value == null || value.isEmpty) {
+            return 'Please enter a destination';
+          }
+          return null;
+        },
+        autovalidateMode: _submitted
+            ? AutovalidateMode.onUserInteraction
+            : AutovalidateMode.disabled,
+      ),
+      const SizedBox(height: 16),
+      HorizonUI.HorizonDropdownMenu<int>(
+        floatingLabelBehavior: FloatingLabelBehavior.always,
+        label: 'Flags',
+        selectedValue: flags,
+        items: [
+          HorizonUI.buildDropdownMenuItem('1', '1: Sweep balance'),
+          HorizonUI.buildDropdownMenuItem('2', '2: Sweep ownership'),
+          HorizonUI.buildDropdownMenuItem(
+              '3', '3: Sweep ownership and balance'),
+        ]
+            .map((item) => DropdownMenuItem<int>(
+                  value: int.parse(item.value!),
+                  child: item.child,
+                ))
+            .toList(),
+        onChanged: (value) {
+          setState(() {
+            flags = value ?? 1;
+          });
+        },
+      ),
+      const SizedBox(height: 16),
+      HorizonUI.HorizonTextFormField(
+        controller: memoController,
+        label: 'Memo',
+        inputFormatters: [
+          FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z]')),
+        ],
+        validator: (value) {
+          if (value == null || value.isEmpty) {
+            return 'Please enter a memo';
+          }
+          return null;
+        },
+        autovalidateMode: _submitted
+            ? AutovalidateMode.onUserInteraction
+            : AutovalidateMode.disabled,
+      ),
+    ];
   }
 
   void _handleInitialCancel() {
@@ -127,12 +187,47 @@ class ComposeSweepPageState extends State<ComposeSweepPage> {
     setState(() {
       _submitted = true;
     });
-    if (formKey.currentState!.validate()) {}
+    if (formKey.currentState!.validate()) {
+      context.read<ComposeSweepBloc>().add(
+            ComposeTransactionEvent(
+              sourceAddress: widget.address,
+              params: ComposeSweepEventParams(
+                destination: destinationController.text,
+                flags: flags,
+                memo: memoController.text,
+              ),
+            ),
+          );
+    }
   }
 
   List<Widget> _buildConfirmationDetails(dynamic composeTransaction) {
     final params = (composeTransaction as ComposeSweepResponse).params;
-    return [];
+    return [
+      HorizonUI.HorizonTextFormField(
+        controller: TextEditingController(text: params.source),
+        label: 'Source',
+        enabled: false,
+      ),
+      const SizedBox(height: 16),
+      HorizonUI.HorizonTextFormField(
+        controller: TextEditingController(text: params.destination),
+        label: 'Destination',
+        enabled: false,
+      ),
+      const SizedBox(height: 16),
+      HorizonUI.HorizonTextFormField(
+        controller: TextEditingController(text: params.flags.toString()),
+        label: 'Flags',
+        enabled: false,
+      ),
+      const SizedBox(height: 16),
+      HorizonUI.HorizonTextFormField(
+        controller: TextEditingController(text: params.memo),
+        label: 'Memo',
+        enabled: false,
+      ),
+    ];
   }
 
   void _onConfirmationBack() {
