@@ -97,8 +97,8 @@ void main() {
       when(() => mockGetFeeEstimatesUseCase.call())
           .thenAnswer((_) async => mockFeeEstimates);
 
-      when(() =>
-              mockEstimateXcpFeeRepository.estimateDividendXcpFees(testAddress))
+      when(() => mockEstimateXcpFeeRepository.estimateDividendXcpFees(
+              testAddress, testAssetName))
           .thenAnswer((_) async => mockDividendXcpFee);
 
       // Act
@@ -115,9 +115,8 @@ void main() {
       verify(() => mockAssetRepository.getAssetVerbose(testAssetName))
           .called(1);
       verify(() => mockGetFeeEstimatesUseCase.call()).called(1);
-      verify(() =>
-              mockEstimateXcpFeeRepository.estimateDividendXcpFees(testAddress))
-          .called(1);
+      verify(() => mockEstimateXcpFeeRepository.estimateDividendXcpFees(
+          testAddress, testAssetName)).called(1);
     });
 
     test('should throw FetchBalancesException when balance fetch fails',
@@ -132,8 +131,8 @@ void main() {
       when(() => mockGetFeeEstimatesUseCase.call())
           .thenAnswer((_) async => mockFeeEstimates);
 
-      when(() =>
-              mockEstimateXcpFeeRepository.estimateDividendXcpFees(testAddress))
+      when(() => mockEstimateXcpFeeRepository.estimateDividendXcpFees(
+              testAddress, testAssetName))
           .thenAnswer((_) async => mockDividendXcpFee);
 
       // Act & Assert
@@ -158,8 +157,8 @@ void main() {
       when(() => mockGetFeeEstimatesUseCase.call())
           .thenAnswer((_) async => mockFeeEstimates);
 
-      when(() =>
-              mockEstimateXcpFeeRepository.estimateDividendXcpFees(testAddress))
+      when(() => mockEstimateXcpFeeRepository.estimateDividendXcpFees(
+              testAddress, testAssetName))
           .thenAnswer((_) async => mockDividendXcpFee);
 
       // Act & Assert
@@ -186,8 +185,8 @@ void main() {
       when(() => mockGetFeeEstimatesUseCase.call())
           .thenThrow(Exception('Fee estimates fetch failed'));
 
-      when(() =>
-              mockEstimateXcpFeeRepository.estimateDividendXcpFees(testAddress))
+      when(() => mockEstimateXcpFeeRepository.estimateDividendXcpFees(
+              testAddress, testAssetName))
           .thenAnswer((_) async => mockDividendXcpFee);
 
       // Act & Assert
@@ -216,8 +215,8 @@ void main() {
       when(() => mockGetFeeEstimatesUseCase.call())
           .thenAnswer((_) async => mockFeeEstimates);
 
-      when(() =>
-              mockEstimateXcpFeeRepository.estimateDividendXcpFees(testAddress))
+      when(() => mockEstimateXcpFeeRepository.estimateDividendXcpFees(
+              testAddress, testAssetName))
           .thenThrow(Exception('Dividend XCP fee fetch failed'));
 
       // Act & Assert
@@ -232,9 +231,8 @@ void main() {
       verify(() => mockAssetRepository.getAssetVerbose(testAssetName))
           .called(1);
       verify(() => mockGetFeeEstimatesUseCase.call()).called(1);
-      verify(() =>
-              mockEstimateXcpFeeRepository.estimateDividendXcpFees(testAddress))
-          .called(1);
+      verify(() => mockEstimateXcpFeeRepository.estimateDividendXcpFees(
+          testAddress, testAssetName)).called(1);
     });
   });
 }

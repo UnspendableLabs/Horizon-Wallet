@@ -156,7 +156,7 @@ void main() {
       build: () {
         when(() => mockGetFeeEstimatesUseCase.call())
             .thenAnswer((_) async => mockFeeEstimates);
-        when(() => mockEstimateXcpFeeRepository.estimateDividendXcpFees(any()))
+        when(() => mockEstimateXcpFeeRepository.estimateSweepXcpFees(any()))
             .thenAnswer((_) async => 20000000);
         return bloc;
       },
