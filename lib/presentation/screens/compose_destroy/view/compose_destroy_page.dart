@@ -275,15 +275,6 @@ class ComposeDestroyPageState extends State<ComposeDestroyPage> {
       return;
     }
     if (formKey.currentState!.validate()) {
-      final balances =
-          context.read<ComposeDestroyBloc>().state.balancesState.maybeWhen(
-                loading: () {},
-                success: (balances) => balances,
-                orElse: () => throw Exception('Balances not found'),
-              );
-      if (balances == null) {
-        throw Exception('invariant: Balances not found');
-      }
       final quantity = getQuantityForDivisibility(
           inputQuantity: quantityController.text,
           divisible: balance_!.assetInfo.divisible);
