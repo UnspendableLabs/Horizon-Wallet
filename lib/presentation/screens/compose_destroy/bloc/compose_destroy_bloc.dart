@@ -69,13 +69,12 @@ class ComposeDestroyBloc extends ComposeBaseBloc<ComposeDestroyState> {
     FeeEstimates feeEstimates;
 
     try {
-      balances = await balanceRepository.getBalancesForAddressAndAssetVerbose(
-          event.currentAddress!, event.assetName!);
+      balances = await balanceRepository.getBalancesForAddress(
+          event.currentAddress!, true);
     } catch (e) {
       emit(state.copyWith(balancesState: BalancesState.error(e.toString())));
       return;
     }
-
     try {
       feeEstimates = await getFeeEstimatesUseCase.call();
     } catch (e) {
@@ -83,9 +82,9 @@ class ComposeDestroyBloc extends ComposeBaseBloc<ComposeDestroyState> {
       return;
     }
 
-    final balance = balances.where((balance) => balance.utxo == null).first;
     emit(state.copyWith(
-      balancesState: BalancesState.success([balance]),
+      balancesState: BalancesState.success(
+          balances.where((balance) => balance.asset != 'BTC').toList()),
       feeState: FeeState.success(feeEstimates),
     ));
   }

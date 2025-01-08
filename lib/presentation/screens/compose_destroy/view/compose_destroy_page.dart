@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/common/format.dart';
 import 'package:horizon/core/logging/logger.dart';
+import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/domain/entities/compose_destroy.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
@@ -25,12 +26,10 @@ import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 class ComposeDestroyPageWrapper extends StatelessWidget {
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
   final String currentAddress;
-  final String assetName;
 
   const ComposeDestroyPageWrapper({
     required this.dashboardActivityFeedBloc,
     required this.currentAddress,
-    required this.assetName,
     super.key,
   });
 
@@ -51,12 +50,10 @@ class ComposeDestroyPageWrapper extends StatelessWidget {
           writelocalTransactionUseCase:
               GetIt.I.get<WriteLocalTransactionUseCase>(),
           logger: GetIt.I.get<Logger>(),
-        )..add(FetchFormData(
-            currentAddress: currentAddress, assetName: assetName)),
+        )..add(FetchFormData(currentAddress: currentAddress)),
         child: ComposeDestroyPage(
           address: currentAddress,
           dashboardActivityFeedBloc: dashboardActivityFeedBloc,
-          assetName: assetName,
         ),
       ),
       orElse: () => const SizedBox.shrink(),
@@ -67,13 +64,11 @@ class ComposeDestroyPageWrapper extends StatelessWidget {
 class ComposeDestroyPage extends StatefulWidget {
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
   final String address;
-  final String assetName;
 
   const ComposeDestroyPage({
     super.key,
     required this.dashboardActivityFeedBloc,
     required this.address,
-    required this.assetName,
   });
 
   @override
@@ -84,6 +79,8 @@ class ComposeDestroyPageState extends State<ComposeDestroyPage> {
   TextEditingController quantityController = TextEditingController();
   TextEditingController tagController = TextEditingController();
   bool _submitted = false;
+  bool assetError = false;
+  Balance? balance_;
 
   @override
   void initState() {
@@ -132,42 +129,12 @@ class ComposeDestroyPageState extends State<ComposeDestroyPage> {
       // only a single balance is emitted by the compose destroy bloc
       success: (balances) => [
         HorizonUI.HorizonTextFormField(
-          label: 'Destroy',
+          label: 'Source Address',
           enabled: false,
-          controller: TextEditingController(
-              text: displayAssetName(
-                  balances[0].asset, balances[0].assetInfo.assetLongname)),
+          controller: TextEditingController(text: widget.address),
         ),
         const SizedBox(height: 16),
-        HorizonUI.HorizonTextFormField(
-          controller:
-              TextEditingController(text: balances[0].quantityNormalized),
-          enabled: false,
-          label: 'Available supply',
-        ),
-        const SizedBox(height: 16),
-        HorizonUI.HorizonTextFormField(
-          label: 'Quantity to destroy',
-          controller: quantityController,
-          validator: (value) {
-            if (value == null || value.isEmpty) {
-              return 'Please enter a quantity';
-            }
-            if (Decimal.parse(value) >
-                Decimal.parse(balances[0].quantityNormalized)) {
-              return 'Quantity to destroy cannot be greater than available supply';
-            }
-            return null;
-          },
-          autovalidateMode: _submitted
-              ? AutovalidateMode.onUserInteraction
-              : AutovalidateMode.disabled,
-          inputFormatters: [
-            balances[0].assetInfo.divisible == true
-                ? DecimalTextInputFormatter(decimalRange: 8)
-                : FilteringTextInputFormatter.digitsOnly,
-          ],
-        ),
+        _buildAssetInput(state, loading, formKey, 'Destroy Asset'),
         const SizedBox(height: 16),
         HorizonUI.HorizonTextFormField(
           label: 'Tag',
@@ -193,13 +160,18 @@ class ComposeDestroyPageState extends State<ComposeDestroyPage> {
         ),
         const SizedBox(height: 16),
         const HorizonUI.HorizonTextFormField(
-          label: 'Quantity to destroy',
+          enabled: false,
+          label: 'Available supply',
+        ),
+        const SizedBox(height: 16),
+        const HorizonUI.HorizonTextFormField(
+          label: 'Destroy Asset',
           enabled: false,
         ),
         const SizedBox(height: 16),
         const HorizonUI.HorizonTextFormField(
+          label: 'Quantity to destroy',
           enabled: false,
-          label: 'Available supply',
         ),
         const SizedBox(height: 16),
         const HorizonUI.HorizonTextFormField(
@@ -207,6 +179,86 @@ class ComposeDestroyPageState extends State<ComposeDestroyPage> {
           enabled: false,
         )
       ],
+    );
+  }
+
+  Widget _buildAssetInput(
+      ComposeDestroyState state, bool loading, GlobalKey<FormState> formKey,
+      [String? label]) {
+    return state.balancesState.maybeWhen(
+      loading: () => const CircularProgressIndicator(),
+      error: (error) => Text('Error fetching balances: $error'),
+      success: (balances) {
+        if (balances.isEmpty) {
+          return const HorizonUI.HorizonTextFormField(
+            enabled: false,
+            label: "No assets",
+          );
+        }
+
+        return Column(
+          children: [
+            HorizonUI.HorizonSearchableDropdownMenu<Balance>(
+              floatingLabelBehavior: FloatingLabelBehavior.always,
+              label: "Destroy Asset",
+              items: balances
+                  .map((balance) => DropdownMenuItem(
+                      value: balance,
+                      child: Text(displayAssetName(
+                          balance.asset, balance.assetInfo.assetLongname))))
+                  .toList(),
+              onChanged: (Balance? value) => setState(() {
+                balance_ = value;
+                quantityController.text = '';
+                assetError = false;
+              }),
+              selectedValue: balance_,
+              displayStringForOption: (Balance balance) => displayAssetName(
+                  balance.asset, balance.assetInfo.assetLongname),
+            ),
+            if (assetError)
+              const Text(
+                'Please select an asset to destroy',
+                style: TextStyle(color: Colors.red),
+              ),
+            const SizedBox(height: 20),
+            HorizonUI.HorizonTextFormField(
+              label: 'Quantity to destroy',
+              enabled: balance_ != null,
+              controller: quantityController,
+              validator: (value) {
+                if (value!.isEmpty) {
+                  return 'Please enter a quantity per unit';
+                }
+                if (Decimal.parse(value) >
+                    Decimal.parse(balance_!.quantityNormalized)) {
+                  return 'Quantity to destroy cannot be greater than available supply';
+                }
+                return null;
+              },
+              autovalidateMode: _submitted
+                  ? AutovalidateMode.onUserInteraction
+                  : AutovalidateMode.disabled,
+              inputFormatters: [
+                balance_?.assetInfo.divisible == true
+                    ? DecimalTextInputFormatter(decimalRange: 8)
+                    : FilteringTextInputFormatter.digitsOnly,
+              ],
+              onFieldSubmitted: (value) {
+                _handleInitialSubmit(formKey);
+              },
+            ),
+            const SizedBox(height: 16),
+            HorizonUI.HorizonTextFormField(
+              controller: TextEditingController(
+                  text: balance_?.quantityNormalized ?? ''),
+              enabled: false,
+              label: 'Available supply',
+            ),
+          ],
+        );
+      },
+      orElse: () => const SizedBox.shrink(),
     );
   }
 
@@ -218,23 +270,18 @@ class ComposeDestroyPageState extends State<ComposeDestroyPage> {
     setState(() {
       _submitted = true;
     });
+    if (balance_ == null) {
+      assetError = true;
+      return;
+    }
     if (formKey.currentState!.validate()) {
-      final balances =
-          context.read<ComposeDestroyBloc>().state.balancesState.maybeWhen(
-                loading: () {},
-                success: (balances) => balances,
-                orElse: () => throw Exception('Balances not found'),
-              );
-      if (balances == null) {
-        throw Exception('invariant: Balances not found');
-      }
       final quantity = getQuantityForDivisibility(
           inputQuantity: quantityController.text,
-          divisible: balances[0].assetInfo.divisible);
+          divisible: balance_!.assetInfo.divisible);
       context.read<ComposeDestroyBloc>().add(ComposeTransactionEvent(
             sourceAddress: widget.address,
             params: ComposeDestroyEventParams(
-              assetName: widget.assetName,
+              assetName: balance_!.asset,
               quantity: quantity,
               tag: tagController.text,
             ),
@@ -275,8 +322,9 @@ class ComposeDestroyPageState extends State<ComposeDestroyPage> {
   }
 
   void _onConfirmationBack() {
-    context.read<ComposeDestroyBloc>().add(FetchFormData(
-        currentAddress: widget.address, assetName: widget.assetName));
+    context
+        .read<ComposeDestroyBloc>()
+        .add(FetchFormData(currentAddress: widget.address));
   }
 
   void _onConfirmationContinue(
@@ -302,7 +350,8 @@ class ComposeDestroyPageState extends State<ComposeDestroyPage> {
   }
 
   void _onFinalizeCancel() {
-    context.read<ComposeDestroyBloc>().add(FetchFormData(
-        currentAddress: widget.address, assetName: widget.assetName));
+    context
+        .read<ComposeDestroyBloc>()
+        .add(FetchFormData(currentAddress: widget.address));
   }
 }
