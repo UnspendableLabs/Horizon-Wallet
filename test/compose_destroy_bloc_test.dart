@@ -158,7 +158,7 @@ void main() {
     blocTest<ComposeDestroyBloc, ComposeDestroyState>(
       'emits loading and then success states when data is fetched successfully',
       build: () {
-        when(() => mockBalanceRepository.getBalancesForAddressAndAssetVerbose(
+        when(() => mockBalanceRepository.getBalancesForAddress(
               any(),
               any(),
             )).thenAnswer((_) async => [mockBalance]);
@@ -168,7 +168,6 @@ void main() {
       },
       act: (bloc) => bloc.add(FetchFormData(
         currentAddress: 'test-address',
-        assetName: 'ASSET_NAME',
       )),
       expect: () => [
         composeDestroyBloc.state.copyWith(
@@ -186,7 +185,7 @@ void main() {
     blocTest<ComposeDestroyBloc, ComposeDestroyState>(
       'emits error state when fetching balances fails',
       build: () {
-        when(() => mockBalanceRepository.getBalancesForAddressAndAssetVerbose(
+        when(() => mockBalanceRepository.getBalancesForAddress(
               any(),
               any(),
             )).thenThrow(Exception('Failed to fetch balances'));
@@ -194,7 +193,6 @@ void main() {
       },
       act: (bloc) => bloc.add(FetchFormData(
         currentAddress: 'test-address',
-        assetName: 'ASSET_NAME',
       )),
       expect: () => [
         composeDestroyBloc.state.copyWith(

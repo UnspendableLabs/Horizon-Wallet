@@ -41,6 +41,7 @@ import 'package:horizon/presentation/forms/sign_psbt/bloc/sign_psbt_bloc.dart';
 import 'package:horizon/presentation/forms/sign_psbt/view/sign_psbt_form.dart';
 import 'package:horizon/presentation/screens/close_dispenser/view/close_dispenser_page.dart';
 import 'package:horizon/presentation/screens/compose_cancel/view/compose_cancel_view.dart';
+import 'package:horizon/presentation/screens/compose_destroy/view/compose_destroy_page.dart';
 import 'package:horizon/presentation/screens/compose_dispense/view/compose_dispense_modal.dart';
 import 'package:horizon/presentation/screens/compose_dispenser/view/compose_dispenser_page.dart';
 import 'package:horizon/presentation/screens/compose_fairmint/view/compose_fairmint_page.dart';
@@ -1062,6 +1063,19 @@ class SendMenu extends StatelessWidget {
                     includeCloseButton: true,
                   ),
                 );
+              } else if (result == 'destroy') {
+                HorizonUI.HorizonDialog.show(
+                  context: context,
+                  body: HorizonUI.HorizonDialog(
+                    title: "Compose Destroy",
+                    body: ComposeDestroyPageWrapper(
+                      dashboardActivityFeedBloc: dashboardActivityFeedBloc,
+                      currentAddress: currentAddress,
+                    ),
+                    includeBackButton: false,
+                    includeCloseButton: true,
+                  ),
+                );
               }
             },
             itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
@@ -1076,6 +1090,10 @@ class SendMenu extends StatelessWidget {
               const PopupMenuItem<String>(
                 value: 'sweep',
                 child: Text('Compose Sweep'),
+              ),
+              const PopupMenuItem<String>(
+                value: 'destroy',
+                child: Text('Compose Destroy'),
               ),
             ],
           ),
