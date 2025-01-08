@@ -92,6 +92,15 @@ class VerboseEventMapper {
       case "UTXO_MOVE":
         return parseSwapFromMoveToUtxo(
             apiEvent as api.VerboseMoveToUtxoEvent, currentAddress);
+      case "ASSET_DESTRUCTION":
+        return AssetDestructionEventMapper.toDomain(
+            apiEvent as api.VerboseAssetDestructionEvent);
+      case "ASSET_DIVIDEND":
+        return AssetDividendEventMapper.toDomain(
+            apiEvent as api.VerboseAssetDividendEvent);
+      case "SWEEP":
+        return VerboseSweepEventMapper.toDomain(
+            apiEvent as api.VerboseSweepEvent);
 
       // case 'NEW_TRANSACTION':
       //   return VerboseNewTransactionEventMapper.toDomain(
@@ -965,6 +974,101 @@ class VerboseAtomicSwapEventMapper {
       blockTime: apiEvent.blockTime,
       params:
           AtomicSwapParamsMapper.toDomain(apiEvent.params, bitcoinSwapAmount),
+    );
+  }
+}
+
+class AssetDestructionEventMapper {
+  static AssetDestructionEvent toDomain(
+      api.VerboseAssetDestructionEvent apiEvent) {
+    return AssetDestructionEvent(
+      state: StateMapper.getVerbose(apiEvent),
+      eventIndex: apiEvent.eventIndex,
+      event: apiEvent.event,
+      txHash: apiEvent.txHash,
+      blockIndex: apiEvent.blockIndex,
+      blockTime: apiEvent.blockTime,
+      params: AssetDestructionParamsMapper.toDomain(apiEvent.params),
+    );
+  }
+}
+
+class AssetDestructionParamsMapper {
+  static AssetDestructionParams toDomain(
+      api.VerboseAssetDestructionParams apiParams) {
+    return AssetDestructionParams(
+      asset: apiParams.asset,
+      blockIndex: apiParams.blockIndex,
+      quantity: apiParams.quantity,
+      source: apiParams.source,
+      status: apiParams.status,
+      tag: apiParams.tag,
+      txHash: apiParams.txHash,
+      txIndex: apiParams.txIndex,
+      quantityNormalized: apiParams.quantityNormalized,
+    );
+  }
+}
+
+class AssetDividendEventMapper {
+  static AssetDividendEvent toDomain(api.VerboseAssetDividendEvent apiEvent) {
+    return AssetDividendEvent(
+      state: StateMapper.getVerbose(apiEvent),
+      eventIndex: apiEvent.eventIndex,
+      event: apiEvent.event,
+      txHash: apiEvent.txHash,
+      blockIndex: apiEvent.blockIndex,
+      blockTime: apiEvent.blockTime,
+      params: AssetDividendParamsMapper.toDomain(apiEvent.params),
+    );
+  }
+}
+
+class AssetDividendParamsMapper {
+  static AssetDividendParams toDomain(
+      api.VerboseAssetDividendParams apiParams) {
+    return AssetDividendParams(
+      asset: apiParams.asset,
+      blockIndex: apiParams.blockIndex,
+      dividendAsset: apiParams.dividendAsset,
+      quantityPerUnit: apiParams.quantityPerUnit,
+      feePaid: apiParams.feePaid,
+      source: apiParams.source,
+      status: apiParams.status,
+      txHash: apiParams.txHash,
+      txIndex: apiParams.txIndex,
+      quantityPerUnitNormalized: apiParams.quantityPerUnitNormalized,
+      feePaidNormalized: apiParams.feePaidNormalized,
+    );
+  }
+}
+
+class VerboseSweepEventMapper {
+  static SweepEvent toDomain(api.VerboseSweepEvent apiEvent) {
+    return SweepEvent(
+      state: StateMapper.getVerbose(apiEvent),
+      eventIndex: apiEvent.eventIndex,
+      event: apiEvent.event,
+      txHash: apiEvent.txHash,
+      blockIndex: apiEvent.blockIndex,
+      blockTime: apiEvent.blockTime,
+      params: SweepParamsMapper.toDomain(apiEvent.params),
+    );
+  }
+}
+
+class SweepParamsMapper {
+  static SweepParams toDomain(api.VerboseSweepParams apiParams) {
+    return SweepParams(
+      destination: apiParams.destination,
+      flags: apiParams.flags,
+      memo: apiParams.memo,
+      source: apiParams.source,
+      status: apiParams.status,
+      txHash: apiParams.txHash,
+      txIndex: apiParams.txIndex,
+      blockTime: apiParams.blockTime,
+      feePaidNormalized: apiParams.feePaidNormalized,
     );
   }
 }

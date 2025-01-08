@@ -596,3 +596,126 @@ class TransactionInfoMpmaSend extends TransactionInfo {
     );
   }
 }
+
+class TransactionInfoAssetDestruction extends TransactionInfo {
+  final AssetDestructionUnpackedVerbose unpackedData;
+  const TransactionInfoAssetDestruction({
+    required super.hash,
+    required super.source,
+    required super.destination,
+    required super.btcAmount,
+    required super.fee,
+    required super.data,
+    required super.domain,
+    required this.unpackedData,
+    required super.btcAmountNormalized,
+  });
+
+  @override
+  List<Object?> get props => [unpackedData, ...super.props];
+
+  @override
+  TransactionInfoAssetDestruction copyWith({
+    String? hash,
+    String? source,
+    String? destination,
+    int? btcAmount,
+    int? fee,
+    String? data,
+    TransactionInfoDomain? domain,
+    AssetDestructionUnpackedVerbose? unpackedData,
+    String? btcAmountNormalized,
+  }) {
+    return TransactionInfoAssetDestruction(
+        hash: hash ?? this.hash,
+        source: source ?? this.source,
+        destination: destination ?? this.destination,
+        btcAmount: btcAmount ?? this.btcAmount,
+        fee: fee ?? this.fee,
+        data: data ?? this.data,
+        domain: domain ?? this.domain,
+        unpackedData: unpackedData ?? this.unpackedData,
+        btcAmountNormalized: btcAmountNormalized ?? this.btcAmountNormalized);
+  }
+}
+
+class TransactionInfoAssetDividend extends TransactionInfo {
+  final AssetDividendUnpackedVerbose unpackedData;
+  const TransactionInfoAssetDividend({
+    required super.hash,
+    required super.source,
+    required super.destination,
+    required super.btcAmount,
+    required super.fee,
+    required super.data,
+    required super.domain,
+    required this.unpackedData,
+    required super.btcAmountNormalized,
+  });
+
+  @override
+  List<Object?> get props => [unpackedData, ...super.props];
+  @override
+  TransactionInfoAssetDividend copyWith({
+    String? hash,
+    String? source,
+    String? destination,
+    int? btcAmount,
+    int? fee,
+    String? data,
+    TransactionInfoDomain? domain,
+    AssetDividendUnpackedVerbose? unpackedData,
+    String? btcAmountNormalized,
+  }) {
+    return TransactionInfoAssetDividend(
+        hash: hash ?? this.hash,
+        source: source ?? this.source,
+        destination: destination ?? this.destination,
+        btcAmount: btcAmount ?? this.btcAmount,
+        fee: fee ?? this.fee,
+        data: data ?? this.data,
+        domain: domain ?? this.domain,
+        unpackedData: unpackedData ?? this.unpackedData,
+        btcAmountNormalized: btcAmountNormalized ?? this.btcAmountNormalized);
+  }
+}
+
+class TransactionInfoSweep extends TransactionInfo {
+  final SweepUnpackedVerbose unpackedData;
+  const TransactionInfoSweep({
+    required super.hash,
+    required super.source,
+    required super.destination,
+    required super.btcAmount,
+    required super.fee,
+    required super.data,
+    required super.domain,
+    required super.btcAmountNormalized,
+    required this.unpackedData,
+  });
+  @override
+  List<Object?> get props => [unpackedData, ...super.props];
+  @override
+  TransactionInfoSweep copyWith({
+    String? hash,
+    String? source,
+    String? destination,
+    int? btcAmount,
+    int? fee,
+    String? data,
+    TransactionInfoDomain? domain,
+    String? btcAmountNormalized,
+  }) {
+    return TransactionInfoSweep(
+      hash: hash ?? this.hash,
+      source: source ?? this.source,
+      destination: destination ?? this.destination,
+      btcAmount: btcAmount ?? this.btcAmount,
+      fee: fee ?? this.fee,
+      data: data ?? this.data,
+      domain: domain ?? this.domain,
+      btcAmountNormalized: btcAmountNormalized ?? this.btcAmountNormalized,
+      unpackedData: unpackedData,
+    );
+  }
+}

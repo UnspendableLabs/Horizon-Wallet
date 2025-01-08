@@ -326,3 +326,43 @@ class MpmaSendUnpackedVerbose extends TransactionUnpacked {
   @override
   List<Object?> get props => [messageType, messageData];
 }
+
+class AssetDestructionUnpackedVerbose extends TransactionUnpacked {
+  final String asset;
+  final String quantityNormalized;
+  final String tag;
+  final int quantity;
+  // final AssetInfo assetInfo;
+
+  const AssetDestructionUnpackedVerbose({
+    required this.asset,
+    required this.quantityNormalized,
+    required this.tag,
+    required this.quantity,
+    // required this.assetInfo,
+  }) : super(messageType: "destroy");
+}
+
+class AssetDividendUnpackedVerbose extends TransactionUnpacked {
+  final String asset;
+  final int quantityPerUnit;
+  final String dividendAsset;
+  final String status;
+  const AssetDividendUnpackedVerbose({
+    required this.asset,
+    required this.quantityPerUnit,
+    required this.dividendAsset,
+    required this.status,
+  }) : super(messageType: "dividend");
+}
+
+class SweepUnpackedVerbose extends TransactionUnpacked {
+  final String destination;
+  final int flags;
+  final String memo;
+  const SweepUnpackedVerbose({
+    required this.destination,
+    required this.flags,
+    required this.memo,
+  }) : super(messageType: "sweep");
+}

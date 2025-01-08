@@ -111,6 +111,7 @@ import 'package:horizon/presentation/screens/compose_dispenser/usecase/fetch_for
 import 'package:horizon/presentation/screens/compose_dispense/usecase/fetch_form_data.dart';
 import 'package:horizon/presentation/screens/compose_dispense/usecase/fetch_open_dispensers_on_address.dart';
 import 'package:horizon/presentation/screens/compose_dispense/usecase/estimate_dispenses.dart';
+import 'package:horizon/presentation/screens/compose_dividend/usecase/fetch_form_data.dart';
 import 'package:horizon/presentation/screens/compose_fairmint/usecase/fetch_form_data.dart';
 import 'package:horizon/presentation/screens/compose_fairminter/usecase/fetch_form_data.dart';
 import 'package:horizon/presentation/screens/compose_issuance/usecase/fetch_form_data.dart';
@@ -259,8 +260,17 @@ Future<void> setup() async {
     GetIt.I.get<Logger>(),
   ));
 
+  injector.registerSingleton<ErrorService>(
+    ErrorServiceImpl(
+      GetIt.I<Config>(),
+      GetIt.I<Logger>(),
+    ),
+  );
+
   injector.registerSingleton<BitcoinRepository>(BitcoinRepositoryImpl(
-    esploraApi: EsploraApi(dio: esploraDio),
+    esploraApi: EsploraApi(
+      dio: esploraDio,
+    ),
     // blockCypherApi: BlockCypherApi(dio: blockCypherDio)
   ));
 
@@ -274,7 +284,9 @@ Future<void> setup() async {
       ComposeRepositoryImpl(api: GetIt.I.get<V2Api>()));
   injector.registerSingleton<UtxoRepository>(UtxoRepositoryImpl(
       api: GetIt.I.get<V2Api>(),
-      esploraApi: EsploraApi(dio: esploraDio),
+      esploraApi: EsploraApi(
+        dio: esploraDio,
+      ),
       cacheProvider: GetIt.I.get<CacheProvider>()));
   injector.registerSingleton<BalanceRepository>(BalanceRepositoryImpl(
       api: GetIt.I.get<V2Api>(),
@@ -396,6 +408,11 @@ Future<void> setup() async {
       FetchComposeFairmintFormDataUseCase(
           getFeeEstimatesUseCase: GetIt.I.get<GetFeeEstimatesUseCase>(),
           fairminterRepository: injector.get<FairminterRepository>()));
+  injector.registerSingleton<FetchDividendFormDataUseCase>(
+      FetchDividendFormDataUseCase(
+          getFeeEstimatesUseCase: GetIt.I.get<GetFeeEstimatesUseCase>(),
+          balanceRepository: injector.get<BalanceRepository>(),
+          assetRepository: injector.get<AssetRepository>()));
 
   injector
       .registerSingleton<ComposeTransactionUseCase>(ComposeTransactionUseCase(
@@ -517,12 +534,6 @@ Future<void> setup() async {
   injector.registerSingleton<PublicKeyService>(
       PublicKeyServiceImpl(config: config));
 
-  injector.registerSingleton<ErrorService>(
-    ErrorServiceImpl(
-      GetIt.I<Config>(),
-      GetIt.I<Logger>(),
-    ),
-  );
   // Register the appropriate platform service
   if (GetIt.I.get<Config>().isWebExtension) {
     GetIt.I.registerSingleton<PlatformService>(PlatformServiceExtensionImpl());
@@ -560,6 +571,8 @@ class TimeoutInterceptor extends Interceptor {
 
       GetIt.I<ErrorService>().captureException(
         formattedError,
+        message:
+            " ${err.response?.statusCode} \n ${formattedError.error.toString()} \n ${err.requestOptions.uri}",
         stackTrace: err.stackTrace,
       );
 
@@ -585,6 +598,8 @@ class ConnectionErrorInterceptor extends Interceptor {
 
       GetIt.I<ErrorService>().captureException(
         formattedError,
+        message:
+            " ${err.response?.statusCode} \n ${formattedError.error.toString()} \n ${err.requestOptions.uri}",
         stackTrace: err.stackTrace,
       );
 
@@ -610,6 +625,8 @@ class BadResponseInterceptor extends Interceptor {
 
       GetIt.I<ErrorService>().captureException(
         formattedError,
+        message:
+            "${err.response?.statusCode} \n ${formattedError.error.toString()} \n${err.requestOptions.uri}",
         stackTrace: err.stackTrace,
       );
 

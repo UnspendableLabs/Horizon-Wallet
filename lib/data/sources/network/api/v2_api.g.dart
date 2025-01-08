@@ -1408,6 +1408,315 @@ Map<String, dynamic> _$OrderFilledEventToJson(OrderFilledEvent instance) =>
       'params': instance.params,
     };
 
+AssetDestructionEvent _$AssetDestructionEventFromJson(
+        Map<String, dynamic> json) =>
+    AssetDestructionEvent(
+      eventIndex: (json['event_index'] as num?)?.toInt(),
+      event: json['event'] as String,
+      txHash: json['tx_hash'] as String?,
+      blockIndex: (json['block_index'] as num?)?.toInt(),
+      params: AssetDestructionParams.fromJson(
+          json['params'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$AssetDestructionEventToJson(
+        AssetDestructionEvent instance) =>
+    <String, dynamic>{
+      'event_index': instance.eventIndex,
+      'event': instance.event,
+      'tx_hash': instance.txHash,
+      'block_index': instance.blockIndex,
+      'params': instance.params,
+    };
+
+AssetDestructionParams _$AssetDestructionParamsFromJson(
+        Map<String, dynamic> json) =>
+    AssetDestructionParams(
+      asset: json['asset'] as String,
+      blockIndex: (json['block_index'] as num).toInt(),
+      quantity: (json['quantity'] as num).toInt(),
+      source: json['source'] as String,
+      status: json['status'] as String,
+      tag: json['tag'] as String,
+      txHash: json['tx_hash'] as String,
+      txIndex: (json['tx_index'] as num).toInt(),
+      blockTime: (json['block_time'] as num?)?.toInt(),
+    );
+
+Map<String, dynamic> _$AssetDestructionParamsToJson(
+        AssetDestructionParams instance) =>
+    <String, dynamic>{
+      'asset': instance.asset,
+      'block_index': instance.blockIndex,
+      'quantity': instance.quantity,
+      'source': instance.source,
+      'status': instance.status,
+      'tag': instance.tag,
+      'tx_hash': instance.txHash,
+      'tx_index': instance.txIndex,
+      'block_time': instance.blockTime,
+    };
+
+VerboseAssetDestructionEvent _$VerboseAssetDestructionEventFromJson(
+        Map<String, dynamic> json) =>
+    VerboseAssetDestructionEvent(
+      eventIndex: (json['event_index'] as num?)?.toInt(),
+      event: json['event'] as String,
+      txHash: json['tx_hash'] as String?,
+      blockIndex: (json['block_index'] as num?)?.toInt(),
+      blockTime: (json['block_time'] as num?)?.toInt(),
+      params: VerboseAssetDestructionParams.fromJson(
+          json['params'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$VerboseAssetDestructionEventToJson(
+        VerboseAssetDestructionEvent instance) =>
+    <String, dynamic>{
+      'event_index': instance.eventIndex,
+      'event': instance.event,
+      'tx_hash': instance.txHash,
+      'block_index': instance.blockIndex,
+      'block_time': instance.blockTime,
+      'params': instance.params,
+    };
+
+VerboseAssetDestructionParams _$VerboseAssetDestructionParamsFromJson(
+        Map<String, dynamic> json) =>
+    VerboseAssetDestructionParams(
+      asset: json['asset'] as String,
+      blockIndex: (json['block_index'] as num).toInt(),
+      quantity: (json['quantity'] as num).toInt(),
+      source: json['source'] as String,
+      status: json['status'] as String,
+      tag: json['tag'] as String,
+      txHash: json['tx_hash'] as String,
+      txIndex: (json['tx_index'] as num).toInt(),
+      blockTime: (json['block_time'] as num?)?.toInt(),
+      assetInfo:
+          AssetInfoModel.fromJson(json['asset_info'] as Map<String, dynamic>),
+      quantityNormalized: json['quantity_normalized'] as String,
+    );
+
+Map<String, dynamic> _$VerboseAssetDestructionParamsToJson(
+        VerboseAssetDestructionParams instance) =>
+    <String, dynamic>{
+      'asset': instance.asset,
+      'block_index': instance.blockIndex,
+      'quantity': instance.quantity,
+      'source': instance.source,
+      'status': instance.status,
+      'tag': instance.tag,
+      'tx_hash': instance.txHash,
+      'tx_index': instance.txIndex,
+      'block_time': instance.blockTime,
+      'asset_info': instance.assetInfo,
+      'quantity_normalized': instance.quantityNormalized,
+    };
+
+AssetDividendEvent _$AssetDividendEventFromJson(Map<String, dynamic> json) =>
+    AssetDividendEvent(
+      eventIndex: (json['event_index'] as num?)?.toInt(),
+      event: json['event'] as String,
+      txHash: json['tx_hash'] as String?,
+      blockIndex: (json['block_index'] as num?)?.toInt(),
+      params:
+          AssetDividendParams.fromJson(json['params'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$AssetDividendEventToJson(AssetDividendEvent instance) =>
+    <String, dynamic>{
+      'event_index': instance.eventIndex,
+      'event': instance.event,
+      'tx_hash': instance.txHash,
+      'block_index': instance.blockIndex,
+      'params': instance.params,
+    };
+
+AssetDividendParams _$AssetDividendParamsFromJson(Map<String, dynamic> json) =>
+    AssetDividendParams(
+      asset: json['asset'] as String,
+      blockIndex: (json['block_index'] as num).toInt(),
+      dividendAsset: json['dividend_asset'] as String,
+      feePaid: (json['fee_paid'] as num).toInt(),
+      quantityPerUnit: (json['quantity_per_unit'] as num).toInt(),
+      source: json['source'] as String,
+      status: json['status'] as String,
+      txHash: json['tx_hash'] as String,
+      txIndex: (json['tx_index'] as num).toInt(),
+      blockTime: (json['block_time'] as num?)?.toInt(),
+    );
+
+Map<String, dynamic> _$AssetDividendParamsToJson(
+        AssetDividendParams instance) =>
+    <String, dynamic>{
+      'asset': instance.asset,
+      'block_index': instance.blockIndex,
+      'dividend_asset': instance.dividendAsset,
+      'fee_paid': instance.feePaid,
+      'quantity_per_unit': instance.quantityPerUnit,
+      'source': instance.source,
+      'status': instance.status,
+      'tx_hash': instance.txHash,
+      'tx_index': instance.txIndex,
+      'block_time': instance.blockTime,
+    };
+
+VerboseAssetDividendEvent _$VerboseAssetDividendEventFromJson(
+        Map<String, dynamic> json) =>
+    VerboseAssetDividendEvent(
+      eventIndex: (json['event_index'] as num?)?.toInt(),
+      event: json['event'] as String,
+      txHash: json['tx_hash'] as String?,
+      blockIndex: (json['block_index'] as num?)?.toInt(),
+      blockTime: (json['block_time'] as num?)?.toInt(),
+      params: VerboseAssetDividendParams.fromJson(
+          json['params'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$VerboseAssetDividendEventToJson(
+        VerboseAssetDividendEvent instance) =>
+    <String, dynamic>{
+      'event_index': instance.eventIndex,
+      'event': instance.event,
+      'tx_hash': instance.txHash,
+      'block_index': instance.blockIndex,
+      'block_time': instance.blockTime,
+      'params': instance.params,
+    };
+
+VerboseAssetDividendParams _$VerboseAssetDividendParamsFromJson(
+        Map<String, dynamic> json) =>
+    VerboseAssetDividendParams(
+      asset: json['asset'] as String,
+      blockIndex: (json['block_index'] as num).toInt(),
+      dividendAsset: json['dividend_asset'] as String,
+      feePaid: (json['fee_paid'] as num).toInt(),
+      quantityPerUnit: (json['quantity_per_unit'] as num).toInt(),
+      source: json['source'] as String,
+      status: json['status'] as String,
+      txHash: json['tx_hash'] as String,
+      txIndex: (json['tx_index'] as num).toInt(),
+      blockTime: (json['block_time'] as num?)?.toInt(),
+      assetInfo:
+          AssetInfoModel.fromJson(json['asset_info'] as Map<String, dynamic>),
+      dividendAssetInfo: DividendAssetInfoModel.fromJson(
+          json['dividend_asset_info'] as Map<String, dynamic>),
+      quantityPerUnitNormalized: json['quantity_per_unit_normalized'] as String,
+      feePaidNormalized: json['fee_paid_normalized'] as String,
+    );
+
+Map<String, dynamic> _$VerboseAssetDividendParamsToJson(
+        VerboseAssetDividendParams instance) =>
+    <String, dynamic>{
+      'asset': instance.asset,
+      'block_index': instance.blockIndex,
+      'dividend_asset': instance.dividendAsset,
+      'fee_paid': instance.feePaid,
+      'quantity_per_unit': instance.quantityPerUnit,
+      'source': instance.source,
+      'status': instance.status,
+      'tx_hash': instance.txHash,
+      'tx_index': instance.txIndex,
+      'block_time': instance.blockTime,
+      'asset_info': instance.assetInfo,
+      'dividend_asset_info': instance.dividendAssetInfo,
+      'quantity_per_unit_normalized': instance.quantityPerUnitNormalized,
+      'fee_paid_normalized': instance.feePaidNormalized,
+    };
+
+SweepEvent _$SweepEventFromJson(Map<String, dynamic> json) => SweepEvent(
+      eventIndex: (json['event_index'] as num?)?.toInt(),
+      event: json['event'] as String,
+      txHash: json['tx_hash'] as String?,
+      blockIndex: (json['block_index'] as num?)?.toInt(),
+      params: SweepParams.fromJson(json['params'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$SweepEventToJson(SweepEvent instance) =>
+    <String, dynamic>{
+      'event_index': instance.eventIndex,
+      'event': instance.event,
+      'tx_hash': instance.txHash,
+      'block_index': instance.blockIndex,
+      'params': instance.params,
+    };
+
+SweepParams _$SweepParamsFromJson(Map<String, dynamic> json) => SweepParams(
+      blockIndex: (json['block_index'] as num).toInt(),
+      feePaid: (json['fee_paid'] as num).toInt(),
+      destination: json['destination'] as String,
+      flags: (json['flags'] as num).toInt(),
+      memo: json['memo'] as String,
+      source: json['source'] as String,
+      status: json['status'] as String,
+      txHash: json['tx_hash'] as String,
+      txIndex: (json['tx_index'] as num).toInt(),
+      blockTime: (json['block_time'] as num?)?.toInt(),
+    );
+
+Map<String, dynamic> _$SweepParamsToJson(SweepParams instance) =>
+    <String, dynamic>{
+      'block_index': instance.blockIndex,
+      'fee_paid': instance.feePaid,
+      'destination': instance.destination,
+      'flags': instance.flags,
+      'memo': instance.memo,
+      'source': instance.source,
+      'status': instance.status,
+      'tx_hash': instance.txHash,
+      'tx_index': instance.txIndex,
+      'block_time': instance.blockTime,
+    };
+
+VerboseSweepEvent _$VerboseSweepEventFromJson(Map<String, dynamic> json) =>
+    VerboseSweepEvent(
+      eventIndex: (json['event_index'] as num?)?.toInt(),
+      event: json['event'] as String,
+      txHash: json['tx_hash'] as String?,
+      blockIndex: (json['block_index'] as num?)?.toInt(),
+      blockTime: (json['block_time'] as num?)?.toInt(),
+      params:
+          VerboseSweepParams.fromJson(json['params'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$VerboseSweepEventToJson(VerboseSweepEvent instance) =>
+    <String, dynamic>{
+      'event_index': instance.eventIndex,
+      'event': instance.event,
+      'tx_hash': instance.txHash,
+      'block_index': instance.blockIndex,
+      'block_time': instance.blockTime,
+      'params': instance.params,
+    };
+
+VerboseSweepParams _$VerboseSweepParamsFromJson(Map<String, dynamic> json) =>
+    VerboseSweepParams(
+      blockIndex: (json['block_index'] as num).toInt(),
+      feePaid: (json['fee_paid'] as num).toInt(),
+      destination: json['destination'] as String,
+      flags: (json['flags'] as num).toInt(),
+      memo: json['memo'] as String,
+      source: json['source'] as String,
+      status: json['status'] as String,
+      txHash: json['tx_hash'] as String,
+      txIndex: (json['tx_index'] as num).toInt(),
+      feePaidNormalized: json['fee_paid_normalized'] as String,
+    );
+
+Map<String, dynamic> _$VerboseSweepParamsToJson(VerboseSweepParams instance) =>
+    <String, dynamic>{
+      'block_index': instance.blockIndex,
+      'fee_paid': instance.feePaid,
+      'destination': instance.destination,
+      'flags': instance.flags,
+      'memo': instance.memo,
+      'source': instance.source,
+      'status': instance.status,
+      'tx_hash': instance.txHash,
+      'tx_index': instance.txIndex,
+      'fee_paid_normalized': instance.feePaidNormalized,
+    };
+
 MoveToUtxoEvent _$MoveToUtxoEventFromJson(Map<String, dynamic> json) =>
     MoveToUtxoEvent(
       eventIndex: (json['event_index'] as num?)?.toInt(),
@@ -1437,7 +1746,7 @@ MoveToUtxoParams _$MoveToUtxoParamsFromJson(Map<String, dynamic> json) =>
       status: json['status'] as String,
       txHash: json['tx_hash'] as String,
       txIndex: (json['tx_index'] as num).toInt(),
-      blockTime: (json['block_time'] as num).toInt(),
+      blockTime: (json['block_time'] as num?)?.toInt(),
     );
 
 Map<String, dynamic> _$MoveToUtxoParamsToJson(MoveToUtxoParams instance) =>
@@ -1489,7 +1798,7 @@ VerboseMoveToUtxoParams _$VerboseMoveToUtxoParamsFromJson(
       status: json['status'] as String,
       txHash: json['tx_hash'] as String,
       txIndex: (json['tx_index'] as num).toInt(),
-      blockTime: (json['block_time'] as num).toInt(),
+      blockTime: (json['block_time'] as num?)?.toInt(),
       assetInfo:
           AssetInfoModel.fromJson(json['asset_info'] as Map<String, dynamic>),
       quantityNormalized: json['quantity_normalized'] as String,
@@ -2295,7 +2604,7 @@ VerboseCreditParams _$VerboseCreditParamsFromJson(Map<String, dynamic> json) =>
       event: json['event'] as String,
       quantity: (json['quantity'] as num).toInt(),
       txIndex: (json['tx_index'] as num).toInt(),
-      blockTime: (json['block_time'] as num).toInt(),
+      blockTime: (json['block_time'] as num?)?.toInt(),
       assetInfo: json['asset_info'] == null
           ? null
           : AssetInfoModel.fromJson(json['asset_info'] as Map<String, dynamic>),
@@ -2326,7 +2635,7 @@ VerboseDebitParams _$VerboseDebitParamsFromJson(Map<String, dynamic> json) =>
       event: json['event'] as String,
       quantity: (json['quantity'] as num).toInt(),
       txIndex: (json['tx_index'] as num).toInt(),
-      blockTime: (json['block_time'] as num).toInt(),
+      blockTime: (json['block_time'] as num?)?.toInt(),
       assetInfo: json['asset_info'] == null
           ? null
           : AssetInfoModel.fromJson(json['asset_info'] as Map<String, dynamic>),
@@ -3153,7 +3462,7 @@ ComposeMpmaSend _$ComposeMpmaSendFromJson(Map<String, dynamic> json) =>
       btcIn: (json['btc_in'] as num).toInt(),
       btcOut: (json['btc_out'] as num).toInt(),
       btcFee: (json['btc_fee'] as num).toInt(),
-      btcChange: (json['btc_change'] as num).toInt(),
+      btcChange: (json['btc_change'] as num?)?.toInt(),
       params: MpmaSendParams.fromJson(json['params'] as Map<String, dynamic>),
     );
 
@@ -3796,6 +4105,135 @@ MoveToUtxoUnpackedVerbose _$MoveToUtxoUnpackedVerboseFromJson(
 Map<String, dynamic> _$MoveToUtxoUnpackedVerboseToJson(
         MoveToUtxoUnpackedVerbose instance) =>
     <String, dynamic>{};
+
+AssetDestructionInfoVerbose _$AssetDestructionInfoVerboseFromJson(
+        Map<String, dynamic> json) =>
+    AssetDestructionInfoVerbose(
+      data: json['data'] as String,
+      source: json['source'] as String,
+      destination: json['destination'] as String?,
+      btcAmount: (json['btc_amount'] as num?)?.toInt(),
+      fee: (json['fee'] as num?)?.toInt(),
+      btcAmountNormalized: json['btc_amount_normalized'] as String?,
+      unpackedData: AssetDestructionUnpackedVerbose.fromJson(
+          json['unpacked_data'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$AssetDestructionInfoVerboseToJson(
+        AssetDestructionInfoVerbose instance) =>
+    <String, dynamic>{
+      'source': instance.source,
+      'destination': instance.destination,
+      'btc_amount': instance.btcAmount,
+      'fee': instance.fee,
+      'data': instance.data,
+      'btc_amount_normalized': instance.btcAmountNormalized,
+      'unpacked_data': instance.unpackedData,
+    };
+
+AssetDestructionUnpackedVerbose _$AssetDestructionUnpackedVerboseFromJson(
+        Map<String, dynamic> json) =>
+    AssetDestructionUnpackedVerbose(
+      asset: json['asset'] as String,
+      quantityNormalized: json['quantity_normalized'] as String,
+      tag: json['tag'] as String,
+      quantity: (json['quantity'] as num).toInt(),
+      assetInfo: json['asset_info'] == null
+          ? null
+          : AssetInfoModel.fromJson(json['asset_info'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$AssetDestructionUnpackedVerboseToJson(
+        AssetDestructionUnpackedVerbose instance) =>
+    <String, dynamic>{
+      'asset': instance.asset,
+      'quantity_normalized': instance.quantityNormalized,
+      'tag': instance.tag,
+      'quantity': instance.quantity,
+      'asset_info': instance.assetInfo,
+    };
+
+AssetDividendInfoVerbose _$AssetDividendInfoVerboseFromJson(
+        Map<String, dynamic> json) =>
+    AssetDividendInfoVerbose(
+      data: json['data'] as String,
+      source: json['source'] as String,
+      destination: json['destination'] as String?,
+      btcAmount: (json['btc_amount'] as num?)?.toInt(),
+      fee: (json['fee'] as num?)?.toInt(),
+      btcAmountNormalized: json['btc_amount_normalized'] as String?,
+      unpackedData: AssetDividendUnpackedVerbose.fromJson(
+          json['unpacked_data'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$AssetDividendInfoVerboseToJson(
+        AssetDividendInfoVerbose instance) =>
+    <String, dynamic>{
+      'source': instance.source,
+      'destination': instance.destination,
+      'btc_amount': instance.btcAmount,
+      'fee': instance.fee,
+      'data': instance.data,
+      'btc_amount_normalized': instance.btcAmountNormalized,
+      'unpacked_data': instance.unpackedData,
+    };
+
+AssetDividendUnpackedVerbose _$AssetDividendUnpackedVerboseFromJson(
+        Map<String, dynamic> json) =>
+    AssetDividendUnpackedVerbose(
+      asset: json['asset'] as String,
+      quantityPerUnit: (json['quantity_per_unit'] as num).toInt(),
+      dividendAsset: json['dividend_asset'] as String,
+      status: json['status'] as String,
+    );
+
+Map<String, dynamic> _$AssetDividendUnpackedVerboseToJson(
+        AssetDividendUnpackedVerbose instance) =>
+    <String, dynamic>{
+      'asset': instance.asset,
+      'quantity_per_unit': instance.quantityPerUnit,
+      'dividend_asset': instance.dividendAsset,
+      'status': instance.status,
+    };
+
+SweepInfoVerbose _$SweepInfoVerboseFromJson(Map<String, dynamic> json) =>
+    SweepInfoVerbose(
+      data: json['data'] as String,
+      source: json['source'] as String,
+      destination: json['destination'] as String?,
+      btcAmount: (json['btc_amount'] as num?)?.toInt(),
+      fee: (json['fee'] as num?)?.toInt(),
+      btcAmountNormalized: json['btc_amount_normalized'] as String?,
+      unpackedData: SweepUnpackedVerbose.fromJson(
+          json['unpacked_data'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$SweepInfoVerboseToJson(SweepInfoVerbose instance) =>
+    <String, dynamic>{
+      'source': instance.source,
+      'destination': instance.destination,
+      'btc_amount': instance.btcAmount,
+      'fee': instance.fee,
+      'data': instance.data,
+      'btc_amount_normalized': instance.btcAmountNormalized,
+      'unpacked_data': instance.unpackedData,
+    };
+
+SweepUnpackedVerbose _$SweepUnpackedVerboseFromJson(
+        Map<String, dynamic> json) =>
+    SweepUnpackedVerbose(
+      destination: json['destination'] as String,
+      flags: (json['flags'] as num).toInt(),
+      memo: json['memo'] as String,
+    );
+
+Map<String, dynamic> _$SweepUnpackedVerboseToJson(
+        SweepUnpackedVerbose instance) =>
+    <String, dynamic>{
+      'destination': instance.destination,
+      'flags': instance.flags,
+      'memo': instance.memo,
+    };
 
 UTXO _$UTXOFromJson(Map<String, dynamic> json) => UTXO(
       vout: (json['vout'] as num).toInt(),
@@ -6363,6 +6801,153 @@ class _V2Api implements V2Api {
     final _value = Response<NodeInfoModel>.fromJson(
       _result.data!,
       (json) => NodeInfoModel.fromJson(json as Map<String, dynamic>),
+    );
+    return _value;
+  }
+
+  @override
+  Future<Response<ComposeDestroyResponseModel>> composeDestroy(
+    String address,
+    String asset,
+    int quantity,
+    String tag, [
+    int? exactFee,
+    String? inputsSet,
+    bool? excludeUtxosWithBalances,
+    bool? disableUtxoLocks,
+  ]) async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{
+      r'asset': asset,
+      r'quantity': quantity,
+      r'tag': tag,
+      r'exact_fee': exactFee,
+      r'inputs_set': inputsSet,
+      r'exclude_utxos_with_balances': excludeUtxosWithBalances,
+      r'disable_utxo_locks': disableUtxoLocks,
+    };
+    queryParameters.removeWhere((k, v) => v == null);
+    final _headers = <String, dynamic>{};
+    const Map<String, dynamic>? _data = null;
+    final _result = await _dio.fetch<Map<String, dynamic>>(
+        _setStreamType<Response<ComposeDestroyResponseModel>>(Options(
+      method: 'GET',
+      headers: _headers,
+      extra: _extra,
+    )
+            .compose(
+              _dio.options,
+              '/addresses/${address}/compose/destroy?verbose=true',
+              queryParameters: queryParameters,
+              data: _data,
+            )
+            .copyWith(
+                baseUrl: _combineBaseUrls(
+              _dio.options.baseUrl,
+              baseUrl,
+            ))));
+    final _value = Response<ComposeDestroyResponseModel>.fromJson(
+      _result.data!,
+      (json) =>
+          ComposeDestroyResponseModel.fromJson(json as Map<String, dynamic>),
+    );
+    return _value;
+  }
+
+  @override
+  Future<Response<ComposeDividendResponseModel>> composeDividend(
+    String address,
+    String asset,
+    int quantityPerUnit,
+    String dividendAsset, [
+    int? exactFee,
+    String? inputsSet,
+    bool? excludeUtxosWithBalances,
+    bool? disableUtxoLocks,
+  ]) async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{
+      r'asset': asset,
+      r'quantity_per_unit': quantityPerUnit,
+      r'dividend_asset': dividendAsset,
+      r'exact_fee': exactFee,
+      r'inputs_set': inputsSet,
+      r'exclude_utxos_with_balances': excludeUtxosWithBalances,
+      r'disable_utxo_locks': disableUtxoLocks,
+    };
+    queryParameters.removeWhere((k, v) => v == null);
+    final _headers = <String, dynamic>{};
+    const Map<String, dynamic>? _data = null;
+    final _result = await _dio.fetch<Map<String, dynamic>>(
+        _setStreamType<Response<ComposeDividendResponseModel>>(Options(
+      method: 'GET',
+      headers: _headers,
+      extra: _extra,
+    )
+            .compose(
+              _dio.options,
+              '/addresses/${address}/compose/dividend?verbose=true',
+              queryParameters: queryParameters,
+              data: _data,
+            )
+            .copyWith(
+                baseUrl: _combineBaseUrls(
+              _dio.options.baseUrl,
+              baseUrl,
+            ))));
+    final _value = Response<ComposeDividendResponseModel>.fromJson(
+      _result.data!,
+      (json) =>
+          ComposeDividendResponseModel.fromJson(json as Map<String, dynamic>),
+    );
+    return _value;
+  }
+
+  @override
+  Future<Response<ComposeSweepResponseModel>> composeSweep(
+    String address,
+    String destination,
+    int flags,
+    String memo, [
+    int? exactFee,
+    String? inputsSet,
+    bool? excludeUtxosWithBalances,
+    bool? disableUtxoLocks,
+  ]) async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{
+      r'destination': destination,
+      r'flags': flags,
+      r'memo': memo,
+      r'exact_fee': exactFee,
+      r'inputs_set': inputsSet,
+      r'exclude_utxos_with_balances': excludeUtxosWithBalances,
+      r'disable_utxo_locks': disableUtxoLocks,
+    };
+    queryParameters.removeWhere((k, v) => v == null);
+    final _headers = <String, dynamic>{};
+    const Map<String, dynamic>? _data = null;
+    final _result = await _dio.fetch<Map<String, dynamic>>(
+        _setStreamType<Response<ComposeSweepResponseModel>>(Options(
+      method: 'GET',
+      headers: _headers,
+      extra: _extra,
+    )
+            .compose(
+              _dio.options,
+              '/addresses/${address}/compose/sweep?verbose=true',
+              queryParameters: queryParameters,
+              data: _data,
+            )
+            .copyWith(
+                baseUrl: _combineBaseUrls(
+              _dio.options.baseUrl,
+              baseUrl,
+            ))));
+    final _value = Response<ComposeSweepResponseModel>.fromJson(
+      _result.data!,
+      (json) =>
+          ComposeSweepResponseModel.fromJson(json as Map<String, dynamic>),
     );
     return _value;
   }

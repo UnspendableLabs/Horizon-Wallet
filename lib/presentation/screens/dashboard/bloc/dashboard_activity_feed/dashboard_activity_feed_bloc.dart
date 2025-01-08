@@ -36,6 +36,9 @@ final DEFAULT_WHITELIST = [
   "ATTACH_TO_UTXO",
   "DETACH_FROM_UTXO",
   "UTXO_MOVE",
+  "ASSET_DESTRUCTION",
+  "ASSET_DIVIDEND",
+  "SWEEP",
 ];
 
 class DashboardActivityFeedBloc

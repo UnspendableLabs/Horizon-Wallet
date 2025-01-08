@@ -1,6 +1,8 @@
 import 'package:horizon/domain/entities/bitcoin_decoded_tx.dart';
 import 'package:horizon/domain/entities/compose_attach_utxo.dart';
+import 'package:horizon/domain/entities/compose_destroy.dart';
 import 'package:horizon/domain/entities/compose_detach_utxo.dart';
+import 'package:horizon/domain/entities/compose_dividend.dart';
 import 'package:horizon/domain/entities/compose_fairmint.dart';
 import 'package:horizon/domain/entities/compose_fairminter.dart';
 import 'package:horizon/domain/entities/compose_issuance.dart';
@@ -11,6 +13,7 @@ import 'package:horizon/domain/entities/compose_dispense.dart';
 import 'package:horizon/domain/entities/compose_order.dart';
 import 'package:horizon/domain/entities/compose_cancel.dart';
 import 'package:horizon/domain/entities/compose_mpma_send.dart';
+import 'package:horizon/domain/entities/compose_sweep.dart';
 import 'package:horizon/domain/entities/utxo.dart';
 
 abstract class ComposeRepository {
@@ -54,4 +57,13 @@ abstract class ComposeRepository {
 
   Future<ComposeMoveToUtxoResponse> composeMoveToUtxo(
       int fee, List<Utxo> inputsSet, ComposeMoveToUtxoParams params);
+
+  Future<ComposeDestroyResponse> composeDestroy(
+      int fee, List<Utxo> inputsSet, ComposeDestroyParams params);
+
+  Future<ComposeDividendResponse> composeDividend(
+      int fee, List<Utxo> inputsSet, ComposeDividendParams params);
+
+  Future<ComposeSweepResponse> composeSweep(
+      int fee, List<Utxo> inputsSet, ComposeSweepParams params);
 }

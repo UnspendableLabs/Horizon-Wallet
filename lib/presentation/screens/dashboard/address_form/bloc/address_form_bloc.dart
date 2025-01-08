@@ -8,6 +8,7 @@ import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
+import 'package:horizon/domain/services/error_service.dart';
 import 'package:horizon/domain/services/wallet_service.dart';
 import "package:horizon/presentation/screens/dashboard/address_form/bloc/address_form_event.dart";
 import "package:horizon/remote_data_bloc/remote_data_state.dart";
@@ -20,6 +21,7 @@ class AddressFormBloc
   final AddressRepository addressRepository;
   final AccountRepository accountRepository;
   final AddressService addressService;
+  final ErrorService errorService;
 
   AddressFormBloc({
     required this.walletRepository,
@@ -28,6 +30,7 @@ class AddressFormBloc
     required this.addressRepository,
     required this.accountRepository,
     required this.addressService,
+    required this.errorService,
   }) : super(const RemoteDataState.initial()) {
     on<Submit>((event, emit) async {
       final currentState = state;
@@ -149,6 +152,11 @@ class AddressFormBloc
     });
 
     on<Reset>((event, emit) {
+      errorService.addBreadcrumb(
+        type: 'navigation',
+        category: 'Form',
+        message: 'address_form_opened',
+      );
       emit(const RemoteDataState.initial());
     });
   }

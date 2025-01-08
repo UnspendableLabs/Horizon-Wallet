@@ -9,7 +9,9 @@ import 'package:horizon/domain/repositories/config_repository.dart';
 import 'package:horizon/presentation/common/colors.dart';
 import 'package:horizon/presentation/common/no_data.dart';
 import 'package:horizon/presentation/screens/compose_attach_utxo/view/compose_attach_utxo_page.dart';
+import 'package:horizon/presentation/screens/compose_destroy/view/compose_destroy_page.dart';
 import 'package:horizon/presentation/screens/compose_detach_utxo/view/compose_detach_utxo_page.dart';
+import 'package:horizon/presentation/screens/compose_dividend/view/compose_dividend_page.dart';
 import 'package:horizon/presentation/screens/compose_movetoutxo/view/compose_movetoutxo_page.dart';
 import 'package:horizon/presentation/screens/compose_send/view/compose_send_page.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_bloc.dart';
@@ -592,26 +594,66 @@ class BalancesSliverState extends State<BalancesSliver> {
                   iconSize: 16.0,
                   icon: const Icon(Icons.more_vert),
                   onSelected: (IssuanceActionType result) {
-                    HorizonUI.HorizonDialog.show(
-                      context: context,
-                      body: HorizonUI.HorizonDialog(
-                        title: "Update Issuance",
-                        body: UpdateIssuancePageWrapper(
-                          currentAddress: widget.currentAddress,
-                          assetName: currentOwnedAsset!.asset,
-                          assetLongname: currentOwnedAsset.assetLongname,
-                          actionType: result,
-                          dashboardActivityFeedBloc:
-                              BlocProvider.of<DashboardActivityFeedBloc>(
-                                  context),
+                    if (result == IssuanceActionType.destroy) {
+                      HorizonUI.HorizonDialog.show(
+                        context: context,
+                        body: HorizonUI.HorizonDialog(
+                          title: "Destroy Asset",
+                          body: ComposeDestroyPageWrapper(
+                            dashboardActivityFeedBloc:
+                                BlocProvider.of<DashboardActivityFeedBloc>(
+                                    context),
+                            currentAddress: widget.currentAddress,
+                            assetName: currentOwnedAsset!.asset,
+                          ),
+                          includeBackButton: false,
+                          includeCloseButton: true,
+                          onBackButtonPressed: () {
+                            Navigator.of(context).pop();
+                          },
                         ),
-                        includeBackButton: false,
-                        includeCloseButton: true,
-                        onBackButtonPressed: () {
-                          Navigator.of(context).pop();
-                        },
-                      ),
-                    );
+                      );
+                    } else if (result == IssuanceActionType.dividend) {
+                      HorizonUI.HorizonDialog.show(
+                        context: context,
+                        body: HorizonUI.HorizonDialog(
+                          title: "Dividend",
+                          body: ComposeDividendPageWrapper(
+                            currentAddress: widget.currentAddress,
+                            dashboardActivityFeedBloc:
+                                BlocProvider.of<DashboardActivityFeedBloc>(
+                                    context),
+                            assetName: currentOwnedAsset!.asset,
+                          ),
+                          includeBackButton: false,
+                          includeCloseButton: true,
+                          onBackButtonPressed: () {
+                            Navigator.of(context).pop();
+                          },
+                        ),
+                      );
+                    } else {
+                      HorizonUI.HorizonDialog.show(
+                        context: context,
+                        body: HorizonUI.HorizonDialog(
+                          title: "Update Issuance",
+                          body: UpdateIssuancePageWrapper(
+                            currentAddress: widget.currentAddress,
+                            assetName: currentOwnedAsset!.asset,
+                            assetLongname: currentOwnedAsset.assetLongname,
+                            actionType: result,
+                            dashboardActivityFeedBloc:
+                                BlocProvider.of<DashboardActivityFeedBloc>(
+                                    context),
+                          ),
+                          includeBackButton: false,
+                          includeCloseButton: true,
+                          onBackButtonPressed: () {
+                            Navigator.of(context).pop();
+                          },
+                        ),
+                      );
+                    }
                   },
                   itemBuilder: (BuildContext context) =>
                       <PopupMenuEntry<IssuanceActionType>>[
@@ -653,6 +695,16 @@ class BalancesSliverState extends State<BalancesSliver> {
                       value: IssuanceActionType.transferOwnership,
                       child: Text('Transfer Ownership'),
                     ),
+                    if (utxo == null)
+                      const PopupMenuItem<IssuanceActionType>(
+                        value: IssuanceActionType.destroy,
+                        child: Text('Destroy'),
+                      ),
+                    if (utxo == null)
+                      const PopupMenuItem<IssuanceActionType>(
+                        value: IssuanceActionType.dividend,
+                        child: Text('Dividend'),
+                      ),
                   ],
                 ),
               ),

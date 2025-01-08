@@ -39,15 +39,18 @@ class ComposeDetachUtxoBloc extends ComposeBaseBloc<ComposeDetachUtxoState> {
     required this.analyticsService,
     required this.signAndBroadcastTransactionUseCase,
     required this.writelocalTransactionUseCase,
-  }) : super(ComposeDetachUtxoState(
-          submitState: const SubmitInitial(),
-          feeOption: FeeOption.Medium(),
-          balancesState: const BalancesState.initial(),
-          feeState: const FeeState.initial(),
-        ));
+  }) : super(
+          ComposeDetachUtxoState(
+            submitState: const SubmitInitial(),
+            feeOption: FeeOption.Medium(),
+            balancesState: const BalancesState.initial(),
+            feeState: const FeeState.initial(),
+          ),
+          composePage: 'compose_detach_utxo',
+        );
 
   @override
-  void onFetchFormData(FetchFormData event, emit) async {
+  Future<void> onFetchFormData(FetchFormData event, emit) async {
     emit(state.copyWith(
       balancesState: const BalancesState.loading(),
       feeState: const FeeState.loading(),

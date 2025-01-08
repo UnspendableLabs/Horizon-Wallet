@@ -49,6 +49,7 @@ import 'package:horizon/presentation/screens/compose_issuance/view/compose_issua
 import 'package:horizon/presentation/screens/compose_mpma/view/compose_mpma_page.dart';
 import 'package:horizon/presentation/screens/compose_order/view/compose_order_view.dart';
 import 'package:horizon/presentation/screens/compose_send/view/compose_send_page.dart';
+import 'package:horizon/presentation/screens/compose_sweep/view/compose_sweep_page.dart';
 import "package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_bloc.dart";
 import "package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_event.dart";
 import "package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_state.dart";
@@ -1048,6 +1049,19 @@ class SendMenu extends StatelessWidget {
                     includeCloseButton: true,
                   ),
                 );
+              } else if (result == 'sweep') {
+                HorizonUI.HorizonDialog.show(
+                  context: context,
+                  body: HorizonUI.HorizonDialog(
+                    title: "Compose Sweep",
+                    body: ComposeSweepPageWrapper(
+                      currentAddress: currentAddress,
+                      dashboardActivityFeedBloc: dashboardActivityFeedBloc,
+                    ),
+                    includeBackButton: false,
+                    includeCloseButton: true,
+                  ),
+                );
               }
             },
             itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
@@ -1058,6 +1072,10 @@ class SendMenu extends StatelessWidget {
               const PopupMenuItem<String>(
                 value: 'mpma',
                 child: Text('Compose MPMA Send'),
+              ),
+              const PopupMenuItem<String>(
+                value: 'sweep',
+                child: Text('Compose Sweep'),
               ),
             ],
           ),

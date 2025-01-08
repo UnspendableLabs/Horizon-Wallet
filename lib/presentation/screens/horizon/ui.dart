@@ -302,6 +302,7 @@ class HorizonDropdownMenu<T> extends StatelessWidget {
   final AutovalidateMode autovalidateMode;
   final String? errorText;
   final String? helperText;
+  final FloatingLabelBehavior? floatingLabelBehavior;
   const HorizonDropdownMenu(
       {super.key,
       required this.items,
@@ -320,7 +321,8 @@ class HorizonDropdownMenu<T> extends StatelessWidget {
       this.validator,
       this.autovalidateMode = AutovalidateMode.disabled,
       this.errorText,
-      this.helperText});
+      this.helperText,
+      this.floatingLabelBehavior});
 
   @override
   Widget build(BuildContext context) {
@@ -335,7 +337,8 @@ class HorizonDropdownMenu<T> extends StatelessWidget {
             labelText: label,
             errorText: errorText ?? state.errorText,
             helperText: helperText,
-            floatingLabelBehavior: FloatingLabelBehavior.never,
+            floatingLabelBehavior:
+                floatingLabelBehavior ?? FloatingLabelBehavior.never,
             contentPadding: const EdgeInsets.symmetric(horizontal: 4.0),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8.0),
@@ -636,6 +639,7 @@ class HorizonSearchableDropdownMenu<T> extends StatefulWidget {
   final AutovalidateMode autovalidateMode;
   final String Function(T) displayStringForOption;
   final Widget? suffixIcon;
+  final FloatingLabelBehavior? floatingLabelBehavior;
 
   HorizonSearchableDropdownMenu({
     super.key,
@@ -648,6 +652,7 @@ class HorizonSearchableDropdownMenu<T> extends StatefulWidget {
     this.validator,
     this.autovalidateMode = AutovalidateMode.disabled,
     this.suffixIcon,
+    this.floatingLabelBehavior,
   });
 
   @override
@@ -789,7 +794,8 @@ class _HorizonSearchableDropdownMenuState<T>
             child: InputDecorator(
               decoration: InputDecoration(
                 labelText: widget.label,
-                floatingLabelBehavior: FloatingLabelBehavior.never,
+                floatingLabelBehavior:
+                    widget.floatingLabelBehavior ?? FloatingLabelBehavior.never,
                 contentPadding: const EdgeInsets.symmetric(
                     horizontal: 12.0, vertical: 16.0),
                 border: OutlineInputBorder(

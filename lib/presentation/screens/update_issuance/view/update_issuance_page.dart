@@ -58,6 +58,7 @@ class UpdateIssuancePageWrapper extends StatelessWidget {
           writelocalTransactionUseCase:
               GetIt.I.get<WriteLocalTransactionUseCase>(),
           logger: GetIt.I.get<Logger>(),
+          issuanceActionType: actionType,
         )..add(FetchFormData(
             assetName: assetName, currentAddress: currentAddress)),
         child: UpdateIssuancePage(
@@ -284,6 +285,7 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
             enabled: false,
           ),
         ],
+      _ => []
     };
   }
 
@@ -463,6 +465,7 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
                 : AutovalidateMode.disabled,
           ),
         ],
+      _ => []
     };
   }
 
@@ -721,6 +724,7 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
           const SizedBox(height: 16),
           ..._buildBoolFields(params, originalAsset),
         ],
+      _ => []
     };
   }
 

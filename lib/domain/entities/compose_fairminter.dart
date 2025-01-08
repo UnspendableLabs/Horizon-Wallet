@@ -66,7 +66,7 @@ class ComposeFairminterResponse extends ComposeResponse {
   final String data;
   final int btcIn;
   final int btcOut;
-  final int btcChange;
+  final int? btcChange;
   @override
   final int btcFee;
   @override
@@ -78,7 +78,7 @@ class ComposeFairminterResponse extends ComposeResponse {
     required this.data,
     required this.btcIn,
     required this.btcOut,
-    required this.btcChange,
+    this.btcChange,
     required this.btcFee,
     required this.rawtransaction,
   });

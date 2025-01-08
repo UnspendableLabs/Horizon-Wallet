@@ -1,24 +1,26 @@
-import 'package:flutter_test/flutter_test.dart';
 import 'package:bloc_test/bloc_test.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:get_it/get_it.dart';
+import 'package:horizon/domain/entities/address.dart';
+import 'package:horizon/domain/entities/balance.dart';
+import 'package:horizon/domain/entities/compose_dispenser.dart';
 import 'package:horizon/domain/entities/dispenser.dart';
-import 'package:horizon/presentation/screens/close_dispenser/bloc/close_dispenser_bloc.dart';
-import 'package:horizon/presentation/screens/close_dispenser/bloc/close_dispenser_state.dart';
-import 'package:horizon/presentation/screens/close_dispenser/usecase/fetch_form_data.dart';
-import 'package:mocktail/mocktail.dart';
-import 'package:horizon/presentation/screens/compose_dispenser/bloc/compose_dispenser_bloc.dart';
-import 'package:horizon/presentation/common/compose_base/bloc/compose_base_event.dart';
-import 'package:horizon/presentation/common/compose_base/bloc/compose_base_state.dart';
+import 'package:horizon/domain/entities/fee_estimates.dart';
+import 'package:horizon/domain/entities/fee_option.dart' as FeeOption;
+import 'package:horizon/domain/entities/utxo.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
+import 'package:horizon/domain/services/error_service.dart';
+import 'package:horizon/presentation/common/compose_base/bloc/compose_base_event.dart';
+import 'package:horizon/presentation/common/compose_base/bloc/compose_base_state.dart';
 import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
 import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transaction_usecase.dart';
 import 'package:horizon/presentation/common/usecase/write_local_transaction_usecase.dart';
-import 'package:horizon/domain/entities/compose_dispenser.dart';
-import 'package:horizon/domain/entities/fee_estimates.dart';
-import 'package:horizon/domain/entities/balance.dart';
-import 'package:horizon/domain/entities/utxo.dart';
-import 'package:horizon/domain/entities/fee_option.dart' as FeeOption;
-import 'package:horizon/domain/entities/address.dart';
+import 'package:horizon/presentation/screens/close_dispenser/bloc/close_dispenser_bloc.dart';
+import 'package:horizon/presentation/screens/close_dispenser/bloc/close_dispenser_state.dart';
+import 'package:horizon/presentation/screens/close_dispenser/usecase/fetch_form_data.dart';
+import 'package:horizon/presentation/screens/compose_dispenser/bloc/compose_dispenser_bloc.dart';
+import 'package:mocktail/mocktail.dart';
 
 class MockComposeRepository extends Mock implements ComposeRepository {}
 
@@ -46,6 +48,8 @@ class MockBalance extends Mock implements Balance {}
 
 class MockComposeDispenserEventParams extends Mock
     implements ComposeDispenserEventParams {}
+
+class MockErrorService extends Mock implements ErrorService {}
 
 class FakeAddress extends Fake implements Address {
   @override
@@ -131,6 +135,7 @@ void main() {
   late MockSignAndBroadcastTransactionUseCase
       mockSignAndBroadcastTransactionUseCase;
   late MockWriteLocalTransactionUseCase mockWriteLocalTransactionUseCase;
+  late MockErrorService mockErrorService;
 
   const mockFeeEstimates = FeeEstimates(fast: 5, medium: 3, slow: 1);
   final mockDispenser = FakeDispenser(
@@ -187,6 +192,10 @@ void main() {
     mockSignAndBroadcastTransactionUseCase =
         MockSignAndBroadcastTransactionUseCase();
     mockWriteLocalTransactionUseCase = MockWriteLocalTransactionUseCase();
+    mockErrorService = MockErrorService();
+
+    // Register the ErrorService mock with GetIt
+    GetIt.I.registerSingleton<ErrorService>(mockErrorService);
 
     closeDispenserBloc = CloseDispenserBloc(
       fetchCloseDispenserFormDataUseCase:
@@ -202,6 +211,8 @@ void main() {
 
   tearDown(() {
     closeDispenserBloc.close();
+    // Reset GetIt instance after each test
+    GetIt.I.reset();
   });
 
   group(FetchFormData, () {

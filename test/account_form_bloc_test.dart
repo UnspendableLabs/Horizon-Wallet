@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:horizon/domain/services/error_service.dart';
 import 'package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_state.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:bloc_test/bloc_test.dart';
@@ -27,6 +28,8 @@ class MockAccountRepository extends Mock implements AccountRepository {}
 
 class MockAddressRepository extends Mock implements AddressRepository {}
 
+class MockErrorService extends Mock implements ErrorService {}
+
 class FakeWallet extends Fake implements Wallet {}
 
 class FakeAccount extends Fake implements Account {}
@@ -40,7 +43,7 @@ void main() {
   late MockWalletRepository mockWalletRepository;
   late MockAccountRepository mockAccountRepository;
   late MockAddressRepository mockAddressRepository;
-
+  late MockErrorService mockErrorService;
   setUp(() {
     mockWalletService = MockWalletService();
     mockEncryptionService = MockEncryptionService();
@@ -48,6 +51,7 @@ void main() {
     mockWalletRepository = MockWalletRepository();
     mockAccountRepository = MockAccountRepository();
     mockAddressRepository = MockAddressRepository();
+    mockErrorService = MockErrorService();
   });
   setUpAll(() {
     registerFallbackValue(FakeWallet());
@@ -103,6 +107,7 @@ void main() {
           encryptionService: mockEncryptionService,
           addressService: mockAddressService,
           addressRepository: mockAddressRepository,
+          errorService: mockErrorService,
         );
       },
       act: (bloc) => bloc.add(Submit(

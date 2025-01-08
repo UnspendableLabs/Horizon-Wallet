@@ -5,13 +5,17 @@ import 'package:horizon/data/models/bitcoin_decoded_tx.dart';
 import 'package:horizon/data/models/compose.dart';
 import 'package:horizon/data/models/compose_attach_utxo.dart';
 import 'package:horizon/data/models/compose_cancel.dart';
+import 'package:horizon/data/models/compose_destroy.dart';
 import 'package:horizon/data/models/compose_detach_utxo.dart';
+import 'package:horizon/data/models/compose_dividend.dart';
 import 'package:horizon/data/models/compose_fairmint.dart';
 import 'package:horizon/data/models/compose_fairminter.dart';
 import 'package:horizon/data/models/compose_movetoutxo.dart';
 import 'package:horizon/data/models/compose_order.dart';
+import 'package:horizon/data/models/compose_sweep.dart';
 import 'package:horizon/data/models/cursor.dart';
 import 'package:horizon/data/models/dispenser.dart';
+import 'package:horizon/data/models/dividend_asset_info.dart';
 import 'package:horizon/data/models/fairminter.dart';
 import 'package:horizon/data/models/node_info.dart';
 import 'package:horizon/data/models/order.dart';
@@ -300,6 +304,10 @@ class Event {
         return DetachFromUtxoEvent.fromJson(json);
       case "UTXO_MOVE":
         return MoveToUtxoEvent.fromJson(json);
+      case "ASSET_DESTRUCTION":
+        return AssetDestructionEvent.fromJson(json);
+      case "ASSET_DIVIDEND":
+        return AssetDividendEvent.fromJson(json);
       default:
         return _$EventFromJson(json);
     }
@@ -1354,6 +1362,292 @@ class OrderFilledEvent extends Event {
 }
 
 @JsonSerializable(fieldRename: FieldRename.snake)
+class AssetDestructionEvent extends Event {
+  final AssetDestructionParams params;
+
+  AssetDestructionEvent({
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
+    required this.params,
+  });
+
+  factory AssetDestructionEvent.fromJson(Map<String, dynamic> json) =>
+      _$AssetDestructionEventFromJson(json);
+
+  Map<String, dynamic> toJson() => _$AssetDestructionEventToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class AssetDestructionParams {
+  final String asset;
+  final int blockIndex;
+  final int quantity;
+  final String source;
+  final String status;
+  final String tag;
+  final String txHash;
+  final int txIndex;
+  final int? blockTime;
+
+  AssetDestructionParams({
+    required this.asset,
+    required this.blockIndex,
+    required this.quantity,
+    required this.source,
+    required this.status,
+    required this.tag,
+    required this.txHash,
+    required this.txIndex,
+    this.blockTime,
+  });
+
+  factory AssetDestructionParams.fromJson(Map<String, dynamic> json) =>
+      _$AssetDestructionParamsFromJson(json);
+
+  Map<String, dynamic> toJson() => _$AssetDestructionParamsToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class VerboseAssetDestructionEvent extends VerboseEvent {
+  final VerboseAssetDestructionParams params;
+
+  VerboseAssetDestructionEvent({
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
+    required super.blockTime,
+    required this.params,
+  });
+
+  factory VerboseAssetDestructionEvent.fromJson(Map<String, dynamic> json) =>
+      _$VerboseAssetDestructionEventFromJson(json);
+
+  Map<String, dynamic> toJson() => _$VerboseAssetDestructionEventToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class VerboseAssetDestructionParams extends AssetDestructionParams {
+  final AssetInfoModel assetInfo;
+  final String quantityNormalized;
+
+  VerboseAssetDestructionParams({
+    required super.asset,
+    required super.blockIndex,
+    required super.quantity,
+    required super.source,
+    required super.status,
+    required super.tag,
+    required super.txHash,
+    required super.txIndex,
+    super.blockTime,
+    required this.assetInfo,
+    required this.quantityNormalized,
+  });
+
+  factory VerboseAssetDestructionParams.fromJson(Map<String, dynamic> json) =>
+      _$VerboseAssetDestructionParamsFromJson(json);
+
+  @override
+  Map<String, dynamic> toJson() => _$VerboseAssetDestructionParamsToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class AssetDividendEvent extends Event {
+  final AssetDividendParams params;
+
+  AssetDividendEvent({
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
+    required this.params,
+  });
+
+  factory AssetDividendEvent.fromJson(Map<String, dynamic> json) =>
+      _$AssetDividendEventFromJson(json);
+
+  Map<String, dynamic> toJson() => _$AssetDividendEventToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class AssetDividendParams {
+  final String asset;
+  final int blockIndex;
+  final String dividendAsset;
+  final int feePaid;
+  final int quantityPerUnit;
+  final String source;
+  final String status;
+  final String txHash;
+  final int txIndex;
+  final int? blockTime;
+
+  AssetDividendParams({
+    required this.asset,
+    required this.blockIndex,
+    required this.dividendAsset,
+    required this.feePaid,
+    required this.quantityPerUnit,
+    required this.source,
+    required this.status,
+    required this.txHash,
+    required this.txIndex,
+    this.blockTime,
+  });
+
+  factory AssetDividendParams.fromJson(Map<String, dynamic> json) =>
+      _$AssetDividendParamsFromJson(json);
+
+  Map<String, dynamic> toJson() => _$AssetDividendParamsToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class VerboseAssetDividendEvent extends VerboseEvent {
+  final VerboseAssetDividendParams params;
+
+  VerboseAssetDividendEvent({
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
+    required super.blockTime,
+    required this.params,
+  });
+
+  factory VerboseAssetDividendEvent.fromJson(Map<String, dynamic> json) =>
+      _$VerboseAssetDividendEventFromJson(json);
+
+  Map<String, dynamic> toJson() => _$VerboseAssetDividendEventToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class VerboseAssetDividendParams extends AssetDividendParams {
+  final AssetInfoModel assetInfo;
+  final DividendAssetInfoModel dividendAssetInfo;
+  final String quantityPerUnitNormalized;
+  final String feePaidNormalized;
+
+  VerboseAssetDividendParams({
+    required super.asset,
+    required super.blockIndex,
+    required super.dividendAsset,
+    required super.feePaid,
+    required super.quantityPerUnit,
+    required super.source,
+    required super.status,
+    required super.txHash,
+    required super.txIndex,
+    super.blockTime,
+    required this.assetInfo,
+    required this.dividendAssetInfo,
+    required this.quantityPerUnitNormalized,
+    required this.feePaidNormalized,
+  });
+
+  factory VerboseAssetDividendParams.fromJson(Map<String, dynamic> json) =>
+      _$VerboseAssetDividendParamsFromJson(json);
+
+  @override
+  Map<String, dynamic> toJson() => _$VerboseAssetDividendParamsToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class SweepEvent extends Event {
+  final SweepParams params;
+
+  SweepEvent({
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
+    required this.params,
+  });
+
+  factory SweepEvent.fromJson(Map<String, dynamic> json) =>
+      _$SweepEventFromJson(json);
+
+  Map<String, dynamic> toJson() => _$SweepEventToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class SweepParams {
+  final int blockIndex;
+  final int feePaid;
+  final String destination;
+  final int flags;
+  final String memo;
+  final String source;
+  final String status;
+  final String txHash;
+  final int txIndex;
+  final int? blockTime;
+
+  SweepParams({
+    required this.blockIndex,
+    required this.feePaid,
+    required this.destination,
+    required this.flags,
+    required this.memo,
+    required this.source,
+    required this.status,
+    required this.txHash,
+    required this.txIndex,
+    this.blockTime,
+  });
+
+  factory SweepParams.fromJson(Map<String, dynamic> json) =>
+      _$SweepParamsFromJson(json);
+
+  Map<String, dynamic> toJson() => _$SweepParamsToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class VerboseSweepEvent extends VerboseEvent {
+  final VerboseSweepParams params;
+
+  VerboseSweepEvent({
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
+    required super.blockTime,
+    required this.params,
+  });
+
+  factory VerboseSweepEvent.fromJson(Map<String, dynamic> json) =>
+      _$VerboseSweepEventFromJson(json);
+
+  Map<String, dynamic> toJson() => _$VerboseSweepEventToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class VerboseSweepParams extends SweepParams {
+  final String feePaidNormalized;
+
+  VerboseSweepParams({
+    required super.blockIndex,
+    required super.feePaid,
+    required super.destination,
+    required super.flags,
+    required super.memo,
+    required super.source,
+    required super.status,
+    required super.txHash,
+    required super.txIndex,
+    required this.feePaidNormalized,
+  });
+
+  factory VerboseSweepParams.fromJson(Map<String, dynamic> json) =>
+      _$VerboseSweepParamsFromJson(json);
+
+  @override
+  Map<String, dynamic> toJson() => _$VerboseSweepParamsToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
 class MoveToUtxoEvent extends Event {
   final MoveToUtxoParams params;
 
@@ -1382,7 +1676,7 @@ class MoveToUtxoParams {
   final String status;
   final String txHash;
   final int txIndex;
-  final int blockTime;
+  final int? blockTime;
 
   MoveToUtxoParams({
     required this.asset,
@@ -1394,7 +1688,7 @@ class MoveToUtxoParams {
     required this.status,
     required this.txHash,
     required this.txIndex,
-    required this.blockTime,
+    this.blockTime,
   });
 
   factory MoveToUtxoParams.fromJson(Map<String, dynamic> json) =>
@@ -2213,7 +2507,7 @@ class VerboseEnhancedSendParams extends EnhancedSendParams {
 
 @JsonSerializable(fieldRename: FieldRename.snake)
 class VerboseCreditParams extends CreditParams {
-  final int blockTime;
+  final int? blockTime;
   final AssetInfoModel? assetInfo;
   final String? quantityNormalized;
 
@@ -2236,7 +2530,7 @@ class VerboseCreditParams extends CreditParams {
 
 @JsonSerializable(fieldRename: FieldRename.snake)
 class VerboseDebitParams extends DebitParams {
-  final int blockTime;
+  final int? blockTime;
   final AssetInfoModel? assetInfo;
   final String? quantityNormalized;
 
@@ -2343,6 +2637,12 @@ class VerboseEvent extends Event {
         return VerboseDetachFromUtxoEvent.fromJson(json);
       case "UTXO_MOVE":
         return VerboseMoveToUtxoEvent.fromJson(json);
+      case "ASSET_DESTRUCTION":
+        return VerboseAssetDestructionEvent.fromJson(json);
+      case "ASSET_DIVIDEND":
+        return VerboseAssetDividendEvent.fromJson(json);
+      case "SWEEP":
+        return VerboseSweepEvent.fromJson(json);
       default:
         return _$VerboseEventFromJson(json);
     }
@@ -3253,7 +3553,7 @@ class ComposeMpmaSend {
   final int btcIn;
   final int btcOut;
   final int btcFee;
-  final int btcChange;
+  final int? btcChange;
   final MpmaSendParams params;
 
   const ComposeMpmaSend({
@@ -3263,7 +3563,7 @@ class ComposeMpmaSend {
     required this.btcIn,
     required this.btcOut,
     required this.btcFee,
-    required this.btcChange,
+    this.btcChange,
     required this.params,
   });
 
@@ -3445,6 +3745,12 @@ class TransactionUnpackedVerbose extends TransactionUnpacked {
         return DetachUnpackedVerbose.fromJson(json);
       case null:
         return MoveToUtxoUnpackedVerbose.fromJson(json);
+      case "destroy":
+        return AssetDestructionUnpackedVerbose.fromJson(json);
+      case "dividend":
+        return AssetDividendUnpackedVerbose.fromJson(json);
+      case "sweep":
+        return SweepUnpackedVerbose.fromJson(json);
       default:
         return TransactionUnpackedVerbose(
           messageType: json["message_type"],
@@ -3794,6 +4100,12 @@ class InfoVerbose extends Info {
         return DetachInfoVerbose.fromJson(json);
       case null: // move to utxo is the only transaction type that does not have a message_type
         return MoveToUtxoInfoVerbose.fromJson(json);
+      case "destroy":
+        return AssetDestructionInfoVerbose.fromJson(json);
+      case "dividend":
+        return AssetDividendInfoVerbose.fromJson(json);
+      case "sweep":
+        return SweepInfoVerbose.fromJson(json);
       default:
         return base;
     }
@@ -4328,6 +4640,179 @@ class MoveToUtxoUnpackedVerbose extends TransactionUnpackedVerbose {
 
   @override
   Map<String, dynamic> toJson() => _$MoveToUtxoUnpackedVerboseToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class AssetDestructionInfoVerbose extends InfoVerbose {
+  final AssetDestructionUnpackedVerbose unpackedData;
+  const AssetDestructionInfoVerbose({
+    required super.data,
+    required super.source,
+    required super.destination,
+    required super.btcAmount,
+    required super.fee,
+    required super.btcAmountNormalized,
+    required this.unpackedData,
+  });
+
+  factory AssetDestructionInfoVerbose.fromJson(Map<String, dynamic> json) =>
+      _$AssetDestructionInfoVerboseFromJson(json);
+
+  @override
+  Map<String, dynamic> toJson() => _$AssetDestructionInfoVerboseToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class AssetDestructionUnpackedVerbose extends TransactionUnpackedVerbose {
+  final String asset;
+  final String quantityNormalized;
+  final String tag;
+  final int quantity;
+  final AssetInfoModel? assetInfo;
+
+  const AssetDestructionUnpackedVerbose({
+    required this.asset,
+    required this.quantityNormalized,
+    required this.tag,
+    required this.quantity,
+    this.assetInfo,
+  }) : super(messageType: "destroy");
+  factory AssetDestructionUnpackedVerbose.fromJson(Map<String, dynamic> json) {
+    final messageData = json["message_data"];
+    return AssetDestructionUnpackedVerbose(
+      asset: messageData["asset"],
+      quantityNormalized: messageData["quantity_normalized"],
+      tag: messageData["tag"],
+      quantity: messageData["quantity"],
+      assetInfo: messageData["asset_info"] != null
+          ? AssetInfoModel.fromJson(messageData["asset_info"])
+          : null,
+    );
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    return {
+      "message_type": "destroy",
+      "message_data": {
+        "asset": asset,
+        "quantity_normalized": quantityNormalized,
+        "tag": tag,
+        "quantity": quantity,
+        "asset_info": assetInfo?.toJson(),
+      }
+    };
+  }
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class AssetDividendInfoVerbose extends InfoVerbose {
+  final AssetDividendUnpackedVerbose unpackedData;
+  const AssetDividendInfoVerbose({
+    required super.data,
+    required super.source,
+    required super.destination,
+    required super.btcAmount,
+    required super.fee,
+    required super.btcAmountNormalized,
+    required this.unpackedData,
+  });
+
+  factory AssetDividendInfoVerbose.fromJson(Map<String, dynamic> json) =>
+      _$AssetDividendInfoVerboseFromJson(json);
+
+  @override
+  Map<String, dynamic> toJson() => _$AssetDividendInfoVerboseToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class AssetDividendUnpackedVerbose extends TransactionUnpackedVerbose {
+  final String asset;
+  final int quantityPerUnit;
+  final String dividendAsset;
+  final String status;
+  const AssetDividendUnpackedVerbose({
+    required this.asset,
+    required this.quantityPerUnit,
+    required this.dividendAsset,
+    required this.status,
+  }) : super(messageType: "dividend");
+
+  factory AssetDividendUnpackedVerbose.fromJson(Map<String, dynamic> json) {
+    final messageData = json["message_data"];
+    return AssetDividendUnpackedVerbose(
+      asset: messageData["asset"],
+      quantityPerUnit: messageData["quantity_per_unit"],
+      dividendAsset: messageData["dividend_asset"],
+      status: messageData["status"],
+    );
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    return {
+      "message_type": "dividend",
+      "message_data": {
+        "asset": asset,
+        "quantity_per_unit": quantityPerUnit,
+        "dividend_asset": dividendAsset,
+        "status": status,
+      }
+    };
+  }
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class SweepInfoVerbose extends InfoVerbose {
+  final SweepUnpackedVerbose unpackedData;
+  const SweepInfoVerbose({
+    required super.data,
+    required super.source,
+    required super.destination,
+    required super.btcAmount,
+    required super.fee,
+    required super.btcAmountNormalized,
+    required this.unpackedData,
+  });
+
+  factory SweepInfoVerbose.fromJson(Map<String, dynamic> json) =>
+      _$SweepInfoVerboseFromJson(json);
+
+  @override
+  Map<String, dynamic> toJson() => _$SweepInfoVerboseToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class SweepUnpackedVerbose extends TransactionUnpackedVerbose {
+  final String destination;
+  final int flags;
+  final String memo;
+  const SweepUnpackedVerbose({
+    required this.destination,
+    required this.flags,
+    required this.memo,
+  }) : super(messageType: "sweep");
+
+  factory SweepUnpackedVerbose.fromJson(Map<String, dynamic> json) {
+    final messageData = json["message_data"];
+    return SweepUnpackedVerbose(
+      destination: messageData["destination"],
+      flags: messageData["flags"],
+      memo: messageData["memo"],
+    );
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    return {
+      "message_type": "sweep",
+      "message_data": {
+        "destination": destination,
+        "flags": flags,
+        "memo": memo,
+      }
+    };
+  }
 }
 
 @JsonSerializable(fieldRename: FieldRename.snake)
@@ -4922,4 +5407,40 @@ abstract class V2Api {
   );
   @GET("/")
   Future<Response<NodeInfoModel>> getNodeInfo();
+
+  @GET("/addresses/{address}/compose/destroy?verbose=true")
+  Future<Response<ComposeDestroyResponseModel>> composeDestroy(
+    @Path("address") String address,
+    @Query("asset") String asset,
+    @Query("quantity") int quantity,
+    @Query("tag") String tag, [
+    @Query("exact_fee") int? exactFee,
+    @Query("inputs_set") String? inputsSet,
+    @Query("exclude_utxos_with_balances") bool? excludeUtxosWithBalances,
+    @Query("disable_utxo_locks") bool? disableUtxoLocks,
+  ]);
+
+  @GET("/addresses/{address}/compose/dividend?verbose=true")
+  Future<Response<ComposeDividendResponseModel>> composeDividend(
+    @Path("address") String address,
+    @Query("asset") String asset,
+    @Query("quantity_per_unit") int quantityPerUnit,
+    @Query("dividend_asset") String dividendAsset, [
+    @Query("exact_fee") int? exactFee,
+    @Query("inputs_set") String? inputsSet,
+    @Query("exclude_utxos_with_balances") bool? excludeUtxosWithBalances,
+    @Query("disable_utxo_locks") bool? disableUtxoLocks,
+  ]);
+
+  @GET("/addresses/{address}/compose/sweep?verbose=true")
+  Future<Response<ComposeSweepResponseModel>> composeSweep(
+    @Path("address") String address,
+    @Query("destination") String destination,
+    @Query("flags") int flags,
+    @Query("memo") String memo, [
+    @Query("exact_fee") int? exactFee,
+    @Query("inputs_set") String? inputsSet,
+    @Query("exclude_utxos_with_balances") bool? excludeUtxosWithBalances,
+    @Query("disable_utxo_locks") bool? disableUtxoLocks,
+  ]);
 }

@@ -50,18 +50,21 @@ class ComposeCancelBloc extends ComposeBaseBloc<ComposeCancelState> {
     required this.signAndBroadcastTransactionUseCase,
     required this.writelocalTransactionUseCase,
     required this.analyticsService,
-  }) : super(ComposeCancelState(
-          submitState: const SubmitInitial(),
-          feeOption: FeeOption.Medium(),
-          balancesState: const BalancesState.initial(),
-          feeState: const FeeState.initial(),
-        )) {
+  }) : super(
+          ComposeCancelState(
+            submitState: const SubmitInitial(),
+            feeOption: FeeOption.Medium(),
+            balancesState: const BalancesState.initial(),
+            feeState: const FeeState.initial(),
+          ),
+          composePage: 'compose_cancel',
+        ) {
     on<ComposeResponseReceived>(_handleComposeResponseReceived);
     on<ConfirmationBackButtonPressed>(_handleConfirmationBackButtonPressed);
   }
 
   @override
-  void onFetchFormData(FetchFormData event, emit) async {
+  Future<void> onFetchFormData(FetchFormData event, emit) async {
     // delegated to fom
   }
 

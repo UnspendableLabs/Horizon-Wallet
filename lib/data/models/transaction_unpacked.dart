@@ -37,6 +37,15 @@ class UnpackedVerboseMapper {
       case "mpma_send":
         return MpmaSendUnpackedVerboseMapper.toDomain(
             u as api.MpmaSendUnpackedVerbose);
+      case "destroy":
+        return AssetDestructionUnpackedVerboseMapper.toDomain(
+            u as api.AssetDestructionUnpackedVerbose);
+      case "dividend":
+        return AssetDividendUnpackedVerboseMapper.toDomain(
+            u as api.AssetDividendUnpackedVerbose);
+      case "sweep":
+        return SweepUnpackedVerboseMapper.toDomain(
+            u as api.SweepUnpackedVerbose);
       default:
         return TransactionUnpacked(
           messageType: u.messageType,
@@ -183,6 +192,41 @@ class MpmaSendUnpackedVerboseMapper {
                 quantityNormalized: d.quantityNormalized,
               ))
           .toList(),
+    );
+  }
+}
+
+class AssetDestructionUnpackedVerboseMapper {
+  static AssetDestructionUnpackedVerbose toDomain(
+      api.AssetDestructionUnpackedVerbose u) {
+    return AssetDestructionUnpackedVerbose(
+      asset: u.asset,
+      quantityNormalized: u.quantityNormalized,
+      tag: u.tag,
+      quantity: u.quantity,
+      // assetInfo: AssetInfoMapper.toDomain(u.assetInfo),
+    );
+  }
+}
+
+class AssetDividendUnpackedVerboseMapper {
+  static AssetDividendUnpackedVerbose toDomain(
+      api.AssetDividendUnpackedVerbose u) {
+    return AssetDividendUnpackedVerbose(
+      asset: u.asset,
+      quantityPerUnit: u.quantityPerUnit,
+      dividendAsset: u.dividendAsset,
+      status: u.status,
+    );
+  }
+}
+
+class SweepUnpackedVerboseMapper {
+  static SweepUnpackedVerbose toDomain(api.SweepUnpackedVerbose u) {
+    return SweepUnpackedVerbose(
+      destination: u.destination,
+      flags: u.flags,
+      memo: u.memo,
     );
   }
 }

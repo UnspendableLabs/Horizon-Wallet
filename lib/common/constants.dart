@@ -26,5 +26,7 @@ enum IssuanceActionType {
   changeDescription,
   issueMore,
   issueSubasset,
-  transferOwnership
+  transferOwnership,
+  destroy,
+  dividend
 }
