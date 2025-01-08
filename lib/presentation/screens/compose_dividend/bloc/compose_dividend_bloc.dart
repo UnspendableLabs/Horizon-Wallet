@@ -61,7 +61,8 @@ class ComposeDividendBloc extends ComposeBaseBloc<ComposeDividendState> {
         balancesState: const BalancesState.loading(),
         feeState: const FeeState.loading(),
         submitState: const SubmitInitial(),
-        assetState: const AssetState.loading()));
+        assetState: const AssetState.loading(),
+        dividendXcpFeeState: const DividendXcpFeeState.loading()));
 
     try {
       final (balances, asset, feeEstimates, dividendXcpFee) =

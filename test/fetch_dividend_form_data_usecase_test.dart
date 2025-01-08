@@ -5,6 +5,7 @@ import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/domain/repositories/asset_repository.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
+import 'package:horizon/domain/repositories/estimate_xcp_fee_repository.dart';
 import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
 import 'package:horizon/presentation/screens/compose_dividend/usecase/fetch_form_data.dart';
 import 'package:mocktail/mocktail.dart';
@@ -17,20 +18,25 @@ class MockAssetRepository extends Mock implements AssetRepository {}
 class MockGetFeeEstimatesUseCase extends Mock
     implements GetFeeEstimatesUseCase {}
 
+class MockEstimateXcpFeeRepository extends Mock
+    implements EstimateXcpFeeRepository {}
+
 void main() {
   late FetchDividendFormDataUseCase useCase;
   late MockBalanceRepository mockBalanceRepository;
   late MockAssetRepository mockAssetRepository;
   late MockGetFeeEstimatesUseCase mockGetFeeEstimatesUseCase;
-
+  late MockEstimateXcpFeeRepository mockEstimateXcpFeeRepository;
   setUp(() {
     mockBalanceRepository = MockBalanceRepository();
     mockAssetRepository = MockAssetRepository();
     mockGetFeeEstimatesUseCase = MockGetFeeEstimatesUseCase();
+    mockEstimateXcpFeeRepository = MockEstimateXcpFeeRepository();
     useCase = FetchDividendFormDataUseCase(
       balanceRepository: mockBalanceRepository,
       assetRepository: mockAssetRepository,
       getFeeEstimatesUseCase: mockGetFeeEstimatesUseCase,
+      estimateXcpFeeRepository: mockEstimateXcpFeeRepository,
     );
   });
 
@@ -78,6 +84,7 @@ void main() {
       medium: 2,
       fast: 3,
     );
+    const mockDividendXcpFee = 10000000;
 
     test('should fetch all data successfully', () async {
       // Arrange
@@ -90,6 +97,10 @@ void main() {
       when(() => mockGetFeeEstimatesUseCase.call())
           .thenAnswer((_) async => mockFeeEstimates);
 
+      when(() =>
+              mockEstimateXcpFeeRepository.estimateDividendXcpFees(testAddress))
+          .thenAnswer((_) async => mockDividendXcpFee);
+
       // Act
       final result = await useCase.call(testAddress, testAssetName);
 
@@ -97,13 +108,16 @@ void main() {
       expect(result.$1, equals(mockBalances));
       expect(result.$2, equals(mockAsset));
       expect(result.$3, equals(mockFeeEstimates));
-
+      expect(result.$4, equals(mockDividendXcpFee));
       verify(() =>
               mockBalanceRepository.getBalancesForAddress(testAddress, true))
           .called(1);
       verify(() => mockAssetRepository.getAssetVerbose(testAssetName))
           .called(1);
       verify(() => mockGetFeeEstimatesUseCase.call()).called(1);
+      verify(() =>
+              mockEstimateXcpFeeRepository.estimateDividendXcpFees(testAddress))
+          .called(1);
     });
 
     test('should throw FetchBalancesException when balance fetch fails',
@@ -118,11 +132,19 @@ void main() {
       when(() => mockGetFeeEstimatesUseCase.call())
           .thenAnswer((_) async => mockFeeEstimates);
 
+      when(() =>
+              mockEstimateXcpFeeRepository.estimateDividendXcpFees(testAddress))
+          .thenAnswer((_) async => mockDividendXcpFee);
+
       // Act & Assert
       expect(
         () => useCase.call(testAddress, testAssetName),
         throwsA(isA<FetchBalancesException>()),
       );
+
+      verify(() =>
+              mockBalanceRepository.getBalancesForAddress(testAddress, true))
+          .called(1);
     });
 
     test('should throw FetchAssetException when asset fetch fails', () async {
@@ -136,11 +158,19 @@ void main() {
       when(() => mockGetFeeEstimatesUseCase.call())
           .thenAnswer((_) async => mockFeeEstimates);
 
+      when(() =>
+              mockEstimateXcpFeeRepository.estimateDividendXcpFees(testAddress))
+          .thenAnswer((_) async => mockDividendXcpFee);
+
       // Act & Assert
       expect(
         () => useCase.call(testAddress, testAssetName),
         throwsA(isA<FetchAssetException>()),
       );
+
+      verify(() =>
+              mockBalanceRepository.getBalancesForAddress(testAddress, true))
+          .called(1);
     });
 
     test(
@@ -156,11 +186,55 @@ void main() {
       when(() => mockGetFeeEstimatesUseCase.call())
           .thenThrow(Exception('Fee estimates fetch failed'));
 
+      when(() =>
+              mockEstimateXcpFeeRepository.estimateDividendXcpFees(testAddress))
+          .thenAnswer((_) async => mockDividendXcpFee);
+
       // Act & Assert
       expect(
         () => useCase.call(testAddress, testAssetName),
         throwsA(isA<FetchFeeEstimatesException>()),
       );
+
+      verify(() =>
+              mockBalanceRepository.getBalancesForAddress(testAddress, true))
+          .called(1);
+      verify(() => mockAssetRepository.getAssetVerbose(testAssetName))
+          .called(1);
+    });
+
+    test(
+        'should throw FetchDividendXcpFeeException when dividend XCP fee fetch fails',
+        () async {
+      // Arrange
+      when(() => mockBalanceRepository.getBalancesForAddress(testAddress, true))
+          .thenAnswer((_) async => mockBalances);
+
+      when(() => mockAssetRepository.getAssetVerbose(testAssetName))
+          .thenAnswer((_) async => mockAsset);
+
+      when(() => mockGetFeeEstimatesUseCase.call())
+          .thenAnswer((_) async => mockFeeEstimates);
+
+      when(() =>
+              mockEstimateXcpFeeRepository.estimateDividendXcpFees(testAddress))
+          .thenThrow(Exception('Dividend XCP fee fetch failed'));
+
+      // Act & Assert
+      expect(
+        () => useCase.call(testAddress, testAssetName),
+        throwsA(isA<FetchDividendXcpFeeException>()),
+      );
+
+      verify(() =>
+              mockBalanceRepository.getBalancesForAddress(testAddress, true))
+          .called(1);
+      verify(() => mockAssetRepository.getAssetVerbose(testAssetName))
+          .called(1);
+      verify(() => mockGetFeeEstimatesUseCase.call()).called(1);
+      verify(() =>
+              mockEstimateXcpFeeRepository.estimateDividendXcpFees(testAddress))
+          .called(1);
     });
   });
 }
