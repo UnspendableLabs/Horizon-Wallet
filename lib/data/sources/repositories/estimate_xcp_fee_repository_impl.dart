@@ -7,8 +7,8 @@ class EstimateXcpFeeRepositoryImpl implements EstimateXcpFeeRepository {
   EstimateXcpFeeRepositoryImpl({required this.api});
 
   @override
-  Future<int> estimateDividendXcpFees(String address) async {
-    final response = await api.estimateDividendXcpFees(address);
+  Future<int> estimateDividendXcpFees(String address, String asset) async {
+    final response = await api.estimateDividendXcpFees(address, asset);
     if (response.result == null) {
       throw Exception('Failed to estimate compose attach xcp fees');
     }

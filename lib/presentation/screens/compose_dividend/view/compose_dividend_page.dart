@@ -85,6 +85,7 @@ class ComposeDividendPageState extends State<ComposeDividendPage> {
   bool _submitted = false;
   Balance? dividendBalance;
   bool assetError = false;
+  String? xcpError;
 
   @override
   void initState() {
@@ -112,7 +113,7 @@ class ComposeDividendPageState extends State<ComposeDividendPage> {
           onInitialCancel: () => _handleInitialCancel(),
           onInitialSubmit: (formKey) => _handleInitialSubmit(formKey),
           buildConfirmationFormFields: (_, composeTransaction, formKey) =>
-              _buildConfirmationDetails(composeTransaction),
+              _buildConfirmationDetails(composeTransaction, state),
           onConfirmationBack: () => _onConfirmationBack(),
           onConfirmationContinue: (composeTransaction, fee, formKey) {
             _onConfirmationContinue(composeTransaction, fee, formKey);
@@ -128,6 +129,19 @@ class ComposeDividendPageState extends State<ComposeDividendPage> {
 
   List<Widget> _buildInitialFormFields(
       ComposeDividendState state, bool loading, GlobalKey<FormState> formKey) {
+    final xcpFee = state.dividendXcpFeeState.maybeWhen(
+      success: (dividendXcpFee) => dividendXcpFee,
+      error: (error) {
+        xcpError = error;
+        return 0;
+      },
+      orElse: () => 0,
+    );
+    if (xcpError != null) {
+      return [
+        SelectableText('Error fetching dividend XCP fee: $xcpError'),
+      ];
+    }
     return state.assetState.maybeWhen(
       success: (asset) => [
         HorizonUI.HorizonTextFormField(
@@ -145,15 +159,12 @@ class ComposeDividendPageState extends State<ComposeDividendPage> {
         const SizedBox(height: 16),
         _buildAssetInput(state, loading, formKey, 'Dividend Payment Asset'),
         const SizedBox(height: 16),
-        state.dividendXcpFeeState.maybeWhen(
-          success: (dividendXcpFee) => HorizonUI.HorizonTextFormField(
-            enabled: false,
-            label: 'XCP Fee',
-            controller: TextEditingController(text: '$dividendXcpFee XCP'),
-          ),
-          error: (error) =>
-              SelectableText('Error fetching dividend XCP fee: $error'),
-          orElse: () => const SizedBox.shrink(),
+        HorizonUI.HorizonTextFormField(
+          enabled: false,
+          label: 'XCP Fee',
+          controller: TextEditingController(
+              text:
+                  '${quantityToQuantityNormalizedString(quantity: xcpFee, divisible: true)} XCP'),
         ),
       ],
       error: (error) => [
@@ -293,7 +304,16 @@ class ComposeDividendPageState extends State<ComposeDividendPage> {
     }
   }
 
-  List<Widget> _buildConfirmationDetails(dynamic composeTransaction) {
+  List<Widget> _buildConfirmationDetails(
+      dynamic composeTransaction, ComposeDividendState state) {
+    final xcpFee = state.dividendXcpFeeState.maybeWhen(
+      success: (dividendXcpFee) => dividendXcpFee,
+      error: (error) {
+        xcpError = error;
+        return 0;
+      },
+      orElse: () => 0,
+    );
     final params = (composeTransaction as ComposeDividendResponse).params;
     return [
       HorizonUI.HorizonTextFormField(
@@ -324,8 +344,15 @@ class ComposeDividendPageState extends State<ComposeDividendPage> {
         controller:
             TextEditingController(text: params.quantityPerUnitNormalized),
       ),
+      const SizedBox(height: 16),
+      HorizonUI.HorizonTextFormField(
+        enabled: false,
+        label: 'XCP Fee',
+        controller: TextEditingController(
+            text:
+                '${quantityToQuantityNormalizedString(quantity: xcpFee, divisible: true)} XCP'),
+      ),
     ];
-//
   }
 
   void _onConfirmationBack() {

@@ -26,7 +26,7 @@ class FetchDividendFormDataUseCase {
         _fetchBalances(currentAddress),
         _fetchAsset(assetName),
         _fetchFeeEstimates(),
-        _fetchDividendXcpFee(currentAddress),
+        _fetchDividendXcpFee(currentAddress, assetName),
       ]);
 
       final balances = futures[0] as List<Balance>;
@@ -74,10 +74,11 @@ class FetchDividendFormDataUseCase {
     }
   }
 
-  Future<int> _fetchDividendXcpFee(String currentAddress) async {
+  Future<int> _fetchDividendXcpFee(
+      String currentAddress, String assetName) async {
     try {
-      return await estimateXcpFeeRepository
-          .estimateDividendXcpFees(currentAddress);
+      return await estimateXcpFeeRepository.estimateDividendXcpFees(
+          currentAddress, assetName);
     } catch (e) {
       throw FetchDividendXcpFeeException(e.toString());
     }

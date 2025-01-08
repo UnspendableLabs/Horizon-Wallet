@@ -74,10 +74,10 @@ class ComposeSweepBloc extends ComposeBaseBloc<ComposeSweepState> {
       return;
     }
 
-    int dividendXcpFee;
+    int sweepXcpFee;
     try {
-      dividendXcpFee = await estimateXcpFeeRepository
-          .estimateDividendXcpFees(event.currentAddress!);
+      sweepXcpFee = await estimateXcpFeeRepository
+          .estimateSweepXcpFees(event.currentAddress!);
     } catch (e) {
       emit(state.copyWith(
           sweepXcpFeeState: SweepXcpFeeState.error(e.toString())));
@@ -87,7 +87,7 @@ class ComposeSweepBloc extends ComposeBaseBloc<ComposeSweepState> {
     emit(state.copyWith(
       balancesState: const BalancesState.success([]),
       feeState: FeeState.success(feeEstimates),
-      sweepXcpFeeState: SweepXcpFeeState.success(dividendXcpFee),
+      sweepXcpFeeState: SweepXcpFeeState.success(sweepXcpFee),
     ));
   }
 

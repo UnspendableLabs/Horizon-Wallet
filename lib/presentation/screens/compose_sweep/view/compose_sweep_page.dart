@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
+import 'package:horizon/common/format.dart';
 import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/domain/entities/compose_sweep.dart';
 import 'package:horizon/domain/entities/event.dart';
@@ -107,7 +108,7 @@ class ComposeSweepPageState extends State<ComposeSweepPage> {
           onInitialCancel: () => _handleInitialCancel(),
           onInitialSubmit: (formKey) => _handleInitialSubmit(formKey),
           buildConfirmationFormFields: (_, composeTransaction, formKey) =>
-              _buildConfirmationDetails(composeTransaction),
+              _buildConfirmationDetails(composeTransaction, state),
           onConfirmationBack: () => _onConfirmationBack(),
           onConfirmationContinue: (composeTransaction, fee, formKey) {
             _onConfirmationContinue(composeTransaction, fee, formKey);
@@ -187,7 +188,9 @@ class ComposeSweepPageState extends State<ComposeSweepPage> {
         success: (sweepXcpFee) => HorizonUI.HorizonTextFormField(
           enabled: false,
           label: 'XCP Fee',
-          controller: TextEditingController(text: '$sweepXcpFee XCP'),
+          controller: TextEditingController(
+              text:
+                  '${quantityToQuantityNormalizedString(quantity: sweepXcpFee, divisible: true)} XCP'),
         ),
         error: (error) =>
             SelectableText('Error fetching sweep XCP fee: $error'),
@@ -252,7 +255,13 @@ class ComposeSweepPageState extends State<ComposeSweepPage> {
     }
   }
 
-  List<Widget> _buildConfirmationDetails(dynamic composeTransaction) {
+  List<Widget> _buildConfirmationDetails(
+      dynamic composeTransaction, ComposeSweepState state) {
+    final sweepXcpFee = state.sweepXcpFeeState.maybeWhen(
+      success: (sweepXcpFee) => sweepXcpFee,
+      error: (error) => 0,
+      orElse: () => 0,
+    );
     final params = (composeTransaction as ComposeSweepResponse).params;
     return [
       HorizonUI.HorizonTextFormField(
@@ -279,6 +288,14 @@ class ComposeSweepPageState extends State<ComposeSweepPage> {
         controller: TextEditingController(text: params.memo),
         label: 'Memo',
         enabled: false,
+      ),
+      const SizedBox(height: 16),
+      HorizonUI.HorizonTextFormField(
+        enabled: false,
+        label: 'XCP Fee',
+        controller: TextEditingController(
+            text:
+                '${quantityToQuantityNormalizedString(quantity: sweepXcpFee, divisible: true)} XCP'),
       ),
     ];
   }

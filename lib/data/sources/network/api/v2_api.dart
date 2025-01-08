@@ -5333,7 +5333,7 @@ abstract class V2Api {
 
   @GET("/addresses/{address}/compose/dividend/estimatexcpfees")
   Future<Response<int>> estimateDividendXcpFees(
-      @Path("address") String address);
+      @Path("address") String address, @Query("asset") String asset);
 
   @GET("/addresses/{address}/compose/sweep/estimatexcpfees")
   Future<Response<int>> estimateSweepXcpFees(@Path("address") String address);

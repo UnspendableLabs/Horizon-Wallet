@@ -1,5 +1,7 @@
 import 'package:horizon/common/uuid.dart';
 import 'package:horizon/core/logging/logger.dart';
+import 'package:horizon/domain/entities/asset.dart';
+import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/domain/entities/compose_dividend.dart';
 import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/domain/entities/fee_option.dart' as FeeOption;
@@ -64,8 +66,13 @@ class ComposeDividendBloc extends ComposeBaseBloc<ComposeDividendState> {
         assetState: const AssetState.loading(),
         dividendXcpFeeState: const DividendXcpFeeState.loading()));
 
+    int dividendXcpFee;
+    List<Balance> balances;
+    Asset asset;
+    FeeEstimates feeEstimates;
+
     try {
-      final (balances, asset, feeEstimates, dividendXcpFee) =
+      (balances, asset, feeEstimates, dividendXcpFee) =
           await fetchDividendFormDataUseCase.call(
               event.currentAddress!, event.assetName!);
 
