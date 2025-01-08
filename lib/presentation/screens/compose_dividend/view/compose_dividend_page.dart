@@ -144,6 +144,17 @@ class ComposeDividendPageState extends State<ComposeDividendPage> {
         ),
         const SizedBox(height: 16),
         _buildAssetInput(state, loading, formKey, 'Dividend Payment Asset'),
+        const SizedBox(height: 16),
+        state.dividendXcpFeeState.maybeWhen(
+          success: (dividendXcpFee) => HorizonUI.HorizonTextFormField(
+            enabled: false,
+            label: 'XCP Fee',
+            controller: TextEditingController(text: '$dividendXcpFee XCP'),
+          ),
+          error: (error) =>
+              SelectableText('Error fetching dividend XCP fee: $error'),
+          orElse: () => const SizedBox.shrink(),
+        ),
       ],
       error: (error) => [
         SelectableText('Error fetching asset ${widget.assetName}: $error'),
@@ -170,6 +181,11 @@ class ComposeDividendPageState extends State<ComposeDividendPage> {
             HorizonUI.HorizonTextFormField(
               enabled: false,
               label: 'Quantity per unit',
+            ),
+            SizedBox(height: 16),
+            HorizonUI.HorizonTextFormField(
+              enabled: false,
+              label: 'XCP Fee',
             ),
           ],
         ),

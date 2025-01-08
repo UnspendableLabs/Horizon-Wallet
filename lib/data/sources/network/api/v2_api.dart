@@ -5331,8 +5331,15 @@ abstract class V2Api {
     @Query("event_name") String? eventName,
   ]);
 
-  @GET("/compose/attach/estimatexcpfees")
-  Future<Response<int>> estimateAttachXcpFees();
+  @GET("/addresses/{address}/compose/dividend/estimatexcpfees")
+  Future<Response<int>> estimateDividendXcpFees(
+      @Path("address") String address);
+
+  @GET("/addresses/{address}/compose/sweep/estimatexcpfees")
+  Future<Response<int>> estimateSweepXcpFees(@Path("address") String address);
+
+  @GET("/addresses/{address}/compose/attach/estimatexcpfees")
+  Future<Response<int>> estimateAttachXcpFees(@Path("address") String address);
 
   @GET("/addresses/{address}/compose/attach?verbose=true")
   Future<Response<ComposeAttachUtxoResponseModel>> composeAttachUtxo(

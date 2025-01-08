@@ -6,6 +6,7 @@ import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/domain/entities/compose_sweep.dart';
 import 'package:horizon/domain/entities/event.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
+import 'package:horizon/domain/repositories/estimate_xcp_fee_repository.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_event.dart';
 import 'package:horizon/presentation/common/compose_base/view/compose_base_page.dart';
@@ -44,6 +45,7 @@ class ComposeSweepPageWrapper extends StatelessWidget {
               GetIt.I.get<SignAndBroadcastTransactionUseCase>(),
           writelocalTransactionUseCase:
               GetIt.I.get<WriteLocalTransactionUseCase>(),
+          estimateXcpFeeRepository: GetIt.I.get<EstimateXcpFeeRepository>(),
           logger: GetIt.I.get<Logger>(),
         )..add(FetchFormData(currentAddress: currentAddress)),
         child: ComposeSweepPage(
@@ -179,6 +181,17 @@ class ComposeSweepPageState extends State<ComposeSweepPage> {
         autovalidateMode: _submitted
             ? AutovalidateMode.onUserInteraction
             : AutovalidateMode.disabled,
+      ),
+      const SizedBox(height: 16),
+      state.sweepXcpFeeState.maybeWhen(
+        success: (sweepXcpFee) => HorizonUI.HorizonTextFormField(
+          enabled: false,
+          label: 'XCP Fee',
+          controller: TextEditingController(text: '$sweepXcpFee XCP'),
+        ),
+        error: (error) =>
+            SelectableText('Error fetching sweep XCP fee: $error'),
+        orElse: () => const SizedBox.shrink(),
       ),
       const SizedBox(height: 16),
       Row(

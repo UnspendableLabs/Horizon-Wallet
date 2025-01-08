@@ -50,6 +50,7 @@ class ComposeDividendBloc extends ComposeBaseBloc<ComposeDividendState> {
             balancesState: const BalancesState.initial(),
             feeState: const FeeState.initial(),
             assetState: const AssetState.initial(),
+            dividendXcpFeeState: const DividendXcpFeeState.initial(),
           ),
           composePage: 'compose_dividend',
         );
@@ -63,13 +64,15 @@ class ComposeDividendBloc extends ComposeBaseBloc<ComposeDividendState> {
         assetState: const AssetState.loading()));
 
     try {
-      final (balances, asset, feeEstimates) = await fetchDividendFormDataUseCase
-          .call(event.currentAddress!, event.assetName!);
+      final (balances, asset, feeEstimates, dividendXcpFee) =
+          await fetchDividendFormDataUseCase.call(
+              event.currentAddress!, event.assetName!);
 
       emit(state.copyWith(
         balancesState: BalancesState.success(balances),
         feeState: FeeState.success(feeEstimates),
         assetState: AssetState.success(asset),
+        dividendXcpFeeState: DividendXcpFeeState.success(dividendXcpFee),
       ));
     } on FetchFeeEstimatesException catch (e) {
       emit(state.copyWith(
@@ -82,6 +85,10 @@ class ComposeDividendBloc extends ComposeBaseBloc<ComposeDividendState> {
     } on FetchBalancesException catch (e) {
       emit(state.copyWith(
         balancesState: BalancesState.error(e.message),
+      ));
+    } on FetchDividendXcpFeeException catch (e) {
+      emit(state.copyWith(
+        dividendXcpFeeState: DividendXcpFeeState.error(e.message),
       ));
     } catch (e) {
       emit(state.copyWith(

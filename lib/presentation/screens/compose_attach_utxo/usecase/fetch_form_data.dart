@@ -1,18 +1,18 @@
 import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
-import 'package:horizon/domain/repositories/compose_repository.dart';
+import 'package:horizon/domain/repositories/estimate_xcp_fee_repository.dart';
 import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
 
 class FetchComposeAttachUtxoFormDataUseCase {
   final GetFeeEstimatesUseCase getFeeEstimatesUseCase;
   final BalanceRepository balanceRepository;
-  final ComposeRepository composeRepository;
+  final EstimateXcpFeeRepository estimateXcpFeeRepository;
 
   FetchComposeAttachUtxoFormDataUseCase({
     required this.getFeeEstimatesUseCase,
     required this.balanceRepository,
-    required this.composeRepository,
+    required this.estimateXcpFeeRepository,
   });
 
   Future<(FeeEstimates, List<Balance>, int)> call(String address) async {
@@ -21,7 +21,7 @@ class FetchComposeAttachUtxoFormDataUseCase {
       final futures = await Future.wait([
         _fetchBalances(address),
         _fetchFeeEstimates(),
-        _fetchAttachXcpFees(),
+        _fetchAttachXcpFees(address),
       ]);
 
       final balances = futures[0] as List<Balance>;
@@ -60,9 +60,9 @@ class FetchComposeAttachUtxoFormDataUseCase {
     }
   }
 
-  Future<int> _fetchAttachXcpFees() async {
+  Future<int> _fetchAttachXcpFees(String address) async {
     try {
-      return await composeRepository.estimateComposeAttachXcpFees();
+      return await estimateXcpFeeRepository.estimateAttachXcpFees(address);
     } catch (e) {
       throw FetchAttachXcpFeesException(e.toString());
     }

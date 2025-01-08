@@ -23,6 +23,8 @@ mixin _$ComposeDividendState {
   SubmitState get submitState =>
       throw _privateConstructorUsedError; // dividend specific properties
   AssetState get assetState => throw _privateConstructorUsedError;
+  DividendXcpFeeState get dividendXcpFeeState =>
+      throw _privateConstructorUsedError;
 
   @JsonKey(ignore: true)
   $ComposeDividendStateCopyWith<ComposeDividendState> get copyWith =>
@@ -40,11 +42,13 @@ abstract class $ComposeDividendStateCopyWith<$Res> {
       BalancesState balancesState,
       FeeOption feeOption,
       SubmitState submitState,
-      AssetState assetState});
+      AssetState assetState,
+      DividendXcpFeeState dividendXcpFeeState});
 
   $FeeStateCopyWith<$Res> get feeState;
   $BalancesStateCopyWith<$Res> get balancesState;
   $AssetStateCopyWith<$Res> get assetState;
+  $DividendXcpFeeStateCopyWith<$Res> get dividendXcpFeeState;
 }
 
 /// @nodoc
@@ -66,6 +70,7 @@ class _$ComposeDividendStateCopyWithImpl<$Res,
     Object? feeOption = null,
     Object? submitState = null,
     Object? assetState = null,
+    Object? dividendXcpFeeState = null,
   }) {
     return _then(_value.copyWith(
       feeState: null == feeState
@@ -88,6 +93,10 @@ class _$ComposeDividendStateCopyWithImpl<$Res,
           ? _value.assetState
           : assetState // ignore: cast_nullable_to_non_nullable
               as AssetState,
+      dividendXcpFeeState: null == dividendXcpFeeState
+          ? _value.dividendXcpFeeState
+          : dividendXcpFeeState // ignore: cast_nullable_to_non_nullable
+              as DividendXcpFeeState,
     ) as $Val);
   }
 
@@ -114,6 +123,15 @@ class _$ComposeDividendStateCopyWithImpl<$Res,
       return _then(_value.copyWith(assetState: value) as $Val);
     });
   }
+
+  @override
+  @pragma('vm:prefer-inline')
+  $DividendXcpFeeStateCopyWith<$Res> get dividendXcpFeeState {
+    return $DividendXcpFeeStateCopyWith<$Res>(_value.dividendXcpFeeState,
+        (value) {
+      return _then(_value.copyWith(dividendXcpFeeState: value) as $Val);
+    });
+  }
 }
 
 /// @nodoc
@@ -129,7 +147,8 @@ abstract class _$$ComposeDividendStateImplCopyWith<$Res>
       BalancesState balancesState,
       FeeOption feeOption,
       SubmitState submitState,
-      AssetState assetState});
+      AssetState assetState,
+      DividendXcpFeeState dividendXcpFeeState});
 
   @override
   $FeeStateCopyWith<$Res> get feeState;
@@ -137,6 +156,8 @@ abstract class _$$ComposeDividendStateImplCopyWith<$Res>
   $BalancesStateCopyWith<$Res> get balancesState;
   @override
   $AssetStateCopyWith<$Res> get assetState;
+  @override
+  $DividendXcpFeeStateCopyWith<$Res> get dividendXcpFeeState;
 }
 
 /// @nodoc
@@ -155,6 +176,7 @@ class __$$ComposeDividendStateImplCopyWithImpl<$Res>
     Object? feeOption = null,
     Object? submitState = null,
     Object? assetState = null,
+    Object? dividendXcpFeeState = null,
   }) {
     return _then(_$ComposeDividendStateImpl(
       feeState: null == feeState
@@ -177,6 +199,10 @@ class __$$ComposeDividendStateImplCopyWithImpl<$Res>
           ? _value.assetState
           : assetState // ignore: cast_nullable_to_non_nullable
               as AssetState,
+      dividendXcpFeeState: null == dividendXcpFeeState
+          ? _value.dividendXcpFeeState
+          : dividendXcpFeeState // ignore: cast_nullable_to_non_nullable
+              as DividendXcpFeeState,
     ));
   }
 }
@@ -189,7 +215,8 @@ class _$ComposeDividendStateImpl extends _ComposeDividendState {
       required this.balancesState,
       required this.feeOption,
       required this.submitState,
-      required this.assetState})
+      required this.assetState,
+      required this.dividendXcpFeeState})
       : super._();
 
 // Inherited properties
@@ -204,10 +231,12 @@ class _$ComposeDividendStateImpl extends _ComposeDividendState {
 // dividend specific properties
   @override
   final AssetState assetState;
+  @override
+  final DividendXcpFeeState dividendXcpFeeState;
 
   @override
   String toString() {
-    return 'ComposeDividendState(feeState: $feeState, balancesState: $balancesState, feeOption: $feeOption, submitState: $submitState, assetState: $assetState)';
+    return 'ComposeDividendState(feeState: $feeState, balancesState: $balancesState, feeOption: $feeOption, submitState: $submitState, assetState: $assetState, dividendXcpFeeState: $dividendXcpFeeState)';
   }
 
   @override
@@ -224,12 +253,14 @@ class _$ComposeDividendStateImpl extends _ComposeDividendState {
             (identical(other.submitState, submitState) ||
                 other.submitState == submitState) &&
             (identical(other.assetState, assetState) ||
-                other.assetState == assetState));
+                other.assetState == assetState) &&
+            (identical(other.dividendXcpFeeState, dividendXcpFeeState) ||
+                other.dividendXcpFeeState == dividendXcpFeeState));
   }
 
   @override
-  int get hashCode => Object.hash(
-      runtimeType, feeState, balancesState, feeOption, submitState, assetState);
+  int get hashCode => Object.hash(runtimeType, feeState, balancesState,
+      feeOption, submitState, assetState, dividendXcpFeeState);
 
   @JsonKey(ignore: true)
   @override
@@ -242,11 +273,13 @@ class _$ComposeDividendStateImpl extends _ComposeDividendState {
 
 abstract class _ComposeDividendState extends ComposeDividendState {
   const factory _ComposeDividendState(
-      {required final FeeState feeState,
-      required final BalancesState balancesState,
-      required final FeeOption feeOption,
-      required final SubmitState submitState,
-      required final AssetState assetState}) = _$ComposeDividendStateImpl;
+          {required final FeeState feeState,
+          required final BalancesState balancesState,
+          required final FeeOption feeOption,
+          required final SubmitState submitState,
+          required final AssetState assetState,
+          required final DividendXcpFeeState dividendXcpFeeState}) =
+      _$ComposeDividendStateImpl;
   const _ComposeDividendState._() : super._();
 
   @override // Inherited properties
@@ -259,6 +292,8 @@ abstract class _ComposeDividendState extends ComposeDividendState {
   SubmitState get submitState;
   @override // dividend specific properties
   AssetState get assetState;
+  @override
+  DividendXcpFeeState get dividendXcpFeeState;
   @override
   @JsonKey(ignore: true)
   _$$ComposeDividendStateImplCopyWith<_$ComposeDividendStateImpl>
@@ -852,5 +887,605 @@ abstract class _AssetError implements AssetState {
   String get error;
   @JsonKey(ignore: true)
   _$$AssetErrorImplCopyWith<_$AssetErrorImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+mixin _$DividendXcpFeeState {
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function() initial,
+    required TResult Function() loading,
+    required TResult Function(int dividendXcpFee) success,
+    required TResult Function(String error) error,
+  }) =>
+      throw _privateConstructorUsedError;
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function()? initial,
+    TResult? Function()? loading,
+    TResult? Function(int dividendXcpFee)? success,
+    TResult? Function(String error)? error,
+  }) =>
+      throw _privateConstructorUsedError;
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function()? initial,
+    TResult Function()? loading,
+    TResult Function(int dividendXcpFee)? success,
+    TResult Function(String error)? error,
+    required TResult orElse(),
+  }) =>
+      throw _privateConstructorUsedError;
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(_DividendXcpFeeInitial value) initial,
+    required TResult Function(_DividendXcpFeeLoading value) loading,
+    required TResult Function(_DividendXcpFeeSuccess value) success,
+    required TResult Function(_DividendXcpFeeError value) error,
+  }) =>
+      throw _privateConstructorUsedError;
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(_DividendXcpFeeInitial value)? initial,
+    TResult? Function(_DividendXcpFeeLoading value)? loading,
+    TResult? Function(_DividendXcpFeeSuccess value)? success,
+    TResult? Function(_DividendXcpFeeError value)? error,
+  }) =>
+      throw _privateConstructorUsedError;
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(_DividendXcpFeeInitial value)? initial,
+    TResult Function(_DividendXcpFeeLoading value)? loading,
+    TResult Function(_DividendXcpFeeSuccess value)? success,
+    TResult Function(_DividendXcpFeeError value)? error,
+    required TResult orElse(),
+  }) =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $DividendXcpFeeStateCopyWith<$Res> {
+  factory $DividendXcpFeeStateCopyWith(
+          DividendXcpFeeState value, $Res Function(DividendXcpFeeState) then) =
+      _$DividendXcpFeeStateCopyWithImpl<$Res, DividendXcpFeeState>;
+}
+
+/// @nodoc
+class _$DividendXcpFeeStateCopyWithImpl<$Res, $Val extends DividendXcpFeeState>
+    implements $DividendXcpFeeStateCopyWith<$Res> {
+  _$DividendXcpFeeStateCopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
+}
+
+/// @nodoc
+abstract class _$$DividendXcpFeeInitialImplCopyWith<$Res> {
+  factory _$$DividendXcpFeeInitialImplCopyWith(
+          _$DividendXcpFeeInitialImpl value,
+          $Res Function(_$DividendXcpFeeInitialImpl) then) =
+      __$$DividendXcpFeeInitialImplCopyWithImpl<$Res>;
+}
+
+/// @nodoc
+class __$$DividendXcpFeeInitialImplCopyWithImpl<$Res>
+    extends _$DividendXcpFeeStateCopyWithImpl<$Res, _$DividendXcpFeeInitialImpl>
+    implements _$$DividendXcpFeeInitialImplCopyWith<$Res> {
+  __$$DividendXcpFeeInitialImplCopyWithImpl(_$DividendXcpFeeInitialImpl _value,
+      $Res Function(_$DividendXcpFeeInitialImpl) _then)
+      : super(_value, _then);
+}
+
+/// @nodoc
+
+class _$DividendXcpFeeInitialImpl implements _DividendXcpFeeInitial {
+  const _$DividendXcpFeeInitialImpl();
+
+  @override
+  String toString() {
+    return 'DividendXcpFeeState.initial()';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$DividendXcpFeeInitialImpl);
+  }
+
+  @override
+  int get hashCode => runtimeType.hashCode;
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function() initial,
+    required TResult Function() loading,
+    required TResult Function(int dividendXcpFee) success,
+    required TResult Function(String error) error,
+  }) {
+    return initial();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function()? initial,
+    TResult? Function()? loading,
+    TResult? Function(int dividendXcpFee)? success,
+    TResult? Function(String error)? error,
+  }) {
+    return initial?.call();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function()? initial,
+    TResult Function()? loading,
+    TResult Function(int dividendXcpFee)? success,
+    TResult Function(String error)? error,
+    required TResult orElse(),
+  }) {
+    if (initial != null) {
+      return initial();
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(_DividendXcpFeeInitial value) initial,
+    required TResult Function(_DividendXcpFeeLoading value) loading,
+    required TResult Function(_DividendXcpFeeSuccess value) success,
+    required TResult Function(_DividendXcpFeeError value) error,
+  }) {
+    return initial(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(_DividendXcpFeeInitial value)? initial,
+    TResult? Function(_DividendXcpFeeLoading value)? loading,
+    TResult? Function(_DividendXcpFeeSuccess value)? success,
+    TResult? Function(_DividendXcpFeeError value)? error,
+  }) {
+    return initial?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(_DividendXcpFeeInitial value)? initial,
+    TResult Function(_DividendXcpFeeLoading value)? loading,
+    TResult Function(_DividendXcpFeeSuccess value)? success,
+    TResult Function(_DividendXcpFeeError value)? error,
+    required TResult orElse(),
+  }) {
+    if (initial != null) {
+      return initial(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class _DividendXcpFeeInitial implements DividendXcpFeeState {
+  const factory _DividendXcpFeeInitial() = _$DividendXcpFeeInitialImpl;
+}
+
+/// @nodoc
+abstract class _$$DividendXcpFeeLoadingImplCopyWith<$Res> {
+  factory _$$DividendXcpFeeLoadingImplCopyWith(
+          _$DividendXcpFeeLoadingImpl value,
+          $Res Function(_$DividendXcpFeeLoadingImpl) then) =
+      __$$DividendXcpFeeLoadingImplCopyWithImpl<$Res>;
+}
+
+/// @nodoc
+class __$$DividendXcpFeeLoadingImplCopyWithImpl<$Res>
+    extends _$DividendXcpFeeStateCopyWithImpl<$Res, _$DividendXcpFeeLoadingImpl>
+    implements _$$DividendXcpFeeLoadingImplCopyWith<$Res> {
+  __$$DividendXcpFeeLoadingImplCopyWithImpl(_$DividendXcpFeeLoadingImpl _value,
+      $Res Function(_$DividendXcpFeeLoadingImpl) _then)
+      : super(_value, _then);
+}
+
+/// @nodoc
+
+class _$DividendXcpFeeLoadingImpl implements _DividendXcpFeeLoading {
+  const _$DividendXcpFeeLoadingImpl();
+
+  @override
+  String toString() {
+    return 'DividendXcpFeeState.loading()';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$DividendXcpFeeLoadingImpl);
+  }
+
+  @override
+  int get hashCode => runtimeType.hashCode;
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function() initial,
+    required TResult Function() loading,
+    required TResult Function(int dividendXcpFee) success,
+    required TResult Function(String error) error,
+  }) {
+    return loading();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function()? initial,
+    TResult? Function()? loading,
+    TResult? Function(int dividendXcpFee)? success,
+    TResult? Function(String error)? error,
+  }) {
+    return loading?.call();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function()? initial,
+    TResult Function()? loading,
+    TResult Function(int dividendXcpFee)? success,
+    TResult Function(String error)? error,
+    required TResult orElse(),
+  }) {
+    if (loading != null) {
+      return loading();
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(_DividendXcpFeeInitial value) initial,
+    required TResult Function(_DividendXcpFeeLoading value) loading,
+    required TResult Function(_DividendXcpFeeSuccess value) success,
+    required TResult Function(_DividendXcpFeeError value) error,
+  }) {
+    return loading(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(_DividendXcpFeeInitial value)? initial,
+    TResult? Function(_DividendXcpFeeLoading value)? loading,
+    TResult? Function(_DividendXcpFeeSuccess value)? success,
+    TResult? Function(_DividendXcpFeeError value)? error,
+  }) {
+    return loading?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(_DividendXcpFeeInitial value)? initial,
+    TResult Function(_DividendXcpFeeLoading value)? loading,
+    TResult Function(_DividendXcpFeeSuccess value)? success,
+    TResult Function(_DividendXcpFeeError value)? error,
+    required TResult orElse(),
+  }) {
+    if (loading != null) {
+      return loading(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class _DividendXcpFeeLoading implements DividendXcpFeeState {
+  const factory _DividendXcpFeeLoading() = _$DividendXcpFeeLoadingImpl;
+}
+
+/// @nodoc
+abstract class _$$DividendXcpFeeSuccessImplCopyWith<$Res> {
+  factory _$$DividendXcpFeeSuccessImplCopyWith(
+          _$DividendXcpFeeSuccessImpl value,
+          $Res Function(_$DividendXcpFeeSuccessImpl) then) =
+      __$$DividendXcpFeeSuccessImplCopyWithImpl<$Res>;
+  @useResult
+  $Res call({int dividendXcpFee});
+}
+
+/// @nodoc
+class __$$DividendXcpFeeSuccessImplCopyWithImpl<$Res>
+    extends _$DividendXcpFeeStateCopyWithImpl<$Res, _$DividendXcpFeeSuccessImpl>
+    implements _$$DividendXcpFeeSuccessImplCopyWith<$Res> {
+  __$$DividendXcpFeeSuccessImplCopyWithImpl(_$DividendXcpFeeSuccessImpl _value,
+      $Res Function(_$DividendXcpFeeSuccessImpl) _then)
+      : super(_value, _then);
+
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? dividendXcpFee = null,
+  }) {
+    return _then(_$DividendXcpFeeSuccessImpl(
+      null == dividendXcpFee
+          ? _value.dividendXcpFee
+          : dividendXcpFee // ignore: cast_nullable_to_non_nullable
+              as int,
+    ));
+  }
+}
+
+/// @nodoc
+
+class _$DividendXcpFeeSuccessImpl implements _DividendXcpFeeSuccess {
+  const _$DividendXcpFeeSuccessImpl(this.dividendXcpFee);
+
+  @override
+  final int dividendXcpFee;
+
+  @override
+  String toString() {
+    return 'DividendXcpFeeState.success(dividendXcpFee: $dividendXcpFee)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$DividendXcpFeeSuccessImpl &&
+            (identical(other.dividendXcpFee, dividendXcpFee) ||
+                other.dividendXcpFee == dividendXcpFee));
+  }
+
+  @override
+  int get hashCode => Object.hash(runtimeType, dividendXcpFee);
+
+  @JsonKey(ignore: true)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$DividendXcpFeeSuccessImplCopyWith<_$DividendXcpFeeSuccessImpl>
+      get copyWith => __$$DividendXcpFeeSuccessImplCopyWithImpl<
+          _$DividendXcpFeeSuccessImpl>(this, _$identity);
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function() initial,
+    required TResult Function() loading,
+    required TResult Function(int dividendXcpFee) success,
+    required TResult Function(String error) error,
+  }) {
+    return success(dividendXcpFee);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function()? initial,
+    TResult? Function()? loading,
+    TResult? Function(int dividendXcpFee)? success,
+    TResult? Function(String error)? error,
+  }) {
+    return success?.call(dividendXcpFee);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function()? initial,
+    TResult Function()? loading,
+    TResult Function(int dividendXcpFee)? success,
+    TResult Function(String error)? error,
+    required TResult orElse(),
+  }) {
+    if (success != null) {
+      return success(dividendXcpFee);
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(_DividendXcpFeeInitial value) initial,
+    required TResult Function(_DividendXcpFeeLoading value) loading,
+    required TResult Function(_DividendXcpFeeSuccess value) success,
+    required TResult Function(_DividendXcpFeeError value) error,
+  }) {
+    return success(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(_DividendXcpFeeInitial value)? initial,
+    TResult? Function(_DividendXcpFeeLoading value)? loading,
+    TResult? Function(_DividendXcpFeeSuccess value)? success,
+    TResult? Function(_DividendXcpFeeError value)? error,
+  }) {
+    return success?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(_DividendXcpFeeInitial value)? initial,
+    TResult Function(_DividendXcpFeeLoading value)? loading,
+    TResult Function(_DividendXcpFeeSuccess value)? success,
+    TResult Function(_DividendXcpFeeError value)? error,
+    required TResult orElse(),
+  }) {
+    if (success != null) {
+      return success(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class _DividendXcpFeeSuccess implements DividendXcpFeeState {
+  const factory _DividendXcpFeeSuccess(final int dividendXcpFee) =
+      _$DividendXcpFeeSuccessImpl;
+
+  int get dividendXcpFee;
+  @JsonKey(ignore: true)
+  _$$DividendXcpFeeSuccessImplCopyWith<_$DividendXcpFeeSuccessImpl>
+      get copyWith => throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class _$$DividendXcpFeeErrorImplCopyWith<$Res> {
+  factory _$$DividendXcpFeeErrorImplCopyWith(_$DividendXcpFeeErrorImpl value,
+          $Res Function(_$DividendXcpFeeErrorImpl) then) =
+      __$$DividendXcpFeeErrorImplCopyWithImpl<$Res>;
+  @useResult
+  $Res call({String error});
+}
+
+/// @nodoc
+class __$$DividendXcpFeeErrorImplCopyWithImpl<$Res>
+    extends _$DividendXcpFeeStateCopyWithImpl<$Res, _$DividendXcpFeeErrorImpl>
+    implements _$$DividendXcpFeeErrorImplCopyWith<$Res> {
+  __$$DividendXcpFeeErrorImplCopyWithImpl(_$DividendXcpFeeErrorImpl _value,
+      $Res Function(_$DividendXcpFeeErrorImpl) _then)
+      : super(_value, _then);
+
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? error = null,
+  }) {
+    return _then(_$DividendXcpFeeErrorImpl(
+      null == error
+          ? _value.error
+          : error // ignore: cast_nullable_to_non_nullable
+              as String,
+    ));
+  }
+}
+
+/// @nodoc
+
+class _$DividendXcpFeeErrorImpl implements _DividendXcpFeeError {
+  const _$DividendXcpFeeErrorImpl(this.error);
+
+  @override
+  final String error;
+
+  @override
+  String toString() {
+    return 'DividendXcpFeeState.error(error: $error)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$DividendXcpFeeErrorImpl &&
+            (identical(other.error, error) || other.error == error));
+  }
+
+  @override
+  int get hashCode => Object.hash(runtimeType, error);
+
+  @JsonKey(ignore: true)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$DividendXcpFeeErrorImplCopyWith<_$DividendXcpFeeErrorImpl> get copyWith =>
+      __$$DividendXcpFeeErrorImplCopyWithImpl<_$DividendXcpFeeErrorImpl>(
+          this, _$identity);
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function() initial,
+    required TResult Function() loading,
+    required TResult Function(int dividendXcpFee) success,
+    required TResult Function(String error) error,
+  }) {
+    return error(this.error);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function()? initial,
+    TResult? Function()? loading,
+    TResult? Function(int dividendXcpFee)? success,
+    TResult? Function(String error)? error,
+  }) {
+    return error?.call(this.error);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function()? initial,
+    TResult Function()? loading,
+    TResult Function(int dividendXcpFee)? success,
+    TResult Function(String error)? error,
+    required TResult orElse(),
+  }) {
+    if (error != null) {
+      return error(this.error);
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(_DividendXcpFeeInitial value) initial,
+    required TResult Function(_DividendXcpFeeLoading value) loading,
+    required TResult Function(_DividendXcpFeeSuccess value) success,
+    required TResult Function(_DividendXcpFeeError value) error,
+  }) {
+    return error(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(_DividendXcpFeeInitial value)? initial,
+    TResult? Function(_DividendXcpFeeLoading value)? loading,
+    TResult? Function(_DividendXcpFeeSuccess value)? success,
+    TResult? Function(_DividendXcpFeeError value)? error,
+  }) {
+    return error?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(_DividendXcpFeeInitial value)? initial,
+    TResult Function(_DividendXcpFeeLoading value)? loading,
+    TResult Function(_DividendXcpFeeSuccess value)? success,
+    TResult Function(_DividendXcpFeeError value)? error,
+    required TResult orElse(),
+  }) {
+    if (error != null) {
+      return error(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class _DividendXcpFeeError implements DividendXcpFeeState {
+  const factory _DividendXcpFeeError(final String error) =
+      _$DividendXcpFeeErrorImpl;
+
+  String get error;
+  @JsonKey(ignore: true)
+  _$$DividendXcpFeeErrorImplCopyWith<_$DividendXcpFeeErrorImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
