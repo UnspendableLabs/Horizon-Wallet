@@ -10,7 +10,7 @@ class ComposeDestroyResponseModel {
   final String? data;
   final int btcIn;
   final int btcOut;
-  final int btcChange;
+  int? btcChange;
   final int btcFee;
   final String rawtransaction;
   final ComposeDestroyParamsModel params;
@@ -21,7 +21,7 @@ class ComposeDestroyResponseModel {
     required this.name,
     required this.btcIn,
     required this.btcOut,
-    required this.btcChange,
+    this.btcChange,
     required this.btcFee,
     this.data,
   });
