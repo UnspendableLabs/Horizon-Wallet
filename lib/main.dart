@@ -435,8 +435,9 @@ void main() {
       logger.error(error.message ?? "", null, stackTrace);
     } else {
       logger.error(error.toString(), null, stackTrace);
+      GetIt.I<ErrorService>().captureException(error,
+          stackTrace: stackTrace, message: error.toString());
     }
-    GetIt.I<ErrorService>().captureException(error, stackTrace: stackTrace);
   });
 }
 
@@ -725,6 +726,7 @@ class MyApp extends StatelessWidget {
             encryptionService: GetIt.I<EncryptionService>(),
             addressService: GetIt.I<AddressService>(),
             addressRepository: GetIt.I<AddressRepository>(),
+            errorService: GetIt.I<ErrorService>(),
           ),
         ),
         BlocProvider<AddressFormBloc>(
@@ -735,6 +737,7 @@ class MyApp extends StatelessWidget {
             addressRepository: GetIt.I<AddressRepository>(),
             accountRepository: GetIt.I<AccountRepository>(),
             addressService: GetIt.I<AddressService>(),
+            errorService: GetIt.I<ErrorService>(),
           ),
         ),
         BlocProvider<ImportAddressPkBloc>(

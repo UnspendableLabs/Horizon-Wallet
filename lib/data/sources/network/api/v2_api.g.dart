@@ -3462,7 +3462,7 @@ ComposeMpmaSend _$ComposeMpmaSendFromJson(Map<String, dynamic> json) =>
       btcIn: (json['btc_in'] as num).toInt(),
       btcOut: (json['btc_out'] as num).toInt(),
       btcFee: (json['btc_fee'] as num).toInt(),
-      btcChange: (json['btc_change'] as num).toInt(),
+      btcChange: (json['btc_change'] as num?)?.toInt(),
       params: MpmaSendParams.fromJson(json['params'] as Map<String, dynamic>),
     );
 

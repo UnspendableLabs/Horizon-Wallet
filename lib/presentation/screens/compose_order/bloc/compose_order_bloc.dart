@@ -50,18 +50,21 @@ class ComposeOrderBloc extends ComposeBaseBloc<ComposeOrderState> {
     required this.signAndBroadcastTransactionUseCase,
     required this.writelocalTransactionUseCase,
     required this.analyticsService,
-  }) : super(ComposeOrderState(
-          submitState: const SubmitInitial(),
-          feeOption: FeeOption.Medium(),
-          balancesState: const BalancesState.initial(),
-          feeState: const FeeState.initial(),
-        )) {
+  }) : super(
+          ComposeOrderState(
+            submitState: const SubmitInitial(),
+            feeOption: FeeOption.Medium(),
+            balancesState: const BalancesState.initial(),
+            feeState: const FeeState.initial(),
+          ),
+          composePage: 'compose_order',
+        ) {
     on<ComposeResponseReceived>(_handleComposeResponseReceived);
     on<ConfirmationBackButtonPressed>(_handleConfirmationBackButtonPressed);
   }
 
   @override
-  void onFetchFormData(FetchFormData event, emit) async {
+  Future<void> onFetchFormData(FetchFormData event, emit) async {
     // delegated to fom
   }
 

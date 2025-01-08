@@ -55,17 +55,20 @@ class ComposeFairminterBloc extends ComposeBaseBloc<ComposeFairminterState> {
     required this.signAndBroadcastTransactionUseCase,
     required this.writelocalTransactionUseCase,
     required this.blockRepository,
-  }) : super(ComposeFairminterState(
-          submitState: const SubmitInitial(),
-          feeOption: FeeOption.Medium(),
-          balancesState: const BalancesState.initial(),
-          feeState: const FeeState.initial(),
-          assetState: const AssetState.initial(),
-          fairmintersState: const FairmintersState.initial(),
-        ));
+  }) : super(
+          ComposeFairminterState(
+            submitState: const SubmitInitial(),
+            feeOption: FeeOption.Medium(),
+            balancesState: const BalancesState.initial(),
+            feeState: const FeeState.initial(),
+            assetState: const AssetState.initial(),
+            fairmintersState: const FairmintersState.initial(),
+          ),
+          composePage: 'compose_fairminter',
+        );
 
   @override
-  void onFetchFormData(FetchFormData event, emit) async {
+  Future<void> onFetchFormData(FetchFormData event, emit) async {
     emit(state.copyWith(
         balancesState: const BalancesState.loading(),
         feeState: const FeeState.loading(),

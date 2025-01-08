@@ -33,8 +33,22 @@ class ErrorServiceImpl implements ErrorService {
 
   @override
   Future<void> captureException(dynamic exception,
-      {StackTrace? stackTrace}) async {
+      {String? message, StackTrace? stackTrace}) async {
     if (!config.isSentryEnabled || !_isInitialized) return;
+
+    try {
+      // Capturing an error breadcrumb allows us to capture the full message, uri, and status code of the failed request before the exception is captured
+      await Sentry.addBreadcrumb(
+        Breadcrumb(
+          type: 'error',
+          category: 'error',
+          message: message ?? exception.toString(),
+        ),
+      );
+      logger.info('Breadcrumb error added to Sentry');
+    } catch (e) {
+      logger.error('Failed to add breadcrumb to Sentry', e as Error);
+    }
 
     try {
       final result =

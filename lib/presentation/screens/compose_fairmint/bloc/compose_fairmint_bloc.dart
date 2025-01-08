@@ -47,15 +47,18 @@ class ComposeFairmintBloc extends ComposeBaseBloc<ComposeFairmintState> {
     required this.writelocalTransactionUseCase,
     required this.blockRepository,
     this.initialFairminterTxHash,
-  }) : super(ComposeFairmintState(
-          submitState: const SubmitInitial(),
-          feeOption: FeeOption.Medium(),
-          balancesState: const BalancesState.initial(),
-          feeState: const FeeState.initial(),
-          fairmintersState: const FairmintersState.initial(),
-          initialFairminterTxHash: initialFairminterTxHash,
-          selectedFairminter: null,
-        )) {
+  }) : super(
+          ComposeFairmintState(
+            submitState: const SubmitInitial(),
+            feeOption: FeeOption.Medium(),
+            balancesState: const BalancesState.initial(),
+            feeState: const FeeState.initial(),
+            fairmintersState: const FairmintersState.initial(),
+            initialFairminterTxHash: initialFairminterTxHash,
+            selectedFairminter: null,
+          ),
+          composePage: 'compose_fairmint',
+        ) {
     on<FairminterChanged>(_onFairminterChanged);
   }
 
@@ -64,7 +67,7 @@ class ComposeFairmintBloc extends ComposeBaseBloc<ComposeFairmintState> {
   }
 
   @override
-  void onFetchFormData(FetchFormData event, emit) async {
+  Future<void> onFetchFormData(FetchFormData event, emit) async {
     Fairminter? currentSelectedFairminter = state.selectedFairminter;
 
     emit(state.copyWith(

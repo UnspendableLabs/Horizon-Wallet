@@ -52,15 +52,18 @@ class ComposeSendBloc extends ComposeBaseBloc<ComposeSendState> {
     required this.signAndBroadcastTransactionUseCase,
     required this.writelocalTransactionUseCase,
     required this.logger,
-  }) : super(ComposeSendState(
-          feeOption: FeeOption.Medium(),
-          submitState: const SubmitInitial(),
-          feeState: const FeeState.initial(),
-          balancesState: const BalancesState.initial(),
-          maxValue: const MaxValueState.initial(),
-          sendMax: false,
-          quantity: "",
-        )) {
+  }) : super(
+          ComposeSendState(
+            feeOption: FeeOption.Medium(),
+            submitState: const SubmitInitial(),
+            feeState: const FeeState.initial(),
+            balancesState: const BalancesState.initial(),
+            maxValue: const MaxValueState.initial(),
+            sendMax: false,
+            quantity: "",
+          ),
+          composePage: 'compose_send',
+        ) {
     // Register additional event handlers specific to sending
     on<ToggleSendMaxEvent>(_onToggleSendMaxEvent);
     on<ChangeAsset>(_onChangeAsset);

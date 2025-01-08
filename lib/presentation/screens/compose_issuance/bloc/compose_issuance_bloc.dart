@@ -58,12 +58,15 @@ class ComposeIssuanceBloc extends ComposeBaseBloc<ComposeIssuanceState> {
       required this.writelocalTransactionUseCase,
       required this.logger,
       required this.fetchIssuanceFormDataUseCase})
-      : super(ComposeIssuanceState(
-            submitState: const SubmitInitial(),
-            feeOption: FeeOption.Medium(),
-            balancesState: const BalancesState.initial(),
-            feeState: const FeeState.initial(),
-            quantity: '')) {
+      : super(
+          ComposeIssuanceState(
+              submitState: const SubmitInitial(),
+              feeOption: FeeOption.Medium(),
+              balancesState: const BalancesState.initial(),
+              feeState: const FeeState.initial(),
+              quantity: ''),
+          composePage: 'compose_issuance',
+        ) {
     // Event handlers specific to issuance
   }
 
@@ -74,7 +77,7 @@ class ComposeIssuanceBloc extends ComposeBaseBloc<ComposeIssuanceState> {
   }
 
   @override
-  void onFetchFormData(FetchFormData event, emit) async {
+  Future<void> onFetchFormData(FetchFormData event, emit) async {
     emit(state.copyWith(
       balancesState: const BalancesState.loading(),
       feeState: const FeeState.loading(),

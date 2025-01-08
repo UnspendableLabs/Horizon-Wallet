@@ -43,16 +43,19 @@ class ComposeDividendBloc extends ComposeBaseBloc<ComposeDividendState> {
     required this.signAndBroadcastTransactionUseCase,
     required this.writelocalTransactionUseCase,
     required this.logger,
-  }) : super(ComposeDividendState(
-          submitState: const SubmitInitial(),
-          feeOption: FeeOption.Medium(),
-          balancesState: const BalancesState.initial(),
-          feeState: const FeeState.initial(),
-          assetState: const AssetState.initial(),
-        ));
+  }) : super(
+          ComposeDividendState(
+            submitState: const SubmitInitial(),
+            feeOption: FeeOption.Medium(),
+            balancesState: const BalancesState.initial(),
+            feeState: const FeeState.initial(),
+            assetState: const AssetState.initial(),
+          ),
+          composePage: 'compose_dividend',
+        );
 
   @override
-  void onFetchFormData(FetchFormData event, emit) async {
+  Future<void> onFetchFormData(FetchFormData event, emit) async {
     emit(state.copyWith(
         balancesState: const BalancesState.loading(),
         feeState: const FeeState.loading(),

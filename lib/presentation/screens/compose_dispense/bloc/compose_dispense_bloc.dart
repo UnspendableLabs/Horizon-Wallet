@@ -54,14 +54,17 @@ class ComposeDispenseBloc extends ComposeBaseBloc<ComposeDispenseState> {
     required this.signAndBroadcastTransactionUseCase,
     required this.writelocalTransactionUseCase,
     required this.estimateDispensesUseCase,
-  }) : super(ComposeDispenseState(
-          feeOption: FeeOption.Medium(),
-          submitState: const SubmitInitial(),
-          feeState: const FeeState.initial(),
-          balancesState: const BalancesState.initial(),
-          dispensersState: const DispensersState.initial(),
-          quantity: "",
-        )) {
+  }) : super(
+          ComposeDispenseState(
+            feeOption: FeeOption.Medium(),
+            submitState: const SubmitInitial(),
+            feeState: const FeeState.initial(),
+            balancesState: const BalancesState.initial(),
+            dispensersState: const DispensersState.initial(),
+            quantity: "",
+          ),
+          composePage: 'compose_dispense',
+        ) {
     on<DispenserAddressChanged>(_onDispenserAddressChanged);
     // Register additional event handlers specific to sending
   }
@@ -110,7 +113,7 @@ class ComposeDispenseBloc extends ComposeBaseBloc<ComposeDispenseState> {
   }
 
   @override
-  void onFetchFormData(FetchFormData event, emit) async {
+  Future<void> onFetchFormData(FetchFormData event, emit) async {
     emit(state.copyWith(
         balancesState: const BalancesState.loading(),
         feeState: const FeeState.loading(),

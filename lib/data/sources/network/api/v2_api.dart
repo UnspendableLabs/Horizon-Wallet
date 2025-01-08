@@ -3553,7 +3553,7 @@ class ComposeMpmaSend {
   final int btcIn;
   final int btcOut;
   final int btcFee;
-  final int btcChange;
+  final int? btcChange;
   final MpmaSendParams params;
 
   const ComposeMpmaSend({
@@ -3563,7 +3563,7 @@ class ComposeMpmaSend {
     required this.btcIn,
     required this.btcOut,
     required this.btcFee,
-    required this.btcChange,
+    this.btcChange,
     required this.params,
   });
 

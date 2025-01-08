@@ -45,7 +45,10 @@ class ComposeMpmaBloc extends ComposeBaseBloc<ComposeMpmaState> {
     required this.signAndBroadcastTransactionUseCase,
     required this.writelocalTransactionUseCase,
     required this.logger,
-  }) : super(ComposeMpmaState.initial()) {
+  }) : super(
+          ComposeMpmaState.initial(),
+          composePage: 'compose_mpma',
+        ) {
     // Register event handlers for entry updates
     on<EntryDestinationUpdated>(_onUpdateEntryDestination);
     on<EntryAssetUpdated>(_onUpdateEntryAsset);
