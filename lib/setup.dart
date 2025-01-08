@@ -270,7 +270,6 @@ Future<void> setup() async {
   injector.registerSingleton<BitcoinRepository>(BitcoinRepositoryImpl(
     esploraApi: EsploraApi(
       dio: esploraDio,
-      errorService: GetIt.I.get<ErrorService>(),
     ),
     // blockCypherApi: BlockCypherApi(dio: blockCypherDio)
   ));
@@ -287,7 +286,6 @@ Future<void> setup() async {
       api: GetIt.I.get<V2Api>(),
       esploraApi: EsploraApi(
         dio: esploraDio,
-        errorService: GetIt.I.get<ErrorService>(),
       ),
       cacheProvider: GetIt.I.get<CacheProvider>()));
   injector.registerSingleton<BalanceRepository>(BalanceRepositoryImpl(

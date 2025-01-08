@@ -43,7 +43,6 @@ class ErrorServiceImpl implements ErrorService {
           type: 'error',
           category: 'error',
           message: message ?? exception.toString(),
-          // data: {'stackTrace': stackTrace},
         ),
       );
       logger.info('Breadcrumb error added to Sentry');

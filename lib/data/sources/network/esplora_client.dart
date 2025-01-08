@@ -3,7 +3,6 @@ import 'package:horizon/data/models/bitcoin_tx.dart';
 import 'package:horizon/domain/entities/bitcoin_tx.dart';
 import 'package:horizon/domain/entities/failure.dart';
 import 'package:horizon/data/models/address_info.dart';
-import 'package:horizon/domain/services/error_service.dart';
 
 class EsploraUtxoStatus {
   final bool confirmed;
@@ -54,13 +53,9 @@ class EsploraUtxo {
 
 class EsploraApi {
   final Dio _dio;
-  final ErrorService errorService;
   final _confirmedTxCache = <String, List<BitcoinTxModel>>{};
 
-  EsploraApi({
-    required Dio dio,
-    required this.errorService,
-  }) : _dio = dio;
+  EsploraApi({required Dio dio}) : _dio = dio;
 
   Future<List<EsploraUtxo>> getUtxosForAddress(String address) async {
     try {
@@ -181,30 +176,12 @@ class EsploraApi {
     if (e.type == DioExceptionType.connectionTimeout ||
         e.type == DioExceptionType.sendTimeout ||
         e.type == DioExceptionType.receiveTimeout) {
-      errorService.addBreadcrumb(
-        type: 'error',
-        category: 'esplora',
-        message:
-            "${e.type} - ${e.message} - ${e.response?.statusCode} - ${e.requestOptions.uri}",
-      );
       throw const NetworkFailure(message: 'Connection timed out');
     } else if (e.response != null) {
-      errorService.addBreadcrumb(
-        type: 'error',
-        category: 'error',
-        message:
-            "${e.type} - ${e.message} - ${e.response?.statusCode} - ${e.requestOptions.uri}",
-      );
       throw ServerFailure(
           message: 'Server error: ${e.response?.statusCode}',
           statusCode: e.response?.statusCode);
     } else {
-      errorService.addBreadcrumb(
-        type: 'error',
-        category: 'esplora',
-        message:
-            "${e.type} - ${e.message} - ${e.response?.statusCode} - ${e.requestOptions.uri}",
-      );
       throw UnexpectedFailure(
           message: 'An unexpected error occurred: ${e.message}');
     }
