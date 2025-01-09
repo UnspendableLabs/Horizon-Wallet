@@ -13,6 +13,22 @@ import 'package:horizon/presentation/common/tx_hash_display.dart';
 import 'package:horizon/common/format.dart';
 import 'package:horizon/presentation/common/colors.dart';
 
+class RBF extends StatelessWidget {
+  final String txHash;
+  const RBF({
+    super.key,
+    required this.txHash,
+  });
+  @override
+  Widget build(BuildContext context) {
+    return TextButton(
+        onPressed: () {
+          print(txHash);
+        },
+        child: Text("accelerate"));
+  }
+}
+
 class SendTitle extends StatelessWidget {
   final String quantityNormalized;
   final String asset;
@@ -537,7 +553,7 @@ class ActivityFeedListItem extends StatelessWidget {
 
   Widget _buildTrailing() {
     if (item.event != null) {
-      return _getEventTrailing(item.event!.state);
+      return _getEventTrailing(item.event!.state, item.event!.txHash);
     } else if (item.info != null) {
       return _getTransactionTrailing(item.info!.domain);
     } else if (item.bitcoinTx != null) {
@@ -638,9 +654,14 @@ class ActivityFeedListItem extends StatelessWidget {
     };
   }
 
-  Widget _getEventTrailing(EventState state) => switch (state) {
-        EventStateMempool() =>
+  Widget _getEventTrailing(EventState state, String? txHash) => switch (state) {
+        EventStateMempool() => Column(
+          children: [
           const TransactionStatusPill(status: TransactionStatus.mempool),
+          RBF(txHash: txHash!)
+          ],
+
+        ),
         EventStateConfirmed(blockHeight: var blockHeight) =>
           TransactionStatusPill(
               status: TransactionStatus.confirmed,
