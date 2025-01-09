@@ -1,9 +1,11 @@
+import 'package:decimal/decimal.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/common/format.dart';
 import 'package:horizon/core/logging/logger.dart';
+import 'package:horizon/domain/entities/asset.dart';
 import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/domain/entities/compose_dividend.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
@@ -86,14 +88,21 @@ class ComposeDividendPageState extends State<ComposeDividendPage> {
   Balance? dividendBalance;
   bool assetError = false;
   String? xcpError;
+  bool maxAmountError = false;
 
   @override
   void initState() {
     super.initState();
+    quantityPerUnitController.addListener(() {
+      setState(() {});
+    });
   }
 
   @override
   void dispose() {
+    quantityPerUnitController.removeListener(() {
+      setState(() {});
+    });
     quantityPerUnitController.dispose();
     super.dispose();
   }
@@ -155,6 +164,12 @@ class ComposeDividendPageState extends State<ComposeDividendPage> {
           enabled: false,
           controller: TextEditingController(
               text: displayAssetName(asset.asset, asset.assetLongname)),
+        ),
+        const SizedBox(height: 16),
+        HorizonUI.HorizonTextFormField(
+          label: 'Target Asset Total Supply',
+          enabled: false,
+          controller: TextEditingController(text: asset.supplyNormalized),
         ),
         const SizedBox(height: 16),
         _buildAssetInput(state, loading, formKey, 'Dividend Payment Asset'),
@@ -254,11 +269,10 @@ class ComposeDividendPageState extends State<ComposeDividendPage> {
                 if (value!.isEmpty) {
                   return 'Please enter a quantity per unit';
                 }
+                maxAmountError = false;
                 return null;
               },
-              autovalidateMode: _submitted
-                  ? AutovalidateMode.onUserInteraction
-                  : AutovalidateMode.disabled,
+              autovalidateMode: AutovalidateMode.onUserInteraction,
               inputFormatters: [
                 dividendBalance?.assetInfo.divisible == true
                     ? DecimalTextInputFormatter(decimalRange: 8)
@@ -267,12 +281,78 @@ class ComposeDividendPageState extends State<ComposeDividendPage> {
               onFieldSubmitted: (value) {
                 _handleInitialSubmit(formKey);
               },
+              suffix: dividendBalance != null
+                  ? TextButton(
+                      onPressed: () {
+                        state.assetState.maybeWhen(
+                          success: (asset) {
+                            final maxAmount =
+                                _calculateMaxAmount(dividendBalance!, asset);
+                            quantityPerUnitController.text = maxAmount;
+                          },
+                          orElse: () {},
+                        );
+                      },
+                      child: const Text('MAX'),
+                    )
+                  : null,
+            ),
+            if (maxAmountError)
+              const SelectableText(
+                'Not enough balance to pay max dividend',
+                style: TextStyle(color: Colors.red),
+              ),
+            const SizedBox(height: 16),
+            HorizonUI.HorizonTextFormField(
+              enabled: false,
+              label: 'Total Dividend Balance',
+              controller: TextEditingController(
+                text: dividendBalance != null
+                    ? '${dividendBalance!.quantityNormalized} ${displayAssetName(dividendBalance!.asset, dividendBalance!.assetInfo.assetLongname)}'
+                    : '',
+              ),
             ),
           ],
         );
       },
       orElse: () => const SizedBox.shrink(),
     );
+  }
+
+  String _calculateMaxAmount(Balance dividendBalance, Asset asset) {
+    try {
+      final dividendQuantity =
+          Decimal.parse(dividendBalance.quantityNormalized);
+      final assetSupply = Decimal.parse(asset.supplyNormalized!);
+
+      if (assetSupply == Decimal.zero) {
+        return '0';
+      }
+
+      // Convert the Rational to a decimal string by performing the actual division
+      final rational = dividendQuantity / assetSupply;
+      final rawValue =
+          rational.numerator.toDouble() / rational.denominator.toDouble();
+
+      // If asset is not divisible
+      if (!dividendBalance.assetInfo.divisible) {
+        if (rawValue < 1) {
+          maxAmountError = true;
+          return '0';
+        }
+        // Round down to nearest whole number
+        return rawValue.floor().toString();
+      }
+
+      // For divisible assets, round to 8 decimal places
+      final roundedDown = (rawValue * 1e8).floor() / 1e8;
+      final decimalValue = Decimal.parse(roundedDown.toString());
+
+      return decimalValue.toString();
+    } catch (e) {
+      maxAmountError = true;
+      return '0';
+    }
   }
 
   void _handleInitialCancel() {
@@ -287,6 +367,9 @@ class ComposeDividendPageState extends State<ComposeDividendPage> {
       setState(() {
         assetError = true;
       });
+      return;
+    }
+    if (maxAmountError) {
       return;
     }
     if (formKey.currentState!.validate()) {
