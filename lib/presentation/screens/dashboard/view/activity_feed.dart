@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get_it/get_it.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:horizon/presentation/common/shared_util.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart';
@@ -9,11 +10,17 @@ import 'package:horizon/domain/entities/event.dart';
 import 'package:horizon/domain/entities/transaction_info.dart';
 import 'package:horizon/presentation/common/no_data.dart';
 import 'package:horizon/domain/entities/bitcoin_tx.dart';
+import 'package:horizon/domain/repositories/bitcoin_repository.dart';
+import 'package:horizon/domain/services/transaction_service.dart';
 import 'package:horizon/presentation/common/tx_hash_display.dart';
 import 'package:horizon/common/format.dart';
 import 'package:horizon/presentation/common/colors.dart';
 import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
-import 'package:horizon/presentation/forms/replace_by_fee/replace_by_fee_form.dart';
+import 'package:horizon/presentation/forms/replace_by_fee/replace_by_fee_form_view.dart';
+import 'package:horizon/presentation/forms/replace_by_fee/replace_by_fee_form_bloc.dart';
+import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
+import 'package:horizon/presentation/screens/compose_rbf/view/compose_rbf_view.dart';
+
 
 class RBF extends StatelessWidget {
   final String txHash;
@@ -27,8 +34,8 @@ class RBF extends StatelessWidget {
         onPressed: () {
           HorizonUI.HorizonDialog.show(
               context: context,
-              body: HorizonUI.HorizonDialog(
-                  title: "Accelerate this transaction", body: ReplaceByFeeForm()));
+              body: ComposeRBFPageWrapper(txHash: txHash),
+              );
         },
         child: Text("accelerate"));
   }

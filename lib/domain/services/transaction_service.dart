@@ -35,6 +35,11 @@ abstract class TransactionService {
       required String destinationAddress,
       required String destinationPrivKey,
       required int fee});
+
+  Future<String> makeRBF({
+    required String txHex,
+    required int feeDelta,
+  });
 }
 
 class TransactionServiceException implements Exception {

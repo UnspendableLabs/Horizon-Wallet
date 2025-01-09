@@ -29,12 +29,49 @@ const ADVANCED_TRANSACTION_FLAG = 0x01;
 
 class TransactionServiceImpl implements TransactionService {
   final Config config;
-
   ecpair.ECPairFactory ecpairFactory =
       ecpair.ECPairFactory(tinysecp256k1js.ecc);
   final bitcoinRepository = GetIt.I.get<BitcoinRepository>();
 
   TransactionServiceImpl({required this.config});
+
+  Future<String> makeRBF({
+    required String txHex,
+    required int feeDelta,
+  }) async {
+    bitcoinjs.Psbt psbt = bitcoinjs.Psbt();
+
+    bitcoinjs.Transaction transaction = bitcoinjs.Transaction.fromHex(txHex);
+
+    for (bitcoinjs.TxInput input in transaction.ins.toDart) {
+      psbt.addInput(input);
+    }
+
+    // TODO: this is not reliable
+    int lastOutIndex = transaction.outs.toDart.length - 1;
+
+    final lastOut = transaction.outs.toDart[lastOutIndex];
+
+    final newValue = lastOut.value - feeDelta;
+
+    if (newValue < 0) {
+      throw TransactionServiceException(
+          'Fee increase exceeds available change');
+    }
+
+    lastOut.value = newValue;
+
+    for (var i = 0; i < lastOutIndex; i++) {
+      final output = transaction.outs.toDart[i];
+      psbt.addOutput(output);
+    }
+
+    psbt.addOutput(lastOut);
+
+    return psbt.toHex();
+
+    return "";
+  }
 
   @override
   String signPsbt(String psbtHex, Map<int, String> inputPrivateKeyMap,
