@@ -12,6 +12,7 @@ import 'package:horizon/domain/entities/bitcoin_tx.dart';
 import 'package:horizon/presentation/common/tx_hash_display.dart';
 import 'package:horizon/common/format.dart';
 import 'package:horizon/presentation/common/colors.dart';
+import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
 
 class RBF extends StatelessWidget {
   final String txHash;
@@ -23,7 +24,12 @@ class RBF extends StatelessWidget {
   Widget build(BuildContext context) {
     return TextButton(
         onPressed: () {
-          print(txHash);
+            HorizonUI.HorizonDialog.show(
+                context: context,
+                body: HorizonUI.HorizonDialog(
+                    title: "Accelerate this transaction",
+                    body:  Text(txHash)
+                    ));
         },
         child: Text("accelerate"));
   }
