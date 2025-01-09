@@ -1,9 +1,11 @@
+import 'package:decimal/decimal.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/common/format.dart';
 import 'package:horizon/core/logging/logger.dart';
+import 'package:horizon/domain/entities/asset.dart';
 import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/domain/entities/compose_dividend.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
@@ -85,14 +87,22 @@ class ComposeDividendPageState extends State<ComposeDividendPage> {
   bool _submitted = false;
   Balance? dividendBalance;
   bool assetError = false;
+  String? xcpError;
+  bool maxAmountError = false;
 
   @override
   void initState() {
     super.initState();
+    quantityPerUnitController.addListener(() {
+      setState(() {});
+    });
   }
 
   @override
   void dispose() {
+    quantityPerUnitController.removeListener(() {
+      setState(() {});
+    });
     quantityPerUnitController.dispose();
     super.dispose();
   }
@@ -112,7 +122,7 @@ class ComposeDividendPageState extends State<ComposeDividendPage> {
           onInitialCancel: () => _handleInitialCancel(),
           onInitialSubmit: (formKey) => _handleInitialSubmit(formKey),
           buildConfirmationFormFields: (_, composeTransaction, formKey) =>
-              _buildConfirmationDetails(composeTransaction),
+              _buildConfirmationDetails(composeTransaction, state),
           onConfirmationBack: () => _onConfirmationBack(),
           onConfirmationContinue: (composeTransaction, fee, formKey) {
             _onConfirmationContinue(composeTransaction, fee, formKey);
@@ -128,6 +138,23 @@ class ComposeDividendPageState extends State<ComposeDividendPage> {
 
   List<Widget> _buildInitialFormFields(
       ComposeDividendState state, bool loading, GlobalKey<FormState> formKey) {
+    final xcpFee = state.dividendXcpFeeState.maybeWhen(
+      success: (dividendXcpFee) => dividendXcpFee,
+      error: (error) {
+        xcpError = error;
+        return 0;
+      },
+      orElse: () => 0,
+    );
+    if (xcpError != null) {
+      return [
+        SelectableText('Error fetching dividend XCP fee: $xcpError'),
+      ];
+    }
+    final balances = state.balancesState.maybeWhen(
+      success: (balances) => balances,
+      orElse: () => [],
+    );
     return state.assetState.maybeWhen(
       success: (asset) => [
         HorizonUI.HorizonTextFormField(
@@ -143,7 +170,34 @@ class ComposeDividendPageState extends State<ComposeDividendPage> {
               text: displayAssetName(asset.asset, asset.assetLongname)),
         ),
         const SizedBox(height: 16),
+        HorizonUI.HorizonTextFormField(
+          label: 'Target Asset Total Supply (not including issuer\'s balance)',
+          enabled: false,
+          controller: TextEditingController(
+              text: asset.divisible!
+                  ? (Decimal.parse(asset.supplyNormalized!) -
+                          Decimal.parse(balances
+                              .firstWhere((balance) =>
+                                  balance.asset == widget.assetName)
+                              .quantityNormalized))
+                      .toStringAsFixed(8)
+                  : (Decimal.parse(asset.supplyNormalized!) -
+                          Decimal.parse(balances
+                              .firstWhere((balance) =>
+                                  balance.asset == widget.assetName)
+                              .quantityNormalized))
+                      .toString()),
+        ),
+        const SizedBox(height: 16),
         _buildAssetInput(state, loading, formKey, 'Dividend Payment Asset'),
+        const SizedBox(height: 16),
+        HorizonUI.HorizonTextFormField(
+          enabled: false,
+          label: 'XCP Fee',
+          controller: TextEditingController(
+              text:
+                  '${quantityToQuantityNormalizedString(quantity: xcpFee, divisible: true)} XCP'),
+        ),
       ],
       error: (error) => [
         SelectableText('Error fetching asset ${widget.assetName}: $error'),
@@ -170,6 +224,11 @@ class ComposeDividendPageState extends State<ComposeDividendPage> {
             HorizonUI.HorizonTextFormField(
               enabled: false,
               label: 'Quantity per unit',
+            ),
+            SizedBox(height: 16),
+            HorizonUI.HorizonTextFormField(
+              enabled: false,
+              label: 'XCP Fee',
             ),
           ],
         ),
@@ -227,11 +286,10 @@ class ComposeDividendPageState extends State<ComposeDividendPage> {
                 if (value!.isEmpty) {
                   return 'Please enter a quantity per unit';
                 }
+                maxAmountError = false;
                 return null;
               },
-              autovalidateMode: _submitted
-                  ? AutovalidateMode.onUserInteraction
-                  : AutovalidateMode.disabled,
+              autovalidateMode: AutovalidateMode.onUserInteraction,
               inputFormatters: [
                 dividendBalance?.assetInfo.divisible == true
                     ? DecimalTextInputFormatter(decimalRange: 8)
@@ -240,12 +298,82 @@ class ComposeDividendPageState extends State<ComposeDividendPage> {
               onFieldSubmitted: (value) {
                 _handleInitialSubmit(formKey);
               },
+              suffix: dividendBalance != null
+                  ? TextButton(
+                      onPressed: () {
+                        state.assetState.maybeWhen(
+                          success: (asset) {
+                            final maxAmount = _calculateMaxAmount(
+                                dividendBalance!,
+                                asset,
+                                balances.firstWhere((balance) =>
+                                    balance.asset == widget.assetName));
+                            quantityPerUnitController.text = maxAmount;
+                          },
+                          orElse: () {},
+                        );
+                      },
+                      child: const Text('MAX'),
+                    )
+                  : null,
+            ),
+            if (maxAmountError)
+              const SelectableText(
+                'Not enough balance to pay max dividend',
+                style: TextStyle(color: Colors.red),
+              ),
+            const SizedBox(height: 16),
+            HorizonUI.HorizonTextFormField(
+              enabled: false,
+              label: 'Total Dividend Balance',
+              controller: TextEditingController(
+                text: dividendBalance != null
+                    ? '${dividendBalance!.quantityNormalized} ${displayAssetName(dividendBalance!.asset, dividendBalance!.assetInfo.assetLongname)}'
+                    : '',
+              ),
             ),
           ],
         );
       },
       orElse: () => const SizedBox.shrink(),
     );
+  }
+
+  String _calculateMaxAmount(
+      Balance dividendBalance, Asset targetAsset, Balance targetAssetBalance) {
+    try {
+      final dividendQuantity =
+          Decimal.parse(dividendBalance.quantityNormalized);
+      final targetAssetSupply = Decimal.parse(targetAsset.supplyNormalized!) -
+          Decimal.parse(targetAssetBalance.quantityNormalized);
+
+      if (targetAssetSupply == Decimal.zero) {
+        return '0';
+      }
+
+      // Convert the Rational to a decimal string by performing the actual division
+      final rational = dividendQuantity / targetAssetSupply;
+      final rawValue =
+          rational.numerator.toDouble() / rational.denominator.toDouble();
+      // If asset is not divisible
+      if (!dividendBalance.assetInfo.divisible) {
+        if (rawValue < 1) {
+          maxAmountError = true;
+          return '0';
+        }
+        // Round down to nearest whole number
+        return rawValue.floor().toString();
+      }
+
+      // For divisible assets, round to 8 decimal places
+      final roundedDown = (rawValue * 1e8).floor() / 1e8;
+      final decimalValue = Decimal.parse(roundedDown.toString());
+
+      return decimalValue.toString();
+    } catch (e) {
+      maxAmountError = true;
+      return '0';
+    }
   }
 
   void _handleInitialCancel() {
@@ -260,6 +388,9 @@ class ComposeDividendPageState extends State<ComposeDividendPage> {
       setState(() {
         assetError = true;
       });
+      return;
+    }
+    if (maxAmountError) {
       return;
     }
     if (formKey.currentState!.validate()) {
@@ -277,7 +408,16 @@ class ComposeDividendPageState extends State<ComposeDividendPage> {
     }
   }
 
-  List<Widget> _buildConfirmationDetails(dynamic composeTransaction) {
+  List<Widget> _buildConfirmationDetails(
+      dynamic composeTransaction, ComposeDividendState state) {
+    final xcpFee = state.dividendXcpFeeState.maybeWhen(
+      success: (dividendXcpFee) => dividendXcpFee,
+      error: (error) {
+        xcpError = error;
+        return 0;
+      },
+      orElse: () => 0,
+    );
     final params = (composeTransaction as ComposeDividendResponse).params;
     return [
       HorizonUI.HorizonTextFormField(
@@ -308,8 +448,15 @@ class ComposeDividendPageState extends State<ComposeDividendPage> {
         controller:
             TextEditingController(text: params.quantityPerUnitNormalized),
       ),
+      const SizedBox(height: 16),
+      HorizonUI.HorizonTextFormField(
+        enabled: false,
+        label: 'XCP Fee',
+        controller: TextEditingController(
+            text:
+                '${quantityToQuantityNormalizedString(quantity: xcpFee, divisible: true)} XCP'),
+      ),
     ];
-//
   }
 
   void _onConfirmationBack() {

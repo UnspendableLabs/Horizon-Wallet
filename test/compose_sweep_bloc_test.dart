@@ -6,6 +6,7 @@ import 'package:horizon/domain/entities/compose_sweep.dart';
 import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/domain/entities/fee_option.dart' as FeeOption;
 import 'package:horizon/domain/repositories/compose_repository.dart';
+import 'package:horizon/domain/repositories/estimate_xcp_fee_repository.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/domain/services/error_service.dart';
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_event.dart';
@@ -36,6 +37,9 @@ class MockSignAndBroadcastTransactionUseCase extends Mock
 
 class MockWriteLocalTransactionUseCase extends Mock
     implements WriteLocalTransactionUseCase {}
+
+class MockEstimateXcpFeeRepository extends Mock
+    implements EstimateXcpFeeRepository {}
 
 class MockErrorService extends Mock implements ErrorService {}
 
@@ -77,7 +81,7 @@ void main() {
       mockSignAndBroadcastTransactionUseCase;
   late MockWriteLocalTransactionUseCase mockWriteLocalTransactionUseCase;
   late MockErrorService mockErrorService;
-
+  late MockEstimateXcpFeeRepository mockEstimateXcpFeeRepository;
   const mockFeeEstimates = FeeEstimates(fast: 5, medium: 3, slow: 1);
   final mockComposeSweepResponse = MockComposeSweepResponse();
 
@@ -113,6 +117,7 @@ void main() {
     mockSignAndBroadcastTransactionUseCase =
         MockSignAndBroadcastTransactionUseCase();
     mockWriteLocalTransactionUseCase = MockWriteLocalTransactionUseCase();
+    mockEstimateXcpFeeRepository = MockEstimateXcpFeeRepository();
     mockErrorService = MockErrorService();
 
     // Register the ErrorService mock with GetIt
@@ -127,6 +132,7 @@ void main() {
       signAndBroadcastTransactionUseCase:
           mockSignAndBroadcastTransactionUseCase,
       writelocalTransactionUseCase: mockWriteLocalTransactionUseCase,
+      estimateXcpFeeRepository: mockEstimateXcpFeeRepository,
     );
   });
 
@@ -150,6 +156,8 @@ void main() {
       build: () {
         when(() => mockGetFeeEstimatesUseCase.call())
             .thenAnswer((_) async => mockFeeEstimates);
+        when(() => mockEstimateXcpFeeRepository.estimateSweepXcpFees(any()))
+            .thenAnswer((_) async => 20000000);
         return bloc;
       },
       act: (bloc) => bloc.add(FetchFormData(currentAddress: 'test-address')),
@@ -159,14 +167,18 @@ void main() {
                 const BalancesState.loading())
             .having((s) => s.feeState, 'feeState', const FeeState.loading())
             .having((s) => s.feeOption, 'feeOption', isA<FeeOption.Medium>())
-            .having((s) => s.submitState, 'submitState', isA<SubmitInitial>()),
+            .having((s) => s.submitState, 'submitState', isA<SubmitInitial>())
+            .having((s) => s.sweepXcpFeeState, 'sweepXcpFeeState',
+                const SweepXcpFeeState.loading()),
         isA<ComposeSweepState>()
             .having((s) => s.balancesState, 'balancesState',
                 const BalancesState.success([]))
             .having((s) => s.feeState, 'feeState',
                 const FeeState.success(mockFeeEstimates))
             .having((s) => s.feeOption, 'feeOption', isA<FeeOption.Medium>())
-            .having((s) => s.submitState, 'submitState', isA<SubmitInitial>()),
+            .having((s) => s.submitState, 'submitState', isA<SubmitInitial>())
+            .having((s) => s.sweepXcpFeeState, 'sweepXcpFeeState',
+                const SweepXcpFeeState.success(20000000)),
       ],
     );
 
@@ -184,6 +196,8 @@ void main() {
                 const BalancesState.loading())
             .having((s) => s.feeState, 'feeState', const FeeState.loading())
             .having((s) => s.feeOption, 'feeOption', isA<FeeOption.Medium>())
+            .having((s) => s.sweepXcpFeeState, 'sweepXcpFeeState',
+                const SweepXcpFeeState.loading())
             .having((s) => s.submitState, 'submitState', isA<SubmitInitial>()),
         isA<ComposeSweepState>()
             .having((s) => s.balancesState, 'balancesState',
@@ -210,7 +224,9 @@ void main() {
                 const BalancesState.initial())
             .having((s) => s.feeState, 'feeState', const FeeState.initial())
             .having((s) => s.feeOption, 'feeOption', isA<FeeOption.Fast>())
-            .having((s) => s.submitState, 'submitState', isA<SubmitInitial>()),
+            .having((s) => s.submitState, 'submitState', isA<SubmitInitial>())
+            .having((s) => s.sweepXcpFeeState, 'sweepXcpFeeState',
+                const SweepXcpFeeState.initial()),
       ],
     );
   });
@@ -243,6 +259,7 @@ void main() {
         feeState: const FeeState.success(mockFeeEstimates),
         feeOption: FeeOption.Medium(),
         submitState: const SubmitInitial(),
+        sweepXcpFeeState: const SweepXcpFeeState.initial(),
       ),
       act: (bloc) => bloc.add(ComposeTransactionEvent(
         params: params,
@@ -256,12 +273,16 @@ void main() {
                 const FeeState.success(mockFeeEstimates))
             .having((s) => s.feeOption, 'feeOption', isA<FeeOption.Medium>())
             .having((s) => s.submitState, 'submitState',
-                isA<SubmitInitial>().having((s) => s.loading, 'loading', true)),
+                isA<SubmitInitial>().having((s) => s.loading, 'loading', true))
+            .having((s) => s.sweepXcpFeeState, 'sweepXcpFeeState',
+                const SweepXcpFeeState.initial()),
         isA<ComposeSweepState>()
             .having((s) => s.balancesState, 'balancesState',
                 const BalancesState.initial())
             .having((s) => s.feeState, 'feeState',
                 const FeeState.success(mockFeeEstimates))
+            .having((s) => s.sweepXcpFeeState, 'sweepXcpFeeState',
+                const SweepXcpFeeState.initial())
             .having((s) => s.feeOption, 'feeOption', isA<FeeOption.Medium>())
             .having(
                 (s) => s.submitState,
@@ -312,6 +333,7 @@ void main() {
         balancesState: const BalancesState.initial(),
         feeState: const FeeState.initial(),
         feeOption: FeeOption.Medium(),
+        sweepXcpFeeState: const SweepXcpFeeState.initial(),
         submitState: SubmitFinalizing<ComposeSweepResponse>(
           loading: false,
           error: null,
@@ -327,6 +349,8 @@ void main() {
                 const BalancesState.initial())
             .having((s) => s.feeState, 'feeState', const FeeState.initial())
             .having((s) => s.feeOption, 'feeOption', isA<FeeOption.Medium>())
+            .having((s) => s.sweepXcpFeeState, 'sweepXcpFeeState',
+                const SweepXcpFeeState.initial())
             .having(
                 (s) => s.submitState,
                 'submitState',
@@ -341,6 +365,8 @@ void main() {
                 const BalancesState.initial())
             .having((s) => s.feeState, 'feeState', const FeeState.initial())
             .having((s) => s.feeOption, 'feeOption', isA<FeeOption.Medium>())
+            .having((s) => s.sweepXcpFeeState, 'sweepXcpFeeState',
+                const SweepXcpFeeState.initial())
             .having(
                 (s) => s.submitState,
                 'submitState',

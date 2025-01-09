@@ -141,8 +141,8 @@ void main() {
       'emits loading and then success states when data is fetched successfully',
       build: () {
         when(() => mockFetchDividendFormDataUseCase.call(any(), any()))
-            .thenAnswer(
-                (_) async => ([mockBalance], mockAsset, mockFeeEstimates));
+            .thenAnswer((_) async =>
+                ([mockBalance], mockAsset, mockFeeEstimates, 20000000));
         return composeDividendBloc;
       },
       act: (bloc) {
@@ -155,11 +155,13 @@ void main() {
           feeState: const FeeState.loading(),
           submitState: const SubmitInitial(),
           assetState: const AssetState.loading(),
+          dividendXcpFeeState: const DividendXcpFeeState.loading(),
         ),
         composeDividendBloc.state.copyWith(
           balancesState: BalancesState.success([mockBalance]),
           feeState: const FeeState.success(mockFeeEstimates),
           assetState: const AssetState.success(mockAsset),
+          dividendXcpFeeState: const DividendXcpFeeState.success(20000000),
         ),
       ],
     );

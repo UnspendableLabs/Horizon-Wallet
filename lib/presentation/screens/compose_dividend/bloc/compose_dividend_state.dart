@@ -19,6 +19,7 @@ class ComposeDividendState with _$ComposeDividendState, ComposeStateBase {
 
     // dividend specific properties
     required AssetState assetState,
+    required DividendXcpFeeState dividendXcpFeeState,
   }) = _ComposeDividendState;
 
   factory ComposeDividendState.initial() => ComposeDividendState(
@@ -27,6 +28,7 @@ class ComposeDividendState with _$ComposeDividendState, ComposeStateBase {
         feeOption: Medium(),
         submitState: const SubmitInitial(),
         assetState: const AssetState.initial(),
+        dividendXcpFeeState: const DividendXcpFeeState.initial(),
       );
 }
 
@@ -36,4 +38,13 @@ class AssetState with _$AssetState {
   const factory AssetState.loading() = _AssetLoading;
   const factory AssetState.success(Asset asset) = _AssetSuccess;
   const factory AssetState.error(String error) = _AssetError;
+}
+
+@freezed
+class DividendXcpFeeState with _$DividendXcpFeeState {
+  const factory DividendXcpFeeState.initial() = _DividendXcpFeeInitial;
+  const factory DividendXcpFeeState.loading() = _DividendXcpFeeLoading;
+  const factory DividendXcpFeeState.success(int dividendXcpFee) =
+      _DividendXcpFeeSuccess;
+  const factory DividendXcpFeeState.error(String error) = _DividendXcpFeeError;
 }

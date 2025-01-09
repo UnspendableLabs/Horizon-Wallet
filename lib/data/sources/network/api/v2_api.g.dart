@@ -6403,7 +6403,40 @@ class _V2Api implements V2Api {
   }
 
   @override
-  Future<Response<int>> estimateAttachXcpFees() async {
+  Future<Response<int>> estimateDividendXcpFees(
+    String address,
+    String asset,
+  ) async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{r'asset': asset};
+    final _headers = <String, dynamic>{};
+    const Map<String, dynamic>? _data = null;
+    final _result = await _dio
+        .fetch<Map<String, dynamic>>(_setStreamType<Response<int>>(Options(
+      method: 'GET',
+      headers: _headers,
+      extra: _extra,
+    )
+            .compose(
+              _dio.options,
+              '/addresses/${address}/compose/dividend/estimatexcpfees',
+              queryParameters: queryParameters,
+              data: _data,
+            )
+            .copyWith(
+                baseUrl: _combineBaseUrls(
+              _dio.options.baseUrl,
+              baseUrl,
+            ))));
+    final _value = Response<int>.fromJson(
+      _result.data!,
+      (json) => json as int,
+    );
+    return _value;
+  }
+
+  @override
+  Future<Response<int>> estimateSweepXcpFees(String address) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};
     final _headers = <String, dynamic>{};
@@ -6416,7 +6449,37 @@ class _V2Api implements V2Api {
     )
             .compose(
               _dio.options,
-              '/compose/attach/estimatexcpfees',
+              '/addresses/${address}/compose/sweep/estimatexcpfees',
+              queryParameters: queryParameters,
+              data: _data,
+            )
+            .copyWith(
+                baseUrl: _combineBaseUrls(
+              _dio.options.baseUrl,
+              baseUrl,
+            ))));
+    final _value = Response<int>.fromJson(
+      _result.data!,
+      (json) => json as int,
+    );
+    return _value;
+  }
+
+  @override
+  Future<Response<int>> estimateAttachXcpFees(String address) async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{};
+    final _headers = <String, dynamic>{};
+    const Map<String, dynamic>? _data = null;
+    final _result = await _dio
+        .fetch<Map<String, dynamic>>(_setStreamType<Response<int>>(Options(
+      method: 'GET',
+      headers: _headers,
+      extra: _extra,
+    )
+            .compose(
+              _dio.options,
+              '/addresses/${address}/compose/attach/estimatexcpfees',
               queryParameters: queryParameters,
               data: _data,
             )
