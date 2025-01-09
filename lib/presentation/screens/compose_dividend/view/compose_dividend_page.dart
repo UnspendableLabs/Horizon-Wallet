@@ -151,6 +151,10 @@ class ComposeDividendPageState extends State<ComposeDividendPage> {
         SelectableText('Error fetching dividend XCP fee: $xcpError'),
       ];
     }
+    final balances = state.balancesState.maybeWhen(
+      success: (balances) => balances,
+      orElse: () => [],
+    );
     return state.assetState.maybeWhen(
       success: (asset) => [
         HorizonUI.HorizonTextFormField(
@@ -167,9 +171,23 @@ class ComposeDividendPageState extends State<ComposeDividendPage> {
         ),
         const SizedBox(height: 16),
         HorizonUI.HorizonTextFormField(
-          label: 'Target Asset Total Supply',
+          label:
+              'Target Asset Total Supply (not including current addressbalance)',
           enabled: false,
-          controller: TextEditingController(text: asset.supplyNormalized),
+          controller: TextEditingController(
+              text: asset.divisible!
+                  ? (Decimal.parse(asset.supplyNormalized!) -
+                          Decimal.parse(balances
+                              .firstWhere((balance) =>
+                                  balance.asset == widget.assetName)
+                              .quantityNormalized))
+                      .toStringAsFixed(8)
+                  : (Decimal.parse(asset.supplyNormalized!) -
+                          Decimal.parse(balances
+                              .firstWhere((balance) =>
+                                  balance.asset == widget.assetName)
+                              .quantityNormalized))
+                      .toString()),
         ),
         const SizedBox(height: 16),
         _buildAssetInput(state, loading, formKey, 'Dividend Payment Asset'),
@@ -286,8 +304,11 @@ class ComposeDividendPageState extends State<ComposeDividendPage> {
                       onPressed: () {
                         state.assetState.maybeWhen(
                           success: (asset) {
-                            final maxAmount =
-                                _calculateMaxAmount(dividendBalance!, asset);
+                            final maxAmount = _calculateMaxAmount(
+                                dividendBalance!,
+                                asset,
+                                balances.firstWhere((balance) =>
+                                    balance.asset == widget.assetName));
                             quantityPerUnitController.text = maxAmount;
                           },
                           orElse: () {},
@@ -319,21 +340,22 @@ class ComposeDividendPageState extends State<ComposeDividendPage> {
     );
   }
 
-  String _calculateMaxAmount(Balance dividendBalance, Asset asset) {
+  String _calculateMaxAmount(
+      Balance dividendBalance, Asset targetAsset, Balance targetAssetBalance) {
     try {
       final dividendQuantity =
           Decimal.parse(dividendBalance.quantityNormalized);
-      final assetSupply = Decimal.parse(asset.supplyNormalized!);
+      final targetAssetSupply = Decimal.parse(targetAsset.supplyNormalized!) -
+          Decimal.parse(targetAssetBalance.quantityNormalized);
 
-      if (assetSupply == Decimal.zero) {
+      if (targetAssetSupply == Decimal.zero) {
         return '0';
       }
 
       // Convert the Rational to a decimal string by performing the actual division
-      final rational = dividendQuantity / assetSupply;
+      final rational = dividendQuantity / targetAssetSupply;
       final rawValue =
           rational.numerator.toDouble() / rational.denominator.toDouble();
-
       // If asset is not divisible
       if (!dividendBalance.assetInfo.divisible) {
         if (rawValue < 1) {
