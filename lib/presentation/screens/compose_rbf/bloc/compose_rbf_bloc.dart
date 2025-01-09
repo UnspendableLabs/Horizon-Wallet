@@ -14,8 +14,8 @@ import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
 
 T unwrapOrThrow<L extends Object, T>(Either<L, T> either) {
   return either.fold(
-    (l) => throw l, 
-    (r) => r, 
+    (l) => throw l,
+    (r) => r,
   );
 }
 
@@ -32,10 +32,12 @@ class ComposeRBFBloc extends ComposeBaseBloc<ReplaceByFeeState> {
       required this.balanceRepository,
       required this.bitcoinRepository,
       required this.getFeeEstimatesUseCase})
-      : super(ReplaceByFeeState.initial(txHash: txHash)) {}
+      : super(ReplaceByFeeState.initial(txHash: txHash), 
+      composePage: "compose_rbf"
+      ) {}
 
   @override
-  void onFetchFormData(
+  Future<void> onFetchFormData(
       FetchFormData event, Emitter<ReplaceByFeeState> emit) async {
     emit(state.copyWith(
       balancesState: const BalancesState.loading(),
@@ -69,8 +71,6 @@ class ComposeRBFBloc extends ComposeBaseBloc<ReplaceByFeeState> {
           unwrapOrThrow(await bitcoinRepository.getTransaction(txHash));
       print("og $originalTx");
     } catch (e) {
-
-
       emit(
           state.copyWith(originalTxState: OriginalTxState.error(e.toString())));
       return;
@@ -81,26 +81,21 @@ class ComposeRBFBloc extends ComposeBaseBloc<ReplaceByFeeState> {
       balancesState: BalancesState.success([balances.first]),
       feeState: FeeState.success(feeEstimates),
     ));
-
   }
 
   @override
   void onChangeFeeOption(
-      ChangeFeeOption event, Emitter<ReplaceByFeeState> emit) {
-  }
+      ChangeFeeOption event, Emitter<ReplaceByFeeState> emit) {}
 
   @override
   void onComposeTransaction(
-      ComposeTransactionEvent event, Emitter<ReplaceByFeeState> emit) {
-  }
+      ComposeTransactionEvent event, Emitter<ReplaceByFeeState> emit) {}
 
   @override
   void onFinalizeTransaction(
-      FinalizeTransactionEvent event, Emitter<ReplaceByFeeState> emit) {
-  }
+      FinalizeTransactionEvent event, Emitter<ReplaceByFeeState> emit) {}
 
   @override
-  void onSignAndBroadcastTransaction(
-      SignAndBroadcastTransactionEvent event, Emitter<ReplaceByFeeState> emit) {
-  }
+  void onSignAndBroadcastTransaction(SignAndBroadcastTransactionEvent event,
+      Emitter<ReplaceByFeeState> emit) {}
 }
