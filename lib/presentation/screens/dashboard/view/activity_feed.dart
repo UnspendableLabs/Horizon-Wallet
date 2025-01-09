@@ -13,6 +13,7 @@ import 'package:horizon/presentation/common/tx_hash_display.dart';
 import 'package:horizon/common/format.dart';
 import 'package:horizon/presentation/common/colors.dart';
 import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
+import 'package:horizon/presentation/forms/replace_by_fee/replace_by_fee_form.dart';
 
 class RBF extends StatelessWidget {
   final String txHash;
@@ -24,12 +25,10 @@ class RBF extends StatelessWidget {
   Widget build(BuildContext context) {
     return TextButton(
         onPressed: () {
-            HorizonUI.HorizonDialog.show(
-                context: context,
-                body: HorizonUI.HorizonDialog(
-                    title: "Accelerate this transaction",
-                    body:  Text(txHash)
-                    ));
+          HorizonUI.HorizonDialog.show(
+              context: context,
+              body: HorizonUI.HorizonDialog(
+                  title: "Accelerate this transaction", body: ReplaceByFeeForm()));
         },
         child: Text("accelerate"));
   }
@@ -662,12 +661,11 @@ class ActivityFeedListItem extends StatelessWidget {
 
   Widget _getEventTrailing(EventState state, String? txHash) => switch (state) {
         EventStateMempool() => Column(
-          children: [
-          const TransactionStatusPill(status: TransactionStatus.mempool),
-          RBF(txHash: txHash!)
-          ],
-
-        ),
+            children: [
+              const TransactionStatusPill(status: TransactionStatus.mempool),
+              RBF(txHash: txHash!)
+            ],
+          ),
         EventStateConfirmed(blockHeight: var blockHeight) =>
           TransactionStatusPill(
               status: TransactionStatus.confirmed,
