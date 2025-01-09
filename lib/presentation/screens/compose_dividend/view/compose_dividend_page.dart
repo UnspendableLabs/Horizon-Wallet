@@ -171,8 +171,7 @@ class ComposeDividendPageState extends State<ComposeDividendPage> {
         ),
         const SizedBox(height: 16),
         HorizonUI.HorizonTextFormField(
-          label:
-              'Target Asset Total Supply (not including current addressbalance)',
+          label: 'Target Asset Total Supply (not including issuer\'s balance)',
           enabled: false,
           controller: TextEditingController(
               text: asset.divisible!
