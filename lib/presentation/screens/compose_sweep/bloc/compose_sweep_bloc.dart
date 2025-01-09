@@ -4,6 +4,7 @@ import 'package:horizon/domain/entities/compose_sweep.dart';
 import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/domain/entities/fee_option.dart' as FeeOption;
 import 'package:horizon/domain/repositories/compose_repository.dart';
+import 'package:horizon/domain/repositories/estimate_xcp_fee_repository.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_bloc.dart';
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_event.dart';
@@ -27,23 +28,23 @@ class ComposeSweepEventParams {
 }
 
 class ComposeSweepBloc extends ComposeBaseBloc<ComposeSweepState> {
-  // final BalanceRepository balanceRepository;
   final ComposeRepository composeRepository;
   final AnalyticsService analyticsService;
   final GetFeeEstimatesUseCase getFeeEstimatesUseCase;
   final ComposeTransactionUseCase composeTransactionUseCase;
   final SignAndBroadcastTransactionUseCase signAndBroadcastTransactionUseCase;
   final WriteLocalTransactionUseCase writelocalTransactionUseCase;
+  final EstimateXcpFeeRepository estimateXcpFeeRepository;
   final Logger logger;
 
   ComposeSweepBloc({
-    // required this.balanceRepository,
     required this.composeRepository,
     required this.analyticsService,
     required this.getFeeEstimatesUseCase,
     required this.composeTransactionUseCase,
     required this.signAndBroadcastTransactionUseCase,
     required this.writelocalTransactionUseCase,
+    required this.estimateXcpFeeRepository,
     required this.logger,
   }) : super(
             ComposeSweepState(
@@ -51,6 +52,7 @@ class ComposeSweepBloc extends ComposeBaseBloc<ComposeSweepState> {
               feeOption: FeeOption.Medium(),
               balancesState: const BalancesState.initial(),
               feeState: const FeeState.initial(),
+              sweepXcpFeeState: const SweepXcpFeeState.initial(),
             ),
             composePage: 'compose_sweep');
 
@@ -60,6 +62,7 @@ class ComposeSweepBloc extends ComposeBaseBloc<ComposeSweepState> {
       balancesState: const BalancesState.loading(),
       feeState: const FeeState.loading(),
       submitState: const SubmitInitial(),
+      sweepXcpFeeState: const SweepXcpFeeState.loading(),
     ));
 
     FeeEstimates feeEstimates;
@@ -71,9 +74,20 @@ class ComposeSweepBloc extends ComposeBaseBloc<ComposeSweepState> {
       return;
     }
 
+    int sweepXcpFee;
+    try {
+      sweepXcpFee = await estimateXcpFeeRepository
+          .estimateSweepXcpFees(event.currentAddress!);
+    } catch (e) {
+      emit(state.copyWith(
+          sweepXcpFeeState: SweepXcpFeeState.error(e.toString())));
+      return;
+    }
+
     emit(state.copyWith(
       balancesState: const BalancesState.success([]),
       feeState: FeeState.success(feeEstimates),
+      sweepXcpFeeState: SweepXcpFeeState.success(sweepXcpFee),
     ));
   }
 

@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:horizon/domain/entities/asset_info.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
+import 'package:horizon/domain/repositories/estimate_xcp_fee_repository.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:horizon/presentation/screens/compose_attach_utxo/usecase/fetch_form_data.dart';
 import 'package:horizon/domain/entities/fee_estimates.dart';
@@ -13,22 +14,25 @@ class MockGetFeeEstimatesUseCase extends Mock
 
 class MockBalanceRepository extends Mock implements BalanceRepository {}
 
+class MockEstimateXcpFeeRepository extends Mock
+    implements EstimateXcpFeeRepository {}
+
 class MockComposeRepository extends Mock implements ComposeRepository {}
 
 void main() {
   late FetchComposeAttachUtxoFormDataUseCase useCase;
   late MockGetFeeEstimatesUseCase mockGetFeeEstimatesUseCase;
   late MockBalanceRepository mockBalanceRepository;
-  late MockComposeRepository mockComposeRepository;
+  late MockEstimateXcpFeeRepository mockEstimateXcpFeeRepository;
 
   setUp(() {
     mockGetFeeEstimatesUseCase = MockGetFeeEstimatesUseCase();
     mockBalanceRepository = MockBalanceRepository();
-    mockComposeRepository = MockComposeRepository();
+    mockEstimateXcpFeeRepository = MockEstimateXcpFeeRepository();
     useCase = FetchComposeAttachUtxoFormDataUseCase(
       getFeeEstimatesUseCase: mockGetFeeEstimatesUseCase,
       balanceRepository: mockBalanceRepository,
-      composeRepository: mockComposeRepository,
+      estimateXcpFeeRepository: mockEstimateXcpFeeRepository,
     );
   });
 
@@ -63,7 +67,7 @@ void main() {
             true,
           )).thenAnswer((_) async => [balance]);
 
-      when(() => mockComposeRepository.estimateComposeAttachXcpFees())
+      when(() => mockEstimateXcpFeeRepository.estimateAttachXcpFees(any()))
           .thenAnswer((_) async => mockXcpFeeEstimate);
 
       // Act
@@ -77,7 +81,8 @@ void main() {
       verify(() =>
               mockBalanceRepository.getBalancesForAddress(testAddress, true))
           .called(1);
-      verify(() => mockComposeRepository.estimateComposeAttachXcpFees())
+      verify(() =>
+              mockEstimateXcpFeeRepository.estimateAttachXcpFees(testAddress))
           .called(1);
     });
 
@@ -154,7 +159,7 @@ void main() {
         .thenAnswer((_) async => feeEstimates);
     when(() => mockBalanceRepository.getBalancesForAddress(testAddress, true))
         .thenAnswer((_) async => [balance]);
-    when(() => mockComposeRepository.estimateComposeAttachXcpFees())
+    when(() => mockEstimateXcpFeeRepository.estimateAttachXcpFees(testAddress))
         .thenThrow(Exception('xcp fees estimate error'));
 
     // Act & Assert
@@ -165,7 +170,8 @@ void main() {
     verify(() => mockGetFeeEstimatesUseCase.call()).called(1);
     verify(() => mockBalanceRepository.getBalancesForAddress(testAddress, true))
         .called(1);
-    verify(() => mockComposeRepository.estimateComposeAttachXcpFees())
+    verify(() =>
+            mockEstimateXcpFeeRepository.estimateAttachXcpFees(testAddress))
         .called(1);
   });
 }

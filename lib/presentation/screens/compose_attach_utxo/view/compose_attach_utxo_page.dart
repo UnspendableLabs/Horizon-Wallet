@@ -177,8 +177,8 @@ class ComposeAttachUtxoPageState extends State<ComposeAttachUtxoPage> {
             onInitialCancel: () => _handleInitialCancel(),
             onInitialSubmit: (formKey) =>
                 _handleInitialSubmit(formKey, balances),
-            buildConfirmationFormFields: (state, composeTransaction, formKey) =>
-                _buildConfirmationDetails(composeTransaction),
+            buildConfirmationFormFields: (_, composeTransaction, formKey) =>
+                _buildConfirmationDetails(composeTransaction, state),
             onConfirmationBack: () => _onConfirmationBack(),
             onConfirmationContinue: (composeTransaction, fee, formKey) {
               _onConfirmationContinue(composeTransaction, fee, formKey);
@@ -318,7 +318,8 @@ class ComposeAttachUtxoPageState extends State<ComposeAttachUtxoPage> {
     );
   }
 
-  List<Widget> _buildConfirmationDetails(dynamic composeTransaction) {
+  List<Widget> _buildConfirmationDetails(
+      dynamic composeTransaction, ComposeAttachUtxoState state) {
     final params = (composeTransaction as ComposeAttachUtxoResponse).params;
     if (params.asset == widget.assetName) {
       return [
@@ -333,6 +334,12 @@ class ComposeAttachUtxoPageState extends State<ComposeAttachUtxoPage> {
         HorizonUI.HorizonTextFormField(
           controller: TextEditingController(text: params.quantityNormalized),
           label: 'Quantity',
+          enabled: false,
+        ),
+        const SizedBox(height: 16),
+        HorizonUI.HorizonTextFormField(
+          controller: TextEditingController(text: state.xcpFeeEstimate),
+          label: 'XCP Fee Estimate',
           enabled: false,
         ),
       ];

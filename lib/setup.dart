@@ -12,6 +12,7 @@ import 'package:chrome_extension/tabs.dart';
 import 'package:horizon/data/services/platform_service_extension_impl.dart';
 import 'package:horizon/data/services/platform_service_web_impl.dart';
 import "package:horizon/data/sources/repositories/address_repository_impl.dart";
+import 'package:horizon/data/sources/repositories/estimate_xcp_fee_repository_impl.dart';
 import "package:horizon/domain/repositories/address_repository.dart";
 import 'package:horizon/data/sources/local/db_manager.dart';
 
@@ -36,6 +37,7 @@ import 'package:horizon/domain/repositories/address_tx_repository.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/repositories/block_repository.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
+import 'package:horizon/domain/repositories/estimate_xcp_fee_repository.dart';
 import 'package:horizon/domain/repositories/fairminter_repository.dart';
 import 'package:horizon/domain/repositories/imported_address_repository.dart';
 import 'package:horizon/domain/repositories/node_info_repository.dart';
@@ -282,6 +284,8 @@ Future<void> setup() async {
       AddressTxRepositoryImpl(api: GetIt.I.get<V2Api>()));
   injector.registerSingleton<ComposeRepository>(
       ComposeRepositoryImpl(api: GetIt.I.get<V2Api>()));
+  injector.registerSingleton<EstimateXcpFeeRepository>(
+      EstimateXcpFeeRepositoryImpl(api: GetIt.I.get<V2Api>()));
   injector.registerSingleton<UtxoRepository>(UtxoRepositoryImpl(
       api: GetIt.I.get<V2Api>(),
       esploraApi: EsploraApi(
@@ -412,7 +416,8 @@ Future<void> setup() async {
       FetchDividendFormDataUseCase(
           getFeeEstimatesUseCase: GetIt.I.get<GetFeeEstimatesUseCase>(),
           balanceRepository: injector.get<BalanceRepository>(),
-          assetRepository: injector.get<AssetRepository>()));
+          assetRepository: injector.get<AssetRepository>(),
+          estimateXcpFeeRepository: GetIt.I.get<EstimateXcpFeeRepository>()));
 
   injector
       .registerSingleton<ComposeTransactionUseCase>(ComposeTransactionUseCase(
@@ -435,7 +440,7 @@ Future<void> setup() async {
   injector.registerSingleton<FetchComposeAttachUtxoFormDataUseCase>(
       FetchComposeAttachUtxoFormDataUseCase(
           getFeeEstimatesUseCase: GetIt.I.get<GetFeeEstimatesUseCase>(),
-          composeRepository: GetIt.I.get<ComposeRepository>(),
+          estimateXcpFeeRepository: GetIt.I.get<EstimateXcpFeeRepository>(),
           balanceRepository: injector.get<BalanceRepository>()));
 
   injector.registerSingleton<SignAndBroadcastTransactionUseCase>(

@@ -15,6 +15,9 @@ class ComposeSweepState with _$ComposeSweepState, ComposeStateBase {
     required BalancesState balancesState,
     required FeeOption feeOption,
     required SubmitState submitState,
+
+    // Sweep properties
+    required SweepXcpFeeState sweepXcpFeeState,
   }) = _ComposeSweepState;
 
   factory ComposeSweepState.initial() => ComposeSweepState(
@@ -22,5 +25,15 @@ class ComposeSweepState with _$ComposeSweepState, ComposeStateBase {
         balancesState: const BalancesState.initial(),
         feeOption: Medium(),
         submitState: const SubmitInitial(),
+        sweepXcpFeeState: const SweepXcpFeeState.initial(),
       );
+}
+
+@freezed
+class SweepXcpFeeState with _$SweepXcpFeeState {
+  const factory SweepXcpFeeState.initial() = _SweepXcpFeeInitial;
+  const factory SweepXcpFeeState.loading() = _SweepXcpFeeLoading;
+  const factory SweepXcpFeeState.success(int dividendXcpFee) =
+      _SweepXcpFeeSuccess;
+  const factory SweepXcpFeeState.error(String error) = _SweepXcpFeeError;
 }

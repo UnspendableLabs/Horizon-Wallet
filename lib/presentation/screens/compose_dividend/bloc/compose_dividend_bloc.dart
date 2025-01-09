@@ -1,5 +1,7 @@
 import 'package:horizon/common/uuid.dart';
 import 'package:horizon/core/logging/logger.dart';
+import 'package:horizon/domain/entities/asset.dart';
+import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/domain/entities/compose_dividend.dart';
 import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/domain/entities/fee_option.dart' as FeeOption;
@@ -50,6 +52,7 @@ class ComposeDividendBloc extends ComposeBaseBloc<ComposeDividendState> {
             balancesState: const BalancesState.initial(),
             feeState: const FeeState.initial(),
             assetState: const AssetState.initial(),
+            dividendXcpFeeState: const DividendXcpFeeState.initial(),
           ),
           composePage: 'compose_dividend',
         );
@@ -60,16 +63,24 @@ class ComposeDividendBloc extends ComposeBaseBloc<ComposeDividendState> {
         balancesState: const BalancesState.loading(),
         feeState: const FeeState.loading(),
         submitState: const SubmitInitial(),
-        assetState: const AssetState.loading()));
+        assetState: const AssetState.loading(),
+        dividendXcpFeeState: const DividendXcpFeeState.loading()));
+
+    int dividendXcpFee;
+    List<Balance> balances;
+    Asset asset;
+    FeeEstimates feeEstimates;
 
     try {
-      final (balances, asset, feeEstimates) = await fetchDividendFormDataUseCase
-          .call(event.currentAddress!, event.assetName!);
+      (balances, asset, feeEstimates, dividendXcpFee) =
+          await fetchDividendFormDataUseCase.call(
+              event.currentAddress!, event.assetName!);
 
       emit(state.copyWith(
         balancesState: BalancesState.success(balances),
         feeState: FeeState.success(feeEstimates),
         assetState: AssetState.success(asset),
+        dividendXcpFeeState: DividendXcpFeeState.success(dividendXcpFee),
       ));
     } on FetchFeeEstimatesException catch (e) {
       emit(state.copyWith(
@@ -82,6 +93,10 @@ class ComposeDividendBloc extends ComposeBaseBloc<ComposeDividendState> {
     } on FetchBalancesException catch (e) {
       emit(state.copyWith(
         balancesState: BalancesState.error(e.message),
+      ));
+    } on FetchDividendXcpFeeException catch (e) {
+      emit(state.copyWith(
+        dividendXcpFeeState: DividendXcpFeeState.error(e.message),
       ));
     } catch (e) {
       emit(state.copyWith(

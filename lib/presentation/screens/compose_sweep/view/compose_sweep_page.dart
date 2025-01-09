@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
+import 'package:horizon/common/format.dart';
 import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/domain/entities/compose_sweep.dart';
 import 'package:horizon/domain/entities/event.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
+import 'package:horizon/domain/repositories/estimate_xcp_fee_repository.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_event.dart';
 import 'package:horizon/presentation/common/compose_base/view/compose_base_page.dart';
@@ -44,6 +46,7 @@ class ComposeSweepPageWrapper extends StatelessWidget {
               GetIt.I.get<SignAndBroadcastTransactionUseCase>(),
           writelocalTransactionUseCase:
               GetIt.I.get<WriteLocalTransactionUseCase>(),
+          estimateXcpFeeRepository: GetIt.I.get<EstimateXcpFeeRepository>(),
           logger: GetIt.I.get<Logger>(),
         )..add(FetchFormData(currentAddress: currentAddress)),
         child: ComposeSweepPage(
@@ -105,7 +108,7 @@ class ComposeSweepPageState extends State<ComposeSweepPage> {
           onInitialCancel: () => _handleInitialCancel(),
           onInitialSubmit: (formKey) => _handleInitialSubmit(formKey),
           buildConfirmationFormFields: (_, composeTransaction, formKey) =>
-              _buildConfirmationDetails(composeTransaction),
+              _buildConfirmationDetails(composeTransaction, state),
           onConfirmationBack: () => _onConfirmationBack(),
           onConfirmationContinue: (composeTransaction, fee, formKey) {
             _onConfirmationContinue(composeTransaction, fee, formKey);
@@ -181,6 +184,19 @@ class ComposeSweepPageState extends State<ComposeSweepPage> {
             : AutovalidateMode.disabled,
       ),
       const SizedBox(height: 16),
+      state.sweepXcpFeeState.maybeWhen(
+        success: (sweepXcpFee) => HorizonUI.HorizonTextFormField(
+          enabled: false,
+          label: 'XCP Fee',
+          controller: TextEditingController(
+              text:
+                  '${quantityToQuantityNormalizedString(quantity: sweepXcpFee, divisible: true)} XCP'),
+        ),
+        error: (error) =>
+            SelectableText('Error fetching sweep XCP fee: $error'),
+        orElse: () => const SizedBox.shrink(),
+      ),
+      const SizedBox(height: 16),
       Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -239,7 +255,13 @@ class ComposeSweepPageState extends State<ComposeSweepPage> {
     }
   }
 
-  List<Widget> _buildConfirmationDetails(dynamic composeTransaction) {
+  List<Widget> _buildConfirmationDetails(
+      dynamic composeTransaction, ComposeSweepState state) {
+    final sweepXcpFee = state.sweepXcpFeeState.maybeWhen(
+      success: (sweepXcpFee) => sweepXcpFee,
+      error: (error) => 0,
+      orElse: () => 0,
+    );
     final params = (composeTransaction as ComposeSweepResponse).params;
     return [
       HorizonUI.HorizonTextFormField(
@@ -266,6 +288,14 @@ class ComposeSweepPageState extends State<ComposeSweepPage> {
         controller: TextEditingController(text: params.memo),
         label: 'Memo',
         enabled: false,
+      ),
+      const SizedBox(height: 16),
+      HorizonUI.HorizonTextFormField(
+        enabled: false,
+        label: 'XCP Fee',
+        controller: TextEditingController(
+            text:
+                '${quantityToQuantityNormalizedString(quantity: sweepXcpFee, divisible: true)} XCP'),
       ),
     ];
   }
