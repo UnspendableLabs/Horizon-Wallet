@@ -35,6 +35,7 @@ class PublicKeyServiceImpl implements PublicKeyService {
   _getNetwork() => switch (config.network) {
         Network.mainnet => ecpair.bitcoin,
         Network.testnet => ecpair.testnet,
+        Network.testnet4 => ecpair.testnet,
         Network.regtest => ecpair.regtest,
       };
 }
