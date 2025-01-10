@@ -215,12 +215,14 @@ class AddressServiceImpl implements AddressService {
   _getNetwork() => switch (config.network) {
         Network.mainnet => ecpair.bitcoin,
         Network.testnet => ecpair.testnet,
+        Network.testnet4 => ecpair.testnet,
         Network.regtest => ecpair.regtest,
       };
 
   _getNetworkBech32() => switch (config.network) {
         Network.mainnet => ecpair.bitcoin.bech32,
         Network.testnet => ecpair.testnet.bech32,
+        Network.testnet4 => ecpair.testnet.bech32,
         Network.regtest => ecpair.regtest.bech32,
       };
 
