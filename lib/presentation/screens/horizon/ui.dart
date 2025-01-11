@@ -540,16 +540,12 @@ class HorizonTextFormField extends StatelessWidget {
                   ),
                 ),
               )
-            : FittedBox(
-                fit: BoxFit.scaleDown,
-                alignment: Alignment.centerLeft,
-                child: SelectableText(
-                  controller?.text ?? '',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: textColor ??
-                        (isDarkMode ? mainTextWhite : mainTextBlack),
-                  ),
+            : SelectableText(
+                controller?.text ?? '',
+                style: TextStyle(
+                  fontSize: 16,
+                  color:
+                      textColor ?? (isDarkMode ? mainTextWhite : mainTextBlack),
                 ),
               ),
       );
