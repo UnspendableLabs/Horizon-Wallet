@@ -87,7 +87,7 @@ class UpdateIssuanceBloc extends ComposeBaseBloc<UpdateIssuanceState> {
     late FeeEstimates feeEstimates;
 
     try {
-      asset = await assetRepository.getAssetVerbose('A9999999999999990000');
+      asset = await assetRepository.getAssetVerbose(event.assetName!);
     } catch (e) {
       emit(state.copyWith(assetState: AssetState.error(e.toString())));
       return;
