@@ -9,6 +9,7 @@ import 'package:horizon/domain/repositories/config_repository.dart';
 import 'package:horizon/presentation/common/colors.dart';
 import 'package:horizon/presentation/common/no_data.dart';
 import 'package:horizon/presentation/screens/compose_attach_utxo/view/compose_attach_utxo_page.dart';
+import 'package:horizon/presentation/screens/compose_burn/view/compose_burn_page.dart';
 import 'package:horizon/presentation/screens/compose_detach_utxo/view/compose_detach_utxo_page.dart';
 import 'package:horizon/presentation/screens/compose_dividend/view/compose_dividend_page.dart';
 import 'package:horizon/presentation/screens/compose_movetoutxo/view/compose_movetoutxo_page.dart';
@@ -490,7 +491,23 @@ class BalancesSliverState extends State<BalancesSliver> {
                   iconSize: 16.0,
                   icon: const Icon(Icons.local_fire_department),
                   onPressed: () {
-                    print('Burn BTC button pressed');
+                    HorizonUI.HorizonDialog.show(
+                      context: context,
+                      body: HorizonUI.HorizonDialog(
+                        title: 'Burn BTC',
+                        body: ComposeBurnPageWrapper(
+                          currentAddress: widget.currentAddress,
+                          dashboardActivityFeedBloc:
+                              BlocProvider.of<DashboardActivityFeedBloc>(
+                                  context),
+                        ),
+                        includeBackButton: false,
+                        includeCloseButton: true,
+                        onBackButtonPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                      ),
+                    );
                   },
                 ),
               ),

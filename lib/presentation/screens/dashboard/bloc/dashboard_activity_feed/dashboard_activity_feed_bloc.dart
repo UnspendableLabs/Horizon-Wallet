@@ -39,6 +39,7 @@ final DEFAULT_WHITELIST = [
   "ASSET_DESTRUCTION",
   "ASSET_DIVIDEND",
   "SWEEP",
+  "BURN"
 ];
 
 class DashboardActivityFeedBloc

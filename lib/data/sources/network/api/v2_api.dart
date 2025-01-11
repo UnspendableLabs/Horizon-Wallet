@@ -309,6 +309,8 @@ class Event {
         return AssetDestructionEvent.fromJson(json);
       case "ASSET_DIVIDEND":
         return AssetDividendEvent.fromJson(json);
+      case "BURN":
+        return BurnEvent.fromJson(json);
       default:
         return _$EventFromJson(json);
     }
@@ -1649,6 +1651,52 @@ class VerboseSweepParams extends SweepParams {
 }
 
 @JsonSerializable(fieldRename: FieldRename.snake)
+class BurnEvent extends Event {
+  final BurnParams params;
+
+  BurnEvent({
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
+    required this.params,
+  });
+
+  factory BurnEvent.fromJson(Map<String, dynamic> json) =>
+      _$BurnEventFromJson(json);
+
+  Map<String, dynamic> toJson() => _$BurnEventToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class BurnParams {
+  final int blockIndex;
+  final int burned;
+  final int earned;
+  final String source;
+  final String status;
+  final String txHash;
+  final int txIndex;
+  final int? blockTime;
+
+  BurnParams({
+    required this.blockIndex,
+    required this.burned,
+    required this.earned,
+    required this.source,
+    required this.status,
+    required this.txHash,
+    required this.txIndex,
+    this.blockTime,
+  });
+
+  factory BurnParams.fromJson(Map<String, dynamic> json) =>
+      _$BurnParamsFromJson(json);
+
+  Map<String, dynamic> toJson() => _$BurnParamsToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
 class MoveToUtxoEvent extends Event {
   final MoveToUtxoParams params;
 
@@ -1664,6 +1712,49 @@ class MoveToUtxoEvent extends Event {
       _$MoveToUtxoEventFromJson(json);
 
   Map<String, dynamic> toJson() => _$MoveToUtxoEventToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class VerboseBurnEvent extends VerboseEvent {
+  final VerboseBurnParams params;
+
+  VerboseBurnEvent({
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
+    required super.blockTime,
+    required this.params,
+  });
+
+  factory VerboseBurnEvent.fromJson(Map<String, dynamic> json) =>
+      _$VerboseBurnEventFromJson(json);
+
+  Map<String, dynamic> toJson() => _$VerboseBurnEventToJson(this);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class VerboseBurnParams extends BurnParams {
+  final String burnedNormalized;
+  final String earnedNormalized;
+
+  VerboseBurnParams({
+    required super.blockIndex,
+    required super.burned,
+    required super.earned,
+    required super.source,
+    required super.status,
+    required super.txHash,
+    required super.txIndex,
+    required this.burnedNormalized,
+    required this.earnedNormalized,
+  });
+
+  factory VerboseBurnParams.fromJson(Map<String, dynamic> json) =>
+      _$VerboseBurnParamsFromJson(json);
+
+  @override
+  Map<String, dynamic> toJson() => _$VerboseBurnParamsToJson(this);
 }
 
 @JsonSerializable(fieldRename: FieldRename.snake)
@@ -2644,6 +2735,8 @@ class VerboseEvent extends Event {
         return VerboseAssetDividendEvent.fromJson(json);
       case "SWEEP":
         return VerboseSweepEvent.fromJson(json);
+      case "BURN":
+        return VerboseBurnEvent.fromJson(json);
       default:
         return _$VerboseEventFromJson(json);
     }

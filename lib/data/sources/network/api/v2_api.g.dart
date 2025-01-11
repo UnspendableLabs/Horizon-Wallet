@@ -1717,6 +1717,45 @@ Map<String, dynamic> _$VerboseSweepParamsToJson(VerboseSweepParams instance) =>
       'fee_paid_normalized': instance.feePaidNormalized,
     };
 
+BurnEvent _$BurnEventFromJson(Map<String, dynamic> json) => BurnEvent(
+      eventIndex: (json['event_index'] as num?)?.toInt(),
+      event: json['event'] as String,
+      txHash: json['tx_hash'] as String?,
+      blockIndex: (json['block_index'] as num?)?.toInt(),
+      params: BurnParams.fromJson(json['params'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$BurnEventToJson(BurnEvent instance) => <String, dynamic>{
+      'event_index': instance.eventIndex,
+      'event': instance.event,
+      'tx_hash': instance.txHash,
+      'block_index': instance.blockIndex,
+      'params': instance.params,
+    };
+
+BurnParams _$BurnParamsFromJson(Map<String, dynamic> json) => BurnParams(
+      blockIndex: (json['block_index'] as num).toInt(),
+      burned: (json['burned'] as num).toInt(),
+      earned: (json['earned'] as num).toInt(),
+      source: json['source'] as String,
+      status: json['status'] as String,
+      txHash: json['tx_hash'] as String,
+      txIndex: (json['tx_index'] as num).toInt(),
+      blockTime: (json['block_time'] as num?)?.toInt(),
+    );
+
+Map<String, dynamic> _$BurnParamsToJson(BurnParams instance) =>
+    <String, dynamic>{
+      'block_index': instance.blockIndex,
+      'burned': instance.burned,
+      'earned': instance.earned,
+      'source': instance.source,
+      'status': instance.status,
+      'tx_hash': instance.txHash,
+      'tx_index': instance.txIndex,
+      'block_time': instance.blockTime,
+    };
+
 MoveToUtxoEvent _$MoveToUtxoEventFromJson(Map<String, dynamic> json) =>
     MoveToUtxoEvent(
       eventIndex: (json['event_index'] as num?)?.toInt(),
@@ -1733,6 +1772,53 @@ Map<String, dynamic> _$MoveToUtxoEventToJson(MoveToUtxoEvent instance) =>
       'tx_hash': instance.txHash,
       'block_index': instance.blockIndex,
       'params': instance.params,
+    };
+
+VerboseBurnEvent _$VerboseBurnEventFromJson(Map<String, dynamic> json) =>
+    VerboseBurnEvent(
+      eventIndex: (json['event_index'] as num?)?.toInt(),
+      event: json['event'] as String,
+      txHash: json['tx_hash'] as String?,
+      blockIndex: (json['block_index'] as num?)?.toInt(),
+      blockTime: (json['block_time'] as num?)?.toInt(),
+      params:
+          VerboseBurnParams.fromJson(json['params'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$VerboseBurnEventToJson(VerboseBurnEvent instance) =>
+    <String, dynamic>{
+      'event_index': instance.eventIndex,
+      'event': instance.event,
+      'tx_hash': instance.txHash,
+      'block_index': instance.blockIndex,
+      'block_time': instance.blockTime,
+      'params': instance.params,
+    };
+
+VerboseBurnParams _$VerboseBurnParamsFromJson(Map<String, dynamic> json) =>
+    VerboseBurnParams(
+      blockIndex: (json['block_index'] as num).toInt(),
+      burned: (json['burned'] as num).toInt(),
+      earned: (json['earned'] as num).toInt(),
+      source: json['source'] as String,
+      status: json['status'] as String,
+      txHash: json['tx_hash'] as String,
+      txIndex: (json['tx_index'] as num).toInt(),
+      burnedNormalized: json['burned_normalized'] as String,
+      earnedNormalized: json['earned_normalized'] as String,
+    );
+
+Map<String, dynamic> _$VerboseBurnParamsToJson(VerboseBurnParams instance) =>
+    <String, dynamic>{
+      'block_index': instance.blockIndex,
+      'burned': instance.burned,
+      'earned': instance.earned,
+      'source': instance.source,
+      'status': instance.status,
+      'tx_hash': instance.txHash,
+      'tx_index': instance.txIndex,
+      'burned_normalized': instance.burnedNormalized,
+      'earned_normalized': instance.earnedNormalized,
     };
 
 MoveToUtxoParams _$MoveToUtxoParamsFromJson(Map<String, dynamic> json) =>

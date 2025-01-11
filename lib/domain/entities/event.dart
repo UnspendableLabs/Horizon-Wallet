@@ -1751,3 +1751,43 @@ final Map<int, String> flagMapper = {
   6: 'binary memo+sweep ownership', // Historical only - not supported
   7: 'binary memo+sweep balance+sweep ownership', // Historical only - not supported
 };
+
+class BurnEvent extends VerboseEvent {
+  final BurnParams params;
+
+  const BurnEvent({
+    required super.state,
+    required super.eventIndex,
+    required super.event,
+    required super.txHash,
+    required super.blockIndex,
+    required super.blockTime,
+    required this.params,
+  });
+}
+
+class BurnParams {
+  final int blockIndex;
+  final int burned;
+  final int earned;
+  final String source;
+  final String status;
+  final String txHash;
+  final int txIndex;
+  final int? blockTime;
+  final String burnedNormalized;
+  final String earnedNormalized;
+
+  BurnParams({
+    required this.blockIndex,
+    required this.burned,
+    required this.earned,
+    required this.source,
+    required this.status,
+    required this.txHash,
+    required this.txIndex,
+    this.blockTime,
+    required this.burnedNormalized,
+    required this.earnedNormalized,
+  });
+}

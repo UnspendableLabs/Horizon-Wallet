@@ -3,6 +3,7 @@ import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/domain/entities/compose_burn.dart';
 import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/domain/entities/fee_option.dart' as FeeOption;
+import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/repositories/block_repository.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
@@ -32,6 +33,7 @@ class ComposeBurnBloc extends ComposeBaseBloc<ComposeBurnState> {
   final SignAndBroadcastTransactionUseCase signAndBroadcastTransactionUseCase;
   final WriteLocalTransactionUseCase writelocalTransactionUseCase;
   final BlockRepository blockRepository;
+  final BalanceRepository balanceRepository;
 
   ComposeBurnBloc({
     required this.logger,
@@ -42,6 +44,7 @@ class ComposeBurnBloc extends ComposeBaseBloc<ComposeBurnState> {
     required this.signAndBroadcastTransactionUseCase,
     required this.writelocalTransactionUseCase,
     required this.blockRepository,
+    required this.balanceRepository,
   }) : super(
           ComposeBurnState(
             submitState: const SubmitInitial(),
@@ -62,8 +65,12 @@ class ComposeBurnBloc extends ComposeBaseBloc<ComposeBurnState> {
     try {
       final feeEstimates = await getFeeEstimatesUseCase.call();
 
+      final balances =
+          await balanceRepository.getBalancesForAddress(event.currentAddress!);
+
       emit(state.copyWith(
-        balancesState: const BalancesState.success([]),
+        balancesState: BalancesState.success(
+            balances.where((balance) => balance.asset == 'BTC').toList()),
         feeState: FeeState.success(feeEstimates),
       ));
     } catch (e) {
