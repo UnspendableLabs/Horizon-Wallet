@@ -4,6 +4,7 @@ import 'package:horizon/data/models/asset_info.dart';
 import 'package:horizon/data/models/bitcoin_decoded_tx.dart';
 import 'package:horizon/data/models/compose.dart';
 import 'package:horizon/data/models/compose_attach_utxo.dart';
+import 'package:horizon/data/models/compose_burn.dart';
 import 'package:horizon/data/models/compose_cancel.dart';
 import 'package:horizon/data/models/compose_destroy.dart';
 import 'package:horizon/data/models/compose_detach_utxo.dart';
@@ -5449,5 +5450,16 @@ abstract class V2Api {
     @Query("inputs_set") String? inputsSet,
     @Query("exclude_utxos_with_balances") bool? excludeUtxosWithBalances,
     @Query("disable_utxo_locks") bool? disableUtxoLocks,
+  ]);
+
+  @GET("/addresses/{address}/compose/burn?verbose=true")
+  Future<Response<ComposeBurnResponseModel>> composeBurn(
+    @Path("address") String address,
+    @Query("quantity") int quantity, [
+    @Query("exact_fee") int? exactFee,
+    @Query("inputs_set") String? inputsSet,
+    @Query("exclude_utxos_with_balances") bool? excludeUtxosWithBalances,
+    @Query("disable_utxo_locks") bool? disableUtxoLocks,
+    @Query("unconfirmed") bool? unconfirmed,
   ]);
 }

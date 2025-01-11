@@ -29,6 +29,7 @@ import 'package:horizon/domain/entities/compose_destroy.dart'
 import 'package:horizon/domain/entities/compose_dividend.dart'
     as compose_dividend;
 import 'package:horizon/domain/entities/compose_sweep.dart' as compose_sweep;
+import 'package:horizon/domain/entities/compose_burn.dart' as compose_burn;
 import 'package:horizon/domain/entities/utxo.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
 
@@ -777,6 +778,37 @@ class ComposeRepositoryImpl extends ComposeRepository {
 
         if (response.result == null) {
           throw Exception('Failed to compose sweep');
+        }
+
+        return response.result!.toDomain();
+      },
+      inputsSet,
+    );
+  }
+
+  @override
+  Future<compose_burn.ComposeBurnResponse> composeBurn(int fee,
+      List<Utxo> inputsSet, compose_burn.ComposeBurnParams params) async {
+    return await _retryOnInvalidUtxo<compose_burn.ComposeBurnResponse>(
+      (currentInputSet) async {
+        final source = params.source;
+        final quantity = params.quantity;
+        const excludeUtxosWithBalances = true;
+        const disableUtxoLocks = true;
+        final inputsSetString =
+            currentInputSet.map((e) => "${e.txid}:${e.vout}").join(',');
+
+        final response = await api.composeBurn(
+          source,
+          quantity,
+          fee,
+          inputsSetString,
+          excludeUtxosWithBalances,
+          disableUtxoLocks,
+        );
+
+        if (response.result == null) {
+          throw Exception('Failed to compose burn');
         }
 
         return response.result!.toDomain();

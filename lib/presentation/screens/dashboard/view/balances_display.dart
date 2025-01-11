@@ -479,6 +479,21 @@ class BalancesSliverState extends State<BalancesSliver> {
           mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
+            if (assetName == 'BTC' &&
+                _config.network == Network.testnet4 &&
+                quantity > 0)
+              SizedBox(
+                width: 32,
+                height: 32,
+                child: IconButton(
+                  padding: EdgeInsets.zero,
+                  iconSize: 16.0,
+                  icon: const Icon(Icons.local_fire_department),
+                  onPressed: () {
+                    print('Burn BTC button pressed');
+                  },
+                ),
+              ),
             if (utxo == null && quantity > 0 && assetName != 'BTC')
               SizedBox(
                 width: 32,
