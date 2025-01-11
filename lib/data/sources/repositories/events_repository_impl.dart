@@ -101,6 +101,9 @@ class VerboseEventMapper {
       case "SWEEP":
         return VerboseSweepEventMapper.toDomain(
             apiEvent as api.VerboseSweepEvent);
+      case "BURN":
+        return VerboseBurnEventMapper.toDomain(
+            apiEvent as api.VerboseBurnEvent);
 
       // case 'NEW_TRANSACTION':
       //   return VerboseNewTransactionEventMapper.toDomain(
@@ -1069,6 +1072,36 @@ class SweepParamsMapper {
       txIndex: apiParams.txIndex,
       blockTime: apiParams.blockTime,
       feePaidNormalized: apiParams.feePaidNormalized,
+    );
+  }
+}
+
+class VerboseBurnEventMapper {
+  static BurnEvent toDomain(api.VerboseBurnEvent apiEvent) {
+    return BurnEvent(
+      state: StateMapper.getVerbose(apiEvent),
+      eventIndex: apiEvent.eventIndex,
+      event: apiEvent.event,
+      txHash: apiEvent.txHash,
+      blockIndex: apiEvent.blockIndex,
+      blockTime: apiEvent.blockTime,
+      params: BurnParamsMapper.toDomain(apiEvent.params),
+    );
+  }
+}
+
+class BurnParamsMapper {
+  static BurnParams toDomain(api.VerboseBurnParams apiParams) {
+    return BurnParams(
+      blockIndex: apiParams.blockIndex,
+      burned: apiParams.burned,
+      earned: apiParams.earned,
+      source: apiParams.source,
+      status: apiParams.status,
+      txHash: apiParams.txHash,
+      txIndex: apiParams.txIndex,
+      burnedNormalized: apiParams.burnedNormalized,
+      earnedNormalized: apiParams.earnedNormalized,
     );
   }
 }
