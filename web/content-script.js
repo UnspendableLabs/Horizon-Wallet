@@ -6,6 +6,7 @@ const VALID_METHODS = [
   "fairmint",
   "dispense",
   "openOrder",
+  "getBalance"
 ];
 
 let backgroundPort = null;
@@ -155,6 +156,17 @@ const methodValidators = {
     }
     return errors;
   },
+  getBalance: (msg) => {
+    console.log("getBalance", msg);
+    const errors = [];
+    if (!msg.params?.address || typeof msg.params.address !== "string") {
+      errors.push(
+        "Missing or invalid 'address' parameter for 'getBalance'. Expected a string."
+      );
+    }
+    console.log("getBalance errors", errors);
+    return errors;
+  },
 };
 
 function validate(msg) {
@@ -213,3 +225,7 @@ document.onreadystatechange = () => {
     addProviderToPage();
   }
 };
+
+backgroundPort.onMessage.addListener((message) => {
+  window.postMessage(message, window.location.origin);
+});
