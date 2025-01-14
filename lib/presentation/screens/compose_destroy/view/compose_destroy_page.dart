@@ -149,7 +149,8 @@ class ComposeDestroyPageState extends State<ComposeDestroyPage> {
               ? AutovalidateMode.onUserInteraction
               : AutovalidateMode.disabled,
           inputFormatters: [
-            FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9 ]')),
+            // Allow all ASCII characters
+            FilteringTextInputFormatter.allow(RegExp(r'[\x20-\x7E]')),
           ],
         )
       ],
