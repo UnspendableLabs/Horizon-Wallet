@@ -108,6 +108,49 @@ async function rpcFairmint(fairminterTxHash) {
   });
 }
 
+async function rpcGetBalance(requestId, port, address) {
+  try {
+    // Get BTC balance
+    const btcBalance = await getBtcBalance(address);
+
+    // Send response back to content script
+    port.postMessage({
+      id: requestId,
+      result: btcBalance,
+    });
+  } catch (error) {
+    // Handle errors and send error response
+    port.postMessage({
+      id: requestId,
+      error: error.message,
+    });
+  }
+}
+
+async function getBtcBalance(address) {
+  const btcApiUrl = `https://api.unspendablelabs.com:3000/address/${address}`;
+
+  const response = await fetch(btcApiUrl);
+  const data = await response.json();
+
+  const funded = data.chain_stats.funded_txo_sum;
+  const spent = data.chain_stats.spent_txo_sum;
+  const quantity = funded - spent;
+  const quantityNormalized = (quantity / 1e8).toFixed(8);
+
+  return {
+    address: address,
+    quantity: quantity,
+    quantityNormalized: quantityNormalized,
+    asset: 'BTC',
+    assetInfo: {
+      assetLongname: 'BTC',
+      description: 'Bitcoin',
+      divisible: true,
+    },
+  };
+}
+
 async function rpcMessageHandler(message, port) {
   const method = message["method"];
   const tabId = getTabIdFromPort(port);
@@ -140,6 +183,9 @@ async function rpcMessageHandler(message, port) {
         message["params"]["get_asset"],
         message["params"]["get_quantity"],
       );
+      break;
+    case "getBalance":
+      await rpcGetBalance(message["id"], port, message["params"]["address"]);
       break;
     default:
       console.log(`Unknown method: ${message["method"]}`);
