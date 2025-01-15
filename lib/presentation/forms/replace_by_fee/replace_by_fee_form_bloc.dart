@@ -138,23 +138,27 @@ class ReplaceByFeeFormBloc extends Bloc<FormEvent, FormStateModel> {
     emit(state.copyWith(submissionStatus: FormzSubmissionStatus.inProgress));
 
     try {
-
       int newFee = event.newFeeRate * event.adjustedVirtualSize;
 
       int feeBump = newFee - event.tx.fee;
 
-      String  psbtHex = await transactionService.makeRBF(
+      String psbtHex = await transactionService.makeRBF(
         txHex: event.hex,
-        feeDelta: newFee - event.tx.fee,
+        feeDelta: feeBump,
       );
 
-
-      print(psbtHex);
-
-      
-
+      emit(state.copyWith(
+        submissionStatus: FormzSubmissionStatus.success,
+      ));
+    } on TransactionServiceException catch (e) {
+      emit(state.copyWith(
+        submissionStatus: FormzSubmissionStatus.failure,
+        errorMessage: e.message,
+      ));
     } catch (e) {
-      emit(state.copyWith(submissionStatus: FormzSubmissionStatus.failure));
+      emit(state.copyWith(
+        submissionStatus: FormzSubmissionStatus.failure,
+      ));
     }
   }
 

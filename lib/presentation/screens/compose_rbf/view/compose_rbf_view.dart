@@ -6,10 +6,12 @@ import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
 import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
 import 'package:horizon/presentation/forms/replace_by_fee/replace_by_fee_form_view.dart';
-import 'package:horizon/presentation/forms/replace_by_fee/replace_by_fee_form_bloc.dart' as rbfForm;
+import 'package:horizon/presentation/forms/replace_by_fee/replace_by_fee_form_bloc.dart'
+    as rbfForm;
 import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
 
-import 'package:horizon/presentation/screens/compose_rbf/bloc/compose_rbf_bloc.dart';
+import 'package:horizon/presentation/screens/compose_rbf/bloc/compose_rbf_bloc.dart'
+    as c;
 
 class ComposeRBFPageWrapper extends StatelessWidget {
   final String txHash;
@@ -22,7 +24,7 @@ class ComposeRBFPageWrapper extends StatelessWidget {
     return shell.state.maybeWhen(
         orElse: () => const SizedBox.shrink(),
         success: (state) => BlocProvider(
-            create: (context) => ComposeRBFBloc(),
+            create: (context) => c.ComposeRBFBloc(),
             child: BlocProvider(
                 create: (context) => rbfForm.ReplaceByFeeFormBloc(
                       txHash: txHash,
@@ -33,16 +35,18 @@ class ComposeRBFPageWrapper extends StatelessWidget {
                     )..add(rbfForm.InitializeRequested(txHash: txHash)),
                 child: HorizonUI.HorizonDialog(
                     title: "Accelerate this transaction",
-                    body: ReplaceByFeeForm(
-                    onSubmitSuccess: () {
-                      context
-                      .read<ComposeRBFBloc>()
-                      .add(const  FormSubmitted());
-
-                    },
-
-
-                    )))));
+                    body: BlocBuilder<c.ComposeRBFBloc, c.ComposeRBFState>(
+                        builder: (context, state) {
+                      return switch (state.step) {
+                        c.Form() => ReplaceByFeeForm(onSubmitSuccess: () {
+                            context
+                                .read<c.ComposeRBFBloc>()
+                                .add(const c.FormSubmitted());
+                          }),
+                        c.Review() => Text("Review"),
+                        c.Password() => Text("Password"),
+                      };
+                    })))));
     // )
   }
 }

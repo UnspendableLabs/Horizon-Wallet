@@ -1,4 +1,5 @@
 import "package:horizon/domain/entities/utxo.dart";
+import 'package:horizon/js/bitcoin.dart' as bitcoinjs;
 
 abstract class TransactionService {
   String signPsbt(String psbtHex, Map<int, String> inputPrivateKeyMap,

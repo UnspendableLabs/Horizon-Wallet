@@ -35,6 +35,7 @@ class TransactionServiceImpl implements TransactionService {
 
   TransactionServiceImpl({required this.config});
 
+  @override
   Future<String> makeRBF({
     required String txHex,
     required int feeDelta,
@@ -69,8 +70,6 @@ class TransactionServiceImpl implements TransactionService {
     psbt.addOutput(lastOut);
 
     return psbt.toHex();
-
-    return "";
   }
 
   @override

@@ -2,7 +2,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:equatable/equatable.dart';
 
-abstract class Step extends Equatable {}
+sealed class Step extends Equatable {}
 
 class Form extends Step {
   @override

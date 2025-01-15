@@ -68,6 +68,7 @@ extension type Psbt._(JSObject _) implements JSObject {
 
   external PsbtData get data;
 
+  @JS("__CACHE.__TX")
   external Transaction get tx;
 }
 
