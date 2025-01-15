@@ -143,7 +143,7 @@ class SubmitArgs {
 class OnSubmitSuccessArgs {
   final ComposeCancelResponse response;
   final VirtualSize virtualSize;
-  final int feeRate;
+  final num feeRate;
 
   OnSubmitSuccessArgs({
     required this.response,
@@ -314,7 +314,7 @@ class CancelOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
     }
   }
 
-  int _getFeeRate() {
+  num _getFeeRate() {
     return switch (state.feeEstimates) {
       Success(data: var feeEstimates) => switch (state.feeOption) {
           FeeOption.Fast() => feeEstimates.fast,

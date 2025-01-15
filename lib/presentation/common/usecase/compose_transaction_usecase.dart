@@ -1,10 +1,10 @@
+import "package:equatable/equatable.dart";
+import 'package:horizon/domain/entities/compose_fn.dart';
+import 'package:horizon/domain/entities/compose_response.dart';
+import 'package:horizon/domain/entities/utxo.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/repositories/utxo_repository.dart';
 import 'package:horizon/presentation/common/usecase/get_virtual_size_usecase.dart';
-import 'package:horizon/domain/entities/utxo.dart';
-import 'package:horizon/domain/entities/compose_response.dart';
-import 'package:horizon/domain/entities/compose_fn.dart';
-import "package:equatable/equatable.dart";
 
 class VirtualSize extends Equatable {
   final int virtualSize;
@@ -34,7 +34,7 @@ class ComposeTransactionUseCase {
 
   Future<(R, VirtualSize)>
       call<P extends ComposeParams, R extends ComposeResponse>({
-    required int feeRate,
+    required num feeRate,
     required String source,
     required P params,
     required ComposeFunction<P, R> composeFn,
@@ -59,7 +59,7 @@ class ComposeTransactionUseCase {
       final int adjustedVirtualSize = tuple.$2;
 
       // Calculate total fee
-      final int totalFee = adjustedVirtualSize * feeRate;
+      final int totalFee = (adjustedVirtualSize * feeRate).ceil();
 
       // Compose the final transaction with the calculated fee
       final R finalTx = await composeFn(totalFee, inputsSet, params);

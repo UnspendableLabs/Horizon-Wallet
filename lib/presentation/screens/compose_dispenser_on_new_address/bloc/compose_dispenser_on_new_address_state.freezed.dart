@@ -302,7 +302,7 @@ mixin _$ComposeDispenserOnNewAddressState<T> {
             T composeSendTransaction,
             T composeDispenserTransaction,
             int btcQuantity,
-            int feeRate)
+            num feeRate)
         confirm,
     required TResult Function(String error) error,
     required TResult Function(String? error, bool? loading) collectPassword,
@@ -319,7 +319,7 @@ mixin _$ComposeDispenserOnNewAddressState<T> {
             T composeSendTransaction,
             T composeDispenserTransaction,
             int btcQuantity,
-            int feeRate)?
+            num feeRate)?
         confirm,
     TResult? Function(String error)? error,
     TResult? Function(String? error, bool? loading)? collectPassword,
@@ -336,7 +336,7 @@ mixin _$ComposeDispenserOnNewAddressState<T> {
             T composeSendTransaction,
             T composeDispenserTransaction,
             int btcQuantity,
-            int feeRate)?
+            num feeRate)?
         confirm,
     TResult Function(String error)? error,
     TResult Function(String? error, bool? loading)? collectPassword,
@@ -475,7 +475,7 @@ class _$ComposeDispenserOnNewAddressStateInitialImpl<T>
             T composeSendTransaction,
             T composeDispenserTransaction,
             int btcQuantity,
-            int feeRate)
+            num feeRate)
         confirm,
     required TResult Function(String error) error,
     required TResult Function(String? error, bool? loading) collectPassword,
@@ -495,7 +495,7 @@ class _$ComposeDispenserOnNewAddressStateInitialImpl<T>
             T composeSendTransaction,
             T composeDispenserTransaction,
             int btcQuantity,
-            int feeRate)?
+            num feeRate)?
         confirm,
     TResult? Function(String error)? error,
     TResult? Function(String? error, bool? loading)? collectPassword,
@@ -515,7 +515,7 @@ class _$ComposeDispenserOnNewAddressStateInitialImpl<T>
             T composeSendTransaction,
             T composeDispenserTransaction,
             int btcQuantity,
-            int feeRate)?
+            num feeRate)?
         confirm,
     TResult Function(String error)? error,
     TResult Function(String? error, bool? loading)? collectPassword,
@@ -655,7 +655,7 @@ class _$ComposeDispenserOnNewAddressStateLoadingImpl<T>
             T composeSendTransaction,
             T composeDispenserTransaction,
             int btcQuantity,
-            int feeRate)
+            num feeRate)
         confirm,
     required TResult Function(String error) error,
     required TResult Function(String? error, bool? loading) collectPassword,
@@ -675,7 +675,7 @@ class _$ComposeDispenserOnNewAddressStateLoadingImpl<T>
             T composeSendTransaction,
             T composeDispenserTransaction,
             int btcQuantity,
-            int feeRate)?
+            num feeRate)?
         confirm,
     TResult? Function(String error)? error,
     TResult? Function(String? error, bool? loading)? collectPassword,
@@ -695,7 +695,7 @@ class _$ComposeDispenserOnNewAddressStateLoadingImpl<T>
             T composeSendTransaction,
             T composeDispenserTransaction,
             int btcQuantity,
-            int feeRate)?
+            num feeRate)?
         confirm,
     TResult Function(String error)? error,
     TResult Function(String? error, bool? loading)? collectPassword,
@@ -796,7 +796,7 @@ abstract class _$$ComposeDispenserOnNewAddressStateConfirmImplCopyWith<T,
       T composeSendTransaction,
       T composeDispenserTransaction,
       int btcQuantity,
-      int feeRate});
+      num feeRate});
 }
 
 /// @nodoc
@@ -844,7 +844,7 @@ class __$$ComposeDispenserOnNewAddressStateConfirmImplCopyWithImpl<T, $Res>
       feeRate: null == feeRate
           ? _value.feeRate
           : feeRate // ignore: cast_nullable_to_non_nullable
-              as int,
+              as num,
     ));
   }
 }
@@ -872,7 +872,7 @@ class _$ComposeDispenserOnNewAddressStateConfirmImpl<T>
   @override
   final int btcQuantity;
   @override
-  final int feeRate;
+  final num feeRate;
 
   @override
   String toString() {
@@ -929,7 +929,7 @@ class _$ComposeDispenserOnNewAddressStateConfirmImpl<T>
             T composeSendTransaction,
             T composeDispenserTransaction,
             int btcQuantity,
-            int feeRate)
+            num feeRate)
         confirm,
     required TResult Function(String error) error,
     required TResult Function(String? error, bool? loading) collectPassword,
@@ -950,7 +950,7 @@ class _$ComposeDispenserOnNewAddressStateConfirmImpl<T>
             T composeSendTransaction,
             T composeDispenserTransaction,
             int btcQuantity,
-            int feeRate)?
+            num feeRate)?
         confirm,
     TResult? Function(String error)? error,
     TResult? Function(String? error, bool? loading)? collectPassword,
@@ -971,7 +971,7 @@ class _$ComposeDispenserOnNewAddressStateConfirmImpl<T>
             T composeSendTransaction,
             T composeDispenserTransaction,
             int btcQuantity,
-            int feeRate)?
+            num feeRate)?
         confirm,
     TResult Function(String error)? error,
     TResult Function(String? error, bool? loading)? collectPassword,
@@ -1060,7 +1060,7 @@ abstract class _ComposeDispenserOnNewAddressStateConfirm<T>
           required final T composeSendTransaction,
           required final T composeDispenserTransaction,
           required final int btcQuantity,
-          required final int feeRate}) =
+          required final num feeRate}) =
       _$ComposeDispenserOnNewAddressStateConfirmImpl<T>;
 
   String get newAccountName;
@@ -1068,7 +1068,7 @@ abstract class _ComposeDispenserOnNewAddressStateConfirm<T>
   T get composeSendTransaction;
   T get composeDispenserTransaction;
   int get btcQuantity;
-  int get feeRate;
+  num get feeRate;
   @JsonKey(ignore: true)
   _$$ComposeDispenserOnNewAddressStateConfirmImplCopyWith<T,
           _$ComposeDispenserOnNewAddressStateConfirmImpl<T>>
@@ -1155,7 +1155,7 @@ class _$ComposeDispenserOnNewAddressStateErrorImpl<T>
             T composeSendTransaction,
             T composeDispenserTransaction,
             int btcQuantity,
-            int feeRate)
+            num feeRate)
         confirm,
     required TResult Function(String error) error,
     required TResult Function(String? error, bool? loading) collectPassword,
@@ -1175,7 +1175,7 @@ class _$ComposeDispenserOnNewAddressStateErrorImpl<T>
             T composeSendTransaction,
             T composeDispenserTransaction,
             int btcQuantity,
-            int feeRate)?
+            num feeRate)?
         confirm,
     TResult? Function(String error)? error,
     TResult? Function(String? error, bool? loading)? collectPassword,
@@ -1195,7 +1195,7 @@ class _$ComposeDispenserOnNewAddressStateErrorImpl<T>
             T composeSendTransaction,
             T composeDispenserTransaction,
             int btcQuantity,
-            int feeRate)?
+            num feeRate)?
         confirm,
     TResult Function(String error)? error,
     TResult Function(String? error, bool? loading)? collectPassword,
@@ -1385,7 +1385,7 @@ class _$ComposeDispenserOnNewAddressStateCollectPasswordImpl<T>
             T composeSendTransaction,
             T composeDispenserTransaction,
             int btcQuantity,
-            int feeRate)
+            num feeRate)
         confirm,
     required TResult Function(String error) error,
     required TResult Function(String? error, bool? loading) collectPassword,
@@ -1405,7 +1405,7 @@ class _$ComposeDispenserOnNewAddressStateCollectPasswordImpl<T>
             T composeSendTransaction,
             T composeDispenserTransaction,
             int btcQuantity,
-            int feeRate)?
+            num feeRate)?
         confirm,
     TResult? Function(String error)? error,
     TResult? Function(String? error, bool? loading)? collectPassword,
@@ -1425,7 +1425,7 @@ class _$ComposeDispenserOnNewAddressStateCollectPasswordImpl<T>
             T composeSendTransaction,
             T composeDispenserTransaction,
             int btcQuantity,
-            int feeRate)?
+            num feeRate)?
         confirm,
     TResult Function(String error)? error,
     TResult Function(String? error, bool? loading)? collectPassword,
@@ -1573,7 +1573,7 @@ class _$ComposeDispenserOnNewAddressStateSuccessImpl<T>
             T composeSendTransaction,
             T composeDispenserTransaction,
             int btcQuantity,
-            int feeRate)
+            num feeRate)
         confirm,
     required TResult Function(String error) error,
     required TResult Function(String? error, bool? loading) collectPassword,
@@ -1593,7 +1593,7 @@ class _$ComposeDispenserOnNewAddressStateSuccessImpl<T>
             T composeSendTransaction,
             T composeDispenserTransaction,
             int btcQuantity,
-            int feeRate)?
+            num feeRate)?
         confirm,
     TResult? Function(String error)? error,
     TResult? Function(String? error, bool? loading)? collectPassword,
@@ -1613,7 +1613,7 @@ class _$ComposeDispenserOnNewAddressStateSuccessImpl<T>
             T composeSendTransaction,
             T composeDispenserTransaction,
             int btcQuantity,
-            int feeRate)?
+            num feeRate)?
         confirm,
     TResult Function(String error)? error,
     TResult Function(String? error, bool? loading)? collectPassword,

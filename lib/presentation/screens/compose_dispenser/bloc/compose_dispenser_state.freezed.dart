@@ -21,7 +21,7 @@ mixin _$ComposeDispenserState {
   BalancesState get balancesState => throw _privateConstructorUsedError;
   FeeOption get feeOption => throw _privateConstructorUsedError;
   SubmitState get submitState =>
-      throw _privateConstructorUsedError; // Dispenser-specific properties
+      throw _privateConstructorUsedError; // Dispenser-specific propertiesflu
   DialogState get dialogState => throw _privateConstructorUsedError;
   String? get assetName => throw _privateConstructorUsedError;
   String? get openAddress => throw _privateConstructorUsedError;
@@ -287,7 +287,7 @@ class _$ComposeDispenserStateImpl extends _ComposeDispenserState {
   final FeeOption feeOption;
   @override
   final SubmitState submitState;
-// Dispenser-specific properties
+// Dispenser-specific propertiesflu
   @override
   final DialogState dialogState;
   @override
@@ -382,7 +382,7 @@ abstract class _ComposeDispenserState extends ComposeDispenserState {
   FeeOption get feeOption;
   @override
   SubmitState get submitState;
-  @override // Dispenser-specific properties
+  @override // Dispenser-specific propertiesflu
   DialogState get dialogState;
   @override
   String? get assetName;
@@ -417,7 +417,7 @@ mixin _$DialogState {
             int giveQuantity,
             int escrowQuantity,
             int mainchainrate,
-            int feeRate)
+            num feeRate)
         closeDialogAndOpenNewAddress,
     required TResult Function(bool? hasOpenDispensers) warning,
     required TResult Function(String error) error,
@@ -436,7 +436,7 @@ mixin _$DialogState {
             int giveQuantity,
             int escrowQuantity,
             int mainchainrate,
-            int feeRate)?
+            num feeRate)?
         closeDialogAndOpenNewAddress,
     TResult? Function(bool? hasOpenDispensers)? warning,
     TResult? Function(String error)? error,
@@ -455,7 +455,7 @@ mixin _$DialogState {
             int giveQuantity,
             int escrowQuantity,
             int mainchainrate,
-            int feeRate)?
+            num feeRate)?
         closeDialogAndOpenNewAddress,
     TResult Function(bool? hasOpenDispensers)? warning,
     TResult Function(String error)? error,
@@ -572,7 +572,7 @@ class _$DispenserInitialImpl implements _DispenserInitial {
             int giveQuantity,
             int escrowQuantity,
             int mainchainrate,
-            int feeRate)
+            num feeRate)
         closeDialogAndOpenNewAddress,
     required TResult Function(bool? hasOpenDispensers) warning,
     required TResult Function(String error) error,
@@ -594,7 +594,7 @@ class _$DispenserInitialImpl implements _DispenserInitial {
             int giveQuantity,
             int escrowQuantity,
             int mainchainrate,
-            int feeRate)?
+            num feeRate)?
         closeDialogAndOpenNewAddress,
     TResult? Function(bool? hasOpenDispensers)? warning,
     TResult? Function(String error)? error,
@@ -616,7 +616,7 @@ class _$DispenserInitialImpl implements _DispenserInitial {
             int giveQuantity,
             int escrowQuantity,
             int mainchainrate,
-            int feeRate)?
+            num feeRate)?
         closeDialogAndOpenNewAddress,
     TResult Function(bool? hasOpenDispensers)? warning,
     TResult Function(String error)? error,
@@ -735,7 +735,7 @@ class _$DispenserLoadingImpl implements _DispenserLoading {
             int giveQuantity,
             int escrowQuantity,
             int mainchainrate,
-            int feeRate)
+            num feeRate)
         closeDialogAndOpenNewAddress,
     required TResult Function(bool? hasOpenDispensers) warning,
     required TResult Function(String error) error,
@@ -757,7 +757,7 @@ class _$DispenserLoadingImpl implements _DispenserLoading {
             int giveQuantity,
             int escrowQuantity,
             int mainchainrate,
-            int feeRate)?
+            num feeRate)?
         closeDialogAndOpenNewAddress,
     TResult? Function(bool? hasOpenDispensers)? warning,
     TResult? Function(String error)? error,
@@ -779,7 +779,7 @@ class _$DispenserLoadingImpl implements _DispenserLoading {
             int giveQuantity,
             int escrowQuantity,
             int mainchainrate,
-            int feeRate)?
+            num feeRate)?
         closeDialogAndOpenNewAddress,
     TResult Function(bool? hasOpenDispensers)? warning,
     TResult Function(String error)? error,
@@ -901,7 +901,7 @@ class _$DispenserSuccessNormalFlowImpl implements _DispenserSuccessNormalFlow {
             int giveQuantity,
             int escrowQuantity,
             int mainchainrate,
-            int feeRate)
+            num feeRate)
         closeDialogAndOpenNewAddress,
     required TResult Function(bool? hasOpenDispensers) warning,
     required TResult Function(String error) error,
@@ -923,7 +923,7 @@ class _$DispenserSuccessNormalFlowImpl implements _DispenserSuccessNormalFlow {
             int giveQuantity,
             int escrowQuantity,
             int mainchainrate,
-            int feeRate)?
+            num feeRate)?
         closeDialogAndOpenNewAddress,
     TResult? Function(bool? hasOpenDispensers)? warning,
     TResult? Function(String error)? error,
@@ -945,7 +945,7 @@ class _$DispenserSuccessNormalFlowImpl implements _DispenserSuccessNormalFlow {
             int giveQuantity,
             int escrowQuantity,
             int mainchainrate,
-            int feeRate)?
+            num feeRate)?
         closeDialogAndOpenNewAddress,
     TResult Function(bool? hasOpenDispensers)? warning,
     TResult Function(String error)? error,
@@ -1070,7 +1070,7 @@ class _$DispenserSuccessCreateNewAddressFlowImpl
             int giveQuantity,
             int escrowQuantity,
             int mainchainrate,
-            int feeRate)
+            num feeRate)
         closeDialogAndOpenNewAddress,
     required TResult Function(bool? hasOpenDispensers) warning,
     required TResult Function(String error) error,
@@ -1092,7 +1092,7 @@ class _$DispenserSuccessCreateNewAddressFlowImpl
             int giveQuantity,
             int escrowQuantity,
             int mainchainrate,
-            int feeRate)?
+            num feeRate)?
         closeDialogAndOpenNewAddress,
     TResult? Function(bool? hasOpenDispensers)? warning,
     TResult? Function(String error)? error,
@@ -1114,7 +1114,7 @@ class _$DispenserSuccessCreateNewAddressFlowImpl
             int giveQuantity,
             int escrowQuantity,
             int mainchainrate,
-            int feeRate)?
+            num feeRate)?
         closeDialogAndOpenNewAddress,
     TResult Function(bool? hasOpenDispensers)? warning,
     TResult Function(String error)? error,
@@ -1199,7 +1199,7 @@ abstract class _$$DispenserCloseDialogAndOpenNewAddressImplCopyWith<$Res> {
       int giveQuantity,
       int escrowQuantity,
       int mainchainrate,
-      int feeRate});
+      num feeRate});
 }
 
 /// @nodoc
@@ -1251,7 +1251,7 @@ class __$$DispenserCloseDialogAndOpenNewAddressImplCopyWithImpl<$Res>
       feeRate: null == feeRate
           ? _value.feeRate
           : feeRate // ignore: cast_nullable_to_non_nullable
-              as int,
+              as num,
     ));
   }
 }
@@ -1282,7 +1282,7 @@ class _$DispenserCloseDialogAndOpenNewAddressImpl
   @override
   final int mainchainrate;
   @override
-  final int feeRate;
+  final num feeRate;
 
   @override
   String toString() {
@@ -1334,7 +1334,7 @@ class _$DispenserCloseDialogAndOpenNewAddressImpl
             int giveQuantity,
             int escrowQuantity,
             int mainchainrate,
-            int feeRate)
+            num feeRate)
         closeDialogAndOpenNewAddress,
     required TResult Function(bool? hasOpenDispensers) warning,
     required TResult Function(String error) error,
@@ -1357,7 +1357,7 @@ class _$DispenserCloseDialogAndOpenNewAddressImpl
             int giveQuantity,
             int escrowQuantity,
             int mainchainrate,
-            int feeRate)?
+            num feeRate)?
         closeDialogAndOpenNewAddress,
     TResult? Function(bool? hasOpenDispensers)? warning,
     TResult? Function(String error)? error,
@@ -1380,7 +1380,7 @@ class _$DispenserCloseDialogAndOpenNewAddressImpl
             int giveQuantity,
             int escrowQuantity,
             int mainchainrate,
-            int feeRate)?
+            num feeRate)?
         closeDialogAndOpenNewAddress,
     TResult Function(bool? hasOpenDispensers)? warning,
     TResult Function(String error)? error,
@@ -1455,7 +1455,7 @@ abstract class _DispenserCloseDialogAndOpenNewAddress implements DialogState {
           required final int giveQuantity,
           required final int escrowQuantity,
           required final int mainchainrate,
-          required final int feeRate}) =
+          required final num feeRate}) =
       _$DispenserCloseDialogAndOpenNewAddressImpl;
 
   String get originalAddress;
@@ -1464,7 +1464,7 @@ abstract class _DispenserCloseDialogAndOpenNewAddress implements DialogState {
   int get giveQuantity;
   int get escrowQuantity;
   int get mainchainrate;
-  int get feeRate;
+  num get feeRate;
   @JsonKey(ignore: true)
   _$$DispenserCloseDialogAndOpenNewAddressImplCopyWith<
           _$DispenserCloseDialogAndOpenNewAddressImpl>
@@ -1548,7 +1548,7 @@ class _$DispenserWarningImpl implements _DispenserWarning {
             int giveQuantity,
             int escrowQuantity,
             int mainchainrate,
-            int feeRate)
+            num feeRate)
         closeDialogAndOpenNewAddress,
     required TResult Function(bool? hasOpenDispensers) warning,
     required TResult Function(String error) error,
@@ -1570,7 +1570,7 @@ class _$DispenserWarningImpl implements _DispenserWarning {
             int giveQuantity,
             int escrowQuantity,
             int mainchainrate,
-            int feeRate)?
+            num feeRate)?
         closeDialogAndOpenNewAddress,
     TResult? Function(bool? hasOpenDispensers)? warning,
     TResult? Function(String error)? error,
@@ -1592,7 +1592,7 @@ class _$DispenserWarningImpl implements _DispenserWarning {
             int giveQuantity,
             int escrowQuantity,
             int mainchainrate,
-            int feeRate)?
+            num feeRate)?
         closeDialogAndOpenNewAddress,
     TResult Function(bool? hasOpenDispensers)? warning,
     TResult Function(String error)? error,
@@ -1744,7 +1744,7 @@ class _$DispenserErrorImpl implements _DispenserError {
             int giveQuantity,
             int escrowQuantity,
             int mainchainrate,
-            int feeRate)
+            num feeRate)
         closeDialogAndOpenNewAddress,
     required TResult Function(bool? hasOpenDispensers) warning,
     required TResult Function(String error) error,
@@ -1766,7 +1766,7 @@ class _$DispenserErrorImpl implements _DispenserError {
             int giveQuantity,
             int escrowQuantity,
             int mainchainrate,
-            int feeRate)?
+            num feeRate)?
         closeDialogAndOpenNewAddress,
     TResult? Function(bool? hasOpenDispensers)? warning,
     TResult? Function(String error)? error,
@@ -1788,7 +1788,7 @@ class _$DispenserErrorImpl implements _DispenserError {
             int giveQuantity,
             int escrowQuantity,
             int mainchainrate,
-            int feeRate)?
+            num feeRate)?
         closeDialogAndOpenNewAddress,
     TResult Function(bool? hasOpenDispensers)? warning,
     TResult Function(String error)? error,

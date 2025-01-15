@@ -222,7 +222,7 @@ class ComposeDispenserBloc extends ComposeBaseBloc<ComposeDispenserState> {
     }
   }
 
-  int _getFeeRate() {
+  num _getFeeRate() {
     FeeEstimates feeEstimates = state.feeState.feeEstimatesOrThrow();
     return switch (state.feeOption) {
       FeeOption.Fast() => feeEstimates.fast,

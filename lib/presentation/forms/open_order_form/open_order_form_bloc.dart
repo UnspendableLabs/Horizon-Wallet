@@ -355,7 +355,7 @@ class SubmitArgs {
 class OnSubmitSuccessArgs {
   final ComposeOrderResponse response;
   final VirtualSize virtualSize;
-  final int feeRate;
+  final num feeRate;
 
   OnSubmitSuccessArgs({
     required this.response,
@@ -919,7 +919,7 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
     }
   }
 
-  int _getFeeRate() {
+  num _getFeeRate() {
     return switch (state.feeEstimates) {
       Success(data: var feeEstimates) => switch (state.feeOption) {
           FeeOption.Fast() => feeEstimates.fast,
