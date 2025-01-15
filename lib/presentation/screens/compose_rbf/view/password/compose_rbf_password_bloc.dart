@@ -10,6 +10,7 @@ import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/entities/utxo.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
 import 'package:horizon/domain/services/address_service.dart';
+import 'package:horizon/domain/services/bitcoind_service.dart';
 import 'package:horizon/domain/services/imported_address_service.dart';
 import 'package:horizon/domain/entities/imported_address.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
@@ -84,6 +85,7 @@ class ComposeRbfPasswordBloc extends Bloc<FormEvent, FormStateModel> {
   final String address;
   final MakeRBFResponse makeRBFResponse;
 
+  final BitcoindService bitcoindService;
   final AddressService addressService;
   final AccountRepository accountRepository;
   final TransactionService transactionService;
@@ -95,7 +97,8 @@ class ComposeRbfPasswordBloc extends Bloc<FormEvent, FormStateModel> {
   final BitcoinRepository bitcoinRepository;
 
   ComposeRbfPasswordBloc(
-      {required this.makeRBFResponse,
+      {required this.bitcoindService,
+      required this.makeRBFResponse,
       required this.address,
       required this.walletRepository,
       required this.signAndBroadcastTransactionUseCase,
@@ -158,7 +161,6 @@ class ComposeRbfPasswordBloc extends Bloc<FormEvent, FormStateModel> {
               print("transaction.vin.length ${transaction.vout.length}");
 
               for (final index in inputIndices) {
-
                 print("index $index");
                 final input = transaction.vout[index];
                 print("input $input");
@@ -180,6 +182,8 @@ class ComposeRbfPasswordBloc extends Bloc<FormEvent, FormStateModel> {
           print(utxoMap);
           final txHex = await transactionService.signTransaction(
               makeRBFResponse.txHex, addressPrivateKey, address, utxoMap);
+
+          final txHash = await bitcoindService.sendrawtransaction(txHex);
 
           print("after sign $txHex");
           // Sign Transaction

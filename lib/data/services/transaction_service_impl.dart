@@ -159,6 +159,7 @@ class TransactionServiceImpl implements TransactionService {
       print("in txHash: $txHash");
 
       final txHashKey = "$txHash:${input.index}";
+      print("txHAshKey: $txHashKey");
 
       var prev = utxoMap[txHashKey];
       if (prev != null) {

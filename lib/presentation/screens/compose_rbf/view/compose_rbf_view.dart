@@ -9,6 +9,7 @@ import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/address_service.dart';
+import 'package:horizon/domain/services/bitcoind_service.dart';
 import 'package:horizon/domain/services/imported_address_service.dart';
 import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
 import 'package:horizon/presentation/forms/replace_by_fee/replace_by_fee_form_view.dart';
@@ -100,6 +101,7 @@ class ComposeRBFPageWrapper extends StatelessWidget {
                             }),
                         c.Password() => BlocProvider(
                             create: (context) => ComposeRbfPasswordBloc(
+                              bitcoindService: GetIt.I.get<BitcoindService>(),
                                 bitcoinRepository: GetIt.I.get<BitcoinRepository>(),
                                 importedAddressService: GetIt.I<ImportedAddressService>(),
                                 addressService: GetIt.I<AddressService>(),
