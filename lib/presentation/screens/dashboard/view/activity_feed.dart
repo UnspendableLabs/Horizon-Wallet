@@ -276,6 +276,8 @@ class ActivityFeedListItem extends StatelessWidget {
           when _getSendSide(params.source) == SendSide.destination =>
         SelectableText(
             "Sweep ${flagMapper[params.flags]} from ${params.source}"),
+      BurnEvent(params: var params) => SelectableText(
+          "Burn ${params.burnedNormalized} BTC for ${params.earnedNormalized} XCP"),
       _ => SelectableText(
           'Invariant: title unsupported event type: ${event.runtimeType}'),
     };
@@ -610,6 +612,8 @@ class ActivityFeedListItem extends StatelessWidget {
         const Icon(Icons.currency_exchange, color: Colors.grey),
       SweepEvent(params: var _) =>
         const Icon(Icons.cleaning_services, color: Colors.grey),
+      BurnEvent(params: var _) =>
+        const Icon(Icons.local_fire_department, color: Colors.grey),
       _ => const Icon(Icons.error),
     };
   }

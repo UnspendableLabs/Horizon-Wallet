@@ -1,5 +1,6 @@
 import 'package:horizon/domain/entities/bitcoin_decoded_tx.dart';
 import 'package:horizon/domain/entities/compose_attach_utxo.dart';
+import 'package:horizon/domain/entities/compose_burn.dart';
 import 'package:horizon/domain/entities/compose_destroy.dart';
 import 'package:horizon/domain/entities/compose_detach_utxo.dart';
 import 'package:horizon/domain/entities/compose_dividend.dart';
@@ -64,4 +65,7 @@ abstract class ComposeRepository {
 
   Future<ComposeSweepResponse> composeSweep(
       int fee, List<Utxo> inputsSet, ComposeSweepParams params);
+
+  Future<ComposeBurnResponse> composeBurn(
+      int fee, List<Utxo> inputsSet, ComposeBurnParams params);
 }
