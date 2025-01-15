@@ -21,21 +21,22 @@ import 'package:horizon/presentation/forms/replace_by_fee/replace_by_fee_form_bl
 import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
 import 'package:horizon/presentation/screens/compose_rbf/view/compose_rbf_view.dart';
 
-
 class RBF extends StatelessWidget {
   final String txHash;
+  final String address;
   const RBF({
     super.key,
     required this.txHash,
+    required this.address,
   });
   @override
   Widget build(BuildContext context) {
     return TextButton(
         onPressed: () {
           HorizonUI.HorizonDialog.show(
-              context: context,
-              body: ComposeRBFPageWrapper(txHash: txHash),
-              );
+            context: context,
+            body: ComposeRBFPageWrapper(txHash: txHash, address: address),
+          );
         },
         child: Text("accelerate"));
   }
@@ -670,7 +671,10 @@ class ActivityFeedListItem extends StatelessWidget {
         EventStateMempool() => Column(
             children: [
               const TransactionStatusPill(status: TransactionStatus.mempool),
-              RBF(txHash: txHash!)
+              RBF(
+                txHash: txHash!,
+                address: addresses.first,
+              )
             ],
           ),
         EventStateConfirmed(blockHeight: var blockHeight) =>
@@ -711,7 +715,7 @@ class ActivityFeedListItem extends StatelessWidget {
 }
 
 class DashboardActivityFeedScreen extends StatefulWidget {
-  final List<String> addresses;
+  final List<String> addresses; // this is always = [sourceAddress]
   final int initialItemCount;
   const DashboardActivityFeedScreen(
       {super.key, required this.addresses, required this.initialItemCount});

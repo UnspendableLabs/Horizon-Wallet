@@ -36,7 +36,7 @@ class TransactionServiceImpl implements TransactionService {
   TransactionServiceImpl({required this.config});
 
   @override
-  Future<String> makeRBF({
+  Future<MakeRBFResponse> makeRBF({
     required String txHex,
     required int feeDelta,
   }) async {
@@ -44,8 +44,15 @@ class TransactionServiceImpl implements TransactionService {
 
     bitcoinjs.Transaction transaction = bitcoinjs.Transaction.fromHex(txHex);
 
+    Map<String, List<int>> txHashToInputsMap = {};
     for (bitcoinjs.TxInput input in transaction.ins.toDart) {
       psbt.addInput(input);
+
+      var txHash = HEX.encode(input.hash.toDart.reversed.toList());
+
+      txHashToInputsMap[txHash] = txHashToInputsMap[txHash] ?? [];
+
+      txHashToInputsMap[txHash]!.add(input.index);
     }
 
     // TODO: this is not reliable
@@ -69,7 +76,27 @@ class TransactionServiceImpl implements TransactionService {
 
     psbt.addOutput(lastOut);
 
-    return psbt.toHex();
+    return MakeRBFResponse(
+        txHex: psbt.cache.tx.toHex(), inputsByTxHash: txHashToInputsMap);
+  }
+
+  @override
+  String signPsbtTmp(String psbtHex, String privateKey) {
+    bitcoinjs.Psbt psbt = bitcoinjs.Psbt.fromHex(psbtHex);
+
+    Buffer privKeyJS =
+        Buffer.from(Uint8List.fromList(hex.decode(privateKey)).toJS);
+
+    final network = _getNetwork();
+
+    dynamic signer = ecpairFactory.fromPrivateKey(privKeyJS, network);
+
+    // # TODO: obvoiusly this is a huge hack
+    psbt.signInput(0, signer);
+
+    psbt.finalizeAllInputs();
+
+    return psbt.extractTransaction().toHex();
   }
 
   @override
@@ -84,6 +111,7 @@ class TransactionServiceImpl implements TransactionService {
       Buffer privKeyJS =
           Buffer.from(Uint8List.fromList(hex.decode(privateKey)).toJS);
       final network = _getNetwork();
+
       dynamic signer = ecpairFactory.fromPrivateKey(privKeyJS, network);
 
       psbt.signInput(
@@ -94,8 +122,12 @@ class TransactionServiceImpl implements TransactionService {
   }
 
   @override
-  Future<String> signTransaction(String unsignedTransaction, String privateKey,
-      String sourceAddress, Map<String, Utxo> utxoMap) async {
+  Future<String> signTransaction(
+    String unsignedTransaction,
+    String privateKey,
+    String sourceAddress,
+    Map<String, Utxo> utxoMap,
+  ) async {
     bitcoinjs.Transaction transaction =
         bitcoinjs.Transaction.fromHex(unsignedTransaction);
 
@@ -123,6 +155,9 @@ class TransactionServiceImpl implements TransactionService {
       bitcoinjs.TxInput input = transaction.ins.toDart[i];
 
       var txHash = HEX.encode(input.hash.toDart.reversed.toList());
+
+      print("in txHash: $txHash");
+
       final txHashKey = "$txHash:${input.index}";
 
       var prev = utxoMap[txHashKey];
@@ -146,7 +181,7 @@ class TransactionServiceImpl implements TransactionService {
         }
       } else {
         throw TransactionServiceException(
-            'Insufficient funds: no utxos available');
+            'Counld not found output at $txHashKey');
       }
     }
 

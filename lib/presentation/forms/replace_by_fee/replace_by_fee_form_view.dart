@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:formz/formz.dart';
+import 'package:horizon/domain/services/transaction_service.dart';
 import 'package:horizon/presentation/common/fee_estimation_v2.dart';
 import 'package:horizon/domain/entities/fee_option.dart' as FeeOption;
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -8,16 +9,14 @@ import 'package:horizon/domain/entities/remote_data.dart';
 
 import "./replace_by_fee_form_bloc.dart";
 
-
 class OnSubmitSuccess {
   final String psbtHex;
   const OnSubmitSuccess({required this.psbtHex});
 }
 
-
 class ReplaceByFeeForm extends StatelessWidget {
   final String? submissionError;
-  final void Function() onSubmitSuccess;
+  final void Function(MakeRBFResponse psbtHex) onSubmitSuccess;
 
   const ReplaceByFeeForm(
       {super.key, this.submissionError, required this.onSubmitSuccess});
@@ -27,7 +26,7 @@ class ReplaceByFeeForm extends StatelessWidget {
     return BlocConsumer<ReplaceByFeeFormBloc, FormStateModel>(
         listener: (context, state) {
       if (state.submissionStatus.isSuccess) {
-        onSubmitSuccess();
+        onSubmitSuccess(state.rbfResponse!);
       }
     }, builder: (context, state) {
       return Padding(

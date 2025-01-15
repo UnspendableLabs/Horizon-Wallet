@@ -1,9 +1,20 @@
 import "package:horizon/domain/entities/utxo.dart";
 import 'package:horizon/js/bitcoin.dart' as bitcoinjs;
 
+class MakeRBFResponse {
+  final String txHex;
+  final Map<String, List<int>> inputsByTxHash;
+  MakeRBFResponse({
+    required this.txHex,
+    required this.inputsByTxHash,
+  });
+}
+
 abstract class TransactionService {
   String signPsbt(String psbtHex, Map<int, String> inputPrivateKeyMap,
       [List<int>? sighashTypes]);
+
+  String signPsbtTmp(String psbtHex, String privateKey);
 
   String psbtToUnsignedTransactionHex(String psbtHex);
 
@@ -37,7 +48,7 @@ abstract class TransactionService {
       required String destinationPrivKey,
       required int fee});
 
-  Future<String> makeRBF({
+  Future<MakeRBFResponse> makeRBF({
     required String txHex,
     required int feeDelta,
   });

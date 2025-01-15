@@ -65,6 +65,7 @@ class FormStateModel extends Equatable {
 
   final FormzSubmissionStatus submissionStatus;
   final String? errorMessage;
+  final MakeRBFResponse? rbfResponse;
 
   const FormStateModel({
     required this.txHash,
@@ -73,6 +74,7 @@ class FormStateModel extends Equatable {
     required this.feeOption,
     this.submissionStatus = FormzSubmissionStatus.initial,
     this.errorMessage,
+    this.rbfResponse,
   });
 
   FormStateModel copyWith({
@@ -82,6 +84,7 @@ class FormStateModel extends Equatable {
     FeeOption.FeeOption? feeOption,
     RemoteData<FeeEstimates>? feeEstimates,
     RemoteData<RBFData>? rbfData,
+    MakeRBFResponse? rbfResponse,
   }) {
     return FormStateModel(
         txHash: txHash ?? this.txHash,
@@ -89,7 +92,8 @@ class FormStateModel extends Equatable {
         submissionStatus: submissionStatus ?? this.submissionStatus,
         errorMessage: errorMessage ?? this.errorMessage,
         feeEstimates: feeEstimates ?? this.feeEstimates,
-        feeOption: feeOption ?? this.feeOption);
+        feeOption: feeOption ?? this.feeOption,
+        rbfResponse: rbfResponse ?? this.rbfResponse);
   }
 
   @override
@@ -99,6 +103,7 @@ class FormStateModel extends Equatable {
         submissionStatus,
         errorMessage,
         feeOption,
+        rbfResponse,
       ];
 }
 
@@ -142,14 +147,15 @@ class ReplaceByFeeFormBloc extends Bloc<FormEvent, FormStateModel> {
 
       int feeBump = newFee - event.tx.fee;
 
-      String psbtHex = await transactionService.makeRBF(
+      MakeRBFResponse rbfResponse = await transactionService.makeRBF(
         txHex: event.hex,
         feeDelta: feeBump,
       );
 
+
       emit(state.copyWith(
-        submissionStatus: FormzSubmissionStatus.success,
-      ));
+          submissionStatus: FormzSubmissionStatus.success, rbfResponse: rbfResponse));
+              
     } on TransactionServiceException catch (e) {
       emit(state.copyWith(
         submissionStatus: FormzSubmissionStatus.failure,
