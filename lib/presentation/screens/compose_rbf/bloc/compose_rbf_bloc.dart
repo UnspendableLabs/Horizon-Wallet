@@ -24,16 +24,23 @@ class Password extends Step {
 
 class ComposeRBFState extends Equatable {
   final MakeRBFResponse? makeRBFResponse;
+  final rbfForm.RBFData? rbfData;
   final Step step;
 
-  const ComposeRBFState({required this.step, this.makeRBFResponse});
+  const ComposeRBFState(
+      {required this.step, this.makeRBFResponse, this.rbfData});
   @override
-  List<Object> get props => [step, makeRBFResponse ?? ""];
+  List<Object> get props => [step, makeRBFResponse ?? "", rbfData ?? ""];
 
-  ComposeRBFState copyWith({Step? step, MakeRBFResponse? makeRBFResponse}) {
+  ComposeRBFState copyWith(
+      {Step? step,
+      MakeRBFResponse? makeRBFResponse,
+      rbfForm.RBFData? rbfData}) {
     return ComposeRBFState(
-        makeRBFResponse: makeRBFResponse ?? this.makeRBFResponse,
-        step: step ?? this.step);
+      makeRBFResponse: makeRBFResponse ?? this.makeRBFResponse,
+      step: step ?? this.step,
+      rbfData: rbfData ?? this.rbfData,
+    );
   }
 }
 
@@ -45,8 +52,9 @@ class ComposeRBFEvent extends Equatable {
 
 class FormSubmitted extends ComposeRBFEvent {
   final MakeRBFResponse makeRBFResponse;
+  final rbfForm.RBFData rbfData;
 
-  const FormSubmitted({required this.makeRBFResponse});
+  const FormSubmitted({required this.makeRBFResponse, required this.rbfData});
 }
 
 class ReviewSubmitted extends ComposeRBFEvent {
@@ -57,8 +65,6 @@ class ReviewBackButtonPressed extends ComposeRBFEvent {
   const ReviewBackButtonPressed();
 }
 
-
-
 class PasswordSubmitted extends ComposeRBFEvent {
   const PasswordSubmitted();
 }
@@ -66,11 +72,12 @@ class PasswordSubmitted extends ComposeRBFEvent {
 class ComposeRBFBloc extends Bloc<ComposeRBFEvent, ComposeRBFState> {
   ComposeRBFBloc() : super(ComposeRBFState(step: Form())) {
     on<FormSubmitted>((event, emit) {
-      print("form submitted");
-      emit(state.copyWith(step: Review(), makeRBFResponse: event.makeRBFResponse));
+      emit(state.copyWith(
+          step: Review(),
+          makeRBFResponse: event.makeRBFResponse,
+          rbfData: event.rbfData));
     });
     on<ReviewSubmitted>((event, emit) {
-      print("reviw submittdd");
       emit(state.copyWith(step: Password()));
     });
     on<ReviewBackButtonPressed>((event, emit) {

@@ -4,8 +4,14 @@ import 'package:horizon/js/bitcoin.dart' as bitcoinjs;
 class MakeRBFResponse {
   final String txHex;
   final Map<String, List<int>> inputsByTxHash;
+  final int virtualSize;
+  final int adjustedVirtualSize;
+  final int fee;
   MakeRBFResponse({
     required this.txHex,
+    required this.virtualSize,
+    required this.adjustedVirtualSize,
+    required this.fee,
     required this.inputsByTxHash,
   });
 }
@@ -50,7 +56,8 @@ abstract class TransactionService {
 
   Future<MakeRBFResponse> makeRBF({
     required String txHex,
-    required int feeDelta,
+    required int oldFee,
+    required int newFee,
   });
 }
 

@@ -48,6 +48,9 @@ extension type GlobalMap._(JSObject _) implements JSObject {
 extension type PsbtCache._(JSObject _) implements JSObject {
   @JS("__TX")
   external Transaction get tx;
+  
+  @JS("__FEE")
+  external int get fee;
 }
 
 
@@ -74,6 +77,9 @@ extension type Psbt._(JSObject _) implements JSObject {
   external bool validateSignaturesOfInput(JSNumber inputIndex);
 
   external PsbtData get data;
+
+  external int getFee();
+
 
   @JS("__CACHE")
   external PsbtCache get cache;

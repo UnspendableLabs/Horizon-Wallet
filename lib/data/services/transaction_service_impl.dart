@@ -15,6 +15,9 @@ import 'package:horizon/js/ecpair.dart' as ecpair;
 import 'package:horizon/js/horizon_utils.dart' as horizon_utils;
 import 'package:horizon/js/tiny_secp256k1.dart' as tinysecp256k1js;
 import 'package:horizon/presentation/common/shared_util.dart';
+import 'dart:math';
+
+import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
 
 const DEFAULT_SEQUENCE = 0xffffffff;
 const SIGHASH_DEFAULT = 0x00;
@@ -38,8 +41,15 @@ class TransactionServiceImpl implements TransactionService {
   @override
   Future<MakeRBFResponse> makeRBF({
     required String txHex,
-    required int feeDelta,
+    required int oldFee,
+    required int newFee,
   }) async {
+    if (newFee <= oldFee) {
+      throw TransactionServiceException('New fee must be greater than old fee');
+    }
+
+    final feeDelta = newFee - oldFee;
+
     bitcoinjs.Psbt psbt = bitcoinjs.Psbt();
 
     bitcoinjs.Transaction transaction = bitcoinjs.Transaction.fromHex(txHex);
@@ -76,8 +86,18 @@ class TransactionServiceImpl implements TransactionService {
 
     psbt.addOutput(lastOut);
 
+    final tx = psbt.cache.tx;
+    final txHex_ = tx.toHex();
+    final virtualSize = tx.virtualSize();
+    final sigops = countSigOps(rawtransaction: txHex);
+    final adjustedVirtualSize = max(virtualSize, sigops * 5);
+
     return MakeRBFResponse(
-        txHex: psbt.cache.tx.toHex(), inputsByTxHash: txHashToInputsMap);
+        txHex: txHex_,
+        virtualSize: virtualSize,
+        fee: newFee,
+        adjustedVirtualSize: adjustedVirtualSize,
+        inputsByTxHash: txHashToInputsMap);
   }
 
   @override

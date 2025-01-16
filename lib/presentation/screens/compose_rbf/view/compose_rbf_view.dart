@@ -26,12 +26,14 @@ import 'package:get_it/get_it.dart';
 import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transaction_usecase.dart';
 
 class ComposeRBFReview extends StatelessWidget {
-  final String psbtHex;
+  final rbfForm.RBFData rbfData;
+  final MakeRBFResponse makeRBFResponse;
   final void Function() onContinue;
   final void Function() onBack;
 
   const ComposeRBFReview(
-      {required this.psbtHex,
+      {required this.rbfData,
+      required this.makeRBFResponse,
       required this.onBack,
       required this.onContinue,
       super.key});
@@ -39,11 +41,63 @@ class ComposeRBFReview extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(16.0),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.center, children: [
-        HorizonUI.HorizonTextFormField(
-            label: "tx hex",
-            enabled: false,
-            controller: TextEditingController(text: psbtHex)),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text(
+          'Replacing:',
+          style: Theme.of(context).textTheme.labelSmall,
+        ),
+        Row(
+          children: [
+            Text(
+              "${rbfData.tx.txid}",
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
+          ],
+        ),
+
+        const SizedBox(height: 16.0),
+        Text(
+          'Fee:',
+          style: Theme.of(context).textTheme.labelSmall,
+        ),
+        Row(
+          children: [
+            Text(
+              "${rbfData.tx.fee} sats/vbyte",
+              style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                    decoration: TextDecoration.lineThrough,
+                  ),
+            ),
+            const SizedBox(width: 8.0),
+            Text(
+              "${makeRBFResponse.fee} sats/vbyte",
+              style: Theme.of(context)
+                  .textTheme
+                  .bodyMedium!
+                  .copyWith(color: Colors.green),
+            ),
+          ],
+        ),
+        // SizedBox(height: 16.0),
+        // Text(
+        //   'Fee Rate:',
+        //   style: Theme.of(context).textTheme.labelSmall,
+        // ),
+        // Row(
+        //   children: [
+        //     Text(
+        //       (rbfData.tx.fee / rbfData.adjustedSize).toStringAsFixed(2),
+        //       style: Theme.of(context).textTheme.bodyMedium,
+        //     ),
+        //     const SizedBox(width: 8.0),
+        //     Text(
+        //       (makeRBFResponse.fee / makeRBFResponse.virtualSize)
+        //           .toStringAsFixed(2),
+        //       style: Theme.of(context).textTheme.bodyMedium,
+        //     ),
+        //     const Text("sats/vB"),
+        //   ],
+        // ),
         const HorizonUI.HorizonDivider(),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -92,13 +146,15 @@ class ComposeRBFPageWrapper extends StatelessWidget {
                       return switch (state.step) {
                         c.Form() => ReplaceByFeeForm(onCancel: () {
                             Navigator.of(context).pop();
-                          }, onSubmitSuccess: (makeRBFResponse) {
+                          }, onSubmitSuccess: (makeRBFResponse, rbfData) {
                             context.read<c.ComposeRBFBloc>().add(
                                 c.FormSubmitted(
-                                    makeRBFResponse: makeRBFResponse));
+                                    makeRBFResponse: makeRBFResponse,
+                                    rbfData: rbfData));
                           }),
                         c.Review() => ComposeRBFReview(
-                            psbtHex: state.makeRBFResponse!.txHex,
+                            makeRBFResponse: state.makeRBFResponse!,
+                            rbfData: state.rbfData!,
                             onBack: () {
                               context
                                   .read<c.ComposeRBFBloc>()
@@ -130,8 +186,7 @@ class ComposeRBFPageWrapper extends StatelessWidget {
                                 makeRBFResponse: state.makeRBFResponse!),
                             child: const ComposeRBFPasswordForm()),
                       };
-                    })
-                    ))));
+                    })))));
     // )
   }
 }

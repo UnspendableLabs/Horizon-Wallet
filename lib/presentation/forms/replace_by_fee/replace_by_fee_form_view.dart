@@ -16,7 +16,7 @@ class OnSubmitSuccess {
 
 class ReplaceByFeeForm extends StatelessWidget {
   final String? submissionError;
-  final void Function(MakeRBFResponse psbtHex) onSubmitSuccess;
+  final void Function(MakeRBFResponse psbtHex, RBFData rbfData) onSubmitSuccess;
   final void Function() onCancel;
 
   const ReplaceByFeeForm(
@@ -31,7 +31,7 @@ class ReplaceByFeeForm extends StatelessWidget {
     return BlocConsumer<ReplaceByFeeFormBloc, FormStateModel>(
         listener: (context, state) {
       if (state.submissionStatus.isSuccess) {
-        onSubmitSuccess(state.rbfResponse!);
+        onSubmitSuccess(state.rbfResponse!, successOrThrow(state.rbfData));
       }
     }, builder: (context, state) {
       return switch (state.rbfData) {
@@ -41,29 +41,29 @@ class ReplaceByFeeForm extends StatelessWidget {
                 Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Text(
                 'Transaction Hash:',
-                style: Theme.of(context).textTheme.labelLarge,
+                style: Theme.of(context).textTheme.labelSmall,
               ),
               Text(
                 state.txHash,
-                style: Theme.of(context).textTheme.bodySmall,
+                style: Theme.of(context).textTheme.bodyMedium,
               ),
               const SizedBox(height: 16.0),
               Text(
                 'Fee:',
-                style: Theme.of(context).textTheme.labelLarge,
+                style: Theme.of(context).textTheme.labelSmall,
               ),
               Text(
                 "${data.tx.fee} sats",
-                style: Theme.of(context).textTheme.bodySmall,
+                style: Theme.of(context).textTheme.bodyMedium,
               ),
               const SizedBox(height: 16.0),
               Text(
                 "Fee Rate:",
-                style: Theme.of(context).textTheme.labelLarge,
+                style: Theme.of(context).textTheme.labelSmall,
               ),
               Text(
                 "${(data.tx.fee / data.adjustedSize).toStringAsFixed(2)} sats/vB",
-                style: Theme.of(context).textTheme.bodySmall,
+                style: Theme.of(context).textTheme.bodyMedium,
               ),
               const HorizonUI.HorizonDivider(),
               FeeSelectionV2(

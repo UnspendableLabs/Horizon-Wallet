@@ -149,7 +149,8 @@ class ReplaceByFeeFormBloc extends Bloc<FormEvent, FormStateModel> {
 
       MakeRBFResponse rbfResponse = await transactionService.makeRBF(
         txHex: event.hex,
-        feeDelta: feeBump,
+        oldFee: event.tx.fee,
+        newFee: newFee,
       );
 
 
@@ -168,6 +169,7 @@ class ReplaceByFeeFormBloc extends Bloc<FormEvent, FormStateModel> {
         errorMessage: e.message,
       ));
     } catch (e) {
+      print(e);
       emit(state.copyWith(
         submissionStatus: FormzSubmissionStatus.failure,
       ));
