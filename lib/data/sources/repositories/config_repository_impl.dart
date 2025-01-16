@@ -86,7 +86,7 @@ class ConfigImpl implements Config {
         Network.mainnet => "https://horizon.market/explorer",
         Network.testnet => "https://testnet-explorer.unspendablelabs.com",
         Network.testnet4 =>
-          "https://testnet-explorer.unspendablelabs.com", // TODO: update when testnet4 explorer is ready
+          "https://mempool.space/testnet4", // TODO: update when testnet4 explorer is ready
         Network.regtest => "http://127.0.0.1:3000",
       };
 

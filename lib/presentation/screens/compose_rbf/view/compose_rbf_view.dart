@@ -86,11 +86,12 @@ class ComposeRBFPageWrapper extends StatelessWidget {
                     body: BlocBuilder<c.ComposeRBFBloc, c.ComposeRBFState>(
                         builder: (context, state) {
                       return switch (state.step) {
-                        c.Form() =>
-                          ReplaceByFeeForm(onSubmitSuccess: (makeRBFResponse) {
-                            context
-                                .read<c.ComposeRBFBloc>()
-                                .add(c.FormSubmitted(makeRBFResponse: makeRBFResponse));
+                        c.Form() => ReplaceByFeeForm(onCancel: () {
+                            Navigator.of(context).pop();
+                          }, onSubmitSuccess: (makeRBFResponse) {
+                            context.read<c.ComposeRBFBloc>().add(
+                                c.FormSubmitted(
+                                    makeRBFResponse: makeRBFResponse));
                           }),
                         c.Review() => ComposeRBFReview(
                             psbtHex: state.makeRBFResponse!.txHex,
@@ -101,14 +102,18 @@ class ComposeRBFPageWrapper extends StatelessWidget {
                             }),
                         c.Password() => BlocProvider(
                             create: (context) => ComposeRbfPasswordBloc(
-                              bitcoindService: GetIt.I.get<BitcoindService>(),
-                                bitcoinRepository: GetIt.I.get<BitcoinRepository>(),
-                                importedAddressService: GetIt.I<ImportedAddressService>(),
+                                bitcoindService: GetIt.I.get<BitcoindService>(),
+                                bitcoinRepository:
+                                    GetIt.I.get<BitcoinRepository>(),
+                                importedAddressService:
+                                    GetIt.I<ImportedAddressService>(),
                                 addressService: GetIt.I<AddressService>(),
                                 accountRepository: GetIt.I<AccountRepository>(),
-                                addressRepository: GetIt.I<UnifiedAddressRepository>(),
+                                addressRepository:
+                                    GetIt.I<UnifiedAddressRepository>(),
                                 encryptionService: GetIt.I<EncryptionService>(),
-                                transactionService: GetIt.I<TransactionService>(),
+                                transactionService:
+                                    GetIt.I<TransactionService>(),
                                 signAndBroadcastTransactionUseCase: GetIt.I
                                     .get<SignAndBroadcastTransactionUseCase>(),
                                 address: address,

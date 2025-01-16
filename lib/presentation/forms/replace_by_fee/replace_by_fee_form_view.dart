@@ -17,9 +17,13 @@ class OnSubmitSuccess {
 class ReplaceByFeeForm extends StatelessWidget {
   final String? submissionError;
   final void Function(MakeRBFResponse psbtHex) onSubmitSuccess;
+  final void Function() onCancel;
 
   const ReplaceByFeeForm(
-      {super.key, this.submissionError, required this.onSubmitSuccess});
+      {super.key,
+      required this.onCancel,
+      this.submissionError,
+      required this.onSubmitSuccess});
 
   @override
   Widget build(BuildContext context) {
@@ -76,7 +80,7 @@ class ReplaceByFeeForm extends StatelessWidget {
                       children: [
                         HorizonUI.HorizonCancelButton(
                           onPressed: () {
-                            // context.read<OpenOrderFormBloc>().add(FormCancelled());
+                            Navigator.of(context).pop();
                           },
                           buttonText: 'CANCEL',
                         ),
