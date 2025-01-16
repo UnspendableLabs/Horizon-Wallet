@@ -53,6 +53,12 @@ class ReviewSubmitted extends ComposeRBFEvent {
   const ReviewSubmitted();
 }
 
+class ReviewBackButtonPressed extends ComposeRBFEvent {
+  const ReviewBackButtonPressed();
+}
+
+
+
 class PasswordSubmitted extends ComposeRBFEvent {
   const PasswordSubmitted();
 }
@@ -60,10 +66,16 @@ class PasswordSubmitted extends ComposeRBFEvent {
 class ComposeRBFBloc extends Bloc<ComposeRBFEvent, ComposeRBFState> {
   ComposeRBFBloc() : super(ComposeRBFState(step: Form())) {
     on<FormSubmitted>((event, emit) {
+      print("form submitted");
       emit(state.copyWith(step: Review(), makeRBFResponse: event.makeRBFResponse));
     });
     on<ReviewSubmitted>((event, emit) {
+      print("reviw submittdd");
       emit(state.copyWith(step: Password()));
+    });
+    on<ReviewBackButtonPressed>((event, emit) {
+      print("review back button pressed");
+      emit(state.copyWith(step: Form()));
     });
   }
 }

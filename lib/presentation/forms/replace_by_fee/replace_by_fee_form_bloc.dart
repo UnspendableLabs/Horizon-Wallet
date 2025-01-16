@@ -155,6 +155,12 @@ class ReplaceByFeeFormBloc extends Bloc<FormEvent, FormStateModel> {
 
       emit(state.copyWith(
           submissionStatus: FormzSubmissionStatus.success, rbfResponse: rbfResponse));
+
+
+      // reset the form
+      emit(state.copyWith(
+          submissionStatus: FormzSubmissionStatus.initial, rbfResponse: null));
+
               
     } on TransactionServiceException catch (e) {
       emit(state.copyWith(
@@ -199,6 +205,7 @@ class ReplaceByFeeFormBloc extends Bloc<FormEvent, FormStateModel> {
               tx: bitcoinTransaction,
               hex: bitcoinTransactionHex,
               adjustedSize: adjustedVirtualSize))));
+
     } catch (e) {
       print(e);
     }

@@ -28,9 +28,13 @@ import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transacti
 class ComposeRBFReview extends StatelessWidget {
   final String psbtHex;
   final void Function() onContinue;
+  final void Function() onBack;
 
   const ComposeRBFReview(
-      {required this.psbtHex, required this.onContinue, super.key});
+      {required this.psbtHex,
+      required this.onBack,
+      required this.onContinue,
+      super.key});
 
   Widget build(BuildContext context) {
     return Padding(
@@ -45,7 +49,7 @@ class ComposeRBFReview extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             HorizonUI.HorizonCancelButton(
-              onPressed: () => {},
+              onPressed: () => onBack(),
               buttonText: 'BACK',
             ),
             HorizonUI.HorizonContinueButton(
@@ -95,6 +99,11 @@ class ComposeRBFPageWrapper extends StatelessWidget {
                           }),
                         c.Review() => ComposeRBFReview(
                             psbtHex: state.makeRBFResponse!.txHex,
+                            onBack: () {
+                              context
+                                  .read<c.ComposeRBFBloc>()
+                                  .add(const c.ReviewBackButtonPressed());
+                            },
                             onContinue: () {
                               context
                                   .read<c.ComposeRBFBloc>()
@@ -121,7 +130,8 @@ class ComposeRBFPageWrapper extends StatelessWidget {
                                 makeRBFResponse: state.makeRBFResponse!),
                             child: const ComposeRBFPasswordForm()),
                       };
-                    })))));
+                    })
+                    ))));
     // )
   }
 }
