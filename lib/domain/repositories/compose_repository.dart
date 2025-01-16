@@ -19,53 +19,53 @@ import 'package:horizon/domain/entities/utxo.dart';
 
 abstract class ComposeRepository {
   Future<ComposeSendResponse> composeSendVerbose(
-      int fee, List<Utxo> inputsSet, ComposeSendParams params);
+      int satPerVbyte, List<Utxo> inputsSet, ComposeSendParams params);
 
   Future<ComposeMpmaSendResponse> composeMpmaSend(
-      int fee, List<Utxo> inputsSet, ComposeMpmaSendParams params);
+      int satPerVbyte, List<Utxo> inputsSet, ComposeMpmaSendParams params);
 
   Future<ComposeIssuanceResponseVerbose> composeIssuanceVerbose(
-      int fee, List<Utxo> inputsSet, ComposeIssuanceParams params);
+      int satPerVbyte, List<Utxo> inputsSet, ComposeIssuanceParams params);
 
   Future<ComposeDispenserResponseVerbose> composeDispenserVerbose(
-      int fee, List<Utxo> inputsSet, ComposeDispenserParams params);
+      int satPerVbyte, List<Utxo> inputsSet, ComposeDispenserParams params);
 
   Future<ComposeDispenseResponse> composeDispense(
-      int fee, List<Utxo> inputsSet, ComposeDispenseParams params);
+      int satPerVbyte, List<Utxo> inputsSet, ComposeDispenseParams params);
 
   Future<ComposeFairmintResponse> composeFairmintVerbose(
-      int fee, List<Utxo> inputsSet, ComposeFairmintParams params);
+      int satPerVbyte, List<Utxo> inputsSet, ComposeFairmintParams params);
 
   Future<ComposeFairminterResponse> composeFairminterVerbose(
-      int fee, List<Utxo> inputsSet, ComposeFairminterParams params);
+      int satPerVbyte, List<Utxo> inputsSet, ComposeFairminterParams params);
 
-  Future<ComposeDispenserResponseVerbose> composeDispenserChain(
-      int fee, DecodedTx prevDecodedTransaction, ComposeDispenserParams params);
+  Future<ComposeDispenserResponseVerbose> composeDispenserChain(int satPerVbyte,
+      DecodedTx prevDecodedTransaction, ComposeDispenserParams params);
 
   Future<ComposeOrderResponse> composeOrder(
-      int fee, List<Utxo> inputsSet, ComposeOrderParams params);
+      int satPerVbyte, List<Utxo> inputsSet, ComposeOrderParams params);
 
   Future<ComposeCancelResponse> composeCancel(
-      int fee, List<Utxo> inputsSet, ComposeCancelParams params);
+      int satPerVbyte, List<Utxo> inputsSet, ComposeCancelParams params);
 
   Future<ComposeAttachUtxoResponse> composeAttachUtxo(
-      int fee, List<Utxo> inputsSet, ComposeAttachUtxoParams params);
+      int satPerVbyte, List<Utxo> inputsSet, ComposeAttachUtxoParams params);
 
   Future<ComposeDetachUtxoResponse> composeDetachUtxo(
-      int fee, List<Utxo> inputsSet, ComposeDetachUtxoParams params);
+      int satPerVbyte, List<Utxo> inputsSet, ComposeDetachUtxoParams params);
 
   Future<ComposeMoveToUtxoResponse> composeMoveToUtxo(
-      int fee, List<Utxo> inputsSet, ComposeMoveToUtxoParams params);
+      int satPerVbyte, List<Utxo> inputsSet, ComposeMoveToUtxoParams params);
 
   Future<ComposeDestroyResponse> composeDestroy(
-      int fee, List<Utxo> inputsSet, ComposeDestroyParams params);
+      int satPerVbyte, List<Utxo> inputsSet, ComposeDestroyParams params);
 
   Future<ComposeDividendResponse> composeDividend(
-      int fee, List<Utxo> inputsSet, ComposeDividendParams params);
+      int satPerVbyte, List<Utxo> inputsSet, ComposeDividendParams params);
 
   Future<ComposeSweepResponse> composeSweep(
-      int fee, List<Utxo> inputsSet, ComposeSweepParams params);
+      int satPerVbyte, List<Utxo> inputsSet, ComposeSweepParams params);
 
   Future<ComposeBurnResponse> composeBurn(
-      int fee, List<Utxo> inputsSet, ComposeBurnParams params);
+      int satPerVbyte, List<Utxo> inputsSet, ComposeBurnParams params);
 }

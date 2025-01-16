@@ -48,21 +48,11 @@ class ComposeTransactionUseCase {
         inputsSet = await _getLargeInputsSet(inputsSet);
       }
 
-      // Get virtual size
-      (int, int) tuple = await getVirtualSizeUseCase.call(
-        params: params,
-        composeFunction: composeFn,
-        inputsSet: inputsSet,
-      );
+      final R finalTx = await composeFn(feeRate, inputsSet, params);
 
-      final int virtualSize = tuple.$1; // virtualSIze
-      final int adjustedVirtualSize = tuple.$2;
-
-      // Calculate total fee
-      final int totalFee = adjustedVirtualSize * feeRate;
-
-      // Compose the final transaction with the calculated fee
-      final R finalTx = await composeFn(totalFee, inputsSet, params);
+      final int virtualSize = finalTx.signedTxEstimatedSize.virtualSize;
+      final int adjustedVirtualSize =
+          finalTx.signedTxEstimatedSize.adjustedVirtualSize;
 
       return (finalTx, VirtualSize(virtualSize, adjustedVirtualSize));
     } catch (e, stackTrace) {
