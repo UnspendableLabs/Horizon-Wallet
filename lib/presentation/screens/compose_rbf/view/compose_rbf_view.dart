@@ -24,6 +24,10 @@ import 'package:horizon/presentation/screens/compose_rbf/view/password/compose_r
 import 'package:horizon/presentation/screens/compose_rbf/view/password/compose_rbf_password_view.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transaction_usecase.dart';
+import 'package:horizon/domain/services/analytics_service.dart';
+import 'package:horizon/presentation/common/usecase/write_local_transaction_usecase.dart';
+import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart";
+import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_event.dart";
 
 class ComposeRBFReview extends StatelessWidget {
   final rbfForm.RBFData rbfData;
@@ -54,7 +58,6 @@ class ComposeRBFReview extends StatelessWidget {
             ),
           ],
         ),
-
         const SizedBox(height: 16.0),
         Text(
           'Fee:',
@@ -78,26 +81,6 @@ class ComposeRBFReview extends StatelessWidget {
             ),
           ],
         ),
-        // SizedBox(height: 16.0),
-        // Text(
-        //   'Fee Rate:',
-        //   style: Theme.of(context).textTheme.labelSmall,
-        // ),
-        // Row(
-        //   children: [
-        //     Text(
-        //       (rbfData.tx.fee / rbfData.adjustedSize).toStringAsFixed(2),
-        //       style: Theme.of(context).textTheme.bodyMedium,
-        //     ),
-        //     const SizedBox(width: 8.0),
-        //     Text(
-        //       (makeRBFResponse.fee / makeRBFResponse.virtualSize)
-        //           .toStringAsFixed(2),
-        //       style: Theme.of(context).textTheme.bodyMedium,
-        //     ),
-        //     const Text("sats/vB"),
-        //   ],
-        // ),
         const HorizonUI.HorizonDivider(),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -120,9 +103,13 @@ class ComposeRBFReview extends StatelessWidget {
 class ComposeRBFPageWrapper extends StatelessWidget {
   final String txHash;
   final String address;
+  final DashboardActivityFeedBloc dashboardActivityFeedBloc;
 
   const ComposeRBFPageWrapper(
-      {required this.txHash, required this.address, super.key});
+      {required this.dashboardActivityFeedBloc,
+      required this.txHash,
+      required this.address,
+      super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -167,25 +154,35 @@ class ComposeRBFPageWrapper extends StatelessWidget {
                             }),
                         c.Password() => BlocProvider(
                             create: (context) => ComposeRbfPasswordBloc(
-                                bitcoindService: GetIt.I.get<BitcoindService>(),
-                                bitcoinRepository:
-                                    GetIt.I.get<BitcoinRepository>(),
-                                importedAddressService:
-                                    GetIt.I<ImportedAddressService>(),
-                                addressService: GetIt.I<AddressService>(),
-                                accountRepository: GetIt.I<AccountRepository>(),
-                                addressRepository:
-                                    GetIt.I<UnifiedAddressRepository>(),
-                                encryptionService: GetIt.I<EncryptionService>(),
-                                transactionService:
-                                    GetIt.I<TransactionService>(),
-                                signAndBroadcastTransactionUseCase: GetIt.I
-                                    .get<SignAndBroadcastTransactionUseCase>(),
-                                address: address,
-                                walletRepository: GetIt.I<WalletRepository>(),
-                                makeRBFResponse: state.makeRBFResponse!),
+                                  analyticsService: GetIt.I<AnalyticsService>(),
+                                  bitcoindService:
+                                      GetIt.I.get<BitcoindService>(),
+                                  bitcoinRepository:
+                                      GetIt.I.get<BitcoinRepository>(),
+                                  importedAddressService:
+                                      GetIt.I<ImportedAddressService>(),
+                                  addressService: GetIt.I<AddressService>(),
+                                  accountRepository:
+                                      GetIt.I<AccountRepository>(),
+                                  addressRepository:
+                                      GetIt.I<UnifiedAddressRepository>(),
+                                  encryptionService:
+                                      GetIt.I<EncryptionService>(),
+                                  transactionService:
+                                      GetIt.I<TransactionService>(),
+                                  signAndBroadcastTransactionUseCase: GetIt.I
+                                      .get<
+                                          SignAndBroadcastTransactionUseCase>(),
+                                  address: address,
+                                  walletRepository: GetIt.I<WalletRepository>(),
+                                  makeRBFResponse: state.makeRBFResponse!,
+                                  writelocalTransactionUseCase:
+                                      GetIt.I<WriteLocalTransactionUseCase>(),
+                                ),
                             child: ComposeRBFPasswordForm(onSuccess: () {
+                              dashboardActivityFeedBloc.add(Load());
                               Navigator.of(context).pop();
+
                             }, onBack: () {
                               context
                                   .read<c.ComposeRBFBloc>()

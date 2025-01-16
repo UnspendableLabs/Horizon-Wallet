@@ -1,7 +1,10 @@
 import 'package:equatable/equatable.dart';
+import 'package:horizon/common/uuid.dart';
+import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/domain/entities/failure.dart';
 import "package:fpdart/fpdart.dart";
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:horizon/presentation/common/usecase/write_local_transaction_usecase.dart';
 
 import 'package:formz/formz.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
@@ -88,6 +91,9 @@ class ComposeRbfPasswordBloc extends Bloc<FormEvent, FormStateModel> {
   final String address;
   final MakeRBFResponse makeRBFResponse;
 
+  final WriteLocalTransactionUseCase writelocalTransactionUseCase;
+
+  final AnalyticsService analyticsService;
   final BitcoindService bitcoindService;
   final AddressService addressService;
   final AccountRepository accountRepository;
@@ -97,10 +103,12 @@ class ComposeRbfPasswordBloc extends Bloc<FormEvent, FormStateModel> {
   final SignAndBroadcastTransactionUseCase signAndBroadcastTransactionUseCase;
   final UnifiedAddressRepository addressRepository;
   final ImportedAddressService importedAddressService;
+
   final BitcoinRepository bitcoinRepository;
 
   ComposeRbfPasswordBloc(
-      {required this.bitcoindService,
+      {required this.analyticsService,
+      required this.bitcoindService,
       required this.makeRBFResponse,
       required this.address,
       required this.walletRepository,
@@ -111,7 +119,8 @@ class ComposeRbfPasswordBloc extends Bloc<FormEvent, FormStateModel> {
       required this.accountRepository,
       required this.addressService,
       required this.importedAddressService,
-      required this.bitcoinRepository})
+      required this.bitcoinRepository,
+      required this.writelocalTransactionUseCase})
       : super(FormStateModel(psbtHex: makeRBFResponse.txHex)) {
     on<PasswordChanged>((event, emit) {
       final password = PasswordInput.dirty(event.password);
@@ -161,12 +170,17 @@ class ComposeRbfPasswordBloc extends Bloc<FormEvent, FormStateModel> {
             utxoMap["$txHash:$index"] = utxo;
           }
         }
-        ;
 
         final txHex = await transactionService.signTransaction(
             makeRBFResponse.txHex, addressPrivateKey, address, utxoMap);
 
         final txHash = await bitcoindService.sendrawtransaction(txHex);
+
+        // not technically necessary since event shows up very quickly in practive
+        await writelocalTransactionUseCase.call(txHex, txHash);
+
+        analyticsService.trackAnonymousEvent('broadcast_rbf',
+            properties: {'distinct_id': uuid.v4()});
 
         emit(state.copyWith(submissionStatus: FormzSubmissionStatus.success));
       } catch (e) {

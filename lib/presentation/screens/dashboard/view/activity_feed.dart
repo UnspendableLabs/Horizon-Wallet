@@ -35,7 +35,9 @@ class RBF extends StatelessWidget {
         onPressed: () {
           HorizonUI.HorizonDialog.show(
             context: context,
-            body: ComposeRBFPageWrapper(txHash: txHash, address: address),
+            body: ComposeRBFPageWrapper(
+            dashboardActivityFeedBloc: context.read<DashboardActivityFeedBloc>(),
+            txHash: txHash, address: address),
           );
         },
         icon: const Icon(Icons.rocket_launch_sharp));
