@@ -31,14 +31,14 @@ class RBF extends StatelessWidget {
   });
   @override
   Widget build(BuildContext context) {
-    return TextButton(
+    return IconButton(
         onPressed: () {
           HorizonUI.HorizonDialog.show(
             context: context,
             body: ComposeRBFPageWrapper(txHash: txHash, address: address),
           );
         },
-        child: Text("accelerate"));
+        icon: const Icon(Icons.rocket_launch_sharp));
   }
 }
 
@@ -183,9 +183,126 @@ class ActivityFeedListItem extends StatelessWidget {
       title: _buildTitle(),
       subtitle: _buildSubtitle(),
       leading: _buildLeadingIcon(),
-      trailing: _buildTrailing(),
+      trailing: Row(mainAxisSize: MainAxisSize.min, children: [
+        _buildRBF() ?? SizedBox.shrink(),
+        _buildTrailing(),
+      ]),
       // onTap: () {},
     );
+  }
+
+  Widget? _buildRBF() {
+    if (item.event != null && item.event!.state is EventStateMempool) {
+      return _buildRBFEvent(item.event!);
+    }
+    if (item.bitcoinTx != null && item.bitcoinTx!.status.confirmed == false) {
+      return _buildRBFBitcoinTx(item.bitcoinTx!);
+    }
+  }
+
+  Widget? _buildRBFBitcoinTx(BitcoinTx tx) {
+    final addresses_ = addresses.map((a) => a).toList();
+
+    return switch (tx.getTransactionType(addresses_)) {
+      TransactionType.sender => RBF(txHash: tx.txid, address: addresses.first),
+      _ => null
+    };
+  }
+
+  Widget? _buildRBFEvent(Event event) {
+    return switch (event) {
+      VerboseEnhancedSendEvent(params: var params)
+          when _getSendSide(params.source) == SendSide.source =>
+        RBF(txHash: params.txHash, address: params.source),
+      VerboseEnhancedSendEvent(params: var params)
+          when _getSendSide(params.source) == SendSide.destination =>
+        RBF(txHash: params.txHash, address: params.source),
+      VerboseMpmaSendEvent(params: var params)
+          when _getSendSide(params.source) == SendSide.source =>
+        RBF(txHash: params.txHash, address: params.source),
+      VerboseAssetIssuanceEvent(params: var params)
+          when _getSendSide(params.source) == SendSide.source =>
+        event.txHash != null
+            ? RBF(txHash: event.txHash!, address: params.source)
+            : null,
+      VerboseResetIssuanceEvent(params: var params)
+          when _getSendSide(params.source) == SendSide.source =>
+        event.txHash != null
+            ? RBF(txHash: event.txHash!, address: params.source)
+            : null,
+      VerboseDispenseEvent(params: var params)
+          when _getSendSide(params.source) == SendSide.source =>
+        event.txHash != null
+            ? RBF(txHash: event.txHash!, address: params.source)
+            : null,
+      VerboseOpenDispenserEvent(params: var params)
+          when _getSendSide(params.source) == SendSide.source =>
+        event.txHash != null
+            ? RBF(txHash: event.txHash!, address: params.source)
+            : null,
+      VerboseRefillDispenserEvent(params: var params)
+          when _getSendSide(params.source) == SendSide.source =>
+        event.txHash != null
+            ? RBF(txHash: event.txHash!, address: params.source)
+            : null,
+      VerboseDispenserUpdateEvent(params: var params)
+          when _getSendSide(params.source) == SendSide.source =>
+        event.txHash != null
+            ? RBF(txHash: event.txHash!, address: params.source)
+            : null,
+      VerboseNewFairmintEvent(params: var params)
+          when _getSendSide(params.source) == SendSide.source =>
+        event.txHash != null
+            ? RBF(txHash: event.txHash!, address: params.source)
+            : null,
+      VerboseNewFairminterEvent(params: var params)
+          when _getSendSide(params.source) == SendSide.source =>
+        event.txHash != null
+            ? RBF(txHash: event.txHash!, address: params.source)
+            : null,
+      VerboseOpenOrderEvent(params: var params)
+          when _getSendSide(params.source) == SendSide.source =>
+        event.txHash != null
+            ? RBF(txHash: event.txHash!, address: params.source)
+            : null,
+      VerboseCancelOrderEvent(params: var params)
+          when _getSendSide(params.source) == SendSide.source =>
+        event.txHash != null
+            ? RBF(txHash: event.txHash!, address: params.source)
+            : null,
+      VerboseAttachToUtxoEvent(params: var params)
+          when _getSendSide(params.source) == SendSide.source =>
+        event.txHash != null
+            ? RBF(txHash: event.txHash!, address: params.source)
+            : null,
+      VerboseDetachFromUtxoEvent(params: var params)
+          when _getSendSide(params.source) == SendSide.source =>
+        event.txHash != null
+            ? RBF(txHash: event.txHash!, address: params.source)
+            : null,
+      AssetDestructionEvent(params: var params)
+          when _getSendSide(params.source) == SendSide.source =>
+        event.txHash != null
+            ? RBF(txHash: event.txHash!, address: params.source)
+            : null,
+      AssetDividendEvent(params: var params)
+          when _getSendSide(params.source) == SendSide.source =>
+        event.txHash != null
+            ? RBF(txHash: event.txHash!, address: params.source)
+            : null,
+      SweepEvent(params: var params)
+          when _getSendSide(params.source) == SendSide.source =>
+        SelectableText(
+            "Sweep ${flagMapper[params.flags]} to ${params.destination}"),
+      SweepEvent(params: var params)
+          when _getSendSide(params.source) == SendSide.destination =>
+        SelectableText(
+            "Sweep ${flagMapper[params.flags]} from ${params.source}"),
+      BurnEvent(params: var params) => SelectableText(
+          "Burn ${params.burnedNormalized} BTC for ${params.earnedNormalized} XCP"),
+      _ => SelectableText(
+          'Invariant: title unsupported event type: ${event.runtimeType}'),
+    };
   }
 
   Widget _buildTitle() {
@@ -668,15 +785,8 @@ class ActivityFeedListItem extends StatelessWidget {
   }
 
   Widget _getEventTrailing(EventState state, String? txHash) => switch (state) {
-        EventStateMempool() => Column(
-            children: [
-              const TransactionStatusPill(status: TransactionStatus.mempool),
-              RBF(
-                txHash: txHash!,
-                address: addresses.first,
-              )
-            ],
-          ),
+        EventStateMempool() =>
+          const TransactionStatusPill(status: TransactionStatus.mempool),
         EventStateConfirmed(blockHeight: var blockHeight) =>
           TransactionStatusPill(
               status: TransactionStatus.confirmed,

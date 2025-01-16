@@ -65,6 +65,10 @@ class ReviewBackButtonPressed extends ComposeRBFEvent {
   const ReviewBackButtonPressed();
 }
 
+class PasswordBackButtonPressed extends ComposeRBFEvent {
+  const PasswordBackButtonPressed();
+}
+
 class PasswordSubmitted extends ComposeRBFEvent {
   const PasswordSubmitted();
 }
@@ -83,6 +87,10 @@ class ComposeRBFBloc extends Bloc<ComposeRBFEvent, ComposeRBFState> {
     on<ReviewBackButtonPressed>((event, emit) {
       print("review back button pressed");
       emit(state.copyWith(step: Form()));
+    });
+    on<PasswordBackButtonPressed>((event, emit) {
+      print("review back button pressed");
+      emit(state.copyWith(step: Review()));
     });
   }
 }

@@ -873,6 +873,7 @@ class VerboseAttachToUtxoParamsMapper {
       api.VerboseAttachToUtxoParams apiParams) {
     return VerboseAttachToUtxoParams(
       asset: apiParams.asset,
+      source: apiParams.source,
       blockIndex: apiParams.blockIndex,
       destination: apiParams.destination,
       feePaid: apiParams.feePaid,
@@ -926,6 +927,7 @@ class VerboseDetachFromUtxoParamsMapper {
   static VerboseDetachFromUtxoParams toDomain(
       api.VerboseDetachFromUtxoParams apiParams) {
     return VerboseDetachFromUtxoParams(
+      source: apiParams.source,
       asset: apiParams.asset,
       blockIndex: apiParams.blockIndex,
       destination: apiParams.destination,

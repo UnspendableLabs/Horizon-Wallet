@@ -8,9 +8,11 @@ import 'package:horizon/presentation/common/colors.dart';
 
 class ComposeRBFPasswordForm extends StatefulWidget {
   final String? submissionError;
+  final void Function() onBack;
+  final void Function() onSuccess;
 
-  const ComposeRBFPasswordForm({Key? key, this.submissionError})
-      : super(key: key);
+  const ComposeRBFPasswordForm(
+      {this.submissionError, required this.onSuccess, required this.onBack, super.key});
 
   @override
   State<ComposeRBFPasswordForm> createState() => _ComposeRBFPasswordForm();
@@ -24,9 +26,16 @@ class _ComposeRBFPasswordForm extends State<ComposeRBFPasswordForm> {
   Widget build(BuildContext context) {
     return BlocConsumer<ComposeRbfPasswordBloc, FormStateModel>(
         listener: (context, state) {
+
+      if ( state.submissionStatus.isSuccess) {
+         widget.onSuccess();
+      }
+
       if (_passwordController.text != state.password.value) {
         _passwordController.text = state.password.value;
       }
+
+
     }, builder: (context, state) {
       return Form(
           key: _formKey,
@@ -61,7 +70,7 @@ class _ComposeRBFPasswordForm extends State<ComposeRBFPasswordForm> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       HorizonUI.HorizonCancelButton(
-                        onPressed: () {},
+                        onPressed: () => widget.onBack(),
                         buttonText: 'BACK',
                       ),
                       HorizonUI.HorizonContinueButton(
@@ -69,8 +78,9 @@ class _ComposeRBFPasswordForm extends State<ComposeRBFPasswordForm> {
                         onPressed: state.submissionStatus.isInProgressOrSuccess
                             ? () {}
                             : () {
-                                context.read<ComposeRbfPasswordBloc>().add(
-                                    FormSubmitted());
+                                context
+                                    .read<ComposeRbfPasswordBloc>()
+                                    .add(FormSubmitted());
 
                                 // widget.onSubmit(_passwordController.text, _formKey);
                               },

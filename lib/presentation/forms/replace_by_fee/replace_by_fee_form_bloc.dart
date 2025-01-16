@@ -2,7 +2,6 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:horizon/domain/entities/remote_data.dart';
 import 'package:horizon/domain/entities/bitcoin_tx.dart';
-import "package:fpdart/fpdart.dart";
 import 'dart:math';
 
 import 'package:horizon/domain/repositories/bitcoin_repository.dart';
@@ -12,13 +11,8 @@ import 'package:horizon/domain/entities/fee_option.dart';
 import 'package:formz/formz.dart';
 import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
+import 'package:horizon/common/fn.dart';
 
-unwrapOrThrow<L extends Object, T>(Either<L, T> either) {
-  return either.fold(
-    (l) => throw l,
-    (r) => r,
-  );
-}
 
 abstract class FormEvent extends Equatable {
   const FormEvent();

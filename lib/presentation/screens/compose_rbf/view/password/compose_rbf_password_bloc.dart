@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:horizon/domain/entities/failure.dart';
 import "package:fpdart/fpdart.dart";
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -7,6 +8,7 @@ import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/entities/address.dart';
+import 'package:horizon/domain/entities/bitcoin_tx.dart';
 import 'package:horizon/domain/entities/utxo.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
 import 'package:horizon/domain/services/address_service.dart';
@@ -18,6 +20,7 @@ import 'package:horizon/domain/entities/wallet.dart';
 import 'package:horizon/domain/entities/unified_address.dart';
 import 'package:horizon/domain/repositories/unified_address_repository.dart';
 import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transaction_usecase.dart';
+import 'package:horizon/common/fn.dart';
 
 abstract class FormEvent extends Equatable {
   const FormEvent();
@@ -127,71 +130,49 @@ class ComposeRbfPasswordBloc extends Bloc<FormEvent, FormStateModel> {
         String rootPrivateKey = await encryptionService.decrypt(
             wallet.encryptedPrivKey, state.password.value);
 
-        final addressE = await addressRepository
-            .get(address)
-            .flatMap((UnifiedAddress unifiedAddress) => getUAddressPrivateKey(
-                  state.password.value,
-                  rootPrivateKey,
-                  wallet.chainCodeHex,
-                  unifiedAddress,
-                ))
-            .run();
+        String addressPrivateKey = unwrapOrThrow<String, String>(
+            await addressRepository
+                .get(address)
+                .flatMap(
+                    (UnifiedAddress unifiedAddress) => getUAddressPrivateKey(
+                          state.password.value,
+                          rootPrivateKey,
+                          wallet.chainCodeHex,
+                          unifiedAddress,
+                        ))
+                .run());
 
-        addressE.fold((error) {
-          emit(state.copyWith(
-            submissionStatus: FormzSubmissionStatus.failure,
-            errorMessage: error,
-          ));
-        }, (addressPrivateKey) async {
-          Map<String, Utxo> utxoMap = {};
+        Map<String, Utxo> utxoMap = {};
 
-          for (final entry in makeRBFResponse.inputsByTxHash.entries) {
-            final txHash = entry.key;
-            final inputIndices = entry.value;
+        for (final entry in makeRBFResponse.inputsByTxHash.entries) {
+          final txHash = entry.key;
+          final inputIndices = entry.value;
 
-            final transactionE = await bitcoinRepository.getTransaction(txHash);
-
-            transactionE.fold((error) {
-              emit(state.copyWith(
-                submissionStatus: FormzSubmissionStatus.failure,
-              ));
-              return;
-            }, ((transaction) {
-              print("do i have transaction");
-              print("transaction.vin.length ${transaction.vout.length}");
-
-              for (final index in inputIndices) {
-                print("index $index");
-                final input = transaction.vout[index];
-                print("input $input");
-                final utxo = Utxo(
-                    txid: txHash,
-                    vout: index,
-                    value: input.value,
-                    address: address // TODO: temp hack
-                    );
-                utxoMap["$txHash:$index"] = utxo;
-              }
-            }));
+          final transaction = unwrapOrThrow<Failure, BitcoinTx>(
+              await bitcoinRepository.getTransaction(txHash));
+          for (final index in inputIndices) {
+            final input = transaction.vout[index];
+            final utxo = Utxo(
+                txid: txHash,
+                vout: index,
+                value: input.value,
+                address: address // TODO: temp hack
+                );
+            utxoMap["$txHash:$index"] = utxo;
           }
+        }
+        ;
 
-          print("before sign");
+        final txHex = await transactionService.signTransaction(
+            makeRBFResponse.txHex, addressPrivateKey, address, utxoMap);
 
-          print("utxoMap");
+        final txHash = await bitcoindService.sendrawtransaction(txHex);
 
-          print(utxoMap);
-          final txHex = await transactionService.signTransaction(
-              makeRBFResponse.txHex, addressPrivateKey, address, utxoMap);
-
-          final txHash = await bitcoindService.sendrawtransaction(txHex);
-
-          print("after sign $txHex");
-          // Sign Transaction
-        });
+        emit(state.copyWith(submissionStatus: FormzSubmissionStatus.success));
       } catch (e) {
-        print(e);
         emit(state.copyWith(
           submissionStatus: FormzSubmissionStatus.failure,
+          errorMessage: e.toString(),
           // error: "Incorrect password.",
         ));
       }

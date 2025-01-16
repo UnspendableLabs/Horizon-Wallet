@@ -739,7 +739,7 @@ class NewFairminterParams {
   final int? quantityByPrice;
   final int? softCap;
   final int? softCapDeadlineBlock;
-  final String? source;
+  final String source;
   final int? startBlock;
   final String? status;
   final String? txHash;
@@ -852,7 +852,7 @@ class NewFairmintParams {
   final int? earnQuantity;
   final String? fairminterTxHash;
   final int? paidQuantity;
-  final String? source;
+  final String source;
   final String? status;
   final String? txHash;
   final int? txIndex;

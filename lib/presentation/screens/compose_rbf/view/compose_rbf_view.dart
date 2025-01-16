@@ -184,7 +184,13 @@ class ComposeRBFPageWrapper extends StatelessWidget {
                                 address: address,
                                 walletRepository: GetIt.I<WalletRepository>(),
                                 makeRBFResponse: state.makeRBFResponse!),
-                            child: const ComposeRBFPasswordForm()),
+                            child: ComposeRBFPasswordForm(onSuccess: () {
+                              Navigator.of(context).pop();
+                            }, onBack: () {
+                              context
+                                  .read<c.ComposeRBFBloc>()
+                                  .add(const c.PasswordBackButtonPressed());
+                            })),
                       };
                     })))));
     // )
