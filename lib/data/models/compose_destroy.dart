@@ -1,4 +1,5 @@
 import 'package:horizon/data/models/asset_info.dart';
+import 'package:horizon/data/models/signed_tx_estimated_size.dart';
 import 'package:horizon/domain/entities/compose_destroy.dart';
 import 'package:json_annotation/json_annotation.dart';
 
@@ -14,6 +15,7 @@ class ComposeDestroyResponseModel {
   final int btcFee;
   final String rawtransaction;
   final ComposeDestroyParamsModel params;
+  final SignedTxEstimatedSizeModel signedTxEstimatedSize;
 
   ComposeDestroyResponseModel({
     required this.rawtransaction,
@@ -24,6 +26,7 @@ class ComposeDestroyResponseModel {
     this.btcChange,
     required this.btcFee,
     this.data,
+    required this.signedTxEstimatedSize,
   });
 
   factory ComposeDestroyResponseModel.fromJson(Map<String, dynamic> json) =>
@@ -37,6 +40,7 @@ class ComposeDestroyResponseModel {
         rawtransaction: rawtransaction,
         btcFee: btcFee,
         params: params.toDomain(),
+        signedTxEstimatedSize: signedTxEstimatedSize.toDomain(),
       );
 }
 

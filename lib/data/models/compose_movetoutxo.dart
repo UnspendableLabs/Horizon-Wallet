@@ -1,3 +1,4 @@
+import 'package:horizon/data/models/signed_tx_estimated_size.dart';
 import 'package:horizon/domain/entities/compose_movetoutxo.dart';
 import 'package:json_annotation/json_annotation.dart';
 
@@ -13,18 +14,18 @@ class ComposeMoveToUtxoResponseModel {
   final int btcFee;
   final String rawtransaction;
   final ComposeMoveToUtxoResponseParamsModel params;
-  // final OrderUnpackedVerbose unpackedData;
+  final SignedTxEstimatedSizeModel signedTxEstimatedSize;
 
   ComposeMoveToUtxoResponseModel({
     required this.rawtransaction,
     required this.params,
     required this.name,
-    // required this.unpackedData,
     required this.btcIn,
     required this.btcOut,
     required this.btcChange,
     required this.btcFee,
     this.data,
+    required this.signedTxEstimatedSize,
   });
 
   factory ComposeMoveToUtxoResponseModel.fromJson(Map<String, dynamic> json) =>
@@ -36,6 +37,7 @@ class ComposeMoveToUtxoResponseModel {
         rawtransaction: rawtransaction,
         btcFee: btcFee,
         params: params.toDomain(),
+        signedTxEstimatedSize: signedTxEstimatedSize.toDomain(),
       );
 }
 

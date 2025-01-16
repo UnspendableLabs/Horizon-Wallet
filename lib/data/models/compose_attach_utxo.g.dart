@@ -18,6 +18,8 @@ ComposeAttachUtxoResponseModel _$ComposeAttachUtxoResponseModelFromJson(
       btcChange: (json['btc_change'] as num).toInt(),
       btcFee: (json['btc_fee'] as num).toInt(),
       data: json['data'] as String,
+      signedTxEstimatedSize: SignedTxEstimatedSizeModel.fromJson(
+          json['signed_tx_estimated_size'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$ComposeAttachUtxoResponseModelToJson(
@@ -31,6 +33,7 @@ Map<String, dynamic> _$ComposeAttachUtxoResponseModelToJson(
       'btc_fee': instance.btcFee,
       'rawtransaction': instance.rawtransaction,
       'params': instance.params,
+      'signed_tx_estimated_size': instance.signedTxEstimatedSize,
     };
 
 ComposeAttachUtxoResponseParamsModel

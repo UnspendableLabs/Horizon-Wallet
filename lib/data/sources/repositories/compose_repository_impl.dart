@@ -127,7 +127,8 @@ class ComposeRepositoryImpl extends ComposeRepository {
             ),
             btcFee: txVerbose.btcFee,
             rawtransaction: txVerbose.rawtransaction,
-            name: txVerbose.name);
+            name: txVerbose.name,
+            signedTxEstimatedSize: txVerbose.signedTxEstimatedSize.toDomain());
       },
       inputsSet,
     );
@@ -176,7 +177,8 @@ class ComposeRepositoryImpl extends ComposeRepository {
               memoIsHex: txVerbose.params.memoIsHex,
               skipValidation: txVerbose.params.skipValidation,
             ),
-            name: txVerbose.name);
+            name: txVerbose.name,
+            signedTxEstimatedSize: txVerbose.signedTxEstimatedSize.toDomain());
       },
       inputsSet,
     );
@@ -236,7 +238,8 @@ class ComposeRepositoryImpl extends ComposeRepository {
               transferDestination: transferDestination,
               quantityNormalized: txVerbose.params.quantityNormalized,
             ),
-            name: name);
+            name: name,
+            signedTxEstimatedSize: txVerbose.signedTxEstimatedSize.toDomain());
       },
       inputsSet,
     );
@@ -304,7 +307,8 @@ class ComposeRepositoryImpl extends ComposeRepository {
               escrowQuantityNormalized:
                   txVerbose.params.escrowQuantityNormalized,
             ),
-            name: txVerbose.name);
+            name: txVerbose.name,
+            signedTxEstimatedSize: txVerbose.signedTxEstimatedSize.toDomain());
       },
       inputsSet,
     );
@@ -494,7 +498,8 @@ class ComposeRepositoryImpl extends ComposeRepository {
           giveQuantityNormalized: txVerbose.params.giveQuantityNormalized,
           escrowQuantityNormalized: txVerbose.params.escrowQuantityNormalized,
         ),
-        name: txVerbose.name);
+        name: txVerbose.name,
+        signedTxEstimatedSize: txVerbose.signedTxEstimatedSize.toDomain());
   }
 
   @override

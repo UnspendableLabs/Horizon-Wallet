@@ -1,4 +1,5 @@
 import 'package:horizon/data/models/asset_info.dart';
+import 'package:horizon/data/models/signed_tx_estimated_size.dart';
 import 'package:horizon/domain/entities/compose_fairmint.dart';
 import 'package:json_annotation/json_annotation.dart';
 
@@ -14,13 +15,13 @@ class ComposeFairmintVerboseModel {
   final int btcFee;
   final String rawtransaction;
   final ComposeFairmintVerboseParamsModel params;
-  // final FairmintUnpackedVerbose unpackedData;
+  final SignedTxEstimatedSizeModel signedTxEstimatedSize;
 
   ComposeFairmintVerboseModel({
     required this.rawtransaction,
     required this.params,
     required this.name,
-    // required this.unpackedData,
+    required this.signedTxEstimatedSize,
     required this.btcIn,
     required this.btcOut,
     this.btcChange,
@@ -40,6 +41,7 @@ class ComposeFairmintVerboseModel {
         btcChange: btcChange,
         btcFee: btcFee,
         params: params.toDomain(),
+        signedTxEstimatedSize: signedTxEstimatedSize.toDomain(),
       );
 }
 

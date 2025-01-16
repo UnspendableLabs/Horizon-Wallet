@@ -1,3 +1,4 @@
+import 'package:horizon/data/models/signed_tx_estimated_size.dart';
 import 'package:horizon/domain/entities/compose_dispense.dart';
 import 'package:json_annotation/json_annotation.dart';
 
@@ -51,20 +52,27 @@ class ComposeDispenseResponseParamsModel extends ComposeDispenseResponseParams {
 }
 
 @JsonSerializable(fieldRename: FieldRename.snake)
-class ComposeDispenseResponseModel extends ComposeDispenseResponse {
-  @override
+class ComposeDispenseResponseModel {
+  final String rawtransaction;
+  final String name;
+  final int btcIn;
+  final int btcOut;
+  final int? btcChange;
+  final int btcFee;
+
+  final SignedTxEstimatedSizeModel signedTxEstimatedSize;
   final ComposeDispenseResponseParamsModel params;
 
   ComposeDispenseResponseModel({
     required this.params,
-    required super.rawtransaction,
-    required super.name,
-    required super.btcIn,
-    required super.btcOut,
-    required super.btcChange,
-    required super.btcFee,
-    // required super.data,
-  }) : super(params: params);
+    required this.rawtransaction,
+    required this.name,
+    required this.btcIn,
+    required this.btcOut,
+    required this.btcChange,
+    required this.btcFee,
+    required this.signedTxEstimatedSize,
+  });
 
   factory ComposeDispenseResponseModel.fromJson(Map<String, dynamic> json) =>
       _$ComposeDispenseResponseModelFromJson(json);
@@ -79,6 +87,7 @@ class ComposeDispenseResponseModel extends ComposeDispenseResponse {
       btcOut: btcOut,
       btcChange: btcChange,
       btcFee: btcFee,
+      signedTxEstimatedSize: signedTxEstimatedSize.toDomain(),
       // data: data,
     );
   }

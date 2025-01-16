@@ -19,6 +19,8 @@ class ComposeBurnResponse implements ComposeResponse {
   final String rawtransaction;
   @override
   final int btcFee;
+  @override
+  final SignedTxEstimatedSize signedTxEstimatedSize;
   final String? data;
   final String name;
   final int btcIn;
@@ -30,6 +32,7 @@ class ComposeBurnResponse implements ComposeResponse {
   ComposeBurnResponse({
     required this.rawtransaction,
     required this.btcFee,
+    required this.signedTxEstimatedSize,
     required this.data,
     required this.name,
     required this.btcIn,

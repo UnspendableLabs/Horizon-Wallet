@@ -20,6 +20,7 @@ import 'package:horizon/data/models/dividend_asset_info.dart';
 import 'package:horizon/data/models/fairminter.dart';
 import 'package:horizon/data/models/node_info.dart';
 import 'package:horizon/data/models/order.dart';
+import 'package:horizon/data/models/signed_tx_estimated_size.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:retrofit/retrofit.dart';
 
@@ -3211,12 +3212,14 @@ class ComposeIssuanceVerbose extends ComposeIssuance {
   @override
   final ComposeIssuanceVerboseParams params;
   final int btcFee;
+  final SignedTxEstimatedSizeModel signedTxEstimatedSize;
 
   ComposeIssuanceVerbose({
     required super.rawtransaction,
     required super.name,
     required this.params,
     required this.btcFee,
+    required this.signedTxEstimatedSize,
   }) : super(params: params);
 
   factory ComposeIssuanceVerbose.fromJson(Map<String, dynamic> json) =>
@@ -3301,7 +3304,7 @@ class ComposeDispenserVerbose extends ComposeDispenser {
   final int? btcChange;
   final int btcFee;
   final String data;
-
+  final SignedTxEstimatedSizeModel signedTxEstimatedSize;
   ComposeDispenserVerbose({
     required super.rawtransaction,
     required super.name,
@@ -3311,6 +3314,7 @@ class ComposeDispenserVerbose extends ComposeDispenser {
     required this.btcChange,
     required this.btcFee,
     required this.data,
+    required this.signedTxEstimatedSize,
   }) : super(params: params);
 
   factory ComposeDispenserVerbose.fromJson(Map<String, dynamic> json) =>
@@ -3624,12 +3628,14 @@ class SendTxVerbose extends SendTx {
   @override
   final SendTxParamsVerbose params;
   final int btcFee;
+  final SignedTxEstimatedSizeModel signedTxEstimatedSize;
 
   const SendTxVerbose({
     required this.params,
     required super.rawtransaction,
     required this.btcFee,
     required super.name,
+    required this.signedTxEstimatedSize,
   }) : super(params: params);
 
   factory SendTxVerbose.fromJson(Map<String, dynamic> json) =>
@@ -3648,6 +3654,7 @@ class ComposeMpmaSend {
   final int btcOut;
   final int btcFee;
   final int? btcChange;
+  final SignedTxEstimatedSizeModel signedTxEstimatedSize;
   final MpmaSendParams params;
 
   const ComposeMpmaSend({
@@ -3659,6 +3666,7 @@ class ComposeMpmaSend {
     required this.btcFee,
     this.btcChange,
     required this.params,
+    required this.signedTxEstimatedSize,
   });
 
   factory ComposeMpmaSend.fromJson(Map<String, dynamic> json) =>

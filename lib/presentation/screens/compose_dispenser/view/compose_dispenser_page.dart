@@ -693,7 +693,6 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
             text: satoshisToBtc(params.mainchainrate).toStringAsFixed(8)),
         enabled: false,
       ),
-      const SizedBox(height: 16.0),
     ];
   }
 

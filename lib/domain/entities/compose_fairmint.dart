@@ -36,6 +36,8 @@ class ComposeFairmintResponse extends ComposeResponse {
   @override
   final int btcFee;
   @override
+  final SignedTxEstimatedSize signedTxEstimatedSize;
+  @override
   final String rawtransaction;
 
   ComposeFairmintResponse({
@@ -47,5 +49,6 @@ class ComposeFairmintResponse extends ComposeResponse {
     this.btcChange,
     required this.btcFee,
     required this.rawtransaction,
+    required this.signedTxEstimatedSize,
   });
 }

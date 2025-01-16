@@ -13,6 +13,8 @@ ComposeFairmintVerboseModel _$ComposeFairmintVerboseModelFromJson(
       params: ComposeFairmintVerboseParamsModel.fromJson(
           json['params'] as Map<String, dynamic>),
       name: json['name'] as String,
+      signedTxEstimatedSize: SignedTxEstimatedSizeModel.fromJson(
+          json['signed_tx_estimated_size'] as Map<String, dynamic>),
       btcIn: (json['btc_in'] as num).toInt(),
       btcOut: (json['btc_out'] as num).toInt(),
       btcChange: (json['btc_change'] as num?)?.toInt(),
@@ -31,6 +33,7 @@ Map<String, dynamic> _$ComposeFairmintVerboseModelToJson(
       'btc_fee': instance.btcFee,
       'rawtransaction': instance.rawtransaction,
       'params': instance.params,
+      'signed_tx_estimated_size': instance.signedTxEstimatedSize,
     };
 
 ComposeFairmintVerboseParamsModel _$ComposeFairmintVerboseParamsModelFromJson(

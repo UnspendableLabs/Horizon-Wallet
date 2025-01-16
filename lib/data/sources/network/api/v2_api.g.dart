@@ -3197,6 +3197,8 @@ ComposeIssuanceVerbose _$ComposeIssuanceVerboseFromJson(
       params: ComposeIssuanceVerboseParams.fromJson(
           json['params'] as Map<String, dynamic>),
       btcFee: (json['btc_fee'] as num).toInt(),
+      signedTxEstimatedSize: SignedTxEstimatedSizeModel.fromJson(
+          json['signed_tx_estimated_size'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$ComposeIssuanceVerboseToJson(
@@ -3206,6 +3208,7 @@ Map<String, dynamic> _$ComposeIssuanceVerboseToJson(
       'name': instance.name,
       'params': instance.params,
       'btc_fee': instance.btcFee,
+      'signed_tx_estimated_size': instance.signedTxEstimatedSize,
     };
 
 ComposeIssuanceVerboseParams _$ComposeIssuanceVerboseParamsFromJson(
@@ -3296,6 +3299,8 @@ ComposeDispenserVerbose _$ComposeDispenserVerboseFromJson(
       btcChange: (json['btc_change'] as num?)?.toInt(),
       btcFee: (json['btc_fee'] as num).toInt(),
       data: json['data'] as String,
+      signedTxEstimatedSize: SignedTxEstimatedSizeModel.fromJson(
+          json['signed_tx_estimated_size'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$ComposeDispenserVerboseToJson(
@@ -3309,6 +3314,7 @@ Map<String, dynamic> _$ComposeDispenserVerboseToJson(
       'btc_change': instance.btcChange,
       'btc_fee': instance.btcFee,
       'data': instance.data,
+      'signed_tx_estimated_size': instance.signedTxEstimatedSize,
     };
 
 ComposeDispenserVerboseParams _$ComposeDispenserVerboseParamsFromJson(
@@ -3530,6 +3536,8 @@ SendTxVerbose _$SendTxVerboseFromJson(Map<String, dynamic> json) =>
       rawtransaction: json['rawtransaction'] as String,
       btcFee: (json['btc_fee'] as num).toInt(),
       name: json['name'] as String,
+      signedTxEstimatedSize: SignedTxEstimatedSizeModel.fromJson(
+          json['signed_tx_estimated_size'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$SendTxVerboseToJson(SendTxVerbose instance) =>
@@ -3538,6 +3546,7 @@ Map<String, dynamic> _$SendTxVerboseToJson(SendTxVerbose instance) =>
       'name': instance.name,
       'params': instance.params,
       'btc_fee': instance.btcFee,
+      'signed_tx_estimated_size': instance.signedTxEstimatedSize,
     };
 
 ComposeMpmaSend _$ComposeMpmaSendFromJson(Map<String, dynamic> json) =>
@@ -3550,6 +3559,8 @@ ComposeMpmaSend _$ComposeMpmaSendFromJson(Map<String, dynamic> json) =>
       btcFee: (json['btc_fee'] as num).toInt(),
       btcChange: (json['btc_change'] as num?)?.toInt(),
       params: MpmaSendParams.fromJson(json['params'] as Map<String, dynamic>),
+      signedTxEstimatedSize: SignedTxEstimatedSizeModel.fromJson(
+          json['signed_tx_estimated_size'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$ComposeMpmaSendToJson(ComposeMpmaSend instance) =>
@@ -3561,6 +3572,7 @@ Map<String, dynamic> _$ComposeMpmaSendToJson(ComposeMpmaSend instance) =>
       'btc_out': instance.btcOut,
       'btc_fee': instance.btcFee,
       'btc_change': instance.btcChange,
+      'signed_tx_estimated_size': instance.signedTxEstimatedSize,
       'params': instance.params,
     };
 

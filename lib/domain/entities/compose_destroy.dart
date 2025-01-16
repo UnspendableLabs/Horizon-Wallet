@@ -23,6 +23,8 @@ class ComposeDestroyResponse implements ComposeResponse {
   final String rawtransaction;
   @override
   final int btcFee;
+  @override
+  final SignedTxEstimatedSize signedTxEstimatedSize;
   final String? data;
   final String name;
 
@@ -31,6 +33,7 @@ class ComposeDestroyResponse implements ComposeResponse {
   ComposeDestroyResponse({
     required this.rawtransaction,
     required this.btcFee,
+    required this.signedTxEstimatedSize,
     required this.data,
     required this.name,
     required this.params,

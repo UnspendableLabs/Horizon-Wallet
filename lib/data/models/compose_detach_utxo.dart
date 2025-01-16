@@ -1,3 +1,4 @@
+import 'package:horizon/data/models/signed_tx_estimated_size.dart';
 import 'package:horizon/domain/entities/compose_detach_utxo.dart';
 import 'package:json_annotation/json_annotation.dart';
 
@@ -13,18 +14,18 @@ class ComposeDetachUtxoResponseModel {
   final int btcFee;
   final String rawtransaction;
   final ComposeDetachUtxoResponseParamsModel params;
-  // final OrderUnpackedVerbose unpackedData;
+  final SignedTxEstimatedSizeModel signedTxEstimatedSize;
 
   ComposeDetachUtxoResponseModel({
     required this.rawtransaction,
     required this.params,
     required this.name,
-    // required this.unpackedData,
     required this.btcIn,
     required this.btcOut,
     required this.btcChange,
     required this.btcFee,
     required this.data,
+    required this.signedTxEstimatedSize,
   });
 
   factory ComposeDetachUtxoResponseModel.fromJson(Map<String, dynamic> json) =>
@@ -36,6 +37,7 @@ class ComposeDetachUtxoResponseModel {
         rawtransaction: rawtransaction,
         btcFee: btcFee,
         params: params.toDomain(),
+        signedTxEstimatedSize: signedTxEstimatedSize.toDomain(),
       );
 }
 
