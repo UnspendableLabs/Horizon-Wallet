@@ -7,7 +7,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
 import 'package:horizon/domain/entities/remote_data.dart';
 
-import "./replace_by_fee_form_bloc.dart";
+import "./compose_rbf_form_bloc.dart";
 
 class OnSubmitSuccess {
   final String psbtHex;

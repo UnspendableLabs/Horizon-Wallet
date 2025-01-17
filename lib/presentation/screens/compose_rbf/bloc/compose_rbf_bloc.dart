@@ -1,8 +1,8 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:equatable/equatable.dart';
-import 'package:horizon/presentation/forms/replace_by_fee/replace_by_fee_form_bloc.dart'
-    as rbfForm;
+
+import 'package:horizon/presentation/screens/compose_rbf/view/form/compose_rbf_form_bloc.dart' as rbfForm;
 import 'package:horizon/domain/services/transaction_service.dart';
 
 sealed class Step extends Equatable {}
