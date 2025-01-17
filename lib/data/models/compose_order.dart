@@ -1,3 +1,4 @@
+import 'package:horizon/data/models/signed_tx_estimated_size.dart';
 import 'package:horizon/domain/entities/compose_order.dart';
 import 'package:json_annotation/json_annotation.dart';
 
@@ -13,6 +14,7 @@ class ComposeOrderResponseModel {
   final int btcFee;
   final String rawtransaction;
   final ComposeOrderResponseParamsModel params;
+  final SignedTxEstimatedSizeModel signedTxEstimatedSize;
   // final OrderUnpackedVerbose unpackedData;
 
   ComposeOrderResponseModel({
@@ -25,6 +27,7 @@ class ComposeOrderResponseModel {
     required this.btcChange,
     required this.btcFee,
     required this.data,
+    required this.signedTxEstimatedSize,
   });
 
   factory ComposeOrderResponseModel.fromJson(Map<String, dynamic> json) =>
@@ -34,6 +37,7 @@ class ComposeOrderResponseModel {
         rawtransaction: rawtransaction,
         btcFee: btcFee,
         params: params.toDomain(),
+        signedTxEstimatedSize: signedTxEstimatedSize.toDomain(),
       );
 }
 

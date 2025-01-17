@@ -4,6 +4,7 @@ import 'package:get_it/get_it.dart';
 import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/domain/entities/compose_dispenser.dart';
+import 'package:horizon/domain/entities/compose_response.dart';
 import 'package:horizon/domain/entities/dispenser.dart';
 import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/domain/entities/fee_option.dart' as FeeOption;
@@ -316,19 +317,21 @@ void main() {
     blocTest<CloseDispenserBloc, CloseDispenserState>(
       'emits SubmitComposingTransaction when transaction composition succeeds',
       build: () {
-        when(
-            () => mockComposeTransactionUseCase.call<ComposeDispenserParams,
-                    ComposeDispenserResponseVerbose>(
-                  feeRate: any(named: 'feeRate'),
-                  source: any(named: 'source'),
-                  composeFn: any(named: 'composeFn'),
-                  params: any(named: 'params'),
-                )).thenAnswer((_) async => (
-              mockComposeDispenserResponseVerbose,
-              FakeVirtualSize(virtualSize: 100, adjustedVirtualSize: 100)
-            ));
+        when(() => mockComposeTransactionUseCase
+                .call<ComposeDispenserParams, ComposeDispenserResponseVerbose>(
+              feeRate: any(named: 'feeRate'),
+              source: any(named: 'source'),
+              composeFn: any(named: 'composeFn'),
+              params: any(named: 'params'),
+            )).thenAnswer((_) async => mockComposeDispenserResponseVerbose);
 
         when(() => mockComposeDispenserResponseVerbose.btcFee).thenReturn(250);
+        when(() => mockComposeDispenserResponseVerbose.signedTxEstimatedSize)
+            .thenReturn(SignedTxEstimatedSize(
+          virtualSize: 120,
+          adjustedVirtualSize: 155,
+          sigopsCount: 1,
+        ));
 
         return closeDispenserBloc;
       },
@@ -347,33 +350,31 @@ void main() {
           isA<SubmitInitial>().having((s) => s.loading, 'loading', true),
         ),
         isA<CloseDispenserState>().having(
-            (state) => state.submitState,
-            'submitState',
-            isA<
-                    SubmitComposingTransaction<ComposeDispenserResponseVerbose,
-                        void>>()
-                .having((s) => s.composeTransaction, 'composeTransaction',
-                    mockComposeDispenserResponseVerbose)
-                .having((s) => s.fee, 'fee', 250)
-                .having((s) => s.feeRate, 'feeRate', 3) // default ( medium ),
-            ),
+          (state) => state.submitState,
+          'submitState',
+          isA<
+                  SubmitComposingTransaction<ComposeDispenserResponseVerbose,
+                      void>>()
+              .having((s) => s.composeTransaction, 'composeTransaction',
+                  mockComposeDispenserResponseVerbose)
+              .having((s) => s.fee, 'fee', 250)
+              .having((s) => s.feeRate, 'feeRate', 3)
+              .having((s) => s.virtualSize, 'virtualSize', 120)
+              .having((s) => s.adjustedVirtualSize, 'adjustedVirtualSize', 155),
+        ),
       ],
     );
 
     blocTest<CloseDispenserBloc, CloseDispenserState>(
       'emits SubmitComposingTransaction when transaction composition succeeds ( Custom Fee )',
       build: () {
-        when(
-            () => mockComposeTransactionUseCase.call<ComposeDispenserParams,
-                    ComposeDispenserResponseVerbose>(
-                  feeRate: any(named: 'feeRate'),
-                  source: any(named: 'source'),
-                  composeFn: any(named: 'composeFn'),
-                  params: any(named: 'params'),
-                )).thenAnswer((_) async => (
-              mockComposeDispenserResponseVerbose,
-              FakeVirtualSize(virtualSize: 100, adjustedVirtualSize: 100)
-            ));
+        when(() => mockComposeTransactionUseCase
+                .call<ComposeDispenserParams, ComposeDispenserResponseVerbose>(
+              feeRate: any(named: 'feeRate'),
+              source: any(named: 'source'),
+              composeFn: any(named: 'composeFn'),
+              params: any(named: 'params'),
+            )).thenAnswer((_) async => mockComposeDispenserResponseVerbose);
 
         when(() => mockComposeDispenserResponseVerbose.btcFee).thenReturn(250);
 

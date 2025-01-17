@@ -2,6 +2,7 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/core/logging/logger.dart';
+import 'package:horizon/domain/entities/compose_response.dart';
 import 'package:horizon/domain/entities/compose_sweep.dart';
 import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/domain/entities/fee_option.dart' as FeeOption;
@@ -52,6 +53,13 @@ class MockComposeSweepResponse extends Mock implements ComposeSweepResponse {
 
   @override
   int get btcFee => 250;
+
+  @override
+  SignedTxEstimatedSize get signedTxEstimatedSize => SignedTxEstimatedSize(
+        virtualSize: 100,
+        adjustedVirtualSize: 100,
+        sigopsCount: 1,
+      );
 }
 
 class MockComposeSweepResponseParams extends Mock
@@ -241,17 +249,13 @@ void main() {
     blocTest<ComposeSweepBloc, ComposeSweepState>(
       'emits composing states when transaction composition succeeds',
       build: () {
-        when(
-            () => mockComposeTransactionUseCase
-                    .call<ComposeSweepParams, ComposeSweepResponse>(
-                  feeRate: any(named: 'feeRate'),
-                  source: any(named: 'source'),
-                  params: any(named: 'params'),
-                  composeFn: any(named: 'composeFn'),
-                )).thenAnswer((_) async => (
-              mockComposeSweepResponse,
-              FakeVirtualSize(virtualSize: 100, adjustedVirtualSize: 100),
-            ));
+        when(() => mockComposeTransactionUseCase
+                .call<ComposeSweepParams, ComposeSweepResponse>(
+              feeRate: any(named: 'feeRate'),
+              source: any(named: 'source'),
+              params: any(named: 'params'),
+              composeFn: any(named: 'composeFn'),
+            )).thenAnswer((_) async => mockComposeSweepResponse);
         return bloc;
       },
       seed: () => ComposeSweepState(

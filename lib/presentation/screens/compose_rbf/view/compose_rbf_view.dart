@@ -89,7 +89,6 @@ class ComposeRBFPageWrapper extends StatelessWidget {
                             }),
                         c.Password() => BlocProvider(
                             create: (context) => ComposeRbfPasswordBloc(
-                              
                                   transactionLocalRepository:
                                       GetIt.I.get<TransactionLocalRepository>(),
                                   analyticsService: GetIt.I<AnalyticsService>(),

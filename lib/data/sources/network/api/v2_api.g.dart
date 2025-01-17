@@ -3197,6 +3197,8 @@ ComposeIssuanceVerbose _$ComposeIssuanceVerboseFromJson(
       params: ComposeIssuanceVerboseParams.fromJson(
           json['params'] as Map<String, dynamic>),
       btcFee: (json['btc_fee'] as num).toInt(),
+      signedTxEstimatedSize: SignedTxEstimatedSizeModel.fromJson(
+          json['signed_tx_estimated_size'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$ComposeIssuanceVerboseToJson(
@@ -3206,6 +3208,7 @@ Map<String, dynamic> _$ComposeIssuanceVerboseToJson(
       'name': instance.name,
       'params': instance.params,
       'btc_fee': instance.btcFee,
+      'signed_tx_estimated_size': instance.signedTxEstimatedSize,
     };
 
 ComposeIssuanceVerboseParams _$ComposeIssuanceVerboseParamsFromJson(
@@ -3296,6 +3299,8 @@ ComposeDispenserVerbose _$ComposeDispenserVerboseFromJson(
       btcChange: (json['btc_change'] as num?)?.toInt(),
       btcFee: (json['btc_fee'] as num).toInt(),
       data: json['data'] as String,
+      signedTxEstimatedSize: SignedTxEstimatedSizeModel.fromJson(
+          json['signed_tx_estimated_size'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$ComposeDispenserVerboseToJson(
@@ -3309,6 +3314,7 @@ Map<String, dynamic> _$ComposeDispenserVerboseToJson(
       'btc_change': instance.btcChange,
       'btc_fee': instance.btcFee,
       'data': instance.data,
+      'signed_tx_estimated_size': instance.signedTxEstimatedSize,
     };
 
 ComposeDispenserVerboseParams _$ComposeDispenserVerboseParamsFromJson(
@@ -3530,6 +3536,8 @@ SendTxVerbose _$SendTxVerboseFromJson(Map<String, dynamic> json) =>
       rawtransaction: json['rawtransaction'] as String,
       btcFee: (json['btc_fee'] as num).toInt(),
       name: json['name'] as String,
+      signedTxEstimatedSize: SignedTxEstimatedSizeModel.fromJson(
+          json['signed_tx_estimated_size'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$SendTxVerboseToJson(SendTxVerbose instance) =>
@@ -3538,6 +3546,7 @@ Map<String, dynamic> _$SendTxVerboseToJson(SendTxVerbose instance) =>
       'name': instance.name,
       'params': instance.params,
       'btc_fee': instance.btcFee,
+      'signed_tx_estimated_size': instance.signedTxEstimatedSize,
     };
 
 ComposeMpmaSend _$ComposeMpmaSendFromJson(Map<String, dynamic> json) =>
@@ -3550,6 +3559,8 @@ ComposeMpmaSend _$ComposeMpmaSendFromJson(Map<String, dynamic> json) =>
       btcFee: (json['btc_fee'] as num).toInt(),
       btcChange: (json['btc_change'] as num?)?.toInt(),
       params: MpmaSendParams.fromJson(json['params'] as Map<String, dynamic>),
+      signedTxEstimatedSize: SignedTxEstimatedSizeModel.fromJson(
+          json['signed_tx_estimated_size'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$ComposeMpmaSendToJson(ComposeMpmaSend instance) =>
@@ -3561,6 +3572,7 @@ Map<String, dynamic> _$ComposeMpmaSendToJson(ComposeMpmaSend instance) =>
       'btc_out': instance.btcOut,
       'btc_fee': instance.btcFee,
       'btc_change': instance.btcChange,
+      'signed_tx_estimated_size': instance.signedTxEstimatedSize,
       'params': instance.params,
     };
 
@@ -5371,8 +5383,7 @@ class _V2Api implements V2Api {
     String asset,
     int quantity, [
     bool? allowUnconfirmedInputs,
-    int? fee,
-    int? feePerKB,
+    int? satPerVbyte,
     String? inputsSet,
     bool? excludeUtxosWithBalances,
     bool? disableUtxoLocks,
@@ -5384,8 +5395,7 @@ class _V2Api implements V2Api {
       r'asset': asset,
       r'quantity': quantity,
       r'allow_unconfirmed_inputs': allowUnconfirmedInputs,
-      r'exact_fee': fee,
-      r'fee_per_kb': feePerKB,
+      r'sat_per_vbyte': satPerVbyte,
       r'inputs_set': inputsSet,
       r'exclude_utxos_with_balances': excludeUtxosWithBalances,
       r'disable_utxo_locks': disableUtxoLocks,
@@ -5425,8 +5435,7 @@ class _V2Api implements V2Api {
     String? assets,
     String? quantities, [
     bool? allowUnconfirmedInputs,
-    int? fee,
-    int? feePerKB,
+    int? satPerVbyte,
     String? inputsSet,
     bool? excludeUtxosWithBalances,
     bool? disableUtxoLocks,
@@ -5437,8 +5446,7 @@ class _V2Api implements V2Api {
       r'assets': assets,
       r'quantities': quantities,
       r'allow_unconfirmed_inputs': allowUnconfirmedInputs,
-      r'exact_fee': fee,
-      r'fee_per_kb': feePerKB,
+      r'sat_per_vbyte': satPerVbyte,
       r'inputs_set': inputsSet,
       r'exclude_utxos_with_balances': excludeUtxosWithBalances,
       r'disable_utxo_locks': disableUtxoLocks,
@@ -5618,7 +5626,7 @@ class _V2Api implements V2Api {
     bool? reset,
     String? description,
     bool? unconfirmed,
-    int? fee,
+    int? satPerVbyte,
     String? inputsSet,
     bool? excludeUtxosWithBalances,
     bool? disableUtxoLocks,
@@ -5633,7 +5641,7 @@ class _V2Api implements V2Api {
       r'reset': reset,
       r'description': description,
       r'unconfirmed': unconfirmed,
-      r'exact_fee': fee,
+      r'sat_per_vbyte': satPerVbyte,
       r'inputs_set': inputsSet,
       r'exclude_utxos_with_balances': excludeUtxosWithBalances,
       r'disable_utxo_locks': disableUtxoLocks,
@@ -5807,7 +5815,7 @@ class _V2Api implements V2Api {
   Future<Response<ComposeFairmintVerboseModel>> composeFairmintVerbose(
     String address,
     String asset, [
-    int? fee,
+    int? satPerVbyte,
     String? inputsSet,
     bool? excludeUtxosWithBalances,
     bool? disableUtxoLocks,
@@ -5815,7 +5823,7 @@ class _V2Api implements V2Api {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{
       r'asset': asset,
-      r'exact_fee': fee,
+      r'sat_per_vbyte': satPerVbyte,
       r'inputs_set': inputsSet,
       r'exclude_utxos_with_balances': excludeUtxosWithBalances,
       r'disable_utxo_locks': disableUtxoLocks,
@@ -5858,7 +5866,7 @@ class _V2Api implements V2Api {
     int? hardCap,
     int? startBlock,
     int? endBlock,
-    int? fee,
+    int? satPerVbyte,
     bool? lockQuantity,
     String? inputsSet,
     bool? excludeUtxosWithBalances,
@@ -5873,7 +5881,7 @@ class _V2Api implements V2Api {
       r'hard_cap': hardCap,
       r'start_block': startBlock,
       r'end_block': endBlock,
-      r'exact_fee': fee,
+      r'sat_per_vbyte': satPerVbyte,
       r'lock_quantity': lockQuantity,
       r'inputs_set': inputsSet,
       r'exclude_utxos_with_balances': excludeUtxosWithBalances,
@@ -5919,6 +5927,7 @@ class _V2Api implements V2Api {
     String? oracleAddress,
     bool? allowUnconfirmedInputs,
     int? exactFee,
+    int? satPerVbyte,
     String? inputsSet,
     bool? excludeUtxosWithBalances,
     bool? unconfirmed,
@@ -5936,6 +5945,7 @@ class _V2Api implements V2Api {
       r'oracle_address': oracleAddress,
       r'allow_unconfirmed_inputs': allowUnconfirmedInputs,
       r'exact_fee': exactFee,
+      r'sat_per_vbyte': satPerVbyte,
       r'inputs_set': inputsSet,
       r'exclude_utxos_with_balances': excludeUtxosWithBalances,
       r'unconfirmed': unconfirmed,
@@ -5979,7 +5989,7 @@ class _V2Api implements V2Api {
     int expiration,
     int feeRequired, [
     bool? allowUnconfirmedInputs,
-    int? exactFee,
+    int? satPerVbyte,
     String? inputsSet,
     bool? excludeUtxosWithBalances,
     bool? disableUtxoLocks,
@@ -5994,7 +6004,7 @@ class _V2Api implements V2Api {
       r'expiration': expiration,
       r'fee_required': feeRequired,
       r'allow_unconfirmed_inputs': allowUnconfirmedInputs,
-      r'exact_fee': exactFee,
+      r'sat_per_vbyte': satPerVbyte,
       r'inputs_set': inputsSet,
       r'exclude_utxos_with_balances': excludeUtxosWithBalances,
       r'disable_utxo_locks': disableUtxoLocks,
@@ -6033,7 +6043,7 @@ class _V2Api implements V2Api {
     String address,
     String giveAsset, [
     bool? allowUnconfirmedInputs,
-    int? exactFee,
+    int? satPerVbyte,
     String? inputsSet,
     bool? excludeUtxosWithBalances,
     bool? disableUtxoLocks,
@@ -6043,7 +6053,7 @@ class _V2Api implements V2Api {
     final queryParameters = <String, dynamic>{
       r'offer_hash': giveAsset,
       r'allow_unconfirmed_inputs': allowUnconfirmedInputs,
-      r'exact_fee': exactFee,
+      r'sat_per_vbyte': satPerVbyte,
       r'inputs_set': inputsSet,
       r'exclude_utxos_with_balances': excludeUtxosWithBalances,
       r'disable_utxo_locks': disableUtxoLocks,
@@ -6128,7 +6138,7 @@ class _V2Api implements V2Api {
     String dispenser,
     int quantity, [
     bool? allowUnconfirmedInputs,
-    int? exactFee,
+    int? satPerVbyte,
     String? inputsSet,
     bool? excludeUtxosWithBalances,
     bool? disableUtxoLocks,
@@ -6139,7 +6149,7 @@ class _V2Api implements V2Api {
       r'dispenser': dispenser,
       r'quantity': quantity,
       r'allow_unconfirmed_inputs': allowUnconfirmedInputs,
-      r'exact_fee': exactFee,
+      r'sat_per_vbyte': satPerVbyte,
       r'inputs_set': inputsSet,
       r'exclude_utxos_with_balances': excludeUtxosWithBalances,
       r'disable_utxo_locks': disableUtxoLocks,
@@ -6589,7 +6599,7 @@ class _V2Api implements V2Api {
     String? destinationVout,
     bool? skipValidation,
     bool? allowUnconfirmedInputs,
-    int? exactFee,
+    int? satPerVbyte,
     String? inputsSet,
     bool? excludeUtxosWithBalances,
     bool? disableUtxoLocks,
@@ -6602,7 +6612,7 @@ class _V2Api implements V2Api {
       r'destination_vout': destinationVout,
       r'skip_validation': skipValidation,
       r'allow_unconfirmed_inputs': allowUnconfirmedInputs,
-      r'exact_fee': exactFee,
+      r'sat_per_vbyte': satPerVbyte,
       r'inputs_set': inputsSet,
       r'exclude_utxos_with_balances': excludeUtxosWithBalances,
       r'disable_utxo_locks': disableUtxoLocks,
@@ -6642,7 +6652,7 @@ class _V2Api implements V2Api {
     String? destination,
     bool? skipValidation,
     bool? allowUnconfirmedInputs,
-    int? exactFee,
+    int? satPerVbyte,
     String? inputsSet,
     bool? excludeUtxosWithBalances,
     bool? disableUtxoLocks,
@@ -6653,7 +6663,7 @@ class _V2Api implements V2Api {
       r'destination': destination,
       r'skip_validation': skipValidation,
       r'allow_unconfirmed_inputs': allowUnconfirmedInputs,
-      r'exact_fee': exactFee,
+      r'sat_per_vbyte': satPerVbyte,
       r'inputs_set': inputsSet,
       r'exclude_utxos_with_balances': excludeUtxosWithBalances,
       r'disable_utxo_locks': disableUtxoLocks,
@@ -6693,7 +6703,7 @@ class _V2Api implements V2Api {
     String? destination,
     bool? skipValidation,
     bool? allowUnconfirmedInputs,
-    int? exactFee,
+    int? satPerVbyte,
     String? inputsSet,
     bool? excludeUtxosWithBalances,
     bool? disableUtxoLocks,
@@ -6704,7 +6714,7 @@ class _V2Api implements V2Api {
       r'destination': destination,
       r'skip_validation': skipValidation,
       r'allow_unconfirmed_inputs': allowUnconfirmedInputs,
-      r'exact_fee': exactFee,
+      r'sat_per_vbyte': satPerVbyte,
       r'inputs_set': inputsSet,
       r'exclude_utxos_with_balances': excludeUtxosWithBalances,
       r'disable_utxo_locks': disableUtxoLocks,
@@ -6960,7 +6970,7 @@ class _V2Api implements V2Api {
     String asset,
     int quantity,
     String tag, [
-    int? exactFee,
+    int? satPerVbyte,
     String? inputsSet,
     bool? excludeUtxosWithBalances,
     bool? disableUtxoLocks,
@@ -6970,7 +6980,7 @@ class _V2Api implements V2Api {
       r'asset': asset,
       r'quantity': quantity,
       r'tag': tag,
-      r'exact_fee': exactFee,
+      r'sat_per_vbyte': satPerVbyte,
       r'inputs_set': inputsSet,
       r'exclude_utxos_with_balances': excludeUtxosWithBalances,
       r'disable_utxo_locks': disableUtxoLocks,
@@ -7009,7 +7019,7 @@ class _V2Api implements V2Api {
     String asset,
     int quantityPerUnit,
     String dividendAsset, [
-    int? exactFee,
+    int? satPerVbyte,
     String? inputsSet,
     bool? excludeUtxosWithBalances,
     bool? disableUtxoLocks,
@@ -7019,7 +7029,7 @@ class _V2Api implements V2Api {
       r'asset': asset,
       r'quantity_per_unit': quantityPerUnit,
       r'dividend_asset': dividendAsset,
-      r'exact_fee': exactFee,
+      r'sat_per_vbyte': satPerVbyte,
       r'inputs_set': inputsSet,
       r'exclude_utxos_with_balances': excludeUtxosWithBalances,
       r'disable_utxo_locks': disableUtxoLocks,
@@ -7058,7 +7068,7 @@ class _V2Api implements V2Api {
     String destination,
     int flags,
     String memo, [
-    int? exactFee,
+    int? satPerVbyte,
     String? inputsSet,
     bool? excludeUtxosWithBalances,
     bool? disableUtxoLocks,
@@ -7068,7 +7078,7 @@ class _V2Api implements V2Api {
       r'destination': destination,
       r'flags': flags,
       r'memo': memo,
-      r'exact_fee': exactFee,
+      r'sat_per_vbyte': satPerVbyte,
       r'inputs_set': inputsSet,
       r'exclude_utxos_with_balances': excludeUtxosWithBalances,
       r'disable_utxo_locks': disableUtxoLocks,
@@ -7105,7 +7115,7 @@ class _V2Api implements V2Api {
   Future<Response<ComposeBurnResponseModel>> composeBurn(
     String address,
     int quantity, [
-    int? exactFee,
+    int? satPerVbyte,
     String? inputsSet,
     bool? excludeUtxosWithBalances,
     bool? disableUtxoLocks,
@@ -7114,7 +7124,7 @@ class _V2Api implements V2Api {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{
       r'quantity': quantity,
-      r'exact_fee': exactFee,
+      r'sat_per_vbyte': satPerVbyte,
       r'inputs_set': inputsSet,
       r'exclude_utxos_with_balances': excludeUtxosWithBalances,
       r'disable_utxo_locks': disableUtxoLocks,

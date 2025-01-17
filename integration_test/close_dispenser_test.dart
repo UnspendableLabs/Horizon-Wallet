@@ -305,7 +305,7 @@ void main() {
 
   group('Close dispenser form', () {
     testWidgets('submits transaction', (WidgetTester tester) async {
-      const composeDispenserResponse = ComposeDispenserResponseVerbose(
+      final composeDispenserResponse = ComposeDispenserResponseVerbose(
           rawtransaction: "test-raw-tx",
           name: "test-name",
           btcIn: 0,
@@ -313,7 +313,7 @@ void main() {
           btcChange: 0,
           btcFee: 0,
           data: "test-data",
-          params: ComposeDispenserResponseVerboseParams(
+          params: const ComposeDispenserResponseVerboseParams(
             source: "test-address",
             asset: "test-asset",
             giveQuantity: 1,
@@ -323,6 +323,11 @@ void main() {
             escrowQuantityNormalized: "test-escrow-quantity-normalized",
             status: 0,
             openAddress: "test-address",
+          ),
+          signedTxEstimatedSize: SignedTxEstimatedSize(
+            virtualSize: 100,
+            adjustedVirtualSize: 100,
+            sigopsCount: 1,
           ));
 
       // Mock dependencies
@@ -357,10 +362,9 @@ void main() {
               feeRate: 5, // medium
               source: "test-address",
               composeFn: any(named: 'composeFn'),
-              params: any(named: 'params'))).thenAnswer((_) async => (
-            composeDispenserResponse,
-            FakeVirtualSize(virtualSize: 100, adjustedVirtualSize: 100)
-          ));
+              params: any(named: 'params'))).thenAnswer(
+        (_) async => composeDispenserResponse,
+      );
 
       await tester.pumpWidget(
         MaterialApp(

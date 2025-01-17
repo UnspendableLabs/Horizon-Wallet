@@ -32,6 +32,8 @@ class ComposeIssuanceResponse implements ComposeResponse {
   final String rawtransaction;
   @override
   final int btcFee;
+  @override
+  final SignedTxEstimatedSize signedTxEstimatedSize;
 
   final ComposeIssuanceResponseParams params;
   final String name;
@@ -39,6 +41,7 @@ class ComposeIssuanceResponse implements ComposeResponse {
   const ComposeIssuanceResponse({
     required this.rawtransaction,
     required this.btcFee,
+    required this.signedTxEstimatedSize,
     required this.params,
     required this.name,
   });
@@ -71,6 +74,8 @@ class ComposeIssuanceResponseVerbose implements ComposeResponse {
   final String rawtransaction;
   @override
   final int btcFee;
+  @override
+  final SignedTxEstimatedSize signedTxEstimatedSize;
 
   final ComposeIssuanceResponseVerboseParams params;
   final String name;
@@ -78,6 +83,7 @@ class ComposeIssuanceResponseVerbose implements ComposeResponse {
   const ComposeIssuanceResponseVerbose({
     required this.rawtransaction,
     required this.btcFee,
+    required this.signedTxEstimatedSize,
     required this.params,
     required this.name,
   });
