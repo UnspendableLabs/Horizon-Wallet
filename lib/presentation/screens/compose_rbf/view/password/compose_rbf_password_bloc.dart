@@ -7,6 +7,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:horizon/presentation/common/usecase/write_local_transaction_usecase.dart';
 
 import 'package:formz/formz.dart';
+import 'package:horizon/domain/repositories/transaction_local_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
@@ -89,9 +90,11 @@ class FormStateModel extends Equatable {
 
 class ComposeRbfPasswordBloc extends Bloc<FormEvent, FormStateModel> {
   final String address;
+  final String txHashToReplace;
   final MakeRBFResponse makeRBFResponse;
 
   final WriteLocalTransactionUseCase writelocalTransactionUseCase;
+  final TransactionLocalRepository transactionLocalRepository;
 
   final AnalyticsService analyticsService;
   final BitcoindService bitcoindService;
@@ -107,7 +110,8 @@ class ComposeRbfPasswordBloc extends Bloc<FormEvent, FormStateModel> {
   final BitcoinRepository bitcoinRepository;
 
   ComposeRbfPasswordBloc(
-      {required this.analyticsService,
+      {required this.txHashToReplace,
+      required this.analyticsService,
       required this.bitcoindService,
       required this.makeRBFResponse,
       required this.address,
@@ -120,7 +124,8 @@ class ComposeRbfPasswordBloc extends Bloc<FormEvent, FormStateModel> {
       required this.addressService,
       required this.importedAddressService,
       required this.bitcoinRepository,
-      required this.writelocalTransactionUseCase})
+      required this.writelocalTransactionUseCase,
+      required this.transactionLocalRepository})
       : super(FormStateModel(psbtHex: makeRBFResponse.txHex)) {
     on<PasswordChanged>((event, emit) {
       final password = PasswordInput.dirty(event.password);
@@ -178,6 +183,8 @@ class ComposeRbfPasswordBloc extends Bloc<FormEvent, FormStateModel> {
 
         // not technically necessary since event shows up very quickly in practive
         await writelocalTransactionUseCase.call(txHex, txHash);
+
+        transactionLocalRepository.delete(txHashToReplace);
 
         analyticsService.trackAnonymousEvent('broadcast_rbf',
             properties: {'distinct_id': uuid.v4()});

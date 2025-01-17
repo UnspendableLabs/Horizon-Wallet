@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/repositories/unified_address_repository.dart';
+import 'package:horizon/domain/repositories/transaction_local_repository.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
@@ -13,15 +14,14 @@ import 'package:horizon/domain/services/bitcoind_service.dart';
 import 'package:horizon/domain/services/imported_address_service.dart';
 import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
 
-
 import 'package:horizon/presentation/screens/compose_rbf/view/form/compose_rbf_form_view.dart';
-import 'package:horizon/presentation/screens/compose_rbf/view/form/compose_rbf_form_bloc.dart' as rbfForm;
+import 'package:horizon/presentation/screens/compose_rbf/view/form/compose_rbf_form_bloc.dart'
+    as rbfForm;
 
 import 'package:horizon/presentation/screens/compose_rbf/view/review/compose_rbf_review_view.dart';
 
 import 'package:horizon/presentation/screens/compose_rbf/view/password/compose_rbf_password_bloc.dart';
 import 'package:horizon/presentation/screens/compose_rbf/view/password/compose_rbf_password_view.dart';
-
 
 import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
 
@@ -33,7 +33,6 @@ import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/presentation/common/usecase/write_local_transaction_usecase.dart';
 import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart";
 import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_event.dart";
-
 
 class ComposeRBFPageWrapper extends StatelessWidget {
   final String txHash;
@@ -90,6 +89,9 @@ class ComposeRBFPageWrapper extends StatelessWidget {
                             }),
                         c.Password() => BlocProvider(
                             create: (context) => ComposeRbfPasswordBloc(
+                              
+                                  transactionLocalRepository:
+                                      GetIt.I.get<TransactionLocalRepository>(),
                                   analyticsService: GetIt.I<AnalyticsService>(),
                                   bitcoindService:
                                       GetIt.I.get<BitcoindService>(),
@@ -109,6 +111,7 @@ class ComposeRBFPageWrapper extends StatelessWidget {
                                   signAndBroadcastTransactionUseCase: GetIt.I
                                       .get<
                                           SignAndBroadcastTransactionUseCase>(),
+                                  txHashToReplace: txHash,
                                   address: address,
                                   walletRepository: GetIt.I<WalletRepository>(),
                                   makeRBFResponse: state.makeRBFResponse!,
