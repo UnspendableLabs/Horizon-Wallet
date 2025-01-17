@@ -39,7 +39,7 @@ abstract class ComposeRepository {
   Future<ComposeFairminterResponse> composeFairminterVerbose(
       int satPerVbyte, List<Utxo> inputsSet, ComposeFairminterParams params);
 
-  Future<ComposeDispenserResponseVerbose> composeDispenserChain(int satPerVbyte,
+  Future<ComposeDispenserResponseVerbose> composeDispenserChain(int exactFee,
       DecodedTx prevDecodedTransaction, ComposeDispenserParams params);
 
   Future<ComposeOrderResponse> composeOrder(

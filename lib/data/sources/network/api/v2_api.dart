@@ -5316,6 +5316,7 @@ abstract class V2Api {
     @Query("open_address") String? openAddress,
     @Query("oracle_address") String? oracleAddress,
     @Query("allow_unconfirmed_inputs") bool? allowUnconfirmedInputs,
+    @Query("exact_fee") int? exactFee,
     @Query("sat_per_vbyte") int? satPerVbyte,
     @Query("inputs_set") String? inputsSet,
     @Query("exclude_utxos_with_balances") bool? excludeUtxosWithBalances,

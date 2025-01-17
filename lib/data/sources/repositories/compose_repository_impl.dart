@@ -260,6 +260,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
         final status = params.status ?? 0;
         const openAddress = null;
         const oracleAddress = null;
+        const exactFee = null;
         const allowUnconfirmedInputs = true;
         const excludeUtxosWithBalances = true;
         const disableUtxoLocks = false;
@@ -277,6 +278,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
             openAddress,
             oracleAddress,
             allowUnconfirmedInputs,
+            exactFee,
             satPerVbyte,
             inputsSetString,
             excludeUtxosWithBalances,
@@ -433,7 +435,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
 
   @override
   Future<compose_dispenser.ComposeDispenserResponseVerbose>
-      composeDispenserChain(int satPerVbyte, DecodedTx prevDecodedTransaction,
+      composeDispenserChain(int exactFee, DecodedTx prevDecodedTransaction,
           compose_dispenser.ComposeDispenserParams params) async {
     final source = params.source;
     final asset = params.asset;
@@ -474,7 +476,8 @@ class ComposeRepositoryImpl extends ComposeRepository {
       openAddress,
       oracleAddress,
       allowUnconfirmedInputs,
-      satPerVbyte,
+      exactFee,
+      null, // null satPerVbyte since we need to specify the exact fee for the dispenser chain
       newInputSet,
       excludeUtxosWithBalances,
       validateCompose,

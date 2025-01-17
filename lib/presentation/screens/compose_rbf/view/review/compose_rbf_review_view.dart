@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
 import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
 
-import 'package:horizon/presentation/screens/compose_rbf/view/form/compose_rbf_form_bloc.dart' as rbfForm;
+import 'package:horizon/presentation/screens/compose_rbf/view/form/compose_rbf_form_bloc.dart'
+    as rbfForm;
 
 class ComposeRBFReview extends StatelessWidget {
   final rbfForm.RBFData rbfData;
