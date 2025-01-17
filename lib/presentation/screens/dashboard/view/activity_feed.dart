@@ -299,8 +299,7 @@ class ActivityFeedListItem extends StatelessWidget {
             "Sweep ${flagMapper[params.flags]} from ${params.source}"),
       BurnEvent(params: var params) => SelectableText(
           "Burn ${params.burnedNormalized} BTC for ${params.earnedNormalized} XCP"),
-      _ => SelectableText(
-          'Invariant: title unsupported event type: ${event.runtimeType}'),
+      _ => null,
     };
   }
 
