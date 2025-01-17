@@ -1,4 +1,3 @@
-import 'package:flutter/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:formz/formz.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -12,7 +11,10 @@ class ComposeRBFPasswordForm extends StatefulWidget {
   final void Function() onSuccess;
 
   const ComposeRBFPasswordForm(
-      {this.submissionError, required this.onSuccess, required this.onBack, super.key});
+      {this.submissionError,
+      required this.onSuccess,
+      required this.onBack,
+      super.key});
 
   @override
   State<ComposeRBFPasswordForm> createState() => _ComposeRBFPasswordForm();
@@ -26,16 +28,13 @@ class _ComposeRBFPasswordForm extends State<ComposeRBFPasswordForm> {
   Widget build(BuildContext context) {
     return BlocConsumer<ComposeRbfPasswordBloc, FormStateModel>(
         listener: (context, state) {
-
-      if ( state.submissionStatus.isSuccess) {
-         widget.onSuccess();
+      if (state.submissionStatus.isSuccess) {
+        widget.onSuccess();
       }
 
       if (_passwordController.text != state.password.value) {
         _passwordController.text = state.password.value;
       }
-
-
     }, builder: (context, state) {
       return Form(
           key: _formKey,
@@ -80,7 +79,7 @@ class _ComposeRBFPasswordForm extends State<ComposeRBFPasswordForm> {
                             : () {
                                 context
                                     .read<ComposeRbfPasswordBloc>()
-                                    .add(FormSubmitted());
+                                    .add(const FormSubmitted());
 
                                 // widget.onSubmit(_passwordController.text, _formKey);
                               },

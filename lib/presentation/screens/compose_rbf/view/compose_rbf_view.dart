@@ -22,7 +22,6 @@ import 'package:horizon/presentation/screens/compose_rbf/bloc/compose_rbf_bloc.d
 
 import 'package:horizon/presentation/screens/compose_rbf/view/password/compose_rbf_password_bloc.dart';
 import 'package:horizon/presentation/screens/compose_rbf/view/password/compose_rbf_password_view.dart';
-import 'package:get_it/get_it.dart';
 import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transaction_usecase.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/presentation/common/usecase/write_local_transaction_usecase.dart';
@@ -42,6 +41,7 @@ class ComposeRBFReview extends StatelessWidget {
       required this.onContinue,
       super.key});
 
+  @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(16.0),
@@ -53,7 +53,7 @@ class ComposeRBFReview extends StatelessWidget {
         Row(
           children: [
             Text(
-              "${rbfData.tx.txid}",
+              rbfData.tx.txid,
               style: Theme.of(context).textTheme.bodyMedium,
             ),
           ],
@@ -180,9 +180,8 @@ class ComposeRBFPageWrapper extends StatelessWidget {
                                       GetIt.I<WriteLocalTransactionUseCase>(),
                                 ),
                             child: ComposeRBFPasswordForm(onSuccess: () {
-                              dashboardActivityFeedBloc.add(Load());
+                              dashboardActivityFeedBloc.add(const Load());
                               Navigator.of(context).pop();
-
                             }, onBack: () {
                               context
                                   .read<c.ComposeRBFBloc>()

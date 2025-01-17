@@ -235,6 +235,6 @@ class ReplaceByFeeForm extends StatelessWidget {
       // );
     });
 
-    return Text("Replace by fee form");
+    return const Text("Replace by fee form");
   }
 }

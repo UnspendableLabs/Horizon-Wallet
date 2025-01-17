@@ -1,5 +1,4 @@
 import "package:horizon/domain/entities/utxo.dart";
-import 'package:horizon/js/bitcoin.dart' as bitcoinjs;
 
 class MakeRBFResponse {
   final String txHex;

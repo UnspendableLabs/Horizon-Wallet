@@ -17,7 +17,6 @@ import 'package:horizon/js/tiny_secp256k1.dart' as tinysecp256k1js;
 import 'package:horizon/presentation/common/shared_util.dart';
 import 'dart:math';
 
-import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
 
 const DEFAULT_SEQUENCE = 0xffffffff;
 const SIGHASH_DEFAULT = 0x00;

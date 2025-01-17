@@ -101,15 +101,13 @@ class SignAndBroadcastTransactionUseCase<R extends ComposeResponse> {
             importedAddress!, password);
       }
 
-
       print("source $source");
 
       print("rawtransaction $rawtransaction");
 
-
       // Sign Transaction
       final txHex = await transactionService.signTransaction(
-          rawtransaction, addressPrivKey, source, utxoMap );
+          rawtransaction, addressPrivKey, source, utxoMap);
 
       // Broadcast Transaction
       try {
@@ -124,7 +122,6 @@ class SignAndBroadcastTransactionUseCase<R extends ComposeResponse> {
     } on TransactionServiceException catch (e) {
       onError(e.message);
     } catch (e) {
-
       print("error $e");
       onError('An unexpected error occurred.');
     }

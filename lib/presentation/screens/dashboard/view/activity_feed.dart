@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:get_it/get_it.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:horizon/presentation/common/shared_util.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart';
@@ -10,15 +9,10 @@ import 'package:horizon/domain/entities/event.dart';
 import 'package:horizon/domain/entities/transaction_info.dart';
 import 'package:horizon/presentation/common/no_data.dart';
 import 'package:horizon/domain/entities/bitcoin_tx.dart';
-import 'package:horizon/domain/repositories/bitcoin_repository.dart';
-import 'package:horizon/domain/services/transaction_service.dart';
 import 'package:horizon/presentation/common/tx_hash_display.dart';
 import 'package:horizon/common/format.dart';
 import 'package:horizon/presentation/common/colors.dart';
 import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
-import 'package:horizon/presentation/forms/replace_by_fee/replace_by_fee_form_view.dart';
-import 'package:horizon/presentation/forms/replace_by_fee/replace_by_fee_form_bloc.dart';
-import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
 import 'package:horizon/presentation/screens/compose_rbf/view/compose_rbf_view.dart';
 
 class RBF extends StatelessWidget {
@@ -36,8 +30,10 @@ class RBF extends StatelessWidget {
           HorizonUI.HorizonDialog.show(
             context: context,
             body: ComposeRBFPageWrapper(
-            dashboardActivityFeedBloc: context.read<DashboardActivityFeedBloc>(),
-            txHash: txHash, address: address),
+                dashboardActivityFeedBloc:
+                    context.read<DashboardActivityFeedBloc>(),
+                txHash: txHash,
+                address: address),
           );
         },
         icon: const Icon(Icons.rocket_launch_sharp));
@@ -186,7 +182,7 @@ class ActivityFeedListItem extends StatelessWidget {
       subtitle: _buildSubtitle(),
       leading: _buildLeadingIcon(),
       trailing: Row(mainAxisSize: MainAxisSize.min, children: [
-        _buildRBF() ?? SizedBox.shrink(),
+        _buildRBF() ?? const SizedBox.shrink(),
         _buildTrailing(),
       ]),
       // onTap: () {},
@@ -200,6 +196,7 @@ class ActivityFeedListItem extends StatelessWidget {
     if (item.bitcoinTx != null && item.bitcoinTx!.status.confirmed == false) {
       return _buildRBFBitcoinTx(item.bitcoinTx!);
     }
+    return null;
   }
 
   Widget? _buildRBFBitcoinTx(BitcoinTx tx) {

@@ -25,7 +25,6 @@ class EventStateConfirmed extends EventState {
 class Event extends Equatable {
   final EventState state;
 
-
   final int? eventIndex;
   final String event;
   final String? txHash;

@@ -7,12 +7,10 @@ import 'dart:math';
 import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 import 'package:horizon/domain/entities/fee_option.dart' as FeeOption;
 import 'package:horizon/domain/entities/fee_estimates.dart';
-import 'package:horizon/domain/entities/fee_option.dart';
 import 'package:formz/formz.dart';
 import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
 import 'package:horizon/common/fn.dart';
-
 
 abstract class FormEvent extends Equatable {
   const FormEvent();
@@ -147,16 +145,13 @@ class ReplaceByFeeFormBloc extends Bloc<FormEvent, FormStateModel> {
         newFee: newFee,
       );
 
-
       emit(state.copyWith(
-          submissionStatus: FormzSubmissionStatus.success, rbfResponse: rbfResponse));
-
+          submissionStatus: FormzSubmissionStatus.success,
+          rbfResponse: rbfResponse));
 
       // reset the form
       emit(state.copyWith(
           submissionStatus: FormzSubmissionStatus.initial, rbfResponse: null));
-
-              
     } on TransactionServiceException catch (e) {
       emit(state.copyWith(
         submissionStatus: FormzSubmissionStatus.failure,
@@ -201,7 +196,6 @@ class ReplaceByFeeFormBloc extends Bloc<FormEvent, FormStateModel> {
               tx: bitcoinTransaction,
               hex: bitcoinTransactionHex,
               adjustedSize: adjustedVirtualSize))));
-
     } catch (e) {
       print(e);
     }
