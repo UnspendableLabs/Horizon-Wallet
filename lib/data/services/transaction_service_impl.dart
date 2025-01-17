@@ -85,8 +85,6 @@ class TransactionServiceImpl implements TransactionService {
           'Fee increase exceeds available change');
     }
 
-    lastOut.value = newValue;
-
     for (var i = 0; i < lastOutIndex; i++) {
       final output = transaction.outs.toDart[i];
       psbt.addOutput(output);
@@ -94,6 +92,7 @@ class TransactionServiceImpl implements TransactionService {
 
     // only add change output if new value is > 0
     if (newValue > 0) {
+      lastOut.value = newValue;
       psbt.addOutput(lastOut);
     }
 
@@ -110,7 +109,6 @@ class TransactionServiceImpl implements TransactionService {
         adjustedVirtualSize: adjustedVirtualSize,
         inputsByTxHash: txHashToInputsMap);
   }
-
 
   @override
   String signPsbt(String psbtHex, Map<int, String> inputPrivateKeyMap,
