@@ -111,24 +111,6 @@ class TransactionServiceImpl implements TransactionService {
         inputsByTxHash: txHashToInputsMap);
   }
 
-  @override
-  String signPsbtTmp(String psbtHex, String privateKey) {
-    bitcoinjs.Psbt psbt = bitcoinjs.Psbt.fromHex(psbtHex);
-
-    Buffer privKeyJS =
-        Buffer.from(Uint8List.fromList(hex.decode(privateKey)).toJS);
-
-    final network = _getNetwork();
-
-    dynamic signer = ecpairFactory.fromPrivateKey(privKeyJS, network);
-
-    // # TODO: obvoiusly this is a huge hack
-    psbt.signInput(0, signer);
-
-    psbt.finalizeAllInputs();
-
-    return psbt.extractTransaction().toHex();
-  }
 
   @override
   String signPsbt(String psbtHex, Map<int, String> inputPrivateKeyMap,

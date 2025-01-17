@@ -19,8 +19,6 @@ abstract class TransactionService {
   String signPsbt(String psbtHex, Map<int, String> inputPrivateKeyMap,
       [List<int>? sighashTypes]);
 
-  String signPsbtTmp(String psbtHex, String privateKey);
-
   String psbtToUnsignedTransactionHex(String psbtHex);
 
   Future<String> signTransaction(String unsignedTransaction, String privateKey,
