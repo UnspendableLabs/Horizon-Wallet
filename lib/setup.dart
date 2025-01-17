@@ -423,7 +423,6 @@ Future<void> setup() async {
       .registerSingleton<ComposeTransactionUseCase>(ComposeTransactionUseCase(
     utxoRepository: GetIt.I.get<UtxoRepository>(),
     balanceRepository: injector.get<BalanceRepository>(),
-    getVirtualSizeUseCase: GetIt.I.get<GetVirtualSizeUseCase>(),
   ));
 
   injector.registerSingleton<FetchFairminterFormDataUseCase>(

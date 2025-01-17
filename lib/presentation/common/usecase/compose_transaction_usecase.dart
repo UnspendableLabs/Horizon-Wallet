@@ -1,6 +1,5 @@
 import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/repositories/utxo_repository.dart';
-import 'package:horizon/presentation/common/usecase/get_virtual_size_usecase.dart';
 import 'package:horizon/domain/entities/utxo.dart';
 import 'package:horizon/domain/entities/compose_response.dart';
 import 'package:horizon/domain/entities/compose_fn.dart';
@@ -24,12 +23,10 @@ class ComposeTransactionException implements Exception {
 class ComposeTransactionUseCase {
   final UtxoRepository utxoRepository;
   final BalanceRepository balanceRepository;
-  final GetVirtualSizeUseCase getVirtualSizeUseCase;
 
   const ComposeTransactionUseCase({
     required this.utxoRepository,
     required this.balanceRepository,
-    required this.getVirtualSizeUseCase,
   });
 
   Future<(R, VirtualSize)>
