@@ -29,7 +29,7 @@ void main() {
     late TransactionService transactionService;
 
     setUpAll(() async {
-      await setup();
+      setup();
       transactionService = GetIt.instance<TransactionService>();
     });
 

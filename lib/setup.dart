@@ -131,7 +131,7 @@ import 'dart:html' as html;
 import 'package:horizon/domain/services/error_service.dart';
 import 'package:horizon/data/services/error_service_impl.dart';
 
-Future<void> setup() async {
+void setup() {
   GetIt injector = GetIt.I;
 
   injector.registerSingleton<Logger>(LoggerImpl(
@@ -175,22 +175,52 @@ Future<void> setup() async {
   ));
 
   dio.interceptors.addAll([
-    // RetryInterceptor(dio: dio, maxRetries: 3, initialDelayMs: 500),
     TimeoutInterceptor(),
     ConnectionErrorInterceptor(),
     BadResponseInterceptor(),
     BadCertificateInterceptor(),
     SimpleLogInterceptor(),
     RetryInterceptor(
-      dio: dio, retries: 3,
-      retryableExtraStatuses: {400}, // to handle backend bug with compose
+      dio: dio,
+      retries: 3,
       retryDelays: const [
         // set delays between retries (optional)
         Duration(seconds: 1), // wait 1 sec before first retry
         Duration(seconds: 1), // wait 2 sec before second retry
         Duration(seconds: 1), // wait 3 sec before third retry
       ],
-    ), // Add the RetryInterceptor here
+      retryEvaluator: (error, retryCount) {
+        // Log the error first
+        GetIt.I<ErrorService>().captureException(
+          error,
+          message: """
+            Original error before retry:
+            ${error.response?.statusCode}
+            ${error.error.toString()}
+            ${error.requestOptions.uri}
+            Type: ${error.type}
+            Response: ${error.response?.data}
+          """,
+          stackTrace: error.stackTrace,
+          context: {
+            'errorType': error.type.toString(),
+            'statusCode': error.response?.statusCode?.toString(),
+            'method': error.requestOptions.method,
+            'path': error.requestOptions.path,
+            'retryCount': retryCount.toString(),
+          },
+        );
+
+        // Determine if we should retry
+        final shouldRetry = error.response?.statusCode ==
+                400 || // handle backend bug with compose
+            error.type == DioExceptionType.connectionTimeout ||
+            error.type == DioExceptionType.receiveTimeout ||
+            error.type == DioExceptionType.connectionError;
+
+        return shouldRetry;
+      },
+    )
   ]);
 
   injector.registerLazySingleton<V2Api>(() => V2Api(dio));
@@ -268,6 +298,7 @@ Future<void> setup() async {
       GetIt.I<Logger>(),
     ),
   );
+  GetIt.I.get<ErrorService>().initialize();
 
   injector.registerSingleton<BitcoinRepository>(BitcoinRepositoryImpl(
     esploraApi: EsploraApi(
@@ -573,13 +604,6 @@ class TimeoutInterceptor extends Interceptor {
         type: DioExceptionType.connectionTimeout,
       );
 
-      GetIt.I<ErrorService>().captureException(
-        formattedError,
-        message:
-            " ${err.response?.statusCode} \n ${formattedError.error.toString()} \n ${err.requestOptions.uri}",
-        stackTrace: err.stackTrace,
-      );
-
       GetIt.I<Logger>().debug(formattedError.toString());
       handler.next(formattedError);
     } else {
@@ -598,13 +622,6 @@ class ConnectionErrorInterceptor extends Interceptor {
         error:
             'Connection Error — Request Failed ${err.response?.data?['error'] != null ? "\n\n ${err.response?.data?['error']}" : ""}',
         type: DioExceptionType.connectionError,
-      );
-
-      GetIt.I<ErrorService>().captureException(
-        formattedError,
-        message:
-            " ${err.response?.statusCode} \n ${formattedError.error.toString()} \n ${err.requestOptions.uri}",
-        stackTrace: err.stackTrace,
       );
 
       GetIt.I<Logger>().debug(formattedError.toString());
@@ -626,15 +643,6 @@ class BadResponseInterceptor extends Interceptor {
             : "Bad Response",
         type: DioExceptionType.badResponse,
       );
-
-      GetIt.I<ErrorService>().captureException(
-        formattedError,
-        message:
-            "${err.response?.statusCode} \n ${formattedError.error.toString()} \n${err.requestOptions.uri}",
-        stackTrace: err.stackTrace,
-      );
-
-      GetIt.I<Logger>().debug(formattedError.toString());
 
       GetIt.I<Logger>().debug(formattedError.toString());
       handler.next(formattedError);

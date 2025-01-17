@@ -152,7 +152,7 @@ void main() {
   group('Onboarding Integration Tests', () {
     setUpAll(() async {
       // Perform any common setup here
-      await setup();
+      setup();
     });
 
     for (final testCase in testCases) {

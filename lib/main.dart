@@ -26,6 +26,7 @@ import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
+import 'package:horizon/domain/services/error_service.dart';
 import 'package:horizon/domain/services/imported_address_service.dart';
 import 'package:horizon/domain/services/wallet_service.dart';
 import 'package:horizon/presentation/common/colors.dart';
@@ -46,7 +47,6 @@ import 'package:horizon/presentation/shell/theme/bloc/theme_bloc.dart';
 import 'package:horizon/presentation/version_cubit.dart';
 import 'package:horizon/setup.dart';
 import 'package:pub_semver/pub_semver.dart';
-import 'package:horizon/domain/services/error_service.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 final _sectionNavigatorKey = GlobalKey<NavigatorState>();
@@ -362,19 +362,19 @@ class ErrorScreen extends StatelessWidget {
 }
 
 void main() {
+  setup();
+
   // Catch synchronous errors in Flutter framework
   FlutterError.onError = (FlutterErrorDetails details) {
     FlutterError.dumpErrorToConsole(details);
-    GetIt.I<ErrorService>()
-        .captureException(details.exception, stackTrace: details.stack);
+    GetIt.I<ErrorService>().captureException(details.exception,
+        stackTrace: details.stack,
+        context: {'runtimeType': details.exception.runtimeType.toString()});
   };
 
   // Catch uncaught asynchronous errors
   runZonedGuarded<Future<void>>(() async {
     WidgetsFlutterBinding.ensureInitialized();
-
-    await setup();
-    await GetIt.I<ErrorService>().initialize();
 
     await setupRegtestWallet();
     await initSettings();
@@ -431,12 +431,26 @@ void main() {
     }).run();
   }, (Object error, StackTrace stackTrace) {
     final logger = GetIt.I<Logger>();
+
+    // Handle different error types
     if (error is DioException) {
       logger.error(error.message ?? "", null, stackTrace);
-    } else {
-      logger.error(error.toString(), null, stackTrace);
+    } else if (error is TypeError) {
+      // Handle type errors (like the minified event type error)
+      final errorMessage = 'Type Error: ${error.toString()}';
+      logger.error(errorMessage, error, stackTrace);
       GetIt.I<ErrorService>().captureException(error,
-          stackTrace: stackTrace, message: error.toString());
+          stackTrace: stackTrace,
+          message: errorMessage,
+          context: {'runtimeType': error.runtimeType.toString()});
+    } else {
+      // Add more specific error type handling here as needed
+      final errorMessage = 'Unhandled Error: ${error.toString()}';
+      logger.error(errorMessage, null, stackTrace);
+      GetIt.I<ErrorService>().captureException(error,
+          stackTrace: stackTrace,
+          message: errorMessage,
+          context: {'errorType': error.runtimeType.toString()});
     }
   });
 }
