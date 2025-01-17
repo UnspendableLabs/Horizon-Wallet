@@ -191,7 +191,7 @@ class TransactionServiceImpl implements TransactionService {
         }
       } else {
         throw TransactionServiceException(
-            'Counld not found output at $txHashKey');
+            'Could not find output at $txHashKey');
       }
     }
 
