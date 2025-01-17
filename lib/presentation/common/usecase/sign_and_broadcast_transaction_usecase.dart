@@ -60,12 +60,10 @@ class SignAndBroadcastTransactionUseCase<R extends ComposeResponse> {
 
   Future<void> call({
     required String password,
-    // todo: no reason to have extrat params...just pass in dirctly.
     required Function(String, String) onSuccess,
     required Function(String) onError,
     required String source,
     required String rawtransaction,
-    bool isPsbt = false,
   }) async {
     try {
       late Address? address;
@@ -73,12 +71,10 @@ class SignAndBroadcastTransactionUseCase<R extends ComposeResponse> {
 
       // Fetch UTXOs
       final utxos = await utxoRepository.getUnspentForAddress(source,
-          excludeCached: false);
+          excludeCached: true);
       final Map<String, Utxo> utxoMap = {
         for (var e in utxos) "${e.txid}:${e.vout}": e
       };
-
-      print("utxoMap: $utxoMap");
 
       // Fetch Address, Account, and Wallet
       address = await addressRepository.getAddress(source);
@@ -86,8 +82,6 @@ class SignAndBroadcastTransactionUseCase<R extends ComposeResponse> {
         importedAddress =
             await importedAddressRepository.getImportedAddress(source);
       }
-
-      print("address: $address");
 
       if (address == null && importedAddress == null) {
         throw SignAndBroadcastTransactionException('Address not found.');
@@ -100,10 +94,6 @@ class SignAndBroadcastTransactionUseCase<R extends ComposeResponse> {
         addressPrivKey = await _getAddressPrivKeyForImportedAddress(
             importedAddress!, password);
       }
-
-      print("source $source");
-
-      print("rawtransaction $rawtransaction");
 
       // Sign Transaction
       final txHex = await transactionService.signTransaction(
@@ -122,7 +112,6 @@ class SignAndBroadcastTransactionUseCase<R extends ComposeResponse> {
     } on TransactionServiceException catch (e) {
       onError(e.message);
     } catch (e) {
-      print("error $e");
       onError('An unexpected error occurred.');
     }
   }
