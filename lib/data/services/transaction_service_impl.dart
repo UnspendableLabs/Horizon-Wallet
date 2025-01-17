@@ -168,11 +168,7 @@ class TransactionServiceImpl implements TransactionService {
       bitcoinjs.TxInput input = transaction.ins.toDart[i];
 
       var txHash = HEX.encode(input.hash.toDart.reversed.toList());
-
-      print("in txHash: $txHash");
-
       final txHashKey = "$txHash:${input.index}";
-      print("txHAshKey: $txHashKey");
 
       var prev = utxoMap[txHashKey];
       if (prev != null) {
