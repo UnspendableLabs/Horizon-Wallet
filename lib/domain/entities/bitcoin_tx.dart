@@ -228,7 +228,7 @@ class BitcoinTx {
           // Check for Counterparty prefix
           if (decodedData.startsWith(PREFIX)) {
             logs.add("Counterparty transaction detected.");
-            // logger.debug(logs.join("\n"));
+            logger.debug(logs.join("\n"));
             return true;
           } else {
             logs.add("Decoded data does not contain Counterparty prefix.");
@@ -294,7 +294,7 @@ class BitcoinTx {
 
                   if (prefixString == PREFIX) {
                     logs.add("Counterparty transaction detected.");
-                    // logger.debug(logs.join("\n"));
+                    logger.debug(logs.join("\n"));
                     return true;
                   } else {
                     logs.add("Chunk does not contain Counterparty prefix.");
@@ -316,12 +316,12 @@ class BitcoinTx {
 
       // No valid Counterparty transaction detected
       logs.add("No Counterparty transaction detected.");
-      // logger.debug(logs.join("\n"));
+      logger.debug(logs.join("\n"));
       return false;
     } catch (e, stacktrace) {
       logs.add("An error occurred: $e");
       logs.add("Stacktrace: $stacktrace");
-      // logger.error(logs.join("\n"), null, stacktrace);
+      logger.error(logs.join("\n"), null, stacktrace);
       return false;
     }
   }
