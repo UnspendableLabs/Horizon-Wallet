@@ -26,7 +26,6 @@ class ReplaceByFeeForm extends StatelessWidget {
       required this.onSubmitSuccess});
 
   @override
-  @override
   Widget build(BuildContext context) {
     return BlocConsumer<ReplaceByFeeFormBloc, FormStateModel>(
         listener: (context, state) {
@@ -43,7 +42,7 @@ class ReplaceByFeeForm extends StatelessWidget {
                 'Transaction Hash:',
                 style: Theme.of(context).textTheme.labelSmall,
               ),
-              Text(
+              SelectableText(
                 state.txHash,
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
