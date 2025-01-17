@@ -275,7 +275,7 @@ class ComposeDispenserOnNewAddressBloc extends Bloc<
           ),
           composeFn: composeRepository.composeSendVerbose,
         );
-        final feeForAssetSend = assetSend.$1.btcFee;
+        final feeForAssetSend = assetSend.btcFee;
 
         final utxos = await utxoRepository.getUnspentForAddress(source,
             excludeCached: true);
@@ -283,7 +283,7 @@ class ComposeDispenserOnNewAddressBloc extends Bloc<
         // 3. re-construct the asset send
         final signedConstructedAssetSend =
             await transactionService.constructChainAndSignTransaction(
-          unsignedTransaction: assetSend.$1.rawtransaction,
+          unsignedTransaction: assetSend.rawtransaction,
           sourceAddress: source,
           utxos: utxos,
           sourcePrivKey: sourceAddressPrivKey,
@@ -326,7 +326,7 @@ class ComposeDispenserOnNewAddressBloc extends Bloc<
             signedAssetSend: signedConstructedAssetSend,
             composeDispenserOnNewAddressState:
                 ComposeDispenserOnNewAddressState.confirm(
-                    composeSendTransaction: assetSend.$1,
+                    composeSendTransaction: assetSend,
                     composeDispenserTransaction: composeDispenserChain,
                     newAccountName: state.newAccount!.name,
                     newAddress: state.newAddress!.address,

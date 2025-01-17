@@ -7,8 +7,12 @@ class Utxo {
 
   Utxo(
       {required this.vout,
-      required this.height,
+      this.height,
       required this.value,
       required this.txid,
       required this.address});
+  @override
+  String toString() {
+    return 'Utxo(vout: $vout, height: $height, value: $value, txid: $txid, address: $address)';
+  }
 }

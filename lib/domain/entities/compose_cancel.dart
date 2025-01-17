@@ -19,12 +19,15 @@ class ComposeCancelResponse implements ComposeResponse {
   final String rawtransaction;
   @override
   final int btcFee;
+  @override
+  final SignedTxEstimatedSize signedTxEstimatedSize;
 
   final ComposeCancelResponseParams params;
 
   const ComposeCancelResponse({
     required this.rawtransaction,
     required this.btcFee,
+    required this.signedTxEstimatedSize,
     required this.params,
   });
 }

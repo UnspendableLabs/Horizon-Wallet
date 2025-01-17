@@ -214,17 +214,20 @@ class ComposeOrderPageState extends State<ComposeOrderPage> {
                     controller: TextEditingController(text: params.giveAsset),
                     enabled: false,
                   ),
+                  const SizedBox(height: 16.0),
                   HorizonUI.HorizonTextFormField(
                     label: "Give Quantity",
                     controller: TextEditingController(
                         text: params.giveQuantityNormalized),
                     enabled: false,
                   ),
+                  const SizedBox(height: 16.0),
                   HorizonUI.HorizonTextFormField(
                     label: "Get Asset",
                     controller: TextEditingController(text: params.getAsset),
                     enabled: false,
                   ),
+                  const SizedBox(height: 16.0),
                   HorizonUI.HorizonTextFormField(
                     label: "Get Quantity",
                     controller: TextEditingController(

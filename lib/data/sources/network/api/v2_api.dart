@@ -20,6 +20,7 @@ import 'package:horizon/data/models/dividend_asset_info.dart';
 import 'package:horizon/data/models/fairminter.dart';
 import 'package:horizon/data/models/node_info.dart';
 import 'package:horizon/data/models/order.dart';
+import 'package:horizon/data/models/signed_tx_estimated_size.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:retrofit/retrofit.dart';
 
@@ -739,7 +740,7 @@ class NewFairminterParams {
   final int? quantityByPrice;
   final int? softCap;
   final int? softCapDeadlineBlock;
-  final String? source;
+  final String source;
   final int? startBlock;
   final String? status;
   final String? txHash;
@@ -852,7 +853,7 @@ class NewFairmintParams {
   final int? earnQuantity;
   final String? fairminterTxHash;
   final int? paidQuantity;
-  final String? source;
+  final String source;
   final String? status;
   final String? txHash;
   final int? txIndex;
@@ -3211,12 +3212,14 @@ class ComposeIssuanceVerbose extends ComposeIssuance {
   @override
   final ComposeIssuanceVerboseParams params;
   final int btcFee;
+  final SignedTxEstimatedSizeModel signedTxEstimatedSize;
 
   ComposeIssuanceVerbose({
     required super.rawtransaction,
     required super.name,
     required this.params,
     required this.btcFee,
+    required this.signedTxEstimatedSize,
   }) : super(params: params);
 
   factory ComposeIssuanceVerbose.fromJson(Map<String, dynamic> json) =>
@@ -3301,7 +3304,7 @@ class ComposeDispenserVerbose extends ComposeDispenser {
   final int? btcChange;
   final int btcFee;
   final String data;
-
+  final SignedTxEstimatedSizeModel signedTxEstimatedSize;
   ComposeDispenserVerbose({
     required super.rawtransaction,
     required super.name,
@@ -3311,6 +3314,7 @@ class ComposeDispenserVerbose extends ComposeDispenser {
     required this.btcChange,
     required this.btcFee,
     required this.data,
+    required this.signedTxEstimatedSize,
   }) : super(params: params);
 
   factory ComposeDispenserVerbose.fromJson(Map<String, dynamic> json) =>
@@ -3624,12 +3628,14 @@ class SendTxVerbose extends SendTx {
   @override
   final SendTxParamsVerbose params;
   final int btcFee;
+  final SignedTxEstimatedSizeModel signedTxEstimatedSize;
 
   const SendTxVerbose({
     required this.params,
     required super.rawtransaction,
     required this.btcFee,
     required super.name,
+    required this.signedTxEstimatedSize,
   }) : super(params: params);
 
   factory SendTxVerbose.fromJson(Map<String, dynamic> json) =>
@@ -3648,6 +3654,7 @@ class ComposeMpmaSend {
   final int btcOut;
   final int btcFee;
   final int? btcChange;
+  final SignedTxEstimatedSizeModel signedTxEstimatedSize;
   final MpmaSendParams params;
 
   const ComposeMpmaSend({
@@ -3659,6 +3666,7 @@ class ComposeMpmaSend {
     required this.btcFee,
     this.btcChange,
     required this.params,
+    required this.signedTxEstimatedSize,
   });
 
   factory ComposeMpmaSend.fromJson(Map<String, dynamic> json) =>
@@ -5160,7 +5168,7 @@ abstract class V2Api {
   //     Compose Send
 
 // GET
-// https://api.counterparty.io/addresses/{address}/compose/send{?destination}{&asset}{&quantity}{&memo}{&memo_is_hex}{&use_enhanced_send}{&encoding}{&fee_per_kb}{&regular_dust_size}{&multisig_dust_size}{&pubkey}{&allow_unconfirmed_inputs}{&fee}{&fee_provided}{&unspent_tx_hash}{&dust_return_pubkey}{&disable_utxo_locks}{&extended_tx_info}{&p2sh_pretx_txid}{&segwit}{&verbose}
+// https://api.counterparty.io/addresses/{address}/compose/send{?destination}{&asset}{&quantity}{&memo}{&memo_is_hex}{&use_enhanced_send}{&encoding}{&sat_per_vbyte}{&regular_dust_size}{&multisig_dust_size}{&pubkey}{&allow_unconfirmed_inputs}{&fee}{&fee_provided}{&unspent_tx_hash}{&dust_return_pubkey}{&disable_utxo_locks}{&extended_tx_info}{&p2sh_pretx_txid}{&segwit}{&verbose}
 
   @GET("/addresses/{address}/compose/send")
   Future<Response<SendTx>> composeSend(
@@ -5180,8 +5188,7 @@ abstract class V2Api {
     @Query("asset") String asset,
     @Query("quantity") int quantity, [
     @Query("allow_unconfirmed_inputs") bool? allowUnconfirmedInputs,
-    @Query("exact_fee") int? fee,
-    @Query("fee_per_kb") int? feePerKB,
+    @Query("sat_per_vbyte") int? satPerVbyte,
     @Query("inputs_set") String? inputsSet,
     @Query("exclude_utxos_with_balances") bool? excludeUtxosWithBalances,
     @Query("disable_utxo_locks") bool? disableUtxoLocks,
@@ -5195,8 +5202,7 @@ abstract class V2Api {
     @Query("assets") String? assets,
     @Query("quantities") String? quantities, [
     @Query("allow_unconfirmed_inputs") bool? allowUnconfirmedInputs,
-    @Query("exact_fee") int? fee,
-    @Query("fee_per_kb") int? feePerKB,
+    @Query("sat_per_vbyte") int? satPerVbyte,
     @Query("inputs_set") String? inputsSet,
     @Query("exclude_utxos_with_balances") bool? excludeUtxosWithBalances,
     @Query("disable_utxo_locks") bool? disableUtxoLocks,
@@ -5241,7 +5247,7 @@ abstract class V2Api {
     @Query("reset") bool? reset,
     @Query("description") String? description,
     @Query("unconfirmed") bool? unconfirmed,
-    @Query("exact_fee") int? fee,
+    @Query("sat_per_vbyte") int? satPerVbyte,
     @Query("inputs_set") String? inputsSet,
     @Query("exclude_utxos_with_balances") bool? excludeUtxosWithBalances,
     @Query("disable_utxo_locks") bool? disableUtxoLocks,
@@ -5276,7 +5282,7 @@ abstract class V2Api {
   Future<Response<ComposeFairmintVerboseModel>> composeFairmintVerbose(
     @Path("address") String address,
     @Query("asset") String asset, [
-    @Query("exact_fee") int? fee,
+    @Query("sat_per_vbyte") int? satPerVbyte,
     @Query("inputs_set") String? inputsSet,
     @Query("exclude_utxos_with_balances") bool? excludeUtxosWithBalances,
     @Query("disable_utxo_locks") bool? disableUtxoLocks,
@@ -5292,7 +5298,7 @@ abstract class V2Api {
     @Query("hard_cap") int? hardCap,
     @Query("start_block") int? startBlock,
     @Query("end_block") int? endBlock,
-    @Query("exact_fee") int? fee,
+    @Query("sat_per_vbyte") int? satPerVbyte,
     @Query("lock_quantity") bool? lockQuantity,
     @Query("inputs_set") String? inputsSet,
     @Query("exclude_utxos_with_balances") bool? excludeUtxosWithBalances,
@@ -5311,6 +5317,7 @@ abstract class V2Api {
     @Query("oracle_address") String? oracleAddress,
     @Query("allow_unconfirmed_inputs") bool? allowUnconfirmedInputs,
     @Query("exact_fee") int? exactFee,
+    @Query("sat_per_vbyte") int? satPerVbyte,
     @Query("inputs_set") String? inputsSet,
     @Query("exclude_utxos_with_balances") bool? excludeUtxosWithBalances,
     @Query("unconfirmed") bool? unconfirmed,
@@ -5328,7 +5335,7 @@ abstract class V2Api {
     @Query("expiration") int expiration,
     @Query("fee_required") int feeRequired, [
     @Query("allow_unconfirmed_inputs") bool? allowUnconfirmedInputs,
-    @Query("exact_fee") int? exactFee,
+    @Query("sat_per_vbyte") int? satPerVbyte,
     @Query("inputs_set") String? inputsSet,
     @Query("exclude_utxos_with_balances") bool? excludeUtxosWithBalances,
     @Query("disable_utxo_locks") bool? disableUtxoLocks,
@@ -5340,7 +5347,7 @@ abstract class V2Api {
     @Path("address") String address,
     @Query("offer_hash") String giveAsset, [
     @Query("allow_unconfirmed_inputs") bool? allowUnconfirmedInputs,
-    @Query("exact_fee") int? exactFee,
+    @Query("sat_per_vbyte") int? satPerVbyte,
     @Query("inputs_set") String? inputsSet,
     @Query("exclude_utxos_with_balances") bool? excludeUtxosWithBalances,
     @Query("disable_utxo_locks") bool? disableUtxoLocks,
@@ -5361,7 +5368,7 @@ abstract class V2Api {
     @Query("dispenser") String dispenser,
     @Query("quantity") int quantity, [
     @Query("allow_unconfirmed_inputs") bool? allowUnconfirmedInputs,
-    @Query("exact_fee") int? exactFee,
+    @Query("sat_per_vbyte") int? satPerVbyte,
     @Query("inputs_set") String? inputsSet,
     @Query("exclude_utxos_with_balances") bool? excludeUtxosWithBalances,
     @Query("disable_utxo_locks") bool? disableUtxoLocks,
@@ -5443,7 +5450,7 @@ abstract class V2Api {
     @Query("destination_vout") String? destinationVout,
     @Query("skip_validation") bool? skipValidation,
     @Query("allow_unconfirmed_inputs") bool? allowUnconfirmedInputs,
-    @Query("exact_fee") int? exactFee,
+    @Query("sat_per_vbyte") int? satPerVbyte,
     @Query("inputs_set") String? inputsSet,
     @Query("exclude_utxos_with_balances") bool? excludeUtxosWithBalances,
     @Query("disable_utxo_locks") bool? disableUtxoLocks,
@@ -5456,7 +5463,7 @@ abstract class V2Api {
     @Query("destination") String? destination,
     @Query("skip_validation") bool? skipValidation,
     @Query("allow_unconfirmed_inputs") bool? allowUnconfirmedInputs,
-    @Query("exact_fee") int? exactFee,
+    @Query("sat_per_vbyte") int? satPerVbyte,
     @Query("inputs_set") String? inputsSet,
     @Query("exclude_utxos_with_balances") bool? excludeUtxosWithBalances,
     @Query("disable_utxo_locks") bool? disableUtxoLocks,
@@ -5469,7 +5476,7 @@ abstract class V2Api {
     @Query("destination") String? destination,
     @Query("skip_validation") bool? skipValidation,
     @Query("allow_unconfirmed_inputs") bool? allowUnconfirmedInputs,
-    @Query("exact_fee") int? exactFee,
+    @Query("sat_per_vbyte") int? satPerVbyte,
     @Query("inputs_set") String? inputsSet,
     @Query("exclude_utxos_with_balances") bool? excludeUtxosWithBalances,
     @Query("disable_utxo_locks") bool? disableUtxoLocks,
@@ -5515,7 +5522,7 @@ abstract class V2Api {
     @Query("asset") String asset,
     @Query("quantity") int quantity,
     @Query("tag") String tag, [
-    @Query("exact_fee") int? exactFee,
+    @Query("sat_per_vbyte") int? satPerVbyte,
     @Query("inputs_set") String? inputsSet,
     @Query("exclude_utxos_with_balances") bool? excludeUtxosWithBalances,
     @Query("disable_utxo_locks") bool? disableUtxoLocks,
@@ -5527,7 +5534,7 @@ abstract class V2Api {
     @Query("asset") String asset,
     @Query("quantity_per_unit") int quantityPerUnit,
     @Query("dividend_asset") String dividendAsset, [
-    @Query("exact_fee") int? exactFee,
+    @Query("sat_per_vbyte") int? satPerVbyte,
     @Query("inputs_set") String? inputsSet,
     @Query("exclude_utxos_with_balances") bool? excludeUtxosWithBalances,
     @Query("disable_utxo_locks") bool? disableUtxoLocks,
@@ -5539,7 +5546,7 @@ abstract class V2Api {
     @Query("destination") String destination,
     @Query("flags") int flags,
     @Query("memo") String memo, [
-    @Query("exact_fee") int? exactFee,
+    @Query("sat_per_vbyte") int? satPerVbyte,
     @Query("inputs_set") String? inputsSet,
     @Query("exclude_utxos_with_balances") bool? excludeUtxosWithBalances,
     @Query("disable_utxo_locks") bool? disableUtxoLocks,
@@ -5549,7 +5556,7 @@ abstract class V2Api {
   Future<Response<ComposeBurnResponseModel>> composeBurn(
     @Path("address") String address,
     @Query("quantity") int quantity, [
-    @Query("exact_fee") int? exactFee,
+    @Query("sat_per_vbyte") int? satPerVbyte,
     @Query("inputs_set") String? inputsSet,
     @Query("exclude_utxos_with_balances") bool? excludeUtxosWithBalances,
     @Query("disable_utxo_locks") bool? disableUtxoLocks,

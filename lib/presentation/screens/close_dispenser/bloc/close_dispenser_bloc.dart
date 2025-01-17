@@ -126,17 +126,15 @@ class CloseDispenserBloc extends ComposeBaseBloc<CloseDispenserState> {
                   status: 10),
               composeFn: composeRepository.composeDispenserVerbose);
 
-      final composed = composeResponse.$1;
-      final virtualSize = composeResponse.$2;
-
       emit(state.copyWith(
           submitState:
               SubmitComposingTransaction<ComposeDispenserResponseVerbose, void>(
-        composeTransaction: composed,
-        fee: composed.btcFee,
+        composeTransaction: composeResponse,
+        fee: composeResponse.btcFee,
         feeRate: feeRate,
-        virtualSize: virtualSize.virtualSize,
-        adjustedVirtualSize: virtualSize.adjustedVirtualSize,
+        virtualSize: composeResponse.signedTxEstimatedSize.virtualSize,
+        adjustedVirtualSize:
+            composeResponse.signedTxEstimatedSize.adjustedVirtualSize,
       )));
     } on ComposeTransactionException catch (e) {
       emit(state.copyWith(

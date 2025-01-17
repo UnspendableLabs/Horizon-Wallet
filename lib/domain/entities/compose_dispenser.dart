@@ -33,12 +33,15 @@ class ComposeDispenserResponse implements ComposeResponse {
   final String rawtransaction;
   @override
   final int btcFee;
+  @override
+  final SignedTxEstimatedSize signedTxEstimatedSize;
   final ComposeDispenserParams params;
   final String name;
 
   const ComposeDispenserResponse({
     required this.rawtransaction,
     required this.btcFee,
+    required this.signedTxEstimatedSize,
     required this.params,
     required this.name,
   });
@@ -76,6 +79,8 @@ class ComposeDispenserResponseVerbose implements ComposeResponse {
   final int? btcChange;
   @override
   final int btcFee;
+  @override
+  final SignedTxEstimatedSize signedTxEstimatedSize;
   final String data;
 
   const ComposeDispenserResponseVerbose({
@@ -87,6 +92,7 @@ class ComposeDispenserResponseVerbose implements ComposeResponse {
     this.btcChange,
     required this.btcFee,
     required this.data,
+    required this.signedTxEstimatedSize,
   });
 }
 

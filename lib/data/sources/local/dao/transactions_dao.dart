@@ -8,6 +8,11 @@ part 'transactions_dao.g.dart';
 @DriftAccessor(tables: [Transactions])
 class TransactionsDao extends DatabaseAccessor<DB> with _$TransactionsDaoMixin {
   TransactionsDao(super.db);
+
+  Future<int> deleteByHash(String txHash) async {
+    return (delete(transactions)..where((t) => t.hash.equals(txHash))).go();
+  }
+
   Future<void> insert(TransactionModel transaction) {
     return into(transactions).insert(transaction);
   }

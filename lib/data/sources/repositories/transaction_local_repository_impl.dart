@@ -23,6 +23,11 @@ class TransactionLocalRepositoryImpl implements TransactionLocalRepository {
       required this.addressRepository});
 
   @override
+  Future<void> delete(String txHash) async {
+    await transactionDao.deleteByHash(txHash);
+  }
+
+  @override
   Future<void> insert(TransactionInfo transactionInfo) async {
     // can only save transactions created locally
     if (transactionInfo.domain.runtimeType != TransactionInfoDomainLocal) {

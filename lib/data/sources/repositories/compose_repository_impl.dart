@@ -82,7 +82,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
   }
 
   @override
-  Future<compose_send.ComposeSendResponse> composeSendVerbose(int fee,
+  Future<compose_send.ComposeSendResponse> composeSendVerbose(num satPerVbyte,
       List<Utxo> inputsSet, compose_send.ComposeSendParams params) async {
     return await _retryOnInvalidUtxo<compose_send.ComposeSendResponse>(
       (currentInputSet) async {
@@ -91,7 +91,8 @@ class ComposeRepositoryImpl extends ComposeRepository {
         final asset = params.asset;
         final quantity = params.quantity;
         const excludeUtxosWithBalances = true;
-        const disableUtxoLocks = true;
+        const allowUnconfirmedInputs = true;
+        const disableUtxoLocks = false;
         final inputsSetString =
             currentInputSet.map((e) => "${e.txid}:${e.vout}").join(',');
 
@@ -100,9 +101,8 @@ class ComposeRepositoryImpl extends ComposeRepository {
             destination,
             asset,
             quantity,
-            true,
-            fee,
-            null,
+            allowUnconfirmedInputs,
+            satPerVbyte.toInt(),
             inputsSetString,
             excludeUtxosWithBalances,
             disableUtxoLocks);
@@ -127,7 +127,8 @@ class ComposeRepositoryImpl extends ComposeRepository {
             ),
             btcFee: txVerbose.btcFee,
             rawtransaction: txVerbose.rawtransaction,
-            name: txVerbose.name);
+            name: txVerbose.name,
+            signedTxEstimatedSize: txVerbose.signedTxEstimatedSize.toDomain());
       },
       inputsSet,
     );
@@ -135,7 +136,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
 
   @override
   Future<compose_mpma_send.ComposeMpmaSendResponse> composeMpmaSend(
-      int fee,
+      num satPerVbyte,
       List<Utxo> inputsSet,
       compose_mpma_send.ComposeMpmaSendParams params) async {
     return await _retryOnInvalidUtxo<compose_mpma_send.ComposeMpmaSendResponse>(
@@ -145,7 +146,8 @@ class ComposeRepositoryImpl extends ComposeRepository {
         final assets = params.assets;
         final quantities = params.quantities;
         const excludeUtxosWithBalances = true;
-        const disableUtxoLocks = true;
+        const allowUnconfirmedInputs = true;
+        const disableUtxoLocks = false;
         final inputsSetString =
             currentInputSet.map((e) => "${e.txid}:${e.vout}").join(',');
 
@@ -154,9 +156,8 @@ class ComposeRepositoryImpl extends ComposeRepository {
             destinations,
             assets,
             quantities,
-            true,
-            fee,
-            null,
+            allowUnconfirmedInputs,
+            satPerVbyte.toInt(),
             inputsSetString,
             excludeUtxosWithBalances,
             disableUtxoLocks);
@@ -176,7 +177,8 @@ class ComposeRepositoryImpl extends ComposeRepository {
               memoIsHex: txVerbose.params.memoIsHex,
               skipValidation: txVerbose.params.skipValidation,
             ),
-            name: txVerbose.name);
+            name: txVerbose.name,
+            signedTxEstimatedSize: txVerbose.signedTxEstimatedSize.toDomain());
       },
       inputsSet,
     );
@@ -184,7 +186,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
 
   @override
   Future<compose_issuance.ComposeIssuanceResponseVerbose>
-      composeIssuanceVerbose(int fee, List<Utxo> inputsSet,
+      composeIssuanceVerbose(num satPerVbyte, List<Utxo> inputsSet,
           compose_issuance.ComposeIssuanceParams params) async {
     return await _retryOnInvalidUtxo<
         compose_issuance.ComposeIssuanceResponseVerbose>(
@@ -199,7 +201,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
         final description = params.description;
         const unconfirmed = true;
         const excludeUtxosWithBalances = true;
-        const disableUtxoLocks = true;
+        const disableUtxoLocks = false;
         final inputsSetString =
             currentInputSet.map((e) => "${e.txid}:${e.vout}").join(',');
 
@@ -213,7 +215,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
             reset,
             description,
             unconfirmed,
-            fee,
+            satPerVbyte.toInt(),
             inputsSetString,
             excludeUtxosWithBalances,
             disableUtxoLocks);
@@ -236,7 +238,8 @@ class ComposeRepositoryImpl extends ComposeRepository {
               transferDestination: transferDestination,
               quantityNormalized: txVerbose.params.quantityNormalized,
             ),
-            name: name);
+            name: name,
+            signedTxEstimatedSize: txVerbose.signedTxEstimatedSize.toDomain());
       },
       inputsSet,
     );
@@ -244,7 +247,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
 
   @override
   Future<compose_dispenser.ComposeDispenserResponseVerbose>
-      composeDispenserVerbose(int fee, List<Utxo> inputsSet,
+      composeDispenserVerbose(num satPerVbyte, List<Utxo> inputsSet,
           compose_dispenser.ComposeDispenserParams params) async {
     return await _retryOnInvalidUtxo<
         compose_dispenser.ComposeDispenserResponseVerbose>(
@@ -257,9 +260,10 @@ class ComposeRepositoryImpl extends ComposeRepository {
         final status = params.status ?? 0;
         const openAddress = null;
         const oracleAddress = null;
-        const allowUnconfirmedTx = true;
+        const exactFee = null;
+        const allowUnconfirmedInputs = true;
         const excludeUtxosWithBalances = true;
-        const disableUtxoLocks = true;
+        const disableUtxoLocks = false;
 
         final inputsSetString =
             currentInputSet.map((e) => "${e.txid}:${e.vout}").join(',');
@@ -273,8 +277,9 @@ class ComposeRepositoryImpl extends ComposeRepository {
             status,
             openAddress,
             oracleAddress,
-            allowUnconfirmedTx,
-            fee,
+            allowUnconfirmedInputs,
+            exactFee,
+            satPerVbyte.toInt(),
             inputsSetString,
             excludeUtxosWithBalances,
             disableUtxoLocks);
@@ -304,7 +309,8 @@ class ComposeRepositoryImpl extends ComposeRepository {
               escrowQuantityNormalized:
                   txVerbose.params.escrowQuantityNormalized,
             ),
-            name: txVerbose.name);
+            name: txVerbose.name,
+            signedTxEstimatedSize: txVerbose.signedTxEstimatedSize.toDomain());
       },
       inputsSet,
     );
@@ -312,7 +318,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
 
   @override
   Future<compose_dispense.ComposeDispenseResponse> composeDispense(
-      int fee,
+      num satPerVbyte,
       List<Utxo> inputsSet,
       compose_dispense.ComposeDispenseParams params) async {
     return await _retryOnInvalidUtxo<compose_dispense.ComposeDispenseResponse>(
@@ -320,9 +326,9 @@ class ComposeRepositoryImpl extends ComposeRepository {
         final sourceAddress = params.address;
         final dispenser = params.dispenser;
         final quantity = params.quantity;
-        const allowUnconfirmedTx = true;
+        const allowUnconfirmedInputs = true;
         const excludeUtxosWithBalances = true;
-        const disableUtxoLocks = true;
+        const disableUtxoLocks = false;
 
         final inputsSetString =
             currentInputSet.map((e) => "${e.txid}:${e.vout}").join(',');
@@ -331,8 +337,8 @@ class ComposeRepositoryImpl extends ComposeRepository {
             sourceAddress,
             dispenser,
             quantity,
-            allowUnconfirmedTx,
-            fee,
+            allowUnconfirmedInputs,
+            satPerVbyte.toInt(),
             inputsSetString,
             excludeUtxosWithBalances,
             disableUtxoLocks);
@@ -349,7 +355,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
 
   @override
   Future<compose_fairmint.ComposeFairmintResponse> composeFairmintVerbose(
-      int fee,
+      num satPerVbyte,
       List<Utxo> inputsSet,
       compose_fairmint.ComposeFairmintParams params) async {
     return await _retryOnInvalidUtxo<compose_fairmint.ComposeFairmintResponse>(
@@ -357,13 +363,18 @@ class ComposeRepositoryImpl extends ComposeRepository {
         final sourceAddress = params.source;
         final asset = params.asset;
         const excludeUtxosWithBalances = true;
-        const disableUtxoLocks = true;
+        const disableUtxoLocks = false;
 
         final inputsSetString =
             currentInputSet.map((e) => "${e.txid}:${e.vout}").join(',');
 
-        final response = await api.composeFairmintVerbose(sourceAddress, asset,
-            fee, inputsSetString, excludeUtxosWithBalances, disableUtxoLocks);
+        final response = await api.composeFairmintVerbose(
+            sourceAddress,
+            asset,
+            satPerVbyte.toInt(),
+            inputsSetString,
+            excludeUtxosWithBalances,
+            disableUtxoLocks);
 
         if (response.result == null) {
           throw Exception('Failed to compose fairmint');
@@ -376,7 +387,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
 
   @override
   Future<compose_fairminter.ComposeFairminterResponse> composeFairminterVerbose(
-      int fee,
+      num satPerVbyte,
       List<Utxo> inputsSet,
       compose_fairminter.ComposeFairminterParams params) async {
     return await _retryOnInvalidUtxo<
@@ -392,7 +403,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
         final divisible = params.divisible;
         final lockQuantity = params.lockQuantity;
         const excludeUtxosWithBalances = true;
-        const disableUtxoLocks = true;
+        const disableUtxoLocks = false;
 
         final inputsSetString =
             currentInputSet.map((e) => "${e.txid}:${e.vout}").join(',');
@@ -406,7 +417,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
             hardCap,
             startBlock,
             endBlock,
-            fee,
+            satPerVbyte.toInt(),
             lockQuantity,
             inputsSetString,
             excludeUtxosWithBalances,
@@ -424,17 +435,20 @@ class ComposeRepositoryImpl extends ComposeRepository {
 
   @override
   Future<compose_dispenser.ComposeDispenserResponseVerbose>
-      composeDispenserChain(int fee, DecodedTx prevDecodedTransaction,
+      composeDispenserChain(int exactFee, DecodedTx prevDecodedTransaction,
           compose_dispenser.ComposeDispenserParams params) async {
     final source = params.source;
     final asset = params.asset;
     final giveQuantity = params.giveQuantity;
     final escrowQuantity = params.escrowQuantity;
     final mainchainrate = params.mainchainrate;
+    const allowUnconfirmedInputs = true;
+    const oracleAddress = null;
+    const openAddress = null;
     final status = params.status ?? 0;
     const excludeUtxosWithBalances = true;
     const validateCompose = false;
-    const disableUtxoLocks = true;
+    const disableUtxoLocks = false;
 
     final Vout? outputForChaining = prevDecodedTransaction.vout
         .firstWhereOrNull((vout) => vout.scriptPubKey.address == params.source);
@@ -459,13 +473,13 @@ class ComposeRepositoryImpl extends ComposeRepository {
       escrowQuantity,
       mainchainrate,
       status,
-      null,
-      null,
-      true,
-      fee,
+      openAddress,
+      oracleAddress,
+      allowUnconfirmedInputs,
+      exactFee,
+      null, // null satPerVbyte since we need to specify the exact fee for the dispenser chain
       newInputSet,
       excludeUtxosWithBalances,
-      null,
       validateCompose,
       disableUtxoLocks,
     );
@@ -494,11 +508,12 @@ class ComposeRepositoryImpl extends ComposeRepository {
           giveQuantityNormalized: txVerbose.params.giveQuantityNormalized,
           escrowQuantityNormalized: txVerbose.params.escrowQuantityNormalized,
         ),
-        name: txVerbose.name);
+        name: txVerbose.name,
+        signedTxEstimatedSize: txVerbose.signedTxEstimatedSize.toDomain());
   }
 
   @override
-  Future<compose_order.ComposeOrderResponse> composeOrder(int fee,
+  Future<compose_order.ComposeOrderResponse> composeOrder(num satPerVbyte,
       List<Utxo> inputsSet, compose_order.ComposeOrderParams params) async {
     return await _retryOnInvalidUtxo<compose_order.ComposeOrderResponse>(
       (currentInputSet) async {
@@ -507,8 +522,9 @@ class ComposeRepositoryImpl extends ComposeRepository {
         final giveAsset = params.giveAsset;
         final getQuantity = params.getQuantity;
         final getAsset = params.getAsset;
+        const allowUnconfirmedInputs = true;
         const excludeUtxosWithBalances = true;
-        const disableUtxoLocks = true;
+        const disableUtxoLocks = false;
 
         final inputsSetString =
             currentInputSet.map((e) => "${e.txid}:${e.vout}").join(',');
@@ -519,10 +535,10 @@ class ComposeRepositoryImpl extends ComposeRepository {
             giveQuantity,
             getAsset,
             getQuantity,
-            4 * 2016, // Two months,
+            4 * 2016, // Expiration, two months
             0, // fee required
-            true, //  allow unconfirmed
-            fee, //exect fee
+            allowUnconfirmedInputs,
+            satPerVbyte.toInt(),
             inputsSetString,
             excludeUtxosWithBalances,
             disableUtxoLocks);
@@ -538,22 +554,23 @@ class ComposeRepositoryImpl extends ComposeRepository {
   }
 
   @override
-  Future<compose_cancel.ComposeCancelResponse> composeCancel(int fee,
+  Future<compose_cancel.ComposeCancelResponse> composeCancel(num satPerVbyte,
       List<Utxo> inputsSet, compose_cancel.ComposeCancelParams params) async {
     return await _retryOnInvalidUtxo<compose_cancel.ComposeCancelResponse>(
       (currentInputSet) async {
         final source = params.source;
         final offerHash = params.offerHash;
         const excludeUtxosWithBalances = true;
-        const disableUtxoLocks = true;
+        const allowUnconfirmedInputs = true;
+        const disableUtxoLocks = false;
         final inputsSetString =
             currentInputSet.map((e) => "${e.txid}:${e.vout}").join(',');
 
         final response = await api.composeCancel(
             source,
             offerHash,
-            true, //  allow unconfirmed
-            fee, //exect fee
+            allowUnconfirmedInputs,
+            satPerVbyte.toInt(),
             inputsSetString,
             excludeUtxosWithBalances,
             disableUtxoLocks);
@@ -570,7 +587,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
 
   @override
   Future<compose_attach_utxo.ComposeAttachUtxoResponse> composeAttachUtxo(
-      int fee,
+      num satPerVbyte,
       List<Utxo> inputsSet,
       compose_attach_utxo.ComposeAttachUtxoParams params) async {
     return await _retryOnInvalidUtxo<
@@ -580,7 +597,10 @@ class ComposeRepositoryImpl extends ComposeRepository {
         final asset = params.asset;
         final quantity = params.quantity;
         const excludeUtxosWithBalances = true;
-        const disableUtxoLocks = true;
+        const disableUtxoLocks = false;
+        const allowUnconfirmedInputs = true;
+        const destinationVout = null;
+        const skipValidation = false;
         final inputsSetString =
             currentInputSet.map((e) => "${e.txid}:${e.vout}").join(',');
 
@@ -588,10 +608,10 @@ class ComposeRepositoryImpl extends ComposeRepository {
             address,
             asset,
             quantity,
-            null,
-            false,
-            true, //  allow unconfirmed
-            fee, //exect fee
+            destinationVout,
+            skipValidation,
+            allowUnconfirmedInputs,
+            satPerVbyte.toInt(),
             inputsSetString,
             excludeUtxosWithBalances,
             disableUtxoLocks);
@@ -608,7 +628,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
 
   @override
   Future<compose_detach_utxo.ComposeDetachUtxoResponse> composeDetachUtxo(
-      int fee,
+      num satPerVbyte,
       List<Utxo> inputsSet,
       compose_detach_utxo.ComposeDetachUtxoParams params) async {
     return await _retryOnInvalidUtxo<
@@ -617,7 +637,9 @@ class ComposeRepositoryImpl extends ComposeRepository {
         final utxo = params.utxo;
         final destination = params.destination;
         const excludeUtxosWithBalances = true;
-        const disableUtxoLocks = true;
+        const disableUtxoLocks = false;
+        const allowUnconfirmedInputs = true;
+        const skipValidation = false;
 
         final inputsSetString =
             currentInputSet.map((e) => "${e.txid}:${e.vout}").join(',');
@@ -625,9 +647,9 @@ class ComposeRepositoryImpl extends ComposeRepository {
         final response = await api.composeDetachUtxo(
           utxo,
           destination,
-          false,
-          true, //  allow unconfirmed
-          fee, //exect fee
+          skipValidation,
+          allowUnconfirmedInputs,
+          satPerVbyte.toInt(),
           inputsSetString,
           excludeUtxosWithBalances,
           disableUtxoLocks,
@@ -645,7 +667,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
 
   @override
   Future<compose_movetoutxo.ComposeMoveToUtxoResponse> composeMoveToUtxo(
-      int fee,
+      num satPerVbyte,
       List<Utxo> inputsSet,
       compose_movetoutxo.ComposeMoveToUtxoParams params) async {
     return await _retryOnInvalidUtxo<
@@ -654,16 +676,18 @@ class ComposeRepositoryImpl extends ComposeRepository {
         final utxo = params.utxo;
         final destination = params.destination;
         const excludeUtxosWithBalances = true;
-        const disableUtxoLocks = true;
+        const disableUtxoLocks = false;
+        const allowUnconfirmedInputs = true;
+        const skipValidation = false;
         final inputsSetString =
             currentInputSet.map((e) => "${e.txid}:${e.vout}").join(',');
 
         final response = await api.composeMoveToUtxo(
           utxo,
           destination,
-          false,
-          true, //  allow unconfirmed inputs
-          fee, //exect fee
+          skipValidation,
+          allowUnconfirmedInputs,
+          satPerVbyte.toInt(),
           inputsSetString,
           excludeUtxosWithBalances,
           disableUtxoLocks,
@@ -680,7 +704,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
   }
 
   @override
-  Future<compose_destroy.ComposeDestroyResponse> composeDestroy(int fee,
+  Future<compose_destroy.ComposeDestroyResponse> composeDestroy(num satPerVbyte,
       List<Utxo> inputsSet, compose_destroy.ComposeDestroyParams params) async {
     return await _retryOnInvalidUtxo<compose_destroy.ComposeDestroyResponse>(
       (currentInputSet) async {
@@ -689,7 +713,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
         final quantity = params.quantity;
         final tag = params.tag;
         const excludeUtxosWithBalances = true;
-        const disableUtxoLocks = true;
+        const disableUtxoLocks = false;
         final inputsSetString =
             currentInputSet.map((e) => "${e.txid}:${e.vout}").join(',');
 
@@ -698,7 +722,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
           asset,
           quantity,
           tag,
-          fee,
+          satPerVbyte.toInt(),
           inputsSetString,
           excludeUtxosWithBalances,
           disableUtxoLocks,
@@ -716,7 +740,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
 
   @override
   Future<compose_dividend.ComposeDividendResponse> composeDividend(
-      int fee,
+      num satPerVbyte,
       List<Utxo> inputsSet,
       compose_dividend.ComposeDividendParams params) async {
     return await _retryOnInvalidUtxo<compose_dividend.ComposeDividendResponse>(
@@ -726,7 +750,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
         final quantityPerUnit = params.quantityPerUnit;
         final dividendAsset = params.dividendAsset;
         const excludeUtxosWithBalances = true;
-        const disableUtxoLocks = true;
+        const disableUtxoLocks = false;
         final inputsSetString =
             currentInputSet.map((e) => "${e.txid}:${e.vout}").join(',');
 
@@ -735,7 +759,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
           asset,
           quantityPerUnit,
           dividendAsset,
-          fee,
+          satPerVbyte.toInt(),
           inputsSetString,
           excludeUtxosWithBalances,
           disableUtxoLocks,
@@ -752,7 +776,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
   }
 
   @override
-  Future<compose_sweep.ComposeSweepResponse> composeSweep(int fee,
+  Future<compose_sweep.ComposeSweepResponse> composeSweep(num satPerVbyte,
       List<Utxo> inputsSet, compose_sweep.ComposeSweepParams params) async {
     return await _retryOnInvalidUtxo<compose_sweep.ComposeSweepResponse>(
       (currentInputSet) async {
@@ -760,8 +784,8 @@ class ComposeRepositoryImpl extends ComposeRepository {
         final destination = params.destination;
         final flags = params.flags;
         final memo = params.memo;
-        const skipValidation = true;
-        const disableUtxoLocks = true;
+        const skipValidation = false;
+        const disableUtxoLocks = false;
         final inputsSetString =
             currentInputSet.map((e) => "${e.txid}:${e.vout}").join(',');
 
@@ -770,7 +794,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
           destination,
           flags,
           memo,
-          fee,
+          satPerVbyte.toInt(),
           inputsSetString,
           skipValidation,
           disableUtxoLocks,
@@ -787,21 +811,21 @@ class ComposeRepositoryImpl extends ComposeRepository {
   }
 
   @override
-  Future<compose_burn.ComposeBurnResponse> composeBurn(int fee,
+  Future<compose_burn.ComposeBurnResponse> composeBurn(num satPerVbyte,
       List<Utxo> inputsSet, compose_burn.ComposeBurnParams params) async {
     return await _retryOnInvalidUtxo<compose_burn.ComposeBurnResponse>(
       (currentInputSet) async {
         final source = params.source;
         final quantity = params.quantity;
         const excludeUtxosWithBalances = true;
-        const disableUtxoLocks = true;
+        const disableUtxoLocks = false;
         final inputsSetString =
             currentInputSet.map((e) => "${e.txid}:${e.vout}").join(',');
 
         final response = await api.composeBurn(
           source,
           quantity,
-          fee,
+          satPerVbyte.toInt(),
           inputsSetString,
           excludeUtxosWithBalances,
           disableUtxoLocks,

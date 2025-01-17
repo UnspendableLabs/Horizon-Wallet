@@ -1,3 +1,4 @@
+import 'package:horizon/data/models/signed_tx_estimated_size.dart';
 import 'package:horizon/domain/entities/compose_burn.dart';
 import 'package:json_annotation/json_annotation.dart';
 
@@ -13,6 +14,7 @@ class ComposeBurnResponseModel {
   final int btcFee;
   final String rawtransaction;
   final ComposeBurnParamsModel params;
+  final SignedTxEstimatedSizeModel signedTxEstimatedSize;
 
   ComposeBurnResponseModel({
     required this.rawtransaction,
@@ -23,6 +25,7 @@ class ComposeBurnResponseModel {
     this.btcChange,
     required this.btcFee,
     this.data,
+    required this.signedTxEstimatedSize,
   });
 
   factory ComposeBurnResponseModel.fromJson(Map<String, dynamic> json) =>
@@ -39,6 +42,7 @@ class ComposeBurnResponseModel {
         btcChange: btcChange,
         btcFee: btcFee,
         params: params.toDomain(),
+        signedTxEstimatedSize: signedTxEstimatedSize.toDomain(),
       );
 }
 

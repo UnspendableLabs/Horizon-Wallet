@@ -812,7 +812,7 @@ void main() {
         (WidgetTester tester) async {
       // Mock dependencies
 
-      const composeDispenserResponse = ComposeDispenserResponseVerbose(
+      final composeDispenserResponse = ComposeDispenserResponseVerbose(
           rawtransaction: "test-raw-tx",
           name: "test-name",
           btcIn: 0,
@@ -820,7 +820,7 @@ void main() {
           btcChange: 0,
           btcFee: 0,
           data: "test-data",
-          params: ComposeDispenserResponseVerboseParams(
+          params: const ComposeDispenserResponseVerboseParams(
             source: "test-address",
             asset: "test-asset",
             giveQuantity: 1,
@@ -829,6 +829,11 @@ void main() {
             giveQuantityNormalized: "test-give-quantity-normalized",
             escrowQuantityNormalized: "test-escrow-quantity-normalized",
             status: 0,
+          ),
+          signedTxEstimatedSize: SignedTxEstimatedSize(
+            virtualSize: 100,
+            adjustedVirtualSize: 100,
+            sigopsCount: 1,
           ));
 
       // Mock dependencies
@@ -862,10 +867,9 @@ void main() {
               feeRate: 5, // medium
               source: "test-address",
               composeFn: any(named: 'composeFn'),
-              params: any(named: 'params'))).thenAnswer((_) async => (
-            composeDispenserResponse,
-            FakeVirtualSize(virtualSize: 100, adjustedVirtualSize: 500)
-          ));
+              params: any(named: 'params'))).thenAnswer(
+        (_) async => composeDispenserResponse,
+      );
       when(() => mockWriteLocalTransactionUseCase.call(any(), any()))
           .thenAnswer((_) async {});
       when(() => mockAnalyticsService.trackEvent(any()))

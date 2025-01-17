@@ -194,18 +194,16 @@ class ComposeDispenseBloc extends ComposeBaseBloc<ComposeDispenseState> {
       final expectedDispenses = estimateDispensesUseCase.call(
           dispensers: dispensers, quantity: event.params.quantity);
 
-      final composed = composeResponse.$1;
-      final virtualSize = composeResponse.$2;
-
       emit(state.copyWith(
           submitState: SubmitComposingTransaction<ComposeDispenseResponse,
               List<EstimatedDispense>>(
-        composeTransaction: composed,
-        fee: composed.btcFee,
+        composeTransaction: composeResponse,
+        fee: composeResponse.btcFee,
         feeRate: feeRate,
         otherParams: expectedDispenses,
-        virtualSize: virtualSize.virtualSize,
-        adjustedVirtualSize: virtualSize.adjustedVirtualSize,
+        virtualSize: composeResponse.signedTxEstimatedSize.virtualSize,
+        adjustedVirtualSize:
+            composeResponse.signedTxEstimatedSize.adjustedVirtualSize,
       )));
     } on FetchOpenDispensersOnAddressException {
       emit(state.copyWith(

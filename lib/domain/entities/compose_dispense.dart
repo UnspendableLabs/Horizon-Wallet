@@ -22,6 +22,8 @@ class ComposeDispenseResponse implements ComposeResponse {
   final String rawtransaction;
   @override
   final int btcFee;
+  @override
+  final SignedTxEstimatedSize signedTxEstimatedSize;
   final ComposeDispenseResponseParams params;
   final String name;
   final int btcIn;
@@ -37,6 +39,7 @@ class ComposeDispenseResponse implements ComposeResponse {
     required this.btcOut,
     this.btcChange,
     required this.btcFee,
+    required this.signedTxEstimatedSize,
     // required this.data,
   });
 }

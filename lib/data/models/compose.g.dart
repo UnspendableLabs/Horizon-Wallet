@@ -49,16 +49,19 @@ ComposeDispenseResponseModel _$ComposeDispenseResponseModelFromJson(
       btcOut: (json['btc_out'] as num).toInt(),
       btcChange: (json['btc_change'] as num?)?.toInt(),
       btcFee: (json['btc_fee'] as num).toInt(),
+      signedTxEstimatedSize: SignedTxEstimatedSizeModel.fromJson(
+          json['signed_tx_estimated_size'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$ComposeDispenseResponseModelToJson(
         ComposeDispenseResponseModel instance) =>
     <String, dynamic>{
       'rawtransaction': instance.rawtransaction,
-      'btc_fee': instance.btcFee,
       'name': instance.name,
       'btc_in': instance.btcIn,
       'btc_out': instance.btcOut,
       'btc_change': instance.btcChange,
+      'btc_fee': instance.btcFee,
+      'signed_tx_estimated_size': instance.signedTxEstimatedSize,
       'params': instance.params,
     };

@@ -1,5 +1,20 @@
 import "package:horizon/domain/entities/utxo.dart";
 
+class MakeRBFResponse {
+  final String txHex;
+  final Map<String, List<int>> inputsByTxHash;
+  final int virtualSize;
+  final int adjustedVirtualSize;
+  final int fee;
+  MakeRBFResponse({
+    required this.txHex,
+    required this.virtualSize,
+    required this.adjustedVirtualSize,
+    required this.fee,
+    required this.inputsByTxHash,
+  });
+}
+
 abstract class TransactionService {
   String signPsbt(String psbtHex, Map<int, String> inputPrivateKeyMap,
       [List<int>? sighashTypes]);
@@ -35,6 +50,13 @@ abstract class TransactionService {
       required String destinationAddress,
       required String destinationPrivKey,
       required int fee});
+
+  Future<MakeRBFResponse> makeRBF({
+    required String source,
+    required String txHex,
+    required int oldFee,
+    required int newFee,
+  });
 }
 
 class TransactionServiceException implements Exception {
