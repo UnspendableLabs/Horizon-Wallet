@@ -54,6 +54,7 @@ abstract class TransactionService {
       required int fee});
 
   Future<MakeRBFResponse> makeRBF({
+    required String source,
     required String txHex,
     required int oldFee,
     required int newFee,

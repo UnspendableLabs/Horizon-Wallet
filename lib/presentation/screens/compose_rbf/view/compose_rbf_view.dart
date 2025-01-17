@@ -120,6 +120,7 @@ class ComposeRBFPageWrapper extends StatelessWidget {
             create: (context) => c.ComposeRBFBloc(),
             child: BlocProvider(
                 create: (context) => rbfForm.ReplaceByFeeFormBloc(
+                      source: address,
                       txHash: txHash,
                       transactionService: GetIt.I.get<TransactionService>(),
                       bitcoinRepository: GetIt.I.get<BitcoinRepository>(),

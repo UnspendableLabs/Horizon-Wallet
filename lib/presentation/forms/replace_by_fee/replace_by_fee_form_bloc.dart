@@ -108,12 +108,14 @@ class RBFData {
 }
 
 class ReplaceByFeeFormBloc extends Bloc<FormEvent, FormStateModel> {
+  final String source;
   final TransactionService transactionService;
   BitcoinRepository bitcoinRepository;
   GetFeeEstimatesUseCase getFeeEstimatesUseCase;
   String txHash;
 
   ReplaceByFeeFormBloc({
+    required this.source,
     required this.txHash,
     required this.getFeeEstimatesUseCase,
     required this.bitcoinRepository,
@@ -137,9 +139,8 @@ class ReplaceByFeeFormBloc extends Bloc<FormEvent, FormStateModel> {
     try {
       int newFee = event.newFeeRate * event.adjustedVirtualSize;
 
-      int feeBump = newFee - event.tx.fee;
-
       MakeRBFResponse rbfResponse = await transactionService.makeRBF(
+        source: source,
         txHex: event.hex,
         oldFee: event.tx.fee,
         newFee: newFee,

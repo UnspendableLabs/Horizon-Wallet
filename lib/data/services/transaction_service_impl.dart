@@ -17,7 +17,6 @@ import 'package:horizon/js/tiny_secp256k1.dart' as tinysecp256k1js;
 import 'package:horizon/presentation/common/shared_util.dart';
 import 'dart:math';
 
-
 const DEFAULT_SEQUENCE = 0xffffffff;
 const SIGHASH_DEFAULT = 0x00;
 const SIGHASH_ALL = 0x01;
@@ -39,6 +38,7 @@ class TransactionServiceImpl implements TransactionService {
 
   @override
   Future<MakeRBFResponse> makeRBF({
+    required String source,
     required String txHex,
     required int oldFee,
     required int newFee,
@@ -64,10 +64,19 @@ class TransactionServiceImpl implements TransactionService {
       txHashToInputsMap[txHash]!.add(input.index);
     }
 
-    // TODO: this is not reliable
+    // We assume that the last output is change output.
+
     int lastOutIndex = transaction.outs.toDart.length - 1;
 
     final lastOut = transaction.outs.toDart[lastOutIndex];
+
+    final lastOutAddress =
+        bitcoinjs.Address.fromOutputScript(lastOut.script, _getNetwork())
+            .toString();
+
+    if (lastOutAddress != source) {
+      throw TransactionServiceException('Last output is not change output');
+    }
 
     final newValue = lastOut.value - feeDelta;
 
