@@ -29,8 +29,7 @@ class ComposeTransactionUseCase {
     required this.balanceRepository,
   });
 
-  Future<(R, VirtualSize)>
-      call<P extends ComposeParams, R extends ComposeResponse>({
+  Future<R> call<P extends ComposeParams, R extends ComposeResponse>({
     required int feeRate,
     required String source,
     required P params,
@@ -46,12 +45,7 @@ class ComposeTransactionUseCase {
       }
 
       final R finalTx = await composeFn(feeRate, inputsSet, params);
-
-      final int virtualSize = finalTx.signedTxEstimatedSize.virtualSize;
-      final int adjustedVirtualSize =
-          finalTx.signedTxEstimatedSize.adjustedVirtualSize;
-
-      return (finalTx, VirtualSize(virtualSize, adjustedVirtualSize));
+      return finalTx;
     } catch (e, stackTrace) {
       throw ComposeTransactionException(e.toString(), stackTrace);
     }

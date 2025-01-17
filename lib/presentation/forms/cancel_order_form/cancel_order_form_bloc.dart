@@ -259,8 +259,10 @@ class CancelOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
         composeFn: composeRepository.composeCancel,
       );
 
-      final composed = composeResponse.$1;
-      final virtualSize = composeResponse.$2;
+      final composed = composeResponse;
+      final virtualSize = VirtualSize(
+          composed.signedTxEstimatedSize.virtualSize,
+          composed.signedTxEstimatedSize.adjustedVirtualSize);
 
       emit(state.copyWith(
         submissionStatus: FormzSubmissionStatus.success,

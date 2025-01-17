@@ -84,7 +84,7 @@ void main() {
           .thenAnswer((_) async => mockComposeResponse);
 
       // Act
-      final (txResponse, virtualSize) = await composeTransactionUseCase.call(
+      final txResponse = await composeTransactionUseCase.call(
         feeRate: feeRate,
         source: source,
         params: mockComposeParams,
@@ -93,8 +93,8 @@ void main() {
 
       // Assert
       expect(txResponse, mockComposeResponse);
-      expect(virtualSize.virtualSize, equals(120));
-      expect(virtualSize.adjustedVirtualSize, equals(155));
+      expect(txResponse.signedTxEstimatedSize.virtualSize, equals(120));
+      expect(txResponse.signedTxEstimatedSize.adjustedVirtualSize, equals(155));
       verify(() => mockUtxoRepository.getUnspentForAddress(source,
           excludeCached: true)).called(1);
       verify(() => mockComposeFunction(feeRate, mockUtxos, mockComposeParams))
@@ -191,7 +191,7 @@ void main() {
           .thenAnswer((_) async => mockComposeResponse);
 
       // Act
-      final (txResponse, virtualSize) = await composeTransactionUseCase.call(
+      final txResponse = await composeTransactionUseCase.call(
         feeRate: feeRate,
         source: source,
         params: mockComposeParams,
@@ -200,8 +200,8 @@ void main() {
 
       // Assert
       expect(txResponse, mockComposeResponse);
-      expect(virtualSize.virtualSize, equals(120));
-      expect(virtualSize.adjustedVirtualSize, equals(155));
+      expect(txResponse.signedTxEstimatedSize.virtualSize, equals(120));
+      expect(txResponse.signedTxEstimatedSize.adjustedVirtualSize, equals(155));
       verify(() => mockUtxoRepository.getUnspentForAddress(source,
           excludeCached: true)).called(1);
       verify(() => mockBalanceRepository.getBalancesForUTXO(any())).called(20);
@@ -254,7 +254,7 @@ void main() {
           .thenAnswer((_) async => mockComposeResponse);
 
       // Act
-      final (txResponse, virtualSize) = await composeTransactionUseCase.call(
+      final txResponse = await composeTransactionUseCase.call(
         feeRate: feeRate,
         source: source,
         params: mockComposeParams,
@@ -263,8 +263,8 @@ void main() {
 
       // Assert
       expect(txResponse, mockComposeResponse);
-      expect(virtualSize.virtualSize, equals(120));
-      expect(virtualSize.adjustedVirtualSize, equals(155));
+      expect(txResponse.signedTxEstimatedSize.virtualSize, equals(120));
+      expect(txResponse.signedTxEstimatedSize.adjustedVirtualSize, equals(155));
       verify(() => mockUtxoRepository.getUnspentForAddress(source,
           excludeCached: true)).called(1);
       verify(() => mockBalanceRepository.getBalancesForUTXO(any())).called(22);

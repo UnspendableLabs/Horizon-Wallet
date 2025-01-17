@@ -6,6 +6,7 @@ import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/domain/entities/asset_info.dart';
 import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/domain/entities/compose_attach_utxo.dart';
+import 'package:horizon/domain/entities/compose_response.dart';
 import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/domain/entities/fee_option.dart' as FeeOption;
 import 'package:horizon/domain/repositories/block_repository.dart';
@@ -367,12 +368,15 @@ void main() {
               composeFn: any(named: 'composeFn'),
               params: any(named: 'params'),
             )).thenAnswer(
-          (_) async => (
-            mockComposeAttachUtxoResponse,
-            FakeVirtualSize(virtualSize: 100, adjustedVirtualSize: 500)
-          ),
+          (_) async => mockComposeAttachUtxoResponse,
         );
         when(() => mockComposeAttachUtxoResponse.btcFee).thenReturn(250);
+        when(() => mockComposeAttachUtxoResponse.signedTxEstimatedSize)
+            .thenReturn(SignedTxEstimatedSize(
+          virtualSize: 100,
+          adjustedVirtualSize: 100,
+          sigopsCount: 1,
+        ));
         return composeAttachUtxoBloc;
       },
       seed: () => composeAttachUtxoBloc.state.copyWith(

@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/domain/entities/compose_detach_utxo.dart';
+import 'package:horizon/domain/entities/compose_response.dart';
 import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/domain/entities/fee_option.dart' as FeeOption;
 import 'package:horizon/domain/repositories/compose_repository.dart';
@@ -205,15 +206,18 @@ void main() {
                 .call<ComposeDetachUtxoParams, ComposeDetachUtxoResponse>(
               feeRate: any(named: 'feeRate'),
               source: any(named: 'source'),
-              composeFn: any(named: 'composeFn'),
               params: any(named: 'params'),
-            )).thenAnswer(
-          (_) async => (
-            mockComposeDetachUtxoResponse,
-            FakeVirtualSize(virtualSize: 100, adjustedVirtualSize: 500)
-          ),
-        );
+              composeFn: any(named: 'composeFn'),
+            )).thenAnswer((_) async => mockComposeDetachUtxoResponse);
+
         when(() => mockComposeDetachUtxoResponse.btcFee).thenReturn(250);
+        when(() => mockComposeDetachUtxoResponse.signedTxEstimatedSize)
+            .thenReturn(SignedTxEstimatedSize(
+          virtualSize: 120,
+          adjustedVirtualSize: 155,
+          sigopsCount: 1,
+        ));
+
         return composeDetachUtxoBloc;
       },
       seed: () => composeDetachUtxoBloc.state.copyWith(
@@ -237,7 +241,9 @@ void main() {
               .having((s) => s.composeTransaction, 'composeTransaction',
                   mockComposeDetachUtxoResponse)
               .having((s) => s.fee, 'fee', 250)
-              .having((s) => s.feeRate, 'feeRate', 3),
+              .having((s) => s.feeRate, 'feeRate', 3)
+              .having((s) => s.virtualSize, 'virtualSize', 120)
+              .having((s) => s.adjustedVirtualSize, 'adjustedVirtualSize', 155),
         ),
       ],
     );

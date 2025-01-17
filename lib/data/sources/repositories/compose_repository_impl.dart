@@ -535,7 +535,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
             4 * 2016, // Expiration, two months
             0, // fee required
             allowUnconfirmedInputs,
-            satPerVbyte, // satPerVbyte per kb
+            satPerVbyte,
             inputsSetString,
             excludeUtxosWithBalances,
             disableUtxoLocks);

@@ -362,10 +362,9 @@ void main() {
               feeRate: 5, // medium
               source: "test-address",
               composeFn: any(named: 'composeFn'),
-              params: any(named: 'params'))).thenAnswer((_) async => (
-            composeDispenserResponse,
-            FakeVirtualSize(virtualSize: 100, adjustedVirtualSize: 100)
-          ));
+              params: any(named: 'params'))).thenAnswer(
+        (_) async => composeDispenserResponse,
+      );
 
       await tester.pumpWidget(
         MaterialApp(

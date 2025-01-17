@@ -867,10 +867,9 @@ void main() {
               feeRate: 5, // medium
               source: "test-address",
               composeFn: any(named: 'composeFn'),
-              params: any(named: 'params'))).thenAnswer((_) async => (
-            composeDispenserResponse,
-            FakeVirtualSize(virtualSize: 100, adjustedVirtualSize: 500)
-          ));
+              params: any(named: 'params'))).thenAnswer(
+        (_) async => composeDispenserResponse,
+      );
       when(() => mockWriteLocalTransactionUseCase.call(any(), any()))
           .thenAnswer((_) async {});
       when(() => mockAnalyticsService.trackEvent(any()))
