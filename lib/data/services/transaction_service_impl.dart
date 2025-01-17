@@ -92,7 +92,10 @@ class TransactionServiceImpl implements TransactionService {
       psbt.addOutput(output);
     }
 
-    psbt.addOutput(lastOut);
+    // only add change output if new value is > 0
+    if (newValue > 0) {
+      psbt.addOutput(lastOut);
+    }
 
     final tx = psbt.cache.tx;
     final txHex_ = tx.toHex();
