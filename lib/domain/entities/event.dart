@@ -30,7 +30,6 @@ class Event extends Equatable {
   final String? txHash;
   final int? blockIndex;
   // final bool confirmed;
-
   const Event({
     required this.state,
     required this.eventIndex,
@@ -331,7 +330,7 @@ class NewFairmintParams {
   final int? earnQuantity;
   final String? fairminterTxHash;
   final int? paidQuantity;
-  final String? source;
+  final String source;
   final String? status;
   final String? txHash;
   final int? txIndex;
@@ -415,7 +414,7 @@ class NewFairminterParams {
   final int? quantityByPrice;
   final int? softCap;
   final int? softCapDeadlineBlock;
-  final String? source;
+  final String source;
   final int? startBlock;
   final String? status;
   final String? txHash;
@@ -1522,12 +1521,14 @@ class AtomicSwapEvent extends VerboseEvent {
 }
 
 class DetachFromUtxoParams {
+  final String source;
   final String asset;
   final int blockIndex;
   final String destination;
   final int feePaid;
 
   DetachFromUtxoParams({
+    required this.source,
     required this.asset,
     required this.blockIndex,
     required this.destination,
@@ -1541,6 +1542,7 @@ class VerboseDetachFromUtxoParams extends DetachFromUtxoParams {
   final String feePaidNormalized;
 
   VerboseDetachFromUtxoParams({
+    required super.source,
     required super.asset,
     required super.blockIndex,
     required super.destination,
@@ -1588,6 +1590,7 @@ class VerboseAttachToUtxoParams extends AttachToUtxoEventParams {
     required super.blockIndex,
     required super.destination,
     required super.feePaid,
+    required super.source,
     // required this.assetInfo,
     required this.quantityNormalized,
     required this.feePaidNormalized,
@@ -1599,12 +1602,14 @@ class AttachToUtxoEventParams {
   final int blockIndex;
   final String destination;
   final int feePaid;
+  final String source;
 
   AttachToUtxoEventParams({
     required this.asset,
     required this.blockIndex,
     required this.destination,
     required this.feePaid,
+    required this.source,
   });
 }
 

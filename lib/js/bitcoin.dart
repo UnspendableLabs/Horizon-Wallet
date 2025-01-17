@@ -44,6 +44,14 @@ extension type GlobalMap._(JSObject _) implements JSObject {
   external Transaction get unsignedTx;
 }
 
+extension type PsbtCache._(JSObject _) implements JSObject {
+  @JS("__TX")
+  external Transaction get tx;
+
+  @JS("__FEE")
+  external int get fee;
+}
+
 extension type Psbt._(JSObject _) implements JSObject {
   external Psbt();
 
@@ -68,7 +76,10 @@ extension type Psbt._(JSObject _) implements JSObject {
 
   external PsbtData get data;
 
-  external Transaction get tx;
+  external int getFee();
+
+  @JS("__CACHE")
+  external PsbtCache get cache;
 }
 
 extension type Payment._(JSObject _) implements JSObject {

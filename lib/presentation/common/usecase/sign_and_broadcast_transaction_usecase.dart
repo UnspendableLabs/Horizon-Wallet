@@ -30,6 +30,7 @@ class SignAndBroadcastTransactionException implements Exception {
 // TODO: there are a few too many deps here.
 //       could add separate use case for deriving key
 //       might also want to split out sign / broadcast
+
 class SignAndBroadcastTransactionUseCase<R extends ComposeResponse> {
   final AddressRepository addressRepository;
   final ImportedAddressRepository importedAddressRepository;
@@ -57,13 +58,13 @@ class SignAndBroadcastTransactionUseCase<R extends ComposeResponse> {
     required this.importedAddressService,
   });
 
-  Future<void> call(
-      {required String password,
-      // todo: no reason to have extrat params...just pass in dirctly.
-      required Function(String, String) onSuccess,
-      required Function(String) onError,
-      required String source,
-      required String rawtransaction}) async {
+  Future<void> call({
+    required String password,
+    required Function(String, String) onSuccess,
+    required Function(String) onError,
+    required String source,
+    required String rawtransaction,
+  }) async {
     try {
       late Address? address;
       late ImportedAddress? importedAddress;
@@ -96,11 +97,7 @@ class SignAndBroadcastTransactionUseCase<R extends ComposeResponse> {
 
       // Sign Transaction
       final txHex = await transactionService.signTransaction(
-        rawtransaction,
-        addressPrivKey,
-        source,
-        utxoMap,
-      );
+          rawtransaction, addressPrivKey, source, utxoMap);
 
       // Broadcast Transaction
       try {

@@ -228,7 +228,7 @@ class BitcoinTx {
           // Check for Counterparty prefix
           if (decodedData.startsWith(PREFIX)) {
             logs.add("Counterparty transaction detected.");
-            logger.info(logs.join("\n"));
+            logger.debug(logs.join("\n"));
             return true;
           } else {
             logs.add("Decoded data does not contain Counterparty prefix.");
