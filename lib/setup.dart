@@ -154,7 +154,6 @@ void setup() {
   injector.registerLazySingleton<Config>(() => config);
 
   bool dioRetryEvaluatorFunc(error, retryCount) {
-    // Log the error first
     GetIt.I<ErrorService>().captureException(
       error,
       message: """
@@ -181,12 +180,10 @@ void setup() {
       },
     );
 
-    // Determine if we should retry
-    final shouldRetry =
-        error.response?.statusCode == 400 || // handle backend bug with compose
-            error.type == DioExceptionType.connectionTimeout ||
-            error.type == DioExceptionType.receiveTimeout ||
-            error.type == DioExceptionType.connectionError;
+    final shouldRetry = error.response?.statusCode == 400 ||
+        error.type == DioExceptionType.connectionTimeout ||
+        error.type == DioExceptionType.receiveTimeout ||
+        error.type == DioExceptionType.connectionError;
 
     return shouldRetry;
   }
