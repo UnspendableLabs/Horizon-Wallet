@@ -153,6 +153,44 @@ void setup() {
 
   injector.registerLazySingleton<Config>(() => config);
 
+  bool dioRetryEvaluatorFunc(error, retryCount) {
+    // Log the error first
+    GetIt.I<ErrorService>().captureException(
+      error,
+      message: """
+            Original error before retry:
+            Status Code: ${error.response?.statusCode ?? 'No status code (connection failed)'}
+            Error: ${error.error.toString()}
+            URL: ${error.requestOptions.uri}
+            Type: ${error.type}
+            Response: ${error.response?.data ?? 'No response (connection failed)'}
+            Message: ${error.message}
+            Response: ${error.response}
+          """,
+      stackTrace: error.stackTrace,
+      context: {
+        'errorType': error.type.toString(),
+        'statusCode':
+            error.response?.statusCode?.toString() ?? 'connection_failed',
+        'method': error.requestOptions.method,
+        'path': error.requestOptions.path,
+        'retryCount': retryCount.toString(),
+        'connectionError': error.type == DioExceptionType.connectionError,
+        'errorMessage': error.message,
+        'response': error.response,
+      },
+    );
+
+    // Determine if we should retry
+    final shouldRetry =
+        error.response?.statusCode == 400 || // handle backend bug with compose
+            error.type == DioExceptionType.connectionTimeout ||
+            error.type == DioExceptionType.receiveTimeout ||
+            error.type == DioExceptionType.connectionError;
+
+    return shouldRetry;
+  }
+
   final dio = Dio(BaseOptions(
     baseUrl: config.counterpartyApiBase,
     headers: {
@@ -189,43 +227,7 @@ void setup() {
         Duration(seconds: 1), // wait 2 sec before second retry
         Duration(seconds: 1), // wait 3 sec before third retry
       ],
-      retryEvaluator: (error, retryCount) {
-        // Log the error first
-        GetIt.I<ErrorService>().captureException(
-          error,
-          message: """
-            Original error before retry:
-            Status Code: ${error.response?.statusCode ?? 'No status code (connection failed)'}
-            Error: ${error.error.toString()}
-            URL: ${error.requestOptions.uri}
-            Type: ${error.type}
-            Response: ${error.response?.data ?? 'No response (connection failed)'}
-            Message: ${error.message}
-            Response: ${error.response}
-          """,
-          stackTrace: error.stackTrace,
-          context: {
-            'errorType': error.type.toString(),
-            'statusCode':
-                error.response?.statusCode?.toString() ?? 'connection_failed',
-            'method': error.requestOptions.method,
-            'path': error.requestOptions.path,
-            'retryCount': retryCount.toString(),
-            'connectionError': error.type == DioExceptionType.connectionError,
-            'errorMessage': error.message,
-            'response': error.response,
-          },
-        );
-
-        // Determine if we should retry
-        final shouldRetry = error.response?.statusCode ==
-                400 || // handle backend bug with compose
-            error.type == DioExceptionType.connectionTimeout ||
-            error.type == DioExceptionType.receiveTimeout ||
-            error.type == DioExceptionType.connectionError;
-
-        return shouldRetry;
-      },
+      retryEvaluator: dioRetryEvaluatorFunc,
     )
   ]);
 
@@ -252,6 +254,7 @@ void setup() {
         Duration(seconds: 3), // wait 3 sec before third retry
         Duration(seconds: 4), // wait 4 sec before fourth retry
       ],
+      retryEvaluator: dioRetryEvaluatorFunc,
     ),
   ]);
 
@@ -270,6 +273,7 @@ void setup() {
         Duration(seconds: 1), // wait 2 sec before second retry
         Duration(seconds: 1), // wait 3 sec before third retry
       ],
+      retryEvaluator: dioRetryEvaluatorFunc,
     ), // Add the RetryInterceptor here
   ]);
 
