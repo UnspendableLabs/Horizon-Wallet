@@ -13,6 +13,7 @@ import 'package:horizon/domain/repositories/compose_repository.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_event.dart';
+import 'package:horizon/presentation/common/compose_base/bloc/compose_base_state.dart';
 import 'package:horizon/presentation/common/compose_base/view/compose_base_page.dart';
 import 'package:horizon/presentation/common/shared_util.dart';
 import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transaction_usecase.dart';
@@ -113,7 +114,7 @@ class ComposeSendPageState extends State<ComposeSendPage> {
         ),
         asset ?? '');
     if (balance == null) {
-      throw Exception("invariant: No balance found for asset");
+      throw Exception("invariant: No balance found for asset $asset");
     }
 
     String maxQuantityNormalized = quantityToQuantityNormalizedString(
@@ -136,11 +137,15 @@ class ComposeSendPageState extends State<ComposeSendPage> {
         },
         success: (maxValue) {
           if (state.sendMax) {
-            final formattedValue =
-                _formatMaxValue(state, maxValue, state.asset);
+            if (state.submitState is SubmitInitial) {
+              // the listener was attempting to set the quantity to the max value during any submit state
+              // we only want to do this if we are in the initial state
+              final formattedValue =
+                  _formatMaxValue(state, maxValue, state.asset);
 
-            if (formattedValue != quantityController.text) {
-              quantityController.text = formattedValue;
+              if (formattedValue != quantityController.text) {
+                quantityController.text = formattedValue;
+              }
             }
           }
         },
@@ -197,17 +202,17 @@ class ComposeSendPageState extends State<ComposeSendPage> {
     if (formKey.currentState!.validate()) {
       Balance? balance = balance_;
 
+      if (asset == null) {
+        throw Exception("no asset selected");
+      }
+
       if (balance == null) {
-        throw Exception("invariant: No balance found for asset");
+        throw Exception("invariant: No balance found for asset: $asset");
       }
 
       int quantity = getQuantityForDivisibility(
           divisible: balance.assetInfo.divisible,
           inputQuantity: quantityController.text);
-
-      if (asset == null) {
-        throw Exception("no asset");
-      }
 
       context.read<ComposeSendBloc>().add(ComposeTransactionEvent(
             sourceAddress: widget.address,
@@ -330,11 +335,16 @@ class ComposeSendPageState extends State<ComposeSendPage> {
             if (value == null || value.isEmpty) {
               return 'Please enter a quantity';
             }
-            Decimal input = Decimal.parse(value);
-            Decimal max = Decimal.parse(balance?.quantityNormalized ?? '0');
-            if (input > max) {
-              return "quantity exceeds max";
+            if (value != '.') {
+              Decimal input = Decimal.parse(value);
+              Decimal max = Decimal.parse(balance?.quantityNormalized ?? '0');
+              if (input > max) {
+                return "quantity exceeds max";
+              }
+            } else {
+              return 'Please enter a quantity';
             }
+
             return null;
           },
           onFieldSubmitted: (value) {
@@ -421,7 +431,6 @@ class ComposeSendPageState extends State<ComposeSendPage> {
               });
             }
           });
-
           return SizedBox(
             height: 48,
             child: AssetDropdown(
@@ -434,7 +443,8 @@ class ComposeSendPageState extends State<ComposeSendPage> {
                     _getBalanceForSelectedAsset(balances, value!);
 
                 if (balance == null) {
-                  throw Exception("invariant: No balance found for asset");
+                  throw Exception(
+                      "invariant: No balance found for asset: $value");
                 }
 
                 setState(() {
@@ -479,7 +489,9 @@ class ComposeSendPageState extends State<ComposeSendPage> {
           Expanded(
             child: HorizonUI.HorizonTextFormField(
               label: "Asset",
-              controller: TextEditingController(text: params.asset),
+              controller: TextEditingController(
+                  text: displayAssetName(
+                      params.asset, params.assetInfo.assetLongname)),
               enabled: false,
             ),
           ),

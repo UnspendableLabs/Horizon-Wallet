@@ -195,19 +195,25 @@ void setup() {
           error,
           message: """
             Original error before retry:
-            ${error.response?.statusCode}
-            ${error.error.toString()}
-            ${error.requestOptions.uri}
+            Status Code: ${error.response?.statusCode ?? 'No status code (connection failed)'}
+            Error: ${error.error.toString()}
+            URL: ${error.requestOptions.uri}
             Type: ${error.type}
-            Response: ${error.response?.data}
+            Response: ${error.response?.data ?? 'No response (connection failed)'}
+            Message: ${error.message}
+            Response: ${error.response}
           """,
           stackTrace: error.stackTrace,
           context: {
             'errorType': error.type.toString(),
-            'statusCode': error.response?.statusCode?.toString(),
+            'statusCode':
+                error.response?.statusCode?.toString() ?? 'connection_failed',
             'method': error.requestOptions.method,
             'path': error.requestOptions.path,
             'retryCount': retryCount.toString(),
+            'connectionError': error.type == DioExceptionType.connectionError,
+            'errorMessage': error.message,
+            'response': error.response,
           },
         );
 
@@ -244,9 +250,9 @@ void setup() {
         Duration(seconds: 1), // wait 1 sec before first retry
         Duration(seconds: 2), // wait 2 sec before second retry
         Duration(seconds: 3), // wait 3 sec before third retry
-        Duration(seconds: 5), // wait 3 sec before third retryh
+        Duration(seconds: 4), // wait 4 sec before fourth retry
       ],
-    ), // Add the RetryInterceptor here
+    ),
   ]);
 
   final mempoolspaceDio = Dio(BaseOptions(
@@ -582,6 +588,7 @@ class CustomDioException extends DioException {
     required super.requestOptions,
     required String super.error,
     required super.type,
+    super.response,
   });
 
   @override
@@ -602,6 +609,7 @@ class TimeoutInterceptor extends Interceptor {
         error:
             'Timeout (${timeoutDuration.inSeconds}s) — Request Failed \n ${err.response?.data?['error']}',
         type: DioExceptionType.connectionTimeout,
+        response: err.response,
       );
 
       GetIt.I<Logger>().debug(formattedError.toString());
@@ -622,6 +630,7 @@ class ConnectionErrorInterceptor extends Interceptor {
         error:
             'Connection Error — Request Failed ${err.response?.data?['error'] != null ? "\n\n ${err.response?.data?['error']}" : ""}',
         type: DioExceptionType.connectionError,
+        response: err.response,
       );
 
       GetIt.I<Logger>().debug(formattedError.toString());
@@ -642,6 +651,7 @@ class BadResponseInterceptor extends Interceptor {
             ? "${err.response?.data?['error']}"
             : "Bad Response",
         type: DioExceptionType.badResponse,
+        response: err.response,
       );
 
       GetIt.I<Logger>().debug(formattedError.toString());
@@ -662,6 +672,7 @@ class BadCertificateInterceptor extends Interceptor {
         error:
             'Bad Certificate — Request Failed ${err.response?.data?['error'] != null ? "\n\n ${err.response?.data?['error']}" : ""}',
         type: DioExceptionType.badCertificate,
+        response: err.response,
       );
       GetIt.I<Logger>().debug(formattedError.toString());
       handler.next(formattedError);
@@ -692,11 +703,6 @@ class SimpleLogInterceptor extends Interceptor {
   void onError(DioException err, ErrorInterceptorHandler handler) {
     final errorInfo =
         '${err.requestOptions.method} ${err.requestOptions.uri} [Error] ${err.message}';
-
-    GetIt.I<ErrorService>().captureException(
-      errorInfo,
-      stackTrace: err.stackTrace,
-    );
 
     GetIt.I<Logger>().debug('Error: $errorInfo');
     if (err.response != null) {
