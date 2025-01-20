@@ -1582,7 +1582,7 @@ class SweepParams {
   final int feePaid;
   final String destination;
   final int flags;
-  final String memo;
+  final String? memo;
   final String source;
   final String status;
   final String txHash;
@@ -1594,7 +1594,7 @@ class SweepParams {
     required this.feePaid,
     required this.destination,
     required this.flags,
-    required this.memo,
+    this.memo,
     required this.source,
     required this.status,
     required this.txHash,

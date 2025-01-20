@@ -217,7 +217,7 @@ void main() {
 
     setUpAll(() async {
       // Perform any common setup here
-      await setup();
+      setup();
     });
 
     tearDownAll(() async {
