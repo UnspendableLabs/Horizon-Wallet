@@ -15,7 +15,7 @@ class PasswordEntered extends ComposeDispenserOnNewAddressEvent {
   final int escrowQuantity;
   final int mainchainrate;
   final int status;
-  final int feeRate;
+  final num feeRate;
   final bool sendExtraBtcToDispenser;
   PasswordEntered({
     required this.password,

@@ -35,7 +35,7 @@ class ComposeDispenserOnNewAddressPageWrapper extends StatelessWidget {
   final int escrowQuantity;
   final int mainchainrate;
   final bool divisible;
-  final int feeRate;
+  final num feeRate;
   final bool sendExtraBtcToDispenser;
   const ComposeDispenserOnNewAddressPageWrapper({
     required this.dashboardActivityFeedBloc,
@@ -94,7 +94,7 @@ class ComposeDispenserOnNewAddressPage extends StatefulWidget {
   final int escrowQuantity;
   final int mainchainrate;
   final bool divisible;
-  final int feeRate;
+  final num feeRate;
   final bool sendExtraBtcToDispenser;
   const ComposeDispenserOnNewAddressPage({
     required this.originalAddress,

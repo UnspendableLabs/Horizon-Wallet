@@ -33,7 +33,7 @@ class ComposeDispenserOnNewAddressState<T>
     required T composeSendTransaction,
     required T composeDispenserTransaction,
     required int btcQuantity,
-    required int feeRate,
+    required num feeRate,
     // required int totalVirtualSize,
     // required int totalAdjustedVirtualSize,
   }) = _ComposeDispenserOnNewAddressStateConfirm;

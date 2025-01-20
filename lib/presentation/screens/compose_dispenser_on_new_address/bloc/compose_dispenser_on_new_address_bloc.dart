@@ -252,11 +252,13 @@ class ComposeDispenserOnNewAddressBloc extends Bloc<
             .escrowQuantity; // the total asset quantity to be sent to the new address for the dispenser
         final mainchainrate = event.mainchainrate;
 
-        int feeToCoverDispenser = event.feeRate * ADJUSTED_VIRTUAL_SIZE;
+        int feeToCoverDispenser =
+            (event.feeRate * ADJUSTED_VIRTUAL_SIZE).ceil();
         int extraBtcToSendToDispenser = 0;
 
         if (event.sendExtraBtcToDispenser) {
-          extraBtcToSendToDispenser = event.feeRate * ADJUSTED_VIRTUAL_SIZE;
+          extraBtcToSendToDispenser =
+              (event.feeRate * ADJUSTED_VIRTUAL_SIZE).ceil();
         }
 
         // 2. compose the asset send
@@ -384,7 +386,7 @@ class ComposeDispenserOnNewAddressBloc extends Bloc<
     });
   }
 
-  int _getFeeRate(FeeOption.FeeOption feeOption) {
+  num _getFeeRate(FeeOption.FeeOption feeOption) {
     FeeEstimates feeEstimates = state.feeState.feeEstimates;
     return switch (feeOption) {
       FeeOption.Fast() => feeEstimates.fast,

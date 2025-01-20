@@ -5,4 +5,4 @@ import 'package:equatable/equatable.dart';
 abstract class ComposeParams extends Equatable {}
 
 typedef ComposeFunction<P extends ComposeParams, R extends ComposeResponse>
-    = Future<R> Function(int fee, List<Utxo> inputsSet, P params);
+    = Future<R> Function(num fee, List<Utxo> inputsSet, P params);

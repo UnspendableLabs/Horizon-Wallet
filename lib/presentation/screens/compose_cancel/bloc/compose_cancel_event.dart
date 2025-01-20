@@ -7,7 +7,7 @@ abstract class ComposeCancelEvent extends ComposeBaseEvent {}
 class ComposeResponseReceived extends ComposeCancelEvent {
   final ComposeCancelResponse response;
   final VirtualSize virtualSize;
-  final int feeRate;
+  final num feeRate;
 
   ComposeResponseReceived({
     required this.response,

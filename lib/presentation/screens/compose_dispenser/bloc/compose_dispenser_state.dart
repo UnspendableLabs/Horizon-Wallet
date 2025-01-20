@@ -16,7 +16,7 @@ class ComposeDispenserState with _$ComposeDispenserState, ComposeStateBase {
     required FeeOption feeOption,
     required SubmitState submitState,
 
-    // Dispenser-specific properties
+    // Dispenser-specific propertiesflu
     required DialogState dialogState,
     String? assetName,
     String? openAddress,
@@ -53,7 +53,7 @@ class DialogState with _$DialogState {
       required int giveQuantity,
       required int escrowQuantity,
       required int mainchainrate,
-      required int feeRate}) = _DispenserCloseDialogAndOpenNewAddress;
+      required num feeRate}) = _DispenserCloseDialogAndOpenNewAddress;
 
   const factory DialogState.warning({bool? hasOpenDispensers}) =
       _DispenserWarning;
