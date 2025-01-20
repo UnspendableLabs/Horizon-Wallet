@@ -40,6 +40,10 @@ class ComposeTransactionUseCase {
       List<Utxo> inputsSet = await utxoRepository.getUnspentForAddress(source,
           excludeCached: true);
 
+      if (inputsSet.isEmpty) {
+        throw Exception('No UTXOs found for transaction');
+      }
+
       if (inputsSet.length > 20) {
         inputsSet = await _getLargeInputsSet(inputsSet);
       }
@@ -66,6 +70,10 @@ class ComposeTransactionUseCase {
       if (balance.isEmpty) {
         inputsForSet.add(utxo);
       }
+    }
+
+    if (inputsForSet.isEmpty) {
+      throw Exception('No UTXOs with no balance found for transaction');
     }
 
     return inputsForSet;
