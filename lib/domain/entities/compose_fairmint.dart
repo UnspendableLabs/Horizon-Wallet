@@ -4,7 +4,7 @@ import 'package:horizon/domain/entities/compose_response.dart';
 
 class ComposeFairmintParams extends ComposeParams {
   final String source;
-  final String asset;
+  final int asset;
   final int? quantity;
   final AssetInfo? assetInfo;
   final String? quantityNormalized;

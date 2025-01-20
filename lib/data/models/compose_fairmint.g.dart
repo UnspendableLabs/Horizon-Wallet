@@ -40,7 +40,7 @@ ComposeFairmintVerboseParamsModel _$ComposeFairmintVerboseParamsModelFromJson(
         Map<String, dynamic> json) =>
     ComposeFairmintVerboseParamsModel(
       source: json['source'] as String,
-      asset: json['asset'] as String,
+      asset: (json['asset'] as num).toInt(),
       quantity: (json['quantity'] as num).toInt(),
       quantityNormalized: json['quantity_normalized'] as String,
       assetInfo:

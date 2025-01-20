@@ -48,7 +48,7 @@ class ComposeFairmintVerboseModel {
 @JsonSerializable(fieldRename: FieldRename.snake)
 class ComposeFairmintVerboseParamsModel {
   final String source;
-  final String asset;
+  final int asset;
   final int quantity;
   final String quantityNormalized;
   final AssetInfoModel assetInfo;
