@@ -40,6 +40,7 @@ import 'package:horizon/presentation/screens/onboarding_create/view/onboarding_c
 import 'package:horizon/presentation/screens/onboarding_import/view/onboarding_import_page.dart';
 import 'package:horizon/presentation/screens/onboarding_import_pk/view/onboarding_import_pk_page.dart';
 import 'package:horizon/presentation/screens/privacy_policy.dart';
+import 'package:horizon/presentation/screens/login/login_view.dart';
 import 'package:horizon/presentation/screens/tos.dart';
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 import 'package:horizon/presentation/shell/bloc/shell_state.dart';
@@ -248,6 +249,14 @@ class AppRouter {
               transitionsBuilder:
                   (context, animation, secondaryAnimation, child) => child),
         ),
+        GoRoute(
+          path: "/login",
+          pageBuilder: (context, state) => CustomTransitionPage<void>(
+              key: state.pageKey,
+              child: const LoginView(),
+              transitionsBuilder:
+                  (context, animation, secondaryAnimation, child) => child),
+        ),
         StatefulShellRoute.indexedStack(
             builder:
                 (BuildContext context, GoRouterState state, navigationShell) {
@@ -272,6 +281,7 @@ class AppRouter {
                             } else if (state.currentImportedAddress != null) {
                               key = Key(state.currentImportedAddress!.address);
                             }
+
                             return Scaffold(
                                 bottomNavigationBar: const Footer(),
                                 body: VersionWarningSnackbar(
@@ -300,6 +310,7 @@ class AppRouter {
         final shell = context.read<ShellStateCubit>();
 
         final path = shell.state.maybeWhen(
+            loggedOut: () => "/login",
             onboarding: (onboarding) {
               return onboarding.when(
                 initial: () => "/onboarding",
@@ -725,6 +736,7 @@ class MyApp extends StatelessWidget {
         ),
         BlocProvider<ShellStateCubit>(
           create: (context) => ShellStateCubit(
+              cacheProvider: GetIt.I<CacheProvider>(),
               walletRepository: GetIt.I<WalletRepository>(),
               accountRepository: GetIt.I<AccountRepository>(),
               addressRepository: GetIt.I<AddressRepository>(),

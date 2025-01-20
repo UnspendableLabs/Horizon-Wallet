@@ -8,10 +8,12 @@ import 'package:horizon/domain/repositories/imported_address_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
+import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 
 import './shell_state.dart';
 
 class ShellStateCubit extends Cubit<ShellState> {
+  CacheProvider cacheProvider;
   WalletRepository walletRepository;
   AccountRepository accountRepository;
   AddressRepository addressRepository;
@@ -19,7 +21,8 @@ class ShellStateCubit extends Cubit<ShellState> {
   AnalyticsService analyticsService;
 
   ShellStateCubit(
-      {required this.walletRepository,
+      {required this.cacheProvider,
+      required this.walletRepository,
       required this.accountRepository,
       required this.addressRepository,
       required this.importedAddressRepository,
@@ -27,7 +30,13 @@ class ShellStateCubit extends Cubit<ShellState> {
       : super(const ShellState.initial());
 
   void initialize() async {
+    if (cacheProvider.getBool("logged_out") ?? false) {
+      emit(const ShellState.loggedOut());
+      return;
+    }
+
     emit(const ShellState.loading());
+
     try {
       Wallet? wallet = await walletRepository.getCurrentWallet();
 
@@ -79,6 +88,7 @@ class ShellStateCubit extends Cubit<ShellState> {
         initial: () => state,
         loading: () => state,
         error: (_) => state,
+        loggedOut: () => state,
         onboarding: (_) => state,
         success: (stateInner) =>
             ShellState.success(stateInner.copyWith(redirect: false)));
@@ -106,11 +116,8 @@ class ShellStateCubit extends Cubit<ShellState> {
     List<Address> addresses =
         await addressRepository.getAllByAccountUuid(account.uuid);
 
-    final state_ = state.when(
-        initial: () => state,
-        loading: () => state,
-        error: (_) => state,
-        onboarding: (_) => state,
+    final state_ = state.maybeWhen(
+        orElse: () => state,
         success: (stateInner) => ShellState.success(stateInner.copyWith(
               currentAccountUuid: account.uuid,
               currentAddress: addresses.first,
@@ -122,14 +129,16 @@ class ShellStateCubit extends Cubit<ShellState> {
   }
 
   void onAddressChanged(Address address) {
-    final state_ = state.when(
-        initial: () => state,
-        loading: () => state,
-        error: (_) => state,
-        onboarding: (_) => state,
+    final state_ = state.maybeWhen(
+        orElse: () => state,
         success: (stateInner) =>
             ShellState.success(stateInner.copyWith(currentAddress: address)));
     emit(state_);
+  }
+
+  void onLogout() {
+    cacheProvider.setBool("logged_out", true);
+    emit(const ShellState.loggedOut());
   }
 
   void refresh() async {
@@ -235,11 +244,8 @@ class ShellStateCubit extends Cubit<ShellState> {
       List<ImportedAddress> importedAddresses =
           await importedAddressRepository.getAll();
 
-      final state_ = state.when(
-          initial: () => state,
-          loading: () => state,
-          error: (_) => state,
-          onboarding: (_) => state,
+      final state_ = state.maybeWhen(
+          orElse: () => state,
           success: (stateInner) => ShellState.success(stateInner.copyWith(
               importedAddresses: importedAddresses,
               currentImportedAddress: importedAddress,
@@ -252,11 +258,8 @@ class ShellStateCubit extends Cubit<ShellState> {
   }
 
   void onImportedAddressChanged(ImportedAddress importedAddress) {
-    final state_ = state.when(
-        initial: () => state,
-        loading: () => state,
-        error: (_) => state,
-        onboarding: (_) => state,
+    final state_ = state.maybeWhen(
+        orElse: () => state,
         success: (stateInner) => ShellState.success(stateInner.copyWith(
             currentImportedAddress: importedAddress,
             currentAddress: null,
