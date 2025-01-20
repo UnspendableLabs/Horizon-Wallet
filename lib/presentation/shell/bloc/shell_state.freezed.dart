@@ -23,6 +23,7 @@ mixin _$ShellState {
     required TResult Function(String error) error,
     required TResult Function(Onboarding onboarding) onboarding,
     required TResult Function(ShellStateSuccess succcess) success,
+    required TResult Function() loggedOut,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
@@ -32,6 +33,7 @@ mixin _$ShellState {
     TResult? Function(String error)? error,
     TResult? Function(Onboarding onboarding)? onboarding,
     TResult? Function(ShellStateSuccess succcess)? success,
+    TResult? Function()? loggedOut,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
@@ -41,6 +43,7 @@ mixin _$ShellState {
     TResult Function(String error)? error,
     TResult Function(Onboarding onboarding)? onboarding,
     TResult Function(ShellStateSuccess succcess)? success,
+    TResult Function()? loggedOut,
     required TResult orElse(),
   }) =>
       throw _privateConstructorUsedError;
@@ -51,6 +54,7 @@ mixin _$ShellState {
     required TResult Function(_Error value) error,
     required TResult Function(_Onboarding value) onboarding,
     required TResult Function(_Success value) success,
+    required TResult Function(_LoggedOut value) loggedOut,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
@@ -60,6 +64,7 @@ mixin _$ShellState {
     TResult? Function(_Error value)? error,
     TResult? Function(_Onboarding value)? onboarding,
     TResult? Function(_Success value)? success,
+    TResult? Function(_LoggedOut value)? loggedOut,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
@@ -69,6 +74,7 @@ mixin _$ShellState {
     TResult Function(_Error value)? error,
     TResult Function(_Onboarding value)? onboarding,
     TResult Function(_Success value)? success,
+    TResult Function(_LoggedOut value)? loggedOut,
     required TResult orElse(),
   }) =>
       throw _privateConstructorUsedError;
@@ -135,6 +141,7 @@ class _$InitialImpl implements _Initial {
     required TResult Function(String error) error,
     required TResult Function(Onboarding onboarding) onboarding,
     required TResult Function(ShellStateSuccess succcess) success,
+    required TResult Function() loggedOut,
   }) {
     return initial();
   }
@@ -147,6 +154,7 @@ class _$InitialImpl implements _Initial {
     TResult? Function(String error)? error,
     TResult? Function(Onboarding onboarding)? onboarding,
     TResult? Function(ShellStateSuccess succcess)? success,
+    TResult? Function()? loggedOut,
   }) {
     return initial?.call();
   }
@@ -159,6 +167,7 @@ class _$InitialImpl implements _Initial {
     TResult Function(String error)? error,
     TResult Function(Onboarding onboarding)? onboarding,
     TResult Function(ShellStateSuccess succcess)? success,
+    TResult Function()? loggedOut,
     required TResult orElse(),
   }) {
     if (initial != null) {
@@ -175,6 +184,7 @@ class _$InitialImpl implements _Initial {
     required TResult Function(_Error value) error,
     required TResult Function(_Onboarding value) onboarding,
     required TResult Function(_Success value) success,
+    required TResult Function(_LoggedOut value) loggedOut,
   }) {
     return initial(this);
   }
@@ -187,6 +197,7 @@ class _$InitialImpl implements _Initial {
     TResult? Function(_Error value)? error,
     TResult? Function(_Onboarding value)? onboarding,
     TResult? Function(_Success value)? success,
+    TResult? Function(_LoggedOut value)? loggedOut,
   }) {
     return initial?.call(this);
   }
@@ -199,6 +210,7 @@ class _$InitialImpl implements _Initial {
     TResult Function(_Error value)? error,
     TResult Function(_Onboarding value)? onboarding,
     TResult Function(_Success value)? success,
+    TResult Function(_LoggedOut value)? loggedOut,
     required TResult orElse(),
   }) {
     if (initial != null) {
@@ -255,6 +267,7 @@ class _$LoadingImpl implements _Loading {
     required TResult Function(String error) error,
     required TResult Function(Onboarding onboarding) onboarding,
     required TResult Function(ShellStateSuccess succcess) success,
+    required TResult Function() loggedOut,
   }) {
     return loading();
   }
@@ -267,6 +280,7 @@ class _$LoadingImpl implements _Loading {
     TResult? Function(String error)? error,
     TResult? Function(Onboarding onboarding)? onboarding,
     TResult? Function(ShellStateSuccess succcess)? success,
+    TResult? Function()? loggedOut,
   }) {
     return loading?.call();
   }
@@ -279,6 +293,7 @@ class _$LoadingImpl implements _Loading {
     TResult Function(String error)? error,
     TResult Function(Onboarding onboarding)? onboarding,
     TResult Function(ShellStateSuccess succcess)? success,
+    TResult Function()? loggedOut,
     required TResult orElse(),
   }) {
     if (loading != null) {
@@ -295,6 +310,7 @@ class _$LoadingImpl implements _Loading {
     required TResult Function(_Error value) error,
     required TResult Function(_Onboarding value) onboarding,
     required TResult Function(_Success value) success,
+    required TResult Function(_LoggedOut value) loggedOut,
   }) {
     return loading(this);
   }
@@ -307,6 +323,7 @@ class _$LoadingImpl implements _Loading {
     TResult? Function(_Error value)? error,
     TResult? Function(_Onboarding value)? onboarding,
     TResult? Function(_Success value)? success,
+    TResult? Function(_LoggedOut value)? loggedOut,
   }) {
     return loading?.call(this);
   }
@@ -319,6 +336,7 @@ class _$LoadingImpl implements _Loading {
     TResult Function(_Error value)? error,
     TResult Function(_Onboarding value)? onboarding,
     TResult Function(_Success value)? success,
+    TResult Function(_LoggedOut value)? loggedOut,
     required TResult orElse(),
   }) {
     if (loading != null) {
@@ -401,6 +419,7 @@ class _$ErrorImpl implements _Error {
     required TResult Function(String error) error,
     required TResult Function(Onboarding onboarding) onboarding,
     required TResult Function(ShellStateSuccess succcess) success,
+    required TResult Function() loggedOut,
   }) {
     return error(this.error);
   }
@@ -413,6 +432,7 @@ class _$ErrorImpl implements _Error {
     TResult? Function(String error)? error,
     TResult? Function(Onboarding onboarding)? onboarding,
     TResult? Function(ShellStateSuccess succcess)? success,
+    TResult? Function()? loggedOut,
   }) {
     return error?.call(this.error);
   }
@@ -425,6 +445,7 @@ class _$ErrorImpl implements _Error {
     TResult Function(String error)? error,
     TResult Function(Onboarding onboarding)? onboarding,
     TResult Function(ShellStateSuccess succcess)? success,
+    TResult Function()? loggedOut,
     required TResult orElse(),
   }) {
     if (error != null) {
@@ -441,6 +462,7 @@ class _$ErrorImpl implements _Error {
     required TResult Function(_Error value) error,
     required TResult Function(_Onboarding value) onboarding,
     required TResult Function(_Success value) success,
+    required TResult Function(_LoggedOut value) loggedOut,
   }) {
     return error(this);
   }
@@ -453,6 +475,7 @@ class _$ErrorImpl implements _Error {
     TResult? Function(_Error value)? error,
     TResult? Function(_Onboarding value)? onboarding,
     TResult? Function(_Success value)? success,
+    TResult? Function(_LoggedOut value)? loggedOut,
   }) {
     return error?.call(this);
   }
@@ -465,6 +488,7 @@ class _$ErrorImpl implements _Error {
     TResult Function(_Error value)? error,
     TResult Function(_Onboarding value)? onboarding,
     TResult Function(_Success value)? success,
+    TResult Function(_LoggedOut value)? loggedOut,
     required TResult orElse(),
   }) {
     if (error != null) {
@@ -563,6 +587,7 @@ class _$OnboardingImpl implements _Onboarding {
     required TResult Function(String error) error,
     required TResult Function(Onboarding onboarding) onboarding,
     required TResult Function(ShellStateSuccess succcess) success,
+    required TResult Function() loggedOut,
   }) {
     return onboarding(this.onboarding);
   }
@@ -575,6 +600,7 @@ class _$OnboardingImpl implements _Onboarding {
     TResult? Function(String error)? error,
     TResult? Function(Onboarding onboarding)? onboarding,
     TResult? Function(ShellStateSuccess succcess)? success,
+    TResult? Function()? loggedOut,
   }) {
     return onboarding?.call(this.onboarding);
   }
@@ -587,6 +613,7 @@ class _$OnboardingImpl implements _Onboarding {
     TResult Function(String error)? error,
     TResult Function(Onboarding onboarding)? onboarding,
     TResult Function(ShellStateSuccess succcess)? success,
+    TResult Function()? loggedOut,
     required TResult orElse(),
   }) {
     if (onboarding != null) {
@@ -603,6 +630,7 @@ class _$OnboardingImpl implements _Onboarding {
     required TResult Function(_Error value) error,
     required TResult Function(_Onboarding value) onboarding,
     required TResult Function(_Success value) success,
+    required TResult Function(_LoggedOut value) loggedOut,
   }) {
     return onboarding(this);
   }
@@ -615,6 +643,7 @@ class _$OnboardingImpl implements _Onboarding {
     TResult? Function(_Error value)? error,
     TResult? Function(_Onboarding value)? onboarding,
     TResult? Function(_Success value)? success,
+    TResult? Function(_LoggedOut value)? loggedOut,
   }) {
     return onboarding?.call(this);
   }
@@ -627,6 +656,7 @@ class _$OnboardingImpl implements _Onboarding {
     TResult Function(_Error value)? error,
     TResult Function(_Onboarding value)? onboarding,
     TResult Function(_Success value)? success,
+    TResult Function(_LoggedOut value)? loggedOut,
     required TResult orElse(),
   }) {
     if (onboarding != null) {
@@ -725,6 +755,7 @@ class _$SuccessImpl implements _Success {
     required TResult Function(String error) error,
     required TResult Function(Onboarding onboarding) onboarding,
     required TResult Function(ShellStateSuccess succcess) success,
+    required TResult Function() loggedOut,
   }) {
     return success(succcess);
   }
@@ -737,6 +768,7 @@ class _$SuccessImpl implements _Success {
     TResult? Function(String error)? error,
     TResult? Function(Onboarding onboarding)? onboarding,
     TResult? Function(ShellStateSuccess succcess)? success,
+    TResult? Function()? loggedOut,
   }) {
     return success?.call(succcess);
   }
@@ -749,6 +781,7 @@ class _$SuccessImpl implements _Success {
     TResult Function(String error)? error,
     TResult Function(Onboarding onboarding)? onboarding,
     TResult Function(ShellStateSuccess succcess)? success,
+    TResult Function()? loggedOut,
     required TResult orElse(),
   }) {
     if (success != null) {
@@ -765,6 +798,7 @@ class _$SuccessImpl implements _Success {
     required TResult Function(_Error value) error,
     required TResult Function(_Onboarding value) onboarding,
     required TResult Function(_Success value) success,
+    required TResult Function(_LoggedOut value) loggedOut,
   }) {
     return success(this);
   }
@@ -777,6 +811,7 @@ class _$SuccessImpl implements _Success {
     TResult? Function(_Error value)? error,
     TResult? Function(_Onboarding value)? onboarding,
     TResult? Function(_Success value)? success,
+    TResult? Function(_LoggedOut value)? loggedOut,
   }) {
     return success?.call(this);
   }
@@ -789,6 +824,7 @@ class _$SuccessImpl implements _Success {
     TResult Function(_Error value)? error,
     TResult Function(_Onboarding value)? onboarding,
     TResult Function(_Success value)? success,
+    TResult Function(_LoggedOut value)? loggedOut,
     required TResult orElse(),
   }) {
     if (success != null) {
@@ -805,6 +841,132 @@ abstract class _Success implements ShellState {
   @JsonKey(ignore: true)
   _$$SuccessImplCopyWith<_$SuccessImpl> get copyWith =>
       throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class _$$LoggedOutImplCopyWith<$Res> {
+  factory _$$LoggedOutImplCopyWith(
+          _$LoggedOutImpl value, $Res Function(_$LoggedOutImpl) then) =
+      __$$LoggedOutImplCopyWithImpl<$Res>;
+}
+
+/// @nodoc
+class __$$LoggedOutImplCopyWithImpl<$Res>
+    extends _$ShellStateCopyWithImpl<$Res, _$LoggedOutImpl>
+    implements _$$LoggedOutImplCopyWith<$Res> {
+  __$$LoggedOutImplCopyWithImpl(
+      _$LoggedOutImpl _value, $Res Function(_$LoggedOutImpl) _then)
+      : super(_value, _then);
+}
+
+/// @nodoc
+
+class _$LoggedOutImpl implements _LoggedOut {
+  const _$LoggedOutImpl();
+
+  @override
+  String toString() {
+    return 'ShellState.loggedOut()';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType && other is _$LoggedOutImpl);
+  }
+
+  @override
+  int get hashCode => runtimeType.hashCode;
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function() initial,
+    required TResult Function() loading,
+    required TResult Function(String error) error,
+    required TResult Function(Onboarding onboarding) onboarding,
+    required TResult Function(ShellStateSuccess succcess) success,
+    required TResult Function() loggedOut,
+  }) {
+    return loggedOut();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function()? initial,
+    TResult? Function()? loading,
+    TResult? Function(String error)? error,
+    TResult? Function(Onboarding onboarding)? onboarding,
+    TResult? Function(ShellStateSuccess succcess)? success,
+    TResult? Function()? loggedOut,
+  }) {
+    return loggedOut?.call();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function()? initial,
+    TResult Function()? loading,
+    TResult Function(String error)? error,
+    TResult Function(Onboarding onboarding)? onboarding,
+    TResult Function(ShellStateSuccess succcess)? success,
+    TResult Function()? loggedOut,
+    required TResult orElse(),
+  }) {
+    if (loggedOut != null) {
+      return loggedOut();
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(_Initial value) initial,
+    required TResult Function(_Loading value) loading,
+    required TResult Function(_Error value) error,
+    required TResult Function(_Onboarding value) onboarding,
+    required TResult Function(_Success value) success,
+    required TResult Function(_LoggedOut value) loggedOut,
+  }) {
+    return loggedOut(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(_Initial value)? initial,
+    TResult? Function(_Loading value)? loading,
+    TResult? Function(_Error value)? error,
+    TResult? Function(_Onboarding value)? onboarding,
+    TResult? Function(_Success value)? success,
+    TResult? Function(_LoggedOut value)? loggedOut,
+  }) {
+    return loggedOut?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(_Initial value)? initial,
+    TResult Function(_Loading value)? loading,
+    TResult Function(_Error value)? error,
+    TResult Function(_Onboarding value)? onboarding,
+    TResult Function(_Success value)? success,
+    TResult Function(_LoggedOut value)? loggedOut,
+    required TResult orElse(),
+  }) {
+    if (loggedOut != null) {
+      return loggedOut(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class _LoggedOut implements ShellState {
+  const factory _LoggedOut() = _$LoggedOutImpl;
 }
 
 /// @nodoc

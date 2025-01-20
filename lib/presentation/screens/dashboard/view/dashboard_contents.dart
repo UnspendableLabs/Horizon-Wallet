@@ -517,6 +517,10 @@ class HorizonAppBarContent extends StatelessWidget {
                           ),
                           onSelected: (value) {
                             switch (value) {
+                              case 'lock_screen':
+                                context.read<ShellStateCubit>().onLogout();
+                                return;
+
                               case 'reset':
                                 HorizonUI.HorizonDialog.show(
                                     context: context,
@@ -610,6 +614,10 @@ class HorizonAppBarContent extends StatelessWidget {
                             const PopupMenuItem<String>(
                               value: 'reset',
                               child: Text('Reset wallet'),
+                            ),
+                            const PopupMenuItem<String>(
+                              value: 'lock_screen',
+                              child: Text('Lock Screen'),
                             ),
                           ],
                         )),

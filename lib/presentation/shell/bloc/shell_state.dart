@@ -16,6 +16,7 @@ class ShellState with _$ShellState {
   const factory ShellState.error(String error) = _Error;
   const factory ShellState.onboarding(Onboarding onboarding) = _Onboarding;
   const factory ShellState.success(ShellStateSuccess succcess) = _Success;
+  const factory ShellState.loggedOut() = _LoggedOut;
 }
 
 @freezed
