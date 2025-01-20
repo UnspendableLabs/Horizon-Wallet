@@ -276,5 +276,76 @@ void main() {
       expect(capturedInputs.length, equals(20));
       expect(capturedInputs, containsAllInOrder(sortedUtxos));
     });
+
+    test('should throw ComposeTransactionException when no UTXOs are found',
+        () async {
+      final composeTransactionUseCase = ComposeTransactionUseCase(
+        utxoRepository: mockUtxoRepository,
+        balanceRepository: mockBalanceRepository,
+      );
+
+      // Arrange
+      const source = 'test_source_address';
+      const feeRate = 10;
+
+      when(() => mockUtxoRepository.getUnspentForAddress(source,
+          excludeCached: true)).thenAnswer((_) async => []);
+
+      // Act & Assert
+      expect(
+        () => composeTransactionUseCase.call(
+          feeRate: feeRate,
+          source: source,
+          params: mockComposeParams,
+          composeFn: mockComposeFunction.call,
+        ),
+        throwsA(isA<ComposeTransactionException>().having((e) => e.message,
+            'message', 'Exception: No UTXOs found for transaction')),
+      );
+    });
+
+    test(
+        'should throw ComposeTransactionException when no UTXOs without balance are found in large inputs set',
+        () async {
+      final composeTransactionUseCase = ComposeTransactionUseCase(
+        utxoRepository: mockUtxoRepository,
+        balanceRepository: mockBalanceRepository,
+      );
+
+      // Arrange
+      const source = 'test_source_address';
+      const feeRate = 10;
+      final mockUtxos = List.generate(25, (_) => MockUtxo());
+
+      // Setup UTXOs
+      for (var i = 0; i < mockUtxos.length; i++) {
+        when(() => mockUtxos[i].txid).thenReturn('mockTxId$i');
+        when(() => mockUtxos[i].vout).thenReturn(i);
+        when(() => mockUtxos[i].value).thenReturn(1000 - i);
+      }
+
+      when(() => mockUtxoRepository.getUnspentForAddress(source,
+          excludeCached: true)).thenAnswer((_) async => mockUtxos);
+
+      // Make all UTXOs have balances
+      for (var i = 0; i < mockUtxos.length; i++) {
+        when(() => mockBalanceRepository.getBalancesForUTXO('mockTxId$i:$i'))
+            .thenAnswer((_) async => [MockBalance()]);
+      }
+
+      // Act & Assert
+      expect(
+        () => composeTransactionUseCase.call(
+          feeRate: feeRate,
+          source: source,
+          params: mockComposeParams,
+          composeFn: mockComposeFunction.call,
+        ),
+        throwsA(isA<ComposeTransactionException>().having(
+            (e) => e.message,
+            'message',
+            'Exception: No UTXOs with no balance found for transaction')),
+      );
+    });
   });
 }

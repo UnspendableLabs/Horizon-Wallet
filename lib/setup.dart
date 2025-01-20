@@ -169,6 +169,7 @@ void setup() {
             Response: ${error.response?.data ?? 'No response (connection failed)'}
             Message: ${error.message}
             Response: ${error.response}
+            App Version: ${config.version}
           """,
       stackTrace: error.stackTrace,
       context: {
@@ -181,6 +182,7 @@ void setup() {
         'connectionError': error.type == DioExceptionType.connectionError,
         'errorMessage': error.message,
         'response': error.response,
+        'appVersion': config.version,
       },
     );
 
