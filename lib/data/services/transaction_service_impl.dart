@@ -15,6 +15,7 @@ import 'package:horizon/js/ecpair.dart' as ecpair;
 import 'package:horizon/js/horizon_utils.dart' as horizon_utils;
 import 'package:horizon/js/tiny_secp256k1.dart' as tinysecp256k1js;
 import 'package:horizon/presentation/common/shared_util.dart';
+import 'dart:math';
 
 const DEFAULT_SEQUENCE = 0xffffffff;
 const SIGHASH_DEFAULT = 0x00;
@@ -29,12 +30,85 @@ const ADVANCED_TRANSACTION_FLAG = 0x01;
 
 class TransactionServiceImpl implements TransactionService {
   final Config config;
-
   ecpair.ECPairFactory ecpairFactory =
       ecpair.ECPairFactory(tinysecp256k1js.ecc);
   final bitcoinRepository = GetIt.I.get<BitcoinRepository>();
 
   TransactionServiceImpl({required this.config});
+
+  @override
+  Future<MakeRBFResponse> makeRBF({
+    required String source,
+    required String txHex,
+    required int oldFee,
+    required int newFee,
+  }) async {
+    if (newFee <= oldFee) {
+      throw TransactionServiceException('New fee must be greater than old fee');
+    }
+
+    final feeDelta = newFee - oldFee;
+
+    bitcoinjs.Psbt psbt = bitcoinjs.Psbt();
+
+    bitcoinjs.Transaction transaction = bitcoinjs.Transaction.fromHex(txHex);
+
+    Map<String, List<int>> txHashToInputsMap = {};
+    for (bitcoinjs.TxInput input in transaction.ins.toDart) {
+      psbt.addInput(input);
+
+      var txHash = HEX.encode(input.hash.toDart.reversed.toList());
+
+      txHashToInputsMap[txHash] = txHashToInputsMap[txHash] ?? [];
+
+      txHashToInputsMap[txHash]!.add(input.index);
+    }
+
+    // We assume that the last output is change output.
+
+    int lastOutIndex = transaction.outs.toDart.length - 1;
+
+    final lastOut = transaction.outs.toDart[lastOutIndex];
+
+    final lastOutAddress =
+        bitcoinjs.Address.fromOutputScript(lastOut.script, _getNetwork())
+            .toString();
+
+    if (lastOutAddress != source) {
+      throw TransactionServiceException('Last output is not change output');
+    }
+
+    final newValue = lastOut.value - feeDelta;
+
+    if (newValue < 0) {
+      throw TransactionServiceException(
+          'Fee increase exceeds available change');
+    }
+
+    for (var i = 0; i < lastOutIndex; i++) {
+      final output = transaction.outs.toDart[i];
+      psbt.addOutput(output);
+    }
+
+    // only add change output if new value is > 0
+    if (newValue > 0) {
+      lastOut.value = newValue;
+      psbt.addOutput(lastOut);
+    }
+
+    final tx = psbt.cache.tx;
+    final txHex_ = tx.toHex();
+    final virtualSize = tx.virtualSize();
+    final sigops = countSigOps(rawtransaction: txHex);
+    final adjustedVirtualSize = max(virtualSize, sigops * 5);
+
+    return MakeRBFResponse(
+        txHex: txHex_,
+        virtualSize: virtualSize,
+        fee: newFee,
+        adjustedVirtualSize: adjustedVirtualSize,
+        inputsByTxHash: txHashToInputsMap);
+  }
 
   @override
   String signPsbt(String psbtHex, Map<int, String> inputPrivateKeyMap,
@@ -48,6 +122,7 @@ class TransactionServiceImpl implements TransactionService {
       Buffer privKeyJS =
           Buffer.from(Uint8List.fromList(hex.decode(privateKey)).toJS);
       final network = _getNetwork();
+
       dynamic signer = ecpairFactory.fromPrivateKey(privKeyJS, network);
 
       psbt.signInput(
@@ -58,8 +133,12 @@ class TransactionServiceImpl implements TransactionService {
   }
 
   @override
-  Future<String> signTransaction(String unsignedTransaction, String privateKey,
-      String sourceAddress, Map<String, Utxo> utxoMap) async {
+  Future<String> signTransaction(
+    String unsignedTransaction,
+    String privateKey,
+    String sourceAddress,
+    Map<String, Utxo> utxoMap,
+  ) async {
     bitcoinjs.Transaction transaction =
         bitcoinjs.Transaction.fromHex(unsignedTransaction);
 
@@ -110,7 +189,7 @@ class TransactionServiceImpl implements TransactionService {
         }
       } else {
         throw TransactionServiceException(
-            'Insufficient funds: no utxos available');
+            'Could not find output at $txHashKey');
       }
     }
 

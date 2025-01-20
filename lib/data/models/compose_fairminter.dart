@@ -1,3 +1,4 @@
+import 'package:horizon/data/models/signed_tx_estimated_size.dart';
 import 'package:horizon/domain/entities/compose_fairminter.dart';
 import 'package:json_annotation/json_annotation.dart';
 
@@ -13,18 +14,18 @@ class ComposeFairminterVerboseModel {
   final int btcFee;
   final String rawtransaction;
   final ComposeFairminterVerboseParamsModel params;
-  // final FairmintUnpackedVerbose unpackedData;
+  final SignedTxEstimatedSizeModel signedTxEstimatedSize;
 
   ComposeFairminterVerboseModel({
     required this.rawtransaction,
     required this.params,
     required this.name,
-    // required this.unpackedData,
     required this.btcIn,
     required this.btcOut,
     this.btcChange,
     required this.btcFee,
     required this.data,
+    required this.signedTxEstimatedSize,
   });
 
   factory ComposeFairminterVerboseModel.fromJson(Map<String, dynamic> json) =>
@@ -39,6 +40,7 @@ class ComposeFairminterVerboseModel {
         btcChange: btcChange,
         btcFee: btcFee,
         params: params.toDomain(),
+        signedTxEstimatedSize: signedTxEstimatedSize.toDomain(),
       );
 }
 

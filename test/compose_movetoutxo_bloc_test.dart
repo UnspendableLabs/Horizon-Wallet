@@ -4,6 +4,7 @@ import 'package:get_it/get_it.dart';
 import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/domain/entities/compose_movetoutxo.dart';
+import 'package:horizon/domain/entities/compose_response.dart';
 import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/domain/entities/fee_option.dart' as FeeOption;
 import 'package:horizon/domain/repositories/compose_repository.dart';
@@ -214,12 +215,15 @@ void main() {
               composeFn: any(named: 'composeFn'),
               params: any(named: 'params'),
             )).thenAnswer(
-          (_) async => (
-            mockComposeMoveToUtxoResponse,
-            FakeVirtualSize(virtualSize: 100, adjustedVirtualSize: 500)
-          ),
+          (_) async => mockComposeMoveToUtxoResponse,
         );
         when(() => mockComposeMoveToUtxoResponse.btcFee).thenReturn(250);
+        when(() => mockComposeMoveToUtxoResponse.signedTxEstimatedSize)
+            .thenReturn(SignedTxEstimatedSize(
+          virtualSize: 120,
+          adjustedVirtualSize: 155,
+          sigopsCount: 1,
+        ));
         return composeMoveToUtxoBloc;
       },
       seed: () => composeMoveToUtxoBloc.state.copyWith(
@@ -243,7 +247,9 @@ void main() {
               .having((s) => s.composeTransaction, 'composeTransaction',
                   mockComposeMoveToUtxoResponse)
               .having((s) => s.fee, 'fee', 250)
-              .having((s) => s.feeRate, 'feeRate', 3),
+              .having((s) => s.feeRate, 'feeRate', 3)
+              .having((s) => s.virtualSize, 'virtualSize', 120)
+              .having((s) => s.adjustedVirtualSize, 'adjustedVirtualSize', 155),
         ),
       ],
     );

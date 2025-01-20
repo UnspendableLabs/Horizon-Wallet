@@ -33,7 +33,9 @@ class ErrorServiceImpl implements ErrorService {
 
   @override
   Future<void> captureException(dynamic exception,
-      {String? message, StackTrace? stackTrace}) async {
+      {String? message,
+      StackTrace? stackTrace,
+      Map<String, dynamic>? context}) async {
     if (!config.isSentryEnabled || !_isInitialized) return;
 
     try {
@@ -43,6 +45,7 @@ class ErrorServiceImpl implements ErrorService {
           type: 'error',
           category: 'error',
           message: message ?? exception.toString(),
+          data: context,
         ),
       );
       logger.info('Breadcrumb error added to Sentry');

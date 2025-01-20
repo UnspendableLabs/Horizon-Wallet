@@ -17,7 +17,7 @@ void main() {
   group('Onboarding Integration Tests', () {
     setUpAll(() async {
       // Perform any common setup here
-      await setup();
+      setup();
     });
 
     testWidgets('recover mnemonic', (WidgetTester tester) async {

@@ -15,7 +15,7 @@ void main() {
     late EncryptionServiceWebWorkerImpl fallbackEncryptionService;
 
     setUpAll(() async {
-      await setup();
+      setup();
       encryptionService = GetIt.instance<EncryptionService>();
       fallbackEncryptionService = EncryptionServiceWebWorkerImpl();
     });

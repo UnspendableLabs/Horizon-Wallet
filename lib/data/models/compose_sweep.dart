@@ -1,3 +1,4 @@
+import 'package:horizon/data/models/signed_tx_estimated_size.dart';
 import 'package:horizon/domain/entities/compose_sweep.dart';
 import 'package:json_annotation/json_annotation.dart';
 
@@ -13,6 +14,7 @@ class ComposeSweepResponseModel {
   final int btcFee;
   final String rawtransaction;
   final ComposeSweepParamsModel params;
+  final SignedTxEstimatedSizeModel signedTxEstimatedSize;
 
   ComposeSweepResponseModel({
     required this.rawtransaction,
@@ -23,6 +25,7 @@ class ComposeSweepResponseModel {
     required this.btcChange,
     required this.btcFee,
     this.data,
+    required this.signedTxEstimatedSize,
   });
 
   factory ComposeSweepResponseModel.fromJson(Map<String, dynamic> json) =>
@@ -36,6 +39,7 @@ class ComposeSweepResponseModel {
         rawtransaction: rawtransaction,
         btcFee: btcFee,
         params: params.toDomain(),
+        signedTxEstimatedSize: signedTxEstimatedSize.toDomain(),
       );
 }
 

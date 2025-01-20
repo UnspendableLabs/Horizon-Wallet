@@ -6,6 +6,7 @@ import 'package:horizon/domain/entities/asset.dart';
 import 'package:horizon/domain/entities/asset_info.dart';
 import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/domain/entities/compose_dividend.dart';
+import 'package:horizon/domain/entities/compose_response.dart';
 import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/domain/entities/fee_option.dart' as FeeOption;
 import 'package:horizon/domain/repositories/compose_repository.dart';
@@ -281,51 +282,44 @@ void main() {
   });
 
   group('ComposeTransactionEvent', () {
-    final mockVirtualSize = FakeVirtualSize(
-      virtualSize: 1000,
-      adjustedVirtualSize: 1000,
-    );
-
-    final mockComposeDividendResponse = MockComposeDividendResponse();
-    final mockParams = ComposeDividendEventParams(
-      assetName: 'ASSET_NAME',
-      quantityPerUnit: 100,
-      dividendAsset: 'DIVIDEND_ASSET',
-    );
-
     blocTest<ComposeDividendBloc, ComposeDividendState>(
       'emits success state when transaction is composed successfully',
       build: () {
         when(() => mockComposeTransactionUseCase
-                    .call<ComposeDividendParams, ComposeDividendResponse>(
-                  feeRate: any(named: 'feeRate'),
-                  source: any(named: 'source'),
-                  params: any(named: 'params'),
-                  composeFn: any(named: 'composeFn'),
-                ))
-            .thenAnswer(
-                (_) async => (mockComposeDividendResponse, mockVirtualSize));
+                .call<ComposeDividendParams, ComposeDividendResponse>(
+              feeRate: any(named: 'feeRate'),
+              source: any(named: 'source'),
+              params: any(named: 'params'),
+              composeFn: any(named: 'composeFn'),
+            )).thenAnswer((_) async => mockComposeDividendResponse);
 
         when(() => mockComposeDividendResponse.btcFee).thenReturn(250);
+        when(() => mockComposeDividendResponse.signedTxEstimatedSize)
+            .thenReturn(SignedTxEstimatedSize(
+          virtualSize: 120,
+          adjustedVirtualSize: 155,
+          sigopsCount: 1,
+        ));
 
         return composeDividendBloc;
       },
       seed: () => composeDividendBloc.state.copyWith(
         feeState: const FeeState.success(mockFeeEstimates),
+        feeOption: FeeOption.Medium(),
       ),
-      act: (bloc) => bloc.add(
-        ComposeTransactionEvent(
-          sourceAddress: 'source-address',
-          params: mockParams,
+      act: (bloc) => bloc.add(ComposeTransactionEvent(
+        params: ComposeDividendEventParams(
+          assetName: composeTransactionParams.asset,
+          quantityPerUnit: composeTransactionParams.quantityPerUnit,
+          dividendAsset: composeTransactionParams.dividendAsset,
         ),
-      ),
+        sourceAddress: 'source-address',
+      )),
       expect: () => [
         isA<ComposeDividendState>().having(
           (state) => state.submitState,
           'submitState',
-          isA<SubmitInitial>()
-              .having((s) => s.loading, 'loading', true)
-              .having((s) => s.error, 'error', null),
+          isA<SubmitInitial>().having((s) => s.loading, 'loading', true),
         ),
         isA<ComposeDividendState>().having(
           (state) => state.submitState,
@@ -334,11 +328,9 @@ void main() {
               .having((s) => s.composeTransaction, 'composeTransaction',
                   mockComposeDividendResponse)
               .having((s) => s.fee, 'fee', 250)
-              .having((s) => s.feeRate, 'feeRate', mockFeeEstimates.medium)
-              .having((s) => s.virtualSize, 'virtualSize',
-                  mockVirtualSize.virtualSize)
-              .having((s) => s.adjustedVirtualSize, 'adjustedVirtualSize',
-                  mockVirtualSize.adjustedVirtualSize),
+              .having((s) => s.feeRate, 'feeRate', 3)
+              .having((s) => s.virtualSize, 'virtualSize', 120)
+              .having((s) => s.adjustedVirtualSize, 'adjustedVirtualSize', 155),
         ),
       ],
     );
@@ -364,7 +356,11 @@ void main() {
       act: (bloc) => bloc.add(
         ComposeTransactionEvent(
           sourceAddress: 'source-address',
-          params: mockParams,
+          params: ComposeDividendEventParams(
+            assetName: composeTransactionParams.asset,
+            quantityPerUnit: composeTransactionParams.quantityPerUnit,
+            dividendAsset: composeTransactionParams.dividendAsset,
+          ),
         ),
       ),
       expect: () => [

@@ -25,6 +25,8 @@ class ComposeDividendResponse implements ComposeResponse {
   final String rawtransaction;
   @override
   final int btcFee;
+  @override
+  final SignedTxEstimatedSize signedTxEstimatedSize;
   final String? data;
   final String name;
 
@@ -36,6 +38,7 @@ class ComposeDividendResponse implements ComposeResponse {
     required this.data,
     required this.name,
     required this.params,
+    required this.signedTxEstimatedSize,
   });
 }
 

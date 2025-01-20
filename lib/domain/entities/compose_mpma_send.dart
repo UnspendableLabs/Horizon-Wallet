@@ -43,6 +43,8 @@ class ComposeMpmaSendResponse extends ComposeResponse {
   final String rawtransaction;
   @override
   final int btcFee;
+  @override
+  final SignedTxEstimatedSize signedTxEstimatedSize;
   final ComposeMpmaSendResponseParams params;
   final String name;
 
@@ -51,5 +53,6 @@ class ComposeMpmaSendResponse extends ComposeResponse {
     required this.params,
     required this.name,
     required this.btcFee,
+    required this.signedTxEstimatedSize,
   });
 }

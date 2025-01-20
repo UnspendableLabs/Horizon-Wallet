@@ -5,6 +5,7 @@ import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/domain/entities/asset_info.dart';
 import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/domain/entities/compose_destroy.dart';
+import 'package:horizon/domain/entities/compose_response.dart';
 import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/domain/entities/fee_option.dart' as FeeOption;
 import 'package:horizon/domain/repositories/balance_repository.dart';
@@ -227,18 +228,22 @@ void main() {
     blocTest<ComposeDestroyBloc, ComposeDestroyState>(
       'emits SubmitComposingTransaction when transaction composition succeeds',
       build: () {
-        when(
-            () => mockComposeTransactionUseCase
-                    .call<ComposeDestroyParams, ComposeDestroyResponse>(
-                  feeRate: any(named: 'feeRate'),
-                  source: any(named: 'source'),
-                  params: any(named: 'params'),
-                  composeFn: any(named: 'composeFn'),
-                )).thenAnswer((_) async => (
-              mockComposeDestroyResponse,
-              FakeVirtualSize(virtualSize: 100, adjustedVirtualSize: 500),
-            ));
+        when(() => mockComposeTransactionUseCase
+                .call<ComposeDestroyParams, ComposeDestroyResponse>(
+              feeRate: any(named: 'feeRate'),
+              source: any(named: 'source'),
+              params: any(named: 'params'),
+              composeFn: any(named: 'composeFn'),
+            )).thenAnswer((_) async => mockComposeDestroyResponse);
+
         when(() => mockComposeDestroyResponse.btcFee).thenReturn(250);
+        when(() => mockComposeDestroyResponse.signedTxEstimatedSize)
+            .thenReturn(SignedTxEstimatedSize(
+          virtualSize: 120,
+          adjustedVirtualSize: 155,
+          sigopsCount: 1,
+        ));
+
         return composeDestroyBloc;
       },
       seed: () => composeDestroyBloc.state.copyWith(
@@ -262,7 +267,9 @@ void main() {
               .having((s) => s.composeTransaction, 'composeTransaction',
                   mockComposeDestroyResponse)
               .having((s) => s.fee, 'fee', 250)
-              .having((s) => s.feeRate, 'feeRate', 3),
+              .having((s) => s.feeRate, 'feeRate', 3)
+              .having((s) => s.virtualSize, 'virtualSize', 120)
+              .having((s) => s.adjustedVirtualSize, 'adjustedVirtualSize', 155),
         ),
       ],
     );

@@ -24,6 +24,8 @@ class ComposeAttachUtxoResponse implements ComposeResponse {
   final String rawtransaction;
   @override
   final int btcFee;
+  @override
+  final SignedTxEstimatedSize signedTxEstimatedSize;
   final String data;
   final String name;
 
@@ -32,6 +34,7 @@ class ComposeAttachUtxoResponse implements ComposeResponse {
   ComposeAttachUtxoResponse({
     required this.rawtransaction,
     required this.btcFee,
+    required this.signedTxEstimatedSize,
     required this.data,
     required this.name,
     required this.params,

@@ -131,7 +131,7 @@ import 'dart:html' as html;
 import 'package:horizon/domain/services/error_service.dart';
 import 'package:horizon/data/services/error_service_impl.dart';
 
-Future<void> setup() async {
+void setup() {
   GetIt injector = GetIt.I;
 
   injector.registerSingleton<Logger>(LoggerImpl(
@@ -152,6 +152,45 @@ Future<void> setup() async {
   Config config = ConfigImpl();
 
   injector.registerLazySingleton<Config>(() => config);
+
+  bool dioRetryEvaluatorFunc(error, retryCount) {
+// the retry function is called on each retry, and it logs a single issue in sentry per error (rather than multiple entries for the same error)
+// it provides a single, customizable place to catch all dio errors
+// we are able to catch the original error + message without the need to parse the dio specific data
+// we should eventually move this to a more generic onError handler but for now we get enough info from the original error to be able to address the error
+    GetIt.I<ErrorService>().captureException(
+      error,
+      message: """
+            Original error before retry:
+            Status Code: ${error.response?.statusCode ?? 'No status code (connection failed)'}
+            Error: ${error.error.toString()}
+            URL: ${error.requestOptions.uri}
+            Type: ${error.type}
+            Response: ${error.response?.data ?? 'No response (connection failed)'}
+            Message: ${error.message}
+            Response: ${error.response}
+          """,
+      stackTrace: error.stackTrace,
+      context: {
+        'errorType': error.type.toString(),
+        'statusCode':
+            error.response?.statusCode?.toString() ?? 'connection_failed',
+        'method': error.requestOptions.method,
+        'path': error.requestOptions.path,
+        'retryCount': retryCount.toString(),
+        'connectionError': error.type == DioExceptionType.connectionError,
+        'errorMessage': error.message,
+        'response': error.response,
+      },
+    );
+
+    final shouldRetry = error.response?.statusCode == 400 ||
+        error.type == DioExceptionType.connectionTimeout ||
+        error.type == DioExceptionType.receiveTimeout ||
+        error.type == DioExceptionType.connectionError;
+
+    return shouldRetry;
+  }
 
   final dio = Dio(BaseOptions(
     baseUrl: config.counterpartyApiBase,
@@ -175,22 +214,22 @@ Future<void> setup() async {
   ));
 
   dio.interceptors.addAll([
-    // RetryInterceptor(dio: dio, maxRetries: 3, initialDelayMs: 500),
     TimeoutInterceptor(),
     ConnectionErrorInterceptor(),
     BadResponseInterceptor(),
     BadCertificateInterceptor(),
     SimpleLogInterceptor(),
     RetryInterceptor(
-      dio: dio, retries: 3,
-      retryableExtraStatuses: {400}, // to handle backend bug with compose
+      dio: dio,
+      retries: 3,
       retryDelays: const [
         // set delays between retries (optional)
         Duration(seconds: 1), // wait 1 sec before first retry
         Duration(seconds: 1), // wait 2 sec before second retry
         Duration(seconds: 1), // wait 3 sec before third retry
       ],
-    ), // Add the RetryInterceptor here
+      retryEvaluator: dioRetryEvaluatorFunc,
+    )
   ]);
 
   injector.registerLazySingleton<V2Api>(() => V2Api(dio));
@@ -214,9 +253,10 @@ Future<void> setup() async {
         Duration(seconds: 1), // wait 1 sec before first retry
         Duration(seconds: 2), // wait 2 sec before second retry
         Duration(seconds: 3), // wait 3 sec before third retry
-        Duration(seconds: 5), // wait 3 sec before third retryh
+        Duration(seconds: 4), // wait 4 sec before fourth retry
       ],
-    ), // Add the RetryInterceptor here
+      retryEvaluator: dioRetryEvaluatorFunc,
+    ),
   ]);
 
   final mempoolspaceDio = Dio(BaseOptions(
@@ -234,6 +274,7 @@ Future<void> setup() async {
         Duration(seconds: 1), // wait 2 sec before second retry
         Duration(seconds: 1), // wait 3 sec before third retry
       ],
+      retryEvaluator: dioRetryEvaluatorFunc,
     ), // Add the RetryInterceptor here
   ]);
 
@@ -268,6 +309,7 @@ Future<void> setup() async {
       GetIt.I<Logger>(),
     ),
   );
+  GetIt.I.get<ErrorService>().initialize();
 
   injector.registerSingleton<BitcoinRepository>(BitcoinRepositoryImpl(
     esploraApi: EsploraApi(
@@ -423,7 +465,6 @@ Future<void> setup() async {
       .registerSingleton<ComposeTransactionUseCase>(ComposeTransactionUseCase(
     utxoRepository: GetIt.I.get<UtxoRepository>(),
     balanceRepository: injector.get<BalanceRepository>(),
-    getVirtualSizeUseCase: GetIt.I.get<GetVirtualSizeUseCase>(),
   ));
 
   injector.registerSingleton<FetchFairminterFormDataUseCase>(
@@ -552,6 +593,7 @@ class CustomDioException extends DioException {
     required super.requestOptions,
     required String super.error,
     required super.type,
+    super.response,
   });
 
   @override
@@ -572,13 +614,7 @@ class TimeoutInterceptor extends Interceptor {
         error:
             'Timeout (${timeoutDuration.inSeconds}s) — Request Failed \n ${err.response?.data?['error']}',
         type: DioExceptionType.connectionTimeout,
-      );
-
-      GetIt.I<ErrorService>().captureException(
-        formattedError,
-        message:
-            " ${err.response?.statusCode} \n ${formattedError.error.toString()} \n ${err.requestOptions.uri}",
-        stackTrace: err.stackTrace,
+        response: err.response,
       );
 
       GetIt.I<Logger>().debug(formattedError.toString());
@@ -599,13 +635,7 @@ class ConnectionErrorInterceptor extends Interceptor {
         error:
             'Connection Error — Request Failed ${err.response?.data?['error'] != null ? "\n\n ${err.response?.data?['error']}" : ""}',
         type: DioExceptionType.connectionError,
-      );
-
-      GetIt.I<ErrorService>().captureException(
-        formattedError,
-        message:
-            " ${err.response?.statusCode} \n ${formattedError.error.toString()} \n ${err.requestOptions.uri}",
-        stackTrace: err.stackTrace,
+        response: err.response,
       );
 
       GetIt.I<Logger>().debug(formattedError.toString());
@@ -626,16 +656,8 @@ class BadResponseInterceptor extends Interceptor {
             ? "${err.response?.data?['error']}"
             : "Bad Response",
         type: DioExceptionType.badResponse,
+        response: err.response,
       );
-
-      GetIt.I<ErrorService>().captureException(
-        formattedError,
-        message:
-            "${err.response?.statusCode} \n ${formattedError.error.toString()} \n${err.requestOptions.uri}",
-        stackTrace: err.stackTrace,
-      );
-
-      GetIt.I<Logger>().debug(formattedError.toString());
 
       GetIt.I<Logger>().debug(formattedError.toString());
       handler.next(formattedError);
@@ -655,6 +677,7 @@ class BadCertificateInterceptor extends Interceptor {
         error:
             'Bad Certificate — Request Failed ${err.response?.data?['error'] != null ? "\n\n ${err.response?.data?['error']}" : ""}',
         type: DioExceptionType.badCertificate,
+        response: err.response,
       );
       GetIt.I<Logger>().debug(formattedError.toString());
       handler.next(formattedError);
@@ -685,11 +708,6 @@ class SimpleLogInterceptor extends Interceptor {
   void onError(DioException err, ErrorInterceptorHandler handler) {
     final errorInfo =
         '${err.requestOptions.method} ${err.requestOptions.uri} [Error] ${err.message}';
-
-    GetIt.I<ErrorService>().captureException(
-      errorInfo,
-      stackTrace: err.stackTrace,
-    );
 
     GetIt.I<Logger>().debug('Error: $errorInfo');
     if (err.response != null) {

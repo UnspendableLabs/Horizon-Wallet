@@ -1,5 +1,6 @@
 import 'package:horizon/data/models/asset_info.dart';
 import 'package:horizon/data/models/dividend_asset_info.dart';
+import 'package:horizon/data/models/signed_tx_estimated_size.dart';
 import 'package:horizon/domain/entities/compose_dividend.dart';
 import 'package:json_annotation/json_annotation.dart';
 
@@ -15,7 +16,7 @@ class ComposeDividendResponseModel {
   final int btcFee;
   final String rawtransaction;
   final ComposeDividendParamsModel params;
-
+  final SignedTxEstimatedSizeModel signedTxEstimatedSize;
   ComposeDividendResponseModel({
     required this.rawtransaction,
     required this.params,
@@ -25,6 +26,7 @@ class ComposeDividendResponseModel {
     required this.btcChange,
     required this.btcFee,
     this.data,
+    required this.signedTxEstimatedSize,
   });
 
   factory ComposeDividendResponseModel.fromJson(Map<String, dynamic> json) =>
@@ -38,6 +40,7 @@ class ComposeDividendResponseModel {
         rawtransaction: rawtransaction,
         btcFee: btcFee,
         params: params.toDomain(),
+        signedTxEstimatedSize: signedTxEstimatedSize.toDomain(),
       );
 }
 
