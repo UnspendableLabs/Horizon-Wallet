@@ -138,8 +138,7 @@ class ComposeSendPageState extends State<ComposeSendPage> {
         success: (maxValue) {
           if (state.sendMax) {
             if (state.submitState is SubmitInitial) {
-              // the listener was attempting to set the quantity to the max value during any submit state
-              // we only want to do this if we are in the initial state
+              // we only want to set the quantity to the max if we are in the initial state
               final formattedValue =
                   _formatMaxValue(state, maxValue, state.asset);
 
