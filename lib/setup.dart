@@ -154,6 +154,10 @@ void setup() {
   injector.registerLazySingleton<Config>(() => config);
 
   bool dioRetryEvaluatorFunc(error, retryCount) {
+// the retry function is called on each retry, and it logs a single issue in sentry per error (rather than multiple entries for the same error)
+// it provides a single, customizable place to catch all dio errors
+// we are able to catch the original error + message without the need to parse the dio specific data
+// we should eventually move this to a more generic onError handler but for now we get enough info from the original error to be able to address the error
     GetIt.I<ErrorService>().captureException(
       error,
       message: """
