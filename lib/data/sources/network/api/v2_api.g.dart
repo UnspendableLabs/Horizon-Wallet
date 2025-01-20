@@ -5814,7 +5814,7 @@ class _V2Api implements V2Api {
   @override
   Future<Response<ComposeFairmintVerboseModel>> composeFairmintVerbose(
     String address,
-    String asset, [
+    int asset, [
     int? satPerVbyte,
     String? inputsSet,
     bool? excludeUtxosWithBalances,

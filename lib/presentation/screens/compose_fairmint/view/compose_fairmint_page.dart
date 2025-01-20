@@ -433,7 +433,7 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
       const SizedBox(height: 16.0),
       HorizonUI.HorizonTextFormField(
         label: "Asset",
-        controller: TextEditingController(text: params.asset),
+        controller: TextEditingController(text: params.asset.toString()),
         enabled: false,
       ),
       const SizedBox(height: 16.0),
