@@ -4,6 +4,7 @@ import 'package:horizon/domain/entities/utxo.dart';
 import 'package:horizon/domain/entities/compose_response.dart';
 import 'package:horizon/domain/entities/compose_fn.dart';
 import "package:equatable/equatable.dart";
+import 'package:horizon/domain/services/error_service.dart';
 
 class VirtualSize extends Equatable {
   final int virtualSize;
@@ -23,10 +24,12 @@ class ComposeTransactionException implements Exception {
 class ComposeTransactionUseCase {
   final UtxoRepository utxoRepository;
   final BalanceRepository balanceRepository;
+  final ErrorService errorService;
 
   const ComposeTransactionUseCase({
     required this.utxoRepository,
     required this.balanceRepository,
+    required this.errorService,
   });
 
   Future<R> call<P extends ComposeParams, R extends ComposeResponse>({
@@ -37,18 +40,32 @@ class ComposeTransactionUseCase {
   }) async {
     try {
       // Fetch UTXOs
-      List<Utxo> inputsSet = await utxoRepository.getUnspentForAddress(source,
-          excludeCached: true);
+      final (List<Utxo> inputsSet, List<dynamic>? cachedTxHashes) =
+          await utxoRepository.getUnspentForAddress(source,
+              excludeCached: true);
 
       if (inputsSet.isEmpty) {
-        throw Exception('No UTXOs found for transaction');
+        final error = Exception('No UTXOs available for transaction');
+        errorService.captureException(error,
+            message: 'No UTXOs available for transaction',
+            context: {
+              'source': source,
+              'params': params,
+              'feeRate': feeRate,
+              'composeFn': composeFn,
+              'inputsSet': inputsSet,
+              'cachedTxHashes': cachedTxHashes,
+            });
+        throw error;
       }
+
+      List<Utxo> inputsSetForTx = inputsSet;
 
       if (inputsSet.length > 20) {
-        inputsSet = await _getLargeInputsSet(inputsSet);
+        inputsSetForTx = await _getLargeInputsSet(inputsSet);
       }
 
-      final R finalTx = await composeFn(feeRate, inputsSet, params);
+      final R finalTx = await composeFn(feeRate, inputsSetForTx, params);
       return finalTx;
     } catch (e, stackTrace) {
       throw ComposeTransactionException(e.toString(), stackTrace);

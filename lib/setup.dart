@@ -467,6 +467,7 @@ void setup() {
       .registerSingleton<ComposeTransactionUseCase>(ComposeTransactionUseCase(
     utxoRepository: GetIt.I.get<UtxoRepository>(),
     balanceRepository: injector.get<BalanceRepository>(),
+    errorService: injector.get<ErrorService>(),
   ));
 
   injector.registerSingleton<FetchFairminterFormDataUseCase>(

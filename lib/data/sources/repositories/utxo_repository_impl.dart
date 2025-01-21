@@ -18,7 +18,7 @@ class UtxoRepositoryImpl implements UtxoRepository {
       : _esploraApi = esploraApi;
 
   @override
-  Future<List<Utxo>> getUnspentForAddress(String address,
+  Future<(List<Utxo>, List<dynamic>?)> getUnspentForAddress(String address,
       {bool excludeCached = false}) async {
     final esploraUtxos = await _esploraApi.getUtxosForAddress(address);
 
@@ -32,14 +32,17 @@ class UtxoRepositoryImpl implements UtxoRepository {
       );
     }).toList();
 
+    List<String>? cachedTxHashes = [];
+
     if (excludeCached) {
-      final cachedTxHashes = cacheProvider.getValue(address);
+      cachedTxHashes = cacheProvider.getValue(address);
       if (cachedTxHashes != null && cachedTxHashes.isNotEmpty) {
         utxos = utxos.where((utxo) {
-          return !(cachedTxHashes.contains(utxo.txid) && utxo.vout == 0);
+          return !(cachedTxHashes!.contains(utxo.txid) && utxo.vout == 0);
         }).toList();
       }
     }
-    return utxos;
+    final List<Utxo> utxoToReturn = [];
+    return (utxoToReturn, cachedTxHashes);
   }
 }
