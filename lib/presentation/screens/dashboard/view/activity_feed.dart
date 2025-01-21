@@ -214,7 +214,7 @@ class ActivityFeedListItem extends StatelessWidget {
           when _getSendSide(params.source) == SendSide.source =>
         RBF(txHash: params.txHash, address: params.source),
       VerboseEnhancedSendEvent(params: var params)
-          when _getSendSide(params.source) == SendSide.destination =>
+          when _getSendSide(params.source) == SendSide.source =>
         RBF(txHash: params.txHash, address: params.source),
       VerboseMpmaSendEvent(params: var params)
           when _getSendSide(params.source) == SendSide.source =>
