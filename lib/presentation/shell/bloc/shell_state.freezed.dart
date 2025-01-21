@@ -973,6 +973,7 @@ abstract class _LoggedOut implements ShellState {
 mixin _$ShellStateSuccess {
   bool get redirect => throw _privateConstructorUsedError;
   Wallet get wallet => throw _privateConstructorUsedError;
+  String get decryptedSecretKey => throw _privateConstructorUsedError;
   List<Account> get accounts => throw _privateConstructorUsedError;
   String? get currentAccountUuid => throw _privateConstructorUsedError;
   List<Address> get addresses => throw _privateConstructorUsedError;
@@ -996,6 +997,7 @@ abstract class $ShellStateSuccessCopyWith<$Res> {
   $Res call(
       {bool redirect,
       Wallet wallet,
+      String decryptedSecretKey,
       List<Account> accounts,
       String? currentAccountUuid,
       List<Address> addresses,
@@ -1019,6 +1021,7 @@ class _$ShellStateSuccessCopyWithImpl<$Res, $Val extends ShellStateSuccess>
   $Res call({
     Object? redirect = null,
     Object? wallet = null,
+    Object? decryptedSecretKey = null,
     Object? accounts = null,
     Object? currentAccountUuid = freezed,
     Object? addresses = null,
@@ -1035,6 +1038,10 @@ class _$ShellStateSuccessCopyWithImpl<$Res, $Val extends ShellStateSuccess>
           ? _value.wallet
           : wallet // ignore: cast_nullable_to_non_nullable
               as Wallet,
+      decryptedSecretKey: null == decryptedSecretKey
+          ? _value.decryptedSecretKey
+          : decryptedSecretKey // ignore: cast_nullable_to_non_nullable
+              as String,
       accounts: null == accounts
           ? _value.accounts
           : accounts // ignore: cast_nullable_to_non_nullable
@@ -1074,6 +1081,7 @@ abstract class _$$ShellStateSuccessImplCopyWith<$Res>
   $Res call(
       {bool redirect,
       Wallet wallet,
+      String decryptedSecretKey,
       List<Account> accounts,
       String? currentAccountUuid,
       List<Address> addresses,
@@ -1095,6 +1103,7 @@ class __$$ShellStateSuccessImplCopyWithImpl<$Res>
   $Res call({
     Object? redirect = null,
     Object? wallet = null,
+    Object? decryptedSecretKey = null,
     Object? accounts = null,
     Object? currentAccountUuid = freezed,
     Object? addresses = null,
@@ -1111,6 +1120,10 @@ class __$$ShellStateSuccessImplCopyWithImpl<$Res>
           ? _value.wallet
           : wallet // ignore: cast_nullable_to_non_nullable
               as Wallet,
+      decryptedSecretKey: null == decryptedSecretKey
+          ? _value.decryptedSecretKey
+          : decryptedSecretKey // ignore: cast_nullable_to_non_nullable
+              as String,
       accounts: null == accounts
           ? _value._accounts
           : accounts // ignore: cast_nullable_to_non_nullable
@@ -1145,6 +1158,7 @@ class _$ShellStateSuccessImpl implements _ShellStateSuccess {
   const _$ShellStateSuccessImpl(
       {required this.redirect,
       required this.wallet,
+      required this.decryptedSecretKey,
       required final List<Account> accounts,
       required this.currentAccountUuid,
       required final List<Address> addresses,
@@ -1159,6 +1173,8 @@ class _$ShellStateSuccessImpl implements _ShellStateSuccess {
   final bool redirect;
   @override
   final Wallet wallet;
+  @override
+  final String decryptedSecretKey;
   final List<Account> _accounts;
   @override
   List<Account> get accounts {
@@ -1194,11 +1210,6 @@ class _$ShellStateSuccessImpl implements _ShellStateSuccess {
   final ImportedAddress? currentImportedAddress;
 
   @override
-  String toString() {
-    return 'ShellStateSuccess._(redirect: $redirect, wallet: $wallet, accounts: $accounts, currentAccountUuid: $currentAccountUuid, addresses: $addresses, currentAddress: $currentAddress, importedAddresses: $importedAddresses, currentImportedAddress: $currentImportedAddress)';
-  }
-
-  @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
@@ -1206,6 +1217,8 @@ class _$ShellStateSuccessImpl implements _ShellStateSuccess {
             (identical(other.redirect, redirect) ||
                 other.redirect == redirect) &&
             (identical(other.wallet, wallet) || other.wallet == wallet) &&
+            (identical(other.decryptedSecretKey, decryptedSecretKey) ||
+                other.decryptedSecretKey == decryptedSecretKey) &&
             const DeepCollectionEquality().equals(other._accounts, _accounts) &&
             (identical(other.currentAccountUuid, currentAccountUuid) ||
                 other.currentAccountUuid == currentAccountUuid) &&
@@ -1224,6 +1237,7 @@ class _$ShellStateSuccessImpl implements _ShellStateSuccess {
       runtimeType,
       redirect,
       wallet,
+      decryptedSecretKey,
       const DeepCollectionEquality().hash(_accounts),
       currentAccountUuid,
       const DeepCollectionEquality().hash(_addresses),
@@ -1243,6 +1257,7 @@ abstract class _ShellStateSuccess implements ShellStateSuccess {
   const factory _ShellStateSuccess(
       {required final bool redirect,
       required final Wallet wallet,
+      required final String decryptedSecretKey,
       required final List<Account> accounts,
       required final String? currentAccountUuid,
       required final List<Address> addresses,
@@ -1254,6 +1269,8 @@ abstract class _ShellStateSuccess implements ShellStateSuccess {
   bool get redirect;
   @override
   Wallet get wallet;
+  @override
+  String get decryptedSecretKey;
   @override
   List<Account> get accounts;
   @override

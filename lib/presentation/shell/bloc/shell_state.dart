@@ -22,9 +22,16 @@ class ShellState with _$ShellState {
 @freezed
 class ShellStateSuccess with _$ShellStateSuccess {
   // Private constructor
+
+  @override
+  String toString() {
+    return 'ShellStateSuccess._(redirect: $redirect, wallet: $wallet, decryptedSecretKey: <REDACTED>, accounts: $accounts, currentAccountUuid: $currentAccountUuid, addresses: $addresses, currentAddress: $currentAddress, importedAddresses: $importedAddresses, currentImportedAddress: $currentImportedAddress)';
+  }
+
   const factory ShellStateSuccess._({
     required bool redirect,
     required Wallet wallet,
+    required String decryptedSecretKey,
     required List<Account> accounts,
     required String? currentAccountUuid,
     required List<Address> addresses,
@@ -37,6 +44,7 @@ class ShellStateSuccess with _$ShellStateSuccess {
   factory ShellStateSuccess.withAccount({
     required bool redirect,
     required Wallet wallet,
+    required String decryptedSecretKey,
     required List<Account> accounts,
     required String currentAccountUuid,
     required List<Address> addresses,
@@ -46,6 +54,7 @@ class ShellStateSuccess with _$ShellStateSuccess {
     return ShellStateSuccess._(
       redirect: redirect,
       wallet: wallet,
+      decryptedSecretKey: decryptedSecretKey,
       accounts: accounts,
       currentAccountUuid: currentAccountUuid,
       addresses: addresses,
@@ -62,6 +71,7 @@ class ShellStateSuccess with _$ShellStateSuccess {
     required bool shouldShowUpgradeWarning,
     required bool redirect,
     required Wallet wallet,
+    required String decryptedSecretKey,
     required List<Account> accounts,
     required List<Address> addresses,
     required List<ImportedAddress> importedAddresses,
@@ -70,6 +80,7 @@ class ShellStateSuccess with _$ShellStateSuccess {
     return ShellStateSuccess._(
       redirect: redirect,
       wallet: wallet,
+      decryptedSecretKey: decryptedSecretKey,
       accounts: accounts,
       currentAccountUuid: null,
       addresses: addresses,
