@@ -1,6 +1,9 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:formz/formz.dart';
+import 'package:horizon/domain/repositories/wallet_repository.dart';
+import 'package:horizon/domain/services/encryption_service.dart';
+import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 
 abstract class FormEvent extends Equatable {
   const FormEvent();
@@ -57,8 +60,17 @@ class Password extends FormzInput<String, PasswordValidationError> {
 }
 
 class LoginFormBloc extends Bloc<FormEvent, FormState> {
-  LoginFormBloc() : super(FormState()) {
+  final WalletRepository walletRepository;
+  final EncryptionService encryptionService;
+  final InMemoryKeyRepository inMemoryKeyRepository;
+
+  LoginFormBloc(
+      {required this.walletRepository,
+      required this.encryptionService,
+      required this.inMemoryKeyRepository})
+      : super(FormState()) {
     on<PasswordChanged>(_onPasswordChanged);
+    on<FormSubmitted>(_onFormSubmitted);
   }
 
   _onPasswordChanged(PasswordChanged event, Emitter<FormState> emit) {
@@ -69,12 +81,33 @@ class LoginFormBloc extends Bloc<FormEvent, FormState> {
     );
   }
 
-  _onFormSubmitted(FormSubmitted event, Emitter<FormState> emit) {
-    print("form submitted");
+  _onFormSubmitted(FormSubmitted event, Emitter<FormState> emit) async {
     emit(
       state.copyWith(
         status: FormzSubmissionStatus.inProgress,
       ),
     );
+
+    try {
+      final password = state.password.value;
+
+      final wallet = await walletRepository.getCurrentWallet();
+
+      print("password $password");
+
+      String decryptedPrivateKey =
+          await encryptionService.decrypt(wallet!.encryptedPrivKey, password);
+
+      await inMemoryKeyRepository.set(key: decryptedPrivateKey);
+
+      emit(
+        state.copyWith(
+          status: FormzSubmissionStatus.success,
+        ),
+      );
+    
+    } catch (e) {
+      emit(state.copyWith(
+        status: FormzSubmissionStatus.failure,)); } //TODO: set encryption key
   }
 }

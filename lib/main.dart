@@ -23,6 +23,7 @@ import 'package:horizon/domain/repositories/config_repository.dart';
 import 'package:horizon/domain/repositories/imported_address_repository.dart';
 import 'package:horizon/domain/repositories/version_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
+import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
@@ -736,6 +737,7 @@ class MyApp extends StatelessWidget {
         ),
         BlocProvider<ShellStateCubit>(
           create: (context) => ShellStateCubit(
+              inMemoryKeyRepository: GetIt.I<InMemoryKeyRepository>(),
               cacheProvider: GetIt.I<CacheProvider>(),
               walletRepository: GetIt.I<WalletRepository>(),
               accountRepository: GetIt.I<AccountRepository>(),

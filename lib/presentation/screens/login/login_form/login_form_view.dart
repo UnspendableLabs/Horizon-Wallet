@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:formz/formz.dart';
+import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 import "./login_form_bloc.dart" as b;
 
 class LoginForm extends StatefulWidget {
@@ -23,7 +24,10 @@ class _LoginFormState extends State<LoginForm> {
   Widget build(BuildContext context) {
     return BlocConsumer<b.LoginFormBloc, b.FormState>(
         listener: (context, state) {
-      // no op for now
+      if (state.status.isSuccess) {
+        final shell = context.read<ShellStateCubit>();
+        shell.initialize();
+      }
     }, builder: (context, state) {
       return Form(
           key: _key,

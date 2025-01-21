@@ -40,7 +40,7 @@ dependencies:
   flutter_bloc: ^8.1.5
   shared_preferences: ^2.2.3
   get_it: ^7.6.9
-  flutter_secure_storage: ^9.0.0
+  flutter_secure_storage: ^9.2.4
   logger: ^2.2.0
   dartsv: ^2.0.2
   bitcoin_base: ^4.2.1

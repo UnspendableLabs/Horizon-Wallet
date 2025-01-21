@@ -1,6 +1,13 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:get_it/get_it.dart';
+
+import 'package:horizon/data/services/secure_kv_service_impl.dart';
+import 'package:horizon/domain/services/secure_kv_service.dart';
+
+import 'package:horizon/data/sources/repositories/in_memory_key_repository_impl.dart';
+import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
+
 import 'package:horizon/data/services/address_service_impl.dart';
 import 'package:horizon/data/services/bip39_service_impl.dart';
 import 'package:horizon/data/services/bitcoind_service_impl.dart';
@@ -220,7 +227,7 @@ void setup() {
     ConnectionErrorInterceptor(),
     BadResponseInterceptor(),
     BadCertificateInterceptor(),
-    SimpleLogInterceptor(),
+    // SimpleLogInterceptor(),
     RetryInterceptor(
       dio: dio,
       retries: 3,
@@ -247,7 +254,7 @@ void setup() {
     ConnectionErrorInterceptor(),
     BadResponseInterceptor(),
     BadCertificateInterceptor(),
-    SimpleLogInterceptor(),
+    // SimpleLogInterceptor(),
     RetryInterceptor(
       dio: dio,
       retries: 4,
@@ -582,6 +589,12 @@ void setup() {
 
   injector.registerSingleton<PublicKeyService>(
       PublicKeyServiceImpl(config: config));
+
+  injector.registerSingleton<SecureKVService>(SecureKVServiceImpl());
+
+  injector.registerSingleton<InMemoryKeyRepository>(InMemoryKeyRepositoryImpl(
+    secureKVService: GetIt.I.get<SecureKVService>(),
+  ));
 
   // Register the appropriate platform service
   if (GetIt.I.get<Config>().isWebExtension) {

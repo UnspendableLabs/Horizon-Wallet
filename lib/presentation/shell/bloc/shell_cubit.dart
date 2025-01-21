@@ -9,6 +9,7 @@ import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
+import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 
 import './shell_state.dart';
 
@@ -19,6 +20,7 @@ class ShellStateCubit extends Cubit<ShellState> {
   AddressRepository addressRepository;
   ImportedAddressRepository importedAddressRepository;
   AnalyticsService analyticsService;
+  InMemoryKeyRepository inMemoryKeyRepository;
 
   ShellStateCubit(
       {required this.cacheProvider,
@@ -26,12 +28,23 @@ class ShellStateCubit extends Cubit<ShellState> {
       required this.accountRepository,
       required this.addressRepository,
       required this.importedAddressRepository,
-      required this.analyticsService})
+      required this.analyticsService,
+      required this.inMemoryKeyRepository})
       : super(const ShellState.initial());
 
   void initialize() async {
-    if (cacheProvider.getBool("logged_out") ?? false) {
-      emit(const ShellState.loggedOut());
+    final key = await inMemoryKeyRepository.get();
+
+    Wallet? wallet = await walletRepository.getCurrentWallet();
+
+    // if we have neither a key nor a wallet, go to onboarding.
+    // otherwise, redirect to logout page
+    if (key == null) {
+      if (wallet != null) {
+        emit(const ShellState.loggedOut());
+        return;
+      }
+      emit(const ShellState.onboarding(Onboarding.initial()));
       return;
     }
 
@@ -72,6 +85,7 @@ class ShellStateCubit extends Cubit<ShellState> {
       emit(ShellState.success(ShellStateSuccess.withAccount(
         redirect: true,
         wallet: wallet,
+        decryptedSecretKey: "FAKE",
         accounts: accounts,
         currentAccountUuid: currentAccount.uuid,
         addresses: addresses,
@@ -137,7 +151,9 @@ class ShellStateCubit extends Cubit<ShellState> {
   }
 
   void onLogout() {
-    cacheProvider.setBool("logged_out", true);
+
+    inMemoryKeyRepository.delete();
+
     emit(const ShellState.loggedOut());
   }
 
@@ -170,6 +186,7 @@ class ShellStateCubit extends Cubit<ShellState> {
       emit(ShellState.success(ShellStateSuccess.withAccount(
         redirect: true,
         wallet: wallet,
+        decryptedSecretKey: "FAKE",
         accounts: accounts,
         addresses: addresses,
         currentAccountUuid: accounts.last.uuid,
@@ -220,6 +237,7 @@ class ShellStateCubit extends Cubit<ShellState> {
       emit(ShellState.success(ShellStateSuccess.withAccount(
         redirect: true,
         wallet: wallet,
+        decryptedSecretKey: "FAKE",
         accounts: accounts,
         addresses: addresses,
         currentAccountUuid: account.uuid,
