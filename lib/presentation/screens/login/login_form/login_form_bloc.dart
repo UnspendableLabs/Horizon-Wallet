@@ -93,21 +93,20 @@ class LoginFormBloc extends Bloc<FormEvent, FormState> {
 
       final wallet = await walletRepository.getCurrentWallet();
 
-      print("password $password");
+      String decryptionKey = await encryptionService.getDecryptionKey(
+          wallet!.encryptedPrivKey, password);
 
-      String decryptedPrivateKey =
-          await encryptionService.decrypt(wallet!.encryptedPrivKey, password);
-
-      await inMemoryKeyRepository.set(key: decryptedPrivateKey);
+      await inMemoryKeyRepository.set(key: decryptionKey);
 
       emit(
         state.copyWith(
           status: FormzSubmissionStatus.success,
         ),
       );
-    
     } catch (e) {
       emit(state.copyWith(
-        status: FormzSubmissionStatus.failure,)); } //TODO: set encryption key
+        status: FormzSubmissionStatus.failure,
+      ));
+    } //TODO: set encryption key
   }
 }

@@ -737,6 +737,7 @@ class MyApp extends StatelessWidget {
         ),
         BlocProvider<ShellStateCubit>(
           create: (context) => ShellStateCubit(
+              encryptionService: GetIt.I<EncryptionService>(),
               inMemoryKeyRepository: GetIt.I<InMemoryKeyRepository>(),
               cacheProvider: GetIt.I<CacheProvider>(),
               walletRepository: GetIt.I<WalletRepository>(),
