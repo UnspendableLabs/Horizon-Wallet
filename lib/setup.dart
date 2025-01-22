@@ -169,6 +169,7 @@ void setup() {
             Response: ${error.response?.data ?? 'No response (connection failed)'}
             Message: ${error.message}
             Response: ${error.response}
+            App Version: ${config.version}
           """,
       stackTrace: error.stackTrace,
       context: {
@@ -181,6 +182,7 @@ void setup() {
         'connectionError': error.type == DioExceptionType.connectionError,
         'errorMessage': error.message,
         'response': error.response,
+        'appVersion': config.version,
       },
     );
 
@@ -465,6 +467,7 @@ void setup() {
       .registerSingleton<ComposeTransactionUseCase>(ComposeTransactionUseCase(
     utxoRepository: GetIt.I.get<UtxoRepository>(),
     balanceRepository: injector.get<BalanceRepository>(),
+    errorService: injector.get<ErrorService>(),
   ));
 
   injector.registerSingleton<FetchFairminterFormDataUseCase>(

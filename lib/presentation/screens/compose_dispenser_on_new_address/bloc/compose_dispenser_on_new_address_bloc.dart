@@ -17,6 +17,7 @@ import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/bitcoind_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
+import 'package:horizon/domain/services/error_service.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
 import 'package:horizon/presentation/common/shared_util.dart';
 import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
@@ -46,7 +47,7 @@ class ComposeDispenserOnNewAddressBloc extends Bloc<
   final TransactionService transactionService;
   final FetchDispenseFormDataUseCase fetchDispenseFormDataUseCase;
   final WriteLocalTransactionUseCase writeLocalTransactionUseCase;
-
+  final ErrorService errorService;
   ComposeDispenserOnNewAddressBloc({
     required this.accountRepository,
     required this.addressRepository,
@@ -63,6 +64,7 @@ class ComposeDispenserOnNewAddressBloc extends Bloc<
     required this.transactionService,
     required this.fetchDispenseFormDataUseCase,
     required this.writeLocalTransactionUseCase,
+    required this.errorService,
   }) : super(const ComposeDispenserOnNewAddressStateBase(
           composeDispenserOnNewAddressState:
               ComposeDispenserOnNewAddressState.collectPassword(loading: false),
@@ -275,8 +277,19 @@ class ComposeDispenserOnNewAddressBloc extends Bloc<
         );
         final feeForAssetSend = assetSend.btcFee;
 
-        final utxos = await utxoRepository.getUnspentForAddress(source,
-            excludeCached: true);
+        final (utxos, cachedTxHashes) = await utxoRepository
+            .getUnspentForAddress(source, excludeCached: true);
+
+        if (utxos.isEmpty) {
+          final error = Exception('No UTXOs available for transaction');
+          errorService.captureException(error,
+              message: 'No UTXOs available for transaction',
+              context: {
+                'source': source,
+                'cachedTxHashes': cachedTxHashes,
+              });
+          throw Exception('No UTXOs available for transaction');
+        }
 
         // 3. re-construct the asset send
         final signedConstructedAssetSend =

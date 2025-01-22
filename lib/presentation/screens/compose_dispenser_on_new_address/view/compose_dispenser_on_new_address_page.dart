@@ -14,6 +14,7 @@ import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/bitcoind_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
+import 'package:horizon/domain/services/error_service.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
 import 'package:horizon/presentation/common/colors.dart';
 import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
@@ -72,6 +73,7 @@ class ComposeDispenserOnNewAddressPageWrapper extends StatelessWidget {
             GetIt.I.get<FetchDispenseFormDataUseCase>(),
         writeLocalTransactionUseCase:
             GetIt.I.get<WriteLocalTransactionUseCase>(),
+        errorService: GetIt.I.get<ErrorService>(),
       )..add(FormOpened(originalAddress: originalAddress)),
       child: ComposeDispenserOnNewAddressPage(
         originalAddress: originalAddress,
