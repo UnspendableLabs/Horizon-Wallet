@@ -90,7 +90,7 @@ class ComposeTransactionUseCase {
     }
 
     if (inputsForSet.isEmpty) {
-      throw Exception('No UTXOs with no balance found for transaction');
+      throw Exception('No unattached UTXOs in input set');
     }
 
     return inputsForSet;

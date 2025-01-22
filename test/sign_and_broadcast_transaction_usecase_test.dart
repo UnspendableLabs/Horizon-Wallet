@@ -148,6 +148,7 @@ void main() {
     test('should sign and broadcast transaction successfully', () async {
       // Arrange
       final mockUtxos = [MockUtxo()];
+      const mockCachedTxHashes = null;
       final mockAddress = MockAddress();
       final mockAccount = MockAccount();
       final mockWallet = MockWallet();
@@ -159,7 +160,8 @@ void main() {
 
       // Mock behaviors
       when(() => mockUtxoRepository.getUnspentForAddress('source',
-          excludeCached: true)).thenAnswer((_) async => mockUtxos);
+              excludeCached: true))
+          .thenAnswer((_) async => (mockUtxos, mockCachedTxHashes));
       when(() => mockAddressRepository.getAddress('source'))
           .thenAnswer((_) async => mockAddress);
       when(() =>
@@ -244,6 +246,7 @@ void main() {
       // Arrange
       final mockUtxos = [MockUtxo()];
       final mockImportedAddress = MockImportedAddress();
+      const mockCachedTxHashes = ['test-cached-tx-hash'];
       const String password = 'password';
       const String decryptedAddressPrivKey = 'decrypted_address_private_key';
       const String addressPrivKey = 'address_private_key';
@@ -252,7 +255,8 @@ void main() {
 
       // Mock behaviors
       when(() => mockUtxoRepository.getUnspentForAddress('source',
-          excludeCached: true)).thenAnswer((_) async => mockUtxos);
+              excludeCached: true))
+          .thenAnswer((_) async => (mockUtxos, mockCachedTxHashes));
       when(() => mockAddressRepository.getAddress('source'))
           .thenAnswer((_) async => null);
       when(() => mockImportedAddressRepository.getImportedAddress('source'))
@@ -313,9 +317,11 @@ void main() {
       // Arrange
 
       final mockUtxos = [MockUtxo()];
+      const mockCachedTxHashes = ['test-cached-tx-hash'];
 
       when(() => mockUtxoRepository.getUnspentForAddress('source',
-          excludeCached: true)).thenAnswer((_) async => mockUtxos);
+              excludeCached: true))
+          .thenAnswer((_) async => (mockUtxos, mockCachedTxHashes));
 
       when(() => mockAddressRepository.getAddress('source'))
           .thenAnswer((_) async => null);
@@ -351,11 +357,12 @@ void main() {
       final mockAddress = MockAddress();
       final mockAccount = MockAccount();
       final mockWallet = MockWallet();
-
+      const mockCachedTxHashes = ['test-cached-tx-hash'];
       final mockUtxos = [MockUtxo()];
 
       when(() => mockUtxoRepository.getUnspentForAddress('source',
-          excludeCached: true)).thenAnswer((_) async => mockUtxos);
+              excludeCached: true))
+          .thenAnswer((_) async => (mockUtxos, mockCachedTxHashes));
 
       when(() => mockAddressRepository.getAddress('source'))
           .thenAnswer((_) async => mockAddress);
@@ -399,11 +406,12 @@ void main() {
         () async {
       // Arrange
       final mockImportedAddress = MockImportedAddress();
-
+      const mockCachedTxHashes = null;
       final mockUtxos = [MockUtxo()];
 
       when(() => mockUtxoRepository.getUnspentForAddress('source',
-          excludeCached: true)).thenAnswer((_) async => mockUtxos);
+              excludeCached: true))
+          .thenAnswer((_) async => (mockUtxos, mockCachedTxHashes));
 
       when(() => mockAddressRepository.getAddress('source'))
           .thenAnswer((_) async => null);
@@ -442,6 +450,7 @@ void main() {
     test('should return error if transaction broadcast fails', () async {
       // Arrange
       final mockUtxos = [MockUtxo()];
+      const mockCachedTxHashes = null;
       final mockAddress = MockAddress();
       final mockAccount = MockAccount();
       final mockWallet = MockWallet();
@@ -452,7 +461,8 @@ void main() {
 
       // Mock behaviors
       when(() => mockUtxoRepository.getUnspentForAddress('source',
-          excludeCached: true)).thenAnswer((_) async => mockUtxos);
+              excludeCached: true))
+          .thenAnswer((_) async => (mockUtxos, mockCachedTxHashes));
       when(() => mockAddressRepository.getAddress('source'))
           .thenAnswer((_) async => mockAddress);
       when(() =>
@@ -512,6 +522,7 @@ void main() {
   test('should return error if signing transaction fails', () async {
     // Arrange
     final mockUtxos = [MockUtxo()];
+    const mockCachedTxHashes = null;
     final mockAddress = MockAddress();
     final mockAccount = MockAccount();
     final mockWallet = MockWallet();
@@ -522,7 +533,8 @@ void main() {
 
     // Mock behaviors
     when(() => mockUtxoRepository.getUnspentForAddress('source',
-        excludeCached: true)).thenAnswer((_) async => mockUtxos);
+            excludeCached: true))
+        .thenAnswer((_) async => (mockUtxos, mockCachedTxHashes));
     when(() => mockAddressRepository.getAddress('source'))
         .thenAnswer((_) async => mockAddress);
     when(() => mockAccountRepository.getAccountByUuid(mockAddress.accountUuid))

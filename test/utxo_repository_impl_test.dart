@@ -32,7 +32,8 @@ void main() {
   });
 
   group('getUnspentForAddress', () {
-    test('should return all UTXOs when excludeCached is false', () async {
+    test('should return all UTXOs and empty cache when excludeCached is false',
+        () async {
       // Arrange
       const address = 'test_address';
       final mockUtxos = [
@@ -43,42 +44,46 @@ void main() {
 
       when(() => mockEsploraApi.getUtxosForAddress(address))
           .thenAnswer((_) async => mockUtxos);
-      when(() => mockCacheProvider.getValue(any())).thenReturn(['tx1']);
 
       // Act
-      final result = await repository.getUnspentForAddress(address);
+      final (result, cachedTxs) =
+          await repository.getUnspentForAddress(address);
 
       // Assert
       expect(result.length, equals(3));
+      expect(cachedTxs, equals([]));
       verifyNever(() => mockCacheProvider.getValue(any()));
       _verifyUtxoList(result, mockUtxos);
     });
 
-    test('should filter cached UTXOs with vout 0 when excludeCached is true',
+    test(
+        'should filter cached UTXOs with vout 0 and return cached tx hashes when excludeCached is true',
         () async {
       // Arrange
       const address = 'test_address';
       final mockUtxos = [
-        _createMockEsploraUtxo('cached_tx1', 0, 1000), // Should be excluded
-        _createMockEsploraUtxo('cached_tx1', 1, 2000), // Should be included
-        _createMockEsploraUtxo('cached_tx2', 0, 3000), // Should be excluded
-        _createMockEsploraUtxo('normal_tx', 0, 4000), // Should be included
-        _createMockEsploraUtxo('normal_tx', 1, 5000), // Should be included
+        _createMockEsploraUtxo('cached_tx1', 0, 1000),
+        _createMockEsploraUtxo('cached_tx1', 1, 2000),
+        _createMockEsploraUtxo('cached_tx2', 0, 3000),
+        _createMockEsploraUtxo('normal_tx', 0, 4000),
+        _createMockEsploraUtxo('normal_tx', 1, 5000),
       ];
+      final cachedTxHashes = ['cached_tx1', 'cached_tx2'];
 
       when(() => mockEsploraApi.getUtxosForAddress(address))
           .thenAnswer((_) async => mockUtxos);
       when(() => mockCacheProvider.getValue(address))
-          .thenReturn(['cached_tx1', 'cached_tx2']);
+          .thenReturn(cachedTxHashes);
 
       // Act
-      final result = await repository.getUnspentForAddress(
+      final (result, cachedTxs) = await repository.getUnspentForAddress(
         address,
         excludeCached: true,
       );
 
       // Assert
       expect(result.length, equals(3));
+      expect(cachedTxs, equals(cachedTxHashes));
       verify(() => mockCacheProvider.getValue(address)).called(1);
 
       // Verify specific UTXOs
@@ -101,7 +106,8 @@ void main() {
           result.where((utxo) => utxo.txid == 'normal_tx').length, equals(2));
     });
 
-    test('should handle empty cache when excludeCached is true', () async {
+    test('should handle empty cache array when excludeCached is true',
+        () async {
       // Arrange
       const address = 'test_address';
       final mockUtxos = [
@@ -111,16 +117,17 @@ void main() {
 
       when(() => mockEsploraApi.getUtxosForAddress(address))
           .thenAnswer((_) async => mockUtxos);
-      when(() => mockCacheProvider.getValue(address)).thenReturn(null);
+      when(() => mockCacheProvider.getValue(address)).thenReturn([]);
 
       // Act
-      final result = await repository.getUnspentForAddress(
+      final (result, cachedTxs) = await repository.getUnspentForAddress(
         address,
         excludeCached: true,
       );
 
       // Assert
       expect(result.length, equals(2));
+      expect(cachedTxs, equals([]));
       verify(() => mockCacheProvider.getValue(address)).called(1);
       _verifyUtxoList(result, mockUtxos);
     });
@@ -138,13 +145,14 @@ void main() {
       when(() => mockCacheProvider.getValue(address)).thenReturn(null);
 
       // Act
-      final result = await repository.getUnspentForAddress(
+      final (result, cachedTxs) = await repository.getUnspentForAddress(
         address,
         excludeCached: true,
       );
 
       // Assert
       expect(result.length, equals(2));
+      expect(cachedTxs, isNull);
       verify(() => mockCacheProvider.getValue(address)).called(1);
       _verifyUtxoList(result, mockUtxos);
     });
@@ -154,36 +162,21 @@ void main() {
         () async {
       // Arrange
       const address = 'test_address';
-
-      // Create 30 mock UTXOs
       final mockEsploraUtxos = List.generate(30, (i) {
         String txid;
         int vout;
 
-        // First 6 UTXOs: 3 pairs of cached transactions with vout 0 and 1
         if (i < 6) {
-          txid = 'cached_tx_${i ~/ 2}'; // Same txid for pairs
-          vout = i % 2; // Alternating vout 0 and 1
+          txid = 'cached_tx_${i ~/ 2}';
+          vout = i % 2;
         } else {
-          // Remaining UTXOs: non-cached transactions
           txid = 'normal_tx_$i';
           vout = i % 2;
         }
 
-        return EsploraUtxo(
-          txid: txid,
-          vout: vout,
-          status: EsploraUtxoStatus(
-            confirmed: true,
-            blockHeight: 100 + i,
-            blockHash: 'hash_$i',
-            blockTime: 1000000 + i,
-          ),
-          value: 1000 + i,
-        );
+        return _createMockEsploraUtxo(txid, vout, 1000 + i);
       });
 
-      // Setup cached transaction hashes (first 3 transactions)
       final cachedTxHashes = ['cached_tx_0', 'cached_tx_1', 'cached_tx_2'];
 
       when(() => mockEsploraApi.getUtxosForAddress(address))
@@ -192,7 +185,7 @@ void main() {
           .thenReturn(cachedTxHashes);
 
       // Act
-      final result = await repository.getUnspentForAddress(
+      final (result, cachedTxs) = await repository.getUnspentForAddress(
         address,
         excludeCached: true,
       );
@@ -200,6 +193,7 @@ void main() {
       // Assert
       // 1. Verify total count (30 original - 3 excluded with vout 0)
       expect(result.length, equals(27));
+      expect(cachedTxs, equals(cachedTxHashes));
 
       // 2. Verify excluded UTXOs (cached with vout 0)
       for (var i = 0; i < 6; i += 2) {
