@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:horizon/domain/entities/dispenser.dart';
 import 'package:integration_test/integration_test.dart';
+import 'package:horizon/setup.dart';
 
 import 'package:mocktail/mocktail.dart';
 
@@ -149,6 +150,7 @@ void main() {
   late MockUtxoRepository mockUtxoRepository;
 
   setUpAll(() {
+    setup();
     registerFallbackValue(FakeAddress().address);
     registerFallbackValue(
         FakeComposeFunction<ComposeDispenserResponseVerbose>());
