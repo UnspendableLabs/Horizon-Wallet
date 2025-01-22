@@ -216,7 +216,7 @@ class SessionStateCubit extends Cubit<SessionState> {
       List<ImportedAddress> importedAddresses =
           await importedAddressRepository.getAll();
 
-      emit(SessionState.success(SessionStateSuccess.withAccount(
+      emit(SessionState.success(SessionStateSuccess(
         redirect: true,
         wallet: wallet,
         decryptionKey: "FAKE",
@@ -267,7 +267,7 @@ class SessionStateCubit extends Cubit<SessionState> {
       List<ImportedAddress> importedAddresses =
           await importedAddressRepository.getAll();
 
-      emit(SessionState.success(SessionStateSuccess.withAccount(
+      emit(SessionState.success(SessionStateSuccess(
         redirect: true,
         wallet: wallet,
         decryptionKey: "FAKE",
