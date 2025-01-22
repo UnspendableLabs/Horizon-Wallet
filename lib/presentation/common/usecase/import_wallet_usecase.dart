@@ -10,6 +10,11 @@ import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/repositories/config_repository.dart';
 
+class PasswordException implements Exception {
+  final String message;
+  PasswordException(this.message);
+}
+
 class ImportWalletUseCase {
   final AddressRepository addressRepository;
   final AccountRepository accountRepository;
@@ -44,9 +49,13 @@ class ImportWalletUseCase {
 
         case ImportFormat.freewallet:
           Wallet wallet = await deriveWallet(secret, password);
-
-          String decryptedPrivKey = await encryptionService.decrypt(
-              wallet.encryptedPrivKey, password);
+          String decryptedPrivKey;
+          try {
+            decryptedPrivKey = await encryptionService.decrypt(
+                wallet.encryptedPrivKey, password);
+          } catch (e) {
+            throw PasswordException('invariant:Invalid password');
+          }
           // create an account to house
           Account account = Account(
               name: 'ACCOUNT 1',
@@ -87,9 +96,13 @@ class ImportWalletUseCase {
           break;
         case ImportFormat.counterwallet:
           Wallet wallet = await deriveWallet(secret, password);
-
-          String decryptedPrivKey = await encryptionService.decrypt(
-              wallet.encryptedPrivKey, password);
+          String decryptedPrivKey;
+          try {
+            decryptedPrivKey = await encryptionService.decrypt(
+                wallet.encryptedPrivKey, password);
+          } catch (e) {
+            throw PasswordException('Invalid password');
+          }
           // https://github.com/CounterpartyXCP/counterwallet/blob/1de386782818aeecd7c23a3d2132746a2f56e4fc/src/js/util.bitcore.js#L17
           Account account = Account(
               name: 'ACCOUNT 1',
@@ -137,7 +150,11 @@ class ImportWalletUseCase {
       onSuccess();
       return;
     } catch (e) {
-      onError(e.toString());
+      if (e is PasswordException) {
+        onError(e.message);
+      } else {
+        onError('An unexpected error occurred importing wallet');
+      }
     }
   }
 
@@ -147,8 +164,13 @@ class ImportWalletUseCase {
     required Future<Wallet> Function(String, String) deriveWallet,
   }) async {
     Wallet wallet = await deriveWallet(secret, password);
-    String decryptedPrivKey =
-        await encryptionService.decrypt(wallet.encryptedPrivKey, password);
+    String decryptedPrivKey;
+    try {
+      decryptedPrivKey =
+          await encryptionService.decrypt(wallet.encryptedPrivKey, password);
+    } catch (e) {
+      throw PasswordException('invariant: Invalid password');
+    }
 
     // m/84'/1'/0'/0
     Account account0 = Account(

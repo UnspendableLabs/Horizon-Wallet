@@ -25,6 +25,7 @@ import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_f
 import 'package:horizon/presentation/screens/horizon/ui.dart';
 import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
 import 'package:horizon/presentation/shell/bloc/shell_state.dart';
+import 'package:horizon/setup.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -177,6 +178,7 @@ void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   setUpAll(() {
+    setup();
     FlutterError.onError = (FlutterErrorDetails details) {
       print('FlutterError: ${details.exception}\n${details.stack}');
     };
@@ -455,22 +457,29 @@ void main() {
           ),
         );
 
+        // Wait for the widget tree to build
+        await tester.pumpAndSettle();
+
         // Dispatch the FetchFormData event
         composeDispenseBloc.add(FetchFormData(
           currentAddress: FakeAddress().address,
         ));
 
-        // Allow time for the Bloc to process and the UI to rebuild
+        // Allow time for the bloc to process the event and rebuild the UI
         await tester.pumpAndSettle();
 
-        // Verify that the initial form fields are rendered correctly
-        final dispenserInput =
-            find.byKey(const Key('dispense_dispenser_input'));
+
+        // Find the TextFormField using bySemanticsLabel
+        final dispenserInput = find.bySemanticsLabel('Dispenser Address');
+        await tester.pumpAndSettle();
+
+        // Verify that the dispenser input is present
         expect(dispenserInput, findsOneWidget);
 
-        // Enter the dispenser address to trigger fetching dispensers
+        // Enter text into the dispenser input field
         await tester.enterText(dispenserInput, 'test_address');
 
+        // Pump to process the text input
         await tester.pumpAndSettle();
 
         await Future.delayed(const Duration(seconds: 1));
@@ -774,9 +783,12 @@ void main() {
 
         await tester.pumpAndSettle();
 
-        // Enter the dispenser address
-        final dispenserInput =
-            find.byKey(const Key('dispense_dispenser_input'));
+        // Find the TextFormField using bySemanticsLabel
+        final dispenserInput = find.bySemanticsLabel('Dispenser Address');
+        await tester.pumpAndSettle();
+
+        // Verify that the dispenser input is present
+        expect(dispenserInput, findsOneWidget);
         await tester.enterText(dispenserInput, 'test_address');
         await tester.pumpAndSettle();
 
@@ -795,7 +807,7 @@ void main() {
           expectedQuantities: ['5', '10', '10'],
           expectedPrices: ['0.00003000', '0.00006000', '0.00006000'],
           expectedError:
-              'Lots entered are greater than lots available.\nMax: 10',
+              'Lots entered are greater\nthan lots available.\nMax: 10',
         );
 
         // Test A4630460187535670455 dispenser
@@ -808,7 +820,7 @@ void main() {
           expectedQuantities: ['75', '150', '150'],
           expectedPrices: ['0.00300000', '0.00600000', '0.00600000'],
           expectedError:
-              'Lots entered are greater than lots available.\nMax: 100',
+              'Lots entered are greater\nthan lots available.\nMax: 100',
         );
 
         // Test XCP dispenser
@@ -821,7 +833,7 @@ void main() {
           expectedQuantities: ['0.25', '0.5', '0.5'],
           expectedPrices: ['0.00032500', '0.00065000', '0.00065000'],
           expectedError:
-              'Lots entered are greater than lots available.\nMax: 100',
+              'Lots entered are greater\nthan lots available.\nMax: 100',
         );
 
         // Test USMINT.GOV dispenser
@@ -834,7 +846,7 @@ void main() {
           expectedQuantities: ['10', '18', '18'],
           expectedPrices: ['0.00003500', '0.00006300', '0.00006300'],
           expectedError:
-              'Lots entered are greater than lots available.\nMax: 9',
+              'Lots entered are greater\nthan lots available.\nMax: 9',
           assetLongname: 'A7805927145042695546',
         );
 
@@ -848,7 +860,7 @@ void main() {
           expectedQuantities: ['0.1', '0.1'],
           expectedPrices: ['0.00010000', '0.00010000'],
           expectedError:
-              'Lots entered are greater than lots available.\nMax: 1',
+              'Lots entered are greater\nthan lots available.\nMax: 1',
         );
       }, (error, stackTrace) {
         print('Caught error: $error\n$stackTrace');
