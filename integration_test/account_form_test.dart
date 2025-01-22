@@ -89,7 +89,7 @@ SessionState createSessionState({
   );
 
   return SessionState.success(
-    SessionStateSuccess.withAccount(
+    SessionStateSuccess(
       accounts: accounts ??
           [defaultAccount], // Include default account if none provided
       wallet: wallet ??
