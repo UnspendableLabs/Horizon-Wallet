@@ -5,7 +5,7 @@ import 'package:get_it/get_it.dart';
 import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart";
 import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_event.dart";
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_state.dart';
-import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
+import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 
 import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
 import 'package:horizon/presentation/screens/compose_order/bloc/compose_order_bloc.dart';
@@ -57,8 +57,8 @@ class ComposeOrderPageWrapper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final shell = context.watch<ShellStateCubit>();
-    return shell.state.maybeWhen(
+    final session = context.watch<SessionStateCubit>();
+    return session.state.maybeWhen(
         success: (state) => BlocProvider(
               key: Key(currentAddress),
               create: (context) => ComposeOrderBloc(

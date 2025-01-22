@@ -26,7 +26,7 @@ import 'package:horizon/presentation/screens/compose_dispenser_on_new_address/bl
 import 'package:horizon/presentation/screens/compose_dispenser_on_new_address/bloc/compose_dispenser_on_new_address_state.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart';
 import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
-import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
+import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 
 class ComposeDispenserOnNewAddressPageWrapper extends StatelessWidget {
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
@@ -140,7 +140,7 @@ class _ComposeDispenserOnNewAddressPageState
         state.composeDispenserOnNewAddressState.maybeWhen(
           success: () async {
             Navigator.of(context).pop();
-            context.read<ShellStateCubit>().refreshAndSelectNewAddress(
+            context.read<SessionStateCubit>().refreshAndSelectNewAddress(
                 state.newAddress!.address, state.newAccount!.uuid);
             ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                 duration: const Duration(seconds: 5),

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
-import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
+import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
@@ -47,8 +47,8 @@ class ComposeRBFPageWrapper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final shell = context.watch<ShellStateCubit>();
-    return shell.state.maybeWhen(
+    final session = context.watch<SessionStateCubit>();
+    return session.state.maybeWhen(
         orElse: () => const SizedBox.shrink(),
         success: (state) => BlocProvider(
             create: (context) => c.ComposeRBFBloc(),

@@ -12,9 +12,22 @@ import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 
-import './shell_state.dart';
+import './session_state.dart';
 
-class ShellStateCubit extends Cubit<ShellState> {
+sealed class GetSessionStateResponse {}
+
+class LoggedIn extends GetSessionStateResponse {
+  Wallet wallet;
+  String decryptionKey;
+
+  LoggedIn({required this.wallet, required this.decryptionKey});
+}
+
+class LoggedOut extends GetSessionStateResponse {}
+
+class NoWallet extends GetSessionStateResponse {}
+
+class SessionStateCubit extends Cubit<SessionState> {
   CacheProvider cacheProvider;
   WalletRepository walletRepository;
   AccountRepository accountRepository;
@@ -24,21 +37,19 @@ class ShellStateCubit extends Cubit<ShellState> {
   InMemoryKeyRepository inMemoryKeyRepository;
   final EncryptionService encryptionService;
 
-  ShellStateCubit(
+  SessionStateCubit(
       {required this.cacheProvider,
       required this.walletRepository,
       required this.accountRepository,
       required this.addressRepository,
       required this.importedAddressRepository,
       required this.analyticsService,
-      required this.inMemoryKeyRepository, 
-      required this.encryptionService
-      })
-      : super(const ShellState.initial());
+      required this.inMemoryKeyRepository,
+      required this.encryptionService})
+      : super(const SessionState.initial());
 
-  void initialize() async {
-
-    final decryptionKey  = await inMemoryKeyRepository.get();
+  Future<GetSessionStateResponse> _getSessionState() async {
+    final decryptionKey = await inMemoryKeyRepository.get();
 
     Wallet? wallet = await walletRepository.getCurrentWallet();
 
@@ -46,66 +57,77 @@ class ShellStateCubit extends Cubit<ShellState> {
     // otherwise, redirect to logout page
     if (decryptionKey == null) {
       if (wallet != null) {
-        emit(const ShellState.loggedOut());
-        return;
+        return LoggedOut();
+        // emit(const SessionState.loggedOut());
+        //
+        // return;
       }
-      emit(const ShellState.onboarding(Onboarding.initial()));
-      return;
+      // emit(const SessionState.onboarding(Onboarding.initial()));
+      return NoWallet();
     }
 
     try {
       encryptionService.decryptWithKey(wallet!.encryptedPrivKey, decryptionKey);
-    } catch (e) {
-      emit(const ShellState.loggedOut());
-    }
-       
 
-    emit(const ShellState.loading());
+      return LoggedIn(wallet: wallet, decryptionKey: decryptionKey);
+    } catch (e) {
+      return LoggedOut();
+      // emit(const SessionState.loggedOut());
+    }
+  }
+
+  void initialize() async {
+    emit(const SessionState.loading());
 
     try {
-      Wallet? wallet = await walletRepository.getCurrentWallet();
+      final sessionState = await this._getSessionState();
 
-      if (wallet == null) {
-        emit(const ShellState.onboarding(Onboarding.initial()));
-        return;
+      switch (sessionState) {
+        case NoWallet():
+          emit(const SessionState.onboarding(Onboarding.initial()));
+          return;
+        case LoggedOut():
+          emit(const SessionState.loggedOut());
+          return;
+        case LoggedIn(wallet: var wallet, decryptionKey: var decryptionKey):
+          analyticsService.trackAnonymousEvent('wallet_opened',
+              properties: {'distinct_id': wallet.uuid});
+
+          List<Account> accounts =
+              await accountRepository.getAccountsByWalletUuid(wallet.uuid);
+
+          if (accounts.isEmpty) {
+            throw Exception("invariant: no accounts for this wallet");
+          }
+
+          Account currentAccount = accounts.first;
+
+          List<Address> addresses =
+              await addressRepository.getAllByAccountUuid(currentAccount.uuid);
+
+          if (addresses.isEmpty) {
+            throw Exception("invariant: no addresses for this account");
+          }
+
+          Address currentAddress = addresses.first;
+
+          List<ImportedAddress> importedAddresses =
+              await importedAddressRepository.getAll();
+
+          emit(SessionState.success(SessionStateSuccess.withAccount(
+            redirect: true,
+            wallet: wallet,
+            decryptionKey: decryptionKey,
+            accounts: accounts,
+            currentAccountUuid: currentAccount.uuid,
+            addresses: addresses,
+            currentAddress: currentAddress,
+            importedAddresses: importedAddresses,
+          )));
+          return;
       }
-
-      analyticsService.trackAnonymousEvent('wallet_opened',
-          properties: {'distinct_id': wallet.uuid});
-
-      List<Account> accounts =
-          await accountRepository.getAccountsByWalletUuid(wallet.uuid);
-
-      if (accounts.isEmpty) {
-        throw Exception("invariant: no accounts for this wallet");
-      }
-
-      Account currentAccount = accounts.first;
-
-      List<Address> addresses =
-          await addressRepository.getAllByAccountUuid(currentAccount.uuid);
-
-      if (addresses.isEmpty) {
-        throw Exception("invariant: no addresses for this account");
-      }
-
-      Address currentAddress = addresses.first;
-
-      List<ImportedAddress> importedAddresses =
-          await importedAddressRepository.getAll();
-
-      emit(ShellState.success(ShellStateSuccess.withAccount(
-        redirect: true,
-        wallet: wallet,
-        decryptedSecretKey: "FAKE",
-        accounts: accounts,
-        currentAccountUuid: currentAccount.uuid,
-        addresses: addresses,
-        currentAddress: currentAddress,
-        importedAddresses: importedAddresses,
-      )));
     } catch (error) {
-      emit(ShellState.error(error.toString()));
+      emit(SessionState.error(error.toString()));
     }
   }
 
@@ -117,25 +139,25 @@ class ShellStateCubit extends Cubit<ShellState> {
         loggedOut: () => state,
         onboarding: (_) => state,
         success: (stateInner) =>
-            ShellState.success(stateInner.copyWith(redirect: false)));
+            SessionState.success(stateInner.copyWith(redirect: false)));
 
     emit(state_);
   }
 
   void onOnboarding() {
-    emit(const ShellState.onboarding(Onboarding.initial()));
+    emit(const SessionState.onboarding(Onboarding.initial()));
   }
 
   void onOnboardingCreate() {
-    emit(const ShellState.onboarding(Onboarding.create()));
+    emit(const SessionState.onboarding(Onboarding.create()));
   }
 
   void onOnboardingImport() {
-    emit(const ShellState.onboarding(Onboarding.import()));
+    emit(const SessionState.onboarding(Onboarding.import()));
   }
 
   void onOnboardingImportPK() {
-    emit(const ShellState.onboarding(Onboarding.importPK()));
+    emit(const SessionState.onboarding(Onboarding.importPK()));
   }
 
   void onAccountChanged(Account account) async {
@@ -144,7 +166,7 @@ class ShellStateCubit extends Cubit<ShellState> {
 
     final state_ = state.maybeWhen(
         orElse: () => state,
-        success: (stateInner) => ShellState.success(stateInner.copyWith(
+        success: (stateInner) => SessionState.success(stateInner.copyWith(
               currentAccountUuid: account.uuid,
               currentAddress: addresses.first,
               addresses: addresses,
@@ -158,14 +180,14 @@ class ShellStateCubit extends Cubit<ShellState> {
     final state_ = state.maybeWhen(
         orElse: () => state,
         success: (stateInner) =>
-            ShellState.success(stateInner.copyWith(currentAddress: address)));
+            SessionState.success(stateInner.copyWith(currentAddress: address)));
     emit(state_);
   }
 
   void onLogout() {
     inMemoryKeyRepository.delete();
 
-    emit(const ShellState.loggedOut());
+    emit(const SessionState.loggedOut());
   }
 
   void refresh() async {
@@ -173,7 +195,7 @@ class ShellStateCubit extends Cubit<ShellState> {
       Wallet? wallet = await walletRepository.getCurrentWallet();
 
       if (wallet == null) {
-        emit(const ShellState.onboarding(Onboarding.initial()));
+        emit(const SessionState.onboarding(Onboarding.initial()));
         return;
       }
 
@@ -194,10 +216,10 @@ class ShellStateCubit extends Cubit<ShellState> {
       List<ImportedAddress> importedAddresses =
           await importedAddressRepository.getAll();
 
-      emit(ShellState.success(ShellStateSuccess.withAccount(
+      emit(SessionState.success(SessionStateSuccess.withAccount(
         redirect: true,
         wallet: wallet,
-        decryptedSecretKey: "FAKE",
+        decryptionKey: "FAKE",
         accounts: accounts,
         addresses: addresses,
         currentAccountUuid: accounts.last.uuid,
@@ -205,7 +227,7 @@ class ShellStateCubit extends Cubit<ShellState> {
         importedAddresses: importedAddresses,
       )));
     } catch (error) {
-      emit(ShellState.error(error.toString()));
+      emit(SessionState.error(error.toString()));
     }
   }
 
@@ -214,7 +236,7 @@ class ShellStateCubit extends Cubit<ShellState> {
       Wallet? wallet = await walletRepository.getCurrentWallet();
 
       if (wallet == null) {
-        emit(const ShellState.onboarding(Onboarding.initial()));
+        emit(const SessionState.onboarding(Onboarding.initial()));
         return;
       }
 
@@ -245,10 +267,10 @@ class ShellStateCubit extends Cubit<ShellState> {
       List<ImportedAddress> importedAddresses =
           await importedAddressRepository.getAll();
 
-      emit(ShellState.success(ShellStateSuccess.withAccount(
+      emit(SessionState.success(SessionStateSuccess.withAccount(
         redirect: true,
         wallet: wallet,
-        decryptedSecretKey: "FAKE",
+        decryptionKey: "FAKE",
         accounts: accounts,
         addresses: addresses,
         currentAccountUuid: account.uuid,
@@ -256,7 +278,7 @@ class ShellStateCubit extends Cubit<ShellState> {
         importedAddresses: importedAddresses,
       )));
     } catch (error) {
-      emit(ShellState.error(error.toString()));
+      emit(SessionState.error(error.toString()));
     }
   }
 
@@ -266,7 +288,7 @@ class ShellStateCubit extends Cubit<ShellState> {
       Wallet? wallet = await walletRepository.getCurrentWallet();
 
       if (wallet == null) {
-        emit(const ShellState.onboarding(Onboarding.initial()));
+        emit(const SessionState.onboarding(Onboarding.initial()));
         return;
       }
 
@@ -275,21 +297,21 @@ class ShellStateCubit extends Cubit<ShellState> {
 
       final state_ = state.maybeWhen(
           orElse: () => state,
-          success: (stateInner) => ShellState.success(stateInner.copyWith(
+          success: (stateInner) => SessionState.success(stateInner.copyWith(
               importedAddresses: importedAddresses,
               currentImportedAddress: importedAddress,
               currentAddress: null,
               currentAccountUuid: null)));
       emit(state_);
     } catch (error) {
-      emit(ShellState.error(error.toString()));
+      emit(SessionState.error(error.toString()));
     }
   }
 
   void onImportedAddressChanged(ImportedAddress importedAddress) {
     final state_ = state.maybeWhen(
         orElse: () => state,
-        success: (stateInner) => ShellState.success(stateInner.copyWith(
+        success: (stateInner) => SessionState.success(stateInner.copyWith(
             currentImportedAddress: importedAddress,
             currentAddress: null,
             currentAccountUuid: null)));

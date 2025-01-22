@@ -14,7 +14,7 @@ import 'package:horizon/presentation/screens/onboarding/view/password_prompt.dar
 import 'package:horizon/presentation/screens/onboarding_import/bloc/onboarding_import_bloc.dart';
 import 'package:horizon/presentation/screens/onboarding_import/bloc/onboarding_import_event.dart';
 import 'package:horizon/presentation/screens/onboarding_import/bloc/onboarding_import_state.dart';
-import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
+import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 
 class OnboardingImportPageWrapper extends StatelessWidget {
   const OnboardingImportPageWrapper({super.key});
@@ -79,9 +79,9 @@ class OnboardingImportPageState extends State<OnboardingImportPage> {
           body: BlocListener<OnboardingImportBloc, OnboardingImportState>(
             listener: (context, state) async {
               if (state.importState is ImportStateSuccess) {
-                final shell = context.read<ShellStateCubit>();
-                // reload shell to trigger redirect
-                shell.initialize();
+                final session = context.read<SessionStateCubit>();
+                // reload session to trigger redirect
+                session.initialize();
               }
             },
             child: BlocBuilder<OnboardingImportBloc, OnboardingImportState>(
@@ -114,9 +114,9 @@ class OnboardingImportPageState extends State<OnboardingImportPage> {
                               PasswordPrompt(
                                   state: state,
                                   onPressedBack: () {
-                                    final shell =
-                                        context.read<ShellStateCubit>();
-                                    shell.onOnboarding();
+                                    final session =
+                                        context.read<SessionStateCubit>();
+                                    session.onOnboarding();
                                   },
                                   onPressedContinue: (password) {
                                     context
@@ -220,8 +220,8 @@ class _ChooseFormatState extends State<ChooseFormat> {
           backButtonText: 'CANCEL',
           continueButtonText: 'CONTINUE',
           onPressedBack: () {
-            final shell = context.read<ShellStateCubit>();
-            shell.onOnboarding();
+            final session = context.read<SessionStateCubit>();
+            session.onOnboarding();
           },
           onPressedContinue: () {
             context.read<OnboardingImportBloc>().add(ImportFormatSubmitted());
@@ -318,8 +318,8 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
             backButtonText: 'CANCEL',
             continueButtonText: 'CONTINUE',
             onPressedBack: () {
-              final shell = context.read<ShellStateCubit>();
-              shell.onOnboarding();
+              final session = context.read<SessionStateCubit>();
+              session.onOnboarding();
             },
             onPressedContinue: () {
               context.read<OnboardingImportBloc>().add(MnemonicSubmitted(

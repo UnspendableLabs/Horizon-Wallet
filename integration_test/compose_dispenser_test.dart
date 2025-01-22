@@ -15,8 +15,8 @@ import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
 import 'package:horizon/domain/repositories/utxo_repository.dart';
 import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart";
-import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
-import 'package:horizon/presentation/shell/bloc/shell_state.dart';
+import 'package:horizon/presentation/session/bloc/session_cubit.dart';
+import 'package:horizon/presentation/session/bloc/session_state.dart';
 import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transaction_usecase.dart';
 import 'package:horizon/presentation/common/usecase/write_local_transaction_usecase.dart';
 import 'package:horizon/presentation/common/usecase/get_virtual_size_usecase.dart';
@@ -67,11 +67,12 @@ class MockDashboardActivityFeedBloc extends Mock
 
 class MockGetVirtualSizeUseCase extends Mock implements GetVirtualSizeUseCase {}
 
-class MockShellStateCubit extends Mock implements ShellStateCubit {
+class MockSessionStateCubit extends Mock implements SessionStateCubit {
   @override
-  ShellState get state => ShellState.success(ShellStateSuccess.withAccount(
+  SessionState get state => SessionState.success(SessionStateSuccess.withAccount(
         accounts: [],
         redirect: false,
+        decryptionKey: "decryption_key",
         wallet: const Wallet(
           name: 'Test Wallet',
           uuid: 'test-wallet-uuid',

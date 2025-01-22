@@ -19,7 +19,7 @@ import 'package:horizon/presentation/screens/compose_sweep/bloc/compose_sweep_bl
 import 'package:horizon/presentation/screens/compose_sweep/bloc/compose_sweep_state.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart';
 import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
-import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
+import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 
 class ComposeSweepPageWrapper extends StatelessWidget {
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
@@ -33,8 +33,8 @@ class ComposeSweepPageWrapper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final shell = context.watch<ShellStateCubit>();
-    return shell.state.maybeWhen(
+    final session = context.watch<SessionStateCubit>();
+    return session.state.maybeWhen(
       success: (state) => BlocProvider(
         key: Key(currentAddress),
         create: (context) => ComposeSweepBloc(

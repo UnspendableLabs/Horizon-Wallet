@@ -7,7 +7,7 @@ import 'package:horizon/presentation/screens/dashboard/account_form/bloc/account
 import "package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_event.dart";
 import 'package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_state.dart';
 import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
-import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
+import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 
 final validAccount = RegExp(r"^\d\'$");
 
@@ -44,16 +44,16 @@ class _AddAccountFormState extends State<AddAccountForm> {
 
   @override
   Widget build(BuildContext context) {
-    final shell = context.watch<ShellStateCubit>();
+    final session = context.watch<SessionStateCubit>();
 
-    List<Account>? accounts = shell.state
+    List<Account>? accounts = session.state
         .maybeWhen(success: (state) => state.accounts, orElse: () => null);
 
     if (accounts == null) {
       throw Exception("invariant: accounts are null");
     }
 
-    Account currentHighestIndexAccount = shell.state.maybeWhen(
+    Account currentHighestIndexAccount = session.state.maybeWhen(
         success: (state) => getHighestIndexAccount(state.accounts),
         orElse: () => throw Exception("invariant: account is null"));
 
@@ -70,8 +70,8 @@ class _AddAccountFormState extends State<AddAccountForm> {
                 content: Text("Success"),
               ));
 
-              // Update accounts in shell
-              shell.refresh();
+              // Update accounts in session
+              session.refresh();
             },
           _ => () => {} // TODO: add noop util
         };

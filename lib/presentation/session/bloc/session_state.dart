@@ -7,54 +7,54 @@ import 'package:horizon/domain/entities/address.dart';
 
 import 'package:pub_semver/pub_semver.dart';
 
-part 'shell_state.freezed.dart';
+part 'session_state.freezed.dart';
 
 @freezed
-class ShellState with _$ShellState {
-  const factory ShellState.initial() = _Initial;
-  const factory ShellState.loading() = _Loading;
-  const factory ShellState.error(String error) = _Error;
-  const factory ShellState.onboarding(Onboarding onboarding) = _Onboarding;
-  const factory ShellState.success(ShellStateSuccess succcess) = _Success;
-  const factory ShellState.loggedOut() = _LoggedOut;
+class SessionState with _$SessionState {
+  const factory SessionState.initial() = _Initial;
+  const factory SessionState.loading() = _Loading;
+  const factory SessionState.error(String error) = _Error;
+  const factory SessionState.onboarding(Onboarding onboarding) = _Onboarding;
+  const factory SessionState.success(SessionStateSuccess succcess) = _Success;
+  const factory SessionState.loggedOut() = _LoggedOut;
 }
 
 @freezed
-class ShellStateSuccess with _$ShellStateSuccess {
+class SessionStateSuccess with _$SessionStateSuccess {
   // Private constructor
 
   @override
   String toString() {
-    return 'ShellStateSuccess._(redirect: $redirect, wallet: $wallet, decryptedSecretKey: <REDACTED>, accounts: $accounts, currentAccountUuid: $currentAccountUuid, addresses: $addresses, currentAddress: $currentAddress, importedAddresses: $importedAddresses, currentImportedAddress: $currentImportedAddress)';
+    return 'SessionStateSuccess(redirect: $redirect, wallet: $wallet, decryptionKey: <REDACTED>, accounts: $accounts, currentAccountUuid: $currentAccountUuid, addresses: $addresses, currentAddress: $currentAddress, importedAddresses: $importedAddresses, currentImportedAddress: $currentImportedAddress)';
   }
 
-  const factory ShellStateSuccess._({
+  const factory SessionStateSuccess({
     required bool redirect,
     required Wallet wallet,
-    required String decryptedSecretKey,
+    required String decryptionKey,
     required List<Account> accounts,
     required String? currentAccountUuid,
     required List<Address> addresses,
     required Address? currentAddress,
     List<ImportedAddress>? importedAddresses,
     ImportedAddress? currentImportedAddress,
-  }) = _ShellStateSuccess;
+  }) = _SessionStateSuccess;
 
   // Factory for account/address state
-  factory ShellStateSuccess.withAccount({
+  factory SessionStateSuccess.withAccount({
     required bool redirect,
     required Wallet wallet,
-    required String decryptedSecretKey,
+    required String decryptionKey,
     required List<Account> accounts,
     required String currentAccountUuid,
     required List<Address> addresses,
     required Address currentAddress,
     List<ImportedAddress>? importedAddresses,
   }) {
-    return ShellStateSuccess._(
+    return SessionStateSuccess(
       redirect: redirect,
       wallet: wallet,
-      decryptedSecretKey: decryptedSecretKey,
+      decryptionKey: decryptionKey,
       accounts: accounts,
       currentAccountUuid: currentAccountUuid,
       addresses: addresses,
@@ -65,7 +65,7 @@ class ShellStateSuccess with _$ShellStateSuccess {
   }
 
   // Factory for imported address state
-  factory ShellStateSuccess.withImportedAddress({
+  factory SessionStateSuccess.withImportedAddress({
     required Version current,
     required Version latest,
     required bool shouldShowUpgradeWarning,
@@ -77,10 +77,10 @@ class ShellStateSuccess with _$ShellStateSuccess {
     required List<ImportedAddress> importedAddresses,
     required ImportedAddress currentImportedAddress,
   }) {
-    return ShellStateSuccess._(
+    return SessionStateSuccess(
       redirect: redirect,
       wallet: wallet,
-      decryptedSecretKey: decryptedSecretKey,
+      decryptionKey: decryptedSecretKey,
       accounts: accounts,
       currentAccountUuid: null,
       addresses: addresses,

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:formz/formz.dart';
-import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
+import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import "./login_form_bloc.dart" as b;
 
 class LoginForm extends StatefulWidget {
@@ -25,8 +25,8 @@ class _LoginFormState extends State<LoginForm> {
     return BlocConsumer<b.LoginFormBloc, b.FormState>(
         listener: (context, state) {
       if (state.status.isSuccess) {
-        final shell = context.read<ShellStateCubit>();
-        shell.initialize();
+        final session = context.read<SessionStateCubit>();
+        session.initialize();
       }
     }, builder: (context, state) {
       return Form(

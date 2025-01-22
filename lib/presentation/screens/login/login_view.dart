@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:horizon/presentation/common/colors.dart';
-import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
+import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:get_it/get_it.dart';
@@ -26,11 +26,11 @@ class LoginView extends StatelessWidget {
         child: Scaffold(
             backgroundColor: scaffoldBackgroundColor,
             body: Center(
-                child: SizedBox(
-                  height: 400,
-                  width: 300,
-                  child: LoginForm(),
-                ),
+              child: SizedBox(
+                height: 400,
+                width: 300,
+                child: LoginForm(),
+              ),
             )));
   }
 }

@@ -3,7 +3,7 @@
 // ignore_for_file: type=lint
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
-part of 'shell_state.dart';
+part of 'session_state.dart';
 
 // **************************************************************************
 // FreezedGenerator
@@ -15,14 +15,14 @@ final _privateConstructorUsedError = UnsupportedError(
     'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
 
 /// @nodoc
-mixin _$ShellState {
+mixin _$SessionState {
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
     required TResult Function() initial,
     required TResult Function() loading,
     required TResult Function(String error) error,
     required TResult Function(Onboarding onboarding) onboarding,
-    required TResult Function(ShellStateSuccess succcess) success,
+    required TResult Function(SessionStateSuccess succcess) success,
     required TResult Function() loggedOut,
   }) =>
       throw _privateConstructorUsedError;
@@ -32,7 +32,7 @@ mixin _$ShellState {
     TResult? Function()? loading,
     TResult? Function(String error)? error,
     TResult? Function(Onboarding onboarding)? onboarding,
-    TResult? Function(ShellStateSuccess succcess)? success,
+    TResult? Function(SessionStateSuccess succcess)? success,
     TResult? Function()? loggedOut,
   }) =>
       throw _privateConstructorUsedError;
@@ -42,7 +42,7 @@ mixin _$ShellState {
     TResult Function()? loading,
     TResult Function(String error)? error,
     TResult Function(Onboarding onboarding)? onboarding,
-    TResult Function(ShellStateSuccess succcess)? success,
+    TResult Function(SessionStateSuccess succcess)? success,
     TResult Function()? loggedOut,
     required TResult orElse(),
   }) =>
@@ -81,16 +81,16 @@ mixin _$ShellState {
 }
 
 /// @nodoc
-abstract class $ShellStateCopyWith<$Res> {
-  factory $ShellStateCopyWith(
-          ShellState value, $Res Function(ShellState) then) =
-      _$ShellStateCopyWithImpl<$Res, ShellState>;
+abstract class $SessionStateCopyWith<$Res> {
+  factory $SessionStateCopyWith(
+          SessionState value, $Res Function(SessionState) then) =
+      _$SessionStateCopyWithImpl<$Res, SessionState>;
 }
 
 /// @nodoc
-class _$ShellStateCopyWithImpl<$Res, $Val extends ShellState>
-    implements $ShellStateCopyWith<$Res> {
-  _$ShellStateCopyWithImpl(this._value, this._then);
+class _$SessionStateCopyWithImpl<$Res, $Val extends SessionState>
+    implements $SessionStateCopyWith<$Res> {
+  _$SessionStateCopyWithImpl(this._value, this._then);
 
   // ignore: unused_field
   final $Val _value;
@@ -107,7 +107,7 @@ abstract class _$$InitialImplCopyWith<$Res> {
 
 /// @nodoc
 class __$$InitialImplCopyWithImpl<$Res>
-    extends _$ShellStateCopyWithImpl<$Res, _$InitialImpl>
+    extends _$SessionStateCopyWithImpl<$Res, _$InitialImpl>
     implements _$$InitialImplCopyWith<$Res> {
   __$$InitialImplCopyWithImpl(
       _$InitialImpl _value, $Res Function(_$InitialImpl) _then)
@@ -121,7 +121,7 @@ class _$InitialImpl implements _Initial {
 
   @override
   String toString() {
-    return 'ShellState.initial()';
+    return 'SessionState.initial()';
   }
 
   @override
@@ -140,7 +140,7 @@ class _$InitialImpl implements _Initial {
     required TResult Function() loading,
     required TResult Function(String error) error,
     required TResult Function(Onboarding onboarding) onboarding,
-    required TResult Function(ShellStateSuccess succcess) success,
+    required TResult Function(SessionStateSuccess succcess) success,
     required TResult Function() loggedOut,
   }) {
     return initial();
@@ -153,7 +153,7 @@ class _$InitialImpl implements _Initial {
     TResult? Function()? loading,
     TResult? Function(String error)? error,
     TResult? Function(Onboarding onboarding)? onboarding,
-    TResult? Function(ShellStateSuccess succcess)? success,
+    TResult? Function(SessionStateSuccess succcess)? success,
     TResult? Function()? loggedOut,
   }) {
     return initial?.call();
@@ -166,7 +166,7 @@ class _$InitialImpl implements _Initial {
     TResult Function()? loading,
     TResult Function(String error)? error,
     TResult Function(Onboarding onboarding)? onboarding,
-    TResult Function(ShellStateSuccess succcess)? success,
+    TResult Function(SessionStateSuccess succcess)? success,
     TResult Function()? loggedOut,
     required TResult orElse(),
   }) {
@@ -220,7 +220,7 @@ class _$InitialImpl implements _Initial {
   }
 }
 
-abstract class _Initial implements ShellState {
+abstract class _Initial implements SessionState {
   const factory _Initial() = _$InitialImpl;
 }
 
@@ -233,7 +233,7 @@ abstract class _$$LoadingImplCopyWith<$Res> {
 
 /// @nodoc
 class __$$LoadingImplCopyWithImpl<$Res>
-    extends _$ShellStateCopyWithImpl<$Res, _$LoadingImpl>
+    extends _$SessionStateCopyWithImpl<$Res, _$LoadingImpl>
     implements _$$LoadingImplCopyWith<$Res> {
   __$$LoadingImplCopyWithImpl(
       _$LoadingImpl _value, $Res Function(_$LoadingImpl) _then)
@@ -247,7 +247,7 @@ class _$LoadingImpl implements _Loading {
 
   @override
   String toString() {
-    return 'ShellState.loading()';
+    return 'SessionState.loading()';
   }
 
   @override
@@ -266,7 +266,7 @@ class _$LoadingImpl implements _Loading {
     required TResult Function() loading,
     required TResult Function(String error) error,
     required TResult Function(Onboarding onboarding) onboarding,
-    required TResult Function(ShellStateSuccess succcess) success,
+    required TResult Function(SessionStateSuccess succcess) success,
     required TResult Function() loggedOut,
   }) {
     return loading();
@@ -279,7 +279,7 @@ class _$LoadingImpl implements _Loading {
     TResult? Function()? loading,
     TResult? Function(String error)? error,
     TResult? Function(Onboarding onboarding)? onboarding,
-    TResult? Function(ShellStateSuccess succcess)? success,
+    TResult? Function(SessionStateSuccess succcess)? success,
     TResult? Function()? loggedOut,
   }) {
     return loading?.call();
@@ -292,7 +292,7 @@ class _$LoadingImpl implements _Loading {
     TResult Function()? loading,
     TResult Function(String error)? error,
     TResult Function(Onboarding onboarding)? onboarding,
-    TResult Function(ShellStateSuccess succcess)? success,
+    TResult Function(SessionStateSuccess succcess)? success,
     TResult Function()? loggedOut,
     required TResult orElse(),
   }) {
@@ -346,7 +346,7 @@ class _$LoadingImpl implements _Loading {
   }
 }
 
-abstract class _Loading implements ShellState {
+abstract class _Loading implements SessionState {
   const factory _Loading() = _$LoadingImpl;
 }
 
@@ -361,7 +361,7 @@ abstract class _$$ErrorImplCopyWith<$Res> {
 
 /// @nodoc
 class __$$ErrorImplCopyWithImpl<$Res>
-    extends _$ShellStateCopyWithImpl<$Res, _$ErrorImpl>
+    extends _$SessionStateCopyWithImpl<$Res, _$ErrorImpl>
     implements _$$ErrorImplCopyWith<$Res> {
   __$$ErrorImplCopyWithImpl(
       _$ErrorImpl _value, $Res Function(_$ErrorImpl) _then)
@@ -391,7 +391,7 @@ class _$ErrorImpl implements _Error {
 
   @override
   String toString() {
-    return 'ShellState.error(error: $error)';
+    return 'SessionState.error(error: $error)';
   }
 
   @override
@@ -418,7 +418,7 @@ class _$ErrorImpl implements _Error {
     required TResult Function() loading,
     required TResult Function(String error) error,
     required TResult Function(Onboarding onboarding) onboarding,
-    required TResult Function(ShellStateSuccess succcess) success,
+    required TResult Function(SessionStateSuccess succcess) success,
     required TResult Function() loggedOut,
   }) {
     return error(this.error);
@@ -431,7 +431,7 @@ class _$ErrorImpl implements _Error {
     TResult? Function()? loading,
     TResult? Function(String error)? error,
     TResult? Function(Onboarding onboarding)? onboarding,
-    TResult? Function(ShellStateSuccess succcess)? success,
+    TResult? Function(SessionStateSuccess succcess)? success,
     TResult? Function()? loggedOut,
   }) {
     return error?.call(this.error);
@@ -444,7 +444,7 @@ class _$ErrorImpl implements _Error {
     TResult Function()? loading,
     TResult Function(String error)? error,
     TResult Function(Onboarding onboarding)? onboarding,
-    TResult Function(ShellStateSuccess succcess)? success,
+    TResult Function(SessionStateSuccess succcess)? success,
     TResult Function()? loggedOut,
     required TResult orElse(),
   }) {
@@ -498,7 +498,7 @@ class _$ErrorImpl implements _Error {
   }
 }
 
-abstract class _Error implements ShellState {
+abstract class _Error implements SessionState {
   const factory _Error(final String error) = _$ErrorImpl;
 
   String get error;
@@ -520,7 +520,7 @@ abstract class _$$OnboardingImplCopyWith<$Res> {
 
 /// @nodoc
 class __$$OnboardingImplCopyWithImpl<$Res>
-    extends _$ShellStateCopyWithImpl<$Res, _$OnboardingImpl>
+    extends _$SessionStateCopyWithImpl<$Res, _$OnboardingImpl>
     implements _$$OnboardingImplCopyWith<$Res> {
   __$$OnboardingImplCopyWithImpl(
       _$OnboardingImpl _value, $Res Function(_$OnboardingImpl) _then)
@@ -558,7 +558,7 @@ class _$OnboardingImpl implements _Onboarding {
 
   @override
   String toString() {
-    return 'ShellState.onboarding(onboarding: $onboarding)';
+    return 'SessionState.onboarding(onboarding: $onboarding)';
   }
 
   @override
@@ -586,7 +586,7 @@ class _$OnboardingImpl implements _Onboarding {
     required TResult Function() loading,
     required TResult Function(String error) error,
     required TResult Function(Onboarding onboarding) onboarding,
-    required TResult Function(ShellStateSuccess succcess) success,
+    required TResult Function(SessionStateSuccess succcess) success,
     required TResult Function() loggedOut,
   }) {
     return onboarding(this.onboarding);
@@ -599,7 +599,7 @@ class _$OnboardingImpl implements _Onboarding {
     TResult? Function()? loading,
     TResult? Function(String error)? error,
     TResult? Function(Onboarding onboarding)? onboarding,
-    TResult? Function(ShellStateSuccess succcess)? success,
+    TResult? Function(SessionStateSuccess succcess)? success,
     TResult? Function()? loggedOut,
   }) {
     return onboarding?.call(this.onboarding);
@@ -612,7 +612,7 @@ class _$OnboardingImpl implements _Onboarding {
     TResult Function()? loading,
     TResult Function(String error)? error,
     TResult Function(Onboarding onboarding)? onboarding,
-    TResult Function(ShellStateSuccess succcess)? success,
+    TResult Function(SessionStateSuccess succcess)? success,
     TResult Function()? loggedOut,
     required TResult orElse(),
   }) {
@@ -666,7 +666,7 @@ class _$OnboardingImpl implements _Onboarding {
   }
 }
 
-abstract class _Onboarding implements ShellState {
+abstract class _Onboarding implements SessionState {
   const factory _Onboarding(final Onboarding onboarding) = _$OnboardingImpl;
 
   Onboarding get onboarding;
@@ -681,14 +681,14 @@ abstract class _$$SuccessImplCopyWith<$Res> {
           _$SuccessImpl value, $Res Function(_$SuccessImpl) then) =
       __$$SuccessImplCopyWithImpl<$Res>;
   @useResult
-  $Res call({ShellStateSuccess succcess});
+  $Res call({SessionStateSuccess succcess});
 
-  $ShellStateSuccessCopyWith<$Res> get succcess;
+  $SessionStateSuccessCopyWith<$Res> get succcess;
 }
 
 /// @nodoc
 class __$$SuccessImplCopyWithImpl<$Res>
-    extends _$ShellStateCopyWithImpl<$Res, _$SuccessImpl>
+    extends _$SessionStateCopyWithImpl<$Res, _$SuccessImpl>
     implements _$$SuccessImplCopyWith<$Res> {
   __$$SuccessImplCopyWithImpl(
       _$SuccessImpl _value, $Res Function(_$SuccessImpl) _then)
@@ -703,14 +703,14 @@ class __$$SuccessImplCopyWithImpl<$Res>
       null == succcess
           ? _value.succcess
           : succcess // ignore: cast_nullable_to_non_nullable
-              as ShellStateSuccess,
+              as SessionStateSuccess,
     ));
   }
 
   @override
   @pragma('vm:prefer-inline')
-  $ShellStateSuccessCopyWith<$Res> get succcess {
-    return $ShellStateSuccessCopyWith<$Res>(_value.succcess, (value) {
+  $SessionStateSuccessCopyWith<$Res> get succcess {
+    return $SessionStateSuccessCopyWith<$Res>(_value.succcess, (value) {
       return _then(_value.copyWith(succcess: value));
     });
   }
@@ -722,11 +722,11 @@ class _$SuccessImpl implements _Success {
   const _$SuccessImpl(this.succcess);
 
   @override
-  final ShellStateSuccess succcess;
+  final SessionStateSuccess succcess;
 
   @override
   String toString() {
-    return 'ShellState.success(succcess: $succcess)';
+    return 'SessionState.success(succcess: $succcess)';
   }
 
   @override
@@ -754,7 +754,7 @@ class _$SuccessImpl implements _Success {
     required TResult Function() loading,
     required TResult Function(String error) error,
     required TResult Function(Onboarding onboarding) onboarding,
-    required TResult Function(ShellStateSuccess succcess) success,
+    required TResult Function(SessionStateSuccess succcess) success,
     required TResult Function() loggedOut,
   }) {
     return success(succcess);
@@ -767,7 +767,7 @@ class _$SuccessImpl implements _Success {
     TResult? Function()? loading,
     TResult? Function(String error)? error,
     TResult? Function(Onboarding onboarding)? onboarding,
-    TResult? Function(ShellStateSuccess succcess)? success,
+    TResult? Function(SessionStateSuccess succcess)? success,
     TResult? Function()? loggedOut,
   }) {
     return success?.call(succcess);
@@ -780,7 +780,7 @@ class _$SuccessImpl implements _Success {
     TResult Function()? loading,
     TResult Function(String error)? error,
     TResult Function(Onboarding onboarding)? onboarding,
-    TResult Function(ShellStateSuccess succcess)? success,
+    TResult Function(SessionStateSuccess succcess)? success,
     TResult Function()? loggedOut,
     required TResult orElse(),
   }) {
@@ -834,10 +834,10 @@ class _$SuccessImpl implements _Success {
   }
 }
 
-abstract class _Success implements ShellState {
-  const factory _Success(final ShellStateSuccess succcess) = _$SuccessImpl;
+abstract class _Success implements SessionState {
+  const factory _Success(final SessionStateSuccess succcess) = _$SuccessImpl;
 
-  ShellStateSuccess get succcess;
+  SessionStateSuccess get succcess;
   @JsonKey(ignore: true)
   _$$SuccessImplCopyWith<_$SuccessImpl> get copyWith =>
       throw _privateConstructorUsedError;
@@ -852,7 +852,7 @@ abstract class _$$LoggedOutImplCopyWith<$Res> {
 
 /// @nodoc
 class __$$LoggedOutImplCopyWithImpl<$Res>
-    extends _$ShellStateCopyWithImpl<$Res, _$LoggedOutImpl>
+    extends _$SessionStateCopyWithImpl<$Res, _$LoggedOutImpl>
     implements _$$LoggedOutImplCopyWith<$Res> {
   __$$LoggedOutImplCopyWithImpl(
       _$LoggedOutImpl _value, $Res Function(_$LoggedOutImpl) _then)
@@ -866,7 +866,7 @@ class _$LoggedOutImpl implements _LoggedOut {
 
   @override
   String toString() {
-    return 'ShellState.loggedOut()';
+    return 'SessionState.loggedOut()';
   }
 
   @override
@@ -885,7 +885,7 @@ class _$LoggedOutImpl implements _LoggedOut {
     required TResult Function() loading,
     required TResult Function(String error) error,
     required TResult Function(Onboarding onboarding) onboarding,
-    required TResult Function(ShellStateSuccess succcess) success,
+    required TResult Function(SessionStateSuccess succcess) success,
     required TResult Function() loggedOut,
   }) {
     return loggedOut();
@@ -898,7 +898,7 @@ class _$LoggedOutImpl implements _LoggedOut {
     TResult? Function()? loading,
     TResult? Function(String error)? error,
     TResult? Function(Onboarding onboarding)? onboarding,
-    TResult? Function(ShellStateSuccess succcess)? success,
+    TResult? Function(SessionStateSuccess succcess)? success,
     TResult? Function()? loggedOut,
   }) {
     return loggedOut?.call();
@@ -911,7 +911,7 @@ class _$LoggedOutImpl implements _LoggedOut {
     TResult Function()? loading,
     TResult Function(String error)? error,
     TResult Function(Onboarding onboarding)? onboarding,
-    TResult Function(ShellStateSuccess succcess)? success,
+    TResult Function(SessionStateSuccess succcess)? success,
     TResult Function()? loggedOut,
     required TResult orElse(),
   }) {
@@ -965,15 +965,15 @@ class _$LoggedOutImpl implements _LoggedOut {
   }
 }
 
-abstract class _LoggedOut implements ShellState {
+abstract class _LoggedOut implements SessionState {
   const factory _LoggedOut() = _$LoggedOutImpl;
 }
 
 /// @nodoc
-mixin _$ShellStateSuccess {
+mixin _$SessionStateSuccess {
   bool get redirect => throw _privateConstructorUsedError;
   Wallet get wallet => throw _privateConstructorUsedError;
-  String get decryptedSecretKey => throw _privateConstructorUsedError;
+  String get decryptionKey => throw _privateConstructorUsedError;
   List<Account> get accounts => throw _privateConstructorUsedError;
   String? get currentAccountUuid => throw _privateConstructorUsedError;
   List<Address> get addresses => throw _privateConstructorUsedError;
@@ -984,20 +984,20 @@ mixin _$ShellStateSuccess {
       throw _privateConstructorUsedError;
 
   @JsonKey(ignore: true)
-  $ShellStateSuccessCopyWith<ShellStateSuccess> get copyWith =>
+  $SessionStateSuccessCopyWith<SessionStateSuccess> get copyWith =>
       throw _privateConstructorUsedError;
 }
 
 /// @nodoc
-abstract class $ShellStateSuccessCopyWith<$Res> {
-  factory $ShellStateSuccessCopyWith(
-          ShellStateSuccess value, $Res Function(ShellStateSuccess) then) =
-      _$ShellStateSuccessCopyWithImpl<$Res, ShellStateSuccess>;
+abstract class $SessionStateSuccessCopyWith<$Res> {
+  factory $SessionStateSuccessCopyWith(
+          SessionStateSuccess value, $Res Function(SessionStateSuccess) then) =
+      _$SessionStateSuccessCopyWithImpl<$Res, SessionStateSuccess>;
   @useResult
   $Res call(
       {bool redirect,
       Wallet wallet,
-      String decryptedSecretKey,
+      String decryptionKey,
       List<Account> accounts,
       String? currentAccountUuid,
       List<Address> addresses,
@@ -1007,9 +1007,9 @@ abstract class $ShellStateSuccessCopyWith<$Res> {
 }
 
 /// @nodoc
-class _$ShellStateSuccessCopyWithImpl<$Res, $Val extends ShellStateSuccess>
-    implements $ShellStateSuccessCopyWith<$Res> {
-  _$ShellStateSuccessCopyWithImpl(this._value, this._then);
+class _$SessionStateSuccessCopyWithImpl<$Res, $Val extends SessionStateSuccess>
+    implements $SessionStateSuccessCopyWith<$Res> {
+  _$SessionStateSuccessCopyWithImpl(this._value, this._then);
 
   // ignore: unused_field
   final $Val _value;
@@ -1021,7 +1021,7 @@ class _$ShellStateSuccessCopyWithImpl<$Res, $Val extends ShellStateSuccess>
   $Res call({
     Object? redirect = null,
     Object? wallet = null,
-    Object? decryptedSecretKey = null,
+    Object? decryptionKey = null,
     Object? accounts = null,
     Object? currentAccountUuid = freezed,
     Object? addresses = null,
@@ -1038,9 +1038,9 @@ class _$ShellStateSuccessCopyWithImpl<$Res, $Val extends ShellStateSuccess>
           ? _value.wallet
           : wallet // ignore: cast_nullable_to_non_nullable
               as Wallet,
-      decryptedSecretKey: null == decryptedSecretKey
-          ? _value.decryptedSecretKey
-          : decryptedSecretKey // ignore: cast_nullable_to_non_nullable
+      decryptionKey: null == decryptionKey
+          ? _value.decryptionKey
+          : decryptionKey // ignore: cast_nullable_to_non_nullable
               as String,
       accounts: null == accounts
           ? _value.accounts
@@ -1071,17 +1071,17 @@ class _$ShellStateSuccessCopyWithImpl<$Res, $Val extends ShellStateSuccess>
 }
 
 /// @nodoc
-abstract class _$$ShellStateSuccessImplCopyWith<$Res>
-    implements $ShellStateSuccessCopyWith<$Res> {
-  factory _$$ShellStateSuccessImplCopyWith(_$ShellStateSuccessImpl value,
-          $Res Function(_$ShellStateSuccessImpl) then) =
-      __$$ShellStateSuccessImplCopyWithImpl<$Res>;
+abstract class _$$SessionStateSuccessImplCopyWith<$Res>
+    implements $SessionStateSuccessCopyWith<$Res> {
+  factory _$$SessionStateSuccessImplCopyWith(_$SessionStateSuccessImpl value,
+          $Res Function(_$SessionStateSuccessImpl) then) =
+      __$$SessionStateSuccessImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call(
       {bool redirect,
       Wallet wallet,
-      String decryptedSecretKey,
+      String decryptionKey,
       List<Account> accounts,
       String? currentAccountUuid,
       List<Address> addresses,
@@ -1091,11 +1091,11 @@ abstract class _$$ShellStateSuccessImplCopyWith<$Res>
 }
 
 /// @nodoc
-class __$$ShellStateSuccessImplCopyWithImpl<$Res>
-    extends _$ShellStateSuccessCopyWithImpl<$Res, _$ShellStateSuccessImpl>
-    implements _$$ShellStateSuccessImplCopyWith<$Res> {
-  __$$ShellStateSuccessImplCopyWithImpl(_$ShellStateSuccessImpl _value,
-      $Res Function(_$ShellStateSuccessImpl) _then)
+class __$$SessionStateSuccessImplCopyWithImpl<$Res>
+    extends _$SessionStateSuccessCopyWithImpl<$Res, _$SessionStateSuccessImpl>
+    implements _$$SessionStateSuccessImplCopyWith<$Res> {
+  __$$SessionStateSuccessImplCopyWithImpl(_$SessionStateSuccessImpl _value,
+      $Res Function(_$SessionStateSuccessImpl) _then)
       : super(_value, _then);
 
   @pragma('vm:prefer-inline')
@@ -1103,7 +1103,7 @@ class __$$ShellStateSuccessImplCopyWithImpl<$Res>
   $Res call({
     Object? redirect = null,
     Object? wallet = null,
-    Object? decryptedSecretKey = null,
+    Object? decryptionKey = null,
     Object? accounts = null,
     Object? currentAccountUuid = freezed,
     Object? addresses = null,
@@ -1111,7 +1111,7 @@ class __$$ShellStateSuccessImplCopyWithImpl<$Res>
     Object? importedAddresses = freezed,
     Object? currentImportedAddress = freezed,
   }) {
-    return _then(_$ShellStateSuccessImpl(
+    return _then(_$SessionStateSuccessImpl(
       redirect: null == redirect
           ? _value.redirect
           : redirect // ignore: cast_nullable_to_non_nullable
@@ -1120,9 +1120,9 @@ class __$$ShellStateSuccessImplCopyWithImpl<$Res>
           ? _value.wallet
           : wallet // ignore: cast_nullable_to_non_nullable
               as Wallet,
-      decryptedSecretKey: null == decryptedSecretKey
-          ? _value.decryptedSecretKey
-          : decryptedSecretKey // ignore: cast_nullable_to_non_nullable
+      decryptionKey: null == decryptionKey
+          ? _value.decryptionKey
+          : decryptionKey // ignore: cast_nullable_to_non_nullable
               as String,
       accounts: null == accounts
           ? _value._accounts
@@ -1154,11 +1154,11 @@ class __$$ShellStateSuccessImplCopyWithImpl<$Res>
 
 /// @nodoc
 
-class _$ShellStateSuccessImpl implements _ShellStateSuccess {
-  const _$ShellStateSuccessImpl(
+class _$SessionStateSuccessImpl implements _SessionStateSuccess {
+  const _$SessionStateSuccessImpl(
       {required this.redirect,
       required this.wallet,
-      required this.decryptedSecretKey,
+      required this.decryptionKey,
       required final List<Account> accounts,
       required this.currentAccountUuid,
       required final List<Address> addresses,
@@ -1174,7 +1174,7 @@ class _$ShellStateSuccessImpl implements _ShellStateSuccess {
   @override
   final Wallet wallet;
   @override
-  final String decryptedSecretKey;
+  final String decryptionKey;
   final List<Account> _accounts;
   @override
   List<Account> get accounts {
@@ -1213,12 +1213,12 @@ class _$ShellStateSuccessImpl implements _ShellStateSuccess {
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$ShellStateSuccessImpl &&
+            other is _$SessionStateSuccessImpl &&
             (identical(other.redirect, redirect) ||
                 other.redirect == redirect) &&
             (identical(other.wallet, wallet) || other.wallet == wallet) &&
-            (identical(other.decryptedSecretKey, decryptedSecretKey) ||
-                other.decryptedSecretKey == decryptedSecretKey) &&
+            (identical(other.decryptionKey, decryptionKey) ||
+                other.decryptionKey == decryptionKey) &&
             const DeepCollectionEquality().equals(other._accounts, _accounts) &&
             (identical(other.currentAccountUuid, currentAccountUuid) ||
                 other.currentAccountUuid == currentAccountUuid) &&
@@ -1237,7 +1237,7 @@ class _$ShellStateSuccessImpl implements _ShellStateSuccess {
       runtimeType,
       redirect,
       wallet,
-      decryptedSecretKey,
+      decryptionKey,
       const DeepCollectionEquality().hash(_accounts),
       currentAccountUuid,
       const DeepCollectionEquality().hash(_addresses),
@@ -1248,29 +1248,30 @@ class _$ShellStateSuccessImpl implements _ShellStateSuccess {
   @JsonKey(ignore: true)
   @override
   @pragma('vm:prefer-inline')
-  _$$ShellStateSuccessImplCopyWith<_$ShellStateSuccessImpl> get copyWith =>
-      __$$ShellStateSuccessImplCopyWithImpl<_$ShellStateSuccessImpl>(
+  _$$SessionStateSuccessImplCopyWith<_$SessionStateSuccessImpl> get copyWith =>
+      __$$SessionStateSuccessImplCopyWithImpl<_$SessionStateSuccessImpl>(
           this, _$identity);
 }
 
-abstract class _ShellStateSuccess implements ShellStateSuccess {
-  const factory _ShellStateSuccess(
-      {required final bool redirect,
-      required final Wallet wallet,
-      required final String decryptedSecretKey,
-      required final List<Account> accounts,
-      required final String? currentAccountUuid,
-      required final List<Address> addresses,
-      required final Address? currentAddress,
-      final List<ImportedAddress>? importedAddresses,
-      final ImportedAddress? currentImportedAddress}) = _$ShellStateSuccessImpl;
+abstract class _SessionStateSuccess implements SessionStateSuccess {
+  const factory _SessionStateSuccess(
+          {required final bool redirect,
+          required final Wallet wallet,
+          required final String decryptionKey,
+          required final List<Account> accounts,
+          required final String? currentAccountUuid,
+          required final List<Address> addresses,
+          required final Address? currentAddress,
+          final List<ImportedAddress>? importedAddresses,
+          final ImportedAddress? currentImportedAddress}) =
+      _$SessionStateSuccessImpl;
 
   @override
   bool get redirect;
   @override
   Wallet get wallet;
   @override
-  String get decryptedSecretKey;
+  String get decryptionKey;
   @override
   List<Account> get accounts;
   @override
@@ -1285,7 +1286,7 @@ abstract class _ShellStateSuccess implements ShellStateSuccess {
   ImportedAddress? get currentImportedAddress;
   @override
   @JsonKey(ignore: true)
-  _$$ShellStateSuccessImplCopyWith<_$ShellStateSuccessImpl> get copyWith =>
+  _$$SessionStateSuccessImplCopyWith<_$SessionStateSuccessImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
 

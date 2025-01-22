@@ -23,9 +23,9 @@ import 'package:horizon/presentation/screens/compose_dispense/usecase/fetch_open
 import 'package:horizon/presentation/screens/compose_dispense/view/compose_dispense_modal.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart';
 import 'package:horizon/presentation/screens/horizon/ui.dart';
-import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
-import 'package:horizon/presentation/shell/bloc/shell_state.dart';
 import 'package:horizon/setup.dart';
+import 'package:horizon/presentation/session/bloc/session_cubit.dart';
+import 'package:horizon/presentation/session/bloc/session_state.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -58,11 +58,12 @@ class MockEstimateDispensesUseCase extends Mock
 
 class MockLogger extends Mock implements Logger {}
 
-class MockShellStateCubit extends Mock implements ShellStateCubit {
+class MockSessionStateCubit extends Mock implements SessionStateCubit {
   @override
-  ShellState get state => ShellState.success(ShellStateSuccess.withAccount(
+  SessionState get state => SessionState.success(SessionStateSuccess.withAccount(
         accounts: [],
         redirect: false,
+        decryptionKey: 'decryption_key',
         wallet: const Wallet(
           name: 'Test Wallet',
           uuid: 'test-wallet-uuid',
@@ -422,8 +423,8 @@ void main() {
         when(() => mockAnalyticsService.trackEvent(any()))
             .thenAnswer((_) async {});
 
-        // Initialize the MockShellStateCubit
-        final mockShellCubit = MockShellStateCubit();
+        // Initialize the MockSessionStateCubit
+        final mockSessionCubit = MockSessionStateCubit();
 
         // Build the widget tree
         await tester.pumpWidget(
@@ -440,8 +441,8 @@ void main() {
                             value: composeDispenseBloc),
                         BlocProvider<DashboardActivityFeedBloc>.value(
                             value: mockDashboardActivityFeedBloc),
-                        BlocProvider<ShellStateCubit>.value(
-                            value: mockShellCubit),
+                        BlocProvider<SessionStateCubit>.value(
+                            value: mockSessionCubit),
                       ],
                       child: ComposeDispensePage(
                         key: const Key('compose_dispense_page'),
@@ -741,8 +742,8 @@ void main() {
         when(() => mockAnalyticsService.trackEvent(any()))
             .thenAnswer((_) async {});
 
-        // Initialize the MockShellStateCubit
-        final mockShellCubit = MockShellStateCubit();
+        // Initialize the MockSessionStateCubit
+        final mockSessionCubit = MockSessionStateCubit();
 
         // Build the widget tree (same as previous test)
         await tester.pumpWidget(
@@ -759,8 +760,8 @@ void main() {
                             value: composeDispenseBloc),
                         BlocProvider<DashboardActivityFeedBloc>.value(
                             value: mockDashboardActivityFeedBloc),
-                        BlocProvider<ShellStateCubit>.value(
-                            value: mockShellCubit),
+                        BlocProvider<SessionStateCubit>.value(
+                            value: mockSessionCubit),
                       ],
                       child: ComposeDispensePage(
                         key: const Key('compose_dispense_page'),
