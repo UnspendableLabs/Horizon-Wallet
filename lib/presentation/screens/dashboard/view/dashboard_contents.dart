@@ -12,6 +12,7 @@ import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/imported_address_repository.dart';
 import 'package:horizon/domain/repositories/config_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
+import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/presentation/screens/dashboard/import_address_pk_form/bloc/import_address_pk_bloc.dart';
 import 'package:horizon/presentation/screens/dashboard/import_address_pk_form/bloc/import_address_pk_event.dart';
@@ -481,6 +482,7 @@ class HorizonAppBarContent extends StatelessWidget {
                 const SizedBox(width: 8),
                 BlocProvider(
                   create: (context) => ResetBloc(
+                  inMemoryKeyRepository: GetIt.I.get<InMemoryKeyRepository>(),
                     walletRepository: GetIt.I.get<WalletRepository>(),
                     accountRepository: GetIt.I.get<AccountRepository>(),
                     addressRepository: GetIt.I.get<AddressRepository>(),

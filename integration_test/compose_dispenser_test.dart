@@ -69,7 +69,7 @@ class MockGetVirtualSizeUseCase extends Mock implements GetVirtualSizeUseCase {}
 
 class MockSessionStateCubit extends Mock implements SessionStateCubit {
   @override
-  SessionState get state => SessionState.success(SessionStateSuccess.withAccount(
+  SessionState get state => const SessionState.success(SessionStateSuccess(
         accounts: [],
         redirect: false,
         decryptionKey: "decryption_key",

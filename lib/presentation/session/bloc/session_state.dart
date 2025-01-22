@@ -19,6 +19,14 @@ class SessionState with _$SessionState {
   const factory SessionState.loggedOut() = _LoggedOut;
 }
 
+extension SessionStateX on SessionState {
+  /// Returns `true` if the current state is [SessionState.success].
+  SessionStateSuccess successOrThrow() => maybeWhen(
+      success: (s) => s,
+      orElse: () =>
+          throw Exception("SessionState.successOrThrow: expected success"));
+}
+
 @freezed
 class SessionStateSuccess with _$SessionStateSuccess {
   // Private constructor
@@ -39,56 +47,6 @@ class SessionStateSuccess with _$SessionStateSuccess {
     List<ImportedAddress>? importedAddresses,
     ImportedAddress? currentImportedAddress,
   }) = _SessionStateSuccess;
-
-  // Factory for account/address state
-  factory SessionStateSuccess.withAccount({
-    required bool redirect,
-    required Wallet wallet,
-    required String decryptionKey,
-    required List<Account> accounts,
-    required String currentAccountUuid,
-    required List<Address> addresses,
-    required Address currentAddress,
-    List<ImportedAddress>? importedAddresses,
-  }) {
-    return SessionStateSuccess(
-      redirect: redirect,
-      wallet: wallet,
-      decryptionKey: decryptionKey,
-      accounts: accounts,
-      currentAccountUuid: currentAccountUuid,
-      addresses: addresses,
-      currentAddress: currentAddress,
-      importedAddresses: importedAddresses,
-      currentImportedAddress: null,
-    );
-  }
-
-  // Factory for imported address state
-  factory SessionStateSuccess.withImportedAddress({
-    required Version current,
-    required Version latest,
-    required bool shouldShowUpgradeWarning,
-    required bool redirect,
-    required Wallet wallet,
-    required String decryptedSecretKey,
-    required List<Account> accounts,
-    required List<Address> addresses,
-    required List<ImportedAddress> importedAddresses,
-    required ImportedAddress currentImportedAddress,
-  }) {
-    return SessionStateSuccess(
-      redirect: redirect,
-      wallet: wallet,
-      decryptionKey: decryptedSecretKey,
-      accounts: accounts,
-      currentAccountUuid: null,
-      addresses: addresses,
-      currentAddress: null,
-      importedAddresses: importedAddresses,
-      currentImportedAddress: currentImportedAddress,
-    );
-  }
 }
 
 @freezed

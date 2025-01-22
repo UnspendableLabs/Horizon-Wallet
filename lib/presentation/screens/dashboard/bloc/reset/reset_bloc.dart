@@ -7,6 +7,7 @@ import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/reset/reset_event.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/reset/reset_state.dart';
+import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 import 'package:logger/logger.dart';
 
 class ResetBloc extends Bloc<ResetEvent, ResetState> {
@@ -18,9 +19,11 @@ class ResetBloc extends Bloc<ResetEvent, ResetState> {
   final ImportedAddressRepository importedAddressRepository;
   final CacheProvider cacheProvider;
   final AnalyticsService analyticsService;
+  final InMemoryKeyRepository inMemoryKeyRepository;
 
   ResetBloc(
-      {required this.walletRepository,
+      {required this.inMemoryKeyRepository,
+      required this.walletRepository,
       required this.accountRepository,
       required this.addressRepository,
       required this.importedAddressRepository,
@@ -36,6 +39,9 @@ class ResetBloc extends Bloc<ResetEvent, ResetState> {
     await accountRepository.deleteAllAccounts();
     await addressRepository.deleteAllAddresses();
     await importedAddressRepository.deleteAllImportedAddresses();
+
+    await inMemoryKeyRepository.delete();
+
     cacheProvider.removeAll();
 
     analyticsService.reset();

@@ -525,7 +525,14 @@ void setup() {
   injector
       .registerSingleton<EstimateDispensesUseCase>(EstimateDispensesUseCase());
 
+  injector.registerSingleton<SecureKVService>(SecureKVServiceImpl());
+
+  injector.registerSingleton<InMemoryKeyRepository>(InMemoryKeyRepositoryImpl(
+    secureKVService: GetIt.I.get<SecureKVService>(),
+  ));
+
   injector.registerSingleton<ImportWalletUseCase>(ImportWalletUseCase(
+    inMemoryKeyRepository: GetIt.I.get<InMemoryKeyRepository>(),
     addressService: GetIt.I.get<AddressService>(),
     config: GetIt.I.get<Config>(),
     addressRepository: GetIt.I.get<AddressRepository>(),
@@ -589,12 +596,6 @@ void setup() {
 
   injector.registerSingleton<PublicKeyService>(
       PublicKeyServiceImpl(config: config));
-
-  injector.registerSingleton<SecureKVService>(SecureKVServiceImpl());
-
-  injector.registerSingleton<InMemoryKeyRepository>(InMemoryKeyRepositoryImpl(
-    secureKVService: GetIt.I.get<SecureKVService>(),
-  ));
 
   // Register the appropriate platform service
   if (GetIt.I.get<Config>().isWebExtension) {

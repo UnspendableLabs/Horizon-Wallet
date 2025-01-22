@@ -126,11 +126,16 @@ void main() {
       final legacyEncrypted =
           await fallbackEncryptionService.encrypt(originalData, password);
 
+      print("legacy: $legacyEncrypted");
+
       // Ensure the legacy encrypted string doesn't start with the Argon2 prefix
       expect(legacyEncrypted.startsWith('A2::'), isFalse);
 
       final decrypted =
           await fallbackEncryptionService.decrypt(legacyEncrypted, password);
+
+      print("de: $decrypted");
+      print("og: $originalData");
       expect(decrypted, originalData);
       await tester.pumpAndSettle();
     });

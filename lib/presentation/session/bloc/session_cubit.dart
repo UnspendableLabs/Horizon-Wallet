@@ -114,7 +114,7 @@ class SessionStateCubit extends Cubit<SessionState> {
           List<ImportedAddress> importedAddresses =
               await importedAddressRepository.getAll();
 
-          emit(SessionState.success(SessionStateSuccess.withAccount(
+          emit(SessionState.success(SessionStateSuccess(
             redirect: true,
             wallet: wallet,
             decryptionKey: decryptionKey,
@@ -216,10 +216,11 @@ class SessionStateCubit extends Cubit<SessionState> {
       List<ImportedAddress> importedAddresses =
           await importedAddressRepository.getAll();
 
-      emit(SessionState.success(SessionStateSuccess(
+      SessionStateSuccess success = state.successOrThrow();
+
+      emit(SessionState.success(success.copyWith(
         redirect: true,
         wallet: wallet,
-        decryptionKey: "FAKE",
         accounts: accounts,
         addresses: addresses,
         currentAccountUuid: accounts.last.uuid,
@@ -267,10 +268,11 @@ class SessionStateCubit extends Cubit<SessionState> {
       List<ImportedAddress> importedAddresses =
           await importedAddressRepository.getAll();
 
-      emit(SessionState.success(SessionStateSuccess(
+      SessionStateSuccess success = state.successOrThrow();
+
+      emit(SessionState.success(success.copyWith(
         redirect: true,
         wallet: wallet,
-        decryptionKey: "FAKE",
         accounts: accounts,
         addresses: addresses,
         currentAccountUuid: account.uuid,

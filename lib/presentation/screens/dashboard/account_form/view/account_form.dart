@@ -70,7 +70,6 @@ class _AddAccountFormState extends State<AddAccountForm> {
                 content: Text("Success"),
               ));
 
-              // Update accounts in session
               session.refresh();
             },
           _ => () => {} // TODO: add noop util
