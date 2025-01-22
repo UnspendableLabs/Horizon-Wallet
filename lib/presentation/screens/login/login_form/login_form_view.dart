@@ -36,8 +36,8 @@ class _LoginFormState extends State<LoginForm> {
               children: [
                 Image.asset(
                   'assets/logo-blue-3d.png',
-                  height: 200,
-                  width: 200,
+                  height: 160,
+                  width: 160,
                 ),
                 TextField(
                   onChanged: (value) => context
@@ -55,8 +55,10 @@ class _LoginFormState extends State<LoginForm> {
                         : null,
                   ),
                 ),
-                ElevatedButton(
-                    style: ElevatedButton.styleFrom(
+                OutlinedButton(
+                    style: OutlinedButton.styleFrom(
+                      minimumSize: Size.fromHeight(
+                          40), // fromHeight use double.infinity as width and 40 is the height
                       padding: const EdgeInsets.symmetric(
                           horizontal: 50, vertical: 20),
                     ),
