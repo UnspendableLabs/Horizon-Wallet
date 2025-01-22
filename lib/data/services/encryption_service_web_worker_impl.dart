@@ -93,8 +93,6 @@ class EncryptionServiceWebWorkerImpl implements EncryptionService {
 
   @override
   Future<String> decrypt(String data_, String password) async {
-    //1) verify password
-
     final data = data_.substring(_argon2Prefix.length);
 
     if (_useWorker) {
@@ -124,8 +122,6 @@ class EncryptionServiceWebWorkerImpl implements EncryptionService {
 
   @override
   Future<String> decryptWithKey(String data_, String keyB64) async {
-    //1) verify password
-
     final data = data_.substring(_argon2Prefix.length);
 
     if (_useWorker) {
@@ -152,7 +148,6 @@ class EncryptionServiceWebWorkerImpl implements EncryptionService {
 
   @override
   Future<String> getDecryptionKey(String data_, String password) async {
-    // 1) Strip prefix and parse
     final data = data_.substring(_argon2Prefix.length);
     if (_useWorker) {
       try {
@@ -164,7 +159,6 @@ class EncryptionServiceWebWorkerImpl implements EncryptionService {
         final saltBase64 = parts[2];
         final salt = Salt(base64Decode(saltBase64));
 
-        // 2) Use the same worker 'hash' action with password & salt
         final encoded = await _send(
           'hash',
           jsonEncode({
@@ -173,7 +167,6 @@ class EncryptionServiceWebWorkerImpl implements EncryptionService {
           }),
         );
 
-        // 3) The derived key is in the last portion of the Argon2 output
         var hashB64 = normalizeB64(encoded.split('\$').last);
         return hashB64;
       } catch (e) {
@@ -215,5 +208,4 @@ class EncryptionServiceWebWorkerImpl implements EncryptionService {
 
     return completer.future;
   }
-  // TODO: cleanup?
 }
