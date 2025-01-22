@@ -148,7 +148,7 @@ void main() {
     test('should sign and broadcast transaction successfully', () async {
       // Arrange
       final mockUtxos = [MockUtxo()];
-      const mockCachedTxHashes = null;
+      const List<String> mockCachedTxHashes = [];
       final mockAddress = MockAddress();
       final mockAccount = MockAccount();
       final mockWallet = MockWallet();
@@ -406,7 +406,7 @@ void main() {
         () async {
       // Arrange
       final mockImportedAddress = MockImportedAddress();
-      const mockCachedTxHashes = null;
+      const List<String> mockCachedTxHashes = ['mock_tx_id'];
       final mockUtxos = [MockUtxo()];
 
       when(() => mockUtxoRepository.getUnspentForAddress('source',
@@ -450,7 +450,7 @@ void main() {
     test('should return error if transaction broadcast fails', () async {
       // Arrange
       final mockUtxos = [MockUtxo()];
-      const mockCachedTxHashes = null;
+      const List<String> mockCachedTxHashes = ['mock_tx_id'];
       final mockAddress = MockAddress();
       final mockAccount = MockAccount();
       final mockWallet = MockWallet();
@@ -522,7 +522,7 @@ void main() {
   test('should return error if signing transaction fails', () async {
     // Arrange
     final mockUtxos = [MockUtxo()];
-    const mockCachedTxHashes = null;
+    const List<String> mockCachedTxHashes = ['tx_id'];
     final mockAddress = MockAddress();
     final mockAccount = MockAccount();
     final mockWallet = MockWallet();

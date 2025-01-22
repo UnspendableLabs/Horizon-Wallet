@@ -40,7 +40,7 @@ class ComposeTransactionUseCase {
   }) async {
     try {
       // Fetch UTXOs
-      final (List<Utxo> inputsSet, List<dynamic>? cachedTxHashes) =
+      final (List<Utxo> inputsSet, List<dynamic> cachedTxHashes) =
           await utxoRepository.getUnspentForAddress(source,
               excludeCached: true);
 
@@ -50,10 +50,6 @@ class ComposeTransactionUseCase {
             message: 'No UTXOs available for transaction',
             context: {
               'source': source,
-              'params': params,
-              'feeRate': feeRate,
-              'composeFn': composeFn,
-              'inputsSet': inputsSet,
               'cachedTxHashes': cachedTxHashes,
             });
         throw error;

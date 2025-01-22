@@ -286,15 +286,6 @@ class ComposeDispenserOnNewAddressBloc extends Bloc<
               message: 'No UTXOs available for transaction',
               context: {
                 'source': source,
-                'params': ComposeSendParams(
-                  source: source,
-                  destination: destination,
-                  asset: assetToSend,
-                  quantity: escrowQuantityToSend,
-                ),
-                'feeRate': event.feeRate,
-                'composeFn': composeRepository.composeSendVerbose,
-                'inputsSet': utxos,
                 'cachedTxHashes': cachedTxHashes,
               });
           throw Exception('No UTXOs available for transaction');

@@ -152,7 +152,7 @@ void main() {
 
       // Assert
       expect(result.length, equals(2));
-      expect(cachedTxs, isNull);
+      expect(cachedTxs, []);
       verify(() => mockCacheProvider.getValue(address)).called(1);
       _verifyUtxoList(result, mockUtxos);
     });

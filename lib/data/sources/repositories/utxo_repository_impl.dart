@@ -1,9 +1,9 @@
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:horizon/data/sources/network/api/v2_api.dart';
+import 'package:horizon/data/sources/network/esplora_client.dart';
 import 'package:horizon/domain/entities/utxo.dart';
 import 'package:horizon/domain/repositories/utxo_repository.dart';
 import 'package:logger/logger.dart';
-import 'package:horizon/data/sources/network/esplora_client.dart';
 
 final logger = Logger();
 
@@ -18,7 +18,7 @@ class UtxoRepositoryImpl implements UtxoRepository {
       : _esploraApi = esploraApi;
 
   @override
-  Future<(List<Utxo>, dynamic)> getUnspentForAddress(String address,
+  Future<(List<Utxo>, List<String>)> getUnspentForAddress(String address,
       {bool excludeCached = false}) async {
     final esploraUtxos = await _esploraApi.getUtxosForAddress(address);
 
@@ -32,17 +32,18 @@ class UtxoRepositoryImpl implements UtxoRepository {
       );
     }).toList();
 
-    dynamic cachedTxHashes = [];
+    List<String> cachedTxHashes = [];
 
     if (excludeCached) {
-      cachedTxHashes = cacheProvider.getValue(address);
-      if (cachedTxHashes != null && cachedTxHashes.isNotEmpty) {
+      final allCachedTxHashes = cacheProvider.getValue(address);
+      if (allCachedTxHashes != null && allCachedTxHashes.isNotEmpty) {
+        cachedTxHashes =
+            (allCachedTxHashes as List).map((e) => e.toString()).toList();
         utxos = utxos.where((utxo) {
-          return !(cachedTxHashes!.contains(utxo.txid) && utxo.vout == 0);
+          return !(cachedTxHashes.contains(utxo.txid) && utxo.vout == 0);
         }).toList();
       }
     }
-
     return (utxos, cachedTxHashes);
   }
 }

@@ -76,7 +76,7 @@ void main() {
       const source = 'test_source_address';
       const feeRate = 10;
       final mockUtxos = [MockUtxo(), MockUtxo()];
-      const mockCachedTxHashes = null;
+      const List<String> mockCachedTxHashes = [];
       when(() => mockUtxos[0].txid).thenReturn('mockTxId1');
       when(() => mockUtxos[0].vout).thenReturn(0);
       when(() => mockUtxos[1].txid).thenReturn('mockTxId2');
@@ -149,7 +149,7 @@ void main() {
       const source = 'test_source_address';
       const feeRate = 10;
       final mockUtxos = [MockUtxo(), MockUtxo()];
-      const mockCachedTxHashes = null;
+      const List<String> mockCachedTxHashes = [];
 
       when(() => mockUtxoRepository.getUnspentForAddress(source,
               excludeCached: true))
@@ -181,7 +181,7 @@ void main() {
       // Arrange
       const source = 'test_source_address';
       const feeRate = 10;
-      const mockCachedTxHashes = null;
+      const List<String> mockCachedTxHashes = ['mock_tx_id'];
       final mockUtxos = List.generate(25, (_) => MockUtxo());
 
       for (var i = 0; i < mockUtxos.length; i++) {
@@ -240,7 +240,7 @@ void main() {
       // Arrange
       const source = 'test_source_address';
       const feeRate = 10;
-      const mockCachedTxHashes = null;
+      const List<String> mockCachedTxHashes = [];
       final mockUtxos = List.generate(25, (_) => MockUtxo());
 
       for (var i = 0; i < mockUtxos.length; i++) {
@@ -308,7 +308,7 @@ void main() {
       const feeRate = 10;
 
       when(() => mockUtxoRepository.getUnspentForAddress(source,
-          excludeCached: true)).thenAnswer((_) async => (<Utxo>[], null));
+          excludeCached: true)).thenAnswer((_) async => (<Utxo>[], <String>[]));
 
       // Act & Assert
       expect(
@@ -335,7 +335,7 @@ void main() {
       // Arrange
       const source = 'test_source_address';
       const feeRate = 10;
-      const mockCachedTxHashes = null;
+      const List<String> mockCachedTxHashes = ['mock_tx_id'];
       final mockUtxos = List.generate(25, (_) => MockUtxo());
 
       // Setup UTXOs
@@ -431,7 +431,7 @@ void main() {
       const source = 'test_source_address';
       const feeRate = 10;
       final mockUtxos = List.generate(25, (_) => MockUtxo());
-      const mockCachedTxHashes = null;
+      const List<String> mockCachedTxHashes = [];
 
       // Setup UTXOs with descending values
       for (var i = 0; i < mockUtxos.length; i++) {
