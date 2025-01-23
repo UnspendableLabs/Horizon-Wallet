@@ -63,7 +63,7 @@ import 'package:horizon/presentation/screens/dashboard/view/activity_feed.dart';
 import 'package:horizon/presentation/screens/dashboard/view/balances_display.dart';
 import 'package:horizon/presentation/screens/dashboard/view/dashboard_contents.dart';
 import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
-import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
+import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:sliver_tools/sliver_tools.dart';
 import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
@@ -195,7 +195,7 @@ void showAccountList(BuildContext context, bool isDarkTheme) {
     context: context,
     pageListBuilder: (modalSheetContext) {
       return [
-        context.read<ShellStateCubit>().state.maybeWhen(
+        context.read<SessionStateCubit>().state.maybeWhen(
               success: (state) {
                 final hasImportedAddresses =
                     state.importedAddresses?.isNotEmpty ?? false;
@@ -259,7 +259,7 @@ void showAccountList(BuildContext context, bool isDarkTheme) {
                                           state.currentAccountUuid,
                                       onTap: () {
                                         context
-                                            .read<ShellStateCubit>()
+                                            .read<SessionStateCubit>()
                                             .onAccountChanged(account);
                                         Navigator.of(modalSheetContext).pop();
                                         GoRouter.of(context).go('/dashboard');
@@ -356,7 +356,7 @@ void showAccountList(BuildContext context, bool isDarkTheme) {
                                                 ?.address,
                                         onTap: () {
                                           context
-                                              .read<ShellStateCubit>()
+                                              .read<SessionStateCubit>()
                                               .onImportedAddressChanged(
                                                   importedAddress);
                                           Navigator.of(modalSheetContext).pop();
@@ -407,7 +407,7 @@ class WalletItemSelectionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final selectedItem = context.read<ShellStateCubit>().state.maybeWhen(
+    final selectedItem = context.read<SessionStateCubit>().state.maybeWhen(
           success: (state) {
             final account = state.accounts.firstWhereOrNull(
                 (account) => account.uuid == state.currentAccountUuid);
@@ -1200,11 +1200,11 @@ class DashboardPageWrapper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final shell = context
-        .watch<ShellStateCubit>()
-        .state; // we should only ever get to this page if shell is success
+    final session = context
+        .watch<SessionStateCubit>()
+        .state; // we should only ever get to this page if session is success
 
-    return shell.maybeWhen(
+    return session.maybeWhen(
         success: (data) => MultiBlocProvider(
               key: key,
               providers: [
@@ -1372,13 +1372,14 @@ class QRCodeDialog extends StatelessWidget {
         ),
         if (currentAccountUuid != null)
           Builder(builder: (context) {
-            final accountUuid = context.read<ShellStateCubit>().state.maybeWhen(
-                  success: (state) => state.currentAccountUuid,
-                  orElse: () => null,
-                );
+            final accountUuid =
+                context.read<SessionStateCubit>().state.maybeWhen(
+                      success: (state) => state.currentAccountUuid,
+                      orElse: () => null,
+                    );
 
             // look up account
-            Account account = context.read<ShellStateCubit>().state.maybeWhen(
+            Account account = context.read<SessionStateCubit>().state.maybeWhen(
                   success: (state) => state.accounts
                       .firstWhere((account) => account.uuid == accountUuid),
                   orElse: () => throw Exception("invariant: no account"),
@@ -1557,8 +1558,8 @@ class DashboardPageState extends State<DashboardPage> {
         body: HorizonUI.HorizonDialog(
           title: "Get Addresses",
           body: Builder(builder: (context) {
-            final shell = context.watch<ShellStateCubit>();
-            return shell.state.maybeWhen(
+            final session = context.watch<SessionStateCubit>();
+            return session.state.maybeWhen(
                 orElse: () => const SizedBox.shrink(),
                 success: (state) {
                   return GetAddressesModal(
@@ -1626,7 +1627,7 @@ class DashboardPageState extends State<DashboardPage> {
 
     final isSmallScreen = screenWidth < 600;
 
-    final state = context.watch<ShellStateCubit>().state;
+    final state = context.watch<SessionStateCubit>().state;
 
     final Account? account = state.maybeWhen(
       success: (state) => state.accounts.firstWhereOrNull(
@@ -1869,7 +1870,7 @@ class DashboardPageState extends State<DashboardPage> {
                             if (account != null)
                               Builder(builder: (context) {
                                 return context
-                                    .read<ShellStateCubit>()
+                                    .read<SessionStateCubit>()
                                     .state
                                     .maybeWhen(
                                         success: (state) => state

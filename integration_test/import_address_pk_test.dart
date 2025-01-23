@@ -288,6 +288,9 @@ void main() {
             await tester.enterText(firstWordField, seedPhrase);
             await tester.pumpAndSettle();
 
+
+
+
             // Tap the "CONTINUE" button
             final continueButton2 = find.text('CONTINUE');
             expect(continueButton2, findsOneWidget);
@@ -339,6 +342,12 @@ void main() {
               final privateKeyField = find.byType(TextFormField).last;
               await tester.enterText(privateKeyField, entry.value);
               await tester.pumpAndSettle();
+
+    
+              final checkbox = find.byType(Checkbox).last;
+              await tester.tap(checkbox);
+              await tester.pumpAndSettle();
+
 
               if (entry.key.startsWith('1') || entry.key.startsWith('m')) {
                 final formatDropdown =

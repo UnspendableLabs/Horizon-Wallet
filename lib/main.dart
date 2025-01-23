@@ -23,6 +23,7 @@ import 'package:horizon/domain/repositories/config_repository.dart';
 import 'package:horizon/domain/repositories/imported_address_repository.dart';
 import 'package:horizon/domain/repositories/version_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
+import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
@@ -40,13 +41,17 @@ import 'package:horizon/presentation/screens/onboarding_create/view/onboarding_c
 import 'package:horizon/presentation/screens/onboarding_import/view/onboarding_import_page.dart';
 import 'package:horizon/presentation/screens/onboarding_import_pk/view/onboarding_import_pk_page.dart';
 import 'package:horizon/presentation/screens/privacy_policy.dart';
+import 'package:horizon/presentation/screens/login/login_view.dart';
 import 'package:horizon/presentation/screens/tos.dart';
-import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
-import 'package:horizon/presentation/shell/bloc/shell_state.dart';
-import 'package:horizon/presentation/shell/theme/bloc/theme_bloc.dart';
+import 'package:horizon/presentation/session/bloc/session_cubit.dart';
+import 'package:horizon/presentation/session/bloc/session_state.dart';
+import 'package:horizon/presentation/session/theme/bloc/theme_bloc.dart';
 import 'package:horizon/presentation/version_cubit.dart';
 import 'package:horizon/setup.dart';
 import 'package:pub_semver/pub_semver.dart';
+
+import 'package:horizon/presentation/inactivity_monitor/inactivity_monitor_bloc.dart';
+import 'package:horizon/presentation/inactivity_monitor/inactivity_monitor_view.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 final _sectionNavigatorKey = GlobalKey<NavigatorState>();
@@ -134,7 +139,7 @@ class VersionWarningState extends State<VersionWarningSnackbar> {
 
     final versionInfo = context
         .read<VersionCubit>()
-        .state; // we should only ever get to this page if shell is success
+        .state; // we should only ever get to this page if session is success
 
     if (!_hasShownSnackbar && versionInfo.warning != null) {
       switch (versionInfo.warning!) {
@@ -248,10 +253,30 @@ class AppRouter {
               transitionsBuilder:
                   (context, animation, secondaryAnimation, child) => child),
         ),
+        GoRoute(
+          path: "/login",
+          pageBuilder: (context, state) => CustomTransitionPage<void>(
+              key: state.pageKey,
+              child: const LoginView(),
+              transitionsBuilder:
+                  (context, animation, secondaryAnimation, child) => child),
+        ),
         StatefulShellRoute.indexedStack(
             builder:
-                (BuildContext context, GoRouterState state, navigationShell) {
-              return navigationShell;
+                (BuildContext context, GoRouterState state, navigationSession) {
+              return BlocProvider(
+                  create: (_) => InactivityMonitorBloc(
+                        inactivityTimeout: const Duration(minutes: 5),
+                        appLostFocusTimeout: const Duration(minutes: 1),
+                      ),
+                  child: InactivityMonitorView(
+                    onTimeout: () {
+                      final session = context.read<SessionStateCubit>();
+                      session.onLogout();
+                    },
+                    child: navigationSession,
+                  ));
+              return navigationSession;
             },
             branches: [
               StatefulShellBranch(
@@ -260,11 +285,11 @@ class AppRouter {
                   GoRoute(
                       path: "/dashboard",
                       builder: (context, state) {
-                        final shell = context.watch<ShellStateCubit>();
+                        final session = context.watch<SessionStateCubit>();
 
                         // this technically isn't necessary, will always be
                         // success
-                        return shell.state.maybeWhen(
+                        return session.state.maybeWhen(
                           success: (state) {
                             late Key key;
                             if (state.currentAddress != null) {
@@ -272,6 +297,7 @@ class AppRouter {
                             } else if (state.currentImportedAddress != null) {
                               key = Key(state.currentImportedAddress!.address);
                             }
+
                             return Scaffold(
                                 bottomNavigationBar: const Footer(),
                                 body: VersionWarningSnackbar(
@@ -297,9 +323,10 @@ class AppRouter {
           return "/tos";
         }
 
-        final shell = context.read<ShellStateCubit>();
+        final session = context.read<SessionStateCubit>();
 
-        final path = shell.state.maybeWhen(
+        final path = session.state.maybeWhen(
+            loggedOut: () => "/login",
             onboarding: (onboarding) {
               return onboarding.when(
                 initial: () => "/onboarding",
@@ -310,14 +337,14 @@ class AppRouter {
             },
             success: (data) {
               Future.delayed(const Duration(milliseconds: 500), () {
-                shell.initialized();
+                session.initialized();
               });
 
               if (data.redirect) {
                 return "/dashboard";
               }
             },
-            // if the shell state is not yet loaded, show a loading screen
+            // if the session state is not yet loaded, show a loading screen
             orElse: () => "/");
 
         final actionParam = state.uri.queryParameters['action'];
@@ -723,8 +750,11 @@ class MyApp extends StatelessWidget {
             warning: warning,
           )),
         ),
-        BlocProvider<ShellStateCubit>(
-          create: (context) => ShellStateCubit(
+        BlocProvider<SessionStateCubit>(
+          create: (context) => SessionStateCubit(
+              encryptionService: GetIt.I<EncryptionService>(),
+              inMemoryKeyRepository: GetIt.I<InMemoryKeyRepository>(),
+              cacheProvider: GetIt.I<CacheProvider>(),
               walletRepository: GetIt.I<WalletRepository>(),
               accountRepository: GetIt.I<AccountRepository>(),
               addressRepository: GetIt.I<AddressRepository>(),
@@ -769,7 +799,7 @@ class MyApp extends StatelessWidget {
           create: (context) => ThemeBloc(GetIt.I<CacheProvider>()),
         ),
       ],
-      child: BlocListener<ShellStateCubit, ShellState>(
+      child: BlocListener<SessionStateCubit, SessionState>(
         listener: (context, state) {
           AppRouter.router.refresh();
         },

@@ -17,7 +17,7 @@ import 'package:horizon/presentation/screens/onboarding_create/bloc/onboarding_c
 import 'package:horizon/presentation/screens/onboarding_create/bloc/onboarding_create_event.dart';
 import 'package:horizon/presentation/screens/onboarding_create/bloc/onboarding_create_state.dart';
 import 'package:horizon/presentation/common/colors.dart';
-import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
+import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 
 class NumberedWordGrid extends StatelessWidget {
   final String text;
@@ -156,9 +156,9 @@ class OnboardingCreatePageState extends State<OnboardingCreatePage> {
             child: BlocListener<OnboardingCreateBloc, OnboardingCreateState>(
               listener: (context, state) {
                 if (state.createState is CreateStateSuccess) {
-                  final shell = context.read<ShellStateCubit>();
-                  // reload shell to trigger redirect
-                  shell.initialize();
+                  final session = context.read<SessionStateCubit>();
+                  // reload session to trigger redirect
+                  session.initialize();
                 }
               },
               child: BlocBuilder<OnboardingCreateBloc, OnboardingCreateState>(
@@ -186,9 +186,9 @@ class OnboardingCreatePageState extends State<OnboardingCreatePage> {
                                   _ => PasswordPrompt(
                                       state: state,
                                       onPressedBack: () {
-                                        final shell =
-                                            context.read<ShellStateCubit>();
-                                        shell.onOnboarding();
+                                        final session =
+                                            context.read<SessionStateCubit>();
+                                        session.onOnboarding();
                                       },
                                       onPressedContinue: (password) {
                                         context
@@ -326,8 +326,8 @@ class _MnemonicState extends State<Mnemonic> {
                               isDarkMode: isDarkMode,
                               isSmallScreenWidth: isSmallScreenWidth,
                               onPressedBack: () {
-                                final shell = context.read<ShellStateCubit>();
-                                shell.onOnboarding();
+                                final session = context.read<SessionStateCubit>();
+                                session.onOnboarding();
                               },
                               onPressedContinue: () {
                                 context

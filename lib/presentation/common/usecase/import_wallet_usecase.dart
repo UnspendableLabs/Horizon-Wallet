@@ -9,6 +9,7 @@ import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/repositories/config_repository.dart';
+import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 
 class PasswordException implements Exception {
   final String message;
@@ -16,6 +17,7 @@ class PasswordException implements Exception {
 }
 
 class ImportWalletUseCase {
+  final InMemoryKeyRepository inMemoryKeyRepository;
   final AddressRepository addressRepository;
   final AccountRepository accountRepository;
   final WalletRepository walletRepository;
@@ -24,6 +26,7 @@ class ImportWalletUseCase {
   final Config config;
 
   ImportWalletUseCase({
+    required this.inMemoryKeyRepository,
     required this.addressRepository,
     required this.accountRepository,
     required this.walletRepository,
@@ -147,6 +150,15 @@ class ImportWalletUseCase {
         default:
           throw UnimplementedError();
       }
+
+      // write decryption key to secure storage ( i.e. create a valid session )
+      final wallet = await walletRepository.getCurrentWallet();
+
+      String decryptionKey = await encryptionService.getDecryptionKey(
+          wallet!.encryptedPrivKey, password);
+
+      await inMemoryKeyRepository.set(key: decryptionKey);
+
       onSuccess();
       return;
     } catch (e) {

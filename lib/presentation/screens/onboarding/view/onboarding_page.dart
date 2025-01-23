@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:horizon/presentation/common/footer/view/footer.dart';
 import 'package:horizon/presentation/common/colors.dart';
-import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
+import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -130,8 +130,8 @@ class OnboardingScreenState extends State<OnboardingScreen> {
                                       fontWeight: FontWeight.w700),
                                 ),
                                 onPressed: () {
-                                  final shell = context.read<ShellStateCubit>();
-                                  shell.onOnboardingCreate();
+                                  final session = context.read<SessionStateCubit>();
+                                  session.onOnboardingCreate();
                                 },
                                 child: Padding(
                                   padding: const EdgeInsets.all(8.0),
@@ -162,8 +162,8 @@ class OnboardingScreenState extends State<OnboardingScreen> {
                                       fontWeight: FontWeight.w700,
                                     )),
                                 onPressed: () {
-                                  final shell = context.read<ShellStateCubit>();
-                                  shell.onOnboardingImport();
+                                  final session = context.read<SessionStateCubit>();
+                                  session.onOnboardingImport();
                                 },
                                 child: Padding(
                                   padding: const EdgeInsets.all(8.0),
@@ -197,9 +197,9 @@ class OnboardingScreenState extends State<OnboardingScreen> {
                                       ),
                                     ),
                                     onPressed: () {
-                                      final shell =
-                                          context.read<ShellStateCubit>();
-                                      shell.onOnboardingImportPK();
+                                      final session =
+                                          context.read<SessionStateCubit>();
+                                      session.onOnboardingImportPK();
                                     },
                                     child: Padding(
                                       padding: const EdgeInsets.all(8.0),
@@ -298,9 +298,9 @@ class OnboardingScreenState extends State<OnboardingScreen> {
                                       ),
                                     ),
                                     onPressed: () {
-                                      final shell =
-                                          context.read<ShellStateCubit>();
-                                      shell.onOnboardingCreate();
+                                      final session =
+                                          context.read<SessionStateCubit>();
+                                      session.onOnboardingCreate();
                                     },
                                     child: Text(
                                       'CREATE A NEW WALLET',
@@ -327,9 +327,9 @@ class OnboardingScreenState extends State<OnboardingScreen> {
                                       ),
                                     ),
                                     onPressed: () {
-                                      final shell =
-                                          context.read<ShellStateCubit>();
-                                      shell.onOnboardingImport();
+                                      final session =
+                                          context.read<SessionStateCubit>();
+                                      session.onOnboardingImport();
                                     },
                                     child: Text(
                                       'LOAD SEED PHRASE',
@@ -356,9 +356,9 @@ class OnboardingScreenState extends State<OnboardingScreen> {
                                       ),
                                     ),
                                     onPressed: () {
-                                      final shell =
-                                          context.read<ShellStateCubit>();
-                                      shell.onOnboardingImportPK();
+                                      final session =
+                                          context.read<SessionStateCubit>();
+                                      session.onOnboardingImportPK();
                                     },
                                     child: Text(
                                       'LOAD MASTER PRIVATE KEY',

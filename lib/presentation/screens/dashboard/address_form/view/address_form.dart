@@ -4,7 +4,7 @@ import 'package:horizon/presentation/common/colors.dart';
 import "package:horizon/presentation/screens/dashboard/address_form/bloc/address_form_bloc.dart";
 import "package:horizon/presentation/screens/dashboard/address_form/bloc/address_form_event.dart";
 import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
-import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
+import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import "package:horizon/remote_data_bloc/remote_data_state.dart";
 
 class AddAddressForm extends StatefulWidget {
@@ -31,7 +31,7 @@ class _AddAccountFormState extends State<AddAddressForm> {
 
   @override
   Widget build(BuildContext context) {
-    final shell = context.watch<ShellStateCubit>();
+    final session = context.watch<SessionStateCubit>();
 
     return BlocConsumer<AddressFormBloc, RemoteDataState<Map<String, dynamic>>>(
         listener: (context, state) {
@@ -50,7 +50,7 @@ class _AddAccountFormState extends State<AddAddressForm> {
           Navigator.of(widget.modalContext!).pop();
         }
 
-        shell.refreshAndSelectNewAddress(
+        session.refreshAndSelectNewAddress(
             addresses['newAddresses'].first.address, addresses['accountUuid']);
 
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(

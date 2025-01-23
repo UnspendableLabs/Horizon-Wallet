@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
-import 'package:horizon/presentation/shell/theme/bloc/theme_event.dart';
+import 'package:horizon/presentation/session/theme/bloc/theme_event.dart';
 
 class ThemeBloc extends Bloc<ThemeEvent, ThemeMode> {
   final CacheProvider cacheProvider;
