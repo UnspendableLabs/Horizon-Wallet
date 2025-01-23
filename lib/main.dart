@@ -50,6 +50,9 @@ import 'package:horizon/presentation/version_cubit.dart';
 import 'package:horizon/setup.dart';
 import 'package:pub_semver/pub_semver.dart';
 
+import 'package:horizon/presentation/inactivity_monitor/inactivity_monitor_bloc.dart';
+import 'package:horizon/presentation/inactivity_monitor/inactivity_monitor_view.dart';
+
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 final _sectionNavigatorKey = GlobalKey<NavigatorState>();
 
@@ -261,6 +264,18 @@ class AppRouter {
         StatefulShellRoute.indexedStack(
             builder:
                 (BuildContext context, GoRouterState state, navigationSession) {
+              return BlocProvider(
+                  create: (_) => InactivityMonitorBloc(
+                        inactivityTimeout: const Duration(minutes: 5),
+                        appLostFocusTimeout: const Duration(minutes: 1),
+                      ),
+                  child: InactivityMonitorView(
+                    onTimeout: () {
+                      final session = context.read<SessionStateCubit>();
+                      session.onLogout();
+                    },
+                    child: navigationSession,
+                  ));
               return navigationSession;
             },
             branches: [
