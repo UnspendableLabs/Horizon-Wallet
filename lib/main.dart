@@ -445,9 +445,9 @@ void main() {
           context: {'runtimeType': error.runtimeType.toString()});
     } else {
       // Add more specific error type handling here as needed
-      final errorMessage = 'Unhandled Error: ${error.toString()}';
-      logger.error(errorMessage, null, stackTrace);
-      GetIt.I<ErrorService>().captureException(error,
+      const errorMessage = 'An unexpected error occurred';
+      logger.error(error.toString(), null, stackTrace);
+      GetIt.I<ErrorService>().captureException(FlutterError(errorMessage),
           stackTrace: stackTrace,
           message: errorMessage,
           context: {'errorType': error.runtimeType.toString()});

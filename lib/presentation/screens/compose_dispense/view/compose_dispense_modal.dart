@@ -182,22 +182,20 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
         // Extract unique assets for the dropdown
         final assets = dispensers.map((d) => d.asset).toSet().toList();
 
-        // Set _selectedAsset to the first asset if it's null
-        if (_selectedAsset == null && assets.isNotEmpty) {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            setState(() {
-              _selectedAsset = assets.first;
-              _selectedDispenser = dispensers.firstWhere(
-                (dispenser) => dispenser.asset == _selectedAsset,
-              );
-            });
-          });
+        if (assets.isEmpty) {
+          // Handle the case where there are no assets
+          return const Text('No dispensers available at this address.');
         }
 
-        // Use _selectedAsset for the selected value
-        String selectedAsset = _selectedAsset ?? assets.first;
+        if (_selectedAsset == null) {
+          _selectedAsset = assets.first;
+          _selectedDispenser = dispensers.firstWhere(
+            (dispenser) => dispenser.asset == _selectedAsset,
+          );
+        }
 
-        // Build the dispenser widgets
+        String selectedAsset = _selectedAsset!;
+
         List<Widget> dispenserWidgets = [
           Column(
             children:
@@ -390,14 +388,10 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
       values.add(remaining);
     }
 
-    // Initialize _buyQuantity with the first value if it's not set
     if (_buyQuantity == null || _buyQuantity!.isEmpty) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        setState(() {
-          _buyQuantity = values.first.toString();
-          _updateLotFromQuantity();
-        });
-      });
+      _buyQuantity = values.first.toString();
+      _updateLotFromQuantity();
+      _lotInputError = null;
     }
 
     int currentIndex = 0;
@@ -545,7 +539,7 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
                                           .giveQuantityNormalized!))
                                   .floor()
                                   .toInt()) {
-                        return 'Lots entered are greater than lots available.\nMax: ${(Decimal.parse(_selectedDispenser!.giveRemainingNormalized!) / Decimal.parse(_selectedDispenser!.giveQuantityNormalized!)).floor()}';
+                        return 'Lots entered are greater\nthan lots available.\nMax: ${(Decimal.parse(_selectedDispenser!.giveRemainingNormalized!) / Decimal.parse(_selectedDispenser!.giveQuantityNormalized!)).floor()}';
                       }
                     }
                     if (_lotInputError != null) {
@@ -687,33 +681,29 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
         label: "Source Address",
       ),
       const SizedBox(height: 16.0),
-      _buildDispenserInput(formKey),
+      HorizonUI.HorizonTextFormField(
+        key: const Key('dispense_dispenser_input'),
+        controller: dispenserController,
+        label: 'Dispenser Address',
+        onChanged: (value) {
+          dispenserController.text = value;
+          context
+              .read<ComposeDispenseBloc>()
+              .add(DispenserAddressChanged(address: value));
+        },
+        validator: (value) {
+          if (value == null || value.isEmpty) {
+            return 'Dispener Address is required';
+          }
+          return null;
+        },
+      ),
       const SizedBox(height: 16.0),
       _buildOpenDispensersList(state),
       const SizedBox(height: 16.0),
       _buildBuyQuantityAndPrice(formKey, state),
       const SizedBox(height: 16.0),
     ];
-  }
-
-  Widget _buildDispenserInput(GlobalKey<FormState> formKey) {
-    return HorizonUI.HorizonTextFormField(
-      key: const Key('dispense_dispenser_input'),
-      controller: dispenserController,
-      label: 'Dispenser Address',
-      onChanged: (value) {
-        dispenserController.text = value;
-        context
-            .read<ComposeDispenseBloc>()
-            .add(DispenserAddressChanged(address: value));
-      },
-      validator: (value) {
-        if (value == null || value.isEmpty) {
-          return 'Dispener Address is required';
-        }
-        return null;
-      },
-    );
   }
 
   List<Widget> _buildConfirmationDetails(state_, dynamic composeTransaction) {
