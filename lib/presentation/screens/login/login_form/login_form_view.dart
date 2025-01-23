@@ -28,6 +28,13 @@ class _LoginFormState extends State<LoginForm> {
         final session = context.read<SessionStateCubit>();
         session.initialize();
       }
+      if (state.status.isFailure) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Invalid Password'),
+          ),
+        );
+      }
     }, builder: (context, state) {
       return Form(
           key: _key,

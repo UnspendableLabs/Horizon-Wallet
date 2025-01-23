@@ -76,6 +76,7 @@ class LoginFormBloc extends Bloc<FormEvent, FormState> {
   _onPasswordChanged(PasswordChanged event, Emitter<FormState> emit) {
     emit(
       state.copyWith(
+        status: FormzSubmissionStatus.initial,
         password: Password.dirty(event.password),
       ),
     );
