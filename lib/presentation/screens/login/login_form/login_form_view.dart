@@ -43,6 +43,9 @@ class _LoginFormState extends State<LoginForm> {
                   onChanged: (value) => context
                       .read<b.LoginFormBloc>()
                       .add(b.PasswordChanged(value)),
+                  onSubmitted: (_) {
+                    context.read<b.LoginFormBloc>().add(b.FormSubmitted());
+                  },
                   enabled: !state.status.isInProgressOrSuccess,
                   controller: _passwordController,
                   obscureText: true,
