@@ -229,8 +229,10 @@ class ActivityFeedListItem extends StatelessWidget {
         event.txHash != null
             ? RBF(txHash: event.txHash!, address: params.source)
             : null,
+
+      // for dispense, source and destination are inverted
       VerboseDispenseEvent(params: var params)
-          when _getSendSide(params.source) == SendSide.source =>
+          when _getSendSide(params.source) == SendSide.destination =>
         event.txHash != null
             ? RBF(txHash: event.txHash!, address: params.source)
             : null,
