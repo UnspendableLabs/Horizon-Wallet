@@ -28,6 +28,13 @@ class _LoginFormState extends State<LoginForm> {
         final session = context.read<SessionStateCubit>();
         session.initialize();
       }
+      if (state.status.isFailure) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Invalid Password'),
+          ),
+        );
+      }
     }, builder: (context, state) {
       return Form(
           key: _key,
@@ -43,6 +50,9 @@ class _LoginFormState extends State<LoginForm> {
                   onChanged: (value) => context
                       .read<b.LoginFormBloc>()
                       .add(b.PasswordChanged(value)),
+                  onSubmitted: (_) {
+                    context.read<b.LoginFormBloc>().add(b.FormSubmitted());
+                  },
                   enabled: !state.status.isInProgressOrSuccess,
                   controller: _passwordController,
                   obscureText: true,

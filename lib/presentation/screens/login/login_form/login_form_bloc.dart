@@ -76,6 +76,7 @@ class LoginFormBloc extends Bloc<FormEvent, FormState> {
   _onPasswordChanged(PasswordChanged event, Emitter<FormState> emit) {
     emit(
       state.copyWith(
+        status: FormzSubmissionStatus.initial,
         password: Password.dirty(event.password),
       ),
     );
@@ -92,17 +93,23 @@ class LoginFormBloc extends Bloc<FormEvent, FormState> {
       final password = state.password.value;
 
       final wallet = await walletRepository.getCurrentWallet();
+   
 
       String decryptionKey = await encryptionService.getDecryptionKey(
           wallet!.encryptedPrivKey, password);
 
+     // test decrypt to validate password 
+      await encryptionService.decryptWithKey(wallet.encryptedPrivKey, decryptionKey);
+
       await inMemoryKeyRepository.set(key: decryptionKey);
+
 
       emit(
         state.copyWith(
           status: FormzSubmissionStatus.success,
         ),
       );
+
     } catch (e) {
       emit(state.copyWith(
         status: FormzSubmissionStatus.failure,
