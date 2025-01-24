@@ -69,8 +69,10 @@ class ImportWalletUseCase {
         throw PasswordException('invariant: Invalid password');
       }
 
+      // Track accounts that have no balance; once 3 accounts have been skipped, stop importing
       int skippedAccounts = 0;
 
+      // Attempt to find balances/transactions for up to 20 accounts, checking up to 20 addresses per account
       for (var i = 0; i < GAP_LIMIT; i++) {
         print("ACCOUNT $i");
         // m/84'/0'/0'/0
@@ -84,11 +86,13 @@ class ImportWalletUseCase {
           importFormat: ImportFormat.horizon,
         );
 
-        int skippedAdresses = 0;
+        // Track addresses that have no balance; once 3 addresses have been skipped, stop importing
+        int skippedAddresses = 0;
 
         for (var j = 0; j < GAP_LIMIT; j++) {
           if (j == 0) {
-            skippedAdresses = 0;
+            // reset the skippedAddresses counter since we are starting a new account
+            skippedAddresses = 0;
           }
           print("ADDRESS $j");
           Address address = await addressService.deriveAddressSegwit(
@@ -106,6 +110,9 @@ class ImportWalletUseCase {
               .getTransactionsByAddress(address.address);
           List<Balance> balances =
               await balanceRepository.getBalancesForAddress(address.address);
+
+          // The balances method always returns a BTC balance, even if it's 0.
+          // If the BTC balance is 0, remove it from the list
           if (balances.length == 1 &&
               balances.first.asset == 'BTC' &&
               balances.first.quantity == 0) {
@@ -113,31 +120,44 @@ class ImportWalletUseCase {
           }
 
           if (transactions.isNotEmpty || balances.isNotEmpty) {
-            skippedAdresses = 0;
+            // reset the skippedAddresses and skippedAccounts counter since we have just added an address
+            skippedAddresses = 0;
+            skippedAccounts = 0;
             print("ADDED ADDRESS $j for account $i");
+
+            // add the address to the account
             if (accountsWithBalances.containsKey(account)) {
               accountsWithBalances[account]!.add(address);
             } else {
               accountsWithBalances[account] = [address];
             }
           } else {
-            skippedAdresses++;
+            // if the current address has no balances or transactions, add it to the skippedAddresses list
+            skippedAddresses++;
           }
 
-          if (skippedAdresses >= SKIP_LIMIT &&
+          // If 3 consecutive addresss have no balance, break the loop and move to the next account
+          if (skippedAddresses >= SKIP_LIMIT &&
               (!accountsWithBalances.containsKey(account) ||
                   !accountsWithBalances[account]!.contains(address))) {
-            if (!accountsWithBalances.containsKey(account)) {
-              skippedAccounts++;
-            }
             break;
           }
         }
+        // If we have not yet reached the skip limit,
+        // if the current account has no balances, add to the skip limit
+        if (skippedAccounts < SKIP_LIMIT &&
+            (!accountsWithBalances.containsKey(account))) {
+          print('skipping account $i');
+          skippedAccounts++;
+        }
+
+        // once we have passed 3 accounts with no balances, break the loop and proceed with inserting wallet/accounts/addresses
         if (skippedAccounts >= SKIP_LIMIT) {
           break;
         }
       }
 
+      // proceed with inserting wallet/accounts/addresses
       print('inserting wallet');
       walletRepository.insert(wallet);
 

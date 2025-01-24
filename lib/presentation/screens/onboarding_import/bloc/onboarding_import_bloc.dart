@@ -78,6 +78,7 @@ class OnboardingImportBloc
           emit(state.copyWith(importState: ImportStateError(message: msg)));
         },
         onSuccess: () {
+          print('import success');
           emit(state.copyWith(importState: ImportStateSuccess()));
         },
       );
