@@ -80,7 +80,7 @@ Transaction _$TransactionFromJson(Map<String, dynamic> json) => Transaction(
       fee: (json['fee'] as num).toInt(),
       data: json['data'] as String,
       supported: json['supported'] as bool,
-      confirmed: json['confirmed'] as bool,
+      confirmed: json['confirmed'] as bool?,
     );
 
 Map<String, dynamic> _$TransactionToJson(Transaction instance) =>
@@ -112,7 +112,7 @@ TransactionVerbose _$TransactionVerboseFromJson(Map<String, dynamic> json) =>
       fee: (json['fee'] as num).toInt(),
       data: json['data'] as String,
       supported: json['supported'] as bool,
-      confirmed: json['confirmed'] as bool,
+      confirmed: json['confirmed'] as bool?,
       unpackedData: TransactionUnpacked.fromJson(
           json['unpacked_data'] as Map<String, dynamic>),
       btcAmountNormalized: json['btc_amount_normalized'] as String,

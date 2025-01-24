@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:horizon/presentation/common/colors.dart';
-import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:get_it/get_it.dart';
@@ -11,7 +10,7 @@ import "./login_form/login_form_view.dart";
 import "./login_form/login_form_bloc.dart";
 
 class LoginView extends StatelessWidget {
-  const LoginView({Key? key}) : super(key: key);
+  const LoginView({super.key});
   @override
   Widget build(BuildContext context) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
@@ -32,12 +31,12 @@ class LoginView extends StatelessWidget {
                 child: Container(
                     decoration: BoxDecoration(
                       border: Border.all(
-                          color: Colors.white.withOpacity(0.1),
-                          ),
+                        color: Colors.white.withOpacity(0.1),
+                      ),
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 8.0),
+                    child: const Padding(
+                      padding: EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 8.0),
                       child: LoginForm(),
                     )),
               ),

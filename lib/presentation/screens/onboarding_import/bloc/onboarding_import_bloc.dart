@@ -1,5 +1,4 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:horizon/common/constants.dart';
 import 'package:horizon/domain/services/mnemonic_service.dart';
 import 'package:horizon/domain/services/wallet_service.dart';
 import 'package:horizon/presentation/common/usecase/import_wallet_usecase.dart';
@@ -11,6 +10,7 @@ class OnboardingImportBloc
   final MnemonicService mnemonicService;
   final ImportWalletUseCase importWalletUseCase;
   final WalletService walletService;
+
   OnboardingImportBloc({
     required this.mnemonicService,
     required this.importWalletUseCase,
@@ -28,15 +28,11 @@ class OnboardingImportBloc
             mnemonic: event.mnemonic));
         return;
       } else {
-        bool validMnemonic = switch (state.importFormat) {
-          ImportFormat.counterwallet =>
-            mnemonicService.validateCounterwalletMnemonic(event.mnemonic),
-          ImportFormat.horizon ||
-          ImportFormat.freewallet =>
-            mnemonicService.validateMnemonic(event.mnemonic),
-        };
+        bool isValidBip39 = mnemonicService.validateMnemonic(event.mnemonic);
+        bool isValidCounterwallet =
+            mnemonicService.validateCounterwalletMnemonic(event.mnemonic);
 
-        if (!validMnemonic) {
+        if (!isValidBip39 && !isValidCounterwallet) {
           emit(state.copyWith(
               mnemonicError: "Invalid seed phrase", mnemonic: event.mnemonic));
           return;
@@ -44,20 +40,6 @@ class OnboardingImportBloc
 
         emit(state.copyWith(mnemonic: event.mnemonic, mnemonicError: null));
       }
-    });
-
-    on<ImportFormatChanged>((event, emit) async {
-      final importFormat = switch (event.importFormat) {
-        "Horizon" => ImportFormat.horizon,
-        "Freewallet" => ImportFormat.freewallet,
-        "Counterwallet" => ImportFormat.counterwallet,
-        _ => throw Exception('Invariant: Invalid import format')
-      };
-      emit(state.copyWith(importFormat: importFormat));
-    });
-
-    on<ImportFormatSubmitted>((event, emit) async {
-      emit(state.copyWith(currentStep: OnboardingImportStep.inputSeed));
     });
 
     on<MnemonicSubmitted>((event, emit) async {
@@ -69,17 +51,8 @@ class OnboardingImportBloc
         emit(state.copyWith(mnemonicError: "Seed phrase must be twelve words"));
         return;
       } else {
-        bool validMnemonic = false;
-
-        if (state.importFormat == ImportFormat.counterwallet) {
-          validMnemonic =
-              mnemonicService.validateCounterwalletMnemonic(event.mnemonic);
-        } else if (state.importFormat == ImportFormat.horizon ||
-            state.importFormat == ImportFormat.freewallet) {
-          validMnemonic = mnemonicService.validateMnemonic(event.mnemonic);
-        }
-
-        if (!validMnemonic) {
+        if (!mnemonicService.validateMnemonic(event.mnemonic) &&
+            !mnemonicService.validateCounterwalletMnemonic(event.mnemonic)) {
           emit(state.copyWith(
               mnemonicError: "Invalid seed phrase", mnemonic: event.mnemonic));
           return;
@@ -97,17 +70,10 @@ class OnboardingImportBloc
       emit(state.copyWith(importState: ImportStateLoading()));
       final password = event.password;
 
-      await importWalletUseCase.call(
+      await importWalletUseCase.callAllWallets(
         password: password,
-        secret: state.mnemonic,
+        mnemonic: state.mnemonic,
         importFormat: state.importFormat,
-        deriveWallet: (secret, password) => switch (state.importFormat) {
-          ImportFormat.horizon => walletService.deriveRoot(secret, password),
-          ImportFormat.freewallet =>
-            walletService.deriveRootFreewallet(secret, password),
-          ImportFormat.counterwallet =>
-            walletService.deriveRootCounterwallet(secret, password),
-        },
         onError: (msg) {
           emit(state.copyWith(importState: ImportStateError(message: msg)));
         },
@@ -115,6 +81,25 @@ class OnboardingImportBloc
           emit(state.copyWith(importState: ImportStateSuccess()));
         },
       );
+
+      // await importWalletUseCase.call(
+      //   password: password,
+      //   mnemonic: state.mnemonic,
+      //   importFormat: state.importFormat,
+      //   deriveWallet: (secret, password) => switch (state.importFormat) {
+      //     ImportFormat.horizon => walletService.deriveRoot(secret, password),
+      //     ImportFormat.freewallet =>
+      //       walletService.deriveRootFreewallet(secret, password),
+      //     ImportFormat.counterwallet =>
+      //       walletService.deriveRootCounterwallet(secret, password),
+      //   },
+      //   onError: (msg) {
+      //     emit(state.copyWith(importState: ImportStateError(message: msg)));
+      //   },
+      //   onSuccess: () {
+      //     emit(state.copyWith(importState: ImportStateSuccess()));
+      //   },
+      // );
       return;
     });
   }

@@ -227,7 +227,7 @@ void setup() {
     ConnectionErrorInterceptor(),
     BadResponseInterceptor(),
     BadCertificateInterceptor(),
-    SimpleLogInterceptor(),
+    // SimpleLogInterceptor(),
     RetryInterceptor(
       dio: dio,
       retries: 3,
@@ -254,7 +254,7 @@ void setup() {
     ConnectionErrorInterceptor(),
     BadResponseInterceptor(),
     BadCertificateInterceptor(),
-    SimpleLogInterceptor(),
+    // SimpleLogInterceptor(),
     RetryInterceptor(
       dio: dio,
       retries: 4,
@@ -539,6 +539,9 @@ void setup() {
     accountRepository: GetIt.I.get<AccountRepository>(),
     walletRepository: GetIt.I.get<WalletRepository>(),
     encryptionService: GetIt.I.get<EncryptionService>(),
+    walletService: GetIt.I.get<WalletService>(),
+    addressTxRepository: GetIt.I.get<AddressTxRepository>(),
+    balanceRepository: GetIt.I.get<BalanceRepository>(),
   ));
 
   injector.registerLazySingleton<RPCGetAddressesSuccessCallback>(

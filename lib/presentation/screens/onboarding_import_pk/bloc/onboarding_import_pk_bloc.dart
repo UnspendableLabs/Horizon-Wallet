@@ -51,7 +51,7 @@ class OnboardingImportPKBloc
       await importWalletUseCase.call(
         password: password,
         importFormat: state.importFormat,
-        secret: state.pk,
+        mnemonic: state.pk,
         deriveWallet: (secret, password) =>
             walletService.fromBase58(secret, password),
         onError: (msg) {

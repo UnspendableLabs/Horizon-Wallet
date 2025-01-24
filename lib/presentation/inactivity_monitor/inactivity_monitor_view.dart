@@ -46,7 +46,7 @@ class _InactivityMonitorViewState extends State<InactivityMonitorView>
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
     if (state == AppLifecycleState.hidden ||
-        state == AppLifecycleState.paused ) {
+        state == AppLifecycleState.paused) {
       _bloc?.add(AppLostFocus());
     } else if (state == AppLifecycleState.resumed) {
       _bloc?.add(AppResumed());

@@ -103,7 +103,7 @@ class Transaction {
   final int fee;
   final String data;
   final bool supported;
-  final bool confirmed;
+  final bool? confirmed;
 
   const Transaction(
       {required this.txHash,

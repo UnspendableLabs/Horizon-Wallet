@@ -2,13 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
-import 'package:horizon/common/constants.dart';
 import 'package:horizon/domain/services/mnemonic_service.dart';
 import 'package:horizon/domain/services/wallet_service.dart';
 import 'package:horizon/presentation/common/colors.dart';
 import 'package:horizon/presentation/common/usecase/import_wallet_usecase.dart';
 import 'package:horizon/presentation/screens/onboarding/view/back_continue_buttons.dart';
-import 'package:horizon/presentation/screens/onboarding/view/import_format_dropdown.dart';
 import 'package:horizon/presentation/screens/onboarding/view/onboarding_app_bar.dart';
 import 'package:horizon/presentation/screens/onboarding/view/password_prompt.dart';
 import 'package:horizon/presentation/screens/onboarding_import/bloc/onboarding_import_bloc.dart';
@@ -105,8 +103,6 @@ class OnboardingImportPageState extends State<OnboardingImportPage> {
                         children: [
                           Flexible(
                               child: switch (state.currentStep) {
-                            OnboardingImportStep.chooseFormat =>
-                              const ChooseFormat(),
                             OnboardingImportStep.inputSeed => SeedInputFields(
                                 mnemonicErrorState: state.mnemonicError,
                               ),
@@ -176,62 +172,6 @@ class OnboardingImportPageState extends State<OnboardingImportPage> {
   }
 }
 
-class ChooseFormat extends StatefulWidget {
-  const ChooseFormat({super.key});
-  @override
-  State<ChooseFormat> createState() => _ChooseFormatState();
-}
-
-class _ChooseFormatState extends State<ChooseFormat> {
-  String selectedFormat = ImportFormat.horizon.name;
-
-  @override
-  void initState() {
-    super.initState();
-    context
-        .read<OnboardingImportBloc>()
-        .add(ImportFormatChanged(importFormat: selectedFormat));
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final isSmallScreen = MediaQuery.of(context).size.width < 768;
-    return Column(
-      children: [
-        const SelectableText("Choose the format of your seed phrase"),
-        const SizedBox(height: 16),
-        if (isSmallScreen) const SizedBox(height: 16),
-        ImportFormatDropdown(
-          onChanged: (String? newValue) {
-            setState(() {
-              selectedFormat = newValue!;
-            });
-            context
-                .read<OnboardingImportBloc>()
-                .add(ImportFormatChanged(importFormat: selectedFormat));
-          },
-          selectedFormat: selectedFormat,
-        ),
-        const SizedBox(height: 16),
-        BackContinueButtons(
-          isDarkMode: isDarkMode,
-          isSmallScreenWidth: isSmallScreen,
-          backButtonText: 'CANCEL',
-          continueButtonText: 'CONTINUE',
-          onPressedBack: () {
-            final session = context.read<SessionStateCubit>();
-            session.onOnboarding();
-          },
-          onPressedContinue: () {
-            context.read<OnboardingImportBloc>().add(ImportFormatSubmitted());
-          },
-        ),
-      ],
-    );
-  }
-}
-
 class SeedInputFields extends StatefulWidget {
   final String? mnemonicErrorState;
   const SeedInputFields({super.key, required this.mnemonicErrorState});
@@ -243,7 +183,6 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
   List<TextEditingController> controllers =
       List.generate(12, (_) => TextEditingController());
   List<FocusNode> focusNodes = List.generate(12, (_) => FocusNode());
-  String? selectedFormat = ImportFormat.horizon.name;
 
   @override
   void initState() {

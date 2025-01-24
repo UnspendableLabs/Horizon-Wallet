@@ -289,7 +289,7 @@ class _MnemonicState extends State<Mnemonic> {
                                           ? mainTextWhite
                                           : mainTextBlack,
                                     ),
-                                    if (config.network == Network.testnet)
+                                    if (config.network == Network.testnet4)
                                       ElevatedButton.icon(
                                         icon: const Icon(
                                           Icons.copy,
@@ -326,7 +326,8 @@ class _MnemonicState extends State<Mnemonic> {
                               isDarkMode: isDarkMode,
                               isSmallScreenWidth: isSmallScreenWidth,
                               onPressedBack: () {
-                                final session = context.read<SessionStateCubit>();
+                                final session =
+                                    context.read<SessionStateCubit>();
                                 session.onOnboarding();
                               },
                               onPressedContinue: () {

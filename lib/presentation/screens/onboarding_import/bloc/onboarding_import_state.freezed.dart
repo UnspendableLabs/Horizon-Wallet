@@ -147,7 +147,7 @@ class _$OnboardingImportStateImpl implements _OnboardingImportState {
       {this.mnemonic = "",
       this.mnemonicError,
       this.importFormat = ImportFormat.horizon,
-      this.currentStep = OnboardingImportStep.chooseFormat,
+      this.currentStep = OnboardingImportStep.inputSeed,
       this.importState = ImportStateNotAsked});
 
   @override

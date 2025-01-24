@@ -2,14 +2,23 @@ import 'package:horizon/common/constants.dart';
 import 'package:horizon/common/uuid.dart';
 import 'package:horizon/domain/entities/account.dart';
 import 'package:horizon/domain/entities/address.dart';
+import 'package:horizon/domain/entities/balance.dart';
+import 'package:horizon/domain/entities/transaction.dart';
 import 'package:horizon/domain/entities/wallet.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
+import 'package:horizon/domain/repositories/address_tx_repository.dart';
+import 'package:horizon/domain/repositories/balance_repository.dart';
+import 'package:horizon/domain/repositories/config_repository.dart';
+import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
-import 'package:horizon/domain/repositories/config_repository.dart';
-import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
+import 'package:horizon/domain/services/wallet_service.dart';
+
+// ignore_for_file: constant_identifier_names
+const GAP_LIMIT = 20;
+const SKIP_LIMIT = 3;
 
 class PasswordException implements Exception {
   final String message;
@@ -24,6 +33,9 @@ class ImportWalletUseCase {
   final EncryptionService encryptionService;
   final AddressService addressService;
   final Config config;
+  final WalletService walletService;
+  final AddressTxRepository addressTxRepository;
+  final BalanceRepository balanceRepository;
 
   ImportWalletUseCase({
     required this.inMemoryKeyRepository,
@@ -33,12 +45,130 @@ class ImportWalletUseCase {
     required this.encryptionService,
     required this.addressService,
     required this.config,
+    required this.walletService,
+    required this.addressTxRepository,
+    required this.balanceRepository,
   });
+
+  Future<void> callAllWallets({
+    required String password,
+    required ImportFormat importFormat,
+    required String mnemonic,
+    required Function(String) onError,
+    required Function() onSuccess,
+  }) async {
+    try {
+      Map<Account, List<Address>> accountsWithBalances = {};
+      // first, attempt to derive horizon wallet
+      final wallet = await walletService.deriveRoot(mnemonic, password);
+      String decryptedPrivKey;
+      try {
+        decryptedPrivKey =
+            await encryptionService.decrypt(wallet.encryptedPrivKey, password);
+      } catch (e) {
+        throw PasswordException('invariant: Invalid password');
+      }
+
+      int skippedAccounts = 0;
+
+      for (var i = 0; i < GAP_LIMIT; i++) {
+        print("ACCOUNT $i");
+        // m/84'/0'/0'/0
+        Account account = Account(
+          name: 'ACCOUNT ${i + 1}',
+          walletUuid: wallet.uuid,
+          purpose: '84\'',
+          coinType: '${_getCoinType()}\'',
+          accountIndex: '$i\'',
+          uuid: uuid.v4(),
+          importFormat: ImportFormat.horizon,
+        );
+
+        int skippedAdresses = 0;
+
+        for (var j = 0; j < GAP_LIMIT; j++) {
+          if (j == 0) {
+            skippedAdresses = 0;
+          }
+          print("ADDRESS $j");
+          Address address = await addressService.deriveAddressSegwit(
+            privKey: decryptedPrivKey,
+            chainCodeHex: wallet.chainCodeHex,
+            accountUuid: account.uuid,
+            purpose: account.purpose,
+            coin: account.coinType,
+            account: account.accountIndex,
+            change: '0',
+            index: j,
+          );
+
+          final List<Transaction> transactions = await addressTxRepository
+              .getTransactionsByAddress(address.address);
+          List<Balance> balances =
+              await balanceRepository.getBalancesForAddress(address.address);
+          if (balances.length == 1 &&
+              balances.first.asset == 'BTC' &&
+              balances.first.quantity == 0) {
+            balances = [];
+          }
+
+          if (transactions.isNotEmpty || balances.isNotEmpty) {
+            skippedAdresses = 0;
+            print("ADDED ADDRESS $j for account $i");
+            if (accountsWithBalances.containsKey(account)) {
+              accountsWithBalances[account]!.add(address);
+            } else {
+              accountsWithBalances[account] = [address];
+            }
+          } else {
+            skippedAdresses++;
+          }
+
+          if (skippedAdresses >= SKIP_LIMIT &&
+              (!accountsWithBalances.containsKey(account) ||
+                  !accountsWithBalances[account]!.contains(address))) {
+            if (!accountsWithBalances.containsKey(account)) {
+              skippedAccounts++;
+            }
+            break;
+          }
+        }
+        if (skippedAccounts >= SKIP_LIMIT) {
+          break;
+        }
+      }
+
+      print('inserting wallet');
+      walletRepository.insert(wallet);
+
+      for (var account in accountsWithBalances.keys) {
+        print('inserting account ${account.name}');
+        await accountRepository.insert(account);
+        print('inserting addresses for account ${account.name}');
+        await addressRepository.insertMany(accountsWithBalances[account]!);
+      }
+
+      print('writing decryption key to secure storage');
+      // write decryption key to secure storage ( i.e. create a valid session )
+      final currentWallet = await walletRepository.getCurrentWallet();
+
+      String decryptionKey = await encryptionService.getDecryptionKey(
+          currentWallet!.encryptedPrivKey, password);
+
+      await inMemoryKeyRepository.set(key: decryptionKey);
+
+      print('calling onSuccess');
+      onSuccess();
+      return;
+    } catch (e) {
+      onError(e.toString());
+    }
+  }
 
   Future<void> call({
     required String password,
     required ImportFormat importFormat,
-    required String secret,
+    required String mnemonic,
     required Future<Wallet> Function(String, String) deriveWallet,
     required Function(String) onError,
     required Function() onSuccess,
@@ -47,11 +177,13 @@ class ImportWalletUseCase {
       switch (importFormat) {
         case ImportFormat.horizon:
           await callHorizon(
-              secret: secret, password: password, deriveWallet: deriveWallet);
+              mnemonic: mnemonic,
+              password: password,
+              deriveWallet: deriveWallet);
           break;
 
         case ImportFormat.freewallet:
-          Wallet wallet = await deriveWallet(secret, password);
+          Wallet wallet = await deriveWallet(mnemonic, password);
           String decryptedPrivKey;
           try {
             decryptedPrivKey = await encryptionService.decrypt(
@@ -98,7 +230,7 @@ class ImportWalletUseCase {
 
           break;
         case ImportFormat.counterwallet:
-          Wallet wallet = await deriveWallet(secret, password);
+          Wallet wallet = await deriveWallet(mnemonic, password);
           String decryptedPrivKey;
           try {
             decryptedPrivKey = await encryptionService.decrypt(
@@ -171,11 +303,11 @@ class ImportWalletUseCase {
   }
 
   Future<void> callHorizon({
-    required String secret,
+    required String mnemonic,
     required String password,
     required Future<Wallet> Function(String, String) deriveWallet,
   }) async {
-    Wallet wallet = await deriveWallet(secret, password);
+    Wallet wallet = await deriveWallet(mnemonic, password);
     String decryptedPrivKey;
     try {
       decryptedPrivKey =
