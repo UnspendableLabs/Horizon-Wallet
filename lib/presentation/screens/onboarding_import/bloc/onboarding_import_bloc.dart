@@ -73,7 +73,6 @@ class OnboardingImportBloc
       await importWalletUseCase.callAllWallets(
         password: password,
         mnemonic: state.mnemonic,
-        importFormat: state.importFormat,
         onError: (msg) {
           emit(state.copyWith(importState: ImportStateError(message: msg)));
         },
