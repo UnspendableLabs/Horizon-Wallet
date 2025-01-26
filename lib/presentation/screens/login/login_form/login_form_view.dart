@@ -5,14 +5,14 @@ import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import "./login_form_bloc.dart" as b;
 
 class LoginForm extends StatefulWidget {
-  const LoginForm({Key? key}) : super(key: key);
+  const LoginForm({super.key});
   @override
   _LoginFormState createState() => _LoginFormState();
 }
 
 class _LoginFormState extends State<LoginForm> {
   final _key = GlobalKey<FormState>();
-  TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
 
   @override
   void dispose() {
@@ -67,7 +67,7 @@ class _LoginFormState extends State<LoginForm> {
                 ),
                 OutlinedButton(
                     style: OutlinedButton.styleFrom(
-                      minimumSize: Size.fromHeight(
+                      minimumSize: const Size.fromHeight(
                           40), // fromHeight use double.infinity as width and 40 is the height
                       padding: const EdgeInsets.symmetric(
                           horizontal: 50, vertical: 20),

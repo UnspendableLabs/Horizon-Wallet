@@ -7,9 +7,6 @@ import 'package:horizon/domain/entities/cursor.dart' as cursor_entity;
 import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 import 'package:horizon/domain/repositories/utxo_repository.dart';
-import 'package:logger/logger.dart';
-
-final logger = Logger();
 
 class BalanceRepositoryImpl implements BalanceRepository {
   final V2Api api;

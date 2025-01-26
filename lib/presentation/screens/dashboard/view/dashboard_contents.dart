@@ -482,7 +482,7 @@ class HorizonAppBarContent extends StatelessWidget {
                 const SizedBox(width: 8),
                 BlocProvider(
                   create: (context) => ResetBloc(
-                  inMemoryKeyRepository: GetIt.I.get<InMemoryKeyRepository>(),
+                    inMemoryKeyRepository: GetIt.I.get<InMemoryKeyRepository>(),
                     walletRepository: GetIt.I.get<WalletRepository>(),
                     accountRepository: GetIt.I.get<AccountRepository>(),
                     addressRepository: GetIt.I.get<AddressRepository>(),

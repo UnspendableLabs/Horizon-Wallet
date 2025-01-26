@@ -113,7 +113,6 @@ void main() {
       await tester.pumpAndSettle();
     });
 
-
     testWidgets('Encrypting same data twice produces different results',
         (WidgetTester tester) async {
       await tester.pumpWidget(MyApp(

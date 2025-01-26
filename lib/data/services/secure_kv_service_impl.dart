@@ -5,17 +5,17 @@ class SecureKVServiceImpl implements SecureKVService {
   final storage = const FlutterSecureStorage();
 
   @override
-  Future<void> write({required String key, required String value }) async {
+  Future<void> write({required String key, required String value}) async {
     await storage.write(key: key, value: value);
   }
 
   @override
-  Future<String?> read({ required String key }) async {
+  Future<String?> read({required String key}) async {
     return await storage.read(key: key);
   }
 
   @override
-  Future<void> delete({ required String key }) async {
+  Future<void> delete({required String key}) async {
     await storage.delete(key: key);
   }
 

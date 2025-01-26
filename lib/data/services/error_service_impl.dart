@@ -33,9 +33,7 @@ class ErrorServiceImpl implements ErrorService {
 
   @override
   Future<void> captureException(dynamic exception,
-      {String? message,
-      StackTrace? stackTrace,
-      Map<String, dynamic>? context}) async {
+      {String? message, Map<String, dynamic>? context}) async {
     if (!config.isSentryEnabled || !_isInitialized) return;
 
     try {
@@ -54,8 +52,7 @@ class ErrorServiceImpl implements ErrorService {
     }
 
     try {
-      final result =
-          await Sentry.captureException(exception, stackTrace: stackTrace);
+      final result = await Sentry.captureException(exception);
       logger.info('Exception captured in Sentry: ${result.toString()}');
     } catch (e) {
       logger.error('Failed to capture exception in Sentry', e as Error);

@@ -17,7 +17,7 @@ class InMemoryKeyRepositoryImpl implements InMemoryKeyRepository {
   Future<void> set({required String key}) async {
     return await secureKVService.write(key: _key, value: key);
   }
-  
+
   @override
   Future<void> delete() async {
     return await secureKVService.delete(key: _key);
