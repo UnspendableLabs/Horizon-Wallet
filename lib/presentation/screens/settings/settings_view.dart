@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 
 enum SettingsValues {
+  requiredPasswordForCryptoOperations,
   inactivityTimeout,
   lostFocusTimeout,
 }
@@ -19,6 +20,13 @@ class SettingsView extends StatelessWidget {
               SettingsGroup(
                 title: "Security",
                 children: [
+
+                  SwitchSettingsTile(
+                    title: 'Require password',
+                    subtitle: 'Require password when signing transactions or granting access to wallet data',
+                    settingKey: SettingsValues.requiredPasswordForCryptoOperations.toString(),
+                    defaultValue: true,
+                  ),
                   DropDownSettingsTile<int>(
                     title: 'Inactivity Timeout',
                     subtitle:
