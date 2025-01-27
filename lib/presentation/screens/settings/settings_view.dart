@@ -17,7 +17,7 @@ class SettingsView extends StatelessWidget {
         orElse: () => const CircularProgressIndicator(),
         success: (session) => SettingsScreen(title: "Settings", children: [
               SettingsGroup(
-                title: "Lock Screen",
+                title: "Security",
                 children: [
                   DropDownSettingsTile<int>(
                     title: 'Inactivity Timeout',

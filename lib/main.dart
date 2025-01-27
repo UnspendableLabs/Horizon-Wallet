@@ -278,6 +278,7 @@ class AppRouter {
                                   "inactivity-timeout:$inactivityTimeout;lost-focus-timeout:$lostFocusTimeout"),
                               create: (_) {
                                 return InactivityMonitorBloc(
+                                  logger: GetIt.I<Logger>(),
                                   inactivityTimeout:
                                       Duration(minutes: inactivityTimeout),
                                   appLostFocusTimeout:
