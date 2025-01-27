@@ -47,6 +47,7 @@ import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:horizon/presentation/session/bloc/session_state.dart';
 import 'package:horizon/presentation/session/theme/bloc/theme_bloc.dart';
 import 'package:horizon/presentation/version_cubit.dart';
+import 'package:horizon/presentation/screens/settings/settings_view.dart';
 import 'package:horizon/setup.dart';
 import 'package:pub_semver/pub_semver.dart';
 
@@ -264,18 +265,36 @@ class AppRouter {
         StatefulShellRoute.indexedStack(
             builder:
                 (BuildContext context, GoRouterState state, navigationSession) {
-              return BlocProvider(
-                  create: (_) => InactivityMonitorBloc(
-                        inactivityTimeout: const Duration(minutes: 5),
-                        appLostFocusTimeout: const Duration(minutes: 1),
-                      ),
-                  child: InactivityMonitorView(
-                    onTimeout: () {
-                      final session = context.read<SessionStateCubit>();
-                      session.onLogout();
-                    },
-                    child: navigationSession,
-                  ));
+              return ValueChangeObserver(
+                  cacheKey: SettingsValues.inactivityTimeout.toString(),
+                  defaultValue: 5,
+                  builder: (context, inactivityTimeout, onChanged) {
+                    return ValueChangeObserver(
+                        cacheKey: SettingsValues.lostFocusTimeout.toString(),
+                        defaultValue: 1,
+                        builder: (context, lostFocusTimeout, onChanged) {
+                          return BlocProvider(
+                              key: Key(
+                                  "inactivity-timeout:$inactivityTimeout;lost-focus-timeout:$lostFocusTimeout"),
+                              create: (_) {
+                                print('is this being rebuilt? ');
+                                return InactivityMonitorBloc(
+                                  inactivityTimeout:
+                                      Duration(minutes: inactivityTimeout),
+                                  appLostFocusTimeout:
+                                      Duration(minutes: lostFocusTimeout),
+                                );
+                              },
+                              child: InactivityMonitorView(
+                                onTimeout: () {
+                                  final session =
+                                      context.read<SessionStateCubit>();
+                                  session.onLogout();
+                                },
+                                child: navigationSession,
+                              ));
+                        });
+                  });
               return navigationSession;
             },
             branches: [
@@ -305,7 +324,31 @@ class AppRouter {
                           },
                           orElse: () => const LoadingScreen(),
                         );
-                      })
+                      }),
+                  GoRoute(
+                      path: "/settings",
+                      builder: (context, state) {
+                        final session = context.watch<SessionStateCubit>();
+
+                        // this technically isn't necessary, will always be
+                        // success
+                        return session.state.maybeWhen(
+                          success: (state) {
+                            late Key key;
+                            if (state.currentAddress != null) {
+                              key = Key(state.currentAddress!.address);
+                            } else if (state.currentImportedAddress != null) {
+                              key = Key(state.currentImportedAddress!.address);
+                            }
+
+                            return Scaffold(
+                                bottomNavigationBar: const Footer(),
+                                body: VersionWarningSnackbar(
+                                    child: SettingsView()));
+                          },
+                          orElse: () => const LoadingScreen(),
+                        );
+                      }),
                 ],
               ),
             ])
