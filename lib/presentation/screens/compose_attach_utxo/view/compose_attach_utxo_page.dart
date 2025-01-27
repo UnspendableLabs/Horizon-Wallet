@@ -90,7 +90,7 @@ class ComposeAttachUtxoPageState extends State<ComposeAttachUtxoPage> {
   TextEditingController quantityController = TextEditingController();
   TextEditingController fromAddressController = TextEditingController();
   TextEditingController assetController = TextEditingController();
-
+  TextEditingController utxoValueController = TextEditingController();
   bool _submitted = false;
   String? error;
   // Add a key for the dropdown
@@ -112,6 +112,7 @@ class ComposeAttachUtxoPageState extends State<ComposeAttachUtxoPage> {
     quantityController.dispose();
     fromAddressController.dispose();
     assetController.dispose();
+    utxoValueController.dispose();
   }
 
   @override
@@ -127,7 +128,7 @@ class ComposeAttachUtxoPageState extends State<ComposeAttachUtxoPage> {
             buildInitialFormFields: (state, loading, formKey) => [
               HorizonUI.HorizonTextFormField(
                 controller: fromAddressController,
-                label: 'From Address',
+                label: 'Source',
                 enabled: false,
               ),
               const SizedBox(height: 16),
@@ -145,6 +146,12 @@ class ComposeAttachUtxoPageState extends State<ComposeAttachUtxoPage> {
               const SizedBox(height: 16),
               const HorizonUI.HorizonTextFormField(
                 label: 'Available Supply',
+                enabled: false,
+              ),
+              const SizedBox(height: 16),
+              HorizonUI.HorizonTextFormField(
+                controller: utxoValueController,
+                label: 'UTXO Value (optional; default: 546 sats)',
                 enabled: false,
               ),
               const SizedBox(height: 16),
@@ -222,12 +229,14 @@ class ComposeAttachUtxoPageState extends State<ComposeAttachUtxoPage> {
       int quantity = getQuantityForDivisibility(
           divisible: balance.assetInfo.divisible,
           inputQuantity: quantityController.text);
+      final utxoValue = int.tryParse(utxoValueController.text) ?? 546;
 
       context.read<ComposeAttachUtxoBloc>().add(ComposeTransactionEvent(
             sourceAddress: fromAddressController.text,
             params: ComposeAttachUtxoEventParams(
               asset: widget.assetName,
               quantity: quantity,
+              utxoValue: utxoValue,
             ),
           ));
     }
@@ -246,7 +255,7 @@ class ComposeAttachUtxoPageState extends State<ComposeAttachUtxoPage> {
         return [
           HorizonUI.HorizonTextFormField(
             controller: fromAddressController,
-            label: 'From Address',
+            label: 'Source',
             enabled: false,
           ),
           const SizedBox(height: 16),
@@ -281,6 +290,29 @@ class ComposeAttachUtxoPageState extends State<ComposeAttachUtxoPage> {
             enabled: false,
           ),
           const SizedBox(height: 16),
+          HorizonUI.HorizonTextFormField(
+            controller: utxoValueController,
+            label: 'UTXO Value (optional; default: 546 sats)',
+            enabled: true,
+            inputFormatters: [
+              FilteringTextInputFormatter.digitsOnly,
+            ],
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                // this field is optional so a value is not required
+                return null;
+              } else {
+                final sats = int.tryParse(value);
+                if (sats == null) {
+                  return 'Invalid UTXO value';
+                } else if (sats < 546) {
+                  return 'UTXO value must be greater than 546 sats';
+                }
+              }
+              return null;
+            },
+          ),
+          const SizedBox(height: 32),
           HorizonUI.HorizonTextFormField(
             controller: TextEditingController(text: state.xcpFeeEstimate),
             label: 'XCP Fee Estimate',
@@ -334,6 +366,12 @@ class ComposeAttachUtxoPageState extends State<ComposeAttachUtxoPage> {
         HorizonUI.HorizonTextFormField(
           controller: TextEditingController(text: params.quantityNormalized),
           label: 'Quantity',
+          enabled: false,
+        ),
+        const SizedBox(height: 16),
+        HorizonUI.HorizonTextFormField(
+          controller: TextEditingController(text: params.utxoValue?.toString()),
+          label: 'UTXO Value',
           enabled: false,
         ),
         const SizedBox(height: 16),

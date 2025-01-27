@@ -131,6 +131,7 @@ void main() {
       asset: 'ASSET_NAME',
       quantity: 10,
       address: 'ADDRESS',
+      utxoValue: 546,
     ));
   });
 

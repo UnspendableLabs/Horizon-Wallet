@@ -5447,6 +5447,7 @@ abstract class V2Api {
     @Path("address") String address,
     @Query("asset") String asset,
     @Query("quantity") int quantity, [
+    @Query("utxo_value") int? utxoValue,
     @Query("destination_vout") String? destinationVout,
     @Query("skip_validation") bool? skipValidation,
     @Query("allow_unconfirmed_inputs") bool? allowUnconfirmedInputs,

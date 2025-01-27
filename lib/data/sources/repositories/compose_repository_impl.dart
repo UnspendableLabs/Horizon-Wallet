@@ -593,6 +593,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
         final address = params.address;
         final asset = params.asset;
         final quantity = params.quantity;
+        final utxoValue = params.utxoValue;
         const excludeUtxosWithBalances = true;
         const disableUtxoLocks = false;
         const allowUnconfirmedInputs = true;
@@ -605,6 +606,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
             address,
             asset,
             quantity,
+            utxoValue,
             destinationVout,
             skipValidation,
             allowUnconfirmedInputs,

@@ -8,11 +8,13 @@ class ComposeAttachUtxoParams extends ComposeParams {
   final String address;
   final String asset;
   final int quantity;
+  final int utxoValue;
 
   ComposeAttachUtxoParams({
     required this.address,
     required this.asset,
     required this.quantity,
+    required this.utxoValue,
   });
 
   @override
@@ -48,12 +50,13 @@ class ComposeAttachUtxoResponseParams {
   final String quantityNormalized;
   final String? destinationVout;
   final AssetInfo assetInfo;
-
+  final int? utxoValue;
   ComposeAttachUtxoResponseParams(
       {required this.source,
       required this.asset,
       required this.quantity,
       required this.quantityNormalized,
       this.destinationVout,
-      required this.assetInfo});
+      required this.assetInfo,
+      this.utxoValue});
 }
