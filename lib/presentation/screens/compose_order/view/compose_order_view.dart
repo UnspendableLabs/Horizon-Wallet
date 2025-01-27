@@ -239,6 +239,13 @@ class ComposeOrderPageState extends State<ComposeOrderPage> {
               onBack: () {
                 onConfirmationBack();
               },
+            onSubmit: ( formKey) {
+              // we call submit with empty password since this will only every 
+              // be called when PW not required
+              context
+                  .read<ComposeOrderBloc>()
+                  .add(SignAndBroadcastTransactionEvent(password: ""));
+            },
               onContinue: (composeTransaction, fee, formKey) => {
                     onConfirmationContinue(composeTransaction, fee, formKey),
                   }),

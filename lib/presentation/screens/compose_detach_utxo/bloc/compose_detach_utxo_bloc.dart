@@ -165,7 +165,7 @@ class ComposeDetachUtxoBloc extends ComposeBaseBloc<ComposeDetachUtxoState> {
     )));
 
     await signAndBroadcastTransactionUseCase.call(
-        password: event.password,
+        decryptionStrategy: Password(event.password),
         source: compose.params.destination,
         rawtransaction: compose.rawtransaction,
         onSuccess: (txHex, txHash) async {

@@ -31,6 +31,18 @@ class SignAndBroadcastTransactionException implements Exception {
 //       could add separate use case for deriving key
 //       might also want to split out sign / broadcast
 
+sealed class DecryptionStrategy {}
+
+class Password extends DecryptionStrategy {
+  final String password;
+  Password(this.password);
+}
+
+class InMemoryKey extends DecryptionStrategy {
+  final String key;
+  InMemoryKey(this.key);
+}
+
 class SignAndBroadcastTransactionUseCase<R extends ComposeResponse> {
   final AddressRepository addressRepository;
   final ImportedAddressRepository importedAddressRepository;
@@ -59,7 +71,7 @@ class SignAndBroadcastTransactionUseCase<R extends ComposeResponse> {
   });
 
   Future<void> call({
-    required String password,
+    required DecryptionStrategy decryptionStrategy,
     required Function(String, String) onSuccess,
     required Function(String) onError,
     required String source,
@@ -89,10 +101,11 @@ class SignAndBroadcastTransactionUseCase<R extends ComposeResponse> {
 
       late String addressPrivKey;
       if (address != null) {
-        addressPrivKey = await _getAddressPrivKeyForAddress(address, password);
+        addressPrivKey =
+            await _getAddressPrivKeyForAddress(address, decryptionStrategy);
       } else {
         addressPrivKey = await _getAddressPrivKeyForImportedAddress(
-            importedAddress!, password);
+            importedAddress!, decryptionStrategy);
       }
 
       // Sign Transaction
@@ -117,7 +130,7 @@ class SignAndBroadcastTransactionUseCase<R extends ComposeResponse> {
   }
 
   Future<String> _getAddressPrivKeyForAddress(
-      Address address, String password) async {
+      Address address, DecryptionStrategy decryptionStrategy) async {
     final account =
         await accountRepository.getAccountByUuid(address.accountUuid);
     if (account == null) {
@@ -128,9 +141,14 @@ class SignAndBroadcastTransactionUseCase<R extends ComposeResponse> {
 
     // Decrypt Root Private Key
     String decryptedRootPrivKey;
+
     try {
-      decryptedRootPrivKey =
-          await encryptionService.decrypt(wallet!.encryptedPrivKey, password);
+      decryptedRootPrivKey = switch (decryptionStrategy) {
+        Password(password: var password) =>
+          await encryptionService.decrypt(wallet!.encryptedPrivKey, password),
+        InMemoryKey(key: var key) =>
+          await encryptionService.decryptWithKey(wallet!.encryptedPrivKey, key)
+      };
     } catch (e) {
       throw SignAndBroadcastTransactionException('Incorrect password.');
     }
@@ -151,11 +169,16 @@ class SignAndBroadcastTransactionUseCase<R extends ComposeResponse> {
   }
 
   Future<String> _getAddressPrivKeyForImportedAddress(
-      ImportedAddress importedAddress, String password) async {
+      ImportedAddress importedAddress,
+      DecryptionStrategy decryptionStrategy) async {
     late String decryptedAddressWif;
     try {
-      decryptedAddressWif = await encryptionService.decrypt(
-          importedAddress.encryptedWif, password);
+      decryptedAddressWif = switch (decryptionStrategy) {
+        Password(password: var password) => await encryptionService.decrypt(
+            importedAddress.encryptedWif, password),
+        InMemoryKey(key: var key) => await encryptionService.decryptWithKey(
+            importedAddress.encryptedWif, key)
+      };
     } catch (e) {
       throw SignAndBroadcastTransactionException('Incorrect password.');
     }

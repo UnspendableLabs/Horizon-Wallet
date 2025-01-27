@@ -181,7 +181,7 @@ class ComposeSweepBloc extends ComposeBaseBloc<ComposeSweepState> {
     )));
 
     await signAndBroadcastTransactionUseCase.call(
-        password: event.password,
+        decryptionStrategy: Password(event.password),
         source: compose.params.source,
         rawtransaction: compose.rawtransaction,
         onSuccess: (txHex, txHash) async {

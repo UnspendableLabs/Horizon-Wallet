@@ -187,6 +187,13 @@ class ComposeCancelPageState extends State<ComposeCancelPage> {
           adjustedVirtualSize: var adjustedVirtualSize,
         ) =>
           ComposeBaseConfirmationPage(
+              onSubmit: (formKey) {
+                // this will only be called when password is not required
+                // so we can just use empty value
+                context
+                    .read<ComposeCancelBloc>()
+                    .add(SignAndBroadcastTransactionEvent(password: ""));
+              },
               composeTransaction: composeTransaction,
               fee: fee,
               feeRate: feeRate,

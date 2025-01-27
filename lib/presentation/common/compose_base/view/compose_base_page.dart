@@ -9,6 +9,8 @@ import 'package:horizon/presentation/common/fee_estimation_v2.dart';
 import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart";
 import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_event.dart";
 import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
+import 'package:flutter_settings_screens/flutter_settings_screens.dart';
+import 'package:horizon/presentation/screens/settings/settings_view.dart';
 
 class ComposeBasePage<B extends ComposeBaseBloc<S>, S extends ComposeStateBase>
     extends StatefulWidget {
@@ -111,6 +113,7 @@ class ComposeBasePageState<B extends ComposeBaseBloc<S>,
               onBack: widget.onConfirmationBack,
               onContinue: (composeTransaction, fee, formKey) => widget
                   .onConfirmationContinue(composeTransaction, fee, formKey),
+              onSubmit: (formKey) => widget.onFinalizeSubmit("", formKey),
             ),
           SubmitFinalizing(
             composeTransaction: var composeTransaction,
@@ -265,18 +268,19 @@ class ComposeBaseConfirmationPage extends StatefulWidget {
       buildConfirmationFormFields;
   final void Function() onBack;
   final void Function(dynamic, int, GlobalKey<FormState>) onContinue;
+  final void Function(GlobalKey<FormState>) onSubmit;
 
-  const ComposeBaseConfirmationPage({
-    super.key,
-    required this.composeTransaction,
-    required this.fee,
-    required this.feeRate,
-    required this.virtualSize,
-    required this.adjustedVirtualSize,
-    required this.buildConfirmationFormFields,
-    required this.onBack,
-    required this.onContinue,
-  });
+  const ComposeBaseConfirmationPage(
+      {super.key,
+      required this.composeTransaction,
+      required this.fee,
+      required this.feeRate,
+      required this.virtualSize,
+      required this.adjustedVirtualSize,
+      required this.buildConfirmationFormFields,
+      required this.onBack,
+      required this.onContinue,
+      required this.onSubmit});
 
   @override
   ComposeBaseConfirmationPageState createState() =>
@@ -289,6 +293,11 @@ class ComposeBaseConfirmationPageState
 
   @override
   Widget build(BuildContext context) {
+    bool passwordIsRequired = Settings.getValue(
+        SettingsValues.requiredPasswordForCryptoOperations.toString());
+
+    final onPressed = passwordIsRequired ? widget.onContinue : widget.onSubmit;
+
     return Form(
       key: _formKey,
       child: Padding(
@@ -337,9 +346,14 @@ class ComposeBaseConfirmationPageState
                   buttonText: 'BACK',
                 ),
                 HorizonUI.HorizonContinueButton(
-                  onPressed: () => widget.onContinue(
-                      widget.composeTransaction, widget.fee, _formKey),
-                  buttonText: 'CONTINUE',
+                  onPressed: () {
+                    passwordIsRequired
+                        ? widget.onContinue(
+                            widget.composeTransaction, widget.fee, _formKey)
+                        : widget.onSubmit(_formKey);
+                  },
+                  buttonText:
+                      passwordIsRequired ? 'CONTINUE' : "SIGN AND SUBMIT",
                 ),
               ],
             ),

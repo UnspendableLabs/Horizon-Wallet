@@ -46,3 +46,7 @@ class SignAndBroadcastTransactionEvent extends ComposeBaseEvent {
     required this.password,
   });
 }
+
+// class PasswordlessTransactionConfirmed extends ComposeBaseEvent {
+//   PasswordlessTransactionConfirmed();
+// }

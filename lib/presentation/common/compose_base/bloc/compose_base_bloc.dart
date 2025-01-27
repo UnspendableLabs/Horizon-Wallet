@@ -11,6 +11,8 @@ abstract interface class ComposeBaseBlocInterface<T extends ComposeStateBase> {
   void onFinalizeTransaction(FinalizeTransactionEvent event, Emitter<T> emit);
   void onSignAndBroadcastTransaction(
       SignAndBroadcastTransactionEvent event, Emitter<T> emit);
+
+
 }
 
 abstract class ComposeBaseBloc<T extends ComposeStateBase>
@@ -55,4 +57,5 @@ abstract class ComposeBaseBloc<T extends ComposeStateBase>
   @override
   void onSignAndBroadcastTransaction(
       SignAndBroadcastTransactionEvent event, Emitter<T> emit);
+
 }

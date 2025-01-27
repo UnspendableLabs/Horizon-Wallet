@@ -167,7 +167,7 @@ class ComposeMoveToUtxoBloc extends ComposeBaseBloc<ComposeMoveToUtxoState> {
     )));
 
     await signAndBroadcastTransactionUseCase.call(
-        password: event.password,
+        decryptionStrategy: Password(event.password),
         source: state.utxoAddress!,
         rawtransaction: compose.rawtransaction,
         onSuccess: (txHex, txHash) async {
