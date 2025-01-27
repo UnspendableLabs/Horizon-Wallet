@@ -230,7 +230,6 @@ class ComposeAttachUtxoPageState extends State<ComposeAttachUtxoPage> {
           divisible: balance.assetInfo.divisible,
           inputQuantity: quantityController.text);
       final utxoValue = int.tryParse(utxoValueController.text) ?? 546;
-      print('utxoValue: $utxoValue');
 
       context.read<ComposeAttachUtxoBloc>().add(ComposeTransactionEvent(
             sourceAddress: fromAddressController.text,
@@ -298,6 +297,20 @@ class ComposeAttachUtxoPageState extends State<ComposeAttachUtxoPage> {
             inputFormatters: [
               FilteringTextInputFormatter.digitsOnly,
             ],
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                // this field is optional so a value is not required
+                return null;
+              } else {
+                final sats = int.tryParse(value);
+                if (sats == null) {
+                  return 'Invalid UTXO value';
+                } else if (sats < 546) {
+                  return 'UTXO value must be greater than 546 sats';
+                }
+              }
+              return null;
+            },
           ),
           const SizedBox(height: 32),
           HorizonUI.HorizonTextFormField(
