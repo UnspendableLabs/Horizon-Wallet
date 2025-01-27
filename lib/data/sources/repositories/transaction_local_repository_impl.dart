@@ -7,10 +7,7 @@ import 'package:horizon/domain/repositories/transaction_local_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
 import "package:horizon/data/sources/local/dao/transactions_dao.dart";
 import "package:horizon/data/models/transaction.dart";
-import 'package:logger/logger.dart';
 import 'package:horizon/data/models/transaction_unpacked.dart';
-
-final logger = Logger();
 
 class TransactionLocalRepositoryImpl implements TransactionLocalRepository {
   final api.V2Api api_;

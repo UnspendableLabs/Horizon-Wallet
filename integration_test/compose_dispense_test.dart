@@ -24,7 +24,6 @@ import 'package:horizon/presentation/screens/compose_dispense/usecase/fetch_open
 import 'package:horizon/presentation/screens/compose_dispense/view/compose_dispense_modal.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart';
 import 'package:horizon/presentation/screens/horizon/ui.dart';
-import 'package:horizon/setup.dart';
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:horizon/presentation/session/bloc/session_state.dart';
 import 'package:integration_test/integration_test.dart';
@@ -469,7 +468,6 @@ void main() {
 
         // Allow time for the bloc to process the event and rebuild the UI
         await tester.pumpAndSettle();
-
 
         // Find the TextFormField using bySemanticsLabel
         final dispenserInput = find.bySemanticsLabel('Dispenser Address');

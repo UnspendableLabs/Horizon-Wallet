@@ -33,10 +33,7 @@ import 'package:horizon/domain/entities/compose_burn.dart' as compose_burn;
 import 'package:horizon/domain/entities/utxo.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
 
-import 'package:logger/logger.dart';
 import 'package:fpdart/fpdart.dart';
-
-final logger = Logger();
 
 class ComposeRepositoryImpl extends ComposeRepository {
   final V2Api api;
