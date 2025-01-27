@@ -21,10 +21,12 @@ import 'package:horizon/presentation/screens/compose_attach_utxo/usecase/fetch_f
 class ComposeAttachUtxoEventParams {
   final String asset;
   final int quantity;
+  final int utxoValue;
 
   ComposeAttachUtxoEventParams({
     required this.asset,
     required this.quantity,
+    this.utxoValue = 546,
   });
 }
 
@@ -161,13 +163,17 @@ class ComposeAttachUtxoBloc extends ComposeBaseBloc<ComposeAttachUtxoState> {
       final source = event.sourceAddress;
       final asset = event.params.asset;
       final quantity = event.params.quantity;
+      final utxoValue = event.params.utxoValue;
 
       final composeResponse = await composeTransactionUseCase
           .call<ComposeAttachUtxoParams, ComposeAttachUtxoResponse>(
               feeRate: feeRate,
               source: source,
               params: ComposeAttachUtxoParams(
-                  address: source, quantity: quantity, asset: asset),
+                  address: source,
+                  quantity: quantity,
+                  asset: asset,
+                  utxoValue: utxoValue),
               composeFn: composeRepository.composeAttachUtxo);
 
       emit(state.copyWith(

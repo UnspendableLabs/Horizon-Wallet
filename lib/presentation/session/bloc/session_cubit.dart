@@ -80,7 +80,7 @@ class SessionStateCubit extends Cubit<SessionState> {
     emit(const SessionState.loading());
 
     try {
-      final sessionState = await this._getSessionState();
+      final sessionState = await _getSessionState();
 
       switch (sessionState) {
         case NoWallet():

@@ -130,7 +130,8 @@ class OnboardingScreenState extends State<OnboardingScreen> {
                                       fontWeight: FontWeight.w700),
                                 ),
                                 onPressed: () {
-                                  final session = context.read<SessionStateCubit>();
+                                  final session =
+                                      context.read<SessionStateCubit>();
                                   session.onOnboardingCreate();
                                 },
                                 child: Padding(
@@ -162,7 +163,8 @@ class OnboardingScreenState extends State<OnboardingScreen> {
                                       fontWeight: FontWeight.w700,
                                     )),
                                 onPressed: () {
-                                  final session = context.read<SessionStateCubit>();
+                                  final session =
+                                      context.read<SessionStateCubit>();
                                   session.onOnboardingImport();
                                 },
                                 child: Padding(
