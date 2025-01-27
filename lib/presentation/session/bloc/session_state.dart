@@ -5,8 +5,6 @@ import 'package:horizon/domain/entities/wallet.dart';
 import 'package:horizon/domain/entities/account.dart';
 import 'package:horizon/domain/entities/address.dart';
 
-import 'package:pub_semver/pub_semver.dart';
-
 part 'session_state.freezed.dart';
 
 @freezed

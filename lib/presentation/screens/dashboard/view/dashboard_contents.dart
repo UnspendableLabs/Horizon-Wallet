@@ -482,7 +482,7 @@ class HorizonAppBarContent extends StatelessWidget {
                 const SizedBox(width: 8),
                 BlocProvider(
                   create: (context) => ResetBloc(
-                  inMemoryKeyRepository: GetIt.I.get<InMemoryKeyRepository>(),
+                    inMemoryKeyRepository: GetIt.I.get<InMemoryKeyRepository>(),
                     walletRepository: GetIt.I.get<WalletRepository>(),
                     accountRepository: GetIt.I.get<AccountRepository>(),
                     addressRepository: GetIt.I.get<AddressRepository>(),
@@ -584,10 +584,16 @@ class HorizonAppBarContent extends StatelessWidget {
                                         child: ViewSeedPhraseFormWrapper(),
                                       ),
                                     ));
+                              case 'settings':
+                                context.go("/settings");
                             }
                           },
                           itemBuilder: (BuildContext context) =>
                               <PopupMenuEntry<String>>[
+                            const PopupMenuItem<String>(
+                              value: 'settings',
+                              child: Text('Settings'),
+                            ),
                             PopupMenuItem<String>(
                               value: 'view_current_address_in_explorer',
                               child: Link(
