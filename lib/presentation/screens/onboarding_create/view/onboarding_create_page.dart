@@ -326,7 +326,8 @@ class _MnemonicState extends State<Mnemonic> {
                               isDarkMode: isDarkMode,
                               isSmallScreenWidth: isSmallScreenWidth,
                               onPressedBack: () {
-                                final session = context.read<SessionStateCubit>();
+                                final session =
+                                    context.read<SessionStateCubit>();
                                 session.onOnboarding();
                               },
                               onPressedContinue: () {

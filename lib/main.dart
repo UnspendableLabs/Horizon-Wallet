@@ -277,7 +277,6 @@ class AppRouter {
                               key: Key(
                                   "inactivity-timeout:$inactivityTimeout;lost-focus-timeout:$lostFocusTimeout"),
                               create: (_) {
-                                print('is this being rebuilt? ');
                                 return InactivityMonitorBloc(
                                   inactivityTimeout:
                                       Duration(minutes: inactivityTimeout),
@@ -341,8 +340,8 @@ class AppRouter {
                               key = Key(state.currentImportedAddress!.address);
                             }
 
-                            return Scaffold(
-                                bottomNavigationBar: const Footer(),
+                            return const Scaffold(
+                                bottomNavigationBar: Footer(),
                                 body: VersionWarningSnackbar(
                                     child: SettingsView()));
                           },

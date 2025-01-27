@@ -586,8 +586,6 @@ class HorizonAppBarContent extends StatelessWidget {
                                     ));
                               case 'settings':
                                 context.go("/settings");
-                                
-
                             }
                           },
                           itemBuilder: (BuildContext context) =>

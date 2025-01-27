@@ -54,15 +54,7 @@ class InactivityMonitorBloc
       {required this.inactivityTimeout, required this.appLostFocusTimeout})
       : super(Stopped()) {
     on<InactivityMonitorStarted>(_handleStart);
-    on<InactivityMonitorStopped>(_handleStop);
-    on<UserActivityDetected>(_handleUserActivityDetected);
-    on<AppLostFocus>(_handleAppLostFocus);
-    on<AppResumed>(_handleAppResumed);
-    on<InactivityTimeoutTriggered>(_handleInactivityTimeoutTriggered);
-    on<AppFocusTimeoutTriggered>(_handleAppFocusTimeout);
-    on<ConfigurationChanged>(_handleConfigurationChanged);
-  }
-
+    on<InactivityMonitorStopped>(_handleStop); on<UserActivityDetected>(_handleUserActivityDetected); on<AppLostFocus>(_handleAppLostFocus); on<AppResumed>(_handleAppResumed); on<InactivityTimeoutTriggered>(_handleInactivityTimeoutTriggered); on<AppFocusTimeoutTriggered>(_handleAppFocusTimeout); on<ConfigurationChanged>(_handleConfigurationChanged); }
   _handleStart(
       InactivityMonitorStarted event, Emitter<InactivityMonitorState> emit) {
     emit(Running());

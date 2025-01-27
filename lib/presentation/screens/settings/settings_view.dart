@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:fpdart/fpdart.dart';
-import 'package:horizon/main.dart';
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 
 enum SettingsValues {
@@ -12,10 +9,12 @@ enum SettingsValues {
 }
 
 class SettingsView extends StatelessWidget {
+  const SettingsView({super.key});
+
   @override
   Widget build(BuildContext context) {
     return context.watch<SessionStateCubit>().state.maybeWhen(
-        orElse: () => CircularProgressIndicator(),
+        orElse: () => const CircularProgressIndicator(),
         success: (session) => SettingsScreen(title: "Settings", children: [
               SettingsGroup(
                 title: "Lock Screen",
@@ -25,7 +24,7 @@ class SettingsView extends StatelessWidget {
                     subtitle:
                         'Period before screen locks after last user interaction',
                     settingKey: SettingsValues.inactivityTimeout.toString(),
-                    values: <int, String>{
+                    values: const <int, String>{
                       1: '1 minute',
                       5: '5 minutes',
                       30: '30 minutes',
@@ -46,7 +45,7 @@ class SettingsView extends StatelessWidget {
                     title: 'Lost Focus Timeout',
                     subtitle: 'Period before screen locks after focus is lost',
                     settingKey: SettingsValues.lostFocusTimeout.toString(),
-                    values: <int, String>{
+                    values: const <int, String>{
                       1: '1 minute',
                       5: '5 minutes',
                       30: '30 minutes',
