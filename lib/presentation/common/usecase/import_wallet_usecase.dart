@@ -66,7 +66,27 @@ class ImportWalletUseCase {
         mnemonic: mnemonic,
       );
       if (accountsWithBalances.isEmpty) {
+        print('no accounts with balances for horizon');
         // TODO: try freewallet
+        (wallet, accountsWithBalances) = await createWalletForImportFormat(
+          password: password,
+          importFormat: ImportFormat.freewallet,
+          mnemonic: mnemonic,
+        );
+      }
+
+      if (accountsWithBalances.isEmpty) {
+        print('no accounts with balances for freewallet');
+        // TODO: try counterwallet
+        (wallet, accountsWithBalances) = await createWalletForImportFormat(
+          password: password,
+          importFormat: ImportFormat.counterwallet,
+          mnemonic: mnemonic,
+        );
+      }
+
+      if (accountsWithBalances.isEmpty) {
+        print('no accounts with balances for counterwallet');
         throw Exception('invariant: no accounts have balances');
       }
 
@@ -106,6 +126,7 @@ class ImportWalletUseCase {
     required String mnemonic,
   }) async {
     Map<Account, List<Address>> accountsWithBalances = {};
+    print('creating wallet for import format $importFormat');
 
     final wallet = switch (importFormat) {
       ImportFormat.horizon =>
