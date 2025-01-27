@@ -584,10 +584,16 @@ class HorizonAppBarContent extends StatelessWidget {
                                         child: ViewSeedPhraseFormWrapper(),
                                       ),
                                     ));
+                              case 'settings':
+                                context.go("/settings");
                             }
                           },
                           itemBuilder: (BuildContext context) =>
                               <PopupMenuEntry<String>>[
+                            const PopupMenuItem<String>(
+                              value: 'settings',
+                              child: Text('Settings'),
+                            ),
                             PopupMenuItem<String>(
                               value: 'view_current_address_in_explorer',
                               child: Link(

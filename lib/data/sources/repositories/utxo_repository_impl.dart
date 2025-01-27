@@ -3,9 +3,6 @@ import 'package:horizon/data/sources/network/api/v2_api.dart';
 import 'package:horizon/data/sources/network/esplora_client.dart';
 import 'package:horizon/domain/entities/utxo.dart';
 import 'package:horizon/domain/repositories/utxo_repository.dart';
-import 'package:logger/logger.dart';
-
-final logger = Logger();
 
 class UtxoRepositoryImpl implements UtxoRepository {
   final V2Api api;

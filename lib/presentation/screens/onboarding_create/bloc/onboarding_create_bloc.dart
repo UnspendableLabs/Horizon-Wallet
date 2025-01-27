@@ -33,7 +33,7 @@ class OnboardingCreateBloc
 
         emit(state.copyWith(createState: CreateStateSuccess()));
       } catch (e) {
-        logger.e({'message': 'Failed to create wallet', 'error': e});
+        logger.e({'message': 'Failed to create wallet'});
         emit(state.copyWith(
             createState: CreateStateError(message: e.toString())));
       }
