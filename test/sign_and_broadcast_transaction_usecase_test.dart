@@ -204,7 +204,7 @@ void main() {
       await signAndBroadcastTransactionUseCase.call(
         source: "source",
         rawtransaction: "rawtransaction",
-        password: password,
+        decryptionStrategy: Password(password),
         onSuccess: onSuccess,
         onError: onError,
       );
@@ -288,7 +288,7 @@ void main() {
       await signAndBroadcastTransactionUseCase.call(
         source: "source",
         rawtransaction: "rawtransaction",
-        password: password,
+        decryptionStrategy: Password(password),
         onSuccess: onSuccess,
         onError: onError,
       );
@@ -340,7 +340,7 @@ void main() {
       await signAndBroadcastTransactionUseCase.call(
         source: "source",
         rawtransaction: "rawtransaction",
-        password: 'password',
+        decryptionStrategy: Password('password'),
         onSuccess: onSuccess,
         onError: onError,
       );
@@ -387,7 +387,7 @@ void main() {
       await signAndBroadcastTransactionUseCase.call(
         source: "source",
         rawtransaction: "rawtransaction",
-        password: 'wrong_password',
+        decryptionStrategy: Password('wrong_password'),
         onSuccess: onSuccess,
         onError: onError,
       );
@@ -433,7 +433,7 @@ void main() {
       await signAndBroadcastTransactionUseCase.call(
         source: "source",
         rawtransaction: "rawtransaction",
-        password: 'wrong_password',
+        decryptionStrategy: Password('wrong_password'),
         onSuccess: onSuccess,
         onError: onError,
       );
@@ -507,7 +507,7 @@ void main() {
       await signAndBroadcastTransactionUseCase.call(
         source: "source",
         rawtransaction: "rawtransaction",
-        password: password,
+        decryptionStrategy: Password(password),
         onSuccess: onSuccess,
         onError: onError,
       );
@@ -577,7 +577,7 @@ void main() {
     await signAndBroadcastTransactionUseCase.call(
       source: "source",
       rawtransaction: "rawtransaction",
-      password: password,
+      decryptionStrategy: Password(password),
       onSuccess: onSuccess,
       onError: onError,
     );
