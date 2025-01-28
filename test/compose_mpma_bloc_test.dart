@@ -24,6 +24,7 @@ import 'package:horizon/presentation/screens/compose_mpma/bloc/compose_mpma_bloc
 import 'package:horizon/presentation/screens/compose_mpma/bloc/compose_mpma_event.dart';
 import 'package:horizon/presentation/screens/compose_mpma/bloc/compose_mpma_state.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 
 // Mock classes
 class MockBalanceRepository extends Mock implements BalanceRepository {}
@@ -52,6 +53,9 @@ class MockTransactionService extends Mock implements TransactionService {}
 class MockLogger extends Mock implements Logger {}
 
 class MockErrorService extends Mock implements ErrorService {}
+
+class MockInMemoryKeyRepository extends Mock implements InMemoryKeyRepository {}
+
 
 void main() {
   late ComposeMpmaBloc bloc;
@@ -87,6 +91,9 @@ void main() {
     GetIt.I.registerSingleton<ErrorService>(mockErrorService);
 
     bloc = ComposeMpmaBloc(
+      passwordRequired: true,
+
+      inMemoryKeyRepository: MockInMemoryKeyRepository(),
       balanceRepository: balanceRepository,
       composeRepository: composeRepository,
       analyticsService: analyticsService,
