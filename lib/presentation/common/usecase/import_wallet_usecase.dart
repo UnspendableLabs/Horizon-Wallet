@@ -53,6 +53,7 @@ class ImportWalletUseCase {
   Future<void> callAllWallets({
     required String password,
     required String mnemonic,
+    required ImportFormat importFormat,
     required Function(String) onError,
     required Function() onSuccess,
   }) async {
@@ -60,35 +61,18 @@ class ImportWalletUseCase {
       Wallet wallet;
       Map<Account, List<Address>> accountsWithBalances;
 
+      final deriveWallet = switch (importFormat) {
+        ImportFormat.horizon => walletService.deriveRoot,
+        ImportFormat.freewallet => walletService.deriveRootFreewallet,
+        ImportFormat.counterwallet => walletService.deriveRootCounterwallet,
+      };
+
       (wallet, accountsWithBalances) = await createWalletForImportFormat(
         password: password,
-        importFormat: ImportFormat.horizon,
+        importFormat: importFormat,
         mnemonic: mnemonic,
+        deriveWallet: deriveWallet,
       );
-      if (accountsWithBalances.isEmpty) {
-        print('no accounts with balances for horizon');
-        // TODO: try freewallet
-        (wallet, accountsWithBalances) = await createWalletForImportFormat(
-          password: password,
-          importFormat: ImportFormat.freewallet,
-          mnemonic: mnemonic,
-        );
-      }
-
-      if (accountsWithBalances.isEmpty) {
-        print('no accounts with balances for freewallet');
-        // TODO: try counterwallet
-        (wallet, accountsWithBalances) = await createWalletForImportFormat(
-          password: password,
-          importFormat: ImportFormat.counterwallet,
-          mnemonic: mnemonic,
-        );
-      }
-
-      if (accountsWithBalances.isEmpty) {
-        print('no accounts with balances for counterwallet');
-        throw Exception('invariant: no accounts have balances');
-      }
 
       // proceed with inserting wallet/accounts/addresses
       print('inserting wallet');
@@ -124,18 +108,12 @@ class ImportWalletUseCase {
     required String password,
     required ImportFormat importFormat,
     required String mnemonic,
+    required Future<Wallet> Function(String, String) deriveWallet,
   }) async {
     Map<Account, List<Address>> accountsWithBalances = {};
     print('creating wallet for import format $importFormat');
 
-    final wallet = switch (importFormat) {
-      ImportFormat.horizon =>
-        await walletService.deriveRoot(mnemonic, password),
-      ImportFormat.freewallet =>
-        await walletService.deriveRootFreewallet(mnemonic, password),
-      ImportFormat.counterwallet =>
-        await walletService.deriveRootCounterwallet(mnemonic, password),
-    };
+    final wallet = await deriveWallet(mnemonic, password);
     String decryptedPrivKey;
     try {
       decryptedPrivKey =
@@ -431,8 +409,6 @@ class ImportWalletUseCase {
                   privKey: decryptedPrivKey,
                   chainCodeHex: wallet.chainCodeHex,
                   accountUuid: account.uuid,
-                  // purpose: account.purpose,
-                  // coin: account.coinType,
                   account: account.accountIndex,
                   change: '0',
                   start: 0,

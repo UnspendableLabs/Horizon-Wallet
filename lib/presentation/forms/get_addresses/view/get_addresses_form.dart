@@ -8,7 +8,6 @@ import 'package:horizon/presentation/forms/get_addresses/bloc/get_addresses_even
 import 'package:horizon/domain/entities/account.dart';
 import 'package:horizon/domain/entities/address_rpc.dart';
 
-
 class GetAddressesForm extends StatelessWidget {
   final List<Account> accounts;
   final void Function(List<AddressRpc>) onSuccess;
