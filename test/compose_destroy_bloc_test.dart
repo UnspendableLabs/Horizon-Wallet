@@ -21,6 +21,7 @@ import 'package:horizon/presentation/common/usecase/write_local_transaction_usec
 import 'package:horizon/presentation/screens/compose_destroy/bloc/compose_destroy_bloc.dart';
 import 'package:horizon/presentation/screens/compose_destroy/bloc/compose_destroy_state.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 
 // Mock classes
 class MockBalanceRepository extends Mock implements BalanceRepository {}
@@ -69,6 +70,8 @@ class FakeVirtualSize extends Fake implements VirtualSize {
   FakeVirtualSize(
       {required this.virtualSize, required this.adjustedVirtualSize});
 }
+
+class MockInMemoryKeyRepository extends Mock implements InMemoryKeyRepository {}
 
 void main() {
   late ComposeDestroyBloc composeDestroyBloc;
@@ -137,6 +140,8 @@ void main() {
     GetIt.I.registerSingleton<ErrorService>(mockErrorService);
 
     composeDestroyBloc = ComposeDestroyBloc(
+      passwordRequired: true,
+      inMemoryKeyRepository: MockInMemoryKeyRepository(),
       balanceRepository: mockBalanceRepository,
       composeRepository: mockComposeRepository,
       analyticsService: mockAnalyticsService,
@@ -285,7 +290,7 @@ void main() {
       'emits SubmitSuccess when transaction is signed and broadcasted successfully',
       build: () {
         when(() => mockSignAndBroadcastTransactionUseCase.call(
-              password: password,
+              decryptionStrategy: Password(password),
               source: sourceAddress,
               rawtransaction: txHex,
               onSuccess: any(named: 'onSuccess'),
@@ -348,7 +353,7 @@ void main() {
       'emits error state when signing fails',
       build: () {
         when(() => mockSignAndBroadcastTransactionUseCase.call(
-              password: password,
+              decryptionStrategy: Password(password),
               source: any(named: 'source'),
               rawtransaction: any(named: 'rawtransaction'),
               onSuccess: any(named: 'onSuccess'),
