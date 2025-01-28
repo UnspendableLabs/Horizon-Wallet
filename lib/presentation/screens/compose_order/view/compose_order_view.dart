@@ -200,7 +200,7 @@ class ComposeOrderPageState extends State<ComposeOrderPage> {
           virtualSize: var virtualSize,
           adjustedVirtualSize: var adjustedVirtualSize,
         ) =>
-          ComposeBaseConfirmationPage(
+          ReviewStepView(
               composeTransaction: composeTransaction,
               fee: fee,
               feeRate: feeRate,
@@ -241,13 +241,6 @@ class ComposeOrderPageState extends State<ComposeOrderPage> {
               onBack: () {
                 onConfirmationBack();
               },
-              onSubmit: (formKey) {
-                // we call submit with empty password since this will only every
-                // be called when PW not required
-                context
-                    .read<ComposeOrderBloc>()
-                    .add(SignAndBroadcastFormSubmitted(password: ""));
-              },
               onContinue: (composeTransaction, fee, formKey) => {
                     onConfirmationContinue(composeTransaction, fee, formKey),
                   }),
@@ -257,7 +250,7 @@ class ComposeOrderPageState extends State<ComposeOrderPage> {
           error: var error,
           loading: var loading
         ) =>
-          ComposeBaseFinalizePage(
+          PasswordStepView(
             state: state,
             composeTransaction: composeTransaction,
             fee: fee,

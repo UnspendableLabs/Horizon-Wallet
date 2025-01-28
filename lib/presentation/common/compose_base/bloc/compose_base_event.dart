@@ -32,10 +32,12 @@ class FormSubmitted<T> extends ComposeBaseEvent {
 class ReviewSubmitted<T> extends ComposeBaseEvent {
   final T composeTransaction;
   final int fee;
+  final bool passwordRequired;
 
   ReviewSubmitted({
     required this.composeTransaction,
     required this.fee,
+    this.passwordRequired = true,
   });
 }
 

@@ -159,99 +159,110 @@ class ComposeIssuanceBloc extends ComposeBaseBloc<ComposeIssuanceState> {
 
   @override
   void onReviewSubmitted(ReviewSubmitted event, emit) async {
-    emit(state.copyWith(
-        submitState: PasswordStep<ComposeIssuanceResponseVerbose>(
-      loading: false,
-      error: null,
-      composeTransaction: event.composeTransaction,
-      fee: event.fee,
-    )));
+
+    print("onReviewSubmitted");
+    print("passwordRequired: $passwordRequired");
+
+    if (passwordRequired) {
+      emit(state.copyWith(
+          submitState: PasswordStep<ComposeIssuanceResponseVerbose>(
+        loading: false,
+        error: null,
+        composeTransaction: event.composeTransaction,
+        fee: event.fee,
+      )));
+      return;
+    }
+
+
+    try {
+
+
+    
+
+    final s = (state.submitState as ReviewStep<ComposeIssuanceResponseVerbose,
+        ComposeIssuanceEventParams>);
+
+    print("s $s");
+
+    emit(state.copyWith(submitState: s.copyWith(loading: true)));
+
+    final inMemoryKey = await inMemoryKeyRepository.get();
+
+    print("inMmeoryKey $inMemoryKey");
+
+    await signAndBroadcastTransactionUseCase.call(
+        decryptionStrategy: InMemoryKey(inMemoryKey!),
+        source: s.composeTransaction.params.source,
+        rawtransaction: s.composeTransaction.rawtransaction,
+        onSuccess: (txHex, txHash) async {
+          await writelocalTransactionUseCase.call(txHex, txHash);
+
+          logger.info('issuance broadcasted txHash: $txHash');
+          analyticsService.trackAnonymousEvent('broadcast_tx_issue',
+              properties: {'distinct_id': uuid.v4()});
+
+          emit(state.copyWith(
+              submitState: SubmitSuccess(
+                  transactionHex: txHex,
+                  sourceAddress: s.composeTransaction.params.source)));
+        },
+        onError: (msg) {
+          emit(state.copyWith(
+              submitState: s.copyWith(loading: false, error: msg.toString())));
+        });
+    } catch (e) {
+
+        print("lord we have problems");
+
+    }
   }
 
   @override
   void onSignAndBroadcastFormSubmitted(
       SignAndBroadcastFormSubmitted event, emit) async {
-    if (passwordRequired) {
-      if (state.submitState is! PasswordStep<ComposeIssuanceResponseVerbose>) {
-        return;
-      }
-
-      final s =
-          (state.submitState as PasswordStep<ComposeIssuanceResponseVerbose>);
-      final compose = s.composeTransaction;
-      final fee = s.fee;
-
-      emit(state.copyWith(
-          submitState: PasswordStep<ComposeIssuanceResponseVerbose>(
-        loading: true,
-        error: null,
-        fee: fee,
-        composeTransaction: compose,
-      )));
-
-      await signAndBroadcastTransactionUseCase.call(
-          decryptionStrategy: Password(event.password),
-          source: compose.params.source,
-          rawtransaction: compose.rawtransaction,
-          onSuccess: (txHex, txHash) async {
-            await writelocalTransactionUseCase.call(txHex, txHash);
-
-            logger.info('issuance broadcasted txHash: $txHash');
-            analyticsService.trackAnonymousEvent('broadcast_tx_issue',
-                properties: {'distinct_id': uuid.v4()});
-
-            emit(state.copyWith(
-                submitState: SubmitSuccess(
-                    transactionHex: txHex,
-                    sourceAddress: compose.params.source)));
-          },
-          onError: (msg) {
-            emit(state.copyWith(
-                submitState: PasswordStep<ComposeIssuanceResponseVerbose>(
-              loading: false,
-              error: msg,
-              fee: fee,
-              composeTransaction: compose,
-            )));
-          });
-    } else {
-      if (state.submitState is! ReviewStep<ComposeIssuanceResponseVerbose,
-          ComposeIssuanceEventParams>) {
-        return;
-      }
-
-      final s = (state.submitState as ReviewStep<ComposeIssuanceResponseVerbose,
-          ComposeIssuanceEventParams>);
-
-      final inMemoryKey = await inMemoryKeyRepository.get();
-
-      await signAndBroadcastTransactionUseCase.call(
-          decryptionStrategy: InMemoryKey(inMemoryKey!),
-          source: s.composeTransaction.params.source,
-          rawtransaction: s.composeTransaction.rawtransaction,
-          onSuccess: (txHex, txHash) async {
-            await writelocalTransactionUseCase.call(txHex, txHash);
-
-            logger.info('issuance broadcasted txHash: $txHash');
-            analyticsService.trackAnonymousEvent('broadcast_tx_issue',
-                properties: {'distinct_id': uuid.v4()});
-
-            emit(state.copyWith(
-                submitState: SubmitSuccess(
-                    transactionHex: txHex,
-                    sourceAddress: s.composeTransaction.params.source)));
-          },
-          onError: (msg) {
-            print(msg);
-            // emit(state.copyWith(
-            //     submitState: SubmitFinalizing<ComposeIssuanceResponseVerbose>(
-            //   loading: false,
-            //   error: msg,
-            //   fee: s.fee,
-            //   composeTransaction: s.composeTransaction,
-            // )));
-          });
+    if (state.submitState is! PasswordStep<ComposeIssuanceResponseVerbose>) {
+      return;
     }
+
+    final s =
+        (state.submitState as PasswordStep<ComposeIssuanceResponseVerbose>);
+    final compose = s.composeTransaction;
+    final fee = s.fee;
+
+    emit(state.copyWith(
+        submitState: PasswordStep<ComposeIssuanceResponseVerbose>(
+      loading: true,
+      error: null,
+      fee: fee,
+      composeTransaction: compose,
+    )));
+
+    await signAndBroadcastTransactionUseCase.call(
+        decryptionStrategy: Password(event.password),
+        source: compose.params.source,
+        rawtransaction: compose.rawtransaction,
+        onSuccess: (txHex, txHash) async {
+          await writelocalTransactionUseCase.call(txHex, txHash);
+
+          logger.info('issuance broadcasted txHash: $txHash');
+          analyticsService.trackAnonymousEvent('broadcast_tx_issue',
+              properties: {'distinct_id': uuid.v4()});
+
+          emit(state.copyWith(
+              submitState: SubmitSuccess(
+                  transactionHex: txHex,
+                  sourceAddress: compose.params.source)));
+        },
+        onError: (msg) {
+          emit(state.copyWith(
+              submitState: PasswordStep<ComposeIssuanceResponseVerbose>(
+            loading: false,
+            error: msg,
+            fee: fee,
+            composeTransaction: compose,
+          )));
+        });
   }
 
   int _getFeeRate() {

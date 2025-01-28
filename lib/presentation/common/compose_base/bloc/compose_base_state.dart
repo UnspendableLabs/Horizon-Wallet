@@ -64,19 +64,46 @@ class ReviewStep<T, O extends Object?> extends SubmitState {
   final int feeRate;
   final int virtualSize;
   final int adjustedVirtualSize;
-  // final int virtualSize;
+  final bool loading;
+  final String? error;
+  // fina
+  // l int virtualSize;
   // final int adjustedVirtualSize;
-  const ReviewStep({
-    this.otherParams,
-    required this.composeTransaction,
-    // required this.virtualSize,
-    required this.fee,
-    required this.feeRate,
-    required this.virtualSize,
-    required this.adjustedVirtualSize,
-    // required this.virtualSize,
-    // required this.adjustedVirtualSize,
-  });
+  const ReviewStep(
+      {this.otherParams,
+      required this.composeTransaction,
+      // required this.virtualSize,
+      required this.fee,
+      required this.feeRate,
+      required this.virtualSize,
+      required this.adjustedVirtualSize,
+      this.loading = false,
+      this.error
+      // required this.virtualSize,
+      // required this.adjustedVirtualSize,
+      });
+
+  ReviewStep copyWith({
+    O? otherParams,
+    T? composeTransaction,
+    int? fee,
+    int? feeRate,
+    int? virtualSize,
+    int? adjustedVirtualSize,
+    bool? loading,
+    String? error,
+  }) {
+    return ReviewStep(
+      otherParams: otherParams,
+      composeTransaction: composeTransaction ?? this.composeTransaction,
+      fee: fee ?? this.fee,
+      feeRate: feeRate ?? this.feeRate,
+      virtualSize: virtualSize ?? this.virtualSize,
+      adjustedVirtualSize: adjustedVirtualSize ?? this.adjustedVirtualSize,
+      loading: loading ?? this.loading,
+      error: error ?? this.error,
+    );
+  }
 }
 
 /// State when submission is successful.

@@ -188,14 +188,7 @@ class ComposeCancelPageState extends State<ComposeCancelPage> {
           virtualSize: var virtualSize,
           adjustedVirtualSize: var adjustedVirtualSize,
         ) =>
-          ComposeBaseConfirmationPage(
-              onSubmit: (formKey) {
-                // this will only be called when password is not required
-                // so we can just use empty value
-                context
-                    .read<ComposeCancelBloc>()
-                    .add(SignAndBroadcastFormSubmitted(password: ""));
-              },
+          ReviewStepView(
               composeTransaction: composeTransaction,
               fee: fee,
               feeRate: feeRate,
@@ -225,7 +218,7 @@ class ComposeCancelPageState extends State<ComposeCancelPage> {
           error: var error,
           loading: var loading
         ) =>
-          ComposeBaseFinalizePage(
+          PasswordStepView(
             state: state,
             composeTransaction: composeTransaction,
             fee: fee,

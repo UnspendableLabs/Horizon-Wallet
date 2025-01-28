@@ -5,6 +5,7 @@ import 'package:horizon/presentation/common/compose_base/bloc/compose_base_event
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_state.dart';
 
 abstract interface class ComposeBaseBlocInterface<T extends ComposeStateBase> {
+
   Future<void> onAsyncFormDependenciesRequested(
       AsyncFormDependenciesRequested event, Emitter<T> emit);
   void onFeeOptionChanged(FeeOptionChanged event, Emitter<T> emit);
@@ -56,5 +57,5 @@ abstract class ComposeBaseBloc<T extends ComposeStateBase>
 
   @override
   void onSignAndBroadcastFormSubmitted(
-      SignAndBroadcastFormSubmitted event, Emitter<T> emit);
+      SignAndBroadcastFormSubmitted event, Emitter<T> emit) {}
 }
