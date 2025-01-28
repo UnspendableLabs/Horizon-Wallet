@@ -58,7 +58,7 @@ class ComposeDestroyBloc extends ComposeBaseBloc<ComposeDestroyState> {
         );
 
   @override
-  Future<void> onFetchFormData(
+  Future<void> onAsyncFormDependenciesRequested(
       AsyncFormDependenciesRequested event, emit) async {
     emit(state.copyWith(
       balancesState: const BalancesState.loading(),
@@ -91,13 +91,13 @@ class ComposeDestroyBloc extends ComposeBaseBloc<ComposeDestroyState> {
   }
 
   @override
-  void onChangeFeeOption(FeeOptionChanged event, emit) async {
+  void onFeeOptionChanged(FeeOptionChanged event, emit) async {
     final value = event.value;
     emit(state.copyWith(feeOption: value));
   }
 
   @override
-  void onComposeTransaction(FormSubmitted event, emit) async {
+  void onFormSubmitted(FormSubmitted event, emit) async {
     emit((state).copyWith(submitState: const FormStep(loading: true)));
     final ComposeDestroyEventParams params = event.params;
 
@@ -147,7 +147,7 @@ class ComposeDestroyBloc extends ComposeBaseBloc<ComposeDestroyState> {
   }
 
   @override
-  void onFinalizeTransaction(ReviewSubmitted event, emit) async {
+  void onReviewSubmitted(ReviewSubmitted event, emit) async {
     emit(state.copyWith(
         submitState: PasswordStep<ComposeDestroyResponse>(
       loading: false,
@@ -158,7 +158,7 @@ class ComposeDestroyBloc extends ComposeBaseBloc<ComposeDestroyState> {
   }
 
   @override
-  void onSignAndBroadcastTransaction(
+  void onSignAndBroadcastFormSubmitted(
       SignAndBroadcastFormSubmitted event, emit) async {
     if (state.submitState is! PasswordStep<ComposeDestroyResponse>) {
       return;

@@ -57,7 +57,7 @@ class ComposeSweepBloc extends ComposeBaseBloc<ComposeSweepState> {
             composePage: 'compose_sweep');
 
   @override
-  Future<void> onFetchFormData(
+  Future<void> onAsyncFormDependenciesRequested(
       AsyncFormDependenciesRequested event, emit) async {
     emit(state.copyWith(
       balancesState: const BalancesState.loading(),
@@ -93,13 +93,13 @@ class ComposeSweepBloc extends ComposeBaseBloc<ComposeSweepState> {
   }
 
   @override
-  void onChangeFeeOption(FeeOptionChanged event, emit) async {
+  void onFeeOptionChanged(FeeOptionChanged event, emit) async {
     final value = event.value;
     emit(state.copyWith(feeOption: value));
   }
 
   @override
-  void onComposeTransaction(FormSubmitted event, emit) async {
+  void onFormSubmitted(FormSubmitted event, emit) async {
     emit((state).copyWith(submitState: const FormStep(loading: true)));
     final ComposeSweepEventParams params = event.params;
 
@@ -152,7 +152,7 @@ class ComposeSweepBloc extends ComposeBaseBloc<ComposeSweepState> {
   }
 
   @override
-  void onFinalizeTransaction(ReviewSubmitted event, emit) async {
+  void onReviewSubmitted(ReviewSubmitted event, emit) async {
     emit(state.copyWith(
         submitState: PasswordStep<ComposeSweepResponse>(
       loading: false,
@@ -163,7 +163,7 @@ class ComposeSweepBloc extends ComposeBaseBloc<ComposeSweepState> {
   }
 
   @override
-  void onSignAndBroadcastTransaction(
+  void onSignAndBroadcastFormSubmitted(
       SignAndBroadcastFormSubmitted event, emit) async {
     if (state.submitState is! PasswordStep<ComposeSweepResponse>) {
       return;

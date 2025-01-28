@@ -64,18 +64,18 @@ class ComposeOrderBloc extends ComposeBaseBloc<ComposeOrderState> {
   }
 
   @override
-  Future<void> onFetchFormData(
+  Future<void> onAsyncFormDependenciesRequested(
       AsyncFormDependenciesRequested event, emit) async {
     // delegated to fom
   }
 
   @override
-  void onChangeFeeOption(FeeOptionChanged event, emit) async {
+  void onFeeOptionChanged(FeeOptionChanged event, emit) async {
     // delegated to fom
   }
 
   @override
-  void onComposeTransaction(FormSubmitted event, emit) async {
+  void onFormSubmitted(FormSubmitted event, emit) async {
     // delegated to form bloc
   }
 
@@ -97,7 +97,7 @@ class ComposeOrderBloc extends ComposeBaseBloc<ComposeOrderState> {
   }
 
   @override
-  void onFinalizeTransaction(ReviewSubmitted event, emit) async {
+  void onReviewSubmitted(ReviewSubmitted event, emit) async {
     emit(state.copyWith(
         submitState: PasswordStep<ComposeOrderResponse>(
       loading: false,
@@ -108,7 +108,7 @@ class ComposeOrderBloc extends ComposeBaseBloc<ComposeOrderState> {
   }
 
   @override
-  void onSignAndBroadcastTransaction(
+  void onSignAndBroadcastFormSubmitted(
       SignAndBroadcastFormSubmitted event, emit) async {
     if (state.submitState is! PasswordStep<ComposeOrderResponse>) {
       return;

@@ -191,13 +191,13 @@ class ComposeMpmaBloc extends ComposeBaseBloc<ComposeMpmaState> {
   }
 
   @override
-  onChangeFeeOption(event, emit) async {
+  onFeeOptionChanged(event, emit) async {
     final value = event.value;
     emit(state.copyWith(feeOption: value));
   }
 
   @override
-  onFetchFormData(event, emit) async {
+  onAsyncFormDependenciesRequested(event, emit) async {
     emit(state.copyWith(
       balancesState: const BalancesState.loading(),
       submitState: const FormStep(),
@@ -244,7 +244,7 @@ class ComposeMpmaBloc extends ComposeBaseBloc<ComposeMpmaState> {
   }
 
   @override
-  onFinalizeTransaction(event, emit) async {
+  onReviewSubmitted(event, emit) async {
     emit(state.copyWith(
         submitState: PasswordStep<ComposeMpmaSendResponse>(
             loading: false,
@@ -254,7 +254,7 @@ class ComposeMpmaBloc extends ComposeBaseBloc<ComposeMpmaState> {
   }
 
   @override
-  onComposeTransaction(event, emit) async {
+  onFormSubmitted(event, emit) async {
     emit((state).copyWith(submitState: const FormStep(loading: true)));
 
     try {
@@ -344,7 +344,7 @@ class ComposeMpmaBloc extends ComposeBaseBloc<ComposeMpmaState> {
   }
 
   @override
-  void onSignAndBroadcastTransaction(
+  void onSignAndBroadcastFormSubmitted(
       SignAndBroadcastFormSubmitted event, emit) async {
     if (state.submitState is! PasswordStep<ComposeMpmaSendResponse>) {
       return;

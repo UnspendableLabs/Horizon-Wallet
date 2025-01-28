@@ -5,12 +5,12 @@ import 'package:horizon/presentation/common/compose_base/bloc/compose_base_event
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_state.dart';
 
 abstract interface class ComposeBaseBlocInterface<T extends ComposeStateBase> {
-  Future<void> onFetchFormData(
+  Future<void> onAsyncFormDependenciesRequested(
       AsyncFormDependenciesRequested event, Emitter<T> emit);
-  void onChangeFeeOption(FeeOptionChanged event, Emitter<T> emit);
-  void onComposeTransaction(FormSubmitted event, Emitter<T> emit);
-  void onFinalizeTransaction(ReviewSubmitted event, Emitter<T> emit);
-  void onSignAndBroadcastTransaction(
+  void onFeeOptionChanged(FeeOptionChanged event, Emitter<T> emit);
+  void onFormSubmitted(FormSubmitted event, Emitter<T> emit);
+  void onReviewSubmitted(ReviewSubmitted event, Emitter<T> emit);
+  void onSignAndBroadcastFormSubmitted(
       SignAndBroadcastFormSubmitted event, Emitter<T> emit);
 }
 
@@ -32,29 +32,29 @@ abstract class ComposeBaseBloc<T extends ComposeStateBase>
         message: '$composePage page opened',
       );
 
-      await onFetchFormData(event, emit);
+      await onAsyncFormDependenciesRequested(event, emit);
     });
 
-    on<FeeOptionChanged>(onChangeFeeOption);
-    on<FormSubmitted>(onComposeTransaction);
-    on<ReviewSubmitted>(onFinalizeTransaction);
-    on<SignAndBroadcastFormSubmitted>(onSignAndBroadcastTransaction);
+    on<FeeOptionChanged>(onFeeOptionChanged);
+    on<FormSubmitted>(onFormSubmitted);
+    on<ReviewSubmitted>(onReviewSubmitted);
+    on<SignAndBroadcastFormSubmitted>(onSignAndBroadcastFormSubmitted);
   }
 
   @override
-  Future<void> onFetchFormData(
+  Future<void> onAsyncFormDependenciesRequested(
       AsyncFormDependenciesRequested event, Emitter<T> emit);
 
   @override
-  void onChangeFeeOption(FeeOptionChanged event, Emitter<T> emit);
+  void onFeeOptionChanged(FeeOptionChanged event, Emitter<T> emit);
 
   @override
-  void onComposeTransaction(FormSubmitted event, Emitter<T> emit);
+  void onFormSubmitted(FormSubmitted event, Emitter<T> emit);
 
   @override
-  void onFinalizeTransaction(ReviewSubmitted event, Emitter<T> emit);
+  void onReviewSubmitted(ReviewSubmitted event, Emitter<T> emit);
 
   @override
-  void onSignAndBroadcastTransaction(
+  void onSignAndBroadcastFormSubmitted(
       SignAndBroadcastFormSubmitted event, Emitter<T> emit);
 }
