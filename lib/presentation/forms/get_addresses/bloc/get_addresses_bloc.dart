@@ -81,7 +81,7 @@ class GetAddressesBloc extends Bloc<GetAddressesEvent, GetAddressesState> {
       Wallet? wallet = await walletRepository.getCurrentWallet();
 
       if (wallet == null) {
-        throw Exception("invariant: wallet not found");
+        throw GetAddressesException("invariant:No wallet found");
       }
 
       final selectedAccountUuid = state.account.value;
@@ -105,7 +105,6 @@ class GetAddressesBloc extends Bloc<GetAddressesEvent, GetAddressesState> {
         }
       } else {
         // address is imported
-
         final importedAddress = await importedAddressRepository
             .getImportedAddress(state.importedAddress.value);
 
@@ -126,17 +125,23 @@ class GetAddressesBloc extends Bloc<GetAddressesEvent, GetAddressesState> {
 
       if (addresses.isEmpty &&
           state.addressSelectionMode == AddressSelectionMode.byAccount) {
-        throw "No account selected";
+        throw GetAddressesException("No account selected");
       }
 
       emit(state.copyWith(
         submissionStatus: FormzSubmissionStatus.success,
         addresses: addresses,
+        error: null, // Clear any previous errors
       ));
     } catch (e) {
+      // Handle different types of errors
+      final errorMessage = e is GetAddressesException
+          ? e.message
+          : 'An unexpected error occurred. Please try again.';
+
       emit(state.copyWith(
         submissionStatus: FormzSubmissionStatus.failure,
-        error: e.toString(),
+        error: errorMessage,
       ));
     }
   }
