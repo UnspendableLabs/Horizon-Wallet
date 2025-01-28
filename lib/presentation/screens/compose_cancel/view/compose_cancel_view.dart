@@ -30,6 +30,8 @@ import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
 
 import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
+import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
+import 'package:horizon/domain/repositories/settings_repository.dart';
 
 class ComposeCancelPageWrapper extends StatelessWidget {
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
@@ -63,6 +65,9 @@ class ComposeCancelPageWrapper extends StatelessWidget {
         success: (state) => BlocProvider(
               key: Key(currentAddress),
               create: (context) => ComposeCancelBloc(
+                passwordRequired: GetIt.I<SettingsRepository>()
+                    .requirePasswordForCryptoOperations,
+                inMemoryKeyRepository: GetIt.I.get<InMemoryKeyRepository>(),
                 getFeeEstimatesUseCase: GetIt.I.get<GetFeeEstimatesUseCase>(),
                 logger: GetIt.I.get<Logger>(),
                 writelocalTransactionUseCase:
