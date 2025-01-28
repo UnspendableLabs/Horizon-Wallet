@@ -20,6 +20,7 @@ import 'package:horizon/presentation/screens/compose_fairminter/bloc/compose_fai
 import 'package:horizon/presentation/screens/compose_fairminter/bloc/compose_fairminter_state.dart';
 import 'package:horizon/presentation/screens/compose_fairminter/usecase/fetch_form_data.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 
 class MockComposeRepository extends Mock implements ComposeRepository {}
 
@@ -67,6 +68,8 @@ class FakeVirtualSize extends Fake implements VirtualSize {
   FakeVirtualSize(
       {required this.virtualSize, required this.adjustedVirtualSize});
 }
+
+class MockInMemoryKeyRepository extends Mock implements InMemoryKeyRepository {}
 
 void main() {
   late ComposeFairminterBloc composeFairminterBloc;
@@ -129,6 +132,8 @@ void main() {
 
     composeFairminterBloc = ComposeFairminterBloc(
       logger: mockLogger,
+      passwordRequired: true,
+      inMemoryKeyRepository: MockInMemoryKeyRepository(),
       fetchFairminterFormDataUseCase: mockFetchFairminterFormDataUseCase,
       composeTransactionUseCase: mockComposeTransactionUseCase,
       composeRepository: mockComposeRepository,
@@ -212,7 +217,7 @@ void main() {
       'emits SubmitSuccess when transaction is signed and broadcasted successfully',
       build: () {
         when(() => mockSignAndBroadcastTransactionUseCase.call(
-              password: password,
+              decryptionStrategy: Password(password),
               source: any(named: 'source'),
               rawtransaction: txHex,
               onSuccess: any(named: 'onSuccess'),

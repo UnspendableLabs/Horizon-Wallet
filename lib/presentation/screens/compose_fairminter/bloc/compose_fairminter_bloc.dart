@@ -14,6 +14,7 @@ import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transacti
 import 'package:horizon/presentation/common/usecase/write_local_transaction_usecase.dart';
 import 'package:horizon/presentation/screens/compose_fairminter/bloc/compose_fairminter_state.dart';
 import 'package:horizon/presentation/screens/compose_fairminter/usecase/fetch_form_data.dart';
+import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 
 class ComposeFairminterEventParams {
   final String asset;
@@ -37,6 +38,9 @@ class ComposeFairminterEventParams {
 }
 
 class ComposeFairminterBloc extends ComposeBaseBloc<ComposeFairminterState> {
+  final txName = 'destroy';
+  final bool passwordRequired;
+  final InMemoryKeyRepository inMemoryKeyRepository;
   final ComposeRepository composeRepository;
   final AnalyticsService analyticsService;
   final Logger logger;
@@ -47,6 +51,8 @@ class ComposeFairminterBloc extends ComposeBaseBloc<ComposeFairminterState> {
   final BlockRepository blockRepository;
 
   ComposeFairminterBloc({
+    required this.passwordRequired,
+    required this.inMemoryKeyRepository,
     required this.logger,
     required this.fetchFairminterFormDataUseCase,
     required this.composeTransactionUseCase,
@@ -208,13 +214,50 @@ class ComposeFairminterBloc extends ComposeBaseBloc<ComposeFairminterState> {
 
   @override
   void onReviewSubmitted(ReviewSubmitted event, emit) async {
-    emit(state.copyWith(
-        submitState: PasswordStep<ComposeFairminterResponse>(
-      loading: false,
-      error: null,
-      composeTransaction: event.composeTransaction,
-      fee: event.fee,
-    )));
+    if (passwordRequired) {
+      emit(state.copyWith(
+          submitState: PasswordStep<ComposeFairminterResponse>(
+        loading: false,
+        error: null,
+        composeTransaction: event.composeTransaction,
+        fee: event.fee,
+      )));
+      return;
+    }
+
+    final s =
+        (state.submitState as ReviewStep<ComposeFairminterResponse, void>);
+
+    try {
+      emit(state.copyWith(submitState: s.copyWith(loading: true)));
+
+      final inMemoryKey = await inMemoryKeyRepository.get();
+
+      await signAndBroadcastTransactionUseCase.call(
+          decryptionStrategy: InMemoryKey(inMemoryKey!),
+          source: s.composeTransaction.params.source,
+          rawtransaction: s.composeTransaction.rawtransaction,
+          onSuccess: (txHex, txHash) async {
+            await writelocalTransactionUseCase.call(txHex, txHash);
+
+            logger.info('$txName broadcasted txHash: $txHash');
+            analyticsService.trackAnonymousEvent('broadcast_tx_$txName',
+                properties: {'distinct_id': uuid.v4()});
+
+            emit(state.copyWith(
+                submitState: SubmitSuccess(
+                    transactionHex: txHex,
+                    sourceAddress: s.composeTransaction.params.source)));
+          },
+          onError: (msg) {
+            emit(state.copyWith(
+                submitState:
+                    s.copyWith(loading: false, error: msg.toString())));
+          });
+    } catch (e) {
+      emit(state.copyWith(
+          submitState: s.copyWith(loading: false, error: e.toString())));
+    }
   }
 
   @override
