@@ -28,7 +28,7 @@ class ComposeFairmintEventParams {
 }
 
 class ComposeFairmintBloc extends ComposeBaseBloc<ComposeFairmintState> {
-  final txName = 'destroy';
+  final txName = 'fairmint';
   final bool passwordRequired;
   final InMemoryKeyRepository inMemoryKeyRepository;
   final ComposeRepository composeRepository;

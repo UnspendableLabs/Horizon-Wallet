@@ -25,7 +25,9 @@ import 'package:horizon/presentation/common/usecase/write_local_transaction_usec
 import 'package:horizon/presentation/screens/compose_dispenser/bloc/compose_dispenser_bloc.dart';
 import 'package:horizon/presentation/screens/compose_dispenser/bloc/compose_dispenser_state.dart';
 import 'package:horizon/presentation/screens/compose_dispenser/usecase/fetch_form_data.dart';
+import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:horizon/core/logging/logger.dart';
 
 class MockComposeRepository extends Mock implements ComposeRepository {}
 
@@ -82,6 +84,10 @@ class MockDispenser extends Mock implements Dispenser {}
 
 class MockComposeDispenserEventParams extends Mock
     implements ComposeDispenserEventParams {}
+
+class MockInMemoryKeyRepository extends Mock implements InMemoryKeyRepository {}
+
+class MockLogger extends Mock implements Logger {}
 
 class FakeAddress extends Fake implements Address {
   @override
@@ -180,6 +186,9 @@ void main() {
     GetIt.I.registerSingleton<ErrorService>(mockErrorService);
 
     composeDispenserBloc = ComposeDispenserBloc(
+      logger: MockLogger(),
+      passwordRequired: true,
+      inMemoryKeyRepository: MockInMemoryKeyRepository(),
       fetchDispenserFormDataUseCase: mockFetchDispenserFormDataUseCase,
       composeTransactionUseCase: mockComposeTransactionUseCase,
       composeRepository: mockComposeRepository,
@@ -511,7 +520,7 @@ void main() {
         when(() => mockSignAndBroadcastTransactionUseCase.call(
               source: sourceAddress,
               rawtransaction: txHex,
-              password: any(named: 'password'),
+              decryptionStrategy: Password(password),
               onSuccess: any(named: 'onSuccess'),
               onError: any(named: 'onError'),
             )).thenAnswer((invocation) async {
@@ -572,7 +581,7 @@ void main() {
         when(() => mockSignAndBroadcastTransactionUseCase.call(
               source: any(named: "source"),
               rawtransaction: any(named: "rawtransaction"),
-              password: any(named: 'password'),
+              decryptionStrategy: Password(password),
               onSuccess: any(named: 'onSuccess'),
               onError: any(named: 'onError'),
             )).thenAnswer((invocation) async {
