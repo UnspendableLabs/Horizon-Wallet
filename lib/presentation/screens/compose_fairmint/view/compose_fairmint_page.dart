@@ -53,7 +53,7 @@ class ComposeFairmintPageWrapper extends StatelessWidget {
           writelocalTransactionUseCase:
               GetIt.I.get<WriteLocalTransactionUseCase>(),
           blockRepository: GetIt.I.get<BlockRepository>(),
-        )..add(FetchFormData(currentAddress: currentAddress)),
+        )..add(AsyncFormDependenciesRequested(currentAddress: currentAddress)),
         child: ComposeFairmintPage(
           address: currentAddress,
           dashboardActivityFeedBloc: dashboardActivityFeedBloc,
@@ -106,7 +106,7 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
                   dashboardActivityFeedBloc: widget.dashboardActivityFeedBloc,
                   onFeeChange: (fee) => context
                       .read<ComposeFairmintBloc>()
-                      .add(ChangeFeeOption(value: fee)),
+                      .add(FeeOptionChanged(value: fee)),
                   buildInitialFormFields: (state, loading, formKey) => [
                         HorizonUI.HorizonTextFormField(
                           label: "Address that will be minting the asset",
@@ -151,7 +151,7 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
             dashboardActivityFeedBloc: widget.dashboardActivityFeedBloc,
             onFeeChange: (fee) => context
                 .read<ComposeFairmintBloc>()
-                .add(ChangeFeeOption(value: fee)),
+                .add(FeeOptionChanged(value: fee)),
             buildInitialFormFields: (state, loading, formKey) =>
                 _buildInitialFormFields(state, loading, formKey, fairminters),
             onInitialCancel: () => _handleInitialCancel(),
@@ -206,7 +206,7 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
         return;
       }
 
-      context.read<ComposeFairmintBloc>().add(ComposeTransactionEvent(
+      context.read<ComposeFairmintBloc>().add(FormSubmitted(
             sourceAddress: widget.address,
             params: ComposeFairmintEventParams(
               asset: _isAssetNameSelected
@@ -459,14 +459,14 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
   void _onConfirmationBack() {
     context
         .read<ComposeFairmintBloc>()
-        .add(FetchFormData(currentAddress: widget.address));
+        .add(AsyncFormDependenciesRequested(currentAddress: widget.address));
   }
 
   void _onConfirmationContinue(
       dynamic composeTransaction, int fee, GlobalKey<FormState> formKey) {
     context
         .read<ComposeFairmintBloc>()
-        .add(FinalizeTransactionEvent<ComposeFairmintResponse>(
+        .add(ReviewSubmitted<ComposeFairmintResponse>(
           composeTransaction: composeTransaction,
           fee: fee,
         ));
@@ -475,7 +475,7 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
   void _onFinalizeSubmit(String password, GlobalKey<FormState> formKey) {
     if (formKey.currentState!.validate()) {
       context.read<ComposeFairmintBloc>().add(
-            SignAndBroadcastTransactionEvent(
+            SignAndBroadcastFormSubmitted(
               password: password,
             ),
           );
@@ -485,7 +485,7 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
   void _onFinalizeCancel() {
     context
         .read<ComposeFairmintBloc>()
-        .add(FetchFormData(currentAddress: widget.address));
+        .add(AsyncFormDependenciesRequested(currentAddress: widget.address));
   }
 }
 

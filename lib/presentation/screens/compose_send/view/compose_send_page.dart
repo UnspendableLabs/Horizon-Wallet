@@ -58,7 +58,7 @@ class ComposeSendPageWrapper extends StatelessWidget {
           writelocalTransactionUseCase:
               GetIt.I.get<WriteLocalTransactionUseCase>(),
           logger: GetIt.I.get<Logger>(),
-        )..add(FetchFormData(currentAddress: currentAddress)),
+        )..add(AsyncFormDependenciesRequested(currentAddress: currentAddress)),
         child: ComposeSendPage(
           address: currentAddress,
           dashboardActivityFeedBloc: dashboardActivityFeedBloc,
@@ -154,20 +154,19 @@ class ComposeSendPageState extends State<ComposeSendPage> {
       return ComposeBasePage<ComposeSendBloc, ComposeSendState>(
         dashboardActivityFeedBloc: widget.dashboardActivityFeedBloc,
         onFeeChange: (fee) =>
-            context.read<ComposeSendBloc>().add(ChangeFeeOption(value: fee)),
+            context.read<ComposeSendBloc>().add(FeeOptionChanged(value: fee)),
         buildInitialFormFields: (state, loading, formKey) =>
             _buildInitialFormFields(state, loading, formKey),
         onInitialCancel: () => _handleInitialCancel(),
         onInitialSubmit: (formKey) => _handleInitialSubmit(formKey),
         buildConfirmationFormFields: (state, composeTransaction, formKey) =>
             _buildConfirmationDetails(composeTransaction),
-        onConfirmationBack: () => context
-            .read<ComposeSendBloc>()
-            .add(FetchFormData(currentAddress: widget.address)),
+        onConfirmationBack: () => context.read<ComposeSendBloc>().add(
+            AsyncFormDependenciesRequested(currentAddress: widget.address)),
         onConfirmationContinue: (composeSend, fee, formKey) {
           if (formKey.currentState!.validate()) {
             context.read<ComposeSendBloc>().add(
-                  FinalizeTransactionEvent<ComposeSendResponse>(
+                  ReviewSubmitted<ComposeSendResponse>(
                     composeTransaction: composeSend,
                     fee: fee,
                   ),
@@ -177,15 +176,14 @@ class ComposeSendPageState extends State<ComposeSendPage> {
         onFinalizeSubmit: (password, formKey) {
           if (formKey.currentState!.validate()) {
             context.read<ComposeSendBloc>().add(
-                  SignAndBroadcastTransactionEvent(
+                  SignAndBroadcastFormSubmitted(
                     password: password,
                   ),
                 );
           }
         },
-        onFinalizeCancel: () => context
-            .read<ComposeSendBloc>()
-            .add(FetchFormData(currentAddress: widget.address)),
+        onFinalizeCancel: () => context.read<ComposeSendBloc>().add(
+            AsyncFormDependenciesRequested(currentAddress: widget.address)),
       );
     });
   }
@@ -213,7 +211,7 @@ class ComposeSendPageState extends State<ComposeSendPage> {
           divisible: balance.assetInfo.divisible,
           inputQuantity: quantityController.text);
 
-      context.read<ComposeSendBloc>().add(ComposeTransactionEvent(
+      context.read<ComposeSendBloc>().add(FormSubmitted(
             sourceAddress: widget.address,
             params: ComposeSendEventParams(
               destinationAddress: destinationAddressController.text,

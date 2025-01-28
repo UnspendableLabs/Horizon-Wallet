@@ -64,17 +64,18 @@ class ComposeCancelBloc extends ComposeBaseBloc<ComposeCancelState> {
   }
 
   @override
-  Future<void> onFetchFormData(FetchFormData event, emit) async {
+  Future<void> onFetchFormData(
+      AsyncFormDependenciesRequested event, emit) async {
     // delegated to fom
   }
 
   @override
-  void onChangeFeeOption(ChangeFeeOption event, emit) async {
+  void onChangeFeeOption(FeeOptionChanged event, emit) async {
     // delegated to fom
   }
 
   @override
-  void onComposeTransaction(ComposeTransactionEvent event, emit) async {
+  void onComposeTransaction(FormSubmitted event, emit) async {
     // delegated to form bloc
   }
 
@@ -96,7 +97,7 @@ class ComposeCancelBloc extends ComposeBaseBloc<ComposeCancelState> {
   }
 
   @override
-  void onFinalizeTransaction(FinalizeTransactionEvent event, emit) async {
+  void onFinalizeTransaction(ReviewSubmitted event, emit) async {
     emit(state.copyWith(
         submitState: PasswordStep<ComposeCancelResponse>(
       loading: false,
@@ -108,7 +109,7 @@ class ComposeCancelBloc extends ComposeBaseBloc<ComposeCancelState> {
 
   @override
   void onSignAndBroadcastTransaction(
-      SignAndBroadcastTransactionEvent event, emit) async {
+      SignAndBroadcastFormSubmitted event, emit) async {
     if (state.submitState is! PasswordStep<ComposeCancelResponse>) {
       return;
     }

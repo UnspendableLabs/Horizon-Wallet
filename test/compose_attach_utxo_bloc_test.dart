@@ -119,12 +119,12 @@ void main() {
     registerFallbackValue(FeeOption.Medium());
     registerFallbackValue(composeTransactionParams);
     registerFallbackValue(
-      ComposeTransactionEvent(
+      FormSubmitted(
         params: composeTransactionParams,
         sourceAddress: 'source-address',
       ),
     );
-    registerFallbackValue(SignAndBroadcastTransactionEvent(
+    registerFallbackValue(SignAndBroadcastFormSubmitted(
       password: 'password',
     ));
     registerFallbackValue(ComposeAttachUtxoParams(
@@ -189,7 +189,7 @@ void main() {
         return composeAttachUtxoBloc;
       },
       act: (bloc) {
-        bloc.add(FetchFormData(
+        bloc.add(AsyncFormDependenciesRequested(
           currentAddress: 'test-address',
         ));
       },
@@ -223,7 +223,7 @@ void main() {
         return composeAttachUtxoBloc;
       },
       act: (bloc) {
-        bloc.add(FetchFormData(
+        bloc.add(AsyncFormDependenciesRequested(
           currentAddress: 'test-address',
         ));
       },
@@ -266,7 +266,7 @@ void main() {
         return composeAttachUtxoBloc;
       },
       act: (bloc) {
-        bloc.add(FetchFormData(
+        bloc.add(AsyncFormDependenciesRequested(
           currentAddress: 'test-address',
         ));
       },
@@ -296,7 +296,7 @@ void main() {
         return composeAttachUtxoBloc;
       },
       act: (bloc) {
-        bloc.add(FetchFormData(
+        bloc.add(AsyncFormDependenciesRequested(
           currentAddress: 'test-address',
         ));
       },
@@ -324,7 +324,7 @@ void main() {
         return composeAttachUtxoBloc;
       },
       act: (bloc) {
-        bloc.add(FetchFormData(
+        bloc.add(AsyncFormDependenciesRequested(
           currentAddress: 'test-address',
         ));
       },
@@ -346,7 +346,7 @@ void main() {
     blocTest<ComposeAttachUtxoBloc, ComposeAttachUtxoState>(
       'emits new state with updated fee option',
       build: () => composeAttachUtxoBloc,
-      act: (bloc) => bloc.add(ChangeFeeOption(value: FeeOption.Fast())),
+      act: (bloc) => bloc.add(FeeOptionChanged(value: FeeOption.Fast())),
       expect: () => [
         isA<ComposeAttachUtxoState>().having(
           (state) => state.feeOption,
@@ -383,7 +383,7 @@ void main() {
         feeState: const FeeState.success(mockFeeEstimates),
         feeOption: FeeOption.Medium(),
       ),
-      act: (bloc) => bloc.add(ComposeTransactionEvent(
+      act: (bloc) => bloc.add(FormSubmitted(
         params: composeTransactionParams,
         sourceAddress: 'source-address',
       )),
@@ -423,7 +423,7 @@ void main() {
         feeState: const FeeState.success(mockFeeEstimates),
         feeOption: FeeOption.Medium(),
       ),
-      act: (bloc) => bloc.add(ComposeTransactionEvent(
+      act: (bloc) => bloc.add(FormSubmitted(
         params: composeTransactionParams,
         sourceAddress: 'source-address',
       )),
@@ -451,7 +451,7 @@ void main() {
     blocTest<ComposeAttachUtxoBloc, ComposeAttachUtxoState>(
       'emits SubmitFinalizing when FinalizeTransactionEvent is added',
       build: () => composeAttachUtxoBloc,
-      act: (bloc) => bloc.add(FinalizeTransactionEvent(
+      act: (bloc) => bloc.add(ReviewSubmitted(
         composeTransaction: mockComposeAttachUtxoResponse,
         fee: fee,
       )),
@@ -511,7 +511,7 @@ void main() {
           fee: 250,
         ),
       ),
-      act: (bloc) => bloc.add(SignAndBroadcastTransactionEvent(
+      act: (bloc) => bloc.add(SignAndBroadcastFormSubmitted(
         password: password,
       )),
       wait: const Duration(milliseconds: 100),
@@ -577,7 +577,7 @@ void main() {
           fee: 250,
         ),
       ),
-      act: (bloc) => bloc.add(SignAndBroadcastTransactionEvent(
+      act: (bloc) => bloc.add(SignAndBroadcastFormSubmitted(
         password: password,
       )),
       expect: () => [
@@ -646,7 +646,7 @@ void main() {
         xcpFeeEstimate: '',
       ),
       act: (bloc) => bloc.add(
-        SignAndBroadcastTransactionEvent(password: 'password'),
+        SignAndBroadcastFormSubmitted(password: 'password'),
       ),
       verify: (_) {
         verify(() => mockCacheProvider.getValue('source')).called(1);
@@ -699,7 +699,7 @@ void main() {
         xcpFeeEstimate: '',
       ),
       act: (bloc) => bloc.add(
-        SignAndBroadcastTransactionEvent(password: 'password'),
+        SignAndBroadcastFormSubmitted(password: 'password'),
       ),
       verify: (_) {
         verify(() => mockCacheProvider.getValue('source')).called(1);

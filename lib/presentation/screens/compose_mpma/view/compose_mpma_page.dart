@@ -55,7 +55,7 @@ class ComposeMpmaPageWrapper extends StatelessWidget {
           writelocalTransactionUseCase:
               GetIt.I.get<WriteLocalTransactionUseCase>(),
           logger: GetIt.I.get<Logger>(),
-        )..add(FetchFormData(currentAddress: currentAddress)),
+        )..add(AsyncFormDependenciesRequested(currentAddress: currentAddress)),
         child: ComposeMpmaPage(
           address: currentAddress,
           dashboardActivityFeedBloc: dashboardActivityFeedBloc,
@@ -415,7 +415,7 @@ class ComposeMpmaPageState extends State<ComposeMpmaPage> {
         return ComposeBasePage<ComposeMpmaBloc, ComposeMpmaState>(
           dashboardActivityFeedBloc: widget.dashboardActivityFeedBloc,
           onFeeChange: (fee) =>
-              context.read<ComposeMpmaBloc>().add(ChangeFeeOption(value: fee)),
+              context.read<ComposeMpmaBloc>().add(FeeOptionChanged(value: fee)),
           buildInitialFormFields: (state, loading, formKey) =>
               _buildInitialFormFields(state, loading, formKey),
           onInitialCancel: () => _handleInitialCancel(),
@@ -423,13 +423,12 @@ class ComposeMpmaPageState extends State<ComposeMpmaPage> {
           buildConfirmationFormFields: (_, composeTransaction, __) =>
               _buildConfirmationDetails(context.read<ComposeMpmaBloc>().state,
                   composeTransaction as ComposeMpmaSendResponse),
-          onConfirmationBack: () => context
-              .read<ComposeMpmaBloc>()
-              .add(FetchFormData(currentAddress: widget.address)),
+          onConfirmationBack: () => context.read<ComposeMpmaBloc>().add(
+              AsyncFormDependenciesRequested(currentAddress: widget.address)),
           onConfirmationContinue: (composeSend, fee, formKey) {
             if (formKey.currentState!.validate()) {
               context.read<ComposeMpmaBloc>().add(
-                    FinalizeTransactionEvent<ComposeMpmaSendResponse>(
+                    ReviewSubmitted<ComposeMpmaSendResponse>(
                       composeTransaction: composeSend,
                       fee: fee,
                     ),
@@ -439,15 +438,14 @@ class ComposeMpmaPageState extends State<ComposeMpmaPage> {
           onFinalizeSubmit: (password, formKey) {
             if (formKey.currentState!.validate()) {
               context.read<ComposeMpmaBloc>().add(
-                    SignAndBroadcastTransactionEvent(
+                    SignAndBroadcastFormSubmitted(
                       password: password,
                     ),
                   );
             }
           },
-          onFinalizeCancel: () => context
-              .read<ComposeMpmaBloc>()
-              .add(FetchFormData(currentAddress: widget.address)),
+          onFinalizeCancel: () => context.read<ComposeMpmaBloc>().add(
+              AsyncFormDependenciesRequested(currentAddress: widget.address)),
         );
       },
     );
@@ -462,7 +460,7 @@ class ComposeMpmaPageState extends State<ComposeMpmaPage> {
       _submitted = true;
     });
     if (formKey.currentState!.validate()) {
-      context.read<ComposeMpmaBloc>().add(ComposeTransactionEvent(
+      context.read<ComposeMpmaBloc>().add(FormSubmitted(
             sourceAddress: widget.address,
             params: ComposeMpmaEventParams(),
           ));

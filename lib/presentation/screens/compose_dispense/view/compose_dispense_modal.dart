@@ -60,7 +60,7 @@ class ComposeDispensePageWrapper extends StatelessWidget {
               GetIt.I.get<FetchDispenseFormDataUseCase>(),
           analyticsService: GetIt.I.get<AnalyticsService>(),
           composeRepository: GetIt.I.get<ComposeRepository>(),
-        )..add(FetchFormData(
+        )..add(AsyncFormDependenciesRequested(
             currentAddress: currentAddress,
             initialDispenserAddress: initialDispenserAddress)),
         child: ComposeDispensePage(
@@ -135,7 +135,7 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
     return ComposeBasePage<ComposeDispenseBloc, ComposeDispenseState>(
       dashboardActivityFeedBloc: widget.dashboardActivityFeedBloc,
       onFeeChange: (fee) =>
-          context.read<ComposeDispenseBloc>().add(ChangeFeeOption(value: fee)),
+          context.read<ComposeDispenseBloc>().add(FeeOptionChanged(value: fee)),
       buildInitialFormFields: (state, loading, formKey) =>
           _buildInitialFormFields(state, loading, formKey),
       onInitialCancel: () => _handleInitialCancel(),
@@ -164,7 +164,7 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
       String dispenser = dispenserController.text;
 
       // Dispatch the event with the calculated values
-      context.read<ComposeDispenseBloc>().add(ComposeTransactionEvent(
+      context.read<ComposeDispenseBloc>().add(FormSubmitted(
             sourceAddress: widget.address,
             params: ComposeDispenseEventParams(
                 address: widget.address,
@@ -807,7 +807,7 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
   }
 
   void _onConfirmationBack() {
-    context.read<ComposeDispenseBloc>().add(FetchFormData(
+    context.read<ComposeDispenseBloc>().add(AsyncFormDependenciesRequested(
           currentAddress: widget.address,
           initialDispenserAddress: dispenserController.text,
         ));
@@ -817,7 +817,7 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
       dynamic composeTransaction, int fee, GlobalKey<FormState> formKey) {
     if (formKey.currentState!.validate()) {
       context.read<ComposeDispenseBloc>().add(
-            FinalizeTransactionEvent<ComposeDispenseResponse>(
+            ReviewSubmitted<ComposeDispenseResponse>(
               composeTransaction: composeTransaction,
               fee: fee,
             ),
@@ -828,7 +828,7 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
   void _onFinalizeSubmit(String password, GlobalKey<FormState> formKey) {
     if (formKey.currentState!.validate()) {
       context.read<ComposeDispenseBloc>().add(
-            SignAndBroadcastTransactionEvent(
+            SignAndBroadcastFormSubmitted(
               password: password,
             ),
           );
@@ -836,7 +836,7 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
   }
 
   void _onFinalizeCancel() {
-    context.read<ComposeDispenseBloc>().add(FetchFormData(
+    context.read<ComposeDispenseBloc>().add(AsyncFormDependenciesRequested(
           currentAddress: widget.address,
           initialDispenserAddress: dispenserController.text,
         ));

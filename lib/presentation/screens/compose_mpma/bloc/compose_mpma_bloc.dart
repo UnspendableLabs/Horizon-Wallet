@@ -345,7 +345,7 @@ class ComposeMpmaBloc extends ComposeBaseBloc<ComposeMpmaState> {
 
   @override
   void onSignAndBroadcastTransaction(
-      SignAndBroadcastTransactionEvent event, emit) async {
+      SignAndBroadcastFormSubmitted event, emit) async {
     if (state.submitState is! PasswordStep<ComposeMpmaSendResponse>) {
       return;
     }

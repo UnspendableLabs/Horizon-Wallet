@@ -48,7 +48,7 @@ class ComposeSweepPageWrapper extends StatelessWidget {
               GetIt.I.get<WriteLocalTransactionUseCase>(),
           estimateXcpFeeRepository: GetIt.I.get<EstimateXcpFeeRepository>(),
           logger: GetIt.I.get<Logger>(),
-        )..add(FetchFormData(currentAddress: currentAddress)),
+        )..add(AsyncFormDependenciesRequested(currentAddress: currentAddress)),
         child: ComposeSweepPage(
           address: currentAddress,
           dashboardActivityFeedBloc: dashboardActivityFeedBloc,
@@ -101,8 +101,9 @@ class ComposeSweepPageState extends State<ComposeSweepPage> {
       builder: (context, state) {
         return ComposeBasePage<ComposeSweepBloc, ComposeSweepState>(
           dashboardActivityFeedBloc: widget.dashboardActivityFeedBloc,
-          onFeeChange: (fee) =>
-              context.read<ComposeSweepBloc>().add(ChangeFeeOption(value: fee)),
+          onFeeChange: (fee) => context
+              .read<ComposeSweepBloc>()
+              .add(FeeOptionChanged(value: fee)),
           buildInitialFormFields: (state, loading, formKey) =>
               _buildInitialFormFields(state, loading, formKey),
           onInitialCancel: () => _handleInitialCancel(),
@@ -243,7 +244,7 @@ class ComposeSweepPageState extends State<ComposeSweepPage> {
 
     if (formKey.currentState!.validate()) {
       context.read<ComposeSweepBloc>().add(
-            ComposeTransactionEvent(
+            FormSubmitted(
               sourceAddress: widget.address,
               params: ComposeSweepEventParams(
                 destination: destinationController.text,
@@ -303,14 +304,14 @@ class ComposeSweepPageState extends State<ComposeSweepPage> {
   void _onConfirmationBack() {
     context
         .read<ComposeSweepBloc>()
-        .add(FetchFormData(currentAddress: widget.address));
+        .add(AsyncFormDependenciesRequested(currentAddress: widget.address));
   }
 
   void _onConfirmationContinue(
       dynamic composeTransaction, int fee, GlobalKey<FormState> formKey) {
     if (formKey.currentState!.validate()) {
       context.read<ComposeSweepBloc>().add(
-            FinalizeTransactionEvent<ComposeSweepResponse>(
+            ReviewSubmitted<ComposeSweepResponse>(
               composeTransaction: composeTransaction,
               fee: fee,
             ),
@@ -321,7 +322,7 @@ class ComposeSweepPageState extends State<ComposeSweepPage> {
   void _onFinalizeSubmit(String password, GlobalKey<FormState> formKey) {
     if (formKey.currentState!.validate()) {
       context.read<ComposeSweepBloc>().add(
-            SignAndBroadcastTransactionEvent(
+            SignAndBroadcastFormSubmitted(
               password: password,
             ),
           );
@@ -331,6 +332,6 @@ class ComposeSweepPageState extends State<ComposeSweepPage> {
   void _onFinalizeCancel() {
     context
         .read<ComposeSweepBloc>()
-        .add(FetchFormData(currentAddress: widget.address));
+        .add(AsyncFormDependenciesRequested(currentAddress: widget.address));
   }
 }

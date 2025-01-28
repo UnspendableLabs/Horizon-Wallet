@@ -64,7 +64,8 @@ class ComposeAttachUtxoBloc extends ComposeBaseBloc<ComposeAttachUtxoState> {
         );
 
   @override
-  Future<void> onFetchFormData(FetchFormData event, emit) async {
+  Future<void> onFetchFormData(
+      AsyncFormDependenciesRequested event, emit) async {
     emit(state.copyWith(
       balancesState: const BalancesState.loading(),
       feeState: const FeeState.loading(),
@@ -137,7 +138,7 @@ class ComposeAttachUtxoBloc extends ComposeBaseBloc<ComposeAttachUtxoState> {
   }
 
   @override
-  void onChangeFeeOption(ChangeFeeOption event, emit) async {
+  void onChangeFeeOption(FeeOptionChanged event, emit) async {
     final value = event.value;
     emit(state.copyWith(feeOption: value));
   }
@@ -153,7 +154,7 @@ class ComposeAttachUtxoBloc extends ComposeBaseBloc<ComposeAttachUtxoState> {
   }
 
   @override
-  void onComposeTransaction(ComposeTransactionEvent event, emit) async {
+  void onComposeTransaction(FormSubmitted event, emit) async {
     emit((state).copyWith(submitState: const FormStep(loading: true)));
 
     try {
@@ -191,7 +192,7 @@ class ComposeAttachUtxoBloc extends ComposeBaseBloc<ComposeAttachUtxoState> {
   }
 
   @override
-  void onFinalizeTransaction(FinalizeTransactionEvent event, emit) async {
+  void onFinalizeTransaction(ReviewSubmitted event, emit) async {
     emit(state.copyWith(
         submitState: PasswordStep<ComposeAttachUtxoResponse>(
       loading: false,
@@ -203,7 +204,7 @@ class ComposeAttachUtxoBloc extends ComposeBaseBloc<ComposeAttachUtxoState> {
 
   @override
   void onSignAndBroadcastTransaction(
-      SignAndBroadcastTransactionEvent event, emit) async {
+      SignAndBroadcastFormSubmitted event, emit) async {
     if (state.submitState is! PasswordStep<ComposeAttachUtxoResponse>) {
       return;
     }

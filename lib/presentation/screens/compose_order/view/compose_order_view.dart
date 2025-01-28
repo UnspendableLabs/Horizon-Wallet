@@ -72,7 +72,8 @@ class ComposeOrderPageWrapper extends StatelessWidget {
                     GetIt.I.get<ComposeTransactionUseCase>(),
                 analyticsService: GetIt.I.get<AnalyticsService>(),
                 composeRepository: GetIt.I.get<ComposeRepository>(),
-              )..add(FetchFormData(currentAddress: currentAddress)),
+              )..add(AsyncFormDependenciesRequested(
+                  currentAddress: currentAddress)),
               child: BlocProvider(
                 create: (context) => OpenOrderFormBloc(
                     composeRepository: GetIt.I.get<ComposeRepository>(),
@@ -157,8 +158,9 @@ class ComposeOrderPage extends StatefulWidget {
 class ComposeOrderPageState extends State<ComposeOrderPage> {
   void onConfirmationContinue(ComposeOrderResponse composeTransaction, int fee,
       GlobalKey<FormState> formKey) {
-    context.read<ComposeOrderBloc>().add(FinalizeTransactionEvent(
-        composeTransaction: composeTransaction, fee: fee));
+    context
+        .read<ComposeOrderBloc>()
+        .add(ReviewSubmitted(composeTransaction: composeTransaction, fee: fee));
   }
 
   void onConfirmationBack() {
@@ -244,7 +246,7 @@ class ComposeOrderPageState extends State<ComposeOrderPage> {
                 // be called when PW not required
                 context
                     .read<ComposeOrderBloc>()
-                    .add(SignAndBroadcastTransactionEvent(password: ""));
+                    .add(SignAndBroadcastFormSubmitted(password: ""));
               },
               onContinue: (composeTransaction, fee, formKey) => {
                     onConfirmationContinue(composeTransaction, fee, formKey),
@@ -264,7 +266,7 @@ class ComposeOrderPageState extends State<ComposeOrderPage> {
             onSubmit: (password, formKey) {
               context
                   .read<ComposeOrderBloc>()
-                  .add(SignAndBroadcastTransactionEvent(password: password));
+                  .add(SignAndBroadcastFormSubmitted(password: password));
             },
             onCancel: () {
               // for now we just go all the way back to step 1

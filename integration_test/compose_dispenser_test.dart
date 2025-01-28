@@ -250,8 +250,8 @@ void main() {
       );
 
       // Dispatch the FetchFormData event
-      composeDispenserBloc
-          .add(FetchFormData(currentAddress: FakeAddress().address));
+      composeDispenserBloc.add(AsyncFormDependenciesRequested(
+          currentAddress: FakeAddress().address));
 
       // Allow time for the Bloc to process and the UI to rebuild
       await tester.pumpAndSettle();
@@ -369,8 +369,8 @@ void main() {
       );
 
       // Dispatch the FetchFormData event
-      composeDispenserBloc
-          .add(FetchFormData(currentAddress: FakeAddress().address));
+      composeDispenserBloc.add(AsyncFormDependenciesRequested(
+          currentAddress: FakeAddress().address));
 
       // Allow time for the Bloc to process and the UI to rebuild
       await tester.pumpAndSettle();
@@ -446,8 +446,8 @@ void main() {
       );
 
       // Dispatch the FetchFormData event
-      composeDispenserBloc
-          .add(FetchFormData(currentAddress: FakeAddress().address));
+      composeDispenserBloc.add(AsyncFormDependenciesRequested(
+          currentAddress: FakeAddress().address));
 
       // Allow time for the Bloc to process and the UI to rebuild
       await tester.pumpAndSettle();
@@ -584,8 +584,8 @@ void main() {
       );
 
       // Dispatch the FetchFormData event
-      composeDispenserBloc
-          .add(FetchFormData(currentAddress: FakeAddress().address));
+      composeDispenserBloc.add(AsyncFormDependenciesRequested(
+          currentAddress: FakeAddress().address));
 
       // Allow time for the Bloc to process and the UI to rebuild
       await tester.pumpAndSettle();
@@ -686,8 +686,8 @@ void main() {
       );
 
       // Dispatch the FetchFormData event
-      composeDispenserBloc
-          .add(FetchFormData(currentAddress: FakeAddress().address));
+      composeDispenserBloc.add(AsyncFormDependenciesRequested(
+          currentAddress: FakeAddress().address));
 
       // Allow time for the Bloc to process and the UI to rebuild
       await tester.pumpAndSettle();
@@ -777,8 +777,8 @@ void main() {
       );
 
       // Dispatch the FetchFormData event
-      composeDispenserBloc
-          .add(FetchFormData(currentAddress: FakeAddress().address));
+      composeDispenserBloc.add(AsyncFormDependenciesRequested(
+          currentAddress: FakeAddress().address));
 
       // Allow time for the Bloc to process and the UI to rebuild
       await tester.pumpAndSettle();
@@ -915,8 +915,8 @@ void main() {
       );
 
       // Dispatch the FetchFormData event
-      composeDispenserBloc
-          .add(FetchFormData(currentAddress: FakeAddress().address));
+      composeDispenserBloc.add(AsyncFormDependenciesRequested(
+          currentAddress: FakeAddress().address));
 
       // Allow time for the Bloc to process and the UI to rebuild
       await tester.pumpAndSettle();

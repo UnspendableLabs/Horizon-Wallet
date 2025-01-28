@@ -73,7 +73,8 @@ class ComposeCancelPageWrapper extends StatelessWidget {
                     GetIt.I.get<ComposeTransactionUseCase>(),
                 analyticsService: GetIt.I.get<AnalyticsService>(),
                 composeRepository: GetIt.I.get<ComposeRepository>(),
-              )..add(FetchFormData(currentAddress: currentAddress)),
+              )..add(AsyncFormDependenciesRequested(
+                  currentAddress: currentAddress)),
               child: BlocProvider(
                 create: (context) => CancelOrderFormBloc(
                     orderRepository: GetIt.I.get<OrderRepository>(),
@@ -145,8 +146,9 @@ class ComposeCancelPage extends StatefulWidget {
 class ComposeCancelPageState extends State<ComposeCancelPage> {
   void onConfirmationContinue(ComposeCancelResponse composeTransaction, int fee,
       GlobalKey<FormState> formKey) {
-    context.read<ComposeCancelBloc>().add(FinalizeTransactionEvent(
-        composeTransaction: composeTransaction, fee: fee));
+    context
+        .read<ComposeCancelBloc>()
+        .add(ReviewSubmitted(composeTransaction: composeTransaction, fee: fee));
   }
 
   void onConfirmationBack() {
@@ -192,7 +194,7 @@ class ComposeCancelPageState extends State<ComposeCancelPage> {
                 // so we can just use empty value
                 context
                     .read<ComposeCancelBloc>()
-                    .add(SignAndBroadcastTransactionEvent(password: ""));
+                    .add(SignAndBroadcastFormSubmitted(password: ""));
               },
               composeTransaction: composeTransaction,
               fee: fee,
@@ -232,7 +234,7 @@ class ComposeCancelPageState extends State<ComposeCancelPage> {
             onSubmit: (password, formKey) {
               context
                   .read<ComposeCancelBloc>()
-                  .add(SignAndBroadcastTransactionEvent(password: password));
+                  .add(SignAndBroadcastFormSubmitted(password: password));
             },
             onCancel: () {
               // for now we just go all the way back to step 1

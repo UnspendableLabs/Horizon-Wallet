@@ -463,13 +463,12 @@ void main() {
         await tester.pumpAndSettle();
 
         // Dispatch the FetchFormData event
-        composeDispenseBloc.add(FetchFormData(
+        composeDispenseBloc.add(AsyncFormDependenciesRequested(
           currentAddress: FakeAddress().address,
         ));
 
         // Allow time for the bloc to process the event and rebuild the UI
         await tester.pumpAndSettle();
-
 
         // Find the TextFormField using bySemanticsLabel
         final dispenserInput = find.bySemanticsLabel('Dispenser Address');
@@ -779,7 +778,7 @@ void main() {
         );
 
         // Dispatch the FetchFormData event
-        composeDispenseBloc.add(FetchFormData(
+        composeDispenseBloc.add(AsyncFormDependenciesRequested(
           currentAddress: FakeAddress().address,
         ));
 

@@ -181,7 +181,8 @@ void main() {
               .thenAnswer((_) async => mockFeeEstimates);
         },
         build: () => bloc,
-        act: (bloc) => bloc.add(FetchFormData(currentAddress: 'test-address')),
+        act: (bloc) => bloc.add(
+            AsyncFormDependenciesRequested(currentAddress: 'test-address')),
         expect: () => [
           isA<ComposeMpmaState>()
               .having((s) => s.feeState, 'feeState', const FeeState.initial())
@@ -218,7 +219,8 @@ void main() {
               .thenThrow(Exception('Failed to fetch balances'));
         },
         build: () => bloc,
-        act: (bloc) => bloc.add(FetchFormData(currentAddress: 'test-address')),
+        act: (bloc) => bloc.add(
+            AsyncFormDependenciesRequested(currentAddress: 'test-address')),
         expect: () => [
           isA<ComposeMpmaState>()
               .having((s) => s.feeState, 'feeState', const FeeState.initial())

@@ -66,7 +66,7 @@ class ComposeIssuancePageWrapper extends StatelessWidget {
           logger: GetIt.I.get<Logger>(),
           fetchIssuanceFormDataUseCase:
               GetIt.I.get<FetchIssuanceFormDataUseCase>(),
-        )..add(FetchFormData(currentAddress: currentAddress)),
+        )..add(AsyncFormDependenciesRequested(currentAddress: currentAddress)),
         child: ComposeIssuancePage(
           address: currentAddress,
           dashboardActivityFeedBloc: dashboardActivityFeedBloc,
@@ -118,7 +118,7 @@ class ComposeIssuancePageState extends State<ComposeIssuancePage> {
     return ComposeBasePage<ComposeIssuanceBloc, ComposeIssuanceState>(
       dashboardActivityFeedBloc: widget.dashboardActivityFeedBloc,
       onFeeChange: (fee) =>
-          context.read<ComposeIssuanceBloc>().add(ChangeFeeOption(value: fee)),
+          context.read<ComposeIssuanceBloc>().add(FeeOptionChanged(value: fee)),
       buildInitialFormFields: (state, loading, formKey) =>
           _buildInitialFormFields(state, loading, formKey),
       onInitialCancel: () => _handleInitialCancel(),
@@ -148,7 +148,7 @@ class ComposeIssuancePageState extends State<ComposeIssuancePage> {
       int quantity = getQuantityForDivisibility(
           divisible: isDivisible, inputQuantity: quantityController.text);
 
-      context.read<ComposeIssuanceBloc>().add(ComposeTransactionEvent(
+      context.read<ComposeIssuanceBloc>().add(FormSubmitted(
             sourceAddress: widget.address,
             params: ComposeIssuanceEventParams(
               name: nameController.text,
@@ -398,14 +398,14 @@ class ComposeIssuancePageState extends State<ComposeIssuancePage> {
   void _onConfirmationBack() {
     context
         .read<ComposeIssuanceBloc>()
-        .add(FetchFormData(currentAddress: widget.address));
+        .add(AsyncFormDependenciesRequested(currentAddress: widget.address));
   }
 
   void _onConfirmationContinue(
       dynamic composeTransaction, int fee, GlobalKey<FormState> formKey) {
     if (formKey.currentState!.validate()) {
       context.read<ComposeIssuanceBloc>().add(
-            FinalizeTransactionEvent<ComposeIssuanceResponseVerbose>(
+            ReviewSubmitted<ComposeIssuanceResponseVerbose>(
               composeTransaction: composeTransaction,
               fee: fee,
             ),
@@ -416,7 +416,7 @@ class ComposeIssuancePageState extends State<ComposeIssuancePage> {
   void _onFinalizeSubmit(String password, GlobalKey<FormState> formKey) {
     if (formKey.currentState!.validate()) {
       context.read<ComposeIssuanceBloc>().add(
-            SignAndBroadcastTransactionEvent(
+            SignAndBroadcastFormSubmitted(
               password: password,
             ),
           );
@@ -426,7 +426,7 @@ class ComposeIssuancePageState extends State<ComposeIssuancePage> {
   void _onFinalizeCancel() {
     context
         .read<ComposeIssuanceBloc>()
-        .add(FetchFormData(currentAddress: widget.address));
+        .add(AsyncFormDependenciesRequested(currentAddress: widget.address));
   }
 }
 

@@ -95,8 +95,7 @@ void main() {
   setUpAll(() {
     registerFallbackValue(FeeOption.Medium());
     registerFallbackValue(composeTransactionParams);
-    registerFallbackValue(
-        SignAndBroadcastTransactionEvent(password: 'password'));
+    registerFallbackValue(SignAndBroadcastFormSubmitted(password: 'password'));
   });
 
   setUp(() {
@@ -147,7 +146,7 @@ void main() {
         return composeDividendBloc;
       },
       act: (bloc) {
-        bloc.add(FetchFormData(
+        bloc.add(AsyncFormDependenciesRequested(
             currentAddress: 'test-address', assetName: 'ASSET_NAME'));
       },
       expect: () => [
@@ -175,7 +174,7 @@ void main() {
         return composeDividendBloc;
       },
       act: (bloc) {
-        bloc.add(FetchFormData(
+        bloc.add(AsyncFormDependenciesRequested(
             currentAddress: 'test-address', assetName: 'ASSET_NAME'));
       },
       expect: () => [
@@ -252,7 +251,7 @@ void main() {
         ),
       ),
       act: (bloc) =>
-          bloc.add(SignAndBroadcastTransactionEvent(password: password)),
+          bloc.add(SignAndBroadcastFormSubmitted(password: password)),
       expect: () => [
         isA<ComposeDividendState>().having(
           (state) => state.submitState,
@@ -307,7 +306,7 @@ void main() {
         feeState: const FeeState.success(mockFeeEstimates),
         feeOption: FeeOption.Medium(),
       ),
-      act: (bloc) => bloc.add(ComposeTransactionEvent(
+      act: (bloc) => bloc.add(FormSubmitted(
         params: ComposeDividendEventParams(
           assetName: composeTransactionParams.asset,
           quantityPerUnit: composeTransactionParams.quantityPerUnit,
@@ -354,7 +353,7 @@ void main() {
         feeState: const FeeState.success(mockFeeEstimates),
       ),
       act: (bloc) => bloc.add(
-        ComposeTransactionEvent(
+        FormSubmitted(
           sourceAddress: 'source-address',
           params: ComposeDividendEventParams(
             assetName: composeTransactionParams.asset,

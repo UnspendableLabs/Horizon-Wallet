@@ -107,11 +107,11 @@ void main() {
       flags: 0,
       memo: 'test memo',
     ));
-    registerFallbackValue(ComposeTransactionEvent(
+    registerFallbackValue(FormSubmitted(
       params: composeTransactionParams,
       sourceAddress: 'source-address',
     ));
-    registerFallbackValue(SignAndBroadcastTransactionEvent(
+    registerFallbackValue(SignAndBroadcastFormSubmitted(
       password: 'password',
     ));
   });
@@ -168,7 +168,8 @@ void main() {
             .thenAnswer((_) async => 20000000);
         return bloc;
       },
-      act: (bloc) => bloc.add(FetchFormData(currentAddress: 'test-address')),
+      act: (bloc) => bloc
+          .add(AsyncFormDependenciesRequested(currentAddress: 'test-address')),
       expect: () => [
         isA<ComposeSweepState>()
             .having((s) => s.balancesState, 'balancesState',
@@ -197,7 +198,8 @@ void main() {
             .thenThrow(Exception('Fee estimates error'));
         return bloc;
       },
-      act: (bloc) => bloc.add(FetchFormData(currentAddress: 'test-address')),
+      act: (bloc) => bloc
+          .add(AsyncFormDependenciesRequested(currentAddress: 'test-address')),
       expect: () => [
         isA<ComposeSweepState>()
             .having((s) => s.balancesState, 'balancesState',
@@ -225,7 +227,7 @@ void main() {
     blocTest<ComposeSweepBloc, ComposeSweepState>(
       'updates fee option when changed',
       build: () => bloc,
-      act: (bloc) => bloc.add(ChangeFeeOption(value: FeeOption.Fast())),
+      act: (bloc) => bloc.add(FeeOptionChanged(value: FeeOption.Fast())),
       expect: () => [
         isA<ComposeSweepState>()
             .having((s) => s.balancesState, 'balancesState',
@@ -265,7 +267,7 @@ void main() {
         submitState: const FormStep(),
         sweepXcpFeeState: const SweepXcpFeeState.initial(),
       ),
-      act: (bloc) => bloc.add(ComposeTransactionEvent(
+      act: (bloc) => bloc.add(FormSubmitted(
         params: params,
         sourceAddress: 'source-address',
       )),
@@ -346,7 +348,7 @@ void main() {
         ),
       ),
       act: (bloc) =>
-          bloc.add(SignAndBroadcastTransactionEvent(password: password)),
+          bloc.add(SignAndBroadcastFormSubmitted(password: password)),
       expect: () => [
         isA<ComposeSweepState>()
             .having((s) => s.balancesState, 'balancesState',

@@ -85,13 +85,13 @@ void main() {
     registerFallbackValue(FeeOption.Medium());
     registerFallbackValue(composeTransactionParams);
     registerFallbackValue(
-      ComposeTransactionEvent(
+      FormSubmitted(
         params: composeTransactionParams,
         sourceAddress: 'source-address',
       ),
     );
     registerFallbackValue(
-      SignAndBroadcastTransactionEvent(
+      SignAndBroadcastFormSubmitted(
         password: 'password',
       ),
     );
@@ -145,7 +145,7 @@ void main() {
         return composeMoveToUtxoBloc;
       },
       act: (bloc) {
-        bloc.add(FetchFormData(
+        bloc.add(AsyncFormDependenciesRequested(
           currentAddress: 'source-address',
         ));
       },
@@ -172,7 +172,7 @@ void main() {
         return composeMoveToUtxoBloc;
       },
       act: (bloc) {
-        bloc.add(FetchFormData(
+        bloc.add(AsyncFormDependenciesRequested(
           currentAddress: 'source-address',
         ));
       },
@@ -193,7 +193,7 @@ void main() {
     blocTest<ComposeMoveToUtxoBloc, ComposeMoveToUtxoState>(
       'emits new state with updated fee option',
       build: () => composeMoveToUtxoBloc,
-      act: (bloc) => bloc.add(ChangeFeeOption(value: FeeOption.Fast())),
+      act: (bloc) => bloc.add(FeeOptionChanged(value: FeeOption.Fast())),
       expect: () => [
         isA<ComposeMoveToUtxoState>().having(
           (state) => state.feeOption,
@@ -230,7 +230,7 @@ void main() {
         feeState: const FeeState.success(mockFeeEstimates),
         feeOption: FeeOption.Medium(),
       ),
-      act: (bloc) => bloc.add(ComposeTransactionEvent(
+      act: (bloc) => bloc.add(FormSubmitted(
         params: composeTransactionParams,
         sourceAddress: 'source-address',
       )),
@@ -272,7 +272,7 @@ void main() {
         feeState: const FeeState.success(mockFeeEstimates),
         feeOption: FeeOption.Medium(),
       ),
-      act: (bloc) => bloc.add(ComposeTransactionEvent(
+      act: (bloc) => bloc.add(FormSubmitted(
         params: composeTransactionParams,
         sourceAddress: 'source-address',
       )),
@@ -299,7 +299,7 @@ void main() {
     blocTest<ComposeMoveToUtxoBloc, ComposeMoveToUtxoState>(
       'emits SubmitFinalizing when FinalizeTransactionEvent is added',
       build: () => composeMoveToUtxoBloc,
-      act: (bloc) => bloc.add(FinalizeTransactionEvent(
+      act: (bloc) => bloc.add(ReviewSubmitted(
         composeTransaction: mockComposeMoveToUtxoResponse,
         fee: fee,
       )),
@@ -374,7 +374,7 @@ void main() {
         ),
         utxoAddress: sourceAddress,
       ),
-      act: (bloc) => bloc.add(SignAndBroadcastTransactionEvent(
+      act: (bloc) => bloc.add(SignAndBroadcastFormSubmitted(
         password: password,
       )),
       expect: () => [
@@ -454,7 +454,7 @@ void main() {
         ),
         utxoAddress: sourceAddress,
       ),
-      act: (bloc) => bloc.add(SignAndBroadcastTransactionEvent(
+      act: (bloc) => bloc.add(SignAndBroadcastFormSubmitted(
         password: password,
       )),
       expect: () => [

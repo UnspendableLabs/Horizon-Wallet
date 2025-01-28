@@ -67,7 +67,8 @@ class ComposeFairmintBloc extends ComposeBaseBloc<ComposeFairmintState> {
   }
 
   @override
-  Future<void> onFetchFormData(FetchFormData event, emit) async {
+  Future<void> onFetchFormData(
+      AsyncFormDependenciesRequested event, emit) async {
     Fairminter? currentSelectedFairminter = state.selectedFairminter;
 
     emit(state.copyWith(
@@ -120,7 +121,7 @@ class ComposeFairmintBloc extends ComposeBaseBloc<ComposeFairmintState> {
   }
 
   @override
-  void onChangeFeeOption(ChangeFeeOption event, emit) async {
+  void onChangeFeeOption(FeeOptionChanged event, emit) async {
     final value = event.value;
     emit(state.copyWith(feeOption: value));
   }
@@ -136,7 +137,7 @@ class ComposeFairmintBloc extends ComposeBaseBloc<ComposeFairmintState> {
   }
 
   @override
-  void onComposeTransaction(ComposeTransactionEvent event, emit) async {
+  void onComposeTransaction(FormSubmitted event, emit) async {
     emit((state).copyWith(submitState: const FormStep(loading: true)));
 
     try {
@@ -172,7 +173,7 @@ class ComposeFairmintBloc extends ComposeBaseBloc<ComposeFairmintState> {
   }
 
   @override
-  void onFinalizeTransaction(FinalizeTransactionEvent event, emit) async {
+  void onFinalizeTransaction(ReviewSubmitted event, emit) async {
     emit(state.copyWith(
         submitState: PasswordStep<ComposeFairmintResponse>(
       loading: false,
@@ -184,7 +185,7 @@ class ComposeFairmintBloc extends ComposeBaseBloc<ComposeFairmintState> {
 
   @override
   void onSignAndBroadcastTransaction(
-      SignAndBroadcastTransactionEvent event, emit) async {
+      SignAndBroadcastFormSubmitted event, emit) async {
     if (state.submitState is! PasswordStep<ComposeFairmintResponse>) {
       return;
     }

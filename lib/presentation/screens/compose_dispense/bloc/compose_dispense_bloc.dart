@@ -113,7 +113,8 @@ class ComposeDispenseBloc extends ComposeBaseBloc<ComposeDispenseState> {
   }
 
   @override
-  Future<void> onFetchFormData(FetchFormData event, emit) async {
+  Future<void> onFetchFormData(
+      AsyncFormDependenciesRequested event, emit) async {
     emit(state.copyWith(
         balancesState: const BalancesState.loading(),
         feeState: const FeeState.loading(),
@@ -166,7 +167,7 @@ class ComposeDispenseBloc extends ComposeBaseBloc<ComposeDispenseState> {
   }
 
   @override
-  void onComposeTransaction(ComposeTransactionEvent event, emit) async {
+  void onComposeTransaction(FormSubmitted event, emit) async {
     emit((state).copyWith(submitState: const FormStep(loading: true)));
 
     try {
@@ -233,7 +234,7 @@ class ComposeDispenseBloc extends ComposeBaseBloc<ComposeDispenseState> {
 
   @override
   void onSignAndBroadcastTransaction(
-      SignAndBroadcastTransactionEvent event, emit) async {
+      SignAndBroadcastFormSubmitted event, emit) async {
     if (state.submitState is! PasswordStep<ComposeDispenseResponse>) {
       return;
     }

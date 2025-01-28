@@ -173,11 +173,11 @@ void main() {
     registerFallbackValue(composeTransactionParams);
     registerFallbackValue(utxos);
     registerFallbackValue(FeeOption.Medium());
-    registerFallbackValue(ComposeTransactionEvent(
+    registerFallbackValue(FormSubmitted(
       params: composeTransactionParams,
       sourceAddress: 'source-address',
     ));
-    registerFallbackValue(SignAndBroadcastTransactionEvent(
+    registerFallbackValue(SignAndBroadcastFormSubmitted(
       password: 'password',
     ));
     registerFallbackValue(composeDispenserParams);
@@ -216,7 +216,7 @@ void main() {
     GetIt.I.reset();
   });
 
-  group(FetchFormData, () {
+  group(AsyncFormDependenciesRequested, () {
     blocTest<CloseDispenserBloc, CloseDispenserState>(
       'emits loading and then success states when data is fetched successfully',
       build: () {
@@ -225,7 +225,7 @@ void main() {
         return closeDispenserBloc;
       },
       act: (bloc) {
-        bloc.add(FetchFormData(currentAddress: mockAddress));
+        bloc.add(AsyncFormDependenciesRequested(currentAddress: mockAddress));
       },
       expect: () => [
         closeDispenserBloc.state.copyWith(
@@ -250,7 +250,7 @@ void main() {
         return closeDispenserBloc;
       },
       act: (bloc) {
-        bloc.add(FetchFormData(currentAddress: mockAddress));
+        bloc.add(AsyncFormDependenciesRequested(currentAddress: mockAddress));
       },
       expect: () => [
         closeDispenserBloc.state.copyWith(
@@ -273,7 +273,7 @@ void main() {
         return closeDispenserBloc;
       },
       act: (bloc) {
-        bloc.add(FetchFormData(currentAddress: mockAddress));
+        bloc.add(AsyncFormDependenciesRequested(currentAddress: mockAddress));
       },
       expect: () => [
         closeDispenserBloc.state.copyWith(
@@ -293,7 +293,7 @@ void main() {
         return closeDispenserBloc;
       },
       act: (bloc) {
-        bloc.add(FetchFormData(currentAddress: mockAddress));
+        bloc.add(AsyncFormDependenciesRequested(currentAddress: mockAddress));
       },
       expect: () => [
         closeDispenserBloc.state.copyWith(
@@ -339,7 +339,7 @@ void main() {
         feeState: const FeeState.success(mockFeeEstimates),
         feeOption: FeeOption.Medium(),
       ),
-      act: (bloc) => bloc.add(ComposeTransactionEvent(
+      act: (bloc) => bloc.add(FormSubmitted(
         params: composeTransactionParams,
         sourceAddress: 'source-address',
       )),
@@ -382,7 +382,7 @@ void main() {
         feeState: const FeeState.success(mockFeeEstimates),
         feeOption: FeeOption.Custom(10),
       ),
-      act: (bloc) => bloc.add(ComposeTransactionEvent(
+      act: (bloc) => bloc.add(FormSubmitted(
         params: composeTransactionParams,
         sourceAddress: 'source-address',
       )),
@@ -423,7 +423,7 @@ void main() {
         feeState: const FeeState.success(mockFeeEstimates),
         feeOption: FeeOption.Medium(),
       ),
-      act: (bloc) => bloc.add(ComposeTransactionEvent(
+      act: (bloc) => bloc.add(FormSubmitted(
         params: composeTransactionParams,
         sourceAddress: 'source-address',
       )),
@@ -443,13 +443,13 @@ void main() {
       ],
     );
   });
-  group(FinalizeTransactionEvent, () {
+  group(ReviewSubmitted, () {
     const fee = 250;
 
     blocTest<CloseDispenserBloc, CloseDispenserState>(
       'emits SubmitFinalizing when FinalizeTransactionEvent is added',
       build: () => closeDispenserBloc,
-      act: (bloc) => bloc.add(FinalizeTransactionEvent(
+      act: (bloc) => bloc.add(ReviewSubmitted(
         composeTransaction: mockComposeDispenserResponseVerbose,
         fee: fee,
       )),
@@ -468,7 +468,7 @@ void main() {
     );
   });
 
-  group(SignAndBroadcastTransactionEvent, () {
+  group(SignAndBroadcastFormSubmitted, () {
     const password = 'test-password';
     const txHex = 'transaction-hex';
     const txHash = 'transaction-hash';
@@ -536,7 +536,7 @@ void main() {
         dispensersState: const DispenserState.initial(),
       ),
       act: (bloc) async {
-        bloc.add(SignAndBroadcastTransactionEvent(password: password));
+        bloc.add(SignAndBroadcastFormSubmitted(password: password));
       },
       // Add a small wait to allow async operations to complete
       wait: const Duration(milliseconds: 10),
@@ -621,7 +621,7 @@ void main() {
         dispensersState: const DispenserState.initial(),
       ),
       act: (bloc) =>
-          bloc.add(SignAndBroadcastTransactionEvent(password: password)),
+          bloc.add(SignAndBroadcastFormSubmitted(password: password)),
       wait: const Duration(milliseconds: 10),
       expect: () => [
         isA<CloseDispenserState>().having(

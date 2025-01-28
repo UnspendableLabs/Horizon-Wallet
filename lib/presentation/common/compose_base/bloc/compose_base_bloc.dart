@@ -5,14 +5,13 @@ import 'package:horizon/presentation/common/compose_base/bloc/compose_base_event
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_state.dart';
 
 abstract interface class ComposeBaseBlocInterface<T extends ComposeStateBase> {
-  Future<void> onFetchFormData(FetchFormData event, Emitter<T> emit);
-  void onChangeFeeOption(ChangeFeeOption event, Emitter<T> emit);
-  void onComposeTransaction(ComposeTransactionEvent event, Emitter<T> emit);
-  void onFinalizeTransaction(FinalizeTransactionEvent event, Emitter<T> emit);
+  Future<void> onFetchFormData(
+      AsyncFormDependenciesRequested event, Emitter<T> emit);
+  void onChangeFeeOption(FeeOptionChanged event, Emitter<T> emit);
+  void onComposeTransaction(FormSubmitted event, Emitter<T> emit);
+  void onFinalizeTransaction(ReviewSubmitted event, Emitter<T> emit);
   void onSignAndBroadcastTransaction(
-      SignAndBroadcastTransactionEvent event, Emitter<T> emit);
-
-
+      SignAndBroadcastFormSubmitted event, Emitter<T> emit);
 }
 
 abstract class ComposeBaseBloc<T extends ComposeStateBase>
@@ -26,7 +25,7 @@ abstract class ComposeBaseBloc<T extends ComposeStateBase>
   }) {
     _errorService = GetIt.I.get<ErrorService>();
 
-    on<FetchFormData>((event, emit) async {
+    on<AsyncFormDependenciesRequested>((event, emit) async {
       _errorService.addBreadcrumb(
         type: 'navigation',
         category: 'compose',
@@ -36,26 +35,26 @@ abstract class ComposeBaseBloc<T extends ComposeStateBase>
       await onFetchFormData(event, emit);
     });
 
-    on<ChangeFeeOption>(onChangeFeeOption);
-    on<ComposeTransactionEvent>(onComposeTransaction);
-    on<FinalizeTransactionEvent>(onFinalizeTransaction);
-    on<SignAndBroadcastTransactionEvent>(onSignAndBroadcastTransaction);
+    on<FeeOptionChanged>(onChangeFeeOption);
+    on<FormSubmitted>(onComposeTransaction);
+    on<ReviewSubmitted>(onFinalizeTransaction);
+    on<SignAndBroadcastFormSubmitted>(onSignAndBroadcastTransaction);
   }
 
   @override
-  Future<void> onFetchFormData(FetchFormData event, Emitter<T> emit);
+  Future<void> onFetchFormData(
+      AsyncFormDependenciesRequested event, Emitter<T> emit);
 
   @override
-  void onChangeFeeOption(ChangeFeeOption event, Emitter<T> emit);
+  void onChangeFeeOption(FeeOptionChanged event, Emitter<T> emit);
 
   @override
-  void onComposeTransaction(ComposeTransactionEvent event, Emitter<T> emit);
+  void onComposeTransaction(FormSubmitted event, Emitter<T> emit);
 
   @override
-  void onFinalizeTransaction(FinalizeTransactionEvent event, Emitter<T> emit);
+  void onFinalizeTransaction(ReviewSubmitted event, Emitter<T> emit);
 
   @override
   void onSignAndBroadcastTransaction(
-      SignAndBroadcastTransactionEvent event, Emitter<T> emit);
-
+      SignAndBroadcastFormSubmitted event, Emitter<T> emit);
 }

@@ -104,11 +104,11 @@ void main() {
       lockQuantity: true,
     ));
     registerFallbackValue(FeeOption.Medium());
-    registerFallbackValue(ComposeTransactionEvent(
+    registerFallbackValue(FormSubmitted(
       params: composeTransactionParams,
       sourceAddress: 'source-address',
     ));
-    registerFallbackValue(SignAndBroadcastTransactionEvent(
+    registerFallbackValue(SignAndBroadcastFormSubmitted(
       password: 'password',
     ));
   });
@@ -158,7 +158,8 @@ void main() {
         return composeFairminterBloc;
       },
       act: (bloc) {
-        bloc.add(FetchFormData(currentAddress: 'test-address'));
+        bloc.add(
+            AsyncFormDependenciesRequested(currentAddress: 'test-address'));
       },
       expect: () => [
         composeFairminterBloc.state.copyWith(
@@ -185,7 +186,8 @@ void main() {
         return composeFairminterBloc;
       },
       act: (bloc) {
-        bloc.add(FetchFormData(currentAddress: 'test-address'));
+        bloc.add(
+            AsyncFormDependenciesRequested(currentAddress: 'test-address'));
       },
       expect: () => [
         composeFairminterBloc.state.copyWith(
@@ -240,7 +242,7 @@ void main() {
         ),
       ),
       act: (bloc) =>
-          bloc.add(SignAndBroadcastTransactionEvent(password: password)),
+          bloc.add(SignAndBroadcastFormSubmitted(password: password)),
       expect: () => [
         isA<ComposeFairminterState>().having(
           (state) => state.submitState,
@@ -364,7 +366,8 @@ void main() {
         return composeFairminterBloc;
       },
       act: (bloc) {
-        bloc.add(FetchFormData(currentAddress: 'test-address'));
+        bloc.add(
+            AsyncFormDependenciesRequested(currentAddress: 'test-address'));
       },
       expect: () => [
         composeFairminterBloc.state.copyWith(

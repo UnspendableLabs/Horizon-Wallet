@@ -47,7 +47,7 @@ class ComposeMoveToUtxoPageWrapper extends StatelessWidget {
               GetIt.I.get<SignAndBroadcastTransactionUseCase>(),
           writelocalTransactionUseCase:
               GetIt.I.get<WriteLocalTransactionUseCase>(),
-        )..add(FetchFormData(currentAddress: currentAddress)),
+        )..add(AsyncFormDependenciesRequested(currentAddress: currentAddress)),
         child: ComposeMoveToUtxoPage(
           address: currentAddress,
           assetName: assetName,
@@ -101,7 +101,7 @@ class ComposeMoveToUtxoPageState extends State<ComposeMoveToUtxoPage> {
           dashboardActivityFeedBloc: widget.dashboardActivityFeedBloc,
           onFeeChange: (fee) => context
               .read<ComposeMoveToUtxoBloc>()
-              .add(ChangeFeeOption(value: fee)),
+              .add(FeeOptionChanged(value: fee)),
           buildInitialFormFields: (state, loading, formKey) =>
               _buildInitialFormFields(state, loading, formKey),
           onInitialCancel: () => _handleInitialCancel(),
@@ -130,7 +130,7 @@ class ComposeMoveToUtxoPageState extends State<ComposeMoveToUtxoPage> {
       _submitted = true;
     });
     if (formKey.currentState!.validate()) {
-      context.read<ComposeMoveToUtxoBloc>().add(ComposeTransactionEvent(
+      context.read<ComposeMoveToUtxoBloc>().add(FormSubmitted(
             sourceAddress: widget.address,
             params: ComposeMoveToUtxoEventParams(
               utxo: utxoController.text,
@@ -185,14 +185,14 @@ class ComposeMoveToUtxoPageState extends State<ComposeMoveToUtxoPage> {
   void _onConfirmationBack() {
     context
         .read<ComposeMoveToUtxoBloc>()
-        .add(FetchFormData(currentAddress: widget.address));
+        .add(AsyncFormDependenciesRequested(currentAddress: widget.address));
   }
 
   void _onConfirmationContinue(
       dynamic composeTransaction, int fee, GlobalKey<FormState> formKey) {
     context
         .read<ComposeMoveToUtxoBloc>()
-        .add(FinalizeTransactionEvent<ComposeMoveToUtxoResponse>(
+        .add(ReviewSubmitted<ComposeMoveToUtxoResponse>(
           composeTransaction: composeTransaction,
           fee: fee,
         ));
@@ -201,7 +201,7 @@ class ComposeMoveToUtxoPageState extends State<ComposeMoveToUtxoPage> {
   void _onFinalizeSubmit(String password, GlobalKey<FormState> formKey) {
     if (formKey.currentState!.validate()) {
       context.read<ComposeMoveToUtxoBloc>().add(
-            SignAndBroadcastTransactionEvent(
+            SignAndBroadcastFormSubmitted(
               password: password,
             ),
           );
@@ -211,6 +211,6 @@ class ComposeMoveToUtxoPageState extends State<ComposeMoveToUtxoPage> {
   void _onFinalizeCancel() {
     context
         .read<ComposeMoveToUtxoBloc>()
-        .add(FetchFormData(currentAddress: widget.address));
+        .add(AsyncFormDependenciesRequested(currentAddress: widget.address));
   }
 }

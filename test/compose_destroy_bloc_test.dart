@@ -106,11 +106,11 @@ void main() {
   setUpAll(() {
     registerFallbackValue(FeeOption.Medium());
     registerFallbackValue(composeTransactionParams);
-    registerFallbackValue(ComposeTransactionEvent(
+    registerFallbackValue(FormSubmitted(
       params: composeTransactionParams,
       sourceAddress: 'source-address',
     ));
-    registerFallbackValue(SignAndBroadcastTransactionEvent(
+    registerFallbackValue(SignAndBroadcastFormSubmitted(
       password: 'password',
     ));
     registerFallbackValue(ComposeDestroyParams(
@@ -167,7 +167,7 @@ void main() {
             .thenAnswer((_) async => mockFeeEstimates);
         return composeDestroyBloc;
       },
-      act: (bloc) => bloc.add(FetchFormData(
+      act: (bloc) => bloc.add(AsyncFormDependenciesRequested(
         currentAddress: 'test-address',
       )),
       expect: () => [
@@ -192,7 +192,7 @@ void main() {
             )).thenThrow(Exception('Failed to fetch balances'));
         return composeDestroyBloc;
       },
-      act: (bloc) => bloc.add(FetchFormData(
+      act: (bloc) => bloc.add(AsyncFormDependenciesRequested(
         currentAddress: 'test-address',
       )),
       expect: () => [
@@ -213,7 +213,7 @@ void main() {
     blocTest<ComposeDestroyBloc, ComposeDestroyState>(
       'emits new state with updated fee option',
       build: () => composeDestroyBloc,
-      act: (bloc) => bloc.add(ChangeFeeOption(value: FeeOption.Fast())),
+      act: (bloc) => bloc.add(FeeOptionChanged(value: FeeOption.Fast())),
       expect: () => [
         isA<ComposeDestroyState>().having(
           (state) => state.feeOption,
@@ -250,7 +250,7 @@ void main() {
         feeState: const FeeState.success(mockFeeEstimates),
         feeOption: FeeOption.Medium(),
       ),
-      act: (bloc) => bloc.add(ComposeTransactionEvent(
+      act: (bloc) => bloc.add(FormSubmitted(
         params: composeTransactionParams,
         sourceAddress: 'source-address',
       )),
@@ -314,7 +314,7 @@ void main() {
           fee: 250,
         ),
       ),
-      act: (bloc) => bloc.add(SignAndBroadcastTransactionEvent(
+      act: (bloc) => bloc.add(SignAndBroadcastFormSubmitted(
         password: password,
       )),
       expect: () => [
@@ -368,7 +368,7 @@ void main() {
           fee: 250,
         ),
       ),
-      act: (bloc) => bloc.add(SignAndBroadcastTransactionEvent(
+      act: (bloc) => bloc.add(SignAndBroadcastFormSubmitted(
         password: password,
       )),
       expect: () => [

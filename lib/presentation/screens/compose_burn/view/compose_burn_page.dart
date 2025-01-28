@@ -48,7 +48,7 @@ class ComposeBurnPageWrapper extends StatelessWidget {
               GetIt.I.get<WriteLocalTransactionUseCase>(),
           blockRepository: GetIt.I.get<BlockRepository>(),
           balanceRepository: GetIt.I.get<BalanceRepository>(),
-        )..add(FetchFormData(currentAddress: currentAddress)),
+        )..add(AsyncFormDependenciesRequested(currentAddress: currentAddress)),
         child: ComposeBurnPage(
           address: currentAddress,
           dashboardActivityFeedBloc: dashboardActivityFeedBloc,
@@ -93,7 +93,7 @@ class ComposeBurnPageState extends State<ComposeBurnPage> {
         return ComposeBasePage<ComposeBurnBloc, ComposeBurnState>(
           dashboardActivityFeedBloc: widget.dashboardActivityFeedBloc,
           onFeeChange: (fee) =>
-              context.read<ComposeBurnBloc>().add(ChangeFeeOption(value: fee)),
+              context.read<ComposeBurnBloc>().add(FeeOptionChanged(value: fee)),
           buildInitialFormFields: (state, loading, formKey) =>
               _buildInitialFormFields(state, loading, formKey),
           onInitialCancel: () => _handleInitialCancel(),
@@ -125,7 +125,7 @@ class ComposeBurnPageState extends State<ComposeBurnPage> {
       final quantity = getQuantityForDivisibility(
           inputQuantity: quantityController.text, divisible: true);
 
-      context.read<ComposeBurnBloc>().add(ComposeTransactionEvent(
+      context.read<ComposeBurnBloc>().add(FormSubmitted(
             sourceAddress: widget.address,
             params: ComposeBurnEventParams(
               quantity: quantity,
@@ -205,14 +205,12 @@ class ComposeBurnPageState extends State<ComposeBurnPage> {
   void _onConfirmationBack() {
     context
         .read<ComposeBurnBloc>()
-        .add(FetchFormData(currentAddress: widget.address));
+        .add(AsyncFormDependenciesRequested(currentAddress: widget.address));
   }
 
   void _onConfirmationContinue(
       dynamic composeTransaction, int fee, GlobalKey<FormState> formKey) {
-    context
-        .read<ComposeBurnBloc>()
-        .add(FinalizeTransactionEvent<ComposeBurnResponse>(
+    context.read<ComposeBurnBloc>().add(ReviewSubmitted<ComposeBurnResponse>(
           composeTransaction: composeTransaction,
           fee: fee,
         ));
@@ -221,7 +219,7 @@ class ComposeBurnPageState extends State<ComposeBurnPage> {
   void _onFinalizeSubmit(String password, GlobalKey<FormState> formKey) {
     if (formKey.currentState!.validate()) {
       context.read<ComposeBurnBloc>().add(
-            SignAndBroadcastTransactionEvent(
+            SignAndBroadcastFormSubmitted(
               password: password,
             ),
           );
@@ -231,6 +229,6 @@ class ComposeBurnPageState extends State<ComposeBurnPage> {
   void _onFinalizeCancel() {
     context
         .read<ComposeBurnBloc>()
-        .add(FetchFormData(currentAddress: widget.address));
+        .add(AsyncFormDependenciesRequested(currentAddress: widget.address));
   }
 }

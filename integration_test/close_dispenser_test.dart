@@ -204,7 +204,7 @@ class MockSessionStateCubit extends Mock implements SessionStateCubit {
         accounts: [],
         redirect: false,
         decryptionKey: "decryption_key",
-        wallet:  Wallet(
+        wallet: Wallet(
           name: 'Test Wallet',
           uuid: 'test-wallet-uuid',
           publicKey: '',
@@ -213,7 +213,7 @@ class MockSessionStateCubit extends Mock implements SessionStateCubit {
         ),
         currentAccountUuid: 'test-account-uuid',
         addresses: [],
-        currentAddress:  Address(
+        currentAddress: Address(
           address: 'test-address',
           accountUuid: 'test-account-uuid',
           index: 0,
@@ -386,8 +386,8 @@ void main() {
         ),
       );
 
-      closeDispenserBloc
-          .add(FetchFormData(currentAddress: FakeAddress().address));
+      closeDispenserBloc.add(AsyncFormDependenciesRequested(
+          currentAddress: FakeAddress().address));
       await tester.pumpAndSettle();
 
       // Find and tap the asset dropdown
@@ -416,7 +416,7 @@ void main() {
       await tester.tap(continueButton);
       await tester.pumpAndSettle();
 
-      closeDispenserBloc.add(ComposeTransactionEvent(
+      closeDispenserBloc.add(FormSubmitted(
         sourceAddress: "test-address",
         params: MockComposeDispenserEventParams(),
       ));
@@ -435,8 +435,7 @@ void main() {
       await tester.tap(confirmContinueButton);
       await tester.pumpAndSettle();
 
-      closeDispenserBloc
-          .add(FinalizeTransactionEvent<ComposeDispenserResponseVerbose>(
+      closeDispenserBloc.add(ReviewSubmitted<ComposeDispenserResponseVerbose>(
         composeTransaction: composeDispenserResponse,
         fee: 5,
       ));

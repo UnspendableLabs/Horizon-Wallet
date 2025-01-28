@@ -296,7 +296,7 @@ class ComposeSendBloc extends ComposeBaseBloc<ComposeSendState> {
 
   @override
   void onSignAndBroadcastTransaction(
-      SignAndBroadcastTransactionEvent event, emit) async {
+      SignAndBroadcastFormSubmitted event, emit) async {
     if (state.submitState is! PasswordStep<ComposeSendResponse>) {
       return;
     }

@@ -66,13 +66,14 @@ class UpdateIssuanceBloc extends ComposeBaseBloc<UpdateIssuanceState> {
         );
 
   @override
-  void onChangeFeeOption(ChangeFeeOption event, emit) async {
+  void onChangeFeeOption(FeeOptionChanged event, emit) async {
     final value = event.value;
     emit(state.copyWith(feeOption: value));
   }
 
   @override
-  Future<void> onFetchFormData(FetchFormData event, emit) async {
+  Future<void> onFetchFormData(
+      AsyncFormDependenciesRequested event, emit) async {
     if (event.assetName == null || event.currentAddress == null) {
       return;
     }
@@ -108,7 +109,7 @@ class UpdateIssuanceBloc extends ComposeBaseBloc<UpdateIssuanceState> {
   }
 
   @override
-  void onComposeTransaction(ComposeTransactionEvent event, emit) async {
+  void onComposeTransaction(FormSubmitted event, emit) async {
     emit((state).copyWith(submitState: const FormStep(loading: true)));
 
     try {
@@ -160,7 +161,7 @@ class UpdateIssuanceBloc extends ComposeBaseBloc<UpdateIssuanceState> {
   }
 
   @override
-  void onFinalizeTransaction(FinalizeTransactionEvent event, emit) async {
+  void onFinalizeTransaction(ReviewSubmitted event, emit) async {
     emit(state.copyWith(
         submitState: PasswordStep<ComposeIssuanceResponseVerbose>(
       loading: false,
@@ -172,7 +173,7 @@ class UpdateIssuanceBloc extends ComposeBaseBloc<UpdateIssuanceState> {
 
   @override
   void onSignAndBroadcastTransaction(
-      SignAndBroadcastTransactionEvent event, emit) async {
+      SignAndBroadcastFormSubmitted event, emit) async {
     if (state.submitState is! PasswordStep<ComposeIssuanceResponseVerbose>) {
       return;
     }

@@ -56,7 +56,7 @@ class ComposeAttachUtxoPageWrapper extends StatelessWidget {
               GetIt.I.get<WriteLocalTransactionUseCase>(),
           blockRepository: GetIt.I.get<BlockRepository>(),
           cacheProvider: GetIt.I.get<CacheProvider>(),
-        )..add(FetchFormData(currentAddress: currentAddress)),
+        )..add(AsyncFormDependenciesRequested(currentAddress: currentAddress)),
         child: ComposeAttachUtxoPage(
           address: currentAddress,
           assetName: assetName,
@@ -171,7 +171,7 @@ class ComposeAttachUtxoPageState extends State<ComposeAttachUtxoPage> {
             dashboardActivityFeedBloc: widget.dashboardActivityFeedBloc,
             onFeeChange: (fee) => context
                 .read<ComposeAttachUtxoBloc>()
-                .add(ChangeFeeOption(value: fee)),
+                .add(FeeOptionChanged(value: fee)),
             buildInitialFormFields: (state, loading, formKey) =>
                 _buildInitialFormFields(state, loading, formKey),
             onInitialCancel: () => _handleInitialCancel(),
@@ -223,7 +223,7 @@ class ComposeAttachUtxoPageState extends State<ComposeAttachUtxoPage> {
           divisible: balance.assetInfo.divisible,
           inputQuantity: quantityController.text);
 
-      context.read<ComposeAttachUtxoBloc>().add(ComposeTransactionEvent(
+      context.read<ComposeAttachUtxoBloc>().add(FormSubmitted(
             sourceAddress: fromAddressController.text,
             params: ComposeAttachUtxoEventParams(
               asset: widget.assetName,
@@ -350,7 +350,7 @@ class ComposeAttachUtxoPageState extends State<ComposeAttachUtxoPage> {
   }
 
   void _onConfirmationBack() {
-    context.read<ComposeAttachUtxoBloc>().add(FetchFormData(
+    context.read<ComposeAttachUtxoBloc>().add(AsyncFormDependenciesRequested(
           currentAddress: widget.address,
         ));
   }
@@ -359,7 +359,7 @@ class ComposeAttachUtxoPageState extends State<ComposeAttachUtxoPage> {
       dynamic composeTransaction, int fee, GlobalKey<FormState> formKey) {
     context
         .read<ComposeAttachUtxoBloc>()
-        .add(FinalizeTransactionEvent<ComposeAttachUtxoResponse>(
+        .add(ReviewSubmitted<ComposeAttachUtxoResponse>(
           composeTransaction: composeTransaction,
           fee: fee,
         ));
@@ -368,7 +368,7 @@ class ComposeAttachUtxoPageState extends State<ComposeAttachUtxoPage> {
   void _onFinalizeSubmit(String password, GlobalKey<FormState> formKey) {
     if (formKey.currentState!.validate()) {
       context.read<ComposeAttachUtxoBloc>().add(
-            SignAndBroadcastTransactionEvent(
+            SignAndBroadcastFormSubmitted(
               password: password,
             ),
           );
@@ -376,7 +376,7 @@ class ComposeAttachUtxoPageState extends State<ComposeAttachUtxoPage> {
   }
 
   void _onFinalizeCancel() {
-    context.read<ComposeAttachUtxoBloc>().add(FetchFormData(
+    context.read<ComposeAttachUtxoBloc>().add(AsyncFormDependenciesRequested(
           currentAddress: widget.address,
         ));
   }
