@@ -13,6 +13,7 @@ import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/imported_address_service.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
 import 'package:horizon/domain/entities/compose_response.dart';
+import 'package:equatable/equatable.dart';
 
 class AddressNotFoundException implements Exception {
   final String message;
@@ -31,16 +32,25 @@ class SignAndBroadcastTransactionException implements Exception {
 //       could add separate use case for deriving key
 //       might also want to split out sign / broadcast
 
-sealed class DecryptionStrategy {}
+
+
+sealed class DecryptionStrategy extends Equatable {}
+
 
 class Password extends DecryptionStrategy {
   final String password;
   Password(this.password);
+
+
+  @override
+  List<Object> get props => [password];
 }
 
 class InMemoryKey extends DecryptionStrategy {
   final String key;
   InMemoryKey(this.key);
+  @override
+  List<Object> get props => [key];
 }
 
 class SignAndBroadcastTransactionUseCase<R extends ComposeResponse> {

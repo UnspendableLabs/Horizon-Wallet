@@ -19,6 +19,7 @@ import 'package:horizon/presentation/common/usecase/write_local_transaction_usec
 import 'package:horizon/presentation/screens/compose_sweep/bloc/compose_sweep_bloc.dart';
 import 'package:horizon/presentation/screens/compose_sweep/bloc/compose_sweep_state.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 
 // Mock classes
 class MockComposeRepository extends Mock implements ComposeRepository {}
@@ -43,6 +44,8 @@ class MockEstimateXcpFeeRepository extends Mock
     implements EstimateXcpFeeRepository {}
 
 class MockErrorService extends Mock implements ErrorService {}
+
+class MockInMemoryKeyRepository extends Mock implements InMemoryKeyRepository {}
 
 class MockComposeSweepResponse extends Mock implements ComposeSweepResponse {
   @override
@@ -132,6 +135,8 @@ void main() {
     GetIt.I.registerSingleton<ErrorService>(mockErrorService);
 
     bloc = ComposeSweepBloc(
+      passwordRequired: true,
+      inMemoryKeyRepository: MockInMemoryKeyRepository(),
       composeRepository: mockComposeRepository,
       analyticsService: mockAnalyticsService,
       logger: mockLogger,
@@ -314,7 +319,7 @@ void main() {
       'successfully signs and broadcasts transaction',
       build: () {
         when(() => mockSignAndBroadcastTransactionUseCase.call(
-              password: password,
+              decryptionStrategy: Password(password),
               source: any(named: 'source'),
               rawtransaction: txHex,
               onSuccess: any(named: 'onSuccess'),
