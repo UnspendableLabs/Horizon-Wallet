@@ -210,14 +210,14 @@ void main() {
         composeDispenserBloc.state.copyWith(
           feeState: const FeeState.loading(),
           balancesState: const BalancesState.loading(),
-          submitState: const SubmitInitial(),
+          submitState: const FormStep(),
           dialogState: const DialogState.loading(),
         ),
         composeDispenserBloc.state.copyWith(
           balancesState: BalancesState.success(mockBalances),
           feeState: const FeeState.success(mockFeeEstimates),
           dialogState: const DialogState.warning(hasOpenDispensers: false),
-          submitState: const SubmitInitial(),
+          submitState: const FormStep(),
         ),
       ],
     );
@@ -236,14 +236,14 @@ void main() {
         composeDispenserBloc.state.copyWith(
           feeState: const FeeState.loading(),
           balancesState: const BalancesState.loading(),
-          submitState: const SubmitInitial(),
+          submitState: const FormStep(),
           dialogState: const DialogState.loading(),
         ),
         composeDispenserBloc.state.copyWith(
           balancesState: BalancesState.success(mockBalances),
           feeState: const FeeState.success(mockFeeEstimates),
           dialogState: const DialogState.warning(hasOpenDispensers: false),
-          submitState: const SubmitInitial(),
+          submitState: const FormStep(),
         ),
       ],
     );
@@ -262,14 +262,14 @@ void main() {
         composeDispenserBloc.state.copyWith(
           feeState: const FeeState.loading(),
           balancesState: const BalancesState.loading(),
-          submitState: const SubmitInitial(),
+          submitState: const FormStep(),
           dialogState: const DialogState.loading(),
         ),
         composeDispenserBloc.state.copyWith(
           balancesState: BalancesState.success(mockBalances),
           feeState: const FeeState.success(mockFeeEstimates),
           dialogState: const DialogState.warning(hasOpenDispensers: true),
-          submitState: const SubmitInitial(),
+          submitState: const FormStep(),
         ),
       ],
     );
@@ -287,7 +287,7 @@ void main() {
       expect: () => [
         composeDispenserBloc.state.copyWith(
           balancesState: const BalancesState.loading(),
-          submitState: const SubmitInitial(),
+          submitState: const FormStep(),
         ),
         composeDispenserBloc.state.copyWith(
           balancesState: const BalancesState.error('Failed to fetch balances'),
@@ -308,7 +308,7 @@ void main() {
       expect: () => [
         composeDispenserBloc.state.copyWith(
           feeState: const FeeState.loading(),
-          submitState: const SubmitInitial(),
+          submitState: const FormStep(),
         ),
         composeDispenserBloc.state.copyWith(
           feeState: const FeeState.error('Failed to fetch fee estimates'),
@@ -329,7 +329,7 @@ void main() {
         composeDispenserBloc.state.copyWith(
           feeState: const FeeState.loading(),
           balancesState: const BalancesState.loading(),
-          submitState: const SubmitInitial(),
+          submitState: const FormStep(),
           dialogState: const DialogState.loading(),
         ),
         composeDispenserBloc.state.copyWith(
@@ -377,14 +377,12 @@ void main() {
         isA<ComposeDispenserState>().having(
           (state) => state.submitState,
           'submitState',
-          isA<SubmitInitial>().having((s) => s.loading, 'loading', true),
+          isA<FormStep>().having((s) => s.loading, 'loading', true),
         ),
         isA<ComposeDispenserState>().having(
           (state) => state.submitState,
           'submitState',
-          isA<
-                  SubmitComposingTransaction<ComposeDispenserResponseVerbose,
-                      void>>()
+          isA<ReviewStep<ComposeDispenserResponseVerbose, void>>()
               .having((s) => s.composeTransaction, 'composeTransaction',
                   mockComposeDispenserResponseVerbose)
               .having((s) => s.fee, 'fee', 250)
@@ -422,14 +420,12 @@ void main() {
         isA<ComposeDispenserState>().having(
           (state) => state.submitState,
           'submitState',
-          isA<SubmitInitial>().having((s) => s.loading, 'loading', true),
+          isA<FormStep>().having((s) => s.loading, 'loading', true),
         ),
         isA<ComposeDispenserState>().having(
             (state) => state.submitState,
             'submitState',
-            isA<
-                    SubmitComposingTransaction<ComposeDispenserResponseVerbose,
-                        void>>()
+            isA<ReviewStep<ComposeDispenserResponseVerbose, void>>()
                 .having((s) => s.composeTransaction, 'composeTransaction',
                     mockComposeDispenserResponseVerbose)
                 .having((s) => s.fee, 'fee', 250)
@@ -465,12 +461,12 @@ void main() {
         isA<ComposeDispenserState>().having(
           (state) => state.submitState,
           'submitState',
-          isA<SubmitInitial>().having((s) => s.loading, 'loading', true),
+          isA<FormStep>().having((s) => s.loading, 'loading', true),
         ),
         isA<ComposeDispenserState>().having(
           (state) => state.submitState,
           'submitState',
-          isA<SubmitInitial>()
+          isA<FormStep>()
               .having((s) => s.loading, 'loading', false)
               .having((s) => s.error, 'error', 'Compose error'),
         ),
@@ -491,7 +487,7 @@ void main() {
         isA<ComposeDispenserState>().having(
           (state) => state.submitState,
           'submitState',
-          isA<SubmitFinalizing<ComposeDispenserResponseVerbose>>()
+          isA<PasswordStep<ComposeDispenserResponseVerbose>>()
               .having((s) => s.loading, 'loading', false)
               .having((s) => s.error, 'error', null)
               .having((s) => s.composeTransaction, 'composeTransaction',
@@ -534,7 +530,7 @@ void main() {
         return composeDispenserBloc;
       },
       seed: () => composeDispenserBloc.state.copyWith(
-        submitState: SubmitFinalizing<ComposeDispenserResponseVerbose>(
+        submitState: PasswordStep<ComposeDispenserResponseVerbose>(
           loading: false,
           error: null,
           composeTransaction: mockComposeDispenserResponseVerbose,
@@ -547,7 +543,7 @@ void main() {
         isA<ComposeDispenserState>().having(
           (state) => state.submitState,
           'submitState',
-          isA<SubmitFinalizing<ComposeDispenserResponseVerbose>>()
+          isA<PasswordStep<ComposeDispenserResponseVerbose>>()
               .having((s) => s.loading, 'loading', true)
               .having((s) => s.error, 'error', null)
               .having((s) => s.composeTransaction, 'composeTransaction',
@@ -587,7 +583,7 @@ void main() {
         return composeDispenserBloc;
       },
       seed: () => composeDispenserBloc.state.copyWith(
-        submitState: SubmitFinalizing<ComposeDispenserResponseVerbose>(
+        submitState: PasswordStep<ComposeDispenserResponseVerbose>(
           loading: false,
           error: null,
           composeTransaction: mockComposeDispenserResponseVerbose,
@@ -600,7 +596,7 @@ void main() {
         isA<ComposeDispenserState>().having(
           (state) => state.submitState,
           'submitState',
-          isA<SubmitFinalizing<ComposeDispenserResponseVerbose>>()
+          isA<PasswordStep<ComposeDispenserResponseVerbose>>()
               .having((s) => s.loading, 'loading', true)
               .having((s) => s.error, 'error', null)
               .having((s) => s.composeTransaction, 'composeTransaction',
@@ -610,7 +606,7 @@ void main() {
         isA<ComposeDispenserState>().having(
           (state) => state.submitState,
           'submitState',
-          isA<SubmitFinalizing<ComposeDispenserResponseVerbose>>()
+          isA<PasswordStep<ComposeDispenserResponseVerbose>>()
               .having((s) => s.loading, 'loading', false)
               .having((s) => s.error, 'error', 'Signing error')
               .having((s) => s.composeTransaction, 'composeTransaction',

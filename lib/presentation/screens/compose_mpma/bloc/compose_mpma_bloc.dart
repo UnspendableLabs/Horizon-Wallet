@@ -68,7 +68,7 @@ class ComposeMpmaBloc extends ComposeBaseBloc<ComposeMpmaState> {
 
     emit(state.copyWith(
       entries: updatedEntries,
-      submitState: const SubmitInitial(),
+      submitState: const FormStep(),
     ));
   }
 
@@ -84,7 +84,7 @@ class ComposeMpmaBloc extends ComposeBaseBloc<ComposeMpmaState> {
 
     emit(state.copyWith(
       entries: updatedEntries,
-      submitState: const SubmitInitial(),
+      submitState: const FormStep(),
     ));
   }
 
@@ -120,7 +120,7 @@ class ComposeMpmaBloc extends ComposeBaseBloc<ComposeMpmaState> {
 
     emit(state.copyWith(
       entries: updatedEntries,
-      submitState: const SubmitInitial(),
+      submitState: const FormStep(),
       composeSendError: null,
     ));
   }
@@ -148,7 +148,7 @@ class ComposeMpmaBloc extends ComposeBaseBloc<ComposeMpmaState> {
 
     emit(state.copyWith(
       entries: updatedEntries,
-      submitState: const SubmitInitial(),
+      submitState: const FormStep(),
       composeSendError: null,
     ));
   }
@@ -172,7 +172,7 @@ class ComposeMpmaBloc extends ComposeBaseBloc<ComposeMpmaState> {
 
     emit(state.copyWith(
       entries: updatedEntries,
-      submitState: const SubmitInitial(),
+      submitState: const FormStep(),
     ));
   }
 
@@ -186,7 +186,7 @@ class ComposeMpmaBloc extends ComposeBaseBloc<ComposeMpmaState> {
 
     emit(state.copyWith(
       entries: updatedEntries,
-      submitState: const SubmitInitial(),
+      submitState: const FormStep(),
     ));
   }
 
@@ -200,7 +200,7 @@ class ComposeMpmaBloc extends ComposeBaseBloc<ComposeMpmaState> {
   onFetchFormData(event, emit) async {
     emit(state.copyWith(
       balancesState: const BalancesState.loading(),
-      submitState: const SubmitInitial(),
+      submitState: const FormStep(),
     ));
 
     late List<Balance> balances;
@@ -212,7 +212,7 @@ class ComposeMpmaBloc extends ComposeBaseBloc<ComposeMpmaState> {
     } catch (e) {
       emit(state.copyWith(
           balancesState: BalancesState.error(e.toString()),
-          submitState: const SubmitInitial()));
+          submitState: const FormStep()));
       return;
     }
     try {
@@ -220,7 +220,7 @@ class ComposeMpmaBloc extends ComposeBaseBloc<ComposeMpmaState> {
     } catch (e) {
       emit(state.copyWith(
           feeState: FeeState.error(e.toString()),
-          submitState: const SubmitInitial()));
+          submitState: const FormStep()));
       return;
     }
 
@@ -239,14 +239,14 @@ class ComposeMpmaBloc extends ComposeBaseBloc<ComposeMpmaState> {
       entries: updatedEntries,
       balancesState: BalancesState.success(nonBtcBalances),
       feeState: FeeState.success(feeEstimates),
-      submitState: const SubmitInitial(),
+      submitState: const FormStep(),
     ));
   }
 
   @override
   onFinalizeTransaction(event, emit) async {
     emit(state.copyWith(
-        submitState: SubmitFinalizing<ComposeMpmaSendResponse>(
+        submitState: PasswordStep<ComposeMpmaSendResponse>(
             loading: false,
             error: null,
             composeTransaction: event.composeTransaction,
@@ -255,7 +255,7 @@ class ComposeMpmaBloc extends ComposeBaseBloc<ComposeMpmaState> {
 
   @override
   onComposeTransaction(event, emit) async {
-    emit((state).copyWith(submitState: const SubmitInitial(loading: true)));
+    emit((state).copyWith(submitState: const FormStep(loading: true)));
 
     try {
       final source = event.sourceAddress;
@@ -319,7 +319,7 @@ class ComposeMpmaBloc extends ComposeBaseBloc<ComposeMpmaState> {
       );
 
       emit(state.copyWith(
-        submitState: SubmitComposingTransaction<ComposeMpmaSendResponse, void>(
+        submitState: ReviewStep<ComposeMpmaSendResponse, void>(
           composeTransaction: composeResponse,
           fee: composeResponse.btcFee,
           feeRate: feeRate,
@@ -330,10 +330,10 @@ class ComposeMpmaBloc extends ComposeBaseBloc<ComposeMpmaState> {
       ));
     } on ComposeTransactionException catch (e) {
       emit(state.copyWith(
-          submitState: SubmitInitial(loading: false, error: e.message)));
+          submitState: FormStep(loading: false, error: e.message)));
     } catch (e) {
       emit(state.copyWith(
-        submitState: SubmitInitial(
+        submitState: FormStep(
           loading: false,
           error: e is ComposeTransactionException
               ? e.message
@@ -346,16 +346,16 @@ class ComposeMpmaBloc extends ComposeBaseBloc<ComposeMpmaState> {
   @override
   void onSignAndBroadcastTransaction(
       SignAndBroadcastTransactionEvent event, emit) async {
-    if (state.submitState is! SubmitFinalizing<ComposeMpmaSendResponse>) {
+    if (state.submitState is! PasswordStep<ComposeMpmaSendResponse>) {
       return;
     }
 
-    final s = (state.submitState as SubmitFinalizing<ComposeMpmaSendResponse>);
+    final s = (state.submitState as PasswordStep<ComposeMpmaSendResponse>);
     final compose = s.composeTransaction;
     final fee = s.fee;
 
     emit(state.copyWith(
-        submitState: SubmitFinalizing<ComposeMpmaSendResponse>(
+        submitState: PasswordStep<ComposeMpmaSendResponse>(
       loading: true,
       error: null,
       fee: fee,
@@ -380,7 +380,7 @@ class ComposeMpmaBloc extends ComposeBaseBloc<ComposeMpmaState> {
         },
         onError: (msg) {
           emit(state.copyWith(
-              submitState: SubmitFinalizing<ComposeMpmaSendResponse>(
+              submitState: PasswordStep<ComposeMpmaSendResponse>(
             loading: false,
             error: msg,
             fee: fee,

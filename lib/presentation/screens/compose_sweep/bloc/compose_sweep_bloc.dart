@@ -48,7 +48,7 @@ class ComposeSweepBloc extends ComposeBaseBloc<ComposeSweepState> {
     required this.logger,
   }) : super(
             ComposeSweepState(
-              submitState: const SubmitInitial(),
+              submitState: const FormStep(),
               feeOption: FeeOption.Medium(),
               balancesState: const BalancesState.initial(),
               feeState: const FeeState.initial(),
@@ -61,7 +61,7 @@ class ComposeSweepBloc extends ComposeBaseBloc<ComposeSweepState> {
     emit(state.copyWith(
       balancesState: const BalancesState.loading(),
       feeState: const FeeState.loading(),
-      submitState: const SubmitInitial(),
+      submitState: const FormStep(),
       sweepXcpFeeState: const SweepXcpFeeState.loading(),
     ));
 
@@ -99,7 +99,7 @@ class ComposeSweepBloc extends ComposeBaseBloc<ComposeSweepState> {
 
   @override
   void onComposeTransaction(ComposeTransactionEvent event, emit) async {
-    emit((state).copyWith(submitState: const SubmitInitial(loading: true)));
+    emit((state).copyWith(submitState: const FormStep(loading: true)));
     final ComposeSweepEventParams params = event.params;
 
     try {
@@ -121,7 +121,7 @@ class ComposeSweepBloc extends ComposeBaseBloc<ComposeSweepState> {
               composeFn: composeRepository.composeSweep);
 
       emit(state.copyWith(
-          submitState: SubmitComposingTransaction<ComposeSweepResponse, void>(
+          submitState: ReviewStep<ComposeSweepResponse, void>(
         composeTransaction: composeResponse,
         fee: composeResponse.btcFee,
         feeRate: feeRate,
@@ -131,10 +131,10 @@ class ComposeSweepBloc extends ComposeBaseBloc<ComposeSweepState> {
       )));
     } on ComposeTransactionException catch (e) {
       emit(state.copyWith(
-          submitState: SubmitInitial(loading: false, error: e.message)));
+          submitState: FormStep(loading: false, error: e.message)));
     } catch (e) {
       emit(state.copyWith(
-          submitState: SubmitInitial(
+          submitState: FormStep(
               loading: false,
               error: 'An unexpected error occurred: ${e.toString()}')));
     }
@@ -153,7 +153,7 @@ class ComposeSweepBloc extends ComposeBaseBloc<ComposeSweepState> {
   @override
   void onFinalizeTransaction(FinalizeTransactionEvent event, emit) async {
     emit(state.copyWith(
-        submitState: SubmitFinalizing<ComposeSweepResponse>(
+        submitState: PasswordStep<ComposeSweepResponse>(
       loading: false,
       error: null,
       composeTransaction: event.composeTransaction,
@@ -164,16 +164,16 @@ class ComposeSweepBloc extends ComposeBaseBloc<ComposeSweepState> {
   @override
   void onSignAndBroadcastTransaction(
       SignAndBroadcastTransactionEvent event, emit) async {
-    if (state.submitState is! SubmitFinalizing<ComposeSweepResponse>) {
+    if (state.submitState is! PasswordStep<ComposeSweepResponse>) {
       return;
     }
 
-    final s = (state.submitState as SubmitFinalizing<ComposeSweepResponse>);
+    final s = (state.submitState as PasswordStep<ComposeSweepResponse>);
     final compose = s.composeTransaction;
     final fee = s.fee;
 
     emit(state.copyWith(
-        submitState: SubmitFinalizing<ComposeSweepResponse>(
+        submitState: PasswordStep<ComposeSweepResponse>(
       loading: true,
       error: null,
       fee: fee,
@@ -198,7 +198,7 @@ class ComposeSweepBloc extends ComposeBaseBloc<ComposeSweepState> {
         },
         onError: (msg) {
           emit(state.copyWith(
-              submitState: SubmitFinalizing<ComposeSweepResponse>(
+              submitState: PasswordStep<ComposeSweepResponse>(
             loading: false,
             error: msg,
             fee: fee,

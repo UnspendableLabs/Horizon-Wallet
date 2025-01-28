@@ -50,23 +50,22 @@ class ComposeIssuanceBloc extends ComposeBaseBloc<ComposeIssuanceState> {
   final FetchIssuanceFormDataUseCase fetchIssuanceFormDataUseCase;
   final InMemoryKeyRepository inMemoryKeyRepository;
 
-  ComposeIssuanceBloc(
-      {required this.passwordRequired,
-      required this.balanceRepository,
-      required this.composeRepository,
-      required this.transactionService,
-      required this.analyticsService,
-      required this.getFeeEstimatesUseCase,
-      required this.composeTransactionUseCase,
-      required this.signAndBroadcastTransactionUseCase,
-      required this.writelocalTransactionUseCase,
-      required this.logger,
-      required this.fetchIssuanceFormDataUseCase, 
-      required this.inMemoryKeyRepository,
-      })
-      : super(
+  ComposeIssuanceBloc({
+    required this.passwordRequired,
+    required this.balanceRepository,
+    required this.composeRepository,
+    required this.transactionService,
+    required this.analyticsService,
+    required this.getFeeEstimatesUseCase,
+    required this.composeTransactionUseCase,
+    required this.signAndBroadcastTransactionUseCase,
+    required this.writelocalTransactionUseCase,
+    required this.logger,
+    required this.fetchIssuanceFormDataUseCase,
+    required this.inMemoryKeyRepository,
+  }) : super(
           ComposeIssuanceState(
-              submitState: const SubmitInitial(),
+              submitState: const FormStep(),
               feeOption: FeeOption.Medium(),
               balancesState: const BalancesState.initial(),
               feeState: const FeeState.initial(),
@@ -87,7 +86,7 @@ class ComposeIssuanceBloc extends ComposeBaseBloc<ComposeIssuanceState> {
     emit(state.copyWith(
       balancesState: const BalancesState.loading(),
       feeState: const FeeState.loading(),
-      submitState: const SubmitInitial(),
+      submitState: const FormStep(),
     ));
 
     try {
@@ -114,7 +113,7 @@ class ComposeIssuanceBloc extends ComposeBaseBloc<ComposeIssuanceState> {
 
   @override
   void onComposeTransaction(ComposeTransactionEvent event, emit) async {
-    emit((state).copyWith(submitState: const SubmitInitial(loading: true)));
+    emit((state).copyWith(submitState: const FormStep(loading: true)));
 
     try {
       final feeRate = _getFeeRate();
@@ -137,8 +136,8 @@ class ComposeIssuanceBloc extends ComposeBaseBloc<ComposeIssuanceState> {
       );
 
       emit(state.copyWith(
-          submitState: SubmitComposingTransaction<
-              ComposeIssuanceResponseVerbose, ComposeIssuanceEventParams>(
+          submitState: ReviewStep<ComposeIssuanceResponseVerbose,
+              ComposeIssuanceEventParams>(
         composeTransaction: composeResponse,
         fee: composeResponse.btcFee,
         feeRate: feeRate,
@@ -148,10 +147,10 @@ class ComposeIssuanceBloc extends ComposeBaseBloc<ComposeIssuanceState> {
       )));
     } on ComposeTransactionException catch (e) {
       emit(state.copyWith(
-          submitState: SubmitInitial(loading: false, error: e.message)));
+          submitState: FormStep(loading: false, error: e.message)));
     } catch (e) {
       emit(state.copyWith(
-          submitState: SubmitInitial(
+          submitState: FormStep(
               loading: false,
               error: 'An unexpected error occurred: ${e.toString()}')));
     }
@@ -160,7 +159,7 @@ class ComposeIssuanceBloc extends ComposeBaseBloc<ComposeIssuanceState> {
   @override
   void onFinalizeTransaction(FinalizeTransactionEvent event, emit) async {
     emit(state.copyWith(
-        submitState: SubmitFinalizing<ComposeIssuanceResponseVerbose>(
+        submitState: PasswordStep<ComposeIssuanceResponseVerbose>(
       loading: false,
       error: null,
       composeTransaction: event.composeTransaction,
@@ -172,18 +171,17 @@ class ComposeIssuanceBloc extends ComposeBaseBloc<ComposeIssuanceState> {
   void onSignAndBroadcastTransaction(
       SignAndBroadcastTransactionEvent event, emit) async {
     if (passwordRequired) {
-      if (state.submitState
-          is! SubmitFinalizing<ComposeIssuanceResponseVerbose>) {
+      if (state.submitState is! PasswordStep<ComposeIssuanceResponseVerbose>) {
         return;
       }
 
-      final s = (state.submitState
-          as SubmitFinalizing<ComposeIssuanceResponseVerbose>);
+      final s =
+          (state.submitState as PasswordStep<ComposeIssuanceResponseVerbose>);
       final compose = s.composeTransaction;
       final fee = s.fee;
 
       emit(state.copyWith(
-          submitState: SubmitFinalizing<ComposeIssuanceResponseVerbose>(
+          submitState: PasswordStep<ComposeIssuanceResponseVerbose>(
         loading: true,
         error: null,
         fee: fee,
@@ -208,7 +206,7 @@ class ComposeIssuanceBloc extends ComposeBaseBloc<ComposeIssuanceState> {
           },
           onError: (msg) {
             emit(state.copyWith(
-                submitState: SubmitFinalizing<ComposeIssuanceResponseVerbose>(
+                submitState: PasswordStep<ComposeIssuanceResponseVerbose>(
               loading: false,
               error: msg,
               fee: fee,
@@ -216,17 +214,16 @@ class ComposeIssuanceBloc extends ComposeBaseBloc<ComposeIssuanceState> {
             )));
           });
     } else {
-      if (state.submitState is! SubmitComposingTransaction<
-          ComposeIssuanceResponseVerbose, ComposeIssuanceEventParams>) {
+      if (state.submitState is! ReviewStep<ComposeIssuanceResponseVerbose,
+          ComposeIssuanceEventParams>) {
         return;
       }
 
-      final s = (state.submitState as SubmitComposingTransaction<
-          ComposeIssuanceResponseVerbose, ComposeIssuanceEventParams>);
-
+      final s = (state.submitState as ReviewStep<ComposeIssuanceResponseVerbose,
+          ComposeIssuanceEventParams>);
 
       final inMemoryKey = await inMemoryKeyRepository.get();
-           
+
       await signAndBroadcastTransactionUseCase.call(
           decryptionStrategy: InMemoryKey(inMemoryKey!),
           source: s.composeTransaction.params.source,

@@ -57,7 +57,7 @@ class ComposeDispenseBloc extends ComposeBaseBloc<ComposeDispenseState> {
   }) : super(
           ComposeDispenseState(
             feeOption: FeeOption.Medium(),
-            submitState: const SubmitInitial(),
+            submitState: const FormStep(),
             feeState: const FeeState.initial(),
             balancesState: const BalancesState.initial(),
             dispensersState: const DispensersState.initial(),
@@ -117,7 +117,7 @@ class ComposeDispenseBloc extends ComposeBaseBloc<ComposeDispenseState> {
     emit(state.copyWith(
         balancesState: const BalancesState.loading(),
         feeState: const FeeState.loading(),
-        submitState: const SubmitInitial()));
+        submitState: const FormStep()));
 
     logger.warn("fetch form data ${event.initialDispenserAddress}");
 
@@ -158,7 +158,7 @@ class ComposeDispenseBloc extends ComposeBaseBloc<ComposeDispenseState> {
   @override
   onFinalizeTransaction(event, emit) async {
     emit(state.copyWith(
-        submitState: SubmitFinalizing<ComposeDispenseResponse>(
+        submitState: PasswordStep<ComposeDispenseResponse>(
             loading: false,
             error: null,
             composeTransaction: event.composeTransaction,
@@ -167,7 +167,7 @@ class ComposeDispenseBloc extends ComposeBaseBloc<ComposeDispenseState> {
 
   @override
   void onComposeTransaction(ComposeTransactionEvent event, emit) async {
-    emit((state).copyWith(submitState: const SubmitInitial(loading: true)));
+    emit((state).copyWith(submitState: const FormStep(loading: true)));
 
     try {
       // This will throw if no dispensers are found
@@ -195,8 +195,8 @@ class ComposeDispenseBloc extends ComposeBaseBloc<ComposeDispenseState> {
           dispensers: dispensers, quantity: event.params.quantity);
 
       emit(state.copyWith(
-          submitState: SubmitComposingTransaction<ComposeDispenseResponse,
-              List<EstimatedDispense>>(
+          submitState:
+              ReviewStep<ComposeDispenseResponse, List<EstimatedDispense>>(
         composeTransaction: composeResponse,
         fee: composeResponse.btcFee,
         feeRate: feeRate,
@@ -207,15 +207,15 @@ class ComposeDispenseBloc extends ComposeBaseBloc<ComposeDispenseState> {
       )));
     } on FetchOpenDispensersOnAddressException {
       emit(state.copyWith(
-          submitState: const SubmitInitial(
+          submitState: const FormStep(
               loading: false, error: 'No open dispensers found')));
       return;
     } on ComposeTransactionException catch (e, _) {
       emit(state.copyWith(
-          submitState: SubmitInitial(loading: false, error: e.message)));
+          submitState: FormStep(loading: false, error: e.message)));
     } catch (e) {
       emit(state.copyWith(
-          submitState: SubmitInitial(
+          submitState: FormStep(
               loading: false,
               error: 'An unexpected error occurred: ${e.toString()}')));
     }
@@ -234,16 +234,16 @@ class ComposeDispenseBloc extends ComposeBaseBloc<ComposeDispenseState> {
   @override
   void onSignAndBroadcastTransaction(
       SignAndBroadcastTransactionEvent event, emit) async {
-    if (state.submitState is! SubmitFinalizing<ComposeDispenseResponse>) {
+    if (state.submitState is! PasswordStep<ComposeDispenseResponse>) {
       return;
     }
 
-    final s = (state.submitState as SubmitFinalizing<ComposeDispenseResponse>);
+    final s = (state.submitState as PasswordStep<ComposeDispenseResponse>);
     final compose = s.composeTransaction;
     final fee = s.fee;
 
     emit(state.copyWith(
-        submitState: SubmitFinalizing<ComposeDispenseResponse>(
+        submitState: PasswordStep<ComposeDispenseResponse>(
       loading: true,
       error: null,
       fee: fee,
@@ -268,7 +268,7 @@ class ComposeDispenseBloc extends ComposeBaseBloc<ComposeDispenseState> {
         },
         onError: (msg) {
           emit(state.copyWith(
-              submitState: SubmitFinalizing<ComposeDispenseResponse>(
+              submitState: PasswordStep<ComposeDispenseResponse>(
             loading: false,
             error: msg,
             fee: fee,

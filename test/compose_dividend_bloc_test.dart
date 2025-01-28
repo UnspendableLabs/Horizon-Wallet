@@ -154,7 +154,7 @@ void main() {
         composeDividendBloc.state.copyWith(
           balancesState: const BalancesState.loading(),
           feeState: const FeeState.loading(),
-          submitState: const SubmitInitial(),
+          submitState: const FormStep(),
           assetState: const AssetState.loading(),
           dividendXcpFeeState: const DividendXcpFeeState.loading(),
         ),
@@ -182,7 +182,7 @@ void main() {
         composeDividendBloc.state.copyWith(
           balancesState: const BalancesState.loading(),
           feeState: const FeeState.loading(),
-          submitState: const SubmitInitial(),
+          submitState: const FormStep(),
           assetState: const AssetState.loading(),
         ),
         composeDividendBloc.state.copyWith(
@@ -244,7 +244,7 @@ void main() {
         return composeDividendBloc;
       },
       seed: () => composeDividendBloc.state.copyWith(
-        submitState: SubmitFinalizing<ComposeDividendResponse>(
+        submitState: PasswordStep<ComposeDividendResponse>(
           loading: false,
           error: null,
           composeTransaction: mockComposeDividendResponse,
@@ -257,7 +257,7 @@ void main() {
         isA<ComposeDividendState>().having(
           (state) => state.submitState,
           'submitState',
-          isA<SubmitFinalizing<ComposeDividendResponse>>()
+          isA<PasswordStep<ComposeDividendResponse>>()
               .having((s) => s.loading, 'loading', true)
               .having((s) => s.error, 'error', null)
               .having((s) => s.composeTransaction, 'composeTransaction',
@@ -319,12 +319,12 @@ void main() {
         isA<ComposeDividendState>().having(
           (state) => state.submitState,
           'submitState',
-          isA<SubmitInitial>().having((s) => s.loading, 'loading', true),
+          isA<FormStep>().having((s) => s.loading, 'loading', true),
         ),
         isA<ComposeDividendState>().having(
           (state) => state.submitState,
           'submitState',
-          isA<SubmitComposingTransaction<ComposeDividendResponse, void>>()
+          isA<ReviewStep<ComposeDividendResponse, void>>()
               .having((s) => s.composeTransaction, 'composeTransaction',
                   mockComposeDividendResponse)
               .having((s) => s.fee, 'fee', 250)
@@ -367,14 +367,14 @@ void main() {
         isA<ComposeDividendState>().having(
           (state) => state.submitState,
           'submitState',
-          isA<SubmitInitial>()
+          isA<FormStep>()
               .having((s) => s.loading, 'loading', true)
               .having((s) => s.error, 'error', null),
         ),
         isA<ComposeDividendState>().having(
           (state) => state.submitState,
           'submitState',
-          isA<SubmitInitial>()
+          isA<FormStep>()
               .having((s) => s.loading, 'loading', false)
               .having((s) => s.error, 'error', 'Failed to compose transaction'),
         ),

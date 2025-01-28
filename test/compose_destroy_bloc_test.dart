@@ -174,7 +174,7 @@ void main() {
         composeDestroyBloc.state.copyWith(
           balancesState: const BalancesState.loading(),
           feeState: const FeeState.loading(),
-          submitState: const SubmitInitial(),
+          submitState: const FormStep(),
         ),
         composeDestroyBloc.state.copyWith(
           balancesState: BalancesState.success([mockBalance]),
@@ -199,7 +199,7 @@ void main() {
         composeDestroyBloc.state.copyWith(
           balancesState: const BalancesState.loading(),
           feeState: const FeeState.loading(),
-          submitState: const SubmitInitial(),
+          submitState: const FormStep(),
         ),
         composeDestroyBloc.state.copyWith(
           balancesState:
@@ -258,12 +258,12 @@ void main() {
         isA<ComposeDestroyState>().having(
           (state) => state.submitState,
           'submitState',
-          isA<SubmitInitial>().having((s) => s.loading, 'loading', true),
+          isA<FormStep>().having((s) => s.loading, 'loading', true),
         ),
         isA<ComposeDestroyState>().having(
           (state) => state.submitState,
           'submitState',
-          isA<SubmitComposingTransaction<ComposeDestroyResponse, void>>()
+          isA<ReviewStep<ComposeDestroyResponse, void>>()
               .having((s) => s.composeTransaction, 'composeTransaction',
                   mockComposeDestroyResponse)
               .having((s) => s.fee, 'fee', 250)
@@ -307,7 +307,7 @@ void main() {
         return composeDestroyBloc;
       },
       seed: () => composeDestroyBloc.state.copyWith(
-        submitState: SubmitFinalizing<ComposeDestroyResponse>(
+        submitState: PasswordStep<ComposeDestroyResponse>(
           loading: false,
           error: null,
           composeTransaction: mockComposeDestroyResponse,
@@ -321,7 +321,7 @@ void main() {
         isA<ComposeDestroyState>().having(
           (state) => state.submitState,
           'submitState',
-          isA<SubmitFinalizing<ComposeDestroyResponse>>()
+          isA<PasswordStep<ComposeDestroyResponse>>()
               .having((s) => s.loading, 'loading', true)
               .having((s) => s.error, 'error', null)
               .having((s) => s.composeTransaction, 'composeTransaction',
@@ -361,7 +361,7 @@ void main() {
         return composeDestroyBloc;
       },
       seed: () => composeDestroyBloc.state.copyWith(
-        submitState: SubmitFinalizing<ComposeDestroyResponse>(
+        submitState: PasswordStep<ComposeDestroyResponse>(
           loading: false,
           error: null,
           composeTransaction: mockComposeDestroyResponse,
@@ -375,7 +375,7 @@ void main() {
         isA<ComposeDestroyState>().having(
           (state) => state.submitState,
           'submitState',
-          isA<SubmitFinalizing<ComposeDestroyResponse>>()
+          isA<PasswordStep<ComposeDestroyResponse>>()
               .having((s) => s.loading, 'loading', true)
               .having((s) => s.error, 'error', null)
               .having((s) => s.composeTransaction, 'composeTransaction',
@@ -385,7 +385,7 @@ void main() {
         isA<ComposeDestroyState>().having(
           (state) => state.submitState,
           'submitState',
-          isA<SubmitFinalizing<ComposeDestroyResponse>>()
+          isA<PasswordStep<ComposeDestroyResponse>>()
               .having((s) => s.loading, 'loading', false)
               .having((s) => s.error, 'error', 'Signing error')
               .having((s) => s.composeTransaction, 'composeTransaction',

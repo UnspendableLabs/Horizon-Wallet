@@ -41,7 +41,7 @@ class ComposeDetachUtxoBloc extends ComposeBaseBloc<ComposeDetachUtxoState> {
     required this.writelocalTransactionUseCase,
   }) : super(
           ComposeDetachUtxoState(
-            submitState: const SubmitInitial(),
+            submitState: const FormStep(),
             feeOption: FeeOption.Medium(),
             balancesState: const BalancesState.initial(),
             feeState: const FeeState.initial(),
@@ -54,7 +54,7 @@ class ComposeDetachUtxoBloc extends ComposeBaseBloc<ComposeDetachUtxoState> {
     emit(state.copyWith(
       balancesState: const BalancesState.loading(),
       feeState: const FeeState.loading(),
-      submitState: const SubmitInitial(),
+      submitState: const FormStep(),
     ));
 
     try {
@@ -96,7 +96,7 @@ class ComposeDetachUtxoBloc extends ComposeBaseBloc<ComposeDetachUtxoState> {
 
   @override
   void onComposeTransaction(ComposeTransactionEvent event, emit) async {
-    emit((state).copyWith(submitState: const SubmitInitial(loading: true)));
+    emit((state).copyWith(submitState: const FormStep(loading: true)));
 
     try {
       final feeRate = _getFeeRate();
@@ -113,8 +113,7 @@ class ComposeDetachUtxoBloc extends ComposeBaseBloc<ComposeDetachUtxoState> {
               composeFn: composeRepository.composeDetachUtxo);
 
       emit(state.copyWith(
-          submitState:
-              SubmitComposingTransaction<ComposeDetachUtxoResponse, void>(
+          submitState: ReviewStep<ComposeDetachUtxoResponse, void>(
         composeTransaction: composeResponse,
         fee: composeResponse.btcFee,
         feeRate: feeRate,
@@ -124,10 +123,10 @@ class ComposeDetachUtxoBloc extends ComposeBaseBloc<ComposeDetachUtxoState> {
       )));
     } on ComposeTransactionException catch (e) {
       emit(state.copyWith(
-          submitState: SubmitInitial(loading: false, error: e.message)));
+          submitState: FormStep(loading: false, error: e.message)));
     } catch (e) {
       emit(state.copyWith(
-          submitState: SubmitInitial(
+          submitState: FormStep(
               loading: false,
               error: 'An unexpected error occurred: ${e.toString()}')));
     }
@@ -136,7 +135,7 @@ class ComposeDetachUtxoBloc extends ComposeBaseBloc<ComposeDetachUtxoState> {
   @override
   void onFinalizeTransaction(FinalizeTransactionEvent event, emit) async {
     emit(state.copyWith(
-        submitState: SubmitFinalizing<ComposeDetachUtxoResponse>(
+        submitState: PasswordStep<ComposeDetachUtxoResponse>(
       loading: false,
       error: null,
       composeTransaction: event.composeTransaction,
@@ -147,17 +146,16 @@ class ComposeDetachUtxoBloc extends ComposeBaseBloc<ComposeDetachUtxoState> {
   @override
   void onSignAndBroadcastTransaction(
       SignAndBroadcastTransactionEvent event, emit) async {
-    if (state.submitState is! SubmitFinalizing<ComposeDetachUtxoResponse>) {
+    if (state.submitState is! PasswordStep<ComposeDetachUtxoResponse>) {
       return;
     }
 
-    final s =
-        (state.submitState as SubmitFinalizing<ComposeDetachUtxoResponse>);
+    final s = (state.submitState as PasswordStep<ComposeDetachUtxoResponse>);
     final compose = s.composeTransaction;
     final fee = s.fee;
 
     emit(state.copyWith(
-        submitState: SubmitFinalizing<ComposeDetachUtxoResponse>(
+        submitState: PasswordStep<ComposeDetachUtxoResponse>(
       loading: true,
       error: null,
       fee: fee,
@@ -182,7 +180,7 @@ class ComposeDetachUtxoBloc extends ComposeBaseBloc<ComposeDetachUtxoState> {
         },
         onError: (msg) {
           emit(state.copyWith(
-              submitState: SubmitFinalizing<ComposeDetachUtxoResponse>(
+              submitState: PasswordStep<ComposeDetachUtxoResponse>(
             loading: false,
             error: msg,
             fee: fee,

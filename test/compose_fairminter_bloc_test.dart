@@ -165,7 +165,7 @@ void main() {
           balancesState: const BalancesState.loading(),
           feeState: const FeeState.loading(),
           assetState: const AssetState.loading(),
-          submitState: const SubmitInitial(),
+          submitState: const FormStep(),
           fairmintersState: const FairmintersState.loading(),
         ),
         composeFairminterBloc.state.copyWith(
@@ -192,7 +192,7 @@ void main() {
           balancesState: const BalancesState.loading(),
           feeState: const FeeState.loading(),
           assetState: const AssetState.loading(),
-          submitState: const SubmitInitial(),
+          submitState: const FormStep(),
         ),
         composeFairminterBloc.state.copyWith(
           feeState: const FeeState.error('Failed to fetch fee estimates'),
@@ -232,7 +232,7 @@ void main() {
         return composeFairminterBloc;
       },
       seed: () => composeFairminterBloc.state.copyWith(
-        submitState: SubmitFinalizing<ComposeFairminterResponse>(
+        submitState: PasswordStep<ComposeFairminterResponse>(
           loading: false,
           error: null,
           composeTransaction: mockComposeFairminterResponseVerbose,
@@ -245,7 +245,7 @@ void main() {
         isA<ComposeFairminterState>().having(
           (state) => state.submitState,
           'submitState',
-          isA<SubmitFinalizing<ComposeFairminterResponse>>()
+          isA<PasswordStep<ComposeFairminterResponse>>()
               .having((s) => s.loading, 'loading', true)
               .having((s) => s.error, 'error', null)
               .having((s) => s.composeTransaction, 'composeTransaction',
@@ -371,7 +371,7 @@ void main() {
           balancesState: const BalancesState.loading(),
           feeState: const FeeState.loading(),
           assetState: const AssetState.loading(),
-          submitState: const SubmitInitial(),
+          submitState: const FormStep(),
           fairmintersState: const FairmintersState.loading(),
         ),
         composeFairminterBloc.state.copyWith(

@@ -188,10 +188,10 @@ class ComposeOrderPageState extends State<ComposeOrderPage> {
       }
     }, builder: (context, state) {
       return switch (state.submitState) {
-        SubmitInitial(error: var error) => OpenOrderForm(
+        FormStep(error: var error) => OpenOrderForm(
             submissionError: error,
           ),
-        SubmitComposingTransaction(
+        ReviewStep(
           composeTransaction: var composeTransaction,
           fee: var fee,
           feeRate: var feeRate,
@@ -239,17 +239,17 @@ class ComposeOrderPageState extends State<ComposeOrderPage> {
               onBack: () {
                 onConfirmationBack();
               },
-            onSubmit: ( formKey) {
-              // we call submit with empty password since this will only every 
-              // be called when PW not required
-              context
-                  .read<ComposeOrderBloc>()
-                  .add(SignAndBroadcastTransactionEvent(password: ""));
-            },
+              onSubmit: (formKey) {
+                // we call submit with empty password since this will only every
+                // be called when PW not required
+                context
+                    .read<ComposeOrderBloc>()
+                    .add(SignAndBroadcastTransactionEvent(password: ""));
+              },
               onContinue: (composeTransaction, fee, formKey) => {
                     onConfirmationContinue(composeTransaction, fee, formKey),
                   }),
-        SubmitFinalizing(
+        PasswordStep(
           composeTransaction: var composeTransaction,
           fee: var fee,
           error: var error,

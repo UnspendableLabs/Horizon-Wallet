@@ -19,8 +19,7 @@ class ComposeBasePage<B extends ComposeBaseBloc<S>, S extends ComposeStateBase>
   final void Function(FeeOption) onFeeChange;
   final void Function() onInitialCancel;
   final void Function(GlobalKey<FormState>) onInitialSubmit;
-  final List<Widget> Function(
-          SubmitComposingTransaction, dynamic, GlobalKey<FormState>)
+  final List<Widget> Function(ReviewStep, dynamic, GlobalKey<FormState>)
       buildConfirmationFormFields;
   final void Function() onConfirmationBack;
   final void Function(dynamic, int, GlobalKey<FormState>)
@@ -76,7 +75,7 @@ class ComposeBasePageState<B extends ComposeBaseBloc<S>,
       },
       builder: (context, state) {
         return switch (state.submitState) {
-          SubmitInitial(error: var error, loading: var loading) =>
+          FormStep(error: var error, loading: var loading) =>
             ComposeBaseInitialPage(
               state: state,
               error: error,
@@ -92,7 +91,7 @@ class ComposeBasePageState<B extends ComposeBaseBloc<S>,
               padding: const EdgeInsets.all(8.0),
               child: SelectableText('An error occurred: $msg'),
             ),
-          SubmitComposingTransaction(
+          ReviewStep(
             composeTransaction: var composeTransaction,
             fee: var fee,
             feeRate: var feeRate,
@@ -107,7 +106,7 @@ class ComposeBasePageState<B extends ComposeBaseBloc<S>,
               adjustedVirtualSize: adjustedVirtualSize,
               buildConfirmationFormFields: (composeTransaction, formKey) =>
                   widget.buildConfirmationFormFields(
-                      state.submitState as SubmitComposingTransaction,
+                      state.submitState as ReviewStep,
                       composeTransaction,
                       formKey),
               onBack: widget.onConfirmationBack,
@@ -115,7 +114,7 @@ class ComposeBasePageState<B extends ComposeBaseBloc<S>,
                   .onConfirmationContinue(composeTransaction, fee, formKey),
               onSubmit: (formKey) => widget.onFinalizeSubmit("", formKey),
             ),
-          SubmitFinalizing(
+          PasswordStep(
             composeTransaction: var composeTransaction,
             fee: var fee,
             error: var error,

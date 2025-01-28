@@ -55,7 +55,7 @@ class ComposeSendBloc extends ComposeBaseBloc<ComposeSendState> {
   }) : super(
           ComposeSendState(
             feeOption: FeeOption.Medium(),
-            submitState: const SubmitInitial(),
+            submitState: const FormStep(),
             feeState: const FeeState.initial(),
             balancesState: const BalancesState.initial(),
             maxValue: const MaxValueState.initial(),
@@ -74,7 +74,7 @@ class ComposeSendBloc extends ComposeBaseBloc<ComposeSendState> {
   _onChangeAsset(event, emit) async {
     final asset = event.asset;
     emit(state.copyWith(
-        submitState: const SubmitInitial(),
+        submitState: const FormStep(),
         asset: asset,
         sendMax: false,
         quantity: "",
@@ -85,7 +85,7 @@ class ComposeSendBloc extends ComposeBaseBloc<ComposeSendState> {
   _onChangeDestination(event, emit) async {
     final destination = event.value;
     emit(state.copyWith(
-        submitState: const SubmitInitial(),
+        submitState: const FormStep(),
         destination: destination,
         composeSendError: null));
   }
@@ -94,7 +94,7 @@ class ComposeSendBloc extends ComposeBaseBloc<ComposeSendState> {
     final quantity = event.value;
 
     emit(state.copyWith(
-        submitState: const SubmitInitial(),
+        submitState: const FormStep(),
         quantity: quantity,
         sendMax: false,
         composeSendError: null,
@@ -111,9 +111,7 @@ class ComposeSendBloc extends ComposeBaseBloc<ComposeSendState> {
 
     final value = event.value;
     emit(state.copyWith(
-        submitState: const SubmitInitial(),
-        sendMax: value,
-        composeSendError: null));
+        submitState: const FormStep(), sendMax: value, composeSendError: null));
 
     if (!value) {
       emit(state.copyWith(maxValue: const MaxValueState.initial()));
@@ -166,7 +164,7 @@ class ComposeSendBloc extends ComposeBaseBloc<ComposeSendState> {
     if (state.destination == null) {
       emit(state.copyWith(
           sendMax: false,
-          submitState: const SubmitInitial(),
+          submitState: const FormStep(),
           composeSendError: "Set destination",
           maxValue: const MaxValueState.initial()));
       return;
@@ -207,7 +205,7 @@ class ComposeSendBloc extends ComposeBaseBloc<ComposeSendState> {
   onFetchFormData(event, emit) async {
     emit(state.copyWith(
       balancesState: const BalancesState.loading(),
-      submitState: const SubmitInitial(),
+      submitState: const FormStep(),
       source: event.currentAddress, // TODO: setting address this way is smell
     ));
 
@@ -221,7 +219,7 @@ class ComposeSendBloc extends ComposeBaseBloc<ComposeSendState> {
     } catch (e) {
       emit(state.copyWith(
           balancesState: BalancesState.error(e.toString()),
-          submitState: const SubmitInitial()));
+          submitState: const FormStep()));
       return;
     }
     try {
@@ -229,20 +227,20 @@ class ComposeSendBloc extends ComposeBaseBloc<ComposeSendState> {
     } catch (e) {
       emit(state.copyWith(
           feeState: FeeState.error(e.toString()),
-          submitState: const SubmitInitial()));
+          submitState: const FormStep()));
       return;
     }
 
     emit(state.copyWith(
         balancesState: BalancesState.success(balances),
         feeState: FeeState.success(feeEstimates),
-        submitState: const SubmitInitial()));
+        submitState: const FormStep()));
   }
 
   @override
   onFinalizeTransaction(event, emit) async {
     emit(state.copyWith(
-        submitState: SubmitFinalizing<ComposeSendResponse>(
+        submitState: PasswordStep<ComposeSendResponse>(
             loading: false,
             error: null,
             composeTransaction: event.composeTransaction,
@@ -251,7 +249,7 @@ class ComposeSendBloc extends ComposeBaseBloc<ComposeSendState> {
 
   @override
   onComposeTransaction(event, emit) async {
-    emit((state).copyWith(submitState: const SubmitInitial(loading: true)));
+    emit((state).copyWith(submitState: const FormStep(loading: true)));
 
     try {
       final feeRate = _getFeeRate();
@@ -275,7 +273,7 @@ class ComposeSendBloc extends ComposeBaseBloc<ComposeSendState> {
       );
 
       emit(state.copyWith(
-          submitState: SubmitComposingTransaction<ComposeSendResponse, void>(
+          submitState: ReviewStep<ComposeSendResponse, void>(
         composeTransaction: composeResponse,
         fee: composeResponse.btcFee,
         feeRate: feeRate,
@@ -285,10 +283,10 @@ class ComposeSendBloc extends ComposeBaseBloc<ComposeSendState> {
       )));
     } on ComposeTransactionException catch (e) {
       emit(state.copyWith(
-          submitState: SubmitInitial(loading: false, error: e.message)));
+          submitState: FormStep(loading: false, error: e.message)));
     } catch (e) {
       emit(state.copyWith(
-          submitState: SubmitInitial(
+          submitState: FormStep(
               loading: false,
               error: e is ComposeTransactionException
                   ? e.message
@@ -299,16 +297,16 @@ class ComposeSendBloc extends ComposeBaseBloc<ComposeSendState> {
   @override
   void onSignAndBroadcastTransaction(
       SignAndBroadcastTransactionEvent event, emit) async {
-    if (state.submitState is! SubmitFinalizing<ComposeSendResponse>) {
+    if (state.submitState is! PasswordStep<ComposeSendResponse>) {
       return;
     }
 
-    final s = (state.submitState as SubmitFinalizing<ComposeSendResponse>);
+    final s = (state.submitState as PasswordStep<ComposeSendResponse>);
     final compose = s.composeTransaction;
     final fee = s.fee;
 
     emit(state.copyWith(
-        submitState: SubmitFinalizing<ComposeSendResponse>(
+        submitState: PasswordStep<ComposeSendResponse>(
       loading: true,
       error: null,
       fee: fee,
@@ -333,7 +331,7 @@ class ComposeSendBloc extends ComposeBaseBloc<ComposeSendState> {
         },
         onError: (msg) {
           emit(state.copyWith(
-              submitState: SubmitFinalizing<ComposeSendResponse>(
+              submitState: PasswordStep<ComposeSendResponse>(
             loading: false,
             error: msg,
             fee: fee,

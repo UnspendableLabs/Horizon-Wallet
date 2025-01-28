@@ -43,7 +43,7 @@ class ComposeMoveToUtxoBloc extends ComposeBaseBloc<ComposeMoveToUtxoState> {
     required this.writelocalTransactionUseCase,
   }) : super(
           ComposeMoveToUtxoState(
-            submitState: const SubmitInitial(),
+            submitState: const FormStep(),
             feeOption: FeeOption.Medium(),
             balancesState: const BalancesState.initial(),
             feeState: const FeeState.initial(),
@@ -57,7 +57,7 @@ class ComposeMoveToUtxoBloc extends ComposeBaseBloc<ComposeMoveToUtxoState> {
     emit(state.copyWith(
       balancesState: const BalancesState.loading(),
       feeState: const FeeState.loading(),
-      submitState: const SubmitInitial(),
+      submitState: const FormStep(),
     ));
 
     try {
@@ -98,7 +98,7 @@ class ComposeMoveToUtxoBloc extends ComposeBaseBloc<ComposeMoveToUtxoState> {
 
   @override
   void onComposeTransaction(ComposeTransactionEvent event, emit) async {
-    emit((state).copyWith(submitState: const SubmitInitial(loading: true)));
+    emit((state).copyWith(submitState: const FormStep(loading: true)));
 
     try {
       final feeRate = _getFeeRate();
@@ -115,8 +115,7 @@ class ComposeMoveToUtxoBloc extends ComposeBaseBloc<ComposeMoveToUtxoState> {
               composeFn: composeRepository.composeMoveToUtxo);
 
       emit(state.copyWith(
-          submitState:
-              SubmitComposingTransaction<ComposeMoveToUtxoResponse, void>(
+          submitState: ReviewStep<ComposeMoveToUtxoResponse, void>(
         composeTransaction: composeResponse,
         fee: composeResponse.btcFee,
         feeRate: feeRate,
@@ -126,10 +125,10 @@ class ComposeMoveToUtxoBloc extends ComposeBaseBloc<ComposeMoveToUtxoState> {
       )));
     } on ComposeTransactionException catch (e) {
       emit(state.copyWith(
-          submitState: SubmitInitial(loading: false, error: e.message)));
+          submitState: FormStep(loading: false, error: e.message)));
     } catch (e) {
       emit(state.copyWith(
-          submitState: SubmitInitial(
+          submitState: FormStep(
               loading: false,
               error: 'An unexpected error occurred: ${e.toString()}')));
     }
@@ -138,7 +137,7 @@ class ComposeMoveToUtxoBloc extends ComposeBaseBloc<ComposeMoveToUtxoState> {
   @override
   void onFinalizeTransaction(FinalizeTransactionEvent event, emit) async {
     emit(state.copyWith(
-        submitState: SubmitFinalizing<ComposeMoveToUtxoResponse>(
+        submitState: PasswordStep<ComposeMoveToUtxoResponse>(
       loading: false,
       error: null,
       composeTransaction: event.composeTransaction,
@@ -149,17 +148,16 @@ class ComposeMoveToUtxoBloc extends ComposeBaseBloc<ComposeMoveToUtxoState> {
   @override
   void onSignAndBroadcastTransaction(
       SignAndBroadcastTransactionEvent event, emit) async {
-    if (state.submitState is! SubmitFinalizing<ComposeMoveToUtxoResponse>) {
+    if (state.submitState is! PasswordStep<ComposeMoveToUtxoResponse>) {
       return;
     }
 
-    final s =
-        (state.submitState as SubmitFinalizing<ComposeMoveToUtxoResponse>);
+    final s = (state.submitState as PasswordStep<ComposeMoveToUtxoResponse>);
     final compose = s.composeTransaction;
     final fee = s.fee;
 
     emit(state.copyWith(
-        submitState: SubmitFinalizing<ComposeMoveToUtxoResponse>(
+        submitState: PasswordStep<ComposeMoveToUtxoResponse>(
       loading: true,
       error: null,
       fee: fee,
@@ -184,7 +182,7 @@ class ComposeMoveToUtxoBloc extends ComposeBaseBloc<ComposeMoveToUtxoState> {
         },
         onError: (msg) {
           emit(state.copyWith(
-              submitState: SubmitFinalizing<ComposeMoveToUtxoResponse>(
+              submitState: PasswordStep<ComposeMoveToUtxoResponse>(
             loading: false,
             error: msg,
             fee: fee,

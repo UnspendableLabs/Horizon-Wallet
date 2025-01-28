@@ -176,10 +176,10 @@ class ComposeCancelPageState extends State<ComposeCancelPage> {
       }
     }, builder: (context, state) {
       return switch (state.submitState) {
-        SubmitInitial(error: var error) => CancelOrderForm(
+        FormStep(error: var error) => CancelOrderForm(
             submissionError: error,
           ),
-        SubmitComposingTransaction(
+        ReviewStep(
           composeTransaction: var composeTransaction,
           fee: var fee,
           feeRate: var feeRate,
@@ -217,7 +217,7 @@ class ComposeCancelPageState extends State<ComposeCancelPage> {
               onContinue: (composeTransaction, fee, formKey) => {
                     onConfirmationContinue(composeTransaction, fee, formKey),
                   }),
-        SubmitFinalizing(
+        PasswordStep(
           composeTransaction: var composeTransaction,
           fee: var fee,
           error: var error,

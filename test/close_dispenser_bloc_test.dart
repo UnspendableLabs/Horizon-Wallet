@@ -232,7 +232,7 @@ void main() {
           feeState: const FeeState.loading(),
           balancesState: const BalancesState.loading(),
           dispensersState: const DispenserState.loading(),
-          submitState: const SubmitInitial(),
+          submitState: const FormStep(),
         ),
         closeDispenserBloc.state.copyWith(
           feeState: const FeeState.success(mockFeeEstimates),
@@ -255,7 +255,7 @@ void main() {
       expect: () => [
         closeDispenserBloc.state.copyWith(
           dispensersState: const DispenserState.loading(),
-          submitState: const SubmitInitial(),
+          submitState: const FormStep(),
         ),
         closeDispenserBloc.state.copyWith(
           dispensersState:
@@ -278,7 +278,7 @@ void main() {
       expect: () => [
         closeDispenserBloc.state.copyWith(
           feeState: const FeeState.loading(),
-          submitState: const SubmitInitial(),
+          submitState: const FormStep(),
         ),
         closeDispenserBloc.state.copyWith(
           feeState: const FeeState.error('Failed to fetch fee estimates'),
@@ -300,7 +300,7 @@ void main() {
           balancesState: const BalancesState.loading(),
           feeState: const FeeState.loading(),
           dispensersState: const DispenserState.loading(),
-          submitState: const SubmitInitial(),
+          submitState: const FormStep(),
         ),
         closeDispenserBloc.state.copyWith(
           feeState: const FeeState.error(
@@ -347,14 +347,12 @@ void main() {
         isA<CloseDispenserState>().having(
           (state) => state.submitState,
           'submitState',
-          isA<SubmitInitial>().having((s) => s.loading, 'loading', true),
+          isA<FormStep>().having((s) => s.loading, 'loading', true),
         ),
         isA<CloseDispenserState>().having(
           (state) => state.submitState,
           'submitState',
-          isA<
-                  SubmitComposingTransaction<ComposeDispenserResponseVerbose,
-                      void>>()
+          isA<ReviewStep<ComposeDispenserResponseVerbose, void>>()
               .having((s) => s.composeTransaction, 'composeTransaction',
                   mockComposeDispenserResponseVerbose)
               .having((s) => s.fee, 'fee', 250)
@@ -392,14 +390,12 @@ void main() {
         isA<CloseDispenserState>().having(
           (state) => state.submitState,
           'submitState',
-          isA<SubmitInitial>().having((s) => s.loading, 'loading', true),
+          isA<FormStep>().having((s) => s.loading, 'loading', true),
         ),
         isA<CloseDispenserState>().having(
             (state) => state.submitState,
             'submitState',
-            isA<
-                    SubmitComposingTransaction<ComposeDispenserResponseVerbose,
-                        void>>()
+            isA<ReviewStep<ComposeDispenserResponseVerbose, void>>()
                 .having((s) => s.composeTransaction, 'composeTransaction',
                     mockComposeDispenserResponseVerbose)
                 .having((s) => s.fee, 'fee', 250)
@@ -435,12 +431,12 @@ void main() {
         isA<CloseDispenserState>().having(
           (state) => state.submitState,
           'submitState',
-          isA<SubmitInitial>().having((s) => s.loading, 'loading', true),
+          isA<FormStep>().having((s) => s.loading, 'loading', true),
         ),
         isA<CloseDispenserState>().having(
           (state) => state.submitState,
           'submitState',
-          isA<SubmitInitial>()
+          isA<FormStep>()
               .having((s) => s.loading, 'loading', false)
               .having((s) => s.error, 'error', 'Compose error'),
         ),
@@ -461,7 +457,7 @@ void main() {
         isA<CloseDispenserState>().having(
           (state) => state.submitState,
           'submitState',
-          isA<SubmitFinalizing<ComposeDispenserResponseVerbose>>()
+          isA<PasswordStep<ComposeDispenserResponseVerbose>>()
               .having((s) => s.loading, 'loading', false)
               .having((s) => s.error, 'error', null)
               .having((s) => s.composeTransaction, 'composeTransaction',
@@ -531,7 +527,7 @@ void main() {
         feeState: const FeeState.initial(),
         balancesState: const BalancesState.initial(),
         feeOption: FeeOption.Medium(),
-        submitState: SubmitFinalizing<ComposeDispenserResponseVerbose>(
+        submitState: PasswordStep<ComposeDispenserResponseVerbose>(
           loading: false,
           error: null,
           composeTransaction: mockComposeDispenserResponseVerbose,
@@ -548,7 +544,7 @@ void main() {
         isA<CloseDispenserState>().having(
           (state) => state.submitState,
           'submitState',
-          isA<SubmitFinalizing<ComposeDispenserResponseVerbose>>()
+          isA<PasswordStep<ComposeDispenserResponseVerbose>>()
               .having((s) => s.loading, 'loading', true)
               .having((s) => s.error, 'error', null)
               .having((s) => s.composeTransaction, 'composeTransaction',
@@ -616,7 +612,7 @@ void main() {
         feeState: const FeeState.initial(),
         balancesState: const BalancesState.initial(),
         feeOption: FeeOption.Medium(),
-        submitState: SubmitFinalizing<ComposeDispenserResponseVerbose>(
+        submitState: PasswordStep<ComposeDispenserResponseVerbose>(
           loading: false,
           error: null,
           composeTransaction: mockComposeDispenserResponseVerbose,
@@ -631,7 +627,7 @@ void main() {
         isA<CloseDispenserState>().having(
           (state) => state.submitState,
           'submitState',
-          isA<SubmitFinalizing<ComposeDispenserResponseVerbose>>()
+          isA<PasswordStep<ComposeDispenserResponseVerbose>>()
               .having((s) => s.loading, 'loading', true)
               .having((s) => s.error, 'error', null)
               .having((s) => s.composeTransaction, 'composeTransaction',
@@ -641,7 +637,7 @@ void main() {
         isA<CloseDispenserState>().having(
           (state) => state.submitState,
           'submitState',
-          isA<SubmitFinalizing<ComposeDispenserResponseVerbose>>()
+          isA<PasswordStep<ComposeDispenserResponseVerbose>>()
               .having((s) => s.loading, 'loading', false)
               .having((s) => s.error, 'error', 'Signing error')
               .having((s) => s.composeTransaction, 'composeTransaction',

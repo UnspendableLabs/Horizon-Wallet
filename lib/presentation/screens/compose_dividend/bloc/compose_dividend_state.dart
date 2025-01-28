@@ -26,7 +26,7 @@ class ComposeDividendState with _$ComposeDividendState, ComposeStateBase {
         feeState: const FeeState.initial(),
         balancesState: const BalancesState.initial(),
         feeOption: Medium(),
-        submitState: const SubmitInitial(),
+        submitState: const FormStep(),
         assetState: const AssetState.initial(),
         dividendXcpFeeState: const DividendXcpFeeState.initial(),
       );

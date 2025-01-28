@@ -54,7 +54,7 @@ class ComposeDispenserBloc extends ComposeBaseBloc<ComposeDispenserState> {
     required this.writelocalTransactionUseCase,
   }) : super(
           ComposeDispenserState(
-            submitState: const SubmitInitial(),
+            submitState: const FormStep(),
             feeOption: FeeOption.Medium(),
             balancesState: const BalancesState.initial(),
             feeState: const FeeState.initial(),
@@ -131,7 +131,7 @@ class ComposeDispenserBloc extends ComposeBaseBloc<ComposeDispenserState> {
         balancesState: const BalancesState.loading(),
         feeState: const FeeState.loading(),
         dialogState: const DialogState.loading(),
-        submitState: const SubmitInitial()));
+        submitState: const FormStep()));
 
     try {
       final (balances, feeEstimates, dispensers) =
@@ -177,7 +177,7 @@ class ComposeDispenserBloc extends ComposeBaseBloc<ComposeDispenserState> {
 
   @override
   void onComposeTransaction(ComposeTransactionEvent event, emit) async {
-    emit((state).copyWith(submitState: const SubmitInitial(loading: true)));
+    emit((state).copyWith(submitState: const FormStep(loading: true)));
 
     try {
       final feeRate = _getFeeRate();
@@ -200,8 +200,7 @@ class ComposeDispenserBloc extends ComposeBaseBloc<ComposeDispenserState> {
               composeFn: composeRepository.composeDispenserVerbose);
 
       emit(state.copyWith(
-          submitState:
-              SubmitComposingTransaction<ComposeDispenserResponseVerbose, void>(
+          submitState: ReviewStep<ComposeDispenserResponseVerbose, void>(
         composeTransaction: composeResponse,
         fee: composeResponse.btcFee,
         feeRate: feeRate,
@@ -211,10 +210,10 @@ class ComposeDispenserBloc extends ComposeBaseBloc<ComposeDispenserState> {
       )));
     } on ComposeTransactionException catch (e) {
       emit(state.copyWith(
-          submitState: SubmitInitial(loading: false, error: e.message)));
+          submitState: FormStep(loading: false, error: e.message)));
     } catch (e) {
       emit(state.copyWith(
-          submitState: SubmitInitial(
+          submitState: FormStep(
               loading: false,
               error: 'An unexpected error occurred: ${e.toString()}')));
     }
@@ -233,7 +232,7 @@ class ComposeDispenserBloc extends ComposeBaseBloc<ComposeDispenserState> {
   @override
   void onFinalizeTransaction(FinalizeTransactionEvent event, emit) async {
     emit(state.copyWith(
-        submitState: SubmitFinalizing<ComposeDispenserResponseVerbose>(
+        submitState: PasswordStep<ComposeDispenserResponseVerbose>(
       loading: false,
       error: null,
       composeTransaction: event.composeTransaction,
@@ -244,18 +243,17 @@ class ComposeDispenserBloc extends ComposeBaseBloc<ComposeDispenserState> {
   @override
   void onSignAndBroadcastTransaction(
       SignAndBroadcastTransactionEvent event, emit) async {
-    if (state.submitState
-        is! SubmitFinalizing<ComposeDispenserResponseVerbose>) {
+    if (state.submitState is! PasswordStep<ComposeDispenserResponseVerbose>) {
       return;
     }
 
-    final s = (state.submitState
-        as SubmitFinalizing<ComposeDispenserResponseVerbose>);
+    final s =
+        (state.submitState as PasswordStep<ComposeDispenserResponseVerbose>);
     final compose = s.composeTransaction;
     final fee = s.fee;
 
     emit(state.copyWith(
-        submitState: SubmitFinalizing<ComposeDispenserResponseVerbose>(
+        submitState: PasswordStep<ComposeDispenserResponseVerbose>(
       loading: true,
       error: null,
       fee: fee,
@@ -280,7 +278,7 @@ class ComposeDispenserBloc extends ComposeBaseBloc<ComposeDispenserState> {
         },
         onError: (msg) {
           emit(state.copyWith(
-              submitState: SubmitFinalizing<ComposeDispenserResponseVerbose>(
+              submitState: PasswordStep<ComposeDispenserResponseVerbose>(
             loading: false,
             error: msg,
             fee: fee,

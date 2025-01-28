@@ -57,7 +57,7 @@ class ComposeFairminterBloc extends ComposeBaseBloc<ComposeFairminterState> {
     required this.blockRepository,
   }) : super(
           ComposeFairminterState(
-            submitState: const SubmitInitial(),
+            submitState: const FormStep(),
             feeOption: FeeOption.Medium(),
             balancesState: const BalancesState.initial(),
             feeState: const FeeState.initial(),
@@ -73,7 +73,7 @@ class ComposeFairminterBloc extends ComposeBaseBloc<ComposeFairminterState> {
         balancesState: const BalancesState.loading(),
         feeState: const FeeState.loading(),
         assetState: const AssetState.loading(),
-        submitState: const SubmitInitial(),
+        submitState: const FormStep(),
         fairmintersState: const FairmintersState.loading()));
 
     try {
@@ -163,7 +163,7 @@ class ComposeFairminterBloc extends ComposeBaseBloc<ComposeFairminterState> {
 
   @override
   void onComposeTransaction(ComposeTransactionEvent event, emit) async {
-    emit((state).copyWith(submitState: const SubmitInitial(loading: true)));
+    emit((state).copyWith(submitState: const FormStep(loading: true)));
 
     try {
       final feeRate = _getFeeRate();
@@ -186,8 +186,7 @@ class ComposeFairminterBloc extends ComposeBaseBloc<ComposeFairminterState> {
               composeFn: composeRepository.composeFairminterVerbose);
 
       emit(state.copyWith(
-          submitState:
-              SubmitComposingTransaction<ComposeFairminterResponse, void>(
+          submitState: ReviewStep<ComposeFairminterResponse, void>(
         composeTransaction: composeResponse,
         fee: composeResponse.btcFee,
         feeRate: feeRate,
@@ -197,10 +196,10 @@ class ComposeFairminterBloc extends ComposeBaseBloc<ComposeFairminterState> {
       )));
     } on ComposeTransactionException catch (e) {
       emit(state.copyWith(
-          submitState: SubmitInitial(loading: false, error: e.message)));
+          submitState: FormStep(loading: false, error: e.message)));
     } catch (e) {
       emit(state.copyWith(
-          submitState: SubmitInitial(
+          submitState: FormStep(
               loading: false,
               error: 'An unexpected error occurred: ${e.toString()}')));
     }
@@ -209,7 +208,7 @@ class ComposeFairminterBloc extends ComposeBaseBloc<ComposeFairminterState> {
   @override
   void onFinalizeTransaction(FinalizeTransactionEvent event, emit) async {
     emit(state.copyWith(
-        submitState: SubmitFinalizing<ComposeFairminterResponse>(
+        submitState: PasswordStep<ComposeFairminterResponse>(
       loading: false,
       error: null,
       composeTransaction: event.composeTransaction,
@@ -220,17 +219,16 @@ class ComposeFairminterBloc extends ComposeBaseBloc<ComposeFairminterState> {
   @override
   void onSignAndBroadcastTransaction(
       SignAndBroadcastTransactionEvent event, emit) async {
-    if (state.submitState is! SubmitFinalizing<ComposeFairminterResponse>) {
+    if (state.submitState is! PasswordStep<ComposeFairminterResponse>) {
       return;
     }
 
-    final s =
-        (state.submitState as SubmitFinalizing<ComposeFairminterResponse>);
+    final s = (state.submitState as PasswordStep<ComposeFairminterResponse>);
     final compose = s.composeTransaction;
     final fee = s.fee;
 
     emit(state.copyWith(
-        submitState: SubmitFinalizing<ComposeFairminterResponse>(
+        submitState: PasswordStep<ComposeFairminterResponse>(
       loading: true,
       error: null,
       fee: fee,
@@ -255,7 +253,7 @@ class ComposeFairminterBloc extends ComposeBaseBloc<ComposeFairminterState> {
         },
         onError: (msg) {
           emit(state.copyWith(
-              submitState: SubmitFinalizing<ComposeFairminterResponse>(
+              submitState: PasswordStep<ComposeFairminterResponse>(
             loading: false,
             error: msg,
             fee: fee,

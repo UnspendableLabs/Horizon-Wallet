@@ -56,7 +56,7 @@ class UpdateIssuanceBloc extends ComposeBaseBloc<UpdateIssuanceState> {
     required this.issuanceActionType,
   }) : super(
           UpdateIssuanceState(
-            submitState: const SubmitInitial(),
+            submitState: const FormStep(),
             feeOption: FeeOption.Medium(),
             balancesState: const BalancesState.initial(),
             feeState: const FeeState.initial(),
@@ -79,7 +79,7 @@ class UpdateIssuanceBloc extends ComposeBaseBloc<UpdateIssuanceState> {
 
     emit(state.copyWith(
       balancesState: const BalancesState.loading(),
-      submitState: const SubmitInitial(),
+      submitState: const FormStep(),
       assetState: const AssetState.loading(),
     ));
 
@@ -109,7 +109,7 @@ class UpdateIssuanceBloc extends ComposeBaseBloc<UpdateIssuanceState> {
 
   @override
   void onComposeTransaction(ComposeTransactionEvent event, emit) async {
-    emit((state).copyWith(submitState: const SubmitInitial(loading: true)));
+    emit((state).copyWith(submitState: const FormStep(loading: true)));
 
     try {
       final feeRate = _getFeeRate();
@@ -139,8 +139,8 @@ class UpdateIssuanceBloc extends ComposeBaseBloc<UpdateIssuanceState> {
         composeFn: composeRepository.composeIssuanceVerbose,
       );
       emit(state.copyWith(
-          submitState: SubmitComposingTransaction<
-              ComposeIssuanceResponseVerbose, ComposeIssuanceEventParams>(
+          submitState: ReviewStep<ComposeIssuanceResponseVerbose,
+              ComposeIssuanceEventParams>(
         composeTransaction: composeResponse,
         fee: composeResponse.btcFee,
         feeRate: feeRate,
@@ -150,10 +150,10 @@ class UpdateIssuanceBloc extends ComposeBaseBloc<UpdateIssuanceState> {
       )));
     } on ComposeTransactionException catch (e) {
       emit(state.copyWith(
-          submitState: SubmitInitial(loading: false, error: e.message)));
+          submitState: FormStep(loading: false, error: e.message)));
     } catch (e) {
       emit(state.copyWith(
-          submitState: SubmitInitial(
+          submitState: FormStep(
               loading: false,
               error: 'An unexpected error occurred: ${e.toString()}')));
     }
@@ -162,7 +162,7 @@ class UpdateIssuanceBloc extends ComposeBaseBloc<UpdateIssuanceState> {
   @override
   void onFinalizeTransaction(FinalizeTransactionEvent event, emit) async {
     emit(state.copyWith(
-        submitState: SubmitFinalizing<ComposeIssuanceResponseVerbose>(
+        submitState: PasswordStep<ComposeIssuanceResponseVerbose>(
       loading: false,
       error: null,
       composeTransaction: event.composeTransaction,
@@ -173,18 +173,17 @@ class UpdateIssuanceBloc extends ComposeBaseBloc<UpdateIssuanceState> {
   @override
   void onSignAndBroadcastTransaction(
       SignAndBroadcastTransactionEvent event, emit) async {
-    if (state.submitState
-        is! SubmitFinalizing<ComposeIssuanceResponseVerbose>) {
+    if (state.submitState is! PasswordStep<ComposeIssuanceResponseVerbose>) {
       return;
     }
 
     final s =
-        (state.submitState as SubmitFinalizing<ComposeIssuanceResponseVerbose>);
+        (state.submitState as PasswordStep<ComposeIssuanceResponseVerbose>);
     final compose = s.composeTransaction;
     final fee = s.fee;
 
     emit(state.copyWith(
-        submitState: SubmitFinalizing<ComposeIssuanceResponseVerbose>(
+        submitState: PasswordStep<ComposeIssuanceResponseVerbose>(
       loading: true,
       error: null,
       fee: fee,
@@ -209,7 +208,7 @@ class UpdateIssuanceBloc extends ComposeBaseBloc<UpdateIssuanceState> {
         },
         onError: (msg) {
           emit(state.copyWith(
-              submitState: SubmitFinalizing<ComposeIssuanceResponseVerbose>(
+              submitState: PasswordStep<ComposeIssuanceResponseVerbose>(
             loading: false,
             error: msg,
             fee: fee,

@@ -48,15 +48,15 @@ abstract class SubmitState {
 }
 
 /// Initial state before submission begins.
-class SubmitInitial extends SubmitState {
+class FormStep extends SubmitState {
   final bool loading;
   final String? error;
 
-  const SubmitInitial({this.loading = false, this.error});
+  const FormStep({this.loading = false, this.error});
 }
 
 /// State when submission is in progress.
-class SubmitComposingTransaction<T, O extends Object?> extends SubmitState {
+class ReviewStep<T, O extends Object?> extends SubmitState {
   final O? otherParams;
   final T composeTransaction;
   // final int virtualSize;
@@ -66,7 +66,7 @@ class SubmitComposingTransaction<T, O extends Object?> extends SubmitState {
   final int adjustedVirtualSize;
   // final int virtualSize;
   // final int adjustedVirtualSize;
-  const SubmitComposingTransaction({
+  const ReviewStep({
     this.otherParams,
     required this.composeTransaction,
     // required this.virtualSize,
@@ -97,25 +97,25 @@ class SubmitError extends SubmitState {
   const SubmitError(this.error);
 }
 
-class SubmitFinalizing<T> extends SubmitState {
+class PasswordStep<T> extends SubmitState {
   final T composeTransaction;
   final int fee;
   final bool loading;
   final String? error;
 
-  const SubmitFinalizing(
+  const PasswordStep(
       {required this.loading,
       required this.error,
       required this.composeTransaction,
       required this.fee});
 
-  SubmitFinalizing copyWith({
+  PasswordStep copyWith({
     required T composeTransaction,
     required int fee,
     required bool loading,
     required String? error,
   }) {
-    return SubmitFinalizing(
+    return PasswordStep(
       composeTransaction: composeTransaction,
       fee: fee,
       loading: loading,

@@ -49,7 +49,7 @@ class ComposeDestroyBloc extends ComposeBaseBloc<ComposeDestroyState> {
     required this.logger,
   }) : super(
           ComposeDestroyState(
-            submitState: const SubmitInitial(),
+            submitState: const FormStep(),
             feeOption: FeeOption.Medium(),
             balancesState: const BalancesState.initial(),
             feeState: const FeeState.initial(),
@@ -62,7 +62,7 @@ class ComposeDestroyBloc extends ComposeBaseBloc<ComposeDestroyState> {
     emit(state.copyWith(
       balancesState: const BalancesState.loading(),
       feeState: const FeeState.loading(),
-      submitState: const SubmitInitial(),
+      submitState: const FormStep(),
     ));
 
     List<Balance> balances;
@@ -97,7 +97,7 @@ class ComposeDestroyBloc extends ComposeBaseBloc<ComposeDestroyState> {
 
   @override
   void onComposeTransaction(ComposeTransactionEvent event, emit) async {
-    emit((state).copyWith(submitState: const SubmitInitial(loading: true)));
+    emit((state).copyWith(submitState: const FormStep(loading: true)));
     final ComposeDestroyEventParams params = event.params;
 
     try {
@@ -116,7 +116,7 @@ class ComposeDestroyBloc extends ComposeBaseBloc<ComposeDestroyState> {
               composeFn: composeRepository.composeDestroy);
 
       emit(state.copyWith(
-          submitState: SubmitComposingTransaction<ComposeDestroyResponse, void>(
+          submitState: ReviewStep<ComposeDestroyResponse, void>(
         composeTransaction: composeResponse,
         fee: composeResponse.btcFee,
         feeRate: feeRate,
@@ -126,10 +126,10 @@ class ComposeDestroyBloc extends ComposeBaseBloc<ComposeDestroyState> {
       )));
     } on ComposeTransactionException catch (e) {
       emit(state.copyWith(
-          submitState: SubmitInitial(loading: false, error: e.message)));
+          submitState: FormStep(loading: false, error: e.message)));
     } catch (e) {
       emit(state.copyWith(
-          submitState: SubmitInitial(
+          submitState: FormStep(
               loading: false,
               error: 'An unexpected error occurred: ${e.toString()}')));
     }
@@ -148,7 +148,7 @@ class ComposeDestroyBloc extends ComposeBaseBloc<ComposeDestroyState> {
   @override
   void onFinalizeTransaction(FinalizeTransactionEvent event, emit) async {
     emit(state.copyWith(
-        submitState: SubmitFinalizing<ComposeDestroyResponse>(
+        submitState: PasswordStep<ComposeDestroyResponse>(
       loading: false,
       error: null,
       composeTransaction: event.composeTransaction,
@@ -159,16 +159,16 @@ class ComposeDestroyBloc extends ComposeBaseBloc<ComposeDestroyState> {
   @override
   void onSignAndBroadcastTransaction(
       SignAndBroadcastTransactionEvent event, emit) async {
-    if (state.submitState is! SubmitFinalizing<ComposeDestroyResponse>) {
+    if (state.submitState is! PasswordStep<ComposeDestroyResponse>) {
       return;
     }
 
-    final s = (state.submitState as SubmitFinalizing<ComposeDestroyResponse>);
+    final s = (state.submitState as PasswordStep<ComposeDestroyResponse>);
     final compose = s.composeTransaction;
     final fee = s.fee;
 
     emit(state.copyWith(
-        submitState: SubmitFinalizing<ComposeDestroyResponse>(
+        submitState: PasswordStep<ComposeDestroyResponse>(
       loading: true,
       error: null,
       fee: fee,
@@ -193,7 +193,7 @@ class ComposeDestroyBloc extends ComposeBaseBloc<ComposeDestroyState> {
         },
         onError: (msg) {
           emit(state.copyWith(
-              submitState: SubmitFinalizing<ComposeDestroyResponse>(
+              submitState: PasswordStep<ComposeDestroyResponse>(
             loading: false,
             error: msg,
             fee: fee,

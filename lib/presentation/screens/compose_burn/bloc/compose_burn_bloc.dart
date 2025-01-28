@@ -47,7 +47,7 @@ class ComposeBurnBloc extends ComposeBaseBloc<ComposeBurnState> {
     required this.balanceRepository,
   }) : super(
           ComposeBurnState(
-            submitState: const SubmitInitial(),
+            submitState: const FormStep(),
             feeOption: FeeOption.Medium(),
             balancesState: const BalancesState.initial(),
             feeState: const FeeState.initial(),
@@ -60,7 +60,7 @@ class ComposeBurnBloc extends ComposeBaseBloc<ComposeBurnState> {
     emit(state.copyWith(
         balancesState: const BalancesState.loading(),
         feeState: const FeeState.loading(),
-        submitState: const SubmitInitial()));
+        submitState: const FormStep()));
 
     try {
       final feeEstimates = await getFeeEstimatesUseCase.call();
@@ -101,7 +101,7 @@ class ComposeBurnBloc extends ComposeBaseBloc<ComposeBurnState> {
 
   @override
   void onComposeTransaction(ComposeTransactionEvent event, emit) async {
-    emit((state).copyWith(submitState: const SubmitInitial(loading: true)));
+    emit((state).copyWith(submitState: const FormStep(loading: true)));
 
     try {
       final feeRate = _getFeeRate();
@@ -116,7 +116,7 @@ class ComposeBurnBloc extends ComposeBaseBloc<ComposeBurnState> {
               composeFn: composeRepository.composeBurn);
 
       emit(state.copyWith(
-          submitState: SubmitComposingTransaction<ComposeBurnResponse, void>(
+          submitState: ReviewStep<ComposeBurnResponse, void>(
         composeTransaction: composeResponse,
         fee: composeResponse.btcFee,
         feeRate: feeRate,
@@ -126,10 +126,10 @@ class ComposeBurnBloc extends ComposeBaseBloc<ComposeBurnState> {
       )));
     } on ComposeTransactionException catch (e) {
       emit(state.copyWith(
-          submitState: SubmitInitial(loading: false, error: e.message)));
+          submitState: FormStep(loading: false, error: e.message)));
     } catch (e) {
       emit(state.copyWith(
-          submitState: SubmitInitial(
+          submitState: FormStep(
               loading: false,
               error: 'An unexpected error occurred: ${e.toString()}')));
     }
@@ -138,7 +138,7 @@ class ComposeBurnBloc extends ComposeBaseBloc<ComposeBurnState> {
   @override
   void onFinalizeTransaction(FinalizeTransactionEvent event, emit) async {
     emit(state.copyWith(
-        submitState: SubmitFinalizing<ComposeBurnResponse>(
+        submitState: PasswordStep<ComposeBurnResponse>(
       loading: false,
       error: null,
       composeTransaction: event.composeTransaction,
@@ -149,16 +149,16 @@ class ComposeBurnBloc extends ComposeBaseBloc<ComposeBurnState> {
   @override
   void onSignAndBroadcastTransaction(
       SignAndBroadcastTransactionEvent event, emit) async {
-    if (state.submitState is! SubmitFinalizing<ComposeBurnResponse>) {
+    if (state.submitState is! PasswordStep<ComposeBurnResponse>) {
       return;
     }
 
-    final s = (state.submitState as SubmitFinalizing<ComposeBurnResponse>);
+    final s = (state.submitState as PasswordStep<ComposeBurnResponse>);
     final compose = s.composeTransaction;
     final fee = s.fee;
 
     emit(state.copyWith(
-        submitState: SubmitFinalizing<ComposeBurnResponse>(
+        submitState: PasswordStep<ComposeBurnResponse>(
       loading: true,
       error: null,
       fee: fee,
@@ -183,7 +183,7 @@ class ComposeBurnBloc extends ComposeBaseBloc<ComposeBurnState> {
         },
         onError: (msg) {
           emit(state.copyWith(
-              submitState: SubmitFinalizing<ComposeBurnResponse>(
+              submitState: PasswordStep<ComposeBurnResponse>(
             loading: false,
             error: msg,
             fee: fee,

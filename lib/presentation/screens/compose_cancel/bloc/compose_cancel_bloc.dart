@@ -52,7 +52,7 @@ class ComposeCancelBloc extends ComposeBaseBloc<ComposeCancelState> {
     required this.analyticsService,
   }) : super(
           ComposeCancelState(
-            submitState: const SubmitInitial(),
+            submitState: const FormStep(),
             feeOption: FeeOption.Medium(),
             balancesState: const BalancesState.initial(),
             feeState: const FeeState.initial(),
@@ -81,7 +81,7 @@ class ComposeCancelBloc extends ComposeBaseBloc<ComposeCancelState> {
   void _handleComposeResponseReceived(
       ComposeResponseReceived event, emit) async {
     emit(state.copyWith(
-        submitState: SubmitComposingTransaction<ComposeCancelResponse, void>(
+        submitState: ReviewStep<ComposeCancelResponse, void>(
       composeTransaction: event.response,
       fee: event.response.btcFee,
       feeRate: event.feeRate,
@@ -92,13 +92,13 @@ class ComposeCancelBloc extends ComposeBaseBloc<ComposeCancelState> {
 
   void _handleConfirmationBackButtonPressed(
       ConfirmationBackButtonPressed event, emit) async {
-    emit(state.copyWith(submitState: const SubmitInitial()));
+    emit(state.copyWith(submitState: const FormStep()));
   }
 
   @override
   void onFinalizeTransaction(FinalizeTransactionEvent event, emit) async {
     emit(state.copyWith(
-        submitState: SubmitFinalizing<ComposeCancelResponse>(
+        submitState: PasswordStep<ComposeCancelResponse>(
       loading: false,
       error: null,
       composeTransaction: event.composeTransaction,
@@ -109,16 +109,16 @@ class ComposeCancelBloc extends ComposeBaseBloc<ComposeCancelState> {
   @override
   void onSignAndBroadcastTransaction(
       SignAndBroadcastTransactionEvent event, emit) async {
-    if (state.submitState is! SubmitFinalizing<ComposeCancelResponse>) {
+    if (state.submitState is! PasswordStep<ComposeCancelResponse>) {
       return;
     }
 
-    final s = (state.submitState as SubmitFinalizing<ComposeCancelResponse>);
+    final s = (state.submitState as PasswordStep<ComposeCancelResponse>);
     final compose = s.composeTransaction;
     final fee = s.fee;
 
     emit(state.copyWith(
-        submitState: SubmitFinalizing<ComposeCancelResponse>(
+        submitState: PasswordStep<ComposeCancelResponse>(
       loading: true,
       error: null,
       fee: fee,
@@ -142,7 +142,7 @@ class ComposeCancelBloc extends ComposeBaseBloc<ComposeCancelState> {
         },
         onError: (msg) {
           emit(state.copyWith(
-              submitState: SubmitFinalizing<ComposeCancelResponse>(
+              submitState: PasswordStep<ComposeCancelResponse>(
             loading: false,
             error: msg,
             fee: fee,

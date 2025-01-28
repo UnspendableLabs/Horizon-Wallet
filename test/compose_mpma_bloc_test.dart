@@ -114,7 +114,7 @@ void main() {
         expect(state.feeState, const FeeState.initial());
         expect(state.balancesState, const BalancesState.initial());
         expect(state.feeOption, isA<Medium>());
-        expect(state.submitState, isA<SubmitInitial>());
+        expect(state.submitState, isA<FormStep>());
         expect(state.entries, [MpmaEntry.initial()]);
         expect(state.composeSendError, null);
       },
@@ -187,7 +187,7 @@ void main() {
               .having((s) => s.feeState, 'feeState', const FeeState.initial())
               .having((s) => s.balancesState, 'balancesState',
                   const BalancesState.loading())
-              .having((s) => s.submitState, 'submitState', isA<SubmitInitial>())
+              .having((s) => s.submitState, 'submitState', isA<FormStep>())
               .having((s) => s.feeOption, 'feeOption', isA<Medium>())
               .having((s) => s.entries, 'entries', [
             MpmaEntry.initial()
@@ -197,7 +197,7 @@ void main() {
                   const FeeState.success(mockFeeEstimates))
               .having((s) => s.balancesState, 'balancesState',
                   const BalancesState.success([]))
-              .having((s) => s.submitState, 'submitState', isA<SubmitInitial>())
+              .having((s) => s.submitState, 'submitState', isA<FormStep>())
               .having((s) => s.feeOption, 'feeOption', isA<Medium>())
               .having((s) => s.entries, 'entries', [
             MpmaEntry.initial()
@@ -224,7 +224,7 @@ void main() {
               .having((s) => s.feeState, 'feeState', const FeeState.initial())
               .having((s) => s.balancesState, 'balancesState',
                   const BalancesState.loading())
-              .having((s) => s.submitState, 'submitState', isA<SubmitInitial>())
+              .having((s) => s.submitState, 'submitState', isA<FormStep>())
               .having((s) => s.feeOption, 'feeOption', isA<Medium>())
               .having((s) => s.entries, 'entries', [
             MpmaEntry.initial()
@@ -240,7 +240,7 @@ void main() {
                   contains('Failed to fetch balances'),
                 ),
               )
-              .having((s) => s.submitState, 'submitState', isA<SubmitInitial>())
+              .having((s) => s.submitState, 'submitState', isA<FormStep>())
               .having((s) => s.feeOption, 'feeOption', isA<Medium>())
               .having((s) => s.entries, 'entries', [
             MpmaEntry.initial()

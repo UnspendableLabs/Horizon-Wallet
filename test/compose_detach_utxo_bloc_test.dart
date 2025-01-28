@@ -147,7 +147,7 @@ void main() {
         composeDetachUtxoBloc.state.copyWith(
           balancesState: const BalancesState.loading(),
           feeState: const FeeState.loading(),
-          submitState: const SubmitInitial(),
+          submitState: const FormStep(),
         ),
         composeDetachUtxoBloc.state.copyWith(
           balancesState: const BalancesState.success([]),
@@ -174,7 +174,7 @@ void main() {
         composeDetachUtxoBloc.state.copyWith(
           balancesState: const BalancesState.loading(),
           feeState: const FeeState.loading(),
-          submitState: const SubmitInitial(),
+          submitState: const FormStep(),
         ),
         composeDetachUtxoBloc.state.copyWith(
           feeState: const FeeState.error('Failed to fetch fee estimates'),
@@ -232,12 +232,12 @@ void main() {
         isA<ComposeDetachUtxoState>().having(
           (state) => state.submitState,
           'submitState',
-          isA<SubmitInitial>().having((s) => s.loading, 'loading', true),
+          isA<FormStep>().having((s) => s.loading, 'loading', true),
         ),
         isA<ComposeDetachUtxoState>().having(
           (state) => state.submitState,
           'submitState',
-          isA<SubmitComposingTransaction<ComposeDetachUtxoResponse, void>>()
+          isA<ReviewStep<ComposeDetachUtxoResponse, void>>()
               .having((s) => s.composeTransaction, 'composeTransaction',
                   mockComposeDetachUtxoResponse)
               .having((s) => s.fee, 'fee', 250)
@@ -274,12 +274,12 @@ void main() {
         isA<ComposeDetachUtxoState>().having(
           (state) => state.submitState,
           'submitState',
-          isA<SubmitInitial>().having((s) => s.loading, 'loading', true),
+          isA<FormStep>().having((s) => s.loading, 'loading', true),
         ),
         isA<ComposeDetachUtxoState>().having(
           (state) => state.submitState,
           'submitState',
-          isA<SubmitInitial>()
+          isA<FormStep>()
               .having((s) => s.loading, 'loading', false)
               .having((s) => s.error, 'error', 'Compose error'),
         ),
@@ -301,7 +301,7 @@ void main() {
         isA<ComposeDetachUtxoState>().having(
           (state) => state.submitState,
           'submitState',
-          isA<SubmitFinalizing<ComposeDetachUtxoResponse>>()
+          isA<PasswordStep<ComposeDetachUtxoResponse>>()
               .having((s) => s.loading, 'loading', false)
               .having((s) => s.error, 'error', null)
               .having((s) => s.composeTransaction, 'composeTransaction',
@@ -360,7 +360,7 @@ void main() {
         return composeDetachUtxoBloc;
       },
       seed: () => composeDetachUtxoBloc.state.copyWith(
-        submitState: SubmitFinalizing<ComposeDetachUtxoResponse>(
+        submitState: PasswordStep<ComposeDetachUtxoResponse>(
           loading: false,
           error: null,
           composeTransaction: mockComposeDetachUtxoResponse,
@@ -374,7 +374,7 @@ void main() {
         isA<ComposeDetachUtxoState>().having(
           (state) => state.submitState,
           'submitState',
-          isA<SubmitFinalizing<ComposeDetachUtxoResponse>>()
+          isA<PasswordStep<ComposeDetachUtxoResponse>>()
               .having((s) => s.loading, 'loading', true)
               .having((s) => s.error, 'error', null)
               .having((s) => s.composeTransaction, 'composeTransaction',
@@ -439,7 +439,7 @@ void main() {
         return composeDetachUtxoBloc;
       },
       seed: () => composeDetachUtxoBloc.state.copyWith(
-        submitState: SubmitFinalizing<ComposeDetachUtxoResponse>(
+        submitState: PasswordStep<ComposeDetachUtxoResponse>(
           loading: false,
           error: null,
           composeTransaction: mockComposeDetachUtxoResponse,
@@ -453,7 +453,7 @@ void main() {
         isA<ComposeDetachUtxoState>().having(
           (state) => state.submitState,
           'submitState',
-          isA<SubmitFinalizing<ComposeDetachUtxoResponse>>()
+          isA<PasswordStep<ComposeDetachUtxoResponse>>()
               .having((s) => s.loading, 'loading', true)
               .having((s) => s.error, 'error', null)
               .having((s) => s.composeTransaction, 'composeTransaction',
@@ -463,7 +463,7 @@ void main() {
         isA<ComposeDetachUtxoState>().having(
           (state) => state.submitState,
           'submitState',
-          isA<SubmitFinalizing<ComposeDetachUtxoResponse>>()
+          isA<PasswordStep<ComposeDetachUtxoResponse>>()
               .having((s) => s.loading, 'loading', false)
               .having((s) => s.error, 'error', 'Signing error')
               .having((s) => s.composeTransaction, 'composeTransaction',

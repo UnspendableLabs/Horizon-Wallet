@@ -52,7 +52,7 @@ class ComposeOrderBloc extends ComposeBaseBloc<ComposeOrderState> {
     required this.analyticsService,
   }) : super(
           ComposeOrderState(
-            submitState: const SubmitInitial(),
+            submitState: const FormStep(),
             feeOption: FeeOption.Medium(),
             balancesState: const BalancesState.initial(),
             feeState: const FeeState.initial(),
@@ -81,7 +81,7 @@ class ComposeOrderBloc extends ComposeBaseBloc<ComposeOrderState> {
   void _handleComposeResponseReceived(
       ComposeResponseReceived event, emit) async {
     emit(state.copyWith(
-        submitState: SubmitComposingTransaction<ComposeOrderResponse, void>(
+        submitState: ReviewStep<ComposeOrderResponse, void>(
       composeTransaction: event.response,
       fee: event.response.btcFee,
       feeRate: event.feeRate,
@@ -92,13 +92,13 @@ class ComposeOrderBloc extends ComposeBaseBloc<ComposeOrderState> {
 
   void _handleConfirmationBackButtonPressed(
       ConfirmationBackButtonPressed event, emit) async {
-    emit(state.copyWith(submitState: const SubmitInitial()));
+    emit(state.copyWith(submitState: const FormStep()));
   }
 
   @override
   void onFinalizeTransaction(FinalizeTransactionEvent event, emit) async {
     emit(state.copyWith(
-        submitState: SubmitFinalizing<ComposeOrderResponse>(
+        submitState: PasswordStep<ComposeOrderResponse>(
       loading: false,
       error: null,
       composeTransaction: event.composeTransaction,
@@ -109,16 +109,16 @@ class ComposeOrderBloc extends ComposeBaseBloc<ComposeOrderState> {
   @override
   void onSignAndBroadcastTransaction(
       SignAndBroadcastTransactionEvent event, emit) async {
-    if (state.submitState is! SubmitFinalizing<ComposeOrderResponse>) {
+    if (state.submitState is! PasswordStep<ComposeOrderResponse>) {
       return;
     }
 
-    final s = (state.submitState as SubmitFinalizing<ComposeOrderResponse>);
+    final s = (state.submitState as PasswordStep<ComposeOrderResponse>);
     final compose = s.composeTransaction;
     final fee = s.fee;
 
     emit(state.copyWith(
-        submitState: SubmitFinalizing<ComposeOrderResponse>(
+        submitState: PasswordStep<ComposeOrderResponse>(
       loading: true,
       error: null,
       fee: fee,
@@ -142,7 +142,7 @@ class ComposeOrderBloc extends ComposeBaseBloc<ComposeOrderState> {
         },
         onError: (msg) {
           emit(state.copyWith(
-              submitState: SubmitFinalizing<ComposeOrderResponse>(
+              submitState: PasswordStep<ComposeOrderResponse>(
             loading: false,
             error: msg,
             fee: fee,

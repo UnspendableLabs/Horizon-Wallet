@@ -47,7 +47,7 @@ class ComposeDividendBloc extends ComposeBaseBloc<ComposeDividendState> {
     required this.logger,
   }) : super(
           ComposeDividendState(
-            submitState: const SubmitInitial(),
+            submitState: const FormStep(),
             feeOption: FeeOption.Medium(),
             balancesState: const BalancesState.initial(),
             feeState: const FeeState.initial(),
@@ -62,7 +62,7 @@ class ComposeDividendBloc extends ComposeBaseBloc<ComposeDividendState> {
     emit(state.copyWith(
         balancesState: const BalancesState.loading(),
         feeState: const FeeState.loading(),
-        submitState: const SubmitInitial(),
+        submitState: const FormStep(),
         assetState: const AssetState.loading(),
         dividendXcpFeeState: const DividendXcpFeeState.loading()));
 
@@ -118,7 +118,7 @@ class ComposeDividendBloc extends ComposeBaseBloc<ComposeDividendState> {
 
   @override
   void onComposeTransaction(ComposeTransactionEvent event, emit) async {
-    emit((state).copyWith(submitState: const SubmitInitial(loading: true)));
+    emit((state).copyWith(submitState: const FormStep(loading: true)));
     final params = event.params as ComposeDividendEventParams;
 
     try {
@@ -140,8 +140,7 @@ class ComposeDividendBloc extends ComposeBaseBloc<ComposeDividendState> {
               composeFn: composeRepository.composeDividend);
 
       emit(state.copyWith(
-          submitState:
-              SubmitComposingTransaction<ComposeDividendResponse, void>(
+          submitState: ReviewStep<ComposeDividendResponse, void>(
         composeTransaction: composeResponse,
         fee: composeResponse.btcFee,
         feeRate: feeRate,
@@ -151,10 +150,10 @@ class ComposeDividendBloc extends ComposeBaseBloc<ComposeDividendState> {
       )));
     } on ComposeTransactionException catch (e) {
       emit(state.copyWith(
-          submitState: SubmitInitial(loading: false, error: e.message)));
+          submitState: FormStep(loading: false, error: e.message)));
     } catch (e) {
       emit(state.copyWith(
-          submitState: SubmitInitial(
+          submitState: FormStep(
               loading: false,
               error: 'An unexpected error occurred: ${e.toString()}')));
     }
@@ -173,7 +172,7 @@ class ComposeDividendBloc extends ComposeBaseBloc<ComposeDividendState> {
   @override
   void onFinalizeTransaction(FinalizeTransactionEvent event, emit) async {
     emit(state.copyWith(
-        submitState: SubmitFinalizing<ComposeDividendResponse>(
+        submitState: PasswordStep<ComposeDividendResponse>(
       loading: false,
       error: null,
       composeTransaction: event.composeTransaction,
@@ -184,16 +183,16 @@ class ComposeDividendBloc extends ComposeBaseBloc<ComposeDividendState> {
   @override
   void onSignAndBroadcastTransaction(
       SignAndBroadcastTransactionEvent event, emit) async {
-    if (state.submitState is! SubmitFinalizing<ComposeDividendResponse>) {
+    if (state.submitState is! PasswordStep<ComposeDividendResponse>) {
       return;
     }
 
-    final s = (state.submitState as SubmitFinalizing<ComposeDividendResponse>);
+    final s = (state.submitState as PasswordStep<ComposeDividendResponse>);
     final compose = s.composeTransaction;
     final fee = s.fee;
 
     emit(state.copyWith(
-        submitState: SubmitFinalizing<ComposeDividendResponse>(
+        submitState: PasswordStep<ComposeDividendResponse>(
       loading: true,
       error: null,
       fee: fee,
@@ -218,7 +217,7 @@ class ComposeDividendBloc extends ComposeBaseBloc<ComposeDividendState> {
         },
         onError: (msg) {
           emit(state.copyWith(
-              submitState: SubmitFinalizing<ComposeDividendResponse>(
+              submitState: PasswordStep<ComposeDividendResponse>(
             loading: false,
             error: msg,
             fee: fee,
