@@ -86,6 +86,7 @@ class OnboardingImportPageState extends State<OnboardingImportPage> {
             },
             child: BlocBuilder<OnboardingImportBloc, OnboardingImportState>(
                 builder: (context, state) {
+              print('STATE CURRENT STEP: ${state.currentStep}');
               return Container(
                 decoration: BoxDecoration(
                   color: scaffoldBackgroundColor,
@@ -190,7 +191,7 @@ class _ChooseFormatState extends State<ChooseFormat> {
     super.initState();
     context
         .read<OnboardingImportBloc>()
-        .add(ImportFormatChanged(importFormat: selectedFormat));
+        .add(ImportFormatChanged(walletType: selectedFormat));
   }
 
   @override
@@ -209,7 +210,7 @@ class _ChooseFormatState extends State<ChooseFormat> {
             });
             context
                 .read<OnboardingImportBloc>()
-                .add(ImportFormatChanged(importFormat: selectedFormat));
+                .add(ImportFormatChanged(walletType: selectedFormat));
           },
           selectedFormat: selectedFormat,
         ),

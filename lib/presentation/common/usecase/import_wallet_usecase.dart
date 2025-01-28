@@ -15,6 +15,7 @@ import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/wallet_service.dart';
+import 'package:horizon/presentation/screens/onboarding/view/import_format_dropdown.dart';
 
 // ignore_for_file: constant_identifier_names
 const GAP_LIMIT = 20;
@@ -53,18 +54,26 @@ class ImportWalletUseCase {
   Future<void> callAllWallets({
     required String password,
     required String mnemonic,
-    required ImportFormat importFormat,
+    required WalletType walletType,
     required Function(String) onError,
     required Function() onSuccess,
   }) async {
     try {
+      print('walletType: $walletType');
       Wallet wallet;
       Map<Account, List<Address>> accountsWithBalances;
 
+      final importFormat = switch (walletType) {
+        WalletType.horizon => ImportFormat.horizon,
+        WalletType.bip32 => ImportFormat
+            .counterwallet, // if the wallet type is _not_ horizon, we will check counterwallet first for balances since it is most common
+      };
+
+      print('importFormat: $importFormat');
+
       final deriveWallet = switch (importFormat) {
         ImportFormat.horizon => walletService.deriveRoot,
-        ImportFormat.freewallet => walletService.deriveRootFreewallet,
-        ImportFormat.counterwallet => walletService.deriveRootCounterwallet,
+        _ => walletService.deriveRootCounterwallet,
       };
 
       (wallet, accountsWithBalances) = await createWalletForImportFormat(
@@ -73,6 +82,22 @@ class ImportWalletUseCase {
         mnemonic: mnemonic,
         deriveWallet: deriveWallet,
       );
+
+      if (importFormat == ImportFormat.counterwallet &&
+          accountsWithBalances.isEmpty) {
+        print('no counterwallet balances found, checking freewallet');
+        // after checking counterwallet, if there are no balances, we will check freewallet
+        (wallet, accountsWithBalances) = await createWalletForImportFormat(
+          password: password,
+          importFormat: ImportFormat.freewallet,
+          mnemonic: mnemonic,
+          deriveWallet: walletService.deriveRootFreewallet,
+        );
+      }
+
+      if (accountsWithBalances.isEmpty) {
+        throw Exception('invariant: no balances found');
+      }
 
       // proceed with inserting wallet/accounts/addresses
       print('inserting wallet');

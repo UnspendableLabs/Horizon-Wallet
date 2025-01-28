@@ -1,6 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:horizon/common/constants.dart';
 import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
+
+enum WalletType {
+  horizon("Horizon", "Horizon Native"),
+  bip32("BIP32", "Freewallet / Counterwallet / Rare Pepe Wallet");
+
+  const WalletType(this.name, this.description);
+  final String name;
+  final String description;
+}
 
 class ImportFormatDropdown extends StatelessWidget {
   final Function(String) onChanged;
@@ -26,14 +34,10 @@ class ImportFormatDropdown extends StatelessWidget {
           selectedValue: selectedFormat,
           items: [
             HorizonUI.buildDropdownMenuItem(
-                ImportFormat.horizon.name, ImportFormat.horizon.description),
+                WalletType.horizon.name, WalletType.horizon.description),
             HorizonUI.buildDropdownMenuItem(
-              ImportFormat.counterwallet.name,
-              ImportFormat.counterwallet.description,
-            ),
-            HorizonUI.buildDropdownMenuItem(
-              ImportFormat.freewallet.name,
-              ImportFormat.freewallet.description,
+              WalletType.bip32.name,
+              WalletType.bip32.description,
             ),
           ],
         ),

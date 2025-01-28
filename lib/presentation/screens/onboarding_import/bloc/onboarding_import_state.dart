@@ -1,6 +1,6 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:horizon/common/constants.dart';
 import 'package:horizon/domain/entities/address.dart';
+import 'package:horizon/presentation/screens/onboarding/view/import_format_dropdown.dart';
 
 part 'onboarding_import_state.freezed.dart';
 
@@ -12,7 +12,7 @@ class OnboardingImportState with _$OnboardingImportState {
   const factory OnboardingImportState({
     @Default("") String mnemonic,
     String? mnemonicError,
-    @Default(ImportFormat.horizon) ImportFormat importFormat,
+    @Default(WalletType.horizon) WalletType walletType,
     @Default(OnboardingImportStep.chooseFormat) currentStep,
     @Default(ImportStateNotAsked) importState,
   }) = _OnboardingImportState;

@@ -1,8 +1,8 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:horizon/common/constants.dart';
 import 'package:horizon/domain/services/mnemonic_service.dart';
 import 'package:horizon/domain/services/wallet_service.dart';
 import 'package:horizon/presentation/common/usecase/import_wallet_usecase.dart';
+import 'package:horizon/presentation/screens/onboarding/view/import_format_dropdown.dart';
 import 'package:horizon/presentation/screens/onboarding_import/bloc/onboarding_import_event.dart';
 import 'package:horizon/presentation/screens/onboarding_import/bloc/onboarding_import_state.dart';
 
@@ -28,11 +28,11 @@ class OnboardingImportBloc
             mnemonic: event.mnemonic));
         return;
       } else {
-        bool validMnemonic = switch (state.importFormat) {
-          ImportFormat.counterwallet =>
-            mnemonicService.validateCounterwalletMnemonic(event.mnemonic),
-          ImportFormat.horizon ||
-          ImportFormat.freewallet =>
+        bool validMnemonic = switch (state.walletType) {
+          WalletType.bip32 =>
+            mnemonicService.validateCounterwalletMnemonic(event.mnemonic) ||
+                mnemonicService.validateMnemonic(event.mnemonic),
+          WalletType.horizon =>
             mnemonicService.validateMnemonic(event.mnemonic),
         };
 
@@ -47,13 +47,12 @@ class OnboardingImportBloc
     });
 
     on<ImportFormatChanged>((event, emit) async {
-      final importFormat = switch (event.importFormat) {
-        "Horizon" => ImportFormat.horizon,
-        "Freewallet" => ImportFormat.freewallet,
-        "Counterwallet" => ImportFormat.counterwallet,
+      final walletType = switch (event.walletType) {
+        "Horizon" => WalletType.horizon,
+        "BIP32" => WalletType.bip32,
         _ => throw Exception('Invariant: Invalid import format')
       };
-      emit(state.copyWith(importFormat: importFormat));
+      emit(state.copyWith(walletType: walletType));
     });
 
     on<ImportFormatSubmitted>((event, emit) async {
@@ -71,11 +70,11 @@ class OnboardingImportBloc
       } else {
         bool validMnemonic = false;
 
-        if (state.importFormat == ImportFormat.counterwallet) {
+        if (state.walletType == WalletType.bip32) {
           validMnemonic =
-              mnemonicService.validateCounterwalletMnemonic(event.mnemonic);
-        } else if (state.importFormat == ImportFormat.horizon ||
-            state.importFormat == ImportFormat.freewallet) {
+              mnemonicService.validateCounterwalletMnemonic(event.mnemonic) ||
+                  mnemonicService.validateMnemonic(event.mnemonic);
+        } else if (state.walletType == WalletType.horizon) {
           validMnemonic = mnemonicService.validateMnemonic(event.mnemonic);
         }
 
@@ -100,7 +99,7 @@ class OnboardingImportBloc
       await importWalletUseCase.callAllWallets(
         password: password,
         mnemonic: state.mnemonic,
-        importFormat: state.importFormat,
+        walletType: state.walletType,
         onError: (msg) {
           emit(state.copyWith(importState: ImportStateError(message: msg)));
         },
