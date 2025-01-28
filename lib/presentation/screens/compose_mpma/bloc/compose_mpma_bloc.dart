@@ -257,6 +257,7 @@ class ComposeMpmaBloc extends ComposeBaseBloc<ComposeMpmaState> {
               error: null,
               composeTransaction: event.composeTransaction,
               fee: event.fee)));
+      return; 
     }
 
     final s = (state.submitState as ReviewStep<ComposeMpmaSendResponse, void>);

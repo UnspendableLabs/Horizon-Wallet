@@ -38,6 +38,7 @@ class ComposeIssuanceEventParams {
 
 class ComposeIssuanceBloc extends ComposeBaseBloc<ComposeIssuanceState> {
   final bool passwordRequired;
+  final InMemoryKeyRepository inMemoryKeyRepository;
   final BalanceRepository balanceRepository;
   final ComposeRepository composeRepository;
   final TransactionService transactionService;
@@ -48,7 +49,6 @@ class ComposeIssuanceBloc extends ComposeBaseBloc<ComposeIssuanceState> {
   final WriteLocalTransactionUseCase writelocalTransactionUseCase;
   final Logger logger;
   final FetchIssuanceFormDataUseCase fetchIssuanceFormDataUseCase;
-  final InMemoryKeyRepository inMemoryKeyRepository;
 
   ComposeIssuanceBloc({
     required this.passwordRequired,

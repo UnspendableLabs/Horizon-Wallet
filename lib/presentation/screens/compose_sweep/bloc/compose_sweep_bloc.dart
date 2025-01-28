@@ -14,6 +14,7 @@ import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
 import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transaction_usecase.dart';
 import 'package:horizon/presentation/common/usecase/write_local_transaction_usecase.dart';
 import 'package:horizon/presentation/screens/compose_sweep/bloc/compose_sweep_state.dart';
+import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 
 class ComposeSweepEventParams {
   final String destination;
@@ -28,6 +29,9 @@ class ComposeSweepEventParams {
 }
 
 class ComposeSweepBloc extends ComposeBaseBloc<ComposeSweepState> {
+  final txName = "sweep";
+  final bool passwordRequired;
+  final InMemoryKeyRepository inMemoryKeyRepository;
   final ComposeRepository composeRepository;
   final AnalyticsService analyticsService;
   final GetFeeEstimatesUseCase getFeeEstimatesUseCase;
@@ -38,6 +42,8 @@ class ComposeSweepBloc extends ComposeBaseBloc<ComposeSweepState> {
   final Logger logger;
 
   ComposeSweepBloc({
+    required this.inMemoryKeyRepository,
+    required this.passwordRequired,
     required this.composeRepository,
     required this.analyticsService,
     required this.getFeeEstimatesUseCase,
@@ -153,13 +159,49 @@ class ComposeSweepBloc extends ComposeBaseBloc<ComposeSweepState> {
 
   @override
   void onReviewSubmitted(ReviewSubmitted event, emit) async {
-    emit(state.copyWith(
-        submitState: PasswordStep<ComposeSweepResponse>(
-      loading: false,
-      error: null,
-      composeTransaction: event.composeTransaction,
-      fee: event.fee,
-    )));
+    if (passwordRequired) {
+      emit(state.copyWith(
+          submitState: PasswordStep<ComposeSweepResponse>(
+        loading: false,
+        error: null,
+        composeTransaction: event.composeTransaction,
+        fee: event.fee,
+      )));
+      return;
+    }
+
+    final s = (state.submitState as ReviewStep<ComposeSweepResponse, void>);
+
+    try {
+      emit(state.copyWith(submitState: s.copyWith(loading: true)));
+
+      final inMemoryKey = await inMemoryKeyRepository.get();
+
+      await signAndBroadcastTransactionUseCase.call(
+          decryptionStrategy: InMemoryKey(inMemoryKey!),
+          source: s.composeTransaction.params.source,
+          rawtransaction: s.composeTransaction.rawtransaction,
+          onSuccess: (txHex, txHash) async {
+            await writelocalTransactionUseCase.call(txHex, txHash);
+
+            logger.info('$txName broadcasted txHash: $txHash');
+            analyticsService.trackAnonymousEvent('broadcast_tx_$txName',
+                properties: {'distinct_id': uuid.v4()});
+
+            emit(state.copyWith(
+                submitState: SubmitSuccess(
+                    transactionHex: txHex,
+                    sourceAddress: s.composeTransaction.params.source)));
+          },
+          onError: (msg) {
+            emit(state.copyWith(
+                submitState:
+                    s.copyWith(loading: false, error: msg.toString())));
+          });
+    } catch (e) {
+      emit(state.copyWith(
+          submitState: s.copyWith(loading: false, error: e.toString())));
+    }
   }
 
   @override

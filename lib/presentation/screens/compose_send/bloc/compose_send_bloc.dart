@@ -33,6 +33,7 @@ class ComposeSendEventParams {
 }
 
 class ComposeSendBloc extends ComposeBaseBloc<ComposeSendState> {
+  final txName = 'send';
   final bool passwordRequired;
   final InMemoryKeyRepository inMemoryKeyRepository;
   final BalanceRepository balanceRepository;
@@ -268,8 +269,8 @@ class ComposeSendBloc extends ComposeBaseBloc<ComposeSendState> {
           onSuccess: (txHex, txHash) async {
             await writelocalTransactionUseCase.call(txHex, txHash);
 
-            logger.info('send broadcasted txHash: $txHash');
-            analyticsService.trackAnonymousEvent('broadcast_tx_send',
+            logger.info('$txName broadcasted txHash: $txHash');
+            analyticsService.trackAnonymousEvent('broadcast_tx_$txName',
                 properties: {'distinct_id': uuid.v4()});
 
             emit(state.copyWith(
