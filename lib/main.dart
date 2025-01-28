@@ -54,6 +54,8 @@ import 'package:pub_semver/pub_semver.dart';
 import 'package:horizon/presentation/inactivity_monitor/inactivity_monitor_bloc.dart';
 import 'package:horizon/presentation/inactivity_monitor/inactivity_monitor_view.dart';
 
+import 'package:horizon/domain/repositories/settings_repository.dart';
+
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 final _sectionNavigatorKey = GlobalKey<NavigatorState>();
 
@@ -266,11 +268,11 @@ class AppRouter {
             builder:
                 (BuildContext context, GoRouterState state, navigationSession) {
               return ValueChangeObserver(
-                  cacheKey: SettingsValues.inactivityTimeout.toString(),
+                  cacheKey: SettingsKeys.inactivityTimeout.toString(),
                   defaultValue: 5,
                   builder: (context, inactivityTimeout, onChanged) {
                     return ValueChangeObserver(
-                        cacheKey: SettingsValues.lostFocusTimeout.toString(),
+                        cacheKey: SettingsKeys.lostFocusTimeout.toString(),
                         defaultValue: 1,
                         builder: (context, lostFocusTimeout, onChanged) {
                           return BlocProvider(

@@ -2,12 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
+import 'package:horizon/domain/repositories/settings_repository.dart';
 
-enum SettingsValues {
-  requiredPasswordForCryptoOperations,
-  inactivityTimeout,
-  lostFocusTimeout,
-}
 
 class SettingsView extends StatelessWidget {
   const SettingsView({super.key});
@@ -24,14 +20,14 @@ class SettingsView extends StatelessWidget {
                   SwitchSettingsTile(
                     title: 'Require password',
                     subtitle: 'Require password when signing transactions or granting access to wallet data',
-                    settingKey: SettingsValues.requiredPasswordForCryptoOperations.toString(),
+                    settingKey: SettingsKeys.requiredPasswordForCryptoOperations.toString(),
                     defaultValue: true,
                   ),
                   DropDownSettingsTile<int>(
                     title: 'Inactivity Timeout',
                     subtitle:
                         'Period before screen locks after last user interaction',
-                    settingKey: SettingsValues.inactivityTimeout.toString(),
+                    settingKey: SettingsKeys.inactivityTimeout.toString(),
                     values: const <int, String>{
                       1: '1 minute',
                       5: '5 minutes',
@@ -41,18 +37,18 @@ class SettingsView extends StatelessWidget {
                       720: '12 hours',
                     },
                     selected: Settings.getValue(
-                        SettingsValues.inactivityTimeout.toString(),
+                        SettingsKeys.inactivityTimeout.toString(),
                         defaultValue: 5)!,
                     onChange: (value) {
                       Settings.setValue(
-                          SettingsValues.inactivityTimeout.toString(), value,
+                          SettingsKeys.inactivityTimeout.toString(), value,
                           notify: true);
                     },
                   ),
                   DropDownSettingsTile<int>(
                     title: 'Lost Focus Timeout',
                     subtitle: 'Period before screen locks after focus is lost',
-                    settingKey: SettingsValues.lostFocusTimeout.toString(),
+                    settingKey: SettingsKeys.lostFocusTimeout.toString(),
                     values: const <int, String>{
                       1: '1 minute',
                       5: '5 minutes',
@@ -62,11 +58,11 @@ class SettingsView extends StatelessWidget {
                       720: '12 hours',
                     },
                     selected: Settings.getValue(
-                        SettingsValues.lostFocusTimeout.toString(),
+                        SettingsKeys.lostFocusTimeout.toString(),
                         defaultValue: 1)!,
                     onChange: (value) {
                       Settings.setValue(
-                          SettingsValues.lostFocusTimeout.toString(), value,
+                          SettingsKeys.lostFocusTimeout.toString(), value,
                           notify: true);
                     },
                   ),

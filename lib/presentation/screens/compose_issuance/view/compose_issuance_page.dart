@@ -29,6 +29,7 @@ import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:horizon/presentation/screens/settings/settings_view.dart';
+import 'package:horizon/domain/repositories/settings_repository.dart';
 
 import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
 import 'dart:math';
@@ -49,10 +50,10 @@ class ComposeIssuancePageWrapper extends StatelessWidget {
       success: (state) => BlocProvider(
         key: Key(currentAddress),
         create: (context) => ComposeIssuanceBloc(
-          // TODO: factor to not allow invalid state
           inMemoryKeyRepository: GetIt.I.get<InMemoryKeyRepository>(),
-          passwordRequired: Settings.getValue(
-              SettingsValues.requiredPasswordForCryptoOperations.toString()),
+          // TODO: factor into settings repository...
+          passwordRequired:
+              GetIt.I<SettingsRepository>().requirePasswordForCryptoOperations,
           composeTransactionUseCase: GetIt.I.get<ComposeTransactionUseCase>(),
           getFeeEstimatesUseCase: GetIt.I.get<GetFeeEstimatesUseCase>(),
           analyticsService: GetIt.I.get<AnalyticsService>(),

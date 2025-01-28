@@ -11,6 +11,8 @@ import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_f
 import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:horizon/presentation/screens/settings/settings_view.dart';
+import 'package:get_it/get_it.dart';
+import 'package:horizon/domain/repositories/settings_repository.dart';
 
 class ComposeBasePage<B extends ComposeBaseBloc<S>, S extends ComposeStateBase>
     extends StatefulWidget {
@@ -92,8 +94,12 @@ class ComposeBasePageState<B extends ComposeBaseBloc<S>,
             feeRate: var feeRate,
             virtualSize: var virtualSize,
             adjustedVirtualSize: var adjustedVirtualSize,
+            loading: var loading,
+            error: var error,
           ) =>
             ReviewStepView(
+              loading: loading,
+              error: error,
               composeTransaction: composeTransaction,
               fee: fee,
               feeRate: feeRate,
@@ -254,6 +260,9 @@ class FormStepViewState<S extends ComposeStateBase>
 }
 
 class ReviewStepView extends StatefulWidget {
+  final bool loading;
+  final String? error;
+
   final dynamic composeTransaction;
   final int fee;
   final int feeRate;
@@ -266,6 +275,8 @@ class ReviewStepView extends StatefulWidget {
 
   const ReviewStepView({
     super.key,
+    required this.loading,
+    required this.error,
     required this.composeTransaction,
     required this.fee,
     required this.feeRate,
@@ -285,8 +296,8 @@ class ReviewStepViewState extends State<ReviewStepView> {
 
   @override
   Widget build(BuildContext context) {
-    bool passwordIsRequired = Settings.getValue(
-        SettingsValues.requiredPasswordForCryptoOperations.toString());
+    bool passwordIsRequired =
+        GetIt.I<SettingsRepository>().requirePasswordForCryptoOperations;
 
     return Form(
       key: _formKey,
@@ -327,6 +338,12 @@ class ReviewStepViewState extends State<ReviewStepView> {
               ),
               enabled: false,
             ),
+            if (widget.error != null)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 16.0),
+                child: SelectableText(widget.error!,
+                    style: const TextStyle(color: redErrorText)),
+              ),
             const HorizonUI.HorizonDivider(),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -337,6 +354,8 @@ class ReviewStepViewState extends State<ReviewStepView> {
                 ),
                 HorizonUI.HorizonContinueButton(
                   onPressed: () {
+                    if (widget.loading) return;
+
                     widget.onContinue(
                         widget.composeTransaction, widget.fee, _formKey);
                   },

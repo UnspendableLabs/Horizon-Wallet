@@ -187,8 +187,13 @@ class ComposeCancelPageState extends State<ComposeCancelPage> {
           feeRate: var feeRate,
           virtualSize: var virtualSize,
           adjustedVirtualSize: var adjustedVirtualSize,
+          loading: var loading,
+          error: var error,
+                  
         ) =>
           ReviewStepView(
+              loading: loading,
+              error: error,
               composeTransaction: composeTransaction,
               fee: fee,
               feeRate: feeRate,

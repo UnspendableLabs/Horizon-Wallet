@@ -21,10 +21,13 @@ import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transacti
 import 'package:horizon/presentation/common/usecase/write_local_transaction_usecase.dart';
 import 'package:horizon/presentation/screens/compose_mpma/bloc/compose_mpma_event.dart';
 import 'package:horizon/presentation/screens/compose_mpma/bloc/compose_mpma_state.dart';
+import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 
 class ComposeMpmaEventParams {}
 
 class ComposeMpmaBloc extends ComposeBaseBloc<ComposeMpmaState> {
+  final bool passwordRequired;
+  final InMemoryKeyRepository inMemoryKeyRepository;
   final BalanceRepository balanceRepository;
   final ComposeRepository composeRepository;
   final AnalyticsService analyticsService;
@@ -36,6 +39,8 @@ class ComposeMpmaBloc extends ComposeBaseBloc<ComposeMpmaState> {
   final Logger logger;
 
   ComposeMpmaBloc({
+    required this.passwordRequired,
+    required this.inMemoryKeyRepository,
     required this.balanceRepository,
     required this.composeRepository,
     required this.analyticsService,
@@ -245,12 +250,47 @@ class ComposeMpmaBloc extends ComposeBaseBloc<ComposeMpmaState> {
 
   @override
   onReviewSubmitted(event, emit) async {
-    emit(state.copyWith(
-        submitState: PasswordStep<ComposeMpmaSendResponse>(
-            loading: false,
-            error: null,
-            composeTransaction: event.composeTransaction,
-            fee: event.fee)));
+    if (passwordRequired) {
+      emit(state.copyWith(
+          submitState: PasswordStep<ComposeMpmaSendResponse>(
+              loading: false,
+              error: null,
+              composeTransaction: event.composeTransaction,
+              fee: event.fee)));
+    }
+
+    final s = (state.submitState as ReviewStep<ComposeMpmaSendResponse, void>);
+
+    try {
+      emit(state.copyWith(submitState: s.copyWith(loading: true)));
+
+      final inMemoryKey = await inMemoryKeyRepository.get();
+
+      await signAndBroadcastTransactionUseCase.call(
+          decryptionStrategy: InMemoryKey(inMemoryKey!),
+          source: s.composeTransaction.params.source,
+          rawtransaction: s.composeTransaction.rawtransaction,
+          onSuccess: (txHex, txHash) async {
+            await writelocalTransactionUseCase.call(txHex, txHash);
+
+            logger.info('mpma_send broadcasted txHash: $txHash');
+            analyticsService.trackAnonymousEvent('broadcast_tx_mpma_send',
+                properties: {'distinct_id': uuid.v4()});
+
+            emit(state.copyWith(
+                submitState: SubmitSuccess(
+                    transactionHex: txHex,
+                    sourceAddress: s.composeTransaction.params.source)));
+          },
+          onError: (msg) {
+            emit(state.copyWith(
+                submitState:
+                    s.copyWith(loading: false, error: msg.toString())));
+          });
+    } catch (e) {
+      emit(state.copyWith(
+          submitState: s.copyWith(loading: false, error: e.toString())));
+    }
   }
 
   @override

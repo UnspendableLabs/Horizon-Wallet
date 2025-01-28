@@ -159,10 +159,6 @@ class ComposeIssuanceBloc extends ComposeBaseBloc<ComposeIssuanceState> {
 
   @override
   void onReviewSubmitted(ReviewSubmitted event, emit) async {
-
-    print("onReviewSubmitted");
-    print("passwordRequired: $passwordRequired");
-
     if (passwordRequired) {
       emit(state.copyWith(
           submitState: PasswordStep<ComposeIssuanceResponseVerbose>(
@@ -174,47 +170,38 @@ class ComposeIssuanceBloc extends ComposeBaseBloc<ComposeIssuanceState> {
       return;
     }
 
-
-    try {
-
-
-    
-
     final s = (state.submitState as ReviewStep<ComposeIssuanceResponseVerbose,
         ComposeIssuanceEventParams>);
 
-    print("s $s");
+    try {
+      emit(state.copyWith(submitState: s.copyWith(loading: true)));
 
-    emit(state.copyWith(submitState: s.copyWith(loading: true)));
+      final inMemoryKey = await inMemoryKeyRepository.get();
 
-    final inMemoryKey = await inMemoryKeyRepository.get();
+      await signAndBroadcastTransactionUseCase.call(
+          decryptionStrategy: InMemoryKey(inMemoryKey!),
+          source: s.composeTransaction.params.source,
+          rawtransaction: s.composeTransaction.rawtransaction,
+          onSuccess: (txHex, txHash) async {
+            await writelocalTransactionUseCase.call(txHex, txHash);
 
-    print("inMmeoryKey $inMemoryKey");
+            logger.info('issuance broadcasted txHash: $txHash');
+            analyticsService.trackAnonymousEvent('broadcast_tx_issue',
+                properties: {'distinct_id': uuid.v4()});
 
-    await signAndBroadcastTransactionUseCase.call(
-        decryptionStrategy: InMemoryKey(inMemoryKey!),
-        source: s.composeTransaction.params.source,
-        rawtransaction: s.composeTransaction.rawtransaction,
-        onSuccess: (txHex, txHash) async {
-          await writelocalTransactionUseCase.call(txHex, txHash);
-
-          logger.info('issuance broadcasted txHash: $txHash');
-          analyticsService.trackAnonymousEvent('broadcast_tx_issue',
-              properties: {'distinct_id': uuid.v4()});
-
-          emit(state.copyWith(
-              submitState: SubmitSuccess(
-                  transactionHex: txHex,
-                  sourceAddress: s.composeTransaction.params.source)));
-        },
-        onError: (msg) {
-          emit(state.copyWith(
-              submitState: s.copyWith(loading: false, error: msg.toString())));
-        });
+            emit(state.copyWith(
+                submitState: SubmitSuccess(
+                    transactionHex: txHex,
+                    sourceAddress: s.composeTransaction.params.source)));
+          },
+          onError: (msg) {
+            emit(state.copyWith(
+                submitState:
+                    s.copyWith(loading: false, error: msg.toString())));
+          });
     } catch (e) {
-
-        print("lord we have problems");
-
+      emit(state.copyWith(
+          submitState: s.copyWith(loading: false, error: e.toString())));
     }
   }
 
