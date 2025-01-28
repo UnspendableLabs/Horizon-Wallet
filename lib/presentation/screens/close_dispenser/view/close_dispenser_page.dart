@@ -17,6 +17,9 @@ import 'package:horizon/presentation/screens/close_dispenser/usecase/fetch_form_
 import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart';
 import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
+import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
+import 'package:horizon/domain/repositories/settings_repository.dart';
+import 'package:horizon/core/logging/logger.dart';
 
 class CloseDispenserPageWrapper extends StatelessWidget {
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
@@ -35,6 +38,10 @@ class CloseDispenserPageWrapper extends StatelessWidget {
       success: (state) => BlocProvider(
         key: Key(currentAddress),
         create: (context) => CloseDispenserBloc(
+          logger: GetIt.I.get<Logger>(),
+          passwordRequired:
+              GetIt.I<SettingsRepository>().requirePasswordForCryptoOperations,
+          inMemoryKeyRepository: GetIt.I.get<InMemoryKeyRepository>(),
           fetchCloseDispenserFormDataUseCase:
               GetIt.I.get<FetchCloseDispenserFormDataUseCase>(),
           writelocalTransactionUseCase:

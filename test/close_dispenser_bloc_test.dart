@@ -22,6 +22,14 @@ import 'package:horizon/presentation/screens/close_dispenser/bloc/close_dispense
 import 'package:horizon/presentation/screens/close_dispenser/usecase/fetch_form_data.dart';
 import 'package:horizon/presentation/screens/compose_dispenser/bloc/compose_dispenser_bloc.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
+import 'package:horizon/domain/repositories/settings_repository.dart';
+import 'package:horizon/core/logging/logger.dart';
+
+
+class MockInMemoryKeyRepository extends Mock implements InMemoryKeyRepository {}
+
+class MockLogger extends Mock implements Logger {}
 
 class MockComposeRepository extends Mock implements ComposeRepository {}
 
@@ -199,6 +207,9 @@ void main() {
     GetIt.I.registerSingleton<ErrorService>(mockErrorService);
 
     closeDispenserBloc = CloseDispenserBloc(
+      passwordRequired: true,
+      inMemoryKeyRepository: MockInMemoryKeyRepository(),
+      logger: MockLogger(),
       fetchCloseDispenserFormDataUseCase:
           mockFetchCloseDispenserFormDataUseCase,
       composeTransactionUseCase: mockComposeTransactionUseCase,
@@ -482,7 +493,7 @@ void main() {
         when(() => mockSignAndBroadcastTransactionUseCase.call(
               source: "source-address",
               rawtransaction: txHex,
-              password: 'test-password',
+              decryptionStrategy: Password('test-password'),
               onSuccess: any(named: 'onSuccess'),
               onError: any(named: 'onError'),
             )).thenAnswer((invocation) async {
@@ -569,7 +580,7 @@ void main() {
         when(() => mockSignAndBroadcastTransactionUseCase.call(
               source: "source-address",
               rawtransaction: "raw-transaction",
-              password: 'test-password',
+              decryptionStrategy: Password('test-password'),
               onSuccess: any(named: 'onSuccess'),
               onError: any(named: 'onError'),
             )).thenAnswer((invocation) async {
