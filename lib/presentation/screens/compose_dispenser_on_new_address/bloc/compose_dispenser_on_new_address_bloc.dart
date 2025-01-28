@@ -26,12 +26,17 @@ import 'package:horizon/presentation/common/usecase/write_local_transaction_usec
 import 'package:horizon/presentation/screens/compose_dispense/usecase/fetch_form_data.dart';
 import 'package:horizon/presentation/screens/compose_dispenser_on_new_address/bloc/compose_dispenser_on_new_address_event.dart';
 import 'package:horizon/presentation/screens/compose_dispenser_on_new_address/bloc/compose_dispenser_on_new_address_state.dart';
+import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 
 // similar dispenser adjusted vsize is ~193, we add plenty of wiggle room
 const int ADJUSTED_VIRTUAL_SIZE = 300;
 
 class ComposeDispenserOnNewAddressBloc extends Bloc<
     ComposeDispenserOnNewAddressEvent, ComposeDispenserOnNewAddressStateBase> {
+  final txName = 'create_dispenser_on_new_address';
+  final bool passwordRequired;
+  final InMemoryKeyRepository inMemoryKeyRepository;
+
   final WalletRepository walletRepository;
   final AccountRepository accountRepository;
   final AddressRepository addressRepository;
@@ -49,6 +54,8 @@ class ComposeDispenserOnNewAddressBloc extends Bloc<
   final WriteLocalTransactionUseCase writeLocalTransactionUseCase;
   final ErrorService errorService;
   ComposeDispenserOnNewAddressBloc({
+    required this.passwordRequired,
+    required this.inMemoryKeyRepository,
     required this.accountRepository,
     required this.addressRepository,
     required this.walletRepository,
