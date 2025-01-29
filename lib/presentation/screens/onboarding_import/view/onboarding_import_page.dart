@@ -282,19 +282,6 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
       backgroundColor: scaffoldBackgroundColor,
       body: Column(
         children: [
-          const Align(
-            alignment: Alignment.center,
-            child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 32.0),
-              child: Text(
-                'Horizon supports importing from Freewallet, Counterwallet, RarePepeWallet, and Horizon Native seeds.',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 16,
-                ),
-              ),
-            ),
-          ),
           isSmallScreen && widget.mnemonicErrorState != null
               ? Align(
                   alignment: Alignment.center,

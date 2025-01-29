@@ -19,7 +19,7 @@ import 'package:horizon/presentation/screens/onboarding/view/import_format_dropd
 
 // ignore_for_file: constant_identifier_names
 const GAP_LIMIT = 20;
-const SKIP_LIMIT = 3;
+const SKIP_LIMIT = 1;
 
 class PasswordException implements Exception {
   final String message;
@@ -71,10 +71,13 @@ class ImportWalletUseCase {
 
       print('importFormat: $importFormat');
 
+      print('deriving wallet');
       final deriveWallet = switch (importFormat) {
         ImportFormat.horizon => walletService.deriveRoot,
         _ => walletService.deriveRootCounterwallet,
       };
+
+      print('deriving accounts and addresses');
 
       (wallet, accountsWithBalances) = await createWalletForImportFormat(
         password: password,
@@ -138,7 +141,9 @@ class ImportWalletUseCase {
     Map<Account, List<Address>> accountsWithBalances = {};
     print('creating wallet for import format $importFormat');
 
+    print('time before deriveWallet: ${DateTime.now()}');
     final wallet = await deriveWallet(mnemonic, password);
+    print('time after deriveWallet: ${DateTime.now()}');
     String decryptedPrivKey;
     try {
       decryptedPrivKey =
@@ -155,6 +160,7 @@ class ImportWalletUseCase {
     for (var i = 0; i < GAP_LIMIT; i++) {
       print("ACCOUNT $i");
       // m/84'/0'/0'/0
+      print('time before account: ${DateTime.now()}');
       Account account = Account(
         name: 'ACCOUNT ${i + 1}',
         walletUuid: wallet.uuid,
@@ -164,7 +170,7 @@ class ImportWalletUseCase {
         uuid: uuid.v4(),
         importFormat: importFormat,
       );
-
+      print('time after account: ${DateTime.now()}');
       // Track addresses that have no balance; once 3 addresses have been skipped, stop importing
       int skippedAddresses = 0;
       Address? firstAddressForAccount;
@@ -174,9 +180,10 @@ class ImportWalletUseCase {
           // reset the skippedAddresses counter since we are starting a new account
           skippedAddresses = 0;
         }
-        print("ADDRESS $j");
+        print("ADDRESS SEGWIT $j");
         Address addressSegwit;
         Address? addressLegacy;
+        print('time before segwit: ${DateTime.now()}');
         if (importFormat == ImportFormat.horizon) {
           // derive single segwit address for horizon
           addressSegwit = await addressService.deriveAddressSegwit(
@@ -189,7 +196,10 @@ class ImportWalletUseCase {
             change: '0',
             index: j,
           );
+          print('time after segwit: ${DateTime.now()}');
         } else {
+          print('legacy addresses $j');
+          print('time before legacy: ${DateTime.now()}');
           // derive single bech32 address and single legacy address for freewallet and counterwallet
           List<Address> singleAddressSegwit =
               await addressService.deriveAddressFreewalletRange(
@@ -202,6 +212,7 @@ class ImportWalletUseCase {
             start: j,
             end: j,
           );
+          print('time after legacy: ${DateTime.now()}');
           addressSegwit = singleAddressSegwit[0];
 
           List<Address> singleAddressLegacy =
