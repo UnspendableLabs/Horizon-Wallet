@@ -230,7 +230,7 @@ void setup() {
     ConnectionErrorInterceptor(),
     BadResponseInterceptor(),
     BadCertificateInterceptor(),
-    SimpleLogInterceptor(),
+    // SimpleLogInterceptor(),
     RetryInterceptor(
       dio: dio,
       retries: 3,
@@ -257,7 +257,7 @@ void setup() {
     ConnectionErrorInterceptor(),
     BadResponseInterceptor(),
     BadCertificateInterceptor(),
-    SimpleLogInterceptor(),
+    // SimpleLogInterceptor(),
     RetryInterceptor(
       dio: dio,
       retries: 4,
@@ -496,9 +496,16 @@ void setup() {
           getFeeEstimatesUseCase: GetIt.I.get<GetFeeEstimatesUseCase>(),
           estimateXcpFeeRepository: GetIt.I.get<EstimateXcpFeeRepository>(),
           balanceRepository: injector.get<BalanceRepository>()));
+  
+  injector.registerSingleton<SecureKVService>(SecureKVServiceImpl());
+
+  injector.registerSingleton<InMemoryKeyRepository>(InMemoryKeyRepositoryImpl(
+    secureKVService: GetIt.I.get<SecureKVService>(),
+  ));
 
   injector.registerSingleton<SignAndBroadcastTransactionUseCase>(
       SignAndBroadcastTransactionUseCase(
+    inMemoryKeyRepository: GetIt.I.get<InMemoryKeyRepository>(),
     addressRepository: GetIt.I.get<AddressRepository>(),
     importedAddressRepository: GetIt.I.get<ImportedAddressRepository>(),
     accountRepository: GetIt.I.get<AccountRepository>(),
@@ -528,11 +535,6 @@ void setup() {
   injector
       .registerSingleton<EstimateDispensesUseCase>(EstimateDispensesUseCase());
 
-  injector.registerSingleton<SecureKVService>(SecureKVServiceImpl());
-
-  injector.registerSingleton<InMemoryKeyRepository>(InMemoryKeyRepositoryImpl(
-    secureKVService: GetIt.I.get<SecureKVService>(),
-  ));
 
   injector.registerSingleton<ImportWalletUseCase>(ImportWalletUseCase(
     inMemoryKeyRepository: GetIt.I.get<InMemoryKeyRepository>(),

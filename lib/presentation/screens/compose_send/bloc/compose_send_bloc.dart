@@ -33,6 +33,7 @@ class ComposeSendEventParams {
   });
 }
 
+// TODO: remove inMemoryKeyRepository ( unused )
 class ComposeSendBloc extends ComposeBaseBloc<ComposeSendState> {
   final txName = 'send';
   final bool passwordRequired;
@@ -261,10 +262,8 @@ class ComposeSendBloc extends ComposeBaseBloc<ComposeSendState> {
     try {
       emit(state.copyWith(submitState: s.copyWith(loading: true)));
 
-      final inMemoryKey = await inMemoryKeyRepository.get();
-
       await signAndBroadcastTransactionUseCase.call(
-          decryptionStrategy: InMemoryKey(inMemoryKey!),
+          decryptionStrategy: InMemoryKey(),
           source: s.composeTransaction.params.source,
           rawtransaction: s.composeTransaction.rawtransaction,
           onSuccess: (txHex, txHash) async {

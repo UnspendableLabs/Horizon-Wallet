@@ -232,10 +232,9 @@ class ComposeFairminterBloc extends ComposeBaseBloc<ComposeFairminterState> {
     try {
       emit(state.copyWith(submitState: s.copyWith(loading: true)));
 
-      final inMemoryKey = await inMemoryKeyRepository.get();
 
       await signAndBroadcastTransactionUseCase.call(
-          decryptionStrategy: InMemoryKey(inMemoryKey!),
+          decryptionStrategy: InMemoryKey(),
           source: s.composeTransaction.params.source,
           rawtransaction: s.composeTransaction.rawtransaction,
           onSuccess: (txHex, txHash) async {

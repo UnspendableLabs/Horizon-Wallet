@@ -14,6 +14,7 @@ import 'package:horizon/domain/services/imported_address_service.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
 import 'package:horizon/domain/entities/compose_response.dart';
 import 'package:horizon/domain/entities/decryption_strategy.dart';
+import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 
 class AddressNotFoundException implements Exception {
   final String message;
@@ -32,10 +33,6 @@ class SignAndBroadcastTransactionException implements Exception {
 //       could add separate use case for deriving key
 //       might also want to split out sign / broadcast
 
-
-
-
-
 class SignAndBroadcastTransactionUseCase<R extends ComposeResponse> {
   final AddressRepository addressRepository;
   final ImportedAddressRepository importedAddressRepository;
@@ -48,8 +45,10 @@ class SignAndBroadcastTransactionUseCase<R extends ComposeResponse> {
   final BitcoindService bitcoindService;
   final TransactionLocalRepository transactionLocalRepository;
   final ImportedAddressService importedAddressService;
+  final InMemoryKeyRepository inMemoryKeyRepository;
 
   SignAndBroadcastTransactionUseCase({
+    required this.inMemoryKeyRepository,
     required this.addressRepository,
     required this.importedAddressRepository,
     required this.accountRepository,
@@ -122,6 +121,7 @@ class SignAndBroadcastTransactionUseCase<R extends ComposeResponse> {
     }
   }
 
+  // this refers to address that is part of actual wallet
   Future<String> _getAddressPrivKeyForAddress(
       Address address, DecryptionStrategy decryptionStrategy) async {
     final account =
@@ -139,8 +139,8 @@ class SignAndBroadcastTransactionUseCase<R extends ComposeResponse> {
       decryptedRootPrivKey = switch (decryptionStrategy) {
         Password(password: var password) =>
           await encryptionService.decrypt(wallet!.encryptedPrivKey, password),
-        InMemoryKey(key: var key) =>
-          await encryptionService.decryptWithKey(wallet!.encryptedPrivKey, key)
+        InMemoryKey() => await encryptionService.decryptWithKey(
+            wallet!.encryptedPrivKey, (await inMemoryKeyRepository.get())!)
       };
     } catch (e) {
       throw SignAndBroadcastTransactionException('Incorrect password.');
@@ -166,11 +166,18 @@ class SignAndBroadcastTransactionUseCase<R extends ComposeResponse> {
       DecryptionStrategy decryptionStrategy) async {
     late String decryptedAddressWif;
     try {
+
+      final map = await inMemoryKeyRepository.getMap();
+      print("cool map $map");
+      final maybeKey =
+          (await inMemoryKeyRepository.getMap())[importedAddress.address];
+
+
       decryptedAddressWif = switch (decryptionStrategy) {
         Password(password: var password) => await encryptionService.decrypt(
             importedAddress.encryptedWif, password),
-        InMemoryKey(key: var key) => await encryptionService.decryptWithKey(
-            importedAddress.encryptedWif, key)
+        InMemoryKey() => await encryptionService.decryptWithKey(
+            importedAddress.encryptedWif, maybeKey!)
       };
     } catch (e) {
       throw SignAndBroadcastTransactionException('Incorrect password.');

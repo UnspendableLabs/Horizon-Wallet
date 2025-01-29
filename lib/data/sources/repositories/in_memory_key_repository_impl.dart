@@ -22,18 +22,19 @@ class InMemoryKeyRepositoryImpl implements InMemoryKeyRepository {
 
   @override
   Future<void> setMap({required Map<String, String> map}) async {
-    final json = map.toString();
-    return await secureKVService.write(key: _mapKey, value: json);
+    final jsonString = json.encode(map);
+    await secureKVService.write(key: _mapKey, value: jsonString);
   }
 
   @override
   Future<Map<String, String>> getMap() async {
     try {
-      String? string = await secureKVService.read(key: _mapKey);
-
-      return json.decode(string!).map((key, value) {
-        return MapEntry(key, value as String);
-      });
+      final string = await secureKVService.read(key: _mapKey);
+      if (string == null) {
+        return {};
+      }
+      final Map<String, dynamic> decoded = json.decode(string);
+      return decoded.map((key, value) => MapEntry(key, value as String));
     } catch (e) {
       return {};
     }

@@ -15,9 +15,9 @@ class Password extends DecryptionStrategy {
 }
 
 class InMemoryKey extends DecryptionStrategy {
-  final String key;
-  InMemoryKey(this.key);
+  // final String key;
+  // InMemoryKey(this.key);
   @override
-  List<Object> get props => [key];
+  List<Object> get props => [];
 }
 

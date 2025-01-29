@@ -831,6 +831,7 @@ class MyApp extends StatelessWidget {
         ),
         BlocProvider<ImportAddressPkBloc>(
           create: (context) => ImportAddressPkBloc(
+            inMemoryKeyRepository: GetIt.I<InMemoryKeyRepository>(),
             walletRepository: GetIt.I<WalletRepository>(),
             walletService: GetIt.I<WalletService>(),
             encryptionService: GetIt.I<EncryptionService>(),
