@@ -211,8 +211,8 @@ class ComposeAttachUtxoBloc extends ComposeBaseBloc<ComposeAttachUtxoState> {
       return;
     }
 
-    final s = ( state.submitState as ReviewStep<ComposeAttachUtxoResponse, void>);
-
+    final s =
+        (state.submitState as ReviewStep<ComposeAttachUtxoResponse, void>);
 
     try {
       emit(state.copyWith(submitState: s.copyWith(loading: true)));
@@ -244,8 +244,6 @@ class ComposeAttachUtxoBloc extends ComposeBaseBloc<ComposeAttachUtxoState> {
       emit(state.copyWith(
           submitState: s.copyWith(loading: false, error: e.toString())));
     }
-
-
   }
 
   @override
@@ -286,8 +284,8 @@ class ComposeAttachUtxoBloc extends ComposeBaseBloc<ComposeAttachUtxoState> {
           // Save back to the cache
           await cacheProvider.setObject(sourceAddress, txHashes);
 
-          logger.info('attach utxo broadcasted txHash: $txHash');
-          analyticsService.trackAnonymousEvent('broadcast_tx_attach_utxo',
+          logger.info('$txName broadcasted txHash: $txHash');
+          analyticsService.trackAnonymousEvent('broadcast_tx_$txName',
               properties: {'distinct_id': uuid.v4()});
 
           emit(state.copyWith(

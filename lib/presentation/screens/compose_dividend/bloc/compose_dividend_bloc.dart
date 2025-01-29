@@ -249,8 +249,8 @@ class ComposeDividendBloc extends ComposeBaseBloc<ComposeDividendState> {
         onSuccess: (txHex, txHash) async {
           await writelocalTransactionUseCase.call(txHex, txHash);
 
-          logger.debug('dividend broadcasted txHash: $txHash');
-          analyticsService.trackAnonymousEvent('broadcast_tx_dividend',
+          logger.debug('$txName broadcasted txHash: $txHash');
+          analyticsService.trackAnonymousEvent('broadcast_tx_$txName',
               properties: {'distinct_id': uuid.v4()});
 
           emit(state.copyWith(

@@ -302,8 +302,8 @@ class ComposeDispenseBloc extends ComposeBaseBloc<ComposeDispenseState> {
         onSuccess: (txHex, txHash) async {
           await writelocalTransactionUseCase.call(txHex, txHash);
 
-          logger.error('dispense broadcasted txHash: $txHash');
-          analyticsService.trackAnonymousEvent('broadcast_tx_dispense',
+          logger.error('$txName broadcasted txHash: $txHash');
+          analyticsService.trackAnonymousEvent('broadcast_tx_$txName',
               properties: {'distinct_id': uuid.v4()});
 
           emit(state.copyWith(

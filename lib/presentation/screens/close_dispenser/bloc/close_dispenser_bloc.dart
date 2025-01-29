@@ -240,8 +240,8 @@ class CloseDispenserBloc extends ComposeBaseBloc<CloseDispenserState> {
         onSuccess: (txHex, txHash) async {
           await writelocalTransactionUseCase.call(txHex, txHash);
 
-          logger.info('dispenser broadcasted txHash: $txHash');
-          analyticsService.trackAnonymousEvent('broadcast_tx_dispenser_close',
+          logger.info('$txName broadcasted txHash: $txHash');
+          analyticsService.trackAnonymousEvent('broadcast_tx_$txName',
               properties: {'distinct_id': uuid.v4()});
 
           emit(state.copyWith(

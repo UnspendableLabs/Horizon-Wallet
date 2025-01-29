@@ -177,7 +177,7 @@ class ComposeCancelBloc extends ComposeBaseBloc<ComposeCancelState> {
         onSuccess: (txHex, txHash) async {
           await writelocalTransactionUseCase.call(txHex, txHash);
 
-          analyticsService.trackAnonymousEvent('broadcast_tx_cancel',
+          analyticsService.trackAnonymousEvent('broadcast_tx_$txName',
               properties: {'distinct_id': uuid.v4()});
 
           emit(state.copyWith(

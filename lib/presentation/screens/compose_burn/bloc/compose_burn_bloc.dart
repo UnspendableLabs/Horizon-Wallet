@@ -188,7 +188,6 @@ class ComposeBurnBloc extends ComposeBaseBloc<ComposeBurnState> {
       emit(state.copyWith(
           submitState: s.copyWith(loading: false, error: e.toString())));
     }
-
   }
 
   @override
@@ -217,8 +216,8 @@ class ComposeBurnBloc extends ComposeBaseBloc<ComposeBurnState> {
         onSuccess: (txHex, txHash) async {
           await writelocalTransactionUseCase.call(txHex, txHash);
 
-          logger.info('burn broadcasted txHash: $txHash');
-          analyticsService.trackAnonymousEvent('broadcast_tx_burn',
+          logger.info('$txName broadcasted txHash: $txHash');
+          analyticsService.trackAnonymousEvent('broadcast_tx_$txName',
               properties: {'distinct_id': uuid.v4()});
 
           emit(state.copyWith(

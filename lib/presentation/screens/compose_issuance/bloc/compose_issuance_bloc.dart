@@ -37,6 +37,7 @@ class ComposeIssuanceEventParams {
 }
 
 class ComposeIssuanceBloc extends ComposeBaseBloc<ComposeIssuanceState> {
+  final txName = 'issuance';
   final bool passwordRequired;
   final InMemoryKeyRepository inMemoryKeyRepository;
   final BalanceRepository balanceRepository;
@@ -185,8 +186,8 @@ class ComposeIssuanceBloc extends ComposeBaseBloc<ComposeIssuanceState> {
           onSuccess: (txHex, txHash) async {
             await writelocalTransactionUseCase.call(txHex, txHash);
 
-            logger.info('issuance broadcasted txHash: $txHash');
-            analyticsService.trackAnonymousEvent('broadcast_tx_issue',
+            logger.info('$txName broadcasted txHash: $txHash');
+            analyticsService.trackAnonymousEvent('broadcast_tx_$txName',
                 properties: {'distinct_id': uuid.v4()});
 
             emit(state.copyWith(
@@ -232,8 +233,8 @@ class ComposeIssuanceBloc extends ComposeBaseBloc<ComposeIssuanceState> {
         onSuccess: (txHex, txHash) async {
           await writelocalTransactionUseCase.call(txHex, txHash);
 
-          logger.info('issuance broadcasted txHash: $txHash');
-          analyticsService.trackAnonymousEvent('broadcast_tx_issue',
+          logger.info('$txName broadcasted txHash: $txHash');
+          analyticsService.trackAnonymousEvent('broadcast_tx_$txName',
               properties: {'distinct_id': uuid.v4()});
 
           emit(state.copyWith(

@@ -225,8 +225,8 @@ class ComposeDestroyBloc extends ComposeBaseBloc<ComposeDestroyState> {
         onSuccess: (txHex, txHash) async {
           await writelocalTransactionUseCase.call(txHex, txHash);
 
-          logger.debug('destroy broadcasted txHash: $txHash');
-          analyticsService.trackAnonymousEvent('broadcast_tx_destroy',
+          logger.debug('$txName broadcasted txHash: $txHash');
+          analyticsService.trackAnonymousEvent('broadcast_tx_$txName',
               properties: {'distinct_id': uuid.v4()});
 
           emit(state.copyWith(
