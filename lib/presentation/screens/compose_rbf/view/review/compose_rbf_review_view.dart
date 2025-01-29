@@ -5,6 +5,9 @@ import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
 import 'package:horizon/presentation/screens/compose_rbf/view/form/compose_rbf_form_bloc.dart'
     as rbfForm;
 
+import 'package:get_it/get_it.dart';
+import 'package:horizon/domain/repositories/settings_repository.dart';
+
 class ComposeRBFReview extends StatelessWidget {
   final rbfForm.RBFData rbfData;
   final MakeRBFResponse makeRBFResponse;
@@ -20,6 +23,9 @@ class ComposeRBFReview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    bool passwordIsRequired =
+        GetIt.I<SettingsRepository>().requirePasswordForCryptoOperations;
+
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [

@@ -15,6 +15,7 @@ import 'package:horizon/presentation/common/usecase/write_local_transaction_usec
 import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
 import 'package:horizon/presentation/screens/compose_order/bloc/compose_order_event.dart';
 import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
+import 'package:horizon/domain/entities/decryption_strategy.dart';
 
 import "./compose_order_state.dart";
 // import "./compose_order_event.dart";
@@ -174,7 +175,7 @@ class ComposeOrderBloc extends ComposeBaseBloc<ComposeOrderState> {
         onSuccess: (txHex, txHash) async {
           await writelocalTransactionUseCase.call(txHex, txHash);
 
-          analyticsService.trackAnonymousEvent('broadcast_tx_order',
+          analyticsService.trackAnonymousEvent('broadcast_tx_$txName',
               properties: {'distinct_id': uuid.v4()});
 
           emit(state.copyWith(

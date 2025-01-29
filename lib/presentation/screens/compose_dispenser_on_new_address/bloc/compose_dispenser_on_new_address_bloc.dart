@@ -27,6 +27,7 @@ import 'package:horizon/presentation/screens/compose_dispense/usecase/fetch_form
 import 'package:horizon/presentation/screens/compose_dispenser_on_new_address/bloc/compose_dispenser_on_new_address_event.dart';
 import 'package:horizon/presentation/screens/compose_dispenser_on_new_address/bloc/compose_dispenser_on_new_address_state.dart';
 import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
+import 'package:horizon/domain/entities/decryption_strategy.dart';
 
 // similar dispenser adjusted vsize is ~193, we add plenty of wiggle room
 const int ADJUSTED_VIRTUAL_SIZE = 300;

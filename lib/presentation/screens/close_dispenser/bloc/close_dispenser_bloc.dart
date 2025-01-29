@@ -14,6 +14,7 @@ import 'package:horizon/presentation/screens/close_dispenser/bloc/close_dispense
 import 'package:horizon/presentation/screens/close_dispenser/usecase/fetch_form_data.dart';
 import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
+import 'package:horizon/domain/entities/decryption_strategy.dart';
 
 class CloseDispenserParams {
   final String asset;

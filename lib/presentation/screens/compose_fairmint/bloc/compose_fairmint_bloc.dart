@@ -18,6 +18,7 @@ import 'package:horizon/presentation/screens/compose_fairmint/bloc/compose_fairm
 import 'package:horizon/presentation/screens/compose_fairmint/bloc/compose_fairmint_state.dart';
 import 'package:horizon/presentation/screens/compose_fairmint/usecase/fetch_form_data.dart';
 import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
+import 'package:horizon/domain/entities/decryption_strategy.dart';
 
 class ComposeFairmintEventParams {
   final String asset;

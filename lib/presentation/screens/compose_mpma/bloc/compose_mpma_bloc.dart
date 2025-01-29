@@ -274,8 +274,8 @@ class ComposeMpmaBloc extends ComposeBaseBloc<ComposeMpmaState> {
           onSuccess: (txHex, txHash) async {
             await writelocalTransactionUseCase.call(txHex, txHash);
 
-            logger.info('mpma_send broadcasted txHash: $txHash');
-            analyticsService.trackAnonymousEvent('broadcast_tx_mpma_send',
+            logger.info('$txName broadcasted txHash: $txHash');
+            analyticsService.trackAnonymousEvent('broadcast_tx_$txName',
                 properties: {'distinct_id': uuid.v4()});
 
             emit(state.copyWith(
@@ -410,8 +410,8 @@ class ComposeMpmaBloc extends ComposeBaseBloc<ComposeMpmaState> {
         onSuccess: (txHex, txHash) async {
           await writelocalTransactionUseCase.call(txHex, txHash);
 
-          logger.info('mpma broadcasted txHash: $txHash');
-          analyticsService.trackAnonymousEvent('broadcast_tx_mpma',
+          logger.info('$txName txHash: $txHash');
+          analyticsService.trackAnonymousEvent('broadcast_tx_$txName',
               properties: {'distinct_id': uuid.v4()});
 
           emit(state.copyWith(

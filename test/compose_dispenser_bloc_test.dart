@@ -28,6 +28,7 @@ import 'package:horizon/presentation/screens/compose_dispenser/usecase/fetch_for
 import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:horizon/core/logging/logger.dart';
+import 'package:horizon/domain/entities/decryption_strategy.dart';
 
 class MockComposeRepository extends Mock implements ComposeRepository {}
 

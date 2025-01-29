@@ -14,6 +14,7 @@ import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transacti
 import 'package:horizon/presentation/common/usecase/write_local_transaction_usecase.dart';
 import 'package:horizon/presentation/screens/compose_fairminter/bloc/compose_fairminter_state.dart';
 import 'package:horizon/presentation/screens/compose_fairminter/usecase/fetch_form_data.dart';
+import 'package:horizon/domain/entities/decryption_strategy.dart';
 import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 
 class ComposeFairminterEventParams {

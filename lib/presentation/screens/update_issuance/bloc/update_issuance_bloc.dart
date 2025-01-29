@@ -17,6 +17,7 @@ import 'package:horizon/presentation/common/usecase/write_local_transaction_usec
 import 'package:horizon/presentation/screens/compose_issuance/bloc/compose_issuance_bloc.dart';
 import 'package:horizon/presentation/screens/update_issuance/bloc/update_issuance_state.dart';
 import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
+import 'package:horizon/domain/entities/decryption_strategy.dart';
 
 class UpdateIssuanceEventParams extends ComposeIssuanceEventParams {
   final IssuanceActionType issuanceActionType;

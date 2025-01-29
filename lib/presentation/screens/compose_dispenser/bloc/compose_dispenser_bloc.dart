@@ -15,6 +15,7 @@ import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.
 import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transaction_usecase.dart';
 import 'package:horizon/presentation/common/usecase/write_local_transaction_usecase.dart';
 import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
+import 'package:horizon/domain/entities/decryption_strategy.dart';
 
 class ComposeDispenserEventParams {
   final String asset;
