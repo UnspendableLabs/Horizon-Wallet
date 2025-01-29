@@ -22,10 +22,12 @@ import 'package:horizon/presentation/common/usecase/write_local_transaction_usec
 import 'package:horizon/presentation/screens/compose_mpma/bloc/compose_mpma_event.dart';
 import 'package:horizon/presentation/screens/compose_mpma/bloc/compose_mpma_state.dart';
 import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
+import 'package:horizon/domain/entities/decryption_strategy.dart';
 
 class ComposeMpmaEventParams {}
 
 class ComposeMpmaBloc extends ComposeBaseBloc<ComposeMpmaState> {
+  final txName = 'mpma_send';
   final bool passwordRequired;
   final InMemoryKeyRepository inMemoryKeyRepository;
   final BalanceRepository balanceRepository;
@@ -257,7 +259,7 @@ class ComposeMpmaBloc extends ComposeBaseBloc<ComposeMpmaState> {
               error: null,
               composeTransaction: event.composeTransaction,
               fee: event.fee)));
-      return; 
+      return;
     }
 
     final s = (state.submitState as ReviewStep<ComposeMpmaSendResponse, void>);
