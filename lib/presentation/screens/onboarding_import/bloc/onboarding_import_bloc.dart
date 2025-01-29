@@ -96,7 +96,7 @@ class OnboardingImportBloc
       emit(state.copyWith(importState: ImportStateLoading()));
       final password = event.password;
 
-      await importWalletUseCase.callAllWallets(
+      await importWalletUseCase.call(
         password: password,
         mnemonic: state.mnemonic,
         walletType: state.walletType,

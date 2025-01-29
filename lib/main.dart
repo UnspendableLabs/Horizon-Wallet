@@ -39,7 +39,6 @@ import 'package:horizon/presentation/screens/dashboard/view/dashboard_page.dart'
 import 'package:horizon/presentation/screens/onboarding/view/onboarding_page.dart';
 import 'package:horizon/presentation/screens/onboarding_create/view/onboarding_create_page.dart';
 import 'package:horizon/presentation/screens/onboarding_import/view/onboarding_import_page.dart';
-import 'package:horizon/presentation/screens/onboarding_import_pk/view/onboarding_import_pk_page.dart';
 import 'package:horizon/presentation/screens/privacy_policy.dart';
 import 'package:horizon/presentation/screens/login/login_view.dart';
 import 'package:horizon/presentation/screens/tos.dart';
@@ -246,14 +245,14 @@ class AppRouter {
               transitionsBuilder:
                   (context, animation, secondaryAnimation, child) => child),
         ),
-        GoRoute(
-          path: "/onboarding/import-pk",
-          pageBuilder: (context, state) => CustomTransitionPage<void>(
-              key: state.pageKey,
-              child: const OnboardingImportPKPageWrapper(),
-              transitionsBuilder:
-                  (context, animation, secondaryAnimation, child) => child),
-        ),
+        // GoRoute(
+        //   path: "/onboarding/import-pk",
+        //   pageBuilder: (context, state) => CustomTransitionPage<void>(
+        //       key: state.pageKey,
+        //       child: const OnboardingImportPKPageWrapper(),
+        //       transitionsBuilder:
+        //           (context, animation, secondaryAnimation, child) => child),
+        // ),
         GoRoute(
           path: "/login",
           pageBuilder: (context, state) => CustomTransitionPage<void>(
