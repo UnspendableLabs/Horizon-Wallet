@@ -2,13 +2,13 @@ import 'package:horizon/common/constants.dart';
 import 'package:horizon/common/uuid.dart';
 import 'package:horizon/domain/entities/account.dart';
 import 'package:horizon/domain/entities/address.dart';
-import 'package:horizon/domain/entities/balance.dart';
-import 'package:horizon/domain/entities/transaction.dart';
+import 'package:horizon/domain/entities/bitcoin_tx.dart';
 import 'package:horizon/domain/entities/wallet.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/address_tx_repository.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
+import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 import 'package:horizon/domain/repositories/config_repository.dart';
 import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
@@ -37,6 +37,7 @@ class ImportWalletUseCase {
   final WalletService walletService;
   final AddressTxRepository addressTxRepository;
   final BalanceRepository balanceRepository;
+  final BitcoinRepository bitcoinRepository;
 
   ImportWalletUseCase({
     required this.inMemoryKeyRepository,
@@ -49,6 +50,7 @@ class ImportWalletUseCase {
     required this.walletService,
     required this.addressTxRepository,
     required this.balanceRepository,
+    required this.bitcoinRepository,
   });
 
   Future<void> callAllWallets({
@@ -60,41 +62,42 @@ class ImportWalletUseCase {
   }) async {
     try {
       print('walletType: $walletType');
-      Wallet wallet;
       Map<Account, List<Address>> accountsWithBalances;
-
-      final importFormat = switch (walletType) {
-        WalletType.horizon => ImportFormat.horizon,
-        WalletType.bip32 => ImportFormat
-            .counterwallet, // if the wallet type is _not_ horizon, we will check counterwallet first for balances since it is most common
-      };
-
-      print('importFormat: $importFormat');
-
-      print('deriving wallet');
-      final deriveWallet = switch (importFormat) {
-        ImportFormat.horizon => walletService.deriveRoot,
-        _ => walletService.deriveRootCounterwallet,
-      };
+      Wallet wallet;
 
       print('deriving accounts and addresses');
 
-      (wallet, accountsWithBalances) = await createWalletForImportFormat(
-        password: password,
-        importFormat: importFormat,
-        mnemonic: mnemonic,
-        deriveWallet: deriveWallet,
-      );
+      if (walletType == WalletType.horizon) {
+        // derive a horizon wallet
+        wallet = await walletService.deriveRoot(mnemonic, password);
+        accountsWithBalances = await createHorizonWallet(
+          password: password,
+          mnemonic: mnemonic,
+          wallet: wallet,
+        );
+      } else {
+        // if bip32 wallet is selected, we default to counterwallet
+        // the assumption here is that 99% of imports will be counterwallet
+        wallet =
+            await walletService.deriveRootCounterwallet(mnemonic, password);
+        accountsWithBalances = await createBip32Wallet(
+          password: password,
+          importFormat: ImportFormat.counterwallet,
+          mnemonic: mnemonic,
+          wallet: wallet,
+        );
+      }
 
-      if (importFormat == ImportFormat.counterwallet &&
-          accountsWithBalances.isEmpty) {
+      // if counterwallet
+      if (walletType == WalletType.bip32 && accountsWithBalances.isEmpty) {
+        wallet = await walletService.deriveRootFreewallet(mnemonic, password);
         print('no counterwallet balances found, checking freewallet');
         // after checking counterwallet, if there are no balances, we will check freewallet
-        (wallet, accountsWithBalances) = await createWalletForImportFormat(
+        accountsWithBalances = await createBip32Wallet(
           password: password,
           importFormat: ImportFormat.freewallet,
           mnemonic: mnemonic,
-          deriveWallet: walletService.deriveRootFreewallet,
+          wallet: wallet,
         );
       }
 
@@ -132,18 +135,13 @@ class ImportWalletUseCase {
     }
   }
 
-  Future<(Wallet, Map<Account, List<Address>>)> createWalletForImportFormat({
+  Future<Map<Account, List<Address>>> createHorizonWallet({
     required String password,
-    required ImportFormat importFormat,
     required String mnemonic,
-    required Future<Wallet> Function(String, String) deriveWallet,
+    required Wallet wallet,
   }) async {
     Map<Account, List<Address>> accountsWithBalances = {};
-    print('creating wallet for import format $importFormat');
 
-    print('time before deriveWallet: ${DateTime.now()}');
-    final wallet = await deriveWallet(mnemonic, password);
-    print('time after deriveWallet: ${DateTime.now()}');
     String decryptedPrivKey;
     try {
       decryptedPrivKey =
@@ -152,15 +150,13 @@ class ImportWalletUseCase {
       throw PasswordException('invariant: Invalid password');
     }
 
-    // Track accounts that have no balance; once 3 accounts have been skipped, stop importing
+    // Track accounts that have no balance; once the SKIP_LIMIT is reached, stop importing
     int skippedAccounts = 0;
-    Account? lastAccountWithBalances;
 
-    // Attempt to find balances/transactions for up to 20 accounts, checking up to 20 addresses per account
+    // Attempt to find balances/transactions for up to 20 accounts, checking only the first address for each horizon account
     for (var i = 0; i < GAP_LIMIT; i++) {
       print("ACCOUNT $i");
       // m/84'/0'/0'/0
-      print('time before account: ${DateTime.now()}');
       Account account = Account(
         name: 'ACCOUNT ${i + 1}',
         walletUuid: wallet.uuid,
@@ -168,134 +164,209 @@ class ImportWalletUseCase {
         coinType: '${_getCoinType()}\'',
         accountIndex: '$i\'',
         uuid: uuid.v4(),
+        importFormat: ImportFormat.horizon,
+      );
+
+      print("ADDRESS SEGWIT 0");
+      print('time before segwit: ${DateTime.now()}');
+      // derive single segwit address for horizon
+      Address address = await addressService.deriveAddressSegwit(
+        privKey: decryptedPrivKey,
+        chainCodeHex: wallet.chainCodeHex,
+        accountUuid: account.uuid,
+        purpose: account.purpose,
+        coin: account.coinType,
+        account: account.accountIndex,
+        change: '0',
+        index: 0,
+      );
+      print('time after segwit: ${DateTime.now()}');
+
+      // get transactions and balances for the segwit address
+      final List<BitcoinTx> transactions =
+          await bitcoinRepository.getTransactions([address.address]).then(
+        (either) async {
+          return either.fold(
+            (error) => throw Exception("GetTransactionInfo failure"),
+            (transactions) => transactions,
+          );
+        },
+      );
+
+      // if there are any transactions or balances for the address, add the address to the account
+      // if there are any transactions or balances for the address, add the address to the account
+      if (transactions.isNotEmpty) {
+        // reset the skippedAddresses and skippedAccounts counter since we have just added an address
+        skippedAccounts = 0;
+
+        // capture the most recent account with balances
+        print("ADDED ADDRESS 0 for account $i");
+
+        // add the segwit address to the account if balances or transactions are present
+        if (accountsWithBalances.containsKey(account)) {
+          accountsWithBalances[account]!.add(address);
+        } else {
+          accountsWithBalances[account] = [address];
+        }
+      }
+
+      // If we have not yet reached the skip limit,
+      // if the current account has no balances, add to the skip limit
+      if (skippedAccounts < SKIP_LIMIT &&
+          (!accountsWithBalances.containsKey(account))) {
+        print('skipping account $i');
+        skippedAccounts++;
+      }
+
+      if (skippedAccounts >= SKIP_LIMIT) {
+        break;
+      }
+    }
+
+    return accountsWithBalances;
+  }
+
+  Future<Map<Account, List<Address>>> createBip32Wallet({
+    required String password,
+    required ImportFormat importFormat,
+    required String mnemonic,
+    required Wallet wallet,
+  }) async {
+    Map<Account, List<Address>> accountsWithBalances = {};
+    print('creating wallet for import format $importFormat');
+
+    String decryptedPrivKey;
+    try {
+      decryptedPrivKey =
+          await encryptionService.decrypt(wallet.encryptedPrivKey, password);
+    } catch (e) {
+      throw PasswordException('invariant: Invalid password');
+    }
+
+    // for freewallet and counterwallet imports, always import the first 20 addresses
+    Account firstAccount = Account(
+      name: 'ACCOUNT 1',
+      walletUuid: wallet.uuid,
+      purpose: '0\'', // unused in Freewallet path
+      coinType: _getCoinType(),
+      accountIndex: '0\'',
+      uuid: uuid.v4(),
+      importFormat: importFormat,
+    );
+
+    List<Address> addressesBech32 =
+        await addressService.deriveAddressFreewalletRange(
+            type: AddressType.bech32,
+            privKey: decryptedPrivKey,
+            chainCodeHex: wallet.chainCodeHex,
+            accountUuid: firstAccount.uuid,
+            account: firstAccount.accountIndex,
+            change: '0',
+            start: 0,
+            end: 9);
+
+    List<Address> addressesLegacy =
+        await addressService.deriveAddressFreewalletRange(
+            type: AddressType.legacy,
+            privKey: decryptedPrivKey,
+            chainCodeHex: wallet.chainCodeHex,
+            accountUuid: firstAccount.uuid,
+            account: firstAccount.accountIndex,
+            change: '0',
+            start: 0,
+            end: 9);
+
+    accountsWithBalances[firstAccount] = [
+      ...addressesBech32,
+      ...addressesLegacy,
+    ];
+
+    // Track accounts that have no balance; once 3 accounts have been skipped, stop importing
+    int skippedAccounts = 0;
+
+    // Attempt to find balances/transactions for all subsequent accounts, up to 20 accounts, checking up to 20 addresses per account
+    for (var i = 1; i < GAP_LIMIT; i++) {
+      print("ACCOUNT $i");
+      //  m/0'/0/0
+      // create an account to house
+      Account account = Account(
+        name: 'ACCOUNT ${i + 1}',
+        walletUuid: wallet.uuid,
+        purpose: '0\'', // unused in Freewallet path
+        coinType: _getCoinType(),
+        accountIndex: '$i\'',
+        uuid: uuid.v4(),
         importFormat: importFormat,
       );
-      print('time after account: ${DateTime.now()}');
       // Track addresses that have no balance; once 3 addresses have been skipped, stop importing
       int skippedAddresses = 0;
-      Address? firstAddressForAccount;
 
       for (var j = 0; j < GAP_LIMIT; j++) {
         if (j == 0) {
           // reset the skippedAddresses counter since we are starting a new account
           skippedAddresses = 0;
         }
-        print("ADDRESS SEGWIT $j");
-        Address addressSegwit;
-        Address? addressLegacy;
-        print('time before segwit: ${DateTime.now()}');
-        if (importFormat == ImportFormat.horizon) {
-          // derive single segwit address for horizon
-          addressSegwit = await addressService.deriveAddressSegwit(
-            privKey: decryptedPrivKey,
-            chainCodeHex: wallet.chainCodeHex,
-            accountUuid: account.uuid,
-            purpose: account.purpose,
-            coin: account.coinType,
-            account: account.accountIndex,
-            change: '0',
-            index: j,
-          );
-          print('time after segwit: ${DateTime.now()}');
-        } else {
-          print('legacy addresses $j');
-          print('time before legacy: ${DateTime.now()}');
-          // derive single bech32 address and single legacy address for freewallet and counterwallet
-          List<Address> singleAddressSegwit =
-              await addressService.deriveAddressFreewalletRange(
-            type: AddressType.bech32,
-            privKey: decryptedPrivKey,
-            chainCodeHex: wallet.chainCodeHex,
-            accountUuid: account.uuid,
-            account: account.accountIndex,
-            change: '0',
-            start: j,
-            end: j,
-          );
-          print('time after legacy: ${DateTime.now()}');
-          addressSegwit = singleAddressSegwit[0];
+        print('legacy addresses $j');
+        print('time before legacy: ${DateTime.now()}');
+        // derive single bech32 address and single legacy address for freewallet and counterwallet
+        List<Address> singleAddressSegwit =
+            await addressService.deriveAddressFreewalletRange(
+          type: AddressType.bech32,
+          privKey: decryptedPrivKey,
+          chainCodeHex: wallet.chainCodeHex,
+          accountUuid: account.uuid,
+          account: account.accountIndex,
+          change: '0',
+          start: j,
+          end: j,
+        );
+        print('time after legacy: ${DateTime.now()}');
 
-          List<Address> singleAddressLegacy =
-              await addressService.deriveAddressFreewalletRange(
-            type: AddressType.legacy,
-            privKey: decryptedPrivKey,
-            chainCodeHex: wallet.chainCodeHex,
-            accountUuid: account.uuid,
-            account: account.accountIndex,
-            change: '0',
-            start: j,
-            end: j,
-          );
+        List<Address> singleAddressLegacy =
+            await addressService.deriveAddressFreewalletRange(
+          type: AddressType.legacy,
+          privKey: decryptedPrivKey,
+          chainCodeHex: wallet.chainCodeHex,
+          accountUuid: account.uuid,
+          account: account.accountIndex,
+          change: '0',
+          start: j,
+          end: j,
+        );
 
-          addressLegacy = singleAddressLegacy[0];
-        }
-
-        if (j == 0) {
-          // capture the first address for the account
-          // at the end, if the account has no balances, we will add the first address to the account
-          firstAddressForAccount = addressSegwit;
-        }
+        Address addressSegwit = singleAddressSegwit[0];
+        Address addressLegacy = singleAddressLegacy[0];
 
         // get transactions and balances for the segwit address
-        final List<Transaction> transactionsSegwit = await addressTxRepository
-            .getTransactionsByAddress(addressSegwit.address);
-        List<Balance> balancesSegwit = await balanceRepository
-            .getBalancesForAddress(addressSegwit.address);
-
-        List<Balance>? balancesLegacy;
-        List<Transaction>? transactionsLegacy;
-
-        // get transactions and balances for the legacy address, when present
-        if (addressLegacy != null) {
-          balancesLegacy = await balanceRepository
-              .getBalancesForAddress(addressLegacy.address);
-          transactionsLegacy = await addressTxRepository
-              .getTransactionsByAddress(addressLegacy.address);
-        }
-
-        // The balances method always returns a BTC balance, even if it's 0.
-        // If the BTC balance is 0, remove it from the list
-        if (balancesSegwit.length == 1 &&
-            balancesSegwit.first.asset == 'BTC' &&
-            balancesSegwit.first.quantity == 0) {
-          balancesSegwit = [];
-        }
-
-        if (balancesLegacy != null &&
-            balancesLegacy.length == 1 &&
-            balancesLegacy.first.asset == 'BTC' &&
-            balancesLegacy.first.quantity == 0) {
-          balancesLegacy = [];
-        }
+        final List<BitcoinTx> transactionsSegwit = await bitcoinRepository
+            .getTransactions([addressSegwit.address]).then((either) async {
+          return either.fold(
+            (error) => throw Exception("GetTransactionInfo failure"),
+            (transactions) => transactions,
+          );
+        });
+        List<BitcoinTx> transactionsLegacy = await bitcoinRepository
+            .getTransactions([addressLegacy.address]).then((either) async {
+          return either.fold(
+            (error) => throw Exception("GetTransactionInfo failure"),
+            (transactions) => transactions,
+          );
+        });
 
         // if there are any transactions or balances for the segwit address or the legacy address, add the address to the account
-        if (transactionsSegwit.isNotEmpty ||
-            balancesSegwit.isNotEmpty ||
-            (balancesLegacy != null && balancesLegacy.isNotEmpty) ||
-            (transactionsLegacy != null && transactionsLegacy.isNotEmpty)) {
+        if (transactionsSegwit.isNotEmpty || transactionsLegacy.isNotEmpty) {
           // reset the skippedAddresses and skippedAccounts counter since we have just added an address
           skippedAddresses = 0;
           skippedAccounts = 0;
 
           // capture the most recent account with balances
-          lastAccountWithBalances = account;
           print("ADDED ADDRESS $j for account $i");
 
-          if (balancesSegwit.isNotEmpty || transactionsSegwit.isNotEmpty) {
-            // add the segwit address to the account if balances or transactions are present
-            if (accountsWithBalances.containsKey(account)) {
-              accountsWithBalances[account]!.add(addressSegwit);
-            } else {
-              accountsWithBalances[account] = [addressSegwit];
-            }
-          } else if (balancesLegacy != null && balancesLegacy.isNotEmpty ||
-              transactionsLegacy != null && transactionsLegacy.isNotEmpty) {
-            // add the legacy address to the account if balances or transactions are present
-            if (accountsWithBalances.containsKey(account)) {
-              accountsWithBalances[account]!.add(addressLegacy!);
-            } else {
-              accountsWithBalances[account] = [addressLegacy!];
-            }
+          // add the legacy address to the account if balances or transactions are present
+          if (accountsWithBalances.containsKey(account)) {
+            accountsWithBalances[account]!.add(addressLegacy);
+          } else {
+            accountsWithBalances[account] = [addressLegacy];
           }
         } else {
           // if the current address has no balances or transactions for either the segwit or legacy address, add it to the skippedAddresses list
@@ -313,36 +384,15 @@ class ImportWalletUseCase {
           (!accountsWithBalances.containsKey(account))) {
         print('skipping account $i');
         skippedAccounts++;
-
-        if (firstAddressForAccount == null ||
-            firstAddressForAccount.accountUuid != account.uuid) {
-          throw Exception(
-              'invariant: first address for account $i is null or does not match account uuid');
-        }
-        // we capture skipped accounts in case it falls between accounts with balances
-        // for example, if I have balances for accounts 1-3, no balances for account 4, but account 5 has balances, then we want to add account 4 to the list of accounts to be imported
-        accountsWithBalances[account] = [firstAddressForAccount];
       }
 
       // once we have passed 3 accounts with no balances, break the loop and proceed with inserting wallet/accounts/addresses
       if (skippedAccounts >= SKIP_LIMIT) {
-        // Remove all empty accounts beyond the last account with balances
-        if (lastAccountWithBalances != null) {
-          accountsWithBalances.removeWhere(
-            (acc, _) =>
-                int.parse(acc.accountIndex.replaceAll("'", '')) >
-                int.parse(
-                    lastAccountWithBalances!.accountIndex.replaceAll("'", '')),
-          );
-        } else {
-          // If no accounts have balances, clear the accountsWithBalances map
-          accountsWithBalances.clear();
-        }
         break;
       }
     }
 
-    return (wallet, accountsWithBalances);
+    return accountsWithBalances;
   }
 
   Future<void> call({

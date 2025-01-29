@@ -535,6 +535,7 @@ void setup() {
     walletService: GetIt.I.get<WalletService>(),
     addressTxRepository: GetIt.I.get<AddressTxRepository>(),
     balanceRepository: GetIt.I.get<BalanceRepository>(),
+    bitcoinRepository: GetIt.I.get<BitcoinRepository>(),
   ));
 
   injector.registerLazySingleton<RPCGetAddressesSuccessCallback>(
