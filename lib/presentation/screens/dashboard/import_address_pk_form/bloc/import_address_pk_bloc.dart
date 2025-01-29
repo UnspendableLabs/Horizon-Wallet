@@ -10,6 +10,7 @@ import 'package:horizon/domain/services/imported_address_service.dart';
 import 'package:horizon/domain/services/wallet_service.dart';
 import "package:horizon/presentation/screens/dashboard/import_address_pk_form/bloc/import_address_pk_event.dart";
 import 'package:horizon/presentation/screens/dashboard/import_address_pk_form/bloc/import_address_pk_state.dart';
+import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 
 class ImportAddressPkBloc
     extends Bloc<ImportAddressPkEvent, ImportAddressPkState> {
@@ -20,6 +21,7 @@ class ImportAddressPkBloc
   final AddressRepository addressRepository;
   final ImportedAddressRepository importedAddressRepository;
   final ImportedAddressService importedAddressService;
+  final InMemoryKeyRepository inMemoryKeyRepository;
   ImportAddressPkBloc({
     required this.walletRepository,
     required this.walletService,
@@ -28,6 +30,7 @@ class ImportAddressPkBloc
     required this.addressRepository,
     required this.importedAddressRepository,
     required this.importedAddressService,
+      required this.inMemoryKeyRepository
   }) : super(ImportAddressPkStep1()) {
     on<Finalize>((event, emit) async {
       emit(ImportAddressPkStep2(state: Step2Initial()));
@@ -77,6 +80,16 @@ class ImportAddressPkBloc
           encryptedWif: encryptedWIF,
           name: event.name,
         );
+
+        final String encryptionKey =
+            await encryptionService.getDecryptionKey(encryptedWIF, event.password);
+
+        final currMap = await inMemoryKeyRepository.getMap();
+        final newMap = {...currMap, address: encryptionKey};
+
+        await inMemoryKeyRepository.setMap(map: newMap);
+
+
 
         try {
           await importedAddressRepository.insert(importedAddress);
