@@ -38,7 +38,7 @@ class ComposeFairminterEventParams {
 }
 
 class ComposeFairminterBloc extends ComposeBaseBloc<ComposeFairminterState> {
-  final txName = 'destroy';
+  final txName = 'fairminter';
   final bool passwordRequired;
   final InMemoryKeyRepository inMemoryKeyRepository;
   final ComposeRepository composeRepository;
