@@ -23,6 +23,8 @@ import 'package:horizon/presentation/screens/compose_attach_utxo/usecase/fetch_f
 import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart";
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
+import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
+import 'package:horizon/domain/repositories/settings_repository.dart';
 
 class ComposeAttachUtxoPageWrapper extends StatelessWidget {
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
@@ -44,6 +46,9 @@ class ComposeAttachUtxoPageWrapper extends StatelessWidget {
       success: (state) => BlocProvider(
         key: Key(currentAddress),
         create: (context) => ComposeAttachUtxoBloc(
+          passwordRequired:
+              GetIt.I<SettingsRepository>().requirePasswordForCryptoOperations,
+          inMemoryKeyRepository: GetIt.I.get<InMemoryKeyRepository>(),
           logger: GetIt.I.get<Logger>(),
           fetchComposeAttachUtxoFormDataUseCase:
               GetIt.I.get<FetchComposeAttachUtxoFormDataUseCase>(),
