@@ -496,7 +496,7 @@ void setup() {
           getFeeEstimatesUseCase: GetIt.I.get<GetFeeEstimatesUseCase>(),
           estimateXcpFeeRepository: GetIt.I.get<EstimateXcpFeeRepository>(),
           balanceRepository: injector.get<BalanceRepository>()));
-  
+
   injector.registerSingleton<SecureKVService>(SecureKVServiceImpl());
 
   injector.registerSingleton<InMemoryKeyRepository>(InMemoryKeyRepositoryImpl(
@@ -534,7 +534,6 @@ void setup() {
 
   injector
       .registerSingleton<EstimateDispensesUseCase>(EstimateDispensesUseCase());
-
 
   injector.registerSingleton<ImportWalletUseCase>(ImportWalletUseCase(
     inMemoryKeyRepository: GetIt.I.get<InMemoryKeyRepository>(),

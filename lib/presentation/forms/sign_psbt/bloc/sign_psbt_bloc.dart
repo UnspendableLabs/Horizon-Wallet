@@ -18,11 +18,14 @@ import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/imported_address_service.dart';
 import 'package:horizon/presentation/common/shared_util.dart';
+import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
+import 'package:horizon/domain/entities/decryption_strategy.dart';
 
 import "./sign_psbt_state.dart";
 import "./sign_psbt_event.dart";
 
 class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
+  final bool passwordRequired;
   final String unsignedPsbt;
   final TransactionService transactionService;
   final WalletRepository walletRepository;
@@ -36,8 +39,10 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
   final AccountRepository accountRepository;
   final Map<String, List<int>> signInputs;
   final List<int>? sighashTypes;
+  final InMemoryKeyRepository inMemoryKeyRepository;
 
   SignPsbtBloc({
+    required this.passwordRequired,
     required this.unsignedPsbt,
     required this.transactionService,
     required this.walletRepository,
@@ -51,6 +56,7 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
     required this.accountRepository,
     required this.signInputs,
     required this.sighashTypes,
+    required this.inMemoryKeyRepository,
   }) : super(SignPsbtState()) {
     on<FetchFormEvent>(_handleFetchForm);
     on<PasswordChanged>(_handlePasswordChanged);
@@ -200,15 +206,30 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
       }
 
       String privateKey = '';
-      try {
-        privateKey = await encryptionService.decrypt(
-            wallet.encryptedPrivKey, state.password.value);
-      } catch (e) {
-        emit(state.copyWith(
-          submissionStatus: FormzSubmissionStatus.failure,
-          error: "Incorrect password.",
-        ));
-        return;
+
+      if (passwordRequired) {
+        try {
+          privateKey = await encryptionService.decrypt(
+              wallet.encryptedPrivKey, state.password.value);
+        } catch (e) {
+          print(" for some rreason we are trying to decode private key? ");
+          emit(state.copyWith(
+            submissionStatus: FormzSubmissionStatus.failure,
+            error: "Incorrect password.",
+          ));
+          return;
+        }
+      } else {
+        try {
+          privateKey = await encryptionService.decryptWithKey(
+              wallet.encryptedPrivKey, (await inMemoryKeyRepository.get())!);
+        } catch (e) {
+          emit(state.copyWith(
+            submissionStatus: FormzSubmissionStatus.failure,
+            error: "Invariant: could not decrypt wallet",
+          ));
+          return;
+        }
       }
 
       Map<int, String> inputPrivateKeyMap = {};
@@ -220,7 +241,9 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
         final result = await addressRepository
             .get(address)
             .flatMap((UnifiedAddress unifiedAddress) => getUAddressPrivateKey(
-                  state.password.value,
+                  passwordRequired
+                      ? Password(state.password.value)
+                      : InMemoryKey(),
                   privateKey,
                   wallet.chainCodeHex,
                   unifiedAddress,
@@ -250,13 +273,16 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
     }
   }
 
-  TaskEither<String, String> getUAddressPrivateKey(String password,
-          String rootPrivKey, String chainCodeHex, UnifiedAddress address) =>
+  TaskEither<String, String> getUAddressPrivateKey(
+          DecryptionStrategy decryptionStrategy,
+          String rootPrivKey,
+          String chainCodeHex,
+          UnifiedAddress address) =>
       switch (address) {
         UAddress(address: var address) =>
           getAddressPrivateKey(rootPrivKey, chainCodeHex, address),
         UImportedAddress(importedAddress: var importedAddress) =>
-          getImportedAddressPrivateKey(importedAddress, password),
+          getImportedAddressPrivateKey(importedAddress, decryptionStrategy)
       };
 
   TaskEither<String, String> getAddressPrivateKey(
@@ -267,9 +293,11 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
           (e, s) => "Failed to derive address private key.");
 
   TaskEither<String, String> getImportedAddressPrivateKey(
-          ImportedAddress importedAddress, String password) =>
+          ImportedAddress importedAddress,
+          DecryptionStrategy decryptionStrategy) =>
       TaskEither.tryCatch(
-          () => _getAddressPrivKeyForImportedAddress(importedAddress, password),
+          () => _getAddressPrivKeyForImportedAddress(
+              importedAddress, decryptionStrategy),
           (e, s) => "Failed to derive address private key.");
 
   Future<String> _getAddressPrivKeyForAddress(
@@ -297,12 +325,21 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
   }
 
   Future<String> _getAddressPrivKeyForImportedAddress(
-      ImportedAddress importedAddress, String password) async {
+      ImportedAddress importedAddress,
+      DecryptionStrategy decryptionStrategy) async {
     late String decryptedAddressWif;
     try {
-      decryptedAddressWif = await encryptionService.decrypt(
-          importedAddress.encryptedWif, password);
+      final maybeKey =
+          (await inMemoryKeyRepository.getMap())[importedAddress.address];
+
+      decryptedAddressWif = switch (decryptionStrategy) {
+        Password(password: var password) => await encryptionService.decrypt(
+            importedAddress.encryptedWif, password),
+        InMemoryKey() => await encryptionService.decryptWithKey(
+            importedAddress.encryptedWif, maybeKey!)
+      };
     } catch (e) {
+      print("countl't gt addredd priv key for imported address");
       throw Exception('Incorrect password.');
     }
 

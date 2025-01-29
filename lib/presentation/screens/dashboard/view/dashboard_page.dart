@@ -26,6 +26,7 @@ import 'package:horizon/domain/repositories/imported_address_repository.dart';
 import 'package:horizon/domain/repositories/transaction_local_repository.dart';
 import 'package:horizon/domain/repositories/unified_address_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
+import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/bitcoind_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
@@ -67,6 +68,7 @@ import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:sliver_tools/sliver_tools.dart';
 import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
+import 'package:horizon/domain/repositories/settings_repository.dart';
 
 class SignPsbtModal extends StatelessWidget {
   final int tabId;
@@ -109,6 +111,9 @@ class SignPsbtModal extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (_) => SignPsbtBloc(
+        passwordRequired:
+            GetIt.I<SettingsRepository>().requirePasswordForCryptoOperations,
+        inMemoryKeyRepository: GetIt.I<InMemoryKeyRepository>(),
         addressRepository: addressRepository,
         importedAddressService: importedAddressService,
         signInputs: signInputs,
@@ -125,6 +130,8 @@ class SignPsbtModal extends StatelessWidget {
       ),
       child: SignPsbtForm(
         key: Key(unsignedPsbt),
+        passwordRequired:
+            GetIt.I<SettingsRepository>().requirePasswordForCryptoOperations,
         onSuccess: (signedPsbtHex) {
           onSuccess(RPCSignPsbtSuccessCallbackArgs(
               tabId: tabId, requestId: requestId, signedPsbt: signedPsbtHex));
