@@ -1,20 +1,31 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:fpdart/fpdart.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/common/constants.dart';
+import 'package:horizon/domain/entities/bitcoin_tx.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
+import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/main.dart';
-import 'package:horizon/setup.dart';
 import 'package:integration_test/integration_test.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:pub_semver/pub_semver.dart';
+
+import 'app_test_setup.dart';
+
+class MockBitcoinRepository extends Mock implements BitcoinRepository {}
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   const network =
       String.fromEnvironment('HORIZON_NETWORK', defaultValue: 'mainnet');
+
+  // Register the mock
+  late MockBitcoinRepository mockBitcoinRepository;
 
   // Define test cases
   final testCases_ = [
@@ -150,9 +161,56 @@ void main() {
       testCases_.where((testCase) => testCase['network'] == network).toList();
 
   group('Onboarding Integration Tests', () {
-    setUpAll(() async {
-      // Perform any common setup here
-      setup();
+    setUp(() async {
+      // Initialize Settings
+      await Settings.init(
+        cacheProvider: SharePreferenceCache(),
+      );
+      // Create the mock instance
+      mockBitcoinRepository = MockBitcoinRepository();
+
+      // Setup default mock behavior before any test runs
+      when(() => mockBitcoinRepository.getTransactions(any()))
+          .thenAnswer((_) async {
+        print('Mock getTransactions called'); // Debug print
+        return Right([
+          BitcoinTx(
+            txid: 'mock_txid',
+            version: 1,
+            locktime: 0,
+            vin: [],
+            vout: [],
+            size: 100,
+            weight: 400,
+            fee: 1000,
+            status: Status(
+              confirmed: true,
+              blockHeight: 1000,
+              blockHash: 'mock_block_hash',
+              blockTime: 1600000000,
+            ),
+          ),
+        ]);
+      });
+
+      // First unregister any existing BitcoinRepository
+      if (GetIt.I.isRegistered<BitcoinRepository>()) {
+        await GetIt.I.unregister<BitcoinRepository>();
+      }
+
+      // Register our mock BEFORE running setup
+      GetIt.I.registerSingleton<BitcoinRepository>(mockBitcoinRepository);
+
+      // Now run the regular setup
+      appTestSetup();
+    });
+
+    tearDown(() async {
+      // Clean up settings
+      Settings.clearCache();
+
+      // Clean up GetIt
+      await GetIt.I.reset();
     });
 
     for (final testCase in testCases) {
@@ -195,7 +253,13 @@ void main() {
         await tester.pumpAndSettle();
 
         // Select the specified import format
-        final formatOption = find.text(testCase['format'] as String).last;
+        String dropdownText;
+        if (testCase['format'] == ImportFormat.horizon.description) {
+          dropdownText = 'Horizon Native';
+        } else {
+          dropdownText = 'Freewallet / Counterwallet / Rare Pepe Wallet';
+        }
+        final formatOption = find.text(dropdownText).last;
         await tester.tap(formatOption);
         await tester.pumpAndSettle();
 
@@ -230,6 +294,7 @@ void main() {
         await tester.enterText(confirmPasswordField, 'securepassword123');
         await tester.pumpAndSettle();
 
+        print('LOGGING IN');
         // Ensure the "LOGIN" button is visible
         final loginButton = find.text('LOGIN');
         expect(loginButton, findsOneWidget);
@@ -240,6 +305,9 @@ void main() {
         // Now tap the "LOGIN" button
         await tester.tap(loginButton);
         await tester.pumpAndSettle();
+
+        print('WAITING FOR 10 SECONDS');
+        await Future.delayed(const Duration(seconds: 10));
 
         final expectedAddresses = testCase['addresses'] as List<String>;
 
@@ -261,6 +329,9 @@ void main() {
               reason:
                   'Address ${addresses[i].address} does not match expected address ${expectedAddresses[i]}');
         }
+
+        verify(() => mockBitcoinRepository.getTransactions(any()))
+            .called(greaterThan(0));
 
         final settingsButton = find.byIcon(Icons.settings);
         expect(settingsButton, findsOneWidget);

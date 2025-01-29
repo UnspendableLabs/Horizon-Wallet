@@ -36,7 +36,6 @@ import "package:horizon/data/sources/repositories/address_repository_impl.dart";
 import 'package:horizon/data/sources/repositories/address_tx_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/asset_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/balance_repository_impl.dart';
-import 'package:horizon/data/sources/repositories/bitcoin_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/block_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/compose_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/config_repository_impl.dart';
@@ -116,7 +115,7 @@ import 'package:horizon/presentation/screens/compose_fairminter/usecase/fetch_fo
 import 'package:horizon/presentation/screens/compose_issuance/usecase/fetch_form_data.dart';
 import 'package:logger/logger.dart' as logger;
 
-void setup() {
+void appTestSetup() {
   GetIt injector = GetIt.I;
 
   injector.registerSingleton<Logger>(LoggerImpl(
@@ -290,12 +289,6 @@ void setup() {
     ),
   );
   GetIt.I.get<ErrorService>().initialize();
-
-  injector.registerLazySingleton<BitcoinRepository>(() => BitcoinRepositoryImpl(
-        esploraApi: EsploraApi(
-          dio: esploraDio,
-        ),
-      ));
 
   injector.registerSingleton<CacheProvider>(HiveCache());
 

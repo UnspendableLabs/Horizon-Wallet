@@ -69,6 +69,7 @@ class ImportWalletUseCase {
 
     // Attempt to find balances/transactions for up to 20 accounts, checking only the first address for each horizon account
     for (var i = 0; i < GAP_LIMIT; i++) {
+      print('ImportWalletUseCase.createHorizonWallet: ACCOUNT i = $i');
       // m/84'/0'/0'/0
       Account account = Account(
         name: 'ACCOUNT ${i + 1}',
@@ -80,6 +81,7 @@ class ImportWalletUseCase {
         importFormat: ImportFormat.horizon,
       );
 
+      print('ImportWalletUseCase.createHorizonWallet: DERIVING ADDRESS');
       Address address = await addressService.deriveAddressSegwit(
         privKey: decryptedPrivKey,
         chainCodeHex: wallet.chainCodeHex,
@@ -92,6 +94,7 @@ class ImportWalletUseCase {
       );
 
       // get transactions and balances for the segwit address
+      print('ImportWalletUseCase.createHorizonWallet: GETTING TRANSACTIONS');
       final List<BitcoinTx> transactions =
           await bitcoinRepository.getTransactions([address.address]).then(
         (either) async {
@@ -101,6 +104,9 @@ class ImportWalletUseCase {
           );
         },
       );
+
+      print(
+          'ImportWalletUseCase.createHorizonWallet: TRANSACTIONS = $transactions');
 
       // if there are any transactions or balances for the address, add the address to the account
       // if there are any transactions or balances for the address, add the address to the account
@@ -128,6 +134,7 @@ class ImportWalletUseCase {
     required Function() onSuccess,
   }) async {
     try {
+      print('ImportWalletUseCase.call');
       Wallet wallet;
       Map<Account, List<Address>> accountsWithBalances = {};
 
@@ -139,6 +146,7 @@ class ImportWalletUseCase {
           break;
 
         case WalletType.bip32:
+          print('ImportWalletUseCase.call: DERIVING COUNTERWALLET WALLET');
           // we assume that 99% of imports will be counterwallet
           // first we check if there are any transactions on the counterwallet account
           wallet =
@@ -150,6 +158,8 @@ class ImportWalletUseCase {
           } catch (e) {
             throw PasswordException('Invalid password');
           }
+
+          print('ImportWalletUseCase.call: DERIVING COUNTERWALLET ACCOUNT');
           // https://github.com/CounterpartyXCP/counterwallet/blob/1de386782818aeecd7c23a3d2132746a2f56e4fc/src/js/util.bitcore.js#L17
           Account counterwalletAccount = Account(
               name: 'ACCOUNT 1',
@@ -159,6 +169,8 @@ class ImportWalletUseCase {
               accountIndex: '0\'',
               uuid: uuid.v4(),
               importFormat: ImportFormat.counterwallet);
+
+          print('ImportWalletUseCase.call: DERIVING COUNTERWALLET ADDRESSES');
 
           // import all 20 addresses for the counterwallet account
           List<Address> addressesBech32 =
@@ -203,6 +215,7 @@ class ImportWalletUseCase {
 
             // check any subsequent accounts for transactions, up to 20 accounts
             for (int i = 1; i < GAP_LIMIT; i++) {
+              print('ImportWalletUseCase.call: DERIVING COUNTERWALLET ACCOUNT');
               Account nextCounterwalletAccount = Account(
                   name: 'ACCOUNT ${i + 1}',
                   walletUuid: wallet.uuid,
@@ -254,6 +267,7 @@ class ImportWalletUseCase {
             // break the switch since we have found all the counterwallet accounts with transactions
             break;
           } else {
+            print('ImportWalletUseCase.call: NO COUNTERWALLET TRANSACTIONS');
             // if there are no counterwallet transactions, we will check freewallet
             wallet =
                 await walletService.deriveRootFreewallet(mnemonic, password);
@@ -263,6 +277,7 @@ class ImportWalletUseCase {
             } catch (e) {
               throw PasswordException('invariant:Invalid password');
             }
+            print('ImportWalletUseCase.call: DERIVING FREEWALLET ACCOUNT');
             // create freewallet account
             Account freewalletAccount = Account(
                 name: 'ACCOUNT 1',
@@ -273,6 +288,7 @@ class ImportWalletUseCase {
                 uuid: uuid.v4(),
                 importFormat: ImportFormat.freewallet);
 
+            print('ImportWalletUseCase.call: DERIVING FREEWALLET ADDRESSES');
             List<Address> addressesBech32 =
                 await addressService.deriveAddressFreewalletRange(
                     type: AddressType.bech32,
@@ -314,6 +330,7 @@ class ImportWalletUseCase {
               ...addressesLegacy,
             ];
             for (int i = 1; i < GAP_LIMIT; i++) {
+              print('ImportWalletUseCase.call: DERIVING FREEWALLET ACCOUNT $i');
               Account nextFreewalletAccount = Account(
                   name: 'ACCOUNT ${i + 1}',
                   walletUuid: wallet.uuid,
