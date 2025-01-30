@@ -339,7 +339,6 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
             importedAddress.encryptedWif, maybeKey!)
       };
     } catch (e) {
-      print("countl't gt addredd priv key for imported address");
       throw Exception('Incorrect password.');
     }
 

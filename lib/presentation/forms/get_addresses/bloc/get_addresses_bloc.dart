@@ -15,8 +15,11 @@ import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/public_key_service.dart';
 import 'package:horizon/domain/entities/address_rpc.dart';
+import 'package:horizon/domain/entities/decryption_strategy.dart';
+import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 
 class GetAddressesBloc extends Bloc<GetAddressesEvent, GetAddressesState> {
+  final bool passwordRequired;
   final List<Account> accounts;
   final AddressRepository addressRepository;
   final ImportedAddressRepository importedAddressRepository;
@@ -26,8 +29,11 @@ class GetAddressesBloc extends Bloc<GetAddressesEvent, GetAddressesState> {
   final AddressService addressService;
   final ImportedAddressService importedAddressService;
   final PublicKeyService publicKeyService;
+  final InMemoryKeyRepository inMemoryKeyRepository;
 
   GetAddressesBloc({
+    required this.inMemoryKeyRepository,
+    required this.passwordRequired,
     required this.addressService,
     required this.importedAddressService,
     required this.accounts,
@@ -93,8 +99,10 @@ class GetAddressesBloc extends Bloc<GetAddressesEvent, GetAddressesState> {
             await addressRepository.getAllByAccountUuid(selectedAccountUuid);
 
         for (var address in addresses_) {
-          final pk =
-              await _getAddressPrivKeyForAddress(address, state.password.value);
+          final pk = passwordRequired
+              ? await _getAddressPrivKeyForAddress(
+                  address, Password(state.password.value))
+              : await _getAddressPrivKeyForAddress(address, InMemoryKey());
 
           final publicKey = await publicKeyService.fromPrivateKeyAsHex(pk);
 
@@ -113,8 +121,11 @@ class GetAddressesBloc extends Bloc<GetAddressesEvent, GetAddressesState> {
           throw GetAddressesException('Imported address not found.');
         }
 
-        final pk = await _getAddressPrivKeyForImportedAddress(
-            importedAddress, state.password.value);
+        final pk = passwordRequired
+            ? await _getAddressPrivKeyForImportedAddress(
+                importedAddress, Password(state.password.value))
+            : await _getAddressPrivKeyForImportedAddress(
+                importedAddress, InMemoryKey());
 
         final publicKey = await publicKeyService.fromPrivateKeyAsHex(pk);
 
@@ -165,7 +176,7 @@ class GetAddressesBloc extends Bloc<GetAddressesEvent, GetAddressesState> {
   }
 
   Future<String> _getAddressPrivKeyForAddress(
-      Address address, String password) async {
+      Address address, DecryptionStrategy decryptionStrategy) async {
     final account =
         await accountRepository.getAccountByUuid(address.accountUuid);
     if (account == null) {
@@ -177,8 +188,13 @@ class GetAddressesBloc extends Bloc<GetAddressesEvent, GetAddressesState> {
     // Decrypt Root Private Key
     String decryptedRootPrivKey;
     try {
-      decryptedRootPrivKey =
-          await encryptionService.decrypt(wallet!.encryptedPrivKey, password);
+
+      decryptedRootPrivKey = switch (decryptionStrategy) {
+        Password(password: var password) =>
+          await encryptionService.decrypt(wallet!.encryptedPrivKey, password),
+        InMemoryKey() => await encryptionService.decryptWithKey(
+            wallet!.encryptedPrivKey, (await inMemoryKeyRepository.get())!)
+      };
     } catch (e) {
       throw GetAddressesException('Incorrect password.');
     }
@@ -199,11 +215,19 @@ class GetAddressesBloc extends Bloc<GetAddressesEvent, GetAddressesState> {
   }
 
   Future<String> _getAddressPrivKeyForImportedAddress(
-      ImportedAddress importedAddress, String password) async {
+      ImportedAddress importedAddress,
+      DecryptionStrategy decryptionStrategy) async {
     late String decryptedAddressWif;
     try {
-      decryptedAddressWif = await encryptionService.decrypt(
-          importedAddress.encryptedWif, password);
+      final maybeKey =
+          (await inMemoryKeyRepository.getMap())[importedAddress.address];
+
+      decryptedAddressWif = switch (decryptionStrategy) {
+        Password(password: var password) => await encryptionService.decrypt(
+            importedAddress.encryptedWif, password),
+        InMemoryKey() => await encryptionService.decryptWithKey(
+            importedAddress.encryptedWif, maybeKey!)
+      };
     } catch (e) {
       throw GetAddressesException('Incorrect password.');
     }

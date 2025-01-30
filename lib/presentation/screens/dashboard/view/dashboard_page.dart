@@ -174,6 +174,9 @@ class GetAddressesModal extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (_) => GetAddressesBloc(
+        passwordRequired:
+            GetIt.I<SettingsRepository>().requirePasswordForCryptoOperations,
+        inMemoryKeyRepository: GetIt.I<InMemoryKeyRepository>(),
         accountRepository: accountRepository,
         publicKeyService: publicKeyService,
         encryptionService: encryptionService,
@@ -185,6 +188,8 @@ class GetAddressesModal extends StatelessWidget {
         importedAddressRepository: importedAddressRepository,
       ),
       child: GetAddressesForm(
+        passwordRequired:
+            GetIt.I<SettingsRepository>().requirePasswordForCryptoOperations,
         accounts: accounts,
         onSuccess: (addresses) {
           onSuccess(RPCGetAddressesSuccessCallbackArgs(
