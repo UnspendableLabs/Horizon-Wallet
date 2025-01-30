@@ -38,6 +38,14 @@ class ComposeDispenserOnNewAddressBloc extends Bloc<
   final bool passwordRequired;
   final InMemoryKeyRepository inMemoryKeyRepository;
 
+  final String asset;
+  final int giveQuantity;
+  final int escrowQuantity;
+  final int mainchainrate;
+  final bool divisible;
+  final int feeRate;
+  final bool sendExtraBtcToDispenser;
+
   final WalletRepository walletRepository;
   final AccountRepository accountRepository;
   final AddressRepository addressRepository;
@@ -55,6 +63,13 @@ class ComposeDispenserOnNewAddressBloc extends Bloc<
   final WriteLocalTransactionUseCase writeLocalTransactionUseCase;
   final ErrorService errorService;
   ComposeDispenserOnNewAddressBloc({
+    required this.asset,
+    required this.divisible,
+    required this.giveQuantity,
+    required this.escrowQuantity,
+    required this.mainchainrate,
+    required this.feeRate,
+    required this.sendExtraBtcToDispenser,
     required this.passwordRequired,
     required this.inMemoryKeyRepository,
     required this.accountRepository,
@@ -79,26 +94,292 @@ class ComposeDispenserOnNewAddressBloc extends Bloc<
           feeState: FeeState.initial(),
         )) {
     on<FormOpened>((event, emit) async {
-      emit(state.copyWith(feeState: const FeeState.loading()));
+      if (passwordRequired) {
+        emit(state.copyWith(feeState: const FeeState.loading()));
 
-      try {
+        try {
+          final feeEstimates =
+              await fetchDispenseFormDataUseCase.call(event.originalAddress);
+
+          emit(state.copyWith(
+            feeState: FeeState.success(feeEstimates),
+          ));
+        } on FetchFeeEstimatesException catch (e) {
+          emit(state.copyWith(
+            feeState: FeeState.error(e.message),
+          ));
+        } catch (e) {
+          emit(state.copyWith(
+            feeState:
+                FeeState.error('An unexpected error occurred: ${e.toString()}'),
+          ));
+        }
+      } else {
+        emit(state.copyWith(
+            composeDispenserOnNewAddressState:
+                const ComposeDispenserOnNewAddressState.loading()));
+
         final feeEstimates =
             await fetchDispenseFormDataUseCase.call(event.originalAddress);
 
         emit(state.copyWith(
           feeState: FeeState.success(feeEstimates),
         ));
-      } on FetchFeeEstimatesException catch (e) {
-        emit(state.copyWith(
-          feeState: FeeState.error(e.message),
-        ));
-      } catch (e) {
-        emit(state.copyWith(
-          feeState:
-              FeeState.error('An unexpected error occurred: ${e.toString()}'),
-        ));
+        try {
+          final wallet = await walletRepository.getCurrentWallet();
+
+          if (wallet == null) {
+            emit(state.copyWith(
+                composeDispenserOnNewAddressState:
+                    const ComposeDispenserOnNewAddressState.error(
+                        'Wallet not found')));
+            return;
+          }
+
+          String? inMemoryKey = await inMemoryKeyRepository.get();
+
+          String decryptedPrivKey = await encryptionService.decryptWithKey(
+              wallet.encryptedPrivKey, inMemoryKey!);
+
+          final List<Account> accountsInWallet =
+              await accountRepository.getAccountsByWalletUuid(wallet.uuid);
+          final highestIndexAccount = getHighestIndexAccount(accountsInWallet);
+          final int newAccountIndex =
+              int.parse(highestIndexAccount.accountIndex.replaceAll('\'', '')) +
+                  1;
+          final Account newAccount = Account(
+            accountIndex: "$newAccountIndex'",
+            walletUuid: wallet.uuid,
+            name: 'Dispenser for ${asset}',
+            uuid: uuid.v4(),
+            purpose: highestIndexAccount.purpose,
+            coinType: highestIndexAccount.coinType,
+            importFormat: highestIndexAccount.importFormat,
+          );
+
+          Address? newAddress;
+          switch (newAccount.importFormat) {
+            case ImportFormat.horizon:
+              newAddress = await addressService.deriveAddressSegwit(
+                privKey: decryptedPrivKey,
+                chainCodeHex: wallet.chainCodeHex,
+                accountUuid: newAccount.uuid,
+                purpose: newAccount.purpose,
+                coin: newAccount.coinType,
+                account: newAccount.accountIndex,
+                change: '0',
+                index: 0,
+              );
+            case ImportFormat.freewallet:
+              final addresses =
+                  await addressService.deriveAddressFreewalletRange(
+                type: AddressType.bech32,
+                privKey: decryptedPrivKey,
+                chainCodeHex: wallet.chainCodeHex,
+                accountUuid: newAccount.uuid,
+                account: newAccount.accountIndex,
+                change: '0',
+                start: 0,
+                end: 0,
+              );
+              newAddress = addresses.first;
+            case ImportFormat.counterwallet:
+              final addresses =
+                  await addressService.deriveAddressFreewalletRange(
+                type: AddressType.bech32,
+                privKey: decryptedPrivKey,
+                chainCodeHex: wallet.chainCodeHex,
+                accountUuid: newAccount.uuid,
+                account: newAccount.accountIndex,
+                change: '0',
+                start: 0,
+                end: 0,
+              );
+              newAddress = addresses.first;
+            default:
+              throw Exception(
+                  'Unsupported import format: ${newAccount.importFormat}');
+          }
+
+          final newAddressBalances = await balanceRepository
+              .getBalancesForAddress(newAddress.address, true);
+          final newAddressDispensers = await dispenserRepository
+              .getDispensersByAddress(newAddress.address)
+              .run()
+              .then((either) => either.fold(
+                    (error) => throw Exception(
+                        'unable to fetch dispensers for new address'), // Handle failure
+                    (dispensers) => dispensers, // Handle success
+                  ));
+
+          // the point of this flow is to open a dispenser on an unused address
+          // if no balances are found, the balances repository returns only a BTC balance of 0
+          if (newAddressBalances.length > 1 ||
+              (newAddressBalances.length == 1 &&
+                  newAddressBalances.first.asset == 'BTC' &&
+                  newAddressBalances.first.quantity > 0) ||
+              newAddressDispensers.isNotEmpty) {
+            emit(state.copyWith(
+                composeDispenserOnNewAddressState:
+                    const ComposeDispenserOnNewAddressState.error(
+                        "Next account to be created in the HD wallet is not empty. Please trigger the automatic account detection workflow here, then try again.")));
+            return;
+          }
+
+          final newAddressPrivKey =
+              await addressService.deriveAddressPrivateKey(
+            rootPrivKey: decryptedPrivKey,
+            chainCodeHex: wallet.chainCodeHex,
+            purpose: newAccount.purpose,
+            coin: newAccount.coinType,
+            account: newAccount.accountIndex,
+            change: '0',
+            index: 0,
+            importFormat: newAccount.importFormat,
+          );
+
+          emit(state.copyWith(newAccount: newAccount, newAddress: newAddress));
+
+          final sourceAddress =
+              await addressRepository.getAddress(event.originalAddress);
+          final sourceAccount = await accountRepository
+              .getAccountByUuid(sourceAddress!.accountUuid);
+          final sourceAddressPrivKey =
+              await addressService.deriveAddressPrivateKey(
+            rootPrivKey: decryptedPrivKey,
+            chainCodeHex: wallet.chainCodeHex,
+            purpose: sourceAccount!.purpose,
+            coin: sourceAccount.coinType,
+            account: sourceAccount.accountIndex,
+            change: '0',
+            index: sourceAddress.index,
+            importFormat: sourceAccount.importFormat,
+          );
+
+          try {
+            final source = event
+                .originalAddress; // the current address which has the btc + asset to be dispensed
+            final destination = newAddress.address; // the new address
+            final assetToSend = asset; // the asset that will be dispensed
+            final assetQuantityToDispense =
+                giveQuantity; // the quantity of each dispense
+            final escrowQuantityToSend =
+                escrowQuantity; // the total asset quantity to be sent to the new address for the dispenser
+
+            int feeToCoverDispenser = feeRate * ADJUSTED_VIRTUAL_SIZE;
+            int extraBtcToSendToDispenser = 0;
+
+            if (sendExtraBtcToDispenser) {
+              extraBtcToSendToDispenser = feeRate * ADJUSTED_VIRTUAL_SIZE;
+            }
+
+            // 2. compose the asset send
+            final assetSend = await composeTransactionUseCase
+                .call<ComposeSendParams, ComposeSendResponse>(
+              feeRate: _getFeeRate(FeeOption
+                  .Slow()), // first tx is sent with slow fee and the next tx will adjust the fee for both
+              source: source,
+              params: ComposeSendParams(
+                source: source,
+                destination: destination,
+                asset: assetToSend,
+                quantity: escrowQuantityToSend,
+              ),
+              composeFn: composeRepository.composeSendVerbose,
+            );
+            final feeForAssetSend = assetSend.btcFee;
+
+            final (utxos, cachedTxHashes) = await utxoRepository
+                .getUnspentForAddress(source, excludeCached: true);
+
+            if (utxos.isEmpty) {
+              final error = Exception('No UTXOs available for transaction');
+              errorService.captureException(error,
+                  message: 'No UTXOs available for transaction',
+                  context: {
+                    'source': source,
+                    'cachedTxHashes': cachedTxHashes,
+                  });
+              throw Exception('No UTXOs available for transaction');
+            }
+
+            // 3. re-construct the asset send
+            final signedConstructedAssetSend =
+                await transactionService.constructChainAndSignTransaction(
+              unsignedTransaction: assetSend.rawtransaction,
+              sourceAddress: source,
+              utxos: utxos,
+              sourcePrivKey: sourceAddressPrivKey,
+              destinationAddress: newAddress.address,
+              destinationPrivKey: newAddressPrivKey,
+              btcQuantity: feeToCoverDispenser + extraBtcToSendToDispenser,
+              fee: feeForAssetSend,
+            );
+
+            final decodedConstructedAssetSend = await bitcoindService
+                .decoderawtransaction(signedConstructedAssetSend);
+
+            // 4. compose the dispenser
+            final composeDispenserChain =
+                await composeRepository.composeDispenserChain(
+              feeToCoverDispenser,
+              decodedConstructedAssetSend,
+              ComposeDispenserParams(
+                source: destination,
+                asset: assetToSend,
+                giveQuantity: assetQuantityToDispense,
+                escrowQuantity: escrowQuantityToSend,
+                mainchainrate: mainchainrate,
+                status: 0,
+              ),
+            );
+
+            // 5. sign the dispenser
+            final signedComposeDispenserChain =
+                await signChainedTransactionUseCase.call(
+              source: destination,
+              rawtransaction: composeDispenserChain.rawtransaction,
+              prevDecodedTransaction: decodedConstructedAssetSend,
+              addressPrivKey: newAddressPrivKey,
+            );
+
+            emit(state.copyWith(
+                signedDispenser: signedComposeDispenserChain,
+                signedAssetSend: signedConstructedAssetSend,
+                composeDispenserOnNewAddressState:
+                    ComposeDispenserOnNewAddressState.confirm(
+                        composeSendTransaction: assetSend,
+                        composeDispenserTransaction: composeDispenserChain,
+                        newAccountName: state.newAccount!.name,
+                        newAddress: state.newAddress!.address,
+                        btcQuantity:
+                            feeToCoverDispenser + extraBtcToSendToDispenser,
+                        feeRate: feeRate)));
+          } on SignTransactionException catch (e) {
+            emit(state.copyWith(
+                composeDispenserOnNewAddressState:
+                    ComposeDispenserOnNewAddressState.error(e.message)));
+          } on TransactionServiceException catch (e) {
+            emit(state.copyWith(
+                composeDispenserOnNewAddressState:
+                    ComposeDispenserOnNewAddressState.error(e.message)));
+          } catch (e) {
+            emit(state.copyWith(
+                composeDispenserOnNewAddressState:
+                    ComposeDispenserOnNewAddressState.error(e
+                            is ComposeTransactionException
+                        ? e.message
+                        : 'An unexpected error occurred: ${e.toString()}')));
+          }
+        } catch (e) {
+          emit(state.copyWith(
+              composeDispenserOnNewAddressState:
+                  const ComposeDispenserOnNewAddressState.error(
+                      'Unspecified error')));
+        }
       }
     });
+
     on<PasswordEntered>((event, emit) async {
       /**
        * The steps for chaining transactions are:
@@ -335,7 +616,6 @@ class ComposeDispenserOnNewAddressBloc extends Bloc<
             await signChainedTransactionUseCase.call(
           source: destination,
           rawtransaction: composeDispenserChain.rawtransaction,
-          password: event.password,
           prevDecodedTransaction: decodedConstructedAssetSend,
           addressPrivKey: newAddressPrivKey,
         );

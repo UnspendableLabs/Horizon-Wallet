@@ -1,7 +1,9 @@
 import 'package:horizon/common/format.dart';
 import 'package:horizon/domain/entities/bitcoin_decoded_tx.dart';
 import 'package:horizon/domain/entities/utxo.dart';
+import 'package:horizon/domain/entities/decryption_strategy.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
+import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 
 class SignTransactionException implements Exception {
   final String message;
@@ -18,7 +20,6 @@ class SignChainedTransactionUseCase {
   });
 
   Future<String> call({
-    required String password,
     required String source,
     required String rawtransaction,
     required DecodedTx prevDecodedTransaction,
