@@ -781,6 +781,9 @@ void showAddressList(BuildContext context, bool isDarkTheme, Account? account) {
                                   padding: const EdgeInsets.symmetric(
                                       horizontal: 16.0),
                                   child: AddAddressForm(
+                                      passwordRequired: GetIt.I
+                                          .get<SettingsRepository>()
+                                          .requirePasswordForCryptoOperations,
                                       accountUuid: state.currentAccountUuid!,
                                       modalContext: modalSheetContext),
                                 ),

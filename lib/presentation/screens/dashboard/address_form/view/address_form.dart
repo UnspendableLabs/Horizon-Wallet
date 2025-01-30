@@ -8,10 +8,14 @@ import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import "package:horizon/remote_data_bloc/remote_data_state.dart";
 
 class AddAddressForm extends StatefulWidget {
+  final bool passwordRequired;
   final String accountUuid;
   final BuildContext? modalContext;
   const AddAddressForm(
-      {super.key, required this.accountUuid, this.modalContext});
+      {super.key,
+      required this.passwordRequired,
+      required this.accountUuid,
+      this.modalContext});
 
   @override
   State<AddAddressForm> createState() => _AddAccountFormState();
@@ -82,7 +86,8 @@ class _AddAccountFormState extends State<AddAddressForm> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
             const SizedBox(height: 16.0),
-            HorizonUI.HorizonTextFormField(
+
+            widget.passwordRequired ? HorizonUI.HorizonTextFormField(
               enabled: state.maybeWhen(
                   loading: () => false,
                   success: (_) => false,
@@ -102,7 +107,7 @@ class _AddAccountFormState extends State<AddAddressForm> {
               onFieldSubmitted: (value) {
                 handleSubmit();
               },
-            ),
+            ) : const Text("Create a new address at the next available index"),
             if (error.isNotEmpty)
               Text(error, style: const TextStyle(color: redErrorText)),
             const SizedBox(height: 16.0),

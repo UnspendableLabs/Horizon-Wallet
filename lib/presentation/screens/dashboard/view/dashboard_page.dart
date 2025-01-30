@@ -319,7 +319,7 @@ void showAccountList(BuildContext context, bool isDarkTheme) {
                                         onBackButtonPressed: cb,
                                         title: "Add an account",
                                         body: Padding(
-                                          padding:const EdgeInsets.symmetric(
+                                          padding: const EdgeInsets.symmetric(
                                               horizontal: 16.0),
                                           child: AddAccountForm(
                                             passwordRequired: GetIt.I<
@@ -1415,6 +1415,8 @@ class QRCodeDialog extends StatelessWidget {
                         body: Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 16.0),
                           child: AddAddressForm(
+                            passwordRequired:
+                                GetIt.I.get<SettingsRepository>().requirePasswordForCryptoOperations,
                             accountUuid: accountUuid!,
                           ),
                         ),
