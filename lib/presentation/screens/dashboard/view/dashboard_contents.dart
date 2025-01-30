@@ -511,6 +511,7 @@ class HorizonAppBarContent extends StatelessWidget {
                         child: PopupMenuButton<String>(
                           position: PopupMenuPosition.under,
                           icon: Icon(
+                            key: const Key('settingsButton'),
                             Icons.settings,
                             size: 20,
                             color: isDarkTheme
