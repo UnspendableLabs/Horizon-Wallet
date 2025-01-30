@@ -26,6 +26,10 @@ import 'package:horizon/domain/repositories/unified_address_repository.dart';
 import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transaction_usecase.dart';
 import 'package:horizon/common/fn.dart';
 
+import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
+
+import 'package:horizon/domain/entities/decryption_strategy.dart';
+
 abstract class FormEvent extends Equatable {
   const FormEvent();
 
@@ -89,6 +93,8 @@ class FormStateModel extends Equatable {
 }
 
 class ComposeRbfPasswordBloc extends Bloc<FormEvent, FormStateModel> {
+  final bool passwordRequired;
+  final InMemoryKeyRepository inMemoryKeyRepository;
   final String address;
   final String txHashToReplace;
   final MakeRBFResponse makeRBFResponse;
@@ -106,31 +112,33 @@ class ComposeRbfPasswordBloc extends Bloc<FormEvent, FormStateModel> {
   final SignAndBroadcastTransactionUseCase signAndBroadcastTransactionUseCase;
   final UnifiedAddressRepository addressRepository;
   final ImportedAddressService importedAddressService;
-
   final BitcoinRepository bitcoinRepository;
 
-  ComposeRbfPasswordBloc(
-      {required this.txHashToReplace,
-      required this.analyticsService,
-      required this.bitcoindService,
-      required this.makeRBFResponse,
-      required this.address,
-      required this.walletRepository,
-      required this.signAndBroadcastTransactionUseCase,
-      required this.transactionService,
-      required this.encryptionService,
-      required this.addressRepository,
-      required this.accountRepository,
-      required this.addressService,
-      required this.importedAddressService,
-      required this.bitcoinRepository,
-      required this.writelocalTransactionUseCase,
-      required this.transactionLocalRepository})
-      : super(FormStateModel(psbtHex: makeRBFResponse.txHex)) {
+  ComposeRbfPasswordBloc({
+    required this.inMemoryKeyRepository,
+    required this.passwordRequired,
+    required this.txHashToReplace,
+    required this.analyticsService,
+    required this.bitcoindService,
+    required this.makeRBFResponse,
+    required this.address,
+    required this.walletRepository,
+    required this.signAndBroadcastTransactionUseCase,
+    required this.transactionService,
+    required this.encryptionService,
+    required this.addressRepository,
+    required this.accountRepository,
+    required this.addressService,
+    required this.importedAddressService,
+    required this.bitcoinRepository,
+    required this.writelocalTransactionUseCase,
+    required this.transactionLocalRepository,
+  }) : super(FormStateModel(psbtHex: makeRBFResponse.txHex)) {
     on<PasswordChanged>((event, emit) {
       final password = PasswordInput.dirty(event.password);
       emit(state.copyWith(password: password));
     });
+
     on<FormSubmitted>((event, emit) async {
       emit(state.copyWith(submissionStatus: FormzSubmissionStatus.inProgress));
 
@@ -141,15 +149,20 @@ class ComposeRbfPasswordBloc extends Bloc<FormEvent, FormStateModel> {
           throw Exception("invariant: wallet not found");
         }
 
-        String rootPrivateKey = await encryptionService.decrypt(
-            wallet.encryptedPrivKey, state.password.value);
+        String rootPrivateKey = passwordRequired
+            ? await encryptionService.decrypt(
+                wallet.encryptedPrivKey, state.password.value)
+            : await encryptionService.decryptWithKey(
+                wallet.encryptedPrivKey, (await inMemoryKeyRepository.get())!);
 
         String addressPrivateKey = unwrapOrThrow<String, String>(
             await addressRepository
                 .get(address)
                 .flatMap(
                     (UnifiedAddress unifiedAddress) => getUAddressPrivateKey(
-                          state.password.value,
+                          passwordRequired
+                              ? Password(state.password.value)
+                              : InMemoryKey(),
                           rootPrivateKey,
                           wallet.chainCodeHex,
                           unifiedAddress,
@@ -200,13 +213,16 @@ class ComposeRbfPasswordBloc extends Bloc<FormEvent, FormStateModel> {
     });
   }
 
-  TaskEither<String, String> getUAddressPrivateKey(String password,
-          String rootPrivKey, String chainCodeHex, UnifiedAddress address) =>
+  TaskEither<String, String> getUAddressPrivateKey(
+          DecryptionStrategy decryptionStrategy,
+          String rootPrivKey,
+          String chainCodeHex,
+          UnifiedAddress address) =>
       switch (address) {
         UAddress(address: var address) =>
           getAddressPrivateKey(rootPrivKey, chainCodeHex, address),
         UImportedAddress(importedAddress: var importedAddress) =>
-          getImportedAddressPrivateKey(importedAddress, password),
+          getImportedAddressPrivateKey(importedAddress, decryptionStrategy)
       };
 
   TaskEither<String, String> getAddressPrivateKey(
@@ -217,9 +233,11 @@ class ComposeRbfPasswordBloc extends Bloc<FormEvent, FormStateModel> {
           (e, s) => "Failed to derive address private key.");
 
   TaskEither<String, String> getImportedAddressPrivateKey(
-          ImportedAddress importedAddress, String password) =>
+          ImportedAddress importedAddress,
+          DecryptionStrategy decryptionStrategy) =>
       TaskEither.tryCatch(
-          () => _getAddressPrivKeyForImportedAddress(importedAddress, password),
+          () => _getAddressPrivKeyForImportedAddress(
+              importedAddress, decryptionStrategy),
           (e, s) => "Failed to derive address private key.");
 
   Future<String> _getAddressPrivKeyForAddress(
@@ -247,11 +265,19 @@ class ComposeRbfPasswordBloc extends Bloc<FormEvent, FormStateModel> {
   }
 
   Future<String> _getAddressPrivKeyForImportedAddress(
-      ImportedAddress importedAddress, String password) async {
+      ImportedAddress importedAddress,
+      DecryptionStrategy decryptionStrategy) async {
     late String decryptedAddressWif;
     try {
-      decryptedAddressWif = await encryptionService.decrypt(
-          importedAddress.encryptedWif, password);
+      final maybeKey =
+          (await inMemoryKeyRepository.getMap())[importedAddress.address];
+
+      decryptedAddressWif = switch (decryptionStrategy) {
+        Password(password: var password) => await encryptionService.decrypt(
+            importedAddress.encryptedWif, password),
+        InMemoryKey() => await encryptionService.decryptWithKey(
+            importedAddress.encryptedWif, maybeKey!)
+      };
     } catch (e) {
       throw Exception('Incorrect password.');
     }
