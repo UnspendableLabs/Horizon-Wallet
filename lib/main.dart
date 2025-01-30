@@ -809,8 +809,10 @@ class MyApp extends StatelessWidget {
         ),
         BlocProvider<AccountFormBloc>(
           create: (context) => AccountFormBloc(
+            passwordRequired: GetIt.I<SettingsRepository>().requirePasswordForCryptoOperations,
             accountRepository: GetIt.I<AccountRepository>(),
             walletRepository: GetIt.I<WalletRepository>(),
+          inMemoryKeyRepository: GetIt.I<InMemoryKeyRepository>(),
             walletService: GetIt.I<WalletService>(),
             encryptionService: GetIt.I<EncryptionService>(),
             addressService: GetIt.I<AddressService>(),

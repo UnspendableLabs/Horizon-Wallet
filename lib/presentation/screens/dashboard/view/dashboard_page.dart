@@ -318,10 +318,14 @@ void showAccountList(BuildContext context, bool isDarkTheme) {
                                       return HorizonUI.HorizonDialog(
                                         onBackButtonPressed: cb,
                                         title: "Add an account",
-                                        body: const Padding(
-                                          padding: EdgeInsets.symmetric(
+                                        body: Padding(
+                                          padding:const EdgeInsets.symmetric(
                                               horizontal: 16.0),
-                                          child: AddAccountForm(),
+                                          child: AddAccountForm(
+                                            passwordRequired: GetIt.I<
+                                                    SettingsRepository>()
+                                                .requirePasswordForCryptoOperations,
+                                          ),
                                         ),
                                       );
                                     }),
