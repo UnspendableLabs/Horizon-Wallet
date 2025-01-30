@@ -92,7 +92,18 @@ void main() {
       "passphrase":
           "stomach worry artefact bicycle finger doctor outdoor learn lecture powder agent body",
       'format': ImportFormat.horizon.description,
-      'addresses': ["bc1q2d0uhg8wupev6d22umufydd98jvznxngnvt5mm"],
+      'addresses': [
+        "bc1q2d0uhg8wupev6d22umufydd98jvznxngnvt5mm",
+        "bc1q3jpqgq03vl6xaed36mjw0uh94xfapd4wxzmwzh",
+        "bc1q5y82yfpwzm9yqhgy27lwn6tcehw6hvh3q080km",
+        "bc1qgngvej4zrv0z7qen44rp6n6nxqeu9ye5g8v952",
+        "bc1qv2dwl4wp4p22cwv9tnyhu9jfmhyt8l8q4r573a",
+        "bc1qcf3de2thj63utrp5ltq0fvd257m99c87la2dvc",
+        "bc1q97ayjx5mdddvsrpe3ugf844vqr8sfpdgvw7vf6",
+        "bc1q4mg9f4hvjdexuj287nws79zwm3agpqlsv3vfht",
+        "bc1qnpy6zj0utmnfwyt8acrcm8dz7zta4kx84muxme",
+        "bc1qlse5jhw0ny8qx23d0v2lkp6j9w7hdz0kemup5v"
+      ],
       'network': 'mainnet'
     },
     {
