@@ -63,6 +63,7 @@ void main() {
   late MockAddressTxRepository mockAddressTxRepository;
   late MockBalanceRepository mockBalanceRepository;
   late MockBitcoinRepository mockBitcoinRepository;
+  late MockMnemonicService mockMnemonicService;
 
   late MockConfig mockConfig;
   late MockWalletService mockWalletService;
@@ -86,7 +87,7 @@ void main() {
     mockAddressTxRepository = MockAddressTxRepository();
     mockBalanceRepository = MockBalanceRepository();
     mockBitcoinRepository = MockBitcoinRepository();
-
+    mockMnemonicService = MockMnemonicService();
     importWalletUseCase = ImportWalletUseCase(
       addressRepository: mockAddressRepository,
       accountRepository: mockAccountRepository,
@@ -99,6 +100,7 @@ void main() {
       addressTxRepository: mockAddressTxRepository,
       balanceRepository: mockBalanceRepository,
       bitcoinRepository: mockBitcoinRepository,
+      mnemonicService: mockMnemonicService,
     );
   });
 
@@ -361,6 +363,9 @@ void main() {
           encryptedPrivKey: 'free-encrypted',
           chainCodeHex: 'free-chainCode');
       const decryptedPrivKey = 'decrypted-private-key';
+
+      when(() => mockMnemonicService.validateMnemonic(any()))
+          .thenAnswer((_) => true);
 
       when(() => mockConfig.network).thenReturn(Network.mainnet);
 

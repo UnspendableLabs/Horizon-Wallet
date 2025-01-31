@@ -8,6 +8,7 @@ import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/main.dart';
 import 'package:horizon/setup.dart';
+import 'package:horizon/test_config.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:pub_semver/pub_semver.dart';
 
@@ -178,6 +179,11 @@ void main() {
     for (final testCase in testCases) {
       testWidgets('Import seed flow - ${testCase['format']}',
           (WidgetTester tester) async {
+        // Set skipCounterwallet based on the format
+        final isFreewallet =
+            testCase['format'] == ImportFormat.freewallet.description;
+        TestConfig.setTestValue(isFreewallet);
+
         // Override FlutterError.onError to ignore RenderFlex overflow errors
         final void Function(FlutterErrorDetails) originalOnError =
             FlutterError.onError!;
@@ -271,11 +277,15 @@ void main() {
 
         final expectedAddresses = testCase['addresses'] as List<String>;
 
+        await Future.delayed(const Duration(seconds: 5));
+
         // Ensure addresses are returned in the correct order
         final addressRepository = GetIt.instance<AddressRepository>();
         final accountRepository = GetIt.instance<AccountRepository>();
         final walletRepository = GetIt.instance<WalletRepository>();
         final wallet = await walletRepository.getCurrentWallet();
+
+        print('Import seed flow - ${testCase['format']}: wallet = $wallet');
 
         final account =
             await accountRepository.getAccountsByWalletUuid(wallet!.uuid);

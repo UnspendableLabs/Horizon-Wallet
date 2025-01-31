@@ -116,7 +116,7 @@ import 'package:horizon/presentation/screens/compose_fairminter/usecase/fetch_fo
 import 'package:horizon/presentation/screens/compose_issuance/usecase/fetch_form_data.dart';
 import 'package:logger/logger.dart' as logger;
 
-void setup() {
+void appTestSetup() {
   GetIt injector = GetIt.I;
 
   injector.registerSingleton<Logger>(LoggerImpl(

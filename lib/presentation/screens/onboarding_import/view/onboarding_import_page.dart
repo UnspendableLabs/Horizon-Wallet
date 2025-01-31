@@ -86,7 +86,6 @@ class OnboardingImportPageState extends State<OnboardingImportPage> {
             },
             child: BlocBuilder<OnboardingImportBloc, OnboardingImportState>(
                 builder: (context, state) {
-              print('STATE CURRENT STEP: ${state.currentStep}');
               return Container(
                 decoration: BoxDecoration(
                   color: scaffoldBackgroundColor,
