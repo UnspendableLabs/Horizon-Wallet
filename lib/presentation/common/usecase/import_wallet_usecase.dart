@@ -117,12 +117,263 @@ class ImportWalletUseCase {
         } else {
           accountsWithBalances[account] = [address];
         }
+      } else if (i == 0) {
+        // if no transactions are found on the first account, we will import just the first account + address and break
+        accountsWithBalances[account] = [address];
+        break;
       } else {
-        // break the loop at the first account with no transactions
+        // break the loop at the once we reach an account with no transactions
         break;
       }
     }
 
+    return accountsWithBalances;
+  }
+
+  Future<(Map<Account, List<Address>>, bool hasTransactions)>
+      createCounterwalletWallet({
+    required String password,
+    required String mnemonic,
+    required Wallet wallet,
+  }) async {
+    bool hasTransactions = false;
+
+    Map<Account, List<Address>> accountsWithBalances = {};
+    print('ImportWalletUseCase.call: DERIVING COUNTERWALLET WALLET');
+    // we assume that 99% of imports will be counterwallet
+    // first we check if there are any transactions on the counterwallet account
+    String decryptedPrivKey;
+    try {
+      decryptedPrivKey =
+          await encryptionService.decrypt(wallet.encryptedPrivKey, password);
+    } catch (e) {
+      throw PasswordException('Invalid password');
+    }
+
+    print('ImportWalletUseCase.call: DERIVING COUNTERWALLET ACCOUNT');
+    // https://github.com/CounterpartyXCP/counterwallet/blob/1de386782818aeecd7c23a3d2132746a2f56e4fc/src/js/util.bitcore.js#L17
+    Account counterwalletAccount = Account(
+        name: 'ACCOUNT 1',
+        walletUuid: wallet.uuid,
+        purpose: '0\'',
+        coinType: _getCoinType(),
+        accountIndex: '0\'',
+        uuid: uuid.v4(),
+        importFormat: ImportFormat.counterwallet);
+
+    print('ImportWalletUseCase.call: DERIVING COUNTERWALLET ADDRESSES');
+
+    // import all 20 addresses for the counterwallet account
+    List<Address> addressesBech32 =
+        await addressService.deriveAddressFreewalletRange(
+            type: AddressType.bech32,
+            privKey: decryptedPrivKey,
+            chainCodeHex: wallet.chainCodeHex,
+            accountUuid: counterwalletAccount.uuid,
+            account: counterwalletAccount.accountIndex,
+            change: '0',
+            start: 0,
+            end: 9);
+
+    List<Address> addressesLegacy =
+        await addressService.deriveAddressFreewalletRange(
+            type: AddressType.legacy,
+            privKey: decryptedPrivKey,
+            chainCodeHex: wallet.chainCodeHex,
+            accountUuid: counterwalletAccount.uuid,
+            account: counterwalletAccount.accountIndex,
+            change: '0',
+            start: 0,
+            end: 9);
+
+    // we will import the first account + addresses, even if there are no transactions
+    accountsWithBalances[counterwalletAccount] = [
+      ...addressesBech32,
+      ...addressesLegacy,
+    ];
+
+    final firstAccountTransactions = await bitcoinRepository.getTransactions([
+      ...addressesBech32.map((e) => e.address),
+      ...addressesLegacy.map((e) => e.address),
+    ]).then((either) async {
+      return either.fold(
+        (error) => throw Exception("GetTransactionInfo failure"),
+        (transactions) => transactions,
+      );
+    });
+
+    // if there are any transactions on the counterwallet account, check any following accounts for transactions, up to 20 accounts
+    if (firstAccountTransactions.isNotEmpty) {
+      hasTransactions = true;
+      // check any subsequent accounts for transactions, up to 20 accounts
+      for (int i = 1; i < GAP_LIMIT; i++) {
+        print('ImportWalletUseCase.call: DERIVING COUNTERWALLET ACCOUNT');
+        Account nextCounterwalletAccount = Account(
+            name: 'ACCOUNT ${i + 1}',
+            walletUuid: wallet.uuid,
+            purpose: counterwalletAccount.purpose,
+            coinType: counterwalletAccount.coinType,
+            accountIndex: '$i\'',
+            uuid: uuid.v4(),
+            importFormat: ImportFormat.counterwallet);
+        List<Address> addressesBech32 =
+            await addressService.deriveAddressFreewalletRange(
+                type: AddressType.bech32,
+                privKey: decryptedPrivKey,
+                chainCodeHex: wallet.chainCodeHex,
+                accountUuid: nextCounterwalletAccount.uuid,
+                account: nextCounterwalletAccount.accountIndex,
+                change: '0',
+                start: 0,
+                end: 9);
+
+        List<Address> addressesLegacy =
+            await addressService.deriveAddressFreewalletRange(
+                type: AddressType.legacy,
+                privKey: decryptedPrivKey,
+                chainCodeHex: wallet.chainCodeHex,
+                accountUuid: nextCounterwalletAccount.uuid,
+                account: nextCounterwalletAccount.accountIndex,
+                change: '0',
+                start: 0,
+                end: 9);
+
+        final allTransactions = await bitcoinRepository.getTransactions([
+          ...addressesBech32.map((e) => e.address),
+          ...addressesLegacy.map((e) => e.address),
+        ]).then((either) async {
+          return either.fold(
+            (error) => throw Exception("GetTransactionInfo failure"),
+            (transactions) => transactions,
+          );
+        });
+        if (allTransactions.isEmpty) {
+          // we will break at the first account with no transactions
+          break;
+        }
+        accountsWithBalances[nextCounterwalletAccount] = [
+          ...addressesBech32,
+          ...addressesLegacy,
+        ];
+      }
+    }
+    return (accountsWithBalances, hasTransactions);
+  }
+
+  Future<Map<Account, List<Address>>> createFreewalletWallet({
+    required String password,
+    required String mnemonic,
+    required Wallet wallet,
+  }) async {
+    final Map<Account, List<Address>> accountsWithBalances = {};
+    String decryptedPrivKey;
+    try {
+      decryptedPrivKey =
+          await encryptionService.decrypt(wallet.encryptedPrivKey, password);
+    } catch (e) {
+      throw PasswordException('invariant:Invalid password');
+    }
+    print('ImportWalletUseCase.call: DERIVING FREEWALLET ACCOUNT');
+    // create freewallet account
+    Account freewalletAccount = Account(
+        name: 'ACCOUNT 1',
+        walletUuid: wallet.uuid,
+        purpose: '32', // unused in Freewallet path
+        coinType: _getCoinType(),
+        accountIndex: '0\'',
+        uuid: uuid.v4(),
+        importFormat: ImportFormat.freewallet);
+
+    print('ImportWalletUseCase.call: DERIVING FREEWALLET ADDRESSES');
+    List<Address> addressesBech32 =
+        await addressService.deriveAddressFreewalletRange(
+            type: AddressType.bech32,
+            privKey: decryptedPrivKey,
+            chainCodeHex: wallet.chainCodeHex,
+            accountUuid: freewalletAccount.uuid,
+            account: freewalletAccount.accountIndex,
+            change: '0',
+            start: 0,
+            end: 9);
+
+    List<Address> addressesLegacy =
+        await addressService.deriveAddressFreewalletRange(
+            type: AddressType.legacy,
+            privKey: decryptedPrivKey,
+            chainCodeHex: wallet.chainCodeHex,
+            accountUuid: freewalletAccount.uuid,
+            account: freewalletAccount.accountIndex,
+            change: '0',
+            start: 0,
+            end: 9);
+
+    final allTransactionsFreewallet = await bitcoinRepository.getTransactions([
+      ...addressesBech32.map((e) => e.address),
+      ...addressesLegacy.map((e) => e.address),
+    ]).then((either) async {
+      return either.fold(
+        (error) => throw Exception("GetTransactionInfo failure"),
+        (transactions) => transactions,
+      );
+    });
+    if (allTransactionsFreewallet.isEmpty) {
+      return {};
+    }
+    // import all 20 addresses for the freewallet account
+    accountsWithBalances[freewalletAccount] = [
+      ...addressesBech32,
+      ...addressesLegacy,
+    ];
+    for (int i = 1; i < GAP_LIMIT; i++) {
+      print('ImportWalletUseCase.call: DERIVING FREEWALLET ACCOUNT $i');
+      Account nextFreewalletAccount = Account(
+          name: 'ACCOUNT ${i + 1}',
+          walletUuid: wallet.uuid,
+          purpose: freewalletAccount.purpose,
+          coinType: freewalletAccount.coinType,
+          accountIndex: '$i\'',
+          uuid: uuid.v4(),
+          importFormat: ImportFormat.freewallet);
+      List<Address> addressesBech32 =
+          await addressService.deriveAddressFreewalletRange(
+              type: AddressType.bech32,
+              privKey: decryptedPrivKey,
+              chainCodeHex: wallet.chainCodeHex,
+              accountUuid: nextFreewalletAccount.uuid,
+              account: nextFreewalletAccount.accountIndex,
+              change: '0',
+              start: 0,
+              end: 9);
+
+      List<Address> addressesLegacy =
+          await addressService.deriveAddressFreewalletRange(
+              type: AddressType.legacy,
+              privKey: decryptedPrivKey,
+              chainCodeHex: wallet.chainCodeHex,
+              accountUuid: nextFreewalletAccount.uuid,
+              account: nextFreewalletAccount.accountIndex,
+              change: '0',
+              start: 0,
+              end: 9);
+
+      final allTransactions = await bitcoinRepository.getTransactions([
+        ...addressesBech32.map((e) => e.address),
+        ...addressesLegacy.map((e) => e.address),
+      ]).then((either) async {
+        return either.fold(
+          (error) => throw Exception("GetTransactionInfo failure"),
+          (transactions) => transactions,
+        );
+      });
+      if (allTransactions.isEmpty) {
+        // we will break at the first account with no transactions
+        break;
+      }
+      accountsWithBalances[nextFreewalletAccount] = [
+        ...addressesBech32,
+        ...addressesLegacy,
+      ];
+    }
     return accountsWithBalances;
   }
 
@@ -146,240 +397,25 @@ class ImportWalletUseCase {
           break;
 
         case WalletType.bip32:
-          print('ImportWalletUseCase.call: DERIVING COUNTERWALLET WALLET');
-          // we assume that 99% of imports will be counterwallet
-          // first we check if there are any transactions on the counterwallet account
+          bool counterwalletHasTransactions = false;
+
           wallet =
               await walletService.deriveRootCounterwallet(mnemonic, password);
-          String decryptedPrivKey;
-          try {
-            decryptedPrivKey = await encryptionService.decrypt(
-                wallet.encryptedPrivKey, password);
-          } catch (e) {
-            throw PasswordException('Invalid password');
-          }
-
-          print('ImportWalletUseCase.call: DERIVING COUNTERWALLET ACCOUNT');
-          // https://github.com/CounterpartyXCP/counterwallet/blob/1de386782818aeecd7c23a3d2132746a2f56e4fc/src/js/util.bitcore.js#L17
-          Account counterwalletAccount = Account(
-              name: 'ACCOUNT 1',
-              walletUuid: wallet.uuid,
-              purpose: '0\'',
-              coinType: _getCoinType(),
-              accountIndex: '0\'',
-              uuid: uuid.v4(),
-              importFormat: ImportFormat.counterwallet);
-
-          print('ImportWalletUseCase.call: DERIVING COUNTERWALLET ADDRESSES');
-
-          // import all 20 addresses for the counterwallet account
-          List<Address> addressesBech32 =
-              await addressService.deriveAddressFreewalletRange(
-                  type: AddressType.bech32,
-                  privKey: decryptedPrivKey,
-                  chainCodeHex: wallet.chainCodeHex,
-                  accountUuid: counterwalletAccount.uuid,
-                  account: counterwalletAccount.accountIndex,
-                  change: '0',
-                  start: 0,
-                  end: 9);
-
-          List<Address> addressesLegacy =
-              await addressService.deriveAddressFreewalletRange(
-                  type: AddressType.legacy,
-                  privKey: decryptedPrivKey,
-                  chainCodeHex: wallet.chainCodeHex,
-                  accountUuid: counterwalletAccount.uuid,
-                  account: counterwalletAccount.accountIndex,
-                  change: '0',
-                  start: 0,
-                  end: 9);
-
-          final allCounterwalletTransactions =
-              await bitcoinRepository.getTransactions([
-            ...addressesBech32.map((e) => e.address),
-            ...addressesLegacy.map((e) => e.address),
-          ]).then((either) async {
-            return either.fold(
-              (error) => throw Exception("GetTransactionInfo failure"),
-              (transactions) => transactions,
-            );
-          });
-
-          // if there are any transactions on the counterwallet account, we will import all 20 addresses for the counterwallet account
-          if (allCounterwalletTransactions.isNotEmpty) {
-            accountsWithBalances[counterwalletAccount] = [
-              ...addressesBech32,
-              ...addressesLegacy,
-            ];
-
-            // check any subsequent accounts for transactions, up to 20 accounts
-            for (int i = 1; i < GAP_LIMIT; i++) {
-              print('ImportWalletUseCase.call: DERIVING COUNTERWALLET ACCOUNT');
-              Account nextCounterwalletAccount = Account(
-                  name: 'ACCOUNT ${i + 1}',
-                  walletUuid: wallet.uuid,
-                  purpose: counterwalletAccount.purpose,
-                  coinType: counterwalletAccount.coinType,
-                  accountIndex: '$i\'',
-                  uuid: uuid.v4(),
-                  importFormat: ImportFormat.counterwallet);
-              List<Address> addressesBech32 =
-                  await addressService.deriveAddressFreewalletRange(
-                      type: AddressType.bech32,
-                      privKey: decryptedPrivKey,
-                      chainCodeHex: wallet.chainCodeHex,
-                      accountUuid: nextCounterwalletAccount.uuid,
-                      account: nextCounterwalletAccount.accountIndex,
-                      change: '0',
-                      start: 0,
-                      end: 9);
-
-              List<Address> addressesLegacy =
-                  await addressService.deriveAddressFreewalletRange(
-                      type: AddressType.legacy,
-                      privKey: decryptedPrivKey,
-                      chainCodeHex: wallet.chainCodeHex,
-                      accountUuid: nextCounterwalletAccount.uuid,
-                      account: nextCounterwalletAccount.accountIndex,
-                      change: '0',
-                      start: 0,
-                      end: 9);
-
-              final allTransactions = await bitcoinRepository.getTransactions([
-                ...addressesBech32.map((e) => e.address),
-                ...addressesLegacy.map((e) => e.address),
-              ]).then((either) async {
-                return either.fold(
-                  (error) => throw Exception("GetTransactionInfo failure"),
-                  (transactions) => transactions,
-                );
-              });
-              if (allTransactions.isEmpty) {
-                // we will break at the first account with no transactions
-                break;
-              }
-              accountsWithBalances[nextCounterwalletAccount] = [
-                ...addressesBech32,
-                ...addressesLegacy,
-              ];
-            }
-            // break the switch since we have found all the counterwallet accounts with transactions
-            break;
-          } else {
+          (accountsWithBalances, counterwalletHasTransactions) =
+              await createCounterwalletWallet(
+                  password: password, mnemonic: mnemonic, wallet: wallet);
+          if (!counterwalletHasTransactions) {
             print('ImportWalletUseCase.call: NO COUNTERWALLET TRANSACTIONS');
             // if there are no counterwallet transactions, we will check freewallet
             wallet =
                 await walletService.deriveRootFreewallet(mnemonic, password);
-            try {
-              decryptedPrivKey = await encryptionService.decrypt(
-                  wallet.encryptedPrivKey, password);
-            } catch (e) {
-              throw PasswordException('invariant:Invalid password');
-            }
-            print('ImportWalletUseCase.call: DERIVING FREEWALLET ACCOUNT');
-            // create freewallet account
-            Account freewalletAccount = Account(
-                name: 'ACCOUNT 1',
-                walletUuid: wallet.uuid,
-                purpose: '32', // unused in Freewallet path
-                coinType: _getCoinType(),
-                accountIndex: '0\'',
-                uuid: uuid.v4(),
-                importFormat: ImportFormat.freewallet);
-
-            print('ImportWalletUseCase.call: DERIVING FREEWALLET ADDRESSES');
-            List<Address> addressesBech32 =
-                await addressService.deriveAddressFreewalletRange(
-                    type: AddressType.bech32,
-                    privKey: decryptedPrivKey,
-                    chainCodeHex: wallet.chainCodeHex,
-                    accountUuid: freewalletAccount.uuid,
-                    account: freewalletAccount.accountIndex,
-                    change: '0',
-                    start: 0,
-                    end: 9);
-
-            List<Address> addressesLegacy =
-                await addressService.deriveAddressFreewalletRange(
-                    type: AddressType.legacy,
-                    privKey: decryptedPrivKey,
-                    chainCodeHex: wallet.chainCodeHex,
-                    accountUuid: freewalletAccount.uuid,
-                    account: freewalletAccount.accountIndex,
-                    change: '0',
-                    start: 0,
-                    end: 9);
-
-            final allTransactionsFreewallet =
-                await bitcoinRepository.getTransactions([
-              ...addressesBech32.map((e) => e.address),
-              ...addressesLegacy.map((e) => e.address),
-            ]).then((either) async {
-              return either.fold(
-                (error) => throw Exception("GetTransactionInfo failure"),
-                (transactions) => transactions,
-              );
-            });
-            if (allTransactionsFreewallet.isEmpty) {
-              throw Exception('invariant: no transactions found on freewallet');
-            }
-            // import all 20 addresses for the freewallet account
-            accountsWithBalances[freewalletAccount] = [
-              ...addressesBech32,
-              ...addressesLegacy,
-            ];
-            for (int i = 1; i < GAP_LIMIT; i++) {
-              print('ImportWalletUseCase.call: DERIVING FREEWALLET ACCOUNT $i');
-              Account nextFreewalletAccount = Account(
-                  name: 'ACCOUNT ${i + 1}',
-                  walletUuid: wallet.uuid,
-                  purpose: freewalletAccount.purpose,
-                  coinType: freewalletAccount.coinType,
-                  accountIndex: '$i\'',
-                  uuid: uuid.v4(),
-                  importFormat: ImportFormat.freewallet);
-              List<Address> addressesBech32 =
-                  await addressService.deriveAddressFreewalletRange(
-                      type: AddressType.bech32,
-                      privKey: decryptedPrivKey,
-                      chainCodeHex: wallet.chainCodeHex,
-                      accountUuid: nextFreewalletAccount.uuid,
-                      account: nextFreewalletAccount.accountIndex,
-                      change: '0',
-                      start: 0,
-                      end: 9);
-
-              List<Address> addressesLegacy =
-                  await addressService.deriveAddressFreewalletRange(
-                      type: AddressType.legacy,
-                      privKey: decryptedPrivKey,
-                      chainCodeHex: wallet.chainCodeHex,
-                      accountUuid: nextFreewalletAccount.uuid,
-                      account: nextFreewalletAccount.accountIndex,
-                      change: '0',
-                      start: 0,
-                      end: 9);
-
-              final allTransactions = await bitcoinRepository.getTransactions([
-                ...addressesBech32.map((e) => e.address),
-                ...addressesLegacy.map((e) => e.address),
-              ]).then((either) async {
-                return either.fold(
-                  (error) => throw Exception("GetTransactionInfo failure"),
-                  (transactions) => transactions,
-                );
-              });
-              if (allTransactions.isEmpty) {
-                // we will break at the first account with no transactions
-                break;
-              }
-              accountsWithBalances[nextFreewalletAccount] = [
-                ...addressesBech32,
-                ...addressesLegacy,
-              ];
+            final freewalletAccountsWithBalances = await createFreewalletWallet(
+                password: password, mnemonic: mnemonic, wallet: wallet);
+            if (freewalletAccountsWithBalances.isNotEmpty) {
+              accountsWithBalances = freewalletAccountsWithBalances;
             }
           }
+
           break;
 
         default:

@@ -1,34 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:fpdart/fpdart.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/common/constants.dart';
-import 'package:horizon/domain/entities/address_info.dart';
-import 'package:horizon/domain/entities/address_stats.dart';
-import 'package:horizon/domain/entities/bitcoin_tx.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
-import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/main.dart';
+import 'package:horizon/setup.dart';
 import 'package:integration_test/integration_test.dart';
-import 'package:mocktail/mocktail.dart';
 import 'package:pub_semver/pub_semver.dart';
-
-import 'app_test_setup.dart';
-
-class MockBitcoinRepository extends Mock implements BitcoinRepository {}
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   const network =
       String.fromEnvironment('HORIZON_NETWORK', defaultValue: 'mainnet');
-
-  // Register the mock
-  late MockBitcoinRepository mockBitcoinRepository;
-  var transactionCallCount = 0;
 
   // Define test cases
   final testCases_ = [
@@ -92,18 +79,7 @@ void main() {
       "passphrase":
           "stomach worry artefact bicycle finger doctor outdoor learn lecture powder agent body",
       'format': ImportFormat.horizon.description,
-      'addresses': [
-        "bc1q2d0uhg8wupev6d22umufydd98jvznxngnvt5mm",
-        "bc1q3jpqgq03vl6xaed36mjw0uh94xfapd4wxzmwzh",
-        "bc1q5y82yfpwzm9yqhgy27lwn6tcehw6hvh3q080km",
-        "bc1qgngvej4zrv0z7qen44rp6n6nxqeu9ye5g8v952",
-        "bc1qv2dwl4wp4p22cwv9tnyhu9jfmhyt8l8q4r573a",
-        "bc1qcf3de2thj63utrp5ltq0fvd257m99c87la2dvc",
-        "bc1q97ayjx5mdddvsrpe3ugf844vqr8sfpdgvw7vf6",
-        "bc1q4mg9f4hvjdexuj287nws79zwm3agpqlsv3vfht",
-        "bc1qnpy6zj0utmnfwyt8acrcm8dz7zta4kx84muxme",
-        "bc1qlse5jhw0ny8qx23d0v2lkp6j9w7hdz0kemup5v"
-      ],
+      'addresses': ["bc1q2d0uhg8wupev6d22umufydd98jvznxngnvt5mm"],
       'network': 'mainnet'
     },
     {
@@ -176,141 +152,27 @@ void main() {
 
   group('Onboarding Integration Tests', () {
     setUp(() async {
-      print('Starting test setup');
-      transactionCallCount = 0;
+      // Perform any common setup here
+      setup();
 
-      // Initialize Settings
+      // Initialize Settings properly with await
       await Settings.init(
         cacheProvider: SharePreferenceCache(),
       );
-      // Create the mock instance
-      mockBitcoinRepository = MockBitcoinRepository();
 
-      // Setup default mock behavior before any test runs
-      when(() => mockBitcoinRepository.getTransactions(any()))
-          .thenAnswer((_) async {
-        print('Mock getTransactions called ${transactionCallCount + 1} times');
-        transactionCallCount++;
-
-        if (transactionCallCount <= 10) {
-          return Right([
-            BitcoinTx(
-              txid: 'mock_txid_$transactionCallCount',
-              version: 1,
-              locktime: 0,
-              vin: [],
-              vout: [],
-              size: 100,
-              weight: 400,
-              fee: 1000,
-              status: Status(
-                confirmed: true,
-                blockHeight: 1000,
-                blockHash: 'mock_block_hash',
-                blockTime: 1600000000,
-              ),
-            ),
-          ]);
-        } else {
-          return const Right([]);
-        }
-      });
-
-      when(() => mockBitcoinRepository.getTransactionHex(any()))
-          .thenAnswer((_) async {
-        return const Right('mock_tx_hex');
-      });
-
-      when(() => mockBitcoinRepository.getAddressInfo(any()))
-          .thenAnswer((_) async {
-        return Right(AddressInfo(
-          address: 'mock_address',
-          chainStats: AddressStats(
-            txCount: 1,
-            fundedTxoCount: 1,
-            spentTxoCount: 0,
-            fundedTxoSum: 100000,
-            spentTxoSum: 0,
-          ),
-          mempoolStats: AddressStats(
-            txCount: 0,
-            fundedTxoCount: 0,
-            spentTxoCount: 0,
-            fundedTxoSum: 0,
-            spentTxoSum: 0,
-          ),
-        ));
-      });
-
-      when(() => mockBitcoinRepository.getTransaction(any()))
-          .thenAnswer((_) async {
-        return Right(BitcoinTx(
-          txid: 'mock_txid',
-          version: 1,
-          locktime: 0,
-          vin: [],
-          vout: [],
-          size: 100,
-          weight: 400,
-          fee: 1000,
-          status: Status(
-            confirmed: true,
-            blockHeight: 1000,
-            blockHash: 'mock_block_hash',
-            blockTime: 1600000000,
-          ),
-        ));
-      });
-
-      when(() => mockBitcoinRepository.getMempoolTransactions(any()))
-          .thenAnswer((_) async {
-        return const Right([]);
-      });
-
-      when(() => mockBitcoinRepository.getBlockHeight()).thenAnswer((_) async {
-        return const Right(8000);
-      });
-
-      when(() => mockBitcoinRepository.getConfirmedTransactionsPaginated(
-          any(), any())).thenAnswer((_) async {
-        return Right([
-          BitcoinTx(
-            txid: 'mock_txid',
-            version: 1,
-            locktime: 0,
-            vin: [],
-            vout: [],
-            size: 100,
-            weight: 400,
-            fee: 1000,
-            status: Status(
-              confirmed: true,
-              blockHeight: 1000,
-              blockHash: 'mock_block_hash',
-              blockTime: 1600000000,
-            ),
-          ),
-        ]);
-      });
-
-      // First unregister any existing BitcoinRepository
-      if (GetIt.I.isRegistered<BitcoinRepository>()) {
-        await GetIt.I.unregister<BitcoinRepository>();
-      }
-
-      // Register our mock BEFORE running setup
-      GetIt.I.registerSingleton<BitcoinRepository>(mockBitcoinRepository);
-
-      // Now run the regular setup
-      appTestSetup();
+      // Add a small delay to ensure initialization is complete
+      await Future.delayed(const Duration(milliseconds: 100));
     });
 
     tearDown(() async {
       // Clean up settings
       Settings.clearCache();
 
-      // Clean up GetIt
+      // Reset GetIt
       await GetIt.I.reset();
+
+      // Add a small delay to ensure cleanup is complete
+      await Future.delayed(const Duration(milliseconds: 100));
     });
 
     for (final testCase in testCases) {
@@ -339,21 +201,18 @@ void main() {
 
         // Wait for the app to settle
         await tester.pumpAndSettle();
-        // print('Initial app pump complete');
 
         // Find and tap the "LOAD SEED PHRASE" button
         final importSeedButton = find.text('LOAD SEED PHRASE');
         expect(importSeedButton, findsOneWidget);
         await tester.tap(importSeedButton);
         await tester.pumpAndSettle();
-        print('Tapped LOAD SEED PHRASE');
 
         // Now we should be on the "Choose the format of your seed phrase" screen
         // Open the dropdown for import format
         final dropdownFinder = find.byType(DropdownButton<String>);
         await tester.tap(dropdownFinder);
         await tester.pumpAndSettle();
-        print('Opened format dropdown');
 
         // Select the specified import format
         String dropdownText;
@@ -365,28 +224,24 @@ void main() {
         final formatOption = find.text(dropdownText).last;
         await tester.tap(formatOption);
         await tester.pumpAndSettle();
-        print('Selected format: $dropdownText');
 
         // Tap the "CONTINUE" button
         final continueButton = find.text('CONTINUE');
         expect(continueButton, findsOneWidget);
         await tester.tap(continueButton);
         await tester.pumpAndSettle();
-        print('Tapped first CONTINUE');
 
         // Now we should be on the seed phrase input screen
         final seedPhrase = testCase['passphrase'] as String;
         final firstWordField = find.byType(TextField).first;
         await tester.enterText(firstWordField, seedPhrase);
         await tester.pumpAndSettle();
-        print('Entered seed phrase');
 
-        // Tap the "CONTINUE" button after seed phrase
+        // Tap the "CONTINUE" button
         final continueButtonAfterSeed = find.text('CONTINUE');
         expect(continueButtonAfterSeed, findsOneWidget);
         await tester.tap(continueButtonAfterSeed);
         await tester.pumpAndSettle();
-        print('Tapped CONTINUE after seed');
 
         // Now we should be on the password entry screen
         expect(find.text('Please create a password'), findsOneWidget);
@@ -395,40 +250,26 @@ void main() {
         final passwordField = find.byType(TextField).first;
         await tester.enterText(passwordField, 'securepassword123');
         await tester.pumpAndSettle();
-        print('Entered password');
 
         // Enter the password confirmation
         final confirmPasswordField = find.byType(TextField).last;
         await tester.enterText(confirmPasswordField, 'securepassword123');
         await tester.pumpAndSettle();
-        print('Entered password confirmation');
 
-        // Ensure the "LOGIN" button is visible and tap it
+        // Ensure the "LOGIN" button is visible
         final loginButton = find.text('LOGIN');
         expect(loginButton, findsOneWidget);
+
         await tester.ensureVisible(loginButton);
         await tester.pumpAndSettle();
+
+        // Now tap the "LOGIN" button
         await tester.tap(loginButton);
-        print('Tapped LOGIN');
-
         await tester.pumpAndSettle();
-        print('LOGGING IN');
 
-        // Future.delayed(const Duration(seconds: 10));
+        // await Future.delayed(const Duration(seconds: 10));
 
-        // Add extra pumps to ensure state updates
-        // for (var i = 0; i < 10; i++) {
-        //   await tester.pump(const Duration(seconds: 1));
-        //   print('Extra pump $i');
-        // }
-
-        print('getting addresses');
         final expectedAddresses = testCase['addresses'] as List<String>;
-
-        // Wait for dashboard to load
-        // await tester.pumpAndSettle(const Duration(seconds: 5));
-
-        // Find settings button
 
         // Ensure addresses are returned in the correct order
         final addressRepository = GetIt.instance<AddressRepository>();
@@ -436,7 +277,6 @@ void main() {
         final walletRepository = GetIt.instance<WalletRepository>();
         final wallet = await walletRepository.getCurrentWallet();
 
-        print('getting accounts');
         final account =
             await accountRepository.getAccountsByWalletUuid(wallet!.uuid);
         final addresses =
@@ -449,44 +289,9 @@ void main() {
               reason:
                   'Address ${addresses[i].address} does not match expected address ${expectedAddresses[i]}');
         }
-        print('verifyings');
 
-        verify(() => mockBitcoinRepository.getTransactions(any()))
-            .called(greaterThan(0));
-
-        print('looking for settings icon');
-
-        // ... existing code ...
-        print('getting addresses');
-
-// Wait for dashboard to load and settings button to appear
-        bool settingsFound = false;
-        for (int i = 0; i < 30; i++) {
-          // Try for up to 30 seconds
-          await tester.pump(const Duration(seconds: 1));
-          try {
-            final settingsButton = find.byKey(const Key('settingsButton'));
-            if (settingsButton.evaluate().isNotEmpty) {
-              settingsFound = true;
-              break;
-            }
-          } catch (e) {
-            // Continue waiting
-          }
-          print('Waiting for settings button to appear... ${i + 1}s');
-        }
-
-        if (!settingsFound) {
-          throw Exception('Settings button did not appear within 30 seconds');
-        }
-
-// Now find and tap the settings button
-        final settingsButton = find.byKey(const Key('settingsButton'));
+        final settingsButton = find.byIcon(Icons.settings);
         expect(settingsButton, findsOneWidget);
-        await tester.tap(settingsButton);
-        await tester.pumpAndSettle();
-
-// Rest of the test...
         await tester.tap(settingsButton);
         await tester.pumpAndSettle();
 
