@@ -3,7 +3,7 @@ import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:horizon/domain/repositories/settings_repository.dart';
-
+import 'package:go_router/go_router.dart';
 
 class SettingsView extends StatelessWidget {
   const SettingsView({super.key});
@@ -12,7 +12,16 @@ class SettingsView extends StatelessWidget {
   Widget build(BuildContext context) {
     return context.watch<SessionStateCubit>().state.maybeWhen(
         orElse: () => const CircularProgressIndicator(),
-        success: (session) => SettingsScreen(title: "Settings", children: [
+        success: (session) =>
+            SettingsScreen(title: "Settings", hasAppBar: false, children: [
+              AppBar(
+                title: Text("Settings"),
+                leading: BackButton(
+                  onPressed: () {
+                    context.go("/dashboard");
+                  },
+                ),
+              ),
               SettingsGroup(
                 title: "Security",
                 children: [
