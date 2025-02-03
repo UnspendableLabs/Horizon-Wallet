@@ -4,17 +4,35 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/common/constants.dart';
+import 'package:horizon/data/services/address_service_impl.dart';
+import 'package:horizon/data/services/bip39_service_impl.dart';
+import 'package:horizon/data/services/encryption_service_web_worker_impl.dart';
+import 'package:horizon/data/services/mnemonic_service_impl.dart';
+import 'package:horizon/data/services/secure_kv_service_impl.dart';
+import 'package:horizon/data/services/wallet_service_impl.dart';
+import 'package:horizon/data/sources/local/db_manager.dart';
+import 'package:horizon/data/sources/repositories/account_repository_impl.dart';
+import "package:horizon/data/sources/repositories/address_repository_impl.dart";
+import 'package:horizon/data/sources/repositories/config_repository_impl.dart';
+import 'package:horizon/data/sources/repositories/in_memory_key_repository_impl.dart';
+import 'package:horizon/data/sources/repositories/wallet_repository_impl.dart';
 import 'package:horizon/domain/entities/bitcoin_tx.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/bitcoin_repository.dart';
+import 'package:horizon/domain/repositories/config_repository.dart';
+import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
+import 'package:horizon/domain/services/address_service.dart';
+import 'package:horizon/domain/services/bip39.dart';
+import 'package:horizon/domain/services/encryption_service.dart';
+import 'package:horizon/domain/services/mnemonic_service.dart';
+import 'package:horizon/domain/services/secure_kv_service.dart';
+import 'package:horizon/domain/services/wallet_service.dart';
 import 'package:horizon/presentation/common/usecase/import_wallet_usecase.dart';
 import 'package:horizon/presentation/screens/onboarding/view/import_format_dropdown.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:mocktail/mocktail.dart';
-
-import 'app_test_setup.dart';
 
 class MockBitcoinRepository extends Mock implements BitcoinRepository {}
 
@@ -104,26 +122,65 @@ void main() {
 
   group('Onboarding Integration Tests', () {
     setUp(() async {
-      print('Starting test setup');
       transactionCallCount = 0;
 
       // Initialize Settings
       await Settings.init(
         cacheProvider: SharePreferenceCache(),
       );
+      GetIt injector = GetIt.I;
+
       // Create the mock instance
       mockBitcoinRepository = MockBitcoinRepository();
 
-      // First unregister any existing BitcoinRepository
-      if (GetIt.I.isRegistered<BitcoinRepository>()) {
-        await GetIt.I.unregister<BitcoinRepository>();
-      }
-
       // Register our mock BEFORE running setup
-      GetIt.I.registerSingleton<BitcoinRepository>(mockBitcoinRepository);
+      injector.registerSingleton<BitcoinRepository>(mockBitcoinRepository);
 
       // Now run the regular setup
-      appTestSetup();
+
+      Config config = ConfigImpl();
+
+      injector.registerLazySingleton<Config>(() => config);
+      injector.registerSingleton<DatabaseManager>(DatabaseManager());
+
+      injector.registerSingleton<EncryptionService>(
+          EncryptionServiceWebWorkerImpl());
+      injector.registerSingleton<WalletService>(
+          WalletServiceImpl(injector(), config));
+      injector.registerSingleton<AddressService>(
+          AddressServiceImpl(config: config));
+
+      injector.registerSingleton<Bip39Service>(Bip39ServiceImpl());
+
+      injector.registerSingleton<MnemonicService>(
+          MnemonicServiceImpl(GetIt.I.get<Bip39Service>()));
+
+      injector.registerSingleton<SecureKVService>(SecureKVServiceImpl());
+
+      injector
+          .registerSingleton<InMemoryKeyRepository>(InMemoryKeyRepositoryImpl(
+        secureKVService: GetIt.I.get<SecureKVService>(),
+      ));
+
+      injector.registerSingleton<AccountRepository>(
+          AccountRepositoryImpl(injector.get<DatabaseManager>().database));
+      injector.registerSingleton<WalletRepository>(
+          WalletRepositoryImpl(injector.get<DatabaseManager>().database));
+      injector.registerSingleton<AddressRepository>(
+          AddressRepositoryImpl(injector.get<DatabaseManager>().database));
+
+      injector.registerSingleton<ImportWalletUseCase>(ImportWalletUseCase(
+        inMemoryKeyRepository: GetIt.I.get<InMemoryKeyRepository>(),
+        addressService: GetIt.I.get<AddressService>(),
+        config: GetIt.I.get<Config>(),
+        addressRepository: GetIt.I.get<AddressRepository>(),
+        accountRepository: GetIt.I.get<AccountRepository>(),
+        walletRepository: GetIt.I.get<WalletRepository>(),
+        encryptionService: GetIt.I.get<EncryptionService>(),
+        walletService: GetIt.I.get<WalletService>(),
+        bitcoinRepository: GetIt.I.get<BitcoinRepository>(),
+        mnemonicService: GetIt.I.get<MnemonicService>(),
+      ));
     });
 
     tearDown(() async {
@@ -171,8 +228,6 @@ void main() {
         // Setup default mock behavior before any test runs
         when(() => mockBitcoinRepository.getTransactions(any()))
             .thenAnswer((_) async {
-          print(
-              'Mock getTransactions called ${transactionCallCount + 1} times');
           if (testCase['format'] == ImportFormat.freewallet.description &&
               transactionCallCount == 0) {
             transactionCallCount++;

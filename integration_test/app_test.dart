@@ -162,7 +162,7 @@ void main() {
       );
 
       // Add a small delay to ensure initialization is complete
-      await Future.delayed(const Duration(milliseconds: 100));
+      await Future.delayed(const Duration(seconds: 3));
     });
 
     tearDown(() async {
@@ -273,19 +273,15 @@ void main() {
         await tester.tap(loginButton);
         await tester.pumpAndSettle();
 
-        // await Future.delayed(const Duration(seconds: 10));
-
         final expectedAddresses = testCase['addresses'] as List<String>;
 
-        await Future.delayed(const Duration(seconds: 5));
+        // await Future.delayed(const Duration(seconds: 5));
 
         // Ensure addresses are returned in the correct order
         final addressRepository = GetIt.instance<AddressRepository>();
         final accountRepository = GetIt.instance<AccountRepository>();
         final walletRepository = GetIt.instance<WalletRepository>();
         final wallet = await walletRepository.getCurrentWallet();
-
-        print('Import seed flow - ${testCase['format']}: wallet = $wallet');
 
         final account =
             await accountRepository.getAccountsByWalletUuid(wallet!.uuid);

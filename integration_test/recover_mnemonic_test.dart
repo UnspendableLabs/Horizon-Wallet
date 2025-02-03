@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
@@ -18,6 +19,10 @@ void main() {
     setUpAll(() async {
       // Perform any common setup here
       setup();
+
+      await Settings.init();
+
+      await Future.delayed(const Duration(seconds: 3));
     });
 
     testWidgets('recover mnemonic', (WidgetTester tester) async {
@@ -34,6 +39,7 @@ void main() {
 
       // Ensure the original error handler is restored after the test
       addTearDown(() {
+        Settings.clearCache();
         FlutterError.onError = originalOnError;
       });
 
@@ -43,7 +49,7 @@ void main() {
       ));
 
       // Wait for the app to settle
-      await tester.pumpAndSettle();
+      await tester.pumpAndSettle(const Duration(seconds: 3));
 
       // Find and tap the "LOAD SEED" button
       final importSeedButton = find.text('LOAD SEED PHRASE');

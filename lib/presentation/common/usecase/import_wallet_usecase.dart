@@ -6,8 +6,6 @@ import 'package:horizon/domain/entities/bitcoin_tx.dart';
 import 'package:horizon/domain/entities/wallet.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
-import 'package:horizon/domain/repositories/address_tx_repository.dart';
-import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 import 'package:horizon/domain/repositories/config_repository.dart';
 import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
@@ -36,8 +34,6 @@ class ImportWalletUseCase {
   final AddressService addressService;
   final Config config;
   final WalletService walletService;
-  final AddressTxRepository addressTxRepository;
-  final BalanceRepository balanceRepository;
   final BitcoinRepository bitcoinRepository;
   final MnemonicService mnemonicService;
 
@@ -50,8 +46,6 @@ class ImportWalletUseCase {
     required this.addressService,
     required this.config,
     required this.walletService,
-    required this.addressTxRepository,
-    required this.balanceRepository,
     required this.bitcoinRepository,
     required this.mnemonicService,
   });

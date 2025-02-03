@@ -510,8 +510,6 @@ void setup() {
     walletRepository: GetIt.I.get<WalletRepository>(),
     encryptionService: GetIt.I.get<EncryptionService>(),
     walletService: GetIt.I.get<WalletService>(),
-    addressTxRepository: GetIt.I.get<AddressTxRepository>(),
-    balanceRepository: GetIt.I.get<BalanceRepository>(),
     bitcoinRepository: GetIt.I.get<BitcoinRepository>(),
     mnemonicService: GetIt.I.get<MnemonicService>(),
   ));

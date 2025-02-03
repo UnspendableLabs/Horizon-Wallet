@@ -7,8 +7,6 @@ import 'package:horizon/domain/entities/bitcoin_tx.dart';
 import 'package:horizon/domain/entities/wallet.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
-import 'package:horizon/domain/repositories/address_tx_repository.dart';
-import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 import 'package:horizon/domain/repositories/config_repository.dart';
 import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
@@ -37,10 +35,6 @@ class MockAddressRepository extends Mock implements AddressRepository {}
 
 class MockInMemoryKeyRepository extends Mock implements InMemoryKeyRepository {}
 
-class MockAddressTxRepository extends Mock implements AddressTxRepository {}
-
-class MockBalanceRepository extends Mock implements BalanceRepository {}
-
 class MockBitcoinRepository extends Mock implements BitcoinRepository {}
 
 class MockConfig extends Mock implements Config {}
@@ -60,8 +54,6 @@ void main() {
   late MockEncryptionService mockEncryptionService;
   late MockAddressService mockAddressService;
   late MockInMemoryKeyRepository mockInMemoryKeyRepository;
-  late MockAddressTxRepository mockAddressTxRepository;
-  late MockBalanceRepository mockBalanceRepository;
   late MockBitcoinRepository mockBitcoinRepository;
   late MockMnemonicService mockMnemonicService;
 
@@ -84,8 +76,7 @@ void main() {
     mockConfig = MockConfig();
     mockWalletService = MockWalletService();
     mockInMemoryKeyRepository = MockInMemoryKeyRepository();
-    mockAddressTxRepository = MockAddressTxRepository();
-    mockBalanceRepository = MockBalanceRepository();
+
     mockBitcoinRepository = MockBitcoinRepository();
     mockMnemonicService = MockMnemonicService();
     importWalletUseCase = ImportWalletUseCase(
@@ -97,8 +88,6 @@ void main() {
       config: mockConfig,
       inMemoryKeyRepository: mockInMemoryKeyRepository,
       walletService: mockWalletService,
-      addressTxRepository: mockAddressTxRepository,
-      balanceRepository: mockBalanceRepository,
       bitcoinRepository: mockBitcoinRepository,
       mnemonicService: mockMnemonicService,
     );
