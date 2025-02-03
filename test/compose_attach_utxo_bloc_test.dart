@@ -22,6 +22,8 @@ import 'package:horizon/presentation/screens/compose_attach_utxo/bloc/compose_at
 import 'package:horizon/presentation/screens/compose_attach_utxo/bloc/compose_attach_utxo_state.dart';
 import 'package:horizon/presentation/screens/compose_attach_utxo/usecase/fetch_form_data.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:horizon/domain/entities/decryption_strategy.dart';
+import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 
 class MockComposeRepository extends Mock implements ComposeRepository {}
 
@@ -83,6 +85,8 @@ class FakeVirtualSize extends Fake implements VirtualSize {
   });
 }
 
+class MockInMemoryKeyRepository extends Mock implements InMemoryKeyRepository {}
+
 void main() {
   late ComposeAttachUtxoBloc composeAttachUtxoBloc;
   late MockComposeRepository mockComposeRepository;
@@ -97,6 +101,7 @@ void main() {
   late MockBlockRepository mockBlockRepository;
   late MockCacheProvider mockCacheProvider;
   late MockErrorService mockErrorService;
+  late MockInMemoryKeyRepository mockInMemoryKeyRepository;
   const mockFeeEstimates = FeeEstimates(fast: 5, medium: 3, slow: 1);
   final mockBalance = Balance(
     asset: 'ASSET_NAME',
@@ -147,11 +152,14 @@ void main() {
     mockBlockRepository = MockBlockRepository();
     mockCacheProvider = MockCacheProvider();
     mockErrorService = MockErrorService();
+    mockInMemoryKeyRepository = MockInMemoryKeyRepository();
 
     // Register the ErrorService mock with GetIt
     GetIt.I.registerSingleton<ErrorService>(mockErrorService);
 
     composeAttachUtxoBloc = ComposeAttachUtxoBloc(
+      passwordRequired: true,
+      inMemoryKeyRepository: mockInMemoryKeyRepository,
       composeRepository: mockComposeRepository,
       analyticsService: mockAnalyticsService,
       logger: mockLogger,
@@ -482,7 +490,7 @@ void main() {
         when(() => mockSignAndBroadcastTransactionUseCase.call(
               source: sourceAddress,
               rawtransaction: txHex,
-              password: any(named: 'password'),
+              decryptionStrategy: Password(password),
               onSuccess: any(named: 'onSuccess'),
               onError: any(named: 'onError'),
             )).thenAnswer((invocation) async {
@@ -497,7 +505,7 @@ void main() {
         when(() => mockCacheProvider.setObject(sourceAddress, any()))
             .thenAnswer((_) async {});
         when(() => mockAnalyticsService.trackAnonymousEvent(
-              'broadcast_tx_attach_utxo',
+              'broadcast_tx_attach_to_utxo',
               properties: any(named: 'properties'),
             )).thenAnswer((_) async {});
 
@@ -536,7 +544,7 @@ void main() {
       ],
       verify: (_) {
         verify(() => mockAnalyticsService.trackAnonymousEvent(
-              'broadcast_tx_attach_utxo',
+              'broadcast_tx_attach_to_utxo',
               properties: any(named: 'properties'),
             )).called(1);
 
@@ -558,7 +566,7 @@ void main() {
         when(() => mockSignAndBroadcastTransactionUseCase.call(
               source: any(named: 'source'),
               rawtransaction: any(named: 'rawtransaction'),
-              password: any(named: 'password'),
+              decryptionStrategy: Password(password),
               onSuccess: any(named: 'onSuccess'),
               onError: any(named: 'onError'),
             )).thenAnswer((invocation) async {
@@ -611,7 +619,7 @@ void main() {
       build: () {
         // const source = 'source-address';
         when(() => mockSignAndBroadcastTransactionUseCase.call(
-              password: any(named: 'password'),
+              decryptionStrategy: Password("password"),
               source: any(named: 'source'),
               rawtransaction: any(named: 'rawtransaction'),
               onSuccess: any(named: 'onSuccess'),
@@ -665,7 +673,7 @@ void main() {
       'should initialize cache when no previous hashes exist',
       build: () {
         when(() => mockSignAndBroadcastTransactionUseCase.call(
-              password: any(named: 'password'),
+              decryptionStrategy: Password("password"),
               source: any(named: 'source'),
               rawtransaction: any(named: 'rawtransaction'),
               onSuccess: any(named: 'onSuccess'),

@@ -166,16 +166,18 @@ class SignAndBroadcastTransactionUseCase<R extends ComposeResponse> {
       DecryptionStrategy decryptionStrategy) async {
     late String decryptedAddressWif;
     try {
-      final map = await inMemoryKeyRepository.getMap();
-      print("cool map $map");
-      final maybeKey =
-          (await inMemoryKeyRepository.getMap())[importedAddress.address];
+      Future<String?> getKey() async {
+        final maybeKey =
+            (await inMemoryKeyRepository.getMap())[importedAddress.address];
+
+        return maybeKey;
+      }
 
       decryptedAddressWif = switch (decryptionStrategy) {
         Password(password: var password) => await encryptionService.decrypt(
             importedAddress.encryptedWif, password),
         InMemoryKey() => await encryptionService.decryptWithKey(
-            importedAddress.encryptedWif, maybeKey!)
+            importedAddress.encryptedWif, (await getKey())!)
       };
     } catch (e) {
       throw SignAndBroadcastTransactionException('Incorrect password.');

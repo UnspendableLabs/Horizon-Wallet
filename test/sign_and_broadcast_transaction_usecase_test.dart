@@ -19,6 +19,8 @@ import 'package:horizon/domain/entities/account.dart';
 import 'package:horizon/domain/entities/wallet.dart';
 import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transaction_usecase.dart';
 import 'package:horizon/domain/entities/transaction_info.dart';
+import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
+import 'package:horizon/domain/entities/decryption_strategy.dart';
 
 // Mock classes
 class MockAddressRepository extends Mock implements AddressRepository {}
@@ -45,6 +47,8 @@ class MockImportedAddressService extends Mock
 
 class MockTransactionLocalRepository extends Mock
     implements TransactionLocalRepository {}
+
+class MockInMemoryKeyRepository extends Mock implements InMemoryKeyRepository {}
 
 class FakeTransactionInfo extends Fake implements TransactionInfo {}
 
@@ -112,6 +116,7 @@ void main() {
   late MockBitcoindService mockBitcoindService;
   late MockTransactionLocalRepository mockTransactionLocalRepository;
   late MockImportedAddressService mockImportedAddressService;
+  late MockInMemoryKeyRepository mockInMemoryKeyRepository;
   setUpAll(() {
     registerFallbackValue(FakeTransactionInfo());
   });
@@ -128,7 +133,9 @@ void main() {
     mockBitcoindService = MockBitcoindService();
     mockTransactionLocalRepository = MockTransactionLocalRepository();
     mockImportedAddressService = MockImportedAddressService();
+    mockInMemoryKeyRepository = MockInMemoryKeyRepository();
     signAndBroadcastTransactionUseCase = SignAndBroadcastTransactionUseCase(
+      inMemoryKeyRepository: mockInMemoryKeyRepository,
       addressRepository: mockAddressRepository,
       importedAddressRepository: mockImportedAddressRepository,
       accountRepository: mockAccountRepository,
@@ -422,8 +429,11 @@ void main() {
           .thenThrow(
               SignAndBroadcastTransactionException('Incorrect password.'));
 
+      when(() => mockInMemoryKeyRepository.getMap())
+          .thenAnswer((_) async => ({ 'test-address': 'test-address-decryption-key' }));
+
       var errorCallbackInvoked = false;
-      onSuccess(String txHex, String txHash) {}
+      onSuccess(String txHex, String txHash) { }
       onError(String error) {
         expect(error, 'Incorrect password.');
         errorCallbackInvoked = true;
@@ -438,7 +448,7 @@ void main() {
         onError: onError,
       );
 
-      // Assert
+      // Asser
       expect(errorCallbackInvoked, true);
       verify(() => mockEncryptionService.decrypt(
           mockImportedAddress.encryptedWif, 'wrong_password')).called(1);

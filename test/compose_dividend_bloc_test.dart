@@ -22,6 +22,9 @@ import 'package:horizon/presentation/screens/compose_dividend/bloc/compose_divid
 import 'package:horizon/presentation/screens/compose_dividend/usecase/fetch_form_data.dart';
 import 'package:mocktail/mocktail.dart';
 
+import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
+import 'package:horizon/domain/entities/decryption_strategy.dart';
+
 // Mock classes
 class MockComposeRepository extends Mock implements ComposeRepository {}
 
@@ -49,6 +52,8 @@ class MockComposeDividendResponseParams extends Mock
 
 class MockErrorService extends Mock implements ErrorService {}
 
+class MockInMemoryKeyRepository extends Mock implements InMemoryKeyRepository {}
+
 class FakeVirtualSize extends Fake implements VirtualSize {
   @override
   final int virtualSize;
@@ -70,6 +75,7 @@ void main() {
   late MockWriteLocalTransactionUseCase mockWriteLocalTransactionUseCase;
   late MockLogger mockLogger;
   late MockErrorService mockErrorService;
+  late MockInMemoryKeyRepository mockInMemoryKeyRepository;
 
   const mockFeeEstimates = FeeEstimates(fast: 5, medium: 3, slow: 1);
   final mockBalance = Balance(
@@ -108,11 +114,14 @@ void main() {
     mockWriteLocalTransactionUseCase = MockWriteLocalTransactionUseCase();
     mockLogger = MockLogger();
     mockErrorService = MockErrorService();
+    mockInMemoryKeyRepository = MockInMemoryKeyRepository();
 
     // Register the ErrorService mock with GetIt
     GetIt.I.registerSingleton<ErrorService>(mockErrorService);
 
     composeDividendBloc = ComposeDividendBloc(
+      passwordRequired: true,
+      inMemoryKeyRepository: mockInMemoryKeyRepository,
       fetchDividendFormDataUseCase: mockFetchDividendFormDataUseCase,
       composeTransactionUseCase: mockComposeTransactionUseCase,
       composeRepository: mockComposeRepository,
@@ -224,7 +233,7 @@ void main() {
         when(() => mockSignAndBroadcastTransactionUseCase.call(
               source: sourceAddress,
               rawtransaction: txHex,
-              password: password,
+              decryptionStrategy: Password(password),
               onSuccess: any(named: 'onSuccess'),
               onError: any(named: 'onError'),
             )).thenAnswer((invocation) async {

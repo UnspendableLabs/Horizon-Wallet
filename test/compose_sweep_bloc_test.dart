@@ -20,6 +20,7 @@ import 'package:horizon/presentation/screens/compose_sweep/bloc/compose_sweep_bl
 import 'package:horizon/presentation/screens/compose_sweep/bloc/compose_sweep_state.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
+import 'package:horizon/domain/entities/decryption_strategy.dart';
 
 // Mock classes
 class MockComposeRepository extends Mock implements ComposeRepository {}

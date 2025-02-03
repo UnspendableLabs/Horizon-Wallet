@@ -25,6 +25,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 import 'package:horizon/domain/repositories/settings_repository.dart';
 import 'package:horizon/core/logging/logger.dart';
+import 'package:horizon/domain/entities/decryption_strategy.dart';
 
 
 class MockInMemoryKeyRepository extends Mock implements InMemoryKeyRepository {}

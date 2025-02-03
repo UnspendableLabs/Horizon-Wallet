@@ -27,7 +27,7 @@ class ComposeMoveToUtxoEventParams {
 }
 
 class ComposeMoveToUtxoBloc extends ComposeBaseBloc<ComposeMoveToUtxoState> {
-  final txName = 'move_utxo';
+  final txName = 'move_to_utxo';
   final bool passwordRequired;
   final InMemoryKeyRepository inMemoryKeyRepository;
 

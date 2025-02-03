@@ -21,6 +21,9 @@ import 'package:horizon/presentation/screens/compose_movetoutxo/bloc/compose_mov
 import 'package:horizon/presentation/screens/compose_movetoutxo/bloc/compose_movetoutxo_state.dart';
 import 'package:mocktail/mocktail.dart';
 
+import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
+import 'package:horizon/domain/entities/decryption_strategy.dart';
+
 class MockComposeRepository extends Mock implements ComposeRepository {}
 
 class MockAnalyticsService extends Mock implements AnalyticsService {}
@@ -61,6 +64,8 @@ class FakeVirtualSize extends Fake implements VirtualSize {
 
 class MockErrorService extends Mock implements ErrorService {}
 
+class MockInMemoryKeyRepository extends Mock implements InMemoryKeyRepository {}
+
 void main() {
   late ComposeMoveToUtxoBloc composeMoveToUtxoBloc;
   late MockComposeRepository mockComposeRepository;
@@ -72,7 +77,7 @@ void main() {
       mockSignAndBroadcastTransactionUseCase;
   late MockWriteLocalTransactionUseCase mockWriteLocalTransactionUseCase;
   late MockErrorService mockErrorService;
-
+  late MockInMemoryKeyRepository mockInMemoryKeyRepository;
   const mockFeeEstimates = FeeEstimates(fast: 5, medium: 3, slow: 1);
   final mockComposeMoveToUtxoResponse = MockComposeMoveToUtxoResponse();
 
@@ -114,11 +119,14 @@ void main() {
         MockSignAndBroadcastTransactionUseCase();
     mockWriteLocalTransactionUseCase = MockWriteLocalTransactionUseCase();
     mockErrorService = MockErrorService();
+    mockInMemoryKeyRepository = MockInMemoryKeyRepository();
 
     // Register the ErrorService mock with GetIt
     GetIt.I.registerSingleton<ErrorService>(mockErrorService);
 
     composeMoveToUtxoBloc = ComposeMoveToUtxoBloc(
+      passwordRequired: true,
+      inMemoryKeyRepository: mockInMemoryKeyRepository,
       composeRepository: mockComposeRepository,
       analyticsService: mockAnalyticsService,
       logger: mockLogger,
@@ -346,7 +354,7 @@ void main() {
         when(() => mockSignAndBroadcastTransactionUseCase.call(
               source: any(named: 'source'),
               rawtransaction: any(named: 'rawtransaction'),
-              password: any(named: 'password'),
+              decryptionStrategy: Password(password),
               onSuccess: any(named: 'onSuccess'),
               onError: any(named: 'onError'),
             )).thenAnswer((invocation) async {
@@ -434,7 +442,7 @@ void main() {
         when(() => mockSignAndBroadcastTransactionUseCase.call(
               source: any(named: 'source'),
               rawtransaction: any(named: 'rawtransaction'),
-              password: any(named: 'password'),
+              decryptionStrategy: Password(password),
               onSuccess: any(named: 'onSuccess'),
               onError: any(named: 'onError'),
             )).thenAnswer((invocation) async {

@@ -571,7 +571,7 @@ void main() {
       ],
       verify: (_) {
         verify(() => mockAnalyticsService.trackAnonymousEvent(
-              'broadcast_tx_dispenser',
+              'broadcast_tx_create_dispenser',
               properties: any(named: 'properties'),
             )).called(1);
       },

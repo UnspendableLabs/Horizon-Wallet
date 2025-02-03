@@ -114,7 +114,6 @@ void main() {
 
       // Act
       final result = await signChainedTransactionUseCase.call(
-        password: password,
         source: source,
         rawtransaction: rawtransaction,
         prevDecodedTransaction: prevDecodedTransaction,
@@ -158,7 +157,6 @@ void main() {
       // Act & Assert
       expect(
         () async => await signChainedTransactionUseCase.call(
-          password: password,
           source: source,
           rawtransaction: rawtransaction,
           prevDecodedTransaction: prevDecodedTransaction,
@@ -198,7 +196,6 @@ void main() {
       // Act & Assert
       expect(
         () async => await signChainedTransactionUseCase.call(
-          password: password,
           source: source,
           rawtransaction: rawtransaction,
           prevDecodedTransaction: prevDecodedTransaction,
@@ -256,7 +253,6 @@ void main() {
 
       // Act
       final result = await signChainedTransactionUseCase.call(
-        password: password,
         source: source,
         rawtransaction: rawtransaction,
         prevDecodedTransaction: prevDecodedTransaction,
@@ -295,7 +291,6 @@ void main() {
       // Act & Assert
       expect(
         () async => await signChainedTransactionUseCase.call(
-          password: password,
           source: source,
           rawtransaction: rawtransaction,
           prevDecodedTransaction: prevDecodedTransaction,

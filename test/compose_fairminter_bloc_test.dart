@@ -21,6 +21,7 @@ import 'package:horizon/presentation/screens/compose_fairminter/bloc/compose_fai
 import 'package:horizon/presentation/screens/compose_fairminter/usecase/fetch_form_data.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
+import 'package:horizon/domain/entities/decryption_strategy.dart';
 
 class MockComposeRepository extends Mock implements ComposeRepository {}
 
