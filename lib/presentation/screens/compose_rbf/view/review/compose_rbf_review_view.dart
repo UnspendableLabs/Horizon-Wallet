@@ -28,7 +28,6 @@ class ComposeRBFReview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
     return BlocConsumer<ComposeRbfPasswordBloc, FormStateModel>(
         listener: (context, state) {
       if (state.submissionStatus.isSuccess) {

@@ -164,7 +164,7 @@ class ComposeDestroyBloc extends ComposeBaseBloc<ComposeDestroyState> {
         fee: event.fee,
       )));
       return;
-    } 
+    }
 
     final s = (state.submitState as ReviewStep<ComposeDestroyResponse, void>);
     try {
@@ -195,7 +195,6 @@ class ComposeDestroyBloc extends ComposeBaseBloc<ComposeDestroyState> {
       emit(state.copyWith(
           submitState: s.copyWith(loading: false, error: e.toString())));
     }
-
   }
 
   @override

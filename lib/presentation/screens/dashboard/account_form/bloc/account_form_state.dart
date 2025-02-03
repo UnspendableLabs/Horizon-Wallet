@@ -1,5 +1,3 @@
-import 'package:horizon/domain/entities/account.dart';
-
 sealed class AccountFormState {}
 
 class AccountFormStep1 extends AccountFormState {}
@@ -19,7 +17,6 @@ class Step2Error extends Step2State {
   final String error;
   Step2Error(this.error);
 }
-
 
 class AccountFormSuccess extends AccountFormState {
   AccountFormSuccess();

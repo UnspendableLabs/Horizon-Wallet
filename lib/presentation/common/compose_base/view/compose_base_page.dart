@@ -9,8 +9,6 @@ import 'package:horizon/presentation/common/fee_estimation_v2.dart';
 import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart";
 import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_event.dart";
 import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
-import 'package:flutter_settings_screens/flutter_settings_screens.dart';
-import 'package:horizon/presentation/screens/settings/settings_view.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/domain/repositories/settings_repository.dart';
 

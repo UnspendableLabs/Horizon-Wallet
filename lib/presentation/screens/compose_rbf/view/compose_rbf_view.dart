@@ -110,9 +110,9 @@ class ComposeRBFPageWrapper extends StatelessWidget {
                             ),
                             child: Builder(builder: (context) {
                               return ComposeRBFReview(
-                              passwordRequired: GetIt.I
-                                  .get<SettingsRepository>()
-                                  .requirePasswordForCryptoOperations,
+                                passwordRequired: GetIt.I
+                                    .get<SettingsRepository>()
+                                    .requirePasswordForCryptoOperations,
                                 makeRBFResponse: state.makeRBFResponse!,
                                 rbfData: state.rbfData!,
                                 onBack: () {

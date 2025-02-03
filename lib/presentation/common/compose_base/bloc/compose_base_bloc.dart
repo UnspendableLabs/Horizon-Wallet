@@ -5,7 +5,6 @@ import 'package:horizon/presentation/common/compose_base/bloc/compose_base_event
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_state.dart';
 
 abstract interface class ComposeBaseBlocInterface<T extends ComposeStateBase> {
-
   Future<void> onAsyncFormDependenciesRequested(
       AsyncFormDependenciesRequested event, Emitter<T> emit);
   void onFeeOptionChanged(FeeOptionChanged event, Emitter<T> emit);

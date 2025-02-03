@@ -39,7 +39,7 @@ class ComposeMoveToUtxoPageWrapper extends StatelessWidget {
     return session.state.maybeWhen(
       success: (state) => BlocProvider(
         key: Key(currentAddress),
-       create: (context) => ComposeMoveToUtxoBloc(
+        create: (context) => ComposeMoveToUtxoBloc(
           passwordRequired:
               GetIt.I<SettingsRepository>().requirePasswordForCryptoOperations,
           inMemoryKeyRepository: GetIt.I.get<InMemoryKeyRepository>(),

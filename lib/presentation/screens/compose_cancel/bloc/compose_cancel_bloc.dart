@@ -118,7 +118,6 @@ class ComposeCancelBloc extends ComposeBaseBloc<ComposeCancelState> {
 
     final s = (state.submitState as ReviewStep<ComposeCancelResponse, void>);
 
-
     try {
       emit(state.copyWith(submitState: s.copyWith(loading: true)));
 
@@ -147,7 +146,6 @@ class ComposeCancelBloc extends ComposeBaseBloc<ComposeCancelState> {
       emit(state.copyWith(
           submitState: s.copyWith(loading: false, error: e.toString())));
     }
-
   }
 
   @override

@@ -1,4 +1,3 @@
-
 enum SettingsKeys {
   requiredPasswordForCryptoOperations,
   inactivityTimeout,

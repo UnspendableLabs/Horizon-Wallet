@@ -64,9 +64,9 @@ class ComposeOrderPageWrapper extends StatelessWidget {
         success: (state) => BlocProvider(
               key: Key(currentAddress),
               create: (context) => ComposeOrderBloc(
-          passwordRequired:
-              GetIt.I<SettingsRepository>().requirePasswordForCryptoOperations,
-          inMemoryKeyRepository: GetIt.I.get<InMemoryKeyRepository>(),
+                passwordRequired: GetIt.I<SettingsRepository>()
+                    .requirePasswordForCryptoOperations,
+                inMemoryKeyRepository: GetIt.I.get<InMemoryKeyRepository>(),
                 getFeeEstimatesUseCase: GetIt.I.get<GetFeeEstimatesUseCase>(),
                 logger: GetIt.I.get<Logger>(),
                 writelocalTransactionUseCase:
@@ -204,13 +204,12 @@ class ComposeOrderPageState extends State<ComposeOrderPage> {
           feeRate: var feeRate,
           virtualSize: var virtualSize,
           adjustedVirtualSize: var adjustedVirtualSize,
-          loading: var loading, 
+          loading: var loading,
           error: var error,
         ) =>
           ReviewStepView(
-              loading: loading, 
-
-                error: error,
+              loading: loading,
+              error: error,
               composeTransaction: composeTransaction,
               fee: fee,
               feeRate: feeRate,

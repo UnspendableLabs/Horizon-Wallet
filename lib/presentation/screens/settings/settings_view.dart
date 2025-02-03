@@ -15,7 +15,7 @@ class SettingsView extends StatelessWidget {
         success: (session) =>
             SettingsScreen(title: "Settings", hasAppBar: false, children: [
               AppBar(
-                title: Text("Settings"),
+                title: const Text("Settings"),
                 leading: BackButton(
                   onPressed: () {
                     context.go("/dashboard");

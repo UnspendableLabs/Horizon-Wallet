@@ -91,8 +91,5 @@ class ComposeRBFBloc extends Bloc<ComposeRBFEvent, ComposeRBFState> {
     on<PasswordBackButtonPressed>((event, emit) {
       emit(state.copyWith(step: Review()));
     });
-
-
-
   }
 }

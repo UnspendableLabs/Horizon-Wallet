@@ -86,28 +86,30 @@ class _AddAccountFormState extends State<AddAddressForm> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
             const SizedBox(height: 16.0),
+            widget.passwordRequired
+                ? HorizonUI.HorizonTextFormField(
+                    enabled: state.maybeWhen(
+                        loading: () => false,
+                        success: (_) => false,
+                        orElse: () => true),
+                    controller: passwordController,
+                    obscureText: true,
+                    enableSuggestions: false,
+                    autocorrect: false,
+                    label: 'Password',
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter your password';
+                      }
 
-            widget.passwordRequired ? HorizonUI.HorizonTextFormField(
-              enabled: state.maybeWhen(
-                  loading: () => false,
-                  success: (_) => false,
-                  orElse: () => true),
-              controller: passwordController,
-              obscureText: true,
-              enableSuggestions: false,
-              autocorrect: false,
-              label: 'Password',
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter your password';
-                }
-
-                return null;
-              },
-              onFieldSubmitted: (value) {
-                handleSubmit();
-              },
-            ) : const Text("Create a new address at the next available index"),
+                      return null;
+                    },
+                    onFieldSubmitted: (value) {
+                      handleSubmit();
+                    },
+                  )
+                : const Text(
+                    "Create a new address at the next available index"),
             if (error.isNotEmpty)
               Text(error, style: const TextStyle(color: redErrorText)),
             const SizedBox(height: 16.0),

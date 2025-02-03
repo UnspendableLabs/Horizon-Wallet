@@ -21,10 +21,8 @@ class LoginView extends StatelessWidget {
         isDarkMode ? lightNavyDarkTheme : whiteLightTheme;
     return BlocProvider<LoginFormBloc>(
         create: (context) => LoginFormBloc(
-        importedAddressRepository: GetIt.I<ImportedAddressRepository>(),
-              
-        importedAddressService: GetIt.I<ImportedAddressService>(),
-              
+              importedAddressRepository: GetIt.I<ImportedAddressRepository>(),
+              importedAddressService: GetIt.I<ImportedAddressService>(),
               walletRepository: GetIt.I<WalletRepository>(),
               encryptionService: GetIt.I<EncryptionService>(),
               inMemoryKeyRepository: GetIt.I<InMemoryKeyRepository>(),

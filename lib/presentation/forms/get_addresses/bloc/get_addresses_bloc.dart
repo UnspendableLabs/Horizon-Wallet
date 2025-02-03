@@ -188,7 +188,6 @@ class GetAddressesBloc extends Bloc<GetAddressesEvent, GetAddressesState> {
     // Decrypt Root Private Key
     String decryptedRootPrivKey;
     try {
-
       decryptedRootPrivKey = switch (decryptionStrategy) {
         Password(password: var password) =>
           await encryptionService.decrypt(wallet!.encryptedPrivKey, password),

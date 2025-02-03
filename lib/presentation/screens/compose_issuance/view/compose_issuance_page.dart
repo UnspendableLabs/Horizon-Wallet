@@ -27,8 +27,6 @@ import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
 import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 
-import 'package:flutter_settings_screens/flutter_settings_screens.dart';
-import 'package:horizon/presentation/screens/settings/settings_view.dart';
 import 'package:horizon/domain/repositories/settings_repository.dart';
 
 import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';

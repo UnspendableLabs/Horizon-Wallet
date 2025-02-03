@@ -166,12 +166,10 @@ class SignAndBroadcastTransactionUseCase<R extends ComposeResponse> {
       DecryptionStrategy decryptionStrategy) async {
     late String decryptedAddressWif;
     try {
-
       final map = await inMemoryKeyRepository.getMap();
       print("cool map $map");
       final maybeKey =
           (await inMemoryKeyRepository.getMap())[importedAddress.address];
-
 
       decryptedAddressWif = switch (decryptionStrategy) {
         Password(password: var password) => await encryptionService.decrypt(

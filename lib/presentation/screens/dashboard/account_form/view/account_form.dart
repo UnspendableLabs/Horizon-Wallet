@@ -217,7 +217,7 @@ class _AddAccountFormState extends State<AddAccountForm> {
                 ),
               );
             }),
-            _ => const SizedBox.shrink()
+          _ => const SizedBox.shrink()
         };
       },
     );

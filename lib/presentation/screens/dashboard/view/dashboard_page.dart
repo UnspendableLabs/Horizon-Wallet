@@ -1415,8 +1415,9 @@ class QRCodeDialog extends StatelessWidget {
                         body: Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 16.0),
                           child: AddAddressForm(
-                            passwordRequired:
-                                GetIt.I.get<SettingsRepository>().requirePasswordForCryptoOperations,
+                            passwordRequired: GetIt.I
+                                .get<SettingsRepository>()
+                                .requirePasswordForCryptoOperations,
                             accountUuid: accountUuid!,
                           ),
                         ),

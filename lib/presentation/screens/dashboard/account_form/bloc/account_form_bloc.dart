@@ -13,7 +13,6 @@ import 'package:horizon/domain/services/error_service.dart';
 import 'package:horizon/domain/services/wallet_service.dart';
 import "package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_event.dart";
 import 'package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_state.dart';
-import 'package:horizon/domain/entities/decryption_strategy.dart';
 import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 
 class AccountFormBloc extends Bloc<AccountFormEvent, AccountFormState> {

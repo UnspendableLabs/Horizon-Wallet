@@ -182,7 +182,6 @@ class ComposeDispenseBloc extends ComposeBaseBloc<ComposeDispenseState> {
     try {
       emit(state.copyWith(submitState: s.copyWith(loading: true)));
 
-
       await signAndBroadcastTransactionUseCase.call(
           decryptionStrategy: InMemoryKey(),
           source: s.composeTransaction.params.source,

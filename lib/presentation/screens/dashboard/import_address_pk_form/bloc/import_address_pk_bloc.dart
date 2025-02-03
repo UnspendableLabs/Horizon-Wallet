@@ -22,16 +22,16 @@ class ImportAddressPkBloc
   final ImportedAddressRepository importedAddressRepository;
   final ImportedAddressService importedAddressService;
   final InMemoryKeyRepository inMemoryKeyRepository;
-  ImportAddressPkBloc({
-    required this.walletRepository,
-    required this.walletService,
-    required this.encryptionService,
-    required this.addressService,
-    required this.addressRepository,
-    required this.importedAddressRepository,
-    required this.importedAddressService,
-      required this.inMemoryKeyRepository
-  }) : super(ImportAddressPkStep1()) {
+  ImportAddressPkBloc(
+      {required this.walletRepository,
+      required this.walletService,
+      required this.encryptionService,
+      required this.addressService,
+      required this.addressRepository,
+      required this.importedAddressRepository,
+      required this.importedAddressService,
+      required this.inMemoryKeyRepository})
+      : super(ImportAddressPkStep1()) {
     on<Finalize>((event, emit) async {
       emit(ImportAddressPkStep2(state: Step2Initial()));
     });
@@ -81,15 +81,13 @@ class ImportAddressPkBloc
           name: event.name,
         );
 
-        final String encryptionKey =
-            await encryptionService.getDecryptionKey(encryptedWIF, event.password);
+        final String encryptionKey = await encryptionService.getDecryptionKey(
+            encryptedWIF, event.password);
 
         final currMap = await inMemoryKeyRepository.getMap();
         final newMap = {...currMap, address: encryptionKey};
 
         await inMemoryKeyRepository.setMap(map: newMap);
-
-
 
         try {
           await importedAddressRepository.insert(importedAddress);

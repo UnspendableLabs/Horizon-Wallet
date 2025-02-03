@@ -194,7 +194,6 @@ class ComposeCancelPageState extends State<ComposeCancelPage> {
           adjustedVirtualSize: var adjustedVirtualSize,
           loading: var loading,
           error: var error,
-                  
         ) =>
           ReviewStepView(
               loading: loading,
