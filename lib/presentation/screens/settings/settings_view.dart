@@ -16,12 +16,20 @@ class SettingsView extends StatelessWidget {
               SettingsGroup(
                 title: "Security",
                 children: [
-
                   SwitchSettingsTile(
                     title: 'Require password',
-                    subtitle: 'Require password when signing transactions or granting access to wallet data',
-                    settingKey: SettingsKeys.requiredPasswordForCryptoOperations.toString(),
+                    enabledLabel:
+                        'Require password when signing transactions or granting access to wallet data. ( Disabling requires reauthentication )',
+                    disabledLabel:
+                        "Require password when signing transactions or granting access to wallet data.",
+                    settingKey: SettingsKeys.requiredPasswordForCryptoOperations
+                        .toString(),
                     defaultValue: true,
+                    onChange: (value) {
+                      if (value == false) {
+                        context.read<SessionStateCubit>().onLogout();
+                      }
+                    },
                   ),
                   DropDownSettingsTile<int>(
                     title: 'Inactivity Timeout',
