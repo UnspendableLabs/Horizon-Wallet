@@ -79,7 +79,7 @@ class MockSessionStateCubit extends Mock implements SessionStateCubit {
         accounts: [],
         redirect: false,
         decryptionKey: "decryption_key",
-        wallet: const Wallet(
+        wallet: Wallet(
           name: 'Test Wallet',
           uuid: 'test-wallet-uuid',
           publicKey: '',
@@ -88,7 +88,7 @@ class MockSessionStateCubit extends Mock implements SessionStateCubit {
         ),
         currentAccountUuid: 'test-account-uuid',
         addresses: [],
-        currentAddress: const Address(
+        currentAddress: Address(
           address: 'test-address',
           accountUuid: 'test-account-uuid',
           index: 0,

@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:formz/formz.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:horizon/presentation/common/colors.dart';
 import 'package:horizon/presentation/forms/get_addresses/bloc/get_addresses_bloc.dart';
 import 'package:horizon/presentation/forms/get_addresses/bloc/get_addresses_state.dart';
 import 'package:horizon/presentation/forms/get_addresses/bloc/get_addresses_event.dart';
 import 'package:horizon/domain/entities/account.dart';
 import 'package:horizon/domain/entities/address_rpc.dart';
+
 
 class GetAddressesForm extends StatelessWidget {
   final bool passwordRequired;
@@ -135,6 +137,11 @@ class GetAddressesForm extends StatelessWidget {
                             .read<GetAddressesBloc>()
                             .add(WarningAcceptedChanged(value ?? false));
                       },
+                      fillColor: WidgetStateProperty.resolveWith<Color>(
+                        (Set<WidgetState> states) {
+                          return mainTextGreyTransparent;
+                        },
+                      ),
                     ),
                     Expanded(
                       child: SelectableText(
@@ -149,7 +156,14 @@ class GetAddressesForm extends StatelessWidget {
                 // Submit Button
                 ElevatedButton(
                   onPressed: state.submissionStatus.isInProgressOrSuccess ||
-                          !state.warningAccepted
+                          !state.warningAccepted ||
+                          state.password.value.isEmpty ||
+                          (state.addressSelectionMode ==
+                                  AddressSelectionMode.byAccount &&
+                              state.account.value.isEmpty) ||
+                          (state.addressSelectionMode ==
+                                  AddressSelectionMode.importedAddresses &&
+                              state.importedAddress.value.isEmpty)
                       ? null
                       : () => context
                           .read<GetAddressesBloc>()

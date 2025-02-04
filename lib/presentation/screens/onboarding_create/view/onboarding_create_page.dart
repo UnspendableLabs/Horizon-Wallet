@@ -289,7 +289,8 @@ class _MnemonicState extends State<Mnemonic> {
                                           ? mainTextWhite
                                           : mainTextBlack,
                                     ),
-                                    if (config.network == Network.testnet)
+                                    if (config.network == Network.testnet4 ||
+                                        config.network == Network.testnet)
                                       ElevatedButton.icon(
                                         icon: const Icon(
                                           Icons.copy,

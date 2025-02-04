@@ -439,8 +439,8 @@ void main() {
   // Catch synchronous errors in Flutter framework
   FlutterError.onError = (FlutterErrorDetails details) {
     FlutterError.dumpErrorToConsole(details);
+    // TODO: Is this error capture necessary?
     GetIt.I<ErrorService>().captureException(details.exception,
-        stackTrace: details.stack,
         context: {'runtimeType': details.exception.runtimeType.toString()});
   };
 
@@ -512,15 +512,13 @@ void main() {
       final errorMessage = 'Type Error: ${error.toString()}';
       logger.error(errorMessage, error, stackTrace);
       GetIt.I<ErrorService>().captureException(error,
-          stackTrace: stackTrace,
           message: errorMessage,
           context: {'runtimeType': error.runtimeType.toString()});
     } else {
       // Add more specific error type handling here as needed
       const errorMessage = 'An unexpected error occurred';
-      logger.error(error.toString(), null, stackTrace);
+      logger.error(errorMessage, null, stackTrace);
       GetIt.I<ErrorService>().captureException(FlutterError(errorMessage),
-          stackTrace: stackTrace,
           message: errorMessage,
           context: {'errorType': error.runtimeType.toString()});
     }

@@ -173,24 +173,17 @@ void setup() {
       message: """
             Original error before retry:
             Status Code: ${error.response?.statusCode ?? 'No status code (connection failed)'}
-            Error: ${error.error.toString()}
             URL: ${error.requestOptions.uri}
             Type: ${error.type}
             Response: ${error.response?.data ?? 'No response (connection failed)'}
-            Message: ${error.message}
-            Response: ${error.response}
             App Version: ${config.version}
           """,
-      stackTrace: error.stackTrace,
       context: {
         'errorType': error.type.toString(),
         'statusCode':
             error.response?.statusCode?.toString() ?? 'connection_failed',
-        'method': error.requestOptions.method,
         'path': error.requestOptions.path,
         'retryCount': retryCount.toString(),
-        'connectionError': error.type == DioExceptionType.connectionError,
-        'errorMessage': error.message,
         'response': error.response,
         'appVersion': config.version,
       },

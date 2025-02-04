@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
@@ -273,7 +272,7 @@ void main() {
         expect(lockScreen, findsOneWidget);
         await tester.tap(lockScreen);
         await tester.pumpAndSettle();
-        
+
         final password = find.byType(TextField);
         await tester.enterText(password, "securepassword123");
         await tester.pumpAndSettle();
@@ -283,10 +282,8 @@ void main() {
         await tester.tap(unlock);
         await tester.pumpAndSettle();
 
-        
         await tester.tap(settingsButton);
         await tester.pumpAndSettle();
-
 
         final resetButton = find.text('Reset wallet');
         expect(resetButton, findsOneWidget);
