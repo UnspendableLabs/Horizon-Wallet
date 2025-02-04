@@ -14,7 +14,7 @@ import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/mnemonic_service.dart';
 import 'package:horizon/domain/services/wallet_service.dart';
-import 'package:horizon/test_config.dart';
+import 'package:horizon/presentation/screens/onboarding_import/onboarding_config.dart';
 
 // ignore_for_file: constant_identifier_names
 const GAP_LIMIT = 20;
@@ -245,11 +245,13 @@ class ImportWalletUseCase {
     return (accountsWithBalances, hasTransactions);
   }
 
-  Future<Map<Account, List<Address>>> createFreewalletWallet({
+  Future<(Map<Account, List<Address>>, bool)> createFreewalletWallet({
     required String password,
     required String mnemonic,
     required Wallet wallet,
   }) async {
+    bool hasTransactions = false;
+
     final Map<Account, List<Address>> accountsWithBalances = {};
     String decryptedPrivKey;
     try {
@@ -290,6 +292,11 @@ class ImportWalletUseCase {
             start: 0,
             end: 9);
 
+    accountsWithBalances[freewalletAccount] = [
+      ...addressesBech32,
+      ...addressesLegacy,
+    ];
+
     final allTransactionsFreewallet = await bitcoinRepository.getTransactions([
       ...addressesBech32.map((e) => e.address),
       ...addressesLegacy.map((e) => e.address),
@@ -299,22 +306,14 @@ class ImportWalletUseCase {
         (transactions) => transactions,
       );
     });
+
     if (allTransactionsFreewallet.isEmpty) {
-      if (TestConfig.skipCounterwallet) {
-        accountsWithBalances[freewalletAccount] = [
-          ...addressesBech32,
-          ...addressesLegacy,
-        ];
-        return accountsWithBalances;
-      } else {
-        return {};
-      }
+      // if there are no transactions on the freewallet account, return the empty account and false for hasTransactions
+      return (accountsWithBalances, hasTransactions);
     }
-    // import all 20 addresses for the freewallet account
-    accountsWithBalances[freewalletAccount] = [
-      ...addressesBech32,
-      ...addressesLegacy,
-    ];
+
+    // otherwise, check any subsequent accounts for transactions, up to 20 accounts
+    hasTransactions = true;
     for (int i = 1; i < GAP_LIMIT; i++) {
       Account nextFreewalletAccount = Account(
           name: 'ACCOUNT ${i + 1}',
@@ -364,7 +363,7 @@ class ImportWalletUseCase {
         ...addressesLegacy,
       ];
     }
-    return accountsWithBalances;
+    return (accountsWithBalances, hasTransactions);
   }
 
   Future<void> call({
@@ -386,45 +385,52 @@ class ImportWalletUseCase {
           break;
 
         case WalletType.bip32:
-          // for bip32 wallets, assume 99% of users have a counterwallet seed phrase
-          // counterwallet seeds are the main freewallet/RPW seed phrases
-          bool counterwalletHasTransactions = false;
-
-          // TestConfig is used here in case we want to skip directly to importing freewallet
-          if (!TestConfig.skipCounterwallet) {
+          final isValidBip39 = mnemonicService.validateMnemonic(mnemonic);
+          if (!isValidBip39) {
+            // if the seed phrase is not valid bip39, import counterwallet and break
             wallet =
                 await walletService.deriveRootCounterwallet(mnemonic, password);
-            (accountsWithBalances, counterwalletHasTransactions) =
-                await createCounterwalletWallet(
-                    password: password, mnemonic: mnemonic, wallet: wallet);
-
-            if (!counterwalletHasTransactions) {
-              // if there are no counterwallet transactions, we will check freewallet
-              // however, if the seed phrase is not valid bip39, we can break immediately and import  counterwallet
-              final isValidBip39 = mnemonicService.validateMnemonic(mnemonic);
-              if (!isValidBip39) {
-                break;
-              }
-              wallet =
-                  await walletService.deriveRootFreewallet(mnemonic, password);
-              final freewalletAccountsWithBalances =
-                  await createFreewalletWallet(
-                      password: password, mnemonic: mnemonic, wallet: wallet);
-
-              // we import freewallet ONLY IF THERE ARE TRANSACTIONS ON THE FREEWALLET ACCOUNTS
-              // otherwise, we will import counterwallet
-              if (freewalletAccountsWithBalances.isNotEmpty) {
-                accountsWithBalances = freewalletAccountsWithBalances;
-              }
-            }
-          } else {
-            // if we are skipping counterwallet, we will skip to importing freewallet
+            (accountsWithBalances, _) = await createCounterwalletWallet(
+                password: password, mnemonic: mnemonic, wallet: wallet);
+            break;
+          }
+          final isValidCounterwallet =
+              mnemonicService.validateCounterwalletMnemonic(mnemonic);
+          if (!isValidCounterwallet ||
+              OnboardingConfig.isFreewalletImportBip39) {
+            // if the seed phrase is not valid counterwallet, or if freewalletbip39 is specified, import freewallet and break
             wallet =
                 await walletService.deriveRootFreewallet(mnemonic, password);
-            accountsWithBalances = await createFreewalletWallet(
+            (accountsWithBalances, _) = await createFreewalletWallet(
                 password: password, mnemonic: mnemonic, wallet: wallet);
+            break;
           }
 
+          // we will get to this point if the seed phrase is both valid bip39 and valid counterwallet, which is relatively common
+          // in this case, for bip32 wallets, assume 99% of users have a counterwallet seed phrase
+          // counterwallet seeds are the main freewallet/RPW seed phrases
+
+          // track if there are transactions on the counterwallet account
+          bool counterwalletHasTransactions = false;
+          wallet =
+              await walletService.deriveRootCounterwallet(mnemonic, password);
+          (accountsWithBalances, counterwalletHasTransactions) =
+              await createCounterwalletWallet(
+                  password: password, mnemonic: mnemonic, wallet: wallet);
+          if (!counterwalletHasTransactions) {
+            // if there are no counterwallet transactions, we will check freewallet bip39
+            wallet =
+                await walletService.deriveRootFreewallet(mnemonic, password);
+            final (freewalletAccountsWithBalances, freewalletHasTransactions) =
+                await createFreewalletWallet(
+                    password: password, mnemonic: mnemonic, wallet: wallet);
+
+            // we import freewallet ONLY IF THERE ARE TRANSACTIONS ON THE FREEWALLET ACCOUNTS
+            // otherwise, we will import counterwallet
+            if (freewalletHasTransactions) {
+              accountsWithBalances = freewalletAccountsWithBalances;
+            }
+          }
           break;
 
         default:
