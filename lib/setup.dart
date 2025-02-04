@@ -230,7 +230,7 @@ void setup() {
     ConnectionErrorInterceptor(),
     BadResponseInterceptor(),
     BadCertificateInterceptor(),
-    // SimpleLogInterceptor(),
+    SimpleLogInterceptor(),
     RetryInterceptor(
       dio: dio,
       retries: 3,
@@ -257,7 +257,7 @@ void setup() {
     ConnectionErrorInterceptor(),
     BadResponseInterceptor(),
     BadCertificateInterceptor(),
-    // SimpleLogInterceptor(),
+    SimpleLogInterceptor(),
     RetryInterceptor(
       dio: dio,
       retries: 4,
@@ -331,6 +331,7 @@ void setup() {
   ));
 
   injector.registerSingleton<CacheProvider>(HiveCache());
+
 
   injector.registerSingleton<DatabaseManager>(DatabaseManager());
 
@@ -609,6 +610,16 @@ void setup() {
   }
 
   injector.registerSingleton<SettingsRepository>(SettingsRepositoryImpl());
+
+
+
+
+
+  await Settings.init(
+    cacheProvider: GetIt.I<CacheProvider>(),
+  );
+  
+
 }
 
 class CustomDioException extends DioException {

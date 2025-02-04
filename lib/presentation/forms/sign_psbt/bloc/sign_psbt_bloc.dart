@@ -212,7 +212,6 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
           privateKey = await encryptionService.decrypt(
               wallet.encryptedPrivKey, state.password.value);
         } catch (e) {
-          print(" for some rreason we are trying to decode private key? ");
           emit(state.copyWith(
             submissionStatus: FormzSubmissionStatus.failure,
             error: "Incorrect password.",
