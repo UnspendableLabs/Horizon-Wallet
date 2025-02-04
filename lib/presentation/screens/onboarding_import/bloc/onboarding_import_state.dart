@@ -1,6 +1,6 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:horizon/common/constants.dart';
 import 'package:horizon/domain/entities/address.dart';
-import 'package:horizon/presentation/screens/onboarding/view/import_format_dropdown.dart';
 
 part 'onboarding_import_state.freezed.dart';
 

@@ -162,7 +162,7 @@ void main() {
       );
 
       // Add a small delay to ensure initialization is complete
-      await Future.delayed(const Duration(seconds: 3));
+      await Future.delayed(const Duration(milliseconds: 100));
     });
 
     tearDown(() async {
@@ -206,7 +206,7 @@ void main() {
         ));
 
         // Wait for the app to settle
-        await tester.pumpAndSettle();
+        await tester.pumpAndSettle(const Duration(seconds: 1));
 
         // Find and tap the "LOAD SEED PHRASE" button
         final importSeedButton = find.text('LOAD SEED PHRASE');
@@ -274,8 +274,6 @@ void main() {
         await tester.pumpAndSettle();
 
         final expectedAddresses = testCase['addresses'] as List<String>;
-
-        // await Future.delayed(const Duration(seconds: 5));
 
         // Ensure addresses are returned in the correct order
         final addressRepository = GetIt.instance<AddressRepository>();

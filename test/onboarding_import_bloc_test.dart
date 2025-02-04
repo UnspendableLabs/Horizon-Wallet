@@ -6,7 +6,6 @@ import 'package:horizon/domain/repositories/config_repository.dart';
 import 'package:horizon/domain/services/mnemonic_service.dart';
 import 'package:horizon/domain/services/wallet_service.dart';
 import 'package:horizon/presentation/common/usecase/import_wallet_usecase.dart';
-import 'package:horizon/presentation/screens/onboarding/view/import_format_dropdown.dart';
 import 'package:horizon/presentation/screens/onboarding_import/bloc/onboarding_import_bloc.dart';
 import 'package:horizon/presentation/screens/onboarding_import/bloc/onboarding_import_event.dart';
 import 'package:horizon/presentation/screens/onboarding_import/bloc/onboarding_import_state.dart';

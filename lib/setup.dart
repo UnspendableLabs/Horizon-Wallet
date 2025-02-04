@@ -1,120 +1,142 @@
-import 'dart:convert';
-// will need to move this import elsewhere for compile to native
-import 'dart:html' as html;
-
-import 'package:chrome_extension/tabs.dart';
 import 'package:dio/dio.dart';
-import 'package:dio_smart_retry/dio_smart_retry.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:get_it/get_it.dart';
-import 'package:horizon/core/logging/logger.dart';
-import 'package:horizon/data/logging/logger_impl.dart';
+
+import 'package:horizon/data/services/secure_kv_service_impl.dart';
+import 'package:horizon/domain/services/secure_kv_service.dart';
+
+import 'package:horizon/data/sources/repositories/in_memory_key_repository_impl.dart';
+import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
+
 import 'package:horizon/data/services/address_service_impl.dart';
-import 'package:horizon/data/services/analytics_service_impl.dart';
 import 'package:horizon/data/services/bip39_service_impl.dart';
 import 'package:horizon/data/services/bitcoind_service_impl.dart';
 import 'package:horizon/data/services/cache_provider_impl.dart';
 import 'package:horizon/data/services/encryption_service_web_worker_impl.dart';
-import 'package:horizon/data/services/error_service_impl.dart';
+import 'package:dio_smart_retry/dio_smart_retry.dart';
 import 'package:horizon/data/services/imported_address_service_impl.dart';
-import 'package:horizon/data/services/mnemonic_service_impl.dart';
+import 'package:chrome_extension/tabs.dart';
 import 'package:horizon/data/services/platform_service_extension_impl.dart';
 import 'package:horizon/data/services/platform_service_web_impl.dart';
-import 'package:horizon/data/services/public_key_service_impl.dart';
-import 'package:horizon/data/services/secure_kv_service_impl.dart';
+import "package:horizon/data/sources/repositories/address_repository_impl.dart";
+import 'package:horizon/data/sources/repositories/estimate_xcp_fee_repository_impl.dart';
+import "package:horizon/domain/repositories/address_repository.dart";
+import 'package:horizon/data/sources/local/db_manager.dart';
+
+import 'package:horizon/data/services/mnemonic_service_impl.dart';
 import 'package:horizon/data/services/transaction_service_impl.dart';
 import 'package:horizon/data/services/wallet_service_impl.dart';
-import 'package:horizon/data/sources/local/dao/transactions_dao.dart';
-import 'package:horizon/data/sources/local/db_manager.dart';
 import 'package:horizon/data/sources/network/api/v2_api.dart';
-import 'package:horizon/data/sources/network/esplora_client.dart';
-import 'package:horizon/data/sources/network/mempool_space_client.dart';
 import 'package:horizon/data/sources/repositories/account_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/account_settings_repository_impl.dart';
-import 'package:horizon/data/sources/repositories/action_repository_impl.dart';
-import "package:horizon/data/sources/repositories/address_repository_impl.dart";
 import 'package:horizon/data/sources/repositories/address_tx_repository_impl.dart';
-import 'package:horizon/data/sources/repositories/asset_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/balance_repository_impl.dart';
-import 'package:horizon/data/sources/repositories/bitcoin_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/block_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/compose_repository_impl.dart';
-import 'package:horizon/data/sources/repositories/config_repository_impl.dart';
-import 'package:horizon/data/sources/repositories/dispenser_repository_impl.dart';
-import 'package:horizon/data/sources/repositories/estimate_xcp_fee_repository_impl.dart';
-import 'package:horizon/data/sources/repositories/events_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/fairminter_repository_impl.dart';
-import 'package:horizon/data/sources/repositories/fee_estimates_repository_mempool_space_impl.dart';
 import 'package:horizon/data/sources/repositories/imported_address_repository_impl.dart';
-import 'package:horizon/data/sources/repositories/in_memory_key_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/node_info_repository_impl.dart';
-import 'package:horizon/data/sources/repositories/order_repository_impl.dart';
-import 'package:horizon/data/sources/repositories/transaction_local_repository_impl.dart';
-import 'package:horizon/data/sources/repositories/transaction_repository_impl.dart';
-import 'package:horizon/data/sources/repositories/unified_address_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/utxo_repository_impl.dart';
-import 'package:horizon/data/sources/repositories/version_repository_extension_impl.dart';
-import 'package:horizon/data/sources/repositories/version_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/wallet_repository_impl.dart';
-import 'package:horizon/domain/entities/address_rpc.dart';
-import 'package:horizon/domain/entities/extension_rpc.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/account_settings_repository.dart';
-import 'package:horizon/domain/repositories/action_repository.dart';
-import "package:horizon/domain/repositories/address_repository.dart";
 import 'package:horizon/domain/repositories/address_tx_repository.dart';
-import 'package:horizon/domain/repositories/asset_repository.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
-import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 import 'package:horizon/domain/repositories/block_repository.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
-import 'package:horizon/domain/repositories/config_repository.dart';
-import 'package:horizon/domain/repositories/dispenser_repository.dart';
 import 'package:horizon/domain/repositories/estimate_xcp_fee_repository.dart';
-import 'package:horizon/domain/repositories/events_repository.dart';
 import 'package:horizon/domain/repositories/fairminter_repository.dart';
-import "package:horizon/domain/repositories/fee_estimates_repository.dart";
 import 'package:horizon/domain/repositories/imported_address_repository.dart';
-import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 import 'package:horizon/domain/repositories/node_info_repository.dart';
-import 'package:horizon/domain/repositories/order_repository.dart';
-import 'package:horizon/domain/repositories/transaction_local_repository.dart';
-import 'package:horizon/domain/repositories/transaction_repository.dart';
-import 'package:horizon/domain/repositories/unified_address_repository.dart';
 import 'package:horizon/domain/repositories/utxo_repository.dart';
-import 'package:horizon/domain/repositories/version_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/address_service.dart';
-import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/domain/services/bip39.dart';
 import 'package:horizon/domain/services/bitcoind_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
-import 'package:horizon/domain/services/error_service.dart';
 import 'package:horizon/domain/services/imported_address_service.dart';
 import 'package:horizon/domain/services/mnemonic_service.dart';
 import 'package:horizon/domain/services/platform_service.dart';
-import 'package:horizon/domain/services/public_key_service.dart';
-import 'package:horizon/domain/services/secure_kv_service.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
 import 'package:horizon/domain/services/wallet_service.dart';
-import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
+
+import 'package:horizon/domain/services/public_key_service.dart';
+import 'package:horizon/data/services/public_key_service_impl.dart';
+
+import 'package:horizon/domain/repositories/version_repository.dart';
+import 'package:horizon/data/sources/repositories/version_repository_impl.dart';
+import 'package:horizon/data/sources/repositories/version_repository_extension_impl.dart';
+
+import 'package:horizon/domain/repositories/asset_repository.dart';
+import 'package:horizon/data/sources/repositories/asset_repository_impl.dart';
+
+import 'package:horizon/domain/repositories/order_repository.dart';
+import 'package:horizon/data/sources/repositories/order_repository_impl.dart';
+
+import 'package:horizon/domain/repositories/transaction_repository.dart';
+import 'package:horizon/data/sources/repositories/transaction_repository_impl.dart';
+import 'package:horizon/data/sources/local/dao/transactions_dao.dart';
+
+import 'package:horizon/domain/repositories/transaction_local_repository.dart';
+import 'package:horizon/data/sources/repositories/transaction_local_repository_impl.dart';
+
+import 'package:horizon/domain/repositories/events_repository.dart';
+import 'package:horizon/data/sources/repositories/events_repository_impl.dart';
+
+import 'package:horizon/domain/repositories/bitcoin_repository.dart';
+import 'package:horizon/data/sources/repositories/bitcoin_repository_impl.dart';
+
+import 'package:horizon/domain/repositories/config_repository.dart';
+import 'package:horizon/data/sources/repositories/config_repository_impl.dart';
+
+import 'package:horizon/domain/repositories/action_repository.dart';
+import 'package:horizon/data/sources/repositories/action_repository_impl.dart';
+
+import 'package:horizon/domain/repositories/dispenser_repository.dart';
+import 'package:horizon/data/sources/repositories/dispenser_repository_impl.dart';
+
+import "package:horizon/domain/repositories/fee_estimates_repository.dart";
+import 'package:horizon/data/sources/repositories/fee_estimates_repository_mempool_space_impl.dart';
+
+import 'package:horizon/data/sources/network/esplora_client.dart';
+import 'package:horizon/data/sources/network/mempool_space_client.dart';
+
+import 'package:horizon/domain/repositories/unified_address_repository.dart';
+import 'package:horizon/data/sources/repositories/unified_address_repository_impl.dart';
+
+import 'package:horizon/domain/services/analytics_service.dart';
+import 'package:horizon/data/services/analytics_service_impl.dart';
+import 'package:horizon/presentation/common/usecase/import_wallet_usecase.dart';
+import 'package:horizon/presentation/common/usecase/sign_chained_transaction_usecase.dart';
+import 'package:horizon/presentation/screens/close_dispenser/usecase/fetch_form_data.dart';
+
 import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
 import 'package:horizon/presentation/common/usecase/get_virtual_size_usecase.dart';
-import 'package:horizon/presentation/common/usecase/import_wallet_usecase.dart';
+import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
 import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transaction_usecase.dart';
-import 'package:horizon/presentation/common/usecase/sign_chained_transaction_usecase.dart';
 import 'package:horizon/presentation/common/usecase/write_local_transaction_usecase.dart';
-import 'package:horizon/presentation/screens/close_dispenser/usecase/fetch_form_data.dart';
 import 'package:horizon/presentation/screens/compose_attach_utxo/usecase/fetch_form_data.dart';
-import 'package:horizon/presentation/screens/compose_dispense/usecase/estimate_dispenses.dart';
+import 'package:horizon/presentation/screens/compose_dispenser/usecase/fetch_form_data.dart';
 import 'package:horizon/presentation/screens/compose_dispense/usecase/fetch_form_data.dart';
 import 'package:horizon/presentation/screens/compose_dispense/usecase/fetch_open_dispensers_on_address.dart';
-import 'package:horizon/presentation/screens/compose_dispenser/usecase/fetch_form_data.dart';
+import 'package:horizon/presentation/screens/compose_dispense/usecase/estimate_dispenses.dart';
 import 'package:horizon/presentation/screens/compose_dividend/usecase/fetch_form_data.dart';
 import 'package:horizon/presentation/screens/compose_fairmint/usecase/fetch_form_data.dart';
 import 'package:horizon/presentation/screens/compose_fairminter/usecase/fetch_form_data.dart';
 import 'package:horizon/presentation/screens/compose_issuance/usecase/fetch_form_data.dart';
+
 import 'package:logger/logger.dart' as logger;
+import 'package:horizon/core/logging/logger.dart';
+import 'package:horizon/data/logging/logger_impl.dart';
+import 'package:horizon/domain/entities/extension_rpc.dart';
+import 'package:horizon/domain/entities/address_rpc.dart';
+import 'dart:convert';
+
+// will need to move this import elsewhere for compile to native
+import 'dart:html' as html;
+
+import 'package:horizon/domain/services/error_service.dart';
+import 'package:horizon/data/services/error_service_impl.dart';
 
 void setup() {
   GetIt injector = GetIt.I;
@@ -291,12 +313,12 @@ void setup() {
   );
   GetIt.I.get<ErrorService>().initialize();
 
-  injector.registerLazySingleton<BitcoinRepository>(() => BitcoinRepositoryImpl(
-        esploraApi: EsploraApi(
-          dio: esploraDio,
-        ),
-      ));
-
+  injector.registerSingleton<BitcoinRepository>(BitcoinRepositoryImpl(
+    esploraApi: EsploraApi(
+      dio: esploraDio,
+    ),
+    // blockCypherApi: BlockCypherApi(dio: blockCypherDio)
+  ));
   injector.registerSingleton<CacheProvider>(HiveCache());
 
   injector.registerSingleton<DatabaseManager>(DatabaseManager());

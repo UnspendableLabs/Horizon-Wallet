@@ -30,7 +30,6 @@ import 'package:horizon/domain/services/mnemonic_service.dart';
 import 'package:horizon/domain/services/secure_kv_service.dart';
 import 'package:horizon/domain/services/wallet_service.dart';
 import 'package:horizon/presentation/common/usecase/import_wallet_usecase.dart';
-import 'package:horizon/presentation/screens/onboarding/view/import_format_dropdown.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:mocktail/mocktail.dart';
 

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/common/constants.dart';
@@ -7,8 +8,26 @@ import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/main.dart';
 import 'package:horizon/setup.dart';
+import 'package:horizon/test_config.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:pub_semver/pub_semver.dart';
+
+extension WidgetTesterExtension on WidgetTester {
+  Future<void> pumpUntilFound(
+    Finder finder, {
+    Duration timeout = const Duration(seconds: 30),
+  }) async {
+    bool found = false;
+    final DateTime start = DateTime.now();
+    while (!found) {
+      if (DateTime.now().difference(start) > timeout) {
+        throw Exception('Timed out waiting for ${finder.toString()}');
+      }
+      await pump(const Duration(milliseconds: 100));
+      found = finder.evaluate().isNotEmpty;
+    }
+  }
+}
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
@@ -150,14 +169,36 @@ void main() {
       testCases_.where((testCase) => testCase['network'] == network).toList();
 
   group('Lockscreen Tests', () {
-    setUpAll(() async {
+    setUp(() async {
       // Perform any common setup here
       setup();
+
+      // Initialize Settings properly with await
+      await Settings.init(
+        cacheProvider: SharePreferenceCache(),
+      );
+
+      // Add a small delay to ensure initialization is complete
+      await Future.delayed(const Duration(milliseconds: 100));
+    });
+
+    tearDown(() async {
+      // Clean up settings
+      Settings.clearCache();
+
+      // Reset GetIt
+      await GetIt.I.reset();
+
+      // Add a small delay to ensure cleanup is complete
+      await Future.delayed(const Duration(milliseconds: 100));
     });
 
     for (final testCase in testCases) {
       testWidgets('Import seed flow - ${testCase['format']}',
           (WidgetTester tester) async {
+        final isFreewallet =
+            testCase['format'] == ImportFormat.freewallet.description;
+        TestConfig.setTestValue(isFreewallet);
         // Override FlutterError.onError to ignore RenderFlex overflow errors
         final void Function(FlutterErrorDetails) originalOnError =
             FlutterError.onError!;
@@ -195,7 +236,13 @@ void main() {
         await tester.pumpAndSettle();
 
         // Select the specified import format
-        final formatOption = find.text(testCase['format'] as String).last;
+        String dropdownText;
+        if (testCase['format'] == ImportFormat.horizon.description) {
+          dropdownText = 'Horizon Native';
+        } else {
+          dropdownText = 'Freewallet / Counterwallet / Rare Pepe Wallet';
+        }
+        final formatOption = find.text(dropdownText).last;
         await tester.tap(formatOption);
         await tester.pumpAndSettle();
 
@@ -276,12 +323,21 @@ void main() {
         await tester.enterText(password, "securepassword123");
         await tester.pumpAndSettle();
 
+        print('UNLOCKING');
         final unlock = find.text('UNLOCK');
         expect(unlock, findsOneWidget);
         await tester.tap(unlock);
         await tester.pumpAndSettle();
 
-        await tester.tap(settingsButton);
+        // Keep pumping frames until the settings button appears or timeout occurs
+        await tester.pumpUntilFound(
+          find.byIcon(Icons.settings),
+          timeout: const Duration(seconds: 10),
+        );
+
+        final settingsButton2 = find.byIcon(Icons.settings);
+        expect(settingsButton2, findsOneWidget);
+        await tester.tap(settingsButton2);
         await tester.pumpAndSettle();
 
         final resetButton = find.text('Reset wallet');
@@ -308,7 +364,11 @@ void main() {
         final confirmResetButton = find.byKey(const Key('continueButton'));
         expect(confirmResetButton, findsOneWidget);
         await tester.tap(confirmResetButton);
-        await tester.pumpAndSettle();
+
+        await tester.pumpAndSettle(const Duration(seconds: 3));
+
+        final initialScreen = find.text('LOAD SEED PHRASE');
+        expect(initialScreen, findsOneWidget);
       });
     }
   });

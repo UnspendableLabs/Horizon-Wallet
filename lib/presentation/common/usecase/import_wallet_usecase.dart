@@ -14,7 +14,6 @@ import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/mnemonic_service.dart';
 import 'package:horizon/domain/services/wallet_service.dart';
-import 'package:horizon/presentation/screens/onboarding/view/import_format_dropdown.dart';
 import 'package:horizon/test_config.dart';
 
 // ignore_for_file: constant_identifier_names
