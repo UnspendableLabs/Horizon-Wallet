@@ -22,6 +22,8 @@ import 'package:horizon/presentation/screens/compose_fairmint/usecase/fetch_form
 import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart";
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
+import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
+import 'package:horizon/domain/repositories/settings_repository.dart';
 
 class ComposeFairmintPageWrapper extends StatelessWidget {
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
@@ -41,6 +43,9 @@ class ComposeFairmintPageWrapper extends StatelessWidget {
       success: (state) => BlocProvider(
         key: Key(currentAddress),
         create: (context) => ComposeFairmintBloc(
+          passwordRequired:
+              GetIt.I<SettingsRepository>().requirePasswordForCryptoOperations,
+          inMemoryKeyRepository: GetIt.I.get<InMemoryKeyRepository>(),
           initialFairminterTxHash: initialFairminterTxHash,
           logger: GetIt.I.get<Logger>(),
           fetchComposeFairmintFormDataUseCase:
@@ -53,7 +58,7 @@ class ComposeFairmintPageWrapper extends StatelessWidget {
           writelocalTransactionUseCase:
               GetIt.I.get<WriteLocalTransactionUseCase>(),
           blockRepository: GetIt.I.get<BlockRepository>(),
-        )..add(FetchFormData(currentAddress: currentAddress)),
+        )..add(AsyncFormDependenciesRequested(currentAddress: currentAddress)),
         child: ComposeFairmintPage(
           address: currentAddress,
           dashboardActivityFeedBloc: dashboardActivityFeedBloc,
@@ -106,7 +111,7 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
                   dashboardActivityFeedBloc: widget.dashboardActivityFeedBloc,
                   onFeeChange: (fee) => context
                       .read<ComposeFairmintBloc>()
-                      .add(ChangeFeeOption(value: fee)),
+                      .add(FeeOptionChanged(value: fee)),
                   buildInitialFormFields: (state, loading, formKey) => [
                         HorizonUI.HorizonTextFormField(
                           label: "Address that will be minting the asset",
@@ -151,7 +156,7 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
             dashboardActivityFeedBloc: widget.dashboardActivityFeedBloc,
             onFeeChange: (fee) => context
                 .read<ComposeFairmintBloc>()
-                .add(ChangeFeeOption(value: fee)),
+                .add(FeeOptionChanged(value: fee)),
             buildInitialFormFields: (state, loading, formKey) =>
                 _buildInitialFormFields(state, loading, formKey, fairminters),
             onInitialCancel: () => _handleInitialCancel(),
@@ -206,7 +211,7 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
         return;
       }
 
-      context.read<ComposeFairmintBloc>().add(ComposeTransactionEvent(
+      context.read<ComposeFairmintBloc>().add(FormSubmitted(
             sourceAddress: widget.address,
             params: ComposeFairmintEventParams(
               asset: _isAssetNameSelected
@@ -459,14 +464,14 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
   void _onConfirmationBack() {
     context
         .read<ComposeFairmintBloc>()
-        .add(FetchFormData(currentAddress: widget.address));
+        .add(AsyncFormDependenciesRequested(currentAddress: widget.address));
   }
 
   void _onConfirmationContinue(
       dynamic composeTransaction, int fee, GlobalKey<FormState> formKey) {
     context
         .read<ComposeFairmintBloc>()
-        .add(FinalizeTransactionEvent<ComposeFairmintResponse>(
+        .add(ReviewSubmitted<ComposeFairmintResponse>(
           composeTransaction: composeTransaction,
           fee: fee,
         ));
@@ -475,7 +480,7 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
   void _onFinalizeSubmit(String password, GlobalKey<FormState> formKey) {
     if (formKey.currentState!.validate()) {
       context.read<ComposeFairmintBloc>().add(
-            SignAndBroadcastTransactionEvent(
+            SignAndBroadcastFormSubmitted(
               password: password,
             ),
           );
@@ -485,7 +490,7 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
   void _onFinalizeCancel() {
     context
         .read<ComposeFairmintBloc>()
-        .add(FetchFormData(currentAddress: widget.address));
+        .add(AsyncFormDependenciesRequested(currentAddress: widget.address));
   }
 }
 

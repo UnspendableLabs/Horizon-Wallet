@@ -138,7 +138,10 @@ import 'dart:html' as html;
 import 'package:horizon/domain/services/error_service.dart';
 import 'package:horizon/data/services/error_service_impl.dart';
 
-void setup() {
+import 'package:horizon/domain/repositories/settings_repository.dart';
+import 'package:horizon/data/sources/repositories/settings_repository_impl.dart';
+
+setup() {
   GetIt injector = GetIt.I;
 
   injector.registerSingleton<Logger>(LoggerImpl(
@@ -486,8 +489,15 @@ void setup() {
           estimateXcpFeeRepository: GetIt.I.get<EstimateXcpFeeRepository>(),
           balanceRepository: injector.get<BalanceRepository>()));
 
+  injector.registerSingleton<SecureKVService>(SecureKVServiceImpl());
+
+  injector.registerSingleton<InMemoryKeyRepository>(InMemoryKeyRepositoryImpl(
+    secureKVService: GetIt.I.get<SecureKVService>(),
+  ));
+
   injector.registerSingleton<SignAndBroadcastTransactionUseCase>(
       SignAndBroadcastTransactionUseCase(
+    inMemoryKeyRepository: GetIt.I.get<InMemoryKeyRepository>(),
     addressRepository: GetIt.I.get<AddressRepository>(),
     importedAddressRepository: GetIt.I.get<ImportedAddressRepository>(),
     accountRepository: GetIt.I.get<AccountRepository>(),
@@ -516,12 +526,6 @@ void setup() {
 
   injector
       .registerSingleton<EstimateDispensesUseCase>(EstimateDispensesUseCase());
-
-  injector.registerSingleton<SecureKVService>(SecureKVServiceImpl());
-
-  injector.registerSingleton<InMemoryKeyRepository>(InMemoryKeyRepositoryImpl(
-    secureKVService: GetIt.I.get<SecureKVService>(),
-  ));
 
   injector.registerSingleton<ImportWalletUseCase>(ImportWalletUseCase(
     inMemoryKeyRepository: GetIt.I.get<InMemoryKeyRepository>(),
@@ -598,6 +602,8 @@ void setup() {
   } else {
     GetIt.I.registerSingleton<PlatformService>(PlatformServiceWebImpl());
   }
+
+  injector.registerSingleton<SettingsRepository>(SettingsRepositoryImpl());
 }
 
 class CustomDioException extends DioException {

@@ -35,6 +35,7 @@ import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
 import "package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_bloc.dart";
 import "package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_state.dart";
 import "package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_event.dart";
+import 'package:horizon/domain/repositories/settings_repository.dart';
 
 class WalletItemSidebar extends StatefulWidget {
   const WalletItemSidebar({super.key});
@@ -168,10 +169,14 @@ class _WalletItemSidebarState extends State<WalletItemSidebar> {
                                   return HorizonUI.HorizonDialog(
                                     onBackButtonPressed: cb,
                                     title: "Add an account",
-                                    body: const Padding(
-                                      padding: EdgeInsets.symmetric(
+                                    body: Padding(
+                                      padding: const EdgeInsets.symmetric(
                                           horizontal: 16.0),
-                                      child: AddAccountForm(),
+                                      child: AddAccountForm(
+                                        passwordRequired: GetIt.I
+                                            .get<SettingsRepository>()
+                                            .requirePasswordForCryptoOperations,
+                                      ),
                                     ),
                                   );
                                 }),
@@ -776,6 +781,9 @@ void showAddressList(BuildContext context, bool isDarkTheme, Account? account) {
                                   padding: const EdgeInsets.symmetric(
                                       horizontal: 16.0),
                                   child: AddAddressForm(
+                                      passwordRequired: GetIt.I
+                                          .get<SettingsRepository>()
+                                          .requirePasswordForCryptoOperations,
                                       accountUuid: state.currentAccountUuid!,
                                       modalContext: modalSheetContext),
                                 ),

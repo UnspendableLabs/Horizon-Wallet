@@ -2,11 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
-
-enum SettingsValues {
-  inactivityTimeout,
-  lostFocusTimeout,
-}
+import 'package:horizon/domain/repositories/settings_repository.dart';
+import 'package:go_router/go_router.dart';
 
 class SettingsView extends StatelessWidget {
   const SettingsView({super.key});
@@ -15,15 +12,39 @@ class SettingsView extends StatelessWidget {
   Widget build(BuildContext context) {
     return context.watch<SessionStateCubit>().state.maybeWhen(
         orElse: () => const CircularProgressIndicator(),
-        success: (session) => SettingsScreen(title: "Settings", children: [
+        success: (session) =>
+            SettingsScreen(title: "Settings", hasAppBar: false, children: [
+              AppBar(
+                title: const Text("Settings"),
+                leading: BackButton(
+                  onPressed: () {
+                    context.go("/dashboard");
+                  },
+                ),
+              ),
               SettingsGroup(
                 title: "Security",
                 children: [
+                  SwitchSettingsTile(
+                    title: 'Require password',
+                    enabledLabel:
+                        'Require password when signing transactions or granting access to wallet data. ( Disabling requires reauthentication )',
+                    disabledLabel:
+                        "Require password when signing transactions or granting access to wallet data.",
+                    settingKey: SettingsKeys.requiredPasswordForCryptoOperations
+                        .toString(),
+                    defaultValue: true,
+                    onChange: (value) {
+                      if (value == false) {
+                        context.read<SessionStateCubit>().onLogout();
+                      }
+                    },
+                  ),
                   DropDownSettingsTile<int>(
                     title: 'Inactivity Timeout',
                     subtitle:
                         'Period before screen locks after last user interaction',
-                    settingKey: SettingsValues.inactivityTimeout.toString(),
+                    settingKey: SettingsKeys.inactivityTimeout.toString(),
                     values: const <int, String>{
                       1: '1 minute',
                       5: '5 minutes',
@@ -33,18 +54,18 @@ class SettingsView extends StatelessWidget {
                       720: '12 hours',
                     },
                     selected: Settings.getValue(
-                        SettingsValues.inactivityTimeout.toString(),
+                        SettingsKeys.inactivityTimeout.toString(),
                         defaultValue: 5)!,
                     onChange: (value) {
                       Settings.setValue(
-                          SettingsValues.inactivityTimeout.toString(), value,
+                          SettingsKeys.inactivityTimeout.toString(), value,
                           notify: true);
                     },
                   ),
                   DropDownSettingsTile<int>(
                     title: 'Lost Focus Timeout',
                     subtitle: 'Period before screen locks after focus is lost',
-                    settingKey: SettingsValues.lostFocusTimeout.toString(),
+                    settingKey: SettingsKeys.lostFocusTimeout.toString(),
                     values: const <int, String>{
                       1: '1 minute',
                       5: '5 minutes',
@@ -54,11 +75,11 @@ class SettingsView extends StatelessWidget {
                       720: '12 hours',
                     },
                     selected: Settings.getValue(
-                        SettingsValues.lostFocusTimeout.toString(),
+                        SettingsKeys.lostFocusTimeout.toString(),
                         defaultValue: 1)!,
                     onChange: (value) {
                       Settings.setValue(
-                          SettingsValues.lostFocusTimeout.toString(), value,
+                          SettingsKeys.lostFocusTimeout.toString(), value,
                           notify: true);
                     },
                   ),

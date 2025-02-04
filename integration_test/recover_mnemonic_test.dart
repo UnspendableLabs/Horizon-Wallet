@@ -19,10 +19,18 @@ void main() {
     setUpAll(() async {
       // Perform any common setup here
       setup();
+      await initSettings();
+    });
 
-      await Settings.init();
+    tearDown(() async {
+      // Clean up settings
+      Settings.clearCache();
 
-      await Future.delayed(const Duration(seconds: 3));
+      // Reset GetIt
+      await GetIt.I.reset();
+
+      // Add a small delay to ensure cleanup is complete
+      await Future.delayed(const Duration(milliseconds: 100));
     });
 
     testWidgets('recover mnemonic', (WidgetTester tester) async {

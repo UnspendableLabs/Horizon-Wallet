@@ -14,6 +14,8 @@ import 'package:horizon/common/format.dart';
 import 'package:horizon/presentation/common/colors.dart';
 import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
 import 'package:horizon/presentation/screens/compose_rbf/view/compose_rbf_view.dart';
+import 'package:horizon/domain/repositories/settings_repository.dart';
+import 'package:get_it/get_it.dart';
 
 class RBF extends StatelessWidget {
   final String txHash;
@@ -30,6 +32,9 @@ class RBF extends StatelessWidget {
           HorizonUI.HorizonDialog.show(
             context: context,
             body: ComposeRBFPageWrapper(
+                passwordRequired: GetIt.I
+                    .get<SettingsRepository>()
+                    .requirePasswordForCryptoOperations,
                 dashboardActivityFeedBloc:
                     context.read<DashboardActivityFeedBloc>(),
                 txHash: txHash,

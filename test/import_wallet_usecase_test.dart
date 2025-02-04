@@ -80,13 +80,13 @@ void main() {
     mockBitcoinRepository = MockBitcoinRepository();
     mockMnemonicService = MockMnemonicService();
     importWalletUseCase = ImportWalletUseCase(
+      inMemoryKeyRepository: mockInMemoryKeyRepository,
       addressRepository: mockAddressRepository,
       accountRepository: mockAccountRepository,
       walletRepository: mockWalletRepository,
       encryptionService: mockEncryptionService,
       addressService: mockAddressService,
       config: mockConfig,
-      inMemoryKeyRepository: mockInMemoryKeyRepository,
       walletService: mockWalletService,
       bitcoinRepository: mockBitcoinRepository,
       mnemonicService: mockMnemonicService,
@@ -109,6 +109,7 @@ void main() {
             encryptedPrivKey: 'encrypted',
             chainCodeHex: 'chainCode');
         const decryptedPrivKey = 'decrypted-private-key';
+        const decryptionKey = "decryption-key";
 
         when(() => mockConfig.network).thenReturn(network);
 
@@ -207,6 +208,8 @@ void main() {
                 ]);
 
         when(() => mockWalletRepository.insert(any())).thenAnswer((_) async {});
+        when(() => mockWalletRepository.getCurrentWallet())
+            .thenAnswer((_) async => wallet);
         when(() => mockAccountRepository.insert(any()))
             .thenAnswer((_) async {});
         when(() => mockAddressRepository.insert(any()))
@@ -215,7 +218,7 @@ void main() {
             .thenAnswer((_) async {});
         when(() => mockEncryptionService.getDecryptionKey(any(), any()))
             .thenAnswer((_) async => 'test-decryption-key');
-        when(() => mockInMemoryKeyRepository.set(key: any(named: 'key')))
+        when(() => mockInMemoryKeyRepository.set(key: decryptionKey))
             .thenAnswer((_) async {});
 
         bool successCallbackInvoked = false;

@@ -18,7 +18,6 @@ class SignChainedTransactionUseCase {
   });
 
   Future<String> call({
-    required String password,
     required String source,
     required String rawtransaction,
     required DecodedTx prevDecodedTransaction,

@@ -23,6 +23,8 @@ import 'package:horizon/presentation/screens/compose_attach_utxo/usecase/fetch_f
 import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart";
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
+import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
+import 'package:horizon/domain/repositories/settings_repository.dart';
 
 class ComposeAttachUtxoPageWrapper extends StatelessWidget {
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
@@ -44,6 +46,9 @@ class ComposeAttachUtxoPageWrapper extends StatelessWidget {
       success: (state) => BlocProvider(
         key: Key(currentAddress),
         create: (context) => ComposeAttachUtxoBloc(
+          passwordRequired:
+              GetIt.I<SettingsRepository>().requirePasswordForCryptoOperations,
+          inMemoryKeyRepository: GetIt.I.get<InMemoryKeyRepository>(),
           logger: GetIt.I.get<Logger>(),
           fetchComposeAttachUtxoFormDataUseCase:
               GetIt.I.get<FetchComposeAttachUtxoFormDataUseCase>(),
@@ -56,7 +61,7 @@ class ComposeAttachUtxoPageWrapper extends StatelessWidget {
               GetIt.I.get<WriteLocalTransactionUseCase>(),
           blockRepository: GetIt.I.get<BlockRepository>(),
           cacheProvider: GetIt.I.get<CacheProvider>(),
-        )..add(FetchFormData(currentAddress: currentAddress)),
+        )..add(AsyncFormDependenciesRequested(currentAddress: currentAddress)),
         child: ComposeAttachUtxoPage(
           address: currentAddress,
           assetName: assetName,
@@ -178,7 +183,7 @@ class ComposeAttachUtxoPageState extends State<ComposeAttachUtxoPage> {
             dashboardActivityFeedBloc: widget.dashboardActivityFeedBloc,
             onFeeChange: (fee) => context
                 .read<ComposeAttachUtxoBloc>()
-                .add(ChangeFeeOption(value: fee)),
+                .add(FeeOptionChanged(value: fee)),
             buildInitialFormFields: (state, loading, formKey) =>
                 _buildInitialFormFields(state, loading, formKey),
             onInitialCancel: () => _handleInitialCancel(),
@@ -231,7 +236,7 @@ class ComposeAttachUtxoPageState extends State<ComposeAttachUtxoPage> {
           inputQuantity: quantityController.text);
       final utxoValue = int.tryParse(utxoValueController.text) ?? 546;
 
-      context.read<ComposeAttachUtxoBloc>().add(ComposeTransactionEvent(
+      context.read<ComposeAttachUtxoBloc>().add(FormSubmitted(
             sourceAddress: fromAddressController.text,
             params: ComposeAttachUtxoEventParams(
               asset: widget.assetName,
@@ -388,7 +393,7 @@ class ComposeAttachUtxoPageState extends State<ComposeAttachUtxoPage> {
   }
 
   void _onConfirmationBack() {
-    context.read<ComposeAttachUtxoBloc>().add(FetchFormData(
+    context.read<ComposeAttachUtxoBloc>().add(AsyncFormDependenciesRequested(
           currentAddress: widget.address,
         ));
   }
@@ -397,7 +402,7 @@ class ComposeAttachUtxoPageState extends State<ComposeAttachUtxoPage> {
       dynamic composeTransaction, int fee, GlobalKey<FormState> formKey) {
     context
         .read<ComposeAttachUtxoBloc>()
-        .add(FinalizeTransactionEvent<ComposeAttachUtxoResponse>(
+        .add(ReviewSubmitted<ComposeAttachUtxoResponse>(
           composeTransaction: composeTransaction,
           fee: fee,
         ));
@@ -406,7 +411,7 @@ class ComposeAttachUtxoPageState extends State<ComposeAttachUtxoPage> {
   void _onFinalizeSubmit(String password, GlobalKey<FormState> formKey) {
     if (formKey.currentState!.validate()) {
       context.read<ComposeAttachUtxoBloc>().add(
-            SignAndBroadcastTransactionEvent(
+            SignAndBroadcastFormSubmitted(
               password: password,
             ),
           );
@@ -414,7 +419,7 @@ class ComposeAttachUtxoPageState extends State<ComposeAttachUtxoPage> {
   }
 
   void _onFinalizeCancel() {
-    context.read<ComposeAttachUtxoBloc>().add(FetchFormData(
+    context.read<ComposeAttachUtxoBloc>().add(AsyncFormDependenciesRequested(
           currentAddress: widget.address,
         ));
   }

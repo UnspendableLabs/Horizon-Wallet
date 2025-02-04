@@ -155,14 +155,7 @@ void main() {
     setUp(() async {
       // Perform any common setup here
       setup();
-
-      // Initialize Settings properly with await
-      await Settings.init(
-        cacheProvider: SharePreferenceCache(),
-      );
-
-      // Add a small delay to ensure initialization is complete
-      await Future.delayed(const Duration(milliseconds: 100));
+      await initSettings();
     });
 
     tearDown(() async {

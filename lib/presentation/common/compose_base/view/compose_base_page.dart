@@ -9,6 +9,8 @@ import 'package:horizon/presentation/common/fee_estimation_v2.dart';
 import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart";
 import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_event.dart";
 import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
+import 'package:get_it/get_it.dart';
+import 'package:horizon/domain/repositories/settings_repository.dart';
 
 class ComposeBasePage<B extends ComposeBaseBloc<S>, S extends ComposeStateBase>
     extends StatefulWidget {
@@ -17,8 +19,7 @@ class ComposeBasePage<B extends ComposeBaseBloc<S>, S extends ComposeStateBase>
   final void Function(FeeOption) onFeeChange;
   final void Function() onInitialCancel;
   final void Function(GlobalKey<FormState>) onInitialSubmit;
-  final List<Widget> Function(
-          SubmitComposingTransaction, dynamic, GlobalKey<FormState>)
+  final List<Widget> Function(ReviewStep, dynamic, GlobalKey<FormState>)
       buildConfirmationFormFields;
   final void Function() onConfirmationBack;
   final void Function(dynamic, int, GlobalKey<FormState>)
@@ -74,8 +75,7 @@ class ComposeBasePageState<B extends ComposeBaseBloc<S>,
       },
       builder: (context, state) {
         return switch (state.submitState) {
-          SubmitInitial(error: var error, loading: var loading) =>
-            ComposeBaseInitialPage(
+          FormStep(error: var error, loading: var loading) => FormStepView(
               state: state,
               error: error,
               loading: loading,
@@ -86,18 +86,18 @@ class ComposeBasePageState<B extends ComposeBaseBloc<S>,
               onSubmit: (formKey) => widget.onInitialSubmit(formKey),
               hideSubmitButtons: widget.hideSubmitButtons ?? false,
             ),
-          SubmitError(error: var msg) => Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: SelectableText('An error occurred: $msg'),
-            ),
-          SubmitComposingTransaction(
+          ReviewStep(
             composeTransaction: var composeTransaction,
             fee: var fee,
             feeRate: var feeRate,
             virtualSize: var virtualSize,
             adjustedVirtualSize: var adjustedVirtualSize,
+            loading: var loading,
+            error: var error,
           ) =>
-            ComposeBaseConfirmationPage(
+            ReviewStepView(
+              loading: loading,
+              error: error,
               composeTransaction: composeTransaction,
               fee: fee,
               feeRate: feeRate,
@@ -105,20 +105,20 @@ class ComposeBasePageState<B extends ComposeBaseBloc<S>,
               adjustedVirtualSize: adjustedVirtualSize,
               buildConfirmationFormFields: (composeTransaction, formKey) =>
                   widget.buildConfirmationFormFields(
-                      state.submitState as SubmitComposingTransaction,
+                      state.submitState as ReviewStep,
                       composeTransaction,
                       formKey),
               onBack: widget.onConfirmationBack,
               onContinue: (composeTransaction, fee, formKey) => widget
                   .onConfirmationContinue(composeTransaction, fee, formKey),
             ),
-          SubmitFinalizing(
+          PasswordStep(
             composeTransaction: var composeTransaction,
             fee: var fee,
             error: var error,
             loading: var loading
           ) =>
-            ComposeBaseFinalizePage(
+            PasswordStepView(
               state: state,
               composeTransaction: composeTransaction,
               fee: fee,
@@ -129,6 +129,10 @@ class ComposeBasePageState<B extends ComposeBaseBloc<S>,
               onCancel: widget.onFinalizeCancel,
             ),
           SubmitSuccess() => const SizedBox.shrink(),
+          SubmitError(error: var msg) => Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: SelectableText('An error occurred: $msg'),
+            ),
           _ => const SizedBox.shrink(),
         };
       },
@@ -136,8 +140,7 @@ class ComposeBasePageState<B extends ComposeBaseBloc<S>,
   }
 }
 
-class ComposeBaseInitialPage<S extends ComposeStateBase>
-    extends StatefulWidget {
+class FormStepView<S extends ComposeStateBase> extends StatefulWidget {
   final S state;
   final String? error;
   final bool loading;
@@ -147,7 +150,7 @@ class ComposeBaseInitialPage<S extends ComposeStateBase>
   final void Function() onCancel;
   final void Function(GlobalKey<FormState>) onSubmit;
   final bool hideSubmitButtons;
-  const ComposeBaseInitialPage({
+  const FormStepView({
     super.key,
     required this.state,
     required this.error,
@@ -160,12 +163,11 @@ class ComposeBaseInitialPage<S extends ComposeStateBase>
   });
 
   @override
-  ComposeBaseInitialPageState<S> createState() =>
-      ComposeBaseInitialPageState<S>();
+  FormStepViewState<S> createState() => FormStepViewState<S>();
 }
 
-class ComposeBaseInitialPageState<S extends ComposeStateBase>
-    extends State<ComposeBaseInitialPage<S>> {
+class FormStepViewState<S extends ComposeStateBase>
+    extends State<FormStepView<S>> {
   final _formKey = GlobalKey<FormState>();
 
   @override
@@ -255,7 +257,10 @@ class ComposeBaseInitialPageState<S extends ComposeStateBase>
   }
 }
 
-class ComposeBaseConfirmationPage extends StatefulWidget {
+class ReviewStepView extends StatefulWidget {
+  final bool loading;
+  final String? error;
+
   final dynamic composeTransaction;
   final int fee;
   final int feeRate;
@@ -266,8 +271,10 @@ class ComposeBaseConfirmationPage extends StatefulWidget {
   final void Function() onBack;
   final void Function(dynamic, int, GlobalKey<FormState>) onContinue;
 
-  const ComposeBaseConfirmationPage({
+  const ReviewStepView({
     super.key,
+    required this.loading,
+    required this.error,
     required this.composeTransaction,
     required this.fee,
     required this.feeRate,
@@ -279,16 +286,17 @@ class ComposeBaseConfirmationPage extends StatefulWidget {
   });
 
   @override
-  ComposeBaseConfirmationPageState createState() =>
-      ComposeBaseConfirmationPageState();
+  ReviewStepViewState createState() => ReviewStepViewState();
 }
 
-class ComposeBaseConfirmationPageState
-    extends State<ComposeBaseConfirmationPage> {
+class ReviewStepViewState extends State<ReviewStepView> {
   final _formKey = GlobalKey<FormState>();
 
   @override
   Widget build(BuildContext context) {
+    bool passwordIsRequired =
+        GetIt.I<SettingsRepository>().requirePasswordForCryptoOperations;
+
     return Form(
       key: _formKey,
       child: Padding(
@@ -328,6 +336,12 @@ class ComposeBaseConfirmationPageState
               ),
               enabled: false,
             ),
+            if (widget.error != null)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 16.0),
+                child: SelectableText(widget.error!,
+                    style: const TextStyle(color: redErrorText)),
+              ),
             const HorizonUI.HorizonDivider(),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -337,9 +351,14 @@ class ComposeBaseConfirmationPageState
                   buttonText: 'BACK',
                 ),
                 HorizonUI.HorizonContinueButton(
-                  onPressed: () => widget.onContinue(
-                      widget.composeTransaction, widget.fee, _formKey),
-                  buttonText: 'CONTINUE',
+                  onPressed: () {
+                    if (widget.loading) return;
+
+                    widget.onContinue(
+                        widget.composeTransaction, widget.fee, _formKey);
+                  },
+                  buttonText:
+                      passwordIsRequired ? 'CONTINUE' : "SIGN AND SUBMIT",
                 ),
               ],
             ),
@@ -350,8 +369,7 @@ class ComposeBaseConfirmationPageState
   }
 }
 
-class ComposeBaseFinalizePage<S extends ComposeStateBase>
-    extends StatefulWidget {
+class PasswordStepView<S extends ComposeStateBase> extends StatefulWidget {
   final S state;
   final dynamic composeTransaction;
   final int fee;
@@ -360,7 +378,7 @@ class ComposeBaseFinalizePage<S extends ComposeStateBase>
   final void Function(String, GlobalKey<FormState>) onSubmit;
   final void Function() onCancel;
 
-  const ComposeBaseFinalizePage({
+  const PasswordStepView({
     super.key,
     required this.state,
     required this.composeTransaction,
@@ -372,12 +390,11 @@ class ComposeBaseFinalizePage<S extends ComposeStateBase>
   });
 
   @override
-  ComposeBaseFinalizePageState<S> createState() =>
-      ComposeBaseFinalizePageState<S>();
+  PasswordStepViewState<S> createState() => PasswordStepViewState<S>();
 }
 
-class ComposeBaseFinalizePageState<S extends ComposeStateBase>
-    extends State<ComposeBaseFinalizePage<S>> {
+class PasswordStepViewState<S extends ComposeStateBase>
+    extends State<PasswordStepView<S>> {
   final _formKey = GlobalKey<FormState>();
   final _passwordController = TextEditingController();
 

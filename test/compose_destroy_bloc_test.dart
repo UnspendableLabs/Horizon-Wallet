@@ -21,6 +21,8 @@ import 'package:horizon/presentation/common/usecase/write_local_transaction_usec
 import 'package:horizon/presentation/screens/compose_destroy/bloc/compose_destroy_bloc.dart';
 import 'package:horizon/presentation/screens/compose_destroy/bloc/compose_destroy_state.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
+import 'package:horizon/domain/entities/decryption_strategy.dart';
 
 // Mock classes
 class MockBalanceRepository extends Mock implements BalanceRepository {}
@@ -70,6 +72,8 @@ class FakeVirtualSize extends Fake implements VirtualSize {
       {required this.virtualSize, required this.adjustedVirtualSize});
 }
 
+class MockInMemoryKeyRepository extends Mock implements InMemoryKeyRepository {}
+
 void main() {
   late ComposeDestroyBloc composeDestroyBloc;
   late MockBalanceRepository mockBalanceRepository;
@@ -106,11 +110,11 @@ void main() {
   setUpAll(() {
     registerFallbackValue(FeeOption.Medium());
     registerFallbackValue(composeTransactionParams);
-    registerFallbackValue(ComposeTransactionEvent(
+    registerFallbackValue(FormSubmitted(
       params: composeTransactionParams,
       sourceAddress: 'source-address',
     ));
-    registerFallbackValue(SignAndBroadcastTransactionEvent(
+    registerFallbackValue(SignAndBroadcastFormSubmitted(
       password: 'password',
     ));
     registerFallbackValue(ComposeDestroyParams(
@@ -137,6 +141,8 @@ void main() {
     GetIt.I.registerSingleton<ErrorService>(mockErrorService);
 
     composeDestroyBloc = ComposeDestroyBloc(
+      passwordRequired: true,
+      inMemoryKeyRepository: MockInMemoryKeyRepository(),
       balanceRepository: mockBalanceRepository,
       composeRepository: mockComposeRepository,
       analyticsService: mockAnalyticsService,
@@ -167,14 +173,14 @@ void main() {
             .thenAnswer((_) async => mockFeeEstimates);
         return composeDestroyBloc;
       },
-      act: (bloc) => bloc.add(FetchFormData(
+      act: (bloc) => bloc.add(AsyncFormDependenciesRequested(
         currentAddress: 'test-address',
       )),
       expect: () => [
         composeDestroyBloc.state.copyWith(
           balancesState: const BalancesState.loading(),
           feeState: const FeeState.loading(),
-          submitState: const SubmitInitial(),
+          submitState: const FormStep(),
         ),
         composeDestroyBloc.state.copyWith(
           balancesState: BalancesState.success([mockBalance]),
@@ -192,14 +198,14 @@ void main() {
             )).thenThrow(Exception('Failed to fetch balances'));
         return composeDestroyBloc;
       },
-      act: (bloc) => bloc.add(FetchFormData(
+      act: (bloc) => bloc.add(AsyncFormDependenciesRequested(
         currentAddress: 'test-address',
       )),
       expect: () => [
         composeDestroyBloc.state.copyWith(
           balancesState: const BalancesState.loading(),
           feeState: const FeeState.loading(),
-          submitState: const SubmitInitial(),
+          submitState: const FormStep(),
         ),
         composeDestroyBloc.state.copyWith(
           balancesState:
@@ -213,7 +219,7 @@ void main() {
     blocTest<ComposeDestroyBloc, ComposeDestroyState>(
       'emits new state with updated fee option',
       build: () => composeDestroyBloc,
-      act: (bloc) => bloc.add(ChangeFeeOption(value: FeeOption.Fast())),
+      act: (bloc) => bloc.add(FeeOptionChanged(value: FeeOption.Fast())),
       expect: () => [
         isA<ComposeDestroyState>().having(
           (state) => state.feeOption,
@@ -250,7 +256,7 @@ void main() {
         feeState: const FeeState.success(mockFeeEstimates),
         feeOption: FeeOption.Medium(),
       ),
-      act: (bloc) => bloc.add(ComposeTransactionEvent(
+      act: (bloc) => bloc.add(FormSubmitted(
         params: composeTransactionParams,
         sourceAddress: 'source-address',
       )),
@@ -258,12 +264,12 @@ void main() {
         isA<ComposeDestroyState>().having(
           (state) => state.submitState,
           'submitState',
-          isA<SubmitInitial>().having((s) => s.loading, 'loading', true),
+          isA<FormStep>().having((s) => s.loading, 'loading', true),
         ),
         isA<ComposeDestroyState>().having(
           (state) => state.submitState,
           'submitState',
-          isA<SubmitComposingTransaction<ComposeDestroyResponse, void>>()
+          isA<ReviewStep<ComposeDestroyResponse, void>>()
               .having((s) => s.composeTransaction, 'composeTransaction',
                   mockComposeDestroyResponse)
               .having((s) => s.fee, 'fee', 250)
@@ -285,7 +291,7 @@ void main() {
       'emits SubmitSuccess when transaction is signed and broadcasted successfully',
       build: () {
         when(() => mockSignAndBroadcastTransactionUseCase.call(
-              password: password,
+              decryptionStrategy: Password(password),
               source: sourceAddress,
               rawtransaction: txHex,
               onSuccess: any(named: 'onSuccess'),
@@ -307,21 +313,21 @@ void main() {
         return composeDestroyBloc;
       },
       seed: () => composeDestroyBloc.state.copyWith(
-        submitState: SubmitFinalizing<ComposeDestroyResponse>(
+        submitState: PasswordStep<ComposeDestroyResponse>(
           loading: false,
           error: null,
           composeTransaction: mockComposeDestroyResponse,
           fee: 250,
         ),
       ),
-      act: (bloc) => bloc.add(SignAndBroadcastTransactionEvent(
+      act: (bloc) => bloc.add(SignAndBroadcastFormSubmitted(
         password: password,
       )),
       expect: () => [
         isA<ComposeDestroyState>().having(
           (state) => state.submitState,
           'submitState',
-          isA<SubmitFinalizing<ComposeDestroyResponse>>()
+          isA<PasswordStep<ComposeDestroyResponse>>()
               .having((s) => s.loading, 'loading', true)
               .having((s) => s.error, 'error', null)
               .having((s) => s.composeTransaction, 'composeTransaction',
@@ -348,7 +354,7 @@ void main() {
       'emits error state when signing fails',
       build: () {
         when(() => mockSignAndBroadcastTransactionUseCase.call(
-              password: password,
+              decryptionStrategy: Password(password),
               source: any(named: 'source'),
               rawtransaction: any(named: 'rawtransaction'),
               onSuccess: any(named: 'onSuccess'),
@@ -361,21 +367,21 @@ void main() {
         return composeDestroyBloc;
       },
       seed: () => composeDestroyBloc.state.copyWith(
-        submitState: SubmitFinalizing<ComposeDestroyResponse>(
+        submitState: PasswordStep<ComposeDestroyResponse>(
           loading: false,
           error: null,
           composeTransaction: mockComposeDestroyResponse,
           fee: 250,
         ),
       ),
-      act: (bloc) => bloc.add(SignAndBroadcastTransactionEvent(
+      act: (bloc) => bloc.add(SignAndBroadcastFormSubmitted(
         password: password,
       )),
       expect: () => [
         isA<ComposeDestroyState>().having(
           (state) => state.submitState,
           'submitState',
-          isA<SubmitFinalizing<ComposeDestroyResponse>>()
+          isA<PasswordStep<ComposeDestroyResponse>>()
               .having((s) => s.loading, 'loading', true)
               .having((s) => s.error, 'error', null)
               .having((s) => s.composeTransaction, 'composeTransaction',
@@ -385,7 +391,7 @@ void main() {
         isA<ComposeDestroyState>().having(
           (state) => state.submitState,
           'submitState',
-          isA<SubmitFinalizing<ComposeDestroyResponse>>()
+          isA<PasswordStep<ComposeDestroyResponse>>()
               .having((s) => s.loading, 'loading', false)
               .having((s) => s.error, 'error', 'Signing error')
               .having((s) => s.composeTransaction, 'composeTransaction',

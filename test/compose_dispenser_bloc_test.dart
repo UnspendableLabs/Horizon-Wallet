@@ -25,7 +25,10 @@ import 'package:horizon/presentation/common/usecase/write_local_transaction_usec
 import 'package:horizon/presentation/screens/compose_dispenser/bloc/compose_dispenser_bloc.dart';
 import 'package:horizon/presentation/screens/compose_dispenser/bloc/compose_dispenser_state.dart';
 import 'package:horizon/presentation/screens/compose_dispenser/usecase/fetch_form_data.dart';
+import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:horizon/core/logging/logger.dart';
+import 'package:horizon/domain/entities/decryption_strategy.dart';
 
 class MockComposeRepository extends Mock implements ComposeRepository {}
 
@@ -82,6 +85,10 @@ class MockDispenser extends Mock implements Dispenser {}
 
 class MockComposeDispenserEventParams extends Mock
     implements ComposeDispenserEventParams {}
+
+class MockInMemoryKeyRepository extends Mock implements InMemoryKeyRepository {}
+
+class MockLogger extends Mock implements Logger {}
 
 class FakeAddress extends Fake implements Address {
   @override
@@ -153,11 +160,11 @@ void main() {
     registerFallbackValue(composeTransactionParams);
     registerFallbackValue(utxos);
     registerFallbackValue(FeeOption.Medium());
-    registerFallbackValue(ComposeTransactionEvent(
+    registerFallbackValue(FormSubmitted(
       params: composeTransactionParams,
       sourceAddress: 'source-address',
     ));
-    registerFallbackValue(SignAndBroadcastTransactionEvent(
+    registerFallbackValue(SignAndBroadcastFormSubmitted(
       password: 'password',
     ));
     registerFallbackValue(composeDispenserParams);
@@ -180,6 +187,9 @@ void main() {
     GetIt.I.registerSingleton<ErrorService>(mockErrorService);
 
     composeDispenserBloc = ComposeDispenserBloc(
+      logger: MockLogger(),
+      passwordRequired: true,
+      inMemoryKeyRepository: MockInMemoryKeyRepository(),
       fetchDispenserFormDataUseCase: mockFetchDispenserFormDataUseCase,
       composeTransactionUseCase: mockComposeTransactionUseCase,
       composeRepository: mockComposeRepository,
@@ -195,7 +205,7 @@ void main() {
     GetIt.I.reset();
   });
 
-  group(FetchFormData, () {
+  group(AsyncFormDependenciesRequested, () {
     blocTest<ComposeDispenserBloc, ComposeDispenserState>(
       'emits loading and then success states when data is fetched successfully',
       build: () {
@@ -204,20 +214,20 @@ void main() {
         return composeDispenserBloc;
       },
       act: (bloc) {
-        bloc.add(FetchFormData(currentAddress: mockAddress));
+        bloc.add(AsyncFormDependenciesRequested(currentAddress: mockAddress));
       },
       expect: () => [
         composeDispenserBloc.state.copyWith(
           feeState: const FeeState.loading(),
           balancesState: const BalancesState.loading(),
-          submitState: const SubmitInitial(),
+          submitState: const FormStep(),
           dialogState: const DialogState.loading(),
         ),
         composeDispenserBloc.state.copyWith(
           balancesState: BalancesState.success(mockBalances),
           feeState: const FeeState.success(mockFeeEstimates),
           dialogState: const DialogState.warning(hasOpenDispensers: false),
-          submitState: const SubmitInitial(),
+          submitState: const FormStep(),
         ),
       ],
     );
@@ -230,20 +240,21 @@ void main() {
         return composeDispenserBloc;
       },
       act: (bloc) {
-        bloc.add(FetchFormData(currentAddress: 'bc1qxxxxxxxxxxxx'));
+        bloc.add(
+            AsyncFormDependenciesRequested(currentAddress: 'bc1qxxxxxxxxxxxx'));
       },
       expect: () => [
         composeDispenserBloc.state.copyWith(
           feeState: const FeeState.loading(),
           balancesState: const BalancesState.loading(),
-          submitState: const SubmitInitial(),
+          submitState: const FormStep(),
           dialogState: const DialogState.loading(),
         ),
         composeDispenserBloc.state.copyWith(
           balancesState: BalancesState.success(mockBalances),
           feeState: const FeeState.success(mockFeeEstimates),
           dialogState: const DialogState.warning(hasOpenDispensers: false),
-          submitState: const SubmitInitial(),
+          submitState: const FormStep(),
         ),
       ],
     );
@@ -256,20 +267,20 @@ void main() {
         return composeDispenserBloc;
       },
       act: (bloc) {
-        bloc.add(FetchFormData(currentAddress: mockAddress));
+        bloc.add(AsyncFormDependenciesRequested(currentAddress: mockAddress));
       },
       expect: () => [
         composeDispenserBloc.state.copyWith(
           feeState: const FeeState.loading(),
           balancesState: const BalancesState.loading(),
-          submitState: const SubmitInitial(),
+          submitState: const FormStep(),
           dialogState: const DialogState.loading(),
         ),
         composeDispenserBloc.state.copyWith(
           balancesState: BalancesState.success(mockBalances),
           feeState: const FeeState.success(mockFeeEstimates),
           dialogState: const DialogState.warning(hasOpenDispensers: true),
-          submitState: const SubmitInitial(),
+          submitState: const FormStep(),
         ),
       ],
     );
@@ -282,12 +293,12 @@ void main() {
         return composeDispenserBloc;
       },
       act: (bloc) {
-        bloc.add(FetchFormData(currentAddress: mockAddress));
+        bloc.add(AsyncFormDependenciesRequested(currentAddress: mockAddress));
       },
       expect: () => [
         composeDispenserBloc.state.copyWith(
           balancesState: const BalancesState.loading(),
-          submitState: const SubmitInitial(),
+          submitState: const FormStep(),
         ),
         composeDispenserBloc.state.copyWith(
           balancesState: const BalancesState.error('Failed to fetch balances'),
@@ -303,12 +314,12 @@ void main() {
         return composeDispenserBloc;
       },
       act: (bloc) {
-        bloc.add(FetchFormData(currentAddress: mockAddress));
+        bloc.add(AsyncFormDependenciesRequested(currentAddress: mockAddress));
       },
       expect: () => [
         composeDispenserBloc.state.copyWith(
           feeState: const FeeState.loading(),
-          submitState: const SubmitInitial(),
+          submitState: const FormStep(),
         ),
         composeDispenserBloc.state.copyWith(
           feeState: const FeeState.error('Failed to fetch fee estimates'),
@@ -323,13 +334,13 @@ void main() {
         return composeDispenserBloc;
       },
       act: (bloc) {
-        bloc.add(FetchFormData(currentAddress: mockAddress));
+        bloc.add(AsyncFormDependenciesRequested(currentAddress: mockAddress));
       },
       expect: () => [
         composeDispenserBloc.state.copyWith(
           feeState: const FeeState.loading(),
           balancesState: const BalancesState.loading(),
-          submitState: const SubmitInitial(),
+          submitState: const FormStep(),
           dialogState: const DialogState.loading(),
         ),
         composeDispenserBloc.state.copyWith(
@@ -369,7 +380,7 @@ void main() {
         feeState: const FeeState.success(mockFeeEstimates),
         feeOption: FeeOption.Medium(),
       ),
-      act: (bloc) => bloc.add(ComposeTransactionEvent(
+      act: (bloc) => bloc.add(FormSubmitted(
         params: composeTransactionParams,
         sourceAddress: 'source-address',
       )),
@@ -377,14 +388,12 @@ void main() {
         isA<ComposeDispenserState>().having(
           (state) => state.submitState,
           'submitState',
-          isA<SubmitInitial>().having((s) => s.loading, 'loading', true),
+          isA<FormStep>().having((s) => s.loading, 'loading', true),
         ),
         isA<ComposeDispenserState>().having(
           (state) => state.submitState,
           'submitState',
-          isA<
-                  SubmitComposingTransaction<ComposeDispenserResponseVerbose,
-                      void>>()
+          isA<ReviewStep<ComposeDispenserResponseVerbose, void>>()
               .having((s) => s.composeTransaction, 'composeTransaction',
                   mockComposeDispenserResponseVerbose)
               .having((s) => s.fee, 'fee', 250)
@@ -414,7 +423,7 @@ void main() {
         feeState: const FeeState.success(mockFeeEstimates),
         feeOption: FeeOption.Custom(10),
       ),
-      act: (bloc) => bloc.add(ComposeTransactionEvent(
+      act: (bloc) => bloc.add(FormSubmitted(
         params: composeTransactionParams,
         sourceAddress: 'source-address',
       )),
@@ -422,14 +431,12 @@ void main() {
         isA<ComposeDispenserState>().having(
           (state) => state.submitState,
           'submitState',
-          isA<SubmitInitial>().having((s) => s.loading, 'loading', true),
+          isA<FormStep>().having((s) => s.loading, 'loading', true),
         ),
         isA<ComposeDispenserState>().having(
             (state) => state.submitState,
             'submitState',
-            isA<
-                    SubmitComposingTransaction<ComposeDispenserResponseVerbose,
-                        void>>()
+            isA<ReviewStep<ComposeDispenserResponseVerbose, void>>()
                 .having((s) => s.composeTransaction, 'composeTransaction',
                     mockComposeDispenserResponseVerbose)
                 .having((s) => s.fee, 'fee', 250)
@@ -457,7 +464,7 @@ void main() {
         feeState: const FeeState.success(mockFeeEstimates),
         feeOption: FeeOption.Medium(),
       ),
-      act: (bloc) => bloc.add(ComposeTransactionEvent(
+      act: (bloc) => bloc.add(FormSubmitted(
         params: composeTransactionParams,
         sourceAddress: 'source-address',
       )),
@@ -465,25 +472,25 @@ void main() {
         isA<ComposeDispenserState>().having(
           (state) => state.submitState,
           'submitState',
-          isA<SubmitInitial>().having((s) => s.loading, 'loading', true),
+          isA<FormStep>().having((s) => s.loading, 'loading', true),
         ),
         isA<ComposeDispenserState>().having(
           (state) => state.submitState,
           'submitState',
-          isA<SubmitInitial>()
+          isA<FormStep>()
               .having((s) => s.loading, 'loading', false)
               .having((s) => s.error, 'error', 'Compose error'),
         ),
       ],
     );
   });
-  group(FinalizeTransactionEvent, () {
+  group(ReviewSubmitted, () {
     const fee = 250;
 
     blocTest<ComposeDispenserBloc, ComposeDispenserState>(
       'emits SubmitFinalizing when FinalizeTransactionEvent is added',
       build: () => composeDispenserBloc,
-      act: (bloc) => bloc.add(FinalizeTransactionEvent(
+      act: (bloc) => bloc.add(ReviewSubmitted(
         composeTransaction: mockComposeDispenserResponseVerbose,
         fee: fee,
       )),
@@ -491,7 +498,7 @@ void main() {
         isA<ComposeDispenserState>().having(
           (state) => state.submitState,
           'submitState',
-          isA<SubmitFinalizing<ComposeDispenserResponseVerbose>>()
+          isA<PasswordStep<ComposeDispenserResponseVerbose>>()
               .having((s) => s.loading, 'loading', false)
               .having((s) => s.error, 'error', null)
               .having((s) => s.composeTransaction, 'composeTransaction',
@@ -502,7 +509,7 @@ void main() {
     );
   });
 
-  group(SignAndBroadcastTransactionEvent, () {
+  group(SignAndBroadcastFormSubmitted, () {
     const password = 'test-password';
     const txHex = 'rawtransaction';
     const txHash = 'transaction-hash';
@@ -514,7 +521,7 @@ void main() {
         when(() => mockSignAndBroadcastTransactionUseCase.call(
               source: sourceAddress,
               rawtransaction: txHex,
-              password: any(named: 'password'),
+              decryptionStrategy: Password(password),
               onSuccess: any(named: 'onSuccess'),
               onError: any(named: 'onError'),
             )).thenAnswer((invocation) async {
@@ -534,7 +541,7 @@ void main() {
         return composeDispenserBloc;
       },
       seed: () => composeDispenserBloc.state.copyWith(
-        submitState: SubmitFinalizing<ComposeDispenserResponseVerbose>(
+        submitState: PasswordStep<ComposeDispenserResponseVerbose>(
           loading: false,
           error: null,
           composeTransaction: mockComposeDispenserResponseVerbose,
@@ -542,12 +549,12 @@ void main() {
         ),
       ),
       act: (bloc) =>
-          bloc.add(SignAndBroadcastTransactionEvent(password: password)),
+          bloc.add(SignAndBroadcastFormSubmitted(password: password)),
       expect: () => [
         isA<ComposeDispenserState>().having(
           (state) => state.submitState,
           'submitState',
-          isA<SubmitFinalizing<ComposeDispenserResponseVerbose>>()
+          isA<PasswordStep<ComposeDispenserResponseVerbose>>()
               .having((s) => s.loading, 'loading', true)
               .having((s) => s.error, 'error', null)
               .having((s) => s.composeTransaction, 'composeTransaction',
@@ -564,7 +571,7 @@ void main() {
       ],
       verify: (_) {
         verify(() => mockAnalyticsService.trackAnonymousEvent(
-              'broadcast_tx_dispenser',
+              'broadcast_tx_create_dispenser',
               properties: any(named: 'properties'),
             )).called(1);
       },
@@ -575,7 +582,7 @@ void main() {
         when(() => mockSignAndBroadcastTransactionUseCase.call(
               source: any(named: "source"),
               rawtransaction: any(named: "rawtransaction"),
-              password: any(named: 'password'),
+              decryptionStrategy: Password(password),
               onSuccess: any(named: 'onSuccess'),
               onError: any(named: 'onError'),
             )).thenAnswer((invocation) async {
@@ -587,7 +594,7 @@ void main() {
         return composeDispenserBloc;
       },
       seed: () => composeDispenserBloc.state.copyWith(
-        submitState: SubmitFinalizing<ComposeDispenserResponseVerbose>(
+        submitState: PasswordStep<ComposeDispenserResponseVerbose>(
           loading: false,
           error: null,
           composeTransaction: mockComposeDispenserResponseVerbose,
@@ -595,12 +602,12 @@ void main() {
         ),
       ),
       act: (bloc) =>
-          bloc.add(SignAndBroadcastTransactionEvent(password: password)),
+          bloc.add(SignAndBroadcastFormSubmitted(password: password)),
       expect: () => [
         isA<ComposeDispenserState>().having(
           (state) => state.submitState,
           'submitState',
-          isA<SubmitFinalizing<ComposeDispenserResponseVerbose>>()
+          isA<PasswordStep<ComposeDispenserResponseVerbose>>()
               .having((s) => s.loading, 'loading', true)
               .having((s) => s.error, 'error', null)
               .having((s) => s.composeTransaction, 'composeTransaction',
@@ -610,7 +617,7 @@ void main() {
         isA<ComposeDispenserState>().having(
           (state) => state.submitState,
           'submitState',
-          isA<SubmitFinalizing<ComposeDispenserResponseVerbose>>()
+          isA<PasswordStep<ComposeDispenserResponseVerbose>>()
               .having((s) => s.loading, 'loading', false)
               .having((s) => s.error, 'error', 'Signing error')
               .having((s) => s.composeTransaction, 'composeTransaction',

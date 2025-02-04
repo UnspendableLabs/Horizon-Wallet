@@ -16,6 +16,7 @@ import 'package:horizon/presentation/screens/dashboard/address_form/bloc/address
 import 'package:horizon/presentation/screens/dashboard/address_form/bloc/address_form_event.dart';
 import 'package:horizon/remote_data_bloc/remote_data_state.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 
 class MockWalletService extends Mock implements WalletService {}
 
@@ -41,6 +42,8 @@ class FakeAddress extends Fake implements Address {
   final int index;
 }
 
+class MockInMemoryKeyRepository extends Mock implements InMemoryKeyRepository {}
+
 void main() {
   late MockWalletService mockWalletService;
   late MockEncryptionService mockEncryptionService;
@@ -49,6 +52,7 @@ void main() {
   late MockAccountRepository mockAccountRepository;
   late MockAddressRepository mockAddressRepository;
   late MockErrorService mockErrorService;
+  late MockInMemoryKeyRepository mockInMemoryKeyRepository;
   setUpAll(() {
     registerFallbackValue(FakeWallet());
     registerFallbackValue(FakeAccount());
@@ -63,6 +67,7 @@ void main() {
     mockAccountRepository = MockAccountRepository();
     mockAddressRepository = MockAddressRepository();
     mockErrorService = MockErrorService();
+    mockInMemoryKeyRepository = MockInMemoryKeyRepository();
     GetIt.I.registerSingleton<WalletService>(mockWalletService);
     GetIt.I.registerSingleton<EncryptionService>(mockEncryptionService);
     GetIt.I.registerSingleton<AddressService>(mockAddressService);
@@ -129,6 +134,8 @@ void main() {
           accountIndex: '0\'',
         );
         return AddressFormBloc(
+          inMemoryKeyRepository: mockInMemoryKeyRepository,
+          passwordRequired: true,
           walletRepository: mockWalletRepository,
           walletService: mockWalletService,
           encryptionService: mockEncryptionService,
@@ -198,6 +205,8 @@ void main() {
             .thenAnswer((_) async {});
 
         return AddressFormBloc(
+          inMemoryKeyRepository: mockInMemoryKeyRepository,
+          passwordRequired: true,
           walletRepository: mockWalletRepository,
           walletService: mockWalletService,
           encryptionService: mockEncryptionService,
@@ -287,6 +296,8 @@ void main() {
             .thenAnswer((_) async {});
 
         return AddressFormBloc(
+          inMemoryKeyRepository: mockInMemoryKeyRepository,
+          passwordRequired: true,
           walletRepository: mockWalletRepository,
           walletService: mockWalletService,
           encryptionService: mockEncryptionService,

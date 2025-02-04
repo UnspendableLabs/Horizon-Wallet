@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/domain/entities/dispenser.dart';
@@ -31,6 +32,14 @@ import 'package:horizon/domain/entities/asset_info.dart';
 import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/domain/entities/compose_dispenser.dart';
 import 'package:horizon/domain/entities/compose_response.dart';
+import 'package:horizon/domain/entities/decryption_strategy.dart';
+import 'package:horizon/core/logging/logger.dart';
+
+import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
+
+class MockInMemoryKeyRepository extends Mock implements InMemoryKeyRepository {}
+
+class MockLogger extends Mock implements Logger {}
 
 class FakeVirtualSize extends Fake implements VirtualSize {
   @override
@@ -136,7 +145,7 @@ class MockSignAndBroadcastTransactionUseCase extends Mock
     implements SignAndBroadcastTransactionUseCase {
   @override
   Future<void> call({
-    required String password,
+    required DecryptionStrategy decryptionStrategy,
     required Function(
       String,
       String,
@@ -150,7 +159,7 @@ class MockSignAndBroadcastTransactionUseCase extends Mock
         #call,
         [],
         {
-          #password: password,
+          #decryptionStrategy: decryptionStrategy,
           #onSuccess: onSuccess,
           #onError: onError,
         },
@@ -302,6 +311,9 @@ void main() {
 
     // Initialize bloc before use
     closeDispenserBloc = CloseDispenserBloc(
+      passwordRequired: true,
+      logger: MockLogger(),
+      inMemoryKeyRepository: MockInMemoryKeyRepository(),
       signAndBroadcastTransactionUseCase:
           mockSignAndBroadcastTransactionUseCase,
       composeTransactionUseCase: mockComposeTransactionUseCase,
@@ -315,6 +327,7 @@ void main() {
 
   tearDown(() async {
     await closeDispenserBloc.close();
+    Settings.clearCache();
     GetIt.I.reset(); // Reset GetIt registrations
   });
 
@@ -399,12 +412,10 @@ void main() {
           ),
         ),
       );
-
-      // Add small delay to allow widget to build
       await tester.pumpAndSettle();
 
-      closeDispenserBloc
-          .add(FetchFormData(currentAddress: FakeAddress().address));
+      closeDispenserBloc.add(AsyncFormDependenciesRequested(
+          currentAddress: FakeAddress().address));
       await tester.pumpAndSettle();
 
       // Find and tap the asset dropdown
@@ -433,7 +444,7 @@ void main() {
       await tester.tap(continueButton);
       await tester.pumpAndSettle();
 
-      closeDispenserBloc.add(ComposeTransactionEvent(
+      closeDispenserBloc.add(FormSubmitted(
         sourceAddress: "test-address",
         params: MockComposeDispenserEventParams(),
       ));
@@ -452,8 +463,7 @@ void main() {
       await tester.tap(confirmContinueButton);
       await tester.pumpAndSettle();
 
-      closeDispenserBloc
-          .add(FinalizeTransactionEvent<ComposeDispenserResponseVerbose>(
+      closeDispenserBloc.add(ReviewSubmitted<ComposeDispenserResponseVerbose>(
         composeTransaction: composeDispenserResponse,
         fee: 5,
       ));

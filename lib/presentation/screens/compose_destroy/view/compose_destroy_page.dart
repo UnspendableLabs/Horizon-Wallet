@@ -22,6 +22,8 @@ import 'package:horizon/presentation/screens/compose_destroy/bloc/compose_destro
 import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart';
 import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
+import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
+import 'package:horizon/domain/repositories/settings_repository.dart';
 
 class ComposeDestroyPageWrapper extends StatelessWidget {
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
@@ -40,6 +42,9 @@ class ComposeDestroyPageWrapper extends StatelessWidget {
       success: (state) => BlocProvider(
         key: Key(currentAddress),
         create: (context) => ComposeDestroyBloc(
+          passwordRequired:
+              GetIt.I<SettingsRepository>().requirePasswordForCryptoOperations,
+          inMemoryKeyRepository: GetIt.I.get<InMemoryKeyRepository>(),
           balanceRepository: GetIt.I.get<BalanceRepository>(),
           composeRepository: GetIt.I.get<ComposeRepository>(),
           analyticsService: GetIt.I.get<AnalyticsService>(),
@@ -50,7 +55,7 @@ class ComposeDestroyPageWrapper extends StatelessWidget {
           writelocalTransactionUseCase:
               GetIt.I.get<WriteLocalTransactionUseCase>(),
           logger: GetIt.I.get<Logger>(),
-        )..add(FetchFormData(currentAddress: currentAddress)),
+        )..add(AsyncFormDependenciesRequested(currentAddress: currentAddress)),
         child: ComposeDestroyPage(
           address: currentAddress,
           dashboardActivityFeedBloc: dashboardActivityFeedBloc,
@@ -103,7 +108,7 @@ class ComposeDestroyPageState extends State<ComposeDestroyPage> {
           dashboardActivityFeedBloc: widget.dashboardActivityFeedBloc,
           onFeeChange: (fee) => context
               .read<ComposeDestroyBloc>()
-              .add(ChangeFeeOption(value: fee)),
+              .add(FeeOptionChanged(value: fee)),
           buildInitialFormFields: (state, loading, formKey) =>
               _buildInitialFormFields(state, loading, formKey),
           onInitialCancel: () => _handleInitialCancel(),
@@ -279,7 +284,7 @@ class ComposeDestroyPageState extends State<ComposeDestroyPage> {
       final quantity = getQuantityForDivisibility(
           inputQuantity: quantityController.text,
           divisible: balance_!.assetInfo.divisible);
-      context.read<ComposeDestroyBloc>().add(ComposeTransactionEvent(
+      context.read<ComposeDestroyBloc>().add(FormSubmitted(
             sourceAddress: widget.address,
             params: ComposeDestroyEventParams(
               assetName: balance_!.asset,
@@ -325,14 +330,14 @@ class ComposeDestroyPageState extends State<ComposeDestroyPage> {
   void _onConfirmationBack() {
     context
         .read<ComposeDestroyBloc>()
-        .add(FetchFormData(currentAddress: widget.address));
+        .add(AsyncFormDependenciesRequested(currentAddress: widget.address));
   }
 
   void _onConfirmationContinue(
       dynamic composeTransaction, int fee, GlobalKey<FormState> formKey) {
     if (formKey.currentState!.validate()) {
       context.read<ComposeDestroyBloc>().add(
-            FinalizeTransactionEvent<ComposeDestroyResponse>(
+            ReviewSubmitted<ComposeDestroyResponse>(
               composeTransaction: composeTransaction,
               fee: fee,
             ),
@@ -343,7 +348,7 @@ class ComposeDestroyPageState extends State<ComposeDestroyPage> {
   void _onFinalizeSubmit(String password, GlobalKey<FormState> formKey) {
     if (formKey.currentState!.validate()) {
       context.read<ComposeDestroyBloc>().add(
-            SignAndBroadcastTransactionEvent(
+            SignAndBroadcastFormSubmitted(
               password: password,
             ),
           );
@@ -353,6 +358,6 @@ class ComposeDestroyPageState extends State<ComposeDestroyPage> {
   void _onFinalizeCancel() {
     context
         .read<ComposeDestroyBloc>()
-        .add(FetchFormData(currentAddress: widget.address));
+        .add(AsyncFormDependenciesRequested(currentAddress: widget.address));
   }
 }

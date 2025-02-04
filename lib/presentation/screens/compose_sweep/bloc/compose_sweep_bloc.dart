@@ -14,6 +14,8 @@ import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
 import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transaction_usecase.dart';
 import 'package:horizon/presentation/common/usecase/write_local_transaction_usecase.dart';
 import 'package:horizon/presentation/screens/compose_sweep/bloc/compose_sweep_state.dart';
+import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
+import 'package:horizon/domain/entities/decryption_strategy.dart';
 
 class ComposeSweepEventParams {
   final String destination;
@@ -28,6 +30,9 @@ class ComposeSweepEventParams {
 }
 
 class ComposeSweepBloc extends ComposeBaseBloc<ComposeSweepState> {
+  final txName = "sweep";
+  final bool passwordRequired;
+  final InMemoryKeyRepository inMemoryKeyRepository;
   final ComposeRepository composeRepository;
   final AnalyticsService analyticsService;
   final GetFeeEstimatesUseCase getFeeEstimatesUseCase;
@@ -38,6 +43,8 @@ class ComposeSweepBloc extends ComposeBaseBloc<ComposeSweepState> {
   final Logger logger;
 
   ComposeSweepBloc({
+    required this.inMemoryKeyRepository,
+    required this.passwordRequired,
     required this.composeRepository,
     required this.analyticsService,
     required this.getFeeEstimatesUseCase,
@@ -48,7 +55,7 @@ class ComposeSweepBloc extends ComposeBaseBloc<ComposeSweepState> {
     required this.logger,
   }) : super(
             ComposeSweepState(
-              submitState: const SubmitInitial(),
+              submitState: const FormStep(),
               feeOption: FeeOption.Medium(),
               balancesState: const BalancesState.initial(),
               feeState: const FeeState.initial(),
@@ -57,11 +64,12 @@ class ComposeSweepBloc extends ComposeBaseBloc<ComposeSweepState> {
             composePage: 'compose_sweep');
 
   @override
-  Future<void> onFetchFormData(FetchFormData event, emit) async {
+  Future<void> onAsyncFormDependenciesRequested(
+      AsyncFormDependenciesRequested event, emit) async {
     emit(state.copyWith(
       balancesState: const BalancesState.loading(),
       feeState: const FeeState.loading(),
-      submitState: const SubmitInitial(),
+      submitState: const FormStep(),
       sweepXcpFeeState: const SweepXcpFeeState.loading(),
     ));
 
@@ -92,14 +100,14 @@ class ComposeSweepBloc extends ComposeBaseBloc<ComposeSweepState> {
   }
 
   @override
-  void onChangeFeeOption(ChangeFeeOption event, emit) async {
+  void onFeeOptionChanged(FeeOptionChanged event, emit) async {
     final value = event.value;
     emit(state.copyWith(feeOption: value));
   }
 
   @override
-  void onComposeTransaction(ComposeTransactionEvent event, emit) async {
-    emit((state).copyWith(submitState: const SubmitInitial(loading: true)));
+  void onFormSubmitted(FormSubmitted event, emit) async {
+    emit((state).copyWith(submitState: const FormStep(loading: true)));
     final ComposeSweepEventParams params = event.params;
 
     try {
@@ -121,7 +129,7 @@ class ComposeSweepBloc extends ComposeBaseBloc<ComposeSweepState> {
               composeFn: composeRepository.composeSweep);
 
       emit(state.copyWith(
-          submitState: SubmitComposingTransaction<ComposeSweepResponse, void>(
+          submitState: ReviewStep<ComposeSweepResponse, void>(
         composeTransaction: composeResponse,
         fee: composeResponse.btcFee,
         feeRate: feeRate,
@@ -131,10 +139,10 @@ class ComposeSweepBloc extends ComposeBaseBloc<ComposeSweepState> {
       )));
     } on ComposeTransactionException catch (e) {
       emit(state.copyWith(
-          submitState: SubmitInitial(loading: false, error: e.message)));
+          submitState: FormStep(loading: false, error: e.message)));
     } catch (e) {
       emit(state.copyWith(
-          submitState: SubmitInitial(
+          submitState: FormStep(
               loading: false,
               error: 'An unexpected error occurred: ${e.toString()}')));
     }
@@ -151,29 +159,63 @@ class ComposeSweepBloc extends ComposeBaseBloc<ComposeSweepState> {
   }
 
   @override
-  void onFinalizeTransaction(FinalizeTransactionEvent event, emit) async {
-    emit(state.copyWith(
-        submitState: SubmitFinalizing<ComposeSweepResponse>(
-      loading: false,
-      error: null,
-      composeTransaction: event.composeTransaction,
-      fee: event.fee,
-    )));
-  }
-
-  @override
-  void onSignAndBroadcastTransaction(
-      SignAndBroadcastTransactionEvent event, emit) async {
-    if (state.submitState is! SubmitFinalizing<ComposeSweepResponse>) {
+  void onReviewSubmitted(ReviewSubmitted event, emit) async {
+    if (passwordRequired) {
+      emit(state.copyWith(
+          submitState: PasswordStep<ComposeSweepResponse>(
+        loading: false,
+        error: null,
+        composeTransaction: event.composeTransaction,
+        fee: event.fee,
+      )));
       return;
     }
 
-    final s = (state.submitState as SubmitFinalizing<ComposeSweepResponse>);
+    final s = (state.submitState as ReviewStep<ComposeSweepResponse, void>);
+
+    try {
+      emit(state.copyWith(submitState: s.copyWith(loading: true)));
+
+      await signAndBroadcastTransactionUseCase.call(
+          decryptionStrategy: InMemoryKey(),
+          source: s.composeTransaction.params.source,
+          rawtransaction: s.composeTransaction.rawtransaction,
+          onSuccess: (txHex, txHash) async {
+            await writelocalTransactionUseCase.call(txHex, txHash);
+
+            logger.info('$txName broadcasted txHash: $txHash');
+            analyticsService.trackAnonymousEvent('broadcast_tx_$txName',
+                properties: {'distinct_id': uuid.v4()});
+
+            emit(state.copyWith(
+                submitState: SubmitSuccess(
+                    transactionHex: txHex,
+                    sourceAddress: s.composeTransaction.params.source)));
+          },
+          onError: (msg) {
+            emit(state.copyWith(
+                submitState:
+                    s.copyWith(loading: false, error: msg.toString())));
+          });
+    } catch (e) {
+      emit(state.copyWith(
+          submitState: s.copyWith(loading: false, error: e.toString())));
+    }
+  }
+
+  @override
+  void onSignAndBroadcastFormSubmitted(
+      SignAndBroadcastFormSubmitted event, emit) async {
+    if (state.submitState is! PasswordStep<ComposeSweepResponse>) {
+      return;
+    }
+
+    final s = (state.submitState as PasswordStep<ComposeSweepResponse>);
     final compose = s.composeTransaction;
     final fee = s.fee;
 
     emit(state.copyWith(
-        submitState: SubmitFinalizing<ComposeSweepResponse>(
+        submitState: PasswordStep<ComposeSweepResponse>(
       loading: true,
       error: null,
       fee: fee,
@@ -181,7 +223,7 @@ class ComposeSweepBloc extends ComposeBaseBloc<ComposeSweepState> {
     )));
 
     await signAndBroadcastTransactionUseCase.call(
-        password: event.password,
+        decryptionStrategy: Password(event.password),
         source: compose.params.source,
         rawtransaction: compose.rawtransaction,
         onSuccess: (txHex, txHash) async {
@@ -198,7 +240,7 @@ class ComposeSweepBloc extends ComposeBaseBloc<ComposeSweepState> {
         },
         onError: (msg) {
           emit(state.copyWith(
-              submitState: SubmitFinalizing<ComposeSweepResponse>(
+              submitState: PasswordStep<ComposeSweepResponse>(
             loading: false,
             error: msg,
             fee: fee,

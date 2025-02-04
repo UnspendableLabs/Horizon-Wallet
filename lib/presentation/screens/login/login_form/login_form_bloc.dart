@@ -4,6 +4,8 @@ import 'package:formz/formz.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
+import 'package:horizon/domain/repositories/imported_address_repository.dart';
+import 'package:horizon/domain/services/imported_address_service.dart';
 
 abstract class FormEvent extends Equatable {
   const FormEvent();
@@ -63,9 +65,13 @@ class LoginFormBloc extends Bloc<FormEvent, FormState> {
   final WalletRepository walletRepository;
   final EncryptionService encryptionService;
   final InMemoryKeyRepository inMemoryKeyRepository;
+  final ImportedAddressRepository importedAddressRepository;
+  final ImportedAddressService importedAddressService;
 
   LoginFormBloc(
-      {required this.walletRepository,
+      {required this.importedAddressService,
+      required this.importedAddressRepository,
+      required this.walletRepository,
       required this.encryptionService,
       required this.inMemoryKeyRepository})
       : super(FormState()) {
@@ -102,6 +108,17 @@ class LoginFormBloc extends Bloc<FormEvent, FormState> {
           wallet.encryptedPrivKey, decryptionKey);
 
       await inMemoryKeyRepository.set(key: decryptionKey);
+
+      final importedAddresses = await importedAddressRepository.getAll();
+      Map<String, String> importedAddressMap = {};
+
+      for (var importedAddress in importedAddresses) {
+        String decryptionKey = await encryptionService.getDecryptionKey(
+            importedAddress.encryptedWif, password);
+        importedAddressMap[importedAddress.address] = decryptionKey;
+      }
+
+      await inMemoryKeyRepository.setMap(map: importedAddressMap);
 
       emit(
         state.copyWith(
