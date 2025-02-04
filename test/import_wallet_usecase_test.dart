@@ -102,12 +102,27 @@ void main() {
         // Setup
         const mnemonic = 'test mnemonic phrase for import';
         const password = 'testPassword';
-        const wallet = Wallet(
-            name: "Imported Wallet",
-            uuid: 'import-wallet-uuid',
-            publicKey: "imported-public-key",
-            encryptedPrivKey: 'encrypted',
-            chainCodeHex: 'chainCode');
+        const horizonWallet = Wallet(
+            name: "Horizon Wallet",
+            uuid: 'horizon-wallet-uuid',
+            publicKey: "horizon-public-key",
+            encryptedPrivKey: 'horizon-encrypted',
+            chainCodeHex: 'horizon-chainCode');
+
+        const counterwallet = Wallet(
+            name: "Counterwallet",
+            uuid: 'counterwallet-uuid',
+            publicKey: "counterwallet-public-key",
+            encryptedPrivKey: 'counterwallet-encrypted',
+            chainCodeHex: 'counterwallet-chainCode');
+
+        const freewallet = Wallet(
+            name: "Freewallet",
+            uuid: 'freewallet-uuid',
+            publicKey: "freewallet-public-key",
+            encryptedPrivKey: 'freewallet-encrypted',
+            chainCodeHex: 'freewallet-chainCode');
+
         const decryptedPrivKey = 'decrypted-private-key';
         const decryptionKey = "decryption-key";
 
@@ -119,19 +134,24 @@ void main() {
             .thenReturn(true);
 
         when(() => mockWalletService.deriveRoot(any(), any()))
-            .thenAnswer((_) async => wallet);
+            .thenAnswer((_) async => horizonWallet);
         when(() => mockWalletService.deriveRootFreewallet(any(), any()))
-            .thenAnswer((_) async => wallet);
+            .thenAnswer((_) async => freewallet);
         when(() => mockWalletService.deriveRootCounterwallet(any(), any()))
-            .thenAnswer((_) async => wallet);
+            .thenAnswer((_) async => counterwallet);
         when(() => mockEncryptionService.decrypt(any(), any()))
             .thenAnswer((_) async => decryptedPrivKey);
         when(() => mockInMemoryKeyRepository.set(key: any(named: 'key')))
             .thenAnswer((_) async {});
         when(() => mockEncryptionService.getDecryptionKey(any(), any()))
             .thenAnswer((_) async => 'test-decryption-key');
+
+        final currentWallet = switch (walletType) {
+          WalletType.horizon => horizonWallet,
+          WalletType.bip32 => isFreewalletBip39 ? freewallet : counterwallet,
+        };
         when(() => mockWalletRepository.getCurrentWallet())
-            .thenAnswer((_) async => wallet);
+            .thenAnswer((_) async => currentWallet);
 
         // Mock Bitcoin repository to return transactions only for first few addresses
         var callCount = 0;
@@ -208,8 +228,6 @@ void main() {
                 ]);
 
         when(() => mockWalletRepository.insert(any())).thenAnswer((_) async {});
-        when(() => mockWalletRepository.getCurrentWallet())
-            .thenAnswer((_) async => wallet);
         when(() => mockAccountRepository.insert(any()))
             .thenAnswer((_) async {});
         when(() => mockAddressRepository.insert(any()))
@@ -237,10 +255,14 @@ void main() {
           },
         );
 
-        // freewallet bip39: decrypt twice, once for counterwallet and once for freewallet
         verify(() => mockEncryptionService.decrypt(
-                wallet.encryptedPrivKey, password))
-            .called(isFreewalletBip39 ? 2 : 1);
+            currentWallet.encryptedPrivKey, password)).called(1);
+
+        // freewallet bip39: decrypt twice, once for counterwallet and once for freewallet
+        if (isFreewalletBip39) {
+          verify(() => mockEncryptionService.decrypt(
+              counterwallet.encryptedPrivKey, password)).called(1);
+        }
 
         switch (walletType) {
           case WalletType.horizon:
@@ -250,7 +272,7 @@ void main() {
             verify(() => mockWalletService.deriveRoot(any(), any())).called(1);
             verify(() => mockBitcoinRepository.getTransactions(any()))
                 .called(4);
-            verify(() => mockWalletRepository.insert(any())).called(1);
+            verify(() => mockWalletRepository.insert(horizonWallet)).called(1);
             verify(() => mockAccountRepository.insert(any())).called(3);
             verify(() => mockAddressRepository.insertMany(any())).called(3);
             break;
@@ -272,7 +294,8 @@ void main() {
             }
             verify(() => mockBitcoinRepository.getTransactions(any()))
                 .called(4);
-            verify(() => mockWalletRepository.insert(any())).called(1);
+            verify(() => mockWalletRepository.insert(
+                isFreewalletBip39 ? freewallet : counterwallet)).called(1);
 
             // bip32: insert 2 accounts and 2 addresses for freewallet bip39 since only 2 accounts have transactions, 3 accounts and 3 addresses for counterwallet
             verify(() => mockAccountRepository.insert(any()))
@@ -391,19 +414,21 @@ void main() {
         "1",
         WalletType.bip32);
 
-    test('imports freewallet when counterwallet has no transactions', () async {
+    test(
+        'imports freewallet if txs are found on freewallet and counterwallet has no transactions',
+        () async {
       // Setup
       const mnemonic = 'test mnemonic phrase for import';
       const password = 'testPassword';
 
       const counterWallet = Wallet(
-          name: "Imported Wallet",
+          name: "Counterwallet",
           uuid: 'counter-wallet-uuid',
           publicKey: "counter-public-key",
           encryptedPrivKey: 'counter-encrypted',
           chainCodeHex: 'counter-chainCode');
       const freeWallet = Wallet(
-          name: "Imported Wallet",
+          name: "Freewallet",
           uuid: 'free-wallet-uuid',
           publicKey: "free-public-key",
           encryptedPrivKey: 'free-encrypted',
@@ -527,7 +552,130 @@ void main() {
       verify(() => mockWalletService.deriveRootFreewallet(any(), any()))
           .called(1);
       verify(() => mockBitcoinRepository.getTransactions(any())).called(3);
-      verify(() => mockWalletRepository.insert(any())).called(1);
+      verify(() => mockWalletRepository.insert(freeWallet)).called(1);
+      verify(() => mockAccountRepository.insert(any())).called(1);
+      verify(() => mockAddressRepository.insertMany(any())).called(1);
+      verify(() => mockWalletRepository.getCurrentWallet()).called(1);
+      verify(() => mockEncryptionService.getDecryptionKey(any(), any()))
+          .called(1);
+      verify(() => mockInMemoryKeyRepository.set(key: any(named: 'key')))
+          .called(1);
+
+      expect(successCallbackInvoked, true);
+      expect(errorCallbackInvoked, false);
+    });
+
+    test(
+        'imports counterwallet if no txs are found on counterwallet or freewallet',
+        () async {
+      // Setup
+      const mnemonic = 'test mnemonic phrase for import';
+      const password = 'testPassword';
+
+      const counterWallet = Wallet(
+          name: "Counterwallet",
+          uuid: 'counter-wallet-uuid',
+          publicKey: "counter-public-key",
+          encryptedPrivKey: 'counter-encrypted',
+          chainCodeHex: 'counter-chainCode');
+      const freeWallet = Wallet(
+          name: "Freewallet",
+          uuid: 'free-wallet-uuid',
+          publicKey: "free-public-key",
+          encryptedPrivKey: 'free-encrypted',
+          chainCodeHex: 'free-chainCode');
+      const decryptedPrivKey = 'decrypted-private-key';
+
+      when(() => mockMnemonicService.validateMnemonic(any()))
+          .thenAnswer((_) => true);
+      when(() => mockMnemonicService.validateCounterwalletMnemonic(any()))
+          .thenAnswer((_) => true);
+      when(() => mockConfig.network).thenReturn(Network.mainnet);
+
+      // Mock Counterwallet derivation
+      when(() => mockWalletService.deriveRootCounterwallet(any(), any()))
+          .thenAnswer((_) async => counterWallet);
+
+      // Mock Freewallet derivation (used after Counterwallet fails)
+      when(() => mockWalletService.deriveRootFreewallet(any(), any()))
+          .thenAnswer((_) async => freeWallet);
+
+      when(() => mockEncryptionService.decrypt(any(), any()))
+          .thenAnswer((_) async => decryptedPrivKey);
+      when(() => mockEncryptionService.getDecryptionKey(any(), any()))
+          .thenAnswer((_) async => 'test-decryption-key');
+
+      // Add mock for getCurrentWallet to return the freewallet (since that's what we end up using)
+      when(() => mockWalletRepository.getCurrentWallet())
+          .thenAnswer((_) async => counterWallet);
+
+      // Mock address derivation for both types
+      when(() => mockAddressService.deriveAddressFreewalletRange(
+              type: AddressType.bech32,
+              privKey: any(named: 'privKey'),
+              chainCodeHex: any(named: 'chainCodeHex'),
+              accountUuid: any(named: 'accountUuid'),
+              account: any(named: 'account'),
+              change: any(named: 'change'),
+              start: any(named: 'start'),
+              end: any(named: 'end')))
+          .thenAnswer((_) async => [
+                const Address(
+                    index: 0, address: "bc1q...", accountUuid: 'account-uuid')
+              ]);
+
+      when(() => mockAddressService.deriveAddressFreewalletRange(
+              type: AddressType.legacy,
+              privKey: any(named: 'privKey'),
+              chainCodeHex: any(named: 'chainCodeHex'),
+              accountUuid: any(named: 'accountUuid'),
+              account: any(named: 'account'),
+              change: any(named: 'change'),
+              start: any(named: 'start'),
+              end: any(named: 'end')))
+          .thenAnswer((_) async => [
+                const Address(
+                    index: 1, address: "1M...", accountUuid: 'account-uuid')
+              ]);
+
+      // Mock Bitcoin repository to return no transactions for Counterwallet addresses
+      // but return transactions for Freewallet addresses
+      when(() => mockBitcoinRepository.getTransactions(any()))
+          .thenAnswer((_) async {
+        return const Right([]);
+      });
+
+      when(() => mockWalletRepository.insert(any())).thenAnswer((_) async {});
+      when(() => mockAccountRepository.insert(any())).thenAnswer((_) async {});
+      when(() => mockAddressRepository.insertMany(any()))
+          .thenAnswer((_) async {});
+      when(() => mockInMemoryKeyRepository.set(key: any(named: 'key')))
+          .thenAnswer((_) async {});
+
+      bool successCallbackInvoked = false;
+      bool errorCallbackInvoked = false;
+
+      // Act
+      await importWalletUseCase.call(
+        password: password,
+        walletType: WalletType.bip32,
+        mnemonic: mnemonic,
+        onError: (error) {
+          errorCallbackInvoked = true;
+        },
+        onSuccess: () {
+          successCallbackInvoked = true;
+        },
+      );
+
+      // Verify
+      verify(() => mockWalletService.deriveRootCounterwallet(any(), any()))
+          .called(1);
+      verify(() => mockWalletService.deriveRootFreewallet(any(), any()))
+          .called(1);
+      verify(() => mockBitcoinRepository.getTransactions(any()))
+          .called(2); // once for empty counterwallet, once for empty freewallet
+      verify(() => mockWalletRepository.insert(counterWallet)).called(1);
       verify(() => mockAccountRepository.insert(any())).called(1);
       verify(() => mockAddressRepository.insertMany(any())).called(1);
       verify(() => mockWalletRepository.getCurrentWallet()).called(1);
@@ -861,7 +1009,7 @@ void main() {
     });
   });
 
-  group('ImportWalletUseCase createCounterwalletWallet', () {
+  group('ImportWalletUseCase createBip32Wallet Counterwallet', () {
     test('creates account and addresses when transactions exist', () async {
       // Setup
       const wallet = Wallet(
@@ -948,10 +1096,11 @@ void main() {
 
       // Act
       final (accountsWithBalances, hasTransactions) =
-          await importWalletUseCase.createCounterwalletWallet(
+          await importWalletUseCase.createBip32Wallet(
         password: password,
         mnemonic: mnemonic,
         wallet: wallet,
+        importFormat: ImportFormat.counterwallet,
       );
 
       // Assert
@@ -1019,10 +1168,11 @@ void main() {
 
       // Act
       final (accountsWithBalances, hasTransactions) =
-          await importWalletUseCase.createCounterwalletWallet(
+          await importWalletUseCase.createBip32Wallet(
         password: password,
         mnemonic: mnemonic,
         wallet: wallet,
+        importFormat: ImportFormat.counterwallet,
       );
 
       // Assert
@@ -1058,13 +1208,14 @@ void main() {
 
       // Act & Assert
       expect(
-        () => importWalletUseCase.createCounterwalletWallet(
+        () => importWalletUseCase.createBip32Wallet(
           password: password,
           mnemonic: mnemonic,
           wallet: wallet,
+          importFormat: ImportFormat.counterwallet,
         ),
-        throwsA(isA<PasswordException>()
-            .having((e) => e.message, 'message', 'Invalid password')),
+        throwsA(isA<PasswordException>().having(
+            (e) => e.message, 'message', 'invariant: Invalid password')),
       );
 
       verify(() =>
@@ -1073,7 +1224,7 @@ void main() {
     });
   });
 
-  group('ImportWalletUseCase createFreewalletWallet', () {
+  group('ImportWalletUseCase createBip32Wallet Freewallet', () {
     test('creates accounts and addresses when transactions exist', () async {
       // Setup
       const wallet = Wallet(
@@ -1160,10 +1311,11 @@ void main() {
 
       // Act
       final (accountsWithBalances, hasTransactions) =
-          await importWalletUseCase.createFreewalletWallet(
+          await importWalletUseCase.createBip32Wallet(
         password: password,
         mnemonic: mnemonic,
         wallet: wallet,
+        importFormat: ImportFormat.freewallet,
       );
 
       // Assert
@@ -1231,10 +1383,11 @@ void main() {
 
       // Act
       final (accountsWithBalances, hasTransactions) =
-          await importWalletUseCase.createFreewalletWallet(
+          await importWalletUseCase.createBip32Wallet(
         password: password,
         mnemonic: mnemonic,
         wallet: wallet,
+        importFormat: ImportFormat.freewallet,
       );
 
       // Assert
@@ -1270,13 +1423,14 @@ void main() {
 
       // Act & Assert
       expect(
-        () => importWalletUseCase.createFreewalletWallet(
+        () => importWalletUseCase.createBip32Wallet(
           password: password,
           mnemonic: mnemonic,
           wallet: wallet,
+          importFormat: ImportFormat.freewallet,
         ),
-        throwsA(isA<PasswordException>()
-            .having((e) => e.message, 'message', 'invariant:Invalid password')),
+        throwsA(isA<PasswordException>().having(
+            (e) => e.message, 'message', 'invariant: Invalid password')),
       );
 
       verify(() =>
@@ -1324,6 +1478,8 @@ void main() {
     verify(() => mockWalletService.deriveRootCounterwallet(mnemonic, password))
         .called(1);
     verifyNever(() => mockWalletService.deriveRootFreewallet(any(), any()));
+
+    verify(() => mockWalletRepository.insert(wallet)).called(1);
   });
 
   test('creates only freewallet when mnemonic is not valid counterwallet',
@@ -1368,6 +1524,7 @@ void main() {
     verify(() => mockWalletService.deriveRootFreewallet(mnemonic, password))
         .called(1);
     verifyNever(() => mockWalletService.deriveRootCounterwallet(any(), any()));
+    verify(() => mockWalletRepository.insert(wallet)).called(1);
   });
 
   test(
@@ -1416,7 +1573,7 @@ void main() {
     verify(() => mockWalletService.deriveRootFreewallet(mnemonic, password))
         .called(1);
     verifyNever(() => mockWalletService.deriveRootCounterwallet(any(), any()));
-
+    verify(() => mockWalletRepository.insert(wallet)).called(1);
     // Reset config flag
     OnboardingConfig.setIsFreewalletImportBip39(false);
   });

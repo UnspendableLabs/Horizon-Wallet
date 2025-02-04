@@ -280,9 +280,29 @@ void main() {
 
         final wallet = await GetIt.I.get<WalletRepository>().getCurrentWallet();
 
+        // ensure the inserted wallet is the same as the one derived from the mnemonic
+        final comparisonWallet = switch (testCase['format']) {
+          'Horizon Native' => await GetIt.I
+              .get<WalletService>()
+              .deriveRoot(testCase['passphrase'] as String, 'password'),
+          'Freewallet (BIP39)' => await GetIt.I
+              .get<WalletService>()
+              .deriveRootFreewallet(
+                  testCase['passphrase'] as String, 'password'),
+          'Freewallet / Counterwallet' => await GetIt.I
+              .get<WalletService>()
+              .deriveRootCounterwallet(
+                  testCase['passphrase'] as String, 'password'),
+          _ => throw Exception('Unknown format'),
+        };
+
+        expect(wallet!.publicKey, comparisonWallet.publicKey);
+        expect(wallet.chainCodeHex, comparisonWallet.chainCodeHex);
+        expect(wallet.name, comparisonWallet.name);
+
         final accounts = await GetIt.I
             .get<AccountRepository>()
-            .getAccountsByWalletUuid(wallet!.uuid);
+            .getAccountsByWalletUuid(wallet.uuid);
 
         final expectedAccountCount =
             testCase['format'] == ImportFormat.horizon.description ? 10 : 1;

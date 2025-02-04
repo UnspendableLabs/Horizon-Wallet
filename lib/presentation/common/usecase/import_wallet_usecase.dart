@@ -17,12 +17,40 @@ import 'package:horizon/domain/services/wallet_service.dart';
 import 'package:horizon/presentation/screens/onboarding_import/onboarding_config.dart';
 
 // ignore_for_file: constant_identifier_names
-const GAP_LIMIT = 20;
+const DEFAULT_NUM_ACCOUNTS = 20;
 
 class PasswordException implements Exception {
   final String message;
   PasswordException(this.message);
 }
+
+// ImportWalletUseCase.call handles two wallet import types:
+
+// 1. Horizon Native:
+//    - Derive Horizon Wallet from seed + password
+//    - Derive first Account + single Address; scan for btc or counterparty transactions; if no txs, insert only this first Account/Address
+//    - If the first Account/Address has txs: continue deriving up to 20 Account/Address pairs until finding one without txs
+//    - Insert Wallet + all Accounts/Address pairs with transactions
+
+// 2. Freewallet / Counterwallet / RPW:
+//    case a. Invalid BIP39 mnemonic - Counterwallet only:
+//      - Derive Counterwallet Wallet from seed + password
+//      - Derive first Account + 20 Addresses (10 bech32 + 10 legacy); scan for transactions; if no txs, insert only this first Account + 20 Addresses
+//      - If has txs: derive up to 20 Accounts with 20 addresses each until finding one without txs
+//      - Insert Wallet + all Accounts/Addresses with transactions
+
+//    case b. Invalid Counterwallet mnemonic - Freewallet only:
+//      - Derive Freewallet Wallet from seed + password
+//      - Same flow as case a, but using Freewallet Wallet
+
+//    case c. mnemonic can be a valid counterwallet or freewallet seed phrase - Counterwallet is the default:
+//      - Attempt to import Counterwallet as outlined in case a. If there are CW txs, insert CW Wallet + Accounts/Addresses
+//      - If there are no Counterwallet txs: attempt to import Freewallet as outlined in case b.
+//      - If there are transactions on the Freewallet Accounts/Addresses: insert Freewallet Wallet + Accounts/Addresses
+//      - Otherwise, default to Counterwallet and insert CW Wallet + Accounts/Addresses
+
+// At the end of the import, the decryption key is written to secure storage
+// onSuccess() is called to redirect the user to the dashboard screen
 
 class ImportWalletUseCase {
   final InMemoryKeyRepository inMemoryKeyRepository;
@@ -65,7 +93,7 @@ class ImportWalletUseCase {
     }
 
     // Attempt to find balances/transactions for up to 20 accounts, checking only the first address for each horizon account
-    for (var i = 0; i < GAP_LIMIT; i++) {
+    for (var i = 0; i < DEFAULT_NUM_ACCOUNTS; i++) {
       // m/84'/0'/0'/0
       Account account = Account(
         name: 'ACCOUNT ${i + 1}',
@@ -88,7 +116,7 @@ class ImportWalletUseCase {
         index: 0,
       );
 
-      // get transactions and balances for the segwit address
+      // get transactions for the address
       final List<BitcoinTx> transactions =
           await bitcoinRepository.getTransactions([address.address]).then(
         (either) async {
@@ -100,16 +128,15 @@ class ImportWalletUseCase {
       );
 
       // if there are any transactions or balances for the address, add the address to the account
-      // if there are any transactions or balances for the address, add the address to the account
       if (transactions.isNotEmpty) {
-        // add the segwit address to the account if balances or transactions are present
+        // add the address to the account if transactions are present
         accountsWithBalances[account] = [address];
       } else if (i == 0) {
-        // if no transactions are found on the first account, we will import just the first account + address and break
+        // if no transactions are found on the first account, import just the first account + address and break
         accountsWithBalances[account] = [address];
         break;
       } else {
-        // break the loop at the once we reach an account with no transactions
+        // break the loop once an account with no transactions is reached
         break;
       }
     }
@@ -117,42 +144,50 @@ class ImportWalletUseCase {
     return accountsWithBalances;
   }
 
-  Future<(Map<Account, List<Address>>, bool)> createCounterwalletWallet({
+  Future<(Map<Account, List<Address>>, bool)> createBip32Wallet({
     required String password,
     required String mnemonic,
     required Wallet wallet,
+    required ImportFormat importFormat,
   }) async {
+    // This method is used for both counterwallet and freewallet
+    // The Account and Address derivations are exactly the same for both but derive from different wallet types
     bool hasTransactions = false;
 
     Map<Account, List<Address>> accountsWithBalances = {};
-    // we assume that 99% of imports will be counterwallet
-    // first we check if there are any transactions on the counterwallet account
     String decryptedPrivKey;
     try {
       decryptedPrivKey =
           await encryptionService.decrypt(wallet.encryptedPrivKey, password);
     } catch (e) {
-      throw PasswordException('Invalid password');
+      throw PasswordException('invariant: Invalid password');
     }
 
-    // https://github.com/CounterpartyXCP/counterwallet/blob/1de386782818aeecd7c23a3d2132746a2f56e4fc/src/js/util.bitcore.js#L17
-    Account counterwalletAccount = Account(
+    // The purpose is unused for both counterwallet and freewallet derivations so this is unnecessary
+    // However, as a distinction, we save the counterwallet purpose as '0\' and the freewallet purpose as '32'
+    final purpose = switch (importFormat) {
+      ImportFormat.counterwallet => '0\'',
+      ImportFormat.freewallet => '32',
+      _ => throw UnimplementedError(),
+    };
+
+    Account account = Account(
         name: 'ACCOUNT 1',
         walletUuid: wallet.uuid,
-        purpose: '0\'',
+        purpose: purpose,
         coinType: _getCoinType(),
         accountIndex: '0\'',
         uuid: uuid.v4(),
-        importFormat: ImportFormat.counterwallet);
+        importFormat: importFormat);
 
-    // import all 20 addresses for the counterwallet account
+    // derive all 20 addresses for the account
     List<Address> addressesBech32 =
         await addressService.deriveAddressFreewalletRange(
             type: AddressType.bech32,
             privKey: decryptedPrivKey,
             chainCodeHex: wallet.chainCodeHex,
-            accountUuid: counterwalletAccount.uuid,
-            account: counterwalletAccount.accountIndex,
+            accountUuid: account.uuid,
+            account: account.accountIndex,
             change: '0',
             start: 0,
             end: 9);
@@ -162,14 +197,14 @@ class ImportWalletUseCase {
             type: AddressType.legacy,
             privKey: decryptedPrivKey,
             chainCodeHex: wallet.chainCodeHex,
-            accountUuid: counterwalletAccount.uuid,
-            account: counterwalletAccount.accountIndex,
+            accountUuid: account.uuid,
+            account: account.accountIndex,
             change: '0',
             start: 0,
             end: 9);
 
-    // we will import the first account + addresses, even if there are no transactions
-    accountsWithBalances[counterwalletAccount] = [
+    // import the first account + addresses, even if there are no transactions
+    accountsWithBalances[account] = [
       ...addressesBech32,
       ...addressesLegacy,
     ];
@@ -184,26 +219,27 @@ class ImportWalletUseCase {
       );
     });
 
-    // if there are any transactions on the first counterwallet account, check any following accounts for transactions, up to 20 accounts
+    // if there are any transactions on the first account, check any following accounts for transactions, up to 20 accounts
     if (firstAccountTransactions.isNotEmpty) {
       hasTransactions = true;
       // check any subsequent accounts for transactions, up to 20 accounts
-      for (int i = 1; i < GAP_LIMIT; i++) {
-        Account nextCounterwalletAccount = Account(
+      for (int i = 1; i < DEFAULT_NUM_ACCOUNTS; i++) {
+        Account nextAccount = Account(
             name: 'ACCOUNT ${i + 1}',
             walletUuid: wallet.uuid,
-            purpose: counterwalletAccount.purpose,
-            coinType: counterwalletAccount.coinType,
+            purpose: account.purpose,
+            coinType: account.coinType,
             accountIndex: '$i\'',
             uuid: uuid.v4(),
-            importFormat: ImportFormat.counterwallet);
+            importFormat: importFormat);
+
         List<Address> nextAddressesBech32 =
             await addressService.deriveAddressFreewalletRange(
                 type: AddressType.bech32,
                 privKey: decryptedPrivKey,
                 chainCodeHex: wallet.chainCodeHex,
-                accountUuid: nextCounterwalletAccount.uuid,
-                account: nextCounterwalletAccount.accountIndex,
+                accountUuid: nextAccount.uuid,
+                account: nextAccount.accountIndex,
                 change: '0',
                 start: 0,
                 end: 9);
@@ -213,8 +249,8 @@ class ImportWalletUseCase {
                 type: AddressType.legacy,
                 privKey: decryptedPrivKey,
                 chainCodeHex: wallet.chainCodeHex,
-                accountUuid: nextCounterwalletAccount.uuid,
-                account: nextCounterwalletAccount.accountIndex,
+                accountUuid: nextAccount.uuid,
+                account: nextAccount.accountIndex,
                 change: '0',
                 start: 0,
                 end: 9);
@@ -229,131 +265,12 @@ class ImportWalletUseCase {
           );
         });
         if (allTransactions.isEmpty) {
-          // we will break at the first account with no transactions
+          // break at the first account with no transactions
           break;
         }
-        accountsWithBalances[nextCounterwalletAccount] = [
+        accountsWithBalances[nextAccount] = [
           ...nextAddressesBech32,
           ...nextAddressesLegacy,
-        ];
-      }
-    }
-    return (accountsWithBalances, hasTransactions);
-  }
-
-  Future<(Map<Account, List<Address>>, bool)> createFreewalletWallet({
-    required String password,
-    required String mnemonic,
-    required Wallet wallet,
-  }) async {
-    bool hasTransactions = false;
-
-    final Map<Account, List<Address>> accountsWithBalances = {};
-    String decryptedPrivKey;
-    try {
-      decryptedPrivKey =
-          await encryptionService.decrypt(wallet.encryptedPrivKey, password);
-    } catch (e) {
-      throw PasswordException('invariant:Invalid password');
-    }
-    // create freewallet account
-    Account freewalletAccount = Account(
-        name: 'ACCOUNT 1',
-        walletUuid: wallet.uuid,
-        purpose: '32', // unused in Freewallet path
-        coinType: _getCoinType(),
-        accountIndex: '0\'',
-        uuid: uuid.v4(),
-        importFormat: ImportFormat.freewallet);
-
-    List<Address> addressesBech32 =
-        await addressService.deriveAddressFreewalletRange(
-            type: AddressType.bech32,
-            privKey: decryptedPrivKey,
-            chainCodeHex: wallet.chainCodeHex,
-            accountUuid: freewalletAccount.uuid,
-            account: freewalletAccount.accountIndex,
-            change: '0',
-            start: 0,
-            end: 9);
-
-    List<Address> addressesLegacy =
-        await addressService.deriveAddressFreewalletRange(
-            type: AddressType.legacy,
-            privKey: decryptedPrivKey,
-            chainCodeHex: wallet.chainCodeHex,
-            accountUuid: freewalletAccount.uuid,
-            account: freewalletAccount.accountIndex,
-            change: '0',
-            start: 0,
-            end: 9);
-
-    // always return the first freewallet account and addresses even if there are no transactions
-    accountsWithBalances[freewalletAccount] = [
-      ...addressesBech32,
-      ...addressesLegacy,
-    ];
-
-    final allTransactionsFreewallet = await bitcoinRepository.getTransactions([
-      ...addressesBech32.map((e) => e.address),
-      ...addressesLegacy.map((e) => e.address),
-    ]).then((either) async {
-      return either.fold(
-        (error) => throw Exception("GetTransactionInfo failure"),
-        (transactions) => transactions,
-      );
-    });
-
-    if (allTransactionsFreewallet.isNotEmpty) {
-      // otherwise, check any subsequent accounts for transactions, up to 20 accounts
-      hasTransactions = true;
-      for (int i = 1; i < GAP_LIMIT; i++) {
-        Account nextFreewalletAccount = Account(
-            name: 'ACCOUNT ${i + 1}',
-            walletUuid: wallet.uuid,
-            purpose: freewalletAccount.purpose,
-            coinType: freewalletAccount.coinType,
-            accountIndex: '$i\'',
-            uuid: uuid.v4(),
-            importFormat: ImportFormat.freewallet);
-        List<Address> addressesBech32 =
-            await addressService.deriveAddressFreewalletRange(
-                type: AddressType.bech32,
-                privKey: decryptedPrivKey,
-                chainCodeHex: wallet.chainCodeHex,
-                accountUuid: nextFreewalletAccount.uuid,
-                account: nextFreewalletAccount.accountIndex,
-                change: '0',
-                start: 0,
-                end: 9);
-
-        List<Address> addressesLegacy =
-            await addressService.deriveAddressFreewalletRange(
-                type: AddressType.legacy,
-                privKey: decryptedPrivKey,
-                chainCodeHex: wallet.chainCodeHex,
-                accountUuid: nextFreewalletAccount.uuid,
-                account: nextFreewalletAccount.accountIndex,
-                change: '0',
-                start: 0,
-                end: 9);
-
-        final allTransactions = await bitcoinRepository.getTransactions([
-          ...addressesBech32.map((e) => e.address),
-          ...addressesLegacy.map((e) => e.address),
-        ]).then((either) async {
-          return either.fold(
-            (error) => throw Exception("GetTransactionInfo failure"),
-            (transactions) => transactions,
-          );
-        });
-        if (allTransactions.isEmpty) {
-          // we will break at the first account with no transactions
-          break;
-        }
-        accountsWithBalances[nextFreewalletAccount] = [
-          ...addressesBech32,
-          ...addressesLegacy,
         ];
       }
     }
@@ -384,10 +301,14 @@ class ImportWalletUseCase {
             // if the seed phrase is not valid bip39, import counterwallet and break
             wallet =
                 await walletService.deriveRootCounterwallet(mnemonic, password);
-            (accountsWithBalances, _) = await createCounterwalletWallet(
-                password: password, mnemonic: mnemonic, wallet: wallet);
+            (accountsWithBalances, _) = await createBip32Wallet(
+                password: password,
+                mnemonic: mnemonic,
+                wallet: wallet,
+                importFormat: ImportFormat.counterwallet);
             break;
           }
+
           final isValidCounterwallet =
               mnemonicService.validateCounterwalletMnemonic(mnemonic);
           if (!isValidCounterwallet ||
@@ -395,37 +316,49 @@ class ImportWalletUseCase {
             // if the seed phrase is not valid counterwallet, or if freewalletbip39 is specified, import freewallet and break
             wallet =
                 await walletService.deriveRootFreewallet(mnemonic, password);
-            (accountsWithBalances, _) = await createFreewalletWallet(
-                password: password, mnemonic: mnemonic, wallet: wallet);
+            (accountsWithBalances, _) = await createBip32Wallet(
+                password: password,
+                mnemonic: mnemonic,
+                wallet: wallet,
+                importFormat: ImportFormat.freewallet);
             break;
           }
 
           // we will get to this point if the seed phrase is both valid bip39 and valid counterwallet, which is relatively common
           // in this case, for bip32 wallets, assume 99% of users have a counterwallet seed phrase
           // counterwallet seeds are the default freewallet/RPW seed phrases
-
-          // track if there are transactions on the counterwallet account
-          bool counterwalletHasTransactions = false;
-          wallet =
+          final counterwallet =
               await walletService.deriveRootCounterwallet(mnemonic, password);
-          (accountsWithBalances, counterwalletHasTransactions) =
-              await createCounterwalletWallet(
-                  password: password, mnemonic: mnemonic, wallet: wallet);
+          final (
+            counterwalletAccountsWithBalances,
+            counterwalletHasTransactions
+          ) = await createBip32Wallet(
+              password: password,
+              mnemonic: mnemonic,
+              wallet: counterwallet,
+              importFormat: ImportFormat.counterwallet);
+
+          // default to importing counterwallet in the case of no Freewallet transactions
+          wallet = counterwallet;
+          accountsWithBalances = counterwalletAccountsWithBalances;
 
           if (!counterwalletHasTransactions) {
-            // if there are no counterwallet transactions, we will check freewallet bip39
-            wallet =
+            // if there are no counterwallet transactions, check freewallet bip39
+            final freewallet =
                 await walletService.deriveRootFreewallet(mnemonic, password);
             final (freewalletAccountsWithBalances, freewalletHasTransactions) =
-                await createFreewalletWallet(
-                    password: password, mnemonic: mnemonic, wallet: wallet);
+                await createBip32Wallet(
+                    password: password,
+                    mnemonic: mnemonic,
+                    wallet: freewallet,
+                    importFormat: ImportFormat.freewallet);
 
             if (freewalletHasTransactions) {
-              // we import freewallet ONLY IF THERE ARE TRANSACTIONS ON THE FREEWALLET ACCOUNTS
+              // import freewallet ONLY IF THERE ARE TRANSACTIONS ON THE FREEWALLET ACCOUNTS
+              wallet = freewallet;
               accountsWithBalances = freewalletAccountsWithBalances;
             }
           }
-          // otherwise, by default we will import counterwallet
           break;
 
         default:
