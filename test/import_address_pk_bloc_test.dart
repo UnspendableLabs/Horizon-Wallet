@@ -5,6 +5,7 @@ import 'package:horizon/domain/entities/imported_address.dart';
 import 'package:horizon/domain/entities/wallet.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/imported_address_repository.dart';
+import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
@@ -32,6 +33,8 @@ class MockImportedAddressRepository extends Mock
 class MockImportedAddressService extends Mock
     implements ImportedAddressService {}
 
+class MockInMemoryKeyRepository extends Mock implements InMemoryKeyRepository {}
+
 // Fake classes for fallback values
 class FakeWallet extends Fake implements Wallet {}
 
@@ -46,6 +49,7 @@ void main() {
   late MockAddressRepository mockAddressRepository;
   late MockImportedAddressRepository mockImportedAddressRepository;
   late MockImportedAddressService mockImportedAddressService;
+  late MockInMemoryKeyRepository mockInMemoryKeyRepository;
 
   const testWif = 'test-wif-key';
   const testPassword = 'test-password';
@@ -60,7 +64,7 @@ void main() {
     registerFallbackValue(ImportAddressPkFormat.segwit);
   });
 
-  setUp(() {
+  setUp(() async {
     mockWalletRepository = MockWalletRepository();
     mockWalletService = MockWalletService();
     mockEncryptionService = MockEncryptionService();
@@ -68,8 +72,10 @@ void main() {
     mockAddressRepository = MockAddressRepository();
     mockImportedAddressRepository = MockImportedAddressRepository();
     mockImportedAddressService = MockImportedAddressService();
+    mockInMemoryKeyRepository = MockInMemoryKeyRepository();
 
     bloc = ImportAddressPkBloc(
+      inMemoryKeyRepository: mockInMemoryKeyRepository,
       walletRepository: mockWalletRepository,
       walletService: mockWalletService,
       encryptionService: mockEncryptionService,
@@ -183,6 +189,8 @@ void main() {
         );
         when(() => mockEncryptionService.decrypt(any(), any()))
             .thenAnswer((_) async => 'decrypted-key');
+        when(() => mockEncryptionService.getDecryptionKey(any(), any()))
+            .thenAnswer((_) async => 'decryption-key');
         when(() => mockImportedAddressService.getAddressFromWIF(
               wif: any(named: 'wif'),
               format: any(named: 'format'),
@@ -193,6 +201,11 @@ void main() {
             .thenAnswer((_) async => 'encrypted-wif');
         when(() => mockImportedAddressRepository.insert(any()))
             .thenAnswer((_) async {});
+        when(() => mockInMemoryKeyRepository.getMap())
+            .thenAnswer((_) async => ({}));
+        when(() => mockInMemoryKeyRepository
+                .setMap(map: {testAddress: 'decryption-key'}))
+            .thenAnswer((_) async => ({}));
         return bloc;
       },
       act: (bloc) => bloc.add(Submit(

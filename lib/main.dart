@@ -54,6 +54,8 @@ import 'package:pub_semver/pub_semver.dart';
 import 'package:horizon/presentation/inactivity_monitor/inactivity_monitor_bloc.dart';
 import 'package:horizon/presentation/inactivity_monitor/inactivity_monitor_view.dart';
 
+import 'package:horizon/domain/repositories/settings_repository.dart';
+
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 final _sectionNavigatorKey = GlobalKey<NavigatorState>();
 
@@ -266,11 +268,11 @@ class AppRouter {
             builder:
                 (BuildContext context, GoRouterState state, navigationSession) {
               return ValueChangeObserver(
-                  cacheKey: SettingsValues.inactivityTimeout.toString(),
+                  cacheKey: SettingsKeys.inactivityTimeout.toString(),
                   defaultValue: 5,
                   builder: (context, inactivityTimeout, onChanged) {
                     return ValueChangeObserver(
-                        cacheKey: SettingsValues.lostFocusTimeout.toString(),
+                        cacheKey: SettingsKeys.lostFocusTimeout.toString(),
                         defaultValue: 1,
                         builder: (context, lostFocusTimeout, onChanged) {
                           return BlocProvider(
@@ -805,8 +807,11 @@ class MyApp extends StatelessWidget {
         ),
         BlocProvider<AccountFormBloc>(
           create: (context) => AccountFormBloc(
+            passwordRequired: GetIt.I<SettingsRepository>()
+                .requirePasswordForCryptoOperations,
             accountRepository: GetIt.I<AccountRepository>(),
             walletRepository: GetIt.I<WalletRepository>(),
+            inMemoryKeyRepository: GetIt.I<InMemoryKeyRepository>(),
             walletService: GetIt.I<WalletService>(),
             encryptionService: GetIt.I<EncryptionService>(),
             addressService: GetIt.I<AddressService>(),
@@ -816,6 +821,9 @@ class MyApp extends StatelessWidget {
         ),
         BlocProvider<AddressFormBloc>(
           create: (context) => AddressFormBloc(
+            passwordRequired: GetIt.I<SettingsRepository>()
+                .requirePasswordForCryptoOperations,
+            inMemoryKeyRepository: GetIt.I<InMemoryKeyRepository>(),
             walletRepository: GetIt.I<WalletRepository>(),
             walletService: GetIt.I<WalletService>(),
             encryptionService: GetIt.I<EncryptionService>(),
@@ -827,6 +835,7 @@ class MyApp extends StatelessWidget {
         ),
         BlocProvider<ImportAddressPkBloc>(
           create: (context) => ImportAddressPkBloc(
+            inMemoryKeyRepository: GetIt.I<InMemoryKeyRepository>(),
             walletRepository: GetIt.I<WalletRepository>(),
             walletService: GetIt.I<WalletService>(),
             encryptionService: GetIt.I<EncryptionService>(),

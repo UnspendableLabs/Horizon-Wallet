@@ -17,6 +17,8 @@ import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.
 import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transaction_usecase.dart';
 import 'package:horizon/presentation/common/usecase/write_local_transaction_usecase.dart';
+import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
+import 'package:horizon/domain/entities/decryption_strategy.dart';
 
 class ComposeDispenseEventParams {
   final String address;
@@ -31,6 +33,10 @@ class ComposeDispenseEventParams {
 }
 
 class ComposeDispenseBloc extends ComposeBaseBloc<ComposeDispenseState> {
+  final txName = 'dispense';
+  final bool passwordRequired;
+  final InMemoryKeyRepository inMemoryKeyRepository;
+
   final Logger logger;
   final ComposeRepository composeRepository;
   final AnalyticsService analyticsService;
@@ -45,6 +51,8 @@ class ComposeDispenseBloc extends ComposeBaseBloc<ComposeDispenseState> {
 
   ComposeDispenseBloc({
     required this.logger,
+    required this.passwordRequired,
+    required this.inMemoryKeyRepository,
     required this.fetchOpenDispensersOnAddressUseCase,
     required this.dispenserRepository,
     required this.composeRepository,
@@ -57,7 +65,7 @@ class ComposeDispenseBloc extends ComposeBaseBloc<ComposeDispenseState> {
   }) : super(
           ComposeDispenseState(
             feeOption: FeeOption.Medium(),
-            submitState: const SubmitInitial(),
+            submitState: const FormStep(),
             feeState: const FeeState.initial(),
             balancesState: const BalancesState.initial(),
             dispensersState: const DispensersState.initial(),
@@ -107,17 +115,18 @@ class ComposeDispenseBloc extends ComposeBaseBloc<ComposeDispenseState> {
   }
 
   @override
-  onChangeFeeOption(event, emit) async {
+  onFeeOptionChanged(event, emit) async {
     final value = event.value;
     emit(state.copyWith(feeOption: value));
   }
 
   @override
-  Future<void> onFetchFormData(FetchFormData event, emit) async {
+  Future<void> onAsyncFormDependenciesRequested(
+      AsyncFormDependenciesRequested event, emit) async {
     emit(state.copyWith(
         balancesState: const BalancesState.loading(),
         feeState: const FeeState.loading(),
-        submitState: const SubmitInitial()));
+        submitState: const FormStep()));
 
     logger.warn("fetch form data ${event.initialDispenserAddress}");
 
@@ -156,18 +165,53 @@ class ComposeDispenseBloc extends ComposeBaseBloc<ComposeDispenseState> {
   }
 
   @override
-  onFinalizeTransaction(event, emit) async {
-    emit(state.copyWith(
-        submitState: SubmitFinalizing<ComposeDispenseResponse>(
-            loading: false,
-            error: null,
-            composeTransaction: event.composeTransaction,
-            fee: event.fee)));
+  onReviewSubmitted(event, emit) async {
+    if (passwordRequired) {
+      emit(state.copyWith(
+          submitState: PasswordStep<ComposeDispenseResponse>(
+              loading: false,
+              error: null,
+              composeTransaction: event.composeTransaction,
+              fee: event.fee)));
+      return;
+    }
+
+    final s = (state.submitState
+        as ReviewStep<ComposeDispenseResponse, List<EstimatedDispense>>);
+
+    try {
+      emit(state.copyWith(submitState: s.copyWith(loading: true)));
+
+      await signAndBroadcastTransactionUseCase.call(
+          decryptionStrategy: InMemoryKey(),
+          source: s.composeTransaction.params.source,
+          rawtransaction: s.composeTransaction.rawtransaction,
+          onSuccess: (txHex, txHash) async {
+            await writelocalTransactionUseCase.call(txHex, txHash);
+
+            logger.info('$txName broadcasted txHash: $txHash');
+            analyticsService.trackAnonymousEvent('broadcast_tx_$txName',
+                properties: {'distinct_id': uuid.v4()});
+
+            emit(state.copyWith(
+                submitState: SubmitSuccess(
+                    transactionHex: txHex,
+                    sourceAddress: s.composeTransaction.params.source)));
+          },
+          onError: (msg) {
+            emit(state.copyWith(
+                submitState:
+                    s.copyWith(loading: false, error: msg.toString())));
+          });
+    } catch (e) {
+      emit(state.copyWith(
+          submitState: s.copyWith(loading: false, error: e.toString())));
+    }
   }
 
   @override
-  void onComposeTransaction(ComposeTransactionEvent event, emit) async {
-    emit((state).copyWith(submitState: const SubmitInitial(loading: true)));
+  void onFormSubmitted(FormSubmitted event, emit) async {
+    emit((state).copyWith(submitState: const FormStep(loading: true)));
 
     try {
       // This will throw if no dispensers are found
@@ -195,8 +239,8 @@ class ComposeDispenseBloc extends ComposeBaseBloc<ComposeDispenseState> {
           dispensers: dispensers, quantity: event.params.quantity);
 
       emit(state.copyWith(
-          submitState: SubmitComposingTransaction<ComposeDispenseResponse,
-              List<EstimatedDispense>>(
+          submitState:
+              ReviewStep<ComposeDispenseResponse, List<EstimatedDispense>>(
         composeTransaction: composeResponse,
         fee: composeResponse.btcFee,
         feeRate: feeRate,
@@ -207,15 +251,15 @@ class ComposeDispenseBloc extends ComposeBaseBloc<ComposeDispenseState> {
       )));
     } on FetchOpenDispensersOnAddressException {
       emit(state.copyWith(
-          submitState: const SubmitInitial(
+          submitState: const FormStep(
               loading: false, error: 'No open dispensers found')));
       return;
     } on ComposeTransactionException catch (e, _) {
       emit(state.copyWith(
-          submitState: SubmitInitial(loading: false, error: e.message)));
+          submitState: FormStep(loading: false, error: e.message)));
     } catch (e) {
       emit(state.copyWith(
-          submitState: SubmitInitial(
+          submitState: FormStep(
               loading: false,
               error: 'An unexpected error occurred: ${e.toString()}')));
     }
@@ -232,18 +276,18 @@ class ComposeDispenseBloc extends ComposeBaseBloc<ComposeDispenseState> {
   }
 
   @override
-  void onSignAndBroadcastTransaction(
-      SignAndBroadcastTransactionEvent event, emit) async {
-    if (state.submitState is! SubmitFinalizing<ComposeDispenseResponse>) {
+  void onSignAndBroadcastFormSubmitted(
+      SignAndBroadcastFormSubmitted event, emit) async {
+    if (state.submitState is! PasswordStep<ComposeDispenseResponse>) {
       return;
     }
 
-    final s = (state.submitState as SubmitFinalizing<ComposeDispenseResponse>);
+    final s = (state.submitState as PasswordStep<ComposeDispenseResponse>);
     final compose = s.composeTransaction;
     final fee = s.fee;
 
     emit(state.copyWith(
-        submitState: SubmitFinalizing<ComposeDispenseResponse>(
+        submitState: PasswordStep<ComposeDispenseResponse>(
       loading: true,
       error: null,
       fee: fee,
@@ -251,14 +295,14 @@ class ComposeDispenseBloc extends ComposeBaseBloc<ComposeDispenseState> {
     )));
 
     await signAndBroadcastTransactionUseCase.call(
-        password: event.password,
+        decryptionStrategy: Password(event.password),
         source: compose.params.source,
         rawtransaction: compose.rawtransaction,
         onSuccess: (txHex, txHash) async {
           await writelocalTransactionUseCase.call(txHex, txHash);
 
-          logger.error('dispense broadcasted txHash: $txHash');
-          analyticsService.trackAnonymousEvent('broadcast_tx_dispense',
+          logger.error('$txName broadcasted txHash: $txHash');
+          analyticsService.trackAnonymousEvent('broadcast_tx_$txName',
               properties: {'distinct_id': uuid.v4()});
 
           emit(state.copyWith(
@@ -268,7 +312,7 @@ class ComposeDispenseBloc extends ComposeBaseBloc<ComposeDispenseState> {
         },
         onError: (msg) {
           emit(state.copyWith(
-              submitState: SubmitFinalizing<ComposeDispenseResponse>(
+              submitState: PasswordStep<ComposeDispenseResponse>(
             loading: false,
             error: msg,
             fee: fee,

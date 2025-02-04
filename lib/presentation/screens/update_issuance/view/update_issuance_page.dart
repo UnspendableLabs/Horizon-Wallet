@@ -59,7 +59,7 @@ class UpdateIssuancePageWrapper extends StatelessWidget {
               GetIt.I.get<WriteLocalTransactionUseCase>(),
           logger: GetIt.I.get<Logger>(),
           issuanceActionType: actionType,
-        )..add(FetchFormData(
+        )..add(AsyncFormDependenciesRequested(
             assetName: assetName, currentAddress: currentAddress)),
         child: UpdateIssuancePage(
           dashboardActivityFeedBloc: dashboardActivityFeedBloc,
@@ -138,7 +138,7 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
             dashboardActivityFeedBloc: widget.dashboardActivityFeedBloc,
             onFeeChange: (fee) => context
                 .read<UpdateIssuanceBloc>()
-                .add(ChangeFeeOption(value: fee)),
+                .add(FeeOptionChanged(value: fee)),
             buildInitialFormFields: (state, loading, formKey) =>
                 _buildInitialFormLoadingFields(state, loading, formKey),
             onInitialCancel: () => {},
@@ -155,7 +155,7 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
               dashboardActivityFeedBloc: widget.dashboardActivityFeedBloc,
               onFeeChange: (fee) => context
                   .read<UpdateIssuanceBloc>()
-                  .add(ChangeFeeOption(value: fee)),
+                  .add(FeeOptionChanged(value: fee)),
               buildInitialFormFields: (state, loading, formKey) =>
                   _buildInitialFormFields(
                       state, loading, formKey, originalAsset),
@@ -540,7 +540,7 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
           print("Invalid case");
       }
 
-      context.read<UpdateIssuanceBloc>().add(ComposeTransactionEvent(
+      context.read<UpdateIssuanceBloc>().add(FormSubmitted(
             sourceAddress: widget.address,
             params: UpdateIssuanceEventParams(
               name: name,
@@ -729,7 +729,7 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
   }
 
   void _onConfirmationBack() {
-    context.read<UpdateIssuanceBloc>().add(FetchFormData(
+    context.read<UpdateIssuanceBloc>().add(AsyncFormDependenciesRequested(
         currentAddress: widget.address, assetName: widget.assetName));
   }
 
@@ -737,7 +737,7 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
       dynamic composeTransaction, int fee, GlobalKey<FormState> formKey) {
     if (formKey.currentState!.validate()) {
       context.read<UpdateIssuanceBloc>().add(
-            FinalizeTransactionEvent<ComposeIssuanceResponseVerbose>(
+            ReviewSubmitted<ComposeIssuanceResponseVerbose>(
               composeTransaction: composeTransaction,
               fee: fee,
             ),
@@ -746,7 +746,7 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
   }
 
   void _onFinalizeCancel() {
-    context.read<UpdateIssuanceBloc>().add(FetchFormData(
+    context.read<UpdateIssuanceBloc>().add(AsyncFormDependenciesRequested(
         currentAddress: widget.address, assetName: widget.assetName));
   }
 
@@ -825,7 +825,7 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
   void _onFinalizeSubmit(String password, GlobalKey<FormState> formKey) {
     if (formKey.currentState!.validate()) {
       context.read<UpdateIssuanceBloc>().add(
-            SignAndBroadcastTransactionEvent(
+            SignAndBroadcastFormSubmitted(
               password: password,
             ),
           );

@@ -21,6 +21,9 @@ import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/unified_address_repository.dart';
 import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/domain/entities/bitcoin_decoded_tx.dart' as DecodedTx;
+import 'package:horizon/domain/entities/decryption_strategy.dart';
+
+import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 
 // Mock Classes
 class MockTransactionService extends Mock implements TransactionService {}
@@ -47,6 +50,8 @@ class MockAccountRepository extends Mock implements AccountRepository {}
 class MockUnifiedAddressRepository extends Mock
     implements UnifiedAddressRepository {}
 
+class MockInMemoryKeyRepository extends Mock implements InMemoryKeyRepository {}
+
 void main() {
   late SignPsbtBloc signPsbtBloc;
   late MockTransactionService mockTransactionService;
@@ -59,6 +64,7 @@ void main() {
   late MockAddressService mockAddressService;
   late MockImportedAddressService mockImportedAddressService;
   late MockAccountRepository mockAccountRepository;
+  late MockInMemoryKeyRepository mockInMemoryKeyRepository;
 
   // Sample Decoded Transactions
   const decodedBuyTransaction = DecodedTx.DecodedTx(
@@ -222,8 +228,12 @@ void main() {
     mockAddressService = MockAddressService();
     mockImportedAddressService = MockImportedAddressService();
     mockAccountRepository = MockAccountRepository();
+    mockInMemoryKeyRepository = MockInMemoryKeyRepository();
+       
 
     signPsbtBloc = SignPsbtBloc(
+      passwordRequired: true,
+      inMemoryKeyRepository: mockInMemoryKeyRepository,
       unsignedPsbt: "unsigned_psbt_hex",
       transactionService: mockTransactionService,
       walletRepository: mockWalletRepository,

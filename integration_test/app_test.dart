@@ -10,6 +10,8 @@ import 'package:horizon/setup.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:pub_semver/pub_semver.dart';
 
+
+
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
@@ -153,6 +155,7 @@ void main() {
     setUpAll(() async {
       // Perform any common setup here
       setup();
+      await initSettings();
     });
 
     for (final testCase in testCases) {
@@ -165,7 +168,7 @@ void main() {
           if (details.exceptionAsString().contains('A RenderFlex overflowed')) {
             // Ignore RenderFlex overflow errors
             return;
-          }
+         }
           originalOnError(details);
         };
 

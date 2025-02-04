@@ -20,6 +20,6 @@ class ComposeBurnState with _$ComposeBurnState, ComposeStateBase {
         feeState: const FeeState.initial(),
         balancesState: const BalancesState.initial(),
         feeOption: Medium(),
-        submitState: const SubmitInitial(),
+        submitState: const FormStep(),
       );
 }

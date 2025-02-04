@@ -24,10 +24,13 @@ import 'package:horizon/presentation/screens/compose_dispense/usecase/fetch_open
 import 'package:horizon/presentation/screens/compose_dispense/view/compose_dispense_modal.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart';
 import 'package:horizon/presentation/screens/horizon/ui.dart';
+import 'package:horizon/setup.dart';
+import 'package:horizon/main.dart';
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:horizon/presentation/session/bloc/session_state.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 
 class MockFetchOpenDispensersOnAddressUseCase extends Mock
     implements FetchOpenDispensersOnAddressUseCase {}
@@ -80,6 +83,8 @@ class MockSessionStateCubit extends Mock implements SessionStateCubit {
         ),
       ));
 }
+
+class MockInMemoryKeyRepository extends Mock implements InMemoryKeyRepository {}
 
 class FakeAddress extends Fake implements Address {
   @override
@@ -178,7 +183,7 @@ Future<void> _verifyDispenserDetails({
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
-  setUpAll(() {
+  setUpAll(() async {
     setup();
     FlutterError.onError = (FlutterErrorDetails details) {
       print('FlutterError: ${details.exception}\n${details.stack}');
@@ -219,6 +224,8 @@ void main() {
       mockDispenserRepository = MockDispenserRepository();
       mockEstimateDispensesUseCase = MockEstimateDispensesUseCase();
       composeDispenseBloc = ComposeDispenseBloc(
+        inMemoryKeyRepository: MockInMemoryKeyRepository(),
+        passwordRequired: true,
         fetchOpenDispensersOnAddressUseCase:
             mockFetchOpenDispensersOnAddressUseCase,
         fetchDispenseFormDataUseCase: mockFetchDispenseFormDataUseCase,
@@ -242,6 +249,7 @@ void main() {
         (WidgetTester tester) async {
       await runZonedGuarded(() async {
         // Mock the dispensers
+
         final dispensers = [
           Dispenser(
             txIndex: 2977292,
@@ -462,7 +470,7 @@ void main() {
         await tester.pumpAndSettle();
 
         // Dispatch the FetchFormData event
-        composeDispenseBloc.add(FetchFormData(
+        composeDispenseBloc.add(AsyncFormDependenciesRequested(
           currentAddress: FakeAddress().address,
         ));
 
@@ -777,7 +785,7 @@ void main() {
         );
 
         // Dispatch the FetchFormData event
-        composeDispenseBloc.add(FetchFormData(
+        composeDispenseBloc.add(AsyncFormDependenciesRequested(
           currentAddress: FakeAddress().address,
         ));
 

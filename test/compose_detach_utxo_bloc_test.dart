@@ -18,6 +18,8 @@ import 'package:horizon/presentation/common/usecase/write_local_transaction_usec
 import 'package:horizon/presentation/screens/compose_detach_utxo/bloc/compose_detach_utxo_bloc.dart';
 import 'package:horizon/presentation/screens/compose_detach_utxo/bloc/compose_detach_utxo_state.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
+import 'package:horizon/domain/entities/decryption_strategy.dart';
 
 class MockComposeRepository extends Mock implements ComposeRepository {}
 
@@ -41,6 +43,8 @@ class MockComposeDetachUtxoResponse extends Mock
     implements ComposeDetachUtxoResponse {}
 
 class MockErrorService extends Mock implements ErrorService {}
+
+class MockInMemoryKeyRepository extends Mock implements InMemoryKeyRepository {}
 
 class FakeVirtualSize extends Fake implements VirtualSize {
   @override
@@ -68,6 +72,8 @@ void main() {
       mockSignAndBroadcastTransactionUseCase;
   late MockWriteLocalTransactionUseCase mockWriteLocalTransactionUseCase;
   late MockErrorService mockErrorService;
+  late MockInMemoryKeyRepository mockInMemoryKeyRepository;
+
 
   const mockFeeEstimates = FeeEstimates(fast: 5, medium: 3, slow: 1);
 
@@ -81,12 +87,12 @@ void main() {
     registerFallbackValue(FeeOption.Medium());
     registerFallbackValue(composeTransactionParams);
     registerFallbackValue(
-      ComposeTransactionEvent(
+      FormSubmitted(
         params: composeTransactionParams,
         sourceAddress: 'source-address',
       ),
     );
-    registerFallbackValue(SignAndBroadcastTransactionEvent(
+    registerFallbackValue(SignAndBroadcastFormSubmitted(
       password: 'password',
     ));
     registerFallbackValue(ComposeDetachUtxoParams(
@@ -106,11 +112,16 @@ void main() {
         MockSignAndBroadcastTransactionUseCase();
     mockWriteLocalTransactionUseCase = MockWriteLocalTransactionUseCase();
     mockErrorService = MockErrorService();
+    mockInMemoryKeyRepository = MockInMemoryKeyRepository();
+       
 
     // Register the ErrorService mock with GetIt
     GetIt.I.registerSingleton<ErrorService>(mockErrorService);
 
     composeDetachUtxoBloc = ComposeDetachUtxoBloc(
+     
+      inMemoryKeyRepository: mockInMemoryKeyRepository,
+      passwordRequired: true,
       composeRepository: mockComposeRepository,
       analyticsService: mockAnalyticsService,
       logger: mockLogger,
@@ -138,7 +149,7 @@ void main() {
         return composeDetachUtxoBloc;
       },
       act: (bloc) {
-        bloc.add(FetchFormData(
+        bloc.add(AsyncFormDependenciesRequested(
           currentAddress: 'test-address',
           assetName: 'ASSET_NAME',
         ));
@@ -147,7 +158,7 @@ void main() {
         composeDetachUtxoBloc.state.copyWith(
           balancesState: const BalancesState.loading(),
           feeState: const FeeState.loading(),
-          submitState: const SubmitInitial(),
+          submitState: const FormStep(),
         ),
         composeDetachUtxoBloc.state.copyWith(
           balancesState: const BalancesState.success([]),
@@ -165,7 +176,7 @@ void main() {
         return composeDetachUtxoBloc;
       },
       act: (bloc) {
-        bloc.add(FetchFormData(
+        bloc.add(AsyncFormDependenciesRequested(
           currentAddress: 'test-address',
           assetName: 'ASSET_NAME',
         ));
@@ -174,7 +185,7 @@ void main() {
         composeDetachUtxoBloc.state.copyWith(
           balancesState: const BalancesState.loading(),
           feeState: const FeeState.loading(),
-          submitState: const SubmitInitial(),
+          submitState: const FormStep(),
         ),
         composeDetachUtxoBloc.state.copyWith(
           feeState: const FeeState.error('Failed to fetch fee estimates'),
@@ -187,7 +198,7 @@ void main() {
     blocTest<ComposeDetachUtxoBloc, ComposeDetachUtxoState>(
       'emits new state with updated fee option',
       build: () => composeDetachUtxoBloc,
-      act: (bloc) => bloc.add(ChangeFeeOption(value: FeeOption.Fast())),
+      act: (bloc) => bloc.add(FeeOptionChanged(value: FeeOption.Fast())),
       expect: () => [
         isA<ComposeDetachUtxoState>().having(
           (state) => state.feeOption,
@@ -224,7 +235,7 @@ void main() {
         feeState: const FeeState.success(mockFeeEstimates),
         feeOption: FeeOption.Medium(),
       ),
-      act: (bloc) => bloc.add(ComposeTransactionEvent(
+      act: (bloc) => bloc.add(FormSubmitted(
         params: composeTransactionParams,
         sourceAddress: 'source-address',
       )),
@@ -232,12 +243,12 @@ void main() {
         isA<ComposeDetachUtxoState>().having(
           (state) => state.submitState,
           'submitState',
-          isA<SubmitInitial>().having((s) => s.loading, 'loading', true),
+          isA<FormStep>().having((s) => s.loading, 'loading', true),
         ),
         isA<ComposeDetachUtxoState>().having(
           (state) => state.submitState,
           'submitState',
-          isA<SubmitComposingTransaction<ComposeDetachUtxoResponse, void>>()
+          isA<ReviewStep<ComposeDetachUtxoResponse, void>>()
               .having((s) => s.composeTransaction, 'composeTransaction',
                   mockComposeDetachUtxoResponse)
               .having((s) => s.fee, 'fee', 250)
@@ -266,7 +277,7 @@ void main() {
         feeState: const FeeState.success(mockFeeEstimates),
         feeOption: FeeOption.Medium(),
       ),
-      act: (bloc) => bloc.add(ComposeTransactionEvent(
+      act: (bloc) => bloc.add(FormSubmitted(
         params: composeTransactionParams,
         sourceAddress: 'source-address',
       )),
@@ -274,12 +285,12 @@ void main() {
         isA<ComposeDetachUtxoState>().having(
           (state) => state.submitState,
           'submitState',
-          isA<SubmitInitial>().having((s) => s.loading, 'loading', true),
+          isA<FormStep>().having((s) => s.loading, 'loading', true),
         ),
         isA<ComposeDetachUtxoState>().having(
           (state) => state.submitState,
           'submitState',
-          isA<SubmitInitial>()
+          isA<FormStep>()
               .having((s) => s.loading, 'loading', false)
               .having((s) => s.error, 'error', 'Compose error'),
         ),
@@ -293,7 +304,7 @@ void main() {
     blocTest<ComposeDetachUtxoBloc, ComposeDetachUtxoState>(
       'emits SubmitFinalizing when FinalizeTransactionEvent is added',
       build: () => composeDetachUtxoBloc,
-      act: (bloc) => bloc.add(FinalizeTransactionEvent(
+      act: (bloc) => bloc.add(ReviewSubmitted(
         composeTransaction: mockComposeDetachUtxoResponse,
         fee: fee,
       )),
@@ -301,7 +312,7 @@ void main() {
         isA<ComposeDetachUtxoState>().having(
           (state) => state.submitState,
           'submitState',
-          isA<SubmitFinalizing<ComposeDetachUtxoResponse>>()
+          isA<PasswordStep<ComposeDetachUtxoResponse>>()
               .having((s) => s.loading, 'loading', false)
               .having((s) => s.error, 'error', null)
               .having((s) => s.composeTransaction, 'composeTransaction',
@@ -340,7 +351,7 @@ void main() {
         when(() => mockSignAndBroadcastTransactionUseCase.call(
               source: destinationAddress,
               rawtransaction: txHex,
-              password: any(named: 'password'),
+              decryptionStrategy: Password(password),
               onSuccess: any(named: 'onSuccess'),
               onError: any(named: 'onError'),
             )).thenAnswer((invocation) async {
@@ -360,21 +371,21 @@ void main() {
         return composeDetachUtxoBloc;
       },
       seed: () => composeDetachUtxoBloc.state.copyWith(
-        submitState: SubmitFinalizing<ComposeDetachUtxoResponse>(
+        submitState: PasswordStep<ComposeDetachUtxoResponse>(
           loading: false,
           error: null,
           composeTransaction: mockComposeDetachUtxoResponse,
           fee: 250,
         ),
       ),
-      act: (bloc) => bloc.add(SignAndBroadcastTransactionEvent(
+      act: (bloc) => bloc.add(SignAndBroadcastFormSubmitted(
         password: password,
       )),
       expect: () => [
         isA<ComposeDetachUtxoState>().having(
           (state) => state.submitState,
           'submitState',
-          isA<SubmitFinalizing<ComposeDetachUtxoResponse>>()
+          isA<PasswordStep<ComposeDetachUtxoResponse>>()
               .having((s) => s.loading, 'loading', true)
               .having((s) => s.error, 'error', null)
               .having((s) => s.composeTransaction, 'composeTransaction',
@@ -425,12 +436,14 @@ void main() {
 
         // Mock the signAndBroadcastTransactionUseCase to call onError
         when(() => mockSignAndBroadcastTransactionUseCase.call(
+              
               source: any(named: 'source'),
               rawtransaction: any(named: 'rawtransaction'),
-              password: any(named: 'password'),
+              decryptionStrategy: Password(password),
               onSuccess: any(named: 'onSuccess'),
               onError: any(named: 'onError'),
             )).thenAnswer((invocation) async {
+              print("are we even ansewring");
           final onError = invocation.namedArguments[const Symbol('onError')]
               as Function(String);
           onError('Signing error');
@@ -439,21 +452,21 @@ void main() {
         return composeDetachUtxoBloc;
       },
       seed: () => composeDetachUtxoBloc.state.copyWith(
-        submitState: SubmitFinalizing<ComposeDetachUtxoResponse>(
+        submitState: PasswordStep<ComposeDetachUtxoResponse>(
           loading: false,
           error: null,
           composeTransaction: mockComposeDetachUtxoResponse,
           fee: 250,
         ),
       ),
-      act: (bloc) => bloc.add(SignAndBroadcastTransactionEvent(
+      act: (bloc) => bloc.add(SignAndBroadcastFormSubmitted(
         password: password,
       )),
       expect: () => [
         isA<ComposeDetachUtxoState>().having(
           (state) => state.submitState,
           'submitState',
-          isA<SubmitFinalizing<ComposeDetachUtxoResponse>>()
+          isA<PasswordStep<ComposeDetachUtxoResponse>>()
               .having((s) => s.loading, 'loading', true)
               .having((s) => s.error, 'error', null)
               .having((s) => s.composeTransaction, 'composeTransaction',
@@ -463,7 +476,7 @@ void main() {
         isA<ComposeDetachUtxoState>().having(
           (state) => state.submitState,
           'submitState',
-          isA<SubmitFinalizing<ComposeDetachUtxoResponse>>()
+          isA<PasswordStep<ComposeDetachUtxoResponse>>()
               .having((s) => s.loading, 'loading', false)
               .having((s) => s.error, 'error', 'Signing error')
               .having((s) => s.composeTransaction, 'composeTransaction',

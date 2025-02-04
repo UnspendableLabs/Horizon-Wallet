@@ -23,6 +23,9 @@ import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_f
 import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 
+import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
+import 'package:horizon/domain/repositories/settings_repository.dart';
+
 class ComposeDividendPageWrapper extends StatelessWidget {
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
   final String currentAddress;
@@ -42,6 +45,9 @@ class ComposeDividendPageWrapper extends StatelessWidget {
       success: (state) => BlocProvider(
         key: Key(currentAddress),
         create: (context) => ComposeDividendBloc(
+          passwordRequired:
+              GetIt.I<SettingsRepository>().requirePasswordForCryptoOperations,
+          inMemoryKeyRepository: GetIt.I.get<InMemoryKeyRepository>(),
           composeRepository: GetIt.I.get<ComposeRepository>(),
           analyticsService: GetIt.I.get<AnalyticsService>(),
           fetchDividendFormDataUseCase:
@@ -52,7 +58,7 @@ class ComposeDividendPageWrapper extends StatelessWidget {
           writelocalTransactionUseCase:
               GetIt.I.get<WriteLocalTransactionUseCase>(),
           logger: GetIt.I.get<Logger>(),
-        )..add(FetchFormData(
+        )..add(AsyncFormDependenciesRequested(
             currentAddress: currentAddress, assetName: assetName)),
         child: ComposeDividendPage(
           address: currentAddress,
@@ -116,7 +122,7 @@ class ComposeDividendPageState extends State<ComposeDividendPage> {
           dashboardActivityFeedBloc: widget.dashboardActivityFeedBloc,
           onFeeChange: (fee) => context
               .read<ComposeDividendBloc>()
-              .add(ChangeFeeOption(value: fee)),
+              .add(FeeOptionChanged(value: fee)),
           buildInitialFormFields: (state, loading, formKey) =>
               _buildInitialFormFields(state, loading, formKey),
           onInitialCancel: () => _handleInitialCancel(),
@@ -397,7 +403,7 @@ class ComposeDividendPageState extends State<ComposeDividendPage> {
       final quantity = getQuantityForDivisibility(
           inputQuantity: quantityPerUnitController.text,
           divisible: dividendBalance!.assetInfo.divisible);
-      context.read<ComposeDividendBloc>().add(ComposeTransactionEvent(
+      context.read<ComposeDividendBloc>().add(FormSubmitted(
             sourceAddress: widget.address,
             params: ComposeDividendEventParams(
               assetName: widget.assetName,
@@ -460,7 +466,7 @@ class ComposeDividendPageState extends State<ComposeDividendPage> {
   }
 
   void _onConfirmationBack() {
-    context.read<ComposeDividendBloc>().add(FetchFormData(
+    context.read<ComposeDividendBloc>().add(AsyncFormDependenciesRequested(
         currentAddress: widget.address, assetName: widget.assetName));
   }
 
@@ -468,7 +474,7 @@ class ComposeDividendPageState extends State<ComposeDividendPage> {
       dynamic composeTransaction, int fee, GlobalKey<FormState> formKey) {
     if (formKey.currentState!.validate()) {
       context.read<ComposeDividendBloc>().add(
-            FinalizeTransactionEvent<ComposeDividendResponse>(
+            ReviewSubmitted<ComposeDividendResponse>(
               composeTransaction: composeTransaction,
               fee: fee,
             ),
@@ -479,7 +485,7 @@ class ComposeDividendPageState extends State<ComposeDividendPage> {
   void _onFinalizeSubmit(String password, GlobalKey<FormState> formKey) {
     if (formKey.currentState!.validate()) {
       context.read<ComposeDividendBloc>().add(
-            SignAndBroadcastTransactionEvent(
+            SignAndBroadcastFormSubmitted(
               password: password,
             ),
           );
@@ -487,7 +493,7 @@ class ComposeDividendPageState extends State<ComposeDividendPage> {
   }
 
   void _onFinalizeCancel() {
-    context.read<ComposeDividendBloc>().add(FetchFormData(
+    context.read<ComposeDividendBloc>().add(AsyncFormDependenciesRequested(
         currentAddress: widget.address, assetName: widget.assetName));
   }
 }

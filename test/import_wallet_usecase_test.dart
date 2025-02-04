@@ -9,6 +9,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
+import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/entities/account.dart';
@@ -30,6 +31,8 @@ class MockAddressRepository extends Mock implements AddressRepository {}
 
 class MockConfig extends Mock implements Config {}
 
+class MockInMemoryKeyRepository extends Mock implements InMemoryKeyRepository {}
+
 // Fake classes for fallback values
 class FakeWallet extends Fake implements Wallet {}
 
@@ -44,6 +47,7 @@ void main() {
   late MockWalletRepository mockWalletRepository;
   late MockEncryptionService mockEncryptionService;
   late MockAddressService mockAddressService;
+  late MockInMemoryKeyRepository mockInMemoryKeyRepository;
 
   late MockConfig mockConfig;
   late MockWalletService mockWalletService;
@@ -63,8 +67,10 @@ void main() {
     mockAddressService = MockAddressService();
     mockConfig = MockConfig();
     mockWalletService = MockWalletService();
+    mockInMemoryKeyRepository = MockInMemoryKeyRepository();
 
     importWalletUseCase = ImportWalletUseCase(
+      inMemoryKeyRepository: mockInMemoryKeyRepository,
       addressRepository: mockAddressRepository,
       accountRepository: mockAccountRepository,
       walletRepository: mockWalletRepository,
@@ -88,6 +94,7 @@ void main() {
             encryptedPrivKey: 'encrypted',
             chainCodeHex: 'chainCode');
         const decryptedPrivKey = 'decrypted-private-key';
+        const decryptionKey = "decryption-key";
 
         when(() => mockConfig.network).thenReturn(network);
         when(() => mockWalletService.deriveRoot(any(), any()))
@@ -98,6 +105,11 @@ void main() {
             .thenAnswer((_) async => wallet);
         when(() => mockEncryptionService.decrypt(any(), any()))
             .thenAnswer((_) async => decryptedPrivKey);
+
+        when(() =>
+                mockEncryptionService.getDecryptionKey("encrypted", password))
+            .thenAnswer((_) async => decryptionKey);
+
         when(() => mockAddressService.deriveAddressSegwit(
                 privKey: any(named: 'privKey'),
                 chainCodeHex: any(named: 'chainCodeHex'),
@@ -137,11 +149,15 @@ void main() {
                       index: 1, address: "1M...", accountUuid: 'account-uuid')
                 ]);
         when(() => mockWalletRepository.insert(any())).thenAnswer((_) async {});
+        when(() => mockWalletRepository.getCurrentWallet())
+            .thenAnswer((_) async => wallet);
         when(() => mockAccountRepository.insert(any()))
             .thenAnswer((_) async {});
         when(() => mockAddressRepository.insert(any()))
             .thenAnswer((_) async {});
         when(() => mockAddressRepository.insertMany(any()))
+            .thenAnswer((_) async {});
+        when(() => mockInMemoryKeyRepository.set(key: decryptionKey))
             .thenAnswer((_) async {});
 
         bool successCallbackInvoked = false;

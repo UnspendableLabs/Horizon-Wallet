@@ -21,6 +21,9 @@ import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_f
 import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 
+import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
+import 'package:horizon/domain/repositories/settings_repository.dart';
+
 class ComposeSweepPageWrapper extends StatelessWidget {
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
   final String currentAddress;
@@ -38,6 +41,10 @@ class ComposeSweepPageWrapper extends StatelessWidget {
       success: (state) => BlocProvider(
         key: Key(currentAddress),
         create: (context) => ComposeSweepBloc(
+          inMemoryKeyRepository: GetIt.I.get<InMemoryKeyRepository>(),
+          // TODO: factor into settings repository...
+          passwordRequired:
+              GetIt.I<SettingsRepository>().requirePasswordForCryptoOperations,
           composeRepository: GetIt.I.get<ComposeRepository>(),
           analyticsService: GetIt.I.get<AnalyticsService>(),
           getFeeEstimatesUseCase: GetIt.I.get<GetFeeEstimatesUseCase>(),
@@ -48,7 +55,7 @@ class ComposeSweepPageWrapper extends StatelessWidget {
               GetIt.I.get<WriteLocalTransactionUseCase>(),
           estimateXcpFeeRepository: GetIt.I.get<EstimateXcpFeeRepository>(),
           logger: GetIt.I.get<Logger>(),
-        )..add(FetchFormData(currentAddress: currentAddress)),
+        )..add(AsyncFormDependenciesRequested(currentAddress: currentAddress)),
         child: ComposeSweepPage(
           address: currentAddress,
           dashboardActivityFeedBloc: dashboardActivityFeedBloc,
@@ -101,8 +108,9 @@ class ComposeSweepPageState extends State<ComposeSweepPage> {
       builder: (context, state) {
         return ComposeBasePage<ComposeSweepBloc, ComposeSweepState>(
           dashboardActivityFeedBloc: widget.dashboardActivityFeedBloc,
-          onFeeChange: (fee) =>
-              context.read<ComposeSweepBloc>().add(ChangeFeeOption(value: fee)),
+          onFeeChange: (fee) => context
+              .read<ComposeSweepBloc>()
+              .add(FeeOptionChanged(value: fee)),
           buildInitialFormFields: (state, loading, formKey) =>
               _buildInitialFormFields(state, loading, formKey),
           onInitialCancel: () => _handleInitialCancel(),
@@ -243,7 +251,7 @@ class ComposeSweepPageState extends State<ComposeSweepPage> {
 
     if (formKey.currentState!.validate()) {
       context.read<ComposeSweepBloc>().add(
-            ComposeTransactionEvent(
+            FormSubmitted(
               sourceAddress: widget.address,
               params: ComposeSweepEventParams(
                 destination: destinationController.text,
@@ -303,14 +311,14 @@ class ComposeSweepPageState extends State<ComposeSweepPage> {
   void _onConfirmationBack() {
     context
         .read<ComposeSweepBloc>()
-        .add(FetchFormData(currentAddress: widget.address));
+        .add(AsyncFormDependenciesRequested(currentAddress: widget.address));
   }
 
   void _onConfirmationContinue(
       dynamic composeTransaction, int fee, GlobalKey<FormState> formKey) {
     if (formKey.currentState!.validate()) {
       context.read<ComposeSweepBloc>().add(
-            FinalizeTransactionEvent<ComposeSweepResponse>(
+            ReviewSubmitted<ComposeSweepResponse>(
               composeTransaction: composeTransaction,
               fee: fee,
             ),
@@ -321,7 +329,7 @@ class ComposeSweepPageState extends State<ComposeSweepPage> {
   void _onFinalizeSubmit(String password, GlobalKey<FormState> formKey) {
     if (formKey.currentState!.validate()) {
       context.read<ComposeSweepBloc>().add(
-            SignAndBroadcastTransactionEvent(
+            SignAndBroadcastFormSubmitted(
               password: password,
             ),
           );
@@ -331,6 +339,6 @@ class ComposeSweepPageState extends State<ComposeSweepPage> {
   void _onFinalizeCancel() {
     context
         .read<ComposeSweepBloc>()
-        .add(FetchFormData(currentAddress: widget.address));
+        .add(AsyncFormDependenciesRequested(currentAddress: widget.address));
   }
 }

@@ -22,6 +22,8 @@ import 'package:horizon/presentation/screens/compose_attach_utxo/bloc/compose_at
 import 'package:horizon/presentation/screens/compose_attach_utxo/bloc/compose_attach_utxo_state.dart';
 import 'package:horizon/presentation/screens/compose_attach_utxo/usecase/fetch_form_data.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:horizon/domain/entities/decryption_strategy.dart';
+import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 
 class MockComposeRepository extends Mock implements ComposeRepository {}
 
@@ -83,6 +85,8 @@ class FakeVirtualSize extends Fake implements VirtualSize {
   });
 }
 
+class MockInMemoryKeyRepository extends Mock implements InMemoryKeyRepository {}
+
 void main() {
   late ComposeAttachUtxoBloc composeAttachUtxoBloc;
   late MockComposeRepository mockComposeRepository;
@@ -97,6 +101,7 @@ void main() {
   late MockBlockRepository mockBlockRepository;
   late MockCacheProvider mockCacheProvider;
   late MockErrorService mockErrorService;
+  late MockInMemoryKeyRepository mockInMemoryKeyRepository;
   const mockFeeEstimates = FeeEstimates(fast: 5, medium: 3, slow: 1);
   final mockBalance = Balance(
     asset: 'ASSET_NAME',
@@ -119,12 +124,12 @@ void main() {
     registerFallbackValue(FeeOption.Medium());
     registerFallbackValue(composeTransactionParams);
     registerFallbackValue(
-      ComposeTransactionEvent(
+      FormSubmitted(
         params: composeTransactionParams,
         sourceAddress: 'source-address',
       ),
     );
-    registerFallbackValue(SignAndBroadcastTransactionEvent(
+    registerFallbackValue(SignAndBroadcastFormSubmitted(
       password: 'password',
     ));
     registerFallbackValue(ComposeAttachUtxoParams(
@@ -148,11 +153,14 @@ void main() {
     mockBlockRepository = MockBlockRepository();
     mockCacheProvider = MockCacheProvider();
     mockErrorService = MockErrorService();
+    mockInMemoryKeyRepository = MockInMemoryKeyRepository();
 
     // Register the ErrorService mock with GetIt
     GetIt.I.registerSingleton<ErrorService>(mockErrorService);
 
     composeAttachUtxoBloc = ComposeAttachUtxoBloc(
+      passwordRequired: true,
+      inMemoryKeyRepository: mockInMemoryKeyRepository,
       composeRepository: mockComposeRepository,
       analyticsService: mockAnalyticsService,
       logger: mockLogger,
@@ -190,7 +198,7 @@ void main() {
         return composeAttachUtxoBloc;
       },
       act: (bloc) {
-        bloc.add(FetchFormData(
+        bloc.add(AsyncFormDependenciesRequested(
           currentAddress: 'test-address',
         ));
       },
@@ -198,7 +206,7 @@ void main() {
         composeAttachUtxoBloc.state.copyWith(
           balancesState: const BalancesState.loading(),
           feeState: const FeeState.loading(),
-          submitState: const SubmitInitial(),
+          submitState: const FormStep(),
           xcpFeeEstimate: '',
         ),
         composeAttachUtxoBloc.state.copyWith(
@@ -224,7 +232,7 @@ void main() {
         return composeAttachUtxoBloc;
       },
       act: (bloc) {
-        bloc.add(FetchFormData(
+        bloc.add(AsyncFormDependenciesRequested(
           currentAddress: 'test-address',
         ));
       },
@@ -232,7 +240,7 @@ void main() {
         composeAttachUtxoBloc.state.copyWith(
           balancesState: const BalancesState.loading(),
           feeState: const FeeState.loading(),
-          submitState: const SubmitInitial(),
+          submitState: const FormStep(),
           xcpFeeEstimate: '',
         ),
         composeAttachUtxoBloc.state.copyWith(
@@ -267,7 +275,7 @@ void main() {
         return composeAttachUtxoBloc;
       },
       act: (bloc) {
-        bloc.add(FetchFormData(
+        bloc.add(AsyncFormDependenciesRequested(
           currentAddress: 'test-address',
         ));
       },
@@ -275,7 +283,7 @@ void main() {
         composeAttachUtxoBloc.state.copyWith(
           balancesState: const BalancesState.loading(),
           feeState: const FeeState.loading(),
-          submitState: const SubmitInitial(),
+          submitState: const FormStep(),
           xcpFeeEstimate: '',
         ),
         composeAttachUtxoBloc.state.copyWith(
@@ -297,7 +305,7 @@ void main() {
         return composeAttachUtxoBloc;
       },
       act: (bloc) {
-        bloc.add(FetchFormData(
+        bloc.add(AsyncFormDependenciesRequested(
           currentAddress: 'test-address',
         ));
       },
@@ -305,7 +313,7 @@ void main() {
         composeAttachUtxoBloc.state.copyWith(
           balancesState: const BalancesState.loading(),
           feeState: const FeeState.loading(),
-          submitState: const SubmitInitial(),
+          submitState: const FormStep(),
         ),
         composeAttachUtxoBloc.state.copyWith(
           feeState: const FeeState.error('Failed to fetch fee estimates'),
@@ -325,7 +333,7 @@ void main() {
         return composeAttachUtxoBloc;
       },
       act: (bloc) {
-        bloc.add(FetchFormData(
+        bloc.add(AsyncFormDependenciesRequested(
           currentAddress: 'test-address',
         ));
       },
@@ -333,7 +341,7 @@ void main() {
         composeAttachUtxoBloc.state.copyWith(
           balancesState: const BalancesState.loading(),
           feeState: const FeeState.loading(),
-          submitState: const SubmitInitial(),
+          submitState: const FormStep(),
         ),
         composeAttachUtxoBloc.state.copyWith(
           balancesState:
@@ -347,7 +355,7 @@ void main() {
     blocTest<ComposeAttachUtxoBloc, ComposeAttachUtxoState>(
       'emits new state with updated fee option',
       build: () => composeAttachUtxoBloc,
-      act: (bloc) => bloc.add(ChangeFeeOption(value: FeeOption.Fast())),
+      act: (bloc) => bloc.add(FeeOptionChanged(value: FeeOption.Fast())),
       expect: () => [
         isA<ComposeAttachUtxoState>().having(
           (state) => state.feeOption,
@@ -384,7 +392,7 @@ void main() {
         feeState: const FeeState.success(mockFeeEstimates),
         feeOption: FeeOption.Medium(),
       ),
-      act: (bloc) => bloc.add(ComposeTransactionEvent(
+      act: (bloc) => bloc.add(FormSubmitted(
         params: composeTransactionParams,
         sourceAddress: 'source-address',
       )),
@@ -392,12 +400,12 @@ void main() {
         isA<ComposeAttachUtxoState>().having(
           (state) => state.submitState,
           'submitState',
-          isA<SubmitInitial>().having((s) => s.loading, 'loading', true),
+          isA<FormStep>().having((s) => s.loading, 'loading', true),
         ),
         isA<ComposeAttachUtxoState>().having(
           (state) => state.submitState,
           'submitState',
-          isA<SubmitComposingTransaction<ComposeAttachUtxoResponse, void>>()
+          isA<ReviewStep<ComposeAttachUtxoResponse, void>>()
               .having((s) => s.composeTransaction, 'composeTransaction',
                   mockComposeAttachUtxoResponse)
               .having((s) => s.fee, 'fee', 250)
@@ -424,7 +432,7 @@ void main() {
         feeState: const FeeState.success(mockFeeEstimates),
         feeOption: FeeOption.Medium(),
       ),
-      act: (bloc) => bloc.add(ComposeTransactionEvent(
+      act: (bloc) => bloc.add(FormSubmitted(
         params: composeTransactionParams,
         sourceAddress: 'source-address',
       )),
@@ -432,12 +440,12 @@ void main() {
         isA<ComposeAttachUtxoState>().having(
           (state) => state.submitState,
           'submitState',
-          isA<SubmitInitial>().having((s) => s.loading, 'loading', true),
+          isA<FormStep>().having((s) => s.loading, 'loading', true),
         ),
         isA<ComposeAttachUtxoState>().having(
           (state) => state.submitState,
           'submitState',
-          isA<SubmitInitial>()
+          isA<FormStep>()
               .having((s) => s.loading, 'loading', false)
               .having((s) => s.error, 'error', 'Compose error'),
         ),
@@ -452,7 +460,7 @@ void main() {
     blocTest<ComposeAttachUtxoBloc, ComposeAttachUtxoState>(
       'emits SubmitFinalizing when FinalizeTransactionEvent is added',
       build: () => composeAttachUtxoBloc,
-      act: (bloc) => bloc.add(FinalizeTransactionEvent(
+      act: (bloc) => bloc.add(ReviewSubmitted(
         composeTransaction: mockComposeAttachUtxoResponse,
         fee: fee,
       )),
@@ -460,7 +468,7 @@ void main() {
         isA<ComposeAttachUtxoState>().having(
           (state) => state.submitState,
           'submitState',
-          isA<SubmitFinalizing<ComposeAttachUtxoResponse>>()
+          isA<PasswordStep<ComposeAttachUtxoResponse>>()
               .having((s) => s.loading, 'loading', false)
               .having((s) => s.error, 'error', null)
               .having((s) => s.composeTransaction, 'composeTransaction',
@@ -483,7 +491,7 @@ void main() {
         when(() => mockSignAndBroadcastTransactionUseCase.call(
               source: sourceAddress,
               rawtransaction: txHex,
-              password: any(named: 'password'),
+              decryptionStrategy: Password(password),
               onSuccess: any(named: 'onSuccess'),
               onError: any(named: 'onError'),
             )).thenAnswer((invocation) async {
@@ -498,21 +506,21 @@ void main() {
         when(() => mockCacheProvider.setObject(sourceAddress, any()))
             .thenAnswer((_) async {});
         when(() => mockAnalyticsService.trackAnonymousEvent(
-              'broadcast_tx_attach_utxo',
+              'broadcast_tx_attach_to_utxo',
               properties: any(named: 'properties'),
             )).thenAnswer((_) async {});
 
         return composeAttachUtxoBloc;
       },
       seed: () => composeAttachUtxoBloc.state.copyWith(
-        submitState: SubmitFinalizing<ComposeAttachUtxoResponse>(
+        submitState: PasswordStep<ComposeAttachUtxoResponse>(
           loading: false,
           error: null,
           composeTransaction: mockComposeAttachUtxoResponse,
           fee: 250,
         ),
       ),
-      act: (bloc) => bloc.add(SignAndBroadcastTransactionEvent(
+      act: (bloc) => bloc.add(SignAndBroadcastFormSubmitted(
         password: password,
       )),
       wait: const Duration(milliseconds: 100),
@@ -520,7 +528,7 @@ void main() {
         isA<ComposeAttachUtxoState>().having(
           (state) => state.submitState,
           'submitState',
-          isA<SubmitFinalizing<ComposeAttachUtxoResponse>>()
+          isA<PasswordStep<ComposeAttachUtxoResponse>>()
               .having((s) => s.loading, 'loading', true)
               .having((s) => s.error, 'error', null)
               .having((s) => s.composeTransaction, 'composeTransaction',
@@ -537,7 +545,7 @@ void main() {
       ],
       verify: (_) {
         verify(() => mockAnalyticsService.trackAnonymousEvent(
-              'broadcast_tx_attach_utxo',
+              'broadcast_tx_attach_to_utxo',
               properties: any(named: 'properties'),
             )).called(1);
 
@@ -559,7 +567,7 @@ void main() {
         when(() => mockSignAndBroadcastTransactionUseCase.call(
               source: any(named: 'source'),
               rawtransaction: any(named: 'rawtransaction'),
-              password: any(named: 'password'),
+              decryptionStrategy: Password(password),
               onSuccess: any(named: 'onSuccess'),
               onError: any(named: 'onError'),
             )).thenAnswer((invocation) async {
@@ -571,21 +579,21 @@ void main() {
         return composeAttachUtxoBloc;
       },
       seed: () => composeAttachUtxoBloc.state.copyWith(
-        submitState: SubmitFinalizing<ComposeAttachUtxoResponse>(
+        submitState: PasswordStep<ComposeAttachUtxoResponse>(
           loading: false,
           error: null,
           composeTransaction: mockComposeAttachUtxoResponse,
           fee: 250,
         ),
       ),
-      act: (bloc) => bloc.add(SignAndBroadcastTransactionEvent(
+      act: (bloc) => bloc.add(SignAndBroadcastFormSubmitted(
         password: password,
       )),
       expect: () => [
         isA<ComposeAttachUtxoState>().having(
           (state) => state.submitState,
           'submitState',
-          isA<SubmitFinalizing<ComposeAttachUtxoResponse>>()
+          isA<PasswordStep<ComposeAttachUtxoResponse>>()
               .having((s) => s.loading, 'loading', true)
               .having((s) => s.error, 'error', null)
               .having((s) => s.composeTransaction, 'composeTransaction',
@@ -595,7 +603,7 @@ void main() {
         isA<ComposeAttachUtxoState>().having(
           (state) => state.submitState,
           'submitState',
-          isA<SubmitFinalizing<ComposeAttachUtxoResponse>>()
+          isA<PasswordStep<ComposeAttachUtxoResponse>>()
               .having((s) => s.loading, 'loading', false)
               .having((s) => s.error, 'error', 'Signing error')
               .having((s) => s.composeTransaction, 'composeTransaction',
@@ -612,7 +620,7 @@ void main() {
       build: () {
         // const source = 'source-address';
         when(() => mockSignAndBroadcastTransactionUseCase.call(
-              password: any(named: 'password'),
+              decryptionStrategy: Password("password"),
               source: any(named: 'source'),
               rawtransaction: any(named: 'rawtransaction'),
               onSuccess: any(named: 'onSuccess'),
@@ -635,7 +643,7 @@ void main() {
         return composeAttachUtxoBloc;
       },
       seed: () => ComposeAttachUtxoState(
-        submitState: SubmitFinalizing<ComposeAttachUtxoResponse>(
+        submitState: PasswordStep<ComposeAttachUtxoResponse>(
           loading: false,
           error: null,
           composeTransaction: mockComposeAttachUtxoResponse,
@@ -647,7 +655,7 @@ void main() {
         xcpFeeEstimate: '',
       ),
       act: (bloc) => bloc.add(
-        SignAndBroadcastTransactionEvent(password: 'password'),
+        SignAndBroadcastFormSubmitted(password: 'password'),
       ),
       verify: (_) {
         verify(() => mockCacheProvider.getValue('source')).called(1);
@@ -666,7 +674,7 @@ void main() {
       'should initialize cache when no previous hashes exist',
       build: () {
         when(() => mockSignAndBroadcastTransactionUseCase.call(
-              password: any(named: 'password'),
+              decryptionStrategy: Password("password"),
               source: any(named: 'source'),
               rawtransaction: any(named: 'rawtransaction'),
               onSuccess: any(named: 'onSuccess'),
@@ -688,7 +696,7 @@ void main() {
         return composeAttachUtxoBloc;
       },
       seed: () => ComposeAttachUtxoState(
-        submitState: SubmitFinalizing<ComposeAttachUtxoResponse>(
+        submitState: PasswordStep<ComposeAttachUtxoResponse>(
           loading: false,
           error: null,
           composeTransaction: mockComposeAttachUtxoResponse,
@@ -700,7 +708,7 @@ void main() {
         xcpFeeEstimate: '',
       ),
       act: (bloc) => bloc.add(
-        SignAndBroadcastTransactionEvent(password: 'password'),
+        SignAndBroadcastFormSubmitted(password: 'password'),
       ),
       verify: (_) {
         verify(() => mockCacheProvider.getValue('source')).called(1);

@@ -22,6 +22,9 @@ import 'package:horizon/presentation/screens/compose_dividend/bloc/compose_divid
 import 'package:horizon/presentation/screens/compose_dividend/usecase/fetch_form_data.dart';
 import 'package:mocktail/mocktail.dart';
 
+import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
+import 'package:horizon/domain/entities/decryption_strategy.dart';
+
 // Mock classes
 class MockComposeRepository extends Mock implements ComposeRepository {}
 
@@ -49,6 +52,8 @@ class MockComposeDividendResponseParams extends Mock
 
 class MockErrorService extends Mock implements ErrorService {}
 
+class MockInMemoryKeyRepository extends Mock implements InMemoryKeyRepository {}
+
 class FakeVirtualSize extends Fake implements VirtualSize {
   @override
   final int virtualSize;
@@ -70,6 +75,7 @@ void main() {
   late MockWriteLocalTransactionUseCase mockWriteLocalTransactionUseCase;
   late MockLogger mockLogger;
   late MockErrorService mockErrorService;
+  late MockInMemoryKeyRepository mockInMemoryKeyRepository;
 
   const mockFeeEstimates = FeeEstimates(fast: 5, medium: 3, slow: 1);
   final mockBalance = Balance(
@@ -95,8 +101,7 @@ void main() {
   setUpAll(() {
     registerFallbackValue(FeeOption.Medium());
     registerFallbackValue(composeTransactionParams);
-    registerFallbackValue(
-        SignAndBroadcastTransactionEvent(password: 'password'));
+    registerFallbackValue(SignAndBroadcastFormSubmitted(password: 'password'));
   });
 
   setUp(() {
@@ -109,11 +114,14 @@ void main() {
     mockWriteLocalTransactionUseCase = MockWriteLocalTransactionUseCase();
     mockLogger = MockLogger();
     mockErrorService = MockErrorService();
+    mockInMemoryKeyRepository = MockInMemoryKeyRepository();
 
     // Register the ErrorService mock with GetIt
     GetIt.I.registerSingleton<ErrorService>(mockErrorService);
 
     composeDividendBloc = ComposeDividendBloc(
+      passwordRequired: true,
+      inMemoryKeyRepository: mockInMemoryKeyRepository,
       fetchDividendFormDataUseCase: mockFetchDividendFormDataUseCase,
       composeTransactionUseCase: mockComposeTransactionUseCase,
       composeRepository: mockComposeRepository,
@@ -147,14 +155,14 @@ void main() {
         return composeDividendBloc;
       },
       act: (bloc) {
-        bloc.add(FetchFormData(
+        bloc.add(AsyncFormDependenciesRequested(
             currentAddress: 'test-address', assetName: 'ASSET_NAME'));
       },
       expect: () => [
         composeDividendBloc.state.copyWith(
           balancesState: const BalancesState.loading(),
           feeState: const FeeState.loading(),
-          submitState: const SubmitInitial(),
+          submitState: const FormStep(),
           assetState: const AssetState.loading(),
           dividendXcpFeeState: const DividendXcpFeeState.loading(),
         ),
@@ -175,14 +183,14 @@ void main() {
         return composeDividendBloc;
       },
       act: (bloc) {
-        bloc.add(FetchFormData(
+        bloc.add(AsyncFormDependenciesRequested(
             currentAddress: 'test-address', assetName: 'ASSET_NAME'));
       },
       expect: () => [
         composeDividendBloc.state.copyWith(
           balancesState: const BalancesState.loading(),
           feeState: const FeeState.loading(),
-          submitState: const SubmitInitial(),
+          submitState: const FormStep(),
           assetState: const AssetState.loading(),
         ),
         composeDividendBloc.state.copyWith(
@@ -225,7 +233,7 @@ void main() {
         when(() => mockSignAndBroadcastTransactionUseCase.call(
               source: sourceAddress,
               rawtransaction: txHex,
-              password: password,
+              decryptionStrategy: Password(password),
               onSuccess: any(named: 'onSuccess'),
               onError: any(named: 'onError'),
             )).thenAnswer((invocation) async {
@@ -244,7 +252,7 @@ void main() {
         return composeDividendBloc;
       },
       seed: () => composeDividendBloc.state.copyWith(
-        submitState: SubmitFinalizing<ComposeDividendResponse>(
+        submitState: PasswordStep<ComposeDividendResponse>(
           loading: false,
           error: null,
           composeTransaction: mockComposeDividendResponse,
@@ -252,12 +260,12 @@ void main() {
         ),
       ),
       act: (bloc) =>
-          bloc.add(SignAndBroadcastTransactionEvent(password: password)),
+          bloc.add(SignAndBroadcastFormSubmitted(password: password)),
       expect: () => [
         isA<ComposeDividendState>().having(
           (state) => state.submitState,
           'submitState',
-          isA<SubmitFinalizing<ComposeDividendResponse>>()
+          isA<PasswordStep<ComposeDividendResponse>>()
               .having((s) => s.loading, 'loading', true)
               .having((s) => s.error, 'error', null)
               .having((s) => s.composeTransaction, 'composeTransaction',
@@ -307,7 +315,7 @@ void main() {
         feeState: const FeeState.success(mockFeeEstimates),
         feeOption: FeeOption.Medium(),
       ),
-      act: (bloc) => bloc.add(ComposeTransactionEvent(
+      act: (bloc) => bloc.add(FormSubmitted(
         params: ComposeDividendEventParams(
           assetName: composeTransactionParams.asset,
           quantityPerUnit: composeTransactionParams.quantityPerUnit,
@@ -319,12 +327,12 @@ void main() {
         isA<ComposeDividendState>().having(
           (state) => state.submitState,
           'submitState',
-          isA<SubmitInitial>().having((s) => s.loading, 'loading', true),
+          isA<FormStep>().having((s) => s.loading, 'loading', true),
         ),
         isA<ComposeDividendState>().having(
           (state) => state.submitState,
           'submitState',
-          isA<SubmitComposingTransaction<ComposeDividendResponse, void>>()
+          isA<ReviewStep<ComposeDividendResponse, void>>()
               .having((s) => s.composeTransaction, 'composeTransaction',
                   mockComposeDividendResponse)
               .having((s) => s.fee, 'fee', 250)
@@ -354,7 +362,7 @@ void main() {
         feeState: const FeeState.success(mockFeeEstimates),
       ),
       act: (bloc) => bloc.add(
-        ComposeTransactionEvent(
+        FormSubmitted(
           sourceAddress: 'source-address',
           params: ComposeDividendEventParams(
             assetName: composeTransactionParams.asset,
@@ -367,14 +375,14 @@ void main() {
         isA<ComposeDividendState>().having(
           (state) => state.submitState,
           'submitState',
-          isA<SubmitInitial>()
+          isA<FormStep>()
               .having((s) => s.loading, 'loading', true)
               .having((s) => s.error, 'error', null),
         ),
         isA<ComposeDividendState>().having(
           (state) => state.submitState,
           'submitState',
-          isA<SubmitInitial>()
+          isA<FormStep>()
               .having((s) => s.loading, 'loading', false)
               .having((s) => s.error, 'error', 'Failed to compose transaction'),
         ),

@@ -30,7 +30,7 @@ class ComposeSendState with _$ComposeSendState, ComposeStateBase {
         feeState: const FeeState.initial(),
         balancesState: const BalancesState.initial(),
         feeOption: Medium(),
-        submitState: const SubmitInitial(),
+        submitState: const FormStep(),
         maxValue: const MaxValueState.initial(),
         sendMax: false,
         quantity: '',

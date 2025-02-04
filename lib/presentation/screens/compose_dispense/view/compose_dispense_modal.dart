@@ -27,6 +27,8 @@ import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_f
 import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:rational/rational.dart';
+import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
+import 'package:horizon/domain/repositories/settings_repository.dart';
 
 class ComposeDispensePageWrapper extends StatelessWidget {
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
@@ -46,6 +48,9 @@ class ComposeDispensePageWrapper extends StatelessWidget {
       success: (state) => BlocProvider(
         key: Key(currentAddress),
         create: (context) => ComposeDispenseBloc(
+          passwordRequired:
+              GetIt.I<SettingsRepository>().requirePasswordForCryptoOperations,
+          inMemoryKeyRepository: GetIt.I.get<InMemoryKeyRepository>(),
           logger: GetIt.I.get<Logger>(),
           estimateDispensesUseCase: GetIt.I.get<EstimateDispensesUseCase>(),
           fetchOpenDispensersOnAddressUseCase:
@@ -60,7 +65,7 @@ class ComposeDispensePageWrapper extends StatelessWidget {
               GetIt.I.get<FetchDispenseFormDataUseCase>(),
           analyticsService: GetIt.I.get<AnalyticsService>(),
           composeRepository: GetIt.I.get<ComposeRepository>(),
-        )..add(FetchFormData(
+        )..add(AsyncFormDependenciesRequested(
             currentAddress: currentAddress,
             initialDispenserAddress: initialDispenserAddress)),
         child: ComposeDispensePage(
@@ -135,7 +140,7 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
     return ComposeBasePage<ComposeDispenseBloc, ComposeDispenseState>(
       dashboardActivityFeedBloc: widget.dashboardActivityFeedBloc,
       onFeeChange: (fee) =>
-          context.read<ComposeDispenseBloc>().add(ChangeFeeOption(value: fee)),
+          context.read<ComposeDispenseBloc>().add(FeeOptionChanged(value: fee)),
       buildInitialFormFields: (state, loading, formKey) =>
           _buildInitialFormFields(state, loading, formKey),
       onInitialCancel: () => _handleInitialCancel(),
@@ -164,7 +169,7 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
       String dispenser = dispenserController.text;
 
       // Dispatch the event with the calculated values
-      context.read<ComposeDispenseBloc>().add(ComposeTransactionEvent(
+      context.read<ComposeDispenseBloc>().add(FormSubmitted(
             sourceAddress: widget.address,
             params: ComposeDispenseEventParams(
                 address: widget.address,
@@ -807,7 +812,7 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
   }
 
   void _onConfirmationBack() {
-    context.read<ComposeDispenseBloc>().add(FetchFormData(
+    context.read<ComposeDispenseBloc>().add(AsyncFormDependenciesRequested(
           currentAddress: widget.address,
           initialDispenserAddress: dispenserController.text,
         ));
@@ -817,7 +822,7 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
       dynamic composeTransaction, int fee, GlobalKey<FormState> formKey) {
     if (formKey.currentState!.validate()) {
       context.read<ComposeDispenseBloc>().add(
-            FinalizeTransactionEvent<ComposeDispenseResponse>(
+            ReviewSubmitted<ComposeDispenseResponse>(
               composeTransaction: composeTransaction,
               fee: fee,
             ),
@@ -828,7 +833,7 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
   void _onFinalizeSubmit(String password, GlobalKey<FormState> formKey) {
     if (formKey.currentState!.validate()) {
       context.read<ComposeDispenseBloc>().add(
-            SignAndBroadcastTransactionEvent(
+            SignAndBroadcastFormSubmitted(
               password: password,
             ),
           );
@@ -836,7 +841,7 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
   }
 
   void _onFinalizeCancel() {
-    context.read<ComposeDispenseBloc>().add(FetchFormData(
+    context.read<ComposeDispenseBloc>().add(AsyncFormDependenciesRequested(
           currentAddress: widget.address,
           initialDispenserAddress: dispenserController.text,
         ));

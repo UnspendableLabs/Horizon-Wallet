@@ -10,11 +10,13 @@ import 'package:horizon/domain/entities/address_rpc.dart';
 
 
 class GetAddressesForm extends StatelessWidget {
+  final bool passwordRequired;
   final List<Account> accounts;
   final void Function(List<AddressRpc>) onSuccess;
 
   const GetAddressesForm({
     super.key,
+    required this.passwordRequired,
     required this.accounts,
     required this.onSuccess,
   });
@@ -111,18 +113,19 @@ class GetAddressesForm extends StatelessWidget {
                 ],
 
                 const SizedBox(height: 20),
-                TextField(
-                  onChanged: (password) => context
-                      .read<GetAddressesBloc>()
-                      .add(PasswordChanged(password)),
-                  decoration: InputDecoration(
-                    labelText: 'Password',
-                    errorText: state.password.displayError == null
-                        ? null
-                        : 'Password cannot be empty',
+                if (passwordRequired)
+                  TextField(
+                    onChanged: (password) => context
+                        .read<GetAddressesBloc>()
+                        .add(PasswordChanged(password)),
+                    decoration: InputDecoration(
+                      labelText: 'Password',
+                      errorText: state.password.displayError == null
+                          ? null
+                          : 'Password cannot be empty',
+                    ),
+                    obscureText: true,
                   ),
-                  obscureText: true,
-                ),
                 const SizedBox(height: 20),
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -173,7 +176,7 @@ class GetAddressesForm extends StatelessWidget {
                 if (state.submissionStatus.isFailure) ...[
                   const SizedBox(height: 20),
                   Text(
-                    state.error ?? 'An error occurred',
+                    state.error.toString() ?? 'An error occurred',
                     style: const TextStyle(color: Colors.red),
                   ),
                 ],

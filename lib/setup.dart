@@ -138,6 +138,9 @@ import 'dart:html' as html;
 import 'package:horizon/domain/services/error_service.dart';
 import 'package:horizon/data/services/error_service_impl.dart';
 
+import 'package:horizon/domain/repositories/settings_repository.dart';
+import 'package:horizon/data/sources/repositories/settings_repository_impl.dart';
+
 void setup() {
   GetIt injector = GetIt.I;
 
@@ -322,6 +325,7 @@ void setup() {
 
   injector.registerSingleton<CacheProvider>(HiveCache());
 
+
   injector.registerSingleton<DatabaseManager>(DatabaseManager());
 
   injector.registerSingleton<AddressTxRepository>(
@@ -487,8 +491,15 @@ void setup() {
           estimateXcpFeeRepository: GetIt.I.get<EstimateXcpFeeRepository>(),
           balanceRepository: injector.get<BalanceRepository>()));
 
+  injector.registerSingleton<SecureKVService>(SecureKVServiceImpl());
+
+  injector.registerSingleton<InMemoryKeyRepository>(InMemoryKeyRepositoryImpl(
+    secureKVService: GetIt.I.get<SecureKVService>(),
+  ));
+
   injector.registerSingleton<SignAndBroadcastTransactionUseCase>(
       SignAndBroadcastTransactionUseCase(
+    inMemoryKeyRepository: GetIt.I.get<InMemoryKeyRepository>(),
     addressRepository: GetIt.I.get<AddressRepository>(),
     importedAddressRepository: GetIt.I.get<ImportedAddressRepository>(),
     accountRepository: GetIt.I.get<AccountRepository>(),
@@ -517,12 +528,6 @@ void setup() {
 
   injector
       .registerSingleton<EstimateDispensesUseCase>(EstimateDispensesUseCase());
-
-  injector.registerSingleton<SecureKVService>(SecureKVServiceImpl());
-
-  injector.registerSingleton<InMemoryKeyRepository>(InMemoryKeyRepositoryImpl(
-    secureKVService: GetIt.I.get<SecureKVService>(),
-  ));
 
   injector.registerSingleton<ImportWalletUseCase>(ImportWalletUseCase(
     inMemoryKeyRepository: GetIt.I.get<InMemoryKeyRepository>(),
@@ -596,6 +601,18 @@ void setup() {
   } else {
     GetIt.I.registerSingleton<PlatformService>(PlatformServiceWebImpl());
   }
+
+  injector.registerSingleton<SettingsRepository>(SettingsRepositoryImpl());
+
+
+
+
+
+  await Settings.init(
+    cacheProvider: GetIt.I<CacheProvider>(),
+  );
+  
+
 }
 
 class CustomDioException extends DioException {

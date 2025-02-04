@@ -27,6 +27,8 @@ import 'package:horizon/presentation/screens/compose_dispenser_on_new_address/bl
 import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart';
 import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
+import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
+import 'package:horizon/domain/repositories/settings_repository.dart';
 
 class ComposeDispenserOnNewAddressPageWrapper extends StatelessWidget {
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
@@ -55,6 +57,16 @@ class ComposeDispenserOnNewAddressPageWrapper extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) => ComposeDispenserOnNewAddressBloc(
+        asset: asset,
+        giveQuantity: giveQuantity,
+        escrowQuantity: escrowQuantity,
+        mainchainrate: mainchainrate,
+        divisible: divisible,
+        feeRate: feeRate,
+        sendExtraBtcToDispenser: sendExtraBtcToDispenser,
+        passwordRequired:
+            GetIt.I<SettingsRepository>().requirePasswordForCryptoOperations,
+        inMemoryKeyRepository: GetIt.I.get<InMemoryKeyRepository>(),
         accountRepository: GetIt.I.get<AccountRepository>(),
         addressRepository: GetIt.I.get<AddressRepository>(),
         walletRepository: GetIt.I.get<WalletRepository>(),

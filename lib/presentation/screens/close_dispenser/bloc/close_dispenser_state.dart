@@ -26,7 +26,7 @@ class CloseDispenserState with _$CloseDispenserState, ComposeStateBase {
         feeState: const FeeState.initial(),
         balancesState: const BalancesState.initial(),
         feeOption: Medium(),
-        submitState: const SubmitInitial(),
+        submitState: const FormStep(),
         dispensersState: const DispenserState.initial(),
       );
 }

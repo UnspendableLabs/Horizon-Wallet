@@ -22,6 +22,15 @@ import 'package:horizon/presentation/screens/close_dispenser/bloc/close_dispense
 import 'package:horizon/presentation/screens/close_dispenser/usecase/fetch_form_data.dart';
 import 'package:horizon/presentation/screens/compose_dispenser/bloc/compose_dispenser_bloc.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
+import 'package:horizon/domain/repositories/settings_repository.dart';
+import 'package:horizon/core/logging/logger.dart';
+import 'package:horizon/domain/entities/decryption_strategy.dart';
+
+
+class MockInMemoryKeyRepository extends Mock implements InMemoryKeyRepository {}
+
+class MockLogger extends Mock implements Logger {}
 
 class MockComposeRepository extends Mock implements ComposeRepository {}
 
@@ -173,11 +182,11 @@ void main() {
     registerFallbackValue(composeTransactionParams);
     registerFallbackValue(utxos);
     registerFallbackValue(FeeOption.Medium());
-    registerFallbackValue(ComposeTransactionEvent(
+    registerFallbackValue(FormSubmitted(
       params: composeTransactionParams,
       sourceAddress: 'source-address',
     ));
-    registerFallbackValue(SignAndBroadcastTransactionEvent(
+    registerFallbackValue(SignAndBroadcastFormSubmitted(
       password: 'password',
     ));
     registerFallbackValue(composeDispenserParams);
@@ -199,6 +208,9 @@ void main() {
     GetIt.I.registerSingleton<ErrorService>(mockErrorService);
 
     closeDispenserBloc = CloseDispenserBloc(
+      passwordRequired: true,
+      inMemoryKeyRepository: MockInMemoryKeyRepository(),
+      logger: MockLogger(),
       fetchCloseDispenserFormDataUseCase:
           mockFetchCloseDispenserFormDataUseCase,
       composeTransactionUseCase: mockComposeTransactionUseCase,
@@ -216,7 +228,7 @@ void main() {
     GetIt.I.reset();
   });
 
-  group(FetchFormData, () {
+  group(AsyncFormDependenciesRequested, () {
     blocTest<CloseDispenserBloc, CloseDispenserState>(
       'emits loading and then success states when data is fetched successfully',
       build: () {
@@ -225,14 +237,14 @@ void main() {
         return closeDispenserBloc;
       },
       act: (bloc) {
-        bloc.add(FetchFormData(currentAddress: mockAddress));
+        bloc.add(AsyncFormDependenciesRequested(currentAddress: mockAddress));
       },
       expect: () => [
         closeDispenserBloc.state.copyWith(
           feeState: const FeeState.loading(),
           balancesState: const BalancesState.loading(),
           dispensersState: const DispenserState.loading(),
-          submitState: const SubmitInitial(),
+          submitState: const FormStep(),
         ),
         closeDispenserBloc.state.copyWith(
           feeState: const FeeState.success(mockFeeEstimates),
@@ -250,12 +262,12 @@ void main() {
         return closeDispenserBloc;
       },
       act: (bloc) {
-        bloc.add(FetchFormData(currentAddress: mockAddress));
+        bloc.add(AsyncFormDependenciesRequested(currentAddress: mockAddress));
       },
       expect: () => [
         closeDispenserBloc.state.copyWith(
           dispensersState: const DispenserState.loading(),
-          submitState: const SubmitInitial(),
+          submitState: const FormStep(),
         ),
         closeDispenserBloc.state.copyWith(
           dispensersState:
@@ -273,12 +285,12 @@ void main() {
         return closeDispenserBloc;
       },
       act: (bloc) {
-        bloc.add(FetchFormData(currentAddress: mockAddress));
+        bloc.add(AsyncFormDependenciesRequested(currentAddress: mockAddress));
       },
       expect: () => [
         closeDispenserBloc.state.copyWith(
           feeState: const FeeState.loading(),
-          submitState: const SubmitInitial(),
+          submitState: const FormStep(),
         ),
         closeDispenserBloc.state.copyWith(
           feeState: const FeeState.error('Failed to fetch fee estimates'),
@@ -293,14 +305,14 @@ void main() {
         return closeDispenserBloc;
       },
       act: (bloc) {
-        bloc.add(FetchFormData(currentAddress: mockAddress));
+        bloc.add(AsyncFormDependenciesRequested(currentAddress: mockAddress));
       },
       expect: () => [
         closeDispenserBloc.state.copyWith(
           balancesState: const BalancesState.loading(),
           feeState: const FeeState.loading(),
           dispensersState: const DispenserState.loading(),
-          submitState: const SubmitInitial(),
+          submitState: const FormStep(),
         ),
         closeDispenserBloc.state.copyWith(
           feeState: const FeeState.error(
@@ -339,7 +351,7 @@ void main() {
         feeState: const FeeState.success(mockFeeEstimates),
         feeOption: FeeOption.Medium(),
       ),
-      act: (bloc) => bloc.add(ComposeTransactionEvent(
+      act: (bloc) => bloc.add(FormSubmitted(
         params: composeTransactionParams,
         sourceAddress: 'source-address',
       )),
@@ -347,14 +359,12 @@ void main() {
         isA<CloseDispenserState>().having(
           (state) => state.submitState,
           'submitState',
-          isA<SubmitInitial>().having((s) => s.loading, 'loading', true),
+          isA<FormStep>().having((s) => s.loading, 'loading', true),
         ),
         isA<CloseDispenserState>().having(
           (state) => state.submitState,
           'submitState',
-          isA<
-                  SubmitComposingTransaction<ComposeDispenserResponseVerbose,
-                      void>>()
+          isA<ReviewStep<ComposeDispenserResponseVerbose, void>>()
               .having((s) => s.composeTransaction, 'composeTransaction',
                   mockComposeDispenserResponseVerbose)
               .having((s) => s.fee, 'fee', 250)
@@ -384,7 +394,7 @@ void main() {
         feeState: const FeeState.success(mockFeeEstimates),
         feeOption: FeeOption.Custom(10),
       ),
-      act: (bloc) => bloc.add(ComposeTransactionEvent(
+      act: (bloc) => bloc.add(FormSubmitted(
         params: composeTransactionParams,
         sourceAddress: 'source-address',
       )),
@@ -392,14 +402,12 @@ void main() {
         isA<CloseDispenserState>().having(
           (state) => state.submitState,
           'submitState',
-          isA<SubmitInitial>().having((s) => s.loading, 'loading', true),
+          isA<FormStep>().having((s) => s.loading, 'loading', true),
         ),
         isA<CloseDispenserState>().having(
             (state) => state.submitState,
             'submitState',
-            isA<
-                    SubmitComposingTransaction<ComposeDispenserResponseVerbose,
-                        void>>()
+            isA<ReviewStep<ComposeDispenserResponseVerbose, void>>()
                 .having((s) => s.composeTransaction, 'composeTransaction',
                     mockComposeDispenserResponseVerbose)
                 .having((s) => s.fee, 'fee', 250)
@@ -427,7 +435,7 @@ void main() {
         feeState: const FeeState.success(mockFeeEstimates),
         feeOption: FeeOption.Medium(),
       ),
-      act: (bloc) => bloc.add(ComposeTransactionEvent(
+      act: (bloc) => bloc.add(FormSubmitted(
         params: composeTransactionParams,
         sourceAddress: 'source-address',
       )),
@@ -435,25 +443,25 @@ void main() {
         isA<CloseDispenserState>().having(
           (state) => state.submitState,
           'submitState',
-          isA<SubmitInitial>().having((s) => s.loading, 'loading', true),
+          isA<FormStep>().having((s) => s.loading, 'loading', true),
         ),
         isA<CloseDispenserState>().having(
           (state) => state.submitState,
           'submitState',
-          isA<SubmitInitial>()
+          isA<FormStep>()
               .having((s) => s.loading, 'loading', false)
               .having((s) => s.error, 'error', 'Compose error'),
         ),
       ],
     );
   });
-  group(FinalizeTransactionEvent, () {
+  group(ReviewSubmitted, () {
     const fee = 250;
 
     blocTest<CloseDispenserBloc, CloseDispenserState>(
       'emits SubmitFinalizing when FinalizeTransactionEvent is added',
       build: () => closeDispenserBloc,
-      act: (bloc) => bloc.add(FinalizeTransactionEvent(
+      act: (bloc) => bloc.add(ReviewSubmitted(
         composeTransaction: mockComposeDispenserResponseVerbose,
         fee: fee,
       )),
@@ -461,7 +469,7 @@ void main() {
         isA<CloseDispenserState>().having(
           (state) => state.submitState,
           'submitState',
-          isA<SubmitFinalizing<ComposeDispenserResponseVerbose>>()
+          isA<PasswordStep<ComposeDispenserResponseVerbose>>()
               .having((s) => s.loading, 'loading', false)
               .having((s) => s.error, 'error', null)
               .having((s) => s.composeTransaction, 'composeTransaction',
@@ -472,7 +480,7 @@ void main() {
     );
   });
 
-  group(SignAndBroadcastTransactionEvent, () {
+  group(SignAndBroadcastFormSubmitted, () {
     const password = 'test-password';
     const txHex = 'transaction-hex';
     const txHash = 'transaction-hash';
@@ -486,7 +494,7 @@ void main() {
         when(() => mockSignAndBroadcastTransactionUseCase.call(
               source: "source-address",
               rawtransaction: txHex,
-              password: 'test-password',
+              decryptionStrategy: Password('test-password'),
               onSuccess: any(named: 'onSuccess'),
               onError: any(named: 'onError'),
             )).thenAnswer((invocation) async {
@@ -531,7 +539,7 @@ void main() {
         feeState: const FeeState.initial(),
         balancesState: const BalancesState.initial(),
         feeOption: FeeOption.Medium(),
-        submitState: SubmitFinalizing<ComposeDispenserResponseVerbose>(
+        submitState: PasswordStep<ComposeDispenserResponseVerbose>(
           loading: false,
           error: null,
           composeTransaction: mockComposeDispenserResponseVerbose,
@@ -540,7 +548,7 @@ void main() {
         dispensersState: const DispenserState.initial(),
       ),
       act: (bloc) async {
-        bloc.add(SignAndBroadcastTransactionEvent(password: password));
+        bloc.add(SignAndBroadcastFormSubmitted(password: password));
       },
       // Add a small wait to allow async operations to complete
       wait: const Duration(milliseconds: 10),
@@ -548,7 +556,7 @@ void main() {
         isA<CloseDispenserState>().having(
           (state) => state.submitState,
           'submitState',
-          isA<SubmitFinalizing<ComposeDispenserResponseVerbose>>()
+          isA<PasswordStep<ComposeDispenserResponseVerbose>>()
               .having((s) => s.loading, 'loading', true)
               .having((s) => s.error, 'error', null)
               .having((s) => s.composeTransaction, 'composeTransaction',
@@ -573,7 +581,7 @@ void main() {
         when(() => mockSignAndBroadcastTransactionUseCase.call(
               source: "source-address",
               rawtransaction: "raw-transaction",
-              password: 'test-password',
+              decryptionStrategy: Password('test-password'),
               onSuccess: any(named: 'onSuccess'),
               onError: any(named: 'onError'),
             )).thenAnswer((invocation) async {
@@ -616,7 +624,7 @@ void main() {
         feeState: const FeeState.initial(),
         balancesState: const BalancesState.initial(),
         feeOption: FeeOption.Medium(),
-        submitState: SubmitFinalizing<ComposeDispenserResponseVerbose>(
+        submitState: PasswordStep<ComposeDispenserResponseVerbose>(
           loading: false,
           error: null,
           composeTransaction: mockComposeDispenserResponseVerbose,
@@ -625,13 +633,13 @@ void main() {
         dispensersState: const DispenserState.initial(),
       ),
       act: (bloc) =>
-          bloc.add(SignAndBroadcastTransactionEvent(password: password)),
+          bloc.add(SignAndBroadcastFormSubmitted(password: password)),
       wait: const Duration(milliseconds: 10),
       expect: () => [
         isA<CloseDispenserState>().having(
           (state) => state.submitState,
           'submitState',
-          isA<SubmitFinalizing<ComposeDispenserResponseVerbose>>()
+          isA<PasswordStep<ComposeDispenserResponseVerbose>>()
               .having((s) => s.loading, 'loading', true)
               .having((s) => s.error, 'error', null)
               .having((s) => s.composeTransaction, 'composeTransaction',
@@ -641,7 +649,7 @@ void main() {
         isA<CloseDispenserState>().having(
           (state) => state.submitState,
           'submitState',
-          isA<SubmitFinalizing<ComposeDispenserResponseVerbose>>()
+          isA<PasswordStep<ComposeDispenserResponseVerbose>>()
               .having((s) => s.loading, 'loading', false)
               .having((s) => s.error, 'error', 'Signing error')
               .having((s) => s.composeTransaction, 'composeTransaction',
