@@ -608,9 +608,6 @@ void setup() {
 
 
 
-  await Settings.init(
-    cacheProvider: GetIt.I<CacheProvider>(),
-  );
   
 
 }
