@@ -27,6 +27,7 @@ class ConfigImpl implements Config {
     };
   }
 
+
   @override
   String get counterpartyApiBase {
     const envValue = String.fromEnvironment('HORIZON_COUNTERPARTY_API_BASE');
