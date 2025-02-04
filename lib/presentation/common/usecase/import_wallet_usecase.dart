@@ -103,11 +103,7 @@ class ImportWalletUseCase {
       // if there are any transactions or balances for the address, add the address to the account
       if (transactions.isNotEmpty) {
         // add the segwit address to the account if balances or transactions are present
-        if (accountsWithBalances.containsKey(account)) {
-          accountsWithBalances[account]!.add(address);
-        } else {
-          accountsWithBalances[account] = [address];
-        }
+        accountsWithBalances[account] = [address];
       } else if (i == 0) {
         // if no transactions are found on the first account, we will import just the first account + address and break
         accountsWithBalances[account] = [address];
@@ -188,7 +184,7 @@ class ImportWalletUseCase {
       );
     });
 
-    // if there are any transactions on the counterwallet account, check any following accounts for transactions, up to 20 accounts
+    // if there are any transactions on the first counterwallet account, check any following accounts for transactions, up to 20 accounts
     if (firstAccountTransactions.isNotEmpty) {
       hasTransactions = true;
       // check any subsequent accounts for transactions, up to 20 accounts
@@ -292,6 +288,7 @@ class ImportWalletUseCase {
             start: 0,
             end: 9);
 
+    // always return the first freewallet account and addresses even if there are no transactions
     accountsWithBalances[freewalletAccount] = [
       ...addressesBech32,
       ...addressesLegacy,
@@ -307,61 +304,58 @@ class ImportWalletUseCase {
       );
     });
 
-    if (allTransactionsFreewallet.isEmpty) {
-      // if there are no transactions on the freewallet account, return the empty account and false for hasTransactions
-      return (accountsWithBalances, hasTransactions);
-    }
+    if (allTransactionsFreewallet.isNotEmpty) {
+      // otherwise, check any subsequent accounts for transactions, up to 20 accounts
+      hasTransactions = true;
+      for (int i = 1; i < GAP_LIMIT; i++) {
+        Account nextFreewalletAccount = Account(
+            name: 'ACCOUNT ${i + 1}',
+            walletUuid: wallet.uuid,
+            purpose: freewalletAccount.purpose,
+            coinType: freewalletAccount.coinType,
+            accountIndex: '$i\'',
+            uuid: uuid.v4(),
+            importFormat: ImportFormat.freewallet);
+        List<Address> addressesBech32 =
+            await addressService.deriveAddressFreewalletRange(
+                type: AddressType.bech32,
+                privKey: decryptedPrivKey,
+                chainCodeHex: wallet.chainCodeHex,
+                accountUuid: nextFreewalletAccount.uuid,
+                account: nextFreewalletAccount.accountIndex,
+                change: '0',
+                start: 0,
+                end: 9);
 
-    // otherwise, check any subsequent accounts for transactions, up to 20 accounts
-    hasTransactions = true;
-    for (int i = 1; i < GAP_LIMIT; i++) {
-      Account nextFreewalletAccount = Account(
-          name: 'ACCOUNT ${i + 1}',
-          walletUuid: wallet.uuid,
-          purpose: freewalletAccount.purpose,
-          coinType: freewalletAccount.coinType,
-          accountIndex: '$i\'',
-          uuid: uuid.v4(),
-          importFormat: ImportFormat.freewallet);
-      List<Address> addressesBech32 =
-          await addressService.deriveAddressFreewalletRange(
-              type: AddressType.bech32,
-              privKey: decryptedPrivKey,
-              chainCodeHex: wallet.chainCodeHex,
-              accountUuid: nextFreewalletAccount.uuid,
-              account: nextFreewalletAccount.accountIndex,
-              change: '0',
-              start: 0,
-              end: 9);
+        List<Address> addressesLegacy =
+            await addressService.deriveAddressFreewalletRange(
+                type: AddressType.legacy,
+                privKey: decryptedPrivKey,
+                chainCodeHex: wallet.chainCodeHex,
+                accountUuid: nextFreewalletAccount.uuid,
+                account: nextFreewalletAccount.accountIndex,
+                change: '0',
+                start: 0,
+                end: 9);
 
-      List<Address> addressesLegacy =
-          await addressService.deriveAddressFreewalletRange(
-              type: AddressType.legacy,
-              privKey: decryptedPrivKey,
-              chainCodeHex: wallet.chainCodeHex,
-              accountUuid: nextFreewalletAccount.uuid,
-              account: nextFreewalletAccount.accountIndex,
-              change: '0',
-              start: 0,
-              end: 9);
-
-      final allTransactions = await bitcoinRepository.getTransactions([
-        ...addressesBech32.map((e) => e.address),
-        ...addressesLegacy.map((e) => e.address),
-      ]).then((either) async {
-        return either.fold(
-          (error) => throw Exception("GetTransactionInfo failure"),
-          (transactions) => transactions,
-        );
-      });
-      if (allTransactions.isEmpty) {
-        // we will break at the first account with no transactions
-        break;
+        final allTransactions = await bitcoinRepository.getTransactions([
+          ...addressesBech32.map((e) => e.address),
+          ...addressesLegacy.map((e) => e.address),
+        ]).then((either) async {
+          return either.fold(
+            (error) => throw Exception("GetTransactionInfo failure"),
+            (transactions) => transactions,
+          );
+        });
+        if (allTransactions.isEmpty) {
+          // we will break at the first account with no transactions
+          break;
+        }
+        accountsWithBalances[nextFreewalletAccount] = [
+          ...addressesBech32,
+          ...addressesLegacy,
+        ];
       }
-      accountsWithBalances[nextFreewalletAccount] = [
-        ...addressesBech32,
-        ...addressesLegacy,
-      ];
     }
     return (accountsWithBalances, hasTransactions);
   }
@@ -408,7 +402,7 @@ class ImportWalletUseCase {
 
           // we will get to this point if the seed phrase is both valid bip39 and valid counterwallet, which is relatively common
           // in this case, for bip32 wallets, assume 99% of users have a counterwallet seed phrase
-          // counterwallet seeds are the main freewallet/RPW seed phrases
+          // counterwallet seeds are the default freewallet/RPW seed phrases
 
           // track if there are transactions on the counterwallet account
           bool counterwalletHasTransactions = false;
@@ -417,6 +411,7 @@ class ImportWalletUseCase {
           (accountsWithBalances, counterwalletHasTransactions) =
               await createCounterwalletWallet(
                   password: password, mnemonic: mnemonic, wallet: wallet);
+
           if (!counterwalletHasTransactions) {
             // if there are no counterwallet transactions, we will check freewallet bip39
             wallet =
@@ -425,12 +420,12 @@ class ImportWalletUseCase {
                 await createFreewalletWallet(
                     password: password, mnemonic: mnemonic, wallet: wallet);
 
-            // we import freewallet ONLY IF THERE ARE TRANSACTIONS ON THE FREEWALLET ACCOUNTS
-            // otherwise, we will import counterwallet
             if (freewalletHasTransactions) {
+              // we import freewallet ONLY IF THERE ARE TRANSACTIONS ON THE FREEWALLET ACCOUNTS
               accountsWithBalances = freewalletAccountsWithBalances;
             }
           }
+          // otherwise, by default we will import counterwallet
           break;
 
         default:
@@ -443,11 +438,16 @@ class ImportWalletUseCase {
         await accountRepository.insert(account);
         await addressRepository.insertMany(accountsWithBalances[account]!);
       }
+
       // write decryption key to secure storage ( i.e. create a valid session )
-      // final wallet = await walletRepository.getCurrentWallet();
+      final currentWallet = await walletRepository.getCurrentWallet();
+
+      if (currentWallet == null) {
+        throw Exception('Wallet insert failed');
+      }
 
       String decryptionKey = await encryptionService.getDecryptionKey(
-          wallet.encryptedPrivKey, password);
+          currentWallet.encryptedPrivKey, password);
 
       await inMemoryKeyRepository.set(key: decryptionKey);
 
@@ -501,6 +501,18 @@ class ImportWalletUseCase {
     await walletRepository.insert(wallet);
     await accountRepository.insert(account0);
     await addressRepository.insert(address);
+
+    // write decryption key to secure storage ( i.e. create a valid session )
+    final currentWallet = await walletRepository.getCurrentWallet();
+
+    if (currentWallet == null) {
+      throw Exception('Wallet insert failed');
+    }
+
+    String decryptionKey = await encryptionService.getDecryptionKey(
+        currentWallet.encryptedPrivKey, password);
+
+    await inMemoryKeyRepository.set(key: decryptionKey);
   }
 
   String _getCoinType() => switch (config.network) {

@@ -323,7 +323,6 @@ void main() {
         await tester.enterText(password, "securepassword123");
         await tester.pumpAndSettle();
 
-        print('UNLOCKING');
         final unlock = find.text('UNLOCK');
         expect(unlock, findsOneWidget);
         await tester.tap(unlock);

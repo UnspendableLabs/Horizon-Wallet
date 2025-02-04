@@ -97,6 +97,8 @@ void main() {
     void runImportTest(String description, Network network,
         String expectedCoinType, WalletType walletType) {
       test(description, () async {
+        final isFreewalletBip39 = description.contains('freewallet');
+
         // Setup
         const mnemonic = 'test mnemonic phrase for import';
         const password = 'testPassword';
@@ -127,13 +129,20 @@ void main() {
             .thenAnswer((_) async {});
         when(() => mockEncryptionService.getDecryptionKey(any(), any()))
             .thenAnswer((_) async => 'test-decryption-key');
+        when(() => mockWalletRepository.getCurrentWallet())
+            .thenAnswer((_) async => wallet);
 
         // Mock Bitcoin repository to return transactions only for first few addresses
         var callCount = 0;
         when(() => mockBitcoinRepository.getTransactions(any()))
             .thenAnswer((_) async {
           callCount++;
-          // Return transactions only for first 3 addresses/accounts
+          if (isFreewalletBip39 && callCount == 1) {
+            // for bip32 wallets, the first transaction call is for counterwallet
+            // return an empty list to indicate that no transactions were found on the counterwallet and import should continue with freewallet
+            return const Right([]);
+          }
+          // Return transactions only for first 3 addresses/accounts of the wallet
           if (callCount <= 3) {
             return Right([
               BitcoinTx(
@@ -225,49 +234,60 @@ void main() {
           },
         );
 
+        // freewallet bip39: decrypt twice, once for counterwallet and once for freewallet
         verify(() => mockEncryptionService.decrypt(
-            wallet.encryptedPrivKey, password)).called(1);
+                wallet.encryptedPrivKey, password))
+            .called(isFreewalletBip39 ? 2 : 1);
 
         switch (walletType) {
           case WalletType.horizon:
+            verifyNever(
+                () => mockMnemonicService.validateCounterwalletMnemonic(any()));
+            verifyNever(() => mockMnemonicService.validateMnemonic(any()));
             verify(() => mockWalletService.deriveRoot(any(), any())).called(1);
             verify(() => mockBitcoinRepository.getTransactions(any()))
                 .called(4);
             verify(() => mockWalletRepository.insert(any())).called(1);
             verify(() => mockAccountRepository.insert(any())).called(3);
             verify(() => mockAddressRepository.insertMany(any())).called(3);
-            verify(() => mockEncryptionService.getDecryptionKey(any(), any()))
-                .called(1);
-            verify(() => mockInMemoryKeyRepository.set(key: any(named: 'key')))
-                .called(1);
-            verifyNever(
-                () => mockMnemonicService.validateCounterwalletMnemonic(any()));
-            verifyNever(() => mockMnemonicService.validateMnemonic(any()));
-            expect(successCallbackInvoked, true);
-            expect(errorCallbackInvoked, false);
             break;
 
           case WalletType.bip32:
             verify(() =>
-                    mockWalletService.deriveRootCounterwallet(any(), any()))
-                .called(1);
-            verify(() => mockBitcoinRepository.getTransactions(any()))
-                .called(4);
-            verify(() => mockWalletRepository.insert(any())).called(1);
-            verify(() => mockAccountRepository.insert(any())).called(3);
-            verify(() => mockAddressRepository.insertMany(any())).called(3);
-            verify(() => mockEncryptionService.getDecryptionKey(any(), any()))
-                .called(1);
-            verify(() => mockInMemoryKeyRepository.set(key: any(named: 'key')))
-                .called(1);
-            verify(() =>
                     mockMnemonicService.validateCounterwalletMnemonic(any()))
                 .called(1);
             verify(() => mockMnemonicService.validateMnemonic(any())).called(1);
-            expect(successCallbackInvoked, true);
-            expect(errorCallbackInvoked, false);
+            verify(() =>
+                    mockWalletService.deriveRootCounterwallet(any(), any()))
+                .called(1);
+            if (isFreewalletBip39) {
+              verify(() => mockWalletService.deriveRootFreewallet(any(), any()))
+                  .called(1);
+            } else {
+              verifyNever(
+                  () => mockWalletService.deriveRootFreewallet(any(), any()));
+            }
+            verify(() => mockBitcoinRepository.getTransactions(any()))
+                .called(4);
+            verify(() => mockWalletRepository.insert(any())).called(1);
+
+            // bip32: insert 2 accounts and 2 addresses for freewallet bip39 since only 2 accounts have transactions, 3 accounts and 3 addresses for counterwallet
+            verify(() => mockAccountRepository.insert(any()))
+                .called(isFreewalletBip39 ? 2 : 3);
+            verify(() => mockAddressRepository.insertMany(any()))
+                .called(isFreewalletBip39 ? 2 : 3);
             break;
         }
+
+        verify(() => mockWalletRepository.getCurrentWallet()).called(1);
+
+        verify(() => mockEncryptionService.getDecryptionKey(any(), any()))
+            .called(1);
+        verify(() => mockInMemoryKeyRepository.set(key: any(named: 'key')))
+            .called(1);
+
+        expect(successCallbackInvoked, true);
+        expect(errorCallbackInvoked, false);
       });
 
       test('error callback is invoked when an error occurs: $walletType',
@@ -352,6 +372,22 @@ void main() {
         "1",
         WalletType.bip32);
 
+    runImportTest(
+        'freewallet bip39: emits correct states when importing wallet for mainnet using BIP32 format',
+        Network.mainnet,
+        "0",
+        WalletType.bip32);
+    runImportTest(
+        'freewallet bip39: emits correct states when importing wallet for testnet using BIP32 format',
+        Network.testnet,
+        "1",
+        WalletType.bip32);
+    runImportTest(
+        'freewallet bip39: emits correct states when importing wallet for regtest using BIP32 format',
+        Network.regtest,
+        "1",
+        WalletType.bip32);
+
     test('imports freewallet when counterwallet has no transactions', () async {
       // Setup
       const mnemonic = 'test mnemonic phrase for import';
@@ -389,6 +425,10 @@ void main() {
           .thenAnswer((_) async => decryptedPrivKey);
       when(() => mockEncryptionService.getDecryptionKey(any(), any()))
           .thenAnswer((_) async => 'test-decryption-key');
+
+      // Add mock for getCurrentWallet to return the freewallet (since that's what we end up using)
+      when(() => mockWalletRepository.getCurrentWallet())
+          .thenAnswer((_) async => freeWallet);
 
       // Mock address derivation for both types
       when(() => mockAddressService.deriveAddressFreewalletRange(
@@ -487,6 +527,7 @@ void main() {
       verify(() => mockWalletRepository.insert(any())).called(1);
       verify(() => mockAccountRepository.insert(any())).called(1);
       verify(() => mockAddressRepository.insertMany(any())).called(1);
+      verify(() => mockWalletRepository.getCurrentWallet()).called(1);
       verify(() => mockEncryptionService.getDecryptionKey(any(), any()))
           .called(1);
       verify(() => mockInMemoryKeyRepository.set(key: any(named: 'key')))
@@ -494,6 +535,67 @@ void main() {
 
       expect(successCallbackInvoked, true);
       expect(errorCallbackInvoked, false);
+    });
+
+    test('throws error when current wallet is not found', () async {
+      // Setup
+      const mnemonic = 'test mnemonic phrase for import';
+      const password = 'testPassword';
+      const wallet = Wallet(
+          name: "Imported Wallet",
+          uuid: 'import-wallet-uuid',
+          publicKey: "imported-public-key",
+          encryptedPrivKey: 'encrypted',
+          chainCodeHex: 'chainCode');
+
+      when(() => mockConfig.network).thenReturn(Network.mainnet);
+      when(() => mockWalletService.deriveRoot(any(), any()))
+          .thenAnswer((_) async => wallet);
+      when(() => mockEncryptionService.decrypt(any(), any()))
+          .thenAnswer((_) async => 'decrypted');
+      when(() => mockAddressService.deriveAddressSegwit(
+              privKey: any(named: 'privKey'),
+              chainCodeHex: any(named: 'chainCodeHex'),
+              accountUuid: any(named: 'accountUuid'),
+              purpose: any(named: 'purpose'),
+              coin: any(named: 'coin'),
+              account: any(named: 'account'),
+              change: any(named: 'change'),
+              index: any(named: 'index')))
+          .thenAnswer((_) async => const Address(
+              index: 0, address: "0xdeadbeef", accountUuid: 'account-uuid'));
+      when(() => mockBitcoinRepository.getTransactions(any()))
+          .thenAnswer((_) async => const Right([]));
+      when(() => mockWalletRepository.insert(any())).thenAnswer((_) async {});
+      when(() => mockAccountRepository.insert(any())).thenAnswer((_) async {});
+      when(() => mockAddressRepository.insertMany(any()))
+          .thenAnswer((_) async {});
+
+      // Mock getCurrentWallet to return null
+      when(() => mockWalletRepository.getCurrentWallet())
+          .thenAnswer((_) async => null);
+
+      bool errorCallbackInvoked = false;
+      String? errorMessage;
+
+      // Act
+      await importWalletUseCase.call(
+        password: password,
+        walletType: WalletType.horizon,
+        mnemonic: mnemonic,
+        onError: (error) {
+          errorCallbackInvoked = true;
+          errorMessage = error;
+        },
+        onSuccess: () {},
+      );
+
+      // Assert
+      expect(errorCallbackInvoked, true);
+      expect(errorMessage, 'An unexpected error occurred importing wallet');
+      verify(() => mockWalletRepository.getCurrentWallet()).called(1);
+      verifyNever(() => mockEncryptionService.getDecryptionKey(any(), any()));
+      verifyNever(() => mockInMemoryKeyRepository.set(key: any(named: 'key')));
     });
   });
 
@@ -1314,5 +1416,124 @@ void main() {
 
     // Reset config flag
     OnboardingConfig.setIsFreewalletImportBip39(false);
+  });
+
+  group('ImportWalletUseCase callHorizon', () {
+    test('successfully creates a horizon wallet', () async {
+      // Setup
+      const mnemonic = 'test mnemonic';
+      const password = 'test-password';
+      const wallet = Wallet(
+          name: "Test Wallet",
+          uuid: 'test-uuid',
+          publicKey: "test-public-key",
+          encryptedPrivKey: 'encrypted-key',
+          chainCodeHex: 'test-chain-code');
+      const decryptedPrivKey = 'decrypted-private-key';
+
+      when(() => mockConfig.network).thenReturn(Network.testnet);
+
+      // Mock deriveRoot to return the wallet
+      when(() => mockWalletService.deriveRoot(any(), any()))
+          .thenAnswer((_) async => wallet);
+
+      when(() => mockEncryptionService.decrypt(any(), any()))
+          .thenAnswer((_) async => decryptedPrivKey);
+
+      // Add mock for getCurrentWallet
+      when(() => mockWalletRepository.getCurrentWallet())
+          .thenAnswer((_) async => wallet);
+
+      when(() => mockEncryptionService.getDecryptionKey(any(), any()))
+          .thenAnswer((_) async => 'test-decryption-key');
+
+      when(() => mockInMemoryKeyRepository.set(key: any(named: 'key')))
+          .thenAnswer((_) async {});
+
+      when(() => mockAddressService.deriveAddressSegwit(
+            privKey: any(named: 'privKey'),
+            chainCodeHex: any(named: 'chainCodeHex'),
+            accountUuid: any(named: 'accountUuid'),
+            purpose: '84\'',
+            coin: '1\'', // testnet
+            account: '0\'',
+            change: '0',
+            index: 0,
+          )).thenAnswer((_) async => const Address(
+            index: 0,
+            address: "tb1q_test_address",
+            accountUuid: 'test-uuid',
+          ));
+
+      // Add these mock responses
+      when(() => mockWalletRepository.insert(any())).thenAnswer((_) async {});
+      when(() => mockAccountRepository.insert(any())).thenAnswer((_) async {});
+      when(() => mockAddressRepository.insert(any())).thenAnswer((_) async {});
+
+      // Capture the account that will be inserted
+      Account? capturedAccount;
+      when(() => mockAccountRepository.insert(any()))
+          .thenAnswer((invocation) async {
+        capturedAccount = invocation.positionalArguments.first as Account;
+      });
+
+      // Act
+      await importWalletUseCase.callHorizon(
+        mnemonic: mnemonic,
+        password: password,
+        deriveWallet: mockWalletService.deriveRoot,
+      );
+
+      // Verify
+      verify(() => mockWalletRepository.insert(wallet)).called(1);
+
+      // Verify account properties using the captured account
+      expect(capturedAccount, isNotNull);
+      expect(capturedAccount?.purpose, equals('84\''));
+      expect(capturedAccount?.coinType, equals('1\'')); // testnet
+      expect(capturedAccount?.accountIndex, equals('0\''));
+      expect(capturedAccount?.importFormat, equals(ImportFormat.horizon));
+
+      verify(() => mockAddressRepository.insert(any())).called(1);
+
+      verify(() => mockWalletRepository.getCurrentWallet()).called(1);
+      verify(() => mockEncryptionService.getDecryptionKey(
+          wallet.encryptedPrivKey, password)).called(1);
+      verify(() => mockInMemoryKeyRepository.set(key: 'test-decryption-key'))
+          .called(1);
+    });
+
+    test('throws PasswordException on decrypt failure', () async {
+      // Setup
+      const mnemonic = 'test mnemonic';
+      const password = 'wrong-password';
+      const wallet = Wallet(
+          name: "Test Wallet",
+          uuid: 'test-uuid',
+          publicKey: "test-public-key",
+          encryptedPrivKey: 'encrypted-key',
+          chainCodeHex: 'test-chain-code');
+
+      Future<Wallet> deriveWallet(String m, String p) async => wallet;
+
+      when(() => mockEncryptionService.decrypt(any(), any()))
+          .thenThrow(Exception('Decrypt failed'));
+
+      // Act & Assert
+      expect(
+        () => importWalletUseCase.callHorizon(
+          mnemonic: mnemonic,
+          password: password,
+          deriveWallet: deriveWallet,
+        ),
+        throwsA(isA<PasswordException>().having(
+            (e) => e.message, 'message', 'invariant: Invalid password')),
+      );
+
+      // Verify no repositories were called
+      verifyNever(() => mockWalletRepository.insert(any()));
+      verifyNever(() => mockAccountRepository.insert(any()));
+      verifyNever(() => mockAddressRepository.insert(any()));
+    });
   });
 }
