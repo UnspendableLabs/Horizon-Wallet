@@ -7,6 +7,7 @@ import 'package:horizon/setup.dart';
 
 import 'package:mocktail/mocktail.dart';
 
+import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_event.dart';
 import 'package:horizon/presentation/screens/compose_dispenser/view/compose_dispenser_page.dart';
 import "package:horizon/presentation/screens/compose_dispenser/bloc/compose_dispenser_bloc.dart";
@@ -30,6 +31,10 @@ import 'package:horizon/domain/entities/asset_info.dart';
 import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/domain/entities/compose_dispenser.dart';
 import 'package:horizon/domain/entities/compose_response.dart';
+
+import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
+
+class MockInMemoryKeyRepository extends Mock implements InMemoryKeyRepository {}
 
 class FakeVirtualSize extends Fake implements VirtualSize {
   @override
@@ -134,6 +139,8 @@ class FakeComposeFunction<T extends ComposeResponse> extends Fake {
   }
 }
 
+class MockLogger extends Mock implements Logger {}
+
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
   late ComposeDispenserBloc composeDispenserBloc;
@@ -148,6 +155,7 @@ void main() {
   late MockWriteLocalTransactionUseCase mockWriteLocalTransactionUseCase;
   late MockGetVirtualSizeUseCase mockGetVirtualSizeUseCase;
   late MockUtxoRepository mockUtxoRepository;
+  late MockLogger mockLogger;
 
   setUpAll(() {
     setup();
@@ -167,8 +175,12 @@ void main() {
     mockAnalyticsService = MockAnalyticsService();
     mockComposeRepository = MockComposeRepository();
     mockWriteLocalTransactionUseCase = MockWriteLocalTransactionUseCase();
+    mockLogger = MockLogger();
 
     composeDispenserBloc = ComposeDispenserBloc(
+      inMemoryKeyRepository: MockInMemoryKeyRepository(),
+      passwordRequired: true,
+      logger: mockLogger,
       signAndBroadcastTransactionUseCase:
           mockSignAndBroadcastTransactionUseCase,
       composeTransactionUseCase: mockComposeTransactionUseCase,
@@ -220,6 +232,9 @@ void main() {
 
       // Instantiate ComposeDispenserBloc with mocks
       final composeDispenserBloc = ComposeDispenserBloc(
+        inMemoryKeyRepository: MockInMemoryKeyRepository(),
+        passwordRequired: true,
+        logger: mockLogger,
         fetchDispenserFormDataUseCase: mockFetchDispenserFormDataUseCase,
         composeTransactionUseCase: mockComposeTransactionUseCase,
         composeRepository: mockComposeRepository,
@@ -339,6 +354,9 @@ void main() {
 
       // Instantiate ComposeDispenserBloc with mocks
       final composeDispenserBloc = ComposeDispenserBloc(
+        inMemoryKeyRepository: MockInMemoryKeyRepository(),
+        passwordRequired: true,
+        logger: mockLogger,
         fetchDispenserFormDataUseCase: mockFetchDispenserFormDataUseCase,
         composeTransactionUseCase: mockComposeTransactionUseCase,
         composeRepository: mockComposeRepository,
@@ -416,6 +434,9 @@ void main() {
 
       // Instantiate ComposeDispenserBloc with mocks
       final composeDispenserBloc = ComposeDispenserBloc(
+        inMemoryKeyRepository: MockInMemoryKeyRepository(),
+        passwordRequired: true,
+        logger: mockLogger,
         fetchDispenserFormDataUseCase: mockFetchDispenserFormDataUseCase,
         composeTransactionUseCase: mockComposeTransactionUseCase,
         composeRepository: mockComposeRepository,
@@ -554,6 +575,9 @@ void main() {
 
       // Instantiate ComposeDispenserBloc with mocks
       final composeDispenserBloc = ComposeDispenserBloc(
+        inMemoryKeyRepository: MockInMemoryKeyRepository(),
+        passwordRequired: true,
+        logger: mockLogger,
         fetchDispenserFormDataUseCase: mockFetchDispenserFormDataUseCase,
         composeTransactionUseCase: mockComposeTransactionUseCase,
         composeRepository: mockComposeRepository,
@@ -656,6 +680,9 @@ void main() {
 
       // Instantiate ComposeDispenserBloc with mocks
       final composeDispenserBloc = ComposeDispenserBloc(
+        inMemoryKeyRepository: MockInMemoryKeyRepository(),
+        passwordRequired: true,
+        logger: mockLogger,
         fetchDispenserFormDataUseCase: mockFetchDispenserFormDataUseCase,
         composeTransactionUseCase: mockComposeTransactionUseCase,
         composeRepository: mockComposeRepository,
@@ -747,6 +774,9 @@ void main() {
 
       // Instantiate ComposeDispenserBloc with mocks
       final composeDispenserBloc = ComposeDispenserBloc(
+        inMemoryKeyRepository: MockInMemoryKeyRepository(),
+        passwordRequired: true,
+        logger: mockLogger,
         fetchDispenserFormDataUseCase: mockFetchDispenserFormDataUseCase,
         composeTransactionUseCase: mockComposeTransactionUseCase,
         composeRepository: mockComposeRepository,
@@ -880,6 +910,9 @@ void main() {
 
       // Instantiate ComposeDispenserBloc with mocks
       final composeDispenserBloc = ComposeDispenserBloc(
+        inMemoryKeyRepository: MockInMemoryKeyRepository(),
+        passwordRequired: true,
+        logger: mockLogger,
         fetchDispenserFormDataUseCase: mockFetchDispenserFormDataUseCase,
         composeTransactionUseCase: mockComposeTransactionUseCase,
         composeRepository: mockComposeRepository,

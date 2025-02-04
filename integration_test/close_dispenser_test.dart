@@ -29,6 +29,14 @@ import 'package:horizon/domain/entities/asset_info.dart';
 import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/domain/entities/compose_dispenser.dart';
 import 'package:horizon/domain/entities/compose_response.dart';
+import 'package:horizon/domain/entities/decryption_strategy.dart';
+import 'package:horizon/core/logging/logger.dart';
+
+import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
+
+class MockInMemoryKeyRepository extends Mock implements InMemoryKeyRepository {}
+
+class MockLogger extends Mock implements Logger {}
 
 class FakeVirtualSize extends Fake implements VirtualSize {
   @override
@@ -134,7 +142,7 @@ class MockSignAndBroadcastTransactionUseCase extends Mock
     implements SignAndBroadcastTransactionUseCase {
   @override
   Future<void> call({
-    required String password,
+    required DecryptionStrategy decryptionStrategy,
     required Function(
       String,
       String,
@@ -148,7 +156,7 @@ class MockSignAndBroadcastTransactionUseCase extends Mock
         #call,
         [],
         {
-          #password: password,
+          #decryptionStrategy: decryptionStrategy,
           #onSuccess: onSuccess,
           #onError: onError,
         },
@@ -287,6 +295,9 @@ void main() {
     mockWriteLocalTransactionUseCase = MockWriteLocalTransactionUseCase();
 
     closeDispenserBloc = CloseDispenserBloc(
+      passwordRequired: true,
+      logger: MockLogger(),
+      inMemoryKeyRepository: MockInMemoryKeyRepository(),
       signAndBroadcastTransactionUseCase:
           mockSignAndBroadcastTransactionUseCase,
       composeTransactionUseCase: mockComposeTransactionUseCase,

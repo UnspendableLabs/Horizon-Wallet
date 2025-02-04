@@ -217,7 +217,9 @@ void main() {
 
     setUpAll(() async {
       // Perform any common setup here
+
       setup();
+      initSettings();
     });
 
     tearDownAll(() async {

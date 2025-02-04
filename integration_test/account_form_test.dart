@@ -34,16 +34,7 @@ class MockAccountFormBloc extends Mock implements AccountFormBloc {
         _stateController.add(_currentState);
         // Simulate async operation
         Future.delayed(const Duration(milliseconds: 500), () {
-          _currentState = AccountFormStep2(
-              state: Step2Success(Account(
-            uuid: 'test-account-uuid',
-            name: 'Test Account',
-            walletUuid: 'test-wallet-uuid',
-            purpose: "44'",
-            coinType: "0'",
-            accountIndex: "0'",
-            importFormat: ImportFormat.counterwallet,
-          )));
+          _currentState = AccountFormSuccess();
           _stateController.add(_currentState);
         });
       }
@@ -145,7 +136,7 @@ void main() {
                 BlocProvider<AccountFormBloc>.value(value: mockBloc),
                 BlocProvider<SessionStateCubit>.value(value: mockSessionCubit),
               ],
-              child: const AddAccountForm(),
+              child: const AddAccountForm(passwordRequired: true),
             ),
           ),
         ),
@@ -249,7 +240,7 @@ void main() {
                 BlocProvider<AccountFormBloc>.value(value: mockBloc),
                 BlocProvider<SessionStateCubit>.value(value: mockSessionCubit),
               ],
-              child: const AddAccountForm(),
+              child: const AddAccountForm(passwordRequired: true),
             ),
           ),
         ),

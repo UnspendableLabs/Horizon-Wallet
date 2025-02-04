@@ -18,6 +18,7 @@ void main() {
     setUpAll(() async {
       // Perform any common setup here
       setup();
+      initSettings();
     });
 
     testWidgets('recover mnemonic', (WidgetTester tester) async {

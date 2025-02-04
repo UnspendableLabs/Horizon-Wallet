@@ -154,6 +154,7 @@ void main() {
     setUpAll(() async {
       // Perform any common setup here
       setup();
+      initSettings();
     });
 
     for (final testCase in testCases) {
