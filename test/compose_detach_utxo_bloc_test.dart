@@ -439,7 +439,6 @@ void main() {
               onSuccess: any(named: 'onSuccess'),
               onError: any(named: 'onError'),
             )).thenAnswer((invocation) async {
-          print("are we even ansewring");
           final onError = invocation.namedArguments[const Symbol('onError')]
               as Function(String);
           onError('Signing error');

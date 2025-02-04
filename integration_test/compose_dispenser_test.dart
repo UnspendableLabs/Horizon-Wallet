@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:horizon/domain/entities/dispenser.dart';
+import 'package:horizon/main.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:horizon/setup.dart';
 
@@ -156,9 +158,9 @@ void main() {
   late MockGetVirtualSizeUseCase mockGetVirtualSizeUseCase;
   late MockUtxoRepository mockUtxoRepository;
   late MockLogger mockLogger;
-
-  setUpAll(() {
+  setUpAll(() async {
     setup();
+    await initSettings();
     registerFallbackValue(FakeAddress().address);
     registerFallbackValue(
         FakeComposeFunction<ComposeDispenserResponseVerbose>());
@@ -195,6 +197,7 @@ void main() {
 
   tearDown(() async {
     await composeDispenserBloc.close();
+    Settings.clearCache();
   });
 
   group('Form Validations', () {

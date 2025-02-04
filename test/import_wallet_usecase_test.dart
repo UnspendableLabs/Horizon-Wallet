@@ -342,7 +342,7 @@ void main() {
       });
     }
 
-    // Update test cases to use WalletType instead of ImportFormat
+    // Run tests for all formats
     runImportTest(
         'emits correct states when importing wallet for mainnet using Horizon format',
         Network.mainnet,

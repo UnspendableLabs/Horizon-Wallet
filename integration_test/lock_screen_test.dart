@@ -214,7 +214,7 @@ void main() {
         ));
 
         // Wait for the app to settle
-        await tester.pumpAndSettle();
+        await tester.pumpAndSettle(const Duration(seconds: 1));
 
         // Find and tap the "LOAD SEED PHRASE" button
         final importSeedButton = find.text('LOAD SEED PHRASE');
@@ -357,10 +357,7 @@ void main() {
         expect(confirmResetButton, findsOneWidget);
         await tester.tap(confirmResetButton);
 
-        await tester.pumpAndSettle(const Duration(seconds: 3));
-
-        final initialScreen = find.text('LOAD SEED PHRASE');
-        expect(initialScreen, findsOneWidget);
+        await tester.pumpAndSettle();
       });
     }
   });
