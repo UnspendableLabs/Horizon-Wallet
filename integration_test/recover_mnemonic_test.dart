@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
+import 'package:horizon/domain/repositories/account_repository.dart';
+import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/main.dart';
@@ -23,6 +25,11 @@ void main() {
     });
 
     tearDown(() async {
+      // Reset the repositories
+      await GetIt.I.get<WalletRepository>().deleteAllWallets();
+      await GetIt.I.get<AccountRepository>().deleteAllAccounts();
+      await GetIt.I.get<AddressRepository>().deleteAllAddresses();
+
       // Clean up settings
       Settings.clearCache();
 

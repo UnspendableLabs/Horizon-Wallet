@@ -141,7 +141,7 @@ import 'package:horizon/data/services/error_service_impl.dart';
 import 'package:horizon/domain/repositories/settings_repository.dart';
 import 'package:horizon/data/sources/repositories/settings_repository_impl.dart';
 
-setup() {
+void setup() {
   GetIt injector = GetIt.I;
 
   injector.registerSingleton<Logger>(LoggerImpl(
@@ -223,7 +223,7 @@ setup() {
     ConnectionErrorInterceptor(),
     BadResponseInterceptor(),
     BadCertificateInterceptor(),
-    // SimpleLogInterceptor(),
+    SimpleLogInterceptor(),
     RetryInterceptor(
       dio: dio,
       retries: 3,
@@ -250,7 +250,7 @@ setup() {
     ConnectionErrorInterceptor(),
     BadResponseInterceptor(),
     BadCertificateInterceptor(),
-    // SimpleLogInterceptor(),
+    SimpleLogInterceptor(),
     RetryInterceptor(
       dio: dio,
       retries: 4,

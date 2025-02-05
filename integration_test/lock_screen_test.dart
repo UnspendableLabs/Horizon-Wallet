@@ -175,14 +175,18 @@ void main() {
     });
 
     tearDown(() async {
+      // Reset the repositories
+      await GetIt.I.get<WalletRepository>().deleteAllWallets();
+      await GetIt.I.get<AccountRepository>().deleteAllAccounts();
+      await GetIt.I.get<AddressRepository>().deleteAllAddresses();
+      // Add a small delay to ensure cleanup is complete
+      await Future.delayed(const Duration(milliseconds: 100));
+
       // Clean up settings
       Settings.clearCache();
 
       // Reset GetIt
       await GetIt.I.reset();
-
-      // Add a small delay to ensure cleanup is complete
-      await Future.delayed(const Duration(milliseconds: 100));
     });
 
     for (final testCase in testCases) {

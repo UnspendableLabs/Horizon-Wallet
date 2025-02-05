@@ -376,7 +376,7 @@ void main() {
                 expectedAddresses.firstWhere((e) => e == address.address));
           }
         }
-      }, skip: true);
+      });
 
       testWidgets(
           'Import Wallet with counterparty transactions - ${testCase['format']}',
@@ -403,7 +403,7 @@ void main() {
               10; // import 10 horizon accounts, 1 address per account
         } else {
           transactionCount =
-              1; // import 1 counterwallet account with 20 address
+              1; // import 1 counterwallet or freewallet account with 20 address
         }
 
         // Setup default mock behavior before any test runs
@@ -489,7 +489,7 @@ void main() {
                 expectedAddresses.firstWhere((e) => e == address.address));
           }
         }
-      }, skip: true);
+      });
 
       testWidgets(
           'Import Wallet with both bitcoin and counterparty transactions - ${testCase['format']}',
@@ -515,7 +515,8 @@ void main() {
           transactionCount =
               10; // import 10 horizon accounts, 1 address per account
         } else {
-          transactionCount = 2; // import 2 bip32 accounts with 20 address
+          transactionCount =
+              2; // import 2 bip32 accounts with 20 addresses each
         }
 
         // Setup default mock behavior before any test runs

@@ -298,7 +298,7 @@ class ImportWalletUseCase {
           final isValidCounterwallet =
               mnemonicService.validateCounterwalletMnemonic(mnemonic);
           if (!isValidCounterwallet) {
-            // if the seed phrase is not valid counterwallet, or if freewalletbip39 is specified, import freewallet and break
+            // if the seed phrase is not valid counterwallet, import freewallet and break
             wallet =
                 await walletService.deriveRootFreewallet(mnemonic, password);
             (accountsWithBalances, _) = await createBip32Wallet(

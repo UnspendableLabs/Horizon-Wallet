@@ -278,6 +278,19 @@ void main() {
                 () => mockMnemonicService.validateCounterwalletMnemonic(any()));
             verifyNever(() => mockMnemonicService.validateMnemonic(any()));
             verify(() => mockWalletService.deriveRoot(any(), any())).called(1);
+            verifyNever(
+                () => mockWalletService.deriveRootFreewallet(any(), any()));
+            verifyNever(
+                () => mockWalletService.deriveRootCounterwallet(any(), any()));
+            verify(() => mockAddressService.deriveAddressSegwit(
+                privKey: any(named: 'privKey'),
+                chainCodeHex: any(named: 'chainCodeHex'),
+                accountUuid: any(named: 'accountUuid'),
+                purpose: '84\'',
+                coin: expectedCoinType,
+                account: any(named: 'account'),
+                change: '0',
+                index: any(named: 'index'))).called(4);
             verify(() => mockBitcoinRepository.getTransactions(any()))
                 .called(4);
             verify(() => mockEventsRepository.numEventsForAddresses(
@@ -302,8 +315,27 @@ void main() {
               verifyNever(
                   () => mockWalletService.deriveRootFreewallet(any(), any()));
             }
+            verifyNever(() => mockWalletService.deriveRoot(any(), any()));
             verify(() => mockBitcoinRepository.getTransactions(any()))
                 .called(4);
+            verify(() => mockAddressService.deriveAddressFreewalletRange(
+                type: AddressType.bech32,
+                privKey: any(named: 'privKey'),
+                chainCodeHex: any(named: 'chainCodeHex'),
+                accountUuid: any(named: 'accountUuid'),
+                account: any(named: 'account'),
+                change: any(named: 'change'),
+                start: any(named: 'start'),
+                end: any(named: 'end'))).called(4);
+            verify(() => mockAddressService.deriveAddressFreewalletRange(
+                type: AddressType.legacy,
+                privKey: any(named: 'privKey'),
+                chainCodeHex: any(named: 'chainCodeHex'),
+                accountUuid: any(named: 'accountUuid'),
+                account: any(named: 'account'),
+                change: any(named: 'change'),
+                start: any(named: 'start'),
+                end: any(named: 'end'))).called(4);
             verify(() => mockEventsRepository.numEventsForAddresses(
                 addresses: any(named: 'addresses'))).called(4);
             verify(() => mockWalletRepository.insert(

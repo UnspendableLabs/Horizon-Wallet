@@ -247,14 +247,6 @@ class AppRouter {
               transitionsBuilder:
                   (context, animation, secondaryAnimation, child) => child),
         ),
-        // GoRoute(
-        //   path: "/onboarding/import-pk",
-        //   pageBuilder: (context, state) => CustomTransitionPage<void>(
-        //       key: state.pageKey,
-        //       child: const OnboardingImportPKPageWrapper(),
-        //       transitionsBuilder:
-        //           (context, animation, secondaryAnimation, child) => child),
-        // ),
         GoRoute(
           path: "/login",
           pageBuilder: (context, state) => CustomTransitionPage<void>(
