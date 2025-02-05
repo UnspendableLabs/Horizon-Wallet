@@ -309,7 +309,7 @@ class ImportWalletUseCase {
             break;
           }
 
-          // we will get to this point if the seed phrase is both valid bip39 and valid counterwallet, which is relatively common
+          // we will get to this point if the seed phrase is both valid bip39 and valid counterwallet, which is not very common, but possible
           // in this case, for bip32 wallets, assume 99% of users have a counterwallet seed phrase
           // counterwallet seeds are the default freewallet/RPW seed phrases
           final counterwallet =
@@ -357,7 +357,6 @@ class ImportWalletUseCase {
         await addressRepository.insertMany(accountsWithBalances[account]!);
       }
 
-      // write decryption key to secure storage ( i.e. create a valid session )
       final currentWallet = await walletRepository.getCurrentWallet();
 
       if (currentWallet == null) {
@@ -367,6 +366,7 @@ class ImportWalletUseCase {
       String decryptionKey = await encryptionService.getDecryptionKey(
           currentWallet.encryptedPrivKey, password);
 
+      // write decryption key to secure storage ( i.e. create a valid session )
       await inMemoryKeyRepository.set(key: decryptionKey);
 
       onSuccess();
