@@ -538,6 +538,7 @@ setup() {
     walletService: GetIt.I.get<WalletService>(),
     bitcoinRepository: GetIt.I.get<BitcoinRepository>(),
     mnemonicService: GetIt.I.get<MnemonicService>(),
+    eventsRepository: GetIt.I.get<EventsRepository>(),
   ));
 
   injector.registerLazySingleton<RPCGetAddressesSuccessCallback>(

@@ -9,6 +9,7 @@ import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 import 'package:horizon/domain/repositories/config_repository.dart';
+import 'package:horizon/domain/repositories/events_repository.dart';
 import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/address_service.dart';
@@ -16,7 +17,6 @@ import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/mnemonic_service.dart';
 import 'package:horizon/domain/services/wallet_service.dart';
 import 'package:horizon/presentation/common/usecase/import_wallet_usecase.dart';
-import 'package:horizon/presentation/screens/onboarding_import/onboarding_config.dart';
 import 'package:mocktail/mocktail.dart';
 
 class MockWalletService extends Mock implements WalletService {}
@@ -37,6 +37,8 @@ class MockInMemoryKeyRepository extends Mock implements InMemoryKeyRepository {}
 
 class MockBitcoinRepository extends Mock implements BitcoinRepository {}
 
+class MockEventsRepository extends Mock implements EventsRepository {}
+
 class MockConfig extends Mock implements Config {}
 
 // Fake classes for fallback values
@@ -56,6 +58,7 @@ void main() {
   late MockInMemoryKeyRepository mockInMemoryKeyRepository;
   late MockBitcoinRepository mockBitcoinRepository;
   late MockMnemonicService mockMnemonicService;
+  late MockEventsRepository mockEventsRepository;
 
   late MockConfig mockConfig;
   late MockWalletService mockWalletService;
@@ -76,6 +79,7 @@ void main() {
     mockConfig = MockConfig();
     mockWalletService = MockWalletService();
     mockInMemoryKeyRepository = MockInMemoryKeyRepository();
+    mockEventsRepository = MockEventsRepository();
 
     mockBitcoinRepository = MockBitcoinRepository();
     mockMnemonicService = MockMnemonicService();
@@ -90,6 +94,7 @@ void main() {
       walletService: mockWalletService,
       bitcoinRepository: mockBitcoinRepository,
       mnemonicService: mockMnemonicService,
+      eventsRepository: mockEventsRepository,
     );
   });
 
@@ -187,6 +192,9 @@ void main() {
           return const Right([]); // Return empty list for subsequent calls
         });
 
+        when(() => mockEventsRepository.numEventsForAddresses(
+            addresses: any(named: 'addresses'))).thenAnswer((_) async => 0);
+
         when(() => mockAddressService.deriveAddressSegwit(
                 privKey: any(named: 'privKey'),
                 chainCodeHex: any(named: 'chainCodeHex'),
@@ -272,6 +280,8 @@ void main() {
             verify(() => mockWalletService.deriveRoot(any(), any())).called(1);
             verify(() => mockBitcoinRepository.getTransactions(any()))
                 .called(4);
+            verify(() => mockEventsRepository.numEventsForAddresses(
+                addresses: any(named: 'addresses'))).called(4);
             verify(() => mockWalletRepository.insert(horizonWallet)).called(1);
             verify(() => mockAccountRepository.insert(any())).called(3);
             verify(() => mockAddressRepository.insertMany(any())).called(3);
@@ -294,6 +304,8 @@ void main() {
             }
             verify(() => mockBitcoinRepository.getTransactions(any()))
                 .called(4);
+            verify(() => mockEventsRepository.numEventsForAddresses(
+                addresses: any(named: 'addresses'))).called(4);
             verify(() => mockWalletRepository.insert(
                 isFreewalletBip39 ? freewallet : counterwallet)).called(1);
 
@@ -421,7 +433,7 @@ void main() {
       const mnemonic = 'test mnemonic phrase for import';
       const password = 'testPassword';
 
-      const counterWallet = Wallet(
+      const counterwallet = Wallet(
           name: "Counterwallet",
           uuid: 'counter-wallet-uuid',
           publicKey: "counter-public-key",
@@ -443,7 +455,7 @@ void main() {
 
       // Mock Counterwallet derivation
       when(() => mockWalletService.deriveRootCounterwallet(any(), any()))
-          .thenAnswer((_) async => counterWallet);
+          .thenAnswer((_) async => counterwallet);
 
       // Mock Freewallet derivation (used after Counterwallet fails)
       when(() => mockWalletService.deriveRootFreewallet(any(), any()))
@@ -523,6 +535,9 @@ void main() {
         return const Right([]);
       });
 
+      when(() => mockEventsRepository.numEventsForAddresses(
+          addresses: any(named: 'addresses'))).thenAnswer((_) async => 0);
+
       when(() => mockWalletRepository.insert(any())).thenAnswer((_) async {});
       when(() => mockAccountRepository.insert(any())).thenAnswer((_) async {});
       when(() => mockAddressRepository.insertMany(any()))
@@ -552,6 +567,8 @@ void main() {
       verify(() => mockWalletService.deriveRootFreewallet(any(), any()))
           .called(1);
       verify(() => mockBitcoinRepository.getTransactions(any())).called(3);
+      verify(() => mockEventsRepository.numEventsForAddresses(
+          addresses: any(named: 'addresses'))).called(3);
       verify(() => mockWalletRepository.insert(freeWallet)).called(1);
       verify(() => mockAccountRepository.insert(any())).called(1);
       verify(() => mockAddressRepository.insertMany(any())).called(1);
@@ -572,7 +589,7 @@ void main() {
       const mnemonic = 'test mnemonic phrase for import';
       const password = 'testPassword';
 
-      const counterWallet = Wallet(
+      const counterwallet = Wallet(
           name: "Counterwallet",
           uuid: 'counter-wallet-uuid',
           publicKey: "counter-public-key",
@@ -594,7 +611,7 @@ void main() {
 
       // Mock Counterwallet derivation
       when(() => mockWalletService.deriveRootCounterwallet(any(), any()))
-          .thenAnswer((_) async => counterWallet);
+          .thenAnswer((_) async => counterwallet);
 
       // Mock Freewallet derivation (used after Counterwallet fails)
       when(() => mockWalletService.deriveRootFreewallet(any(), any()))
@@ -607,7 +624,7 @@ void main() {
 
       // Add mock for getCurrentWallet to return the freewallet (since that's what we end up using)
       when(() => mockWalletRepository.getCurrentWallet())
-          .thenAnswer((_) async => counterWallet);
+          .thenAnswer((_) async => counterwallet);
 
       // Mock address derivation for both types
       when(() => mockAddressService.deriveAddressFreewalletRange(
@@ -645,6 +662,9 @@ void main() {
         return const Right([]);
       });
 
+      when(() => mockEventsRepository.numEventsForAddresses(
+          addresses: any(named: 'addresses'))).thenAnswer((_) async => 0);
+
       when(() => mockWalletRepository.insert(any())).thenAnswer((_) async {});
       when(() => mockAccountRepository.insert(any())).thenAnswer((_) async {});
       when(() => mockAddressRepository.insertMany(any()))
@@ -675,7 +695,7 @@ void main() {
           .called(1);
       verify(() => mockBitcoinRepository.getTransactions(any()))
           .called(2); // once for empty counterwallet, once for empty freewallet
-      verify(() => mockWalletRepository.insert(counterWallet)).called(1);
+      verify(() => mockWalletRepository.insert(counterwallet)).called(1);
       verify(() => mockAccountRepository.insert(any())).called(1);
       verify(() => mockAddressRepository.insertMany(any())).called(1);
       verify(() => mockWalletRepository.getCurrentWallet()).called(1);
@@ -717,6 +737,8 @@ void main() {
               index: 0, address: "0xdeadbeef", accountUuid: 'account-uuid'));
       when(() => mockBitcoinRepository.getTransactions(any()))
           .thenAnswer((_) async => const Right([]));
+      when(() => mockEventsRepository.numEventsForAddresses(
+          addresses: any(named: 'addresses'))).thenAnswer((_) async => 0);
       when(() => mockWalletRepository.insert(any())).thenAnswer((_) async {});
       when(() => mockAccountRepository.insert(any())).thenAnswer((_) async {});
       when(() => mockAddressRepository.insertMany(any()))
@@ -813,6 +835,9 @@ void main() {
         return const Right([]);
       });
 
+      when(() => mockEventsRepository.numEventsForAddresses(
+          addresses: any(named: 'addresses'))).thenAnswer((_) async => 0);
+
       // Act
       final accountsWithBalances =
           await importWalletUseCase.createHorizonWallet(
@@ -843,6 +868,8 @@ void main() {
 
       // Verify number of calls
       verify(() => mockBitcoinRepository.getTransactions(any())).called(4);
+      verify(() => mockEventsRepository.numEventsForAddresses(
+          addresses: any(named: 'addresses'))).called(4);
       verify(() =>
               mockEncryptionService.decrypt(wallet.encryptedPrivKey, password))
           .called(1);
@@ -885,6 +912,8 @@ void main() {
       // Mock no transactions for any account
       when(() => mockBitcoinRepository.getTransactions(any()))
           .thenAnswer((_) async => const Right([]));
+      when(() => mockEventsRepository.numEventsForAddresses(
+          addresses: any(named: 'addresses'))).thenAnswer((_) async => 0);
 
       // Act
       final accountsWithBalances =
@@ -913,6 +942,8 @@ void main() {
 
       // Verify we only called getTransactions once
       verify(() => mockBitcoinRepository.getTransactions(any())).called(1);
+      verify(() => mockEventsRepository.numEventsForAddresses(
+          addresses: any(named: 'addresses'))).called(1);
       verify(() =>
               mockEncryptionService.decrypt(wallet.encryptedPrivKey, password))
           .called(1);
@@ -982,6 +1013,9 @@ void main() {
 
       when(() => mockBitcoinRepository.getTransactions(any()))
           .thenAnswer((_) async => const Right([]));
+
+      when(() => mockEventsRepository.numEventsForAddresses(
+          addresses: any(named: 'addresses'))).thenAnswer((_) async => 0);
 
       // Act
       final accountsWithBalances =
@@ -1094,6 +1128,9 @@ void main() {
         return const Right([]);
       });
 
+      when(() => mockEventsRepository.numEventsForAddresses(
+          addresses: any(named: 'addresses'))).thenAnswer((_) async => 0);
+
       // Act
       final (accountsWithBalances, hasTransactions) =
           await importWalletUseCase.createBip32Wallet(
@@ -1126,6 +1163,8 @@ void main() {
 
       // Verify number of calls
       verify(() => mockBitcoinRepository.getTransactions(any())).called(3);
+      verify(() => mockEventsRepository.numEventsForAddresses(
+          addresses: any(named: 'addresses'))).called(3);
     });
 
     test('returns single account map when no transactions exist', () async {
@@ -1166,6 +1205,9 @@ void main() {
       when(() => mockBitcoinRepository.getTransactions(any()))
           .thenAnswer((_) async => const Right([]));
 
+      when(() => mockEventsRepository.numEventsForAddresses(
+          addresses: any(named: 'addresses'))).thenAnswer((_) async => 0);
+
       // Act
       final (accountsWithBalances, hasTransactions) =
           await importWalletUseCase.createBip32Wallet(
@@ -1190,6 +1232,8 @@ void main() {
 
       // Verify we only called getTransactions once
       verify(() => mockBitcoinRepository.getTransactions(any())).called(1);
+      verify(() => mockEventsRepository.numEventsForAddresses(
+          addresses: any(named: 'addresses'))).called(1);
     });
 
     test('throws PasswordException for invalid password', () async {
@@ -1309,6 +1353,9 @@ void main() {
         return const Right([]);
       });
 
+      when(() => mockEventsRepository.numEventsForAddresses(
+          addresses: any(named: 'addresses'))).thenAnswer((_) async => 0);
+
       // Act
       final (accountsWithBalances, hasTransactions) =
           await importWalletUseCase.createBip32Wallet(
@@ -1341,6 +1388,8 @@ void main() {
 
       // Verify number of calls
       verify(() => mockBitcoinRepository.getTransactions(any())).called(3);
+      verify(() => mockEventsRepository.numEventsForAddresses(
+          addresses: any(named: 'addresses'))).called(3);
     });
 
     test('returns single account map when no transactions exist', () async {
@@ -1381,6 +1430,9 @@ void main() {
       when(() => mockBitcoinRepository.getTransactions(any()))
           .thenAnswer((_) async => const Right([]));
 
+      when(() => mockEventsRepository.numEventsForAddresses(
+          addresses: any(named: 'addresses'))).thenAnswer((_) async => 0);
+
       // Act
       final (accountsWithBalances, hasTransactions) =
           await importWalletUseCase.createBip32Wallet(
@@ -1405,6 +1457,8 @@ void main() {
 
       // Verify we only called getTransactions once
       verify(() => mockBitcoinRepository.getTransactions(any())).called(1);
+      verify(() => mockEventsRepository.numEventsForAddresses(
+          addresses: any(named: 'addresses'))).called(1);
     });
 
     test('throws PasswordException for invalid password', () async {
@@ -1440,32 +1494,81 @@ void main() {
   });
 
   test('creates only counterwallet when mnemonic is not valid BIP39', () async {
-    // Setup
-    const wallet = Wallet(
-        name: "Test Wallet",
-        uuid: 'test-wallet-uuid',
-        publicKey: "test-public-key",
-        encryptedPrivKey: 'encrypted-key',
-        chainCodeHex: 'test-chain-code');
-    const password = 'test-password';
     const mnemonic = 'invalid bip39 mnemonic';
+    const password = 'test-password';
+    const counterwallet = Wallet(
+        name: "Counterwallet",
+        uuid: 'counter-wallet-uuid',
+        publicKey: "counter-public-key",
+        encryptedPrivKey: 'counter-encrypted',
+        chainCodeHex: 'counter-chainCode');
+    const decryptedPrivKey = 'decrypted-private-key';
 
-    // Mock invalid BIP39
-    when(() => mockMnemonicService.validateMnemonic(any())).thenReturn(false);
+    when(() => mockMnemonicService.validateMnemonic(any()))
+        .thenAnswer((_) => false);
+    when(() => mockMnemonicService.validateCounterwalletMnemonic(any()))
+        .thenAnswer((_) => true);
+    when(() => mockConfig.network).thenReturn(Network.mainnet);
 
+    // Mock Counterwallet derivation
     when(() => mockWalletService.deriveRootCounterwallet(any(), any()))
-        .thenAnswer((_) async => wallet);
+        .thenAnswer((_) async => counterwallet);
 
     when(() => mockEncryptionService.decrypt(any(), any()))
-        .thenAnswer((_) async => 'decrypted-key');
+        .thenAnswer((_) async => decryptedPrivKey);
     when(() => mockEncryptionService.getDecryptionKey(any(), any()))
-        .thenAnswer((_) async => 'test-key');
+        .thenAnswer((_) async => 'test-decryption-key');
 
-    // Mock empty transactions for simplicity
+    // Add mock for getCurrentWallet to return the freewallet (since that's what we end up using)
+    when(() => mockWalletRepository.getCurrentWallet())
+        .thenAnswer((_) async => counterwallet);
+
+    // Mock address derivation for both types
+    when(() => mockAddressService.deriveAddressFreewalletRange(
+            type: AddressType.bech32,
+            privKey: any(named: 'privKey'),
+            chainCodeHex: any(named: 'chainCodeHex'),
+            accountUuid: any(named: 'accountUuid'),
+            account: any(named: 'account'),
+            change: any(named: 'change'),
+            start: any(named: 'start'),
+            end: any(named: 'end')))
+        .thenAnswer((_) async => [
+              const Address(
+                  index: 0, address: "bc1q...", accountUuid: 'account-uuid')
+            ]);
+
+    when(() =>
+        mockAddressService.deriveAddressFreewalletRange(
+            type: AddressType.legacy,
+            privKey: any(named: 'privKey'),
+            chainCodeHex: any(named: 'chainCodeHex'),
+            accountUuid: any(named: 'accountUuid'),
+            account: any(named: 'account'),
+            change: any(named: 'change'),
+            start: any(named: 'start'),
+            end: any(named: 'end'))).thenAnswer((_) async => [
+          const Address(index: 1, address: "1M...", accountUuid: 'account-uuid')
+        ]);
+
+    // Mock Bitcoin repository to return no transactions for Counterwallet addresses
+    // but return transactions for Freewallet addresses
     when(() => mockBitcoinRepository.getTransactions(any()))
-        .thenAnswer((_) async => const Right([]));
+        .thenAnswer((_) async {
+      return const Right([]);
+    });
 
-    // Act
+    when(() => mockEventsRepository.numEventsForAddresses(
+        addresses: any(named: 'addresses'))).thenAnswer((_) async => 0);
+
+    when(() => mockWalletRepository.insert(any())).thenAnswer((_) async {});
+    when(() => mockAccountRepository.insert(any())).thenAnswer((_) async {});
+    when(() => mockAddressRepository.insertMany(any()))
+        .thenAnswer((_) async {});
+    when(() => mockInMemoryKeyRepository.set(key: any(named: 'key')))
+        .thenAnswer((_) async {});
+
+    // ACT
     await importWalletUseCase.call(
       password: password,
       walletType: WalletType.bip32,
@@ -1479,37 +1582,85 @@ void main() {
         .called(1);
     verifyNever(() => mockWalletService.deriveRootFreewallet(any(), any()));
 
-    verify(() => mockWalletRepository.insert(wallet)).called(1);
+    verify(() => mockWalletRepository.insert(counterwallet)).called(1);
   });
 
   test('creates only freewallet when mnemonic is not valid counterwallet',
       () async {
     // Setup
-    const wallet = Wallet(
-        name: "Test Wallet",
-        uuid: 'test-wallet-uuid',
-        publicKey: "test-public-key",
-        encryptedPrivKey: 'encrypted-key',
-        chainCodeHex: 'test-chain-code');
+    const mnemonic = 'invalid legacy mnemonic';
     const password = 'test-password';
-    const mnemonic = 'valid bip39 but invalid counterwallet mnemonic';
+    const freewallet = Wallet(
+        name: "Freewallet",
+        uuid: 'free-wallet-uuid',
+        publicKey: "free-public-key",
+        encryptedPrivKey: 'free-encrypted',
+        chainCodeHex: 'free-chainCode');
+    const decryptedPrivKey = 'decrypted-private-key';
 
-    // Mock valid BIP39 but invalid counterwallet
-    when(() => mockMnemonicService.validateMnemonic(any())).thenReturn(true);
+    when(() => mockMnemonicService.validateMnemonic(any()))
+        .thenAnswer((_) => true);
     when(() => mockMnemonicService.validateCounterwalletMnemonic(any()))
-        .thenReturn(false);
+        .thenAnswer((_) => false);
+    when(() => mockConfig.network).thenReturn(Network.mainnet);
 
+    // Mock Counterwallet derivation
     when(() => mockWalletService.deriveRootFreewallet(any(), any()))
-        .thenAnswer((_) async => wallet);
+        .thenAnswer((_) async => freewallet);
 
     when(() => mockEncryptionService.decrypt(any(), any()))
-        .thenAnswer((_) async => 'decrypted-key');
+        .thenAnswer((_) async => decryptedPrivKey);
     when(() => mockEncryptionService.getDecryptionKey(any(), any()))
-        .thenAnswer((_) async => 'test-key');
+        .thenAnswer((_) async => 'test-decryption-key');
 
-    // Mock empty transactions for simplicity
+    // Add mock for getCurrentWallet to return the freewallet (since that's what we end up using)
+    when(() => mockWalletRepository.getCurrentWallet())
+        .thenAnswer((_) async => freewallet);
+
+    // Mock address derivation for both types
+    when(() => mockAddressService.deriveAddressFreewalletRange(
+            type: AddressType.bech32,
+            privKey: any(named: 'privKey'),
+            chainCodeHex: any(named: 'chainCodeHex'),
+            accountUuid: any(named: 'accountUuid'),
+            account: any(named: 'account'),
+            change: any(named: 'change'),
+            start: any(named: 'start'),
+            end: any(named: 'end')))
+        .thenAnswer((_) async => [
+              const Address(
+                  index: 0, address: "bc1q...", accountUuid: 'account-uuid')
+            ]);
+
+    when(() =>
+        mockAddressService.deriveAddressFreewalletRange(
+            type: AddressType.legacy,
+            privKey: any(named: 'privKey'),
+            chainCodeHex: any(named: 'chainCodeHex'),
+            accountUuid: any(named: 'accountUuid'),
+            account: any(named: 'account'),
+            change: any(named: 'change'),
+            start: any(named: 'start'),
+            end: any(named: 'end'))).thenAnswer((_) async => [
+          const Address(index: 1, address: "1M...", accountUuid: 'account-uuid')
+        ]);
+
+    // Mock Bitcoin repository to return no transactions for Counterwallet addresses
+    // but return transactions for Freewallet addresses
     when(() => mockBitcoinRepository.getTransactions(any()))
-        .thenAnswer((_) async => const Right([]));
+        .thenAnswer((_) async {
+      return const Right([]);
+    });
+
+    when(() => mockEventsRepository.numEventsForAddresses(
+        addresses: any(named: 'addresses'))).thenAnswer((_) async => 0);
+
+    when(() => mockWalletRepository.insert(any())).thenAnswer((_) async {});
+    when(() => mockAccountRepository.insert(any())).thenAnswer((_) async {});
+    when(() => mockAddressRepository.insertMany(any()))
+        .thenAnswer((_) async {});
+    when(() => mockInMemoryKeyRepository.set(key: any(named: 'key')))
+        .thenAnswer((_) async {});
 
     // Act
     await importWalletUseCase.call(
@@ -1524,58 +1675,7 @@ void main() {
     verify(() => mockWalletService.deriveRootFreewallet(mnemonic, password))
         .called(1);
     verifyNever(() => mockWalletService.deriveRootCounterwallet(any(), any()));
-    verify(() => mockWalletRepository.insert(wallet)).called(1);
-  });
-
-  test(
-      'creates only freewallet when OnboardingConfig.isFreewalletImportBip39 is true',
-      () async {
-    // Setup
-    const wallet = Wallet(
-        name: "Test Wallet",
-        uuid: 'test-wallet-uuid',
-        publicKey: "test-public-key",
-        encryptedPrivKey: 'encrypted-key',
-        chainCodeHex: 'test-chain-code');
-    const password = 'test-password';
-    const mnemonic = 'valid bip39 and counterwallet mnemonic';
-
-    // Set config flag
-    OnboardingConfig.setIsFreewalletImportBip39(true);
-
-    // Mock valid BIP39 and valid counterwallet
-    when(() => mockMnemonicService.validateMnemonic(any())).thenReturn(true);
-    when(() => mockMnemonicService.validateCounterwalletMnemonic(any()))
-        .thenReturn(true);
-
-    when(() => mockWalletService.deriveRootFreewallet(any(), any()))
-        .thenAnswer((_) async => wallet);
-
-    when(() => mockEncryptionService.decrypt(any(), any()))
-        .thenAnswer((_) async => 'decrypted-key');
-    when(() => mockEncryptionService.getDecryptionKey(any(), any()))
-        .thenAnswer((_) async => 'test-key');
-
-    // Mock empty transactions for simplicity
-    when(() => mockBitcoinRepository.getTransactions(any()))
-        .thenAnswer((_) async => const Right([]));
-
-    // Act
-    await importWalletUseCase.call(
-      password: password,
-      walletType: WalletType.bip32,
-      mnemonic: mnemonic,
-      onError: (_) {},
-      onSuccess: () {},
-    );
-
-    // Verify
-    verify(() => mockWalletService.deriveRootFreewallet(mnemonic, password))
-        .called(1);
-    verifyNever(() => mockWalletService.deriveRootCounterwallet(any(), any()));
-    verify(() => mockWalletRepository.insert(wallet)).called(1);
-    // Reset config flag
-    OnboardingConfig.setIsFreewalletImportBip39(false);
+    verify(() => mockWalletRepository.insert(freewallet)).called(1);
   });
 
   group('ImportWalletUseCase callHorizon', () {
@@ -1695,5 +1795,652 @@ void main() {
       verifyNever(() => mockAccountRepository.insert(any()));
       verifyNever(() => mockAddressRepository.insert(any()));
     });
+  });
+
+  test(
+      'imports horizon wallet with multiple accounts when only counterparty transactions exist',
+      () async {
+    // Setup
+    const mnemonic = 'test mnemonic';
+    const password = 'test-password';
+    const wallet = Wallet(
+        name: "Test Wallet",
+        uuid: 'test-wallet-uuid',
+        publicKey: "test-public-key",
+        encryptedPrivKey: 'encrypted-key',
+        chainCodeHex: 'test-chain-code');
+    const decryptedPrivKey = 'decrypted-private-key';
+
+    when(() => mockConfig.network).thenReturn(Network.mainnet);
+    when(() => mockWalletService.deriveRoot(any(), any()))
+        .thenAnswer((_) async => wallet);
+    when(() => mockEncryptionService.decrypt(any(), any()))
+        .thenAnswer((_) async => decryptedPrivKey);
+
+    // Mock getCurrentWallet
+    when(() => mockWalletRepository.getCurrentWallet())
+        .thenAnswer((_) async => wallet);
+
+    when(() => mockEncryptionService.getDecryptionKey(any(), any()))
+        .thenAnswer((_) async => 'test-decryption-key');
+
+    when(() => mockInMemoryKeyRepository.set(key: any(named: 'key')))
+        .thenAnswer((_) async {});
+
+    // Mock address derivation
+    when(() => mockAddressService.deriveAddressSegwit(
+          privKey: any(named: 'privKey'),
+          chainCodeHex: any(named: 'chainCodeHex'),
+          accountUuid: any(named: 'accountUuid'),
+          purpose: any(named: 'purpose'),
+          coin: any(named: 'coin'),
+          account: any(named: 'account'),
+          change: any(named: 'change'),
+          index: any(named: 'index'),
+        )).thenAnswer((invocation) async => Address(
+          index: 0,
+          address:
+              "bc1q_test_address_${invocation.namedArguments[const Symbol('account')]}",
+          accountUuid:
+              invocation.namedArguments[const Symbol('accountUuid')] as String,
+        ));
+
+    // Mock no bitcoin transactions but have counterparty transactions for first 3 accounts
+    when(() => mockBitcoinRepository.getTransactions(any()))
+        .thenAnswer((_) async => const Right([]));
+
+    var callCount = 0;
+    when(() => mockEventsRepository.numEventsForAddresses(
+        addresses: any(named: 'addresses'))).thenAnswer((_) async {
+      callCount++;
+      // Return 1 counterparty event for first 3 accounts, 0 for the 4th
+      if (callCount <= 3) {
+        return 1;
+      }
+      return 0;
+    });
+
+    // Mock repository inserts
+    when(() => mockWalletRepository.insert(any())).thenAnswer((_) async {});
+    when(() => mockAccountRepository.insert(any())).thenAnswer((_) async {});
+    when(() => mockAddressRepository.insertMany(any()))
+        .thenAnswer((_) async {});
+
+    // Act
+    await importWalletUseCase.call(
+      password: password,
+      walletType: WalletType.horizon,
+      mnemonic: mnemonic,
+      onError: (_) {},
+      onSuccess: () {},
+    );
+
+    // Verify
+    verify(() => mockBitcoinRepository.getTransactions(any())).called(4);
+    verify(() => mockEventsRepository.numEventsForAddresses(
+        addresses: any(named: 'addresses'))).called(4);
+    verify(() => mockWalletRepository.insert(wallet)).called(1);
+    verify(() => mockAccountRepository.insert(any()))
+        .called(3); // Should create 3 accounts
+    verify(() => mockAddressRepository.insertMany(any()))
+        .called(3); // Should create 3 addresses
+  });
+
+  test(
+      'imports counterwallet with multiple accounts when only counterparty transactions exist',
+      () async {
+    // Setup
+    const mnemonic = 'test mnemonic';
+    const password = 'test-password';
+    const wallet = Wallet(
+        name: "Counterwallet",
+        uuid: 'counterwallet-uuid',
+        publicKey: "counterwallet-public-key",
+        encryptedPrivKey: 'counterwallet-encrypted',
+        chainCodeHex: 'counterwallet-chainCode');
+    const decryptedPrivKey = 'decrypted-private-key';
+
+    when(() => mockConfig.network).thenReturn(Network.mainnet);
+    when(() => mockMnemonicService.validateMnemonic(any())).thenReturn(true);
+    when(() => mockMnemonicService.validateCounterwalletMnemonic(any()))
+        .thenReturn(true);
+    when(() => mockWalletService.deriveRootCounterwallet(any(), any()))
+        .thenAnswer((_) async => wallet);
+    when(() => mockEncryptionService.decrypt(any(), any()))
+        .thenAnswer((_) async => decryptedPrivKey);
+
+    // Mock getCurrentWallet
+    when(() => mockWalletRepository.getCurrentWallet())
+        .thenAnswer((_) async => wallet);
+
+    when(() => mockEncryptionService.getDecryptionKey(any(), any()))
+        .thenAnswer((_) async => 'test-decryption-key');
+
+    // Mock address derivation for both types
+    when(() => mockAddressService.deriveAddressFreewalletRange(
+              type: AddressType.bech32,
+              privKey: any(named: 'privKey'),
+              chainCodeHex: any(named: 'chainCodeHex'),
+              accountUuid: any(named: 'accountUuid'),
+              account: any(named: 'account'),
+              change: any(named: 'change'),
+              start: any(named: 'start'),
+              end: any(named: 'end'),
+            ))
+        .thenAnswer((_) async => [
+              const Address(
+                  index: 0, address: "bc1q...", accountUuid: 'account-uuid')
+            ]);
+
+    when(() => mockAddressService.deriveAddressFreewalletRange(
+              type: AddressType.legacy,
+              privKey: any(named: 'privKey'),
+              chainCodeHex: any(named: 'chainCodeHex'),
+              accountUuid: any(named: 'accountUuid'),
+              account: any(named: 'account'),
+              change: any(named: 'change'),
+              start: any(named: 'start'),
+              end: any(named: 'end'),
+            ))
+        .thenAnswer((_) async => [
+              const Address(
+                  index: 1, address: "1...", accountUuid: 'account-uuid')
+            ]);
+
+    // Mock no bitcoin transactions but have counterparty transactions for first 2 accounts
+    when(() => mockBitcoinRepository.getTransactions(any()))
+        .thenAnswer((_) async => const Right([]));
+
+    var callCount = 0;
+    when(() => mockEventsRepository.numEventsForAddresses(
+        addresses: any(named: 'addresses'))).thenAnswer((_) async {
+      callCount++;
+      // Return 1 counterparty event for first 2 accounts, 0 for the 3rd
+      if (callCount <= 2) {
+        return 1;
+      }
+      return 0;
+    });
+
+    // Mock repository inserts
+    when(() => mockWalletRepository.insert(any())).thenAnswer((_) async {});
+    when(() => mockAccountRepository.insert(any())).thenAnswer((_) async {});
+    when(() => mockAddressRepository.insertMany(any()))
+        .thenAnswer((_) async {});
+
+    // Act
+    await importWalletUseCase.call(
+      password: password,
+      walletType: WalletType.bip32,
+      mnemonic: mnemonic,
+      onError: (_) {},
+      onSuccess: () {},
+    );
+
+    // Verify
+    verify(() => mockBitcoinRepository.getTransactions(any())).called(3);
+    verify(() => mockEventsRepository.numEventsForAddresses(
+        addresses: any(named: 'addresses'))).called(3);
+    verify(() => mockWalletRepository.insert(wallet)).called(1);
+    verify(() => mockAccountRepository.insert(any()))
+        .called(2); // Should create 2 accounts
+    verify(() => mockAddressRepository.insertMany(any()))
+        .called(2); // Should create addresses for 2 accounts
+  });
+
+  test(
+      'imports freewallet with multiple accounts when only counterparty transactions exist',
+      () async {
+    // Setup
+    const mnemonic = 'test mnemonic';
+    const password = 'test-password';
+    const wallet = Wallet(
+        name: "Freewallet",
+        uuid: 'freewallet-uuid',
+        publicKey: "freewallet-public-key",
+        encryptedPrivKey: 'freewallet-encrypted',
+        chainCodeHex: 'freewallet-chainCode');
+    const decryptedPrivKey = 'decrypted-private-key';
+
+    when(() => mockConfig.network).thenReturn(Network.mainnet);
+    when(() => mockMnemonicService.validateMnemonic(any())).thenReturn(true);
+    when(() => mockMnemonicService.validateCounterwalletMnemonic(any()))
+        .thenReturn(false);
+    when(() => mockWalletService.deriveRootFreewallet(any(), any()))
+        .thenAnswer((_) async => wallet);
+    when(() => mockEncryptionService.decrypt(any(), any()))
+        .thenAnswer((_) async => decryptedPrivKey);
+
+    // Mock getCurrentWallet
+    when(() => mockWalletRepository.getCurrentWallet())
+        .thenAnswer((_) async => wallet);
+
+    when(() => mockEncryptionService.getDecryptionKey(any(), any()))
+        .thenAnswer((_) async => 'test-decryption-key');
+
+    // Mock address derivation for both types
+    when(() => mockAddressService.deriveAddressFreewalletRange(
+              type: AddressType.bech32,
+              privKey: any(named: 'privKey'),
+              chainCodeHex: any(named: 'chainCodeHex'),
+              accountUuid: any(named: 'accountUuid'),
+              account: any(named: 'account'),
+              change: any(named: 'change'),
+              start: any(named: 'start'),
+              end: any(named: 'end'),
+            ))
+        .thenAnswer((_) async => [
+              const Address(
+                  index: 0, address: "bc1q...", accountUuid: 'account-uuid')
+            ]);
+
+    when(() => mockAddressService.deriveAddressFreewalletRange(
+              type: AddressType.legacy,
+              privKey: any(named: 'privKey'),
+              chainCodeHex: any(named: 'chainCodeHex'),
+              accountUuid: any(named: 'accountUuid'),
+              account: any(named: 'account'),
+              change: any(named: 'change'),
+              start: any(named: 'start'),
+              end: any(named: 'end'),
+            ))
+        .thenAnswer((_) async => [
+              const Address(
+                  index: 1, address: "1...", accountUuid: 'account-uuid')
+            ]);
+
+    // Mock no bitcoin transactions but have counterparty transactions for first 2 accounts
+    when(() => mockBitcoinRepository.getTransactions(any()))
+        .thenAnswer((_) async => const Right([]));
+
+    var callCount = 0;
+    when(() => mockEventsRepository.numEventsForAddresses(
+        addresses: any(named: 'addresses'))).thenAnswer((_) async {
+      callCount++;
+      // Return 1 counterparty event for first 2 accounts, 0 for the 3rd
+      if (callCount <= 2) {
+        return 1;
+      }
+      return 0;
+    });
+
+    // Mock repository inserts
+    when(() => mockWalletRepository.insert(any())).thenAnswer((_) async {});
+    when(() => mockAccountRepository.insert(any())).thenAnswer((_) async {});
+    when(() => mockAddressRepository.insertMany(any()))
+        .thenAnswer((_) async {});
+
+    // Act
+    await importWalletUseCase.call(
+      password: password,
+      walletType: WalletType.bip32,
+      mnemonic: mnemonic,
+      onError: (_) {},
+      onSuccess: () {},
+    );
+
+    // Verify
+    verify(() => mockBitcoinRepository.getTransactions(any())).called(3);
+    verify(() => mockEventsRepository.numEventsForAddresses(
+        addresses: any(named: 'addresses'))).called(3);
+    verify(() => mockWalletRepository.insert(wallet)).called(1);
+    verify(() => mockAccountRepository.insert(any()))
+        .called(2); // Should create 2 accounts
+    verify(() => mockAddressRepository.insertMany(any()))
+        .called(2); // Should create addresses for 2 accounts
+  });
+
+  // Add these new tests after the existing tests, just before the final closing brace
+
+  test(
+      'imports horizon wallet when both bitcoin and counterparty transactions exist',
+      () async {
+    // Setup
+    const mnemonic = 'test mnemonic';
+    const password = 'test-password';
+    const wallet = Wallet(
+        name: "Test Wallet",
+        uuid: 'test-wallet-uuid',
+        publicKey: "test-public-key",
+        encryptedPrivKey: 'encrypted-key',
+        chainCodeHex: 'test-chain-code');
+    const decryptedPrivKey = 'decrypted-private-key';
+
+    when(() => mockConfig.network).thenReturn(Network.mainnet);
+    when(() => mockWalletService.deriveRoot(any(), any()))
+        .thenAnswer((_) async => wallet);
+    when(() => mockEncryptionService.decrypt(any(), any()))
+        .thenAnswer((_) async => decryptedPrivKey);
+    when(() => mockWalletRepository.getCurrentWallet())
+        .thenAnswer((_) async => wallet);
+    when(() => mockEncryptionService.getDecryptionKey(any(), any()))
+        .thenAnswer((_) async => 'test-decryption-key');
+    when(() => mockInMemoryKeyRepository.set(key: any(named: 'key')))
+        .thenAnswer((_) async {});
+
+    // Mock address derivation
+    when(() => mockAddressService.deriveAddressSegwit(
+          privKey: any(named: 'privKey'),
+          chainCodeHex: any(named: 'chainCodeHex'),
+          accountUuid: any(named: 'accountUuid'),
+          purpose: any(named: 'purpose'),
+          coin: any(named: 'coin'),
+          account: any(named: 'account'),
+          change: any(named: 'change'),
+          index: any(named: 'index'),
+        )).thenAnswer((invocation) async => Address(
+          index: 0,
+          address:
+              "bc1q_test_address_${invocation.namedArguments[const Symbol('account')]}",
+          accountUuid:
+              invocation.namedArguments[const Symbol('accountUuid')] as String,
+        ));
+
+    // Mock bitcoin transactions for accounts 0-1, counterparty transactions for accounts 1-2
+    var btcCallCount = 0;
+    when(() => mockBitcoinRepository.getTransactions(any()))
+        .thenAnswer((_) async {
+      btcCallCount++;
+      if (btcCallCount <= 2) {
+        return Right([
+          BitcoinTx(
+            txid: 'test-tx-id',
+            version: 1,
+            locktime: 0,
+            vin: [],
+            vout: [],
+            size: 100,
+            weight: 400,
+            fee: 1000,
+            status: Status(
+              confirmed: true,
+              blockHeight: 100,
+              blockHash: 'test-block-hash',
+              blockTime: 1234567890,
+            ),
+          )
+        ]);
+      }
+      return const Right([]);
+    });
+
+    var xcpCallCount = 0;
+    when(() => mockEventsRepository.numEventsForAddresses(
+        addresses: any(named: 'addresses'))).thenAnswer((_) async {
+      xcpCallCount++;
+      // Return 1 counterparty event for accounts 1-2, 0 for others
+      if (xcpCallCount == 2 || xcpCallCount == 3) {
+        return 1;
+      }
+      return 0;
+    });
+
+    when(() => mockWalletRepository.insert(any())).thenAnswer((_) async {});
+    when(() => mockAccountRepository.insert(any())).thenAnswer((_) async {});
+    when(() => mockAddressRepository.insertMany(any()))
+        .thenAnswer((_) async {});
+
+    // Act
+    await importWalletUseCase.call(
+      password: password,
+      walletType: WalletType.horizon,
+      mnemonic: mnemonic,
+      onError: (_) {},
+      onSuccess: () {},
+    );
+
+    // Verify
+    verify(() => mockBitcoinRepository.getTransactions(any())).called(4);
+    verify(() => mockEventsRepository.numEventsForAddresses(
+        addresses: any(named: 'addresses'))).called(4);
+    verify(() => mockWalletRepository.insert(wallet)).called(1);
+    verify(() => mockAccountRepository.insert(any()))
+        .called(3); // Should create 3 accounts (0,1,2)
+    verify(() => mockAddressRepository.insertMany(any()))
+        .called(3); // Should create 3 addresses
+  });
+
+  test(
+      'imports counterwallet when both bitcoin and counterparty transactions exist',
+      () async {
+    // Setup
+    const mnemonic = 'test mnemonic';
+    const password = 'test-password';
+    const wallet = Wallet(
+        name: "Counterwallet",
+        uuid: 'counterwallet-uuid',
+        publicKey: "counterwallet-public-key",
+        encryptedPrivKey: 'counterwallet-encrypted',
+        chainCodeHex: 'counterwallet-chainCode');
+    const decryptedPrivKey = 'decrypted-private-key';
+
+    when(() => mockConfig.network).thenReturn(Network.mainnet);
+    when(() => mockMnemonicService.validateMnemonic(any())).thenReturn(true);
+    when(() => mockMnemonicService.validateCounterwalletMnemonic(any()))
+        .thenReturn(true);
+    when(() => mockWalletService.deriveRootCounterwallet(any(), any()))
+        .thenAnswer((_) async => wallet);
+    when(() => mockEncryptionService.decrypt(any(), any()))
+        .thenAnswer((_) async => decryptedPrivKey);
+    when(() => mockWalletRepository.getCurrentWallet())
+        .thenAnswer((_) async => wallet);
+    when(() => mockEncryptionService.getDecryptionKey(any(), any()))
+        .thenAnswer((_) async => 'test-decryption-key');
+
+    // Mock address derivation for both types
+    when(() => mockAddressService.deriveAddressFreewalletRange(
+              type: AddressType.bech32,
+              privKey: any(named: 'privKey'),
+              chainCodeHex: any(named: 'chainCodeHex'),
+              accountUuid: any(named: 'accountUuid'),
+              account: any(named: 'account'),
+              change: any(named: 'change'),
+              start: any(named: 'start'),
+              end: any(named: 'end'),
+            ))
+        .thenAnswer((_) async => [
+              const Address(
+                  index: 0, address: "bc1q...", accountUuid: 'account-uuid')
+            ]);
+
+    when(() => mockAddressService.deriveAddressFreewalletRange(
+              type: AddressType.legacy,
+              privKey: any(named: 'privKey'),
+              chainCodeHex: any(named: 'chainCodeHex'),
+              accountUuid: any(named: 'accountUuid'),
+              account: any(named: 'account'),
+              change: any(named: 'change'),
+              start: any(named: 'start'),
+              end: any(named: 'end'),
+            ))
+        .thenAnswer((_) async => [
+              const Address(
+                  index: 1, address: "1...", accountUuid: 'account-uuid')
+            ]);
+
+    // Mock bitcoin transactions for account 0, counterparty transactions for accounts 0-1
+    var btcCallCount = 0;
+    when(() => mockBitcoinRepository.getTransactions(any()))
+        .thenAnswer((_) async {
+      btcCallCount++;
+      if (btcCallCount == 1) {
+        return Right([
+          BitcoinTx(
+            txid: 'test-tx-id',
+            version: 1,
+            locktime: 0,
+            vin: [],
+            vout: [],
+            size: 100,
+            weight: 400,
+            fee: 1000,
+            status: Status(
+              confirmed: true,
+              blockHeight: 100,
+              blockHash: 'test-block-hash',
+              blockTime: 1234567890,
+            ),
+          )
+        ]);
+      }
+      return const Right([]);
+    });
+
+    var xcpCallCount = 0;
+    when(() => mockEventsRepository.numEventsForAddresses(
+        addresses: any(named: 'addresses'))).thenAnswer((_) async {
+      xcpCallCount++;
+      // Return 1 counterparty event for first 2 accounts, 0 for the 3rd
+      if (xcpCallCount <= 2) {
+        return 1;
+      }
+      return 0;
+    });
+
+    when(() => mockWalletRepository.insert(any())).thenAnswer((_) async {});
+    when(() => mockAccountRepository.insert(any())).thenAnswer((_) async {});
+    when(() => mockAddressRepository.insertMany(any()))
+        .thenAnswer((_) async {});
+
+    // Act
+    await importWalletUseCase.call(
+      password: password,
+      walletType: WalletType.bip32,
+      mnemonic: mnemonic,
+      onError: (_) {},
+      onSuccess: () {},
+    );
+
+    // Verify
+    verify(() => mockBitcoinRepository.getTransactions(any())).called(3);
+    verify(() => mockEventsRepository.numEventsForAddresses(
+        addresses: any(named: 'addresses'))).called(3);
+    verify(() => mockWalletRepository.insert(wallet)).called(1);
+    verify(() => mockAccountRepository.insert(any()))
+        .called(2); // Should create 2 accounts (0,1)
+    verify(() => mockAddressRepository.insertMany(any()))
+        .called(2); // Should create addresses for 2 accounts
+  });
+
+  test(
+      'imports freewallet when both bitcoin and counterparty transactions exist',
+      () async {
+    // Setup
+    const mnemonic = 'test mnemonic';
+    const password = 'test-password';
+    const wallet = Wallet(
+        name: "Freewallet",
+        uuid: 'freewallet-uuid',
+        publicKey: "freewallet-public-key",
+        encryptedPrivKey: 'freewallet-encrypted',
+        chainCodeHex: 'freewallet-chainCode');
+    const decryptedPrivKey = 'decrypted-private-key';
+
+    when(() => mockConfig.network).thenReturn(Network.mainnet);
+    when(() => mockMnemonicService.validateMnemonic(any())).thenReturn(true);
+    when(() => mockMnemonicService.validateCounterwalletMnemonic(any()))
+        .thenReturn(false);
+    when(() => mockWalletService.deriveRootFreewallet(any(), any()))
+        .thenAnswer((_) async => wallet);
+    when(() => mockEncryptionService.decrypt(any(), any()))
+        .thenAnswer((_) async => decryptedPrivKey);
+    when(() => mockWalletRepository.getCurrentWallet())
+        .thenAnswer((_) async => wallet);
+    when(() => mockEncryptionService.getDecryptionKey(any(), any()))
+        .thenAnswer((_) async => 'test-decryption-key');
+
+    // Mock address derivation for both types
+    when(() => mockAddressService.deriveAddressFreewalletRange(
+              type: AddressType.bech32,
+              privKey: any(named: 'privKey'),
+              chainCodeHex: any(named: 'chainCodeHex'),
+              accountUuid: any(named: 'accountUuid'),
+              account: any(named: 'account'),
+              change: any(named: 'change'),
+              start: any(named: 'start'),
+              end: any(named: 'end'),
+            ))
+        .thenAnswer((_) async => [
+              const Address(
+                  index: 0, address: "bc1q...", accountUuid: 'account-uuid')
+            ]);
+
+    when(() => mockAddressService.deriveAddressFreewalletRange(
+              type: AddressType.legacy,
+              privKey: any(named: 'privKey'),
+              chainCodeHex: any(named: 'chainCodeHex'),
+              accountUuid: any(named: 'accountUuid'),
+              account: any(named: 'account'),
+              change: any(named: 'change'),
+              start: any(named: 'start'),
+              end: any(named: 'end'),
+            ))
+        .thenAnswer((_) async => [
+              const Address(
+                  index: 1, address: "1...", accountUuid: 'account-uuid')
+            ]);
+
+    // Mock bitcoin transactions for accounts 0-1, counterparty transactions for accounts 1-2
+    var btcCallCount = 0;
+    when(() => mockBitcoinRepository.getTransactions(any()))
+        .thenAnswer((_) async {
+      btcCallCount++;
+      if (btcCallCount <= 2) {
+        return Right([
+          BitcoinTx(
+            txid: 'test-tx-id',
+            version: 1,
+            locktime: 0,
+            vin: [],
+            vout: [],
+            size: 100,
+            weight: 400,
+            fee: 1000,
+            status: Status(
+              confirmed: true,
+              blockHeight: 100,
+              blockHash: 'test-block-hash',
+              blockTime: 1234567890,
+            ),
+          )
+        ]);
+      }
+      return const Right([]);
+    });
+
+    var xcpCallCount = 0;
+    when(() => mockEventsRepository.numEventsForAddresses(
+        addresses: any(named: 'addresses'))).thenAnswer((_) async {
+      xcpCallCount++;
+      // Return 1 counterparty event for accounts 1-2, 0 for others
+      if (xcpCallCount == 2 || xcpCallCount == 3) {
+        return 1;
+      }
+      return 0;
+    });
+
+    when(() => mockWalletRepository.insert(any())).thenAnswer((_) async {});
+    when(() => mockAccountRepository.insert(any())).thenAnswer((_) async {});
+    when(() => mockAddressRepository.insertMany(any()))
+        .thenAnswer((_) async {});
+
+    // Act
+    await importWalletUseCase.call(
+      password: password,
+      walletType: WalletType.bip32,
+      mnemonic: mnemonic,
+      onError: (_) {},
+      onSuccess: () {},
+    );
+
+    // Verify
+    verify(() => mockBitcoinRepository.getTransactions(any())).called(4);
+    verify(() => mockEventsRepository.numEventsForAddresses(
+        addresses: any(named: 'addresses'))).called(4);
+    verify(() => mockWalletRepository.insert(wallet)).called(1);
+    verify(() => mockAccountRepository.insert(any()))
+        .called(3); // Should create 3 accounts (0,1,2)
+    verify(() => mockAddressRepository.insertMany(any()))
+        .called(3); // Should create addresses for 3 accounts
   });
 }

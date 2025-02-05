@@ -8,7 +8,6 @@ import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/main.dart';
 import 'package:horizon/setup.dart';
-import 'package:horizon/presentation/screens/onboarding_import/onboarding_config.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:pub_semver/pub_semver.dart';
 
@@ -172,11 +171,6 @@ void main() {
     for (final testCase in testCases) {
       testWidgets('Import seed flow - ${testCase['format']}',
           (WidgetTester tester) async {
-        // Set skipCounterwallet based on the format
-        final isFreewalletBip39 =
-            testCase['format'] == ImportFormat.freewallet.description;
-        OnboardingConfig.setIsFreewalletImportBip39(isFreewalletBip39);
-
         // Override FlutterError.onError to ignore RenderFlex overflow errors
         final void Function(FlutterErrorDetails) originalOnError =
             FlutterError.onError!;

@@ -8,13 +8,13 @@ import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 import 'package:horizon/domain/repositories/config_repository.dart';
+import 'package:horizon/domain/repositories/events_repository.dart';
 import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/mnemonic_service.dart';
 import 'package:horizon/domain/services/wallet_service.dart';
-import 'package:horizon/presentation/screens/onboarding_import/onboarding_config.dart';
 
 // ignore_for_file: constant_identifier_names
 const DEFAULT_NUM_ACCOUNTS = 20;
@@ -63,6 +63,7 @@ class ImportWalletUseCase {
   final WalletService walletService;
   final BitcoinRepository bitcoinRepository;
   final MnemonicService mnemonicService;
+  final EventsRepository eventsRepository;
 
   ImportWalletUseCase({
     required this.inMemoryKeyRepository,
@@ -75,6 +76,7 @@ class ImportWalletUseCase {
     required this.walletService,
     required this.bitcoinRepository,
     required this.mnemonicService,
+    required this.eventsRepository,
   });
 
   Future<Map<Account, List<Address>>> createHorizonWallet({
@@ -117,18 +119,11 @@ class ImportWalletUseCase {
       );
 
       // get transactions for the address
-      final List<BitcoinTx> transactions =
-          await bitcoinRepository.getTransactions([address.address]).then(
-        (either) async {
-          return either.fold(
-            (error) => throw Exception("GetTransactionInfo failure"),
-            (transactions) => transactions,
-          );
-        },
-      );
+      final bool addressHasTransactions =
+          await addressesHaveTransactions([address]);
 
       // if there are any transactions or balances for the address, add the address to the account
-      if (transactions.isNotEmpty) {
+      if (addressHasTransactions) {
         // add the address to the account if transactions are present
         accountsWithBalances[account] = [address];
       } else if (i == 0) {
@@ -209,18 +204,13 @@ class ImportWalletUseCase {
       ...addressesLegacy,
     ];
 
-    final firstAccountTransactions = await bitcoinRepository.getTransactions([
-      ...addressesBech32.map((e) => e.address),
-      ...addressesLegacy.map((e) => e.address),
-    ]).then((either) async {
-      return either.fold(
-        (error) => throw Exception("GetTransactionInfo failure"),
-        (transactions) => transactions,
-      );
-    });
+    final allAddressesHaveTransactions = await addressesHaveTransactions([
+      ...addressesBech32,
+      ...addressesLegacy,
+    ]);
 
     // if there are any transactions on the first account, check any following accounts for transactions, up to 20 accounts
-    if (firstAccountTransactions.isNotEmpty) {
+    if (allAddressesHaveTransactions) {
       hasTransactions = true;
       // check any subsequent accounts for transactions, up to 20 accounts
       for (int i = 1; i < DEFAULT_NUM_ACCOUNTS; i++) {
@@ -255,16 +245,12 @@ class ImportWalletUseCase {
                 start: 0,
                 end: 9);
 
-        final allTransactions = await bitcoinRepository.getTransactions([
-          ...nextAddressesBech32.map((e) => e.address),
-          ...nextAddressesLegacy.map((e) => e.address),
-        ]).then((either) async {
-          return either.fold(
-            (error) => throw Exception("GetTransactionInfo failure"),
-            (transactions) => transactions,
-          );
-        });
-        if (allTransactions.isEmpty) {
+        final bool allAddressesHaveTransactions =
+            await addressesHaveTransactions([
+          ...nextAddressesBech32,
+          ...nextAddressesLegacy,
+        ]);
+        if (!allAddressesHaveTransactions) {
           // break at the first account with no transactions
           break;
         }
@@ -311,8 +297,7 @@ class ImportWalletUseCase {
 
           final isValidCounterwallet =
               mnemonicService.validateCounterwalletMnemonic(mnemonic);
-          if (!isValidCounterwallet ||
-              OnboardingConfig.isFreewalletImportBip39) {
+          if (!isValidCounterwallet) {
             // if the seed phrase is not valid counterwallet, or if freewalletbip39 is specified, import freewallet and break
             wallet =
                 await walletService.deriveRootFreewallet(mnemonic, password);
@@ -446,6 +431,23 @@ class ImportWalletUseCase {
         currentWallet.encryptedPrivKey, password);
 
     await inMemoryKeyRepository.set(key: decryptionKey);
+  }
+
+  Future<bool> addressesHaveTransactions(List<Address> addresses) async {
+    final List<BitcoinTx> btcTransactions = await bitcoinRepository
+        .getTransactions(addresses.map((e) => e.address).toList())
+        .then((either) async {
+      return either.fold(
+        (error) => throw Exception("GetTransactionInfo failure"),
+        (transactions) => transactions,
+      );
+    });
+
+    final int numCounterpartyTransactions =
+        await eventsRepository.numEventsForAddresses(
+            addresses: addresses.map((e) => e.address).toList());
+
+    return btcTransactions.isNotEmpty || numCounterpartyTransactions > 0;
   }
 
   String _getCoinType() => switch (config.network) {

@@ -21,6 +21,7 @@ import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 import 'package:horizon/domain/repositories/config_repository.dart';
+import 'package:horizon/domain/repositories/events_repository.dart';
 import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/address_service.dart';
@@ -35,11 +36,14 @@ import 'package:mocktail/mocktail.dart';
 
 class MockBitcoinRepository extends Mock implements BitcoinRepository {}
 
+class MockEventsRepository extends Mock implements EventsRepository {}
+
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   // Register the mock
   late MockBitcoinRepository mockBitcoinRepository;
+  late MockEventsRepository mockEventsRepository;
   var transactionCallCount = 0;
 
   // Define test cases
@@ -131,9 +135,10 @@ void main() {
 
       // Create the mock instance
       mockBitcoinRepository = MockBitcoinRepository();
-
+      mockEventsRepository = MockEventsRepository();
       // Register our mock BEFORE running setup
       injector.registerSingleton<BitcoinRepository>(mockBitcoinRepository);
+      injector.registerSingleton<EventsRepository>(mockEventsRepository);
 
       // Now run the regular setup
 
@@ -179,6 +184,7 @@ void main() {
         walletService: GetIt.I.get<WalletService>(),
         bitcoinRepository: GetIt.I.get<BitcoinRepository>(),
         mnemonicService: GetIt.I.get<MnemonicService>(),
+        eventsRepository: GetIt.I.get<EventsRepository>(),
       ));
     });
 
@@ -194,7 +200,8 @@ void main() {
     });
 
     for (final testCase in testCases) {
-      testWidgets('Import seed flow - ${testCase['format']}',
+      testWidgets(
+          'Import Wallet with bitcoin transactions - ${testCase['format']}',
           (WidgetTester tester) async {
         // Override FlutterError.onError to ignore RenderFlex overflow errors
         final void Function(FlutterErrorDetails) originalOnError =
@@ -216,27 +223,17 @@ void main() {
         if (testCase['format'] == ImportFormat.horizon.description) {
           transactionCount =
               10; // import 10 horizon accounts, 1 address per account
-        } else if (testCase['format'] == ImportFormat.freewallet.description) {
-          transactionCount =
-              2; // gets called twice, first time to find 0 transactions on a counterwallet account, second time to import 1 freewallet wallet account with 20 addresses each
         } else {
           transactionCount =
-              1; // import 1 counterwallet account with 20 address
+              1; // import 1 counterwallet or freewallet account with 20 address
         }
 
         // Setup default mock behavior before any test runs
         when(() => mockBitcoinRepository.getTransactions(any()))
             .thenAnswer((_) async {
-          if (testCase['format'] == ImportFormat.freewallet.description &&
-              transactionCallCount == 0) {
+          if (transactionCallCount < transactionCount) {
             transactionCallCount++;
 
-            // in order to import 1 freewallet account, we first need to find 0 transactions on a counterwallet account
-            return const Right([]);
-          }
-          transactionCallCount++;
-
-          if (transactionCallCount <= transactionCount) {
             // only import 1 account
             return Right([
               BitcoinTx(
@@ -258,6 +255,124 @@ void main() {
             ]);
           } else {
             return const Right([]);
+          }
+        });
+        when(() => mockEventsRepository.numEventsForAddresses(
+            addresses: any(named: 'addresses'))).thenAnswer((_) async {
+          return 0;
+        });
+
+        final walletType =
+            testCase['format'] == ImportFormat.horizon.description
+                ? WalletType.horizon
+                : WalletType.bip32;
+        final importWalletUseCase = GetIt.I.get<ImportWalletUseCase>();
+        await importWalletUseCase.call(
+          mnemonic: testCase['passphrase'] as String,
+          password: 'password',
+          walletType: walletType,
+          onError: (error) {
+            print('Error: $error');
+          },
+          onSuccess: () {
+            print('Success');
+          },
+        );
+
+        final wallet = await GetIt.I.get<WalletRepository>().getCurrentWallet();
+
+        // ensure the inserted wallet is the same as the one derived from the mnemonic
+        final comparisonWallet = switch (testCase['format']) {
+          'Horizon Native' => await GetIt.I
+              .get<WalletService>()
+              .deriveRoot(testCase['passphrase'] as String, 'password'),
+          'Freewallet (BIP39)' => await GetIt.I
+              .get<WalletService>()
+              .deriveRootFreewallet(
+                  testCase['passphrase'] as String, 'password'),
+          'Freewallet / Counterwallet' => await GetIt.I
+              .get<WalletService>()
+              .deriveRootCounterwallet(
+                  testCase['passphrase'] as String, 'password'),
+          _ => throw Exception('Unknown format'),
+        };
+
+        expect(wallet!.publicKey, comparisonWallet.publicKey);
+        expect(wallet.chainCodeHex, comparisonWallet.chainCodeHex);
+        expect(wallet.name, comparisonWallet.name);
+
+        final accounts = await GetIt.I
+            .get<AccountRepository>()
+            .getAccountsByWalletUuid(wallet.uuid);
+
+        final expectedAccountCount =
+            testCase['format'] == ImportFormat.horizon.description ? 10 : 1;
+
+        expect(accounts.length, expectedAccountCount);
+
+        for (final account in accounts) {
+          final addresses = await GetIt.I
+              .get<AddressRepository>()
+              .getAllByAccountUuid(account.uuid);
+
+          final expectedAddressCount =
+              testCase['format'] == ImportFormat.horizon.description ? 1 : 20;
+
+          expect(addresses.length, expectedAddressCount);
+
+          for (final address in addresses) {
+            expect(
+                (testCase['addresses'] as List<String>)
+                    .contains(address.address),
+                isTrue);
+            expect(
+                address.address,
+                (testCase['addresses'] as List<String>)
+                    .firstWhere((e) => e == address.address));
+          }
+        }
+      });
+
+      testWidgets(
+          'Import Wallet with bitcoin transactions - ${testCase['format']}',
+          (WidgetTester tester) async {
+        // Override FlutterError.onError to ignore RenderFlex overflow errors
+        final void Function(FlutterErrorDetails) originalOnError =
+            FlutterError.onError!;
+        FlutterError.onError = (FlutterErrorDetails details) {
+          if (details.exceptionAsString().contains('A RenderFlex overflowed')) {
+            // Ignore RenderFlex overflow errors
+            return;
+          }
+          originalOnError(details);
+        };
+
+        // Ensure the original error handler is restored after the test
+        addTearDown(() {
+          FlutterError.onError = originalOnError;
+        });
+
+        int transactionCount;
+        if (testCase['format'] == ImportFormat.horizon.description) {
+          transactionCount =
+              10; // import 10 horizon accounts, 1 address per account
+        } else {
+          transactionCount =
+              1; // import 1 counterwallet account with 20 address
+        }
+
+        // Setup default mock behavior before any test runs
+        when(() => mockBitcoinRepository.getTransactions(any()))
+            .thenAnswer((_) async {
+          return const Right([]);
+        });
+        when(() => mockEventsRepository.numEventsForAddresses(
+            addresses: any(named: 'addresses'))).thenAnswer((_) async {
+          if (transactionCallCount < transactionCount) {
+            transactionCallCount++;
+            return 1;
+          } else {
+            return 0;
           }
         });
 

@@ -37,4 +37,8 @@ abstract class EventsRepository {
     Cursor? cursor,
     List<String>? whitelist,
   });
+
+  Future<int> numEventsForAddresses({
+    required List<String> addresses,
+  });
 }
