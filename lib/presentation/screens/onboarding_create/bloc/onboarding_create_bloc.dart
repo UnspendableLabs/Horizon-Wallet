@@ -25,7 +25,7 @@ class OnboardingCreateBloc
       final password = event.password;
       try {
         await importWalletUseCase.callHorizon(
-          secret: state.mnemonicState.mnemonic,
+          mnemonic: state.mnemonicState.mnemonic,
           password: password,
           deriveWallet: (secret, password) =>
               walletService.deriveRoot(secret, password),

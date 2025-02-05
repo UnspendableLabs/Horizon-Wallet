@@ -17,7 +17,6 @@ import 'package:horizon/presentation/screens/dashboard/address_form/bloc/address
 import 'package:horizon/remote_data_bloc/remote_data_state.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
-import 'package:horizon/domain/entities/decryption_strategy.dart';
 
 class MockWalletService extends Mock implements WalletService {}
 

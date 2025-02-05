@@ -56,7 +56,6 @@ class MockErrorService extends Mock implements ErrorService {}
 
 class MockInMemoryKeyRepository extends Mock implements InMemoryKeyRepository {}
 
-
 void main() {
   late ComposeMpmaBloc bloc;
   late MockBalanceRepository balanceRepository;
@@ -92,7 +91,6 @@ void main() {
 
     bloc = ComposeMpmaBloc(
       passwordRequired: true,
-
       inMemoryKeyRepository: MockInMemoryKeyRepository(),
       balanceRepository: balanceRepository,
       composeRepository: composeRepository,

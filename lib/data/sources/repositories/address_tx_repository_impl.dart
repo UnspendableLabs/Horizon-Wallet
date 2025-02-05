@@ -84,7 +84,6 @@ class AddressTxRepositoryImpl extends AddressTxRepository {
       transactions.add(transaction_entity.Transaction(
           txHash: transaction.txHash,
           txIndex: transaction.txIndex,
-          txlistHash: transaction.txlistHash,
           blockIndex: transaction.blockIndex,
           blockHash: transaction.blockHash,
           blockTime: transaction.blockTime,

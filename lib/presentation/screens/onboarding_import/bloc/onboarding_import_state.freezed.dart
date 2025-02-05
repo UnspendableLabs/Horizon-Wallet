@@ -18,7 +18,7 @@ final _privateConstructorUsedError = UnsupportedError(
 mixin _$OnboardingImportState {
   String get mnemonic => throw _privateConstructorUsedError;
   String? get mnemonicError => throw _privateConstructorUsedError;
-  ImportFormat get importFormat => throw _privateConstructorUsedError;
+  WalletType get walletType => throw _privateConstructorUsedError;
   dynamic get currentStep => throw _privateConstructorUsedError;
   dynamic get importState => throw _privateConstructorUsedError;
 
@@ -36,7 +36,7 @@ abstract class $OnboardingImportStateCopyWith<$Res> {
   $Res call(
       {String mnemonic,
       String? mnemonicError,
-      ImportFormat importFormat,
+      WalletType walletType,
       dynamic currentStep,
       dynamic importState});
 }
@@ -57,7 +57,7 @@ class _$OnboardingImportStateCopyWithImpl<$Res,
   $Res call({
     Object? mnemonic = null,
     Object? mnemonicError = freezed,
-    Object? importFormat = null,
+    Object? walletType = null,
     Object? currentStep = freezed,
     Object? importState = freezed,
   }) {
@@ -70,10 +70,10 @@ class _$OnboardingImportStateCopyWithImpl<$Res,
           ? _value.mnemonicError
           : mnemonicError // ignore: cast_nullable_to_non_nullable
               as String?,
-      importFormat: null == importFormat
-          ? _value.importFormat
-          : importFormat // ignore: cast_nullable_to_non_nullable
-              as ImportFormat,
+      walletType: null == walletType
+          ? _value.walletType
+          : walletType // ignore: cast_nullable_to_non_nullable
+              as WalletType,
       currentStep: freezed == currentStep
           ? _value.currentStep
           : currentStep // ignore: cast_nullable_to_non_nullable
@@ -98,7 +98,7 @@ abstract class _$$OnboardingImportStateImplCopyWith<$Res>
   $Res call(
       {String mnemonic,
       String? mnemonicError,
-      ImportFormat importFormat,
+      WalletType walletType,
       dynamic currentStep,
       dynamic importState});
 }
@@ -117,7 +117,7 @@ class __$$OnboardingImportStateImplCopyWithImpl<$Res>
   $Res call({
     Object? mnemonic = null,
     Object? mnemonicError = freezed,
-    Object? importFormat = null,
+    Object? walletType = null,
     Object? currentStep = freezed,
     Object? importState = freezed,
   }) {
@@ -130,10 +130,10 @@ class __$$OnboardingImportStateImplCopyWithImpl<$Res>
           ? _value.mnemonicError
           : mnemonicError // ignore: cast_nullable_to_non_nullable
               as String?,
-      importFormat: null == importFormat
-          ? _value.importFormat
-          : importFormat // ignore: cast_nullable_to_non_nullable
-              as ImportFormat,
+      walletType: null == walletType
+          ? _value.walletType
+          : walletType // ignore: cast_nullable_to_non_nullable
+              as WalletType,
       currentStep: freezed == currentStep ? _value.currentStep! : currentStep,
       importState: freezed == importState ? _value.importState! : importState,
     ));
@@ -146,7 +146,7 @@ class _$OnboardingImportStateImpl implements _OnboardingImportState {
   const _$OnboardingImportStateImpl(
       {this.mnemonic = "",
       this.mnemonicError,
-      this.importFormat = ImportFormat.horizon,
+      this.walletType = WalletType.horizon,
       this.currentStep = OnboardingImportStep.chooseFormat,
       this.importState = ImportStateNotAsked});
 
@@ -157,7 +157,7 @@ class _$OnboardingImportStateImpl implements _OnboardingImportState {
   final String? mnemonicError;
   @override
   @JsonKey()
-  final ImportFormat importFormat;
+  final WalletType walletType;
   @override
   @JsonKey()
   final dynamic currentStep;
@@ -167,7 +167,7 @@ class _$OnboardingImportStateImpl implements _OnboardingImportState {
 
   @override
   String toString() {
-    return 'OnboardingImportState(mnemonic: $mnemonic, mnemonicError: $mnemonicError, importFormat: $importFormat, currentStep: $currentStep, importState: $importState)';
+    return 'OnboardingImportState(mnemonic: $mnemonic, mnemonicError: $mnemonicError, walletType: $walletType, currentStep: $currentStep, importState: $importState)';
   }
 
   @override
@@ -179,8 +179,8 @@ class _$OnboardingImportStateImpl implements _OnboardingImportState {
                 other.mnemonic == mnemonic) &&
             (identical(other.mnemonicError, mnemonicError) ||
                 other.mnemonicError == mnemonicError) &&
-            (identical(other.importFormat, importFormat) ||
-                other.importFormat == importFormat) &&
+            (identical(other.walletType, walletType) ||
+                other.walletType == walletType) &&
             const DeepCollectionEquality()
                 .equals(other.currentStep, currentStep) &&
             const DeepCollectionEquality()
@@ -192,7 +192,7 @@ class _$OnboardingImportStateImpl implements _OnboardingImportState {
       runtimeType,
       mnemonic,
       mnemonicError,
-      importFormat,
+      walletType,
       const DeepCollectionEquality().hash(currentStep),
       const DeepCollectionEquality().hash(importState));
 
@@ -208,7 +208,7 @@ abstract class _OnboardingImportState implements OnboardingImportState {
   const factory _OnboardingImportState(
       {final String mnemonic,
       final String? mnemonicError,
-      final ImportFormat importFormat,
+      final WalletType walletType,
       final dynamic currentStep,
       final dynamic importState}) = _$OnboardingImportStateImpl;
 
@@ -217,7 +217,7 @@ abstract class _OnboardingImportState implements OnboardingImportState {
   @override
   String? get mnemonicError;
   @override
-  ImportFormat get importFormat;
+  WalletType get walletType;
   @override
   dynamic get currentStep;
   @override

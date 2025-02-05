@@ -74,7 +74,6 @@ void main() {
   late MockErrorService mockErrorService;
   late MockInMemoryKeyRepository mockInMemoryKeyRepository;
 
-
   const mockFeeEstimates = FeeEstimates(fast: 5, medium: 3, slow: 1);
 
   final mockComposeDetachUtxoResponse = MockComposeDetachUtxoResponse();
@@ -113,13 +112,11 @@ void main() {
     mockWriteLocalTransactionUseCase = MockWriteLocalTransactionUseCase();
     mockErrorService = MockErrorService();
     mockInMemoryKeyRepository = MockInMemoryKeyRepository();
-       
 
     // Register the ErrorService mock with GetIt
     GetIt.I.registerSingleton<ErrorService>(mockErrorService);
 
     composeDetachUtxoBloc = ComposeDetachUtxoBloc(
-     
       inMemoryKeyRepository: mockInMemoryKeyRepository,
       passwordRequired: true,
       composeRepository: mockComposeRepository,
@@ -436,14 +433,12 @@ void main() {
 
         // Mock the signAndBroadcastTransactionUseCase to call onError
         when(() => mockSignAndBroadcastTransactionUseCase.call(
-              
               source: any(named: 'source'),
               rawtransaction: any(named: 'rawtransaction'),
               decryptionStrategy: Password(password),
               onSuccess: any(named: 'onSuccess'),
               onError: any(named: 'onError'),
             )).thenAnswer((invocation) async {
-              print("are we even ansewring");
           final onError = invocation.namedArguments[const Symbol('onError')]
               as Function(String);
           onError('Signing error');

@@ -322,9 +322,7 @@ void setup() {
     ),
     // blockCypherApi: BlockCypherApi(dio: blockCypherDio)
   ));
-
   injector.registerSingleton<CacheProvider>(HiveCache());
-
 
   injector.registerSingleton<DatabaseManager>(DatabaseManager());
 
@@ -537,6 +535,10 @@ void setup() {
     accountRepository: GetIt.I.get<AccountRepository>(),
     walletRepository: GetIt.I.get<WalletRepository>(),
     encryptionService: GetIt.I.get<EncryptionService>(),
+    walletService: GetIt.I.get<WalletService>(),
+    bitcoinRepository: GetIt.I.get<BitcoinRepository>(),
+    mnemonicService: GetIt.I.get<MnemonicService>(),
+    eventsRepository: GetIt.I.get<EventsRepository>(),
   ));
 
   injector.registerLazySingleton<RPCGetAddressesSuccessCallback>(
@@ -603,13 +605,6 @@ void setup() {
   }
 
   injector.registerSingleton<SettingsRepository>(SettingsRepositoryImpl());
-
-
-
-
-
-  
-
 }
 
 class CustomDioException extends DioException {

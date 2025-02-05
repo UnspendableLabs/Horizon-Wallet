@@ -429,11 +429,11 @@ void main() {
           .thenThrow(
               SignAndBroadcastTransactionException('Incorrect password.'));
 
-      when(() => mockInMemoryKeyRepository.getMap())
-          .thenAnswer((_) async => ({ 'test-address': 'test-address-decryption-key' }));
+      when(() => mockInMemoryKeyRepository.getMap()).thenAnswer(
+          (_) async => ({'test-address': 'test-address-decryption-key'}));
 
       var errorCallbackInvoked = false;
-      onSuccess(String txHex, String txHash) { }
+      onSuccess(String txHex, String txHash) {}
       onError(String error) {
         expect(error, 'Incorrect password.');
         errorCallbackInvoked = true;

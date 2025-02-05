@@ -21,7 +21,6 @@ import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/unified_address_repository.dart';
 import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/domain/entities/bitcoin_decoded_tx.dart' as DecodedTx;
-import 'package:horizon/domain/entities/decryption_strategy.dart';
 
 import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 
@@ -229,7 +228,6 @@ void main() {
     mockImportedAddressService = MockImportedAddressService();
     mockAccountRepository = MockAccountRepository();
     mockInMemoryKeyRepository = MockInMemoryKeyRepository();
-       
 
     signPsbtBloc = SignPsbtBloc(
       passwordRequired: true,

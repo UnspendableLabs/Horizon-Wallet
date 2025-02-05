@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:get_it/get_it.dart';
 import 'package:horizon/domain/entities/dispenser.dart';
+import 'package:horizon/domain/repositories/settings_repository.dart';
+import 'package:horizon/domain/services/error_service.dart';
 import 'package:horizon/presentation/screens/close_dispenser/bloc/close_dispenser_bloc.dart';
 import 'package:horizon/presentation/screens/close_dispenser/usecase/fetch_form_data.dart';
 import 'package:horizon/presentation/screens/close_dispenser/view/close_dispenser_page.dart';
@@ -263,10 +266,28 @@ class FakeComposeFunction<T extends ComposeResponse> extends Fake {
   }
 }
 
+class MockErrorService extends Mock implements ErrorService {}
+
+class MockSettingsRepository extends Mock implements SettingsRepository {
+  @override
+  bool get requirePasswordForCryptoOperations => true;
+
+  @override
+  int get inactivityTimeout => 1000;
+
+  @override
+  int get lostFocusTimeout => 1000;
+}
+
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
   late CloseDispenserBloc closeDispenserBloc;
   late MockDashboardActivityFeedBloc mockDashboardActivityFeedBloc;
+  late MockSessionStateCubit mockSessionStateCubit;
+
+  // Add mock error service
+  late MockErrorService mockErrorService;
+  late MockSettingsRepository mockSettingsRepository;
 
   late ComposeTransactionUseCase mockComposeTransactionUseCase;
   late MockFetchCloseDispenserFormDataUseCase
@@ -282,6 +303,12 @@ void main() {
     registerFallbackValue(
         FakeComposeFunction<ComposeDispenserResponseVerbose>());
     registerFallbackValue(FakeComposeDispenserParams());
+
+    // Register error service in GetIt
+    mockErrorService = MockErrorService();
+    GetIt.I.registerSingleton<ErrorService>(mockErrorService);
+    mockSettingsRepository = MockSettingsRepository();
+    GetIt.I.registerSingleton<SettingsRepository>(mockSettingsRepository);
   });
 
   setUp(() {
@@ -293,7 +320,10 @@ void main() {
     mockAnalyticsService = MockAnalyticsService();
     mockComposeRepository = MockComposeRepository();
     mockWriteLocalTransactionUseCase = MockWriteLocalTransactionUseCase();
+    mockSessionStateCubit = MockSessionStateCubit();
+    mockDashboardActivityFeedBloc = MockDashboardActivityFeedBloc();
 
+    // Initialize bloc before use
     closeDispenserBloc = CloseDispenserBloc(
       passwordRequired: true,
       logger: MockLogger(),
@@ -307,12 +337,11 @@ void main() {
       composeRepository: mockComposeRepository,
       writelocalTransactionUseCase: mockWriteLocalTransactionUseCase,
     );
-
-    mockDashboardActivityFeedBloc = MockDashboardActivityFeedBloc();
   });
 
   tearDown(() async {
     await closeDispenserBloc.close();
+    GetIt.I.reset(); // Reset GetIt registrations
   });
 
   group('Close dispenser form', () {
@@ -396,6 +425,7 @@ void main() {
           ),
         ),
       );
+      await tester.pumpAndSettle();
 
       closeDispenserBloc.add(AsyncFormDependenciesRequested(
           currentAddress: FakeAddress().address));

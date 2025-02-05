@@ -1,3 +1,12 @@
+enum WalletType {
+  horizon("Horizon", "Horizon Native"),
+  bip32("BIP32", "Freewallet / Counterwallet / Rare Pepe Wallet");
+
+  const WalletType(this.name, this.description);
+  final String name;
+  final String description;
+}
+
 enum ImportFormat {
   horizon("Horizon", "Horizon Native"),
   // legacy("Legacy", "BIP44,P2PKH,Base58"),

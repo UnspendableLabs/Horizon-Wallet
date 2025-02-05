@@ -190,7 +190,7 @@ class _ChooseFormatState extends State<ChooseFormat> {
     super.initState();
     context
         .read<OnboardingImportBloc>()
-        .add(ImportFormatChanged(importFormat: selectedFormat));
+        .add(ImportFormatChanged(walletType: selectedFormat));
   }
 
   @override
@@ -209,7 +209,7 @@ class _ChooseFormatState extends State<ChooseFormat> {
             });
             context
                 .read<OnboardingImportBloc>()
-                .add(ImportFormatChanged(importFormat: selectedFormat));
+                .add(ImportFormatChanged(walletType: selectedFormat));
           },
           selectedFormat: selectedFormat,
         ),
@@ -243,7 +243,7 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
   List<TextEditingController> controllers =
       List.generate(12, (_) => TextEditingController());
   List<FocusNode> focusNodes = List.generate(12, (_) => FocusNode());
-  String? selectedFormat = ImportFormat.horizon.name;
+  bool _showSeedPhrase = false;
 
   @override
   void initState() {
@@ -281,7 +281,6 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
       backgroundColor: scaffoldBackgroundColor,
       body: Column(
         children: [
-          const SizedBox(height: 16),
           isSmallScreen && widget.mnemonicErrorState != null
               ? Align(
                   alignment: Alignment.center,
@@ -311,6 +310,26 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
                     child: buildInputFields(isSmallScreen, isDarkMode),
                   )
                 : buildInputFields(isSmallScreen, isDarkMode),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: TextButton.icon(
+              onPressed: () {
+                setState(() {
+                  _showSeedPhrase = !_showSeedPhrase;
+                });
+              },
+              icon: Icon(
+                _showSeedPhrase ? Icons.visibility_off : Icons.visibility,
+                color: isDarkMode ? mainTextWhite : mainTextBlack,
+              ),
+              label: Text(
+                _showSeedPhrase ? 'Hide Seed Phrase' : 'Show Seed Phrase',
+                style: TextStyle(
+                  color: isDarkMode ? mainTextWhite : mainTextBlack,
+                ),
+              ),
+            ),
           ),
           BackContinueButtons(
             isDarkMode: isDarkMode,
@@ -440,6 +459,7 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
               child: TextField(
                 controller: controllers[index],
                 focusNode: focusNodes[index],
+                obscureText: !_showSeedPhrase,
                 onChanged: (value) => handleInput(value, index),
                 decoration: InputDecoration(
                   filled: true,
@@ -489,6 +509,7 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
             child: TextField(
               controller: controllers[index],
               focusNode: focusNodes[index],
+              obscureText: !_showSeedPhrase,
               onChanged: (value) => handleInput(value, index),
               decoration: InputDecoration(
                 filled: true,

@@ -12,7 +12,7 @@ class OnboardingImportState with _$OnboardingImportState {
   const factory OnboardingImportState({
     @Default("") String mnemonic,
     String? mnemonicError,
-    @Default(ImportFormat.horizon) ImportFormat importFormat,
+    @Default(WalletType.horizon) WalletType walletType,
     @Default(OnboardingImportStep.chooseFormat) currentStep,
     @Default(ImportStateNotAsked) importState,
   }) = _OnboardingImportState;

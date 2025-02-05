@@ -1313,4 +1313,19 @@ class EventsRepositoryImpl implements EventsRepository {
       await cacheProvider.setObject(address, txHashes);
     }
   }
+
+  @override
+  Future<int> numEventsForAddresses({
+    required List<String> addresses,
+  }) async {
+    final addressesParam = addresses.join(",");
+
+    final response = await api_.getEventsByAddressesVerbose(addressesParam);
+
+    if (response.error != null) {
+      throw Exception("Error getting events by addresses: ${response.error}");
+    }
+
+    return response.resultCount ?? 0;
+  }
 }
