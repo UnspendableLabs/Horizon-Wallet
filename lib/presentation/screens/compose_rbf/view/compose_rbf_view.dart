@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
-import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
+import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
@@ -33,22 +33,26 @@ import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/presentation/common/usecase/write_local_transaction_usecase.dart';
 import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart";
 import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_event.dart";
+import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
+import 'package:horizon/domain/repositories/settings_repository.dart';
 
 class ComposeRBFPageWrapper extends StatelessWidget {
+  final bool passwordRequired;
   final String txHash;
   final String address;
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
 
   const ComposeRBFPageWrapper(
-      {required this.dashboardActivityFeedBloc,
+      {required this.passwordRequired,
+      required this.dashboardActivityFeedBloc,
       required this.txHash,
       required this.address,
       super.key});
 
   @override
   Widget build(BuildContext context) {
-    final shell = context.watch<ShellStateCubit>();
-    return shell.state.maybeWhen(
+    final session = context.watch<SessionStateCubit>();
+    return session.state.maybeWhen(
         orElse: () => const SizedBox.shrink(),
         success: (state) => BlocProvider(
             create: (context) => c.ComposeRBFBloc(),
@@ -74,21 +78,73 @@ class ComposeRBFPageWrapper extends StatelessWidget {
                                     makeRBFResponse: makeRBFResponse,
                                     rbfData: rbfData));
                           }),
-                        c.Review() => ComposeRBFReview(
-                            makeRBFResponse: state.makeRBFResponse!,
-                            rbfData: state.rbfData!,
-                            onBack: () {
-                              context
-                                  .read<c.ComposeRBFBloc>()
-                                  .add(const c.ReviewBackButtonPressed());
-                            },
-                            onContinue: () {
-                              context
-                                  .read<c.ComposeRBFBloc>()
-                                  .add(const c.ReviewSubmitted());
+                        c.Review() => BlocProvider(
+                            create: (context) => ComposeRbfPasswordBloc(
+                              passwordRequired: GetIt.I
+                                  .get<SettingsRepository>()
+                                  .requirePasswordForCryptoOperations,
+                              inMemoryKeyRepository:
+                                  GetIt.I.get<InMemoryKeyRepository>(),
+                              transactionLocalRepository:
+                                  GetIt.I.get<TransactionLocalRepository>(),
+                              analyticsService: GetIt.I<AnalyticsService>(),
+                              bitcoindService: GetIt.I.get<BitcoindService>(),
+                              bitcoinRepository:
+                                  GetIt.I.get<BitcoinRepository>(),
+                              importedAddressService:
+                                  GetIt.I<ImportedAddressService>(),
+                              addressService: GetIt.I<AddressService>(),
+                              accountRepository: GetIt.I<AccountRepository>(),
+                              addressRepository:
+                                  GetIt.I<UnifiedAddressRepository>(),
+                              encryptionService: GetIt.I<EncryptionService>(),
+                              transactionService: GetIt.I<TransactionService>(),
+                              signAndBroadcastTransactionUseCase: GetIt.I
+                                  .get<SignAndBroadcastTransactionUseCase>(),
+                              txHashToReplace: txHash,
+                              address: address,
+                              walletRepository: GetIt.I<WalletRepository>(),
+                              makeRBFResponse: state.makeRBFResponse!,
+                              writelocalTransactionUseCase:
+                                  GetIt.I<WriteLocalTransactionUseCase>(),
+                            ),
+                            child: Builder(builder: (context) {
+                              return ComposeRBFReview(
+                                passwordRequired: GetIt.I
+                                    .get<SettingsRepository>()
+                                    .requirePasswordForCryptoOperations,
+                                makeRBFResponse: state.makeRBFResponse!,
+                                rbfData: state.rbfData!,
+                                onBack: () {
+                                  context
+                                      .read<c.ComposeRBFBloc>()
+                                      .add(const c.ReviewBackButtonPressed());
+                                },
+                                onContinue: () {
+                                  if (passwordRequired) {
+                                    context
+                                        .read<c.ComposeRBFBloc>()
+                                        .add(const c.ReviewSubmitted());
+                                  } else {
+                                    context
+                                        .read<ComposeRbfPasswordBloc>()
+                                        .add(const FormSubmitted());
+                                  }
+                                },
+                                onSuccess: () {
+                                  dashboardActivityFeedBloc.add(const Load());
+                                  Navigator.of(context).pop();
+                                },
+                              );
                             }),
+                          ),
                         c.Password() => BlocProvider(
                             create: (context) => ComposeRbfPasswordBloc(
+                                  passwordRequired: GetIt.I
+                                      .get<SettingsRepository>()
+                                      .requirePasswordForCryptoOperations,
+                                  inMemoryKeyRepository:
+                                      GetIt.I.get<InMemoryKeyRepository>(),
                                   transactionLocalRepository:
                                       GetIt.I.get<TransactionLocalRepository>(),
                                   analyticsService: GetIt.I<AnalyticsService>(),

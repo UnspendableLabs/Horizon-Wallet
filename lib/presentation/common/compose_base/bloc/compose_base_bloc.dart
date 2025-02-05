@@ -5,12 +5,13 @@ import 'package:horizon/presentation/common/compose_base/bloc/compose_base_event
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_state.dart';
 
 abstract interface class ComposeBaseBlocInterface<T extends ComposeStateBase> {
-  Future<void> onFetchFormData(FetchFormData event, Emitter<T> emit);
-  void onChangeFeeOption(ChangeFeeOption event, Emitter<T> emit);
-  void onComposeTransaction(ComposeTransactionEvent event, Emitter<T> emit);
-  void onFinalizeTransaction(FinalizeTransactionEvent event, Emitter<T> emit);
-  void onSignAndBroadcastTransaction(
-      SignAndBroadcastTransactionEvent event, Emitter<T> emit);
+  Future<void> onAsyncFormDependenciesRequested(
+      AsyncFormDependenciesRequested event, Emitter<T> emit);
+  void onFeeOptionChanged(FeeOptionChanged event, Emitter<T> emit);
+  void onFormSubmitted(FormSubmitted event, Emitter<T> emit);
+  void onReviewSubmitted(ReviewSubmitted event, Emitter<T> emit);
+  void onSignAndBroadcastFormSubmitted(
+      SignAndBroadcastFormSubmitted event, Emitter<T> emit);
 }
 
 abstract class ComposeBaseBloc<T extends ComposeStateBase>
@@ -24,35 +25,36 @@ abstract class ComposeBaseBloc<T extends ComposeStateBase>
   }) {
     _errorService = GetIt.I.get<ErrorService>();
 
-    on<FetchFormData>((event, emit) async {
+    on<AsyncFormDependenciesRequested>((event, emit) async {
       _errorService.addBreadcrumb(
         type: 'navigation',
         category: 'compose',
         message: '$composePage page opened',
       );
 
-      await onFetchFormData(event, emit);
+      await onAsyncFormDependenciesRequested(event, emit);
     });
 
-    on<ChangeFeeOption>(onChangeFeeOption);
-    on<ComposeTransactionEvent>(onComposeTransaction);
-    on<FinalizeTransactionEvent>(onFinalizeTransaction);
-    on<SignAndBroadcastTransactionEvent>(onSignAndBroadcastTransaction);
+    on<FeeOptionChanged>(onFeeOptionChanged);
+    on<FormSubmitted>(onFormSubmitted);
+    on<ReviewSubmitted>(onReviewSubmitted);
+    on<SignAndBroadcastFormSubmitted>(onSignAndBroadcastFormSubmitted);
   }
 
   @override
-  Future<void> onFetchFormData(FetchFormData event, Emitter<T> emit);
+  Future<void> onAsyncFormDependenciesRequested(
+      AsyncFormDependenciesRequested event, Emitter<T> emit);
 
   @override
-  void onChangeFeeOption(ChangeFeeOption event, Emitter<T> emit);
+  void onFeeOptionChanged(FeeOptionChanged event, Emitter<T> emit);
 
   @override
-  void onComposeTransaction(ComposeTransactionEvent event, Emitter<T> emit);
+  void onFormSubmitted(FormSubmitted event, Emitter<T> emit);
 
   @override
-  void onFinalizeTransaction(FinalizeTransactionEvent event, Emitter<T> emit);
+  void onReviewSubmitted(ReviewSubmitted event, Emitter<T> emit);
 
   @override
-  void onSignAndBroadcastTransaction(
-      SignAndBroadcastTransactionEvent event, Emitter<T> emit);
+  void onSignAndBroadcastFormSubmitted(
+      SignAndBroadcastFormSubmitted event, Emitter<T> emit) {}
 }

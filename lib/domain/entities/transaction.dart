@@ -1,7 +1,6 @@
 class Transaction {
   final String txHash;
   final int txIndex;
-  final String? txlistHash;
   final int blockIndex;
   final String? blockHash;
   final int blockTime;
@@ -12,17 +11,17 @@ class Transaction {
   final String data;
   final bool supported;
 
-  const Transaction(
-      {required this.txHash,
-      required this.txIndex,
-      required this.txlistHash,
-      required this.blockIndex,
-      required this.blockHash,
-      required this.blockTime,
-      required this.source,
-      required this.destination,
-      required this.btcAmount,
-      required this.fee,
-      required this.data,
-      required this.supported});
+  const Transaction({
+    required this.txHash,
+    required this.txIndex,
+    required this.blockIndex,
+    required this.blockHash,
+    required this.blockTime,
+    required this.source,
+    required this.destination,
+    required this.btcAmount,
+    required this.fee,
+    required this.data,
+    required this.supported,
+  });
 }

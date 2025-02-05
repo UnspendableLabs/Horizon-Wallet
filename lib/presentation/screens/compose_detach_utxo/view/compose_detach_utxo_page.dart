@@ -13,9 +13,10 @@ import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transacti
 import 'package:horizon/presentation/common/usecase/write_local_transaction_usecase.dart';
 import 'package:horizon/presentation/screens/compose_detach_utxo/bloc/compose_detach_utxo_bloc.dart';
 import 'package:horizon/presentation/screens/compose_detach_utxo/bloc/compose_detach_utxo_state.dart';
-
+import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
+import 'package:horizon/domain/repositories/settings_repository.dart';
 import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart";
-import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
+import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
 
 class ComposeDetachUtxoPageWrapper extends StatelessWidget {
@@ -33,11 +34,14 @@ class ComposeDetachUtxoPageWrapper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final shell = context.watch<ShellStateCubit>();
-    return shell.state.maybeWhen(
+    final session = context.watch<SessionStateCubit>();
+    return session.state.maybeWhen(
       success: (state) => BlocProvider(
         key: Key(currentAddress),
         create: (context) => ComposeDetachUtxoBloc(
+          passwordRequired:
+              GetIt.I<SettingsRepository>().requirePasswordForCryptoOperations,
+          inMemoryKeyRepository: GetIt.I.get<InMemoryKeyRepository>(),
           logger: GetIt.I.get<Logger>(),
           getFeeEstimatesUseCase: GetIt.I.get<GetFeeEstimatesUseCase>(),
           analyticsService: GetIt.I.get<AnalyticsService>(),
@@ -47,7 +51,7 @@ class ComposeDetachUtxoPageWrapper extends StatelessWidget {
               GetIt.I.get<SignAndBroadcastTransactionUseCase>(),
           writelocalTransactionUseCase:
               GetIt.I.get<WriteLocalTransactionUseCase>(),
-        )..add(FetchFormData()),
+        )..add(AsyncFormDependenciesRequested()),
         child: ComposeDetachUtxoPage(
           address: currentAddress,
           assetName: assetName,
@@ -101,7 +105,7 @@ class ComposeDetachUtxoPageState extends State<ComposeDetachUtxoPage> {
           dashboardActivityFeedBloc: widget.dashboardActivityFeedBloc,
           onFeeChange: (fee) => context
               .read<ComposeDetachUtxoBloc>()
-              .add(ChangeFeeOption(value: fee)),
+              .add(FeeOptionChanged(value: fee)),
           buildInitialFormFields: (state, loading, formKey) =>
               _buildInitialFormFields(state, loading, formKey),
           onInitialCancel: () => _handleInitialCancel(),
@@ -127,7 +131,7 @@ class ComposeDetachUtxoPageState extends State<ComposeDetachUtxoPage> {
 
   void _handleInitialSubmit(GlobalKey<FormState> formKey) {
     if (formKey.currentState!.validate()) {
-      context.read<ComposeDetachUtxoBloc>().add(ComposeTransactionEvent(
+      context.read<ComposeDetachUtxoBloc>().add(FormSubmitted(
             sourceAddress: destinationController.text,
             params: ComposeDetachUtxoEventParams(
               utxo: utxoController.text,
@@ -171,14 +175,14 @@ class ComposeDetachUtxoPageState extends State<ComposeDetachUtxoPage> {
   }
 
   void _onConfirmationBack() {
-    context.read<ComposeDetachUtxoBloc>().add(FetchFormData());
+    context.read<ComposeDetachUtxoBloc>().add(AsyncFormDependenciesRequested());
   }
 
   void _onConfirmationContinue(
       dynamic composeTransaction, int fee, GlobalKey<FormState> formKey) {
     context
         .read<ComposeDetachUtxoBloc>()
-        .add(FinalizeTransactionEvent<ComposeDetachUtxoResponse>(
+        .add(ReviewSubmitted<ComposeDetachUtxoResponse>(
           composeTransaction: composeTransaction,
           fee: fee,
         ));
@@ -187,7 +191,7 @@ class ComposeDetachUtxoPageState extends State<ComposeDetachUtxoPage> {
   void _onFinalizeSubmit(String password, GlobalKey<FormState> formKey) {
     if (formKey.currentState!.validate()) {
       context.read<ComposeDetachUtxoBloc>().add(
-            SignAndBroadcastTransactionEvent(
+            SignAndBroadcastFormSubmitted(
               password: password,
             ),
           );
@@ -195,6 +199,6 @@ class ComposeDetachUtxoPageState extends State<ComposeDetachUtxoPage> {
   }
 
   void _onFinalizeCancel() {
-    context.read<ComposeDetachUtxoBloc>().add(FetchFormData());
+    context.read<ComposeDetachUtxoBloc>().add(AsyncFormDependenciesRequested());
   }
 }

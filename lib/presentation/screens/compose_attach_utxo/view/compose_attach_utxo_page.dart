@@ -21,8 +21,10 @@ import 'package:horizon/presentation/screens/compose_attach_utxo/bloc/compose_at
 import 'package:horizon/presentation/screens/compose_attach_utxo/bloc/compose_attach_utxo_state.dart';
 import 'package:horizon/presentation/screens/compose_attach_utxo/usecase/fetch_form_data.dart';
 import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart";
-import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
+import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
+import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
+import 'package:horizon/domain/repositories/settings_repository.dart';
 
 class ComposeAttachUtxoPageWrapper extends StatelessWidget {
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
@@ -39,11 +41,14 @@ class ComposeAttachUtxoPageWrapper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final shell = context.watch<ShellStateCubit>();
-    return shell.state.maybeWhen(
+    final session = context.watch<SessionStateCubit>();
+    return session.state.maybeWhen(
       success: (state) => BlocProvider(
         key: Key(currentAddress),
         create: (context) => ComposeAttachUtxoBloc(
+          passwordRequired:
+              GetIt.I<SettingsRepository>().requirePasswordForCryptoOperations,
+          inMemoryKeyRepository: GetIt.I.get<InMemoryKeyRepository>(),
           logger: GetIt.I.get<Logger>(),
           fetchComposeAttachUtxoFormDataUseCase:
               GetIt.I.get<FetchComposeAttachUtxoFormDataUseCase>(),
@@ -56,7 +61,7 @@ class ComposeAttachUtxoPageWrapper extends StatelessWidget {
               GetIt.I.get<WriteLocalTransactionUseCase>(),
           blockRepository: GetIt.I.get<BlockRepository>(),
           cacheProvider: GetIt.I.get<CacheProvider>(),
-        )..add(FetchFormData(currentAddress: currentAddress)),
+        )..add(AsyncFormDependenciesRequested(currentAddress: currentAddress)),
         child: ComposeAttachUtxoPage(
           address: currentAddress,
           assetName: assetName,
@@ -90,7 +95,7 @@ class ComposeAttachUtxoPageState extends State<ComposeAttachUtxoPage> {
   TextEditingController quantityController = TextEditingController();
   TextEditingController fromAddressController = TextEditingController();
   TextEditingController assetController = TextEditingController();
-
+  TextEditingController utxoValueController = TextEditingController();
   bool _submitted = false;
   String? error;
   // Add a key for the dropdown
@@ -112,6 +117,7 @@ class ComposeAttachUtxoPageState extends State<ComposeAttachUtxoPage> {
     quantityController.dispose();
     fromAddressController.dispose();
     assetController.dispose();
+    utxoValueController.dispose();
   }
 
   @override
@@ -127,7 +133,7 @@ class ComposeAttachUtxoPageState extends State<ComposeAttachUtxoPage> {
             buildInitialFormFields: (state, loading, formKey) => [
               HorizonUI.HorizonTextFormField(
                 controller: fromAddressController,
-                label: 'From Address',
+                label: 'Source',
                 enabled: false,
               ),
               const SizedBox(height: 16),
@@ -145,6 +151,12 @@ class ComposeAttachUtxoPageState extends State<ComposeAttachUtxoPage> {
               const SizedBox(height: 16),
               const HorizonUI.HorizonTextFormField(
                 label: 'Available Supply',
+                enabled: false,
+              ),
+              const SizedBox(height: 16),
+              HorizonUI.HorizonTextFormField(
+                controller: utxoValueController,
+                label: 'UTXO Value (optional; default: 546 sats)',
                 enabled: false,
               ),
               const SizedBox(height: 16),
@@ -171,7 +183,7 @@ class ComposeAttachUtxoPageState extends State<ComposeAttachUtxoPage> {
             dashboardActivityFeedBloc: widget.dashboardActivityFeedBloc,
             onFeeChange: (fee) => context
                 .read<ComposeAttachUtxoBloc>()
-                .add(ChangeFeeOption(value: fee)),
+                .add(FeeOptionChanged(value: fee)),
             buildInitialFormFields: (state, loading, formKey) =>
                 _buildInitialFormFields(state, loading, formKey),
             onInitialCancel: () => _handleInitialCancel(),
@@ -222,12 +234,14 @@ class ComposeAttachUtxoPageState extends State<ComposeAttachUtxoPage> {
       int quantity = getQuantityForDivisibility(
           divisible: balance.assetInfo.divisible,
           inputQuantity: quantityController.text);
+      final utxoValue = int.tryParse(utxoValueController.text) ?? 546;
 
-      context.read<ComposeAttachUtxoBloc>().add(ComposeTransactionEvent(
+      context.read<ComposeAttachUtxoBloc>().add(FormSubmitted(
             sourceAddress: fromAddressController.text,
             params: ComposeAttachUtxoEventParams(
               asset: widget.assetName,
               quantity: quantity,
+              utxoValue: utxoValue,
             ),
           ));
     }
@@ -246,7 +260,7 @@ class ComposeAttachUtxoPageState extends State<ComposeAttachUtxoPage> {
         return [
           HorizonUI.HorizonTextFormField(
             controller: fromAddressController,
-            label: 'From Address',
+            label: 'Source',
             enabled: false,
           ),
           const SizedBox(height: 16),
@@ -281,6 +295,29 @@ class ComposeAttachUtxoPageState extends State<ComposeAttachUtxoPage> {
             enabled: false,
           ),
           const SizedBox(height: 16),
+          HorizonUI.HorizonTextFormField(
+            controller: utxoValueController,
+            label: 'UTXO Value (optional; default: 546 sats)',
+            enabled: true,
+            inputFormatters: [
+              FilteringTextInputFormatter.digitsOnly,
+            ],
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                // this field is optional so a value is not required
+                return null;
+              } else {
+                final sats = int.tryParse(value);
+                if (sats == null) {
+                  return 'Invalid UTXO value';
+                } else if (sats < 546) {
+                  return 'UTXO value must be greater than 546 sats';
+                }
+              }
+              return null;
+            },
+          ),
+          const SizedBox(height: 32),
           HorizonUI.HorizonTextFormField(
             controller: TextEditingController(text: state.xcpFeeEstimate),
             label: 'XCP Fee Estimate',
@@ -338,6 +375,12 @@ class ComposeAttachUtxoPageState extends State<ComposeAttachUtxoPage> {
         ),
         const SizedBox(height: 16),
         HorizonUI.HorizonTextFormField(
+          controller: TextEditingController(text: params.utxoValue?.toString()),
+          label: 'UTXO Value',
+          enabled: false,
+        ),
+        const SizedBox(height: 16),
+        HorizonUI.HorizonTextFormField(
           controller: TextEditingController(text: state.xcpFeeEstimate),
           label: 'XCP Fee Estimate',
           enabled: false,
@@ -350,7 +393,7 @@ class ComposeAttachUtxoPageState extends State<ComposeAttachUtxoPage> {
   }
 
   void _onConfirmationBack() {
-    context.read<ComposeAttachUtxoBloc>().add(FetchFormData(
+    context.read<ComposeAttachUtxoBloc>().add(AsyncFormDependenciesRequested(
           currentAddress: widget.address,
         ));
   }
@@ -359,7 +402,7 @@ class ComposeAttachUtxoPageState extends State<ComposeAttachUtxoPage> {
       dynamic composeTransaction, int fee, GlobalKey<FormState> formKey) {
     context
         .read<ComposeAttachUtxoBloc>()
-        .add(FinalizeTransactionEvent<ComposeAttachUtxoResponse>(
+        .add(ReviewSubmitted<ComposeAttachUtxoResponse>(
           composeTransaction: composeTransaction,
           fee: fee,
         ));
@@ -368,7 +411,7 @@ class ComposeAttachUtxoPageState extends State<ComposeAttachUtxoPage> {
   void _onFinalizeSubmit(String password, GlobalKey<FormState> formKey) {
     if (formKey.currentState!.validate()) {
       context.read<ComposeAttachUtxoBloc>().add(
-            SignAndBroadcastTransactionEvent(
+            SignAndBroadcastFormSubmitted(
               password: password,
             ),
           );
@@ -376,7 +419,7 @@ class ComposeAttachUtxoPageState extends State<ComposeAttachUtxoPage> {
   }
 
   void _onFinalizeCancel() {
-    context.read<ComposeAttachUtxoBloc>().add(FetchFormData(
+    context.read<ComposeAttachUtxoBloc>().add(AsyncFormDependenciesRequested(
           currentAddress: widget.address,
         ));
   }

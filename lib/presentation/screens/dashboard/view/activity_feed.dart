@@ -14,6 +14,8 @@ import 'package:horizon/common/format.dart';
 import 'package:horizon/presentation/common/colors.dart';
 import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
 import 'package:horizon/presentation/screens/compose_rbf/view/compose_rbf_view.dart';
+import 'package:horizon/domain/repositories/settings_repository.dart';
+import 'package:get_it/get_it.dart';
 
 class RBF extends StatelessWidget {
   final String txHash;
@@ -30,6 +32,9 @@ class RBF extends StatelessWidget {
           HorizonUI.HorizonDialog.show(
             context: context,
             body: ComposeRBFPageWrapper(
+                passwordRequired: GetIt.I
+                    .get<SettingsRepository>()
+                    .requirePasswordForCryptoOperations,
                 dashboardActivityFeedBloc:
                     context.read<DashboardActivityFeedBloc>(),
                 txHash: txHash,
@@ -214,7 +219,7 @@ class ActivityFeedListItem extends StatelessWidget {
           when _getSendSide(params.source) == SendSide.source =>
         RBF(txHash: params.txHash, address: params.source),
       VerboseEnhancedSendEvent(params: var params)
-          when _getSendSide(params.source) == SendSide.destination =>
+          when _getSendSide(params.source) == SendSide.source =>
         RBF(txHash: params.txHash, address: params.source),
       VerboseMpmaSendEvent(params: var params)
           when _getSendSide(params.source) == SendSide.source =>
@@ -229,8 +234,10 @@ class ActivityFeedListItem extends StatelessWidget {
         event.txHash != null
             ? RBF(txHash: event.txHash!, address: params.source)
             : null,
+
+      // for dispense, source and destination are inverted
       VerboseDispenseEvent(params: var params)
-          when _getSendSide(params.source) == SendSide.source =>
+          when _getSendSide(params.source) == SendSide.destination =>
         event.txHash != null
             ? RBF(txHash: event.txHash!, address: params.source)
             : null,

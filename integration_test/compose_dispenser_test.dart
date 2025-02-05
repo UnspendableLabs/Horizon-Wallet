@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:horizon/domain/entities/dispenser.dart';
+import 'package:horizon/main.dart';
 import 'package:integration_test/integration_test.dart';
+import 'package:horizon/setup.dart';
 
 import 'package:mocktail/mocktail.dart';
 
+import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_event.dart';
 import 'package:horizon/presentation/screens/compose_dispenser/view/compose_dispenser_page.dart';
 import "package:horizon/presentation/screens/compose_dispenser/bloc/compose_dispenser_bloc.dart";
@@ -15,8 +19,8 @@ import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
 import 'package:horizon/domain/repositories/utxo_repository.dart';
 import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart";
-import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
-import 'package:horizon/presentation/shell/bloc/shell_state.dart';
+import 'package:horizon/presentation/session/bloc/session_cubit.dart';
+import 'package:horizon/presentation/session/bloc/session_state.dart';
 import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transaction_usecase.dart';
 import 'package:horizon/presentation/common/usecase/write_local_transaction_usecase.dart';
 import 'package:horizon/presentation/common/usecase/get_virtual_size_usecase.dart';
@@ -29,6 +33,10 @@ import 'package:horizon/domain/entities/asset_info.dart';
 import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/domain/entities/compose_dispenser.dart';
 import 'package:horizon/domain/entities/compose_response.dart';
+
+import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
+
+class MockInMemoryKeyRepository extends Mock implements InMemoryKeyRepository {}
 
 class FakeVirtualSize extends Fake implements VirtualSize {
   @override
@@ -67,12 +75,13 @@ class MockDashboardActivityFeedBloc extends Mock
 
 class MockGetVirtualSizeUseCase extends Mock implements GetVirtualSizeUseCase {}
 
-class MockShellStateCubit extends Mock implements ShellStateCubit {
+class MockSessionStateCubit extends Mock implements SessionStateCubit {
   @override
-  ShellState get state => ShellState.success(ShellStateSuccess.withAccount(
+  SessionState get state => const SessionState.success(SessionStateSuccess(
         accounts: [],
         redirect: false,
-        wallet: const Wallet(
+        decryptionKey: "decryption_key",
+        wallet: Wallet(
           name: 'Test Wallet',
           uuid: 'test-wallet-uuid',
           publicKey: '',
@@ -81,7 +90,7 @@ class MockShellStateCubit extends Mock implements ShellStateCubit {
         ),
         currentAccountUuid: 'test-account-uuid',
         addresses: [],
-        currentAddress: const Address(
+        currentAddress: Address(
           address: 'test-address',
           accountUuid: 'test-account-uuid',
           index: 0,
@@ -132,6 +141,8 @@ class FakeComposeFunction<T extends ComposeResponse> extends Fake {
   }
 }
 
+class MockLogger extends Mock implements Logger {}
+
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
   late ComposeDispenserBloc composeDispenserBloc;
@@ -146,8 +157,10 @@ void main() {
   late MockWriteLocalTransactionUseCase mockWriteLocalTransactionUseCase;
   late MockGetVirtualSizeUseCase mockGetVirtualSizeUseCase;
   late MockUtxoRepository mockUtxoRepository;
-
-  setUpAll(() {
+  late MockLogger mockLogger;
+  setUpAll(() async {
+    setup();
+    await initSettings();
     registerFallbackValue(FakeAddress().address);
     registerFallbackValue(
         FakeComposeFunction<ComposeDispenserResponseVerbose>());
@@ -164,8 +177,12 @@ void main() {
     mockAnalyticsService = MockAnalyticsService();
     mockComposeRepository = MockComposeRepository();
     mockWriteLocalTransactionUseCase = MockWriteLocalTransactionUseCase();
+    mockLogger = MockLogger();
 
     composeDispenserBloc = ComposeDispenserBloc(
+      inMemoryKeyRepository: MockInMemoryKeyRepository(),
+      passwordRequired: true,
+      logger: mockLogger,
       signAndBroadcastTransactionUseCase:
           mockSignAndBroadcastTransactionUseCase,
       composeTransactionUseCase: mockComposeTransactionUseCase,
@@ -180,6 +197,7 @@ void main() {
 
   tearDown(() async {
     await composeDispenserBloc.close();
+    Settings.clearCache();
   });
 
   group('Form Validations', () {
@@ -217,6 +235,9 @@ void main() {
 
       // Instantiate ComposeDispenserBloc with mocks
       final composeDispenserBloc = ComposeDispenserBloc(
+        inMemoryKeyRepository: MockInMemoryKeyRepository(),
+        passwordRequired: true,
+        logger: mockLogger,
         fetchDispenserFormDataUseCase: mockFetchDispenserFormDataUseCase,
         composeTransactionUseCase: mockComposeTransactionUseCase,
         composeRepository: mockComposeRepository,
@@ -247,8 +268,8 @@ void main() {
       );
 
       // Dispatch the FetchFormData event
-      composeDispenserBloc
-          .add(FetchFormData(currentAddress: FakeAddress().address));
+      composeDispenserBloc.add(AsyncFormDependenciesRequested(
+          currentAddress: FakeAddress().address));
 
       // Allow time for the Bloc to process and the UI to rebuild
       await tester.pumpAndSettle();
@@ -336,6 +357,9 @@ void main() {
 
       // Instantiate ComposeDispenserBloc with mocks
       final composeDispenserBloc = ComposeDispenserBloc(
+        inMemoryKeyRepository: MockInMemoryKeyRepository(),
+        passwordRequired: true,
+        logger: mockLogger,
         fetchDispenserFormDataUseCase: mockFetchDispenserFormDataUseCase,
         composeTransactionUseCase: mockComposeTransactionUseCase,
         composeRepository: mockComposeRepository,
@@ -366,8 +390,8 @@ void main() {
       );
 
       // Dispatch the FetchFormData event
-      composeDispenserBloc
-          .add(FetchFormData(currentAddress: FakeAddress().address));
+      composeDispenserBloc.add(AsyncFormDependenciesRequested(
+          currentAddress: FakeAddress().address));
 
       // Allow time for the Bloc to process and the UI to rebuild
       await tester.pumpAndSettle();
@@ -413,6 +437,9 @@ void main() {
 
       // Instantiate ComposeDispenserBloc with mocks
       final composeDispenserBloc = ComposeDispenserBloc(
+        inMemoryKeyRepository: MockInMemoryKeyRepository(),
+        passwordRequired: true,
+        logger: mockLogger,
         fetchDispenserFormDataUseCase: mockFetchDispenserFormDataUseCase,
         composeTransactionUseCase: mockComposeTransactionUseCase,
         composeRepository: mockComposeRepository,
@@ -443,8 +470,8 @@ void main() {
       );
 
       // Dispatch the FetchFormData event
-      composeDispenserBloc
-          .add(FetchFormData(currentAddress: FakeAddress().address));
+      composeDispenserBloc.add(AsyncFormDependenciesRequested(
+          currentAddress: FakeAddress().address));
 
       // Allow time for the Bloc to process and the UI to rebuild
       await tester.pumpAndSettle();
@@ -551,6 +578,9 @@ void main() {
 
       // Instantiate ComposeDispenserBloc with mocks
       final composeDispenserBloc = ComposeDispenserBloc(
+        inMemoryKeyRepository: MockInMemoryKeyRepository(),
+        passwordRequired: true,
+        logger: mockLogger,
         fetchDispenserFormDataUseCase: mockFetchDispenserFormDataUseCase,
         composeTransactionUseCase: mockComposeTransactionUseCase,
         composeRepository: mockComposeRepository,
@@ -581,8 +611,8 @@ void main() {
       );
 
       // Dispatch the FetchFormData event
-      composeDispenserBloc
-          .add(FetchFormData(currentAddress: FakeAddress().address));
+      composeDispenserBloc.add(AsyncFormDependenciesRequested(
+          currentAddress: FakeAddress().address));
 
       // Allow time for the Bloc to process and the UI to rebuild
       await tester.pumpAndSettle();
@@ -653,6 +683,9 @@ void main() {
 
       // Instantiate ComposeDispenserBloc with mocks
       final composeDispenserBloc = ComposeDispenserBloc(
+        inMemoryKeyRepository: MockInMemoryKeyRepository(),
+        passwordRequired: true,
+        logger: mockLogger,
         fetchDispenserFormDataUseCase: mockFetchDispenserFormDataUseCase,
         composeTransactionUseCase: mockComposeTransactionUseCase,
         composeRepository: mockComposeRepository,
@@ -683,8 +716,8 @@ void main() {
       );
 
       // Dispatch the FetchFormData event
-      composeDispenserBloc
-          .add(FetchFormData(currentAddress: FakeAddress().address));
+      composeDispenserBloc.add(AsyncFormDependenciesRequested(
+          currentAddress: FakeAddress().address));
 
       // Allow time for the Bloc to process and the UI to rebuild
       await tester.pumpAndSettle();
@@ -744,6 +777,9 @@ void main() {
 
       // Instantiate ComposeDispenserBloc with mocks
       final composeDispenserBloc = ComposeDispenserBloc(
+        inMemoryKeyRepository: MockInMemoryKeyRepository(),
+        passwordRequired: true,
+        logger: mockLogger,
         fetchDispenserFormDataUseCase: mockFetchDispenserFormDataUseCase,
         composeTransactionUseCase: mockComposeTransactionUseCase,
         composeRepository: mockComposeRepository,
@@ -774,8 +810,8 @@ void main() {
       );
 
       // Dispatch the FetchFormData event
-      composeDispenserBloc
-          .add(FetchFormData(currentAddress: FakeAddress().address));
+      composeDispenserBloc.add(AsyncFormDependenciesRequested(
+          currentAddress: FakeAddress().address));
 
       // Allow time for the Bloc to process and the UI to rebuild
       await tester.pumpAndSettle();
@@ -877,6 +913,9 @@ void main() {
 
       // Instantiate ComposeDispenserBloc with mocks
       final composeDispenserBloc = ComposeDispenserBloc(
+        inMemoryKeyRepository: MockInMemoryKeyRepository(),
+        passwordRequired: true,
+        logger: mockLogger,
         fetchDispenserFormDataUseCase: mockFetchDispenserFormDataUseCase,
         composeTransactionUseCase: mockComposeTransactionUseCase,
         composeRepository: mockComposeRepository,
@@ -912,8 +951,8 @@ void main() {
       );
 
       // Dispatch the FetchFormData event
-      composeDispenserBloc
-          .add(FetchFormData(currentAddress: FakeAddress().address));
+      composeDispenserBloc.add(AsyncFormDependenciesRequested(
+          currentAddress: FakeAddress().address));
 
       // Allow time for the Bloc to process and the UI to rebuild
       await tester.pumpAndSettle();

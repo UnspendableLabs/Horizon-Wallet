@@ -24,7 +24,7 @@ class ComposeSweepState with _$ComposeSweepState, ComposeStateBase {
         feeState: const FeeState.initial(),
         balancesState: const BalancesState.initial(),
         feeOption: Medium(),
-        submitState: const SubmitInitial(),
+        submitState: const FormStep(),
         sweepXcpFeeState: const SweepXcpFeeState.initial(),
       );
 }

@@ -80,7 +80,7 @@ Transaction _$TransactionFromJson(Map<String, dynamic> json) => Transaction(
       fee: (json['fee'] as num).toInt(),
       data: json['data'] as String,
       supported: json['supported'] as bool,
-      confirmed: json['confirmed'] as bool,
+      confirmed: json['confirmed'] as bool?,
     );
 
 Map<String, dynamic> _$TransactionToJson(Transaction instance) =>
@@ -112,7 +112,7 @@ TransactionVerbose _$TransactionVerboseFromJson(Map<String, dynamic> json) =>
       fee: (json['fee'] as num).toInt(),
       data: json['data'] as String,
       supported: json['supported'] as bool,
-      confirmed: json['confirmed'] as bool,
+      confirmed: json['confirmed'] as bool?,
       unpackedData: TransactionUnpacked.fromJson(
           json['unpacked_data'] as Map<String, dynamic>),
       btcAmountNormalized: json['btc_amount_normalized'] as String,
@@ -1646,7 +1646,7 @@ SweepParams _$SweepParamsFromJson(Map<String, dynamic> json) => SweepParams(
       feePaid: (json['fee_paid'] as num).toInt(),
       destination: json['destination'] as String,
       flags: (json['flags'] as num).toInt(),
-      memo: json['memo'] as String,
+      memo: json['memo'] as String?,
       source: json['source'] as String,
       status: json['status'] as String,
       txHash: json['tx_hash'] as String,
@@ -1695,7 +1695,7 @@ VerboseSweepParams _$VerboseSweepParamsFromJson(Map<String, dynamic> json) =>
       feePaid: (json['fee_paid'] as num).toInt(),
       destination: json['destination'] as String,
       flags: (json['flags'] as num).toInt(),
-      memo: json['memo'] as String,
+      memo: json['memo'] as String?,
       source: json['source'] as String,
       status: json['status'] as String,
       txHash: json['tx_hash'] as String,
@@ -6596,6 +6596,7 @@ class _V2Api implements V2Api {
     String address,
     String asset,
     int quantity, [
+    int? utxoValue,
     String? destinationVout,
     bool? skipValidation,
     bool? allowUnconfirmedInputs,
@@ -6609,6 +6610,7 @@ class _V2Api implements V2Api {
     final queryParameters = <String, dynamic>{
       r'asset': asset,
       r'quantity': quantity,
+      r'utxo_value': utxoValue,
       r'destination_vout': destinationVout,
       r'skip_validation': skipValidation,
       r'allow_unconfirmed_inputs': allowUnconfirmedInputs,

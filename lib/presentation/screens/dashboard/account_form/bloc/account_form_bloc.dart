@@ -13,8 +13,11 @@ import 'package:horizon/domain/services/error_service.dart';
 import 'package:horizon/domain/services/wallet_service.dart';
 import "package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_event.dart";
 import 'package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_state.dart';
+import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 
 class AccountFormBloc extends Bloc<AccountFormEvent, AccountFormState> {
+  final bool passwordRequired;
+  final InMemoryKeyRepository inMemoryKeyRepository;
   final AccountRepository accountRepository;
   final WalletRepository walletRepository;
   final WalletService walletService;
@@ -24,6 +27,8 @@ class AccountFormBloc extends Bloc<AccountFormEvent, AccountFormState> {
   final ErrorService errorService;
 
   AccountFormBloc({
+    required this.inMemoryKeyRepository,
+    required this.passwordRequired,
     required this.accountRepository,
     required this.walletRepository,
     required this.walletService,
@@ -37,7 +42,9 @@ class AccountFormBloc extends Bloc<AccountFormEvent, AccountFormState> {
     });
 
     on<Submit>((event, emit) async {
-      emit(AccountFormStep2(state: Step2Loading()));
+      if (passwordRequired) {
+        emit(AccountFormStep2(state: Step2Loading()));
+      }
       try {
         Wallet? wallet = await walletRepository.getCurrentWallet();
 
@@ -47,8 +54,11 @@ class AccountFormBloc extends Bloc<AccountFormEvent, AccountFormState> {
 
         late String decryptedPrivKey;
         try {
-          decryptedPrivKey = await encryptionService.decrypt(
-              wallet.encryptedPrivKey, event.password);
+          decryptedPrivKey = passwordRequired
+              ? await encryptionService.decrypt(
+                  wallet.encryptedPrivKey, event.password)
+              : await encryptionService.decryptWithKey(wallet.encryptedPrivKey,
+                  (await inMemoryKeyRepository.get())!);
         } catch (e) {
           emit(AccountFormStep2(state: Step2Error("Incorrect password")));
           return;
@@ -146,7 +156,7 @@ class AccountFormBloc extends Bloc<AccountFormEvent, AccountFormState> {
             throw Exception("invalid import format");
         }
 
-        emit(AccountFormStep2(state: Step2Success(account)));
+        emit(AccountFormSuccess());
       } catch (e) {
         emit(AccountFormStep2(state: Step2Error(e.toString())));
       }

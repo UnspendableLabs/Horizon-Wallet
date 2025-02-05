@@ -6,8 +6,8 @@ class MnemonicChanged extends OnboardingImportEvent {
 }
 
 class ImportFormatChanged extends OnboardingImportEvent {
-  final String importFormat;
-  ImportFormatChanged({required this.importFormat});
+  final String walletType;
+  ImportFormatChanged({required this.walletType});
 }
 
 class ImportFormatSubmitted extends OnboardingImportEvent {}

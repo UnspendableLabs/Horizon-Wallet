@@ -5,7 +5,7 @@ import 'package:get_it/get_it.dart';
 import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart";
 import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_event.dart";
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_state.dart';
-import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
+import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 
 import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
 import 'package:horizon/presentation/screens/compose_cancel/bloc/compose_cancel_bloc.dart';
@@ -30,6 +30,8 @@ import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
 
 import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
+import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
+import 'package:horizon/domain/repositories/settings_repository.dart';
 
 class ComposeCancelPageWrapper extends StatelessWidget {
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
@@ -58,11 +60,14 @@ class ComposeCancelPageWrapper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final shell = context.watch<ShellStateCubit>();
-    return shell.state.maybeWhen(
+    final session = context.watch<SessionStateCubit>();
+    return session.state.maybeWhen(
         success: (state) => BlocProvider(
               key: Key(currentAddress),
               create: (context) => ComposeCancelBloc(
+                passwordRequired: GetIt.I<SettingsRepository>()
+                    .requirePasswordForCryptoOperations,
+                inMemoryKeyRepository: GetIt.I.get<InMemoryKeyRepository>(),
                 getFeeEstimatesUseCase: GetIt.I.get<GetFeeEstimatesUseCase>(),
                 logger: GetIt.I.get<Logger>(),
                 writelocalTransactionUseCase:
@@ -73,7 +78,8 @@ class ComposeCancelPageWrapper extends StatelessWidget {
                     GetIt.I.get<ComposeTransactionUseCase>(),
                 analyticsService: GetIt.I.get<AnalyticsService>(),
                 composeRepository: GetIt.I.get<ComposeRepository>(),
-              )..add(FetchFormData(currentAddress: currentAddress)),
+              )..add(AsyncFormDependenciesRequested(
+                  currentAddress: currentAddress)),
               child: BlocProvider(
                 create: (context) => CancelOrderFormBloc(
                     orderRepository: GetIt.I.get<OrderRepository>(),
@@ -145,8 +151,9 @@ class ComposeCancelPage extends StatefulWidget {
 class ComposeCancelPageState extends State<ComposeCancelPage> {
   void onConfirmationContinue(ComposeCancelResponse composeTransaction, int fee,
       GlobalKey<FormState> formKey) {
-    context.read<ComposeCancelBloc>().add(FinalizeTransactionEvent(
-        composeTransaction: composeTransaction, fee: fee));
+    context
+        .read<ComposeCancelBloc>()
+        .add(ReviewSubmitted(composeTransaction: composeTransaction, fee: fee));
   }
 
   void onConfirmationBack() {
@@ -176,17 +183,21 @@ class ComposeCancelPageState extends State<ComposeCancelPage> {
       }
     }, builder: (context, state) {
       return switch (state.submitState) {
-        SubmitInitial(error: var error) => CancelOrderForm(
+        FormStep(error: var error) => CancelOrderForm(
             submissionError: error,
           ),
-        SubmitComposingTransaction(
+        ReviewStep(
           composeTransaction: var composeTransaction,
           fee: var fee,
           feeRate: var feeRate,
           virtualSize: var virtualSize,
           adjustedVirtualSize: var adjustedVirtualSize,
+          loading: var loading,
+          error: var error,
         ) =>
-          ComposeBaseConfirmationPage(
+          ReviewStepView(
+              loading: loading,
+              error: error,
               composeTransaction: composeTransaction,
               fee: fee,
               feeRate: feeRate,
@@ -210,13 +221,13 @@ class ComposeCancelPageState extends State<ComposeCancelPage> {
               onContinue: (composeTransaction, fee, formKey) => {
                     onConfirmationContinue(composeTransaction, fee, formKey),
                   }),
-        SubmitFinalizing(
+        PasswordStep(
           composeTransaction: var composeTransaction,
           fee: var fee,
           error: var error,
           loading: var loading
         ) =>
-          ComposeBaseFinalizePage(
+          PasswordStepView(
             state: state,
             composeTransaction: composeTransaction,
             fee: fee,
@@ -225,7 +236,7 @@ class ComposeCancelPageState extends State<ComposeCancelPage> {
             onSubmit: (password, formKey) {
               context
                   .read<ComposeCancelBloc>()
-                  .add(SignAndBroadcastTransactionEvent(password: password));
+                  .add(SignAndBroadcastFormSubmitted(password: password));
             },
             onCancel: () {
               // for now we just go all the way back to step 1

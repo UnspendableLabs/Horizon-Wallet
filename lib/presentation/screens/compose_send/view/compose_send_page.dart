@@ -13,6 +13,7 @@ import 'package:horizon/domain/repositories/compose_repository.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_event.dart';
+import 'package:horizon/presentation/common/compose_base/bloc/compose_base_state.dart';
 import 'package:horizon/presentation/common/compose_base/view/compose_base_page.dart';
 import 'package:horizon/presentation/common/shared_util.dart';
 import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transaction_usecase.dart';
@@ -22,10 +23,13 @@ import 'package:horizon/presentation/screens/compose_send/bloc/compose_send_even
 import 'package:horizon/presentation/screens/compose_send/bloc/compose_send_state.dart';
 import 'package:horizon/presentation/screens/compose_send/view/asset_dropdown.dart';
 import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart";
-import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
+import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
 import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
 import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
+import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
+
+import 'package:horizon/domain/repositories/settings_repository.dart';
 
 class ComposeSendPageWrapper extends StatelessWidget {
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
@@ -41,11 +45,14 @@ class ComposeSendPageWrapper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final shell = context.watch<ShellStateCubit>();
-    return shell.state.maybeWhen(
+    final session = context.watch<SessionStateCubit>();
+    return session.state.maybeWhen(
       success: (state) => BlocProvider(
         key: Key(currentAddress),
         create: (context) => ComposeSendBloc(
+          passwordRequired:
+              GetIt.I<SettingsRepository>().requirePasswordForCryptoOperations,
+          inMemoryKeyRepository: GetIt.I.get<InMemoryKeyRepository>(),
           composeTransactionUseCase: GetIt.I.get<ComposeTransactionUseCase>(),
           getFeeEstimatesUseCase: GetIt.I.get<GetFeeEstimatesUseCase>(),
           analyticsService: GetIt.I.get<AnalyticsService>(),
@@ -57,7 +64,7 @@ class ComposeSendPageWrapper extends StatelessWidget {
           writelocalTransactionUseCase:
               GetIt.I.get<WriteLocalTransactionUseCase>(),
           logger: GetIt.I.get<Logger>(),
-        )..add(FetchFormData(currentAddress: currentAddress)),
+        )..add(AsyncFormDependenciesRequested(currentAddress: currentAddress)),
         child: ComposeSendPage(
           address: currentAddress,
           dashboardActivityFeedBloc: dashboardActivityFeedBloc,
@@ -113,7 +120,7 @@ class ComposeSendPageState extends State<ComposeSendPage> {
         ),
         asset ?? '');
     if (balance == null) {
-      throw Exception("invariant: No balance found for asset");
+      throw Exception("invariant: No balance found for asset $asset");
     }
 
     String maxQuantityNormalized = quantityToQuantityNormalizedString(
@@ -136,11 +143,14 @@ class ComposeSendPageState extends State<ComposeSendPage> {
         },
         success: (maxValue) {
           if (state.sendMax) {
-            final formattedValue =
-                _formatMaxValue(state, maxValue, state.asset);
+            if (state.submitState is FormStep) {
+              // we only want to set the quantity to the max if we are in the initial state
+              final formattedValue =
+                  _formatMaxValue(state, maxValue, state.asset);
 
-            if (formattedValue != quantityController.text) {
-              quantityController.text = formattedValue;
+              if (formattedValue != quantityController.text) {
+                quantityController.text = formattedValue;
+              }
             }
           }
         },
@@ -150,20 +160,19 @@ class ComposeSendPageState extends State<ComposeSendPage> {
       return ComposeBasePage<ComposeSendBloc, ComposeSendState>(
         dashboardActivityFeedBloc: widget.dashboardActivityFeedBloc,
         onFeeChange: (fee) =>
-            context.read<ComposeSendBloc>().add(ChangeFeeOption(value: fee)),
+            context.read<ComposeSendBloc>().add(FeeOptionChanged(value: fee)),
         buildInitialFormFields: (state, loading, formKey) =>
             _buildInitialFormFields(state, loading, formKey),
         onInitialCancel: () => _handleInitialCancel(),
         onInitialSubmit: (formKey) => _handleInitialSubmit(formKey),
         buildConfirmationFormFields: (state, composeTransaction, formKey) =>
             _buildConfirmationDetails(composeTransaction),
-        onConfirmationBack: () => context
-            .read<ComposeSendBloc>()
-            .add(FetchFormData(currentAddress: widget.address)),
+        onConfirmationBack: () => context.read<ComposeSendBloc>().add(
+            AsyncFormDependenciesRequested(currentAddress: widget.address)),
         onConfirmationContinue: (composeSend, fee, formKey) {
           if (formKey.currentState!.validate()) {
             context.read<ComposeSendBloc>().add(
-                  FinalizeTransactionEvent<ComposeSendResponse>(
+                  ReviewSubmitted<ComposeSendResponse>(
                     composeTransaction: composeSend,
                     fee: fee,
                   ),
@@ -173,15 +182,14 @@ class ComposeSendPageState extends State<ComposeSendPage> {
         onFinalizeSubmit: (password, formKey) {
           if (formKey.currentState!.validate()) {
             context.read<ComposeSendBloc>().add(
-                  SignAndBroadcastTransactionEvent(
+                  SignAndBroadcastFormSubmitted(
                     password: password,
                   ),
                 );
           }
         },
-        onFinalizeCancel: () => context
-            .read<ComposeSendBloc>()
-            .add(FetchFormData(currentAddress: widget.address)),
+        onFinalizeCancel: () => context.read<ComposeSendBloc>().add(
+            AsyncFormDependenciesRequested(currentAddress: widget.address)),
       );
     });
   }
@@ -197,19 +205,19 @@ class ComposeSendPageState extends State<ComposeSendPage> {
     if (formKey.currentState!.validate()) {
       Balance? balance = balance_;
 
+      if (asset == null) {
+        throw Exception("no asset selected");
+      }
+
       if (balance == null) {
-        throw Exception("invariant: No balance found for asset");
+        throw Exception("invariant: No balance found for asset: $asset");
       }
 
       int quantity = getQuantityForDivisibility(
           divisible: balance.assetInfo.divisible,
           inputQuantity: quantityController.text);
 
-      if (asset == null) {
-        throw Exception("no asset");
-      }
-
-      context.read<ComposeSendBloc>().add(ComposeTransactionEvent(
+      context.read<ComposeSendBloc>().add(FormSubmitted(
             sourceAddress: widget.address,
             params: ComposeSendEventParams(
               destinationAddress: destinationAddressController.text,
@@ -330,11 +338,16 @@ class ComposeSendPageState extends State<ComposeSendPage> {
             if (value == null || value.isEmpty) {
               return 'Please enter a quantity';
             }
-            Decimal input = Decimal.parse(value);
-            Decimal max = Decimal.parse(balance?.quantityNormalized ?? '0');
-            if (input > max) {
-              return "quantity exceeds max";
+            if (value != '.') {
+              Decimal input = Decimal.parse(value);
+              Decimal max = Decimal.parse(balance?.quantityNormalized ?? '0');
+              if (input > max) {
+                return "quantity exceeds max";
+              }
+            } else {
+              return 'Please enter a quantity';
             }
+
             return null;
           },
           onFieldSubmitted: (value) {
@@ -421,7 +434,6 @@ class ComposeSendPageState extends State<ComposeSendPage> {
               });
             }
           });
-
           return SizedBox(
             height: 48,
             child: AssetDropdown(
@@ -434,7 +446,8 @@ class ComposeSendPageState extends State<ComposeSendPage> {
                     _getBalanceForSelectedAsset(balances, value!);
 
                 if (balance == null) {
-                  throw Exception("invariant: No balance found for asset");
+                  throw Exception(
+                      "invariant: No balance found for asset: $value");
                 }
 
                 setState(() {
@@ -479,7 +492,9 @@ class ComposeSendPageState extends State<ComposeSendPage> {
           Expanded(
             child: HorizonUI.HorizonTextFormField(
               label: "Asset",
-              controller: TextEditingController(text: params.asset),
+              controller: TextEditingController(
+                  text: displayAssetName(
+                      params.asset, params.assetInfo.assetLongname)),
               enabled: false,
             ),
           ),

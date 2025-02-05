@@ -1,17 +1,17 @@
-import 'package:flutter_test/flutter_test.dart';
-import 'package:horizon/presentation/common/usecase/import_wallet_usecase.dart';
-import 'package:mocktail/mocktail.dart';
 import 'package:bloc_test/bloc_test.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
+import 'package:horizon/domain/entities/account.dart';
+import 'package:horizon/domain/entities/address.dart';
+import 'package:horizon/domain/entities/wallet.dart';
+import 'package:horizon/domain/repositories/config_repository.dart';
+import 'package:horizon/domain/services/mnemonic_service.dart';
+import 'package:horizon/domain/services/wallet_service.dart';
+import 'package:horizon/presentation/common/usecase/import_wallet_usecase.dart';
 import 'package:horizon/presentation/screens/onboarding_create/bloc/onboarding_create_bloc.dart';
 import 'package:horizon/presentation/screens/onboarding_create/bloc/onboarding_create_event.dart';
 import 'package:horizon/presentation/screens/onboarding_create/bloc/onboarding_create_state.dart';
-import 'package:horizon/domain/services/wallet_service.dart';
-import 'package:horizon/domain/services/mnemonic_service.dart';
-import 'package:horizon/domain/repositories/config_repository.dart';
-import 'package:horizon/domain/entities/wallet.dart';
-import 'package:horizon/domain/entities/account.dart';
-import 'package:horizon/domain/entities/address.dart';
+import 'package:mocktail/mocktail.dart';
 
 class MockWalletService extends Mock implements WalletService {}
 
@@ -60,7 +60,7 @@ void main() {
 
     void setupMocks(Network network, String expectedCoinType) {
       when(() => mockImportWalletUseCase.callHorizon(
-            secret: any(named: 'secret'),
+            mnemonic: any(named: 'mnemonic'),
             password: any(named: 'password'),
             deriveWallet: any(named: 'deriveWallet'),
           )).thenAnswer((_) async {});
@@ -90,7 +90,7 @@ void main() {
       ],
       verify: (_) {
         verify(() => mockImportWalletUseCase.callHorizon(
-              secret: any(named: 'secret'),
+              mnemonic: any(named: 'mnemonic'),
               password: any(named: 'password'),
               deriveWallet: any(named: 'deriveWallet'),
             )).called(1);
@@ -121,7 +121,7 @@ void main() {
       ],
       verify: (_) {
         verify(() => mockImportWalletUseCase.callHorizon(
-              secret: any(named: 'secret'),
+              mnemonic: any(named: 'mnemonic'),
               password: any(named: 'password'),
               deriveWallet: any(named: 'deriveWallet'),
             )).called(1);
@@ -152,7 +152,7 @@ void main() {
       ],
       verify: (_) {
         verify(() => mockImportWalletUseCase.callHorizon(
-              secret: any(named: 'secret'),
+              mnemonic: any(named: 'mnemonic'),
               password: any(named: 'password'),
               deriveWallet: any(named: 'deriveWallet'),
             )).called(1);
@@ -162,7 +162,7 @@ void main() {
       'emits error states when creating wallet fails',
       build: () {
         when(() => mockImportWalletUseCase.callHorizon(
-              secret: any(named: 'secret'),
+              mnemonic: any(named: 'mnemonic'),
               password: any(named: 'password'),
               deriveWallet: any(named: 'deriveWallet'),
             )).thenThrow(Exception('Failed to create wallet'));
@@ -186,7 +186,7 @@ void main() {
       ],
       verify: (_) {
         verify(() => mockImportWalletUseCase.callHorizon(
-              secret: any(named: 'secret'),
+              mnemonic: any(named: 'mnemonic'),
               password: any(named: 'password'),
               deriveWallet: any(named: 'deriveWallet'),
             )).called(1);

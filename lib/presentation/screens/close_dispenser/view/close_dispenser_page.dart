@@ -16,7 +16,10 @@ import 'package:horizon/presentation/screens/close_dispenser/bloc/close_dispense
 import 'package:horizon/presentation/screens/close_dispenser/usecase/fetch_form_data.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart';
 import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
-import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
+import 'package:horizon/presentation/session/bloc/session_cubit.dart';
+import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
+import 'package:horizon/domain/repositories/settings_repository.dart';
+import 'package:horizon/core/logging/logger.dart';
 
 class CloseDispenserPageWrapper extends StatelessWidget {
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
@@ -30,11 +33,15 @@ class CloseDispenserPageWrapper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final shell = context.watch<ShellStateCubit>();
-    return shell.state.maybeWhen(
+    final session = context.watch<SessionStateCubit>();
+    return session.state.maybeWhen(
       success: (state) => BlocProvider(
         key: Key(currentAddress),
         create: (context) => CloseDispenserBloc(
+          logger: GetIt.I.get<Logger>(),
+          passwordRequired:
+              GetIt.I<SettingsRepository>().requirePasswordForCryptoOperations,
+          inMemoryKeyRepository: GetIt.I.get<InMemoryKeyRepository>(),
           fetchCloseDispenserFormDataUseCase:
               GetIt.I.get<FetchCloseDispenserFormDataUseCase>(),
           writelocalTransactionUseCase:
@@ -44,7 +51,7 @@ class CloseDispenserPageWrapper extends StatelessWidget {
           composeTransactionUseCase: GetIt.I.get<ComposeTransactionUseCase>(),
           analyticsService: GetIt.I.get<AnalyticsService>(),
           composeRepository: GetIt.I.get<ComposeRepository>(),
-        )..add(FetchFormData(currentAddress: currentAddress)),
+        )..add(AsyncFormDependenciesRequested(currentAddress: currentAddress)),
         child: CloseDispenserPage(
           address: currentAddress,
           dashboardActivityFeedBloc: dashboardActivityFeedBloc,
@@ -89,7 +96,7 @@ class CloseDispenserPageState extends State<CloseDispenserPage> {
           dashboardActivityFeedBloc: widget.dashboardActivityFeedBloc,
           onFeeChange: (fee) => context
               .read<CloseDispenserBloc>()
-              .add(ChangeFeeOption(value: fee)),
+              .add(FeeOptionChanged(value: fee)),
           buildInitialFormFields: (state, loading, formKey) =>
               _buildInitialFormFields(state, loading, formKey),
           onInitialCancel: () => _handleInitialCancel(),
@@ -197,7 +204,7 @@ class CloseDispenserPageState extends State<CloseDispenserPage> {
       _submitted = true;
     });
     if (formKey.currentState!.validate()) {
-      context.read<CloseDispenserBloc>().add(ComposeTransactionEvent(
+      context.read<CloseDispenserBloc>().add(FormSubmitted(
             sourceAddress: widget.address,
             params: CloseDispenserParams(
               asset: selectedDispenser!.asset,
@@ -253,14 +260,14 @@ class CloseDispenserPageState extends State<CloseDispenserPage> {
     });
     context
         .read<CloseDispenserBloc>()
-        .add(FetchFormData(currentAddress: widget.address));
+        .add(AsyncFormDependenciesRequested(currentAddress: widget.address));
   }
 
   void _onConfirmationContinue(
       dynamic composeTransaction, int fee, GlobalKey<FormState> formKey) {
     if (formKey.currentState!.validate()) {
       context.read<CloseDispenserBloc>().add(
-            FinalizeTransactionEvent<ComposeDispenserResponseVerbose>(
+            ReviewSubmitted<ComposeDispenserResponseVerbose>(
               composeTransaction: composeTransaction,
               fee: fee,
             ),
@@ -271,7 +278,7 @@ class CloseDispenserPageState extends State<CloseDispenserPage> {
   void _onFinalizeSubmit(String password, GlobalKey<FormState> formKey) {
     if (formKey.currentState!.validate()) {
       context.read<CloseDispenserBloc>().add(
-            SignAndBroadcastTransactionEvent(
+            SignAndBroadcastFormSubmitted(
               password: password,
             ),
           );
@@ -285,6 +292,6 @@ class CloseDispenserPageState extends State<CloseDispenserPage> {
     });
     context
         .read<CloseDispenserBloc>()
-        .add(FetchFormData(currentAddress: widget.address));
+        .add(AsyncFormDependenciesRequested(currentAddress: widget.address));
   }
 }

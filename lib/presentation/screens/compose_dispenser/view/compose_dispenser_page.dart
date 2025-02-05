@@ -23,7 +23,10 @@ import 'package:horizon/presentation/screens/compose_dispenser_on_new_address/vi
 import 'package:horizon/presentation/screens/compose_send/view/asset_dropdown.dart';
 import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart";
 import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
-import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
+import 'package:horizon/presentation/session/bloc/session_cubit.dart';
+import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
+import 'package:horizon/domain/repositories/settings_repository.dart';
+import 'package:horizon/core/logging/logger.dart';
 
 class ComposeDispenserPageWrapper extends StatelessWidget {
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
@@ -37,11 +40,15 @@ class ComposeDispenserPageWrapper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final shell = context.watch<ShellStateCubit>();
-    return shell.state.maybeWhen(
+    final session = context.watch<SessionStateCubit>();
+    return session.state.maybeWhen(
       success: (state) => BlocProvider(
         key: Key(currentAddress),
         create: (context) => ComposeDispenserBloc(
+          logger: GetIt.I.get<Logger>(),
+          passwordRequired:
+              GetIt.I<SettingsRepository>().requirePasswordForCryptoOperations,
+          inMemoryKeyRepository: GetIt.I.get<InMemoryKeyRepository>(),
           writelocalTransactionUseCase:
               GetIt.I.get<WriteLocalTransactionUseCase>(),
           signAndBroadcastTransactionUseCase:
@@ -51,7 +58,7 @@ class ComposeDispenserPageWrapper extends StatelessWidget {
               GetIt.I.get<FetchDispenserFormDataUseCase>(),
           analyticsService: GetIt.I.get<AnalyticsService>(),
           composeRepository: GetIt.I.get<ComposeRepository>(),
-        )..add(FetchFormData(currentAddress: currentAddress)),
+        )..add(AsyncFormDependenciesRequested(currentAddress: currentAddress)),
         child: ComposeDispenserPage(
           address: currentAddress,
           dashboardActivityFeedBloc: dashboardActivityFeedBloc,
@@ -151,7 +158,7 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
         dashboardActivityFeedBloc: widget.dashboardActivityFeedBloc,
         onFeeChange: (fee) => context
             .read<ComposeDispenserBloc>()
-            .add(ChangeFeeOption(value: fee)),
+            .add(FeeOptionChanged(value: fee)),
         buildInitialFormFields: (state, loading, formKey) =>
             _buildInitialFormFields(state, loading, formKey),
         onInitialCancel: () => _handleInitialCancel(),
@@ -215,7 +222,7 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
 
       // Dispatch the event with the calculated values
 
-      context.read<ComposeDispenserBloc>().add(ComposeTransactionEvent(
+      context.read<ComposeDispenserBloc>().add(FormSubmitted(
             sourceAddress: widget.address,
             params: ComposeDispenserEventParams(
               asset: asset!,
@@ -699,14 +706,14 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
   void _onConfirmationBack() {
     context
         .read<ComposeDispenserBloc>()
-        .add(FetchFormData(currentAddress: widget.address));
+        .add(AsyncFormDependenciesRequested(currentAddress: widget.address));
   }
 
   void _onConfirmationContinue(
       dynamic composeTransaction, int fee, GlobalKey<FormState> formKey) {
     if (formKey.currentState!.validate()) {
       context.read<ComposeDispenserBloc>().add(
-            FinalizeTransactionEvent<ComposeDispenserResponseVerbose>(
+            ReviewSubmitted<ComposeDispenserResponseVerbose>(
               composeTransaction: composeTransaction,
               fee: fee,
             ),
@@ -717,7 +724,7 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
   void _onFinalizeSubmit(String password, GlobalKey<FormState> formKey) {
     if (formKey.currentState!.validate()) {
       context.read<ComposeDispenserBloc>().add(
-            SignAndBroadcastTransactionEvent(
+            SignAndBroadcastFormSubmitted(
               password: password,
             ),
           );
@@ -727,7 +734,7 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
   void _onFinalizeCancel() {
     context
         .read<ComposeDispenserBloc>()
-        .add(FetchFormData(currentAddress: widget.address));
+        .add(AsyncFormDependenciesRequested(currentAddress: widget.address));
   }
 
   bool _shouldHideSubmitButtons(DialogState dialogState) {

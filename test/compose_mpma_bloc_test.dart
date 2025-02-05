@@ -24,6 +24,7 @@ import 'package:horizon/presentation/screens/compose_mpma/bloc/compose_mpma_bloc
 import 'package:horizon/presentation/screens/compose_mpma/bloc/compose_mpma_event.dart';
 import 'package:horizon/presentation/screens/compose_mpma/bloc/compose_mpma_state.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 
 // Mock classes
 class MockBalanceRepository extends Mock implements BalanceRepository {}
@@ -52,6 +53,8 @@ class MockTransactionService extends Mock implements TransactionService {}
 class MockLogger extends Mock implements Logger {}
 
 class MockErrorService extends Mock implements ErrorService {}
+
+class MockInMemoryKeyRepository extends Mock implements InMemoryKeyRepository {}
 
 void main() {
   late ComposeMpmaBloc bloc;
@@ -87,6 +90,8 @@ void main() {
     GetIt.I.registerSingleton<ErrorService>(mockErrorService);
 
     bloc = ComposeMpmaBloc(
+      passwordRequired: true,
+      inMemoryKeyRepository: MockInMemoryKeyRepository(),
       balanceRepository: balanceRepository,
       composeRepository: composeRepository,
       analyticsService: analyticsService,
@@ -114,7 +119,7 @@ void main() {
         expect(state.feeState, const FeeState.initial());
         expect(state.balancesState, const BalancesState.initial());
         expect(state.feeOption, isA<Medium>());
-        expect(state.submitState, isA<SubmitInitial>());
+        expect(state.submitState, isA<FormStep>());
         expect(state.entries, [MpmaEntry.initial()]);
         expect(state.composeSendError, null);
       },
@@ -181,13 +186,14 @@ void main() {
               .thenAnswer((_) async => mockFeeEstimates);
         },
         build: () => bloc,
-        act: (bloc) => bloc.add(FetchFormData(currentAddress: 'test-address')),
+        act: (bloc) => bloc.add(
+            AsyncFormDependenciesRequested(currentAddress: 'test-address')),
         expect: () => [
           isA<ComposeMpmaState>()
               .having((s) => s.feeState, 'feeState', const FeeState.initial())
               .having((s) => s.balancesState, 'balancesState',
                   const BalancesState.loading())
-              .having((s) => s.submitState, 'submitState', isA<SubmitInitial>())
+              .having((s) => s.submitState, 'submitState', isA<FormStep>())
               .having((s) => s.feeOption, 'feeOption', isA<Medium>())
               .having((s) => s.entries, 'entries', [
             MpmaEntry.initial()
@@ -197,7 +203,7 @@ void main() {
                   const FeeState.success(mockFeeEstimates))
               .having((s) => s.balancesState, 'balancesState',
                   const BalancesState.success([]))
-              .having((s) => s.submitState, 'submitState', isA<SubmitInitial>())
+              .having((s) => s.submitState, 'submitState', isA<FormStep>())
               .having((s) => s.feeOption, 'feeOption', isA<Medium>())
               .having((s) => s.entries, 'entries', [
             MpmaEntry.initial()
@@ -218,13 +224,14 @@ void main() {
               .thenThrow(Exception('Failed to fetch balances'));
         },
         build: () => bloc,
-        act: (bloc) => bloc.add(FetchFormData(currentAddress: 'test-address')),
+        act: (bloc) => bloc.add(
+            AsyncFormDependenciesRequested(currentAddress: 'test-address')),
         expect: () => [
           isA<ComposeMpmaState>()
               .having((s) => s.feeState, 'feeState', const FeeState.initial())
               .having((s) => s.balancesState, 'balancesState',
                   const BalancesState.loading())
-              .having((s) => s.submitState, 'submitState', isA<SubmitInitial>())
+              .having((s) => s.submitState, 'submitState', isA<FormStep>())
               .having((s) => s.feeOption, 'feeOption', isA<Medium>())
               .having((s) => s.entries, 'entries', [
             MpmaEntry.initial()
@@ -240,7 +247,7 @@ void main() {
                   contains('Failed to fetch balances'),
                 ),
               )
-              .having((s) => s.submitState, 'submitState', isA<SubmitInitial>())
+              .having((s) => s.submitState, 'submitState', isA<FormStep>())
               .having((s) => s.feeOption, 'feeOption', isA<Medium>())
               .having((s) => s.entries, 'entries', [
             MpmaEntry.initial()

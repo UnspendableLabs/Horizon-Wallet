@@ -5,7 +5,7 @@ import 'package:horizon/presentation/screens/dashboard/import_address_pk_form/bl
 import 'package:horizon/presentation/screens/dashboard/import_address_pk_form/bloc/import_address_pk_event.dart';
 import 'package:horizon/presentation/screens/dashboard/import_address_pk_form/bloc/import_address_pk_state.dart';
 import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
-import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
+import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 
 final validAccount = RegExp(r"^\d\'$");
 
@@ -44,7 +44,7 @@ class _ImportAddressPkFormState extends State<ImportAddressPkForm> {
 
   @override
   Widget build(BuildContext context) {
-    final shell = context.watch<ShellStateCubit>();
+    final session = context.watch<SessionStateCubit>();
 
     return BlocConsumer<ImportAddressPkBloc, ImportAddressPkState>(
       listener: (context, state) {
@@ -56,8 +56,8 @@ class _ImportAddressPkFormState extends State<ImportAddressPkForm> {
                 content: Text("Success"),
               ));
 
-              // Update accounts in shell
-              shell.refreshAndSelectNewImportedAddress(state.address);
+              // Update accounts in session
+              session.refreshAndSelectNewImportedAddress(state.address);
             },
           _ => () => {} // TODO: add noop util
         };

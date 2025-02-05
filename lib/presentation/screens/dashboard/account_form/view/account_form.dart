@@ -7,12 +7,14 @@ import 'package:horizon/presentation/screens/dashboard/account_form/bloc/account
 import "package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_event.dart";
 import 'package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_state.dart';
 import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
-import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
+import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 
 final validAccount = RegExp(r"^\d\'$");
 
 class AddAccountForm extends StatefulWidget {
-  const AddAccountForm({super.key});
+  final bool passwordRequired;
+
+  const AddAccountForm({super.key, required this.passwordRequired});
 
   @override
   State<AddAccountForm> createState() => _AddAccountFormState();
@@ -44,16 +46,16 @@ class _AddAccountFormState extends State<AddAccountForm> {
 
   @override
   Widget build(BuildContext context) {
-    final shell = context.watch<ShellStateCubit>();
+    final session = context.watch<SessionStateCubit>();
 
-    List<Account>? accounts = shell.state
+    List<Account>? accounts = session.state
         .maybeWhen(success: (state) => state.accounts, orElse: () => null);
 
     if (accounts == null) {
       throw Exception("invariant: accounts are null");
     }
 
-    Account currentHighestIndexAccount = shell.state.maybeWhen(
+    Account currentHighestIndexAccount = session.state.maybeWhen(
         success: (state) => getHighestIndexAccount(state.accounts),
         orElse: () => throw Exception("invariant: account is null"));
 
@@ -64,14 +66,13 @@ class _AddAccountFormState extends State<AddAccountForm> {
     return BlocConsumer<AccountFormBloc, AccountFormState>(
       listener: (context, state) {
         final cb = switch (state) {
-          AccountFormStep2(state: var state) when state is Step2Success => () {
+          AccountFormSuccess() => () {
               Navigator.of(context).pop();
               ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
                 content: Text("Success"),
               ));
 
-              // Update accounts in shell
-              shell.refresh();
+              session.refresh();
             },
           _ => () => {} // TODO: add noop util
         };
@@ -85,7 +86,25 @@ class _AddAccountFormState extends State<AddAccountForm> {
                 // Validate will return true if the form is valid, or false if
                 // the form is invalid.
                 if (_formKey.currentState!.validate()) {
-                  context.read<AccountFormBloc>().add(Finalize());
+                  if (widget.passwordRequired) {
+                    context.read<AccountFormBloc>().add(Finalize());
+                  } else {
+                    String name = nameController.text;
+                    String purpose = currentHighestIndexAccount.purpose;
+                    String coinType = currentHighestIndexAccount.coinType;
+                    String accountIndex = "$newAccountIndex";
+                    String walletUuid = currentHighestIndexAccount.walletUuid;
+                    String password = passwordController.text;
+
+                    context.read<AccountFormBloc>().add(Submit(
+                        name: name,
+                        purpose: purpose,
+                        coinType: coinType,
+                        accountIndex: "$accountIndex'",
+                        walletUuid: walletUuid,
+                        password: password,
+                        importFormat: currentHighestIndexAccount.importFormat));
+                  }
                 }
               }
 
@@ -115,7 +134,9 @@ class _AddAccountFormState extends State<AddAccountForm> {
                           onEditingComplete: handleSubmit,
                         ),
                         HorizonUI.HorizonDialogSubmitButton(
-                          textChild: const Text('CONTINUE'),
+                          textChild: widget.passwordRequired
+                              ? const Text('CONTINUE')
+                              : const Text("CREATE ACCOUNT"),
                           onPressed: handleSubmit,
                         )
                       ],
@@ -196,6 +217,7 @@ class _AddAccountFormState extends State<AddAccountForm> {
                 ),
               );
             }),
+          _ => const SizedBox.shrink()
         };
       },
     );

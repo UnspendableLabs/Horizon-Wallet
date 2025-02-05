@@ -103,7 +103,7 @@ class Transaction {
   final int fee;
   final String data;
   final bool supported;
-  final bool confirmed;
+  final bool? confirmed;
 
   const Transaction(
       {required this.txHash,
@@ -1582,7 +1582,7 @@ class SweepParams {
   final int feePaid;
   final String destination;
   final int flags;
-  final String memo;
+  final String? memo;
   final String source;
   final String status;
   final String txHash;
@@ -1594,7 +1594,7 @@ class SweepParams {
     required this.feePaid,
     required this.destination,
     required this.flags,
-    required this.memo,
+    this.memo,
     required this.source,
     required this.status,
     required this.txHash,
@@ -5447,6 +5447,7 @@ abstract class V2Api {
     @Path("address") String address,
     @Query("asset") String asset,
     @Query("quantity") int quantity, [
+    @Query("utxo_value") int? utxoValue,
     @Query("destination_vout") String? destinationVout,
     @Query("skip_validation") bool? skipValidation,
     @Query("allow_unconfirmed_inputs") bool? allowUnconfirmedInputs,

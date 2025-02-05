@@ -19,6 +19,8 @@ import 'package:horizon/domain/entities/account.dart';
 import 'package:horizon/domain/entities/wallet.dart';
 import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transaction_usecase.dart';
 import 'package:horizon/domain/entities/transaction_info.dart';
+import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
+import 'package:horizon/domain/entities/decryption_strategy.dart';
 
 // Mock classes
 class MockAddressRepository extends Mock implements AddressRepository {}
@@ -45,6 +47,8 @@ class MockImportedAddressService extends Mock
 
 class MockTransactionLocalRepository extends Mock
     implements TransactionLocalRepository {}
+
+class MockInMemoryKeyRepository extends Mock implements InMemoryKeyRepository {}
 
 class FakeTransactionInfo extends Fake implements TransactionInfo {}
 
@@ -112,6 +116,7 @@ void main() {
   late MockBitcoindService mockBitcoindService;
   late MockTransactionLocalRepository mockTransactionLocalRepository;
   late MockImportedAddressService mockImportedAddressService;
+  late MockInMemoryKeyRepository mockInMemoryKeyRepository;
   setUpAll(() {
     registerFallbackValue(FakeTransactionInfo());
   });
@@ -128,7 +133,9 @@ void main() {
     mockBitcoindService = MockBitcoindService();
     mockTransactionLocalRepository = MockTransactionLocalRepository();
     mockImportedAddressService = MockImportedAddressService();
+    mockInMemoryKeyRepository = MockInMemoryKeyRepository();
     signAndBroadcastTransactionUseCase = SignAndBroadcastTransactionUseCase(
+      inMemoryKeyRepository: mockInMemoryKeyRepository,
       addressRepository: mockAddressRepository,
       importedAddressRepository: mockImportedAddressRepository,
       accountRepository: mockAccountRepository,
@@ -148,6 +155,7 @@ void main() {
     test('should sign and broadcast transaction successfully', () async {
       // Arrange
       final mockUtxos = [MockUtxo()];
+      const List<String> mockCachedTxHashes = [];
       final mockAddress = MockAddress();
       final mockAccount = MockAccount();
       final mockWallet = MockWallet();
@@ -159,7 +167,8 @@ void main() {
 
       // Mock behaviors
       when(() => mockUtxoRepository.getUnspentForAddress('source',
-          excludeCached: true)).thenAnswer((_) async => mockUtxos);
+              excludeCached: true))
+          .thenAnswer((_) async => (mockUtxos, mockCachedTxHashes));
       when(() => mockAddressRepository.getAddress('source'))
           .thenAnswer((_) async => mockAddress);
       when(() =>
@@ -202,7 +211,7 @@ void main() {
       await signAndBroadcastTransactionUseCase.call(
         source: "source",
         rawtransaction: "rawtransaction",
-        password: password,
+        decryptionStrategy: Password(password),
         onSuccess: onSuccess,
         onError: onError,
       );
@@ -244,6 +253,7 @@ void main() {
       // Arrange
       final mockUtxos = [MockUtxo()];
       final mockImportedAddress = MockImportedAddress();
+      const mockCachedTxHashes = ['test-cached-tx-hash'];
       const String password = 'password';
       const String decryptedAddressPrivKey = 'decrypted_address_private_key';
       const String addressPrivKey = 'address_private_key';
@@ -252,7 +262,8 @@ void main() {
 
       // Mock behaviors
       when(() => mockUtxoRepository.getUnspentForAddress('source',
-          excludeCached: true)).thenAnswer((_) async => mockUtxos);
+              excludeCached: true))
+          .thenAnswer((_) async => (mockUtxos, mockCachedTxHashes));
       when(() => mockAddressRepository.getAddress('source'))
           .thenAnswer((_) async => null);
       when(() => mockImportedAddressRepository.getImportedAddress('source'))
@@ -284,7 +295,7 @@ void main() {
       await signAndBroadcastTransactionUseCase.call(
         source: "source",
         rawtransaction: "rawtransaction",
-        password: password,
+        decryptionStrategy: Password(password),
         onSuccess: onSuccess,
         onError: onError,
       );
@@ -313,9 +324,11 @@ void main() {
       // Arrange
 
       final mockUtxos = [MockUtxo()];
+      const mockCachedTxHashes = ['test-cached-tx-hash'];
 
       when(() => mockUtxoRepository.getUnspentForAddress('source',
-          excludeCached: true)).thenAnswer((_) async => mockUtxos);
+              excludeCached: true))
+          .thenAnswer((_) async => (mockUtxos, mockCachedTxHashes));
 
       when(() => mockAddressRepository.getAddress('source'))
           .thenAnswer((_) async => null);
@@ -334,7 +347,7 @@ void main() {
       await signAndBroadcastTransactionUseCase.call(
         source: "source",
         rawtransaction: "rawtransaction",
-        password: 'password',
+        decryptionStrategy: Password('password'),
         onSuccess: onSuccess,
         onError: onError,
       );
@@ -351,11 +364,12 @@ void main() {
       final mockAddress = MockAddress();
       final mockAccount = MockAccount();
       final mockWallet = MockWallet();
-
+      const mockCachedTxHashes = ['test-cached-tx-hash'];
       final mockUtxos = [MockUtxo()];
 
       when(() => mockUtxoRepository.getUnspentForAddress('source',
-          excludeCached: true)).thenAnswer((_) async => mockUtxos);
+              excludeCached: true))
+          .thenAnswer((_) async => (mockUtxos, mockCachedTxHashes));
 
       when(() => mockAddressRepository.getAddress('source'))
           .thenAnswer((_) async => mockAddress);
@@ -380,7 +394,7 @@ void main() {
       await signAndBroadcastTransactionUseCase.call(
         source: "source",
         rawtransaction: "rawtransaction",
-        password: 'wrong_password',
+        decryptionStrategy: Password('wrong_password'),
         onSuccess: onSuccess,
         onError: onError,
       );
@@ -399,11 +413,12 @@ void main() {
         () async {
       // Arrange
       final mockImportedAddress = MockImportedAddress();
-
+      const List<String> mockCachedTxHashes = ['mock_tx_id'];
       final mockUtxos = [MockUtxo()];
 
       when(() => mockUtxoRepository.getUnspentForAddress('source',
-          excludeCached: true)).thenAnswer((_) async => mockUtxos);
+              excludeCached: true))
+          .thenAnswer((_) async => (mockUtxos, mockCachedTxHashes));
 
       when(() => mockAddressRepository.getAddress('source'))
           .thenAnswer((_) async => null);
@@ -413,6 +428,9 @@ void main() {
               mockImportedAddress.encryptedWif, "wrong_password"))
           .thenThrow(
               SignAndBroadcastTransactionException('Incorrect password.'));
+
+      when(() => mockInMemoryKeyRepository.getMap()).thenAnswer(
+          (_) async => ({'test-address': 'test-address-decryption-key'}));
 
       var errorCallbackInvoked = false;
       onSuccess(String txHex, String txHash) {}
@@ -425,12 +443,12 @@ void main() {
       await signAndBroadcastTransactionUseCase.call(
         source: "source",
         rawtransaction: "rawtransaction",
-        password: 'wrong_password',
+        decryptionStrategy: Password('wrong_password'),
         onSuccess: onSuccess,
         onError: onError,
       );
 
-      // Assert
+      // Asser
       expect(errorCallbackInvoked, true);
       verify(() => mockEncryptionService.decrypt(
           mockImportedAddress.encryptedWif, 'wrong_password')).called(1);
@@ -442,6 +460,7 @@ void main() {
     test('should return error if transaction broadcast fails', () async {
       // Arrange
       final mockUtxos = [MockUtxo()];
+      const List<String> mockCachedTxHashes = ['mock_tx_id'];
       final mockAddress = MockAddress();
       final mockAccount = MockAccount();
       final mockWallet = MockWallet();
@@ -452,7 +471,8 @@ void main() {
 
       // Mock behaviors
       when(() => mockUtxoRepository.getUnspentForAddress('source',
-          excludeCached: true)).thenAnswer((_) async => mockUtxos);
+              excludeCached: true))
+          .thenAnswer((_) async => (mockUtxos, mockCachedTxHashes));
       when(() => mockAddressRepository.getAddress('source'))
           .thenAnswer((_) async => mockAddress);
       when(() =>
@@ -497,7 +517,7 @@ void main() {
       await signAndBroadcastTransactionUseCase.call(
         source: "source",
         rawtransaction: "rawtransaction",
-        password: password,
+        decryptionStrategy: Password(password),
         onSuccess: onSuccess,
         onError: onError,
       );
@@ -512,6 +532,7 @@ void main() {
   test('should return error if signing transaction fails', () async {
     // Arrange
     final mockUtxos = [MockUtxo()];
+    const List<String> mockCachedTxHashes = ['tx_id'];
     final mockAddress = MockAddress();
     final mockAccount = MockAccount();
     final mockWallet = MockWallet();
@@ -522,7 +543,8 @@ void main() {
 
     // Mock behaviors
     when(() => mockUtxoRepository.getUnspentForAddress('source',
-        excludeCached: true)).thenAnswer((_) async => mockUtxos);
+            excludeCached: true))
+        .thenAnswer((_) async => (mockUtxos, mockCachedTxHashes));
     when(() => mockAddressRepository.getAddress('source'))
         .thenAnswer((_) async => mockAddress);
     when(() => mockAccountRepository.getAccountByUuid(mockAddress.accountUuid))
@@ -565,7 +587,7 @@ void main() {
     await signAndBroadcastTransactionUseCase.call(
       source: "source",
       rawtransaction: "rawtransaction",
-      password: password,
+      decryptionStrategy: Password(password),
       onSuccess: onSuccess,
       onError: onError,
     );

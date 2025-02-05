@@ -18,8 +18,10 @@ import 'package:horizon/presentation/common/usecase/write_local_transaction_usec
 import 'package:horizon/presentation/screens/compose_burn/bloc/compose_burn_bloc.dart';
 import 'package:horizon/presentation/screens/compose_burn/bloc/compose_burn_state.dart';
 import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart";
-import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
+import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
+import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
+import 'package:horizon/domain/repositories/settings_repository.dart';
 
 class ComposeBurnPageWrapper extends StatelessWidget {
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
@@ -32,12 +34,15 @@ class ComposeBurnPageWrapper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final shell = context.watch<ShellStateCubit>();
-    return shell.state.maybeWhen(
+    final session = context.watch<SessionStateCubit>();
+    return session.state.maybeWhen(
       success: (state) => BlocProvider(
         key: Key(currentAddress),
         create: (context) => ComposeBurnBloc(
           logger: GetIt.I.get<Logger>(),
+          passwordRequired:
+              GetIt.I<SettingsRepository>().requirePasswordForCryptoOperations,
+          inMemoryKeyRepository: GetIt.I.get<InMemoryKeyRepository>(),
           getFeeEstimatesUseCase: GetIt.I.get<GetFeeEstimatesUseCase>(),
           analyticsService: GetIt.I.get<AnalyticsService>(),
           composeTransactionUseCase: GetIt.I.get<ComposeTransactionUseCase>(),
@@ -48,7 +53,7 @@ class ComposeBurnPageWrapper extends StatelessWidget {
               GetIt.I.get<WriteLocalTransactionUseCase>(),
           blockRepository: GetIt.I.get<BlockRepository>(),
           balanceRepository: GetIt.I.get<BalanceRepository>(),
-        )..add(FetchFormData(currentAddress: currentAddress)),
+        )..add(AsyncFormDependenciesRequested(currentAddress: currentAddress)),
         child: ComposeBurnPage(
           address: currentAddress,
           dashboardActivityFeedBloc: dashboardActivityFeedBloc,
@@ -93,7 +98,7 @@ class ComposeBurnPageState extends State<ComposeBurnPage> {
         return ComposeBasePage<ComposeBurnBloc, ComposeBurnState>(
           dashboardActivityFeedBloc: widget.dashboardActivityFeedBloc,
           onFeeChange: (fee) =>
-              context.read<ComposeBurnBloc>().add(ChangeFeeOption(value: fee)),
+              context.read<ComposeBurnBloc>().add(FeeOptionChanged(value: fee)),
           buildInitialFormFields: (state, loading, formKey) =>
               _buildInitialFormFields(state, loading, formKey),
           onInitialCancel: () => _handleInitialCancel(),
@@ -125,7 +130,7 @@ class ComposeBurnPageState extends State<ComposeBurnPage> {
       final quantity = getQuantityForDivisibility(
           inputQuantity: quantityController.text, divisible: true);
 
-      context.read<ComposeBurnBloc>().add(ComposeTransactionEvent(
+      context.read<ComposeBurnBloc>().add(FormSubmitted(
             sourceAddress: widget.address,
             params: ComposeBurnEventParams(
               quantity: quantity,
@@ -205,14 +210,12 @@ class ComposeBurnPageState extends State<ComposeBurnPage> {
   void _onConfirmationBack() {
     context
         .read<ComposeBurnBloc>()
-        .add(FetchFormData(currentAddress: widget.address));
+        .add(AsyncFormDependenciesRequested(currentAddress: widget.address));
   }
 
   void _onConfirmationContinue(
       dynamic composeTransaction, int fee, GlobalKey<FormState> formKey) {
-    context
-        .read<ComposeBurnBloc>()
-        .add(FinalizeTransactionEvent<ComposeBurnResponse>(
+    context.read<ComposeBurnBloc>().add(ReviewSubmitted<ComposeBurnResponse>(
           composeTransaction: composeTransaction,
           fee: fee,
         ));
@@ -221,7 +224,7 @@ class ComposeBurnPageState extends State<ComposeBurnPage> {
   void _onFinalizeSubmit(String password, GlobalKey<FormState> formKey) {
     if (formKey.currentState!.validate()) {
       context.read<ComposeBurnBloc>().add(
-            SignAndBroadcastTransactionEvent(
+            SignAndBroadcastFormSubmitted(
               password: password,
             ),
           );
@@ -231,6 +234,6 @@ class ComposeBurnPageState extends State<ComposeBurnPage> {
   void _onFinalizeCancel() {
     context
         .read<ComposeBurnBloc>()
-        .add(FetchFormData(currentAddress: widget.address));
+        .add(AsyncFormDependenciesRequested(currentAddress: widget.address));
   }
 }
