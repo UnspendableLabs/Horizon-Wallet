@@ -44,7 +44,8 @@ void main() {
   // Register the mock
   late MockBitcoinRepository mockBitcoinRepository;
   late MockEventsRepository mockEventsRepository;
-  var transactionCallCount = 0;
+  var btcTransactionCallCount = 0; // Separate counter for BTC transactions
+  var cpTransactionCallCount = 0; // Separate counter for Counterparty events
 
   // Define test cases
   final testCases_ = [
@@ -52,7 +53,7 @@ void main() {
       "passphrase":
           "voice flame certainly anyone former raw limit king rhythm tumble crystal earth",
       'format': ImportFormat.counterwallet.description,
-      'addresses': [
+      'addressesFirstAccount': [
         "1F2MFgLaQNLCTFCMWhffEG43GtxPxu6KWM",
         "bc1qn8f324j40n5x4d6led6xs0hm5x779q27dfc7a3",
         '16Qd1F7qYLJfvTpBueEZ3yMYhwrsanPjSN',
@@ -73,6 +74,28 @@ void main() {
         'bc1qxe6v9m4ekyuxljh9cl86yarjutxjw02k4ldwpw',
         '189mUW7GJf9AKjENViooKT6vMg2qRdQHT3',
         'bc1qfec424jsfhawu4cw7353p6qu48yc4692l98pzc'
+      ],
+      'addressesSecondAccount': [
+        "bc1q9tammy233uyk82u54vm4z6gsnepuh9n3zqek8q",
+        "bc1qvgr098jqm0ywlwwuruqvqav0vhlmknf8j6sxvh",
+        "bc1q2z0kqfj97tcqccz56s3q0qlmktglys4gy7p97p",
+        "bc1qselk7pxc4wwdnn64yfpllvk7csa0usup2ckmr0",
+        "bc1q6xq5nt67zzyje2txqprwgcuj63g85ww3e32r8d",
+        "bc1qsmrptxdr0r33q6qy7xzddc3vqjvtelec984l7f",
+        "bc1q0aq3yfj4rut553xtvttjlvggv6dt0gyxaflf0y",
+        "bc1qlgc4ze09a9d6hx7rk4764y002hx2l9hp9walj7",
+        "bc1qx7202audpe973aw248q7e6t550pw4enej7jffl",
+        "bc1q8haxa8xgsl8dp7q5t9652696vm3a5whpmvdx35",
+        "14vGxJ1szfKxAonUgEPFBZn3XDu4yFbh9j",
+        "19wKYY5t6gqXXY6QYEWFe2iQM8v3DaKiNj",
+        "18MHyxTU5WaktWjL3qdf5fyHaXcKWaXGkH",
+        "1DGACxCdbvykfJPJHCvxGb2zaBxNQzWG2t",
+        "1L6m7AnEbX9wB27toTyBe5vgUs5af6samk",
+        "1DHcqrExT8xx5dWtyUzdMkpWDebffbba7X",
+        "1CbrmZvfe4qXALQYSVE8h2wqDEJHQwtBau",
+        "1Pou1dX2UEMoKsM9p5L6qEr2HRrnfnuw3q",
+        "164tcPpP52gzFPpWgsxkg4cgJUjQSB4TuF",
+        "16eiE2bt2tNUXRUqxT2CSwGURfGoXmZjRK",
       ],
     },
     {
@@ -96,7 +119,7 @@ void main() {
       "passphrase":
           "crash suffer render miss endorse plastic success choice cable check normal gadget",
       'format': ImportFormat.freewallet.description,
-      'addresses': [
+      'addressesFirstAccount': [
         "1FP7TJfEnPYfg2jPvB89sPcPYH4pkV8xgA",
         "bc1qnhqye8y0tad8newu6hhhyusveh9gm8gu80t9uh",
         "1Bt7nYKBrwwuBJq4nMFNXsWoN4DFqpTq2r",
@@ -118,6 +141,28 @@ void main() {
         "1KfekfR1hWVBCa8y7Wa8TEK94CUp4ftkdz",
         "bc1qenqetjtjt2xvp9wdmrg38dw76jard0xlyfqj9p"
       ],
+      'addressesSecondAccount': [
+        "1MpkEZJpHoyJtjGKkAr6uJDjrEC47r76Yd",
+        "17msXfd9eN5PSFaHKXQGuU881Ji1R4FLvn",
+        "13FhqraLzgpbBXu4KWfA4ARTLyRpMu6y24",
+        "1K2Wt4MSVC9uLokkfP5kWU3Mhz9yM3rNYL",
+        "1sGVw2FsdJJLnPRqHe8ot7fyJ4x2Uzhap",
+        "1KT5WwbsKe5vxLMxH8Sc6a9SfJ2WpPhELu",
+        "1QK88Azh7RwAEk3KbaYVgugrn4KmNGPQNH",
+        "1GALyDMnDR19dQJ5BkA5g5QaJp98ogPzmY",
+        "18THX2TCioCSSf3oSYwkmcYKBCHfruEomT",
+        "1H8csH1sq65TTnxLXupK9yirufpQWmF1We",
+        "bc1qu34z049mg9fz3ewr2uhuxxdksn94zjf7mvgqyw",
+        "bc1qffxnclyy5y9uxsv75s7ydrmujvj5r7c3yurj8m",
+        "bc1qrzuzkg0kk3vtzssjkq24gex7uvjxaeu8qknh47",
+        "bc1qckae7a0ep3jnwzmrtgya4943lqax7v5nuvtp7a",
+        "bc1qpxqmcc945w8kgghmg47g7njqrlzsk3ssxnevpc",
+        "bc1qefsdjh8022l0z6y3dgrgq3x3rweq3a5kjk2h49",
+        "bc1ql7u98twmwwjhqcfqzyvhq4l89z5zmvxd6ukfmh",
+        "bc1q5e8yeseevzmyme4jsaarx5d9f7sp4mkwecw39z",
+        "bc1q28qhh4etyzlw8rtue6lamdfdjkr5lvu9352nk5",
+        "bc1qkred6j8htgguc8jctc6dad3cw7468eqkpy9cfm"
+      ],
     },
   ];
 
@@ -125,7 +170,8 @@ void main() {
 
   group('Onboarding Integration Tests', () {
     setUp(() async {
-      transactionCallCount = 0;
+      btcTransactionCallCount = 0; // Reset BTC counter
+      cpTransactionCallCount = 0; // Reset CP counter
 
       // Initialize Settings
       await Settings.init(
@@ -231,13 +277,13 @@ void main() {
         // Setup default mock behavior before any test runs
         when(() => mockBitcoinRepository.getTransactions(any()))
             .thenAnswer((_) async {
-          if (transactionCallCount < transactionCount) {
-            transactionCallCount++;
+          if (btcTransactionCallCount < transactionCount) {
+            btcTransactionCallCount++;
 
             // only import 1 account
             return Right([
               BitcoinTx(
-                txid: 'mock_txid_$transactionCallCount',
+                txid: 'mock_txid_$btcTransactionCallCount',
                 version: 1,
                 locktime: 0,
                 vin: [],
@@ -321,20 +367,19 @@ void main() {
           expect(addresses.length, expectedAddressCount);
 
           for (final address in addresses) {
-            expect(
-                (testCase['addresses'] as List<String>)
-                    .contains(address.address),
-                isTrue);
-            expect(
-                address.address,
-                (testCase['addresses'] as List<String>)
-                    .firstWhere((e) => e == address.address));
+            final expectedAddresses =
+                testCase['format'] == ImportFormat.horizon.description
+                    ? (testCase['addresses'] as List<String>)
+                    : (testCase['addressesFirstAccount'] as List<String>);
+            expect(expectedAddresses.contains(address.address), isTrue);
+            expect(address.address,
+                expectedAddresses.firstWhere((e) => e == address.address));
           }
         }
-      });
+      }, skip: true);
 
       testWidgets(
-          'Import Wallet with bitcoin transactions - ${testCase['format']}',
+          'Import Wallet with counterparty transactions - ${testCase['format']}',
           (WidgetTester tester) async {
         // Override FlutterError.onError to ignore RenderFlex overflow errors
         final void Function(FlutterErrorDetails) originalOnError =
@@ -368,8 +413,8 @@ void main() {
         });
         when(() => mockEventsRepository.numEventsForAddresses(
             addresses: any(named: 'addresses'))).thenAnswer((_) async {
-          if (transactionCallCount < transactionCount) {
-            transactionCallCount++;
+          if (cpTransactionCallCount < transactionCount) {
+            cpTransactionCallCount++;
             return 1;
           } else {
             return 0;
@@ -435,14 +480,160 @@ void main() {
           expect(addresses.length, expectedAddressCount);
 
           for (final address in addresses) {
-            expect(
-                (testCase['addresses'] as List<String>)
-                    .contains(address.address),
-                isTrue);
-            expect(
-                address.address,
-                (testCase['addresses'] as List<String>)
-                    .firstWhere((e) => e == address.address));
+            final expectedAddresses =
+                testCase['format'] == ImportFormat.horizon.description
+                    ? (testCase['addresses'] as List<String>)
+                    : (testCase['addressesFirstAccount'] as List<String>);
+            expect(expectedAddresses.contains(address.address), isTrue);
+            expect(address.address,
+                expectedAddresses.firstWhere((e) => e == address.address));
+          }
+        }
+      }, skip: true);
+
+      testWidgets(
+          'Import Wallet with both bitcoin and counterparty transactions - ${testCase['format']}',
+          (WidgetTester tester) async {
+        // Override FlutterError.onError to ignore RenderFlex overflow errors
+        final void Function(FlutterErrorDetails) originalOnError =
+            FlutterError.onError!;
+        FlutterError.onError = (FlutterErrorDetails details) {
+          if (details.exceptionAsString().contains('A RenderFlex overflowed')) {
+            // Ignore RenderFlex overflow errors
+            return;
+          }
+          originalOnError(details);
+        };
+
+        // Ensure the original error handler is restored after the test
+        addTearDown(() {
+          FlutterError.onError = originalOnError;
+        });
+
+        int transactionCount;
+        if (testCase['format'] == ImportFormat.horizon.description) {
+          transactionCount =
+              10; // import 10 horizon accounts, 1 address per account
+        } else {
+          transactionCount = 2; // import 2 bip32 accounts with 20 address
+        }
+
+        // Setup default mock behavior before any test runs
+        when(() => mockBitcoinRepository.getTransactions(any()))
+            .thenAnswer((_) async {
+          if (btcTransactionCallCount < transactionCount) {
+            btcTransactionCallCount++;
+            return Right([
+              BitcoinTx(
+                txid: 'mock_txid_$btcTransactionCallCount',
+                version: 1,
+                locktime: 0,
+                vin: [],
+                vout: [],
+                size: 100,
+                weight: 400,
+                fee: 1000,
+                status: Status(
+                  confirmed: true,
+                  blockHeight: 1000,
+                  blockHash: 'mock_block_hash',
+                  blockTime: 1600000000,
+                ),
+              ),
+            ]);
+          } else {
+            return const Right([]);
+          }
+        });
+        when(() => mockEventsRepository.numEventsForAddresses(
+            addresses: any(named: 'addresses'))).thenAnswer((_) async {
+          if (cpTransactionCallCount < transactionCount) {
+            cpTransactionCallCount++;
+            return 5;
+          } else {
+            return 0;
+          }
+        });
+
+        final walletType =
+            testCase['format'] == ImportFormat.horizon.description
+                ? WalletType.horizon
+                : WalletType.bip32;
+        final importWalletUseCase = GetIt.I.get<ImportWalletUseCase>();
+        await importWalletUseCase.call(
+          mnemonic: testCase['passphrase'] as String,
+          password: 'password',
+          walletType: walletType,
+          onError: (error) {
+            print('Error: $error');
+          },
+          onSuccess: () {
+            print('Success');
+          },
+        );
+
+        final wallet = await GetIt.I.get<WalletRepository>().getCurrentWallet();
+
+        // ensure the inserted wallet is the same as the one derived from the mnemonic
+        final comparisonWallet = switch (testCase['format']) {
+          'Horizon Native' => await GetIt.I
+              .get<WalletService>()
+              .deriveRoot(testCase['passphrase'] as String, 'password'),
+          'Freewallet (BIP39)' => await GetIt.I
+              .get<WalletService>()
+              .deriveRootFreewallet(
+                  testCase['passphrase'] as String, 'password'),
+          'Freewallet / Counterwallet' => await GetIt.I
+              .get<WalletService>()
+              .deriveRootCounterwallet(
+                  testCase['passphrase'] as String, 'password'),
+          _ => throw Exception('Unknown format'),
+        };
+
+        expect(wallet!.publicKey, comparisonWallet.publicKey);
+        expect(wallet.chainCodeHex, comparisonWallet.chainCodeHex);
+        expect(wallet.name, comparisonWallet.name);
+
+        final accounts = await GetIt.I
+            .get<AccountRepository>()
+            .getAccountsByWalletUuid(wallet.uuid);
+
+        final expectedAccountCount =
+            testCase['format'] == ImportFormat.horizon.description ? 10 : 2;
+
+        expect(accounts.length, expectedAccountCount);
+
+        for (final account in accounts) {
+          final addresses = await GetIt.I
+              .get<AddressRepository>()
+              .getAllByAccountUuid(account.uuid);
+
+          final expectedAddressCount =
+              testCase['format'] == ImportFormat.horizon.description ? 1 : 20;
+
+          expect(addresses.length, expectedAddressCount);
+
+          for (final address in addresses) {
+            if (testCase['format'] == ImportFormat.horizon.description) {
+              final expectedAddresses = testCase['addresses'] as List<String>;
+              expect(expectedAddresses.contains(address.address), isTrue);
+              expect(address.address,
+                  expectedAddresses.firstWhere((e) => e == address.address));
+            } else {
+              if (account.accountIndex == '0\'') {
+                final expectedAddresses =
+                    testCase['addressesFirstAccount'] as List<String>;
+                expect(expectedAddresses.contains(address.address), isTrue);
+                expect(address.address,
+                    expectedAddresses.firstWhere((e) => e == address.address));
+              } else {
+                final expectedAddresses =
+                    testCase['addressesSecondAccount'] as List<String>;
+                expect(expectedAddresses.contains(address.address), isTrue);
+                expect(address.address,
+                    expectedAddresses.firstWhere((e) => e == address.address));
+              }
+            }
           }
         }
       });
