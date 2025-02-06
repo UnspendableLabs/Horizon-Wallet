@@ -262,31 +262,22 @@ class AppRouter {
                   cacheKey: SettingsKeys.inactivityTimeout.toString(),
                   defaultValue: 5,
                   builder: (context, inactivityTimeout, onChanged) {
-                    return ValueChangeObserver(
-                        cacheKey: SettingsKeys.lostFocusTimeout.toString(),
-                        defaultValue: 1,
-                        builder: (context, lostFocusTimeout, onChanged) {
-                          return BlocProvider(
-                              key: Key(
-                                  "inactivity-timeout:$inactivityTimeout;lost-focus-timeout:$lostFocusTimeout"),
-                              create: (_) {
-                                return InactivityMonitorBloc(
-                                  logger: GetIt.I<Logger>(),
-                                  inactivityTimeout:
-                                      Duration(minutes: inactivityTimeout),
-                                  appLostFocusTimeout:
-                                      Duration(minutes: lostFocusTimeout),
-                                );
-                              },
-                              child: InactivityMonitorView(
-                                onTimeout: () {
-                                  final session =
-                                      context.read<SessionStateCubit>();
-                                  session.onLogout();
-                                },
-                                child: navigationSession,
-                              ));
-                        });
+                    return BlocProvider(
+                        key: Key("inactivity-timeout:$inactivityTimeout"),
+                        create: (_) {
+                          return InactivityMonitorBloc(
+                            logger: GetIt.I<Logger>(),
+                            inactivityTimeout:
+                                Duration(minutes: inactivityTimeout),
+                          );
+                        },
+                        child: InactivityMonitorView(
+                          onTimeout: () {
+                            final session = context.read<SessionStateCubit>();
+                            session.onLogout();
+                          },
+                          child: navigationSession,
+                        ));
                   });
               return navigationSession;
             },

@@ -162,8 +162,7 @@ class SettingsView extends StatelessWidget {
                   const Divider(height: 0.0),
                   DropDownSettingsTile<int>(
                     title: 'Inactivity Timeout',
-                    subtitle:
-                        'Period before screen locks after last user interaction',
+                    subtitle: 'Period of inactivity before screen locks',
                     settingKey: SettingsKeys.inactivityTimeout.toString(),
                     values: const <int, String>{
                       1: '1 minute',
@@ -179,27 +178,6 @@ class SettingsView extends StatelessWidget {
                     onChange: (value) {
                       Settings.setValue(
                           SettingsKeys.inactivityTimeout.toString(), value,
-                          notify: true);
-                    },
-                  ),
-                  DropDownSettingsTile<int>(
-                    title: 'Lost Focus Timeout',
-                    subtitle: 'Period before screen locks after focus is lost',
-                    settingKey: SettingsKeys.lostFocusTimeout.toString(),
-                    values: const <int, String>{
-                      1: '1 minute',
-                      5: '5 minutes',
-                      30: '30 minutes',
-                      120: '2 hours',
-                      360: '6 hours',
-                      720: '12 hours',
-                    },
-                    selected: Settings.getValue(
-                        SettingsKeys.lostFocusTimeout.toString(),
-                        defaultValue: 1)!,
-                    onChange: (value) {
-                      Settings.setValue(
-                          SettingsKeys.lostFocusTimeout.toString(), value,
                           notify: true);
                     },
                   ),

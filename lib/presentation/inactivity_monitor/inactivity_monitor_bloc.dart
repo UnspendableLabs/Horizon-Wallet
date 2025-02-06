@@ -17,8 +17,6 @@ class AppResumed extends InactivityMonitorEvent {}
 
 class InactivityTimeoutTriggered extends InactivityMonitorEvent {}
 
-class AppFocusTimeoutTriggered extends InactivityMonitorEvent {}
-
 abstract class InactivityMonitorState extends Equatable {}
 
 class Stopped extends InactivityMonitorState {
@@ -36,37 +34,38 @@ class TimeoutOut extends InactivityMonitorState {
   List<Object?> get props => [];
 }
 
-class InactivityMonitorBloc
-    extends Bloc<InactivityMonitorEvent, InactivityMonitorState> {
-  Logger logger;
-  Duration inactivityTimeout;
-  Duration appLostFocusTimeout;
+class InactivityMonitorBloc extends Bloc<InactivityMonitorEvent, InactivityMonitorState> {
+  final Logger logger;
+  final Duration inactivityTimeout;
   Timer? _inactivityTimer;
   DateTime? _lostFocusTime;
 
-  InactivityMonitorBloc(
-      {required this.logger,
-      required this.inactivityTimeout,
-      required this.appLostFocusTimeout})
-      : super(Stopped()) {
+  InactivityMonitorBloc({
+    required this.logger,
+    required this.inactivityTimeout,
+  }) : super(Stopped()) {
     on<InactivityMonitorStarted>(_handleStart);
     on<InactivityMonitorStopped>(_handleStop);
     on<UserActivityDetected>(_handleUserActivityDetected);
     on<AppLostFocus>(_handleAppLostFocus);
     on<AppResumed>(_handleAppResumed);
     on<InactivityTimeoutTriggered>(_handleInactivityTimeoutTriggered);
-    on<AppFocusTimeoutTriggered>(_handleAppFocusTimeout);
   }
-  _handleStart(
-      InactivityMonitorStarted event, Emitter<InactivityMonitorState> emit) {
+
+  void _handleStart(
+    InactivityMonitorStarted event,
+    Emitter<InactivityMonitorState> emit,
+  ) {
     logger.debug('Received InactivityMonitorStarted event.');
     emit(Running());
     logger.debug('InactivityMonitorBloc state changed to Running.');
     _startInactivityTimer();
   }
 
-  _handleStop(
-      InactivityMonitorStopped event, Emitter<InactivityMonitorState> emit) {
+  void _handleStop(
+    InactivityMonitorStopped event,
+    Emitter<InactivityMonitorState> emit,
+  ) {
     logger.debug('Received InactivityMonitorStopped event.');
     _cancelInactivityTimer();
     _lostFocusTime = null;
@@ -74,20 +73,25 @@ class InactivityMonitorBloc
     logger.debug('InactivityMonitorBloc state changed to Stopped.');
   }
 
-  _handleUserActivityDetected(
-      UserActivityDetected event, Emitter<InactivityMonitorState> emit) {
+  void _handleUserActivityDetected(
+    UserActivityDetected event,
+    Emitter<InactivityMonitorState> emit,
+  ) {
     logger.debug('Received UserActivityDetected event.');
     if (state is Running) {
       logger.debug('Resetting inactivity timer due to user activity.');
       _startInactivityTimer();
     } else {
       logger.debug(
-          'User activity detected, but monitor is not in Running state.');
+        'User activity detected, but monitor is not in Running state.',
+      );
     }
   }
 
-  _handleAppLostFocus(
-      AppLostFocus event, Emitter<InactivityMonitorState> emit) {
+  void _handleAppLostFocus(
+    AppLostFocus event,
+    Emitter<InactivityMonitorState> emit,
+  ) {
     logger.debug('Received AppLostFocus event.');
     if (state is Running) {
       logger.debug('Cancelling inactivity timer and recording lostFocusTime.');
@@ -98,53 +102,45 @@ class InactivityMonitorBloc
     }
   }
 
-  _handleInactivityTimeoutTriggered(
-      InactivityTimeoutTriggered event, Emitter<InactivityMonitorState> emit) {
-    logger.debug(
-      'InactivityTimeoutTriggered: No user activity for $inactivityTimeout.',
-    );
-    emit(TimeoutOut());
-    logger.debug('InactivityMonitorBloc state changed to TimeoutOut.');
-    _cancelInactivityTimer();
-  }
-
-  void _handleAppFocusTimeout(
-    AppFocusTimeoutTriggered event,
+  void _handleAppResumed(
+    AppResumed event,
     Emitter<InactivityMonitorState> emit,
   ) {
-    logger.debug(
-      'AppFocusTimeoutTriggered: App lost focus for more than $appLostFocusTimeout.',
-    );
-    emit(TimeoutOut());
-    logger.debug('InactivityMonitorBloc state changed to TimeoutOut.');
-    _cancelInactivityTimer();
-  }
-
-  _handleAppResumed(AppResumed event, Emitter<InactivityMonitorState> emit) {
     logger.debug('Received AppResumed event.');
     if (state is Running && _lostFocusTime != null) {
       final diff = DateTime.now().difference(_lostFocusTime!);
       logger.debug(
-        'Time since app lost focus: ${diff.inSeconds}s (limit: ${appLostFocusTimeout.inSeconds}s).',
+        'Time since app lost focus: ${diff.inSeconds}s (limit: ${inactivityTimeout.inSeconds}s).',
       );
       _lostFocusTime = null;
-      if (diff > appLostFocusTimeout) {
-        logger.debug('Lost focus duration exceeded appLostFocusTimeout.');
-        add(AppFocusTimeoutTriggered());
+
+      // Use the same inactivity timeout check:
+      if (diff > inactivityTimeout) {
+        logger.debug('Lost focus duration exceeded inactivityTimeout.');
+        add(InactivityTimeoutTriggered());
       } else {
         logger.debug(
-            'Lost focus duration did not exceed timeout; restarting inactivity timer.');
+          'Lost focus duration did not exceed timeout; restarting inactivity timer.',
+        );
         _startInactivityTimer();
       }
     } else {
       logger.debug(
-          'App resumed, but state is not Running or _lostFocusTime is null.');
+        'App resumed, but state is not Running or _lostFocusTime is null.',
+      );
     }
   }
 
-  void _cancelInactivityTimer() {
-    _inactivityTimer?.cancel();
-    _inactivityTimer = null;
+  void _handleInactivityTimeoutTriggered(
+    InactivityTimeoutTriggered event,
+    Emitter<InactivityMonitorState> emit,
+  ) {
+    logger.debug(
+      'InactivityTimeoutTriggered: No user activity or app focus for $inactivityTimeout.',
+    );
+    emit(TimeoutOut());
+    logger.debug('InactivityMonitorBloc state changed to TimeoutOut.');
+    _cancelInactivityTimer();
   }
 
   void _startInactivityTimer() {
@@ -154,9 +150,15 @@ class InactivityMonitorBloc
     });
   }
 
+  void _cancelInactivityTimer() {
+    _inactivityTimer?.cancel();
+    _inactivityTimer = null;
+  }
+
   @override
   Future<void> close() {
     _cancelInactivityTimer();
     return super.close();
   }
 }
+
