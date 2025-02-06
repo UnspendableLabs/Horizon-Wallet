@@ -139,8 +139,6 @@ import 'package:horizon/domain/services/error_service.dart';
 import 'package:horizon/data/services/error_service_impl.dart';
 
 
-import 'package:horizon/domain/services/kv_service.dart';
-import 'package:horizon/data/services/kv_service_impl.dart';
 
 import 'package:horizon/domain/repositories/settings_repository.dart';
 import 'package:horizon/data/sources/repositories/settings_repository_impl.dart';

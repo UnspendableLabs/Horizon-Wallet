@@ -157,7 +157,7 @@ class SettingsView extends StatelessWidget {
                         "Require password when signing transactions or granting access to wallet data.",
                     settingKey: SettingsKeys.requiredPasswordForCryptoOperations
                         .toString(),
-                    defaultValue: true,
+                    defaultValue: false,
                   ),
                   const Divider(height: 0.0),
                   DropDownSettingsTile<int>(
