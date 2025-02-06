@@ -54,6 +54,7 @@ import 'package:horizon/presentation/inactivity_monitor/inactivity_monitor_bloc.
 import 'package:horizon/presentation/inactivity_monitor/inactivity_monitor_view.dart';
 
 import 'package:horizon/domain/repositories/settings_repository.dart';
+import 'package:horizon/domain/services/secure_kv_service.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 final _sectionNavigatorKey = GlobalKey<NavigatorState>();
@@ -262,31 +263,23 @@ class AppRouter {
                   cacheKey: SettingsKeys.inactivityTimeout.toString(),
                   defaultValue: 5,
                   builder: (context, inactivityTimeout, onChanged) {
-                    return ValueChangeObserver(
-                        cacheKey: SettingsKeys.lostFocusTimeout.toString(),
-                        defaultValue: 1,
-                        builder: (context, lostFocusTimeout, onChanged) {
-                          return BlocProvider(
-                              key: Key(
-                                  "inactivity-timeout:$inactivityTimeout;lost-focus-timeout:$lostFocusTimeout"),
-                              create: (_) {
-                                return InactivityMonitorBloc(
-                                  logger: GetIt.I<Logger>(),
-                                  inactivityTimeout:
-                                      Duration(minutes: inactivityTimeout),
-                                  appLostFocusTimeout:
-                                      Duration(minutes: lostFocusTimeout),
-                                );
-                              },
-                              child: InactivityMonitorView(
-                                onTimeout: () {
-                                  final session =
-                                      context.read<SessionStateCubit>();
-                                  session.onLogout();
-                                },
-                                child: navigationSession,
-                              ));
-                        });
+                    return BlocProvider(
+                        key: Key("inactivity-timeout:$inactivityTimeout"),
+                        create: (_) {
+                          return InactivityMonitorBloc(
+                            logger: GetIt.I<Logger>(),
+                            kvService: GetIt.I<SecureKVService>(),
+                            inactivityTimeout:
+                                Duration(minutes: inactivityTimeout),
+                          );
+                        },
+                        child: InactivityMonitorView(
+                          onTimeout: () {
+                            final session = context.read<SessionStateCubit>();
+                            session.onLogout();
+                          },
+                          child: navigationSession,
+                        ));
                   });
               return navigationSession;
             },
@@ -786,6 +779,7 @@ class MyApp extends StatelessWidget {
         ),
         BlocProvider<SessionStateCubit>(
           create: (context) => SessionStateCubit(
+              kvService: GetIt.I<SecureKVService>(),
               encryptionService: GetIt.I<EncryptionService>(),
               inMemoryKeyRepository: GetIt.I<InMemoryKeyRepository>(),
               cacheProvider: GetIt.I<CacheProvider>(),

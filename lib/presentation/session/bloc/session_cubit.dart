@@ -11,6 +11,8 @@ import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
+import 'package:horizon/domain/services/secure_kv_service.dart';
+import 'package:horizon/common/constants.dart';
 
 import './session_state.dart';
 
@@ -36,9 +38,11 @@ class SessionStateCubit extends Cubit<SessionState> {
   AnalyticsService analyticsService;
   InMemoryKeyRepository inMemoryKeyRepository;
   final EncryptionService encryptionService;
+  final SecureKVService kvService;
 
   SessionStateCubit(
-      {required this.cacheProvider,
+      {required this.kvService,
+      required this.cacheProvider,
       required this.walletRepository,
       required this.accountRepository,
       required this.addressRepository,
@@ -49,6 +53,21 @@ class SessionStateCubit extends Cubit<SessionState> {
       : super(const SessionState.initial());
 
   Future<GetSessionStateResponse> _getSessionState() async {
+    final storedDeadlineString =
+        await kvService.read(key: kInactivityDeadlineKey);
+
+    if (storedDeadlineString != null && storedDeadlineString.isNotEmpty) {
+      final storedDeadline = DateTime.tryParse(storedDeadlineString);
+      if (storedDeadline != null) {
+        // If the deadline has past, session is invali
+        if (DateTime.now().isAfter(storedDeadline)) {
+          // clear it
+          await kvService.delete(key: kInactivityDeadlineKey);
+          return LoggedOut();
+        }
+      }
+    }
+
     final decryptionKey = await inMemoryKeyRepository.get();
 
     Wallet? wallet = await walletRepository.getCurrentWallet();

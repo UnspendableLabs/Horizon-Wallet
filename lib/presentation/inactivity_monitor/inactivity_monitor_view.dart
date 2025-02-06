@@ -55,19 +55,19 @@ class _InactivityMonitorViewState extends State<InactivityMonitorView>
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<InactivityMonitorBloc, InactivityMonitorState>(
-      listener: (context, state) {
-        if (state is TimeoutOut) {
-          widget.onTimeout();
-        }
-      },
-      child: Listener(
+    return BlocConsumer<InactivityMonitorBloc, InactivityMonitorState>(
+        listener: (context, state) {
+      if (state is TimeoutOut) {
+        widget.onTimeout();
+      }
+    }, builder: (context, state) {
+      return Listener(
         onPointerDown: (_) {
           _bloc?.add(UserActivityDetected());
         },
         behavior: HitTestBehavior.translucent,
         child: widget.child,
-      ),
-    );
+      );
+    });
   }
 }
