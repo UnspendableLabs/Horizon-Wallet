@@ -54,6 +54,7 @@ import 'package:horizon/presentation/inactivity_monitor/inactivity_monitor_bloc.
 import 'package:horizon/presentation/inactivity_monitor/inactivity_monitor_view.dart';
 
 import 'package:horizon/domain/repositories/settings_repository.dart';
+import 'package:horizon/domain/services/secure_kv_service.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 final _sectionNavigatorKey = GlobalKey<NavigatorState>();
@@ -267,6 +268,7 @@ class AppRouter {
                         create: (_) {
                           return InactivityMonitorBloc(
                             logger: GetIt.I<Logger>(),
+                            kvService: GetIt.I<SecureKVService>(),
                             inactivityTimeout:
                                 Duration(minutes: inactivityTimeout),
                           );
@@ -777,6 +779,7 @@ class MyApp extends StatelessWidget {
         ),
         BlocProvider<SessionStateCubit>(
           create: (context) => SessionStateCubit(
+              kvService: GetIt.I<SecureKVService>(),
               encryptionService: GetIt.I<EncryptionService>(),
               inMemoryKeyRepository: GetIt.I<InMemoryKeyRepository>(),
               cacheProvider: GetIt.I<CacheProvider>(),

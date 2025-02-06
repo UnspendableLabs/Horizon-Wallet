@@ -1,7 +1,10 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:horizon/core/logging/logger.dart';
+
+import 'package:horizon/domain/services/secure_kv_service.dart';
 import 'dart:async';
+import 'package:horizon/common/constants.dart';
 
 abstract class InactivityMonitorEvent {}
 
@@ -34,13 +37,19 @@ class TimeoutOut extends InactivityMonitorState {
   List<Object?> get props => [];
 }
 
-class InactivityMonitorBloc extends Bloc<InactivityMonitorEvent, InactivityMonitorState> {
+// TODO: move to shared constants
+
+class InactivityMonitorBloc
+    extends Bloc<InactivityMonitorEvent, InactivityMonitorState> {
   final Logger logger;
+  final SecureKVService kvService;
   final Duration inactivityTimeout;
   Timer? _inactivityTimer;
-  DateTime? _lostFocusTime;
+
+  DateTime? _deadlineTime;
 
   InactivityMonitorBloc({
+    required this.kvService,
     required this.logger,
     required this.inactivityTimeout,
   }) : super(Stopped()) {
@@ -55,10 +64,39 @@ class InactivityMonitorBloc extends Bloc<InactivityMonitorEvent, InactivityMonit
   void _handleStart(
     InactivityMonitorStarted event,
     Emitter<InactivityMonitorState> emit,
-  ) {
+  ) async {
     logger.debug('Received InactivityMonitorStarted event.');
+
+    try {
+
+      // we should never really hit this case becasuse we check this deadline when
+      // initializing session
+
+      final storedDeadlineString =
+          await kvService.read(key: kInactivityDeadlineKey);
+      logger.debug(
+          "InactivityMonitorBloc: stored deadline: $storedDeadlineString");
+
+      if (storedDeadlineString != null && storedDeadlineString.isNotEmpty) {
+        final storedDeadline = DateTime.tryParse(storedDeadlineString);
+        if (storedDeadline != null) {
+          _deadlineTime = storedDeadline;
+
+          // If the deadline is already in the past, trigger a timeout right away.
+          if (DateTime.now().isAfter(_deadlineTime!)) {
+            add(InactivityTimeoutTriggered());
+            return;
+          }
+        }
+      }
+    } catch (e) {
+      logger.error('Error reading inactivity deadline: $e');
+    }
+
     emit(Running());
     logger.debug('InactivityMonitorBloc state changed to Running.');
+
+    _setDeadline();
     _startInactivityTimer();
   }
 
@@ -68,7 +106,7 @@ class InactivityMonitorBloc extends Bloc<InactivityMonitorEvent, InactivityMonit
   ) {
     logger.debug('Received InactivityMonitorStopped event.');
     _cancelInactivityTimer();
-    _lostFocusTime = null;
+    _clearDeadline();
     emit(Stopped());
     logger.debug('InactivityMonitorBloc state changed to Stopped.');
   }
@@ -80,6 +118,7 @@ class InactivityMonitorBloc extends Bloc<InactivityMonitorEvent, InactivityMonit
     logger.debug('Received UserActivityDetected event.');
     if (state is Running) {
       logger.debug('Resetting inactivity timer due to user activity.');
+      _setDeadline();
       _startInactivityTimer();
     } else {
       logger.debug(
@@ -94,8 +133,6 @@ class InactivityMonitorBloc extends Bloc<InactivityMonitorEvent, InactivityMonit
   ) {
     logger.debug('Received AppLostFocus event.');
     if (state is Running) {
-      logger.debug('Cancelling inactivity timer and recording lostFocusTime.');
-      _lostFocusTime = DateTime.now();
       _cancelInactivityTimer();
     } else {
       logger.debug('App lost focus, but monitor is not in Running state.');
@@ -107,26 +144,19 @@ class InactivityMonitorBloc extends Bloc<InactivityMonitorEvent, InactivityMonit
     Emitter<InactivityMonitorState> emit,
   ) {
     logger.debug('Received AppResumed event.');
-    if (state is Running && _lostFocusTime != null) {
-      final diff = DateTime.now().difference(_lostFocusTime!);
-      logger.debug(
-        'Time since app lost focus: ${diff.inSeconds}s (limit: ${inactivityTimeout.inSeconds}s).',
-      );
-      _lostFocusTime = null;
-
-      // Use the same inactivity timeout check:
-      if (diff > inactivityTimeout) {
-        logger.debug('Lost focus duration exceeded inactivityTimeout.');
+    if (state is Running && _deadlineTime != null) {
+      if (DateTime.now().isAfter(_deadlineTime!)) {
+        logger.debug('App resumed after inactivity timeout.');
         add(InactivityTimeoutTriggered());
+        return;
       } else {
-        logger.debug(
-          'Lost focus duration did not exceed timeout; restarting inactivity timer.',
-        );
+        logger.debug('App resumed before inactivity timeout.');
+
         _startInactivityTimer();
       }
     } else {
       logger.debug(
-        'App resumed, but state is not Running or _lostFocusTime is null.',
+        'App resumed, but state is not Running or _deadlineTime is null.',
       );
     }
   }
@@ -141,6 +171,7 @@ class InactivityMonitorBloc extends Bloc<InactivityMonitorEvent, InactivityMonit
     emit(TimeoutOut());
     logger.debug('InactivityMonitorBloc state changed to TimeoutOut.');
     _cancelInactivityTimer();
+    _clearDeadline();
   }
 
   void _startInactivityTimer() {
@@ -160,5 +191,16 @@ class InactivityMonitorBloc extends Bloc<InactivityMonitorEvent, InactivityMonit
     _cancelInactivityTimer();
     return super.close();
   }
-}
 
+  void _setDeadline() {
+    _deadlineTime = DateTime.now().add(inactivityTimeout);
+    kvService.write(
+        key: kInactivityDeadlineKey, value: _deadlineTime!.toIso8601String());
+  }
+
+  /// Clears the persisted deadline from local storage.
+  void _clearDeadline() {
+    _deadlineTime = null;
+    kvService.delete(key: kInactivityDeadlineKey);
+  }
+}
