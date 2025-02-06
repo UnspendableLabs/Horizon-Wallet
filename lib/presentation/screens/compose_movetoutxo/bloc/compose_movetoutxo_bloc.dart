@@ -164,7 +164,7 @@ class ComposeMoveToUtxoBloc extends ComposeBaseBloc<ComposeMoveToUtxoState> {
 
       await signAndBroadcastTransactionUseCase.call(
           decryptionStrategy: InMemoryKey(),
-          source: s.composeTransaction.params.source,
+          source: state.utxoAddress!,
           rawtransaction: s.composeTransaction.rawtransaction,
           onSuccess: (txHex, txHash) async {
             await writelocalTransactionUseCase.call(txHex, txHash);

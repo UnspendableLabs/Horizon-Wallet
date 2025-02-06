@@ -4,10 +4,6 @@ import 'package:horizon/domain/entities/compose_response.dart';
 import 'package:horizon/domain/entities/utxo.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/repositories/utxo_repository.dart';
-import 'package:horizon/domain/entities/utxo.dart';
-import 'package:horizon/domain/entities/compose_response.dart';
-import 'package:horizon/domain/entities/compose_fn.dart';
-import "package:equatable/equatable.dart";
 import 'package:horizon/domain/services/error_service.dart';
 
 class VirtualSize extends Equatable {

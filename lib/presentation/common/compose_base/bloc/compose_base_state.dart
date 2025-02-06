@@ -94,7 +94,7 @@ class ReviewStep<T, O extends Object?> extends SubmitState {
     String? error,
   }) {
     return ReviewStep(
-      otherParams: otherParams,
+      otherParams: otherParams ?? this.otherParams,
       composeTransaction: composeTransaction ?? this.composeTransaction,
       fee: fee ?? this.fee,
       feeRate: feeRate ?? this.feeRate,

@@ -99,7 +99,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
             asset,
             quantity,
             allowUnconfirmedInputs,
-            satPerVbyte.toInt(),
+            satPerVbyte,
             inputsSetString,
             excludeUtxosWithBalances,
             disableUtxoLocks);
@@ -154,7 +154,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
             assets,
             quantities,
             allowUnconfirmedInputs,
-            satPerVbyte.toInt(),
+            satPerVbyte,
             inputsSetString,
             excludeUtxosWithBalances,
             disableUtxoLocks);
@@ -212,7 +212,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
             reset,
             description,
             unconfirmed,
-            satPerVbyte.toInt(),
+            satPerVbyte,
             inputsSetString,
             excludeUtxosWithBalances,
             disableUtxoLocks);
@@ -276,7 +276,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
             oracleAddress,
             allowUnconfirmedInputs,
             exactFee,
-            satPerVbyte.toInt(),
+            satPerVbyte,
             inputsSetString,
             excludeUtxosWithBalances,
             disableUtxoLocks);
@@ -335,7 +335,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
             dispenser,
             quantity,
             allowUnconfirmedInputs,
-            satPerVbyte.toInt(),
+            satPerVbyte,
             inputsSetString,
             excludeUtxosWithBalances,
             disableUtxoLocks);
@@ -368,7 +368,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
         final response = await api.composeFairmintVerbose(
             sourceAddress,
             asset,
-            satPerVbyte.toInt(),
+            satPerVbyte,
             inputsSetString,
             excludeUtxosWithBalances,
             disableUtxoLocks);
@@ -414,7 +414,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
             hardCap,
             startBlock,
             endBlock,
-            satPerVbyte.toInt(),
+            satPerVbyte,
             lockQuantity,
             inputsSetString,
             excludeUtxosWithBalances,
@@ -455,8 +455,8 @@ class ComposeRepositoryImpl extends ComposeRepository {
     }
 
     final scriptPubKey = outputForChaining.scriptPubKey;
-    final int value =
-        (outputForChaining.value * SATOSHI_RATE).toInt(); // convert to sats
+    final num value =
+        (outputForChaining.value * SATOSHI_RATE); // convert to sats
     final String txid = prevDecodedTransaction.txid;
     final int vout = outputForChaining.n;
 
@@ -535,7 +535,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
             4 * 2016, // Expiration, two months
             0, // fee required
             allowUnconfirmedInputs,
-            satPerVbyte.toInt(),
+            satPerVbyte,
             inputsSetString,
             excludeUtxosWithBalances,
             disableUtxoLocks);
@@ -567,7 +567,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
             source,
             offerHash,
             allowUnconfirmedInputs,
-            satPerVbyte.toInt(),
+            satPerVbyte,
             inputsSetString,
             excludeUtxosWithBalances,
             disableUtxoLocks);
@@ -610,7 +610,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
             destinationVout,
             skipValidation,
             allowUnconfirmedInputs,
-            satPerVbyte.toInt(),
+            satPerVbyte,
             inputsSetString,
             excludeUtxosWithBalances,
             disableUtxoLocks);
@@ -648,7 +648,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
           destination,
           skipValidation,
           allowUnconfirmedInputs,
-          satPerVbyte.toInt(),
+          satPerVbyte,
           inputsSetString,
           excludeUtxosWithBalances,
           disableUtxoLocks,
@@ -686,7 +686,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
           destination,
           skipValidation,
           allowUnconfirmedInputs,
-          satPerVbyte.toInt(),
+          satPerVbyte,
           inputsSetString,
           excludeUtxosWithBalances,
           disableUtxoLocks,
@@ -721,7 +721,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
           asset,
           quantity,
           tag,
-          satPerVbyte.toInt(),
+          satPerVbyte,
           inputsSetString,
           excludeUtxosWithBalances,
           disableUtxoLocks,
@@ -758,7 +758,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
           asset,
           quantityPerUnit,
           dividendAsset,
-          satPerVbyte.toInt(),
+          satPerVbyte,
           inputsSetString,
           excludeUtxosWithBalances,
           disableUtxoLocks,
@@ -793,7 +793,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
           destination,
           flags,
           memo,
-          satPerVbyte.toInt(),
+          satPerVbyte,
           inputsSetString,
           skipValidation,
           disableUtxoLocks,
@@ -824,7 +824,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
         final response = await api.composeBurn(
           source,
           quantity,
-          satPerVbyte.toInt(),
+          satPerVbyte,
           inputsSetString,
           excludeUtxosWithBalances,
           disableUtxoLocks,

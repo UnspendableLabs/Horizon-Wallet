@@ -210,7 +210,8 @@ class ComposeDispenserBloc extends ComposeBaseBloc<ComposeDispenserState> {
               composeFn: composeRepository.composeDispenserVerbose);
 
       emit(state.copyWith(
-          submitState: ReviewStep<ComposeDispenserResponseVerbose, void>(
+          submitState: ReviewStep<ComposeDispenserResponseVerbose,
+              ComposeDispenserEventParams>(
         composeTransaction: composeResponse,
         fee: composeResponse.btcFee,
         feeRate: feeRate,

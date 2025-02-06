@@ -161,7 +161,8 @@ class ComposeDetachUtxoBloc extends ComposeBaseBloc<ComposeDetachUtxoState> {
 
       await signAndBroadcastTransactionUseCase.call(
           decryptionStrategy: InMemoryKey(),
-          source: s.composeTransaction.params.source,
+          source:
+              s.composeTransaction.params.destination, // DESTINATION IS SOURCE ON DETACH
           rawtransaction: s.composeTransaction.rawtransaction,
           onSuccess: (txHex, txHash) async {
             await writelocalTransactionUseCase.call(txHex, txHash);
@@ -207,7 +208,7 @@ class ComposeDetachUtxoBloc extends ComposeBaseBloc<ComposeDetachUtxoState> {
 
     await signAndBroadcastTransactionUseCase.call(
         decryptionStrategy: Password(event.password),
-        source: compose.params.destination,
+        source: compose.params.destination, // DESTINATION IS SOURCE ON DETACH
         rawtransaction: compose.rawtransaction,
         onSuccess: (txHex, txHash) async {
           await writelocalTransactionUseCase.call(txHex, txHash);

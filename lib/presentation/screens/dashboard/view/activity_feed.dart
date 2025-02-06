@@ -435,7 +435,7 @@ class ActivityFeedListItem extends StatelessWidget {
   }
 
   Widget _buildAssetIssuanceTitle(VerboseAssetIssuanceParams params) {
-    if (params.transfer) {
+    if (params.transfer && params.assetEvents != 'fairmint') {
       if (addresses.any((a) => a == params.source)) {
         return SelectableText(
             "Transfer Out of ${displayAssetName(params.asset, params.assetLongname)}");
