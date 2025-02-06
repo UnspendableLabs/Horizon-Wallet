@@ -62,7 +62,9 @@ class SessionStateCubit extends Cubit<SessionState> {
         // If the deadline has past, session is invali
         if (DateTime.now().isAfter(storedDeadline)) {
           // clear it
+          await inMemoryKeyRepository.delete();
           await kvService.delete(key: kInactivityDeadlineKey);
+
           return LoggedOut();
         }
       }
