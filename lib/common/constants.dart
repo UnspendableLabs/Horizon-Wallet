@@ -38,3 +38,5 @@ enum IssuanceActionType {
   transferOwnership,
   dividend
 }
+
+const String kInactivityDeadlineKey = 'inactivityDeadline';

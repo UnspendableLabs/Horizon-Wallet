@@ -6,7 +6,7 @@ class SettingsRepositoryImpl implements SettingsRepository {
   bool get requirePasswordForCryptoOperations =>
       Settings.getValue<bool>(
           SettingsKeys.requiredPasswordForCryptoOperations.toString()) ??
-      true;
+      false;
 
   @override
   int get inactivityTimeout =>

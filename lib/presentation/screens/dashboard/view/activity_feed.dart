@@ -298,14 +298,14 @@ class ActivityFeedListItem extends StatelessWidget {
             : null,
       SweepEvent(params: var params)
           when _getSendSide(params.source) == SendSide.source =>
-        SelectableText(
-            "Sweep ${flagMapper[params.flags]} to ${params.destination}"),
-      SweepEvent(params: var params)
-          when _getSendSide(params.source) == SendSide.destination =>
-        SelectableText(
-            "Sweep ${flagMapper[params.flags]} from ${params.source}"),
-      BurnEvent(params: var params) => SelectableText(
-          "Burn ${params.burnedNormalized} BTC for ${params.earnedNormalized} XCP"),
+        event.txHash != null
+            ? RBF(txHash: event.txHash!, address: params.source)
+            : null,
+      BurnEvent(params: var params)
+          when _getSendSide(params.source) == SendSide.source =>
+        event.txHash != null
+            ? RBF(txHash: event.txHash!, address: params.source)
+            : null,
       _ => null,
     };
   }
