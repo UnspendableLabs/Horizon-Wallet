@@ -21,7 +21,7 @@ mixin _$ComposeDispenserState {
   BalancesState get balancesState => throw _privateConstructorUsedError;
   FeeOption get feeOption => throw _privateConstructorUsedError;
   SubmitState get submitState =>
-      throw _privateConstructorUsedError; // Dispenser-specific propertiesflu
+      throw _privateConstructorUsedError; // Dispenser-specific properties
   DialogState get dialogState => throw _privateConstructorUsedError;
   String? get assetName => throw _privateConstructorUsedError;
   String? get openAddress => throw _privateConstructorUsedError;
@@ -287,7 +287,7 @@ class _$ComposeDispenserStateImpl extends _ComposeDispenserState {
   final FeeOption feeOption;
   @override
   final SubmitState submitState;
-// Dispenser-specific propertiesflu
+// Dispenser-specific properties
   @override
   final DialogState dialogState;
   @override
@@ -382,7 +382,7 @@ abstract class _ComposeDispenserState extends ComposeDispenserState {
   FeeOption get feeOption;
   @override
   SubmitState get submitState;
-  @override // Dispenser-specific propertiesflu
+  @override // Dispenser-specific properties
   DialogState get dialogState;
   @override
   String? get assetName;

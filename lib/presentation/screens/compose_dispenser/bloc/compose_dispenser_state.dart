@@ -16,7 +16,7 @@ class ComposeDispenserState with _$ComposeDispenserState, ComposeStateBase {
     required FeeOption feeOption,
     required SubmitState submitState,
 
-    // Dispenser-specific propertiesflu
+    // Dispenser-specific properties
     required DialogState dialogState,
     String? assetName,
     String? openAddress,
