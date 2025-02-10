@@ -156,7 +156,7 @@ class GetAddressesForm extends StatelessWidget {
                 ElevatedButton(
                   onPressed: state.submissionStatus.isInProgressOrSuccess ||
                           !state.warningAccepted ||
-                          state.password.value.isEmpty ||
+                          (state.password.value.isEmpty && passwordRequired) ||
                           (state.addressSelectionMode ==
                                   AddressSelectionMode.byAccount &&
                               state.account.value.isEmpty) ||
