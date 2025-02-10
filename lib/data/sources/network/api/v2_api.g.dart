@@ -5383,7 +5383,7 @@ class _V2Api implements V2Api {
     String asset,
     int quantity, [
     bool? allowUnconfirmedInputs,
-    int? satPerVbyte,
+    num? satPerVbyte,
     String? inputsSet,
     bool? excludeUtxosWithBalances,
     bool? disableUtxoLocks,
@@ -5435,7 +5435,7 @@ class _V2Api implements V2Api {
     String? assets,
     String? quantities, [
     bool? allowUnconfirmedInputs,
-    int? satPerVbyte,
+    num? satPerVbyte,
     String? inputsSet,
     bool? excludeUtxosWithBalances,
     bool? disableUtxoLocks,
@@ -5626,7 +5626,7 @@ class _V2Api implements V2Api {
     bool? reset,
     String? description,
     bool? unconfirmed,
-    int? satPerVbyte,
+    num? satPerVbyte,
     String? inputsSet,
     bool? excludeUtxosWithBalances,
     bool? disableUtxoLocks,
@@ -5815,7 +5815,7 @@ class _V2Api implements V2Api {
   Future<Response<ComposeFairmintVerboseModel>> composeFairmintVerbose(
     String address,
     String asset, [
-    int? satPerVbyte,
+    num? satPerVbyte,
     String? inputsSet,
     bool? excludeUtxosWithBalances,
     bool? disableUtxoLocks,
@@ -5866,7 +5866,7 @@ class _V2Api implements V2Api {
     int? hardCap,
     int? startBlock,
     int? endBlock,
-    int? satPerVbyte,
+    num? satPerVbyte,
     bool? lockQuantity,
     String? inputsSet,
     bool? excludeUtxosWithBalances,
@@ -5927,7 +5927,7 @@ class _V2Api implements V2Api {
     String? oracleAddress,
     bool? allowUnconfirmedInputs,
     int? exactFee,
-    int? satPerVbyte,
+    num? satPerVbyte,
     String? inputsSet,
     bool? excludeUtxosWithBalances,
     bool? unconfirmed,
@@ -5989,7 +5989,7 @@ class _V2Api implements V2Api {
     int expiration,
     int feeRequired, [
     bool? allowUnconfirmedInputs,
-    int? satPerVbyte,
+    num? satPerVbyte,
     String? inputsSet,
     bool? excludeUtxosWithBalances,
     bool? disableUtxoLocks,
@@ -6043,7 +6043,7 @@ class _V2Api implements V2Api {
     String address,
     String giveAsset, [
     bool? allowUnconfirmedInputs,
-    int? satPerVbyte,
+    num? satPerVbyte,
     String? inputsSet,
     bool? excludeUtxosWithBalances,
     bool? disableUtxoLocks,
@@ -6138,7 +6138,7 @@ class _V2Api implements V2Api {
     String dispenser,
     int quantity, [
     bool? allowUnconfirmedInputs,
-    int? satPerVbyte,
+    num? satPerVbyte,
     String? inputsSet,
     bool? excludeUtxosWithBalances,
     bool? disableUtxoLocks,
@@ -6600,7 +6600,7 @@ class _V2Api implements V2Api {
     String? destinationVout,
     bool? skipValidation,
     bool? allowUnconfirmedInputs,
-    int? satPerVbyte,
+    num? satPerVbyte,
     String? inputsSet,
     bool? excludeUtxosWithBalances,
     bool? disableUtxoLocks,
@@ -6654,7 +6654,7 @@ class _V2Api implements V2Api {
     String? destination,
     bool? skipValidation,
     bool? allowUnconfirmedInputs,
-    int? satPerVbyte,
+    num? satPerVbyte,
     String? inputsSet,
     bool? excludeUtxosWithBalances,
     bool? disableUtxoLocks,
@@ -6705,7 +6705,7 @@ class _V2Api implements V2Api {
     String? destination,
     bool? skipValidation,
     bool? allowUnconfirmedInputs,
-    int? satPerVbyte,
+    num? satPerVbyte,
     String? inputsSet,
     bool? excludeUtxosWithBalances,
     bool? disableUtxoLocks,
@@ -6972,7 +6972,7 @@ class _V2Api implements V2Api {
     String asset,
     int quantity,
     String tag, [
-    int? satPerVbyte,
+    num? satPerVbyte,
     String? inputsSet,
     bool? excludeUtxosWithBalances,
     bool? disableUtxoLocks,
@@ -7021,7 +7021,7 @@ class _V2Api implements V2Api {
     String asset,
     int quantityPerUnit,
     String dividendAsset, [
-    int? satPerVbyte,
+    num? satPerVbyte,
     String? inputsSet,
     bool? excludeUtxosWithBalances,
     bool? disableUtxoLocks,
@@ -7070,7 +7070,7 @@ class _V2Api implements V2Api {
     String destination,
     int flags,
     String memo, [
-    int? satPerVbyte,
+    num? satPerVbyte,
     String? inputsSet,
     bool? excludeUtxosWithBalances,
     bool? disableUtxoLocks,
@@ -7117,7 +7117,7 @@ class _V2Api implements V2Api {
   Future<Response<ComposeBurnResponseModel>> composeBurn(
     String address,
     int quantity, [
-    int? satPerVbyte,
+    num? satPerVbyte,
     String? inputsSet,
     bool? excludeUtxosWithBalances,
     bool? disableUtxoLocks,

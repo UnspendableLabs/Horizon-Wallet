@@ -26,7 +26,7 @@ class MockBalanceRepository extends Mock implements BalanceRepository {}
 
 class MockComposeFunction extends Mock {
   Future<MockComposeResponse> call(
-    int fee,
+    num fee,
     List<Utxo> inputsSet,
     ComposeParams params,
   );

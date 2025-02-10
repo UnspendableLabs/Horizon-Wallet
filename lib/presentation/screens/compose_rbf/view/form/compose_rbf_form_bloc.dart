@@ -39,7 +39,7 @@ class FormSubmitted extends FormEvent {
   BitcoinTx tx;
   String hex;
   int adjustedVirtualSize;
-  int newFeeRate;
+  num newFeeRate;
 
   FormSubmitted(
       {required this.tx,
@@ -137,7 +137,7 @@ class ReplaceByFeeFormBloc extends Bloc<FormEvent, FormStateModel> {
     emit(state.copyWith(submissionStatus: FormzSubmissionStatus.inProgress));
 
     try {
-      int newFee = event.newFeeRate * event.adjustedVirtualSize;
+      num newFee = event.newFeeRate * event.adjustedVirtualSize;
 
       MakeRBFResponse rbfResponse = await transactionService.makeRBF(
         source: source,

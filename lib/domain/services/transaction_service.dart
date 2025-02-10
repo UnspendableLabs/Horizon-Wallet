@@ -5,7 +5,7 @@ class MakeRBFResponse {
   final Map<String, List<int>> inputsByTxHash;
   final int virtualSize;
   final int adjustedVirtualSize;
-  final int fee;
+  final num fee;
   MakeRBFResponse({
     required this.txHex,
     required this.virtualSize,
@@ -49,13 +49,13 @@ abstract class TransactionService {
       required String sourcePrivKey,
       required String destinationAddress,
       required String destinationPrivKey,
-      required int fee});
+      required num fee});
 
   Future<MakeRBFResponse> makeRBF({
     required String source,
     required String txHex,
-    required int oldFee,
-    required int newFee,
+    required num oldFee,
+    required num newFee,
   });
 }
 

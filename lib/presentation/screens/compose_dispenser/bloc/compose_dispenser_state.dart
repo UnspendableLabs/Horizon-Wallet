@@ -53,7 +53,7 @@ class DialogState with _$DialogState {
       required int giveQuantity,
       required int escrowQuantity,
       required int mainchainrate,
-      required int feeRate}) = _DispenserCloseDialogAndOpenNewAddress;
+      required num feeRate}) = _DispenserCloseDialogAndOpenNewAddress;
 
   const factory DialogState.warning({bool? hasOpenDispensers}) =
       _DispenserWarning;

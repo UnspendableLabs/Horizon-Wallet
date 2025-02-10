@@ -40,8 +40,8 @@ class TransactionServiceImpl implements TransactionService {
   Future<MakeRBFResponse> makeRBF({
     required String source,
     required String txHex,
-    required int oldFee,
-    required int newFee,
+    required num oldFee,
+    required num newFee,
   }) async {
     if (newFee <= oldFee) {
       throw TransactionServiceException('New fee must be greater than old fee');
@@ -78,7 +78,7 @@ class TransactionServiceImpl implements TransactionService {
       throw TransactionServiceException('Last output is not change output');
     }
 
-    final newValue = lastOut.value - feeDelta;
+    final newValue = (lastOut.value - feeDelta).ceil();
 
     if (newValue < 0) {
       throw TransactionServiceException(
@@ -298,7 +298,7 @@ class TransactionServiceImpl implements TransactionService {
       required String sourcePrivKey,
       required String destinationAddress,
       required String destinationPrivKey,
-      required int fee}) async {
+      required num fee}) async {
     final sourceIsSegwit = addressIsSegwit(sourceAddress);
 
     bitcoinjs.Transaction transaction =
@@ -446,7 +446,7 @@ class TransactionServiceImpl implements TransactionService {
     // change output will be targetValue - inputSetValue goes to the source address
 
     // Add the for change
-    int changeAmount = inputSetValue - targetValue;
+    int changeAmount = (inputSetValue - targetValue).ceil();
 
     // Create payment for source address (where change goes)
     bitcoinjs.Payment changeScript;

@@ -42,7 +42,7 @@ class ComposeDispenserOnNewAddressBloc extends Bloc<
   final int escrowQuantity;
   final int mainchainrate;
   final bool divisible;
-  final int feeRate;
+  final num feeRate;
   final bool sendExtraBtcToDispenser;
 
   final WalletRepository walletRepository;
@@ -265,11 +265,12 @@ class ComposeDispenserOnNewAddressBloc extends Bloc<
             final escrowQuantityToSend =
                 escrowQuantity; // the total asset quantity to be sent to the new address for the dispenser
 
-            int feeToCoverDispenser = feeRate * ADJUSTED_VIRTUAL_SIZE;
+            int feeToCoverDispenser = (feeRate * ADJUSTED_VIRTUAL_SIZE).ceil();
             int extraBtcToSendToDispenser = 0;
 
             if (sendExtraBtcToDispenser) {
-              extraBtcToSendToDispenser = feeRate * ADJUSTED_VIRTUAL_SIZE;
+              extraBtcToSendToDispenser =
+                  (feeRate * ADJUSTED_VIRTUAL_SIZE).ceil();
             }
 
             // 2. compose the asset send
@@ -542,11 +543,13 @@ class ComposeDispenserOnNewAddressBloc extends Bloc<
             .escrowQuantity; // the total asset quantity to be sent to the new address for the dispenser
         final mainchainrate = event.mainchainrate;
 
-        int feeToCoverDispenser = event.feeRate * ADJUSTED_VIRTUAL_SIZE;
+        int feeToCoverDispenser =
+            (event.feeRate * ADJUSTED_VIRTUAL_SIZE).ceil();
         int extraBtcToSendToDispenser = 0;
 
         if (event.sendExtraBtcToDispenser) {
-          extraBtcToSendToDispenser = event.feeRate * ADJUSTED_VIRTUAL_SIZE;
+          extraBtcToSendToDispenser =
+              (event.feeRate * ADJUSTED_VIRTUAL_SIZE).ceil();
         }
 
         // 2. compose the asset send
@@ -684,7 +687,7 @@ class ComposeDispenserOnNewAddressBloc extends Bloc<
     });
   }
 
-  int _getFeeRate(FeeOption.FeeOption feeOption) {
+  num _getFeeRate(FeeOption.FeeOption feeOption) {
     FeeEstimates feeEstimates = state.feeState.feeEstimates;
     return switch (feeOption) {
       FeeOption.Fast() => feeEstimates.fast,

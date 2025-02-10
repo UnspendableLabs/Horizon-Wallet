@@ -210,7 +210,8 @@ class ComposeDispenserBloc extends ComposeBaseBloc<ComposeDispenserState> {
               composeFn: composeRepository.composeDispenserVerbose);
 
       emit(state.copyWith(
-          submitState: ReviewStep<ComposeDispenserResponseVerbose, void>(
+          submitState: ReviewStep<ComposeDispenserResponseVerbose,
+              ComposeDispenserEventParams>(
         composeTransaction: composeResponse,
         fee: composeResponse.btcFee,
         feeRate: feeRate,
@@ -229,7 +230,7 @@ class ComposeDispenserBloc extends ComposeBaseBloc<ComposeDispenserState> {
     }
   }
 
-  int _getFeeRate() {
+  num _getFeeRate() {
     FeeEstimates feeEstimates = state.feeState.feeEstimatesOrThrow();
     return switch (state.feeOption) {
       FeeOption.Fast() => feeEstimates.fast,

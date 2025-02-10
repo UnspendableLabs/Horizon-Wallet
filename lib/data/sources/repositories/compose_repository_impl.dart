@@ -79,7 +79,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
   }
 
   @override
-  Future<compose_send.ComposeSendResponse> composeSendVerbose(int satPerVbyte,
+  Future<compose_send.ComposeSendResponse> composeSendVerbose(num satPerVbyte,
       List<Utxo> inputsSet, compose_send.ComposeSendParams params) async {
     return await _retryOnInvalidUtxo<compose_send.ComposeSendResponse>(
       (currentInputSet) async {
@@ -133,7 +133,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
 
   @override
   Future<compose_mpma_send.ComposeMpmaSendResponse> composeMpmaSend(
-      int satPerVbyte,
+      num satPerVbyte,
       List<Utxo> inputsSet,
       compose_mpma_send.ComposeMpmaSendParams params) async {
     return await _retryOnInvalidUtxo<compose_mpma_send.ComposeMpmaSendResponse>(
@@ -183,7 +183,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
 
   @override
   Future<compose_issuance.ComposeIssuanceResponseVerbose>
-      composeIssuanceVerbose(int satPerVbyte, List<Utxo> inputsSet,
+      composeIssuanceVerbose(num satPerVbyte, List<Utxo> inputsSet,
           compose_issuance.ComposeIssuanceParams params) async {
     return await _retryOnInvalidUtxo<
         compose_issuance.ComposeIssuanceResponseVerbose>(
@@ -244,7 +244,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
 
   @override
   Future<compose_dispenser.ComposeDispenserResponseVerbose>
-      composeDispenserVerbose(int satPerVbyte, List<Utxo> inputsSet,
+      composeDispenserVerbose(num satPerVbyte, List<Utxo> inputsSet,
           compose_dispenser.ComposeDispenserParams params) async {
     return await _retryOnInvalidUtxo<
         compose_dispenser.ComposeDispenserResponseVerbose>(
@@ -315,7 +315,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
 
   @override
   Future<compose_dispense.ComposeDispenseResponse> composeDispense(
-      int satPerVbyte,
+      num satPerVbyte,
       List<Utxo> inputsSet,
       compose_dispense.ComposeDispenseParams params) async {
     return await _retryOnInvalidUtxo<compose_dispense.ComposeDispenseResponse>(
@@ -352,7 +352,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
 
   @override
   Future<compose_fairmint.ComposeFairmintResponse> composeFairmintVerbose(
-      int satPerVbyte,
+      num satPerVbyte,
       List<Utxo> inputsSet,
       compose_fairmint.ComposeFairmintParams params) async {
     return await _retryOnInvalidUtxo<compose_fairmint.ComposeFairmintResponse>(
@@ -384,7 +384,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
 
   @override
   Future<compose_fairminter.ComposeFairminterResponse> composeFairminterVerbose(
-      int satPerVbyte,
+      num satPerVbyte,
       List<Utxo> inputsSet,
       compose_fairminter.ComposeFairminterParams params) async {
     return await _retryOnInvalidUtxo<
@@ -456,7 +456,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
 
     final scriptPubKey = outputForChaining.scriptPubKey;
     final int value =
-        (outputForChaining.value * SATOSHI_RATE).toInt(); // convert to sats
+        (outputForChaining.value * SATOSHI_RATE).ceil(); // convert to sats
     final String txid = prevDecodedTransaction.txid;
     final int vout = outputForChaining.n;
 
@@ -510,7 +510,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
   }
 
   @override
-  Future<compose_order.ComposeOrderResponse> composeOrder(int satPerVbyte,
+  Future<compose_order.ComposeOrderResponse> composeOrder(num satPerVbyte,
       List<Utxo> inputsSet, compose_order.ComposeOrderParams params) async {
     return await _retryOnInvalidUtxo<compose_order.ComposeOrderResponse>(
       (currentInputSet) async {
@@ -551,7 +551,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
   }
 
   @override
-  Future<compose_cancel.ComposeCancelResponse> composeCancel(int satPerVbyte,
+  Future<compose_cancel.ComposeCancelResponse> composeCancel(num satPerVbyte,
       List<Utxo> inputsSet, compose_cancel.ComposeCancelParams params) async {
     return await _retryOnInvalidUtxo<compose_cancel.ComposeCancelResponse>(
       (currentInputSet) async {
@@ -584,7 +584,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
 
   @override
   Future<compose_attach_utxo.ComposeAttachUtxoResponse> composeAttachUtxo(
-      int satPerVbyte,
+      num satPerVbyte,
       List<Utxo> inputsSet,
       compose_attach_utxo.ComposeAttachUtxoParams params) async {
     return await _retryOnInvalidUtxo<
@@ -627,7 +627,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
 
   @override
   Future<compose_detach_utxo.ComposeDetachUtxoResponse> composeDetachUtxo(
-      int satPerVbyte,
+      num satPerVbyte,
       List<Utxo> inputsSet,
       compose_detach_utxo.ComposeDetachUtxoParams params) async {
     return await _retryOnInvalidUtxo<
@@ -666,7 +666,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
 
   @override
   Future<compose_movetoutxo.ComposeMoveToUtxoResponse> composeMoveToUtxo(
-      int satPerVbyte,
+      num satPerVbyte,
       List<Utxo> inputsSet,
       compose_movetoutxo.ComposeMoveToUtxoParams params) async {
     return await _retryOnInvalidUtxo<
@@ -703,7 +703,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
   }
 
   @override
-  Future<compose_destroy.ComposeDestroyResponse> composeDestroy(int satPerVbyte,
+  Future<compose_destroy.ComposeDestroyResponse> composeDestroy(num satPerVbyte,
       List<Utxo> inputsSet, compose_destroy.ComposeDestroyParams params) async {
     return await _retryOnInvalidUtxo<compose_destroy.ComposeDestroyResponse>(
       (currentInputSet) async {
@@ -739,7 +739,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
 
   @override
   Future<compose_dividend.ComposeDividendResponse> composeDividend(
-      int satPerVbyte,
+      num satPerVbyte,
       List<Utxo> inputsSet,
       compose_dividend.ComposeDividendParams params) async {
     return await _retryOnInvalidUtxo<compose_dividend.ComposeDividendResponse>(
@@ -775,7 +775,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
   }
 
   @override
-  Future<compose_sweep.ComposeSweepResponse> composeSweep(int satPerVbyte,
+  Future<compose_sweep.ComposeSweepResponse> composeSweep(num satPerVbyte,
       List<Utxo> inputsSet, compose_sweep.ComposeSweepParams params) async {
     return await _retryOnInvalidUtxo<compose_sweep.ComposeSweepResponse>(
       (currentInputSet) async {
@@ -810,7 +810,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
   }
 
   @override
-  Future<compose_burn.ComposeBurnResponse> composeBurn(int satPerVbyte,
+  Future<compose_burn.ComposeBurnResponse> composeBurn(num satPerVbyte,
       List<Utxo> inputsSet, compose_burn.ComposeBurnParams params) async {
     return await _retryOnInvalidUtxo<compose_burn.ComposeBurnResponse>(
       (currentInputSet) async {

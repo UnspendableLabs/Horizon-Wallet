@@ -263,7 +263,7 @@ class ReviewStepView extends StatefulWidget {
 
   final dynamic composeTransaction;
   final int fee;
-  final int feeRate;
+  final num feeRate;
   final int virtualSize;
   final int adjustedVirtualSize;
   final List<Widget> Function(dynamic, GlobalKey<FormState>)

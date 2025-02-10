@@ -33,9 +33,7 @@ class ComposeDispenserOnNewAddressState<T>
     required T composeSendTransaction,
     required T composeDispenserTransaction,
     required int btcQuantity,
-    required int feeRate,
-    // required int totalVirtualSize,
-    // required int totalAdjustedVirtualSize,
+    required num feeRate,
   }) = _ComposeDispenserOnNewAddressStateConfirm;
   const factory ComposeDispenserOnNewAddressState.error(String error) =
       _ComposeDispenserOnNewAddressStateError;

@@ -68,7 +68,6 @@ class InactivityMonitorBloc
     logger.debug('Received InactivityMonitorStarted event.');
 
     try {
-
       // we should never really hit this case becasuse we check this deadline when
       // initializing session
 

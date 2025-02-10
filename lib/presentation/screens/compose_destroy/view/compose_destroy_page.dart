@@ -161,7 +161,12 @@ class ComposeDestroyPageState extends State<ComposeDestroyPage> {
       ],
       orElse: () => [
         const HorizonUI.HorizonTextFormField(
-          label: 'Destroy',
+          label: 'Source Address',
+          enabled: false,
+        ),
+        const SizedBox(height: 16),
+        const HorizonUI.HorizonTextFormField(
+          label: 'Destroy Asset',
           enabled: false,
         ),
         const SizedBox(height: 16),
@@ -171,12 +176,12 @@ class ComposeDestroyPageState extends State<ComposeDestroyPage> {
         ),
         const SizedBox(height: 16),
         const HorizonUI.HorizonTextFormField(
-          label: 'Destroy Asset',
+          label: 'Quantity to destroy',
           enabled: false,
         ),
         const SizedBox(height: 16),
         const HorizonUI.HorizonTextFormField(
-          label: 'Quantity to destroy',
+          label: 'Available supply',
           enabled: false,
         ),
         const SizedBox(height: 16),
