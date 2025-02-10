@@ -455,8 +455,8 @@ class ComposeRepositoryImpl extends ComposeRepository {
     }
 
     final scriptPubKey = outputForChaining.scriptPubKey;
-    final num value =
-        (outputForChaining.value * SATOSHI_RATE); // convert to sats
+    final int value =
+        (outputForChaining.value * SATOSHI_RATE).ceil(); // convert to sats
     final String txid = prevDecodedTransaction.txid;
     final int vout = outputForChaining.n;
 
