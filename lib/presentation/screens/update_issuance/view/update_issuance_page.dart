@@ -25,7 +25,11 @@ import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
 import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
 
+import 'package:horizon/domain/repositories/settings_repository.dart';
+import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
+
 class UpdateIssuancePageWrapper extends StatelessWidget {
+
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
   final IssuanceActionType actionType;
   final String assetName;
@@ -48,6 +52,11 @@ class UpdateIssuancePageWrapper extends StatelessWidget {
       success: (state) => BlocProvider(
         key: Key(currentAddress),
         create: (context) => UpdateIssuanceBloc(
+          
+          inMemoryKeyRepository: GetIt.I.get<InMemoryKeyRepository>(),
+          // TODO: factor into settings repository...
+          passwordRequired:
+              GetIt.I<SettingsRepository>().requirePasswordForCryptoOperations,
           composeTransactionUseCase: GetIt.I.get<ComposeTransactionUseCase>(),
           assetRepository: GetIt.I.get<AssetRepository>(),
           composeRepository: GetIt.I.get<ComposeRepository>(),
