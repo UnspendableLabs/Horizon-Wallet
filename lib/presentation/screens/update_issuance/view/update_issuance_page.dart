@@ -21,9 +21,12 @@ import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_f
 import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
 import 'package:horizon/presentation/screens/update_issuance/bloc/update_issuance_bloc.dart';
 import 'package:horizon/presentation/screens/update_issuance/bloc/update_issuance_state.dart';
-import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
+import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
 import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
+
+import 'package:horizon/domain/repositories/settings_repository.dart';
+import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 
 class UpdateIssuancePageWrapper extends StatelessWidget {
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
@@ -43,11 +46,15 @@ class UpdateIssuancePageWrapper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final shell = context.watch<ShellStateCubit>();
-    return shell.state.maybeWhen(
+    final session = context.watch<SessionStateCubit>();
+    return session.state.maybeWhen(
       success: (state) => BlocProvider(
         key: Key(currentAddress),
         create: (context) => UpdateIssuanceBloc(
+          inMemoryKeyRepository: GetIt.I.get<InMemoryKeyRepository>(),
+          // TODO: factor into settings repository...
+          passwordRequired:
+              GetIt.I<SettingsRepository>().requirePasswordForCryptoOperations,
           composeTransactionUseCase: GetIt.I.get<ComposeTransactionUseCase>(),
           assetRepository: GetIt.I.get<AssetRepository>(),
           composeRepository: GetIt.I.get<ComposeRepository>(),
@@ -59,7 +66,7 @@ class UpdateIssuancePageWrapper extends StatelessWidget {
               GetIt.I.get<WriteLocalTransactionUseCase>(),
           logger: GetIt.I.get<Logger>(),
           issuanceActionType: actionType,
-        )..add(FetchFormData(
+        )..add(AsyncFormDependenciesRequested(
             assetName: assetName, currentAddress: currentAddress)),
         child: UpdateIssuancePage(
           dashboardActivityFeedBloc: dashboardActivityFeedBloc,
@@ -138,7 +145,7 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
             dashboardActivityFeedBloc: widget.dashboardActivityFeedBloc,
             onFeeChange: (fee) => context
                 .read<UpdateIssuanceBloc>()
-                .add(ChangeFeeOption(value: fee)),
+                .add(FeeOptionChanged(value: fee)),
             buildInitialFormFields: (state, loading, formKey) =>
                 _buildInitialFormLoadingFields(state, loading, formKey),
             onInitialCancel: () => {},
@@ -155,7 +162,7 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
               dashboardActivityFeedBloc: widget.dashboardActivityFeedBloc,
               onFeeChange: (fee) => context
                   .read<UpdateIssuanceBloc>()
-                  .add(ChangeFeeOption(value: fee)),
+                  .add(FeeOptionChanged(value: fee)),
               buildInitialFormFields: (state, loading, formKey) =>
                   _buildInitialFormFields(
                       state, loading, formKey, originalAsset),
@@ -540,7 +547,7 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
           print("Invalid case");
       }
 
-      context.read<UpdateIssuanceBloc>().add(ComposeTransactionEvent(
+      context.read<UpdateIssuanceBloc>().add(FormSubmitted(
             sourceAddress: widget.address,
             params: UpdateIssuanceEventParams(
               name: name,
@@ -729,7 +736,7 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
   }
 
   void _onConfirmationBack() {
-    context.read<UpdateIssuanceBloc>().add(FetchFormData(
+    context.read<UpdateIssuanceBloc>().add(AsyncFormDependenciesRequested(
         currentAddress: widget.address, assetName: widget.assetName));
   }
 
@@ -737,7 +744,7 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
       dynamic composeTransaction, int fee, GlobalKey<FormState> formKey) {
     if (formKey.currentState!.validate()) {
       context.read<UpdateIssuanceBloc>().add(
-            FinalizeTransactionEvent<ComposeIssuanceResponseVerbose>(
+            ReviewSubmitted<ComposeIssuanceResponseVerbose>(
               composeTransaction: composeTransaction,
               fee: fee,
             ),
@@ -746,7 +753,7 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
   }
 
   void _onFinalizeCancel() {
-    context.read<UpdateIssuanceBloc>().add(FetchFormData(
+    context.read<UpdateIssuanceBloc>().add(AsyncFormDependenciesRequested(
         currentAddress: widget.address, assetName: widget.assetName));
   }
 
@@ -825,7 +832,7 @@ class UpdateIssuancePageState extends State<UpdateIssuancePage> {
   void _onFinalizeSubmit(String password, GlobalKey<FormState> formKey) {
     if (formKey.currentState!.validate()) {
       context.read<UpdateIssuanceBloc>().add(
-            SignAndBroadcastTransactionEvent(
+            SignAndBroadcastFormSubmitted(
               password: password,
             ),
           );

@@ -12,8 +12,8 @@ import 'package:horizon/presentation/screens/dashboard/account_form/bloc/account
 import 'package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_state.dart';
 import 'package:horizon/presentation/screens/dashboard/account_form/view/account_form.dart';
 import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
-import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
-import 'package:horizon/presentation/shell/bloc/shell_state.dart';
+import 'package:horizon/presentation/session/bloc/session_cubit.dart';
+import 'package:horizon/presentation/session/bloc/session_state.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -34,16 +34,7 @@ class MockAccountFormBloc extends Mock implements AccountFormBloc {
         _stateController.add(_currentState);
         // Simulate async operation
         Future.delayed(const Duration(milliseconds: 500), () {
-          _currentState = AccountFormStep2(
-              state: Step2Success(Account(
-            uuid: 'test-account-uuid',
-            name: 'Test Account',
-            walletUuid: 'test-wallet-uuid',
-            purpose: "44'",
-            coinType: "0'",
-            accountIndex: "0'",
-            importFormat: ImportFormat.counterwallet,
-          )));
+          _currentState = AccountFormSuccess();
           _stateController.add(_currentState);
         });
       }
@@ -57,19 +48,19 @@ class MockAccountFormBloc extends Mock implements AccountFormBloc {
   }
 }
 
-class MockShellStateCubit extends Mock implements ShellStateCubit {
-  final ShellState _state;
+class MockSessionStateCubit extends Mock implements SessionStateCubit {
+  final SessionState _state;
 
-  MockShellStateCubit(this._state);
-
-  @override
-  ShellState get state => _state;
+  MockSessionStateCubit(this._state);
 
   @override
-  Stream<ShellState> get stream => Stream.value(_state);
+  SessionState get state => _state;
+
+  @override
+  Stream<SessionState> get stream => Stream.value(_state);
 }
 
-ShellState createShellState({
+SessionState createSessionState({
   List<Account>? accounts,
   Wallet? wallet,
   String? currentAccountUuid,
@@ -88,8 +79,8 @@ ShellState createShellState({
     importFormat: ImportFormat.counterwallet,
   );
 
-  return ShellState.success(
-    ShellStateSuccess.withAccount(
+  return SessionState.success(
+    SessionStateSuccess(
       accounts: accounts ??
           [defaultAccount], // Include default account if none provided
       wallet: wallet ??
@@ -100,6 +91,7 @@ ShellState createShellState({
             encryptedPrivKey: '',
             chainCodeHex: '',
           ),
+      decryptionKey: "decryption_key",
       currentAccountUuid: currentAccountUuid ?? defaultAccount.uuid,
       addresses: addresses ?? [],
       currentAddress: currentAddress ??
@@ -122,11 +114,11 @@ void main() {
 
   group('AddAccountForm Integration Test', () {
     late MockAccountFormBloc mockBloc;
-    late MockShellStateCubit mockShellCubit;
+    late MockSessionStateCubit mockSessionCubit;
 
     setUp(() {
       mockBloc = MockAccountFormBloc();
-      mockShellCubit = MockShellStateCubit(createShellState());
+      mockSessionCubit = MockSessionStateCubit(createSessionState());
     });
 
     tearDown(() async {
@@ -142,9 +134,9 @@ void main() {
             body: MultiBlocProvider(
               providers: [
                 BlocProvider<AccountFormBloc>.value(value: mockBloc),
-                BlocProvider<ShellStateCubit>.value(value: mockShellCubit),
+                BlocProvider<SessionStateCubit>.value(value: mockSessionCubit),
               ],
-              child: const AddAccountForm(),
+              child: const AddAccountForm(passwordRequired: true),
             ),
           ),
         ),
@@ -227,14 +219,14 @@ void main() {
         ),
       ];
 
-      // Create a ShellState with these accounts
-      final shellState = createShellState(
+      // Create a SessionState with these accounts
+      final sessionState = createSessionState(
         accounts: accounts,
         currentAccountUuid: 'account-uuid-2',
       );
 
-      // Initialize MockShellStateCubit with the custom ShellState
-      final mockShellCubit = MockShellStateCubit(shellState);
+      // Initialize MockSessionStateCubit with the custom SessionState
+      final mockSessionCubit = MockSessionStateCubit(sessionState);
 
       // Initialize MockAccountFormBloc
       final mockBloc = MockAccountFormBloc();
@@ -246,9 +238,9 @@ void main() {
             body: MultiBlocProvider(
               providers: [
                 BlocProvider<AccountFormBloc>.value(value: mockBloc),
-                BlocProvider<ShellStateCubit>.value(value: mockShellCubit),
+                BlocProvider<SessionStateCubit>.value(value: mockSessionCubit),
               ],
-              child: const AddAccountForm(),
+              child: const AddAccountForm(passwordRequired: true),
             ),
           ),
         ),

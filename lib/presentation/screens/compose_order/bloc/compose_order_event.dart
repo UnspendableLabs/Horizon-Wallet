@@ -7,7 +7,7 @@ abstract class ComposeOrderEvent extends ComposeBaseEvent {}
 class ComposeResponseReceived extends ComposeOrderEvent {
   final ComposeOrderResponse response;
   final VirtualSize virtualSize;
-  final int feeRate;
+  final num feeRate;
 
   ComposeResponseReceived({
     required this.response,

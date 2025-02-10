@@ -497,8 +497,10 @@ class DashboardActivityFeedBloc
 
         // don't add btc mempool if it's in the counterparty mempoool
         for (final tx in btcMempoolList) {
-          mempoolActivityFeedItems
-              .add(ActivityFeedItem(id: tx.txid, hash: tx.txid, bitcoinTx: tx));
+          if (!counterpartyMempoolByHash.keys.contains(tx.txid)) {
+            mempoolActivityFeedItems.add(
+                ActivityFeedItem(id: tx.txid, hash: tx.txid, bitcoinTx: tx));
+          }
         }
 
         for (final tx in counterpartyMempool) {
@@ -625,6 +627,10 @@ class DashboardActivityFeedBloc
         } else if (event.event == 'NEW_FAIRMINT' &&
             fairmintAssetIssuanceHashes.contains(event.txHash)) {
           // Skip adding NEW_FAIRMINT if corresponding ASSET_ISSUANCE with the same tx_hash is present
+          continue;
+        } else if (event.event == 'ASSET_DESTRUCTION' &&
+            (event as AssetDestructionEvent).params.tag == 'reset') {
+          // Skip destroys when they are triggered by an issuance reset
           continue;
         } else {
           filteredEvents.add(event);

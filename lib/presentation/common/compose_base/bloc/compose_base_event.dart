@@ -2,47 +2,53 @@ import 'package:horizon/domain/entities/fee_option.dart';
 
 abstract class ComposeBaseEvent {}
 
-class FetchFormData extends ComposeBaseEvent {
+class AsyncFormDependenciesRequested extends ComposeBaseEvent {
   String? currentAddress;
   String? assetName;
   String?
       initialDispenserAddress; // this is a total hack but necessary due to current base bloc implementation
-  FetchFormData({
+  AsyncFormDependenciesRequested({
     this.currentAddress,
     this.assetName,
     this.initialDispenserAddress,
   });
 }
 
-class ChangeFeeOption extends ComposeBaseEvent {
+class FeeOptionChanged extends ComposeBaseEvent {
   final FeeOption value;
-  ChangeFeeOption({required this.value});
+  FeeOptionChanged({required this.value});
 }
 
-class ComposeTransactionEvent<T> extends ComposeBaseEvent {
+class FormSubmitted<T> extends ComposeBaseEvent {
   final String sourceAddress;
   final T params;
 
-  ComposeTransactionEvent({
+  FormSubmitted({
     required this.sourceAddress,
     required this.params,
   });
 }
 
-class FinalizeTransactionEvent<T> extends ComposeBaseEvent {
+class ReviewSubmitted<T> extends ComposeBaseEvent {
   final T composeTransaction;
   final int fee;
+  final bool passwordRequired;
 
-  FinalizeTransactionEvent({
+  ReviewSubmitted({
     required this.composeTransaction,
     required this.fee,
+    this.passwordRequired = true,
   });
 }
 
-class SignAndBroadcastTransactionEvent extends ComposeBaseEvent {
+class SignAndBroadcastFormSubmitted extends ComposeBaseEvent {
   final String password;
 
-  SignAndBroadcastTransactionEvent({
+  SignAndBroadcastFormSubmitted({
     required this.password,
   });
 }
+
+// class PasswordlessTransactionConfirmed extends ComposeBaseEvent {
+//   PasswordlessTransactionConfirmed();
+// }

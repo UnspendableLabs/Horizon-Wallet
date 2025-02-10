@@ -12,8 +12,8 @@ import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/imported_address_repository.dart';
 import 'package:horizon/domain/repositories/config_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
+import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
-import 'package:horizon/presentation/screens/dashboard/bloc/logout/view/logout_dialog.dart';
 import 'package:horizon/presentation/screens/dashboard/import_address_pk_form/bloc/import_address_pk_bloc.dart';
 import 'package:horizon/presentation/screens/dashboard/import_address_pk_form/bloc/import_address_pk_event.dart';
 import 'package:horizon/presentation/screens/dashboard/import_address_pk_form/bloc/import_address_pk_state.dart';
@@ -21,19 +21,21 @@ import 'package:horizon/presentation/screens/dashboard/import_address_pk_form/vi
 import 'package:horizon/presentation/screens/dashboard/view_address_pk_form/view/view_address_pk_form.dart';
 import 'package:horizon/presentation/screens/dashboard/view_seed_phrase_form/view/view_seed_phrase_form.dart';
 import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
-import 'package:horizon/presentation/screens/dashboard/bloc/logout/logout_bloc.dart';
-import 'package:horizon/presentation/screens/dashboard/bloc/logout/logout_state.dart';
+import 'package:horizon/presentation/screens/dashboard/bloc/reset/view/reset_dialog.dart';
+import 'package:horizon/presentation/screens/dashboard/bloc/reset/reset_bloc.dart';
+import 'package:horizon/presentation/screens/dashboard/bloc/reset/reset_state.dart';
 import 'package:horizon/presentation/common/colors.dart';
 import 'package:horizon/presentation/common/link.dart';
 import 'package:horizon/presentation/screens/dashboard/account_form/view/account_form.dart';
 import 'package:horizon/presentation/screens/dashboard/address_form/view/address_form.dart';
-import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
-import 'package:horizon/presentation/shell/theme/bloc/theme_bloc.dart';
-import 'package:horizon/presentation/shell/theme/bloc/theme_event.dart';
+import 'package:horizon/presentation/session/bloc/session_cubit.dart';
+import 'package:horizon/presentation/session/theme/bloc/theme_bloc.dart';
+import 'package:horizon/presentation/session/theme/bloc/theme_event.dart';
 import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
 import "package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_bloc.dart";
 import "package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_state.dart";
 import "package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_event.dart";
+import 'package:horizon/domain/repositories/settings_repository.dart';
 
 class WalletItemSidebar extends StatefulWidget {
   const WalletItemSidebar({super.key});
@@ -48,7 +50,7 @@ class _WalletItemSidebarState extends State<WalletItemSidebar> {
 
   @override
   Widget build(BuildContext context) {
-    final shell = context.watch<ShellStateCubit>();
+    final session = context.watch<SessionStateCubit>();
     final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
     final backgroundColor = isDarkTheme ? darkNavyDarkTheme : whiteLightTheme;
     return Padding(
@@ -59,7 +61,7 @@ class _WalletItemSidebarState extends State<WalletItemSidebar> {
           color: backgroundColor,
           borderRadius: BorderRadius.circular(30.0),
         ),
-        child: shell.state.maybeWhen(
+        child: session.state.maybeWhen(
           success: (state) {
             final hasImportedAddresses =
                 state.importedAddresses?.isNotEmpty ?? false;
@@ -123,7 +125,7 @@ class _WalletItemSidebarState extends State<WalletItemSidebar> {
                                 onTap: () {
                                   setState(() => selectedAccount = account);
                                   context
-                                      .read<ShellStateCubit>()
+                                      .read<SessionStateCubit>()
                                       .onAccountChanged(account);
                                   GoRouter.of(context).go('/dashboard');
                                 },
@@ -167,10 +169,14 @@ class _WalletItemSidebarState extends State<WalletItemSidebar> {
                                   return HorizonUI.HorizonDialog(
                                     onBackButtonPressed: cb,
                                     title: "Add an account",
-                                    body: const Padding(
-                                      padding: EdgeInsets.symmetric(
+                                    body: Padding(
+                                      padding: const EdgeInsets.symmetric(
                                           horizontal: 16.0),
-                                      child: AddAccountForm(),
+                                      child: AddAccountForm(
+                                        passwordRequired: GetIt.I
+                                            .get<SettingsRepository>()
+                                            .requirePasswordForCryptoOperations,
+                                      ),
                                     ),
                                   );
                                 }),
@@ -247,7 +253,7 @@ class _WalletItemSidebarState extends State<WalletItemSidebar> {
                                                   selectedImportedAddress =
                                                       importedAddress);
                                               context
-                                                  .read<ShellStateCubit>()
+                                                  .read<SessionStateCubit>()
                                                   .onImportedAddressChanged(
                                                       importedAddress);
                                               GoRouter.of(context)
@@ -322,7 +328,7 @@ class HorizonAppBarContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final shell = context.watch<ShellStateCubit>();
+    final session = context.watch<SessionStateCubit>();
     final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
     final isSmallScreen = MediaQuery.of(context).size.width < 700;
 
@@ -331,14 +337,14 @@ class HorizonAppBarContent extends StatelessWidget {
         isDarkTheme ? blueDarkThemeGradiantColor : royalBlueLightTheme;
     final unselectedColor = isDarkTheme ? mainTextGrey : mainTextGrey;
 
-    final Account? account = shell.state.maybeWhen(
+    final Account? account = session.state.maybeWhen(
       success: (state) => state.accounts.firstWhereOrNull(
         (account) => account.uuid == state.currentAccountUuid,
       ),
       orElse: () => null,
     );
 
-    final String? address = shell.state.maybeWhen(
+    final String? address = session.state.maybeWhen(
       success: (state) =>
           state.currentAddress?.address ??
           state.currentImportedAddress?.address,
@@ -388,7 +394,7 @@ class HorizonAppBarContent extends StatelessWidget {
                         )),
                   const SizedBox(width: 12),
                   if (!isSmallScreen && account != null)
-                    shell.state.maybeWhen(
+                    session.state.maybeWhen(
                       success: (state) => state.addresses.length > 1
                           ? Flexible(
                               child: Container(
@@ -480,7 +486,8 @@ class HorizonAppBarContent extends StatelessWidget {
                 ),
                 const SizedBox(width: 8),
                 BlocProvider(
-                  create: (context) => LogoutBloc(
+                  create: (context) => ResetBloc(
+                    inMemoryKeyRepository: GetIt.I.get<InMemoryKeyRepository>(),
                     walletRepository: GetIt.I.get<WalletRepository>(),
                     accountRepository: GetIt.I.get<AccountRepository>(),
                     addressRepository: GetIt.I.get<AddressRepository>(),
@@ -489,11 +496,11 @@ class HorizonAppBarContent extends StatelessWidget {
                     cacheProvider: GetIt.I.get<CacheProvider>(),
                     analyticsService: GetIt.I.get<AnalyticsService>(),
                   ),
-                  child: BlocConsumer<LogoutBloc, LogoutState>(
+                  child: BlocConsumer<ResetBloc, ResetState>(
                     listener: (context, state) {
-                      if (state.logoutState is LoggedOut) {
-                        final shell = context.read<ShellStateCubit>();
-                        shell.onOnboarding();
+                      if (state.resetState is Out) {
+                        final session = context.read<SessionStateCubit>();
+                        session.onOnboarding();
                       }
                     },
                     builder: (context, state) => Container(
@@ -517,13 +524,16 @@ class HorizonAppBarContent extends StatelessWidget {
                           ),
                           onSelected: (value) {
                             switch (value) {
+                              case 'lock_screen':
+                                context.read<SessionStateCubit>().onLogout();
+                                return;
                               case 'reset':
                                 HorizonUI.HorizonDialog.show(
                                     context: context,
                                     body: BlocProvider.value(
                                       value:
-                                          BlocProvider.of<LogoutBloc>(context),
-                                      child: const LogoutDialog(),
+                                          BlocProvider.of<ResetBloc>(context),
+                                      child: const ResetDialog(),
                                     ));
                               case 'import_address_pk':
                                 HorizonUI.HorizonDialog.show(
@@ -579,10 +589,16 @@ class HorizonAppBarContent extends StatelessWidget {
                                         child: ViewSeedPhraseFormWrapper(),
                                       ),
                                     ));
+                              case 'settings':
+                                context.go("/settings");
                             }
                           },
                           itemBuilder: (BuildContext context) =>
                               <PopupMenuEntry<String>>[
+                            const PopupMenuItem<String>(
+                              value: 'settings',
+                              child: Text('Settings'),
+                            ),
                             PopupMenuItem<String>(
                               value: 'view_current_address_in_explorer',
                               child: Link(
@@ -610,6 +626,10 @@ class HorizonAppBarContent extends StatelessWidget {
                             const PopupMenuItem<String>(
                               value: 'reset',
                               child: Text('Reset wallet'),
+                            ),
+                            const PopupMenuItem<String>(
+                              value: 'lock_screen',
+                              child: Text('Lock Screen'),
                             ),
                           ],
                         )),
@@ -658,7 +678,7 @@ class AddressSelectionButton extends StatelessWidget {
             children: [
               Expanded(
                 child: Text(
-                  context.read<ShellStateCubit>().state.maybeWhen(
+                  context.read<SessionStateCubit>().state.maybeWhen(
                         success: (state) => state.addresses
                             .firstWhere((address) =>
                                 address.address ==
@@ -696,7 +716,7 @@ void showAddressList(BuildContext context, bool isDarkTheme, Account? account) {
     context: context,
     pageListBuilder: (modalSheetContext) {
       return [
-        context.read<ShellStateCubit>().state.maybeWhen(
+        context.read<SessionStateCubit>().state.maybeWhen(
               success: (state) => WoltModalSheetPage(
                 backgroundColor: isDarkTheme
                     ? dialogBackgroundColorDarkTheme
@@ -728,7 +748,7 @@ void showAddressList(BuildContext context, bool isDarkTheme, Account? account) {
                               selected: isSelected,
                               onTap: () {
                                 context
-                                    .read<ShellStateCubit>()
+                                    .read<SessionStateCubit>()
                                     .onAddressChanged(address);
                                 Navigator.of(modalSheetContext).pop();
                                 GoRouter.of(context).go('/dashboard');
@@ -761,6 +781,9 @@ void showAddressList(BuildContext context, bool isDarkTheme, Account? account) {
                                   padding: const EdgeInsets.symmetric(
                                       horizontal: 16.0),
                                   child: AddAddressForm(
+                                      passwordRequired: GetIt.I
+                                          .get<SettingsRepository>()
+                                          .requirePasswordForCryptoOperations,
                                       accountUuid: state.currentAccountUuid!,
                                       modalContext: modalSheetContext),
                                 ),

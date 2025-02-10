@@ -15,6 +15,8 @@ import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
 import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transaction_usecase.dart';
 import 'package:horizon/presentation/common/usecase/write_local_transaction_usecase.dart';
 import 'package:horizon/presentation/screens/compose_destroy/bloc/compose_destroy_state.dart';
+import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
+import 'package:horizon/domain/entities/decryption_strategy.dart';
 
 class ComposeDestroyEventParams {
   final String assetName;
@@ -29,6 +31,9 @@ class ComposeDestroyEventParams {
 }
 
 class ComposeDestroyBloc extends ComposeBaseBloc<ComposeDestroyState> {
+  final txName = 'destroy';
+  final bool passwordRequired;
+  final InMemoryKeyRepository inMemoryKeyRepository;
   final BalanceRepository balanceRepository;
   final ComposeRepository composeRepository;
   final AnalyticsService analyticsService;
@@ -39,6 +44,8 @@ class ComposeDestroyBloc extends ComposeBaseBloc<ComposeDestroyState> {
   final Logger logger;
 
   ComposeDestroyBloc({
+    required this.inMemoryKeyRepository,
+    required this.passwordRequired,
     required this.balanceRepository,
     required this.composeRepository,
     required this.analyticsService,
@@ -49,7 +56,7 @@ class ComposeDestroyBloc extends ComposeBaseBloc<ComposeDestroyState> {
     required this.logger,
   }) : super(
           ComposeDestroyState(
-            submitState: const SubmitInitial(),
+            submitState: const FormStep(),
             feeOption: FeeOption.Medium(),
             balancesState: const BalancesState.initial(),
             feeState: const FeeState.initial(),
@@ -58,11 +65,12 @@ class ComposeDestroyBloc extends ComposeBaseBloc<ComposeDestroyState> {
         );
 
   @override
-  Future<void> onFetchFormData(FetchFormData event, emit) async {
+  Future<void> onAsyncFormDependenciesRequested(
+      AsyncFormDependenciesRequested event, emit) async {
     emit(state.copyWith(
       balancesState: const BalancesState.loading(),
       feeState: const FeeState.loading(),
-      submitState: const SubmitInitial(),
+      submitState: const FormStep(),
     ));
 
     List<Balance> balances;
@@ -90,14 +98,14 @@ class ComposeDestroyBloc extends ComposeBaseBloc<ComposeDestroyState> {
   }
 
   @override
-  void onChangeFeeOption(ChangeFeeOption event, emit) async {
+  void onFeeOptionChanged(FeeOptionChanged event, emit) async {
     final value = event.value;
     emit(state.copyWith(feeOption: value));
   }
 
   @override
-  void onComposeTransaction(ComposeTransactionEvent event, emit) async {
-    emit((state).copyWith(submitState: const SubmitInitial(loading: true)));
+  void onFormSubmitted(FormSubmitted event, emit) async {
+    emit((state).copyWith(submitState: const FormStep(loading: true)));
     final ComposeDestroyEventParams params = event.params;
 
     try {
@@ -116,7 +124,7 @@ class ComposeDestroyBloc extends ComposeBaseBloc<ComposeDestroyState> {
               composeFn: composeRepository.composeDestroy);
 
       emit(state.copyWith(
-          submitState: SubmitComposingTransaction<ComposeDestroyResponse, void>(
+          submitState: ReviewStep<ComposeDestroyResponse, void>(
         composeTransaction: composeResponse,
         fee: composeResponse.btcFee,
         feeRate: feeRate,
@@ -126,16 +134,16 @@ class ComposeDestroyBloc extends ComposeBaseBloc<ComposeDestroyState> {
       )));
     } on ComposeTransactionException catch (e) {
       emit(state.copyWith(
-          submitState: SubmitInitial(loading: false, error: e.message)));
+          submitState: FormStep(loading: false, error: e.message)));
     } catch (e) {
       emit(state.copyWith(
-          submitState: SubmitInitial(
+          submitState: FormStep(
               loading: false,
               error: 'An unexpected error occurred: ${e.toString()}')));
     }
   }
 
-  int _getFeeRate() {
+  num _getFeeRate() {
     FeeEstimates feeEstimates = state.feeState.feeEstimatesOrThrow();
     return switch (state.feeOption) {
       FeeOption.Fast() => feeEstimates.fast,
@@ -146,29 +154,62 @@ class ComposeDestroyBloc extends ComposeBaseBloc<ComposeDestroyState> {
   }
 
   @override
-  void onFinalizeTransaction(FinalizeTransactionEvent event, emit) async {
-    emit(state.copyWith(
-        submitState: SubmitFinalizing<ComposeDestroyResponse>(
-      loading: false,
-      error: null,
-      composeTransaction: event.composeTransaction,
-      fee: event.fee,
-    )));
-  }
-
-  @override
-  void onSignAndBroadcastTransaction(
-      SignAndBroadcastTransactionEvent event, emit) async {
-    if (state.submitState is! SubmitFinalizing<ComposeDestroyResponse>) {
+  void onReviewSubmitted(ReviewSubmitted event, emit) async {
+    if (passwordRequired) {
+      emit(state.copyWith(
+          submitState: PasswordStep<ComposeDestroyResponse>(
+        loading: false,
+        error: null,
+        composeTransaction: event.composeTransaction,
+        fee: event.fee,
+      )));
       return;
     }
 
-    final s = (state.submitState as SubmitFinalizing<ComposeDestroyResponse>);
+    final s = (state.submitState as ReviewStep<ComposeDestroyResponse, void>);
+    try {
+      emit(state.copyWith(submitState: s.copyWith(loading: true)));
+
+      await signAndBroadcastTransactionUseCase.call(
+          decryptionStrategy: InMemoryKey(),
+          source: s.composeTransaction.params.source,
+          rawtransaction: s.composeTransaction.rawtransaction,
+          onSuccess: (txHex, txHash) async {
+            await writelocalTransactionUseCase.call(txHex, txHash);
+
+            logger.info('$txName broadcasted txHash: $txHash');
+            analyticsService.trackAnonymousEvent('broadcast_tx_$txName',
+                properties: {'distinct_id': uuid.v4()});
+
+            emit(state.copyWith(
+                submitState: SubmitSuccess(
+                    transactionHex: txHex,
+                    sourceAddress: s.composeTransaction.params.source)));
+          },
+          onError: (msg) {
+            emit(state.copyWith(
+                submitState:
+                    s.copyWith(loading: false, error: msg.toString())));
+          });
+    } catch (e) {
+      emit(state.copyWith(
+          submitState: s.copyWith(loading: false, error: e.toString())));
+    }
+  }
+
+  @override
+  void onSignAndBroadcastFormSubmitted(
+      SignAndBroadcastFormSubmitted event, emit) async {
+    if (state.submitState is! PasswordStep<ComposeDestroyResponse>) {
+      return;
+    }
+
+    final s = (state.submitState as PasswordStep<ComposeDestroyResponse>);
     final compose = s.composeTransaction;
     final fee = s.fee;
 
     emit(state.copyWith(
-        submitState: SubmitFinalizing<ComposeDestroyResponse>(
+        submitState: PasswordStep<ComposeDestroyResponse>(
       loading: true,
       error: null,
       fee: fee,
@@ -176,14 +217,14 @@ class ComposeDestroyBloc extends ComposeBaseBloc<ComposeDestroyState> {
     )));
 
     await signAndBroadcastTransactionUseCase.call(
-        password: event.password,
+        decryptionStrategy: Password(event.password),
         source: compose.params.source,
         rawtransaction: compose.rawtransaction,
         onSuccess: (txHex, txHash) async {
           await writelocalTransactionUseCase.call(txHex, txHash);
 
-          logger.debug('destroy broadcasted txHash: $txHash');
-          analyticsService.trackAnonymousEvent('broadcast_tx_destroy',
+          logger.debug('$txName broadcasted txHash: $txHash');
+          analyticsService.trackAnonymousEvent('broadcast_tx_$txName',
               properties: {'distinct_id': uuid.v4()});
 
           emit(state.copyWith(
@@ -193,7 +234,7 @@ class ComposeDestroyBloc extends ComposeBaseBloc<ComposeDestroyState> {
         },
         onError: (msg) {
           emit(state.copyWith(
-              submitState: SubmitFinalizing<ComposeDestroyResponse>(
+              submitState: PasswordStep<ComposeDestroyResponse>(
             loading: false,
             error: msg,
             fee: fee,

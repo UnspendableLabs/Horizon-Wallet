@@ -113,28 +113,6 @@ void main() {
       await tester.pumpAndSettle();
     });
 
-    testWidgets('Decrypt legacy encrypted data', (WidgetTester tester) async {
-      await tester.pumpWidget(MyApp(
-        currentVersion: Version(0, 0, 0),
-        latestVersion: Version(0, 0, 0),
-      ));
-
-      const originalData = 'Original legacy data';
-      const password = 'oldPassword123';
-
-      // Create a legacy encrypted string
-      final legacyEncrypted =
-          await fallbackEncryptionService.encrypt(originalData, password);
-
-      // Ensure the legacy encrypted string doesn't start with the Argon2 prefix
-      expect(legacyEncrypted.startsWith('A2::'), isFalse);
-
-      final decrypted =
-          await fallbackEncryptionService.decrypt(legacyEncrypted, password);
-      expect(decrypted, originalData);
-      await tester.pumpAndSettle();
-    });
-
     testWidgets('Encrypting same data twice produces different results',
         (WidgetTester tester) async {
       await tester.pumpWidget(MyApp(

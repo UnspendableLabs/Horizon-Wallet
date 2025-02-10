@@ -25,8 +25,10 @@ import 'package:horizon/presentation/screens/compose_dispense/usecase/fetch_form
 import 'package:horizon/presentation/screens/compose_dispense/usecase/fetch_open_dispensers_on_address.dart';
 import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart";
 import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
-import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
+import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:rational/rational.dart';
+import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
+import 'package:horizon/domain/repositories/settings_repository.dart';
 
 class ComposeDispensePageWrapper extends StatelessWidget {
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
@@ -41,11 +43,14 @@ class ComposeDispensePageWrapper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final shell = context.watch<ShellStateCubit>();
-    return shell.state.maybeWhen(
+    final session = context.watch<SessionStateCubit>();
+    return session.state.maybeWhen(
       success: (state) => BlocProvider(
         key: Key(currentAddress),
         create: (context) => ComposeDispenseBloc(
+          passwordRequired:
+              GetIt.I<SettingsRepository>().requirePasswordForCryptoOperations,
+          inMemoryKeyRepository: GetIt.I.get<InMemoryKeyRepository>(),
           logger: GetIt.I.get<Logger>(),
           estimateDispensesUseCase: GetIt.I.get<EstimateDispensesUseCase>(),
           fetchOpenDispensersOnAddressUseCase:
@@ -60,7 +65,7 @@ class ComposeDispensePageWrapper extends StatelessWidget {
               GetIt.I.get<FetchDispenseFormDataUseCase>(),
           analyticsService: GetIt.I.get<AnalyticsService>(),
           composeRepository: GetIt.I.get<ComposeRepository>(),
-        )..add(FetchFormData(
+        )..add(AsyncFormDependenciesRequested(
             currentAddress: currentAddress,
             initialDispenserAddress: initialDispenserAddress)),
         child: ComposeDispensePage(
@@ -135,7 +140,7 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
     return ComposeBasePage<ComposeDispenseBloc, ComposeDispenseState>(
       dashboardActivityFeedBloc: widget.dashboardActivityFeedBloc,
       onFeeChange: (fee) =>
-          context.read<ComposeDispenseBloc>().add(ChangeFeeOption(value: fee)),
+          context.read<ComposeDispenseBloc>().add(FeeOptionChanged(value: fee)),
       buildInitialFormFields: (state, loading, formKey) =>
           _buildInitialFormFields(state, loading, formKey),
       onInitialCancel: () => _handleInitialCancel(),
@@ -164,7 +169,7 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
       String dispenser = dispenserController.text;
 
       // Dispatch the event with the calculated values
-      context.read<ComposeDispenseBloc>().add(ComposeTransactionEvent(
+      context.read<ComposeDispenseBloc>().add(FormSubmitted(
             sourceAddress: widget.address,
             params: ComposeDispenseEventParams(
                 address: widget.address,
@@ -182,22 +187,20 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
         // Extract unique assets for the dropdown
         final assets = dispensers.map((d) => d.asset).toSet().toList();
 
-        // Set _selectedAsset to the first asset if it's null
-        if (_selectedAsset == null && assets.isNotEmpty) {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            setState(() {
-              _selectedAsset = assets.first;
-              _selectedDispenser = dispensers.firstWhere(
-                (dispenser) => dispenser.asset == _selectedAsset,
-              );
-            });
-          });
+        if (assets.isEmpty) {
+          // Handle the case where there are no assets
+          return const Text('No dispensers available at this address.');
         }
 
-        // Use _selectedAsset for the selected value
-        String selectedAsset = _selectedAsset ?? assets.first;
+        if (_selectedAsset == null) {
+          _selectedAsset = assets.first;
+          _selectedDispenser = dispensers.firstWhere(
+            (dispenser) => dispenser.asset == _selectedAsset,
+          );
+        }
 
-        // Build the dispenser widgets
+        String selectedAsset = _selectedAsset!;
+
         List<Widget> dispenserWidgets = [
           Column(
             children:
@@ -390,14 +393,10 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
       values.add(remaining);
     }
 
-    // Initialize _buyQuantity with the first value if it's not set
     if (_buyQuantity == null || _buyQuantity!.isEmpty) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        setState(() {
-          _buyQuantity = values.first.toString();
-          _updateLotFromQuantity();
-        });
-      });
+      _buyQuantity = values.first.toString();
+      _updateLotFromQuantity();
+      _lotInputError = null;
     }
 
     int currentIndex = 0;
@@ -545,7 +544,7 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
                                           .giveQuantityNormalized!))
                                   .floor()
                                   .toInt()) {
-                        return 'Lots entered are greater than lots available.\nMax: ${(Decimal.parse(_selectedDispenser!.giveRemainingNormalized!) / Decimal.parse(_selectedDispenser!.giveQuantityNormalized!)).floor()}';
+                        return 'Lots entered are greater\nthan lots available.\nMax: ${(Decimal.parse(_selectedDispenser!.giveRemainingNormalized!) / Decimal.parse(_selectedDispenser!.giveQuantityNormalized!)).floor()}';
                       }
                     }
                     if (_lotInputError != null) {
@@ -687,33 +686,29 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
         label: "Source Address",
       ),
       const SizedBox(height: 16.0),
-      _buildDispenserInput(formKey),
+      HorizonUI.HorizonTextFormField(
+        key: const Key('dispense_dispenser_input'),
+        controller: dispenserController,
+        label: 'Dispenser Address',
+        onChanged: (value) {
+          dispenserController.text = value;
+          context
+              .read<ComposeDispenseBloc>()
+              .add(DispenserAddressChanged(address: value));
+        },
+        validator: (value) {
+          if (value == null || value.isEmpty) {
+            return 'Dispener Address is required';
+          }
+          return null;
+        },
+      ),
       const SizedBox(height: 16.0),
       _buildOpenDispensersList(state),
       const SizedBox(height: 16.0),
       _buildBuyQuantityAndPrice(formKey, state),
       const SizedBox(height: 16.0),
     ];
-  }
-
-  Widget _buildDispenserInput(GlobalKey<FormState> formKey) {
-    return HorizonUI.HorizonTextFormField(
-      key: const Key('dispense_dispenser_input'),
-      controller: dispenserController,
-      label: 'Dispenser Address',
-      onChanged: (value) {
-        dispenserController.text = value;
-        context
-            .read<ComposeDispenseBloc>()
-            .add(DispenserAddressChanged(address: value));
-      },
-      validator: (value) {
-        if (value == null || value.isEmpty) {
-          return 'Dispener Address is required';
-        }
-        return null;
-      },
-    );
   }
 
   List<Widget> _buildConfirmationDetails(state_, dynamic composeTransaction) {
@@ -817,7 +812,7 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
   }
 
   void _onConfirmationBack() {
-    context.read<ComposeDispenseBloc>().add(FetchFormData(
+    context.read<ComposeDispenseBloc>().add(AsyncFormDependenciesRequested(
           currentAddress: widget.address,
           initialDispenserAddress: dispenserController.text,
         ));
@@ -827,7 +822,7 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
       dynamic composeTransaction, int fee, GlobalKey<FormState> formKey) {
     if (formKey.currentState!.validate()) {
       context.read<ComposeDispenseBloc>().add(
-            FinalizeTransactionEvent<ComposeDispenseResponse>(
+            ReviewSubmitted<ComposeDispenseResponse>(
               composeTransaction: composeTransaction,
               fee: fee,
             ),
@@ -838,7 +833,7 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
   void _onFinalizeSubmit(String password, GlobalKey<FormState> formKey) {
     if (formKey.currentState!.validate()) {
       context.read<ComposeDispenseBloc>().add(
-            SignAndBroadcastTransactionEvent(
+            SignAndBroadcastFormSubmitted(
               password: password,
             ),
           );
@@ -846,7 +841,7 @@ class ComposeDispensePageState extends State<ComposeDispensePage> {
   }
 
   void _onFinalizeCancel() {
-    context.read<ComposeDispenseBloc>().add(FetchFormData(
+    context.read<ComposeDispenseBloc>().add(AsyncFormDependenciesRequested(
           currentAddress: widget.address,
           initialDispenserAddress: dispenserController.text,
         ));

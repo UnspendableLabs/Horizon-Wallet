@@ -15,6 +15,8 @@ import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transacti
 import 'package:horizon/presentation/common/usecase/write_local_transaction_usecase.dart';
 import 'package:horizon/presentation/screens/compose_dividend/bloc/compose_dividend_state.dart';
 import 'package:horizon/presentation/screens/compose_dividend/usecase/fetch_form_data.dart';
+import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
+import 'package:horizon/domain/entities/decryption_strategy.dart';
 
 class ComposeDividendEventParams {
   final String assetName;
@@ -29,6 +31,9 @@ class ComposeDividendEventParams {
 }
 
 class ComposeDividendBloc extends ComposeBaseBloc<ComposeDividendState> {
+  final txName = 'dividend';
+  final bool passwordRequired;
+  final InMemoryKeyRepository inMemoryKeyRepository;
   final ComposeRepository composeRepository;
   final AnalyticsService analyticsService;
   final FetchDividendFormDataUseCase fetchDividendFormDataUseCase;
@@ -38,6 +43,8 @@ class ComposeDividendBloc extends ComposeBaseBloc<ComposeDividendState> {
   final Logger logger;
 
   ComposeDividendBloc({
+    required this.passwordRequired,
+    required this.inMemoryKeyRepository,
     required this.composeRepository,
     required this.analyticsService,
     required this.fetchDividendFormDataUseCase,
@@ -47,7 +54,7 @@ class ComposeDividendBloc extends ComposeBaseBloc<ComposeDividendState> {
     required this.logger,
   }) : super(
           ComposeDividendState(
-            submitState: const SubmitInitial(),
+            submitState: const FormStep(),
             feeOption: FeeOption.Medium(),
             balancesState: const BalancesState.initial(),
             feeState: const FeeState.initial(),
@@ -58,11 +65,12 @@ class ComposeDividendBloc extends ComposeBaseBloc<ComposeDividendState> {
         );
 
   @override
-  Future<void> onFetchFormData(FetchFormData event, emit) async {
+  Future<void> onAsyncFormDependenciesRequested(
+      AsyncFormDependenciesRequested event, emit) async {
     emit(state.copyWith(
         balancesState: const BalancesState.loading(),
         feeState: const FeeState.loading(),
-        submitState: const SubmitInitial(),
+        submitState: const FormStep(),
         assetState: const AssetState.loading(),
         dividendXcpFeeState: const DividendXcpFeeState.loading()));
 
@@ -111,14 +119,14 @@ class ComposeDividendBloc extends ComposeBaseBloc<ComposeDividendState> {
   }
 
   @override
-  void onChangeFeeOption(ChangeFeeOption event, emit) async {
+  void onFeeOptionChanged(FeeOptionChanged event, emit) async {
     final value = event.value;
     emit(state.copyWith(feeOption: value));
   }
 
   @override
-  void onComposeTransaction(ComposeTransactionEvent event, emit) async {
-    emit((state).copyWith(submitState: const SubmitInitial(loading: true)));
+  void onFormSubmitted(FormSubmitted event, emit) async {
+    emit((state).copyWith(submitState: const FormStep(loading: true)));
     final params = event.params as ComposeDividendEventParams;
 
     try {
@@ -140,8 +148,7 @@ class ComposeDividendBloc extends ComposeBaseBloc<ComposeDividendState> {
               composeFn: composeRepository.composeDividend);
 
       emit(state.copyWith(
-          submitState:
-              SubmitComposingTransaction<ComposeDividendResponse, void>(
+          submitState: ReviewStep<ComposeDividendResponse, void>(
         composeTransaction: composeResponse,
         fee: composeResponse.btcFee,
         feeRate: feeRate,
@@ -151,16 +158,16 @@ class ComposeDividendBloc extends ComposeBaseBloc<ComposeDividendState> {
       )));
     } on ComposeTransactionException catch (e) {
       emit(state.copyWith(
-          submitState: SubmitInitial(loading: false, error: e.message)));
+          submitState: FormStep(loading: false, error: e.message)));
     } catch (e) {
       emit(state.copyWith(
-          submitState: SubmitInitial(
+          submitState: FormStep(
               loading: false,
               error: 'An unexpected error occurred: ${e.toString()}')));
     }
   }
 
-  int _getFeeRate() {
+  num _getFeeRate() {
     FeeEstimates feeEstimates = state.feeState.feeEstimatesOrThrow();
     return switch (state.feeOption) {
       FeeOption.Fast() => feeEstimates.fast,
@@ -171,29 +178,63 @@ class ComposeDividendBloc extends ComposeBaseBloc<ComposeDividendState> {
   }
 
   @override
-  void onFinalizeTransaction(FinalizeTransactionEvent event, emit) async {
-    emit(state.copyWith(
-        submitState: SubmitFinalizing<ComposeDividendResponse>(
-      loading: false,
-      error: null,
-      composeTransaction: event.composeTransaction,
-      fee: event.fee,
-    )));
-  }
-
-  @override
-  void onSignAndBroadcastTransaction(
-      SignAndBroadcastTransactionEvent event, emit) async {
-    if (state.submitState is! SubmitFinalizing<ComposeDividendResponse>) {
+  void onReviewSubmitted(ReviewSubmitted event, emit) async {
+    if (passwordRequired) {
+      emit(state.copyWith(
+          submitState: PasswordStep<ComposeDividendResponse>(
+        loading: false,
+        error: null,
+        composeTransaction: event.composeTransaction,
+        fee: event.fee,
+      )));
       return;
     }
 
-    final s = (state.submitState as SubmitFinalizing<ComposeDividendResponse>);
+    final s = (state.submitState as ReviewStep<ComposeDividendResponse, void>);
+
+    try {
+      emit(state.copyWith(submitState: s.copyWith(loading: true)));
+
+      await signAndBroadcastTransactionUseCase.call(
+          decryptionStrategy: InMemoryKey(),
+          source: s.composeTransaction.params.source,
+          rawtransaction: s.composeTransaction.rawtransaction,
+          onSuccess: (txHex, txHash) async {
+            await writelocalTransactionUseCase.call(txHex, txHash);
+
+            logger.info('$txName broadcasted txHash: $txHash');
+            analyticsService.trackAnonymousEvent('broadcast_tx_$txName',
+                properties: {'distinct_id': uuid.v4()});
+
+            emit(state.copyWith(
+                submitState: SubmitSuccess(
+                    transactionHex: txHex,
+                    sourceAddress: s.composeTransaction.params.source)));
+          },
+          onError: (msg) {
+            emit(state.copyWith(
+                submitState:
+                    s.copyWith(loading: false, error: msg.toString())));
+          });
+    } catch (e) {
+      emit(state.copyWith(
+          submitState: s.copyWith(loading: false, error: e.toString())));
+    }
+  }
+
+  @override
+  void onSignAndBroadcastFormSubmitted(
+      SignAndBroadcastFormSubmitted event, emit) async {
+    if (state.submitState is! PasswordStep<ComposeDividendResponse>) {
+      return;
+    }
+
+    final s = (state.submitState as PasswordStep<ComposeDividendResponse>);
     final compose = s.composeTransaction;
     final fee = s.fee;
 
     emit(state.copyWith(
-        submitState: SubmitFinalizing<ComposeDividendResponse>(
+        submitState: PasswordStep<ComposeDividendResponse>(
       loading: true,
       error: null,
       fee: fee,
@@ -201,14 +242,14 @@ class ComposeDividendBloc extends ComposeBaseBloc<ComposeDividendState> {
     )));
 
     await signAndBroadcastTransactionUseCase.call(
-        password: event.password,
+        decryptionStrategy: Password(event.password),
         source: compose.params.source,
         rawtransaction: compose.rawtransaction,
         onSuccess: (txHex, txHash) async {
           await writelocalTransactionUseCase.call(txHex, txHash);
 
-          logger.debug('dividend broadcasted txHash: $txHash');
-          analyticsService.trackAnonymousEvent('broadcast_tx_dividend',
+          logger.debug('$txName broadcasted txHash: $txHash');
+          analyticsService.trackAnonymousEvent('broadcast_tx_$txName',
               properties: {'distinct_id': uuid.v4()});
 
           emit(state.copyWith(
@@ -218,7 +259,7 @@ class ComposeDividendBloc extends ComposeBaseBloc<ComposeDividendState> {
         },
         onError: (msg) {
           emit(state.copyWith(
-              submitState: SubmitFinalizing<ComposeDividendResponse>(
+              submitState: PasswordStep<ComposeDividendResponse>(
             loading: false,
             error: msg,
             fee: fee,

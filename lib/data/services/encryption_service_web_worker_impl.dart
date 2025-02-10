@@ -93,8 +93,6 @@ class EncryptionServiceWebWorkerImpl implements EncryptionService {
 
   @override
   Future<String> decrypt(String data_, String password) async {
-    //1) verify password
-
     final data = data_.substring(_argon2Prefix.length);
 
     if (_useWorker) {
@@ -104,23 +102,73 @@ class EncryptionServiceWebWorkerImpl implements EncryptionService {
           throw const FormatException('Invalid encrypted data format');
         }
 
-        final saltBase64 = parts[2];
         final ivAndCipher = parts[3];
-        final salt = Salt(base64Decode(saltBase64));
         final iv = IV(base64Decode(ivAndCipher.substring(0, 24)));
-        final cipher = ivAndCipher.substring(24);
+        final cipherText = ivAndCipher.substring(24);
+
+        final keyB64 = await getDecryptionKey(data_, password);
+        final normalizedKey = normalizeB64(keyB64);
+
+        final key = Key(Uint8List.fromList(base64Decode(normalizedKey)));
+        final encrypter = Encrypter(AES(key));
+        return encrypter.decrypt64(cipherText, iv: iv);
+      } catch (e) {
+        rethrow;
+      }
+    } else {
+      throw Exception('Web Worker not supported');
+    }
+  }
+
+  @override
+  Future<String> decryptWithKey(String data_, String keyB64) async {
+    final data = data_.substring(_argon2Prefix.length);
+
+    if (_useWorker) {
+      try {
+        final parts = data.split('::');
+        if (parts.length != 4) {
+          throw const FormatException('Invalid encrypted data format');
+        }
+
+        final ivAndCipher = parts[3];
+        final iv = IV(base64Decode(ivAndCipher.substring(0, 24)));
+        final cipherText = ivAndCipher.substring(24);
+
+        final key = Key(Uint8List.fromList(base64Decode(keyB64)));
+        final encrypter = Encrypter(AES(key));
+        return encrypter.decrypt64(cipherText, iv: iv);
+      } catch (e) {
+        rethrow;
+      }
+    } else {
+      throw Exception('Web Worker not supported');
+    }
+  }
+
+  @override
+  Future<String> getDecryptionKey(String data_, String password) async {
+    final data = data_.substring(_argon2Prefix.length);
+    if (_useWorker) {
+      try {
+        final parts = data.split('::');
+        if (parts.length != 4) {
+          throw const FormatException('Invalid encrypted data format');
+        }
+
+        final saltBase64 = parts[2];
+        final salt = Salt(base64Decode(saltBase64));
+
         final encoded = await _send(
-            'hash',
-            jsonEncode({
-              "password": password,
-              "salt": base64Encode(salt.bytes),
-            }));
+          'hash',
+          jsonEncode({
+            "password": password,
+            "salt": base64Encode(salt.bytes),
+          }),
+        );
 
         var hashB64 = normalizeB64(encoded.split('\$').last);
-        final key =
-            Key(Uint8List.fromList(base64Decode(normalizeB64(hashB64))));
-        final encrypter = Encrypter(AES(key));
-        return encrypter.decrypt64(cipher, iv: iv);
+        return hashB64;
       } catch (e) {
         rethrow;
       }
@@ -160,5 +208,4 @@ class EncryptionServiceWebWorkerImpl implements EncryptionService {
 
     return completer.future;
   }
-  // TODO: cleanup?
 }

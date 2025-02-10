@@ -12,7 +12,9 @@ import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transacti
 import 'package:horizon/presentation/common/usecase/write_local_transaction_usecase.dart';
 import 'package:horizon/presentation/screens/close_dispenser/bloc/close_dispenser_state.dart';
 import 'package:horizon/presentation/screens/close_dispenser/usecase/fetch_form_data.dart';
-import 'package:logger/logger.dart';
+import 'package:horizon/core/logging/logger.dart';
+import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
+import 'package:horizon/domain/entities/decryption_strategy.dart';
 
 class CloseDispenserParams {
   final String asset;
@@ -31,7 +33,11 @@ class CloseDispenserParams {
 }
 
 class CloseDispenserBloc extends ComposeBaseBloc<CloseDispenserState> {
-  final Logger logger = Logger();
+  final txName = 'close_dispenser';
+  final bool passwordRequired;
+  final InMemoryKeyRepository inMemoryKeyRepository;
+
+  final Logger logger;
   final ComposeRepository composeRepository;
   final AnalyticsService analyticsService;
 
@@ -41,6 +47,9 @@ class CloseDispenserBloc extends ComposeBaseBloc<CloseDispenserState> {
   final WriteLocalTransactionUseCase writelocalTransactionUseCase;
 
   CloseDispenserBloc({
+    required this.logger,
+    required this.passwordRequired,
+    required this.inMemoryKeyRepository,
     required this.fetchCloseDispenserFormDataUseCase,
     required this.composeTransactionUseCase,
     required this.composeRepository,
@@ -49,7 +58,7 @@ class CloseDispenserBloc extends ComposeBaseBloc<CloseDispenserState> {
     required this.writelocalTransactionUseCase,
   }) : super(
           CloseDispenserState(
-            submitState: const SubmitInitial(),
+            submitState: const FormStep(),
             feeOption: FeeOption.Medium(),
             balancesState: const BalancesState.initial(),
             feeState: const FeeState.initial(),
@@ -59,12 +68,13 @@ class CloseDispenserBloc extends ComposeBaseBloc<CloseDispenserState> {
         );
 
   @override
-  Future<void> onFetchFormData(FetchFormData event, emit) async {
+  Future<void> onAsyncFormDependenciesRequested(
+      AsyncFormDependenciesRequested event, emit) async {
     emit(state.copyWith(
         balancesState: const BalancesState.loading(),
         feeState: const FeeState.loading(),
         dispensersState: const DispenserState.loading(),
-        submitState: const SubmitInitial()));
+        submitState: const FormStep()));
 
     try {
       final (feeEstimates, dispensers) =
@@ -96,14 +106,14 @@ class CloseDispenserBloc extends ComposeBaseBloc<CloseDispenserState> {
   }
 
   @override
-  void onChangeFeeOption(ChangeFeeOption event, emit) async {
+  void onFeeOptionChanged(FeeOptionChanged event, emit) async {
     final value = event.value;
     emit(state.copyWith(feeOption: value));
   }
 
   @override
-  void onComposeTransaction(ComposeTransactionEvent event, emit) async {
-    emit((state).copyWith(submitState: const SubmitInitial(loading: true)));
+  void onFormSubmitted(FormSubmitted event, emit) async {
+    emit((state).copyWith(submitState: const FormStep(loading: true)));
 
     try {
       final feeRate = _getFeeRate();
@@ -127,8 +137,7 @@ class CloseDispenserBloc extends ComposeBaseBloc<CloseDispenserState> {
               composeFn: composeRepository.composeDispenserVerbose);
 
       emit(state.copyWith(
-          submitState:
-              SubmitComposingTransaction<ComposeDispenserResponseVerbose, void>(
+          submitState: ReviewStep<ComposeDispenserResponseVerbose, void>(
         composeTransaction: composeResponse,
         fee: composeResponse.btcFee,
         feeRate: feeRate,
@@ -138,16 +147,16 @@ class CloseDispenserBloc extends ComposeBaseBloc<CloseDispenserState> {
       )));
     } on ComposeTransactionException catch (e) {
       emit(state.copyWith(
-          submitState: SubmitInitial(loading: false, error: e.message)));
+          submitState: FormStep(loading: false, error: e.message)));
     } catch (e) {
       emit(state.copyWith(
-          submitState: SubmitInitial(
+          submitState: FormStep(
               loading: false,
               error: 'An unexpected error occurred: ${e.toString()}')));
     }
   }
 
-  int _getFeeRate() {
+  num _getFeeRate() {
     FeeEstimates feeEstimates = state.feeState.feeEstimatesOrThrow();
     return switch (state.feeOption) {
       FeeOption.Fast() => feeEstimates.fast,
@@ -158,31 +167,65 @@ class CloseDispenserBloc extends ComposeBaseBloc<CloseDispenserState> {
   }
 
   @override
-  void onFinalizeTransaction(FinalizeTransactionEvent event, emit) async {
-    emit(state.copyWith(
-        submitState: SubmitFinalizing<ComposeDispenserResponseVerbose>(
-      loading: false,
-      error: null,
-      composeTransaction: event.composeTransaction,
-      fee: event.fee,
-    )));
-  }
-
-  @override
-  void onSignAndBroadcastTransaction(
-      SignAndBroadcastTransactionEvent event, emit) async {
-    if (state.submitState
-        is! SubmitFinalizing<ComposeDispenserResponseVerbose>) {
+  void onReviewSubmitted(ReviewSubmitted event, emit) async {
+    if (passwordRequired) {
+      emit(state.copyWith(
+          submitState: PasswordStep<ComposeDispenserResponseVerbose>(
+        loading: false,
+        error: null,
+        composeTransaction: event.composeTransaction,
+        fee: event.fee,
+      )));
       return;
     }
 
     final s = (state.submitState
-        as SubmitFinalizing<ComposeDispenserResponseVerbose>);
+        as ReviewStep<ComposeDispenserResponseVerbose, void>);
+
+    try {
+      emit(state.copyWith(submitState: s.copyWith(loading: true)));
+
+      await signAndBroadcastTransactionUseCase.call(
+          decryptionStrategy: InMemoryKey(),
+          source: s.composeTransaction.params.source,
+          rawtransaction: s.composeTransaction.rawtransaction,
+          onSuccess: (txHex, txHash) async {
+            await writelocalTransactionUseCase.call(txHex, txHash);
+
+            logger.info('$txName broadcasted txHash: $txHash');
+            analyticsService.trackAnonymousEvent('broadcast_tx_$txName',
+                properties: {'distinct_id': uuid.v4()});
+
+            emit(state.copyWith(
+                submitState: SubmitSuccess(
+                    transactionHex: txHex,
+                    sourceAddress: s.composeTransaction.params.source)));
+          },
+          onError: (msg) {
+            emit(state.copyWith(
+                submitState:
+                    s.copyWith(loading: false, error: msg.toString())));
+          });
+    } catch (e) {
+      emit(state.copyWith(
+          submitState: s.copyWith(loading: false, error: e.toString())));
+    }
+  }
+
+  @override
+  void onSignAndBroadcastFormSubmitted(
+      SignAndBroadcastFormSubmitted event, emit) async {
+    if (state.submitState is! PasswordStep<ComposeDispenserResponseVerbose>) {
+      return;
+    }
+
+    final s =
+        (state.submitState as PasswordStep<ComposeDispenserResponseVerbose>);
     final compose = s.composeTransaction;
     final fee = s.fee;
 
     emit(state.copyWith(
-        submitState: SubmitFinalizing<ComposeDispenserResponseVerbose>(
+        submitState: PasswordStep<ComposeDispenserResponseVerbose>(
       loading: true,
       error: null,
       fee: fee,
@@ -190,14 +233,14 @@ class CloseDispenserBloc extends ComposeBaseBloc<CloseDispenserState> {
     )));
 
     await signAndBroadcastTransactionUseCase.call(
-        password: event.password,
+        decryptionStrategy: Password(event.password),
         source: compose.params.source,
         rawtransaction: compose.rawtransaction,
         onSuccess: (txHex, txHash) async {
           await writelocalTransactionUseCase.call(txHex, txHash);
 
-          logger.d('dispenser broadcasted txHash: $txHash');
-          analyticsService.trackAnonymousEvent('broadcast_tx_dispenser_close',
+          logger.info('$txName broadcasted txHash: $txHash');
+          analyticsService.trackAnonymousEvent('broadcast_tx_$txName',
               properties: {'distinct_id': uuid.v4()});
 
           emit(state.copyWith(
@@ -207,7 +250,7 @@ class CloseDispenserBloc extends ComposeBaseBloc<CloseDispenserState> {
         },
         onError: (msg) {
           emit(state.copyWith(
-              submitState: SubmitFinalizing<ComposeDispenserResponseVerbose>(
+              submitState: PasswordStep<ComposeDispenserResponseVerbose>(
             loading: false,
             error: msg,
             fee: fee,

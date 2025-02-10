@@ -2,19 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:horizon/presentation/common/colors.dart';
-import 'package:horizon/presentation/screens/dashboard/bloc/logout/logout_bloc.dart';
-import 'package:horizon/presentation/screens/dashboard/bloc/logout/logout_event.dart';
+import 'package:horizon/presentation/screens/dashboard/bloc/reset/reset_bloc.dart';
+import 'package:horizon/presentation/screens/dashboard/bloc/reset/reset_event.dart';
 import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
 import 'package:horizon/presentation/screens/onboarding/view/back_continue_buttons.dart';
 
-class LogoutDialog extends StatefulWidget {
-  const LogoutDialog({super.key});
+class ResetDialog extends StatefulWidget {
+  const ResetDialog({super.key});
 
   @override
-  State<LogoutDialog> createState() => _LogoutDialogState();
+  State<ResetDialog> createState() => _ResetDialogState();
 }
 
-class _LogoutDialogState extends State<LogoutDialog> {
+class _ResetDialogState extends State<ResetDialog> {
   final resetConfirmationController = TextEditingController();
   bool hasConfirmedUnderstanding = false;
   String resetConfirmationText = '';
@@ -31,7 +31,7 @@ class _LogoutDialogState extends State<LogoutDialog> {
   Widget build(BuildContext context) {
     final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
     final isSmallScreen = MediaQuery.of(context).size.width < 400;
-    final state = context.watch<LogoutBloc>().state;
+    final state = context.watch<ResetBloc>().state;
 
     return HorizonUI.HorizonDialog(
         onBackButtonPressed: () {
@@ -173,7 +173,7 @@ class _LogoutDialogState extends State<LogoutDialog> {
                     continueButtonText: 'RESET WALLET',
                     onPressedContinue: () {
                       if (resetConfirmationController.text == 'RESET WALLET') {
-                        context.read<LogoutBloc>().add(LogoutEvent());
+                        context.read<ResetBloc>().add(ResetEvent());
                       } else {
                         setState(() {
                           errorTextStepTwo =

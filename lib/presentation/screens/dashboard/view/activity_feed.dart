@@ -14,6 +14,8 @@ import 'package:horizon/common/format.dart';
 import 'package:horizon/presentation/common/colors.dart';
 import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
 import 'package:horizon/presentation/screens/compose_rbf/view/compose_rbf_view.dart';
+import 'package:horizon/domain/repositories/settings_repository.dart';
+import 'package:get_it/get_it.dart';
 
 class RBF extends StatelessWidget {
   final String txHash;
@@ -30,6 +32,9 @@ class RBF extends StatelessWidget {
           HorizonUI.HorizonDialog.show(
             context: context,
             body: ComposeRBFPageWrapper(
+                passwordRequired: GetIt.I
+                    .get<SettingsRepository>()
+                    .requirePasswordForCryptoOperations,
                 dashboardActivityFeedBloc:
                     context.read<DashboardActivityFeedBloc>(),
                 txHash: txHash,
@@ -229,8 +234,10 @@ class ActivityFeedListItem extends StatelessWidget {
         event.txHash != null
             ? RBF(txHash: event.txHash!, address: params.source)
             : null,
+
+      // for dispense, source and destination are inverted
       VerboseDispenseEvent(params: var params)
-          when _getSendSide(params.source) == SendSide.source =>
+          when _getSendSide(params.source) == SendSide.destination =>
         event.txHash != null
             ? RBF(txHash: event.txHash!, address: params.source)
             : null,
@@ -291,14 +298,14 @@ class ActivityFeedListItem extends StatelessWidget {
             : null,
       SweepEvent(params: var params)
           when _getSendSide(params.source) == SendSide.source =>
-        SelectableText(
-            "Sweep ${flagMapper[params.flags]} to ${params.destination}"),
-      SweepEvent(params: var params)
-          when _getSendSide(params.source) == SendSide.destination =>
-        SelectableText(
-            "Sweep ${flagMapper[params.flags]} from ${params.source}"),
-      BurnEvent(params: var params) => SelectableText(
-          "Burn ${params.burnedNormalized} BTC for ${params.earnedNormalized} XCP"),
+        event.txHash != null
+            ? RBF(txHash: event.txHash!, address: params.source)
+            : null,
+      BurnEvent(params: var params)
+          when _getSendSide(params.source) == SendSide.source =>
+        event.txHash != null
+            ? RBF(txHash: event.txHash!, address: params.source)
+            : null,
       _ => null,
     };
   }
@@ -428,7 +435,7 @@ class ActivityFeedListItem extends StatelessWidget {
   }
 
   Widget _buildAssetIssuanceTitle(VerboseAssetIssuanceParams params) {
-    if (params.transfer) {
+    if (params.transfer && params.assetEvents != 'fairmint') {
       if (addresses.any((a) => a == params.source)) {
         return SelectableText(
             "Transfer Out of ${displayAssetName(params.asset, params.assetLongname)}");

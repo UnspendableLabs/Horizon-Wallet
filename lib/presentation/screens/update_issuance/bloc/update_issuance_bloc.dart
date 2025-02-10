@@ -18,6 +18,9 @@ import 'package:horizon/presentation/screens/compose_issuance/bloc/compose_issua
 import 'package:horizon/presentation/screens/update_issuance/bloc/update_issuance_state.dart';
 import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
 
+import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
+import 'package:horizon/domain/entities/decryption_strategy.dart';
+
 class UpdateIssuanceEventParams extends ComposeIssuanceEventParams {
   final IssuanceActionType issuanceActionType;
   final String? destination;
@@ -35,6 +38,9 @@ class UpdateIssuanceEventParams extends ComposeIssuanceEventParams {
 }
 
 class UpdateIssuanceBloc extends ComposeBaseBloc<UpdateIssuanceState> {
+  final txName = 'update_issuance';
+  final bool passwordRequired;
+  final InMemoryKeyRepository inMemoryKeyRepository;
   final AssetRepository assetRepository;
   final ComposeRepository composeRepository;
   final AnalyticsService analyticsService;
@@ -45,6 +51,8 @@ class UpdateIssuanceBloc extends ComposeBaseBloc<UpdateIssuanceState> {
   final Logger logger;
   final IssuanceActionType issuanceActionType;
   UpdateIssuanceBloc({
+    required this.passwordRequired,
+    required this.inMemoryKeyRepository,
     required this.assetRepository,
     required this.composeRepository,
     required this.analyticsService,
@@ -56,7 +64,7 @@ class UpdateIssuanceBloc extends ComposeBaseBloc<UpdateIssuanceState> {
     required this.issuanceActionType,
   }) : super(
           UpdateIssuanceState(
-            submitState: const SubmitInitial(),
+            submitState: const FormStep(),
             feeOption: FeeOption.Medium(),
             balancesState: const BalancesState.initial(),
             feeState: const FeeState.initial(),
@@ -66,20 +74,21 @@ class UpdateIssuanceBloc extends ComposeBaseBloc<UpdateIssuanceState> {
         );
 
   @override
-  void onChangeFeeOption(ChangeFeeOption event, emit) async {
+  void onFeeOptionChanged(FeeOptionChanged event, emit) async {
     final value = event.value;
     emit(state.copyWith(feeOption: value));
   }
 
   @override
-  Future<void> onFetchFormData(FetchFormData event, emit) async {
+  Future<void> onAsyncFormDependenciesRequested(
+      AsyncFormDependenciesRequested event, emit) async {
     if (event.assetName == null || event.currentAddress == null) {
       return;
     }
 
     emit(state.copyWith(
       balancesState: const BalancesState.loading(),
-      submitState: const SubmitInitial(),
+      submitState: const FormStep(),
       assetState: const AssetState.loading(),
     ));
 
@@ -108,8 +117,8 @@ class UpdateIssuanceBloc extends ComposeBaseBloc<UpdateIssuanceState> {
   }
 
   @override
-  void onComposeTransaction(ComposeTransactionEvent event, emit) async {
-    emit((state).copyWith(submitState: const SubmitInitial(loading: true)));
+  void onFormSubmitted(FormSubmitted event, emit) async {
+    emit((state).copyWith(submitState: const FormStep(loading: true)));
 
     try {
       final feeRate = _getFeeRate();
@@ -139,8 +148,8 @@ class UpdateIssuanceBloc extends ComposeBaseBloc<UpdateIssuanceState> {
         composeFn: composeRepository.composeIssuanceVerbose,
       );
       emit(state.copyWith(
-          submitState: SubmitComposingTransaction<
-              ComposeIssuanceResponseVerbose, ComposeIssuanceEventParams>(
+          submitState: ReviewStep<ComposeIssuanceResponseVerbose,
+              ComposeIssuanceEventParams>(
         composeTransaction: composeResponse,
         fee: composeResponse.btcFee,
         feeRate: feeRate,
@@ -150,41 +159,75 @@ class UpdateIssuanceBloc extends ComposeBaseBloc<UpdateIssuanceState> {
       )));
     } on ComposeTransactionException catch (e) {
       emit(state.copyWith(
-          submitState: SubmitInitial(loading: false, error: e.message)));
+          submitState: FormStep(loading: false, error: e.message)));
     } catch (e) {
       emit(state.copyWith(
-          submitState: SubmitInitial(
+          submitState: FormStep(
               loading: false,
               error: 'An unexpected error occurred: ${e.toString()}')));
     }
   }
 
   @override
-  void onFinalizeTransaction(FinalizeTransactionEvent event, emit) async {
-    emit(state.copyWith(
-        submitState: SubmitFinalizing<ComposeIssuanceResponseVerbose>(
-      loading: false,
-      error: null,
-      composeTransaction: event.composeTransaction,
-      fee: event.fee,
-    )));
+  void onReviewSubmitted(ReviewSubmitted event, emit) async {
+    if (passwordRequired) {
+      emit(state.copyWith(
+          submitState: PasswordStep<ComposeIssuanceResponseVerbose>(
+        loading: false,
+        error: null,
+        composeTransaction: event.composeTransaction,
+        fee: event.fee,
+      )));
+      return;
+    }
+
+    final s = (state.submitState as ReviewStep<ComposeIssuanceResponseVerbose,
+        ComposeIssuanceEventParams>);
+
+    try {
+      emit(state.copyWith(submitState: s.copyWith(loading: true)));
+
+      await signAndBroadcastTransactionUseCase.call(
+          decryptionStrategy: InMemoryKey(),
+          source: s.composeTransaction.params.source,
+          rawtransaction: s.composeTransaction.rawtransaction,
+          onSuccess: (txHex, txHash) async {
+            await writelocalTransactionUseCase.call(txHex, txHash);
+
+            logger.info('$txName broadcasted txHash: $txHash');
+            analyticsService.trackAnonymousEvent('broadcast_tx_$txName',
+                properties: {'distinct_id': uuid.v4()});
+
+            emit(state.copyWith(
+                submitState: SubmitSuccess(
+                    transactionHex: txHex,
+                    sourceAddress: s.composeTransaction.params.source)));
+          },
+          onError: (msg) {
+            emit(state.copyWith(
+                submitState:
+                    s.copyWith(loading: false, error: msg.toString())));
+          });
+    } catch (e) {
+      emit(state.copyWith(
+          submitState: s.copyWith(loading: false, error: e.toString())));
+    }
   }
 
   @override
-  void onSignAndBroadcastTransaction(
-      SignAndBroadcastTransactionEvent event, emit) async {
-    if (state.submitState
-        is! SubmitFinalizing<ComposeIssuanceResponseVerbose>) {
+  void onSignAndBroadcastFormSubmitted(
+      SignAndBroadcastFormSubmitted event, emit) async {
+    if (state.submitState is! PasswordStep<ComposeIssuanceResponseVerbose>) {
       return;
     }
 
     final s =
-        (state.submitState as SubmitFinalizing<ComposeIssuanceResponseVerbose>);
+        (state.submitState as PasswordStep<ComposeIssuanceResponseVerbose>);
     final compose = s.composeTransaction;
     final fee = s.fee;
 
     emit(state.copyWith(
-        submitState: SubmitFinalizing<ComposeIssuanceResponseVerbose>(
+        submitState: PasswordStep<ComposeIssuanceResponseVerbose>(
       loading: true,
       error: null,
       fee: fee,
@@ -192,7 +235,7 @@ class UpdateIssuanceBloc extends ComposeBaseBloc<UpdateIssuanceState> {
     )));
 
     await signAndBroadcastTransactionUseCase.call(
-        password: event.password,
+        decryptionStrategy: Password(event.password),
         source: compose.params.source,
         rawtransaction: compose.rawtransaction,
         onSuccess: (txHex, txHash) async {
@@ -209,7 +252,7 @@ class UpdateIssuanceBloc extends ComposeBaseBloc<UpdateIssuanceState> {
         },
         onError: (msg) {
           emit(state.copyWith(
-              submitState: SubmitFinalizing<ComposeIssuanceResponseVerbose>(
+              submitState: PasswordStep<ComposeIssuanceResponseVerbose>(
             loading: false,
             error: msg,
             fee: fee,
@@ -218,7 +261,7 @@ class UpdateIssuanceBloc extends ComposeBaseBloc<UpdateIssuanceState> {
         });
   }
 
-  int _getFeeRate() {
+  num _getFeeRate() {
     FeeEstimates feeEstimates = state.feeState.feeEstimatesOrThrow();
     return switch (state.feeOption) {
       FeeOption.Fast() => feeEstimates.fast,

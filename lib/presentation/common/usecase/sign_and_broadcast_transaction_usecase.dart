@@ -13,6 +13,8 @@ import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/imported_address_service.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
 import 'package:horizon/domain/entities/compose_response.dart';
+import 'package:horizon/domain/entities/decryption_strategy.dart';
+import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 
 class AddressNotFoundException implements Exception {
   final String message;
@@ -43,8 +45,10 @@ class SignAndBroadcastTransactionUseCase<R extends ComposeResponse> {
   final BitcoindService bitcoindService;
   final TransactionLocalRepository transactionLocalRepository;
   final ImportedAddressService importedAddressService;
+  final InMemoryKeyRepository inMemoryKeyRepository;
 
   SignAndBroadcastTransactionUseCase({
+    required this.inMemoryKeyRepository,
     required this.addressRepository,
     required this.importedAddressRepository,
     required this.accountRepository,
@@ -59,7 +63,7 @@ class SignAndBroadcastTransactionUseCase<R extends ComposeResponse> {
   });
 
   Future<void> call({
-    required String password,
+    required DecryptionStrategy decryptionStrategy,
     required Function(String, String) onSuccess,
     required Function(String) onError,
     required String source,
@@ -89,10 +93,11 @@ class SignAndBroadcastTransactionUseCase<R extends ComposeResponse> {
 
       late String addressPrivKey;
       if (address != null) {
-        addressPrivKey = await _getAddressPrivKeyForAddress(address, password);
+        addressPrivKey =
+            await _getAddressPrivKeyForAddress(address, decryptionStrategy);
       } else {
         addressPrivKey = await _getAddressPrivKeyForImportedAddress(
-            importedAddress!, password);
+            importedAddress!, decryptionStrategy);
       }
 
       // Sign Transaction
@@ -116,8 +121,9 @@ class SignAndBroadcastTransactionUseCase<R extends ComposeResponse> {
     }
   }
 
+  // this refers to address that is part of actual wallet
   Future<String> _getAddressPrivKeyForAddress(
-      Address address, String password) async {
+      Address address, DecryptionStrategy decryptionStrategy) async {
     final account =
         await accountRepository.getAccountByUuid(address.accountUuid);
     if (account == null) {
@@ -128,9 +134,14 @@ class SignAndBroadcastTransactionUseCase<R extends ComposeResponse> {
 
     // Decrypt Root Private Key
     String decryptedRootPrivKey;
+
     try {
-      decryptedRootPrivKey =
-          await encryptionService.decrypt(wallet!.encryptedPrivKey, password);
+      decryptedRootPrivKey = switch (decryptionStrategy) {
+        Password(password: var password) =>
+          await encryptionService.decrypt(wallet!.encryptedPrivKey, password),
+        InMemoryKey() => await encryptionService.decryptWithKey(
+            wallet!.encryptedPrivKey, (await inMemoryKeyRepository.get())!)
+      };
     } catch (e) {
       throw SignAndBroadcastTransactionException('Incorrect password.');
     }
@@ -151,11 +162,23 @@ class SignAndBroadcastTransactionUseCase<R extends ComposeResponse> {
   }
 
   Future<String> _getAddressPrivKeyForImportedAddress(
-      ImportedAddress importedAddress, String password) async {
+      ImportedAddress importedAddress,
+      DecryptionStrategy decryptionStrategy) async {
     late String decryptedAddressWif;
     try {
-      decryptedAddressWif = await encryptionService.decrypt(
-          importedAddress.encryptedWif, password);
+      Future<String?> getKey() async {
+        final maybeKey =
+            (await inMemoryKeyRepository.getMap())[importedAddress.address];
+
+        return maybeKey;
+      }
+
+      decryptedAddressWif = switch (decryptionStrategy) {
+        Password(password: var password) => await encryptionService.decrypt(
+            importedAddress.encryptedWif, password),
+        InMemoryKey() => await encryptionService.decryptWithKey(
+            importedAddress.encryptedWif, (await getKey())!)
+      };
     } catch (e) {
       throw SignAndBroadcastTransactionException('Incorrect password.');
     }

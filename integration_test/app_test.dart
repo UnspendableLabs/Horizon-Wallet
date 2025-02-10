@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/common/constants.dart';
@@ -150,9 +151,26 @@ void main() {
       testCases_.where((testCase) => testCase['network'] == network).toList();
 
   group('Onboarding Integration Tests', () {
-    setUpAll(() async {
+    setUp(() async {
       // Perform any common setup here
       setup();
+      await initSettings();
+    });
+
+    tearDown(() async {
+      // Reset the repositories
+      await GetIt.I.get<WalletRepository>().deleteAllWallets();
+      await GetIt.I.get<AccountRepository>().deleteAllAccounts();
+      await GetIt.I.get<AddressRepository>().deleteAllAddresses();
+      await Future.delayed(const Duration(milliseconds: 100));
+
+      // Clean up settings
+      Settings.clearCache();
+
+      // Reset GetIt
+      await GetIt.I.reset();
+
+      // Add a small delay to ensure cleanup is complete
     });
 
     for (final testCase in testCases) {
@@ -180,7 +198,7 @@ void main() {
         ));
 
         // Wait for the app to settle
-        await tester.pumpAndSettle();
+        await tester.pumpAndSettle(const Duration(seconds: 1));
 
         // Find and tap the "LOAD SEED PHRASE" button
         final importSeedButton = find.text('LOAD SEED PHRASE');
@@ -195,7 +213,13 @@ void main() {
         await tester.pumpAndSettle();
 
         // Select the specified import format
-        final formatOption = find.text(testCase['format'] as String).last;
+        String dropdownText;
+        if (testCase['format'] == ImportFormat.horizon.description) {
+          dropdownText = 'Horizon Native';
+        } else {
+          dropdownText = 'Freewallet / Counterwallet / Rare Pepe Wallet';
+        }
+        final formatOption = find.text(dropdownText).last;
         await tester.tap(formatOption);
         await tester.pumpAndSettle();
 

@@ -12,9 +12,11 @@ import 'package:horizon/domain/services/error_service.dart';
 import 'package:horizon/domain/services/wallet_service.dart';
 import "package:horizon/presentation/screens/dashboard/address_form/bloc/address_form_event.dart";
 import "package:horizon/remote_data_bloc/remote_data_state.dart";
+import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 
 class AddressFormBloc
     extends Bloc<AddressFormEvent, RemoteDataState<Map<String, dynamic>>> {
+  final bool passwordRequired;
   final WalletRepository walletRepository;
   final WalletService walletService;
   final EncryptionService encryptionService;
@@ -22,8 +24,10 @@ class AddressFormBloc
   final AccountRepository accountRepository;
   final AddressService addressService;
   final ErrorService errorService;
+  final InMemoryKeyRepository inMemoryKeyRepository;
 
   AddressFormBloc({
+    required this.passwordRequired,
     required this.walletRepository,
     required this.walletService,
     required this.encryptionService,
@@ -31,6 +35,7 @@ class AddressFormBloc
     required this.accountRepository,
     required this.addressService,
     required this.errorService,
+    required this.inMemoryKeyRepository,
   }) : super(const RemoteDataState.initial()) {
     on<Submit>((event, emit) async {
       final currentState = state;
@@ -46,8 +51,11 @@ class AddressFormBloc
 
         String decryptedPrivKey;
         try {
-          decryptedPrivKey = await encryptionService.decrypt(
-              wallet.encryptedPrivKey, event.password);
+          decryptedPrivKey = passwordRequired
+              ? await encryptionService.decrypt(
+                  wallet.encryptedPrivKey, event.password)
+              : await encryptionService.decryptWithKey(wallet.encryptedPrivKey,
+                  (await inMemoryKeyRepository.get())!);
         } catch (e) {
           throw Exception("Incorrect password");
         }

@@ -1,6 +1,13 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:get_it/get_it.dart';
+
+import 'package:horizon/data/services/secure_kv_service_impl.dart';
+import 'package:horizon/domain/services/secure_kv_service.dart';
+
+import 'package:horizon/data/sources/repositories/in_memory_key_repository_impl.dart';
+import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
+
 import 'package:horizon/data/services/address_service_impl.dart';
 import 'package:horizon/data/services/bip39_service_impl.dart';
 import 'package:horizon/data/services/bitcoind_service_impl.dart';
@@ -131,6 +138,9 @@ import 'dart:html' as html;
 import 'package:horizon/domain/services/error_service.dart';
 import 'package:horizon/data/services/error_service_impl.dart';
 
+import 'package:horizon/domain/repositories/settings_repository.dart';
+import 'package:horizon/data/sources/repositories/settings_repository_impl.dart';
+
 void setup() {
   GetIt injector = GetIt.I;
 
@@ -163,24 +173,17 @@ void setup() {
       message: """
             Original error before retry:
             Status Code: ${error.response?.statusCode ?? 'No status code (connection failed)'}
-            Error: ${error.error.toString()}
             URL: ${error.requestOptions.uri}
             Type: ${error.type}
             Response: ${error.response?.data ?? 'No response (connection failed)'}
-            Message: ${error.message}
-            Response: ${error.response}
             App Version: ${config.version}
           """,
-      stackTrace: error.stackTrace,
       context: {
         'errorType': error.type.toString(),
         'statusCode':
             error.response?.statusCode?.toString() ?? 'connection_failed',
-        'method': error.requestOptions.method,
         'path': error.requestOptions.path,
         'retryCount': retryCount.toString(),
-        'connectionError': error.type == DioExceptionType.connectionError,
-        'errorMessage': error.message,
         'response': error.response,
         'appVersion': config.version,
       },
@@ -319,7 +322,6 @@ void setup() {
     ),
     // blockCypherApi: BlockCypherApi(dio: blockCypherDio)
   ));
-
   injector.registerSingleton<CacheProvider>(HiveCache());
 
   injector.registerSingleton<DatabaseManager>(DatabaseManager());
@@ -487,8 +489,15 @@ void setup() {
           estimateXcpFeeRepository: GetIt.I.get<EstimateXcpFeeRepository>(),
           balanceRepository: injector.get<BalanceRepository>()));
 
+  injector.registerSingleton<SecureKVService>(SecureKVServiceImpl());
+
+  injector.registerSingleton<InMemoryKeyRepository>(InMemoryKeyRepositoryImpl(
+    secureKVService: GetIt.I.get<SecureKVService>(),
+  ));
+
   injector.registerSingleton<SignAndBroadcastTransactionUseCase>(
       SignAndBroadcastTransactionUseCase(
+    inMemoryKeyRepository: GetIt.I.get<InMemoryKeyRepository>(),
     addressRepository: GetIt.I.get<AddressRepository>(),
     importedAddressRepository: GetIt.I.get<ImportedAddressRepository>(),
     accountRepository: GetIt.I.get<AccountRepository>(),
@@ -519,12 +528,17 @@ void setup() {
       .registerSingleton<EstimateDispensesUseCase>(EstimateDispensesUseCase());
 
   injector.registerSingleton<ImportWalletUseCase>(ImportWalletUseCase(
+    inMemoryKeyRepository: GetIt.I.get<InMemoryKeyRepository>(),
     addressService: GetIt.I.get<AddressService>(),
     config: GetIt.I.get<Config>(),
     addressRepository: GetIt.I.get<AddressRepository>(),
     accountRepository: GetIt.I.get<AccountRepository>(),
     walletRepository: GetIt.I.get<WalletRepository>(),
     encryptionService: GetIt.I.get<EncryptionService>(),
+    walletService: GetIt.I.get<WalletService>(),
+    bitcoinRepository: GetIt.I.get<BitcoinRepository>(),
+    mnemonicService: GetIt.I.get<MnemonicService>(),
+    eventsRepository: GetIt.I.get<EventsRepository>(),
   ));
 
   injector.registerLazySingleton<RPCGetAddressesSuccessCallback>(
@@ -589,6 +603,8 @@ void setup() {
   } else {
     GetIt.I.registerSingleton<PlatformService>(PlatformServiceWebImpl());
   }
+
+  injector.registerSingleton<SettingsRepository>(SettingsRepositoryImpl());
 }
 
 class CustomDioException extends DioException {

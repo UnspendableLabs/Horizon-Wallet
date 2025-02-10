@@ -6,9 +6,12 @@ import 'package:horizon/presentation/forms/sign_psbt/bloc/sign_psbt_state.dart';
 import 'package:horizon/presentation/forms/sign_psbt/bloc/sign_psbt_event.dart';
 
 class SignPsbtForm extends StatefulWidget {
+  final bool passwordRequired;
+
   final void Function(String) onSuccess;
 
-  const SignPsbtForm({super.key, required this.onSuccess});
+  const SignPsbtForm(
+      {super.key, required this.onSuccess, required this.passwordRequired});
 
   @override
   State<SignPsbtForm> createState() => _SignPsbtFormState();
@@ -78,18 +81,20 @@ class _SignPsbtFormState extends State<SignPsbtForm> {
 
                 const SizedBox(height: 20),
                 // Password Field
-                TextField(
-                  onChanged: (password) => context
-                      .read<SignPsbtBloc>()
-                      .add(PasswordChanged(password)),
-                  decoration: InputDecoration(
-                    labelText: 'Password',
-                    errorText: state.password.displayError == null
-                        ? null
-                        : 'Password cannot be empty',
+                if (widget.passwordRequired)
+                  TextField(
+                    onChanged: (password) => context
+                        .read<SignPsbtBloc>()
+                        .add(PasswordChanged(password)),
+                    decoration: InputDecoration(
+                      labelText: 'Password',
+                      errorText: state.password.displayError == null
+                          ? null
+                          : 'Password cannot be empty',
+                    ),
+                    obscureText: true,
                   ),
-                  obscureText: true,
-                ),
+
                 const SizedBox(height: 20),
                 // Submit Button
                 ElevatedButton(

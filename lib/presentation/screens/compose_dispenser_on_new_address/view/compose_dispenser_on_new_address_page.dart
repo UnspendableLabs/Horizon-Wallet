@@ -26,7 +26,9 @@ import 'package:horizon/presentation/screens/compose_dispenser_on_new_address/bl
 import 'package:horizon/presentation/screens/compose_dispenser_on_new_address/bloc/compose_dispenser_on_new_address_state.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart';
 import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
-import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
+import 'package:horizon/presentation/session/bloc/session_cubit.dart';
+import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
+import 'package:horizon/domain/repositories/settings_repository.dart';
 
 class ComposeDispenserOnNewAddressPageWrapper extends StatelessWidget {
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
@@ -36,7 +38,7 @@ class ComposeDispenserOnNewAddressPageWrapper extends StatelessWidget {
   final int escrowQuantity;
   final int mainchainrate;
   final bool divisible;
-  final int feeRate;
+  final num feeRate;
   final bool sendExtraBtcToDispenser;
   const ComposeDispenserOnNewAddressPageWrapper({
     required this.dashboardActivityFeedBloc,
@@ -55,6 +57,16 @@ class ComposeDispenserOnNewAddressPageWrapper extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) => ComposeDispenserOnNewAddressBloc(
+        asset: asset,
+        giveQuantity: giveQuantity,
+        escrowQuantity: escrowQuantity,
+        mainchainrate: mainchainrate,
+        divisible: divisible,
+        feeRate: feeRate,
+        sendExtraBtcToDispenser: sendExtraBtcToDispenser,
+        passwordRequired:
+            GetIt.I<SettingsRepository>().requirePasswordForCryptoOperations,
+        inMemoryKeyRepository: GetIt.I.get<InMemoryKeyRepository>(),
         accountRepository: GetIt.I.get<AccountRepository>(),
         addressRepository: GetIt.I.get<AddressRepository>(),
         walletRepository: GetIt.I.get<WalletRepository>(),
@@ -96,7 +108,7 @@ class ComposeDispenserOnNewAddressPage extends StatefulWidget {
   final int escrowQuantity;
   final int mainchainrate;
   final bool divisible;
-  final int feeRate;
+  final num feeRate;
   final bool sendExtraBtcToDispenser;
   const ComposeDispenserOnNewAddressPage({
     required this.originalAddress,
@@ -140,7 +152,7 @@ class _ComposeDispenserOnNewAddressPageState
         state.composeDispenserOnNewAddressState.maybeWhen(
           success: () async {
             Navigator.of(context).pop();
-            context.read<ShellStateCubit>().refreshAndSelectNewAddress(
+            context.read<SessionStateCubit>().refreshAndSelectNewAddress(
                 state.newAddress!.address, state.newAccount!.uuid);
             ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                 duration: const Duration(seconds: 5),

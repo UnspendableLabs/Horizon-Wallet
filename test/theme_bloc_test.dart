@@ -2,8 +2,8 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:horizon/presentation/shell/theme/bloc/theme_bloc.dart';
-import 'package:horizon/presentation/shell/theme/bloc/theme_event.dart';
+import 'package:horizon/presentation/session/theme/bloc/theme_bloc.dart';
+import 'package:horizon/presentation/session/theme/bloc/theme_event.dart';
 import 'package:mocktail/mocktail.dart';
 
 class MockCacheProvider extends Mock implements CacheProvider {}

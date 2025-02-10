@@ -9,6 +9,7 @@ import 'package:get_it/get_it.dart';
 import 'package:horizon/domain/repositories/config_repository.dart';
 import 'package:horizon/domain/services/mnemonic_service.dart';
 import 'package:horizon/domain/services/wallet_service.dart';
+import 'package:horizon/presentation/common/colors.dart';
 import 'package:horizon/presentation/common/usecase/import_wallet_usecase.dart';
 import 'package:horizon/presentation/screens/onboarding/view/back_continue_buttons.dart';
 import 'package:horizon/presentation/screens/onboarding/view/onboarding_app_bar.dart';
@@ -16,8 +17,7 @@ import 'package:horizon/presentation/screens/onboarding/view/password_prompt.dar
 import 'package:horizon/presentation/screens/onboarding_create/bloc/onboarding_create_bloc.dart';
 import 'package:horizon/presentation/screens/onboarding_create/bloc/onboarding_create_event.dart';
 import 'package:horizon/presentation/screens/onboarding_create/bloc/onboarding_create_state.dart';
-import 'package:horizon/presentation/common/colors.dart';
-import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
+import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 
 class NumberedWordGrid extends StatelessWidget {
   final String text;
@@ -156,9 +156,9 @@ class OnboardingCreatePageState extends State<OnboardingCreatePage> {
             child: BlocListener<OnboardingCreateBloc, OnboardingCreateState>(
               listener: (context, state) {
                 if (state.createState is CreateStateSuccess) {
-                  final shell = context.read<ShellStateCubit>();
-                  // reload shell to trigger redirect
-                  shell.initialize();
+                  final session = context.read<SessionStateCubit>();
+                  // reload session to trigger redirect
+                  session.initialize();
                 }
               },
               child: BlocBuilder<OnboardingCreateBloc, OnboardingCreateState>(
@@ -186,9 +186,9 @@ class OnboardingCreatePageState extends State<OnboardingCreatePage> {
                                   _ => PasswordPrompt(
                                       state: state,
                                       onPressedBack: () {
-                                        final shell =
-                                            context.read<ShellStateCubit>();
-                                        shell.onOnboarding();
+                                        final session =
+                                            context.read<SessionStateCubit>();
+                                        session.onOnboarding();
                                       },
                                       onPressedContinue: (password) {
                                         context
@@ -289,7 +289,8 @@ class _MnemonicState extends State<Mnemonic> {
                                           ? mainTextWhite
                                           : mainTextBlack,
                                     ),
-                                    if (config.network == Network.testnet)
+                                    if (config.network == Network.testnet4 ||
+                                        config.network == Network.testnet)
                                       ElevatedButton.icon(
                                         icon: const Icon(
                                           Icons.copy,
@@ -326,8 +327,9 @@ class _MnemonicState extends State<Mnemonic> {
                               isDarkMode: isDarkMode,
                               isSmallScreenWidth: isSmallScreenWidth,
                               onPressedBack: () {
-                                final shell = context.read<ShellStateCubit>();
-                                shell.onOnboarding();
+                                final session =
+                                    context.read<SessionStateCubit>();
+                                session.onOnboarding();
                               },
                               onPressedContinue: () {
                                 context
@@ -363,6 +365,7 @@ class _ConfirmSeedInputFieldsState extends State<ConfirmSeedInputFields> {
   List<TextEditingController> controllers =
       List.generate(12, (_) => TextEditingController());
   List<FocusNode> focusNodes = List.generate(12, (_) => FocusNode());
+  bool _showSeedPhrase = false;
 
   @override
   void initState() {
@@ -441,6 +444,26 @@ class _ConfirmSeedInputFieldsState extends State<ConfirmSeedInputFields> {
                     child: buildInputFields(isSmallScreen, isDarkMode),
                   )
                 : buildInputFields(isSmallScreen, isDarkMode),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: TextButton.icon(
+              onPressed: () {
+                setState(() {
+                  _showSeedPhrase = !_showSeedPhrase;
+                });
+              },
+              icon: Icon(
+                _showSeedPhrase ? Icons.visibility_off : Icons.visibility,
+                color: isDarkMode ? mainTextWhite : mainTextBlack,
+              ),
+              label: Text(
+                _showSeedPhrase ? 'Hide Seed Phrase' : 'Show Seed Phrase',
+                style: TextStyle(
+                  color: isDarkMode ? mainTextWhite : mainTextBlack,
+                ),
+              ),
+            ),
           ),
           if (isSmallScreen) const SizedBox(height: 16),
           BackContinueButtons(
@@ -567,6 +590,7 @@ class _ConfirmSeedInputFieldsState extends State<ConfirmSeedInputFields> {
               child: TextField(
                 controller: controllers[index],
                 focusNode: focusNodes[index],
+                obscureText: !_showSeedPhrase,
                 onChanged: (value) => handleInput(value, index),
                 decoration: InputDecoration(
                   filled: true,
@@ -638,6 +662,7 @@ class _ConfirmSeedInputFieldsState extends State<ConfirmSeedInputFields> {
             child: TextField(
               controller: controllers[index],
               focusNode: focusNodes[index],
+              obscureText: !_showSeedPhrase,
               onChanged: (value) => handleInput(value, index),
               decoration: InputDecoration(
                 filled: true,

@@ -32,7 +32,7 @@ class ComposeDispenseState with _$ComposeDispenseState, ComposeStateBase {
         balancesState: const BalancesState.initial(),
         dispensersState: const DispensersState.initial(),
         feeOption: Medium(),
-        submitState: const SubmitInitial(),
+        submitState: const FormStep(),
         quantity: '',
       );
 }

@@ -20,6 +20,8 @@ import 'package:horizon/presentation/screens/compose_fairminter/bloc/compose_fai
 import 'package:horizon/presentation/screens/compose_fairminter/bloc/compose_fairminter_state.dart';
 import 'package:horizon/presentation/screens/compose_fairminter/usecase/fetch_form_data.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
+import 'package:horizon/domain/entities/decryption_strategy.dart';
 
 class MockComposeRepository extends Mock implements ComposeRepository {}
 
@@ -68,6 +70,8 @@ class FakeVirtualSize extends Fake implements VirtualSize {
       {required this.virtualSize, required this.adjustedVirtualSize});
 }
 
+class MockInMemoryKeyRepository extends Mock implements InMemoryKeyRepository {}
+
 void main() {
   late ComposeFairminterBloc composeFairminterBloc;
   late MockComposeRepository mockComposeRepository;
@@ -104,11 +108,11 @@ void main() {
       lockQuantity: true,
     ));
     registerFallbackValue(FeeOption.Medium());
-    registerFallbackValue(ComposeTransactionEvent(
+    registerFallbackValue(FormSubmitted(
       params: composeTransactionParams,
       sourceAddress: 'source-address',
     ));
-    registerFallbackValue(SignAndBroadcastTransactionEvent(
+    registerFallbackValue(SignAndBroadcastFormSubmitted(
       password: 'password',
     ));
   });
@@ -129,6 +133,8 @@ void main() {
 
     composeFairminterBloc = ComposeFairminterBloc(
       logger: mockLogger,
+      passwordRequired: true,
+      inMemoryKeyRepository: MockInMemoryKeyRepository(),
       fetchFairminterFormDataUseCase: mockFetchFairminterFormDataUseCase,
       composeTransactionUseCase: mockComposeTransactionUseCase,
       composeRepository: mockComposeRepository,
@@ -158,14 +164,15 @@ void main() {
         return composeFairminterBloc;
       },
       act: (bloc) {
-        bloc.add(FetchFormData(currentAddress: 'test-address'));
+        bloc.add(
+            AsyncFormDependenciesRequested(currentAddress: 'test-address'));
       },
       expect: () => [
         composeFairminterBloc.state.copyWith(
           balancesState: const BalancesState.loading(),
           feeState: const FeeState.loading(),
           assetState: const AssetState.loading(),
-          submitState: const SubmitInitial(),
+          submitState: const FormStep(),
           fairmintersState: const FairmintersState.loading(),
         ),
         composeFairminterBloc.state.copyWith(
@@ -185,14 +192,15 @@ void main() {
         return composeFairminterBloc;
       },
       act: (bloc) {
-        bloc.add(FetchFormData(currentAddress: 'test-address'));
+        bloc.add(
+            AsyncFormDependenciesRequested(currentAddress: 'test-address'));
       },
       expect: () => [
         composeFairminterBloc.state.copyWith(
           balancesState: const BalancesState.loading(),
           feeState: const FeeState.loading(),
           assetState: const AssetState.loading(),
-          submitState: const SubmitInitial(),
+          submitState: const FormStep(),
         ),
         composeFairminterBloc.state.copyWith(
           feeState: const FeeState.error('Failed to fetch fee estimates'),
@@ -210,7 +218,7 @@ void main() {
       'emits SubmitSuccess when transaction is signed and broadcasted successfully',
       build: () {
         when(() => mockSignAndBroadcastTransactionUseCase.call(
-              password: password,
+              decryptionStrategy: Password(password),
               source: any(named: 'source'),
               rawtransaction: txHex,
               onSuccess: any(named: 'onSuccess'),
@@ -232,7 +240,7 @@ void main() {
         return composeFairminterBloc;
       },
       seed: () => composeFairminterBloc.state.copyWith(
-        submitState: SubmitFinalizing<ComposeFairminterResponse>(
+        submitState: PasswordStep<ComposeFairminterResponse>(
           loading: false,
           error: null,
           composeTransaction: mockComposeFairminterResponseVerbose,
@@ -240,12 +248,12 @@ void main() {
         ),
       ),
       act: (bloc) =>
-          bloc.add(SignAndBroadcastTransactionEvent(password: password)),
+          bloc.add(SignAndBroadcastFormSubmitted(password: password)),
       expect: () => [
         isA<ComposeFairminterState>().having(
           (state) => state.submitState,
           'submitState',
-          isA<SubmitFinalizing<ComposeFairminterResponse>>()
+          isA<PasswordStep<ComposeFairminterResponse>>()
               .having((s) => s.loading, 'loading', true)
               .having((s) => s.error, 'error', null)
               .having((s) => s.composeTransaction, 'composeTransaction',
@@ -364,14 +372,15 @@ void main() {
         return composeFairminterBloc;
       },
       act: (bloc) {
-        bloc.add(FetchFormData(currentAddress: 'test-address'));
+        bloc.add(
+            AsyncFormDependenciesRequested(currentAddress: 'test-address'));
       },
       expect: () => [
         composeFairminterBloc.state.copyWith(
           balancesState: const BalancesState.loading(),
           feeState: const FeeState.loading(),
           assetState: const AssetState.loading(),
-          submitState: const SubmitInitial(),
+          submitState: const FormStep(),
           fairmintersState: const FairmintersState.loading(),
         ),
         composeFairminterBloc.state.copyWith(

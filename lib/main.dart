@@ -23,6 +23,7 @@ import 'package:horizon/domain/repositories/config_repository.dart';
 import 'package:horizon/domain/repositories/imported_address_repository.dart';
 import 'package:horizon/domain/repositories/version_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
+import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
@@ -38,15 +39,22 @@ import 'package:horizon/presentation/screens/dashboard/view/dashboard_page.dart'
 import 'package:horizon/presentation/screens/onboarding/view/onboarding_page.dart';
 import 'package:horizon/presentation/screens/onboarding_create/view/onboarding_create_page.dart';
 import 'package:horizon/presentation/screens/onboarding_import/view/onboarding_import_page.dart';
-import 'package:horizon/presentation/screens/onboarding_import_pk/view/onboarding_import_pk_page.dart';
 import 'package:horizon/presentation/screens/privacy_policy.dart';
+import 'package:horizon/presentation/screens/login/login_view.dart';
 import 'package:horizon/presentation/screens/tos.dart';
-import 'package:horizon/presentation/shell/bloc/shell_cubit.dart';
-import 'package:horizon/presentation/shell/bloc/shell_state.dart';
-import 'package:horizon/presentation/shell/theme/bloc/theme_bloc.dart';
+import 'package:horizon/presentation/session/bloc/session_cubit.dart';
+import 'package:horizon/presentation/session/bloc/session_state.dart';
+import 'package:horizon/presentation/session/theme/bloc/theme_bloc.dart';
 import 'package:horizon/presentation/version_cubit.dart';
+import 'package:horizon/presentation/screens/settings/settings_view.dart';
 import 'package:horizon/setup.dart';
 import 'package:pub_semver/pub_semver.dart';
+
+import 'package:horizon/presentation/inactivity_monitor/inactivity_monitor_bloc.dart';
+import 'package:horizon/presentation/inactivity_monitor/inactivity_monitor_view.dart';
+
+import 'package:horizon/domain/repositories/settings_repository.dart';
+import 'package:horizon/domain/services/secure_kv_service.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 final _sectionNavigatorKey = GlobalKey<NavigatorState>();
@@ -134,7 +142,7 @@ class VersionWarningState extends State<VersionWarningSnackbar> {
 
     final versionInfo = context
         .read<VersionCubit>()
-        .state; // we should only ever get to this page if shell is success
+        .state; // we should only ever get to this page if session is success
 
     if (!_hasShownSnackbar && versionInfo.warning != null) {
       switch (versionInfo.warning!) {
@@ -241,17 +249,39 @@ class AppRouter {
                   (context, animation, secondaryAnimation, child) => child),
         ),
         GoRoute(
-          path: "/onboarding/import-pk",
+          path: "/login",
           pageBuilder: (context, state) => CustomTransitionPage<void>(
               key: state.pageKey,
-              child: const OnboardingImportPKPageWrapper(),
+              child: const LoginView(),
               transitionsBuilder:
                   (context, animation, secondaryAnimation, child) => child),
         ),
         StatefulShellRoute.indexedStack(
             builder:
-                (BuildContext context, GoRouterState state, navigationShell) {
-              return navigationShell;
+                (BuildContext context, GoRouterState state, navigationSession) {
+              return ValueChangeObserver(
+                  cacheKey: SettingsKeys.inactivityTimeout.toString(),
+                  defaultValue: 5,
+                  builder: (context, inactivityTimeout, onChanged) {
+                    return BlocProvider(
+                        key: Key("inactivity-timeout:$inactivityTimeout"),
+                        create: (_) {
+                          return InactivityMonitorBloc(
+                            logger: GetIt.I<Logger>(),
+                            kvService: GetIt.I<SecureKVService>(),
+                            inactivityTimeout:
+                                Duration(minutes: inactivityTimeout),
+                          );
+                        },
+                        child: InactivityMonitorView(
+                          onTimeout: () {
+                            final session = context.read<SessionStateCubit>();
+                            session.onLogout();
+                          },
+                          child: navigationSession,
+                        ));
+                  });
+              return navigationSession;
             },
             branches: [
               StatefulShellBranch(
@@ -260,11 +290,11 @@ class AppRouter {
                   GoRoute(
                       path: "/dashboard",
                       builder: (context, state) {
-                        final shell = context.watch<ShellStateCubit>();
+                        final session = context.watch<SessionStateCubit>();
 
                         // this technically isn't necessary, will always be
                         // success
-                        return shell.state.maybeWhen(
+                        return session.state.maybeWhen(
                           success: (state) {
                             late Key key;
                             if (state.currentAddress != null) {
@@ -272,6 +302,7 @@ class AppRouter {
                             } else if (state.currentImportedAddress != null) {
                               key = Key(state.currentImportedAddress!.address);
                             }
+
                             return Scaffold(
                                 bottomNavigationBar: const Footer(),
                                 body: VersionWarningSnackbar(
@@ -279,7 +310,31 @@ class AppRouter {
                           },
                           orElse: () => const LoadingScreen(),
                         );
-                      })
+                      }),
+                  GoRoute(
+                      path: "/settings",
+                      builder: (context, state) {
+                        final session = context.watch<SessionStateCubit>();
+
+                        // this technically isn't necessary, will always be
+                        // success
+                        return session.state.maybeWhen(
+                          success: (state) {
+                            late Key key;
+                            if (state.currentAddress != null) {
+                              key = Key(state.currentAddress!.address);
+                            } else if (state.currentImportedAddress != null) {
+                              key = Key(state.currentImportedAddress!.address);
+                            }
+
+                            return const Scaffold(
+                                bottomNavigationBar: Footer(),
+                                body: VersionWarningSnackbar(
+                                    child: SettingsView()));
+                          },
+                          orElse: () => const LoadingScreen(),
+                        );
+                      }),
                 ],
               ),
             ])
@@ -297,9 +352,10 @@ class AppRouter {
           return "/tos";
         }
 
-        final shell = context.read<ShellStateCubit>();
+        final session = context.read<SessionStateCubit>();
 
-        final path = shell.state.maybeWhen(
+        final path = session.state.maybeWhen(
+            loggedOut: () => "/login",
             onboarding: (onboarding) {
               return onboarding.when(
                 initial: () => "/onboarding",
@@ -310,14 +366,14 @@ class AppRouter {
             },
             success: (data) {
               Future.delayed(const Duration(milliseconds: 500), () {
-                shell.initialized();
+                session.initialized();
               });
 
               if (data.redirect) {
                 return "/dashboard";
               }
             },
-            // if the shell state is not yet loaded, show a loading screen
+            // if the session state is not yet loaded, show a loading screen
             orElse: () => "/");
 
         final actionParam = state.uri.queryParameters['action'];
@@ -367,8 +423,8 @@ void main() {
   // Catch synchronous errors in Flutter framework
   FlutterError.onError = (FlutterErrorDetails details) {
     FlutterError.dumpErrorToConsole(details);
+    // TODO: Is this error capture necessary?
     GetIt.I<ErrorService>().captureException(details.exception,
-        stackTrace: details.stack,
         context: {'runtimeType': details.exception.runtimeType.toString()});
   };
 
@@ -440,15 +496,13 @@ void main() {
       final errorMessage = 'Type Error: ${error.toString()}';
       logger.error(errorMessage, error, stackTrace);
       GetIt.I<ErrorService>().captureException(error,
-          stackTrace: stackTrace,
           message: errorMessage,
           context: {'runtimeType': error.runtimeType.toString()});
     } else {
       // Add more specific error type handling here as needed
-      final errorMessage = 'Unhandled Error: ${error.toString()}';
+      const errorMessage = 'An unexpected error occurred';
       logger.error(errorMessage, null, stackTrace);
-      GetIt.I<ErrorService>().captureException(error,
-          stackTrace: stackTrace,
+      GetIt.I<ErrorService>().captureException(FlutterError(errorMessage),
           message: errorMessage,
           context: {'errorType': error.runtimeType.toString()});
     }
@@ -723,8 +777,12 @@ class MyApp extends StatelessWidget {
             warning: warning,
           )),
         ),
-        BlocProvider<ShellStateCubit>(
-          create: (context) => ShellStateCubit(
+        BlocProvider<SessionStateCubit>(
+          create: (context) => SessionStateCubit(
+              kvService: GetIt.I<SecureKVService>(),
+              encryptionService: GetIt.I<EncryptionService>(),
+              inMemoryKeyRepository: GetIt.I<InMemoryKeyRepository>(),
+              cacheProvider: GetIt.I<CacheProvider>(),
               walletRepository: GetIt.I<WalletRepository>(),
               accountRepository: GetIt.I<AccountRepository>(),
               addressRepository: GetIt.I<AddressRepository>(),
@@ -734,8 +792,11 @@ class MyApp extends StatelessWidget {
         ),
         BlocProvider<AccountFormBloc>(
           create: (context) => AccountFormBloc(
+            passwordRequired: GetIt.I<SettingsRepository>()
+                .requirePasswordForCryptoOperations,
             accountRepository: GetIt.I<AccountRepository>(),
             walletRepository: GetIt.I<WalletRepository>(),
+            inMemoryKeyRepository: GetIt.I<InMemoryKeyRepository>(),
             walletService: GetIt.I<WalletService>(),
             encryptionService: GetIt.I<EncryptionService>(),
             addressService: GetIt.I<AddressService>(),
@@ -745,6 +806,9 @@ class MyApp extends StatelessWidget {
         ),
         BlocProvider<AddressFormBloc>(
           create: (context) => AddressFormBloc(
+            passwordRequired: GetIt.I<SettingsRepository>()
+                .requirePasswordForCryptoOperations,
+            inMemoryKeyRepository: GetIt.I<InMemoryKeyRepository>(),
             walletRepository: GetIt.I<WalletRepository>(),
             walletService: GetIt.I<WalletService>(),
             encryptionService: GetIt.I<EncryptionService>(),
@@ -756,6 +820,7 @@ class MyApp extends StatelessWidget {
         ),
         BlocProvider<ImportAddressPkBloc>(
           create: (context) => ImportAddressPkBloc(
+            inMemoryKeyRepository: GetIt.I<InMemoryKeyRepository>(),
             walletRepository: GetIt.I<WalletRepository>(),
             walletService: GetIt.I<WalletService>(),
             encryptionService: GetIt.I<EncryptionService>(),
@@ -769,7 +834,7 @@ class MyApp extends StatelessWidget {
           create: (context) => ThemeBloc(GetIt.I<CacheProvider>()),
         ),
       ],
-      child: BlocListener<ShellStateCubit, ShellState>(
+      child: BlocListener<SessionStateCubit, SessionState>(
         listener: (context, state) {
           AppRouter.router.refresh();
         },

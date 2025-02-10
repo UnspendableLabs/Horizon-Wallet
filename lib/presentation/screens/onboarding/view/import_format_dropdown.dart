@@ -26,14 +26,10 @@ class ImportFormatDropdown extends StatelessWidget {
           selectedValue: selectedFormat,
           items: [
             HorizonUI.buildDropdownMenuItem(
-                ImportFormat.horizon.name, ImportFormat.horizon.description),
+                WalletType.horizon.name, WalletType.horizon.description),
             HorizonUI.buildDropdownMenuItem(
-              ImportFormat.counterwallet.name,
-              ImportFormat.counterwallet.description,
-            ),
-            HorizonUI.buildDropdownMenuItem(
-              ImportFormat.freewallet.name,
-              ImportFormat.freewallet.description,
+              WalletType.bip32.name,
+              WalletType.bip32.description,
             ),
           ],
         ),

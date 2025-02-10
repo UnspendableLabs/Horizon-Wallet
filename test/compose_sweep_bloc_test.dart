@@ -19,6 +19,8 @@ import 'package:horizon/presentation/common/usecase/write_local_transaction_usec
 import 'package:horizon/presentation/screens/compose_sweep/bloc/compose_sweep_bloc.dart';
 import 'package:horizon/presentation/screens/compose_sweep/bloc/compose_sweep_state.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
+import 'package:horizon/domain/entities/decryption_strategy.dart';
 
 // Mock classes
 class MockComposeRepository extends Mock implements ComposeRepository {}
@@ -43,6 +45,8 @@ class MockEstimateXcpFeeRepository extends Mock
     implements EstimateXcpFeeRepository {}
 
 class MockErrorService extends Mock implements ErrorService {}
+
+class MockInMemoryKeyRepository extends Mock implements InMemoryKeyRepository {}
 
 class MockComposeSweepResponse extends Mock implements ComposeSweepResponse {
   @override
@@ -107,11 +111,11 @@ void main() {
       flags: 0,
       memo: 'test memo',
     ));
-    registerFallbackValue(ComposeTransactionEvent(
+    registerFallbackValue(FormSubmitted(
       params: composeTransactionParams,
       sourceAddress: 'source-address',
     ));
-    registerFallbackValue(SignAndBroadcastTransactionEvent(
+    registerFallbackValue(SignAndBroadcastFormSubmitted(
       password: 'password',
     ));
   });
@@ -132,6 +136,8 @@ void main() {
     GetIt.I.registerSingleton<ErrorService>(mockErrorService);
 
     bloc = ComposeSweepBloc(
+      passwordRequired: true,
+      inMemoryKeyRepository: MockInMemoryKeyRepository(),
       composeRepository: mockComposeRepository,
       analyticsService: mockAnalyticsService,
       logger: mockLogger,
@@ -155,7 +161,7 @@ void main() {
     expect(initialState.feeState, equals(const FeeState.initial()));
     expect(initialState.balancesState, equals(const BalancesState.initial()));
     expect(initialState.feeOption, isA<FeeOption.Medium>());
-    expect(initialState.submitState, isA<SubmitInitial>());
+    expect(initialState.submitState, isA<FormStep>());
   });
 
   group('FetchFormData', () {
@@ -168,14 +174,15 @@ void main() {
             .thenAnswer((_) async => 20000000);
         return bloc;
       },
-      act: (bloc) => bloc.add(FetchFormData(currentAddress: 'test-address')),
+      act: (bloc) => bloc
+          .add(AsyncFormDependenciesRequested(currentAddress: 'test-address')),
       expect: () => [
         isA<ComposeSweepState>()
             .having((s) => s.balancesState, 'balancesState',
                 const BalancesState.loading())
             .having((s) => s.feeState, 'feeState', const FeeState.loading())
             .having((s) => s.feeOption, 'feeOption', isA<FeeOption.Medium>())
-            .having((s) => s.submitState, 'submitState', isA<SubmitInitial>())
+            .having((s) => s.submitState, 'submitState', isA<FormStep>())
             .having((s) => s.sweepXcpFeeState, 'sweepXcpFeeState',
                 const SweepXcpFeeState.loading()),
         isA<ComposeSweepState>()
@@ -184,7 +191,7 @@ void main() {
             .having((s) => s.feeState, 'feeState',
                 const FeeState.success(mockFeeEstimates))
             .having((s) => s.feeOption, 'feeOption', isA<FeeOption.Medium>())
-            .having((s) => s.submitState, 'submitState', isA<SubmitInitial>())
+            .having((s) => s.submitState, 'submitState', isA<FormStep>())
             .having((s) => s.sweepXcpFeeState, 'sweepXcpFeeState',
                 const SweepXcpFeeState.success(20000000)),
       ],
@@ -197,7 +204,8 @@ void main() {
             .thenThrow(Exception('Fee estimates error'));
         return bloc;
       },
-      act: (bloc) => bloc.add(FetchFormData(currentAddress: 'test-address')),
+      act: (bloc) => bloc
+          .add(AsyncFormDependenciesRequested(currentAddress: 'test-address')),
       expect: () => [
         isA<ComposeSweepState>()
             .having((s) => s.balancesState, 'balancesState',
@@ -206,7 +214,7 @@ void main() {
             .having((s) => s.feeOption, 'feeOption', isA<FeeOption.Medium>())
             .having((s) => s.sweepXcpFeeState, 'sweepXcpFeeState',
                 const SweepXcpFeeState.loading())
-            .having((s) => s.submitState, 'submitState', isA<SubmitInitial>()),
+            .having((s) => s.submitState, 'submitState', isA<FormStep>()),
         isA<ComposeSweepState>()
             .having((s) => s.balancesState, 'balancesState',
                 const BalancesState.loading())
@@ -216,7 +224,7 @@ void main() {
                 isA<FeeState>().having((f) => f.toString(), 'error message',
                     contains('Fee estimates error')))
             .having((s) => s.feeOption, 'feeOption', isA<FeeOption.Medium>())
-            .having((s) => s.submitState, 'submitState', isA<SubmitInitial>()),
+            .having((s) => s.submitState, 'submitState', isA<FormStep>()),
       ],
     );
   });
@@ -225,14 +233,14 @@ void main() {
     blocTest<ComposeSweepBloc, ComposeSweepState>(
       'updates fee option when changed',
       build: () => bloc,
-      act: (bloc) => bloc.add(ChangeFeeOption(value: FeeOption.Fast())),
+      act: (bloc) => bloc.add(FeeOptionChanged(value: FeeOption.Fast())),
       expect: () => [
         isA<ComposeSweepState>()
             .having((s) => s.balancesState, 'balancesState',
                 const BalancesState.initial())
             .having((s) => s.feeState, 'feeState', const FeeState.initial())
             .having((s) => s.feeOption, 'feeOption', isA<FeeOption.Fast>())
-            .having((s) => s.submitState, 'submitState', isA<SubmitInitial>())
+            .having((s) => s.submitState, 'submitState', isA<FormStep>())
             .having((s) => s.sweepXcpFeeState, 'sweepXcpFeeState',
                 const SweepXcpFeeState.initial()),
       ],
@@ -262,10 +270,10 @@ void main() {
         balancesState: const BalancesState.initial(),
         feeState: const FeeState.success(mockFeeEstimates),
         feeOption: FeeOption.Medium(),
-        submitState: const SubmitInitial(),
+        submitState: const FormStep(),
         sweepXcpFeeState: const SweepXcpFeeState.initial(),
       ),
-      act: (bloc) => bloc.add(ComposeTransactionEvent(
+      act: (bloc) => bloc.add(FormSubmitted(
         params: params,
         sourceAddress: 'source-address',
       )),
@@ -277,7 +285,7 @@ void main() {
                 const FeeState.success(mockFeeEstimates))
             .having((s) => s.feeOption, 'feeOption', isA<FeeOption.Medium>())
             .having((s) => s.submitState, 'submitState',
-                isA<SubmitInitial>().having((s) => s.loading, 'loading', true))
+                isA<FormStep>().having((s) => s.loading, 'loading', true))
             .having((s) => s.sweepXcpFeeState, 'sweepXcpFeeState',
                 const SweepXcpFeeState.initial()),
         isA<ComposeSweepState>()
@@ -291,7 +299,7 @@ void main() {
             .having(
                 (s) => s.submitState,
                 'submitState',
-                isA<SubmitComposingTransaction<ComposeSweepResponse, void>>()
+                isA<ReviewStep<ComposeSweepResponse, void>>()
                     .having((s) => s.composeTransaction, 'composeTransaction',
                         mockComposeSweepResponse)
                     .having((s) => s.fee, 'fee', 250)
@@ -312,7 +320,7 @@ void main() {
       'successfully signs and broadcasts transaction',
       build: () {
         when(() => mockSignAndBroadcastTransactionUseCase.call(
-              password: password,
+              decryptionStrategy: Password(password),
               source: any(named: 'source'),
               rawtransaction: txHex,
               onSuccess: any(named: 'onSuccess'),
@@ -338,7 +346,7 @@ void main() {
         feeState: const FeeState.initial(),
         feeOption: FeeOption.Medium(),
         sweepXcpFeeState: const SweepXcpFeeState.initial(),
-        submitState: SubmitFinalizing<ComposeSweepResponse>(
+        submitState: PasswordStep<ComposeSweepResponse>(
           loading: false,
           error: null,
           composeTransaction: mockComposeSweepResponse,
@@ -346,7 +354,7 @@ void main() {
         ),
       ),
       act: (bloc) =>
-          bloc.add(SignAndBroadcastTransactionEvent(password: password)),
+          bloc.add(SignAndBroadcastFormSubmitted(password: password)),
       expect: () => [
         isA<ComposeSweepState>()
             .having((s) => s.balancesState, 'balancesState',
@@ -358,7 +366,7 @@ void main() {
             .having(
                 (s) => s.submitState,
                 'submitState',
-                isA<SubmitFinalizing<ComposeSweepResponse>>()
+                isA<PasswordStep<ComposeSweepResponse>>()
                     .having((s) => s.loading, 'loading', true)
                     .having((s) => s.error, 'error', null)
                     .having((s) => s.composeTransaction, 'composeTransaction',
