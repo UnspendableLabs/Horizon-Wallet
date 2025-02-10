@@ -143,7 +143,7 @@ class ReplaceByFeeFormBloc extends Bloc<FormEvent, FormStateModel> {
         source: source,
         txHex: event.hex,
         oldFee: event.tx.fee,
-        newFee: newFee.toInt(),
+        newFee: newFee,
       );
 
       emit(state.copyWith(

@@ -265,12 +265,12 @@ class ComposeDispenserOnNewAddressBloc extends Bloc<
             final escrowQuantityToSend =
                 escrowQuantity; // the total asset quantity to be sent to the new address for the dispenser
 
-            int feeToCoverDispenser = feeRate.toInt() * ADJUSTED_VIRTUAL_SIZE;
+            int feeToCoverDispenser = (feeRate * ADJUSTED_VIRTUAL_SIZE).ceil();
             int extraBtcToSendToDispenser = 0;
 
             if (sendExtraBtcToDispenser) {
               extraBtcToSendToDispenser =
-                  feeRate.toInt() * ADJUSTED_VIRTUAL_SIZE;
+                  (feeRate * ADJUSTED_VIRTUAL_SIZE).ceil();
             }
 
             // 2. compose the asset send

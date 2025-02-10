@@ -348,7 +348,7 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
           keyboardType: const TextInputType.numberWithOptions(
               decimal: true, signed: false),
           validator: (value) {
-            if (value == null || value.isEmpty) {
+            if (value == null || value.isEmpty || value == '.') {
               return 'Please enter a quantity';
             }
             Decimal input = Decimal.parse(value);
@@ -434,7 +434,7 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
       keyboardType:
           const TextInputType.numberWithOptions(decimal: true, signed: false),
       validator: (value) {
-        if (value == null || value.isEmpty) {
+        if (value == null || value.isEmpty || value == '.') {
           return 'Please enter an escrow quantity';
         }
         Decimal escrowQuantity = Decimal.parse(value);
@@ -443,7 +443,8 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
           return "escrow quantity exceeds available balance";
         }
 
-        Decimal? giveQuantity = giveQuantityController.text.isNotEmpty
+        Decimal? giveQuantity = (giveQuantityController.text.isNotEmpty &&
+                giveQuantityController.text != '.')
             ? Decimal.parse(giveQuantityController.text)
             : null;
         // Check if the escrow quantity is greater than or equal to the give quantity
@@ -648,7 +649,7 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
       keyboardType: const TextInputType.numberWithOptions(
           decimal: false, signed: false), // No decimal allowed
       validator: (value) {
-        if (value == null || value.isEmpty) {
+        if (value == null || value.isEmpty || value == '.') {
           return 'Per Unit Price is required';
         }
         if (double.parse(value) < 0.000006) {

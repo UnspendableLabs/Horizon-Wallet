@@ -180,7 +180,7 @@ class _FeeSelectionV2State extends State<FeeSelectionV2> {
         onChanged: widget.enabled
             ? (value) {
                 if (widget.value is Custom) {
-                  final fee = double.tryParse(value) ?? 0;
+                  final fee = num.tryParse(value) ?? 0;
                   final newOption = Custom(fee);
                   widget.onSelected(newOption);
                 }
