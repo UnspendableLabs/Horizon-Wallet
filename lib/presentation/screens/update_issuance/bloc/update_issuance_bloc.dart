@@ -17,6 +17,8 @@ import 'package:horizon/presentation/common/usecase/write_local_transaction_usec
 import 'package:horizon/presentation/screens/compose_issuance/bloc/compose_issuance_bloc.dart';
 import 'package:horizon/presentation/screens/update_issuance/bloc/update_issuance_state.dart';
 import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
+
+import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 import 'package:horizon/domain/entities/decryption_strategy.dart';
 
 class UpdateIssuanceEventParams extends ComposeIssuanceEventParams {
@@ -36,6 +38,9 @@ class UpdateIssuanceEventParams extends ComposeIssuanceEventParams {
 }
 
 class UpdateIssuanceBloc extends ComposeBaseBloc<UpdateIssuanceState> {
+  final txName = 'update_issuance';
+  final bool passwordRequired;
+  final InMemoryKeyRepository inMemoryKeyRepository;
   final AssetRepository assetRepository;
   final ComposeRepository composeRepository;
   final AnalyticsService analyticsService;
@@ -46,6 +51,8 @@ class UpdateIssuanceBloc extends ComposeBaseBloc<UpdateIssuanceState> {
   final Logger logger;
   final IssuanceActionType issuanceActionType;
   UpdateIssuanceBloc({
+    required this.passwordRequired,
+    required this.inMemoryKeyRepository,
     required this.assetRepository,
     required this.composeRepository,
     required this.analyticsService,
@@ -163,13 +170,48 @@ class UpdateIssuanceBloc extends ComposeBaseBloc<UpdateIssuanceState> {
 
   @override
   void onReviewSubmitted(ReviewSubmitted event, emit) async {
-    emit(state.copyWith(
-        submitState: PasswordStep<ComposeIssuanceResponseVerbose>(
-      loading: false,
-      error: null,
-      composeTransaction: event.composeTransaction,
-      fee: event.fee,
-    )));
+    if (passwordRequired) {
+      emit(state.copyWith(
+          submitState: PasswordStep<ComposeIssuanceResponseVerbose>(
+        loading: false,
+        error: null,
+        composeTransaction: event.composeTransaction,
+        fee: event.fee,
+      )));
+      return;
+    }
+
+    final s = (state.submitState as ReviewStep<ComposeIssuanceResponseVerbose,
+        ComposeIssuanceEventParams>);
+
+    try {
+      emit(state.copyWith(submitState: s.copyWith(loading: true)));
+
+      await signAndBroadcastTransactionUseCase.call(
+          decryptionStrategy: InMemoryKey(),
+          source: s.composeTransaction.params.source,
+          rawtransaction: s.composeTransaction.rawtransaction,
+          onSuccess: (txHex, txHash) async {
+            await writelocalTransactionUseCase.call(txHex, txHash);
+
+            logger.info('$txName broadcasted txHash: $txHash');
+            analyticsService.trackAnonymousEvent('broadcast_tx_$txName',
+                properties: {'distinct_id': uuid.v4()});
+
+            emit(state.copyWith(
+                submitState: SubmitSuccess(
+                    transactionHex: txHex,
+                    sourceAddress: s.composeTransaction.params.source)));
+          },
+          onError: (msg) {
+            emit(state.copyWith(
+                submitState:
+                    s.copyWith(loading: false, error: msg.toString())));
+          });
+    } catch (e) {
+      emit(state.copyWith(
+          submitState: s.copyWith(loading: false, error: e.toString())));
+    }
   }
 
   @override
