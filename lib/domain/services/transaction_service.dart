@@ -21,6 +21,11 @@ abstract class TransactionService {
 
   String psbtToUnsignedTransactionHex(String psbtHex);
 
+
+  // // TODO: this doesn't totally belong here
+  // Future<String> signMessage(String message, String privateKey,
+  //     String sourceAddress);
+
   Future<String> signTransaction(String unsignedTransaction, String privateKey,
       String sourceAddress, Map<String, Utxo> utxoMap);
 
