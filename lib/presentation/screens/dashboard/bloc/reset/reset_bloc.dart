@@ -9,6 +9,8 @@ import 'package:horizon/presentation/screens/dashboard/bloc/reset/reset_event.da
 import 'package:horizon/presentation/screens/dashboard/bloc/reset/reset_state.dart';
 import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 import 'package:logger/logger.dart';
+import 'package:horizon/domain/services/secure_kv_service.dart';
+import 'package:horizon/common/constants.dart';
 
 class ResetBloc extends Bloc<ResetEvent, ResetState> {
   final logger = Logger();
@@ -20,16 +22,18 @@ class ResetBloc extends Bloc<ResetEvent, ResetState> {
   final CacheProvider cacheProvider;
   final AnalyticsService analyticsService;
   final InMemoryKeyRepository inMemoryKeyRepository;
+  final SecureKVService kvService;
 
-  ResetBloc(
-      {required this.inMemoryKeyRepository,
-      required this.walletRepository,
-      required this.accountRepository,
-      required this.addressRepository,
-      required this.importedAddressRepository,
-      required this.analyticsService,
-      required this.cacheProvider})
-      : super(const ResetState()) {
+  ResetBloc({
+    required this.inMemoryKeyRepository,
+    required this.walletRepository,
+    required this.accountRepository,
+    required this.addressRepository,
+    required this.importedAddressRepository,
+    required this.analyticsService,
+    required this.cacheProvider,
+    required this.kvService,
+  }) : super(const ResetState()) {
     on<ResetEvent>(_onReset);
   }
 
@@ -40,7 +44,9 @@ class ResetBloc extends Bloc<ResetEvent, ResetState> {
     await addressRepository.deleteAllAddresses();
     await importedAddressRepository.deleteAllImportedAddresses();
 
+    // logout effects
     await inMemoryKeyRepository.delete();
+    await kvService.delete(key: kInactivityDeadlineKey);
 
     cacheProvider.removeAll();
 
