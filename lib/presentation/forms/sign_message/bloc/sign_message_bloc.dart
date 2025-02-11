@@ -1,3 +1,4 @@
+import 'package:floor/floor.dart';
 import "package:fpdart/fpdart.dart";
 import 'package:formz/formz.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -33,13 +34,9 @@ class SignMessageBloc extends Bloc<SignMessageEvent, SignMessageState> {
   final EncryptionService encryptionService;
   final AddressService addressService;
   final ImportedAddressService importedAddressService;
-  final BitcoindService bitcoindService;
-  final BitcoinRepository bitcoinRepository;
   final BalanceRepository balanceRepository;
   final UnifiedAddressRepository addressRepository;
   final AccountRepository accountRepository;
-  final Map<String, List<int>> signInputs;
-  final List<int>? sighashTypes;
   final InMemoryKeyRepository inMemoryKeyRepository;
 
   SignMessageBloc({
@@ -51,13 +48,9 @@ class SignMessageBloc extends Bloc<SignMessageEvent, SignMessageState> {
     required this.encryptionService,
     required this.addressService,
     required this.importedAddressService,
-    required this.bitcoindService,
     required this.balanceRepository,
-    required this.bitcoinRepository,
     required this.addressRepository,
     required this.accountRepository,
-    required this.signInputs,
-    required this.sighashTypes,
     required this.inMemoryKeyRepository,
   }) : super(SignMessageState()) {
     on<PasswordChanged>(_handlePasswordChanged);
@@ -78,6 +71,9 @@ class SignMessageBloc extends Bloc<SignMessageEvent, SignMessageState> {
   _handleSignMessageSubmitted(
       SignMessageSubmitted event, Emitter<SignMessageState> emit) async {
     try {
+
+      print("who dat");
+
       Wallet? wallet = await walletRepository.getCurrentWallet();
 
       if (wallet == null) {
@@ -109,8 +105,10 @@ class SignMessageBloc extends Bloc<SignMessageEvent, SignMessageState> {
           return;
         }
       }
+      
+      print("before sign");
 
-      final addressPrivKey = await addressRepository
+      dynamic signature = await addressRepository
           .get(address)
           .flatMap((UnifiedAddress unifiedAddress) => getUAddressPrivateKey(
                 passwordRequired
@@ -120,48 +118,22 @@ class SignMessageBloc extends Bloc<SignMessageEvent, SignMessageState> {
                 wallet.chainCodeHex,
                 unifiedAddress,
               ))
-          .match((error) => throw Exception("Could not find address: $address"),
-              (addressPrivateKey) => addressPrivateKey)
+          .map((addressPrivateKey) {
+              return  transactionService.signMessage(message, addressPrivateKey);
+            })
+          .match((error) => throw error,
+              (signature) => signature)
           .run();
 
+      print("signature $signature");
 
-      // sign the message
-
-      // Map<int, String> inputPrivateKeyMap = {};
-      //
-      // for (final entry in signInputs.entries) {
-      //   final address = entry.key;
-      //   final inputIndices = entry.value;
-      //
-      //   final result = await addressRepository
-      //       .get(address)
-      //       .flatMap((UnifiedAddress unifiedAddress) => getUAddressPrivateKey(
-      //             passwordRequired
-      //                 ? Password(state.password.value)
-      //                 : InMemoryKey(),
-      //             privateKey,
-      //             wallet.chainCodeHex,
-      //             unifiedAddress,
-      //           ))
-      //       .run();
-      //
-      //   result.fold(
-      //       (error) => throw Exception("Could not find address: $address"),
-      //       (addressPrivateKey) {
-      //     for (final index in inputIndices) {
-      //       inputPrivateKeyMap[index] = addressPrivateKey;
-      //     }
-      //   });
-      // }
-      //
-      // String signedHex = transactionService.signMessage(
-      //     unsignedMessage, inputPrivateKeyMap, sighashTypes);
-      //
-      // emit(state.copyWith(
-      //   signedMessage: signedHex,
-      //   submissionStatus: FormzSubmissionStatus.success,
-      // ));
-    } catch (e) {
+      emit(state.copyWith(
+        signature: "cool mon",
+        submissionStatus: FormzSubmissionStatus.success,
+      ));
+    } catch (e, callstack) {
+      print(callstack);
+      rethrow;
       emit(state.copyWith(
           submissionStatus: FormzSubmissionStatus.failure,
           error: e.toString()));
