@@ -71,6 +71,13 @@ class ActionRepositoryImpl implements ActionRepository {
       ] =>
         RPCSignPsbtAction(int.tryParse(tabId)!, requestId, psbt,
             _parseSignInputs(signInputs), null),
+      [
+        "signMessage:ext",
+        String tabId,
+        String requestId,
+        String message,
+      ] =>
+        RPCSignMessageAction(int.tryParse(tabId)!, requestId, message),
       _ => throw Exception()
     };
   }
