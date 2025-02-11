@@ -76,5 +76,6 @@ class RPCSignMessageAction extends RPCAction {
   @override
   CallerType get caller => CallerType.extension;
   final String message;
-  RPCSignMessageAction(super.tabId, super.requestId, this.message);
+  final String address;
+  RPCSignMessageAction(super.tabId, super.requestId, this.message, this.address);
 }
