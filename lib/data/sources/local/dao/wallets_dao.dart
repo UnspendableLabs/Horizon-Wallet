@@ -14,8 +14,19 @@ class WalletsDao extends DatabaseAccessor<DB> with _$WalletsDaoMixin {
       (select(wallets)..where((tbl) => tbl.uuid.equals(uuid)))
           .getSingleOrNull();
 
-  // TODO: get the actual current wallet
-  Future<WalletModel?> getCurrentWallet() => select(wallets).getSingleOrNull();
+  Future<WalletModel?> getCurrentWallet() async {
+    final wallets_ = await select(wallets).get();
+
+    if (wallets_.isEmpty) {
+      return null;
+    }
+
+    if (wallets_.length != 1) {
+      print("invariant: multiple wallets found");
+    }
+
+    return wallets_.first;
+  }
 
   Stream<WalletModel?> watchWalletByUuid(String uuid) =>
       (select(wallets)..where((tbl) => tbl.uuid.equals(uuid))).watchSingle();

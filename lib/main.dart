@@ -198,7 +198,7 @@ class AppRouter {
             builder: (context, state) {
               return const LoadingScreen();
             }),
-        if (true)
+        if (GetIt.instance<Config>().isDatabaseViewerEnabled)
           GoRoute(
             path: "/db",
             pageBuilder: (context, state) => CustomTransitionPage<void>(
