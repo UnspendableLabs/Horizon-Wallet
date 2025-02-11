@@ -76,8 +76,9 @@ class ActionRepositoryImpl implements ActionRepository {
         String tabId,
         String requestId,
         String message,
+        String address,
       ] =>
-        RPCSignMessageAction(int.tryParse(tabId)!, requestId, message),
+        RPCSignMessageAction(int.tryParse(tabId)!, requestId, message, address),
       _ => throw Exception()
     };
   }

@@ -1,90 +1,49 @@
 import 'package:formz/formz.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:horizon/presentation/forms/sign_psbt/bloc/sign_psbt_bloc.dart';
-import 'package:horizon/presentation/forms/sign_psbt/bloc/sign_psbt_state.dart';
-import 'package:horizon/presentation/forms/sign_psbt/bloc/sign_psbt_event.dart';
+import 'package:horizon/presentation/forms/sign_message/bloc/sign_message_bloc.dart';
+import 'package:horizon/presentation/forms/sign_message/bloc/sign_message_state.dart';
+import 'package:horizon/presentation/forms/sign_message/bloc/sign_message_event.dart';
 
-class SignPsbtForm extends StatefulWidget {
+class SignMessageForm extends StatefulWidget {
   final bool passwordRequired;
 
   final void Function(String) onSuccess;
 
-  const SignPsbtForm(
+  const SignMessageForm(
       {super.key, required this.onSuccess, required this.passwordRequired});
 
   @override
-  State<SignPsbtForm> createState() => _SignPsbtFormState();
+  State<SignMessageForm> createState() => _SignMessageFormState();
 }
 
-class _SignPsbtFormState extends State<SignPsbtForm> {
+class _SignMessageFormState extends State<SignMessageForm> {
   @override
   void initState() {
     super.initState();
-    context.read<SignPsbtBloc>().add(FetchFormEvent());
   }
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<SignPsbtBloc, SignPsbtState>(
+    return BlocListener<SignMessageBloc, SignMessageState>(
       listener: (context, state) {
         if (state.submissionStatus.isSuccess) {
-          widget.onSuccess(state.signedPsbt!);
+          widget.onSuccess(state.signature!);
         }
       },
-      child: BlocBuilder<SignPsbtBloc, SignPsbtState>(
+      child: BlocBuilder<SignMessageBloc, SignMessageState>(
         builder: (context, state) {
-          if (!state.isFormDataLoaded) {
-            // Display a loading indicator while data is being fetched
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
-          }
-
           return Padding(
             padding: const EdgeInsets.all(16.0),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text(
-                  'Transaction Details',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                if (state.parsedPsbtState != null) ...[
-                  if (state.parsedPsbtState!.psbtSignType ==
-                      PsbtSignTypeEnum.buy) ...[
-                    SelectableText(
-                      'Swap ${state.parsedPsbtState!.bitcoinAmount!.toStringAsFixed(8)} BTC for ${state.parsedPsbtState!.getAmount} ${state.parsedPsbtState!.asset}',
-                      style: const TextStyle(fontSize: 16),
-                    ),
-                    const SizedBox(height: 16),
-                    SelectableText(
-                      'TX fee: ${state.parsedPsbtState!.fee?.toStringAsFixed(8)} BTC',
-                      style: const TextStyle(fontSize: 16),
-                    ),
-                    const SizedBox(height: 8),
-                    SelectableText(
-                      'Total BTC to be sent: ${(state.parsedPsbtState!.fee! + state.parsedPsbtState!.bitcoinAmount!).toStringAsFixed(8)} BTC',
-                      style: const TextStyle(fontSize: 16),
-                    ),
-                  ] else ...[
-                    SelectableText(
-                      'Swap ${state.parsedPsbtState!.getAmount} ${state.parsedPsbtState!.asset} for ${state.parsedPsbtState!.bitcoinAmount!.toStringAsFixed(8)} BTC',
-                      style: const TextStyle(fontSize: 16),
-                    ),
-                  ],
-                ],
-
                 const SizedBox(height: 20),
                 // Password Field
                 if (widget.passwordRequired)
                   TextField(
                     onChanged: (password) => context
-                        .read<SignPsbtBloc>()
+                        .read<SignMessageBloc>()
                         .add(PasswordChanged(password)),
                     decoration: InputDecoration(
                       labelText: 'Password',
@@ -100,11 +59,12 @@ class _SignPsbtFormState extends State<SignPsbtForm> {
                 ElevatedButton(
                   onPressed: state.submissionStatus.isInProgressOrSuccess
                       ? null
-                      : () =>
-                          context.read<SignPsbtBloc>().add(SignPsbtSubmitted()),
+                      : () => context
+                          .read<SignMessageBloc>()
+                          .add(SignMessageSubmitted()),
                   child: state.submissionStatus.isInProgress
                       ? const CircularProgressIndicator()
-                      : const Text('Sign PSBT'),
+                      : const Text('Sign Message'),
                 ),
                 const SizedBox(height: 20),
                 // Status/Error Message
@@ -115,13 +75,13 @@ class _SignPsbtFormState extends State<SignPsbtForm> {
                   ),
                 ] else if (state.submissionStatus.isSuccess) ...[
                   const Text(
-                    'Transaction signed successfully!',
+                    'Signed message',
                     style: TextStyle(color: Colors.green),
                   ),
-                  // Show the signed PSBT if needed
-                  if (state.signedPsbt != null)
+                  // Show the signed MESSAGE if needed
+                  if (state.signature != null)
                     SelectableText(
-                      'Signed PSBT: ${state.signedPsbt}',
+                      'Signed MESSAGE: ${state.signature }',
                       style: const TextStyle(color: Colors.black),
                     ),
                 ],
