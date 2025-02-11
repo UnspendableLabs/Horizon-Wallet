@@ -198,7 +198,7 @@ class AppRouter {
             builder: (context, state) {
               return const LoadingScreen();
             }),
-        if (GetIt.instance<Config>().isDatabaseViewerEnabled)
+        if (true)
           GoRoute(
             path: "/db",
             pageBuilder: (context, state) => CustomTransitionPage<void>(
@@ -344,6 +344,11 @@ class AppRouter {
             onGoHome: () => context.go('/dashboard'),
           ),
       redirect: (context, state) async {
+
+        if (state.matchedLocation == "/db") {
+          return "/db";
+        }
+
         if (state.matchedLocation == "/privacy-policy") {
           return "/privacy-policy";
         }
