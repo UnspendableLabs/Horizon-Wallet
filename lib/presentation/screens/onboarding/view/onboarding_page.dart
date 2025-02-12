@@ -1,8 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:horizon/presentation/common/footer/view/footer.dart';
+import 'package:get_it/get_it.dart';
+import 'package:horizon/core/logging/logger.dart';
+import 'package:horizon/domain/repositories/account_repository.dart';
+import 'package:horizon/domain/repositories/address_repository.dart';
+import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/presentation/common/colors.dart';
+import 'package:horizon/presentation/common/footer/view/footer.dart';
+import 'package:horizon/presentation/screens/onboarding/bloc/onboarding_bloc.dart';
+import 'package:horizon/presentation/screens/onboarding/bloc/onboarding_events.dart';
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
+import 'package:horizon/remote_data_bloc/remote_data_state.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -13,9 +21,21 @@ class OnboardingScreen extends StatefulWidget {
 
 class OnboardingScreenState extends State<OnboardingScreen> {
   @override
-  void initState() {
-    super.initState();
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (context) => OnboardingBloc(
+        logger: GetIt.I.get<Logger>(),
+        walletRepository: GetIt.I.get<WalletRepository>(),
+        accountRepository: GetIt.I.get<AccountRepository>(),
+        addressRepository: GetIt.I.get<AddressRepository>(),
+      )..add(FetchOnboardingState()),
+      child: const OnboardingView(),
+    );
   }
+}
+
+class OnboardingView extends StatelessWidget {
+  const OnboardingView({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -116,69 +136,7 @@ class OnboardingScreenState extends State<OnboardingScreen> {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            SizedBox(
-                              width: 250,
-                              child: ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  elevation: 0,
-                                  backgroundColor:
-                                      leftSideBackgroundColor, // Background color
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 32, vertical: 16),
-                                  textStyle: const TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w700),
-                                ),
-                                onPressed: () {
-                                  final session =
-                                      context.read<SessionStateCubit>();
-                                  session.onOnboardingCreate();
-                                },
-                                child: Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Text(
-                                    'CREATE A NEW WALLET',
-                                    style: TextStyle(
-                                        color: isDarkMode
-                                            ? neonBlueDarkTheme
-                                            : mainTextWhite),
-                                  ),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 20),
-                            SizedBox(
-                              width: 250,
-                              child: ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                    overlayColor: noBackgroundColor,
-                                    elevation: 0,
-                                    backgroundColor: isDarkMode
-                                        ? noBackgroundColor
-                                        : backdropBackgroundColor,
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 32, vertical: 16),
-                                    textStyle: const TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w700,
-                                    )),
-                                onPressed: () {
-                                  final session =
-                                      context.read<SessionStateCubit>();
-                                  session.onOnboardingImport();
-                                },
-                                child: Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Text(
-                                    'LOAD SEED PHRASE',
-                                    style: TextStyle(
-                                        color: isDarkMode
-                                            ? mainTextGrey
-                                            : mainTextBlack),
-                                  ),
-                                ),
-                              ),
-                            ),
+                            _buildButtons(context, isDarkMode),
                           ],
                         ),
                       ),
@@ -245,64 +203,7 @@ class OnboardingScreenState extends State<OnboardingScreen> {
                               child: Column(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  ElevatedButton(
-                                    style: ElevatedButton.styleFrom(
-                                      elevation: 0,
-                                      backgroundColor: isDarkMode
-                                          ? navyDarkTheme
-                                          : whiteLightTheme,
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 32,
-                                        vertical: 16,
-                                      ),
-                                      textStyle: const TextStyle(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w700,
-                                      ),
-                                    ),
-                                    onPressed: () {
-                                      final session =
-                                          context.read<SessionStateCubit>();
-                                      session.onOnboardingCreate();
-                                    },
-                                    child: Text(
-                                      'CREATE A NEW WALLET',
-                                      style: TextStyle(
-                                        color: isDarkMode
-                                            ? neonBlueDarkTheme
-                                            : mainTextBlack,
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 20),
-                                  ElevatedButton(
-                                    style: ElevatedButton.styleFrom(
-                                      overlayColor: Colors.transparent,
-                                      elevation: 0,
-                                      backgroundColor: Colors.transparent,
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 32,
-                                        vertical: 16,
-                                      ),
-                                      textStyle: const TextStyle(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w700,
-                                      ),
-                                    ),
-                                    onPressed: () {
-                                      final session =
-                                          context.read<SessionStateCubit>();
-                                      session.onOnboardingImport();
-                                    },
-                                    child: Text(
-                                      'LOAD SEED PHRASE',
-                                      style: TextStyle(
-                                        color: isDarkMode
-                                            ? mainTextGrey
-                                            : mainTextWhite,
-                                      ),
-                                    ),
-                                  ),
+                                  _buildButtons(context, isDarkMode),
                                 ],
                               ),
                             ),
@@ -318,6 +219,105 @@ class OnboardingScreenState extends State<OnboardingScreen> {
           }
         },
       ),
+    );
+  }
+
+  Widget _buildButtons(BuildContext context, bool isDarkMode) {
+    // Get the colors again since we're in a different scope
+    final backdropBackgroundColor =
+        isDarkMode ? mediumNavyDarkTheme : lightBlueLightTheme;
+    final leftSideBackgroundColor =
+        isDarkMode ? lightNavyDarkTheme : royalBlueLightTheme;
+
+    return BlocBuilder<OnboardingBloc, RemoteDataState<bool>>(
+      builder: (context, state) {
+        final isDisabled = state.maybeWhen(
+              error: (_) => true,
+              orElse: () => false,
+            );
+
+        return Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            if (state.maybeWhen(
+              error: (message) => true,
+              orElse: () => false,
+            )) ...[
+              Text(
+                state.maybeWhen(
+                  error: (message) => message,
+                  orElse: () => '',
+                ),
+                style: const TextStyle(
+                  color: redErrorText,
+                  fontSize: 14,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 20),
+            ],
+            SizedBox(
+              width: 250,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  elevation: 0,
+                  backgroundColor: leftSideBackgroundColor,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                  textStyle: const TextStyle(
+                      fontSize: 12, fontWeight: FontWeight.w700),
+                ),
+                onPressed: isDisabled
+                    ? null
+                    : () {
+                        final session = context.read<SessionStateCubit>();
+                        session.onOnboardingCreate();
+                      },
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text(
+                    'CREATE A NEW WALLET',
+                    style: TextStyle(
+                        color: isDarkMode ? neonBlueDarkTheme : mainTextWhite),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            SizedBox(
+              width: 250,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                    overlayColor: noBackgroundColor,
+                    elevation: 0,
+                    backgroundColor: isDarkMode
+                        ? noBackgroundColor
+                        : backdropBackgroundColor,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 32, vertical: 16),
+                    textStyle: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                    )),
+                onPressed: isDisabled
+                    ? null
+                    : () {
+                        final session = context.read<SessionStateCubit>();
+                        session.onOnboardingImport();
+                      },
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text(
+                    'LOAD SEED PHRASE',
+                    style: TextStyle(
+                        color: isDarkMode ? mainTextGrey : mainTextBlack),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }
