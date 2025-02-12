@@ -489,7 +489,6 @@ class HorizonAppBarContent extends StatelessWidget {
                 BlocProvider(
                   create: (context) => ResetBloc(
                     kvService: GetIt.I.get<SecureKVService>(),
-
                     inMemoryKeyRepository: GetIt.I.get<InMemoryKeyRepository>(),
                     walletRepository: GetIt.I.get<WalletRepository>(),
                     accountRepository: GetIt.I.get<AccountRepository>(),
