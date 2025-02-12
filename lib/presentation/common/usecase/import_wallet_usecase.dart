@@ -24,6 +24,11 @@ class PasswordException implements Exception {
   PasswordException(this.message);
 }
 
+class MultipleWalletsException implements Exception {
+  final String message;
+  MultipleWalletsException(this.message);
+}
+
 // ImportWalletUseCase.call handles two wallet import types:
 
 // 1. Horizon Native:
@@ -350,6 +355,11 @@ class ImportWalletUseCase {
           throw UnimplementedError();
       }
 
+      final existingWallet = await walletRepository.getCurrentWallet();
+      if (existingWallet != null) {
+        throw MultipleWalletsException(onboardingErrorMessage);
+      }
+
       // insert wallet, accounts, and addresses
       await walletRepository.insert(wallet);
       for (var account in accountsWithBalances.keys) {
@@ -373,6 +383,8 @@ class ImportWalletUseCase {
       return;
     } catch (e) {
       if (e is PasswordException) {
+        onError(e.message);
+      } else if (e is MultipleWalletsException) {
         onError(e.message);
       } else {
         onError('An unexpected error occurred importing wallet');
@@ -415,6 +427,11 @@ class ImportWalletUseCase {
       change: '0',
       index: 0,
     );
+
+    final existingWallet = await walletRepository.getCurrentWallet();
+    if (existingWallet != null) {
+      throw MultipleWalletsException(onboardingErrorMessage);
+    }
 
     await walletRepository.insert(wallet);
     await accountRepository.insert(account0);

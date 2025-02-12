@@ -155,8 +155,16 @@ void main() {
           WalletType.horizon => horizonWallet,
           WalletType.bip32 => isFreewalletBip39 ? freewallet : counterwallet,
         };
+
+        int getCurrentWalletCallCount = 0;
         when(() => mockWalletRepository.getCurrentWallet())
-            .thenAnswer((_) async => currentWallet);
+            .thenAnswer((_) async {
+          getCurrentWalletCallCount++;
+          if (getCurrentWalletCallCount == 1) {
+            return null;
+          }
+          return currentWallet;
+        });
 
         // Mock Bitcoin repository to return transactions only for first few addresses
         var callCount = 0;
@@ -349,7 +357,7 @@ void main() {
             break;
         }
 
-        verify(() => mockWalletRepository.getCurrentWallet()).called(1);
+        verify(() => mockWalletRepository.getCurrentWallet()).called(2);
 
         verify(() => mockEncryptionService.getDecryptionKey(any(), any()))
             .called(1);
@@ -499,9 +507,14 @@ void main() {
           .thenAnswer((_) async => 'test-decryption-key');
 
       // Add mock for getCurrentWallet to return the freewallet (since that's what we end up using)
-      when(() => mockWalletRepository.getCurrentWallet())
-          .thenAnswer((_) async => freeWallet);
-
+      int getCurrentWalletCallCount = 0;
+      when(() => mockWalletRepository.getCurrentWallet()).thenAnswer((_) async {
+        getCurrentWalletCallCount++;
+        if (getCurrentWalletCallCount == 1) {
+          return null;
+        }
+        return freeWallet;
+      });
       // Mock address derivation for both types
       when(() => mockAddressService.deriveAddressFreewalletRange(
               type: AddressType.bech32,
@@ -604,7 +617,7 @@ void main() {
       verify(() => mockWalletRepository.insert(freeWallet)).called(1);
       verify(() => mockAccountRepository.insert(any())).called(1);
       verify(() => mockAddressRepository.insertMany(any())).called(1);
-      verify(() => mockWalletRepository.getCurrentWallet()).called(1);
+      verify(() => mockWalletRepository.getCurrentWallet()).called(2);
       verify(() => mockEncryptionService.getDecryptionKey(any(), any()))
           .called(1);
       verify(() => mockInMemoryKeyRepository.set(key: any(named: 'key')))
@@ -655,9 +668,14 @@ void main() {
           .thenAnswer((_) async => 'test-decryption-key');
 
       // Add mock for getCurrentWallet to return the freewallet (since that's what we end up using)
-      when(() => mockWalletRepository.getCurrentWallet())
-          .thenAnswer((_) async => counterwallet);
-
+      int getCurrentWalletCallCount = 0;
+      when(() => mockWalletRepository.getCurrentWallet()).thenAnswer((_) async {
+        getCurrentWalletCallCount++;
+        if (getCurrentWalletCallCount == 1) {
+          return null;
+        }
+        return counterwallet;
+      });
       // Mock address derivation for both types
       when(() => mockAddressService.deriveAddressFreewalletRange(
               type: AddressType.bech32,
@@ -730,7 +748,7 @@ void main() {
       verify(() => mockWalletRepository.insert(counterwallet)).called(1);
       verify(() => mockAccountRepository.insert(any())).called(1);
       verify(() => mockAddressRepository.insertMany(any())).called(1);
-      verify(() => mockWalletRepository.getCurrentWallet()).called(1);
+      verify(() => mockWalletRepository.getCurrentWallet()).called(2);
       verify(() => mockEncryptionService.getDecryptionKey(any(), any()))
           .called(1);
       verify(() => mockInMemoryKeyRepository.set(key: any(named: 'key')))
@@ -798,9 +816,185 @@ void main() {
       // Assert
       expect(errorCallbackInvoked, true);
       expect(errorMessage, 'An unexpected error occurred importing wallet');
-      verify(() => mockWalletRepository.getCurrentWallet()).called(1);
+      verify(() => mockWalletRepository.getCurrentWallet()).called(2);
       verifyNever(() => mockEncryptionService.getDecryptionKey(any(), any()));
       verifyNever(() => mockInMemoryKeyRepository.set(key: any(named: 'key')));
+    });
+
+    test('throws MultipleWalletsException when wallet already exists',
+        () async {
+      const mnemonic = 'test mnemonic phrase for import';
+      const password = 'testPassword';
+
+      const counterwallet = Wallet(
+          name: "Counterwallet",
+          uuid: 'counter-wallet-uuid',
+          publicKey: "counter-public-key",
+          encryptedPrivKey: 'counter-encrypted',
+          chainCodeHex: 'counter-chainCode');
+      const freewallet = Wallet(
+          name: "Freewallet",
+          uuid: 'free-wallet-uuid',
+          publicKey: "free-public-key",
+          encryptedPrivKey: 'free-encrypted',
+          chainCodeHex: 'free-chainCode');
+      const decryptedPrivKey = 'decrypted-private-key';
+
+      when(() => mockMnemonicService.validateMnemonic(any())).thenReturn(false);
+      when(() => mockMnemonicService.validateCounterwalletMnemonic(any()))
+          .thenReturn(true);
+      when(() => mockConfig.network).thenReturn(Network.mainnet);
+
+      // Mock Counterwallet derivation
+      when(() => mockWalletService.deriveRootCounterwallet(any(), any()))
+          .thenAnswer((_) async => counterwallet);
+
+      when(() => mockEncryptionService.decrypt(any(), any()))
+          .thenAnswer((_) async => decryptedPrivKey);
+      when(() => mockEncryptionService.getDecryptionKey(any(), any()))
+          .thenAnswer((_) async => 'test-decryption-key');
+
+      // mock getCurrentWallet to return an existing freewallet, which is invalid
+      when(() => mockWalletRepository.getCurrentWallet())
+          .thenAnswer((_) async => freewallet);
+
+      // Mock address derivation for both types
+      when(() => mockAddressService.deriveAddressFreewalletRange(
+              type: AddressType.bech32,
+              privKey: any(named: 'privKey'),
+              chainCodeHex: any(named: 'chainCodeHex'),
+              accountUuid: any(named: 'accountUuid'),
+              account: any(named: 'account'),
+              change: any(named: 'change'),
+              start: any(named: 'start'),
+              end: any(named: 'end')))
+          .thenAnswer((_) async => [
+                const Address(
+                    index: 0, address: "bc1q...", accountUuid: 'account-uuid')
+              ]);
+
+      when(() => mockAddressService.deriveAddressFreewalletRange(
+              type: AddressType.legacy,
+              privKey: any(named: 'privKey'),
+              chainCodeHex: any(named: 'chainCodeHex'),
+              accountUuid: any(named: 'accountUuid'),
+              account: any(named: 'account'),
+              change: any(named: 'change'),
+              start: any(named: 'start'),
+              end: any(named: 'end')))
+          .thenAnswer((_) async => [
+                const Address(
+                    index: 1, address: "1M...", accountUuid: 'account-uuid')
+              ]);
+
+      // Mock Bitcoin repository to return no transactions for Counterwallet addresses
+      // but return transactions for Freewallet addresses
+      when(() => mockBitcoinRepository.getTransactions(any()))
+          .thenAnswer((_) async {
+        return const Right([]);
+      });
+
+      when(() => mockEventsRepository.numEventsForAddresses(
+          addresses: any(named: 'addresses'))).thenAnswer((_) async => 0);
+
+      bool successCallbackInvoked = false;
+
+      bool errorCallbackInvoked = false;
+      String? errorMessage;
+
+      // Act
+      await importWalletUseCase.call(
+        password: password,
+        walletType: WalletType.bip32,
+        mnemonic: mnemonic,
+        onError: (error) {
+          errorCallbackInvoked = true;
+          errorMessage = error;
+        },
+        onSuccess: () {
+          successCallbackInvoked = true;
+        },
+      );
+
+      // Assert
+      expect(errorCallbackInvoked, true);
+      expect(successCallbackInvoked, false);
+      expect(errorMessage,
+          'Something went wrong while opening your wallet. Please reach out to support@unspendablelabs.com or the Horizon Telegram channel https://t.me/horizonxcp for support.');
+      verify(() => mockWalletRepository.getCurrentWallet()).called(1);
+      verifyNever(() => mockWalletRepository.insert(any()));
+      verifyNever(() => mockAccountRepository.insert(any()));
+      verifyNever(() => mockAddressRepository.insertMany(any()));
+    });
+
+    test(
+        'throws MultipleWalletsException when wallet already exists in callHorizon',
+        () async {
+      // Setup
+      const mnemonic = 'test mnemonic';
+      const password = 'test-password';
+      const wallet = Wallet(
+          name: "Test Wallet",
+          uuid: 'test-uuid',
+          publicKey: "test-public-key",
+          encryptedPrivKey: 'encrypted-key',
+          chainCodeHex: 'test-chain-code');
+      const decryptedPrivKey = 'decrypted-private-key';
+
+      when(() => mockConfig.network).thenReturn(Network.testnet);
+
+      // Mock deriveRoot to return the wallet
+      when(() => mockWalletService.deriveRoot(any(), any()))
+          .thenAnswer((_) async => wallet);
+
+      when(() => mockEncryptionService.decrypt(any(), any()))
+          .thenAnswer((_) async => decryptedPrivKey);
+
+      // Add mock for getCurrentWallet
+      when(() => mockWalletRepository.getCurrentWallet()).thenAnswer((_) async {
+        return wallet;
+      });
+
+      when(() => mockEncryptionService.getDecryptionKey(any(), any()))
+          .thenAnswer((_) async => 'test-decryption-key');
+
+      when(() => mockInMemoryKeyRepository.set(key: any(named: 'key')))
+          .thenAnswer((_) async {});
+
+      when(() => mockAddressService.deriveAddressSegwit(
+            privKey: any(named: 'privKey'),
+            chainCodeHex: any(named: 'chainCodeHex'),
+            accountUuid: any(named: 'accountUuid'),
+            purpose: '84\'',
+            coin: '1\'', // testnet
+            account: '0\'',
+            change: '0',
+            index: 0,
+          )).thenAnswer((_) async => const Address(
+            index: 0,
+            address: "tb1q_test_address",
+            accountUuid: 'test-uuid',
+          ));
+
+      try {
+        // Act
+        await importWalletUseCase.callHorizon(
+          password: password,
+          mnemonic: mnemonic,
+          deriveWallet: mockWalletService.deriveRoot,
+        );
+      } catch (e) {
+        expect(e, isA<MultipleWalletsException>());
+        expect((e as MultipleWalletsException).message,
+            'Something went wrong while opening your wallet. Please reach out to support@unspendablelabs.com or the Horizon Telegram channel https://t.me/horizonxcp for support.');
+      }
+
+      // Assert
+
+      verify(() => mockWalletRepository.getCurrentWallet()).called(1);
+      verifyNever(() => mockWalletRepository.insert(any()));
+      verifyNever(() => mockAccountRepository.insert(any()));
+      verifyNever(() => mockAddressRepository.insert(any()));
     });
   });
 
@@ -1552,9 +1746,14 @@ void main() {
         .thenAnswer((_) async => 'test-decryption-key');
 
     // Add mock for getCurrentWallet to return the freewallet (since that's what we end up using)
-    when(() => mockWalletRepository.getCurrentWallet())
-        .thenAnswer((_) async => counterwallet);
-
+    int callCount = 0;
+    when(() => mockWalletRepository.getCurrentWallet()).thenAnswer((_) async {
+      callCount++;
+      if (callCount == 1) {
+        return null;
+      }
+      return counterwallet;
+    });
     // Mock address derivation for both types
     when(() => mockAddressService.deriveAddressFreewalletRange(
             type: AddressType.bech32,
@@ -1646,9 +1845,14 @@ void main() {
         .thenAnswer((_) async => 'test-decryption-key');
 
     // Add mock for getCurrentWallet to return the freewallet (since that's what we end up using)
-    when(() => mockWalletRepository.getCurrentWallet())
-        .thenAnswer((_) async => freewallet);
-
+    int callCount = 0;
+    when(() => mockWalletRepository.getCurrentWallet()).thenAnswer((_) async {
+      callCount++;
+      if (callCount == 1) {
+        return null;
+      }
+      return freewallet;
+    });
     // Mock address derivation for both types
     when(() => mockAddressService.deriveAddressFreewalletRange(
             type: AddressType.bech32,
@@ -1733,8 +1937,14 @@ void main() {
           .thenAnswer((_) async => decryptedPrivKey);
 
       // Add mock for getCurrentWallet
-      when(() => mockWalletRepository.getCurrentWallet())
-          .thenAnswer((_) async => wallet);
+      int callCount = 0;
+      when(() => mockWalletRepository.getCurrentWallet()).thenAnswer((_) async {
+        callCount++;
+        if (callCount == 1) {
+          return null;
+        }
+        return wallet;
+      });
 
       when(() => mockEncryptionService.getDecryptionKey(any(), any()))
           .thenAnswer((_) async => 'test-decryption-key');
@@ -1788,7 +1998,7 @@ void main() {
 
       verify(() => mockAddressRepository.insert(any())).called(1);
 
-      verify(() => mockWalletRepository.getCurrentWallet()).called(1);
+      verify(() => mockWalletRepository.getCurrentWallet()).called(2);
       verify(() => mockEncryptionService.getDecryptionKey(
           wallet.encryptedPrivKey, password)).called(1);
       verify(() => mockInMemoryKeyRepository.set(key: 'test-decryption-key'))
@@ -1850,9 +2060,14 @@ void main() {
         .thenAnswer((_) async => decryptedPrivKey);
 
     // Mock getCurrentWallet
-    when(() => mockWalletRepository.getCurrentWallet())
-        .thenAnswer((_) async => wallet);
-
+    int getCurrentWalletCallCount = 0;
+    when(() => mockWalletRepository.getCurrentWallet()).thenAnswer((_) async {
+      getCurrentWalletCallCount++;
+      if (getCurrentWalletCallCount == 1) {
+        return null;
+      }
+      return wallet;
+    });
     when(() => mockEncryptionService.getDecryptionKey(any(), any()))
         .thenAnswer((_) async => 'test-decryption-key');
 
@@ -1942,9 +2157,14 @@ void main() {
         .thenAnswer((_) async => decryptedPrivKey);
 
     // Mock getCurrentWallet
-    when(() => mockWalletRepository.getCurrentWallet())
-        .thenAnswer((_) async => wallet);
-
+    int getCurrentWalletCallCount = 0;
+    when(() => mockWalletRepository.getCurrentWallet()).thenAnswer((_) async {
+      getCurrentWalletCallCount++;
+      if (getCurrentWalletCallCount == 1) {
+        return null;
+      }
+      return wallet;
+    });
     when(() => mockEncryptionService.getDecryptionKey(any(), any()))
         .thenAnswer((_) async => 'test-decryption-key');
 
@@ -2044,9 +2264,14 @@ void main() {
         .thenAnswer((_) async => decryptedPrivKey);
 
     // Mock getCurrentWallet
-    when(() => mockWalletRepository.getCurrentWallet())
-        .thenAnswer((_) async => wallet);
-
+    int getCurrentWalletCallCount = 0;
+    when(() => mockWalletRepository.getCurrentWallet()).thenAnswer((_) async {
+      getCurrentWalletCallCount++;
+      if (getCurrentWalletCallCount == 1) {
+        return null;
+      }
+      return wallet;
+    });
     when(() => mockEncryptionService.getDecryptionKey(any(), any()))
         .thenAnswer((_) async => 'test-decryption-key');
 
@@ -2143,8 +2368,14 @@ void main() {
         .thenAnswer((_) async => wallet);
     when(() => mockEncryptionService.decrypt(any(), any()))
         .thenAnswer((_) async => decryptedPrivKey);
-    when(() => mockWalletRepository.getCurrentWallet())
-        .thenAnswer((_) async => wallet);
+    int callCount = 0;
+    when(() => mockWalletRepository.getCurrentWallet()).thenAnswer((_) async {
+      callCount++;
+      if (callCount == 1) {
+        return null;
+      }
+      return wallet;
+    });
     when(() => mockEncryptionService.getDecryptionKey(any(), any()))
         .thenAnswer((_) async => 'test-decryption-key');
     when(() => mockInMemoryKeyRepository.set(key: any(named: 'key')))
@@ -2254,8 +2485,14 @@ void main() {
         .thenAnswer((_) async => wallet);
     when(() => mockEncryptionService.decrypt(any(), any()))
         .thenAnswer((_) async => decryptedPrivKey);
-    when(() => mockWalletRepository.getCurrentWallet())
-        .thenAnswer((_) async => wallet);
+    int callCount = 0;
+    when(() => mockWalletRepository.getCurrentWallet()).thenAnswer((_) async {
+      callCount++;
+      if (callCount == 1) {
+        return null;
+      }
+      return wallet;
+    });
     when(() => mockEncryptionService.getDecryptionKey(any(), any()))
         .thenAnswer((_) async => 'test-decryption-key');
 
@@ -2376,8 +2613,14 @@ void main() {
         .thenAnswer((_) async => wallet);
     when(() => mockEncryptionService.decrypt(any(), any()))
         .thenAnswer((_) async => decryptedPrivKey);
-    when(() => mockWalletRepository.getCurrentWallet())
-        .thenAnswer((_) async => wallet);
+    int callCount = 0;
+    when(() => mockWalletRepository.getCurrentWallet()).thenAnswer((_) async {
+      callCount++;
+      if (callCount == 1) {
+        return null;
+      }
+      return wallet;
+    });
     when(() => mockEncryptionService.getDecryptionKey(any(), any()))
         .thenAnswer((_) async => 'test-decryption-key');
 
