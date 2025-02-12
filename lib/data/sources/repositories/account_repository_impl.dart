@@ -82,7 +82,7 @@ class AccountRepositoryImpl implements AccountRepository {
   }
 
   @override
-  Future<List<entity.Account>> getAllAccounts() async {
+  Future<List<entity.Account>> getAll() async {
     List<AccountModel> accounts = await _accountDao.getAllAccounts();
     return accounts
         .map((account) => entity.Account(

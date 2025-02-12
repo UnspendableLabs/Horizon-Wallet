@@ -35,7 +35,7 @@ class OnboardingBloc extends Bloc<OnboardingEvent, RemoteDataState<bool>> {
         return;
       }
 
-      final accounts = await accountRepository.getAllAccounts();
+      final accounts = await accountRepository.getAll();
       if (accounts.isNotEmpty) {
         emit(const RemoteDataState.error(onboardingErrorMessage));
         return;
@@ -50,6 +50,8 @@ class OnboardingBloc extends Bloc<OnboardingEvent, RemoteDataState<bool>> {
       emit(const RemoteDataState.success(true));
     } catch (e) {
       logger.error('Error fetching onboarding state: $e');
+      emit(const RemoteDataState.error(
+          'An unexpected error occurred. Please try again.'));
     }
   }
 }
