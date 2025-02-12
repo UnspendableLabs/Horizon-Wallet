@@ -153,13 +153,6 @@ class TransactionServiceImpl implements TransactionService {
       
       final String b64 = base64Encode(signature);
 
-
-      print("b64 $b64");
-
-      final verified = bitcoinMessage.verify(message, "tb1q4zepxe42rkhq00l72tzk73seuqw9ydckgynzv5", signatureBuf);
-
-      print("verified $verified");
-
       return b64;
 
   }

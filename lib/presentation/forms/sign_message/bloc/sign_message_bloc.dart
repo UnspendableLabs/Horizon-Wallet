@@ -72,8 +72,6 @@ class SignMessageBloc extends Bloc<SignMessageEvent, SignMessageState> {
       SignMessageSubmitted event, Emitter<SignMessageState> emit) async {
     try {
 
-      print("who dat");
-
       Wallet? wallet = await walletRepository.getCurrentWallet();
 
       if (wallet == null) {
@@ -106,7 +104,6 @@ class SignMessageBloc extends Bloc<SignMessageEvent, SignMessageState> {
         }
       }
       
-      print("before sign");
 
       dynamic signature = await addressRepository
           .get(address)
@@ -125,15 +122,12 @@ class SignMessageBloc extends Bloc<SignMessageEvent, SignMessageState> {
               (signature) => signature)
           .run();
 
-      print("signature $signature");
 
       emit(state.copyWith(
-        signature: "cool mon",
+        signature: signature,
         submissionStatus: FormzSubmissionStatus.success,
       ));
     } catch (e, callstack) {
-      print(callstack);
-      rethrow;
       emit(state.copyWith(
           submissionStatus: FormzSubmissionStatus.failure,
           error: e.toString()));
