@@ -1,5 +1,8 @@
+import 'dart:math' show pi, sin;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
@@ -110,11 +113,7 @@ class OnboardingView extends StatelessWidget {
                               ],
                             ),
                             Expanded(
-                              child: Image.asset(
-                                'assets/logo-blue-3d.png',
-                                width: 800,
-                                height: 800,
-                              ),
+                              child: AnimatedLogo(isDarkMode: isDarkMode),
                             ),
                           ],
                         ),
@@ -191,10 +190,7 @@ class OnboardingView extends StatelessWidget {
                               child: Padding(
                                 padding:
                                     const EdgeInsets.symmetric(horizontal: 16),
-                                child: Image.asset(
-                                  'assets/logo-blue-3d.png',
-                                  fit: BoxFit.contain,
-                                ),
+                                child: AnimatedLogo(isDarkMode: isDarkMode),
                               ),
                             ),
                             Container(
@@ -315,6 +311,113 @@ class OnboardingView extends StatelessWidget {
               ),
             ),
           ],
+        );
+      },
+    );
+  }
+}
+
+class AnimatedLogo extends StatefulWidget {
+  final bool isDarkMode;
+
+  const AnimatedLogo({super.key, required this.isDarkMode});
+
+  @override
+  State<AnimatedLogo> createState() => _AnimatedLogoState();
+}
+
+class _AnimatedLogoState extends State<AnimatedLogo>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+
+  // Define color stops for both themes
+  final List<Color> darkModeColors = [
+    const Color(0xFFDFD9BF),
+    const Color(0xFFEED09A),
+    const Color(0xFFEEB395),
+    const Color(0xFFE9A7AF),
+    const Color(0xFF9B86D7),
+    const Color(0xFF509FC0),
+    const Color(0xFF7DC2BC),
+  ];
+
+  final List<Color> lightModeColors = [
+    const Color(0xFF5D2B3B),
+    const Color(0xFF2F1C46),
+    const Color(0xFF1B1F38),
+    const Color(0xFF0B102C),
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(
+          seconds: 6), // Increased duration for smoother transition
+      vsync: this,
+    );
+
+    // Start the animation after a frame to ensure proper initialization
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _controller.repeat(reverse: true);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.stop();
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  void didUpdateWidget(AnimatedLogo oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (mounted && !_controller.isAnimating) {
+      _controller.repeat(reverse: true);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!mounted) return const SizedBox.shrink();
+
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, child) {
+        return ShaderMask(
+          shaderCallback: (Rect bounds) {
+            final colors = widget.isDarkMode ? darkModeColors : lightModeColors;
+            final baseStops = widget.isDarkMode
+                ? [0.003, 0.1276, 0.2572, 0.4068, 0.6062, 0.8155, 1.0]
+                : [0.0, 0.326, 0.652, 0.9879];
+
+            // Create interpolated stops based on animation value
+            final shiftedStops = baseStops.map((stop) {
+              // Use sine function to create smooth back-and-forth movement
+              final shift = sin(_controller.value * pi) *
+                  0.2; // Adjust 0.2 to control movement amount
+              return (stop + shift).clamp(0.0, 1.0);
+            }).toList();
+
+            return LinearGradient(
+              begin: const Alignment(-0.2, -1.0),
+              end: const Alignment(0.2, 1.0),
+              colors: colors,
+              stops: shiftedStops,
+              transform: widget.isDarkMode
+                  ? const GradientRotation(170.88 * pi / 180)
+                  : const GradientRotation(139.18 * pi / 180),
+            ).createShader(bounds);
+          },
+          child: SvgPicture.asset(
+            widget.isDarkMode
+                ? 'assets/horizon-H-dark-mode.svg'
+                : 'assets/horizon-H-light-mode.svg',
+            fit: BoxFit.contain,
+          ),
         );
       },
     );

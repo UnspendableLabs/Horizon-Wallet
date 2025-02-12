@@ -123,6 +123,8 @@ flutter:
     - assets/logo-black.svg
     - assets/logo-white.svg
     - assets/logo-blue-3d.png
+    - assets/horizon-H-dark-mode.svg
+    - assets/horizon-H-light-mode.svg
     - fonts/
 
   #   - .env
