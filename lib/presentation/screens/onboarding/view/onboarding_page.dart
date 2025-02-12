@@ -13,7 +13,6 @@ import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/screens/onboarding/bloc/onboarding_bloc.dart';
 import 'package:horizon/presentation/screens/onboarding/bloc/onboarding_events.dart';
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
-import 'package:horizon/remote_data_bloc/remote_data_state.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -170,7 +169,108 @@ class OnboardingView extends StatelessWidget {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            _buildButtons(context, isDarkMode),
+                            Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                SizedBox(
+                                  width: double.infinity,
+                                  height: 62,
+                                  child: DecoratedBox(
+                                    decoration: BoxDecoration(
+                                      gradient: LinearGradient(
+                                        begin: Alignment.centerLeft,
+                                        end: Alignment.centerRight,
+                                        colors: isDarkMode
+                                            ? const [
+                                                createButtonDarkGradient1,
+                                                createButtonDarkGradient2,
+                                                createButtonDarkGradient3,
+                                                createButtonDarkGradient4,
+                                              ]
+                                            : const [
+                                                createButtonLightGradient1,
+                                                createButtonLightGradient2,
+                                                createButtonLightGradient3,
+                                                createButtonLightGradient4,
+                                              ],
+                                        stops: isDarkMode
+                                            ? const [0.0, 0.325, 0.65, 1.0]
+                                            : const [0.0, 0.326, 0.652, 0.9879],
+                                        transform: isDarkMode
+                                            ? null
+                                            : const GradientRotation(
+                                                139.18 * pi / 180),
+                                      ),
+                                      borderRadius: BorderRadius.circular(50),
+                                    ),
+                                    child: ElevatedButton(
+                                      style: ElevatedButton.styleFrom(
+                                        elevation: 0,
+                                        backgroundColor: Colors.transparent,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(50),
+                                        ),
+                                        padding: const EdgeInsets.all(20),
+                                      ),
+                                      onPressed: () {
+                                        final session =
+                                            context.read<SessionStateCubit>();
+                                        session.onOnboardingCreate();
+                                      },
+                                      child: Text(
+                                        'CREATE A NEW WALLET',
+                                        style: TextStyle(
+                                          color: isDarkMode
+                                              ? Colors.black
+                                              : Colors.white,
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w800,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 10),
+                                SizedBox(
+                                  width: double.infinity,
+                                  height: 62,
+                                  child: ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                      elevation: 0,
+                                      backgroundColor: isDarkMode
+                                          ? importButtonDarkBackground
+                                          : Colors.transparent,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(50),
+                                        side: isDarkMode
+                                            ? BorderSide.none
+                                            : BorderSide(
+                                                width: 1,
+                                                color: Colors.black,
+                                              ),
+                                      ),
+                                      padding: const EdgeInsets.all(20),
+                                    ),
+                                    onPressed: () {
+                                      final session =
+                                          context.read<SessionStateCubit>();
+                                      session.onOnboardingImport();
+                                    },
+                                    child: Text(
+                                      'LOAD SEED PHRASE',
+                                      style: TextStyle(
+                                        color: isDarkMode
+                                            ? Colors.white
+                                            : Colors.black,
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
                           ],
                         ),
                       ),
@@ -180,101 +280,184 @@ class OnboardingView extends StatelessWidget {
               ],
             );
           } else {
-            return SizedBox(
-              height: constraints.maxHeight,
-              width: constraints.maxWidth,
-              child: SingleChildScrollView(
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(
-                    minHeight: constraints.maxHeight,
-                  ),
-                  child: IntrinsicHeight(
-                    child: Padding(
-                      padding: const EdgeInsets.only(top: 16),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: leftSideBackgroundColor,
-                          borderRadius: BorderRadius.circular(30.0),
-                        ),
-                        child: Column(
-                          children: [
-                            const SizedBox(height: 12),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
-                                  'Horizon',
-                                  style: TextStyle(
-                                    color: isDarkMode
-                                        ? Colors.white
-                                        : Colors.black,
-                                    fontSize: 32.0,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                                ShaderMask(
-                                  shaderCallback: (Rect bounds) {
-                                    final colors = isDarkMode
-                                        ? _getDarkModeColors()
-                                        : _getLightModeColors();
-                                    final stops = isDarkMode
-                                        ? [
-                                            0.003,
-                                            0.1276,
-                                            0.2572,
-                                            0.4068,
-                                            0.6062,
-                                            0.8155,
-                                            1.0
-                                          ]
-                                        : [0.0, 0.326, 0.652, 0.9879];
+            return SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: SizedBox(
+                  height: MediaQuery.of(context).size.height -
+                      MediaQuery.of(context).padding.top -
+                      MediaQuery.of(context).padding.bottom,
+                  child: Column(
+                    children: [
+                      const SizedBox(height: 48),
+                      Column(
+                        children: [
+                          Text(
+                            'Horizon',
+                            style: TextStyle(
+                              color: isDarkMode ? Colors.white : Colors.black,
+                              fontSize: 32.0,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          ShaderMask(
+                            shaderCallback: (Rect bounds) {
+                              final colors = isDarkMode
+                                  ? _getDarkModeColors()
+                                  : _getLightModeColors();
+                              final stops = isDarkMode
+                                  ? [
+                                      0.003,
+                                      0.1276,
+                                      0.2572,
+                                      0.4068,
+                                      0.6062,
+                                      0.8155,
+                                      1.0
+                                    ]
+                                  : [0.0, 0.326, 0.652, 0.9879];
 
-                                    return LinearGradient(
-                                      begin: const Alignment(-0.2, -1.0),
-                                      end: const Alignment(0.2, 1.0),
-                                      colors: colors,
-                                      stops: stops,
-                                      transform: isDarkMode
-                                          ? const GradientRotation(
-                                              170.88 * pi / 180)
-                                          : const GradientRotation(
-                                              139.18 * pi / 180),
-                                    ).createShader(bounds);
-                                  },
-                                  child: const Text(
-                                    'Wallet',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 32.0,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            Expanded(
-                              child: Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 16),
-                                child: AnimatedLogo(isDarkMode: isDarkMode),
+                              return LinearGradient(
+                                begin: const Alignment(-0.2, -1.0),
+                                end: const Alignment(0.2, 1.0),
+                                colors: colors,
+                                stops: stops,
+                                transform: isDarkMode
+                                    ? const GradientRotation(170.88 * pi / 180)
+                                    : const GradientRotation(139.18 * pi / 180),
+                              ).createShader(bounds);
+                            },
+                            child: const Text(
+                              'Wallet',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 32.0,
+                                fontWeight: FontWeight.w600,
                               ),
                             ),
-                            Container(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 32),
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  _buildButtons(context, isDarkMode),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(height: 30),
-                          ],
+                          ),
+                        ],
+                      ),
+                      const Expanded(
+                        flex: 1,
+                        child: SizedBox(),
+                      ),
+                      SizedBox(
+                        height: 116,
+                        child: Center(
+                          child: AspectRatio(
+                            aspectRatio: 109 / 116,
+                            child: AnimatedLogo(isDarkMode: isDarkMode),
+                          ),
                         ),
                       ),
-                    ),
+                      const Expanded(
+                        flex: 1,
+                        child: SizedBox(),
+                      ),
+                      Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          SizedBox(
+                            width: double.infinity,
+                            height: 62,
+                            child: DecoratedBox(
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  begin: Alignment.centerLeft,
+                                  end: Alignment.centerRight,
+                                  colors: isDarkMode
+                                      ? const [
+                                          createButtonDarkGradient1,
+                                          createButtonDarkGradient2,
+                                          createButtonDarkGradient3,
+                                          createButtonDarkGradient4,
+                                        ]
+                                      : const [
+                                          createButtonLightGradient1,
+                                          createButtonLightGradient2,
+                                          createButtonLightGradient3,
+                                          createButtonLightGradient4,
+                                        ],
+                                  stops: isDarkMode
+                                      ? const [0.0, 0.325, 0.65, 1.0]
+                                      : const [0.0, 0.326, 0.652, 0.9879],
+                                  transform: isDarkMode
+                                      ? null
+                                      : const GradientRotation(
+                                          139.18 * pi / 180),
+                                ),
+                                borderRadius: BorderRadius.circular(50),
+                              ),
+                              child: ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  elevation: 0,
+                                  backgroundColor: Colors.transparent,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(50),
+                                  ),
+                                  padding: const EdgeInsets.all(20),
+                                ),
+                                onPressed: () {
+                                  final session =
+                                      context.read<SessionStateCubit>();
+                                  session.onOnboardingCreate();
+                                },
+                                child: Text(
+                                  'CREATE A NEW WALLET',
+                                  style: TextStyle(
+                                    color: isDarkMode
+                                        ? Colors.black
+                                        : Colors.white,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          SizedBox(
+                            width: double.infinity,
+                            height: 62,
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                elevation: 0,
+                                backgroundColor: isDarkMode
+                                    ? importButtonDarkBackground
+                                    : Colors.transparent,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(50),
+                                  side: isDarkMode
+                                      ? BorderSide.none
+                                      : BorderSide(
+                                          width: 1,
+                                          color: Colors.black,
+                                        ),
+                                ),
+                                padding: const EdgeInsets.all(20),
+                              ),
+                              onPressed: () {
+                                final session =
+                                    context.read<SessionStateCubit>();
+                                session.onOnboardingImport();
+                              },
+                              child: Text(
+                                'LOAD SEED PHRASE',
+                                style: TextStyle(
+                                  color:
+                                      isDarkMode ? Colors.white : Colors.black,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 32),
+                        ],
+                      ),
+                      const SizedBox(height: 48),
+                    ],
                   ),
                 ),
               ),
@@ -282,133 +465,6 @@ class OnboardingView extends StatelessWidget {
           }
         },
       ),
-    );
-  }
-
-  Widget _buildButtons(BuildContext context, bool isDarkMode) {
-    return BlocBuilder<OnboardingBloc, RemoteDataState<bool>>(
-      builder: (context, state) {
-        final isDisabled = state.maybeWhen(
-          error: (_) => true,
-          orElse: () => false,
-        );
-
-        return Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            if (state.maybeWhen(
-              error: (message) => true,
-              orElse: () => false,
-            )) ...[
-              SelectableText(
-                state.maybeWhen(
-                  error: (message) => message,
-                  orElse: () => '',
-                ),
-                style: const TextStyle(
-                  color: Colors.red,
-                  fontSize: 14,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 20),
-            ],
-            SizedBox(
-              width: 250,
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.centerLeft,
-                    end: Alignment.centerRight,
-                    colors: isDarkMode
-                        ? const [
-                            createButtonDarkGradient1,
-                            createButtonDarkGradient2,
-                            createButtonDarkGradient3,
-                            createButtonDarkGradient4,
-                          ]
-                        : const [
-                            createButtonLightGradient1,
-                            createButtonLightGradient2,
-                            createButtonLightGradient3,
-                            createButtonLightGradient4,
-                          ],
-                    stops: isDarkMode
-                        ? const [0.0, 0.325, 0.65, 1.0]
-                        : const [0.0, 0.326, 0.652, 0.9879],
-                    transform: isDarkMode
-                        ? null
-                        : const GradientRotation(139.18 * pi / 180),
-                  ),
-                  borderRadius: BorderRadius.circular(28),
-                ),
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    elevation: 0,
-                    backgroundColor: Colors.transparent,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(28),
-                    ),
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 32, vertical: 16),
-                    textStyle: const TextStyle(
-                        fontSize: 12, fontWeight: FontWeight.w700),
-                  ),
-                  onPressed: isDisabled
-                      ? null
-                      : () {
-                          final session = context.read<SessionStateCubit>();
-                          session.onOnboardingCreate();
-                        },
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Text(
-                      'CREATE A NEW WALLET',
-                      style: TextStyle(
-                        color: isDarkMode ? Colors.black : Colors.white,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 20),
-            SizedBox(
-              width: 250,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  overlayColor: Colors.transparent,
-                  elevation: 0,
-                  backgroundColor: isDarkMode
-                      ? importButtonDarkBackground
-                      : Colors.transparent,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                  textStyle: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                onPressed: isDisabled
-                    ? null
-                    : () {
-                        final session = context.read<SessionStateCubit>();
-                        session.onOnboardingImport();
-                      },
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Text(
-                    'LOAD SEED PHRASE',
-                    style: TextStyle(
-                      color: isDarkMode ? Colors.white : Colors.black,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        );
-      },
     );
   }
 
