@@ -11,19 +11,15 @@ import 'package:pub_semver/pub_semver.dart';
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
-  // Enable this to report test results back to the host
-
   group('Onboarding Validation Tests', () {
     setUpAll(() async {
       setup();
-      // await initSettings();
     });
 
     tearDown(() async {
       // Clean up after each test
       await GetIt.I.get<WalletRepository>().deleteAllWallets();
       GetIt.I.reset();
-      // Settings.clearCache();
     });
 
     testWidgets('buttons should be disabled when wallet exists',

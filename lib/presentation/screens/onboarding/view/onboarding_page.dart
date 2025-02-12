@@ -223,7 +223,6 @@ class OnboardingView extends StatelessWidget {
   }
 
   Widget _buildButtons(BuildContext context, bool isDarkMode) {
-    // Get the colors again since we're in a different scope
     final backdropBackgroundColor =
         isDarkMode ? mediumNavyDarkTheme : lightBlueLightTheme;
     final leftSideBackgroundColor =

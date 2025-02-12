@@ -840,7 +840,6 @@ void main() {
           chainCodeHex: 'free-chainCode');
       const decryptedPrivKey = 'decrypted-private-key';
 
-      // Change these from thenAnswer to thenReturn
       when(() => mockMnemonicService.validateMnemonic(any())).thenReturn(false);
       when(() => mockMnemonicService.validateCounterwalletMnemonic(any()))
           .thenReturn(true);
