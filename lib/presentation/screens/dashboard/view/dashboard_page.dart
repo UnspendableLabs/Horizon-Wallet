@@ -40,6 +40,10 @@ import 'package:horizon/presentation/forms/get_addresses/bloc/get_addresses_bloc
 import 'package:horizon/presentation/forms/get_addresses/view/get_addresses_form.dart';
 import 'package:horizon/presentation/forms/sign_psbt/bloc/sign_psbt_bloc.dart';
 import 'package:horizon/presentation/forms/sign_psbt/view/sign_psbt_form.dart';
+
+import 'package:horizon/presentation/forms/sign_message/bloc/sign_message_bloc.dart';
+import 'package:horizon/presentation/forms/sign_message/view/sign_message_form.dart';
+
 import 'package:horizon/presentation/screens/close_dispenser/view/close_dispenser_page.dart';
 import 'package:horizon/presentation/screens/compose_cancel/view/compose_cancel_view.dart';
 import 'package:horizon/presentation/screens/compose_destroy/view/compose_destroy_page.dart';
@@ -69,6 +73,76 @@ import 'package:qr_flutter/qr_flutter.dart';
 import 'package:sliver_tools/sliver_tools.dart';
 import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
 import 'package:horizon/domain/repositories/settings_repository.dart';
+
+class SignMessageModal extends StatelessWidget {
+  final int tabId;
+  final String requestId;
+  final String message;
+  final String address;
+  final TransactionService transactionService;
+  final WalletRepository walletRepository;
+  final EncryptionService encryptionService;
+  final AddressService addressService;
+  final BitcoindService bitcoindService;
+  final BalanceRepository balanceRepository;
+  final RPCSignMessageSuccessCallback onSuccess;
+  final ImportedAddressService importedAddressService;
+  final UnifiedAddressRepository addressRepository;
+  final AccountRepository accountRepository;
+  final BitcoinRepository bitcoinRepository;
+
+  const SignMessageModal(
+      {super.key,
+      required this.message,
+      required this.address,
+      required this.transactionService,
+      required this.walletRepository,
+      required this.encryptionService,
+      required this.addressService,
+      required this.bitcoindService,
+      required this.balanceRepository,
+      required this.tabId,
+      required this.requestId,
+      required this.onSuccess,
+      required this.importedAddressService,
+      required this.addressRepository,
+      required this.accountRepository,
+      required this.bitcoinRepository});
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (_) => SignMessageBloc(
+        address: address,
+        passwordRequired:
+            GetIt.I<SettingsRepository>().requirePasswordForCryptoOperations,
+        inMemoryKeyRepository: GetIt.I<InMemoryKeyRepository>(),
+        addressRepository: addressRepository,
+        importedAddressService: importedAddressService,
+        message: message,
+        transactionService: transactionService,
+        balanceRepository: balanceRepository,
+        walletRepository: walletRepository,
+        encryptionService: encryptionService,
+        addressService: addressService,
+        accountRepository: accountRepository,
+      ),
+      child: SignMessageForm(
+        key: Key(message),
+        passwordRequired:
+            GetIt.I<SettingsRepository>().requirePasswordForCryptoOperations,
+        onSuccess: (signature) {
+          onSuccess(RPCSignMessageSuccessCallbackArgs(
+              tabId: tabId,
+              requestId: requestId,
+              signature: signature,
+              messageHash: message, // TODO: This is just a placeholder
+              address: address));
+        },
+      ),
+    );
+  }
+}
 
 class SignPsbtModal extends StatelessWidget {
   final int tabId;
@@ -1502,6 +1576,13 @@ class DashboardPageState extends State<DashboardPage> {
       ) =>
         () => _handleRPCSignPsbtAction(
             tabId, requestId, psbt, signInputs, sighashTypes),
+      URLAction.RPCSignMessageAction(
+        tabId: var tabId,
+        requestId: var requestId,
+        message: var message,
+        address: var address
+      ) =>
+        () => _handleRPCSignMessageAction(tabId, requestId, message, address),
       _ => noop
     };
   }
@@ -1625,6 +1706,37 @@ class DashboardPageState extends State<DashboardPage> {
               encryptionService: GetIt.I.get<EncryptionService>(),
               addressService: GetIt.I.get<AddressService>(),
               onSuccess: GetIt.I<RPCSignPsbtSuccessCallback>()),
+          includeBackButton: false,
+          includeCloseButton: true,
+        ));
+  }
+
+  void _handleRPCSignMessageAction(
+    int tabId,
+    String requestId,
+    String message,
+    String address,
+  ) {
+    HorizonUI.HorizonDialog.show(
+        context: context,
+        body: HorizonUI.HorizonDialog(
+          title: "Sign Message",
+          body: SignMessageModal(
+              tabId: tabId,
+              requestId: requestId,
+              message: message,
+              address: address,
+              accountRepository: GetIt.I<AccountRepository>(),
+              addressRepository: GetIt.I<UnifiedAddressRepository>(),
+              importedAddressService: GetIt.I.get<ImportedAddressService>(),
+              transactionService: GetIt.I.get<TransactionService>(),
+              bitcoindService: GetIt.I.get<BitcoindService>(),
+              balanceRepository: GetIt.I.get<BalanceRepository>(),
+              bitcoinRepository: GetIt.I.get<BitcoinRepository>(),
+              walletRepository: GetIt.I.get<WalletRepository>(),
+              encryptionService: GetIt.I.get<EncryptionService>(),
+              addressService: GetIt.I.get<AddressService>(),
+              onSuccess: GetIt.I<RPCSignMessageSuccessCallback>()),
           includeBackButton: false,
           includeCloseButton: true,
         ));

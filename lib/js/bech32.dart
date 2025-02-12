@@ -1,4 +1,4 @@
-@JS('bech32.bech32')
+@JS('hwd.bech32.bech32')
 library;
 
 import 'dart:js_interop';
