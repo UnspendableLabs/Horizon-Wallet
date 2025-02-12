@@ -232,9 +232,9 @@ class OnboardingView extends StatelessWidget {
     return BlocBuilder<OnboardingBloc, RemoteDataState<bool>>(
       builder: (context, state) {
         final isDisabled = state.maybeWhen(
-              error: (_) => true,
-              orElse: () => false,
-            );
+          error: (_) => true,
+          orElse: () => false,
+        );
 
         return Column(
           mainAxisAlignment: MainAxisAlignment.center,

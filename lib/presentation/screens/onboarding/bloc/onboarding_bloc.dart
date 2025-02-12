@@ -35,6 +35,14 @@ class OnboardingBloc extends Bloc<OnboardingEvent, RemoteDataState<bool>> {
         return;
       }
 
+      final accounts =
+          await accountRepository.getAccountsByWalletUuid(currentWallet!.uuid);
+      if (accounts.isNotEmpty) {
+        emit(const RemoteDataState.error(
+            'Invalid state detected. Please contact support.'));
+        return;
+      }
+
       final addresses = await addressRepository.getAll();
       if (addresses.isNotEmpty) {
         emit(const RemoteDataState.error(
