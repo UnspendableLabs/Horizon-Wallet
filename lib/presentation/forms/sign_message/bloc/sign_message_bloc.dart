@@ -1,16 +1,12 @@
-import 'package:floor/floor.dart';
 import "package:fpdart/fpdart.dart";
 import 'package:formz/formz.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:horizon/common/format.dart';
 
 import 'package:horizon/domain/entities/wallet.dart';
 import 'package:horizon/domain/entities/unified_address.dart';
 import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/entities/imported_address.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
-import 'package:horizon/domain/repositories/bitcoin_repository.dart';
-import 'package:horizon/domain/services/bitcoind_service.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
@@ -18,7 +14,6 @@ import 'package:horizon/domain/repositories/unified_address_repository.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/imported_address_service.dart';
-import 'package:horizon/presentation/common/shared_util.dart';
 import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 import 'package:horizon/domain/entities/decryption_strategy.dart';
 
@@ -71,7 +66,6 @@ class SignMessageBloc extends Bloc<SignMessageEvent, SignMessageState> {
   _handleSignMessageSubmitted(
       SignMessageSubmitted event, Emitter<SignMessageState> emit) async {
     try {
-
       Wallet? wallet = await walletRepository.getCurrentWallet();
 
       if (wallet == null) {
@@ -103,7 +97,6 @@ class SignMessageBloc extends Bloc<SignMessageEvent, SignMessageState> {
           return;
         }
       }
-      
 
       dynamic signature = await addressRepository
           .get(address)
@@ -116,18 +109,16 @@ class SignMessageBloc extends Bloc<SignMessageEvent, SignMessageState> {
                 unifiedAddress,
               ))
           .map((addressPrivateKey) {
-              return  transactionService.signMessage(message, addressPrivateKey);
-            })
-          .match((error) => throw error,
-              (signature) => signature)
+            return transactionService.signMessage(message, addressPrivateKey);
+          })
+          .match((error) => throw error, (signature) => signature)
           .run();
-
 
       emit(state.copyWith(
         signature: signature,
         submissionStatus: FormzSubmissionStatus.success,
       ));
-    } catch (e, callstack) {
+    } catch (e) {
       emit(state.copyWith(
           submissionStatus: FormzSubmissionStatus.failure,
           error: e.toString()));

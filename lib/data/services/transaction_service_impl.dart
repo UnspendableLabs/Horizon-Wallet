@@ -136,25 +136,23 @@ class TransactionServiceImpl implements TransactionService {
 
   @override
   String signMessage(String message, String privateKey) {
-      Buffer privKeyJS =
-          Buffer.from(Uint8List.fromList(hex.decode(privateKey)).toJS);
+    Buffer privKeyJS =
+        Buffer.from(Uint8List.fromList(hex.decode(privateKey)).toJS);
 
-      final network = _getNetwork();
+    final network = _getNetwork();
 
-      final ecpair_ = ecpairFactory.fromPrivateKey(privKeyJS, network);
+    final ecpair_ = ecpairFactory.fromPrivateKey(privKeyJS, network);
 
-      final bitcoinMessage.Signer signer =
-          bitcoinMessage.createECPairSigner(ecpair_);
+    final bitcoinMessage.Signer signer =
+        bitcoinMessage.createECPairSigner(ecpair_);
 
-      final Buffer signatureBuf = bitcoinMessage.sign(message, signer);
+    final Buffer signatureBuf = bitcoinMessage.sign(message, signer);
 
+    final Uint8List signature = signatureBuf.toDart;
 
-      final Uint8List signature = signatureBuf.toDart;
-      
-      final String b64 = base64Encode(signature);
+    final String b64 = base64Encode(signature);
 
-      return b64;
-
+    return b64;
   }
 
   @override
