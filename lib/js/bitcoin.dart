@@ -1,4 +1,4 @@
-@JS('bitcoin')
+@JS('hwd.bitcoinjs')
 library;
 
 import 'dart:js_interop';

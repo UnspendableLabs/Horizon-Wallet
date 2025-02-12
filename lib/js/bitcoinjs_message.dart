@@ -1,4 +1,4 @@
-@JS('bitcoinMessage')
+@JS('hwd.bitcoinjsMessage')
 library;
 
 import 'package:js/js.dart';

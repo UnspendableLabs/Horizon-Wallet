@@ -1,4 +1,4 @@
-@JS("crypto")
+@JS("hwd.crypto")
 library;
 
 import 'dart:js_interop';

@@ -1,4 +1,4 @@
-@JS("bip32")
+@JS("hwd.bip32")
 library;
 
 import 'dart:js_interop';
