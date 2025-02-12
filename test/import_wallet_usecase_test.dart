@@ -920,8 +920,8 @@ void main() {
       // Assert
       expect(errorCallbackInvoked, true);
       expect(successCallbackInvoked, false);
-      expect(
-          errorMessage, 'Multiple wallets detected. Please contact support.');
+      expect(errorMessage,
+          'Something went wrong while opening your wallet. Please reach out to support@unspendablelabs.com or the Horizon Telegram channel https://t.me/horizonxcp for support.');
       verify(() => mockWalletRepository.getCurrentWallet()).called(1);
       verifyNever(() => mockWalletRepository.insert(any()));
       verifyNever(() => mockAccountRepository.insert(any()));
@@ -987,7 +987,7 @@ void main() {
       } catch (e) {
         expect(e, isA<MultipleWalletsException>());
         expect((e as MultipleWalletsException).message,
-            'Multiple wallets detected. Please contact support.');
+            'Something went wrong while opening your wallet. Please reach out to support@unspendablelabs.com or the Horizon Telegram channel https://t.me/horizonxcp for support.');
       }
 
       // Assert

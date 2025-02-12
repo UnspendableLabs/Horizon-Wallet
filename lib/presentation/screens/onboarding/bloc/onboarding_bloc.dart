@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:horizon/common/constants.dart';
 import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
@@ -30,22 +31,19 @@ class OnboardingBloc extends Bloc<OnboardingEvent, RemoteDataState<bool>> {
 
       final currentWallet = await walletRepository.getCurrentWallet();
       if (currentWallet != null) {
-        emit(const RemoteDataState.error(
-            'Invalid state detected. Please contact support.'));
+        emit(const RemoteDataState.error(onboardingErrorMessage));
         return;
       }
 
       final accounts = await accountRepository.getAllAccounts();
       if (accounts.isNotEmpty) {
-        emit(const RemoteDataState.error(
-            'Invalid state detected. Please contact support.'));
+        emit(const RemoteDataState.error(onboardingErrorMessage));
         return;
       }
 
       final addresses = await addressRepository.getAll();
       if (addresses.isNotEmpty) {
-        emit(const RemoteDataState.error(
-            'Invalid state detected. Please contact support.'));
+        emit(const RemoteDataState.error(onboardingErrorMessage));
         return;
       }
 

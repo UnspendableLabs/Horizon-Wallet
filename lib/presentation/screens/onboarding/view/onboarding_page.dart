@@ -243,7 +243,7 @@ class OnboardingView extends StatelessWidget {
               error: (message) => true,
               orElse: () => false,
             )) ...[
-              Text(
+              SelectableText(
                 state.maybeWhen(
                   error: (message) => message,
                   orElse: () => '',

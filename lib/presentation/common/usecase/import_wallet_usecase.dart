@@ -357,8 +357,7 @@ class ImportWalletUseCase {
 
       final existingWallet = await walletRepository.getCurrentWallet();
       if (existingWallet != null) {
-        throw MultipleWalletsException(
-            'Multiple wallets detected. Please contact support.');
+        throw MultipleWalletsException(onboardingErrorMessage);
       }
 
       // insert wallet, accounts, and addresses
@@ -431,8 +430,7 @@ class ImportWalletUseCase {
 
     final existingWallet = await walletRepository.getCurrentWallet();
     if (existingWallet != null) {
-      throw MultipleWalletsException(
-          'Multiple wallets detected. Please contact support.');
+      throw MultipleWalletsException(onboardingErrorMessage);
     }
 
     await walletRepository.insert(wallet);
