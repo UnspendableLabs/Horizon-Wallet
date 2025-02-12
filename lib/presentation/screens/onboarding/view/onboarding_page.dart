@@ -8,8 +8,8 @@ import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
-import 'package:horizon/presentation/common/colors.dart';
 import 'package:horizon/presentation/common/footer/view/footer.dart';
+import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/screens/onboarding/bloc/onboarding_bloc.dart';
 import 'package:horizon/presentation/screens/onboarding/bloc/onboarding_events.dart';
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
@@ -43,12 +43,15 @@ class OnboardingView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final backdropBackgroundColor =
-        isDarkMode ? mediumNavyDarkTheme : lightBlueLightTheme;
-    final leftSideBackgroundColor =
-        isDarkMode ? lightNavyDarkTheme : royalBlueLightTheme;
-    final rightSideBackgroundColor =
-        isDarkMode ? darkNavyDarkTheme : whiteLightTheme;
+    final backdropBackgroundColor = isDarkMode
+        ? darkThemeBackgroundColor
+        : lightThemeBackgroundColorTopGradiant;
+    final leftSideBackgroundColor = isDarkMode
+        ? darkThemeBackgroundColor
+        : lightThemeBackgroundColorTopGradiant;
+    final rightSideBackgroundColor = isDarkMode
+        ? darkThemeBackgroundColor
+        : lightThemeBackgroundColorTopGradiant;
 
     return Scaffold(
       bottomNavigationBar: const Footer(),
@@ -67,15 +70,15 @@ class OnboardingView extends StatelessWidget {
                       decoration: BoxDecoration(
                         color: leftSideBackgroundColor,
                         gradient: isDarkMode
-                            ? RadialGradient(
+                            ? null
+                            : const RadialGradient(
                                 center: Alignment.topRight,
                                 radius: 1.0,
                                 colors: [
-                                  blueDarkThemeGradiantColor,
-                                  leftSideBackgroundColor,
+                                  lightThemeBackgroundColorTopGradiant,
+                                  lightThemeBackgroundColorTopGradiant
                                 ],
-                              )
-                            : null,
+                              ),
                         borderRadius: BorderRadius.circular(30.0),
                       ),
                       child: Center(
@@ -83,7 +86,7 @@ class OnboardingView extends StatelessWidget {
                           mainAxisAlignment: MainAxisAlignment.start,
                           children: [
                             const SizedBox(height: 50, width: 10),
-                            const Stack(
+                            Stack(
                               alignment: Alignment.center,
                               clipBehavior:
                                   Clip.none, // Ensure ALPHA is not clipped
@@ -95,17 +98,49 @@ class OnboardingView extends StatelessWidget {
                                     Text(
                                       'Horizon',
                                       style: TextStyle(
-                                        color: mainTextWhite,
+                                        color: isDarkMode
+                                            ? Colors.white
+                                            : Colors.black,
                                         fontSize: 50,
                                         fontWeight: FontWeight.w600,
                                       ),
                                     ),
-                                    Text(
-                                      'Wallet',
-                                      style: TextStyle(
-                                        color: neonBlueDarkTheme,
-                                        fontSize: 50,
-                                        fontWeight: FontWeight.w600,
+                                    ShaderMask(
+                                      shaderCallback: (Rect bounds) {
+                                        final colors = isDarkMode
+                                            ? _getDarkModeColors()
+                                            : _getLightModeColors();
+                                        final stops = isDarkMode
+                                            ? [
+                                                0.003,
+                                                0.1276,
+                                                0.2572,
+                                                0.4068,
+                                                0.6062,
+                                                0.8155,
+                                                1.0
+                                              ]
+                                            : [0.0, 0.326, 0.652, 0.9879];
+
+                                        return LinearGradient(
+                                          begin: const Alignment(-0.2, -1.0),
+                                          end: const Alignment(0.2, 1.0),
+                                          colors: colors,
+                                          stops: stops,
+                                          transform: isDarkMode
+                                              ? const GradientRotation(
+                                                  170.88 * pi / 180)
+                                              : const GradientRotation(
+                                                  139.18 * pi / 180),
+                                        ).createShader(bounds);
+                                      },
+                                      child: const Text(
+                                        'Wallet',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 50,
+                                          fontWeight: FontWeight.w600,
+                                        ),
                                       ),
                                     ),
                                   ],
@@ -164,24 +199,56 @@ class OnboardingView extends StatelessWidget {
                         child: Column(
                           children: [
                             const SizedBox(height: 12),
-                            const Column(
+                            Column(
                               crossAxisAlignment: CrossAxisAlignment.center,
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 Text(
                                   'Horizon',
                                   style: TextStyle(
-                                    color: mainTextWhite,
+                                    color: isDarkMode
+                                        ? Colors.white
+                                        : Colors.black,
                                     fontSize: 32.0,
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
-                                Text(
-                                  'Wallet',
-                                  style: TextStyle(
-                                    color: neonBlueDarkTheme,
-                                    fontSize: 32.0,
-                                    fontWeight: FontWeight.w600,
+                                ShaderMask(
+                                  shaderCallback: (Rect bounds) {
+                                    final colors = isDarkMode
+                                        ? _getDarkModeColors()
+                                        : _getLightModeColors();
+                                    final stops = isDarkMode
+                                        ? [
+                                            0.003,
+                                            0.1276,
+                                            0.2572,
+                                            0.4068,
+                                            0.6062,
+                                            0.8155,
+                                            1.0
+                                          ]
+                                        : [0.0, 0.326, 0.652, 0.9879];
+
+                                    return LinearGradient(
+                                      begin: const Alignment(-0.2, -1.0),
+                                      end: const Alignment(0.2, 1.0),
+                                      colors: colors,
+                                      stops: stops,
+                                      transform: isDarkMode
+                                          ? const GradientRotation(
+                                              170.88 * pi / 180)
+                                          : const GradientRotation(
+                                              139.18 * pi / 180),
+                                    ).createShader(bounds);
+                                  },
+                                  child: const Text(
+                                    'Wallet',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 32.0,
+                                      fontWeight: FontWeight.w600,
+                                    ),
                                   ),
                                 ),
                               ],
@@ -219,11 +286,6 @@ class OnboardingView extends StatelessWidget {
   }
 
   Widget _buildButtons(BuildContext context, bool isDarkMode) {
-    final backdropBackgroundColor =
-        isDarkMode ? mediumNavyDarkTheme : lightBlueLightTheme;
-    final leftSideBackgroundColor =
-        isDarkMode ? lightNavyDarkTheme : royalBlueLightTheme;
-
     return BlocBuilder<OnboardingBloc, RemoteDataState<bool>>(
       builder: (context, state) {
         final isDisabled = state.maybeWhen(
@@ -244,7 +306,7 @@ class OnboardingView extends StatelessWidget {
                   orElse: () => '',
                 ),
                 style: const TextStyle(
-                  color: redErrorText,
+                  color: Colors.red,
                   fontSize: 14,
                 ),
                 textAlign: TextAlign.center,
@@ -253,27 +315,59 @@ class OnboardingView extends StatelessWidget {
             ],
             SizedBox(
               width: 250,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  elevation: 0,
-                  backgroundColor: leftSideBackgroundColor,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                  textStyle: const TextStyle(
-                      fontSize: 12, fontWeight: FontWeight.w700),
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
+                    colors: isDarkMode
+                        ? const [
+                            createButtonDarkGradient1,
+                            createButtonDarkGradient2,
+                            createButtonDarkGradient3,
+                            createButtonDarkGradient4,
+                          ]
+                        : const [
+                            createButtonLightGradient1,
+                            createButtonLightGradient2,
+                            createButtonLightGradient3,
+                            createButtonLightGradient4,
+                          ],
+                    stops: isDarkMode
+                        ? const [0.0, 0.325, 0.65, 1.0]
+                        : const [0.0, 0.326, 0.652, 0.9879],
+                    transform: isDarkMode
+                        ? null
+                        : const GradientRotation(139.18 * pi / 180),
+                  ),
+                  borderRadius: BorderRadius.circular(28),
                 ),
-                onPressed: isDisabled
-                    ? null
-                    : () {
-                        final session = context.read<SessionStateCubit>();
-                        session.onOnboardingCreate();
-                      },
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Text(
-                    'CREATE A NEW WALLET',
-                    style: TextStyle(
-                        color: isDarkMode ? neonBlueDarkTheme : mainTextWhite),
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    elevation: 0,
+                    backgroundColor: Colors.transparent,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(28),
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 32, vertical: 16),
+                    textStyle: const TextStyle(
+                        fontSize: 12, fontWeight: FontWeight.w700),
+                  ),
+                  onPressed: isDisabled
+                      ? null
+                      : () {
+                          final session = context.read<SessionStateCubit>();
+                          session.onOnboardingCreate();
+                        },
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Text(
+                      'CREATE A NEW WALLET',
+                      style: TextStyle(
+                        color: isDarkMode ? Colors.black : Colors.white,
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -283,17 +377,18 @@ class OnboardingView extends StatelessWidget {
               width: 250,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                    overlayColor: noBackgroundColor,
-                    elevation: 0,
-                    backgroundColor: isDarkMode
-                        ? noBackgroundColor
-                        : backdropBackgroundColor,
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 32, vertical: 16),
-                    textStyle: const TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
-                    )),
+                  overlayColor: Colors.transparent,
+                  elevation: 0,
+                  backgroundColor: isDarkMode
+                      ? importButtonDarkBackground
+                      : Colors.transparent,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                  textStyle: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
                 onPressed: isDisabled
                     ? null
                     : () {
@@ -305,7 +400,8 @@ class OnboardingView extends StatelessWidget {
                   child: Text(
                     'LOAD SEED PHRASE',
                     style: TextStyle(
-                        color: isDarkMode ? mainTextGrey : mainTextBlack),
+                      color: isDarkMode ? Colors.white : Colors.black,
+                    ),
                   ),
                 ),
               ),
@@ -315,6 +411,23 @@ class OnboardingView extends StatelessWidget {
       },
     );
   }
+
+  List<Color> _getDarkModeColors() => const [
+        Color(0xFF7DC2BC),
+        Color(0xFF509FC0),
+        Color(0xFF9B86D7),
+        Color(0xFFE9A7AF),
+        Color(0xFFEEB395),
+        Color(0xFFEED09A),
+        Color(0xFFDFD9BF),
+      ];
+
+  List<Color> _getLightModeColors() => const [
+        Color(0xFF5D2B3B),
+        Color(0xFF2F1C46),
+        Color(0xFF1B1F38),
+        Color(0xFF0B102C),
+      ];
 }
 
 class AnimatedLogo extends StatefulWidget {
