@@ -1710,9 +1710,13 @@ class DashboardPageState extends State<DashboardPage> {
           includeCloseButton: true,
         ));
   }
-  
-  void _handleRPCSignMessageAction(int tabId, String requestId, String message, String address, 
-     ) {
+
+  void _handleRPCSignMessageAction(
+    int tabId,
+    String requestId,
+    String message,
+    String address,
+  ) {
     HorizonUI.HorizonDialog.show(
         context: context,
         body: HorizonUI.HorizonDialog(

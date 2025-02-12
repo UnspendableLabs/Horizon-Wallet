@@ -81,7 +81,7 @@ class _SignMessageFormState extends State<SignMessageForm> {
                   // Show the signed MESSAGE if needed
                   if (state.signature != null)
                     SelectableText(
-                      'Signed MESSAGE: ${state.signature }',
+                      'Signed MESSAGE: ${state.signature}',
                       style: const TextStyle(color: Colors.black),
                     ),
                 ],

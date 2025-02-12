@@ -371,7 +371,7 @@ class ImportWalletUseCase {
 
       onSuccess();
       return;
-    } catch (e, callstack) {
+    } catch (e) {
       if (e is PasswordException) {
         onError(e.message);
       } else {
