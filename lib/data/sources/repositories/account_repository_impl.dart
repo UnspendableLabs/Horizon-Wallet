@@ -80,4 +80,21 @@ class AccountRepositoryImpl implements AccountRepository {
   Future<void> deleteAllAccounts() async {
     await _accountDao.deleteAllAccounts();
   }
+
+  @override
+  Future<List<entity.Account>> getAllAccounts() async {
+    List<AccountModel> accounts = await _accountDao.getAllAccounts();
+    return accounts
+        .map((account) => entity.Account(
+              uuid: account.uuid,
+              walletUuid: account.walletUuid,
+              purpose: account.purpose,
+              accountIndex: account.accountIndex,
+              name: account.name,
+              coinType: account.coinType,
+              importFormat: ImportFormat.values
+                  .firstWhere((e) => e.name == account.importFormat),
+            ))
+        .toList();
+  }
 }
