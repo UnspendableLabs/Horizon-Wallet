@@ -126,6 +126,8 @@ flutter:
     - assets/horizon-H-light-mode.svg
     - assets/rainbow-gradiant.png
     - assets/horizon-logo.png
+    - assets/app-bar-H-dark-mode.png
+    - assets/app-bar-H-light-mode.png
     - fonts/
 
   #   - .env

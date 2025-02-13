@@ -88,16 +88,6 @@ class OnboardingView extends StatelessWidget {
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
                         color: leftSideBackgroundColor,
-                        gradient: isDarkMode
-                            ? null
-                            : const RadialGradient(
-                                center: Alignment.topRight,
-                                radius: 1.0,
-                                colors: [
-                                  lightThemeBackgroundColorTopGradiant,
-                                  lightThemeBackgroundColorTopGradiant
-                                ],
-                              ),
                         borderRadius: BorderRadius.circular(30.0),
                       ),
                       child: Center(
@@ -180,7 +170,7 @@ class OnboardingView extends StatelessWidget {
                                                   .read<SessionStateCubit>();
                                               session.onOnboardingCreate();
                                             },
-                                      buttonText: 'CREATE A NEW WALLET',
+                                      buttonText: 'Create a new wallet',
                                       isDarkMode: isDarkMode,
                                     ),
                                     const SizedBox(height: 10),
@@ -192,7 +182,7 @@ class OnboardingView extends StatelessWidget {
                                                   .read<SessionStateCubit>();
                                               session.onOnboardingImport();
                                             },
-                                      buttonText: 'LOAD SEED PHRASE',
+                                      buttonText: 'Load seed phrase',
                                       isDarkMode: isDarkMode,
                                     ),
                                   ],

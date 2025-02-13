@@ -9,9 +9,9 @@ import 'package:get_it/get_it.dart';
 import 'package:horizon/domain/repositories/config_repository.dart';
 import 'package:horizon/domain/services/mnemonic_service.dart';
 import 'package:horizon/domain/services/wallet_service.dart';
-import 'package:horizon/presentation/common/colors.dart';
+import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/common/usecase/import_wallet_usecase.dart';
-import 'package:horizon/presentation/screens/onboarding/view/back_continue_buttons.dart';
+import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 import 'package:horizon/presentation/screens/onboarding/view/onboarding_app_bar.dart';
 import 'package:horizon/presentation/screens/onboarding/view/password_prompt.dart';
 import 'package:horizon/presentation/screens/onboarding_create/bloc/onboarding_create_bloc.dart';
@@ -134,13 +134,12 @@ class OnboardingCreatePageState extends State<OnboardingCreatePage> {
             vertical: screenSize.height / 16,
           );
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final backdropBackgroundColor =
-        isDarkMode ? mediumNavyDarkTheme : lightBlueLightTheme;
-    final scaffoldBackgroundColor =
-        isDarkMode ? lightNavyDarkTheme : whiteLightTheme;
+    final backdropBackgroundColor = isDarkMode
+        ? darkThemeBackgroundColor
+        : lightThemeBackgroundColorTopGradiant;
 
     return Scaffold(
-      backgroundColor: scaffoldBackgroundColor,
+      backgroundColor: backdropBackgroundColor,
       body: SafeArea(
         child: Container(
           decoration: BoxDecoration(
@@ -149,7 +148,7 @@ class OnboardingCreatePageState extends State<OnboardingCreatePage> {
           padding: padding,
           child: Container(
             decoration: BoxDecoration(
-              color: scaffoldBackgroundColor,
+              color: backdropBackgroundColor,
               borderRadius: BorderRadius.circular(30),
             ),
             padding: const EdgeInsets.all(12),
@@ -171,7 +170,7 @@ class OnboardingCreatePageState extends State<OnboardingCreatePage> {
                             isDarkMode: isDarkMode,
                             isSmallScreenWidth: isSmallScreen,
                             isSmallScreenHeight: isSmallScreen,
-                            scaffoldBackgroundColor: scaffoldBackgroundColor,
+                            scaffoldBackgroundColor: backdropBackgroundColor,
                           ),
                           Flexible(
                             child: BlocBuilder<OnboardingCreateBloc,
@@ -196,8 +195,8 @@ class OnboardingCreatePageState extends State<OnboardingCreatePage> {
                                             .add(CreateWallet(
                                                 password: password));
                                       },
-                                      backButtonText: 'CANCEL',
-                                      continueButtonText: 'CONTINUE',
+                                      backButtonText: 'Cancel',
+                                      continueButtonText: 'Continue',
                                     ),
                                 };
                               },
@@ -244,16 +243,15 @@ class _MnemonicState extends State<Mnemonic> {
   @override
   Widget build(BuildContext context) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final scaffoldBackgroundColor =
-        isDarkMode ? lightNavyDarkTheme : whiteLightTheme;
-    final screenSize = MediaQuery.of(context).size;
-    final isSmallScreenWidth = screenSize.width < 768;
+    final backdropBackgroundColor = isDarkMode
+        ? darkThemeBackgroundColor
+        : lightThemeBackgroundColorTopGradiant;
     final Config config = GetIt.I<Config>();
 
     return BlocBuilder<OnboardingCreateBloc, OnboardingCreateState>(
       builder: (context, state) {
         return Container(
-          color: scaffoldBackgroundColor,
+          color: backdropBackgroundColor,
           child: SafeArea(
             child: LayoutBuilder(
               builder: (context, constraints) {
@@ -283,19 +281,31 @@ class _MnemonicState extends State<Mnemonic> {
                                     NumberedWordGrid(
                                       text: state.mnemonicState.mnemonic,
                                       backgroundColor: isDarkMode
-                                          ? darkThemeInputColor
-                                          : lightThemeInputColor,
+                                          ? inputDarkBackground
+                                          : inputLightBackground,
                                       textColor: isDarkMode
-                                          ? mainTextWhite
-                                          : mainTextBlack,
+                                          ? Colors.white
+                                          : Colors.black,
                                     ),
                                     if (config.network == Network.testnet4 ||
                                         config.network == Network.testnet)
                                       ElevatedButton.icon(
-                                        icon: const Icon(
-                                          Icons.copy,
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: isDarkMode
+                                              ? createButtonDarkGradient2
+                                              : createButtonLightGradient2,
                                         ),
-                                        label: const Text('COPY'),
+                                        icon: Icon(
+                                          Icons.copy,
+                                          color: isDarkMode
+                                              ? Colors.black
+                                              : Colors.white,
+                                        ),
+                                        label: Text('COPY',
+                                            style: TextStyle(
+                                                color: isDarkMode
+                                                    ? Colors.black
+                                                    : Colors.white)),
                                         onPressed: () {
                                           Clipboard.setData(ClipboardData(
                                               text: state
@@ -323,21 +333,39 @@ class _MnemonicState extends State<Mnemonic> {
                                 ),
                               ),
                             const SizedBox(height: 16),
-                            BackContinueButtons(
-                              isDarkMode: isDarkMode,
-                              isSmallScreenWidth: isSmallScreenWidth,
-                              onPressedBack: () {
-                                final session =
-                                    context.read<SessionStateCubit>();
-                                session.onOnboarding();
-                              },
-                              onPressedContinue: () {
-                                context
-                                    .read<OnboardingCreateBloc>()
-                                    .add(UnconfirmMnemonic());
-                              },
-                              backButtonText: 'BACK',
-                              continueButtonText: 'CONTINUE',
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Expanded(
+                                  child: Padding(
+                                    padding: const EdgeInsets.only(right: 8.0),
+                                    child: HorizonOutlinedButton(
+                                      isDarkMode: isDarkMode,
+                                      onPressed: () {
+                                        final session =
+                                            context.read<SessionStateCubit>();
+                                        session.onOnboarding();
+                                      },
+                                      buttonText: 'Back',
+                                    ),
+                                  ),
+                                ),
+                                Expanded(
+                                  child: Padding(
+                                    padding: const EdgeInsets.only(left: 8.0),
+                                    child: HorizonGradientButton(
+                                      isDarkMode: isDarkMode,
+                                      onPressed: () {
+                                        context
+                                            .read<OnboardingCreateBloc>()
+                                            .add(UnconfirmMnemonic());
+                                      },
+                                      buttonText: 'Continue',
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                           ],
                         ),
@@ -397,11 +425,12 @@ class _ConfirmSeedInputFieldsState extends State<ConfirmSeedInputFields> {
   Widget build(BuildContext context) {
     final isSmallScreen = MediaQuery.of(context).size.width < 768;
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final scaffoldBackgroundColor =
-        isDarkMode ? lightNavyDarkTheme : whiteLightTheme;
+    final backdropBackgroundColor = isDarkMode
+        ? darkThemeBackgroundColor
+        : lightThemeBackgroundColorTopGradiant;
 
     return Container(
-      color: scaffoldBackgroundColor,
+      color: backdropBackgroundColor,
       child: Column(
         children: [
           Padding(
@@ -412,7 +441,7 @@ class _ConfirmSeedInputFieldsState extends State<ConfirmSeedInputFields> {
               style: TextStyle(
                   fontSize: 25,
                   fontWeight: FontWeight.w600,
-                  color: isDarkMode ? mainTextWhite : mainTextBlack),
+                  color: isDarkMode ? Colors.white : Colors.black),
             ),
           ),
           isSmallScreen && widget.mnemonicErrorState != null
@@ -427,11 +456,11 @@ class _ConfirmSeedInputFieldsState extends State<ConfirmSeedInputFields> {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(Icons.info, color: redErrorText),
+                        const Icon(Icons.info, color: Colors.red),
                         const SizedBox(width: 4),
                         SelectableText(
                           widget.mnemonicErrorState!.message,
-                          style: const TextStyle(color: redErrorText),
+                          style: const TextStyle(color: Colors.red),
                         ),
                       ],
                     ),
@@ -455,54 +484,75 @@ class _ConfirmSeedInputFieldsState extends State<ConfirmSeedInputFields> {
               },
               icon: Icon(
                 _showSeedPhrase ? Icons.visibility_off : Icons.visibility,
-                color: isDarkMode ? mainTextWhite : mainTextBlack,
+                color: isDarkMode ? Colors.white : Colors.black,
               ),
               label: Text(
                 _showSeedPhrase ? 'Hide Seed Phrase' : 'Show Seed Phrase',
                 style: TextStyle(
-                  color: isDarkMode ? mainTextWhite : mainTextBlack,
+                  color: isDarkMode ? Colors.white : Colors.black,
                 ),
               ),
             ),
           ),
-          if (isSmallScreen) const SizedBox(height: 16),
-          BackContinueButtons(
-              isDarkMode: isDarkMode,
-              isSmallScreenWidth: isSmallScreen,
-              onPressedBack: () {
-                context.read<OnboardingCreateBloc>().add(GoBackToMnemonic());
-              },
-              onPressedContinue: () {
-                context.read<OnboardingCreateBloc>().add(ConfirmMnemonic(
-                    mnemonic: controllers
-                        .map((controller) => controller.text)
-                        .toList()));
-              },
-              backButtonText: 'BACK',
-              continueButtonText: 'CONTINUE',
-              errorWidget: !isSmallScreen && widget.mnemonicErrorState != null
-                  ? Align(
-                      alignment: Alignment.center,
-                      child: Container(
-                        padding: const EdgeInsets.all(8.0),
-                        decoration: BoxDecoration(
-                          color: redErrorTextTransparent,
-                          borderRadius: BorderRadius.circular(40.0),
+          // if (isSmallScreen) const SizedBox(height: 16),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.only(right: 8.0),
+                  child: HorizonOutlinedButton(
+                    isDarkMode: isDarkMode,
+                    onPressed: () {
+                      context
+                          .read<OnboardingCreateBloc>()
+                          .add(GoBackToMnemonic());
+                    },
+                    buttonText: 'Back',
+                  ),
+                ),
+              ),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 8.0),
+                  child: HorizonGradientButton(
+                    isDarkMode: isDarkMode,
+                    onPressed: () {
+                      context.read<OnboardingCreateBloc>().add(ConfirmMnemonic(
+                          mnemonic: controllers
+                              .map((controller) => controller.text)
+                              .toList()));
+                    },
+                    buttonText: 'Continue',
+                  ),
+                ),
+              ),
+            ],
+          ),
+          !isSmallScreen && widget.mnemonicErrorState != null
+              ? Align(
+                  alignment: Alignment.center,
+                  child: Container(
+                    padding: const EdgeInsets.all(8.0),
+                    decoration: BoxDecoration(
+                      color: redErrorTextTransparent,
+                      borderRadius: BorderRadius.circular(40.0),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.info, color: Colors.red),
+                        const SizedBox(width: 4),
+                        SelectableText(
+                          widget.mnemonicErrorState!.message,
+                          style: const TextStyle(color: Colors.red),
                         ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(Icons.info, color: redErrorText),
-                            const SizedBox(width: 4),
-                            SelectableText(
-                              widget.mnemonicErrorState!.message,
-                              style: const TextStyle(color: redErrorText),
-                            ),
-                          ],
-                        ),
-                      ),
-                    )
-                  : null),
+                      ],
+                    ),
+                  ),
+                )
+              : const SizedBox.shrink(),
         ],
       ),
     );
@@ -578,7 +628,7 @@ class _ConfirmSeedInputFieldsState extends State<ConfirmSeedInputFields> {
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.normal,
-                color: isDarkMode ? mainTextWhite : mainTextBlack,
+                color: isDarkMode ? Colors.white : Colors.black,
               ),
               textAlign: TextAlign.right,
             ),
@@ -595,15 +645,14 @@ class _ConfirmSeedInputFieldsState extends State<ConfirmSeedInputFields> {
                 decoration: InputDecoration(
                   filled: true,
                   fillColor:
-                      isDarkMode ? darkThemeInputColor : lightThemeInputColor,
+                      isDarkMode ? inputDarkBackground : inputLightBackground,
                   contentPadding:
                       const EdgeInsets.symmetric(vertical: 0, horizontal: 8),
                   hintText: 'Word ${index + 1}',
                   hintStyle: TextStyle(
                     fontSize: 14,
-                    color: isDarkMode
-                        ? darkThemeInputLabelColor
-                        : lightThemeInputLabelColor,
+                    color:
+                        isDarkMode ? inputDarkLabelColor : inputLightLabelColor,
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8.0),
@@ -613,7 +662,7 @@ class _ConfirmSeedInputFieldsState extends State<ConfirmSeedInputFields> {
                             widget.mnemonicErrorState!.incorrectIndexes!
                                 .contains(index)
                         ? const BorderSide(
-                            color: redErrorText,
+                            color: Colors.red,
                             width: 1.0,
                             style: BorderStyle.solid)
                         : BorderSide.none,
@@ -626,7 +675,7 @@ class _ConfirmSeedInputFieldsState extends State<ConfirmSeedInputFields> {
                             widget.mnemonicErrorState!.incorrectIndexes!
                                 .contains(index)
                         ? const BorderSide(
-                            color: redErrorText,
+                            color: Colors.red,
                             width: 1.0,
                             style: BorderStyle.solid)
                         : BorderSide.none,
@@ -652,7 +701,7 @@ class _ConfirmSeedInputFieldsState extends State<ConfirmSeedInputFields> {
               "${index + 1}. ",
               style: TextStyle(
                 fontWeight: FontWeight.normal,
-                color: isDarkMode ? mainTextWhite : mainTextBlack,
+                color: isDarkMode ? Colors.white : Colors.black,
               ),
               textAlign: TextAlign.right,
             ),
@@ -667,13 +716,12 @@ class _ConfirmSeedInputFieldsState extends State<ConfirmSeedInputFields> {
               decoration: InputDecoration(
                 filled: true,
                 fillColor:
-                    isDarkMode ? darkThemeInputColor : lightThemeInputColor,
+                    isDarkMode ? inputDarkBackground : inputLightBackground,
                 labelText: 'Word ${index + 1}',
                 labelStyle: TextStyle(
                   fontWeight: FontWeight.normal,
-                  color: isDarkMode
-                      ? darkThemeInputLabelColor
-                      : lightThemeInputLabelColor,
+                  color:
+                      isDarkMode ? inputDarkLabelColor : inputLightLabelColor,
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8.0),
@@ -682,7 +730,7 @@ class _ConfirmSeedInputFieldsState extends State<ConfirmSeedInputFields> {
                           widget.mnemonicErrorState!.incorrectIndexes!
                               .contains(index)
                       ? const BorderSide(
-                          color: redErrorText,
+                          color: Colors.red,
                           width: 1.0,
                           style: BorderStyle.solid)
                       : BorderSide.none,
@@ -694,7 +742,7 @@ class _ConfirmSeedInputFieldsState extends State<ConfirmSeedInputFields> {
                           widget.mnemonicErrorState!.incorrectIndexes!
                               .contains(index)
                       ? const BorderSide(
-                          color: redErrorText,
+                          color: Colors.red,
                           width: 1.0,
                           style: BorderStyle.solid)
                       : BorderSide.none,

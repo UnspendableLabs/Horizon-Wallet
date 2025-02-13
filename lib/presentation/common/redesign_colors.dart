@@ -1,8 +1,9 @@
 import 'dart:ui';
 
+import 'package:flutter/material.dart';
+
 const darkThemeBackgroundColor = Color(0xFF0D0D0D);
-const lightThemeBackgroundColorTopGradiant = Color(0xFFFEF7E5);
-const lightThemeBackgroundColorBottomGradiant = Color(0xFFC8DAE6);
+const lightThemeBackgroundColorTopGradiant = Color(0xFFE6EAEE);
 
 // Dark mode create button gradient colors
 const createButtonDarkGradient1 = Color(0xFFDFD9BF);
@@ -19,3 +20,13 @@ const createButtonLightGradient4 = Color(0xFF0B102C);
 // Import button colors
 const importButtonDarkBackground = Color(0xFF000000);
 const importButtonTextColor = Color(0xFFDEE4E8);
+
+// Inputs
+const inputDarkBackground = Color(0xFF1E1E1E);
+const inputDarkLabelColor = Color.fromRGBO(254, 251, 249, 0.33);
+
+const inputLightBackground = Colors.white;
+const inputLightLabelColor = Color(0xFF808080);
+
+// Text Colors
+const redErrorTextTransparent = Color.fromRGBO(239, 87, 87, 0.16);
