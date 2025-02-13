@@ -7,6 +7,7 @@ import 'package:horizon/domain/services/imported_address_service.dart';
 import 'package:horizon/js/bitcoin.dart' as bitcoin;
 import 'package:horizon/js/ecpair.dart' as ecpair;
 import 'package:horizon/js/tiny_secp256k1.dart' as tinysecp256k1js;
+import 'package:horizon/js/buffer.dart';
 
 class ImportedAddressServiceImpl implements ImportedAddressService {
   final Config config;
@@ -30,7 +31,7 @@ class ImportedAddressServiceImpl implements ImportedAddressService {
     final network = _getNetwork();
 
     final paymentOpts =
-        bitcoin.PaymentOptions(pubkey: ecPair.publicKey, network: network);
+        bitcoin.PaymentOptions(pubkey: Buffer.from(ecPair.publicKey), network: network);
 
     switch (format) {
       case ImportAddressPkFormat.segwit:
