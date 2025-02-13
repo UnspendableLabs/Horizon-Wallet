@@ -1,4 +1,4 @@
-@JS("hwd.buffer")
+@JS("buffer")
 library;
 
 import 'dart:js_interop';

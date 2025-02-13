@@ -97,7 +97,7 @@ external Payment p2wpkh(JSObject options);
 external Payment p2pkh(JSObject payment);
 
 extension type PaymentOptions._(JSObject o) implements JSObject {
-  external PaymentOptions({JSAny pubkey, JSAny network});
+  external PaymentOptions({Buffer pubkey, JSAny network});
   // external int get a;
   // external int get b;
 }

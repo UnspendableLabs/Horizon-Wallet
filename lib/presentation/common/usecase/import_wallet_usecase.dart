@@ -371,10 +371,13 @@ class ImportWalletUseCase {
 
       onSuccess();
       return;
-    } catch (e) {
+    } catch (e, callstack) {
       if (e is PasswordException) {
         onError(e.message);
       } else {
+        print(e);
+        print(callstack);
+
         onError('An unexpected error occurred importing wallet');
       }
     }

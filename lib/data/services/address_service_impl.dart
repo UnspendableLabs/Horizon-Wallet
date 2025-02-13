@@ -192,8 +192,8 @@ class AddressServiceImpl implements AddressService {
   String _legacyFromBip32(bip32.BIP32Interface child) {
     final network = _getNetwork();
 
-    final paymentOpts =
-        bitcoin.PaymentOptions(pubkey: child.publicKey, network: network);
+    final paymentOpts = bitcoin.PaymentOptions(
+        pubkey: Buffer.from(child.publicKey), network: network);
 
     final payment = bitcoin.p2pkh(paymentOpts);
 
