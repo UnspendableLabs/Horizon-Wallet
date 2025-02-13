@@ -42,7 +42,7 @@ class _LoginFormState extends State<LoginForm> {
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 Image.asset(
-                  'assets/logo-blue-3d.png',
+                  'horizon-logo.png',
                   height: 160,
                   width: 160,
                 ),
