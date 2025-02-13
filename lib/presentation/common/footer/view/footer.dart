@@ -52,6 +52,7 @@ class _FooterState extends State<_Footer> {
     TextStyle textStyle() => TextStyle(
           color: isDarkTheme ? Colors.white : Colors.black,
           fontSize: screenWidth < 600 ? 10 : 16,
+          fontWeight: FontWeight.w300,
         );
 
     final config = GetIt.I.get<Config>();

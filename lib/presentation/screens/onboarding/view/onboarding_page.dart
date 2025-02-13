@@ -1,6 +1,8 @@
 import 'dart:math' show pi, sin;
+import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get_it/get_it.dart';
@@ -211,22 +213,10 @@ class OnboardingView extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Column(
                 children: [
-                  // Top section with flexible spacing
+                  const Spacer(flex: 1), // Add space at top
+                  // Logo section - increased size
                   Expanded(
-                    flex: 2,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        HorizonTitle(
-                          isDarkMode: isDarkMode,
-                          fontSize: 32,
-                        ),
-                      ],
-                    ),
-                  ),
-                  // Logo section
-                  Expanded(
-                    flex: 3,
+                    flex: 4, // Increased flex to make logo section bigger
                     child: Center(
                       child: SizedBox(
                         width: 109,
@@ -235,11 +225,15 @@ class OnboardingView extends StatelessWidget {
                       ),
                     ),
                   ),
-                  // Buttons section with flexible spacing
-                  Expanded(
-                    flex: 2,
+                  const Spacer(
+                      flex: 1), // Add flexible space between logo and buttons
+                  // Buttons section - moved closer to bottom
+                  Padding(
+                    padding: const EdgeInsets.only(
+                        bottom: 32), // Add padding at bottom
                     child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize
+                          .min, // Changed from MainAxisAlignment.center
                       children: [
                         BlocBuilder<OnboardingBloc, RemoteDataState<bool>>(
                           builder: (context, state) {
@@ -409,53 +403,113 @@ class HorizonTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(
-          'Horizon',
-          style: TextStyle(
-            color: isDarkMode ? Colors.white : Colors.black,
-            fontSize: fontSize,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        ShaderMask(
-          shaderCallback: (Rect bounds) {
-            return LinearGradient(
-              begin: Alignment.centerLeft,
-              end: Alignment.centerRight,
-              colors: isDarkMode
-                  ? const [
-                      createButtonDarkGradient1,
-                      createButtonDarkGradient2,
-                      createButtonDarkGradient3,
-                      createButtonDarkGradient4,
-                    ]
-                  : const [
-                      createButtonLightGradient1,
-                      createButtonLightGradient2,
-                      createButtonLightGradient3,
-                      createButtonLightGradient4,
-                    ],
-              stops: isDarkMode
-                  ? const [0.0, 0.325, 0.65, 1.0]
-                  : const [0.0, 0.326, 0.652, 0.9879],
-              transform:
-                  isDarkMode ? null : const GradientRotation(139.18 * pi / 180),
-            ).createShader(bounds);
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return FutureBuilder<ImageShader?>(
+          future: _createShaderFromImage(context, constraints),
+          builder: (context, snapshot) {
+            if (snapshot.hasError) {
+              print('Error loading shader: ${snapshot.error}');
+            }
+
+            return ShaderMask(
+              shaderCallback: (bounds) {
+                if (isDarkMode && snapshot.hasData && snapshot.data != null) {
+                  return snapshot.data!;
+                }
+                return const LinearGradient(
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
+                  colors: [
+                    createButtonLightGradient1,
+                    createButtonLightGradient2,
+                    createButtonLightGradient3,
+                    createButtonLightGradient4,
+                  ],
+                  stops: [0.0, 0.326, 0.652, 0.9879],
+                  transform: GradientRotation(139.18 * pi / 180),
+                ).createShader(bounds);
+              },
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Horizon ',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: fontSize,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  Text(
+                    'Wallet',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: fontSize,
+                      fontWeight: FontWeight.w300,
+                    ),
+                  ),
+                ],
+              ),
+            );
           },
-          child: Text(
-            'Wallet',
+        );
+      },
+    );
+  }
+
+  Future<ui.Image?> _loadImage(String asset) async {
+    try {
+      final data = await rootBundle.load(asset);
+      final codec = await ui.instantiateImageCodec(data.buffer.asUint8List());
+      final frame = await codec.getNextFrame();
+      return frame.image;
+    } catch (e) {
+      print('Error loading image: $e');
+      return null;
+    }
+  }
+
+  Future<ImageShader?> _createShaderFromImage(
+      BuildContext context, BoxConstraints constraints) async {
+    final image = await _loadImage('rainbow-gradiant.png');
+    if (image == null) return null;
+
+    // Calculate the total width needed for both text elements
+    final textPainter = TextPainter(
+      text: TextSpan(
+        children: [
+          TextSpan(
+            text: 'Horizon ',
             style: TextStyle(
-              color: Colors.white,
+              fontSize: fontSize,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          TextSpan(
+            text: 'Wallet',
+            style: TextStyle(
               fontSize: fontSize,
               fontWeight: FontWeight.w400,
             ),
           ),
-        ),
-      ],
+        ],
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout();
+
+    final matrix4 = Matrix4.identity();
+    // Scale the image to match the text width and height
+    matrix4.scale(
+      textPainter.width / image.width,
+      textPainter.height / image.height,
+    );
+
+    return ImageShader(
+      image,
+      TileMode.clamp,
+      TileMode.clamp,
+      matrix4.storage,
     );
   }
 }
