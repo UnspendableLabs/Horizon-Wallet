@@ -4,10 +4,10 @@ import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 import 'package:horizon/domain/repositories/node_info_repository.dart';
 import 'package:horizon/domain/repositories/config_repository.dart';
-import 'package:horizon/presentation/common/colors.dart';
 import 'package:horizon/presentation/common/footer/bloc/footer_bloc.dart';
 import 'package:horizon/presentation/common/footer/bloc/footer_event.dart';
 import 'package:horizon/presentation/common/footer/bloc/footer_state.dart';
+import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:horizon/domain/services/platform_service.dart';
 
@@ -50,8 +50,9 @@ class _FooterState extends State<_Footer> {
     final screenWidth = MediaQuery.of(context).size.width;
 
     TextStyle textStyle() => TextStyle(
-          color: neonBlueDarkTheme,
+          color: isDarkTheme ? Colors.white : Colors.black,
           fontSize: screenWidth < 600 ? 10 : 16,
+          fontWeight: FontWeight.w300,
         );
 
     final config = GetIt.I.get<Config>();
@@ -65,7 +66,9 @@ class _FooterState extends State<_Footer> {
             width: double.infinity,
             height: 30,
             decoration: BoxDecoration(
-              color: isDarkTheme ? darkNavyDarkTheme : greyLightTheme,
+              color: isDarkTheme
+                  ? darkThemeBackgroundColor
+                  : lightThemeBackgroundColorTopGradiant,
             ),
             child: Center(
               child: Wrap(

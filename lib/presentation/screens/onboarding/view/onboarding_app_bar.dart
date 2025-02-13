@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
-import 'package:horizon/presentation/common/colors.dart';
 
 class OnboardingAppBar extends StatelessWidget implements PreferredSizeWidget {
   final bool isDarkMode;
@@ -26,24 +24,16 @@ class OnboardingAppBar extends StatelessWidget implements PreferredSizeWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             isDarkMode
-                ? SvgPicture.asset(
-                    'assets/logo-white.svg',
+                ? Image.asset(
+                    'app-bar-H-dark-mode.png',
                     width: 48,
                     height: 48,
                   )
-                : SvgPicture.asset(
-                    'assets/logo-black.svg',
+                : Image.asset(
+                    'app-bar-H-light-mode.png',
                     width: 48,
                     height: 48,
                   ),
-            const SizedBox(width: 8),
-            Text(
-              'Horizon',
-              style: TextStyle(
-                  fontSize: 34,
-                  fontWeight: FontWeight.bold,
-                  color: isDarkMode ? mainTextWhite : mainTextBlack),
-            ),
           ],
         ),
       ),

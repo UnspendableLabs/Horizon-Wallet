@@ -122,7 +122,12 @@ flutter:
   assets:
     - assets/logo-black.svg
     - assets/logo-white.svg
-    - assets/logo-blue-3d.png
+    - assets/horizon-H-dark-mode.svg
+    - assets/horizon-H-light-mode.svg
+    - assets/rainbow-gradiant.png
+    - assets/horizon-logo.png
+    - assets/app-bar-H-dark-mode.png
+    - assets/app-bar-H-light-mode.png
     - fonts/
 
   #   - .env
@@ -170,5 +175,5 @@ flutter_native_splash:
   android: false
   ios: false
   web: true
-  color: "#1e1e38"
-  image: "assets/logo-blue-3d.png"
+  color: "#0D0D0D"
+  image: "assets/horizon-logo.png"

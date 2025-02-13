@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:horizon/presentation/common/colors.dart';
-import 'package:horizon/presentation/screens/onboarding/view/back_continue_buttons.dart';
+import 'package:horizon/presentation/common/redesign_colors.dart';
+import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 
 class PasswordPrompt extends StatefulWidget {
   final Function() onPressedBack;
@@ -73,7 +73,7 @@ class PasswordPromptState extends State<PasswordPrompt> {
                     style: TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
-                        color: isDarkMode ? mainTextWhite : mainTextBlack),
+                        color: isDarkMode ? Colors.white : Colors.black),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 8),
@@ -114,13 +114,13 @@ class PasswordPromptState extends State<PasswordPrompt> {
                         decoration: InputDecoration(
                           filled: true,
                           fillColor: isDarkMode
-                              ? darkThemeInputColor
-                              : lightThemeInputColor,
+                              ? inputDarkBackground
+                              : inputLightBackground,
                           labelText: 'Password',
                           labelStyle: TextStyle(
                               color: isDarkMode
-                                  ? darkThemeInputLabelColor
-                                  : lightThemeInputLabelColor),
+                                  ? inputDarkLabelColor
+                                  : inputLightLabelColor),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8.0),
                             borderSide: BorderSide.none,
@@ -173,13 +173,13 @@ class PasswordPromptState extends State<PasswordPrompt> {
                           decoration: InputDecoration(
                             filled: true,
                             fillColor: isDarkMode
-                                ? darkThemeInputColor
-                                : lightThemeInputColor,
+                                ? inputDarkBackground
+                                : inputLightBackground,
                             labelText: 'Confirm Password',
                             labelStyle: TextStyle(
                                 color: isDarkMode
-                                    ? darkThemeInputLabelColor
-                                    : lightThemeInputLabelColor),
+                                    ? inputDarkLabelColor
+                                    : inputLightLabelColor),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8.0),
                               borderSide: BorderSide.none,
@@ -212,20 +212,39 @@ class PasswordPromptState extends State<PasswordPrompt> {
                         )
                       : const SizedBox.shrink(),
                   const Spacer(),
-                  BackContinueButtons(
-                    isDarkMode: isDarkMode,
-                    isSmallScreenWidth: isSmallScreen,
-                    onPressedBack: widget.onPressedBack,
-                    onPressedContinue: () {
-                      setState(() {
-                        _submitted = true;
-                      });
-                      if (formKey.currentState!.validate()) {
-                        widget.onPressedContinue(passwordController.text);
-                      }
-                    },
-                    backButtonText: widget.backButtonText,
-                    continueButtonText: widget.continueButtonText,
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.only(right: 8.0),
+                          child: HorizonOutlinedButton(
+                            isDarkMode: isDarkMode,
+                            onPressed: widget.onPressedBack,
+                            buttonText: widget.backButtonText,
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.only(left: 8.0),
+                          child: HorizonGradientButton(
+                            isDarkMode: isDarkMode,
+                            onPressed: () {
+                              setState(() {
+                                _submitted = true;
+                              });
+                              if (formKey.currentState!.validate()) {
+                                widget
+                                    .onPressedContinue(passwordController.text);
+                              }
+                            },
+                            buttonText: widget.continueButtonText,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),

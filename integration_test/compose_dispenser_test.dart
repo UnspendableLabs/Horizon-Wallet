@@ -17,15 +17,11 @@ import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.
 import 'package:horizon/presentation/screens/compose_dispenser/usecase/fetch_form_data.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
-import 'package:horizon/domain/repositories/utxo_repository.dart';
 import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart";
-import 'package:horizon/presentation/session/bloc/session_cubit.dart';
-import 'package:horizon/presentation/session/bloc/session_state.dart';
 import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transaction_usecase.dart';
 import 'package:horizon/presentation/common/usecase/write_local_transaction_usecase.dart';
 import 'package:horizon/presentation/common/usecase/get_virtual_size_usecase.dart';
 
-import 'package:horizon/domain/entities/wallet.dart';
 import 'package:horizon/domain/entities/utxo.dart';
 import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/entities/balance.dart';
@@ -68,35 +64,10 @@ class MockAnalyticsService extends Mock implements AnalyticsService {}
 
 class MockComposeRepository extends Mock implements ComposeRepository {}
 
-class MockUtxoRepository extends Mock implements UtxoRepository {}
-
 class MockDashboardActivityFeedBloc extends Mock
     implements DashboardActivityFeedBloc {}
 
 class MockGetVirtualSizeUseCase extends Mock implements GetVirtualSizeUseCase {}
-
-class MockSessionStateCubit extends Mock implements SessionStateCubit {
-  @override
-  SessionState get state => const SessionState.success(SessionStateSuccess(
-        accounts: [],
-        redirect: false,
-        decryptionKey: "decryption_key",
-        wallet: Wallet(
-          name: 'Test Wallet',
-          uuid: 'test-wallet-uuid',
-          publicKey: '',
-          encryptedPrivKey: '',
-          chainCodeHex: '',
-        ),
-        currentAccountUuid: 'test-account-uuid',
-        addresses: [],
-        currentAddress: Address(
-          address: 'test-address',
-          accountUuid: 'test-account-uuid',
-          index: 0,
-        ),
-      ));
-}
 
 class MockSignAndBroadcastTransactionUseCase extends Mock
     implements SignAndBroadcastTransactionUseCase {}
@@ -155,8 +126,7 @@ void main() {
   late MockAnalyticsService mockAnalyticsService;
   late MockComposeRepository mockComposeRepository;
   late MockWriteLocalTransactionUseCase mockWriteLocalTransactionUseCase;
-  late MockGetVirtualSizeUseCase mockGetVirtualSizeUseCase;
-  late MockUtxoRepository mockUtxoRepository;
+
   late MockLogger mockLogger;
   setUpAll(() async {
     setup();
@@ -168,8 +138,6 @@ void main() {
   });
 
   setUp(() {
-    mockGetVirtualSizeUseCase = MockGetVirtualSizeUseCase();
-    mockUtxoRepository = MockUtxoRepository();
     mockComposeTransactionUseCase = MockComposeTransactionUseCase();
     mockFetchDispenserFormDataUseCase = MockFetchDispenserFormDataUseCase();
     mockSignAndBroadcastTransactionUseCase =

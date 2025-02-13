@@ -5,8 +5,9 @@ import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
-import 'package:horizon/presentation/common/colors.dart';
 import 'package:horizon/presentation/common/footer/view/footer.dart';
+import 'package:horizon/presentation/common/redesign_colors.dart';
+import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 import 'package:horizon/presentation/screens/onboarding/bloc/onboarding_bloc.dart';
 import 'package:horizon/presentation/screens/onboarding/bloc/onboarding_events.dart';
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
@@ -40,283 +41,109 @@ class OnboardingView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final backdropBackgroundColor =
-        isDarkMode ? mediumNavyDarkTheme : lightBlueLightTheme;
-    final leftSideBackgroundColor =
-        isDarkMode ? lightNavyDarkTheme : royalBlueLightTheme;
-    final rightSideBackgroundColor =
-        isDarkMode ? darkNavyDarkTheme : whiteLightTheme;
+    final backdropBackgroundColor = isDarkMode
+        ? darkThemeBackgroundColor
+        : lightThemeBackgroundColorTopGradiant;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final buttonWidth = screenWidth > 768 ? screenWidth * 0.5 : null;
 
     return Scaffold(
       bottomNavigationBar: const Footer(),
       backgroundColor: backdropBackgroundColor,
-      body: LayoutBuilder(
-        builder: (context, constraints) {
-          if (constraints.maxWidth > 768) {
-            return Row(
-              children: [
-                Expanded(
-                  flex: 4,
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(12, 12, 4, 12),
-                    child: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: leftSideBackgroundColor,
-                        gradient: isDarkMode
-                            ? RadialGradient(
-                                center: Alignment.topRight,
-                                radius: 1.0,
-                                colors: [
-                                  blueDarkThemeGradiantColor,
-                                  leftSideBackgroundColor,
-                                ],
-                              )
-                            : null,
-                        borderRadius: BorderRadius.circular(30.0),
-                      ),
-                      child: Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: [
-                            const SizedBox(height: 50, width: 10),
-                            const Stack(
-                              alignment: Alignment.center,
-                              clipBehavior:
-                                  Clip.none, // Ensure ALPHA is not clipped
-                              children: [
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Text(
-                                      'Horizon',
-                                      style: TextStyle(
-                                        color: mainTextWhite,
-                                        fontSize: 50,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                    Text(
-                                      'Wallet',
-                                      style: TextStyle(
-                                        color: neonBlueDarkTheme,
-                                        fontSize: 50,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                            Expanded(
-                              child: Image.asset(
-                                'assets/logo-blue-3d.png',
-                                width: 800,
-                                height: 800,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                Expanded(
-                  flex: 3,
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(4, 12, 12, 12),
-                    child: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: rightSideBackgroundColor,
-                        borderRadius: BorderRadius.circular(30.0),
-                      ),
-                      child: Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            _buildButtons(context, isDarkMode),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            );
-          } else {
-            return SizedBox(
-              height: constraints.maxHeight,
-              width: constraints.maxWidth,
-              child: SingleChildScrollView(
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(
-                    minHeight: constraints.maxHeight,
-                  ),
-                  child: IntrinsicHeight(
-                    child: Padding(
-                      padding: const EdgeInsets.only(top: 16),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: leftSideBackgroundColor,
-                          borderRadius: BorderRadius.circular(30.0),
-                        ),
-                        child: Column(
-                          children: [
-                            const SizedBox(height: 12),
-                            const Column(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
-                                  'Horizon',
-                                  style: TextStyle(
-                                    color: mainTextWhite,
-                                    fontSize: 32.0,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                                Text(
-                                  'Wallet',
-                                  style: TextStyle(
-                                    color: neonBlueDarkTheme,
-                                    fontSize: 32.0,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            Expanded(
-                              child: Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 16),
-                                child: Image.asset(
-                                  'assets/logo-blue-3d.png',
-                                  fit: BoxFit.contain,
-                                ),
-                              ),
-                            ),
-                            Container(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 32),
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  _buildButtons(context, isDarkMode),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(height: 30),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            );
-          }
-        },
-      ),
-    );
-  }
-
-  Widget _buildButtons(BuildContext context, bool isDarkMode) {
-    final backdropBackgroundColor =
-        isDarkMode ? mediumNavyDarkTheme : lightBlueLightTheme;
-    final leftSideBackgroundColor =
-        isDarkMode ? lightNavyDarkTheme : royalBlueLightTheme;
-
-    return BlocBuilder<OnboardingBloc, RemoteDataState<bool>>(
-      builder: (context, state) {
-        final isDisabled = state.maybeWhen(
-          error: (_) => true,
-          orElse: () => false,
-        );
-
-        return Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+      body: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: Column(
           children: [
-            if (state.maybeWhen(
-              error: (message) => true,
-              orElse: () => false,
-            )) ...[
-              SelectableText(
-                state.maybeWhen(
-                  error: (message) => message,
-                  orElse: () => '',
-                ),
-                style: const TextStyle(
-                  color: redErrorText,
-                  fontSize: 14,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 20),
-            ],
-            SizedBox(
-              width: 250,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  elevation: 0,
-                  backgroundColor: leftSideBackgroundColor,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                  textStyle: const TextStyle(
-                      fontSize: 12, fontWeight: FontWeight.w700),
-                ),
-                onPressed: isDisabled
-                    ? null
-                    : () {
-                        final session = context.read<SessionStateCubit>();
-                        session.onOnboardingCreate();
-                      },
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Text(
-                    'CREATE A NEW WALLET',
-                    style: TextStyle(
-                        color: isDarkMode ? neonBlueDarkTheme : mainTextWhite),
+            const Spacer(flex: 1),
+            Expanded(
+              flex: 4,
+              child: Center(
+                child: SizedBox(
+                  width: 109,
+                  height: 116,
+                  child: Image.asset(
+                    isDarkMode
+                        ? 'assets/app-bar-H-dark-mode.png'
+                        : 'assets/app-bar-H-light-mode.png',
+                    fit: BoxFit.contain,
                   ),
                 ),
               ),
             ),
-            const SizedBox(height: 20),
-            SizedBox(
-              width: 250,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                    overlayColor: noBackgroundColor,
-                    elevation: 0,
-                    backgroundColor: isDarkMode
-                        ? noBackgroundColor
-                        : backdropBackgroundColor,
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 32, vertical: 16),
-                    textStyle: const TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
-                    )),
-                onPressed: isDisabled
-                    ? null
-                    : () {
-                        final session = context.read<SessionStateCubit>();
-                        session.onOnboardingImport();
-                      },
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Text(
-                    'LOAD SEED PHRASE',
-                    style: TextStyle(
-                        color: isDarkMode ? mainTextGrey : mainTextBlack),
+            const Spacer(flex: 1),
+            Padding(
+              padding: const EdgeInsets.only(bottom: 32),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  BlocBuilder<OnboardingBloc, RemoteDataState<bool>>(
+                    builder: (context, state) {
+                      final isDisabled = state.maybeWhen(
+                        error: (_) => true,
+                        orElse: () => false,
+                      );
+                      return Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (state.maybeWhen(
+                            error: (message) => true,
+                            orElse: () => false,
+                          )) ...[
+                            SizedBox(
+                              width: buttonWidth,
+                              child: SelectableText(
+                                state.maybeWhen(
+                                  error: (message) => message,
+                                  orElse: () => '',
+                                ),
+                                style: const TextStyle(
+                                  color: Colors.red,
+                                  fontSize: 14,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                            const SizedBox(height: 20),
+                          ],
+                          SizedBox(
+                            width: buttonWidth,
+                            child: HorizonGradientButton(
+                              onPressed: isDisabled
+                                  ? null
+                                  : () {
+                                      final session =
+                                          context.read<SessionStateCubit>();
+                                      session.onOnboardingCreate();
+                                    },
+                              buttonText: 'Create a new wallet',
+                              isDarkMode: isDarkMode,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          SizedBox(
+                            width: buttonWidth,
+                            child: HorizonOutlinedButton(
+                              onPressed: isDisabled
+                                  ? null
+                                  : () {
+                                      final session =
+                                          context.read<SessionStateCubit>();
+                                      session.onOnboardingImport();
+                                    },
+                              buttonText: 'Load seed phrase',
+                              isDarkMode: isDarkMode,
+                            ),
+                          ),
+                        ],
+                      );
+                    },
                   ),
-                ),
+                ],
               ),
             ),
           ],
-        );
-      },
+        ),
+      ),
     );
   }
 }
