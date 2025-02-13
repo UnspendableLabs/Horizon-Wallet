@@ -44,6 +44,8 @@ void main() {
   // Register the mock
   late MockBitcoinRepository mockBitcoinRepository;
   late MockEventsRepository mockEventsRepository;
+  var btcTransactionCallCount = 0; // Separate counter for BTC transactions
+  var cpTransactionCallCount = 0; // Separate counter for Counterparty events
 
   // Define test cases
   final testCases_ = [
@@ -168,6 +170,9 @@ void main() {
 
   group('Onboarding Integration Tests', () {
     setUp(() async {
+      btcTransactionCallCount = 0; // Reset BTC counter
+      cpTransactionCallCount = 0; // Reset CP counter
+
       // Initialize Settings
       await Settings.init(
         cacheProvider: SharePreferenceCache(),
@@ -266,9 +271,8 @@ void main() {
               10; // import 10 horizon accounts, 1 address per account
         } else {
           transactionCount =
-              2; // import 1 counterwallet or freewallet account with 2 address
+              1; // import 1 counterwallet or freewallet account with 20 address
         }
-        var btcTransactionCallCount = 0;
 
         // Setup default mock behavior before any test runs
         when(() => mockBitcoinRepository.getTransactions(any()))
@@ -357,27 +361,16 @@ void main() {
               .get<AddressRepository>()
               .getAllByAccountUuid(account.uuid);
 
-          final expectedAddressCount = testCase['format'] ==
-                  ImportFormat.horizon.description
-              ? 1
-              : 2; // only 2 addresses for freewallet and counterwallet have transactions
+          final expectedAddressCount =
+              testCase['format'] == ImportFormat.horizon.description ? 1 : 20;
 
           expect(addresses.length, expectedAddressCount);
 
-          final testCaseAddresses = testCase['format'] ==
-                  ImportFormat.horizon.description
-              ? (testCase['addresses'] as List<String>)
-              : (testCase['addressesFirstAccount'] as List<
-                  String>); // only first two addresses are expected for freewallet and counterwallet
-          final expectedAddresses = testCase['format'] ==
-                  ImportFormat.horizon.description
-              ? testCaseAddresses
-              : [
-                  testCaseAddresses[1],
-                  testCaseAddresses[3],
-                ]; // only first two bech32 addresses are expected for freewallet and counterwallet, since we first check all transactions for bech32 addresses
-
           for (final address in addresses) {
+            final expectedAddresses =
+                testCase['format'] == ImportFormat.horizon.description
+                    ? (testCase['addresses'] as List<String>)
+                    : (testCase['addressesFirstAccount'] as List<String>);
             expect(expectedAddresses.contains(address.address), isTrue);
             expect(address.address,
                 expectedAddresses.firstWhere((e) => e == address.address));
@@ -410,7 +403,7 @@ void main() {
               10; // import 10 horizon accounts, 1 address per account
         } else {
           transactionCount =
-              20; // check all 20 addresses for events; import 1 counterwallet or freewallet account, returning with 10 address with events
+              1; // import 1 counterwallet or freewallet account with 20 address
         }
 
         // Setup default mock behavior before any test runs
@@ -418,20 +411,11 @@ void main() {
             .thenAnswer((_) async {
           return const Right([]);
         });
-        var cpTransactionCallCount =
-            0; // Separate counter for Counterparty events
-
         when(() => mockEventsRepository.numEventsForAddresses(
             addresses: any(named: 'addresses'))).thenAnswer((_) async {
           if (cpTransactionCallCount < transactionCount) {
-            if (testCase['format'] != ImportFormat.horizon.description) {
-              cpTransactionCallCount++;
-              return cpTransactionCallCount %
-                  2; // for freewallet/counterwallet, this test is contrived so that for every other address, we return events. This will result in 5 legacy addresses and 5 bech32 addresses with events
-            } else {
-              cpTransactionCallCount++;
-              return 1; // for horizon, each address in an account has an event, up to 10 accounts
-            }
+            cpTransactionCallCount++;
+            return 1;
           } else {
             return 0;
           }
@@ -491,31 +475,15 @@ void main() {
               .getAllByAccountUuid(account.uuid);
 
           final expectedAddressCount =
-              testCase['format'] == ImportFormat.horizon.description ? 1 : 10;
+              testCase['format'] == ImportFormat.horizon.description ? 1 : 20;
 
           expect(addresses.length, expectedAddressCount);
 
-          final testCaseAddresses =
-              testCase['format'] == ImportFormat.horizon.description
-                  ? (testCase['addresses'] as List<String>)
-                  : (testCase['addressesFirstAccount'] as List<String>);
-          final expectedAddresses = testCase['format'] ==
-                  ImportFormat.horizon.description
-              ? testCaseAddresses
-              : [
-                  testCaseAddresses[0],
-                  testCaseAddresses[1],
-                  testCaseAddresses[4],
-                  testCaseAddresses[5],
-                  testCaseAddresses[8],
-                  testCaseAddresses[9],
-                  testCaseAddresses[12],
-                  testCaseAddresses[13],
-                  testCaseAddresses[16],
-                  testCaseAddresses[17],
-                ]; // every other bech32/legacy address pair has events for freewallet and counterwallet, up to 5 pairs (10 addresses).
-
           for (final address in addresses) {
+            final expectedAddresses =
+                testCase['format'] == ImportFormat.horizon.description
+                    ? (testCase['addresses'] as List<String>)
+                    : (testCase['addressesFirstAccount'] as List<String>);
             expect(expectedAddresses.contains(address.address), isTrue);
             expect(address.address,
                 expectedAddresses.firstWhere((e) => e == address.address));
@@ -548,10 +516,8 @@ void main() {
               10; // import 10 horizon accounts, 1 address per account
         } else {
           transactionCount =
-              40; // check 40 addresses for events, 20 addresses per account
+              2; // import 2 bip32 accounts with 20 addresses each
         }
-        var btcTransactionCallCount = 0;
-        var cpTransactionCallCount = 0;
 
         // Setup default mock behavior before any test runs
         when(() => mockBitcoinRepository.getTransactions(any()))

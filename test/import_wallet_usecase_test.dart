@@ -134,9 +134,9 @@ void main() {
         when(() => mockConfig.network).thenReturn(network);
 
         when(() => mockMnemonicService.validateMnemonic(any()))
-            .thenReturn(isFreewalletBip39 ? true : true);
+            .thenReturn(true);
         when(() => mockMnemonicService.validateCounterwalletMnemonic(any()))
-            .thenReturn(isFreewalletBip39 ? false : true);
+            .thenReturn(true);
 
         when(() => mockWalletService.deriveRoot(any(), any()))
             .thenAnswer((_) async => horizonWallet);
@@ -170,9 +170,14 @@ void main() {
         var callCount = 0;
         when(() => mockBitcoinRepository.getTransactions(any()))
             .thenAnswer((_) async {
-          // each call is for a different account
-          if (callCount <= 2) {
-            callCount++;
+          callCount++;
+          if (isFreewalletBip39 && callCount == 1) {
+            // for bip32 wallets, the first transaction call is for counterwallet
+            // return an empty list to indicate that no transactions were found on the counterwallet and import should continue with freewallet
+            return const Right([]);
+          }
+          // Return transactions only for first 3 addresses/accounts of the wallet
+          if (callCount <= 3) {
             return Right([
               BitcoinTx(
                 txid: 'test-tx-id',
@@ -269,6 +274,12 @@ void main() {
         verify(() => mockEncryptionService.decrypt(
             currentWallet.encryptedPrivKey, password)).called(1);
 
+        // freewallet bip39: decrypt twice, once for counterwallet and once for freewallet
+        if (isFreewalletBip39) {
+          verify(() => mockEncryptionService.decrypt(
+              counterwallet.encryptedPrivKey, password)).called(1);
+        }
+
         switch (walletType) {
           case WalletType.horizon:
             verifyNever(
@@ -302,21 +313,19 @@ void main() {
                     mockMnemonicService.validateCounterwalletMnemonic(any()))
                 .called(1);
             verify(() => mockMnemonicService.validateMnemonic(any())).called(1);
+            verify(() =>
+                    mockWalletService.deriveRootCounterwallet(any(), any()))
+                .called(1);
             if (isFreewalletBip39) {
               verify(() => mockWalletService.deriveRootFreewallet(any(), any()))
                   .called(1);
-              verifyNever(() =>
-                  mockWalletService.deriveRootCounterwallet(any(), any()));
             } else {
-              verify(() =>
-                      mockWalletService.deriveRootCounterwallet(any(), any()))
-                  .called(1);
               verifyNever(
                   () => mockWalletService.deriveRootFreewallet(any(), any()));
             }
             verifyNever(() => mockWalletService.deriveRoot(any(), any()));
             verify(() => mockBitcoinRepository.getTransactions(any()))
-                .called(6); // called once for each derived address
+                .called(4);
             verify(() => mockAddressService.deriveAddressFreewalletRange(
                 type: AddressType.bech32,
                 privKey: any(named: 'privKey'),
@@ -325,7 +334,7 @@ void main() {
                 account: any(named: 'account'),
                 change: any(named: 'change'),
                 start: any(named: 'start'),
-                end: any(named: 'end'))).called(3);
+                end: any(named: 'end'))).called(4);
             verify(() => mockAddressService.deriveAddressFreewalletRange(
                 type: AddressType.legacy,
                 privKey: any(named: 'privKey'),
@@ -334,16 +343,17 @@ void main() {
                 account: any(named: 'account'),
                 change: any(named: 'change'),
                 start: any(named: 'start'),
-                end: any(named: 'end'))).called(3);
+                end: any(named: 'end'))).called(4);
             verify(() => mockEventsRepository.numEventsForAddresses(
-                    addresses: any(named: 'addresses')))
-                .called(6); // called once for each derived address
+                addresses: any(named: 'addresses'))).called(4);
             verify(() => mockWalletRepository.insert(
                 isFreewalletBip39 ? freewallet : counterwallet)).called(1);
 
             // bip32: insert 2 accounts and 2 addresses for freewallet bip39 since only 2 accounts have transactions, 3 accounts and 3 addresses for counterwallet
-            verify(() => mockAccountRepository.insert(any())).called(2);
-            verify(() => mockAddressRepository.insertMany(any())).called(2);
+            verify(() => mockAccountRepository.insert(any()))
+                .called(isFreewalletBip39 ? 2 : 3);
+            verify(() => mockAddressRepository.insertMany(any()))
+                .called(isFreewalletBip39 ? 2 : 3);
             break;
         }
 
@@ -539,14 +549,11 @@ void main() {
       var callCount = 0;
       when(() => mockBitcoinRepository.getTransactions(any()))
           .thenAnswer((_) async {
-        if (callCount < 2) {
-          callCount++;
-
+        callCount++;
+        if (callCount == 1) {
           // First call (Counterwallet addresses) - return empty
           return const Right([]);
         } else if (callCount == 2) {
-          callCount++;
-
           // Second call (Freewallet addresses) - return transactions
           return Right([
             BitcoinTx(
@@ -567,11 +574,9 @@ void main() {
             )
           ]);
         } else if (callCount == 3) {
-          callCount++;
           // Third call (next account's addresses) - return empty to stop scanning
           return const Right([]);
         }
-        callCount++;
         return const Right([]);
       });
 
@@ -606,9 +611,9 @@ void main() {
           .called(1);
       verify(() => mockWalletService.deriveRootFreewallet(any(), any()))
           .called(1);
-      verify(() => mockBitcoinRepository.getTransactions(any())).called(6);
+      verify(() => mockBitcoinRepository.getTransactions(any())).called(3);
       verify(() => mockEventsRepository.numEventsForAddresses(
-          addresses: any(named: 'addresses'))).called(6);
+          addresses: any(named: 'addresses'))).called(3);
       verify(() => mockWalletRepository.insert(freeWallet)).called(1);
       verify(() => mockAccountRepository.insert(any())).called(1);
       verify(() => mockAddressRepository.insertMany(any())).called(1);
@@ -738,12 +743,8 @@ void main() {
           .called(1);
       verify(() => mockWalletService.deriveRootFreewallet(any(), any()))
           .called(1);
-      verify(() => mockBitcoinRepository.getTransactions(any())).called(
-          4); // two calls for empty counterwallet, two calls for empty freewallet
-      verify(() =>
-          mockEventsRepository.numEventsForAddresses(
-              addresses: any(named: 'addresses'))).called(
-          4); // two calls for empty counterwallet, two calls for empty freewallet
+      verify(() => mockBitcoinRepository.getTransactions(any()))
+          .called(2); // once for empty counterwallet, once for empty freewallet
       verify(() => mockWalletRepository.insert(counterwallet)).called(1);
       verify(() => mockAccountRepository.insert(any())).called(1);
       verify(() => mockAddressRepository.insertMany(any())).called(1);
@@ -1327,10 +1328,9 @@ void main() {
       var callCount = 0;
       when(() => mockBitcoinRepository.getTransactions(any()))
           .thenAnswer((_) async {
-        // Return transactions for first 2 address for 2 accounts
-        if (callCount <= 3) {
-          callCount++;
-
+        callCount++;
+        // Return transactions for first 2 accounts
+        if (callCount <= 2) {
           return Right([
             BitcoinTx(
               txid: 'test-tx-id-$callCount',
@@ -1350,7 +1350,6 @@ void main() {
             )
           ]);
         }
-        callCount++;
         // Return empty list for 3rd account to stop scanning
         return const Right([]);
       });
@@ -1389,9 +1388,9 @@ void main() {
       }
 
       // Verify number of calls
-      verify(() => mockBitcoinRepository.getTransactions(any())).called(6);
+      verify(() => mockBitcoinRepository.getTransactions(any())).called(3);
       verify(() => mockEventsRepository.numEventsForAddresses(
-          addresses: any(named: 'addresses'))).called(6);
+          addresses: any(named: 'addresses'))).called(3);
     });
 
     test('returns single account map when no transactions exist', () async {
@@ -1458,9 +1457,9 @@ void main() {
       expect(firstAccount.importFormat, equals(ImportFormat.counterwallet));
 
       // Verify we only called getTransactions once
-      verify(() => mockBitcoinRepository.getTransactions(any())).called(2);
+      verify(() => mockBitcoinRepository.getTransactions(any())).called(1);
       verify(() => mockEventsRepository.numEventsForAddresses(
-          addresses: any(named: 'addresses'))).called(2);
+          addresses: any(named: 'addresses'))).called(1);
     });
 
     test('throws PasswordException for invalid password', () async {
@@ -1554,10 +1553,9 @@ void main() {
       var callCount = 0;
       when(() => mockBitcoinRepository.getTransactions(any()))
           .thenAnswer((_) async {
-        // Return transactions for first 2 address for 2 accounts
-        if (callCount <= 3) {
-          callCount++;
-
+        callCount++;
+        // Return transactions for first 2 accounts
+        if (callCount <= 2) {
           return Right([
             BitcoinTx(
               txid: 'test-tx-id-$callCount',
@@ -1577,7 +1575,6 @@ void main() {
             )
           ]);
         }
-        callCount++;
         // Return empty list for subsequent accounts
         return const Right([]);
       });
@@ -1616,9 +1613,9 @@ void main() {
       }
 
       // Verify number of calls
-      verify(() => mockBitcoinRepository.getTransactions(any())).called(6);
+      verify(() => mockBitcoinRepository.getTransactions(any())).called(3);
       verify(() => mockEventsRepository.numEventsForAddresses(
-          addresses: any(named: 'addresses'))).called(6);
+          addresses: any(named: 'addresses'))).called(3);
     });
 
     test('returns single account map when no transactions exist', () async {
@@ -1685,9 +1682,9 @@ void main() {
       expect(firstAccount.importFormat, equals(ImportFormat.freewallet));
 
       // Verify we only called getTransactions once
-      verify(() => mockBitcoinRepository.getTransactions(any())).called(2);
+      verify(() => mockBitcoinRepository.getTransactions(any())).called(1);
       verify(() => mockEventsRepository.numEventsForAddresses(
-          addresses: any(named: 'addresses'))).called(2);
+          addresses: any(named: 'addresses'))).called(1);
     });
 
     test('throws PasswordException for invalid password', () async {
@@ -2209,12 +2206,11 @@ void main() {
     var callCount = 0;
     when(() => mockEventsRepository.numEventsForAddresses(
         addresses: any(named: 'addresses'))).thenAnswer((_) async {
+      callCount++;
       // Return 1 counterparty event for first 2 accounts, 0 for the 3rd
-      if (callCount <= 3) {
-        callCount++;
+      if (callCount <= 2) {
         return 1;
       }
-      callCount++;
       return 0;
     });
 
@@ -2234,14 +2230,14 @@ void main() {
     );
 
     // Verify
-    verify(() => mockBitcoinRepository.getTransactions(any())).called(6);
+    verify(() => mockBitcoinRepository.getTransactions(any())).called(3);
     verify(() => mockEventsRepository.numEventsForAddresses(
-        addresses: any(named: 'addresses'))).called(6);
+        addresses: any(named: 'addresses'))).called(3);
     verify(() => mockWalletRepository.insert(wallet)).called(1);
     verify(() => mockAccountRepository.insert(any()))
         .called(2); // Should create 2 accounts
     verify(() => mockAddressRepository.insertMany(any()))
-        .called(2); // Should create addresses for 2 account
+        .called(2); // Should create addresses for 2 accounts
   });
 
   test(
@@ -2317,12 +2313,11 @@ void main() {
     var callCount = 0;
     when(() => mockEventsRepository.numEventsForAddresses(
         addresses: any(named: 'addresses'))).thenAnswer((_) async {
+      callCount++;
       // Return 1 counterparty event for first 2 accounts, 0 for the 3rd
-      if (callCount <= 3) {
-        callCount++;
+      if (callCount <= 2) {
         return 1;
       }
-      callCount++;
       return 0;
     });
 
@@ -2342,9 +2337,9 @@ void main() {
     );
 
     // Verify
-    verify(() => mockBitcoinRepository.getTransactions(any())).called(6);
+    verify(() => mockBitcoinRepository.getTransactions(any())).called(3);
     verify(() => mockEventsRepository.numEventsForAddresses(
-        addresses: any(named: 'addresses'))).called(6);
+        addresses: any(named: 'addresses'))).called(3);
     verify(() => mockWalletRepository.insert(wallet)).called(1);
     verify(() => mockAccountRepository.insert(any()))
         .called(2); // Should create 2 accounts
@@ -2563,12 +2558,11 @@ void main() {
     var xcpCallCount = 0;
     when(() => mockEventsRepository.numEventsForAddresses(
         addresses: any(named: 'addresses'))).thenAnswer((_) async {
+      xcpCallCount++;
       // Return 1 counterparty event for first 2 accounts, 0 for the 3rd
-      if (xcpCallCount <= 3) {
-        xcpCallCount++;
+      if (xcpCallCount <= 2) {
         return 1;
       }
-      xcpCallCount++;
       return 0;
     });
 
@@ -2587,9 +2581,9 @@ void main() {
     );
 
     // Verify
-    verify(() => mockBitcoinRepository.getTransactions(any())).called(6);
+    verify(() => mockBitcoinRepository.getTransactions(any())).called(3);
     verify(() => mockEventsRepository.numEventsForAddresses(
-        addresses: any(named: 'addresses'))).called(6);
+        addresses: any(named: 'addresses'))).called(3);
     verify(() => mockWalletRepository.insert(wallet)).called(1);
     verify(() => mockAccountRepository.insert(any()))
         .called(2); // Should create 2 accounts (0,1)
@@ -2665,8 +2659,8 @@ void main() {
     var btcCallCount = 0;
     when(() => mockBitcoinRepository.getTransactions(any()))
         .thenAnswer((_) async {
-      if (btcCallCount <= 3) {
-        btcCallCount++;
+      btcCallCount++;
+      if (btcCallCount <= 2) {
         return Right([
           BitcoinTx(
             txid: 'test-tx-id',
@@ -2686,20 +2680,17 @@ void main() {
           )
         ]);
       }
-      btcCallCount++;
       return const Right([]);
     });
 
     var xcpCallCount = 0;
     when(() => mockEventsRepository.numEventsForAddresses(
         addresses: any(named: 'addresses'))).thenAnswer((_) async {
+      xcpCallCount++;
       // Return 1 counterparty event for accounts 1-2, 0 for others
-      if (xcpCallCount == 4 || xcpCallCount == 5) {
-        xcpCallCount++;
-
+      if (xcpCallCount == 2 || xcpCallCount == 3) {
         return 1;
       }
-      xcpCallCount++;
       return 0;
     });
 
@@ -2718,13 +2709,13 @@ void main() {
     );
 
     // Verify
-    verify(() => mockBitcoinRepository.getTransactions(any())).called(8);
+    verify(() => mockBitcoinRepository.getTransactions(any())).called(4);
     verify(() => mockEventsRepository.numEventsForAddresses(
-        addresses: any(named: 'addresses'))).called(8);
+        addresses: any(named: 'addresses'))).called(4);
     verify(() => mockWalletRepository.insert(wallet)).called(1);
     verify(() => mockAccountRepository.insert(any()))
         .called(3); // Should create 3 accounts (0,1,2)
     verify(() => mockAddressRepository.insertMany(any()))
-        .called(3); // Should create adresseses for 3 addresses
+        .called(3); // Should create addresses for 3 accounts
   });
 }
