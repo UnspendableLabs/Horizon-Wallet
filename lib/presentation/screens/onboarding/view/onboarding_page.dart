@@ -119,7 +119,7 @@ class OnboardingView extends StatelessWidget {
                               isDarkMode: isDarkMode,
                             ),
                           ),
-                          const SizedBox(height: 10),
+                          const SizedBox(height: 16),
                           SizedBox(
                             width: buttonWidth,
                             child: HorizonOutlinedButton(

@@ -203,21 +203,23 @@ class ImportWalletUseCase {
             start: 0,
             end: 9);
 
-    // import the first account + addresses, even if there are no transactions
-    accountsWithBalances[account] = [
-      ...addressesBech32,
-      ...addressesLegacy,
-    ];
+    // Check each address individually for transactions
+    List<Address> addressesWithTransactions = [];
 
-    final allAddressesHaveTransactions = await addressesHaveTransactions([
-      ...addressesBech32,
-      ...addressesLegacy,
-    ]);
+    for (var address in [...addressesBech32, ...addressesLegacy]) {
+      if (await addressesHaveTransactions([address])) {
+        addressesWithTransactions.add(address);
+        hasTransactions = true;
+      }
+    }
 
-    // if there are any transactions on the first account, check any following accounts for transactions, up to 20 accounts
-    if (allAddressesHaveTransactions) {
-      hasTransactions = true;
-      // check any subsequent accounts for transactions, up to 20 accounts
+    // For first account: if no transactions, add all addresses
+    // If has transactions, only add addresses with transactions
+
+    if (hasTransactions) {
+      accountsWithBalances[account] = addressesWithTransactions;
+
+      // Check subsequent accounts (up to 20) if first account had transactions
       for (int i = 1; i < DEFAULT_NUM_ACCOUNTS; i++) {
         Account nextAccount = Account(
             name: 'ACCOUNT ${i + 1}',
@@ -250,21 +252,27 @@ class ImportWalletUseCase {
                 start: 0,
                 end: 9);
 
-        final bool allAddressesHaveTransactions =
-            await addressesHaveTransactions([
-          ...nextAddressesBech32,
-          ...nextAddressesLegacy,
-        ]);
-        if (!allAddressesHaveTransactions) {
-          // break at the first account with no transactions
-          break;
+        List<Address> nextAddressesWithTransactions = [];
+        bool hasNextAccountTransactions = false;
+
+        // Check each address individually
+        for (var address in [...nextAddressesBech32, ...nextAddressesLegacy]) {
+          if (await addressesHaveTransactions([address])) {
+            nextAddressesWithTransactions.add(address);
+            hasNextAccountTransactions = true;
+          }
         }
-        accountsWithBalances[nextAccount] = [
-          ...nextAddressesBech32,
-          ...nextAddressesLegacy,
-        ];
+        if (!hasNextAccountTransactions) {
+          break; // Stop if no transactions found on any address
+        }
+
+        accountsWithBalances[nextAccount] = nextAddressesWithTransactions;
       }
+    } else {
+      // No transactions on first account - add all addresses
+      accountsWithBalances[account] = [...addressesBech32, ...addressesLegacy];
     }
+
     return (accountsWithBalances, hasTransactions);
   }
 
