@@ -169,8 +169,6 @@ void main() {
 
       // Reset GetIt
       await GetIt.I.reset();
-
-      // Add a small delay to ensure cleanup is complete
     });
 
     for (final testCase in testCases) {
@@ -198,10 +196,10 @@ void main() {
         ));
 
         // Wait for the app to settle
-        await tester.pumpAndSettle(const Duration(seconds: 1));
+        await tester.pumpAndSettle();
 
         // Find and tap the "LOAD SEED PHRASE" button
-        final importSeedButton = find.text('LOAD SEED PHRASE');
+        final importSeedButton = find.text('Load seed phrase');
         expect(importSeedButton, findsOneWidget);
         await tester.tap(importSeedButton);
         await tester.pumpAndSettle();
@@ -224,7 +222,7 @@ void main() {
         await tester.pumpAndSettle();
 
         // Tap the "CONTINUE" button
-        final continueButton = find.text('CONTINUE');
+        final continueButton = find.text('Continue');
         expect(continueButton, findsOneWidget);
         await tester.tap(continueButton);
         await tester.pumpAndSettle();
@@ -236,7 +234,7 @@ void main() {
         await tester.pumpAndSettle();
 
         // Tap the "CONTINUE" button
-        final continueButtonAfterSeed = find.text('CONTINUE');
+        final continueButtonAfterSeed = find.text('Continue');
         expect(continueButtonAfterSeed, findsOneWidget);
         await tester.tap(continueButtonAfterSeed);
         await tester.pumpAndSettle();
@@ -255,7 +253,7 @@ void main() {
         await tester.pumpAndSettle();
 
         // Ensure the "LOGIN" button is visible
-        final loginButton = find.text('LOGIN');
+        final loginButton = find.text('Load wallet');
         expect(loginButton, findsOneWidget);
 
         await tester.ensureVisible(loginButton);

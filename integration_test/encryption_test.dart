@@ -12,12 +12,10 @@ void main() {
 
   group('EncryptionService Integration Tests -- web worker', () {
     late EncryptionService encryptionService;
-    late EncryptionServiceWebWorkerImpl fallbackEncryptionService;
 
     setUpAll(() async {
       setup();
       encryptionService = GetIt.instance<EncryptionService>();
-      fallbackEncryptionService = EncryptionServiceWebWorkerImpl();
     });
 
     testWidgets('Encrypt and decrypt with new Argon2 method',

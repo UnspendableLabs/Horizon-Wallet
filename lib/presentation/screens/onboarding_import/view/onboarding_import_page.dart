@@ -5,9 +5,9 @@ import 'package:get_it/get_it.dart';
 import 'package:horizon/common/constants.dart';
 import 'package:horizon/domain/services/mnemonic_service.dart';
 import 'package:horizon/domain/services/wallet_service.dart';
-import 'package:horizon/presentation/common/colors.dart';
+import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/common/usecase/import_wallet_usecase.dart';
-import 'package:horizon/presentation/screens/onboarding/view/back_continue_buttons.dart';
+import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 import 'package:horizon/presentation/screens/onboarding/view/import_format_dropdown.dart';
 import 'package:horizon/presentation/screens/onboarding/view/onboarding_app_bar.dart';
 import 'package:horizon/presentation/screens/onboarding/view/password_prompt.dart';
@@ -58,10 +58,9 @@ class OnboardingImportPageState extends State<OnboardingImportPage> {
             vertical: screenSize.height / 16,
           );
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final backdropBackgroundColor =
-        isDarkMode ? mediumNavyDarkTheme : lightBlueLightTheme;
-    final scaffoldBackgroundColor =
-        isDarkMode ? lightNavyDarkTheme : whiteLightTheme;
+    final backdropBackgroundColor = isDarkMode
+        ? darkThemeBackgroundColor
+        : lightThemeBackgroundColorTopGradiant;
 
     return Container(
       decoration: BoxDecoration(
@@ -70,12 +69,12 @@ class OnboardingImportPageState extends State<OnboardingImportPage> {
       padding: padding,
       child: Container(
         decoration: BoxDecoration(
-          color: scaffoldBackgroundColor,
+          color: backdropBackgroundColor,
           borderRadius: BorderRadius.circular(30),
         ),
         padding: const EdgeInsets.all(12),
         child: Scaffold(
-          backgroundColor: scaffoldBackgroundColor,
+          backgroundColor: backdropBackgroundColor,
           body: BlocListener<OnboardingImportBloc, OnboardingImportState>(
             listener: (context, state) async {
               if (state.importState is ImportStateSuccess) {
@@ -88,16 +87,16 @@ class OnboardingImportPageState extends State<OnboardingImportPage> {
                 builder: (context, state) {
               return Container(
                 decoration: BoxDecoration(
-                  color: scaffoldBackgroundColor,
+                  color: backdropBackgroundColor,
                   borderRadius: BorderRadius.circular(30),
                 ),
                 child: Scaffold(
-                  backgroundColor: scaffoldBackgroundColor,
+                  backgroundColor: backdropBackgroundColor,
                   appBar: OnboardingAppBar(
                     isDarkMode: isDarkMode,
                     isSmallScreenWidth: isSmallScreen,
                     isSmallScreenHeight: isSmallScreen,
-                    scaffoldBackgroundColor: scaffoldBackgroundColor,
+                    scaffoldBackgroundColor: backdropBackgroundColor,
                   ),
                   body: Stack(
                     children: [
@@ -123,8 +122,8 @@ class OnboardingImportPageState extends State<OnboardingImportPage> {
                                         .read<OnboardingImportBloc>()
                                         .add(ImportWallet(password: password));
                                   },
-                                  backButtonText: 'CANCEL',
-                                  continueButtonText: 'LOGIN',
+                                  backButtonText: 'Cancel',
+                                  continueButtonText: 'Load wallet',
                                   optionalErrorWidget: state.importState
                                           is ImportStateError
                                       ? Align(
@@ -140,12 +139,12 @@ class OnboardingImportPageState extends State<OnboardingImportPage> {
                                               mainAxisSize: MainAxisSize.min,
                                               children: [
                                                 const Icon(Icons.info,
-                                                    color: redErrorText),
+                                                    color: Colors.red),
                                                 const SizedBox(width: 4),
                                                 SelectableText(
                                                   state.importState.message,
                                                   style: const TextStyle(
-                                                      color: redErrorText),
+                                                      color: Colors.red),
                                                 ),
                                               ],
                                             ),
@@ -214,18 +213,38 @@ class _ChooseFormatState extends State<ChooseFormat> {
           selectedFormat: selectedFormat,
         ),
         const SizedBox(height: 16),
-        BackContinueButtons(
-          isDarkMode: isDarkMode,
-          isSmallScreenWidth: isSmallScreen,
-          backButtonText: 'CANCEL',
-          continueButtonText: 'CONTINUE',
-          onPressedBack: () {
-            final session = context.read<SessionStateCubit>();
-            session.onOnboarding();
-          },
-          onPressedContinue: () {
-            context.read<OnboardingImportBloc>().add(ImportFormatSubmitted());
-          },
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.only(right: 8.0),
+                child: HorizonOutlinedButton(
+                  isDarkMode: isDarkMode,
+                  onPressed: () {
+                    final session = context.read<SessionStateCubit>();
+                    session.onOnboarding();
+                  },
+                  buttonText: 'Cancel',
+                ),
+              ),
+            ),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.only(left: 8.0),
+                child: HorizonGradientButton(
+                  isDarkMode: isDarkMode,
+                  onPressed: () {
+                    context
+                        .read<OnboardingImportBloc>()
+                        .add(ImportFormatSubmitted());
+                  },
+                  buttonText: 'Continue',
+                ),
+              ),
+            ),
+          ],
         ),
       ],
     );
@@ -275,8 +294,9 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
   Widget build(BuildContext context) {
     final isSmallScreen = MediaQuery.of(context).size.width < 768;
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final scaffoldBackgroundColor =
-        isDarkMode ? lightNavyDarkTheme : whiteLightTheme;
+    final scaffoldBackgroundColor = isDarkMode
+        ? darkThemeBackgroundColor
+        : lightThemeBackgroundColorTopGradiant;
     return Scaffold(
       backgroundColor: scaffoldBackgroundColor,
       body: Column(
@@ -293,11 +313,11 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(Icons.info, color: redErrorText),
+                        const Icon(Icons.info, color: Colors.red),
                         const SizedBox(width: 4),
                         SelectableText(
                           widget.mnemonicErrorState!,
-                          style: const TextStyle(color: redErrorText),
+                          style: const TextStyle(color: Colors.red),
                         ),
                       ],
                     ),
@@ -321,56 +341,81 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
               },
               icon: Icon(
                 _showSeedPhrase ? Icons.visibility_off : Icons.visibility,
-                color: isDarkMode ? mainTextWhite : mainTextBlack,
+                color: isDarkMode ? Colors.white : Colors.black,
               ),
               label: Text(
                 _showSeedPhrase ? 'Hide Seed Phrase' : 'Show Seed Phrase',
                 style: TextStyle(
-                  color: isDarkMode ? mainTextWhite : mainTextBlack,
+                  color: isDarkMode ? Colors.white : Colors.black,
                 ),
               ),
             ),
           ),
-          BackContinueButtons(
-            isDarkMode: isDarkMode,
-            isSmallScreenWidth: isSmallScreen,
-            backButtonText: 'CANCEL',
-            continueButtonText: 'CONTINUE',
-            onPressedBack: () {
-              final session = context.read<SessionStateCubit>();
-              session.onOnboarding();
-            },
-            onPressedContinue: () {
-              context.read<OnboardingImportBloc>().add(MnemonicSubmitted(
-                    mnemonic: controllers
-                        .map((controller) => controller.text)
-                        .join(' ')
-                        .trim(),
-                  ));
-            },
-            errorWidget: !isSmallScreen && widget.mnemonicErrorState != null
-                ? Align(
-                    alignment: Alignment.center,
-                    child: Container(
-                      padding: const EdgeInsets.all(8.0),
-                      decoration: BoxDecoration(
-                        color: redErrorTextTransparent,
-                        borderRadius: BorderRadius.circular(40.0),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(Icons.info, color: redErrorText),
-                          const SizedBox(width: 4),
-                          SelectableText(
-                            widget.mnemonicErrorState!,
-                            style: const TextStyle(color: redErrorText),
-                          ),
-                        ],
+          !isSmallScreen && widget.mnemonicErrorState != null
+              ? Column(
+                  children: [
+                    Align(
+                      alignment: Alignment.center,
+                      child: Container(
+                        padding: const EdgeInsets.all(8.0),
+                        decoration: BoxDecoration(
+                          color: redErrorTextTransparent,
+                          borderRadius: BorderRadius.circular(40.0),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.info, color: Colors.red),
+                            const SizedBox(width: 4),
+                            SelectableText(
+                              widget.mnemonicErrorState!,
+                              style: const TextStyle(color: Colors.red),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                  )
-                : null,
+                    const SizedBox(height: 16),
+                  ],
+                )
+              : const SizedBox.shrink(),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.only(right: 8.0),
+                  child: HorizonOutlinedButton(
+                    isDarkMode: isDarkMode,
+                    onPressed: () {
+                      final session = context.read<SessionStateCubit>();
+                      session.onOnboarding();
+                    },
+                    buttonText: 'Cancel',
+                  ),
+                ),
+              ),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 8.0),
+                  child: HorizonGradientButton(
+                    isDarkMode: isDarkMode,
+                    onPressed: () {
+                      context
+                          .read<OnboardingImportBloc>()
+                          .add(MnemonicSubmitted(
+                            mnemonic: controllers
+                                .map((controller) => controller.text)
+                                .join(' ')
+                                .trim(),
+                          ));
+                    },
+                    buttonText: 'Continue',
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -447,7 +492,7 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.normal,
-                color: isDarkMode ? mainTextWhite : mainTextBlack,
+                color: isDarkMode ? Colors.white : Colors.black,
               ),
               textAlign: TextAlign.right,
             ),
@@ -464,15 +509,14 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
                 decoration: InputDecoration(
                   filled: true,
                   fillColor:
-                      isDarkMode ? darkThemeInputColor : lightThemeInputColor,
+                      isDarkMode ? inputDarkBackground : inputLightBackground,
                   contentPadding:
                       const EdgeInsets.symmetric(vertical: 0, horizontal: 8),
                   hintText: 'Word ${index + 1}',
                   hintStyle: TextStyle(
                     fontSize: 14,
-                    color: isDarkMode
-                        ? darkThemeInputLabelColor
-                        : lightThemeInputLabelColor,
+                    color:
+                        isDarkMode ? inputDarkLabelColor : inputLightLabelColor,
                   ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8.0),
@@ -499,7 +543,7 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
               "${index + 1}. ",
               style: TextStyle(
                 fontWeight: FontWeight.normal,
-                color: isDarkMode ? mainTextWhite : mainTextBlack,
+                color: isDarkMode ? Colors.white : Colors.black,
               ),
               textAlign: TextAlign.right,
             ),
@@ -514,13 +558,12 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
               decoration: InputDecoration(
                 filled: true,
                 fillColor:
-                    isDarkMode ? darkThemeInputColor : lightThemeInputColor,
+                    isDarkMode ? inputDarkBackground : inputLightBackground,
                 labelText: 'Word ${index + 1}',
                 labelStyle: TextStyle(
                   fontWeight: FontWeight.normal,
-                  color: isDarkMode
-                      ? darkThemeInputLabelColor
-                      : lightThemeInputLabelColor,
+                  color:
+                      isDarkMode ? inputDarkLabelColor : inputLightLabelColor,
                 ),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8.0),

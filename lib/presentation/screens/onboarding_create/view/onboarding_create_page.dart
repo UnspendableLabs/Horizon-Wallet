@@ -196,7 +196,7 @@ class OnboardingCreatePageState extends State<OnboardingCreatePage> {
                                                 password: password));
                                       },
                                       backButtonText: 'Cancel',
-                                      continueButtonText: 'Continue',
+                                      continueButtonText: 'Create Wallet',
                                     ),
                                 };
                               },
@@ -494,7 +494,34 @@ class _ConfirmSeedInputFieldsState extends State<ConfirmSeedInputFields> {
               ),
             ),
           ),
-          // if (isSmallScreen) const SizedBox(height: 16),
+          !isSmallScreen && widget.mnemonicErrorState != null
+              ? Column(
+                  children: [
+                    Align(
+                      alignment: Alignment.center,
+                      child: Container(
+                        padding: const EdgeInsets.all(8.0),
+                        decoration: BoxDecoration(
+                          color: redErrorTextTransparent,
+                          borderRadius: BorderRadius.circular(40.0),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.info, color: Colors.red),
+                            const SizedBox(width: 4),
+                            SelectableText(
+                              widget.mnemonicErrorState!.message,
+                              style: const TextStyle(color: Colors.red),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+                )
+              : const SizedBox.shrink(),
           Row(
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -530,29 +557,6 @@ class _ConfirmSeedInputFieldsState extends State<ConfirmSeedInputFields> {
               ),
             ],
           ),
-          !isSmallScreen && widget.mnemonicErrorState != null
-              ? Align(
-                  alignment: Alignment.center,
-                  child: Container(
-                    padding: const EdgeInsets.all(8.0),
-                    decoration: BoxDecoration(
-                      color: redErrorTextTransparent,
-                      borderRadius: BorderRadius.circular(40.0),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(Icons.info, color: Colors.red),
-                        const SizedBox(width: 4),
-                        SelectableText(
-                          widget.mnemonicErrorState!.message,
-                          style: const TextStyle(color: Colors.red),
-                        ),
-                      ],
-                    ),
-                  ),
-                )
-              : const SizedBox.shrink(),
         ],
       ),
     );

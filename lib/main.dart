@@ -30,7 +30,6 @@ import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/error_service.dart';
 import 'package:horizon/domain/services/imported_address_service.dart';
 import 'package:horizon/domain/services/wallet_service.dart';
-import 'package:horizon/presentation/common/colors.dart';
 import 'package:horizon/presentation/common/footer/view/footer.dart';
 import 'package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_bloc.dart';
 import 'package:horizon/presentation/screens/dashboard/address_form/bloc/address_form_bloc.dart';
@@ -526,7 +525,7 @@ class MyApp extends StatelessWidget {
   final Version latestVersion;
   final VersionWarning? warning;
 
-  MyApp({
+  const MyApp({
     required this.currentVersion,
     required this.latestVersion,
     this.warning,
