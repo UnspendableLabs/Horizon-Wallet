@@ -344,6 +344,10 @@ class AppRouter {
             onGoHome: () => context.go('/dashboard'),
           ),
       redirect: (context, state) async {
+        if (state.matchedLocation == "/db") {
+          return "/db";
+        }
+
         if (state.matchedLocation == "/privacy-policy") {
           return "/privacy-policy";
         }

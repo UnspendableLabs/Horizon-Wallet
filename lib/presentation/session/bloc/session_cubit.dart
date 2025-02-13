@@ -53,6 +53,18 @@ class SessionStateCubit extends Cubit<SessionState> {
       : super(const SessionState.initial());
 
   Future<GetSessionStateResponse> _getSessionState() async {
+    Wallet? wallet = await walletRepository.getCurrentWallet();
+
+    if (wallet == null) {
+      return NoWallet();
+    }
+
+    final decryptionKey = await inMemoryKeyRepository.get();
+
+    if (decryptionKey == null) {
+      return LoggedOut();
+    }
+
     final storedDeadlineString =
         await kvService.read(key: kInactivityDeadlineKey);
 
@@ -61,7 +73,7 @@ class SessionStateCubit extends Cubit<SessionState> {
       if (storedDeadline != null) {
         // If the deadline has past, session is invali
         if (DateTime.now().isAfter(storedDeadline)) {
-          // clear it
+          // logout effects
           await inMemoryKeyRepository.delete();
           await kvService.delete(key: kInactivityDeadlineKey);
 
@@ -70,30 +82,12 @@ class SessionStateCubit extends Cubit<SessionState> {
       }
     }
 
-    final decryptionKey = await inMemoryKeyRepository.get();
-
-    Wallet? wallet = await walletRepository.getCurrentWallet();
-
-    // if we have neither a key nor a wallet, go to onboarding.
-    // otherwise, redirect to logout page
-    if (decryptionKey == null) {
-      if (wallet != null) {
-        return LoggedOut();
-        // emit(const SessionState.loggedOut());
-        //
-        // return;
-      }
-      // emit(const SessionState.onboarding(Onboarding.initial()));
-      return NoWallet();
-    }
-
     try {
-      encryptionService.decryptWithKey(wallet!.encryptedPrivKey, decryptionKey);
+      encryptionService.decryptWithKey(wallet.encryptedPrivKey, decryptionKey);
 
       return LoggedIn(wallet: wallet, decryptionKey: decryptionKey);
     } catch (e) {
       return LoggedOut();
-      // emit(const SessionState.loggedOut());
     }
   }
 
@@ -205,8 +199,10 @@ class SessionStateCubit extends Cubit<SessionState> {
     emit(state_);
   }
 
-  void onLogout() {
-    inMemoryKeyRepository.delete();
+  void onLogout() async {
+    // logout effects
+    await inMemoryKeyRepository.delete();
+    await kvService.delete(key: kInactivityDeadlineKey);
 
     emit(const SessionState.loggedOut());
   }

@@ -36,6 +36,7 @@ import "package:horizon/presentation/screens/dashboard/account_form/bloc/account
 import "package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_state.dart";
 import "package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_event.dart";
 import 'package:horizon/domain/repositories/settings_repository.dart';
+import 'package:horizon/domain/services/secure_kv_service.dart';
 
 class WalletItemSidebar extends StatefulWidget {
   const WalletItemSidebar({super.key});
@@ -487,6 +488,7 @@ class HorizonAppBarContent extends StatelessWidget {
                 const SizedBox(width: 8),
                 BlocProvider(
                   create: (context) => ResetBloc(
+                    kvService: GetIt.I.get<SecureKVService>(),
                     inMemoryKeyRepository: GetIt.I.get<InMemoryKeyRepository>(),
                     walletRepository: GetIt.I.get<WalletRepository>(),
                     accountRepository: GetIt.I.get<AccountRepository>(),
