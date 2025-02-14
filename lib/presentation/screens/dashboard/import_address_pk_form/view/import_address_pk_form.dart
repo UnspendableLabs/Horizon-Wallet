@@ -57,7 +57,7 @@ class _ImportAddressPkFormState extends State<ImportAddressPkForm> {
               ));
 
               // Update accounts in session
-              session.refreshAndSelectNewImportedAddress(state.address);
+              session.refresh();
             },
           _ => () => {} // TODO: add noop util
         };

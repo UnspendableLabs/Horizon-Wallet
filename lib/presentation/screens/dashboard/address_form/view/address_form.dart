@@ -54,8 +54,7 @@ class _AddAccountFormState extends State<AddAddressForm> {
           Navigator.of(widget.modalContext!).pop();
         }
 
-        session.refreshAndSelectNewAddress(
-            addresses['newAddresses'].first.address, addresses['accountUuid']);
+        session.refresh();
 
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
           content: Text("Success"),
