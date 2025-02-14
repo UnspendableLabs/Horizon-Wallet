@@ -86,6 +86,7 @@ dependencies:
   pub_semver: ^2.1.4
   flutter_native_splash: ^2.4.3
   sentry_flutter: ^8.11.0
+  lottie: ^3.2.0
 
 dev_dependencies:
   floor_generator: ^1.4.2
