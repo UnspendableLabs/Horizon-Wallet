@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:formz/formz.dart';
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
+import 'package:lottie/lottie.dart';
 import "./login_form_bloc.dart" as b;
 
 class LoginForm extends StatefulWidget {
@@ -41,10 +42,15 @@ class _LoginFormState extends State<LoginForm> {
           child: Column(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                Image.asset(
-                  'horizon-logo.png',
-                  height: 160,
-                  width: 160,
+                Center(
+                  child: SizedBox(
+                    width: 109,
+                    height: 116,
+                    child: Lottie.asset(
+                      'logo_animation-gradient.json',
+                      fit: BoxFit.contain,
+                    ),
+                  ),
                 ),
                 TextField(
                   onChanged: (value) => context

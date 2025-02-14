@@ -12,6 +12,7 @@ import 'package:horizon/presentation/screens/onboarding/bloc/onboarding_bloc.dar
 import 'package:horizon/presentation/screens/onboarding/bloc/onboarding_events.dart';
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:horizon/remote_data_bloc/remote_data_state.dart';
+import 'package:lottie/lottie.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -61,10 +62,8 @@ class OnboardingView extends StatelessWidget {
                 child: SizedBox(
                   width: 109,
                   height: 116,
-                  child: Image.asset(
-                    isDarkMode
-                        ? 'assets/app-bar-H-dark-mode.png'
-                        : 'assets/app-bar-H-light-mode.png',
+                  child: Lottie.asset(
+                    'logo_animation-gradient.json',
                     fit: BoxFit.contain,
                   ),
                 ),
