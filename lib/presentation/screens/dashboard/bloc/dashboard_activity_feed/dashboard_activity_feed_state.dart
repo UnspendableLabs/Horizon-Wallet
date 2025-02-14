@@ -20,14 +20,12 @@ class DashboardActivityFeedStateLoading extends DashboardActivityFeedState {}
 
 class DashboardActivityFeedStateCompleteOk extends DashboardActivityFeedState {
   final List<ActivityFeedItem> transactions;
-  final int newTransactionCount;
   final Cursor? nextCursor;
   final String? mostRecentCounterpartyEventHash;
   final String? mostRecentBitcoinTxHash;
 
   const DashboardActivityFeedStateCompleteOk({
     required this.transactions,
-    required this.newTransactionCount,
     required this.nextCursor,
     required this.mostRecentCounterpartyEventHash,
     required this.mostRecentBitcoinTxHash,
@@ -36,7 +34,6 @@ class DashboardActivityFeedStateCompleteOk extends DashboardActivityFeedState {
   @override
   List<Object?> get props => [
         List<Object?>.from(transactions),
-        newTransactionCount,
         nextCursor,
         mostRecentCounterpartyEventHash
       ];
@@ -52,20 +49,17 @@ class DashboardActivityFeedStateCompleteError
 
 class DashboardActivityFeedStateReloadingOk extends DashboardActivityFeedState {
   final List<ActivityFeedItem> transactions;
-  final int newTransactionCount;
+  // final int newTransactionCount;
 
-  const DashboardActivityFeedStateReloadingOk(
-      {required this.transactions, required this.newTransactionCount});
+  const DashboardActivityFeedStateReloadingOk({required this.transactions});
 
-  copyWith({List<ActivityFeedItem>? transactions, int? newTransactionCount}) {
+  copyWith({List<ActivityFeedItem>? transactions}) {
     return DashboardActivityFeedStateReloadingOk(
-        transactions: transactions ?? this.transactions,
-        newTransactionCount: newTransactionCount ?? this.newTransactionCount);
+        transactions: transactions ?? this.transactions);
   }
 
   @override
-  List<Object> get props =>
-      [List<Object>.from(transactions), newTransactionCount];
+  List<Object> get props => [List<Object>.from(transactions)];
 }
 
 class DashboardActivityFeedStateReloadingError

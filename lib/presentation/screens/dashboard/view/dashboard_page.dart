@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/common/fn.dart';
+import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/domain/entities/account.dart';
 import 'package:horizon/domain/entities/action.dart' as URLAction;
 import 'package:horizon/domain/entities/extension_rpc.dart';
@@ -12,7 +13,9 @@ import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/asset_repository.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/repositories/bitcoin_repository.dart';
+import 'package:horizon/domain/repositories/events_repository.dart';
 import 'package:horizon/domain/repositories/imported_address_repository.dart';
+import 'package:horizon/domain/repositories/transaction_local_repository.dart';
 import 'package:horizon/domain/repositories/unified_address_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
@@ -43,6 +46,7 @@ import 'package:horizon/presentation/screens/compose_sweep/view/compose_sweep_pa
 import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_bloc.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_event.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart';
+import 'package:horizon/presentation/screens/dashboard/view/activity_feed.dart';
 import 'package:horizon/presentation/screens/dashboard/view/balances_display.dart';
 import 'package:horizon/presentation/screens/dashboard/view/dashboard_contents.dart';
 import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
@@ -1212,18 +1216,21 @@ class DashboardPageWrapper extends StatelessWidget {
                     ],
                   )..add(Start(pollingInterval: const Duration(seconds: 60))),
                 ),
-                // BlocProvider<DashboardActivityFeedBloc>(
-                //   create: (context) => DashboardActivityFeedBloc(
-                //     logger: GetIt.I.get<Logger>(),
-                //     addresses: data.addresses,
-                //     eventsRepository: GetIt.I.get<EventsRepository>(),
-                //     addressRepository: GetIt.I.get<AddressRepository>(),
-                //     bitcoinRepository: GetIt.I.get<BitcoinRepository>(),
-                //     transactionLocalRepository:
-                //         GetIt.I.get<TransactionLocalRepository>(),
-                //     pageSize: 1000,
-                //   ),
-                // ),
+                BlocProvider<DashboardActivityFeedBloc>(
+                  create: (context) => DashboardActivityFeedBloc(
+                    logger: GetIt.I.get<Logger>(),
+                    addresses: [
+                      ...data.addresses.map((e) => e.address),
+                      ...(data.importedAddresses?.map((e) => e.address) ?? [])
+                    ],
+                    eventsRepository: GetIt.I.get<EventsRepository>(),
+                    addressRepository: GetIt.I.get<AddressRepository>(),
+                    bitcoinRepository: GetIt.I.get<BitcoinRepository>(),
+                    transactionLocalRepository:
+                        GetIt.I.get<TransactionLocalRepository>(),
+                    pageSize: 1000,
+                  ),
+                ),
               ],
               child: DashboardPage(
                 key: key,
@@ -1734,43 +1741,35 @@ class DashboardPageState extends State<DashboardPage> {
                                           ),
                                         ),
                                       ),
-                                      // SizedBox(
-                                      //   height: 352,
-                                      //   child: Container(
-                                      //     margin: const EdgeInsets.fromLTRB(
-                                      //         8, 4, 8, 8),
-                                      //     decoration: BoxDecoration(
-                                      //       color: backgroundColorInner,
-                                      //       borderRadius:
-                                      //           BorderRadius.circular(30.0),
-                                      //     ),
-                                      //     child: CustomScrollView(
-                                      //       slivers: [
-                                      //         SliverPadding(
-                                      //           padding:
-                                      //               const EdgeInsets.all(8.0),
-                                      //           sliver:
-                                      //               DashboardActivityFeedScreen(
-                                      //                   key: Key(
-                                      //                     widget.currentAddress
-                                      //                             ?.address ??
-                                      //                         widget
-                                      //                             .currentImportedAddress!
-                                      //                             .address,
-                                      //                   ),
-                                      //                   addresses: [
-                                      //                     widget.currentAddress
-                                      //                             ?.address ??
-                                      //                         widget
-                                      //                             .currentImportedAddress!
-                                      //                             .address
-                                      //                   ],
-                                      //                   initialItemCount: 4),
-                                      //         )
-                                      //       ],
-                                      //     ),
-                                      //   ),
-                                      // ),
+                                      SizedBox(
+                                        height: 352,
+                                        child: Container(
+                                          margin: const EdgeInsets.fromLTRB(
+                                              8, 4, 8, 8),
+                                          decoration: BoxDecoration(
+                                            color: backgroundColorInner,
+                                            borderRadius:
+                                                BorderRadius.circular(30.0),
+                                          ),
+                                          child: CustomScrollView(
+                                            slivers: [
+                                              SliverPadding(
+                                                padding:
+                                                    const EdgeInsets.all(8.0),
+                                                sliver:
+                                                    DashboardActivityFeedScreen(
+                                                        key: Key(
+                                                          widget
+                                                              .addresses.first,
+                                                        ),
+                                                        addresses:
+                                                            widget.addresses,
+                                                        initialItemCount: 4),
+                                              )
+                                            ],
+                                          ),
+                                        ),
+                                      ),
                                     ],
                                   ),
                                 )),
@@ -1908,29 +1907,25 @@ class DashboardPageState extends State<DashboardPage> {
                                     BalancesDisplay(isDarkTheme: isDarkTheme),
                               ),
                             ]),
-                            // SliverStack(children: [
-                            //   SliverPositioned.fill(
-                            //     child: Container(
-                            //       margin: const EdgeInsets.fromLTRB(8, 8, 8, 0),
-                            //       decoration: BoxDecoration(
-                            //         color: backgroundColorInner,
-                            //         borderRadius: BorderRadius.circular(30.0),
-                            //       ),
-                            //     ),
-                            //   ),
-                            //   SliverPadding(
-                            //     padding: const EdgeInsets.all(8.0),
-                            //     sliver: DashboardActivityFeedScreen(
-                            //       key: Key(widget.currentAddress?.address ??
-                            //           widget.currentImportedAddress!.address),
-                            //       addresses: [
-                            //         widget.currentAddress?.address ??
-                            //             widget.currentImportedAddress!.address
-                            //       ],
-                            //       initialItemCount: 3,
-                            //     ),
-                            //   ),
-                            // ])
+                            SliverStack(children: [
+                              SliverPositioned.fill(
+                                child: Container(
+                                  margin: const EdgeInsets.fromLTRB(8, 8, 8, 0),
+                                  decoration: BoxDecoration(
+                                    color: backgroundColorInner,
+                                    borderRadius: BorderRadius.circular(30.0),
+                                  ),
+                                ),
+                              ),
+                              SliverPadding(
+                                padding: const EdgeInsets.all(8.0),
+                                sliver: DashboardActivityFeedScreen(
+                                  key: Key(widget.addresses.first),
+                                  addresses: widget.addresses,
+                                  initialItemCount: 3,
+                                ),
+                              ),
+                            ])
                           ]),
                         )
                       ],

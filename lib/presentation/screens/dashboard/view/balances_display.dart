@@ -213,28 +213,26 @@ class BalancesSliverState extends State<BalancesSliver> {
           Table(
             children: [
               // Convert entries to TableRow widgets
-              ...balanceEntries.entries
-                  .map((entry) => TableRow(
-                        children: [
-                          // Asset name/longname column
-                          Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Text(
-                              entry.key,
-                              style: const TextStyle(fontSize: 14),
-                            ),
-                          ),
-                          // Quantity column
-                          Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Text(
-                              entry.value.quantityNormalized,
-                              style: const TextStyle(fontSize: 14),
-                            ),
-                          ),
-                        ],
-                      ))
-                  ,
+              ...balanceEntries.entries.map((entry) => TableRow(
+                    children: [
+                      // Asset name/longname column
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text(
+                          entry.key,
+                          style: const TextStyle(fontSize: 14),
+                        ),
+                      ),
+                      // Quantity column
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text(
+                          entry.value.quantityNormalized,
+                          style: const TextStyle(fontSize: 14),
+                        ),
+                      ),
+                    ],
+                  )),
             ],
           ),
         ];
