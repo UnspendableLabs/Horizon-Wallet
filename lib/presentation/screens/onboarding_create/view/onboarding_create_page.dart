@@ -6,13 +6,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
-import 'package:horizon/domain/repositories/config_repository.dart';
 import 'package:horizon/domain/services/mnemonic_service.dart';
 import 'package:horizon/domain/services/wallet_service.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/common/usecase/import_wallet_usecase.dart';
-import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
-import 'package:horizon/presentation/screens/onboarding/view/onboarding_app_bar.dart';
+import 'package:horizon/presentation/screens/onboarding/view/onboarding_shell.dart';
 import 'package:horizon/presentation/screens/onboarding/view/password_prompt.dart';
 import 'package:horizon/presentation/screens/onboarding_create/bloc/onboarding_create_bloc.dart';
 import 'package:horizon/presentation/screens/onboarding_create/bloc/onboarding_create_event.dart';
@@ -95,287 +93,118 @@ class OnboardingCreatePageWrapper extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-        create: (context) => OnboardingCreateBloc(
-              mnmonicService: GetIt.I<MnemonicService>(),
-              walletService: GetIt.I<WalletService>(),
-              importWalletUseCase: GetIt.I<ImportWalletUseCase>(),
-            ),
-        child: const OnboardingCreatePage());
-  }
-}
-
-class OnboardingCreatePage extends StatefulWidget {
-  const OnboardingCreatePage({super.key});
-  @override
-  OnboardingCreatePageState createState() => OnboardingCreatePageState();
-}
-
-class OnboardingCreatePageState extends State<OnboardingCreatePage> {
-  final TextEditingController _passwordController =
-      TextEditingController(text: "");
-  final TextEditingController _passwordConfirmationController =
-      TextEditingController(text: "");
-
-  @override
-  dispose() {
-    _passwordController.dispose();
-    _passwordConfirmationController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final screenSize = MediaQuery.of(context).size;
-    final isSmallScreen = screenSize.width < 768;
-    final EdgeInsetsGeometry padding = isSmallScreen
-        ? const EdgeInsets.all(8.0)
-        : EdgeInsets.symmetric(
-            horizontal: screenSize.width / 8,
-            vertical: screenSize.height / 16,
-          );
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final backdropBackgroundColor = isDarkMode
-        ? darkThemeBackgroundColor
-        : lightThemeBackgroundColorTopGradiant;
-
-    return Scaffold(
-      backgroundColor: backdropBackgroundColor,
-      body: SafeArea(
-        child: Container(
-          decoration: BoxDecoration(
-            color: backdropBackgroundColor,
-          ),
-          padding: padding,
-          child: Container(
-            decoration: BoxDecoration(
-              color: backdropBackgroundColor,
-              borderRadius: BorderRadius.circular(30),
-            ),
-            padding: const EdgeInsets.all(12),
-            child: BlocListener<OnboardingCreateBloc, OnboardingCreateState>(
-              listener: (context, state) {
-                if (state.createState is CreateStateSuccess) {
-                  final session = context.read<SessionStateCubit>();
-                  // reload session to trigger redirect
-                  session.initialize();
-                }
-              },
-              child: BlocBuilder<OnboardingCreateBloc, OnboardingCreateState>(
-                builder: (context, state) {
-                  return Stack(
-                    children: [
-                      Column(
-                        children: [
-                          OnboardingAppBar(
-                            isDarkMode: isDarkMode,
-                            isSmallScreenWidth: isSmallScreen,
-                            isSmallScreenHeight: isSmallScreen,
-                            scaffoldBackgroundColor: backdropBackgroundColor,
-                          ),
-                          Flexible(
-                            child: BlocBuilder<OnboardingCreateBloc,
-                                OnboardingCreateState>(
-                              builder: (context, state) {
-                                return switch (state.createState) {
-                                  CreateStateNotAsked => const Mnemonic(),
-                                  CreateStateMnemonicUnconfirmed =>
-                                    ConfirmSeedInputFields(
-                                      mnemonicErrorState: state.mnemonicError,
-                                    ),
-                                  _ => PasswordPrompt(
-                                      state: state,
-                                      onPressedBack: () {
-                                        final session =
-                                            context.read<SessionStateCubit>();
-                                        session.onOnboarding();
-                                      },
-                                      onPressedContinue: (password) {
-                                        context
-                                            .read<OnboardingCreateBloc>()
-                                            .add(CreateWallet(
-                                                password: password));
-                                      },
-                                      backButtonText: 'Cancel',
-                                      continueButtonText: 'Create Wallet',
-                                    ),
-                                };
-                              },
-                            ),
-                          ),
-                        ],
-                      ),
-                      if (state.createState is CreateStateLoading)
-                        Container(
-                          color: Colors.black.withOpacity(0.3),
-                          child: const Center(
-                            child: CircularProgressIndicator(),
-                          ),
-                        ),
-                    ],
-                  );
-                },
-              ),
-            ),
-          ),
-        ),
-      ),
+      create: (context) => OnboardingCreateBloc(
+        mnmonicService: GetIt.I<MnemonicService>(),
+        walletService: GetIt.I<WalletService>(),
+        importWalletUseCase: GetIt.I<ImportWalletUseCase>(),
+      )..add(GenerateMnemonic()),
+      child: const OnboardingCreatePage(),
     );
   }
 }
 
-class Mnemonic extends StatefulWidget {
-  const Mnemonic({super.key});
-
-  @override
-  State<Mnemonic> createState() => _MnemonicState();
-}
-
-class _MnemonicState extends State<Mnemonic> {
-  @override
-  void initState() {
-    super.initState();
-    final state = BlocProvider.of<OnboardingCreateBloc>(context).state;
-    if (state.mnemonicState is! GenerateMnemonicStateUnconfirmed) {
-      BlocProvider.of<OnboardingCreateBloc>(context).add(GenerateMnemonic());
-    }
-  }
+class OnboardingCreatePage extends StatelessWidget {
+  const OnboardingCreatePage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final backdropBackgroundColor = isDarkMode
-        ? darkThemeBackgroundColor
-        : lightThemeBackgroundColorTopGradiant;
-    final Config config = GetIt.I<Config>();
+    return BlocConsumer<OnboardingCreateBloc, OnboardingCreateState>(
+      listener: (context, state) {
+        if (state.createState is CreateStateSuccess) {
+          final session = context.read<SessionStateCubit>();
+          session.initialize();
+        }
+      },
+      builder: (context, state) {
+        return OnboardingShell(
+          steps: const [
+            ShowMnemonicStep(),
+            ConfirmMnemonicStep(),
+            CreatePasswordStep(),
+          ],
+          onBack: () {
+            final session = context.read<SessionStateCubit>();
+            session.onOnboarding();
+          },
+          onNext: () {
+            if (state.createState is CreateStateNotAsked) {
+              context.read<OnboardingCreateBloc>().add(UnconfirmMnemonic());
+            } else if (state.createState is CreateStateMnemonicUnconfirmed) {
+              // Get mnemonic from confirm step and validate
+              // TODO: Get actual mnemonic from the step
+              context.read<OnboardingCreateBloc>().add(
+                    ConfirmMnemonic(mnemonic: ['test']), // Get actual mnemonic
+                  );
+            } else {
+              // Get password from password step and create wallet
+              // TODO: Get actual password from the step
+              context.read<OnboardingCreateBloc>().add(
+                    CreateWallet(password: 'password'), // Get actual password
+                  );
+            }
+          },
+          backButtonText: 'Cancel',
+          nextButtonText: state.createState is CreateStateMnemonicConfirmed
+              ? 'Create Wallet'
+              : 'Continue',
+          isLoading: state.createState is CreateStateLoading,
+        );
+      },
+    );
+  }
+}
 
+class ShowMnemonicStep extends StatelessWidget {
+  const ShowMnemonicStep({super.key});
+
+  @override
+  Widget build(BuildContext context) {
     return BlocBuilder<OnboardingCreateBloc, OnboardingCreateState>(
       builder: (context, state) {
-        return Container(
-          color: backdropBackgroundColor,
-          child: SafeArea(
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                return SingleChildScrollView(
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(
-                      minHeight: constraints.maxHeight,
-                    ),
-                    child: IntrinsicHeight(
-                      child: Padding(
-                        padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
-                        child: Column(
-                          children: [
-                            if (state.mnemonicState
-                                is GenerateMnemonicStateLoading)
-                              const CircularProgressIndicator()
-                            else if (state.mnemonicState
-                                    is GenerateMnemonicStateGenerated ||
-                                state.mnemonicState
-                                    is GenerateMnemonicStateUnconfirmed)
-                              Expanded(
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.stretch,
-                                  children: [
-                                    NumberedWordGrid(
-                                      text: state.mnemonicState.mnemonic,
-                                      backgroundColor: isDarkMode
-                                          ? inputDarkBackground
-                                          : inputLightBackground,
-                                      textColor: isDarkMode
-                                          ? Colors.white
-                                          : Colors.black,
-                                    ),
-                                    if (config.network == Network.testnet4 ||
-                                        config.network == Network.testnet)
-                                      ElevatedButton.icon(
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor: isDarkMode
-                                              ? createButtonDarkGradient2
-                                              : createButtonLightGradient2,
-                                        ),
-                                        icon: Icon(
-                                          Icons.copy,
-                                          color: isDarkMode
-                                              ? Colors.black
-                                              : Colors.white,
-                                        ),
-                                        label: Text('COPY',
-                                            style: TextStyle(
-                                                color: isDarkMode
-                                                    ? Colors.black
-                                                    : Colors.white)),
-                                        onPressed: () {
-                                          Clipboard.setData(ClipboardData(
-                                              text: state
-                                                  .mnemonicState.mnemonic));
-                                          ScaffoldMessenger.of(context)
-                                              .showSnackBar(
-                                            const SnackBar(
-                                              content: Text(
-                                                  'Seed phrase copied to clipboard'),
-                                              duration: Duration(seconds: 2),
-                                            ),
-                                          );
-                                        },
-                                      ),
-                                    const SizedBox(height: 16),
-                                    const Text(
-                                      'Please write down your seed phrase in a secure location. It is the only way to recover your wallet.',
-                                      textAlign: TextAlign.center,
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.w300,
-                                        fontSize: 16,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            const SizedBox(height: 16),
-                            Row(
-                              mainAxisSize: MainAxisSize.min,
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Expanded(
-                                  child: Padding(
-                                    padding: const EdgeInsets.only(right: 8.0),
-                                    child: HorizonOutlinedButton(
-                                      isDarkMode: isDarkMode,
-                                      onPressed: () {
-                                        final session =
-                                            context.read<SessionStateCubit>();
-                                        session.onOnboarding();
-                                      },
-                                      buttonText: 'Back',
-                                    ),
-                                  ),
-                                ),
-                                Expanded(
-                                  child: Padding(
-                                    padding: const EdgeInsets.only(left: 8.0),
-                                    child: HorizonGradientButton(
-                                      isDarkMode: isDarkMode,
-                                      onPressed: () {
-                                        context
-                                            .read<OnboardingCreateBloc>()
-                                            .add(UnconfirmMnemonic());
-                                      },
-                                      buttonText: 'Continue',
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                );
-              },
-            ),
-          ),
+        if (state.mnemonicState is GenerateMnemonicStateLoading) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        if (state.mnemonicState is GenerateMnemonicStateGenerated ||
+            state.mnemonicState is GenerateMnemonicStateUnconfirmed) {
+          return NumberedWordGrid(
+            text: state.mnemonicState.mnemonic,
+            backgroundColor: Theme.of(context).cardColor,
+            textColor:
+                Theme.of(context).textTheme.bodyLarge?.color ?? Colors.black,
+          );
+        }
+
+        return const SizedBox.shrink();
+      },
+    );
+  }
+}
+
+class ConfirmMnemonicStep extends StatelessWidget {
+  const ConfirmMnemonicStep({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<OnboardingCreateBloc, OnboardingCreateState>(
+      builder: (context, state) {
+        return ConfirmSeedInputFields(
+          mnemonicErrorState: state.mnemonicError,
+        );
+      },
+    );
+  }
+}
+
+class CreatePasswordStep extends StatelessWidget {
+  const CreatePasswordStep({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<OnboardingCreateBloc, OnboardingCreateState>(
+      builder: (context, state) {
+        return PasswordPrompt(
+          state: state,
         );
       },
     );
@@ -522,41 +351,6 @@ class _ConfirmSeedInputFieldsState extends State<ConfirmSeedInputFields> {
                   ],
                 )
               : const SizedBox.shrink(),
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.only(right: 8.0),
-                  child: HorizonOutlinedButton(
-                    isDarkMode: isDarkMode,
-                    onPressed: () {
-                      context
-                          .read<OnboardingCreateBloc>()
-                          .add(GoBackToMnemonic());
-                    },
-                    buttonText: 'Back',
-                  ),
-                ),
-              ),
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.only(left: 8.0),
-                  child: HorizonGradientButton(
-                    isDarkMode: isDarkMode,
-                    onPressed: () {
-                      context.read<OnboardingCreateBloc>().add(ConfirmMnemonic(
-                          mnemonic: controllers
-                              .map((controller) => controller.text)
-                              .toList()));
-                    },
-                    buttonText: 'Continue',
-                  ),
-                ),
-              ),
-            ],
-          ),
         ],
       ),
     );
