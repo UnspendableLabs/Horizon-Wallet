@@ -21,56 +21,64 @@ class OnboardingCreateBloc
   }) : super(const OnboardingCreateState()) {
     on<WalletCreated>((event, emit) async {
       logger.d('Processing WalletCreated event');
-      emit(state.copyWith(createState: CreateStateLoading()));
+      emit(state.copyWith(createState: const CreateState.loading()));
       final password = event.password;
       try {
+        final mnemonic = state.createMnemonicState.maybeWhen(
+          success: (mnemonic) => mnemonic,
+          orElse: () => '',
+        );
         await importWalletUseCase.callHorizon(
-          mnemonic: state.mnemonicState.mnemonic,
+          mnemonic: mnemonic,
           password: password,
           deriveWallet: (secret, password) =>
               walletService.deriveRoot(secret, password),
         );
 
-        emit(state.copyWith(createState: CreateStateSuccess()));
+        emit(state.copyWith(createState: const CreateState.success()));
       } catch (e) {
         logger.e({'message': 'Failed to create wallet'});
         emit(state.copyWith(
-            createState: CreateStateError(message: e.toString())));
+            createState: CreateState.error(message: e.toString())));
       }
     });
 
     on<MnemonicGenerated>((event, emit) {
-      if (state.mnemonicState is MnemonicGeneratedStateUnconfirmed) {
-        // If a mnemonic is already generated, do not generate a new one
-        return;
-      }
-      emit(state.copyWith(mnemonicState: MnemonicGeneratedStateLoading()));
+      emit(state.copyWith(
+          createMnemonicState: const CreateMnemonicState.loading()));
 
       try {
         String mnemonic = mnmonicService.generateMnemonic();
 
         emit(state.copyWith(
-            mnemonicState:
-                MnemonicGeneratedStateGenerated(mnemonic: mnemonic)));
+            createMnemonicState:
+                CreateMnemonicState.success(mnemonic: mnemonic)));
       } catch (e) {
         emit(state.copyWith(
-            mnemonicState: MnemonicGeneratedStateError(message: e.toString())));
+            createMnemonicState:
+                CreateMnemonicState.error(message: e.toString())));
       }
     });
 
     on<MnemonicCreated>((event, emit) {
+      final mnemonic = state.createMnemonicState.maybeWhen(
+        success: (mnemonic) => mnemonic,
+        orElse: () => '',
+      );
       emit(state.copyWith(
-          mnemonicState: MnemonicGeneratedStateUnconfirmed(
-              mnemonic: state.mnemonicState.mnemonic),
+          createMnemonicState: CreateMnemonicState.success(mnemonic: mnemonic),
           currentStep: OnboardingCreateStep.confirmMnemonic));
     });
 
     on<MnemonicConfirmedChanged>((event, emit) {
-      if (state.mnemonicState.mnemonic != event.mnemonic) {
+      final mnemonic = state.createMnemonicState.maybeWhen(
+        success: (mnemonic) => mnemonic,
+        orElse: () => '',
+      );
+      if (mnemonic != event.mnemonic) {
         List<int> incorrectIndexes = [];
         for (int i = 0; i < 12; i++) {
-          if (state.mnemonicState.mnemonic.split(' ')[i] !=
-              event.mnemonic.split(' ')[i]) {
+          if (mnemonic.split(' ')[i] != event.mnemonic.split(' ')[i]) {
             incorrectIndexes.add(i);
           }
         }
@@ -84,16 +92,20 @@ class OnboardingCreateBloc
     });
 
     on<MnemonicConfirmed>((event, emit) {
+      final mnemonic = state.createMnemonicState.maybeWhen(
+        success: (mnemonic) => mnemonic,
+        orElse: () => '',
+      );
       if (event.mnemonic.isEmpty) {
         emit(state.copyWith(
             mnemonicError: MnemonicErrorState(
                 message: 'Seed phrase is required', incorrectIndexes: [])));
         return;
       }
-      if (state.mnemonicState.mnemonic != event.mnemonic.join(' ')) {
+      if (mnemonic != event.mnemonic.join(' ')) {
         List<int> incorrectIndexes = [];
         for (int i = 0; i < 12; i++) {
-          if (state.mnemonicState.mnemonic.split(' ')[i] != event.mnemonic[i]) {
+          if (mnemonic.split(' ')[i] != event.mnemonic[i]) {
             incorrectIndexes.add(i);
           }
         }
@@ -103,7 +115,6 @@ class OnboardingCreateBloc
                 incorrectIndexes: incorrectIndexes)));
       } else {
         emit(state.copyWith(
-            createState: CreateStateMnemonicConfirmed,
             mnemonicError: null,
             currentStep: OnboardingCreateStep.createPassword));
       }
@@ -111,9 +122,7 @@ class OnboardingCreateBloc
 
     on<GoBackToMnemonic>((event, emit) {
       emit(state.copyWith(
-          createState: CreateStateNotAsked,
-          mnemonicError: null,
-          currentStep: OnboardingCreateStep.showMnemonic));
+          mnemonicError: null, currentStep: OnboardingCreateStep.showMnemonic));
     });
   }
 }

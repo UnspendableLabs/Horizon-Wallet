@@ -16,11 +16,6 @@ class MnemonicConfirmed extends OnboardingCreateEvent {
   MnemonicConfirmed({required this.mnemonic});
 }
 
-class MnemonicSubmitted extends OnboardingCreateEvent {
-  final String mnemonic;
-  MnemonicSubmitted({required this.mnemonic});
-}
-
 class WalletCreated extends OnboardingCreateEvent {
   final String password;
   WalletCreated({required this.password});

@@ -119,12 +119,23 @@ class _OnboardingCreatePageState extends State<OnboardingCreatePage> {
   Widget build(BuildContext context) {
     return BlocConsumer<OnboardingCreateBloc, OnboardingCreateState>(
       listener: (context, state) {
-        if (state.createState is CreateStateSuccess) {
-          final session = context.read<SessionStateCubit>();
-          session.initialize();
-        }
+        state.createState.maybeWhen(
+          success: () {
+            final session = context.read<SessionStateCubit>();
+            session.initialize();
+          },
+          orElse: () {},
+        );
       },
       builder: (context, state) {
+        final createStateError = state.createState.maybeWhen(
+          error: (message) => message,
+          orElse: () => null,
+        );
+        final isLoading = state.createState.maybeWhen(
+          loading: () => true,
+          orElse: () => false,
+        );
         return OnboardingShell(
           steps: [
             const ShowMnemonicStep(),
@@ -135,7 +146,7 @@ class _OnboardingCreatePageState extends State<OnboardingCreatePage> {
             PasswordPrompt(
               key: _passwordStepKey,
               state: state,
-              optionalErrorWidget: state.createState is CreateStateError
+              optionalErrorWidget: createStateError != null
                   ? Align(
                       alignment: Alignment.center,
                       child: Container(
@@ -150,7 +161,7 @@ class _OnboardingCreatePageState extends State<OnboardingCreatePage> {
                             const Icon(Icons.info, color: Colors.red),
                             const SizedBox(width: 4),
                             SelectableText(
-                              (state.createState as CreateStateError).message,
+                              createStateError,
                               style: const TextStyle(color: Colors.red),
                             ),
                           ],
@@ -193,7 +204,7 @@ class _OnboardingCreatePageState extends State<OnboardingCreatePage> {
               state.currentStep == OnboardingCreateStep.createPassword
                   ? 'Create Wallet'
                   : 'Continue',
-          isLoading: state.createState is CreateStateLoading,
+          isLoading: isLoading,
         );
       },
     );
@@ -207,56 +218,45 @@ class ShowMnemonicStep extends StatelessWidget {
   Widget build(BuildContext context) {
     final Config config = GetIt.I<Config>();
 
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-
     return BlocBuilder<OnboardingCreateBloc, OnboardingCreateState>(
       builder: (context, state) {
-        if (state.mnemonicState is MnemonicGeneratedStateLoading) {
-          return const Center(child: CircularProgressIndicator());
-        }
-
-        if (state.mnemonicState is MnemonicGeneratedStateGenerated ||
-            state.mnemonicState is MnemonicGeneratedStateUnconfirmed) {
-          return Column(
+        return state.createMnemonicState.maybeWhen(
+          orElse: () => const SizedBox.shrink(),
+          initial: () => const SizedBox.shrink(),
+          loading: () => const Center(child: CircularProgressIndicator()),
+          success: (mnemonic) => Column(
             children: [
-              NumberedWordGrid(
-                text: state.mnemonicState.mnemonic,
-                backgroundColor: Theme.of(context).cardColor,
-                textColor: Theme.of(context).textTheme.bodyLarge?.color ??
-                    Colors.black,
+              Column(
+                children: [
+                  NumberedWordGrid(
+                    text: mnemonic,
+                    backgroundColor: Theme.of(context).cardColor,
+                    textColor: Theme.of(context).textTheme.bodyLarge?.color ??
+                        Colors.black,
+                  ),
+                  const SizedBox(height: 16),
+                  if (config.network == Network.testnet4 ||
+                      config.network == Network.testnet)
+                    ElevatedButton.icon(
+                      onPressed: () {
+                        Clipboard.setData(ClipboardData(text: mnemonic));
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Seed phrase copied to clipboard'),
+                            duration: Duration(seconds: 2),
+                          ),
+                        );
+                      },
+                      icon: const Icon(Icons.copy),
+                      label: const Text('COPY'),
+                    ),
+                ],
               ),
               const SizedBox(height: 16),
-              if (config.network == Network.testnet4 ||
-                  config.network == Network.testnet)
-                ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: isDarkMode
-                        ? createButtonDarkGradient2
-                        : createButtonLightGradient2,
-                  ),
-                  icon: Icon(
-                    Icons.copy,
-                    color: isDarkMode ? Colors.black : Colors.white,
-                  ),
-                  label: Text('COPY',
-                      style: TextStyle(
-                          color: isDarkMode ? Colors.black : Colors.white)),
-                  onPressed: () {
-                    Clipboard.setData(
-                        ClipboardData(text: state.mnemonicState.mnemonic));
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Seed phrase copied to clipboard'),
-                        duration: Duration(seconds: 2),
-                      ),
-                    );
-                  },
-                ),
             ],
-          );
-        }
-
-        return const SizedBox.shrink();
+          ),
+          error: (message) => SelectableText(message),
+        );
       },
     );
   }

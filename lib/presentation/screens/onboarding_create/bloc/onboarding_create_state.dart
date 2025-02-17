@@ -12,59 +12,34 @@ enum OnboardingCreateStep {
 class OnboardingCreateState with _$OnboardingCreateState {
   const factory OnboardingCreateState({
     @Default(null) MnemonicErrorState? mnemonicError,
-    @Default(MnemonicGeneratedStateNotAsked) mnemonicState,
-    @Default(CreateStateNotAsked) createState,
+    @Default(CreateMnemonicState.initial())
+    CreateMnemonicState createMnemonicState,
+    @Default(CreateState.initial()) CreateState createState,
     @Default(OnboardingCreateStep.showMnemonic)
     OnboardingCreateStep currentStep,
   }) = _OnboardingCreateState;
-}
-
-abstract class MnemonicGeneratedState {}
-
-class MnemonicGeneratedStateNotAsked extends MnemonicGeneratedState {}
-
-class MnemonicGeneratedStateLoading extends MnemonicGeneratedState {}
-
-class MnemonicGeneratedStateGenerated extends MnemonicGeneratedState {
-  final String mnemonic;
-  MnemonicGeneratedStateGenerated({required this.mnemonic});
-}
-
-class MnemonicGeneratedStateUnconfirmed extends MnemonicGeneratedState {
-  final String mnemonic;
-  MnemonicGeneratedStateUnconfirmed({required this.mnemonic});
-}
-
-class MnemonicGeneratedStateSuccess extends MnemonicGeneratedState {
-  final String mnemonic;
-  MnemonicGeneratedStateSuccess({required this.mnemonic});
-}
-
-class MnemonicGeneratedStateError extends MnemonicGeneratedState {
-  final String message;
-  MnemonicGeneratedStateError({required this.message});
-}
-
-abstract class CreateState {}
-
-class CreateStateNotAsked extends CreateState {}
-
-class CreateStateMnemonicUnconfirmed extends CreateState {}
-
-class CreateStateMnemonicConfirmed extends CreateState {}
-
-class CreateStateLoading extends CreateState {}
-
-class CreateStateSuccess extends CreateState {}
-
-class CreateStateError extends CreateState {
-  final String message;
-  final List<int>? incorrectIndexes;
-  CreateStateError({required this.message, this.incorrectIndexes});
 }
 
 class MnemonicErrorState {
   final String message;
   final List<int>? incorrectIndexes;
   MnemonicErrorState({required this.message, this.incorrectIndexes});
+}
+
+@freezed
+class CreateState with _$CreateState {
+  const factory CreateState.initial() = CreateStateInitial;
+  const factory CreateState.loading() = CreateStateLoading;
+  const factory CreateState.success() = CreateStateSuccess;
+  const factory CreateState.error({required String message}) = CreateStateError;
+}
+
+@freezed
+class CreateMnemonicState with _$CreateMnemonicState {
+  const factory CreateMnemonicState.initial() = CreateMnemonicStateInitial;
+  const factory CreateMnemonicState.loading() = CreateMnemonicStateLoading;
+  const factory CreateMnemonicState.success({required String mnemonic}) =
+      CreateMnemonicStateSuccess;
+  const factory CreateMnemonicState.error({required String message}) =
+      CreateMnemonicStateError;
 }
