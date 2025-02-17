@@ -1468,6 +1468,7 @@ class DashboardPageState extends State<DashboardPage> {
                                                 padding:
                                                     const EdgeInsets.all(8.0),
                                                 sliver:
+                                                // TODO: update key
                                                     DashboardActivityFeedScreen(
                                                         key: Key(
                                                           widget
@@ -1631,6 +1632,7 @@ class DashboardPageState extends State<DashboardPage> {
                               SliverPadding(
                                 padding: const EdgeInsets.all(8.0),
                                 sliver: DashboardActivityFeedScreen(
+                                  // TODO: update key
                                   key: Key(widget.addresses.first),
                                   addresses: widget.addresses,
                                   initialItemCount: 3,
