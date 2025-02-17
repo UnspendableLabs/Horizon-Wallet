@@ -12,12 +12,16 @@ class ImportFormatChanged extends OnboardingImportEvent {
 
 class ImportFormatSubmitted extends OnboardingImportEvent {}
 
-class MnemonicSubmittedted extends OnboardingImportEvent {
+class MnemonicSubmitted extends OnboardingImportEvent {
   final String mnemonic;
-  MnemonicSubmittedted({required this.mnemonic});
+  MnemonicSubmitted({required this.mnemonic});
 }
 
 class ImportWallet extends OnboardingImportEvent {
   final String password;
   ImportWallet({required this.password});
 }
+
+class SeedInputBackPressed extends OnboardingImportEvent {}
+
+class ImportFormatBackPressed extends OnboardingImportEvent {}

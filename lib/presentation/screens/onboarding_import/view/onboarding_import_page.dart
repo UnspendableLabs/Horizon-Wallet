@@ -31,30 +31,48 @@ class OnboardingImportPageWrapper extends StatelessWidget {
   }
 }
 
-class OnboardingImportPage extends StatelessWidget {
+class OnboardingImportPage extends StatefulWidget {
   const OnboardingImportPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    // Add a key to access the password prompt state
-    final passwordPromptKey = GlobalKey<PasswordPromptState>();
+  State<OnboardingImportPage> createState() => _OnboardingImportPageState();
+}
 
+class _OnboardingImportPageState extends State<OnboardingImportPage> {
+  final _passwordStepKey = GlobalKey<PasswordPromptState>();
+  final _seedInputKey = GlobalKey<_SeedInputFieldsState>();
+
+  @override
+  Widget build(BuildContext context) {
     return BlocConsumer<OnboardingImportBloc, OnboardingImportState>(
       listener: (context, state) {
-        if (state.importState is ImportStateSuccess) {
-          final session = context.read<SessionStateCubit>();
-          session.initialize();
-        }
+        state.importState.maybeWhen(
+          orElse: () => false,
+          success: () {
+            final session = context.read<SessionStateCubit>();
+            session.initialize();
+          },
+        );
       },
       builder: (context, state) {
+        final isLoading = state.importState.maybeWhen(
+          orElse: () => false,
+          loading: () => true,
+        );
+        final error = state.importState.maybeWhen(
+          orElse: () => false,
+          error: (error) => error,
+        );
+
         return OnboardingShell(
           steps: [
             const ChooseFormatStep(),
-            const SeedInputStep(),
+            SeedInputStep(key: _seedInputKey),
             PasswordPrompt(
-              key: passwordPromptKey,
+              key: _passwordStepKey,
               state: state,
-              optionalErrorWidget: state.importState is ImportStateError
+              onValidationChanged: () => setState(() {}),
+              optionalErrorWidget: error
                   ? Align(
                       alignment: Alignment.center,
                       child: Container(
@@ -69,7 +87,7 @@ class OnboardingImportPage extends StatelessWidget {
                             const Icon(Icons.info, color: Colors.red),
                             const SizedBox(width: 4),
                             SelectableText(
-                              (state.importState as ImportStateError).message,
+                              error,
                               style: const TextStyle(color: Colors.red),
                             ),
                           ],
@@ -80,22 +98,30 @@ class OnboardingImportPage extends StatelessWidget {
             ),
           ],
           onBack: () {
-            final session = context.read<SessionStateCubit>();
-            session.onOnboarding();
+            if (state.currentStep == OnboardingImportStep.chooseFormat) {
+              final session = context.read<SessionStateCubit>();
+              session.onOnboarding();
+            } else if (state.currentStep == OnboardingImportStep.inputSeed) {
+              _seedInputKey.currentState?.clearInputs();
+              context
+                  .read<OnboardingImportBloc>()
+                  .add(ImportFormatBackPressed());
+            } else if (state.currentStep ==
+                OnboardingImportStep.inputPassword) {
+              _passwordStepKey.currentState?.clearPassword();
+              context.read<OnboardingImportBloc>().add(SeedInputBackPressed());
+            }
           },
           onNext: () {
-            print('ON NEXT: ${state.currentStep}');
             if (state.currentStep == OnboardingImportStep.chooseFormat) {
               context.read<OnboardingImportBloc>().add(ImportFormatSubmitted());
             } else if (state.currentStep == OnboardingImportStep.inputSeed) {
               context
                   .read<OnboardingImportBloc>()
-                  .add(MnemonicSubmittedted(mnemonic: state.mnemonic));
-            }
-            // This will be called when the final step is completed
-            if (state.currentStep == OnboardingImportStep.inputPassword) {
-              // Get password from the password prompt
-              final passwordState = passwordPromptKey.currentState;
+                  .add(MnemonicSubmitted(mnemonic: state.mnemonic));
+            } else if (state.currentStep ==
+                OnboardingImportStep.inputPassword) {
+              final passwordState = _passwordStepKey.currentState;
               if (passwordState != null && passwordState.isValid) {
                 context.read<OnboardingImportBloc>().add(
                       ImportWallet(password: passwordState.password),
@@ -108,10 +134,28 @@ class OnboardingImportPage extends StatelessWidget {
               state.currentStep == OnboardingImportStep.inputPassword
                   ? 'Load Wallet'
                   : 'Continue',
-          isLoading: state.importState is ImportStateLoading,
+          isLoading: isLoading,
+          nextButtonEnabled: _getNextButtonEnabled(state),
         );
       },
     );
+  }
+
+  bool _getNextButtonEnabled(OnboardingImportState state) {
+    if (state.currentStep == OnboardingImportStep.inputSeed) {
+      final isValid = _seedInputKey.currentState?.isValidMnemonic() ?? false;
+      final noErrors = state.mnemonicError == null;
+      return noErrors && isValid;
+    } else if (state.currentStep == OnboardingImportStep.inputPassword) {
+      final error = state.importState.maybeWhen(
+        orElse: () => false,
+        error: (error) => error,
+      );
+      final isValid = _passwordStepKey.currentState?.isValid ?? false;
+      return isValid && !error;
+    } else {
+      return true;
+    }
   }
 }
 
@@ -156,14 +200,18 @@ class _ChooseFormatStepState extends State<ChooseFormatStep> {
 }
 
 class SeedInputStep extends StatelessWidget {
-  const SeedInputStep({super.key});
+  @override
+  final Key? key;
+  const SeedInputStep({this.key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<OnboardingImportBloc, OnboardingImportState>(
       builder: (context, state) {
         return SeedInputFields(
+          key: key,
           mnemonicErrorState: state.mnemonicError,
+          onInputChanged: () => context.findRenderObject()?.markNeedsPaint(),
         );
       },
     );
@@ -172,7 +220,14 @@ class SeedInputStep extends StatelessWidget {
 
 class SeedInputFields extends StatefulWidget {
   final String? mnemonicErrorState;
-  const SeedInputFields({super.key, required this.mnemonicErrorState});
+  final VoidCallback? onInputChanged;
+
+  const SeedInputFields({
+    super.key,
+    required this.mnemonicErrorState,
+    this.onInputChanged,
+  });
+
   @override
   State<SeedInputFields> createState() => _SeedInputFieldsState();
 }
@@ -469,6 +524,9 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
         }
       }
     }
+
+    widget.onInputChanged?.call();
+
     updateMnemonic();
   }
 
@@ -495,5 +553,18 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
     context
         .read<OnboardingImportBloc>()
         .add(MnemonicChanged(mnemonic: mnemonic));
+  }
+
+  bool isValidMnemonic() {
+    return controllers.every((controller) => controller.text.trim().isNotEmpty);
+  }
+
+  void clearInputs() {
+    for (var controller in controllers) {
+      controller.clear();
+    }
+    setState(() {
+      _showSeedPhrase = false;
+    });
   }
 }

@@ -19,8 +19,7 @@ mixin _$OnboardingCreateState {
   MnemonicErrorState? get mnemonicError => throw _privateConstructorUsedError;
   CreateMnemonicState get createMnemonicState =>
       throw _privateConstructorUsedError;
-  CreateState get createState =>
-      throw _privateConstructorUsedError; // @Default(null) String? errorMessage,
+  CreateState get createState => throw _privateConstructorUsedError;
   OnboardingCreateStep get currentStep => throw _privateConstructorUsedError;
 
   @JsonKey(ignore: true)
@@ -178,7 +177,6 @@ class _$OnboardingCreateStateImpl implements _OnboardingCreateState {
   @override
   @JsonKey()
   final CreateState createState;
-// @Default(null) String? errorMessage,
   @override
   @JsonKey()
   final OnboardingCreateStep currentStep;
@@ -228,7 +226,7 @@ abstract class _OnboardingCreateState implements OnboardingCreateState {
   CreateMnemonicState get createMnemonicState;
   @override
   CreateState get createState;
-  @override // @Default(null) String? errorMessage,
+  @override
   OnboardingCreateStep get currentStep;
   @override
   @JsonKey(ignore: true)

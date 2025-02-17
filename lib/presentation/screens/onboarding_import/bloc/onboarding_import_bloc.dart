@@ -59,7 +59,7 @@ class OnboardingImportBloc
       emit(state.copyWith(currentStep: OnboardingImportStep.inputSeed));
     });
 
-    on<MnemonicSubmittedted>((event, emit) async {
+    on<MnemonicSubmitted>((event, emit) async {
       // Validate mnemonic before proceeding
       if (state.mnemonic.isEmpty) {
         emit(state.copyWith(mnemonicError: "Seed phrase is required"));
@@ -93,7 +93,7 @@ class OnboardingImportBloc
     });
 
     on<ImportWallet>((event, emit) async {
-      emit(state.copyWith(importState: ImportStateLoading()));
+      emit(state.copyWith(importState: const ImportState.loading()));
       final password = event.password;
 
       await importWalletUseCase.call(
@@ -101,13 +101,29 @@ class OnboardingImportBloc
         mnemonic: state.mnemonic,
         walletType: state.walletType,
         onError: (msg) {
-          emit(state.copyWith(importState: ImportStateError(message: msg)));
+          emit(state.copyWith(importState: ImportState.error(message: msg)));
         },
         onSuccess: () {
-          emit(state.copyWith(importState: ImportStateSuccess()));
+          emit(state.copyWith(importState: const ImportState.success()));
         },
       );
       return;
+    });
+
+    on<SeedInputBackPressed>((event, emit) async {
+      emit(state.copyWith(
+        currentStep: OnboardingImportStep.inputSeed,
+        mnemonicError: null,
+        mnemonic: '',
+      ));
+    });
+
+    on<ImportFormatBackPressed>((event, emit) async {
+      emit(state.copyWith(
+          currentStep: OnboardingImportStep.chooseFormat,
+          mnemonicError: null,
+          mnemonic: '',
+          walletType: WalletType.horizon));
     });
   }
 }

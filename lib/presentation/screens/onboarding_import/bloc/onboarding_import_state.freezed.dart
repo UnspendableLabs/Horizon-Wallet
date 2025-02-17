@@ -148,7 +148,7 @@ class _$OnboardingImportStateImpl implements _OnboardingImportState {
       this.mnemonicError,
       this.walletType = WalletType.horizon,
       this.currentStep = OnboardingImportStep.chooseFormat,
-      this.importState = ImportStateNotAsked});
+      this.importState = const ImportState.initial()});
 
   @override
   @JsonKey()
@@ -226,4 +226,566 @@ abstract class _OnboardingImportState implements OnboardingImportState {
   @JsonKey(ignore: true)
   _$$OnboardingImportStateImplCopyWith<_$OnboardingImportStateImpl>
       get copyWith => throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+mixin _$ImportState {
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function() initial,
+    required TResult Function() loading,
+    required TResult Function() success,
+    required TResult Function(String message) error,
+  }) =>
+      throw _privateConstructorUsedError;
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function()? initial,
+    TResult? Function()? loading,
+    TResult? Function()? success,
+    TResult? Function(String message)? error,
+  }) =>
+      throw _privateConstructorUsedError;
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function()? initial,
+    TResult Function()? loading,
+    TResult Function()? success,
+    TResult Function(String message)? error,
+    required TResult orElse(),
+  }) =>
+      throw _privateConstructorUsedError;
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(ImportStateNotAsked value) initial,
+    required TResult Function(ImportStateLoading value) loading,
+    required TResult Function(ImportStateSuccess value) success,
+    required TResult Function(ImportStateError value) error,
+  }) =>
+      throw _privateConstructorUsedError;
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(ImportStateNotAsked value)? initial,
+    TResult? Function(ImportStateLoading value)? loading,
+    TResult? Function(ImportStateSuccess value)? success,
+    TResult? Function(ImportStateError value)? error,
+  }) =>
+      throw _privateConstructorUsedError;
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(ImportStateNotAsked value)? initial,
+    TResult Function(ImportStateLoading value)? loading,
+    TResult Function(ImportStateSuccess value)? success,
+    TResult Function(ImportStateError value)? error,
+    required TResult orElse(),
+  }) =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $ImportStateCopyWith<$Res> {
+  factory $ImportStateCopyWith(
+          ImportState value, $Res Function(ImportState) then) =
+      _$ImportStateCopyWithImpl<$Res, ImportState>;
+}
+
+/// @nodoc
+class _$ImportStateCopyWithImpl<$Res, $Val extends ImportState>
+    implements $ImportStateCopyWith<$Res> {
+  _$ImportStateCopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
+}
+
+/// @nodoc
+abstract class _$$ImportStateNotAskedImplCopyWith<$Res> {
+  factory _$$ImportStateNotAskedImplCopyWith(_$ImportStateNotAskedImpl value,
+          $Res Function(_$ImportStateNotAskedImpl) then) =
+      __$$ImportStateNotAskedImplCopyWithImpl<$Res>;
+}
+
+/// @nodoc
+class __$$ImportStateNotAskedImplCopyWithImpl<$Res>
+    extends _$ImportStateCopyWithImpl<$Res, _$ImportStateNotAskedImpl>
+    implements _$$ImportStateNotAskedImplCopyWith<$Res> {
+  __$$ImportStateNotAskedImplCopyWithImpl(_$ImportStateNotAskedImpl _value,
+      $Res Function(_$ImportStateNotAskedImpl) _then)
+      : super(_value, _then);
+}
+
+/// @nodoc
+
+class _$ImportStateNotAskedImpl implements ImportStateNotAsked {
+  const _$ImportStateNotAskedImpl();
+
+  @override
+  String toString() {
+    return 'ImportState.initial()';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$ImportStateNotAskedImpl);
+  }
+
+  @override
+  int get hashCode => runtimeType.hashCode;
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function() initial,
+    required TResult Function() loading,
+    required TResult Function() success,
+    required TResult Function(String message) error,
+  }) {
+    return initial();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function()? initial,
+    TResult? Function()? loading,
+    TResult? Function()? success,
+    TResult? Function(String message)? error,
+  }) {
+    return initial?.call();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function()? initial,
+    TResult Function()? loading,
+    TResult Function()? success,
+    TResult Function(String message)? error,
+    required TResult orElse(),
+  }) {
+    if (initial != null) {
+      return initial();
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(ImportStateNotAsked value) initial,
+    required TResult Function(ImportStateLoading value) loading,
+    required TResult Function(ImportStateSuccess value) success,
+    required TResult Function(ImportStateError value) error,
+  }) {
+    return initial(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(ImportStateNotAsked value)? initial,
+    TResult? Function(ImportStateLoading value)? loading,
+    TResult? Function(ImportStateSuccess value)? success,
+    TResult? Function(ImportStateError value)? error,
+  }) {
+    return initial?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(ImportStateNotAsked value)? initial,
+    TResult Function(ImportStateLoading value)? loading,
+    TResult Function(ImportStateSuccess value)? success,
+    TResult Function(ImportStateError value)? error,
+    required TResult orElse(),
+  }) {
+    if (initial != null) {
+      return initial(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class ImportStateNotAsked implements ImportState {
+  const factory ImportStateNotAsked() = _$ImportStateNotAskedImpl;
+}
+
+/// @nodoc
+abstract class _$$ImportStateLoadingImplCopyWith<$Res> {
+  factory _$$ImportStateLoadingImplCopyWith(_$ImportStateLoadingImpl value,
+          $Res Function(_$ImportStateLoadingImpl) then) =
+      __$$ImportStateLoadingImplCopyWithImpl<$Res>;
+}
+
+/// @nodoc
+class __$$ImportStateLoadingImplCopyWithImpl<$Res>
+    extends _$ImportStateCopyWithImpl<$Res, _$ImportStateLoadingImpl>
+    implements _$$ImportStateLoadingImplCopyWith<$Res> {
+  __$$ImportStateLoadingImplCopyWithImpl(_$ImportStateLoadingImpl _value,
+      $Res Function(_$ImportStateLoadingImpl) _then)
+      : super(_value, _then);
+}
+
+/// @nodoc
+
+class _$ImportStateLoadingImpl implements ImportStateLoading {
+  const _$ImportStateLoadingImpl();
+
+  @override
+  String toString() {
+    return 'ImportState.loading()';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType && other is _$ImportStateLoadingImpl);
+  }
+
+  @override
+  int get hashCode => runtimeType.hashCode;
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function() initial,
+    required TResult Function() loading,
+    required TResult Function() success,
+    required TResult Function(String message) error,
+  }) {
+    return loading();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function()? initial,
+    TResult? Function()? loading,
+    TResult? Function()? success,
+    TResult? Function(String message)? error,
+  }) {
+    return loading?.call();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function()? initial,
+    TResult Function()? loading,
+    TResult Function()? success,
+    TResult Function(String message)? error,
+    required TResult orElse(),
+  }) {
+    if (loading != null) {
+      return loading();
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(ImportStateNotAsked value) initial,
+    required TResult Function(ImportStateLoading value) loading,
+    required TResult Function(ImportStateSuccess value) success,
+    required TResult Function(ImportStateError value) error,
+  }) {
+    return loading(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(ImportStateNotAsked value)? initial,
+    TResult? Function(ImportStateLoading value)? loading,
+    TResult? Function(ImportStateSuccess value)? success,
+    TResult? Function(ImportStateError value)? error,
+  }) {
+    return loading?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(ImportStateNotAsked value)? initial,
+    TResult Function(ImportStateLoading value)? loading,
+    TResult Function(ImportStateSuccess value)? success,
+    TResult Function(ImportStateError value)? error,
+    required TResult orElse(),
+  }) {
+    if (loading != null) {
+      return loading(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class ImportStateLoading implements ImportState {
+  const factory ImportStateLoading() = _$ImportStateLoadingImpl;
+}
+
+/// @nodoc
+abstract class _$$ImportStateSuccessImplCopyWith<$Res> {
+  factory _$$ImportStateSuccessImplCopyWith(_$ImportStateSuccessImpl value,
+          $Res Function(_$ImportStateSuccessImpl) then) =
+      __$$ImportStateSuccessImplCopyWithImpl<$Res>;
+}
+
+/// @nodoc
+class __$$ImportStateSuccessImplCopyWithImpl<$Res>
+    extends _$ImportStateCopyWithImpl<$Res, _$ImportStateSuccessImpl>
+    implements _$$ImportStateSuccessImplCopyWith<$Res> {
+  __$$ImportStateSuccessImplCopyWithImpl(_$ImportStateSuccessImpl _value,
+      $Res Function(_$ImportStateSuccessImpl) _then)
+      : super(_value, _then);
+}
+
+/// @nodoc
+
+class _$ImportStateSuccessImpl implements ImportStateSuccess {
+  const _$ImportStateSuccessImpl();
+
+  @override
+  String toString() {
+    return 'ImportState.success()';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType && other is _$ImportStateSuccessImpl);
+  }
+
+  @override
+  int get hashCode => runtimeType.hashCode;
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function() initial,
+    required TResult Function() loading,
+    required TResult Function() success,
+    required TResult Function(String message) error,
+  }) {
+    return success();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function()? initial,
+    TResult? Function()? loading,
+    TResult? Function()? success,
+    TResult? Function(String message)? error,
+  }) {
+    return success?.call();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function()? initial,
+    TResult Function()? loading,
+    TResult Function()? success,
+    TResult Function(String message)? error,
+    required TResult orElse(),
+  }) {
+    if (success != null) {
+      return success();
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(ImportStateNotAsked value) initial,
+    required TResult Function(ImportStateLoading value) loading,
+    required TResult Function(ImportStateSuccess value) success,
+    required TResult Function(ImportStateError value) error,
+  }) {
+    return success(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(ImportStateNotAsked value)? initial,
+    TResult? Function(ImportStateLoading value)? loading,
+    TResult? Function(ImportStateSuccess value)? success,
+    TResult? Function(ImportStateError value)? error,
+  }) {
+    return success?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(ImportStateNotAsked value)? initial,
+    TResult Function(ImportStateLoading value)? loading,
+    TResult Function(ImportStateSuccess value)? success,
+    TResult Function(ImportStateError value)? error,
+    required TResult orElse(),
+  }) {
+    if (success != null) {
+      return success(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class ImportStateSuccess implements ImportState {
+  const factory ImportStateSuccess() = _$ImportStateSuccessImpl;
+}
+
+/// @nodoc
+abstract class _$$ImportStateErrorImplCopyWith<$Res> {
+  factory _$$ImportStateErrorImplCopyWith(_$ImportStateErrorImpl value,
+          $Res Function(_$ImportStateErrorImpl) then) =
+      __$$ImportStateErrorImplCopyWithImpl<$Res>;
+  @useResult
+  $Res call({String message});
+}
+
+/// @nodoc
+class __$$ImportStateErrorImplCopyWithImpl<$Res>
+    extends _$ImportStateCopyWithImpl<$Res, _$ImportStateErrorImpl>
+    implements _$$ImportStateErrorImplCopyWith<$Res> {
+  __$$ImportStateErrorImplCopyWithImpl(_$ImportStateErrorImpl _value,
+      $Res Function(_$ImportStateErrorImpl) _then)
+      : super(_value, _then);
+
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? message = null,
+  }) {
+    return _then(_$ImportStateErrorImpl(
+      message: null == message
+          ? _value.message
+          : message // ignore: cast_nullable_to_non_nullable
+              as String,
+    ));
+  }
+}
+
+/// @nodoc
+
+class _$ImportStateErrorImpl implements ImportStateError {
+  const _$ImportStateErrorImpl({required this.message});
+
+  @override
+  final String message;
+
+  @override
+  String toString() {
+    return 'ImportState.error(message: $message)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$ImportStateErrorImpl &&
+            (identical(other.message, message) || other.message == message));
+  }
+
+  @override
+  int get hashCode => Object.hash(runtimeType, message);
+
+  @JsonKey(ignore: true)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$ImportStateErrorImplCopyWith<_$ImportStateErrorImpl> get copyWith =>
+      __$$ImportStateErrorImplCopyWithImpl<_$ImportStateErrorImpl>(
+          this, _$identity);
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function() initial,
+    required TResult Function() loading,
+    required TResult Function() success,
+    required TResult Function(String message) error,
+  }) {
+    return error(message);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function()? initial,
+    TResult? Function()? loading,
+    TResult? Function()? success,
+    TResult? Function(String message)? error,
+  }) {
+    return error?.call(message);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function()? initial,
+    TResult Function()? loading,
+    TResult Function()? success,
+    TResult Function(String message)? error,
+    required TResult orElse(),
+  }) {
+    if (error != null) {
+      return error(message);
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(ImportStateNotAsked value) initial,
+    required TResult Function(ImportStateLoading value) loading,
+    required TResult Function(ImportStateSuccess value) success,
+    required TResult Function(ImportStateError value) error,
+  }) {
+    return error(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(ImportStateNotAsked value)? initial,
+    TResult? Function(ImportStateLoading value)? loading,
+    TResult? Function(ImportStateSuccess value)? success,
+    TResult? Function(ImportStateError value)? error,
+  }) {
+    return error?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(ImportStateNotAsked value)? initial,
+    TResult Function(ImportStateLoading value)? loading,
+    TResult Function(ImportStateSuccess value)? success,
+    TResult Function(ImportStateError value)? error,
+    required TResult orElse(),
+  }) {
+    if (error != null) {
+      return error(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class ImportStateError implements ImportState {
+  const factory ImportStateError({required final String message}) =
+      _$ImportStateErrorImpl;
+
+  String get message;
+  @JsonKey(ignore: true)
+  _$$ImportStateErrorImplCopyWith<_$ImportStateErrorImpl> get copyWith =>
+      throw _privateConstructorUsedError;
 }
