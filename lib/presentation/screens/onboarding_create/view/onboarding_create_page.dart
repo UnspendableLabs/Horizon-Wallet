@@ -132,7 +132,33 @@ class _OnboardingCreatePageState extends State<OnboardingCreatePage> {
               key: _confirmStepKey,
               mnemonicErrorState: state.mnemonicError,
             ),
-            const CreatePasswordStep(),
+            PasswordPrompt(
+              key: _passwordStepKey,
+              state: state,
+              optionalErrorWidget: state.createState is CreateStateError
+                  ? Align(
+                      alignment: Alignment.center,
+                      child: Container(
+                        padding: const EdgeInsets.all(8.0),
+                        decoration: BoxDecoration(
+                          color: Colors.red.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(40.0),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.info, color: Colors.red),
+                            const SizedBox(width: 4),
+                            SelectableText(
+                              (state.createState as CreateStateError).message,
+                              style: const TextStyle(color: Colors.red),
+                            ),
+                          ],
+                        ),
+                      ),
+                    )
+                  : null,
+            ),
           ],
           onBack: () {
             final session = context.read<SessionStateCubit>();
@@ -153,9 +179,13 @@ class _OnboardingCreatePageState extends State<OnboardingCreatePage> {
               }
             } else if (state.currentStep ==
                 OnboardingCreateStep.createPassword) {
-              context.read<OnboardingCreateBloc>().add(
-                    WalletCreated(password: 'password'),
-                  );
+              // Get password from the password prompt
+              final passwordState = _passwordStepKey.currentState;
+              if (passwordState != null && passwordState.isValid) {
+                context.read<OnboardingCreateBloc>().add(
+                      WalletCreated(password: passwordState.password),
+                    );
+              }
             }
           },
           backButtonText: 'Cancel',
@@ -620,43 +650,5 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
 
   String getMnemonic() {
     return controllers.map((controller) => controller.text).join(' ').trim();
-  }
-}
-
-class CreatePasswordStep extends StatelessWidget {
-  const CreatePasswordStep({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return BlocBuilder<OnboardingCreateBloc, OnboardingCreateState>(
-      builder: (context, state) {
-        return PasswordPrompt(
-          state: state,
-          optionalErrorWidget: state.createState is CreateStateError
-              ? Align(
-                  alignment: Alignment.center,
-                  child: Container(
-                    padding: const EdgeInsets.all(8.0),
-                    decoration: BoxDecoration(
-                      color: Colors.red.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(40.0),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(Icons.info, color: Colors.red),
-                        const SizedBox(width: 4),
-                        SelectableText(
-                          (state.createState as CreateStateError).message,
-                          style: const TextStyle(color: Colors.red),
-                        ),
-                      ],
-                    ),
-                  ),
-                )
-              : null,
-        );
-      },
-    );
   }
 }

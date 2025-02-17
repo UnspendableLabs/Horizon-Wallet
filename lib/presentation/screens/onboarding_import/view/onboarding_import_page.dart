@@ -36,6 +36,9 @@ class OnboardingImportPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Add a key to access the password prompt state
+    final passwordPromptKey = GlobalKey<PasswordPromptState>();
+
     return BlocConsumer<OnboardingImportBloc, OnboardingImportState>(
       listener: (context, state) {
         if (state.importState is ImportStateSuccess) {
@@ -45,10 +48,36 @@ class OnboardingImportPage extends StatelessWidget {
       },
       builder: (context, state) {
         return OnboardingShell(
-          steps: const [
-            ChooseFormatStep(),
-            SeedInputStep(),
-            CreatePasswordStep(),
+          steps: [
+            const ChooseFormatStep(),
+            const SeedInputStep(),
+            PasswordPrompt(
+              key: passwordPromptKey,
+              state: state,
+              optionalErrorWidget: state.importState is ImportStateError
+                  ? Align(
+                      alignment: Alignment.center,
+                      child: Container(
+                        padding: const EdgeInsets.all(8.0),
+                        decoration: BoxDecoration(
+                          color: Colors.red.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(40.0),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.info, color: Colors.red),
+                            const SizedBox(width: 4),
+                            SelectableText(
+                              (state.importState as ImportStateError).message,
+                              style: const TextStyle(color: Colors.red),
+                            ),
+                          ],
+                        ),
+                      ),
+                    )
+                  : null,
+            ),
           ],
           onBack: () {
             final session = context.read<SessionStateCubit>();
@@ -65,11 +94,13 @@ class OnboardingImportPage extends StatelessWidget {
             }
             // This will be called when the final step is completed
             if (state.currentStep == OnboardingImportStep.inputPassword) {
-              // Get password from the password prompt and submit
-              // You'll need to add a way to access the password from the PasswordPrompt
-              context.read<OnboardingImportBloc>().add(
-                    ImportWallet(password: "password"), // Get actual password
-                  );
+              // Get password from the password prompt
+              final passwordState = passwordPromptKey.currentState;
+              if (passwordState != null && passwordState.isValid) {
+                context.read<OnboardingImportBloc>().add(
+                      ImportWallet(password: passwordState.password),
+                    );
+              }
             }
           },
           backButtonText: 'Cancel',
@@ -133,44 +164,6 @@ class SeedInputStep extends StatelessWidget {
       builder: (context, state) {
         return SeedInputFields(
           mnemonicErrorState: state.mnemonicError,
-        );
-      },
-    );
-  }
-}
-
-class CreatePasswordStep extends StatelessWidget {
-  const CreatePasswordStep({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return BlocBuilder<OnboardingImportBloc, OnboardingImportState>(
-      builder: (context, state) {
-        return PasswordPrompt(
-          state: state,
-          optionalErrorWidget: state.importState is ImportStateError
-              ? Align(
-                  alignment: Alignment.center,
-                  child: Container(
-                    padding: const EdgeInsets.all(8.0),
-                    decoration: BoxDecoration(
-                      color: Colors.red.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(40.0),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(Icons.info, color: Colors.red),
-                        const SizedBox(width: 4),
-                        SelectableText(
-                          (state.importState as ImportStateError).message,
-                          style: const TextStyle(color: Colors.red),
-                        ),
-                      ],
-                    ),
-                  ),
-                )
-              : null,
         );
       },
     );

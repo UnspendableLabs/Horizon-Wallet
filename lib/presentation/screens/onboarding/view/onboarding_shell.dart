@@ -28,9 +28,6 @@ class _OnboardingShellState extends State<OnboardingShell> {
   int _currentStep = 0;
 
   void _handleStepContinue() {
-    print("OnboardingShell$_currentStep");
-    print("OnboardingShell${widget.steps.length}");
-
     widget.onNext();
     if (_currentStep < widget.steps.length - 1) {
       setState(() {
