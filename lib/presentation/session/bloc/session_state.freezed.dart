@@ -975,12 +975,8 @@ mixin _$SessionStateSuccess {
   Wallet get wallet => throw _privateConstructorUsedError;
   String get decryptionKey => throw _privateConstructorUsedError;
   List<Account> get accounts => throw _privateConstructorUsedError;
-  String? get currentAccountUuid => throw _privateConstructorUsedError;
   List<Address> get addresses => throw _privateConstructorUsedError;
-  Address? get currentAddress => throw _privateConstructorUsedError;
   List<ImportedAddress>? get importedAddresses =>
-      throw _privateConstructorUsedError;
-  ImportedAddress? get currentImportedAddress =>
       throw _privateConstructorUsedError;
 
   @JsonKey(ignore: true)
@@ -999,11 +995,8 @@ abstract class $SessionStateSuccessCopyWith<$Res> {
       Wallet wallet,
       String decryptionKey,
       List<Account> accounts,
-      String? currentAccountUuid,
       List<Address> addresses,
-      Address? currentAddress,
-      List<ImportedAddress>? importedAddresses,
-      ImportedAddress? currentImportedAddress});
+      List<ImportedAddress>? importedAddresses});
 }
 
 /// @nodoc
@@ -1023,11 +1016,8 @@ class _$SessionStateSuccessCopyWithImpl<$Res, $Val extends SessionStateSuccess>
     Object? wallet = null,
     Object? decryptionKey = null,
     Object? accounts = null,
-    Object? currentAccountUuid = freezed,
     Object? addresses = null,
-    Object? currentAddress = freezed,
     Object? importedAddresses = freezed,
-    Object? currentImportedAddress = freezed,
   }) {
     return _then(_value.copyWith(
       redirect: null == redirect
@@ -1046,26 +1036,14 @@ class _$SessionStateSuccessCopyWithImpl<$Res, $Val extends SessionStateSuccess>
           ? _value.accounts
           : accounts // ignore: cast_nullable_to_non_nullable
               as List<Account>,
-      currentAccountUuid: freezed == currentAccountUuid
-          ? _value.currentAccountUuid
-          : currentAccountUuid // ignore: cast_nullable_to_non_nullable
-              as String?,
       addresses: null == addresses
           ? _value.addresses
           : addresses // ignore: cast_nullable_to_non_nullable
               as List<Address>,
-      currentAddress: freezed == currentAddress
-          ? _value.currentAddress
-          : currentAddress // ignore: cast_nullable_to_non_nullable
-              as Address?,
       importedAddresses: freezed == importedAddresses
           ? _value.importedAddresses
           : importedAddresses // ignore: cast_nullable_to_non_nullable
               as List<ImportedAddress>?,
-      currentImportedAddress: freezed == currentImportedAddress
-          ? _value.currentImportedAddress
-          : currentImportedAddress // ignore: cast_nullable_to_non_nullable
-              as ImportedAddress?,
     ) as $Val);
   }
 }
@@ -1083,11 +1061,8 @@ abstract class _$$SessionStateSuccessImplCopyWith<$Res>
       Wallet wallet,
       String decryptionKey,
       List<Account> accounts,
-      String? currentAccountUuid,
       List<Address> addresses,
-      Address? currentAddress,
-      List<ImportedAddress>? importedAddresses,
-      ImportedAddress? currentImportedAddress});
+      List<ImportedAddress>? importedAddresses});
 }
 
 /// @nodoc
@@ -1105,11 +1080,8 @@ class __$$SessionStateSuccessImplCopyWithImpl<$Res>
     Object? wallet = null,
     Object? decryptionKey = null,
     Object? accounts = null,
-    Object? currentAccountUuid = freezed,
     Object? addresses = null,
-    Object? currentAddress = freezed,
     Object? importedAddresses = freezed,
-    Object? currentImportedAddress = freezed,
   }) {
     return _then(_$SessionStateSuccessImpl(
       redirect: null == redirect
@@ -1128,26 +1100,14 @@ class __$$SessionStateSuccessImplCopyWithImpl<$Res>
           ? _value._accounts
           : accounts // ignore: cast_nullable_to_non_nullable
               as List<Account>,
-      currentAccountUuid: freezed == currentAccountUuid
-          ? _value.currentAccountUuid
-          : currentAccountUuid // ignore: cast_nullable_to_non_nullable
-              as String?,
       addresses: null == addresses
           ? _value._addresses
           : addresses // ignore: cast_nullable_to_non_nullable
               as List<Address>,
-      currentAddress: freezed == currentAddress
-          ? _value.currentAddress
-          : currentAddress // ignore: cast_nullable_to_non_nullable
-              as Address?,
       importedAddresses: freezed == importedAddresses
           ? _value._importedAddresses
           : importedAddresses // ignore: cast_nullable_to_non_nullable
               as List<ImportedAddress>?,
-      currentImportedAddress: freezed == currentImportedAddress
-          ? _value.currentImportedAddress
-          : currentImportedAddress // ignore: cast_nullable_to_non_nullable
-              as ImportedAddress?,
     ));
   }
 }
@@ -1160,11 +1120,8 @@ class _$SessionStateSuccessImpl implements _SessionStateSuccess {
       required this.wallet,
       required this.decryptionKey,
       required final List<Account> accounts,
-      required this.currentAccountUuid,
       required final List<Address> addresses,
-      required this.currentAddress,
-      final List<ImportedAddress>? importedAddresses,
-      this.currentImportedAddress})
+      final List<ImportedAddress>? importedAddresses})
       : _accounts = accounts,
         _addresses = addresses,
         _importedAddresses = importedAddresses;
@@ -1183,8 +1140,6 @@ class _$SessionStateSuccessImpl implements _SessionStateSuccess {
     return EqualUnmodifiableListView(_accounts);
   }
 
-  @override
-  final String? currentAccountUuid;
   final List<Address> _addresses;
   @override
   List<Address> get addresses {
@@ -1193,8 +1148,6 @@ class _$SessionStateSuccessImpl implements _SessionStateSuccess {
     return EqualUnmodifiableListView(_addresses);
   }
 
-  @override
-  final Address? currentAddress;
   final List<ImportedAddress>? _importedAddresses;
   @override
   List<ImportedAddress>? get importedAddresses {
@@ -1207,9 +1160,6 @@ class _$SessionStateSuccessImpl implements _SessionStateSuccess {
   }
 
   @override
-  final ImportedAddress? currentImportedAddress;
-
-  @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
@@ -1220,16 +1170,10 @@ class _$SessionStateSuccessImpl implements _SessionStateSuccess {
             (identical(other.decryptionKey, decryptionKey) ||
                 other.decryptionKey == decryptionKey) &&
             const DeepCollectionEquality().equals(other._accounts, _accounts) &&
-            (identical(other.currentAccountUuid, currentAccountUuid) ||
-                other.currentAccountUuid == currentAccountUuid) &&
             const DeepCollectionEquality()
                 .equals(other._addresses, _addresses) &&
-            (identical(other.currentAddress, currentAddress) ||
-                other.currentAddress == currentAddress) &&
             const DeepCollectionEquality()
-                .equals(other._importedAddresses, _importedAddresses) &&
-            (identical(other.currentImportedAddress, currentImportedAddress) ||
-                other.currentImportedAddress == currentImportedAddress));
+                .equals(other._importedAddresses, _importedAddresses));
   }
 
   @override
@@ -1239,11 +1183,8 @@ class _$SessionStateSuccessImpl implements _SessionStateSuccess {
       wallet,
       decryptionKey,
       const DeepCollectionEquality().hash(_accounts),
-      currentAccountUuid,
       const DeepCollectionEquality().hash(_addresses),
-      currentAddress,
-      const DeepCollectionEquality().hash(_importedAddresses),
-      currentImportedAddress);
+      const DeepCollectionEquality().hash(_importedAddresses));
 
   @JsonKey(ignore: true)
   @override
@@ -1259,11 +1200,8 @@ abstract class _SessionStateSuccess implements SessionStateSuccess {
           required final Wallet wallet,
           required final String decryptionKey,
           required final List<Account> accounts,
-          required final String? currentAccountUuid,
           required final List<Address> addresses,
-          required final Address? currentAddress,
-          final List<ImportedAddress>? importedAddresses,
-          final ImportedAddress? currentImportedAddress}) =
+          final List<ImportedAddress>? importedAddresses}) =
       _$SessionStateSuccessImpl;
 
   @override
@@ -1275,15 +1213,9 @@ abstract class _SessionStateSuccess implements SessionStateSuccess {
   @override
   List<Account> get accounts;
   @override
-  String? get currentAccountUuid;
-  @override
   List<Address> get addresses;
   @override
-  Address? get currentAddress;
-  @override
   List<ImportedAddress>? get importedAddresses;
-  @override
-  ImportedAddress? get currentImportedAddress;
   @override
   @JsonKey(ignore: true)
   _$$SessionStateSuccessImplCopyWith<_$SessionStateSuccessImpl> get copyWith =>

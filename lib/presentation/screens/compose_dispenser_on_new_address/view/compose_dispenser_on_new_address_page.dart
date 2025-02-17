@@ -152,8 +152,7 @@ class _ComposeDispenserOnNewAddressPageState
         state.composeDispenserOnNewAddressState.maybeWhen(
           success: () async {
             Navigator.of(context).pop();
-            context.read<SessionStateCubit>().refreshAndSelectNewAddress(
-                state.newAddress!.address, state.newAccount!.uuid);
+            context.read<SessionStateCubit>().refresh();
             ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                 duration: const Duration(seconds: 5),
                 action: SnackBarAction(

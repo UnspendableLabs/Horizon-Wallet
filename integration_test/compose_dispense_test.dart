@@ -72,13 +72,7 @@ class MockSessionStateCubit extends Mock implements SessionStateCubit {
           encryptedPrivKey: '',
           chainCodeHex: '',
         ),
-        currentAccountUuid: 'test-account-uuid',
         addresses: [],
-        currentAddress: Address(
-          address: 'test-address',
-          accountUuid: 'test-account-uuid',
-          index: 0,
-        ),
       ));
 }
 

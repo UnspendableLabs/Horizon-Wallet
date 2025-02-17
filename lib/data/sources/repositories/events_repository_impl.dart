@@ -23,8 +23,7 @@ class VerboseEventMapper {
   final BitcoinRepository bitcoinRepository;
   VerboseEventMapper({required this.bitcoinRepository});
 
-  Future<VerboseEvent> toDomain(
-      api.VerboseEvent apiEvent, String currentAddress) async {
+  Future<VerboseEvent> toDomain(api.VerboseEvent apiEvent) async {
     switch (apiEvent.event) {
       case 'ENHANCED_SEND':
         return VerboseEnhancedSendEventMapper.toDomain(
@@ -90,8 +89,10 @@ class VerboseEventMapper {
         return VerboseDetachFromUtxoEventMapper.toDomain(
             apiEvent as api.VerboseDetachFromUtxoEvent);
       case "UTXO_MOVE":
-        return parseSwapFromMoveToUtxo(
-            apiEvent as api.VerboseMoveToUtxoEvent, currentAddress);
+        return VerboseMoveToUtxoEventMapper.toDomain(
+            apiEvent as api.VerboseMoveToUtxoEvent);
+      // return parseSwapFromMoveToUtxo(
+      //     apiEvent as api.VerboseMoveToUtxoEvent, currentAddress);
       case "ASSET_DESTRUCTION":
         return AssetDestructionEventMapper.toDomain(
             apiEvent as api.VerboseAssetDestructionEvent);
@@ -1125,8 +1126,8 @@ class EventsRepositoryImpl implements EventsRepository {
         List<VerboseEvent>,
         cursor_entity.Cursor? nextCursor,
         int? resultCount
-      )> getByAddressVerbose({
-    required String address,
+      )> getByAddressesVerbose({
+    required List<String> addresses,
     cursor_entity.Cursor? cursor,
     int? limit,
     bool? unconfirmed = false,
@@ -1134,7 +1135,7 @@ class EventsRepositoryImpl implements EventsRepository {
   }) async {
     List<VerboseEvent> events = [];
 
-    final addressesParam = address;
+    final addressesParam = addresses.join(",");
 
     final whitelist_ = whitelist?.join(",");
 
@@ -1151,49 +1152,50 @@ class EventsRepositoryImpl implements EventsRepository {
     List<VerboseEvent> events_ =
         await Future.wait(response.result!.map((event) async {
       return await VerboseEventMapper(bitcoinRepository: bitcoinRepository)
-          .toDomain(event, address);
+          .toDomain(event);
     }).toList());
     events.addAll(events_);
     // Invalidate cache for AttachToUtxoEvent
-    await updateAttachToUtxoCache(events, address, cacheProvider);
+    await updateAttachToUtxoCache(events, addresses, cacheProvider);
 
     return (events, nextCursor, response.resultCount);
   }
 
   @override
-  Future<List<VerboseEvent>> getAllByAddressVerbose({
-    required String address,
+  Future<List<VerboseEvent>> getAllByAddressesVerbose({
+    required List<String> addresses,
     bool? unconfirmed = false,
     List<String>? whitelist,
   }) async {
-    final addresses = [address];
     final List<VerboseEvent> events = [];
 
     if (unconfirmed == true) {
       final mempoolEvents =
-          await _getAllMempoolVerboseEventsForAddress(address, whitelist);
+          await getAllMempoolVerboseEventsForAddresses(addresses, whitelist);
       events.addAll(mempoolEvents);
     }
 
-    final futures = addresses.map((address) =>
-        _getAllVerboseEventsForAddress(address, unconfirmed, whitelist));
+    final eventResults = await _getAllVerboseEventsForAddresses(
+        addresses, unconfirmed, whitelist);
 
-    final eventResults = await Future.wait(futures);
-    final allEvents = eventResults.expand((events) => events).toList();
-    events.addAll(allEvents);
+    // final eventResults = await Future.wait(futures);
+    // final allEvents = eventResults.expand((events) => events).toList();
+    events.addAll(eventResults);
 
     return events;
   }
 
-  Future<List<VerboseEvent>> _getAllVerboseEventsForAddress(
-      String address, bool? unconfirmed, List<String>? whitelist) async {
+  Future<List<VerboseEvent>> _getAllVerboseEventsForAddresses(
+      List<String> addresses,
+      bool? unconfirmed,
+      List<String>? whitelist) async {
     final allEvents = <VerboseEvent>[];
     Cursor? cursor;
     bool hasMore = true;
 
     while (hasMore) {
-      final (events, nextCursor, _) = await getByAddressVerbose(
-        address: address,
+      final (events, nextCursor, _) = await getByAddressesVerbose(
+        addresses: addresses,
         limit: 1000,
         cursor: cursor,
         unconfirmed: unconfirmed,
@@ -1210,7 +1212,7 @@ class EventsRepositoryImpl implements EventsRepository {
     }
 
     // Invalidate cache for AttachToUtxoEvent
-    await updateAttachToUtxoCache(allEvents, address, cacheProvider);
+    await updateAttachToUtxoCache(allEvents, addresses, cacheProvider);
 
     return allEvents;
   }
@@ -1221,18 +1223,16 @@ class EventsRepositoryImpl implements EventsRepository {
         List<VerboseEvent>,
         cursor_entity.Cursor? nextCursor,
         int? resultCount
-      )> getMempoolEventsByAddressVerbose({
-    required String address,
+      )> getMempoolEventsByAddressesVerbose({
+    required List<String> addresses,
     cursor_entity.Cursor? cursor,
     int? limit,
     List<String>? whitelist,
   }) async {
-    final addressesParam = address;
-
     final whitelist_ = whitelist?.join(",");
 
     final response = await api_.getMempoolEventsByAddressesVerbose(
-        addressesParam,
+        addresses.join(","),
         cursor_model.CursorMapper.toData(cursor),
         limit,
         whitelist_);
@@ -1246,21 +1246,22 @@ class EventsRepositoryImpl implements EventsRepository {
     List<VerboseEvent> events =
         await Future.wait(response.result!.map((event) async {
       return await VerboseEventMapper(bitcoinRepository: bitcoinRepository)
-          .toDomain(event, address);
+          .toDomain(event);
     }).toList());
 
     return (events, nextCursor, response.resultCount);
   }
 
-  Future<List<VerboseEvent>> _getAllMempoolVerboseEventsForAddress(
-      String address, List<String>? whitelist) async {
+  @override
+  Future<List<VerboseEvent>> getAllMempoolVerboseEventsForAddresses(
+      List<String> addresses, List<String>? whitelist) async {
     final allEvents = <VerboseEvent>[];
     Cursor? cursor;
     bool hasMore = true;
 
     while (hasMore) {
-      final (events, nextCursor, _) = await getMempoolEventsByAddressVerbose(
-        address: address,
+      final (events, nextCursor, _) = await getMempoolEventsByAddressesVerbose(
+        addresses: addresses,
         limit: 1000,
         cursor: cursor,
       );
@@ -1282,35 +1283,37 @@ class EventsRepositoryImpl implements EventsRepository {
 
   static Future<void> updateAttachToUtxoCache(
     List<VerboseEvent> events,
-    String address,
+    List<String> addresses,
     CacheProvider cacheProvider,
   ) async {
     // 1. get all unconfirmed attaches
-    final txHashes = cacheProvider.getValue(address) ?? [];
-    final confirmedTxHashes = <String>[];
+    for (final address in addresses) {
+      final txHashes = cacheProvider.getValue(address) ?? [];
+      final confirmedTxHashes = <String>[];
 
-    // 2. get all confirmed attaches
-    for (final event in events) {
-      if (event is VerboseAttachToUtxoEvent &&
-          event.state is EventStateConfirmed) {
-        final txHash = event.txHash;
-        if (txHash != null && txHashes.contains(txHash)) {
-          // 3. remove the txHashes as the events confirm
-          confirmedTxHashes.add(txHash);
+      // 2. get all confirmed attaches
+      for (final event in events) {
+        if (event is VerboseAttachToUtxoEvent &&
+            event.state is EventStateConfirmed) {
+          final txHash = event.txHash;
+          if (txHash != null && txHashes.contains(txHash)) {
+            // 3. remove the txHashes as the events confirm
+            confirmedTxHashes.add(txHash);
+          }
         }
       }
-    }
-    if (confirmedTxHashes.isEmpty) {
-      return;
-    } else {
-      txHashes.removeWhere((txHash) => confirmedTxHashes.contains(txHash));
-    }
-    // 4. Update the cache outside of the loop, all at once
-    if (txHashes.isEmpty) {
-      // Remove the key if the list is empty
-      await cacheProvider.remove(address);
-    } else {
-      await cacheProvider.setObject(address, txHashes);
+      if (confirmedTxHashes.isEmpty) {
+        return;
+      } else {
+        txHashes.removeWhere((txHash) => confirmedTxHashes.contains(txHash));
+      }
+      // 4. Update the cache outside of the loop, all at once
+      if (txHashes.isEmpty) {
+        // Remove the key if the list is empty
+        await cacheProvider.remove(address);
+      } else {
+        await cacheProvider.setObject(address, txHashes);
+      }
     }
   }
 

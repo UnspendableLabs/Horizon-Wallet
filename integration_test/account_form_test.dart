@@ -92,14 +92,7 @@ SessionState createSessionState({
             chainCodeHex: '',
           ),
       decryptionKey: "decryption_key",
-      currentAccountUuid: currentAccountUuid ?? defaultAccount.uuid,
       addresses: addresses ?? [],
-      currentAddress: currentAddress ??
-          Address(
-            address: 'test-address',
-            accountUuid: defaultAccount.uuid,
-            index: 1,
-          ),
       redirect: redirect,
     ),
   );
