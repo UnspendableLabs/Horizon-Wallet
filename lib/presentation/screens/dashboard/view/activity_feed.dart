@@ -864,13 +864,13 @@ class DashboardActivityFeedScreenState
     super.dispose();
   }
 
-  Widget _buildNewTransactionsBanner(DashboardActivityFeedState state) {
-    final newTransactionCount = (state as dynamic).newTransactionCount as int;
-    if (newTransactionCount > 0) {
-      return NewTransactionsBanner(count: newTransactionCount);
-    }
-    return const SizedBox.shrink();
-  }
+  // Widget _buildNewTransactionsBanner(DashboardActivityFeedState state) {
+  //   final newTransactionCount = (state as dynamic).newTransactionCount as int;
+  //   if (newTransactionCount > 0) {
+  //     return NewTransactionsBanner(count: newTransactionCount);
+  //   }
+  //   return const SizedBox.shrink();
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -881,10 +881,10 @@ class DashboardActivityFeedScreenState
       builder: (context, state) {
         final widgets = <Widget>[];
 
-        if (state is DashboardActivityFeedStateCompleteOk ||
-            state is DashboardActivityFeedStateReloadingOk) {
-          widgets.add(_buildNewTransactionsBanner(state));
-        }
+        // if (state is DashboardActivityFeedStateCompleteOk ||
+        //     state is DashboardActivityFeedStateReloadingOk) {
+        //   widgets.add(_buildNewTransactionsBanner(state));
+        // }
 
         widgets.addAll(_buildContent(state));
 

@@ -295,12 +295,7 @@ class AppRouter {
                         // success
                         return session.state.maybeWhen(
                           success: (state) {
-                            late Key key;
-                            if (state.currentAddress != null) {
-                              key = Key(state.currentAddress!.address);
-                            } else if (state.currentImportedAddress != null) {
-                              key = Key(state.currentImportedAddress!.address);
-                            }
+                            final Key key = Key(state.wallet.uuid);
 
                             return Scaffold(
                                 bottomNavigationBar: const Footer(),
@@ -319,12 +314,7 @@ class AppRouter {
                         // success
                         return session.state.maybeWhen(
                           success: (state) {
-                            late Key key;
-                            if (state.currentAddress != null) {
-                              key = Key(state.currentAddress!.address);
-                            } else if (state.currentImportedAddress != null) {
-                              key = Key(state.currentImportedAddress!.address);
-                            }
+                            final Key key = Key(state.wallet.uuid);
 
                             return const Scaffold(
                                 bottomNavigationBar: Footer(),
