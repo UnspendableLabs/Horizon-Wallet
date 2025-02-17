@@ -165,56 +165,22 @@ class SeedInputState extends State<SeedInput> {
   Widget buildInputFields(bool isSmallScreen, bool isDarkMode) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        if (isSmallScreen) {
-          return SingleChildScrollView(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: Column(
-                    children: List.generate(6,
-                        (index) => buildCompactInputField(index, isDarkMode)),
-                  ),
-                ),
-                Expanded(
-                  child: Column(
-                    children: List.generate(
-                        6,
-                        (index) =>
-                            buildCompactInputField(index + 6, isDarkMode)),
-                  ),
-                ),
-              ],
-            ),
-          );
-        } else {
-          return SingleChildScrollView(
-            child: ConstrainedBox(
-              constraints: BoxConstraints(
-                minHeight: constraints.maxHeight,
-              ),
-              child: IntrinsicHeight(
-                child: Column(
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: List.generate(2, (columnIndex) {
-                        return Expanded(
-                          child: Column(
-                            children: List.generate(6, (rowIndex) {
-                              int index = columnIndex * 6 + rowIndex;
-                              return buildInputField(index, isDarkMode);
-                            }),
-                          ),
-                        );
-                      }),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          );
-        }
+        return SingleChildScrollView(
+          child: Column(
+            children: List.generate(4, (rowIndex) {
+              return Row(
+                children: List.generate(3, (colIndex) {
+                  final index = rowIndex * 3 + colIndex;
+                  return Expanded(
+                    child: isSmallScreen
+                        ? buildCompactInputField(index, isDarkMode)
+                        : buildInputField(index, isDarkMode),
+                  );
+                }),
+              );
+            }),
+          ),
+        );
       },
     );
   }
@@ -222,65 +188,54 @@ class SeedInputState extends State<SeedInput> {
   Widget buildCompactInputField(int index, bool isDarkMode) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 4.0),
-      child: Row(
-        children: [
-          SizedBox(
-            width: 20,
-            child: Text(
-              "${index + 1}.",
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.normal,
-                color: isDarkMode ? Colors.white : Colors.black,
-              ),
-              textAlign: TextAlign.right,
-            ),
+      child: Container(
+        width: 105,
+        height: 44,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(
+            color: isDarkMode
+                ? const Color.fromRGBO(254, 251, 249, 0.08)
+                : Colors.transparent,
           ),
-          const SizedBox(width: 4),
-          Expanded(
-            child: SizedBox(
-              height: 40,
+          color: isDarkMode ? inputDarkBackground : inputLightBackground,
+        ),
+        child: Row(
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(left: 6.0),
+              child: Text(
+                "${index + 1}.",
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.normal,
+                  color: isDarkMode ? Colors.white : Colors.black,
+                ),
+              ),
+            ),
+            const SizedBox(width: 6),
+            Expanded(
               child: TextField(
                 controller: controllers[index],
                 focusNode: focusNodes[index],
                 obscureText: !_showSeedPhrase,
                 onChanged: (value) => handleInput(value, index),
                 decoration: InputDecoration(
-                  filled: true,
-                  fillColor:
-                      isDarkMode ? inputDarkBackground : inputLightBackground,
-                  contentPadding:
-                      const EdgeInsets.symmetric(vertical: 0, horizontal: 8),
+                  isDense: true,
+                  contentPadding: const EdgeInsets.only(right: 20),
+                  border: InputBorder.none,
                   hintText: 'Word ${index + 1}',
                   hintStyle: TextStyle(
                     fontSize: 14,
                     color:
                         isDarkMode ? inputDarkLabelColor : inputLightLabelColor,
                   ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8.0),
-                    borderSide: widget.incorrectIndexes?.contains(index) == true
-                        ? const BorderSide(
-                            color: Colors.red,
-                            width: 1.0,
-                            style: BorderStyle.solid)
-                        : BorderSide.none,
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8.0),
-                    borderSide: widget.incorrectIndexes?.contains(index) == true
-                        ? const BorderSide(
-                            color: Colors.red,
-                            width: 1.0,
-                            style: BorderStyle.solid)
-                        : BorderSide.none,
-                  ),
                 ),
                 style: const TextStyle(fontSize: 14),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -288,59 +243,53 @@ class SeedInputState extends State<SeedInput> {
   Widget buildInputField(int index, bool isDarkMode) {
     return Padding(
       padding: const EdgeInsets.all(8.0),
-      child: Row(
-        children: [
-          SizedBox(
-            width: 24,
-            child: Text(
-              "${index + 1}. ",
-              style: TextStyle(
-                fontWeight: FontWeight.normal,
-                color: isDarkMode ? Colors.white : Colors.black,
-              ),
-              textAlign: TextAlign.right,
-            ),
+      child: Container(
+        width: 105,
+        height: 44,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(
+            color: isDarkMode
+                ? const Color.fromRGBO(254, 251, 249, 0.08)
+                : Colors.transparent,
           ),
-          const SizedBox(width: 4),
-          Expanded(
-            child: TextField(
-              controller: controllers[index],
-              focusNode: focusNodes[index],
-              obscureText: !_showSeedPhrase,
-              onChanged: (value) => handleInput(value, index),
-              decoration: InputDecoration(
-                filled: true,
-                fillColor:
-                    isDarkMode ? inputDarkBackground : inputLightBackground,
-                labelText: 'Word ${index + 1}',
-                labelStyle: TextStyle(
+          color: isDarkMode ? inputDarkBackground : inputLightBackground,
+        ),
+        child: Row(
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(left: 6.0),
+              child: Text(
+                "${index + 1}.",
+                style: TextStyle(
                   fontWeight: FontWeight.normal,
-                  color:
-                      isDarkMode ? inputDarkLabelColor : inputLightLabelColor,
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8.0),
-                  borderSide: widget.incorrectIndexes?.contains(index) == true
-                      ? const BorderSide(
-                          color: Colors.red,
-                          width: 1.0,
-                          style: BorderStyle.solid)
-                      : BorderSide.none,
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8.0),
-                  borderSide: widget.incorrectIndexes?.contains(index) == true
-                      ? const BorderSide(
-                          color: Colors.red,
-                          width: 1.0,
-                          style: BorderStyle.solid)
-                      : BorderSide.none,
+                  color: isDarkMode ? Colors.white : Colors.black,
                 ),
               ),
-              style: const TextStyle(fontSize: 16),
             ),
-          ),
-        ],
+            const SizedBox(width: 6),
+            Expanded(
+              child: TextField(
+                controller: controllers[index],
+                focusNode: focusNodes[index],
+                obscureText: !_showSeedPhrase,
+                onChanged: (value) => handleInput(value, index),
+                decoration: InputDecoration(
+                  isDense: true,
+                  contentPadding: const EdgeInsets.only(right: 20),
+                  border: InputBorder.none,
+                  hintText: 'Word ${index + 1}',
+                  hintStyle: TextStyle(
+                    fontWeight: FontWeight.normal,
+                    color:
+                        isDarkMode ? inputDarkLabelColor : inputLightLabelColor,
+                  ),
+                ),
+                style: const TextStyle(fontSize: 16),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -357,20 +306,12 @@ class SeedInputState extends State<SeedInput> {
     }
 
     widget.onInputChanged?.call();
-
     updateMnemonic();
   }
 
   void handleTabNavigation(int index) {
-    int nextIndex;
-    if (index % 6 == 5) {
-      nextIndex = index + 7 - 6;
-    } else {
-      nextIndex = index + 1;
-    }
-
-    if (nextIndex < 12) {
-      FocusScope.of(context).requestFocus(focusNodes[nextIndex]);
+    if (index < 11) {
+      FocusScope.of(context).requestFocus(focusNodes[index + 1]);
     } else {
       FocusScope.of(context).unfocus();
     }

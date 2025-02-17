@@ -20,7 +20,7 @@ import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 
 class NumberedWordGrid extends StatelessWidget {
   final String text;
-  final int rowsPerColumn;
+  final int wordsPerRow;
   final Color backgroundColor;
   final Color textColor;
   final double borderRadius;
@@ -32,7 +32,7 @@ class NumberedWordGrid extends StatelessWidget {
     required this.text,
     required this.backgroundColor,
     required this.textColor,
-    this.rowsPerColumn = 6,
+    this.wordsPerRow = 3,
     this.borderRadius = 8.0,
     this.padding = const EdgeInsets.all(16.0),
     this.itemMargin =
@@ -43,47 +43,68 @@ class NumberedWordGrid extends StatelessWidget {
   Widget build(BuildContext context) {
     List<String> words = text.split(' ');
     int totalWords = words.length;
-    int columnCount = (totalWords / rowsPerColumn).ceil();
+    int rowCount = (totalWords / wordsPerRow).ceil();
 
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: List.generate(columnCount, (columnIndex) {
-        int startIndex = columnIndex * rowsPerColumn;
-        int endIndex = min((columnIndex + 1) * rowsPerColumn, totalWords);
-        List<String> columnWords = words.sublist(startIndex, endIndex);
+    return Column(
+      children: List.generate(rowCount, (rowIndex) {
+        int startIndex = rowIndex * wordsPerRow;
+        int endIndex = min((rowIndex + 1) * wordsPerRow, totalWords);
+        List<String> rowWords = words.sublist(startIndex, endIndex);
 
-        return Expanded(
-          child: _buildColumn(columnWords, startIndex: startIndex + 1),
+        return Row(
+          children: rowWords.asMap().entries.map((entry) {
+            int wordIndex = startIndex + entry.key;
+            String word = entry.value;
+            return Expanded(
+              child: Container(
+                margin: itemMargin,
+                child: Container(
+                  width: 105,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(18),
+                    border: Border.all(
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? const Color.fromRGBO(254, 251, 249, 0.08)
+                          : Colors.transparent,
+                    ),
+                    color: backgroundColor,
+                  ),
+                  child: Row(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.only(left: 6.0),
+                        child: Text(
+                          "${wordIndex + 1}.",
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: textColor,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.only(right: 20),
+                          child: Text(
+                            word,
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: textColor,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          }).toList(),
         );
       }),
-    );
-  }
-
-  Widget _buildColumn(List<String> words, {required int startIndex}) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: words.asMap().entries.map((entry) {
-        int index = entry.key + startIndex;
-        String word = entry.value;
-        return Container(
-          margin: itemMargin,
-          child: Container(
-            decoration: BoxDecoration(
-              color: backgroundColor,
-              borderRadius: BorderRadius.circular(borderRadius),
-            ),
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            child: Text(
-              '$index. $word',
-              style: TextStyle(
-                fontSize: 16,
-                color: textColor,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-        );
-      }).toList(),
     );
   }
 }
