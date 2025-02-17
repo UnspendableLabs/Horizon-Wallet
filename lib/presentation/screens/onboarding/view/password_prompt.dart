@@ -4,12 +4,14 @@ import 'package:horizon/presentation/common/redesign_colors.dart';
 class PasswordPrompt extends StatefulWidget {
   final Widget? optionalErrorWidget;
   final void Function(String)? onPasswordChanged;
+  final VoidCallback? onValidationChanged;
 
   const PasswordPrompt({
     super.key,
     required this.state,
     this.optionalErrorWidget,
     this.onPasswordChanged,
+    this.onValidationChanged,
   });
 
   final dynamic state;
@@ -39,18 +41,24 @@ class PasswordPromptState extends State<PasswordPrompt> {
   @override
   void initState() {
     super.initState();
-    passwordController.addListener(() {
-      if (widget.onPasswordChanged != null && isValid) {
-        widget.onPasswordChanged!(password);
-      }
-    });
+    passwordController.addListener(_onInputChanged);
+    passwordConfirmationController.addListener(_onInputChanged);
+  }
+
+  void _onInputChanged() {
+    if (widget.onPasswordChanged != null && isValid) {
+      widget.onPasswordChanged!(password);
+    }
+    widget.onValidationChanged?.call();
   }
 
   @override
   void dispose() {
-    super.dispose();
+    passwordController.removeListener(_onInputChanged);
+    passwordConfirmationController.removeListener(_onInputChanged);
     passwordController.dispose();
     passwordConfirmationController.dispose();
+    super.dispose();
   }
 
   void clearPassword() {
