@@ -3,6 +3,7 @@ const MESSAGE_SOURCE = "horizon";
 const VALID_METHODS = [
   "getAddresses",
   "signPsbt",
+  "signMessage",
   "fairmint",
   "dispense",
   "openOrder",
@@ -98,6 +99,24 @@ const methodValidators = {
           );
         }
       }
+    }
+
+    return errors;
+  },
+
+  signMessage: (msg) => {
+
+    const errors = [];
+
+    if (!msg.params?.message || typeof msg.params.message !== "string") {
+      errors.push(
+        "Missing or invalid 'message' parameter for 'signMessage'. Expected a string.",
+      );
+    }
+    if (!msg.params?.address || typeof msg.params.address !== "string") {
+      errors.push(
+        "Missing or invalid 'address' parameter for 'SignMessage. Expected a string.",
+      );
     }
 
     return errors;
