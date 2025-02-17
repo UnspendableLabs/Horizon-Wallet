@@ -54,7 +54,7 @@ void main() {
     GetIt.I.reset();
   });
 
-  group('OnboardingCreateBloc - CreateWallet', () {
+  group('OnboardingCreateBloc - WalletCreated', () {
     const mnemonic = 'test mnemonic';
     const password = 'testPassword';
 
@@ -77,9 +77,9 @@ void main() {
         );
       },
       seed: () => OnboardingCreateState(
-        mnemonicState: GenerateMnemonicStateGenerated(mnemonic: mnemonic),
+        mnemonicState: MnemonicGeneratedStateGenerated(mnemonic: mnemonic),
       ),
-      act: (bloc) => bloc.add(CreateWallet(password: password)),
+      act: (bloc) => bloc.add(WalletCreated(password: password)),
       expect: () => [
         predicate<OnboardingCreateState>(
           (state) => state.createState is CreateStateLoading,
@@ -108,9 +108,9 @@ void main() {
         );
       },
       seed: () => OnboardingCreateState(
-        mnemonicState: GenerateMnemonicStateGenerated(mnemonic: mnemonic),
+        mnemonicState: MnemonicGeneratedStateGenerated(mnemonic: mnemonic),
       ),
-      act: (bloc) => bloc.add(CreateWallet(password: password)),
+      act: (bloc) => bloc.add(WalletCreated(password: password)),
       expect: () => [
         predicate<OnboardingCreateState>(
           (state) => state.createState is CreateStateLoading,
@@ -139,9 +139,9 @@ void main() {
         );
       },
       seed: () => OnboardingCreateState(
-        mnemonicState: GenerateMnemonicStateGenerated(mnemonic: mnemonic),
+        mnemonicState: MnemonicGeneratedStateGenerated(mnemonic: mnemonic),
       ),
-      act: (bloc) => bloc.add(CreateWallet(password: password)),
+      act: (bloc) => bloc.add(WalletCreated(password: password)),
       expect: () => [
         predicate<OnboardingCreateState>(
           (state) => state.createState is CreateStateLoading,
@@ -173,9 +173,9 @@ void main() {
         );
       },
       seed: () => OnboardingCreateState(
-        mnemonicState: GenerateMnemonicStateGenerated(mnemonic: mnemonic),
+        mnemonicState: MnemonicGeneratedStateGenerated(mnemonic: mnemonic),
       ),
-      act: (bloc) => bloc.add(CreateWallet(password: password)),
+      act: (bloc) => bloc.add(WalletCreated(password: password)),
       expect: () => [
         predicate<OnboardingCreateState>(
           (state) => state.createState is CreateStateLoading,

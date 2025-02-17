@@ -2,26 +2,26 @@ abstract class OnboardingCreateEvent {}
 
 class GoBackToMnemonic extends OnboardingCreateEvent {}
 
-class GenerateMnemonic extends OnboardingCreateEvent {}
+class MnemonicGenerated extends OnboardingCreateEvent {}
 
-class UnconfirmMnemonic extends OnboardingCreateEvent {}
+class MnemonicCreated extends OnboardingCreateEvent {}
 
-class ConfirmMnemonicChanged extends OnboardingCreateEvent {
+class MnemonicConfirmedChanged extends OnboardingCreateEvent {
   final String mnemonic;
-  ConfirmMnemonicChanged({required this.mnemonic});
+  MnemonicConfirmedChanged({required this.mnemonic});
 }
 
-class ConfirmMnemonic extends OnboardingCreateEvent {
+class MnemonicConfirmed extends OnboardingCreateEvent {
   final List<String> mnemonic;
-  ConfirmMnemonic({required this.mnemonic});
+  MnemonicConfirmed({required this.mnemonic});
 }
 
-class MnemonicSubmit extends OnboardingCreateEvent {
+class MnemonicSubmitted extends OnboardingCreateEvent {
   final String mnemonic;
-  MnemonicSubmit({required this.mnemonic});
+  MnemonicSubmitted({required this.mnemonic});
 }
 
-class CreateWallet extends OnboardingCreateEvent {
+class WalletCreated extends OnboardingCreateEvent {
   final String password;
-  CreateWallet({required this.password});
+  WalletCreated({required this.password});
 }

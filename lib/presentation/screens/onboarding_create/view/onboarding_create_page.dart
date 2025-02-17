@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
+import 'package:horizon/domain/repositories/config_repository.dart';
 import 'package:horizon/domain/services/mnemonic_service.dart';
 import 'package:horizon/domain/services/wallet_service.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
@@ -97,14 +98,22 @@ class OnboardingCreatePageWrapper extends StatelessWidget {
         mnmonicService: GetIt.I<MnemonicService>(),
         walletService: GetIt.I<WalletService>(),
         importWalletUseCase: GetIt.I<ImportWalletUseCase>(),
-      )..add(GenerateMnemonic()),
+      )..add(MnemonicGenerated()),
       child: const OnboardingCreatePage(),
     );
   }
 }
 
-class OnboardingCreatePage extends StatelessWidget {
+class OnboardingCreatePage extends StatefulWidget {
   const OnboardingCreatePage({super.key});
+
+  @override
+  State<OnboardingCreatePage> createState() => _OnboardingCreatePageState();
+}
+
+class _OnboardingCreatePageState extends State<OnboardingCreatePage> {
+  final _passwordStepKey = GlobalKey<PasswordPromptState>();
+  final _confirmStepKey = GlobalKey<_SeedInputFieldsState>();
 
   @override
   Widget build(BuildContext context) {
@@ -117,36 +126,43 @@ class OnboardingCreatePage extends StatelessWidget {
       },
       builder: (context, state) {
         return OnboardingShell(
-          steps: const [
-            ShowMnemonicStep(),
-            ConfirmMnemonicStep(),
-            CreatePasswordStep(),
+          steps: [
+            const ShowMnemonicStep(),
+            SeedInputFields(
+              key: _confirmStepKey,
+              mnemonicErrorState: state.mnemonicError,
+            ),
+            const CreatePasswordStep(),
           ],
           onBack: () {
             final session = context.read<SessionStateCubit>();
             session.onOnboarding();
           },
           onNext: () {
-            if (state.createState is CreateStateNotAsked) {
-              context.read<OnboardingCreateBloc>().add(UnconfirmMnemonic());
-            } else if (state.createState is CreateStateMnemonicUnconfirmed) {
-              // Get mnemonic from confirm step and validate
-              // TODO: Get actual mnemonic from the step
+            print('ON NEXT: ${state.currentStep}');
+            if (state.currentStep == OnboardingCreateStep.showMnemonic) {
+              context.read<OnboardingCreateBloc>().add(MnemonicCreated());
+            } else if (state.currentStep ==
+                OnboardingCreateStep.confirmMnemonic) {
+              final confirmedMnemonic =
+                  _confirmStepKey.currentState?.getMnemonic();
+              if (confirmedMnemonic != null) {
+                context.read<OnboardingCreateBloc>().add(
+                      MnemonicConfirmed(mnemonic: confirmedMnemonic.split(' ')),
+                    );
+              }
+            } else if (state.currentStep ==
+                OnboardingCreateStep.createPassword) {
               context.read<OnboardingCreateBloc>().add(
-                    ConfirmMnemonic(mnemonic: ['test']), // Get actual mnemonic
-                  );
-            } else {
-              // Get password from password step and create wallet
-              // TODO: Get actual password from the step
-              context.read<OnboardingCreateBloc>().add(
-                    CreateWallet(password: 'password'), // Get actual password
+                    WalletCreated(password: 'password'),
                   );
             }
           },
           backButtonText: 'Cancel',
-          nextButtonText: state.createState is CreateStateMnemonicConfirmed
-              ? 'Create Wallet'
-              : 'Continue',
+          nextButtonText:
+              state.currentStep == OnboardingCreateStep.createPassword
+                  ? 'Create Wallet'
+                  : 'Continue',
           isLoading: state.createState is CreateStateLoading,
         );
       },
@@ -159,19 +175,54 @@ class ShowMnemonicStep extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final Config config = GetIt.I<Config>();
+
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
     return BlocBuilder<OnboardingCreateBloc, OnboardingCreateState>(
       builder: (context, state) {
-        if (state.mnemonicState is GenerateMnemonicStateLoading) {
+        if (state.mnemonicState is MnemonicGeneratedStateLoading) {
           return const Center(child: CircularProgressIndicator());
         }
 
-        if (state.mnemonicState is GenerateMnemonicStateGenerated ||
-            state.mnemonicState is GenerateMnemonicStateUnconfirmed) {
-          return NumberedWordGrid(
-            text: state.mnemonicState.mnemonic,
-            backgroundColor: Theme.of(context).cardColor,
-            textColor:
-                Theme.of(context).textTheme.bodyLarge?.color ?? Colors.black,
+        if (state.mnemonicState is MnemonicGeneratedStateGenerated ||
+            state.mnemonicState is MnemonicGeneratedStateUnconfirmed) {
+          return Column(
+            children: [
+              NumberedWordGrid(
+                text: state.mnemonicState.mnemonic,
+                backgroundColor: Theme.of(context).cardColor,
+                textColor: Theme.of(context).textTheme.bodyLarge?.color ??
+                    Colors.black,
+              ),
+              const SizedBox(height: 16),
+              if (config.network == Network.testnet4 ||
+                  config.network == Network.testnet)
+                ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: isDarkMode
+                        ? createButtonDarkGradient2
+                        : createButtonLightGradient2,
+                  ),
+                  icon: Icon(
+                    Icons.copy,
+                    color: isDarkMode ? Colors.black : Colors.white,
+                  ),
+                  label: Text('COPY',
+                      style: TextStyle(
+                          color: isDarkMode ? Colors.black : Colors.white)),
+                  onPressed: () {
+                    Clipboard.setData(
+                        ClipboardData(text: state.mnemonicState.mnemonic));
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Seed phrase copied to clipboard'),
+                        duration: Duration(seconds: 2),
+                      ),
+                    );
+                  },
+                ),
+            ],
           );
         }
 
@@ -181,44 +232,19 @@ class ShowMnemonicStep extends StatelessWidget {
   }
 }
 
-class ConfirmMnemonicStep extends StatelessWidget {
-  const ConfirmMnemonicStep({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return BlocBuilder<OnboardingCreateBloc, OnboardingCreateState>(
-      builder: (context, state) {
-        return ConfirmSeedInputFields(
-          mnemonicErrorState: state.mnemonicError,
-        );
-      },
-    );
-  }
-}
-
-class CreatePasswordStep extends StatelessWidget {
-  const CreatePasswordStep({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return BlocBuilder<OnboardingCreateBloc, OnboardingCreateState>(
-      builder: (context, state) {
-        return PasswordPrompt(
-          state: state,
-        );
-      },
-    );
-  }
-}
-
-class ConfirmSeedInputFields extends StatefulWidget {
+class SeedInputFields extends StatefulWidget {
   final MnemonicErrorState? mnemonicErrorState;
-  const ConfirmSeedInputFields({required this.mnemonicErrorState, super.key});
+
+  const SeedInputFields({
+    super.key,
+    this.mnemonicErrorState,
+  });
+
   @override
-  State<ConfirmSeedInputFields> createState() => _ConfirmSeedInputFieldsState();
+  State<SeedInputFields> createState() => _SeedInputFieldsState();
 }
 
-class _ConfirmSeedInputFieldsState extends State<ConfirmSeedInputFields> {
+class _SeedInputFieldsState extends State<SeedInputFields> {
   List<TextEditingController> controllers =
       List.generate(12, (_) => TextEditingController());
   List<FocusNode> focusNodes = List.generate(12, (_) => FocusNode());
@@ -589,6 +615,48 @@ class _ConfirmSeedInputFieldsState extends State<ConfirmSeedInputFields> {
         controllers.map((controller) => controller.text).join(' ').trim();
     context
         .read<OnboardingCreateBloc>()
-        .add(ConfirmMnemonicChanged(mnemonic: mnemonic));
+        .add(MnemonicConfirmedChanged(mnemonic: mnemonic));
+  }
+
+  String getMnemonic() {
+    return controllers.map((controller) => controller.text).join(' ').trim();
+  }
+}
+
+class CreatePasswordStep extends StatelessWidget {
+  const CreatePasswordStep({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<OnboardingCreateBloc, OnboardingCreateState>(
+      builder: (context, state) {
+        return PasswordPrompt(
+          state: state,
+          optionalErrorWidget: state.createState is CreateStateError
+              ? Align(
+                  alignment: Alignment.center,
+                  child: Container(
+                    padding: const EdgeInsets.all(8.0),
+                    decoration: BoxDecoration(
+                      color: Colors.red.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(40.0),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.info, color: Colors.red),
+                        const SizedBox(width: 4),
+                        SelectableText(
+                          (state.createState as CreateStateError).message,
+                          style: const TextStyle(color: Colors.red),
+                        ),
+                      ],
+                    ),
+                  ),
+                )
+              : null,
+        );
+      },
+    );
   }
 }

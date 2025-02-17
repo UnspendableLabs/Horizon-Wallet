@@ -12,9 +12,9 @@ class ImportFormatChanged extends OnboardingImportEvent {
 
 class ImportFormatSubmitted extends OnboardingImportEvent {}
 
-class MnemonicSubmitted extends OnboardingImportEvent {
+class MnemonicSubmittedted extends OnboardingImportEvent {
   final String mnemonic;
-  MnemonicSubmitted({required this.mnemonic});
+  MnemonicSubmittedted({required this.mnemonic});
 }
 
 class ImportWallet extends OnboardingImportEvent {

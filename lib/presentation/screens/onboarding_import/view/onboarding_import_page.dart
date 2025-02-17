@@ -55,6 +55,14 @@ class OnboardingImportPage extends StatelessWidget {
             session.onOnboarding();
           },
           onNext: () {
+            print('ON NEXT: ${state.currentStep}');
+            if (state.currentStep == OnboardingImportStep.chooseFormat) {
+              context.read<OnboardingImportBloc>().add(ImportFormatSubmitted());
+            } else if (state.currentStep == OnboardingImportStep.inputSeed) {
+              context
+                  .read<OnboardingImportBloc>()
+                  .add(MnemonicSubmittedted(mnemonic: state.mnemonic));
+            }
             // This will be called when the final step is completed
             if (state.currentStep == OnboardingImportStep.inputPassword) {
               // Get password from the password prompt and submit

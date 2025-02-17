@@ -19,6 +19,7 @@ mixin _$OnboardingCreateState {
   MnemonicErrorState? get mnemonicError => throw _privateConstructorUsedError;
   dynamic get mnemonicState => throw _privateConstructorUsedError;
   dynamic get createState => throw _privateConstructorUsedError;
+  OnboardingCreateStep get currentStep => throw _privateConstructorUsedError;
 
   @JsonKey(ignore: true)
   $OnboardingCreateStateCopyWith<OnboardingCreateState> get copyWith =>
@@ -34,7 +35,8 @@ abstract class $OnboardingCreateStateCopyWith<$Res> {
   $Res call(
       {MnemonicErrorState? mnemonicError,
       dynamic mnemonicState,
-      dynamic createState});
+      dynamic createState,
+      OnboardingCreateStep currentStep});
 }
 
 /// @nodoc
@@ -54,6 +56,7 @@ class _$OnboardingCreateStateCopyWithImpl<$Res,
     Object? mnemonicError = freezed,
     Object? mnemonicState = freezed,
     Object? createState = freezed,
+    Object? currentStep = null,
   }) {
     return _then(_value.copyWith(
       mnemonicError: freezed == mnemonicError
@@ -68,6 +71,10 @@ class _$OnboardingCreateStateCopyWithImpl<$Res,
           ? _value.createState
           : createState // ignore: cast_nullable_to_non_nullable
               as dynamic,
+      currentStep: null == currentStep
+          ? _value.currentStep
+          : currentStep // ignore: cast_nullable_to_non_nullable
+              as OnboardingCreateStep,
     ) as $Val);
   }
 }
@@ -84,7 +91,8 @@ abstract class _$$OnboardingCreateStateImplCopyWith<$Res>
   $Res call(
       {MnemonicErrorState? mnemonicError,
       dynamic mnemonicState,
-      dynamic createState});
+      dynamic createState,
+      OnboardingCreateStep currentStep});
 }
 
 /// @nodoc
@@ -102,6 +110,7 @@ class __$$OnboardingCreateStateImplCopyWithImpl<$Res>
     Object? mnemonicError = freezed,
     Object? mnemonicState = freezed,
     Object? createState = freezed,
+    Object? currentStep = null,
   }) {
     return _then(_$OnboardingCreateStateImpl(
       mnemonicError: freezed == mnemonicError
@@ -111,6 +120,10 @@ class __$$OnboardingCreateStateImplCopyWithImpl<$Res>
       mnemonicState:
           freezed == mnemonicState ? _value.mnemonicState! : mnemonicState,
       createState: freezed == createState ? _value.createState! : createState,
+      currentStep: null == currentStep
+          ? _value.currentStep
+          : currentStep // ignore: cast_nullable_to_non_nullable
+              as OnboardingCreateStep,
     ));
   }
 }
@@ -120,8 +133,9 @@ class __$$OnboardingCreateStateImplCopyWithImpl<$Res>
 class _$OnboardingCreateStateImpl implements _OnboardingCreateState {
   const _$OnboardingCreateStateImpl(
       {this.mnemonicError = null,
-      this.mnemonicState = GenerateMnemonicStateNotAsked,
-      this.createState = CreateStateNotAsked});
+      this.mnemonicState = MnemonicGeneratedStateNotAsked,
+      this.createState = CreateStateNotAsked,
+      this.currentStep = OnboardingCreateStep.showMnemonic});
 
   @override
   @JsonKey()
@@ -132,10 +146,13 @@ class _$OnboardingCreateStateImpl implements _OnboardingCreateState {
   @override
   @JsonKey()
   final dynamic createState;
+  @override
+  @JsonKey()
+  final OnboardingCreateStep currentStep;
 
   @override
   String toString() {
-    return 'OnboardingCreateState(mnemonicError: $mnemonicError, mnemonicState: $mnemonicState, createState: $createState)';
+    return 'OnboardingCreateState(mnemonicError: $mnemonicError, mnemonicState: $mnemonicState, createState: $createState, currentStep: $currentStep)';
   }
 
   @override
@@ -148,7 +165,9 @@ class _$OnboardingCreateStateImpl implements _OnboardingCreateState {
             const DeepCollectionEquality()
                 .equals(other.mnemonicState, mnemonicState) &&
             const DeepCollectionEquality()
-                .equals(other.createState, createState));
+                .equals(other.createState, createState) &&
+            (identical(other.currentStep, currentStep) ||
+                other.currentStep == currentStep));
   }
 
   @override
@@ -156,7 +175,8 @@ class _$OnboardingCreateStateImpl implements _OnboardingCreateState {
       runtimeType,
       mnemonicError,
       const DeepCollectionEquality().hash(mnemonicState),
-      const DeepCollectionEquality().hash(createState));
+      const DeepCollectionEquality().hash(createState),
+      currentStep);
 
   @JsonKey(ignore: true)
   @override
@@ -170,7 +190,8 @@ abstract class _OnboardingCreateState implements OnboardingCreateState {
   const factory _OnboardingCreateState(
       {final MnemonicErrorState? mnemonicError,
       final dynamic mnemonicState,
-      final dynamic createState}) = _$OnboardingCreateStateImpl;
+      final dynamic createState,
+      final OnboardingCreateStep currentStep}) = _$OnboardingCreateStateImpl;
 
   @override
   MnemonicErrorState? get mnemonicError;
@@ -178,6 +199,8 @@ abstract class _OnboardingCreateState implements OnboardingCreateState {
   dynamic get mnemonicState;
   @override
   dynamic get createState;
+  @override
+  OnboardingCreateStep get currentStep;
   @override
   @JsonKey(ignore: true)
   _$$OnboardingCreateStateImplCopyWith<_$OnboardingCreateStateImpl>

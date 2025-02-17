@@ -2,39 +2,47 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'onboarding_create_state.freezed.dart';
 
+enum OnboardingCreateStep {
+  showMnemonic,
+  confirmMnemonic,
+  createPassword,
+}
+
 @freezed
 class OnboardingCreateState with _$OnboardingCreateState {
   const factory OnboardingCreateState({
     @Default(null) MnemonicErrorState? mnemonicError,
-    @Default(GenerateMnemonicStateNotAsked) mnemonicState,
+    @Default(MnemonicGeneratedStateNotAsked) mnemonicState,
     @Default(CreateStateNotAsked) createState,
+    @Default(OnboardingCreateStep.showMnemonic)
+    OnboardingCreateStep currentStep,
   }) = _OnboardingCreateState;
 }
 
-abstract class GenerateMnemonicState {}
+abstract class MnemonicGeneratedState {}
 
-class GenerateMnemonicStateNotAsked extends GenerateMnemonicState {}
+class MnemonicGeneratedStateNotAsked extends MnemonicGeneratedState {}
 
-class GenerateMnemonicStateLoading extends GenerateMnemonicState {}
+class MnemonicGeneratedStateLoading extends MnemonicGeneratedState {}
 
-class GenerateMnemonicStateGenerated extends GenerateMnemonicState {
+class MnemonicGeneratedStateGenerated extends MnemonicGeneratedState {
   final String mnemonic;
-  GenerateMnemonicStateGenerated({required this.mnemonic});
+  MnemonicGeneratedStateGenerated({required this.mnemonic});
 }
 
-class GenerateMnemonicStateUnconfirmed extends GenerateMnemonicState {
+class MnemonicGeneratedStateUnconfirmed extends MnemonicGeneratedState {
   final String mnemonic;
-  GenerateMnemonicStateUnconfirmed({required this.mnemonic});
+  MnemonicGeneratedStateUnconfirmed({required this.mnemonic});
 }
 
-class GenerateMnemonicStateSuccess extends GenerateMnemonicState {
+class MnemonicGeneratedStateSuccess extends MnemonicGeneratedState {
   final String mnemonic;
-  GenerateMnemonicStateSuccess({required this.mnemonic});
+  MnemonicGeneratedStateSuccess({required this.mnemonic});
 }
 
-class GenerateMnemonicStateError extends GenerateMnemonicState {
+class MnemonicGeneratedStateError extends MnemonicGeneratedState {
   final String message;
-  GenerateMnemonicStateError({required this.message});
+  MnemonicGeneratedStateError({required this.message});
 }
 
 abstract class CreateState {}

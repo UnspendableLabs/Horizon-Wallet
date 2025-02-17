@@ -3,11 +3,13 @@ import 'package:horizon/presentation/common/redesign_colors.dart';
 
 class PasswordPrompt extends StatefulWidget {
   final Widget? optionalErrorWidget;
+  final void Function(String)? onPasswordChanged;
 
   const PasswordPrompt({
     super.key,
     required this.state,
     this.optionalErrorWidget,
+    this.onPasswordChanged,
   });
 
   final dynamic state;
@@ -25,9 +27,17 @@ class PasswordPromptState extends State<PasswordPrompt> {
   final passwordConfirmationController = TextEditingController();
   bool _submitted = false;
 
+  String get password => passwordController.text;
+  bool get isValid => formKey.currentState?.validate() ?? false;
+
   @override
   void initState() {
     super.initState();
+    passwordController.addListener(() {
+      if (widget.onPasswordChanged != null && isValid) {
+        widget.onPasswordChanged!(password);
+      }
+    });
   }
 
   @override
@@ -94,8 +104,7 @@ class PasswordPromptState extends State<PasswordPrompt> {
                           setState(() {
                             _submitted = true;
                           });
-                          if (formKey.currentState!.validate()) {
-                          }
+                          if (formKey.currentState!.validate()) {}
                         },
                         obscureText: _isPasswordObscured,
                         enableSuggestions: false,
