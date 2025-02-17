@@ -9,6 +9,7 @@ class OnboardingShell extends StatefulWidget {
   final String nextButtonText;
   final String backButtonText;
   final bool isLoading;
+  final bool nextButtonEnabled;
 
   const OnboardingShell({
     super.key,
@@ -18,6 +19,7 @@ class OnboardingShell extends StatefulWidget {
     required this.nextButtonText,
     required this.backButtonText,
     this.isLoading = false,
+    this.nextButtonEnabled = true,
   });
 
   @override
@@ -41,9 +43,8 @@ class _OnboardingShellState extends State<OnboardingShell> {
       setState(() {
         _currentStep--;
       });
-    } else {
-      widget.onBack();
     }
+    widget.onBack();
   }
 
   @override
@@ -107,7 +108,9 @@ class _OnboardingShellState extends State<OnboardingShell> {
                     Expanded(
                       child: HorizonGradientButton(
                         isDarkMode: isDarkMode,
-                        onPressed: _handleStepContinue,
+                        onPressed: widget.nextButtonEnabled
+                            ? _handleStepContinue
+                            : null,
                         buttonText: _currentStep == widget.steps.length - 1
                             ? widget.nextButtonText
                             : 'Continue',

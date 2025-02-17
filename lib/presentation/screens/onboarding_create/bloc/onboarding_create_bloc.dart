@@ -75,13 +75,25 @@ class OnboardingCreateBloc
         success: (mnemonic) => mnemonic,
         orElse: () => '',
       );
-      if (mnemonic != event.mnemonic) {
-        List<int> incorrectIndexes = [];
-        for (int i = 0; i < 12; i++) {
-          if (mnemonic.split(' ')[i] != event.mnemonic.split(' ')[i]) {
-            incorrectIndexes.add(i);
-          }
+
+      // Split both mnemonics into word arrays
+      final correctWords = mnemonic.split(' ');
+      final inputWords =
+          event.mnemonic.split(' ').where((w) => w.isNotEmpty).toList();
+
+      List<int> incorrectIndexes = [];
+
+      // Check each position 0-11
+      for (int i = 0; i < 12; i++) {
+        // If this position is beyond input words or word doesn't match, mark as incorrect
+        if (i >= inputWords.length ||
+            (i < inputWords.length && correctWords[i] != inputWords[i])) {
+          incorrectIndexes.add(i);
         }
+      }
+
+      // Only emit error state if there are incorrect indices
+      if (incorrectIndexes.isNotEmpty) {
         emit(state.copyWith(
             mnemonicError: MnemonicErrorState(
                 message: 'Seed phrase does not match',
@@ -120,9 +132,15 @@ class OnboardingCreateBloc
       }
     });
 
-    on<GoBackToMnemonic>((event, emit) {
+    on<MnemonicBackPressed>((event, emit) {
       emit(state.copyWith(
           mnemonicError: null, currentStep: OnboardingCreateStep.showMnemonic));
+    });
+
+    on<ConfirmMnemonicBackPressed>((event, emit) {
+      emit(state.copyWith(
+          mnemonicError: null,
+          currentStep: OnboardingCreateStep.confirmMnemonic));
     });
   }
 }

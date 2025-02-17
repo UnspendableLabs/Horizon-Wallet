@@ -142,6 +142,9 @@ class _OnboardingCreatePageState extends State<OnboardingCreatePage> {
             SeedInputFields(
               key: _confirmStepKey,
               mnemonicErrorState: state.mnemonicError,
+              onInputChanged: () => setState(() {
+                /* trigger rebuild */
+              }),
             ),
             PasswordPrompt(
               key: _passwordStepKey,
@@ -172,22 +175,35 @@ class _OnboardingCreatePageState extends State<OnboardingCreatePage> {
             ),
           ],
           onBack: () {
-            final session = context.read<SessionStateCubit>();
-            session.onOnboarding();
+            if (state.currentStep == OnboardingCreateStep.showMnemonic) {
+              final session = context.read<SessionStateCubit>();
+              session.onOnboarding();
+            } else {
+              // Clear password state if we're going back from password step
+              if (state.currentStep == OnboardingCreateStep.createPassword) {
+                _passwordStepKey.currentState?.clearPassword();
+                context
+                    .read<OnboardingCreateBloc>()
+                    .add(ConfirmMnemonicBackPressed());
+              }
+              // Clear mnemonic errors if going back from confirm step
+              if (state.currentStep == OnboardingCreateStep.confirmMnemonic) {
+                _confirmStepKey.currentState?.clearInputs();
+                context.read<OnboardingCreateBloc>().add(MnemonicBackPressed());
+              }
+            }
           },
           onNext: () {
-            print('ON NEXT: ${state.currentStep}');
             if (state.currentStep == OnboardingCreateStep.showMnemonic) {
               context.read<OnboardingCreateBloc>().add(MnemonicCreated());
             } else if (state.currentStep ==
                 OnboardingCreateStep.confirmMnemonic) {
               final confirmedMnemonic =
                   _confirmStepKey.currentState?.getMnemonic();
-              if (confirmedMnemonic != null) {
-                context.read<OnboardingCreateBloc>().add(
-                      MnemonicConfirmed(mnemonic: confirmedMnemonic.split(' ')),
-                    );
-              }
+
+              context.read<OnboardingCreateBloc>().add(
+                    MnemonicConfirmed(mnemonic: confirmedMnemonic!.split(' ')),
+                  );
             } else if (state.currentStep ==
                 OnboardingCreateStep.createPassword) {
               // Get password from the password prompt
@@ -205,9 +221,31 @@ class _OnboardingCreatePageState extends State<OnboardingCreatePage> {
                   ? 'Create Wallet'
                   : 'Continue',
           isLoading: isLoading,
+          nextButtonEnabled: _getNextButtonEnabled(state),
         );
       },
     );
+  }
+
+  bool _getNextButtonEnabled(OnboardingCreateState state) {
+    // if all mnemonic fields are filled on confirm step and there are no errors, return true
+    if (state.currentStep == OnboardingCreateStep.confirmMnemonic) {
+      final isValid = _confirmStepKey.currentState?.isValidMnemonic() ?? false;
+      final noErrors = state.mnemonicError == null;
+      return noErrors && isValid;
+
+      // if password is filled on create password step and there are no errors, return true
+    } else if (state.currentStep == OnboardingCreateStep.createPassword) {
+      final isValid = _passwordStepKey.currentState?.isValid ?? false;
+      final errors = state.createState.maybeWhen(
+        error: (message) => true,
+        orElse: () => false,
+      );
+      return isValid && !errors;
+    } else {
+      // if all steps are valid, return true
+      return true;
+    }
   }
 }
 
@@ -264,10 +302,12 @@ class ShowMnemonicStep extends StatelessWidget {
 
 class SeedInputFields extends StatefulWidget {
   final MnemonicErrorState? mnemonicErrorState;
+  final VoidCallback? onInputChanged;
 
   const SeedInputFields({
     super.key,
     this.mnemonicErrorState,
+    this.onInputChanged,
   });
 
   @override
@@ -637,6 +677,10 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
         }
       }
     }
+    // Notify parent through callback
+    widget.onInputChanged?.call();
+
+    // Update mnemonic in bloc
     updateMnemonic();
   }
 
@@ -648,7 +692,26 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
         .add(MnemonicConfirmedChanged(mnemonic: mnemonic));
   }
 
+  bool isValidMnemonic() {
+    final allFilled =
+        controllers.every((controller) => controller.text.trim().isNotEmpty);
+
+    return allFilled;
+  }
+
   String getMnemonic() {
-    return controllers.map((controller) => controller.text).join(' ').trim();
+    return controllers
+        .map((controller) => controller.text.trim())
+        .where((word) => word.isNotEmpty)
+        .join(' ');
+  }
+
+  void clearInputs() {
+    for (var controller in controllers) {
+      controller.clear();
+    }
+    setState(() {
+      _showSeedPhrase = false;
+    });
   }
 }

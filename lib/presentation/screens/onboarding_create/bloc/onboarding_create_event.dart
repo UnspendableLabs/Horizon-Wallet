@@ -1,10 +1,12 @@
 abstract class OnboardingCreateEvent {}
 
-class GoBackToMnemonic extends OnboardingCreateEvent {}
+class MnemonicBackPressed extends OnboardingCreateEvent {}
 
 class MnemonicGenerated extends OnboardingCreateEvent {}
 
 class MnemonicCreated extends OnboardingCreateEvent {}
+
+class ConfirmMnemonicBackPressed extends OnboardingCreateEvent {}
 
 class MnemonicConfirmedChanged extends OnboardingCreateEvent {
   final String mnemonic;

@@ -28,7 +28,13 @@ class PasswordPromptState extends State<PasswordPrompt> {
   bool _submitted = false;
 
   String get password => passwordController.text;
-  bool get isValid => formKey.currentState?.validate() ?? false;
+  bool get isValid {
+    if (passwordController.text.isEmpty ||
+        passwordConfirmationController.text.isEmpty) {
+      return false;
+    }
+    return formKey.currentState?.validate() ?? false;
+  }
 
   @override
   void initState() {
@@ -45,6 +51,14 @@ class PasswordPromptState extends State<PasswordPrompt> {
     super.dispose();
     passwordController.dispose();
     passwordConfirmationController.dispose();
+  }
+
+  void clearPassword() {
+    passwordController.clear();
+    passwordConfirmationController.clear();
+    setState(() {
+      _submitted = false;
+    });
   }
 
   @override
