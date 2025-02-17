@@ -606,7 +606,7 @@ void setup() {
               Future.delayed(const Duration(seconds: 0), html.window.close);
             }
           : (args) => GetIt.I<Logger>().debug("""
-               RPCGetSignMessageSuccessCallback called with:
+               RPCSignMessageSuccessCallback called with:
                   tabId: ${args.tabId}
                   requestId: ${args.requestId}
                   signature: ${args.signature}
