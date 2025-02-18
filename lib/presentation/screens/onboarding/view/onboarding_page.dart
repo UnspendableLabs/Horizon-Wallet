@@ -62,7 +62,7 @@ class OnboardingView extends StatelessWidget {
                   width: 109,
                   height: 116,
                   child: Lottie.asset(
-                    'logo_animation-gradient.json',
+                    'assets/logo_animation-gradient.json',
                     fit: BoxFit.contain,
                   ),
                 ),
