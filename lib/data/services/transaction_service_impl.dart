@@ -146,7 +146,12 @@ class TransactionServiceImpl implements TransactionService {
     final bitcoinMessage.Signer signer =
         bitcoinMessage.createECPairSigner(ecpair_);
 
-    final Buffer signatureBuf = bitcoinMessage.sign(message, signer);
+    final Buffer signatureBuf =
+        bitcoinMessage.sign(
+        message, 
+        signer, 
+        (true).toJS // evidently, needs to be compressed
+        );
 
     final Uint8List signature = signatureBuf.toDart;
 
