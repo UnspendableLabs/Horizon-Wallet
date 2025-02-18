@@ -75,16 +75,16 @@ class PasswordPromptState extends State<PasswordPrompt> {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final screenSize = MediaQuery.of(context).size;
     final isSmallScreen = screenSize.width < 768;
-    final backdropBackgroundColor = isDarkMode
-        ? darkThemeBackgroundColor
-        : lightThemeBackgroundColorTopGradiant;
+    final backdropBackgroundColor =
+        isDarkMode ? darkThemeBackgroundColor : lightThemeBackgroundColor;
 
     return Container(
       color: backdropBackgroundColor,
       child: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
+            padding:
+                EdgeInsets.symmetric(horizontal: isSmallScreen ? 20.0 : 40.0),
             child: Column(
               children: [
                 SelectableText(
@@ -188,7 +188,7 @@ class PasswordPromptState extends State<PasswordPrompt> {
                     ? (isDarkMode ? inputDarkBackground : inputLightBackground)
                     : (isDarkMode
                         ? darkThemeBackgroundColor
-                        : lightThemeBackgroundColorTopGradiant),
+                        : lightThemeBackgroundColor),
               ),
               child: Container(
                 decoration: BoxDecoration(
@@ -203,7 +203,9 @@ class PasswordPromptState extends State<PasswordPrompt> {
                               width: 1,
                             )
                           : Border.all(
-                              color: inputDarkBorderColor,
+                              color: isDarkMode
+                                  ? inputDarkBorderColor
+                                  : inputLightBorderColor,
                             ),
                 ),
                 padding:

@@ -25,8 +25,8 @@ class NumberedWordGrid extends StatelessWidget {
   final Color backgroundColor;
   final Color textColor;
   final double borderRadius;
-  final EdgeInsets padding;
   final EdgeInsets itemMargin;
+  final bool isSmallScreen;
 
   const NumberedWordGrid({
     super.key,
@@ -35,9 +35,9 @@ class NumberedWordGrid extends StatelessWidget {
     required this.textColor,
     this.wordsPerRow = 3,
     this.borderRadius = 8.0,
-    this.padding = const EdgeInsets.all(16.0),
     this.itemMargin =
         const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
+    this.isSmallScreen = false,
   });
 
   @override
@@ -67,8 +67,8 @@ class NumberedWordGrid extends StatelessWidget {
                     borderRadius: BorderRadius.circular(18),
                     border: Border.all(
                       color: Theme.of(context).brightness == Brightness.dark
-                          ? const Color.fromRGBO(254, 251, 249, 0.08)
-                          : Colors.transparent,
+                          ? inputDarkBorderColor
+                          : inputLightBorderColor,
                     ),
                     color: backgroundColor,
                   ),
@@ -81,8 +81,8 @@ class NumberedWordGrid extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 12,
                             color: isDarkMode
-                                ? const Color.fromRGBO(254, 251, 249, 0.33)
-                                : Colors.black,
+                                ? subtitleDarkTextColor
+                                : subtitleLightTextColor,
                           ),
                         ),
                       ),
@@ -93,7 +93,7 @@ class NumberedWordGrid extends StatelessWidget {
                           child: Text(
                             word,
                             style: TextStyle(
-                              fontSize: 12,
+                              fontSize: isSmallScreen ? 11 : 12,
                               color: textColor,
                             ),
                           ),
@@ -280,7 +280,7 @@ class ShowMnemonicStep extends StatelessWidget {
   Widget build(BuildContext context) {
     final Config config = GetIt.I<Config>();
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-
+    final isSmallScreen = MediaQuery.of(context).size.width < 500;
     return BlocBuilder<OnboardingCreateBloc, OnboardingCreateState>(
       builder: (context, state) {
         return state.createMnemonicState.maybeWhen(
@@ -290,11 +290,12 @@ class ShowMnemonicStep extends StatelessWidget {
           success: (mnemonic) => Column(
             children: [
               Padding(
-                padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
+                padding: EdgeInsets.symmetric(
+                    horizontal: isSmallScreen ? 20.0 : 40.0),
                 child: Column(
                   children: [
-                    Text(
-                      'Seed phrase',
+                    SelectableText(
+                      'Seed Phrase',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 18,
@@ -303,15 +304,15 @@ class ShowMnemonicStep extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 10),
-                    Text(
+                    SelectableText(
                       'Please write down your seed phrase and store it in a secure location. It is the only way to recover your wallet.',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.normal,
                         color: isDarkMode
-                            ? const Color.fromRGBO(254, 251, 249, 0.66)
-                            : Colors.black,
+                            ? subtitleDarkTextColor
+                            : subtitleLightTextColor,
                       ),
                     ),
                   ],
@@ -320,8 +321,11 @@ class ShowMnemonicStep extends StatelessWidget {
               Column(
                 children: [
                   Padding(
-                    padding: const EdgeInsets.all(20.0),
+                    padding: EdgeInsets.symmetric(
+                        vertical: 14.0,
+                        horizontal: isSmallScreen ? 20.0 : 40.0),
                     child: NumberedWordGrid(
+                      isSmallScreen: isSmallScreen,
                       text: mnemonic,
                       backgroundColor: isDarkMode
                           ? inputDarkBackground

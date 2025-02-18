@@ -48,9 +48,13 @@ class ResetBloc extends Bloc<ResetEvent, ResetState> {
     await inMemoryKeyRepository.delete();
     await kvService.delete(key: kInactivityDeadlineKey);
 
-    cacheProvider.removeAll();
+    final isDarkMode = cacheProvider.getBool("isDarkMode");
+
+    await cacheProvider.removeAll();
 
     analyticsService.reset();
+
+    await cacheProvider.setBool("isDarkMode", isDarkMode ?? true);
 
     logger.d('emit reset state');
     emit(ResetState(resetState: Out()));

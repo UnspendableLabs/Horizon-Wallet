@@ -49,7 +49,6 @@ class OnboardingCreateBloc
 
       try {
         String mnemonic = mnmonicService.generateMnemonic();
-        print('mnemonic! $mnemonic');
 
         emit(state.copyWith(
             createMnemonicState:

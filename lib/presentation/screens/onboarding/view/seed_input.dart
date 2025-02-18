@@ -61,11 +61,10 @@ class SeedInputState extends State<SeedInput> {
 
   @override
   Widget build(BuildContext context) {
-    final isSmallScreen = MediaQuery.of(context).size.width < 768;
+    final isSmallScreen = MediaQuery.of(context).size.width < 500;
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final backdropBackgroundColor = isDarkMode
-        ? darkThemeBackgroundColor
-        : lightThemeBackgroundColorTopGradiant;
+    final backdropBackgroundColor =
+        isDarkMode ? darkThemeBackgroundColor : lightThemeBackgroundColor;
 
     return Container(
       color: backdropBackgroundColor,
@@ -73,7 +72,8 @@ class SeedInputState extends State<SeedInput> {
         children: [
           if (widget.showTitle) ...[
             Padding(
-              padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
+              padding:
+                  EdgeInsets.symmetric(horizontal: isSmallScreen ? 20.0 : 40.0),
               child: Column(
                 children: [
                   SelectableText(
@@ -105,8 +105,16 @@ class SeedInputState extends State<SeedInput> {
           ],
           buildInputFields(isSmallScreen, isDarkMode),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10.0),
+            padding: const EdgeInsets.all(10.0),
             child: TextButton.icon(
+              style: TextButton.styleFrom(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                backgroundColor: isDarkMode
+                    ? Colors.transparent
+                    : transparentPurpleButtonColor,
+              ),
               onPressed: () {
                 setState(() {
                   _showSeedPhrase = !_showSeedPhrase;
@@ -121,6 +129,7 @@ class SeedInputState extends State<SeedInput> {
                 style: TextStyle(
                   color: isDarkMode ? Colors.white : Colors.black,
                   fontSize: 14,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
             ),
@@ -131,7 +140,9 @@ class SeedInputState extends State<SeedInput> {
               child: Container(
                 padding: const EdgeInsets.all(10.0),
                 decoration: BoxDecoration(
-                  color: redErrorTextTransparent,
+                  color: isDarkMode
+                      ? redErrorTextTransparentDark
+                      : redErrorTextTransparentLight,
                   borderRadius: BorderRadius.circular(40.0),
                 ),
                 child: Row(
@@ -200,7 +211,7 @@ class SeedInputState extends State<SeedInput> {
               ? (isDarkMode ? inputDarkBackground : inputLightBackground)
               : (isDarkMode
                   ? darkThemeBackgroundColor
-                  : lightThemeBackgroundColorTopGradiant),
+                  : lightThemeBackgroundColor),
         ),
         child: Container(
           decoration: BoxDecoration(
@@ -215,7 +226,9 @@ class SeedInputState extends State<SeedInput> {
                         width: 1,
                       )
                     : Border.all(
-                        color: inputDarkBorderColor,
+                        color: isDarkMode
+                            ? inputDarkBorderColor
+                            : inputLightBorderColor,
                       ),
           ),
           child: Row(
@@ -231,7 +244,7 @@ class SeedInputState extends State<SeedInput> {
                         ? redErrorTextDarkColor
                         : isDarkMode
                             ? inputDarkLabelColor
-                            : Colors.black,
+                            : inputLightLabelColor,
                   ),
                 ),
               ),

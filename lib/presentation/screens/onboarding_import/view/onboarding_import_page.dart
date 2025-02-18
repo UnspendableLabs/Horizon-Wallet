@@ -78,7 +78,7 @@ class _OnboardingImportPageState extends State<OnboardingImportPage> {
                       child: Container(
                         padding: const EdgeInsets.all(8.0),
                         decoration: BoxDecoration(
-                          color: redErrorTextTransparent,
+                          color: redErrorTextTransparentDark,
                           borderRadius: BorderRadius.circular(40.0),
                         ),
                         child: Row(
@@ -185,10 +185,10 @@ class _ChooseFormatStepState extends State<ChooseFormatStep> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               SelectableText(
-                'Wallet Type',
+                'Import Your Wallet',
                 style: TextStyle(
                   fontSize: 18,
-                  fontWeight: FontWeight.w500,
+                  fontWeight: FontWeight.w700,
                   color: isDarkMode ? Colors.white : Colors.black,
                 ),
               ),

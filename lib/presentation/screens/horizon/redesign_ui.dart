@@ -34,13 +34,10 @@ class HorizonGradientButton extends StatelessWidget {
                   ]
                 : const [
                     createButtonLightGradient1,
-                    createButtonLightGradient2,
                     createButtonLightGradient3,
-                    createButtonLightGradient4,
                   ],
-            stops: isDarkMode
-                ? const [0.0, 0.325, 0.65, 1.0]
-                : const [0.0, 0.326, 0.652, 0.9879],
+            stops:
+                isDarkMode ? const [0.0, 0.325, 0.65, 1.0] : const [0.0, 1.0],
             transform:
                 isDarkMode ? null : const GradientRotation(139.18 * pi / 180),
           ),
@@ -93,16 +90,11 @@ class HorizonOutlinedButton extends StatelessWidget {
         style: ElevatedButton.styleFrom(
           elevation: 0,
           backgroundColor: isTransparent == true
-              ? (isDarkMode ? importButtonDarkBackground : Colors.transparent)
+              ? (isDarkMode ? importButtonDarkBackground : Colors.white)
               : tealButtonColor,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(50),
-            side: isDarkMode
-                ? BorderSide.none
-                : const BorderSide(
-                    width: 1,
-                    color: Colors.black,
-                  ),
+            side: BorderSide.none,
           ),
           padding: const EdgeInsets.all(20),
         ),
@@ -262,7 +254,7 @@ class _HorizonRedesignDropdownState<T>
               border: const GradientBoxBorder(width: 1),
               color: widget.isDarkMode
                   ? darkThemeBackgroundColor
-                  : lightThemeBackgroundColorTopGradiant,
+                  : lightThemeBackgroundColor,
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -298,7 +290,6 @@ class _HorizonRedesignDropdownState<T>
   @override
   Widget build(BuildContext context) {
     final hasValue = widget.selectedValue != null;
-
     return CompositedTransformTarget(
       link: _layerLink,
       child: GestureDetector(
@@ -310,14 +301,17 @@ class _HorizonRedesignDropdownState<T>
             borderRadius: BorderRadius.circular(18),
             border: focusNode.hasFocus
                 ? const GradientBoxBorder(width: 1)
-                : Border.all(color: inputDarkBorderColor),
+                : Border.all(
+                    color: widget.isDarkMode
+                        ? inputDarkBorderColor
+                        : inputLightBorderColor),
             color: hasValue
                 ? (widget.isDarkMode
                     ? inputDarkBackground
                     : inputLightBackground)
                 : (widget.isDarkMode
-                    ? const Color(0xFF090909)
-                    : lightThemeBackgroundColorTopGradiant),
+                    ? darkThemeBackgroundColor
+                    : lightThemeBackgroundColor),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,

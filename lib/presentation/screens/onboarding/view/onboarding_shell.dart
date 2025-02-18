@@ -50,9 +50,8 @@ class _OnboardingShellState extends State<OnboardingShell> {
   @override
   Widget build(BuildContext context) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final backdropBackgroundColor = isDarkMode
-        ? darkThemeBackgroundColor
-        : lightThemeBackgroundColorTopGradiant;
+    final backdropBackgroundColor =
+        isDarkMode ? darkThemeBackgroundColor : lightThemeBackgroundColor;
 
     final screenWidth = MediaQuery.of(context).size.width;
     final isWideScreen = screenWidth > 500;
@@ -143,7 +142,7 @@ class _OnboardingShellState extends State<OnboardingShell> {
     }
 
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: isDarkMode ? Colors.black : Colors.white,
       body: Center(
         child: Container(
           width: 500,
