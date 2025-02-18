@@ -74,12 +74,14 @@ class HorizonOutlinedButton extends StatelessWidget {
   final VoidCallback? onPressed;
   final String buttonText;
   final bool isDarkMode;
+  final bool? isTransparent;
 
   const HorizonOutlinedButton({
     super.key,
     required this.onPressed,
     required this.buttonText,
     required this.isDarkMode,
+    this.isTransparent = false,
   });
 
   @override
@@ -90,8 +92,9 @@ class HorizonOutlinedButton extends StatelessWidget {
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
           elevation: 0,
-          backgroundColor:
-              isDarkMode ? importButtonDarkBackground : Colors.transparent,
+          backgroundColor: isTransparent == true
+              ? (isDarkMode ? importButtonDarkBackground : Colors.transparent)
+              : tealButtonColor,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(50),
             side: isDarkMode
@@ -107,7 +110,9 @@ class HorizonOutlinedButton extends StatelessWidget {
         child: Text(
           buttonText,
           style: TextStyle(
-            color: isDarkMode ? Colors.white : Colors.black,
+            color: isTransparent == true
+                ? (isDarkMode ? Colors.white : Colors.black)
+                : const Color.fromRGBO(9, 9, 9, 1),
             fontSize: 16,
             fontWeight: FontWeight.w400,
           ),

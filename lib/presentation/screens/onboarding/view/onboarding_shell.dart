@@ -54,7 +54,10 @@ class _OnboardingShellState extends State<OnboardingShell> {
         ? darkThemeBackgroundColor
         : lightThemeBackgroundColorTopGradiant;
 
-    return Scaffold(
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isWideScreen = screenWidth > 500;
+
+    final shellContent = Scaffold(
       backgroundColor: backdropBackgroundColor,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
@@ -73,7 +76,8 @@ class _OnboardingShellState extends State<OnboardingShell> {
             children: [
               // Step indicators
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                padding:
+                    EdgeInsets.symmetric(horizontal: isWideScreen ? 30 : 16),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: List.generate(widget.steps.length, (index) {
@@ -102,11 +106,13 @@ class _OnboardingShellState extends State<OnboardingShell> {
               ),
               // Bottom buttons
               Padding(
-                padding: const EdgeInsets.all(16.0),
+                padding: EdgeInsets.symmetric(
+                    vertical: 30, horizontal: isWideScreen ? 30 : 16),
                 child: Row(
                   children: [
                     Expanded(
-                      child: HorizonGradientButton(
+                      child: HorizonOutlinedButton(
+                        isTransparent: false,
                         isDarkMode: isDarkMode,
                         onPressed: widget.nextButtonEnabled
                             ? _handleStepContinue
@@ -129,6 +135,27 @@ class _OnboardingShellState extends State<OnboardingShell> {
               ),
             ),
         ],
+      ),
+    );
+
+    if (!isWideScreen) {
+      return shellContent;
+    }
+
+    return Scaffold(
+      backgroundColor: Colors.black,
+      body: Center(
+        child: Container(
+          width: 500,
+          height: 812,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(18),
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(18),
+            child: shellContent,
+          ),
+        ),
       ),
     );
   }

@@ -18,6 +18,7 @@ const createButtonLightGradient4 = Color(0xFF0B102C);
 // Import button colors
 const importButtonDarkBackground = Color(0xFF000000);
 const importButtonTextColor = Color(0xFFDEE4E8);
+const tealButtonColor = Color(0xFF1EE7C5);
 
 // Inputs
 const inputDarkBackground = Color(0xFF1E1E1E);

@@ -9,6 +9,7 @@ import 'package:get_it/get_it.dart';
 import 'package:horizon/domain/repositories/config_repository.dart';
 import 'package:horizon/domain/services/mnemonic_service.dart';
 import 'package:horizon/domain/services/wallet_service.dart';
+import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/common/usecase/import_wallet_usecase.dart';
 import 'package:horizon/presentation/screens/onboarding/view/onboarding_shell.dart';
 import 'package:horizon/presentation/screens/onboarding/view/password_prompt.dart';
@@ -41,6 +42,7 @@ class NumberedWordGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     List<String> words = text.split(' ');
     int totalWords = words.length;
     int rowCount = (totalWords / wordsPerRow).ceil();
@@ -77,9 +79,10 @@ class NumberedWordGrid extends StatelessWidget {
                         child: Text(
                           "${wordIndex + 1}.",
                           style: TextStyle(
-                            fontSize: 16,
-                            color: textColor,
-                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                            color: isDarkMode
+                                ? const Color.fromRGBO(254, 251, 249, 0.33)
+                                : Colors.black,
                           ),
                         ),
                       ),
@@ -90,9 +93,8 @@ class NumberedWordGrid extends StatelessWidget {
                           child: Text(
                             word,
                             style: TextStyle(
-                              fontSize: 16,
+                              fontSize: 12,
                               color: textColor,
-                              fontWeight: FontWeight.bold,
                             ),
                           ),
                         ),
@@ -277,6 +279,7 @@ class ShowMnemonicStep extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final Config config = GetIt.I<Config>();
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     return BlocBuilder<OnboardingCreateBloc, OnboardingCreateState>(
       builder: (context, state) {
@@ -286,13 +289,46 @@ class ShowMnemonicStep extends StatelessWidget {
           loading: () => const Center(child: CircularProgressIndicator()),
           success: (mnemonic) => Column(
             children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
+                child: Column(
+                  children: [
+                    Text(
+                      'Seed phrase',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                        color: isDarkMode ? Colors.white : Colors.black,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      'Please write down your seed phrase and store it in a secure location. It is the only way to recover your wallet.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.normal,
+                        color: isDarkMode
+                            ? const Color.fromRGBO(254, 251, 249, 0.66)
+                            : Colors.black,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
               Column(
                 children: [
-                  NumberedWordGrid(
-                    text: mnemonic,
-                    backgroundColor: Theme.of(context).cardColor,
-                    textColor: Theme.of(context).textTheme.bodyLarge?.color ??
-                        Colors.black,
+                  Padding(
+                    padding: const EdgeInsets.all(20.0),
+                    child: NumberedWordGrid(
+                      text: mnemonic,
+                      backgroundColor: isDarkMode
+                          ? inputDarkBackground
+                          : inputLightBackground,
+                      textColor: isDarkMode ? Colors.white : Colors.black,
+                      itemMargin: const EdgeInsets.all(5.0),
+                    ),
                   ),
                   const SizedBox(height: 16),
                   if (config.network == Network.testnet4 ||
@@ -344,6 +380,9 @@ class _SeedInputFieldsState extends State<SeedInputFields> {
     return SeedInput(
       key: widget.seedInputKey,
       showTitle: true,
+      title: 'Seed Phrase Confirmation',
+      subtitle:
+          'To ensure you have securely saved your seed phrase, please enter it below.',
       errorMessage: widget.mnemonicErrorState?.message,
       incorrectIndexes: widget.mnemonicErrorState?.incorrectIndexes,
       onInputChanged: widget.onInputChanged,

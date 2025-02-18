@@ -9,6 +9,7 @@ class SeedInput extends StatefulWidget {
   final VoidCallback? onInputChanged;
   final bool showTitle;
   final String? title;
+  final String? subtitle;
 
   const SeedInput({
     super.key,
@@ -18,6 +19,7 @@ class SeedInput extends StatefulWidget {
     this.onInputChanged,
     this.showTitle = false,
     this.title,
+    this.subtitle,
   });
 
   @override
@@ -71,13 +73,32 @@ class SeedInputState extends State<SeedInput> {
           if (widget.showTitle) ...[
             Padding(
               padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
-              child: Text(
-                textAlign: TextAlign.center,
-                widget.title ?? 'Please confirm your seed phrase',
-                style: TextStyle(
-                    fontSize: 25,
-                    fontWeight: FontWeight.w600,
-                    color: isDarkMode ? Colors.white : Colors.black),
+              child: Column(
+                children: [
+                  Text(
+                    widget.title ?? 'Please confirm your seed phrase',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      color: isDarkMode ? Colors.white : Colors.black,
+                    ),
+                  ),
+                  if (widget.subtitle != null) ...[
+                    const SizedBox(height: 10),
+                    Text(
+                      widget.subtitle!,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.normal,
+                        color: isDarkMode
+                            ? const Color.fromRGBO(254, 251, 249, 0.66)
+                            : Colors.black,
+                      ),
+                    ),
+                  ],
+                ],
               ),
             ),
           ],
@@ -166,40 +187,61 @@ class SeedInputState extends State<SeedInput> {
     return LayoutBuilder(
       builder: (context, constraints) {
         return SingleChildScrollView(
-          child: Column(
-            children: List.generate(4, (rowIndex) {
-              return Row(
-                children: List.generate(3, (colIndex) {
-                  final index = rowIndex * 3 + colIndex;
-                  return Expanded(
-                    child: isSmallScreen
-                        ? buildCompactInputField(index, isDarkMode)
-                        : buildInputField(index, isDarkMode),
-                  );
-                }),
-              );
-            }),
+          child: Padding(
+            padding: EdgeInsets.symmetric(
+                vertical: 14.0, horizontal: isSmallScreen ? 20.0 : 40.0),
+            child: Column(
+              children: List.generate(4, (rowIndex) {
+                return Row(
+                  children: List.generate(3, (colIndex) {
+                    final index = rowIndex * 3 + colIndex;
+                    return Expanded(
+                      child: buildInputField(index, isDarkMode),
+                    );
+                  }),
+                );
+              }),
+            ),
           ),
         );
       },
     );
   }
 
-  Widget buildCompactInputField(int index, bool isDarkMode) {
+  Widget buildInputField(int index, bool isDarkMode) {
+    final hasText = controllers[index].text.isNotEmpty;
+    final isFocused = focusNodes[index].hasFocus;
+
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 4.0),
+      padding: const EdgeInsets.all(5.0),
       child: Container(
         width: 105,
         height: 44,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(
-            color: isDarkMode
-                ? const Color.fromRGBO(254, 251, 249, 0.08)
-                : Colors.transparent,
-          ),
-          color: isDarkMode ? inputDarkBackground : inputLightBackground,
-        ),
+        decoration: (!isFocused || !hasText)
+            ? BoxDecoration(
+                borderRadius: BorderRadius.circular(18),
+                border: Border.all(
+                  color: const Color.fromRGBO(254, 251, 249, 0.08),
+                ),
+                color: hasText
+                    ? (isDarkMode ? inputDarkBackground : inputLightBackground)
+                    : (isDarkMode
+                        ? darkThemeBackgroundColor
+                        : lightThemeBackgroundColorTopGradiant),
+              )
+            : BoxDecoration(
+                borderRadius: BorderRadius.circular(18),
+                gradient: const LinearGradient(
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
+                  colors: [
+                    Color.fromRGBO(250, 204, 206, 1),
+                    Color.fromRGBO(246, 167, 168, 1),
+                    Color.fromRGBO(163, 167, 211, 1),
+                    Color.fromRGBO(202, 206, 250, 0.96),
+                  ],
+                ),
+              ),
         child: Row(
           children: [
             Padding(
@@ -209,7 +251,9 @@ class SeedInputState extends State<SeedInput> {
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.normal,
-                  color: isDarkMode ? Colors.white : Colors.black,
+                  color: isDarkMode
+                      ? const Color.fromRGBO(254, 251, 249, 0.33)
+                      : Colors.black,
                 ),
               ),
             ),
@@ -226,66 +270,13 @@ class SeedInputState extends State<SeedInput> {
                   border: InputBorder.none,
                   hintText: 'Word ${index + 1}',
                   hintStyle: TextStyle(
-                    fontSize: 14,
-                    color:
-                        isDarkMode ? inputDarkLabelColor : inputLightLabelColor,
-                  ),
-                ),
-                style: const TextStyle(fontSize: 14),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget buildInputField(int index, bool isDarkMode) {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Container(
-        width: 105,
-        height: 44,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(
-            color: isDarkMode
-                ? const Color.fromRGBO(254, 251, 249, 0.08)
-                : Colors.transparent,
-          ),
-          color: isDarkMode ? inputDarkBackground : inputLightBackground,
-        ),
-        child: Row(
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(left: 6.0),
-              child: Text(
-                "${index + 1}.",
-                style: TextStyle(
-                  fontWeight: FontWeight.normal,
-                  color: isDarkMode ? Colors.white : Colors.black,
-                ),
-              ),
-            ),
-            const SizedBox(width: 6),
-            Expanded(
-              child: TextField(
-                controller: controllers[index],
-                focusNode: focusNodes[index],
-                obscureText: !_showSeedPhrase,
-                onChanged: (value) => handleInput(value, index),
-                decoration: InputDecoration(
-                  isDense: true,
-                  contentPadding: const EdgeInsets.only(right: 20),
-                  border: InputBorder.none,
-                  hintText: 'Word ${index + 1}',
-                  hintStyle: TextStyle(
+                    fontSize: 12,
                     fontWeight: FontWeight.normal,
                     color:
                         isDarkMode ? inputDarkLabelColor : inputLightLabelColor,
                   ),
                 ),
-                style: const TextStyle(fontSize: 16),
+                style: const TextStyle(fontSize: 12),
               ),
             ),
           ],
