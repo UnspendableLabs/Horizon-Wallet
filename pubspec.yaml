@@ -130,6 +130,7 @@ flutter:
     - assets/horizon-logo.png
     - assets/app-bar-H-dark-mode.png
     - assets/app-bar-H-light-mode.png
+    - assets/logo_animation-gradient.json
     - fonts/
 
   #   - .env
