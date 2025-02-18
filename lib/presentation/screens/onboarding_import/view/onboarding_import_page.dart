@@ -4,8 +4,9 @@ import 'package:get_it/get_it.dart';
 import 'package:horizon/common/constants.dart';
 import 'package:horizon/domain/services/mnemonic_service.dart';
 import 'package:horizon/domain/services/wallet_service.dart';
+import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/common/usecase/import_wallet_usecase.dart';
-import 'package:horizon/presentation/screens/onboarding/view/import_format_dropdown.dart';
+import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 import 'package:horizon/presentation/screens/onboarding/view/onboarding_shell.dart';
 import 'package:horizon/presentation/screens/onboarding/view/password_prompt.dart';
 import 'package:horizon/presentation/screens/onboarding/view/seed_input.dart';
@@ -77,17 +78,17 @@ class _OnboardingImportPageState extends State<OnboardingImportPage> {
                       child: Container(
                         padding: const EdgeInsets.all(8.0),
                         decoration: BoxDecoration(
-                          color: Colors.red.withOpacity(0.1),
+                          color: redErrorTextTransparent,
                           borderRadius: BorderRadius.circular(40.0),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.info, color: Colors.red),
+                            const Icon(Icons.info, color: redErrorTextColor),
                             const SizedBox(width: 4),
                             SelectableText(
                               error,
-                              style: const TextStyle(color: Colors.red),
+                              style: const TextStyle(color: redErrorTextColor),
                             ),
                           ],
                         ),
@@ -152,6 +153,8 @@ class _OnboardingImportPageState extends State<OnboardingImportPage> {
       );
       final isValid = _passwordStepKey.currentState?.isValid ?? false;
       return isValid && !error;
+    } else if (state.currentStep == OnboardingImportStep.chooseFormat) {
+      return state.walletType != null;
     } else {
       return true;
     }
@@ -166,32 +169,68 @@ class ChooseFormatStep extends StatefulWidget {
 }
 
 class _ChooseFormatStepState extends State<ChooseFormatStep> {
-  String selectedFormat = ImportFormat.horizon.name;
-
-  @override
-  void initState() {
-    super.initState();
-    context.read<OnboardingImportBloc>().add(
-          ImportFormatChanged(walletType: selectedFormat),
-        );
-  }
+  String? selectedFormat;
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final isSmallScreen = MediaQuery.of(context).size.width < 500;
+
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const SelectableText("Choose the format of your seed phrase"),
-        const SizedBox(height: 16),
-        ImportFormatDropdown(
-          onChanged: (String? newValue) {
-            setState(() {
-              selectedFormat = newValue!;
-            });
-            context.read<OnboardingImportBloc>().add(
-                  ImportFormatChanged(walletType: selectedFormat),
-                );
-          },
-          selectedFormat: selectedFormat,
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: isSmallScreen ? 20 : 40),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              SelectableText(
+                'Wallet Type',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w500,
+                  color: isDarkMode ? Colors.white : Colors.black,
+                ),
+              ),
+              const SizedBox(height: 10),
+              SelectableText(
+                'Choose the format of your recovery phrase',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: isDarkMode
+                      ? subtitleDarkTextColor
+                      : subtitleLightTextColor,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 14),
+              HorizonRedesignDropdown<String>(
+                isDarkMode: isDarkMode,
+                hintText: 'Wallet Type',
+                selectedValue: selectedFormat,
+                onChanged: (value) {
+                  if (value != null) {
+                    setState(() {
+                      selectedFormat = value;
+                    });
+                    context.read<OnboardingImportBloc>().add(
+                          ImportFormatChanged(walletType: selectedFormat!),
+                        );
+                  }
+                },
+                items: [
+                  DropdownMenuItem(
+                    value: WalletType.horizon.name,
+                    child: Text(WalletType.horizon.description),
+                  ),
+                  DropdownMenuItem(
+                    value: WalletType.bip32.name,
+                    child: Text(WalletType.bip32.description),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ],
     );

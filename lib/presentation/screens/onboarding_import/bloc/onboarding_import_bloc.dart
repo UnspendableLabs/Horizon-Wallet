@@ -34,6 +34,7 @@ class OnboardingImportBloc
                 mnemonicService.validateMnemonic(event.mnemonic),
           WalletType.horizon =>
             mnemonicService.validateMnemonic(event.mnemonic),
+          null => false,
         };
 
         if (!validMnemonic) {
@@ -50,7 +51,7 @@ class OnboardingImportBloc
       final walletType = switch (event.walletType) {
         "Horizon" => WalletType.horizon,
         "BIP32" => WalletType.bip32,
-        _ => throw Exception('Invariant: Invalid import format')
+        _ => null,
       };
       emit(state.copyWith(walletType: walletType));
     });
@@ -94,12 +95,19 @@ class OnboardingImportBloc
 
     on<ImportWallet>((event, emit) async {
       emit(state.copyWith(importState: const ImportState.loading()));
+
+      if (state.walletType == null) {
+        emit(state.copyWith(
+            importState: const ImportState.error(
+                message: "invariant: Wallet type is required")));
+        return;
+      }
       final password = event.password;
 
       await importWalletUseCase.call(
         password: password,
         mnemonic: state.mnemonic,
-        walletType: state.walletType,
+        walletType: state.walletType!,
         onError: (msg) {
           emit(state.copyWith(importState: ImportState.error(message: msg)));
         },
@@ -123,7 +131,7 @@ class OnboardingImportBloc
           currentStep: OnboardingImportStep.chooseFormat,
           mnemonicError: null,
           mnemonic: '',
-          walletType: WalletType.horizon));
+          walletType: null));
     });
   }
 }

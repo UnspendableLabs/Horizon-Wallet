@@ -1,65 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
-
-class GradientBoxBorder extends BoxBorder {
-  const GradientBoxBorder({
-    required this.gradient,
-    this.width = 1.0,
-  });
-
-  final Gradient gradient;
-  final double width;
-
-  @override
-  BorderSide get top => BorderSide.none;
-
-  @override
-  BorderSide get right => BorderSide.none;
-
-  @override
-  BorderSide get bottom => BorderSide.none;
-
-  @override
-  BorderSide get left => BorderSide.none;
-
-  @override
-  EdgeInsetsGeometry get dimensions => EdgeInsets.all(width);
-
-  @override
-  bool get isUniform => true;
-
-  @override
-  void paint(
-    Canvas canvas,
-    Rect rect, {
-    TextDirection? textDirection,
-    BoxShape shape = BoxShape.rectangle,
-    BorderRadius? borderRadius,
-  }) {
-    final Paint paint = Paint()
-      ..strokeWidth = width
-      ..style = PaintingStyle.stroke;
-
-    if (borderRadius != null) {
-      final RRect rrect = RRect.fromRectAndRadius(rect, borderRadius.topLeft);
-      final Path path = Path()..addRRect(rrect);
-      paint.shader = gradient.createShader(rect);
-      canvas.drawPath(path, paint);
-    } else {
-      paint.shader = gradient.createShader(rect);
-      canvas.drawRect(rect, paint);
-    }
-  }
-
-  @override
-  ShapeBorder scale(double t) {
-    return GradientBoxBorder(
-      gradient: gradient,
-      width: width * t,
-    );
-  }
-}
+import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 
 class SeedInput extends StatefulWidget {
   final Function(String) onInputsUpdated;
@@ -134,7 +76,7 @@ class SeedInputState extends State<SeedInput> {
               padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
               child: Column(
                 children: [
-                  Text(
+                  SelectableText(
                     widget.title ?? 'Please confirm your seed phrase',
                     textAlign: TextAlign.center,
                     style: TextStyle(
@@ -145,15 +87,15 @@ class SeedInputState extends State<SeedInput> {
                   ),
                   if (widget.subtitle != null) ...[
                     const SizedBox(height: 10),
-                    Text(
+                    SelectableText(
                       widget.subtitle!,
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.normal,
                         color: isDarkMode
-                            ? const Color.fromRGBO(254, 251, 249, 0.66)
-                            : Colors.black,
+                            ? subtitleDarkTextColor
+                            : subtitleLightTextColor,
                       ),
                     ),
                   ],
@@ -189,7 +131,7 @@ class SeedInputState extends State<SeedInput> {
               child: Container(
                 padding: const EdgeInsets.all(10.0),
                 decoration: BoxDecoration(
-                  color: const Color.fromRGBO(251, 99, 104, 0.2),
+                  color: redErrorTextTransparent,
                   borderRadius: BorderRadius.circular(40.0),
                 ),
                 child: Row(
@@ -197,14 +139,13 @@ class SeedInputState extends State<SeedInput> {
                   children: [
                     const Icon(
                       Icons.warning_amber_rounded,
-                      color: Color.fromRGBO(251, 99, 104, 1),
+                      color: redErrorTextColor,
                       size: 18,
                     ),
                     const SizedBox(width: 4),
                     SelectableText(
                       widget.errorMessage!,
-                      style: const TextStyle(
-                          color: Color.fromRGBO(251, 99, 104, 1)),
+                      style: const TextStyle(color: redErrorTextColor),
                     ),
                   ],
                 ),
@@ -266,25 +207,15 @@ class SeedInputState extends State<SeedInput> {
             borderRadius: BorderRadius.circular(18),
             border: isIncorrect
                 ? Border.all(
-                    color: const Color.fromRGBO(251, 99, 104, 1),
+                    color: redErrorTextColor,
                     width: 1,
                   )
                 : isFocused && hasText
                     ? const GradientBoxBorder(
-                        gradient: LinearGradient(
-                          begin: Alignment.centerLeft,
-                          end: Alignment.centerRight,
-                          colors: [
-                            Color.fromRGBO(250, 204, 206, 1),
-                            Color.fromRGBO(246, 167, 168, 1),
-                            Color.fromRGBO(163, 167, 211, 1),
-                            Color.fromRGBO(202, 206, 250, 0.96),
-                          ],
-                        ),
                         width: 1,
                       )
                     : Border.all(
-                        color: const Color.fromRGBO(254, 251, 249, 0.08),
+                        color: inputDarkBorderColor,
                       ),
           ),
           child: Row(
@@ -297,9 +228,9 @@ class SeedInputState extends State<SeedInput> {
                     fontSize: 12,
                     fontWeight: FontWeight.normal,
                     color: isIncorrect
-                        ? const Color.fromRGBO(93, 43, 59, 1)
+                        ? redErrorTextDarkColor
                         : isDarkMode
-                            ? const Color.fromRGBO(254, 251, 249, 0.33)
+                            ? inputDarkLabelColor
                             : Colors.black,
                   ),
                 ),
@@ -327,7 +258,7 @@ class SeedInputState extends State<SeedInput> {
                   style: TextStyle(
                     fontSize: 12,
                     color: isIncorrect
-                        ? const Color.fromRGBO(251, 99, 104, 1)
+                        ? redErrorTextColor
                         : isDarkMode
                             ? Colors.white
                             : Colors.black,

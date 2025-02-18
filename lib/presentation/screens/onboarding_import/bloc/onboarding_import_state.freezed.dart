@@ -18,7 +18,7 @@ final _privateConstructorUsedError = UnsupportedError(
 mixin _$OnboardingImportState {
   String get mnemonic => throw _privateConstructorUsedError;
   String? get mnemonicError => throw _privateConstructorUsedError;
-  WalletType get walletType => throw _privateConstructorUsedError;
+  WalletType? get walletType => throw _privateConstructorUsedError;
   dynamic get currentStep => throw _privateConstructorUsedError;
   dynamic get importState => throw _privateConstructorUsedError;
 
@@ -36,7 +36,7 @@ abstract class $OnboardingImportStateCopyWith<$Res> {
   $Res call(
       {String mnemonic,
       String? mnemonicError,
-      WalletType walletType,
+      WalletType? walletType,
       dynamic currentStep,
       dynamic importState});
 }
@@ -57,7 +57,7 @@ class _$OnboardingImportStateCopyWithImpl<$Res,
   $Res call({
     Object? mnemonic = null,
     Object? mnemonicError = freezed,
-    Object? walletType = null,
+    Object? walletType = freezed,
     Object? currentStep = freezed,
     Object? importState = freezed,
   }) {
@@ -70,10 +70,10 @@ class _$OnboardingImportStateCopyWithImpl<$Res,
           ? _value.mnemonicError
           : mnemonicError // ignore: cast_nullable_to_non_nullable
               as String?,
-      walletType: null == walletType
+      walletType: freezed == walletType
           ? _value.walletType
           : walletType // ignore: cast_nullable_to_non_nullable
-              as WalletType,
+              as WalletType?,
       currentStep: freezed == currentStep
           ? _value.currentStep
           : currentStep // ignore: cast_nullable_to_non_nullable
@@ -98,7 +98,7 @@ abstract class _$$OnboardingImportStateImplCopyWith<$Res>
   $Res call(
       {String mnemonic,
       String? mnemonicError,
-      WalletType walletType,
+      WalletType? walletType,
       dynamic currentStep,
       dynamic importState});
 }
@@ -117,7 +117,7 @@ class __$$OnboardingImportStateImplCopyWithImpl<$Res>
   $Res call({
     Object? mnemonic = null,
     Object? mnemonicError = freezed,
-    Object? walletType = null,
+    Object? walletType = freezed,
     Object? currentStep = freezed,
     Object? importState = freezed,
   }) {
@@ -130,10 +130,10 @@ class __$$OnboardingImportStateImplCopyWithImpl<$Res>
           ? _value.mnemonicError
           : mnemonicError // ignore: cast_nullable_to_non_nullable
               as String?,
-      walletType: null == walletType
+      walletType: freezed == walletType
           ? _value.walletType
           : walletType // ignore: cast_nullable_to_non_nullable
-              as WalletType,
+              as WalletType?,
       currentStep: freezed == currentStep ? _value.currentStep! : currentStep,
       importState: freezed == importState ? _value.importState! : importState,
     ));
@@ -146,7 +146,7 @@ class _$OnboardingImportStateImpl implements _OnboardingImportState {
   const _$OnboardingImportStateImpl(
       {this.mnemonic = "",
       this.mnemonicError,
-      this.walletType = WalletType.horizon,
+      this.walletType,
       this.currentStep = OnboardingImportStep.chooseFormat,
       this.importState = const ImportState.initial()});
 
@@ -156,8 +156,7 @@ class _$OnboardingImportStateImpl implements _OnboardingImportState {
   @override
   final String? mnemonicError;
   @override
-  @JsonKey()
-  final WalletType walletType;
+  final WalletType? walletType;
   @override
   @JsonKey()
   final dynamic currentStep;
@@ -208,7 +207,7 @@ abstract class _OnboardingImportState implements OnboardingImportState {
   const factory _OnboardingImportState(
       {final String mnemonic,
       final String? mnemonicError,
-      final WalletType walletType,
+      final WalletType? walletType,
       final dynamic currentStep,
       final dynamic importState}) = _$OnboardingImportStateImpl;
 
@@ -217,7 +216,7 @@ abstract class _OnboardingImportState implements OnboardingImportState {
   @override
   String? get mnemonicError;
   @override
-  WalletType get walletType;
+  WalletType? get walletType;
   @override
   dynamic get currentStep;
   @override

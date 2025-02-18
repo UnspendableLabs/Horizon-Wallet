@@ -23,9 +23,14 @@ const tealButtonColor = Color(0xFF1EE7C5);
 // Inputs
 const inputDarkBackground = Color(0xFF1E1E1E);
 const inputDarkLabelColor = Color.fromRGBO(254, 251, 249, 0.33);
+const inputDarkBorderColor = Color.fromRGBO(254, 251, 249, 0.08);
 
 const inputLightBackground = Colors.white;
 const inputLightLabelColor = Color(0xFF808080);
 
 // Text Colors
-const redErrorTextTransparent = Color.fromRGBO(239, 87, 87, 0.16);
+const subtitleDarkTextColor = Color.fromRGBO(254, 251, 249, 0.66);
+const subtitleLightTextColor = Color(0xFF808080);
+const redErrorTextColor = Color.fromRGBO(251, 99, 104, 1);
+const redErrorTextTransparent = Color.fromRGBO(251, 99, 104, 0.2);
+const redErrorTextDarkColor = Color.fromRGBO(93, 43, 59, 1);
