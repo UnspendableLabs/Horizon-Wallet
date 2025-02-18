@@ -212,6 +212,10 @@ class SeedInputStep extends StatelessWidget {
       builder: (context, state) {
         return SeedInput(
           key: seedInputKey,
+          title: 'Seed Phrase',
+          subtitle:
+              'Enter your recovery phrase to restore access to your wallet. Make sure to enter the phrase exactly as it was saved.',
+          showTitle: true,
           errorMessage: state.mnemonicError,
           onInputChanged: () => context.findRenderObject()?.markNeedsPaint(),
           onInputsUpdated: (mnemonic) {
