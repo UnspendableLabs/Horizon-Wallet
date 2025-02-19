@@ -79,24 +79,14 @@ class SeedInputState extends State<SeedInput> {
                   SelectableText(
                     widget.title ?? 'Please confirm your seed phrase',
                     textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                      color: isDarkMode ? Colors.white : Colors.black,
-                    ),
+                    style: Theme.of(context).textTheme.bodyLarge,
                   ),
                   if (widget.subtitle != null) ...[
                     const SizedBox(height: 10),
                     SelectableText(
                       widget.subtitle!,
                       textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.normal,
-                        color: isDarkMode
-                            ? subtitleDarkTextColor
-                            : subtitleLightTextColor,
-                      ),
+                      style: Theme.of(context).textTheme.bodySmall,
                     ),
                   ],
                 ],
@@ -107,14 +97,7 @@ class SeedInputState extends State<SeedInput> {
           Padding(
             padding: const EdgeInsets.all(10.0),
             child: TextButton.icon(
-              style: TextButton.styleFrom(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                backgroundColor: isDarkMode
-                    ? Colors.transparent
-                    : transparentPurpleButtonColor,
-              ),
+              style: Theme.of(context).textButtonTheme.style,
               onPressed: () {
                 setState(() {
                   _showSeedPhrase = !_showSeedPhrase;
@@ -122,15 +105,10 @@ class SeedInputState extends State<SeedInput> {
               },
               icon: Icon(
                 _showSeedPhrase ? Icons.visibility_off : Icons.visibility,
-                color: isDarkMode ? Colors.white : Colors.black,
               ),
               label: Text(
                 _showSeedPhrase ? 'Hide Phrase' : 'Show Phrase',
-                style: TextStyle(
-                  color: isDarkMode ? Colors.white : Colors.black,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                ),
+                style: Theme.of(context).textTheme.bodyMedium,
               ),
             ),
           ),

@@ -7,6 +7,7 @@ import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/main.dart';
+import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 import 'package:horizon/setup.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:pub_semver/pub_semver.dart';
@@ -214,7 +215,15 @@ void main() {
         ));
 
         // Wait for the app to settle
-        await tester.pumpAndSettle(const Duration(seconds: 1));
+        await tester.pumpAndSettle();
+        // Wait for the Load seed phrase button to appear
+        bool buttonFound = false;
+        int attempts = 0;
+        while (!buttonFound && attempts < 100) {
+          await tester.pump(const Duration(milliseconds: 100));
+          buttonFound = find.text('Load seed phrase').evaluate().isNotEmpty;
+          attempts++;
+        }
 
         // Find and tap the "LOAD SEED PHRASE" button
         final importSeedButton = find.text('Load seed phrase');
@@ -224,7 +233,7 @@ void main() {
 
         // Now we should be on the "Choose the format of your seed phrase" screen
         // Open the dropdown for import format
-        final dropdownFinder = find.byType(DropdownButton<String>);
+        final dropdownFinder = find.byType(HorizonRedesignDropdown<String>);
         await tester.tap(dropdownFinder);
         await tester.pumpAndSettle();
 
@@ -270,7 +279,7 @@ void main() {
         await tester.pumpAndSettle();
 
         // Ensure the "LOGIN" button is visible
-        final loginButton = find.text('Load wallet');
+        final loginButton = find.text('Load Wallet');
         expect(loginButton, findsOneWidget);
 
         await tester.ensureVisible(loginButton);

@@ -338,6 +338,10 @@ class ShowMnemonicStep extends StatelessWidget {
                   if (config.network == Network.testnet4 ||
                       config.network == Network.testnet)
                     ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: tealButtonColor,
+                        foregroundColor: Colors.black,
+                      ),
                       onPressed: () {
                         Clipboard.setData(ClipboardData(text: mnemonic));
                         ScaffoldMessenger.of(context).showSnackBar(

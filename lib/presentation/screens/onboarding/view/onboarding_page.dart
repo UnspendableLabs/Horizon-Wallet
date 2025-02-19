@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
@@ -6,7 +7,6 @@ import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/presentation/common/footer/view/footer.dart';
-import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 import 'package:horizon/presentation/screens/onboarding/bloc/onboarding_bloc.dart';
 import 'package:horizon/presentation/screens/onboarding/bloc/onboarding_events.dart';
@@ -39,17 +39,20 @@ class OnboardingScreenState extends State<OnboardingScreen> {
 class OnboardingView extends StatelessWidget {
   const OnboardingView({super.key});
 
+  String get _animationAsset {
+    return kDebugMode
+        ? 'logo_animation-gradient.json'
+        : 'assets/logo_animation-gradient.json';
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final backdropBackgroundColor =
-        isDarkMode ? darkThemeBackgroundColor : lightThemeBackgroundColor;
     final screenWidth = MediaQuery.of(context).size.width;
     final isWideScreen = screenWidth > 500;
 
     final pageContent = Scaffold(
       bottomNavigationBar: const Footer(),
-      backgroundColor: backdropBackgroundColor,
       body: Padding(
         padding: EdgeInsets.symmetric(horizontal: isWideScreen ? 30 : 16),
         child: Column(
@@ -62,7 +65,7 @@ class OnboardingView extends StatelessWidget {
                   width: 109,
                   height: 116,
                   child: Lottie.asset(
-                    'assets/logo_animation-gradient.json',
+                    _animationAsset,
                     fit: BoxFit.contain,
                   ),
                 ),
@@ -115,7 +118,6 @@ class OnboardingView extends StatelessWidget {
                                       session.onOnboardingCreate();
                                     },
                               buttonText: 'Create a new wallet',
-                              isDarkMode: isDarkMode,
                             ),
                           ),
                           const SizedBox(height: 16),
@@ -131,7 +133,6 @@ class OnboardingView extends StatelessWidget {
                                       session.onOnboardingImport();
                                     },
                               buttonText: 'Load seed phrase',
-                              isDarkMode: isDarkMode,
                             ),
                           ),
                         ],

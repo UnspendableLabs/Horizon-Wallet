@@ -6,17 +6,17 @@ import 'package:horizon/presentation/common/redesign_colors.dart';
 class HorizonGradientButton extends StatelessWidget {
   final VoidCallback? onPressed;
   final String buttonText;
-  final bool isDarkMode;
 
   const HorizonGradientButton({
     super.key,
     required this.onPressed,
     required this.buttonText,
-    required this.isDarkMode,
   });
 
   @override
   Widget build(BuildContext context) {
+    final brightness = Theme.of(context).brightness;
+
     return SizedBox(
       width: double.infinity,
       height: 62,
@@ -25,7 +25,7 @@ class HorizonGradientButton extends StatelessWidget {
           gradient: LinearGradient(
             begin: Alignment.centerLeft,
             end: Alignment.centerRight,
-            colors: isDarkMode
+            colors: brightness == Brightness.dark
                 ? const [
                     createButtonDarkGradient1,
                     createButtonDarkGradient2,
@@ -36,31 +36,18 @@ class HorizonGradientButton extends StatelessWidget {
                     createButtonLightGradient1,
                     createButtonLightGradient3,
                   ],
-            stops:
-                isDarkMode ? const [0.0, 0.325, 0.65, 1.0] : const [0.0, 1.0],
-            transform:
-                isDarkMode ? null : const GradientRotation(139.18 * pi / 180),
+            stops: brightness == Brightness.dark
+                ? const [0.0, 0.325, 0.65, 1.0]
+                : const [0.0, 1.0],
+            transform: brightness == Brightness.dark
+                ? null
+                : const GradientRotation(139.18 * pi / 180),
           ),
           borderRadius: BorderRadius.circular(50),
         ),
         child: ElevatedButton(
-          style: ElevatedButton.styleFrom(
-            elevation: 0,
-            backgroundColor: Colors.transparent,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(50),
-            ),
-            padding: const EdgeInsets.all(20),
-          ),
           onPressed: onPressed,
-          child: Text(
-            buttonText,
-            style: TextStyle(
-              color: isDarkMode ? Colors.black : Colors.white,
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
+          child: Text(buttonText),
         ),
       ),
     );
@@ -70,14 +57,12 @@ class HorizonGradientButton extends StatelessWidget {
 class HorizonOutlinedButton extends StatelessWidget {
   final VoidCallback? onPressed;
   final String buttonText;
-  final bool isDarkMode;
   final bool? isTransparent;
 
   const HorizonOutlinedButton({
     super.key,
     required this.onPressed,
     required this.buttonText,
-    required this.isDarkMode,
     this.isTransparent = false,
   });
 
@@ -86,29 +71,15 @@ class HorizonOutlinedButton extends StatelessWidget {
     return SizedBox(
       width: double.infinity,
       height: 62,
-      child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          elevation: 0,
-          backgroundColor: isTransparent == true
-              ? (isDarkMode ? importButtonDarkBackground : Colors.white)
-              : tealButtonColor,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(50),
-            side: BorderSide.none,
-          ),
-          padding: const EdgeInsets.all(20),
-        ),
+      child: FilledButton(
+        style: isTransparent == true
+            ? Theme.of(context).filledButtonTheme.style
+            : FilledButton.styleFrom(
+                backgroundColor: tealButtonColor,
+                foregroundColor: Colors.black,
+              ),
         onPressed: onPressed,
-        child: Text(
-          buttonText,
-          style: TextStyle(
-            color: isTransparent == true
-                ? (isDarkMode ? Colors.white : Colors.black)
-                : const Color.fromRGBO(9, 9, 9, 1),
-            fontSize: 16,
-            fontWeight: FontWeight.w400,
-          ),
-        ),
+        child: Text(buttonText),
       ),
     );
   }
@@ -186,7 +157,6 @@ class HorizonRedesignDropdown<T> extends StatefulWidget {
   final Function(T?) onChanged;
   final T? selectedValue;
   final String hintText;
-  final bool isDarkMode;
 
   const HorizonRedesignDropdown({
     super.key,
@@ -194,7 +164,6 @@ class HorizonRedesignDropdown<T> extends StatefulWidget {
     required this.onChanged,
     required this.selectedValue,
     required this.hintText,
-    required this.isDarkMode,
   });
 
   @override
@@ -240,6 +209,8 @@ class _HorizonRedesignDropdownState<T>
   OverlayEntry _createOverlayEntry() {
     RenderBox renderBox = context.findRenderObject() as RenderBox;
     var size = renderBox.size;
+    final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
 
     return OverlayEntry(
       builder: (context) => Positioned(
@@ -247,39 +218,45 @@ class _HorizonRedesignDropdownState<T>
         child: CompositedTransformFollower(
           link: _layerLink,
           showWhenUnlinked: false,
-          offset: Offset(0.0, size.height + 10.0), // 10px spacing
-          child: Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(18),
-              border: const GradientBoxBorder(width: 1),
-              color: widget.isDarkMode
-                  ? darkThemeBackgroundColor
-                  : lightThemeBackgroundColor,
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: widget.items.map((item) {
-                return Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    onTap: () {
-                      widget.onChanged(item.value);
-                      _toggleDropdown();
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 16),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: item.child,
-                          ),
-                        ],
+          offset: Offset(0.0, size.height + 10.0),
+          child: Theme(
+            data: theme,
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(18),
+                border: const GradientBoxBorder(width: 1),
+                color: isDarkMode ? inputDarkBackground : inputLightBackground,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: widget.items.map((item) {
+                  return Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: () {
+                        widget.onChanged(item.value);
+                        _toggleDropdown();
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 16,
+                        ),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: DefaultTextStyle(
+                                style: theme.dropdownMenuTheme.textStyle!,
+                                child: item.child,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                );
-              }).toList(),
+                  );
+                }).toList(),
+              ),
             ),
           ),
         ),
@@ -289,6 +266,7 @@ class _HorizonRedesignDropdownState<T>
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final hasValue = widget.selectedValue != null;
     return CompositedTransformTarget(
       link: _layerLink,
@@ -302,14 +280,12 @@ class _HorizonRedesignDropdownState<T>
             border: focusNode.hasFocus
                 ? const GradientBoxBorder(width: 1)
                 : Border.all(
-                    color: widget.isDarkMode
+                    color: isDarkMode
                         ? inputDarkBorderColor
                         : inputLightBorderColor),
             color: hasValue
-                ? (widget.isDarkMode
-                    ? inputDarkBackground
-                    : inputLightBackground)
-                : (widget.isDarkMode
+                ? (isDarkMode ? inputDarkBackground : inputLightBackground)
+                : (isDarkMode
                     ? darkThemeBackgroundColor
                     : lightThemeBackgroundColor),
           ),
@@ -326,19 +302,11 @@ class _HorizonRedesignDropdownState<T>
                               .child as Text)
                           .data!
                       : widget.hintText,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: hasValue
-                        ? (widget.isDarkMode ? Colors.white : Colors.black)
-                        : (widget.isDarkMode
-                            ? inputDarkLabelColor
-                            : inputLightLabelColor),
-                  ),
+                  style: Theme.of(context).textTheme.bodyMedium,
                 ),
               ),
               Icon(
                 _isOpen ? Icons.arrow_drop_up : Icons.arrow_drop_down,
-                color: widget.isDarkMode ? Colors.white : Colors.black,
                 size: 18,
               ),
             ],

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 
 class OnboardingShell extends StatefulWidget {
@@ -50,21 +49,17 @@ class _OnboardingShellState extends State<OnboardingShell> {
   @override
   Widget build(BuildContext context) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final backdropBackgroundColor =
-        isDarkMode ? darkThemeBackgroundColor : lightThemeBackgroundColor;
 
     final screenWidth = MediaQuery.of(context).size.width;
     final isWideScreen = screenWidth > 500;
 
     final shellContent = Scaffold(
-      backgroundColor: backdropBackgroundColor,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(
+          icon: const Icon(
             Icons.arrow_back,
-            color: isDarkMode ? Colors.white : Colors.black,
           ),
           onPressed: _handleStepBack,
         ),
@@ -112,7 +107,6 @@ class _OnboardingShellState extends State<OnboardingShell> {
                     Expanded(
                       child: HorizonOutlinedButton(
                         isTransparent: false,
-                        isDarkMode: isDarkMode,
                         onPressed: widget.nextButtonEnabled
                             ? _handleStepContinue
                             : null,

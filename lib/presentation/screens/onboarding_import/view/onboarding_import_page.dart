@@ -173,7 +173,6 @@ class _ChooseFormatStepState extends State<ChooseFormatStep> {
 
   @override
   Widget build(BuildContext context) {
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final isSmallScreen = MediaQuery.of(context).size.width < 500;
 
     return Column(
@@ -186,26 +185,16 @@ class _ChooseFormatStepState extends State<ChooseFormatStep> {
             children: [
               SelectableText(
                 'Import Your Wallet',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
-                  color: isDarkMode ? Colors.white : Colors.black,
-                ),
+                style: Theme.of(context).textTheme.bodyLarge,
               ),
               const SizedBox(height: 10),
               SelectableText(
                 'Choose the format of your recovery phrase',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: isDarkMode
-                      ? subtitleDarkTextColor
-                      : subtitleLightTextColor,
-                ),
+                style: Theme.of(context).textTheme.bodySmall,
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 14),
               HorizonRedesignDropdown<String>(
-                isDarkMode: isDarkMode,
                 hintText: 'Wallet Type',
                 selectedValue: selectedFormat,
                 onChanged: (value) {
@@ -221,11 +210,13 @@ class _ChooseFormatStepState extends State<ChooseFormatStep> {
                 items: [
                   DropdownMenuItem(
                     value: WalletType.horizon.name,
-                    child: Text(WalletType.horizon.description),
+                    child: Text(WalletType.horizon.description,
+                        style: Theme.of(context).textTheme.bodyMedium),
                   ),
                   DropdownMenuItem(
                     value: WalletType.bip32.name,
-                    child: Text(WalletType.bip32.description),
+                    child: Text(WalletType.bip32.description,
+                        style: Theme.of(context).textTheme.bodyMedium),
                   ),
                 ],
               ),
