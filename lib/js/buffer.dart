@@ -1,12 +1,12 @@
-@JS("buffer")
-library;
-
 import 'dart:js_interop';
 import 'dart:js_util';
 import 'dart:typed_data';
 
+@JS("Buffer")
 extension type Buffer._(JSObject _) implements JSObject {
   external factory Buffer.from(JSUint8Array list);
+
+  external static bool isBuffer(JSObject obj);
 
   @JS('toString')
   external String toJSString([String encoding]);

@@ -1,5 +1,3 @@
-import 'dart:js_interop';
-
 import 'package:convert/convert.dart';
 import 'package:horizon/common/constants.dart';
 import 'package:horizon/domain/repositories/config_repository.dart';
@@ -7,7 +5,7 @@ import 'package:horizon/domain/services/imported_address_service.dart';
 import 'package:horizon/js/bitcoin.dart' as bitcoin;
 import 'package:horizon/js/ecpair.dart' as ecpair;
 import 'package:horizon/js/tiny_secp256k1.dart' as tinysecp256k1js;
-import 'package:horizon/js/buffer.dart';
+import 'package:horizon/js/signer.dart';
 
 class ImportedAddressServiceImpl implements ImportedAddressService {
   final Config config;
@@ -18,20 +16,27 @@ class ImportedAddressServiceImpl implements ImportedAddressService {
 
   @override
   Future<String> getAddressPrivateKeyFromWIF({required String wif}) async {
-    final addressPrivateKey =
-        ecpairFactory.fromWIF(wif, _getNetwork()).privateKey.toDart;
-    return hex.encode(addressPrivateKey);
+    final ecpair.ECPairInterface ecpair_ =
+        ecpairFactory.fromWIF(wif, _getNetwork());
+
+    if (ecpair_.privateKey == null) {
+      throw Exception("Private key not found");
+    }
+
+    final privateKey = ecpair_.privateKey!.toDart;
+
+    return hex.encode(privateKey);
   }
 
   @override
   Future<String> getAddressFromWIF(
       {required String wif, required ImportAddressPkFormat format}) async {
-    final ecpair.ECPair ecPair = ecpairFactory.fromWIF(wif, _getNetwork());
+    final Signer signer = ecpairFactory.fromWIF(wif, _getNetwork());
 
     final network = _getNetwork();
 
     final paymentOpts =
-        bitcoin.PaymentOptions(pubkey: Buffer.from(ecPair.publicKey), network: network);
+        bitcoin.PaymentOptions(pubkey: signer.publicKey, network: network);
 
     switch (format) {
       case ImportAddressPkFormat.segwit:
