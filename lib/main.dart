@@ -34,6 +34,7 @@ import 'package:horizon/domain/services/secure_kv_service.dart';
 import 'package:horizon/domain/services/wallet_service.dart';
 import 'package:horizon/presentation/common/footer/view/footer.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
+import 'package:horizon/presentation/common/theme_extension.dart';
 import 'package:horizon/presentation/inactivity_monitor/inactivity_monitor_bloc.dart';
 import 'package:horizon/presentation/inactivity_monitor/inactivity_monitor_view.dart';
 import 'package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_bloc.dart';
@@ -592,6 +593,19 @@ class MyApp extends StatelessWidget {
           padding: WidgetStatePropertyAll(EdgeInsets.zero),
         ),
       ),
+      inputDecorationTheme: const InputDecorationTheme(
+        isDense: true,
+        contentPadding: EdgeInsets.zero,
+        border: InputBorder.none,
+        hintStyle: TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.normal,
+          color: inputLightLabelColor,
+        ),
+      ),
+      extensions: {
+        CustomThemeExtension.light,
+      },
     );
   }
 
@@ -666,6 +680,19 @@ class MyApp extends StatelessWidget {
           padding: WidgetStatePropertyAll(EdgeInsets.zero),
         ),
       ),
+      inputDecorationTheme: const InputDecorationTheme(
+        isDense: true,
+        contentPadding: EdgeInsets.zero,
+        border: InputBorder.none,
+        hintStyle: TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.normal,
+          color: inputDarkLabelColor,
+        ),
+      ),
+      extensions: {
+        CustomThemeExtension.dark,
+      },
     );
   }
 

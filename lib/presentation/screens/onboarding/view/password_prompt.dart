@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
+import 'package:horizon/presentation/common/theme_extension.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 
 class PasswordPrompt extends StatefulWidget {
@@ -110,7 +111,7 @@ class PasswordPromptState extends State<PasswordPrompt> {
                 child: Column(
                   children: [
                     buildPasswordField(
-                      isDarkMode,
+                      context,
                       controller: passwordController,
                       isObscured: _isPasswordObscured,
                       onToggleObscured: () {
@@ -122,7 +123,7 @@ class PasswordPromptState extends State<PasswordPrompt> {
                     ),
                     const SizedBox(height: 10),
                     buildPasswordField(
-                      isDarkMode,
+                      context,
                       controller: passwordConfirmationController,
                       isObscured: _isPasswordConfirmationObscured,
                       onToggleObscured: () {
@@ -148,12 +149,14 @@ class PasswordPromptState extends State<PasswordPrompt> {
   }
 
   Widget buildPasswordField(
-    bool isDarkMode, {
+    BuildContext context, {
     required TextEditingController controller,
     required bool isObscured,
     required VoidCallback onToggleObscured,
     required String label,
   }) {
+    final theme = Theme.of(context);
+    final customTheme = theme.extension<CustomThemeExtension>()!;
     final hasText = controller.text.isNotEmpty;
     final focusNode =
         label == 'Password' ? passwordFocusNode : confirmPasswordFocusNode;
@@ -175,34 +178,21 @@ class PasswordPromptState extends State<PasswordPrompt> {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(18),
                 color: hasText
-                    ? (isDarkMode ? inputDarkBackground : inputLightBackground)
-                    : (isDarkMode
-                        ? darkThemeBackgroundColor
-                        : lightThemeBackgroundColor),
+                    ? customTheme.inputBackground
+                    : customTheme.inputBackgroundEmpty,
               ),
               child: Container(
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(18),
                   border: hasError
-                      ? Border.all(
-                          color: redErrorTextColor,
-                          width: 1,
-                        )
+                      ? Border.all(color: customTheme.errorColor, width: 1)
                       : focusNode.hasFocus && hasText
-                          ? const GradientBoxBorder(
-                              width: 1,
-                            )
-                          : Border.all(
-                              color: isDarkMode
-                                  ? inputDarkBorderColor
-                                  : inputLightBorderColor,
-                            ),
+                          ? const GradientBoxBorder(width: 1)
+                          : Border.all(color: customTheme.inputBorderColor),
                 ),
                 padding:
                     const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Expanded(
                       child: TextFormField(
@@ -212,20 +202,15 @@ class PasswordPromptState extends State<PasswordPrompt> {
                         onChanged: (_) => field.didChange(controller.text),
                         style: TextStyle(
                           fontSize: 12,
-                          color: isDarkMode ? Colors.white : Colors.black,
+                          color: customTheme.inputTextColor,
                         ),
                         decoration: InputDecoration(
-                          isDense: true,
-                          contentPadding: EdgeInsets.zero,
-                          border: InputBorder.none,
+                          isDense: theme.inputDecorationTheme.isDense,
+                          contentPadding:
+                              theme.inputDecorationTheme.contentPadding,
+                          border: theme.inputDecorationTheme.border,
                           hintText: label,
-                          hintStyle: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.normal,
-                            color: isDarkMode
-                                ? inputDarkLabelColor
-                                : inputLightLabelColor,
-                          ),
+                          hintStyle: theme.inputDecorationTheme.hintStyle,
                         ),
                       ),
                     ),
@@ -234,7 +219,7 @@ class PasswordPromptState extends State<PasswordPrompt> {
                         isObscured
                             ? Icons.visibility_outlined
                             : Icons.visibility_off_outlined,
-                        color: isDarkMode ? Colors.white : Colors.black,
+                        color: customTheme.inputTextColor,
                         size: 18,
                       ),
                       onPressed: onToggleObscured,
@@ -251,8 +236,8 @@ class PasswordPromptState extends State<PasswordPrompt> {
                 padding: const EdgeInsets.only(left: 16, top: 4),
                 child: Text(
                   field.errorText!,
-                  style: const TextStyle(
-                    color: redErrorTextColor,
+                  style: TextStyle(
+                    color: customTheme.errorColor,
                     fontSize: 12,
                   ),
                 ),
