@@ -92,7 +92,7 @@ class OnboardingView extends StatelessWidget {
                           )) ...[
                             SizedBox(
                               width:
-                                  screenWidth > 768 ? screenWidth * 0.5 : null,
+                                  screenWidth > 500 ? screenWidth * 0.5 : null,
                               child: SelectableText(
                                 state.maybeWhen(
                                   error: (message) => message,
@@ -108,7 +108,7 @@ class OnboardingView extends StatelessWidget {
                             const SizedBox(height: 20),
                           ],
                           SizedBox(
-                            width: screenWidth > 768 ? screenWidth * 0.5 : null,
+                            width: screenWidth > 500 ? screenWidth * 0.5 : null,
                             child: HorizonGradientButton(
                               onPressed: isDisabled
                                   ? null
@@ -122,7 +122,7 @@ class OnboardingView extends StatelessWidget {
                           ),
                           const SizedBox(height: 16),
                           SizedBox(
-                            width: screenWidth > 768 ? screenWidth * 0.5 : null,
+                            width: screenWidth > 500 ? screenWidth * 0.5 : null,
                             child: HorizonOutlinedButton(
                               isTransparent: true,
                               onPressed: isDisabled

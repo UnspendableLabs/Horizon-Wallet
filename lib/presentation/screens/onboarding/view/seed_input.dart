@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
+import 'package:horizon/presentation/common/theme_extension.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 
 class SeedInput extends StatefulWidget {
@@ -62,93 +63,87 @@ class SeedInputState extends State<SeedInput> {
   @override
   Widget build(BuildContext context) {
     final isSmallScreen = MediaQuery.of(context).size.width < 500;
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final backdropBackgroundColor =
-        isDarkMode ? darkThemeBackgroundColor : lightThemeBackgroundColor;
+    final theme = Theme.of(context);
+    final customTheme = theme.extension<CustomThemeExtension>()!;
 
-    return Container(
-      color: backdropBackgroundColor,
-      child: Column(
-        children: [
-          if (widget.showTitle) ...[
-            Padding(
-              padding:
-                  EdgeInsets.symmetric(horizontal: isSmallScreen ? 20.0 : 40.0),
-              child: Column(
-                children: [
+    return Column(
+      children: [
+        if (widget.showTitle) ...[
+          Padding(
+            padding:
+                EdgeInsets.symmetric(horizontal: isSmallScreen ? 20.0 : 40.0),
+            child: Column(
+              children: [
+                SelectableText(
+                  widget.title ?? 'Please confirm your seed phrase',
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.bodyLarge,
+                ),
+                if (widget.subtitle != null) ...[
+                  const SizedBox(height: 10),
                   SelectableText(
-                    widget.title ?? 'Please confirm your seed phrase',
+                    widget.subtitle!,
                     textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.bodyLarge,
+                    style: Theme.of(context).textTheme.bodySmall,
                   ),
-                  if (widget.subtitle != null) ...[
-                    const SizedBox(height: 10),
-                    SelectableText(
-                      widget.subtitle!,
-                      textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.bodySmall,
-                    ),
-                  ],
+                ],
+              ],
+            ),
+          ),
+        ],
+        buildInputFields(isSmallScreen),
+        Padding(
+          padding: const EdgeInsets.all(10.0),
+          child: TextButton.icon(
+            style: Theme.of(context).textButtonTheme.style,
+            onPressed: () {
+              setState(() {
+                _showSeedPhrase = !_showSeedPhrase;
+              });
+            },
+            icon: Icon(
+              _showSeedPhrase ? Icons.visibility_off : Icons.visibility,
+            ),
+            label: Text(
+              _showSeedPhrase ? 'Hide Phrase' : 'Show Phrase',
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
+          ),
+        ),
+        if (widget.errorMessage != null) ...[
+          Padding(
+            padding: const EdgeInsets.only(top: 10.0),
+            child: Container(
+              padding: const EdgeInsets.all(10.0),
+              decoration: BoxDecoration(
+                color: customTheme.errorBackgroundColor,
+                borderRadius: BorderRadius.circular(40.0),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(
+                    Icons.warning_amber_rounded,
+                    color: redErrorTextColor,
+                    size: 18,
+                  ),
+                  const SizedBox(width: 4),
+                  SelectableText(
+                    widget.errorMessage!,
+                    style: const TextStyle(color: redErrorTextColor),
+                  ),
                 ],
               ),
             ),
-          ],
-          buildInputFields(isSmallScreen, isDarkMode),
-          Padding(
-            padding: const EdgeInsets.all(10.0),
-            child: TextButton.icon(
-              style: Theme.of(context).textButtonTheme.style,
-              onPressed: () {
-                setState(() {
-                  _showSeedPhrase = !_showSeedPhrase;
-                });
-              },
-              icon: Icon(
-                _showSeedPhrase ? Icons.visibility_off : Icons.visibility,
-              ),
-              label: Text(
-                _showSeedPhrase ? 'Hide Phrase' : 'Show Phrase',
-                style: Theme.of(context).textTheme.bodyMedium,
-              ),
-            ),
           ),
-          if (widget.errorMessage != null) ...[
-            Padding(
-              padding: const EdgeInsets.only(top: 10.0),
-              child: Container(
-                padding: const EdgeInsets.all(10.0),
-                decoration: BoxDecoration(
-                  color: isDarkMode
-                      ? redErrorTextTransparentDark
-                      : redErrorTextTransparentLight,
-                  borderRadius: BorderRadius.circular(40.0),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(
-                      Icons.warning_amber_rounded,
-                      color: redErrorTextColor,
-                      size: 18,
-                    ),
-                    const SizedBox(width: 4),
-                    SelectableText(
-                      widget.errorMessage!,
-                      style: const TextStyle(color: redErrorTextColor),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-          ],
-          const Spacer(),
+          const SizedBox(height: 16),
         ],
-      ),
+        const Spacer(),
+      ],
     );
   }
 
-  Widget buildInputFields(bool isSmallScreen, bool isDarkMode) {
+  Widget buildInputFields(bool isSmallScreen) {
     return LayoutBuilder(
       builder: (context, constraints) {
         return SingleChildScrollView(
@@ -161,7 +156,7 @@ class SeedInputState extends State<SeedInput> {
                   children: List.generate(3, (colIndex) {
                     final index = rowIndex * 3 + colIndex;
                     return Expanded(
-                      child: buildInputField(index, isDarkMode),
+                      child: buildInputField(index),
                     );
                   }),
                 );
@@ -173,41 +168,35 @@ class SeedInputState extends State<SeedInput> {
     );
   }
 
-  Widget buildInputField(int index, bool isDarkMode) {
+  Widget buildInputField(int index) {
     final hasText = controllers[index].text.isNotEmpty;
     final isFocused = focusNodes[index].hasFocus;
     final isIncorrect = widget.incorrectIndexes?.contains(index) ?? false;
+    final theme = Theme.of(context);
+    final customTheme = theme.extension<CustomThemeExtension>()!;
 
     return Padding(
       padding: const EdgeInsets.all(5.0),
       child: Container(
         width: 105,
-        height: 44,
+        height: 56,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(18),
           color: hasText
-              ? (isDarkMode ? inputDarkBackground : inputLightBackground)
-              : (isDarkMode
-                  ? darkThemeBackgroundColor
-                  : lightThemeBackgroundColor),
+              ? customTheme.inputBackground
+              : customTheme.inputBackgroundEmpty,
         ),
         child: Container(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(18),
             border: isIncorrect
                 ? Border.all(
-                    color: redErrorTextColor,
+                    color: customTheme.errorColor,
                     width: 1,
                   )
                 : isFocused && hasText
-                    ? const GradientBoxBorder(
-                        width: 1,
-                      )
-                    : Border.all(
-                        color: isDarkMode
-                            ? inputDarkBorderColor
-                            : inputLightBorderColor,
-                      ),
+                    ? const GradientBoxBorder(width: 1)
+                    : Border.all(color: customTheme.inputBorderColor),
           ),
           child: Row(
             children: [
@@ -219,10 +208,8 @@ class SeedInputState extends State<SeedInput> {
                     fontSize: 12,
                     fontWeight: FontWeight.normal,
                     color: isIncorrect
-                        ? redErrorTextDarkColor
-                        : isDarkMode
-                            ? inputDarkLabelColor
-                            : inputLightLabelColor,
+                        ? customTheme.errorColor
+                        : theme.inputDecorationTheme.hintStyle?.color,
                   ),
                 ),
               ),
@@ -238,21 +225,13 @@ class SeedInputState extends State<SeedInput> {
                     contentPadding: const EdgeInsets.only(right: 20),
                     border: InputBorder.none,
                     hintText: 'Word ${index + 1}',
-                    hintStyle: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.normal,
-                      color: isDarkMode
-                          ? inputDarkLabelColor
-                          : inputLightLabelColor,
-                    ),
+                    hintStyle: theme.inputDecorationTheme.hintStyle,
                   ),
                   style: TextStyle(
                     fontSize: 12,
                     color: isIncorrect
-                        ? redErrorTextColor
-                        : isDarkMode
-                            ? Colors.white
-                            : Colors.black,
+                        ? customTheme.errorColor
+                        : customTheme.inputTextColor,
                   ),
                 ),
               ),

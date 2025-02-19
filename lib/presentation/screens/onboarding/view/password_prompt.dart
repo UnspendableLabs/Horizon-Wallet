@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/common/theme_extension.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 
@@ -73,78 +72,72 @@ class PasswordPromptState extends State<PasswordPrompt> {
 
   @override
   Widget build(BuildContext context) {
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final screenSize = MediaQuery.of(context).size;
-    final isSmallScreen = screenSize.width < 768;
-    final backdropBackgroundColor =
-        isDarkMode ? darkThemeBackgroundColor : lightThemeBackgroundColor;
+    final isSmallScreen = screenSize.width < 500;
 
-    return Container(
-      color: backdropBackgroundColor,
-      child: Column(
-        children: [
-          Padding(
-            padding:
-                EdgeInsets.symmetric(horizontal: isSmallScreen ? 20.0 : 40.0),
-            child: Column(
-              children: [
-                SelectableText(
-                  'Please create a password',
-                  textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.bodyLarge,
-                ),
-                const SizedBox(height: 10),
-                SelectableText(
-                  'This password will be used to encrypt and decrypt your seed phrase, which will be stored locally. You will be able to use your wallet with just your password, but you will only be able to recover your wallet with your seed phrase.',
-                  textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
-              ],
-            ),
+    return Column(
+      children: [
+        Padding(
+          padding:
+              EdgeInsets.symmetric(horizontal: isSmallScreen ? 20.0 : 40.0),
+          child: Column(
+            children: [
+              SelectableText(
+                'Please create a password',
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.bodyLarge,
+              ),
+              const SizedBox(height: 10),
+              SelectableText(
+                'This password will be used to encrypt and decrypt your seed phrase, which will be stored locally. You will be able to use your wallet with just your password, but you will only be able to recover your wallet with your seed phrase.',
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+            ],
           ),
-          Expanded(
-            child: Form(
-              key: formKey,
-              child: Padding(
-                padding: EdgeInsets.symmetric(
-                    horizontal: isSmallScreen ? 20.0 : 40.0, vertical: 14.0),
-                child: Column(
-                  children: [
-                    buildPasswordField(
-                      context,
-                      controller: passwordController,
-                      isObscured: _isPasswordObscured,
-                      onToggleObscured: () {
-                        setState(() {
-                          _isPasswordObscured = !_isPasswordObscured;
-                        });
-                      },
-                      label: 'Password',
-                    ),
-                    const SizedBox(height: 10),
-                    buildPasswordField(
-                      context,
-                      controller: passwordConfirmationController,
-                      isObscured: _isPasswordConfirmationObscured,
-                      onToggleObscured: () {
-                        setState(() {
-                          _isPasswordConfirmationObscured =
-                              !_isPasswordConfirmationObscured;
-                        });
-                      },
-                      label: 'Confirm Password',
-                    ),
-                    if (widget.optionalErrorWidget != null) ...[
-                      const SizedBox(height: 16),
-                      widget.optionalErrorWidget!,
-                    ],
+        ),
+        Expanded(
+          child: Form(
+            key: formKey,
+            child: Padding(
+              padding: EdgeInsets.symmetric(
+                  horizontal: isSmallScreen ? 20.0 : 40.0, vertical: 14.0),
+              child: Column(
+                children: [
+                  buildPasswordField(
+                    context,
+                    controller: passwordController,
+                    isObscured: _isPasswordObscured,
+                    onToggleObscured: () {
+                      setState(() {
+                        _isPasswordObscured = !_isPasswordObscured;
+                      });
+                    },
+                    label: 'Password',
+                  ),
+                  const SizedBox(height: 10),
+                  buildPasswordField(
+                    context,
+                    controller: passwordConfirmationController,
+                    isObscured: _isPasswordConfirmationObscured,
+                    onToggleObscured: () {
+                      setState(() {
+                        _isPasswordConfirmationObscured =
+                            !_isPasswordConfirmationObscured;
+                      });
+                    },
+                    label: 'Confirm Password',
+                  ),
+                  if (widget.optionalErrorWidget != null) ...[
+                    const SizedBox(height: 16),
+                    widget.optionalErrorWidget!,
                   ],
-                ),
+                ],
               ),
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 

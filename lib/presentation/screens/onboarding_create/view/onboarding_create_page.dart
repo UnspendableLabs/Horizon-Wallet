@@ -10,6 +10,7 @@ import 'package:horizon/domain/repositories/config_repository.dart';
 import 'package:horizon/domain/services/mnemonic_service.dart';
 import 'package:horizon/domain/services/wallet_service.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
+import 'package:horizon/presentation/common/theme_extension.dart';
 import 'package:horizon/presentation/common/usecase/import_wallet_usecase.dart';
 import 'package:horizon/presentation/screens/onboarding/view/onboarding_shell.dart';
 import 'package:horizon/presentation/screens/onboarding/view/password_prompt.dart';
@@ -22,8 +23,6 @@ import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 class NumberedWordGrid extends StatelessWidget {
   final String text;
   final int wordsPerRow;
-  final Color backgroundColor;
-  final Color textColor;
   final double borderRadius;
   final EdgeInsets itemMargin;
   final bool isSmallScreen;
@@ -31,8 +30,6 @@ class NumberedWordGrid extends StatelessWidget {
   const NumberedWordGrid({
     super.key,
     required this.text,
-    required this.backgroundColor,
-    required this.textColor,
     this.wordsPerRow = 3,
     this.borderRadius = 8.0,
     this.itemMargin =
@@ -42,7 +39,8 @@ class NumberedWordGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final theme = Theme.of(context);
+    final customTheme = theme.extension<CustomThemeExtension>()!;
     List<String> words = text.split(' ');
     int totalWords = words.length;
     int rowCount = (totalWords / wordsPerRow).ceil();
@@ -62,15 +60,11 @@ class NumberedWordGrid extends StatelessWidget {
                 margin: itemMargin,
                 child: Container(
                   width: 105,
-                  height: 44,
+                  height: 56,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(18),
-                    border: Border.all(
-                      color: Theme.of(context).brightness == Brightness.dark
-                          ? inputDarkBorderColor
-                          : inputLightBorderColor,
-                    ),
-                    color: backgroundColor,
+                    border: Border.all(color: customTheme.inputBorderColor),
+                    color: customTheme.inputBackground,
                   ),
                   child: Row(
                     children: [
@@ -80,9 +74,8 @@ class NumberedWordGrid extends StatelessWidget {
                           "${wordIndex + 1}.",
                           style: TextStyle(
                             fontSize: 12,
-                            color: isDarkMode
-                                ? subtitleDarkTextColor
-                                : subtitleLightTextColor,
+                            fontWeight: FontWeight.normal,
+                            color: theme.inputDecorationTheme.hintStyle?.color,
                           ),
                         ),
                       ),
@@ -93,8 +86,8 @@ class NumberedWordGrid extends StatelessWidget {
                           child: Text(
                             word,
                             style: TextStyle(
-                              fontSize: isSmallScreen ? 11 : 12,
-                              color: textColor,
+                              fontSize: 12,
+                              color: customTheme.inputTextColor,
                             ),
                           ),
                         ),
@@ -279,7 +272,6 @@ class ShowMnemonicStep extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final Config config = GetIt.I<Config>();
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final isSmallScreen = MediaQuery.of(context).size.width < 500;
     return BlocBuilder<OnboardingCreateBloc, OnboardingCreateState>(
       builder: (context, state) {
@@ -297,23 +289,13 @@ class ShowMnemonicStep extends StatelessWidget {
                     SelectableText(
                       'Seed Phrase',
                       textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
-                        color: isDarkMode ? Colors.white : Colors.black,
-                      ),
+                      style: Theme.of(context).textTheme.bodyLarge,
                     ),
                     const SizedBox(height: 10),
                     SelectableText(
                       'Please write down your seed phrase and store it in a secure location. It is the only way to recover your wallet.',
                       textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.normal,
-                        color: isDarkMode
-                            ? subtitleDarkTextColor
-                            : subtitleLightTextColor,
-                      ),
+                      style: Theme.of(context).textTheme.bodySmall,
                     ),
                   ],
                 ),
@@ -327,10 +309,6 @@ class ShowMnemonicStep extends StatelessWidget {
                     child: NumberedWordGrid(
                       isSmallScreen: isSmallScreen,
                       text: mnemonic,
-                      backgroundColor: isDarkMode
-                          ? inputDarkBackground
-                          : inputLightBackground,
-                      textColor: isDarkMode ? Colors.white : Colors.black,
                       itemMargin: const EdgeInsets.all(5.0),
                     ),
                   ),
