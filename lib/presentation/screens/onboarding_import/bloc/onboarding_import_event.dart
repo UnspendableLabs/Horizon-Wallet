@@ -21,3 +21,7 @@ class ImportWallet extends OnboardingImportEvent {
   final String password;
   ImportWallet({required this.password});
 }
+
+class SeedInputBackPressed extends OnboardingImportEvent {}
+
+class ImportFormatBackPressed extends OnboardingImportEvent {}

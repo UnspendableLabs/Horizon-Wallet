@@ -51,7 +51,7 @@ class _FooterState extends State<_Footer> {
 
     TextStyle textStyle() => TextStyle(
           color: isDarkTheme ? Colors.white : Colors.black,
-          fontSize: screenWidth < 600 ? 10 : 16,
+          fontSize: screenWidth < 500 ? 10 : 16,
           fontWeight: FontWeight.w300,
         );
 
@@ -68,7 +68,7 @@ class _FooterState extends State<_Footer> {
             decoration: BoxDecoration(
               color: isDarkTheme
                   ? darkThemeBackgroundColor
-                  : lightThemeBackgroundColorTopGradiant,
+                  : lightThemeBackgroundColor,
             ),
             child: Center(
               child: Wrap(

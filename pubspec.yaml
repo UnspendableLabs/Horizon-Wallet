@@ -87,6 +87,7 @@ dependencies:
   flutter_native_splash: ^2.4.3
   sentry_flutter: ^8.11.0
   lottie: ^3.2.0
+  flutter_form_builder: ^9.5.0
 
 dev_dependencies:
   floor_generator: ^1.4.2
@@ -129,6 +130,7 @@ flutter:
     - assets/horizon-logo.png
     - assets/app-bar-H-dark-mode.png
     - assets/app-bar-H-light-mode.png
+    - assets/logo_animation-gradient.json
     - fonts/
 
   #   - .env

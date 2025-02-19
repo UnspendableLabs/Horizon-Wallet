@@ -42,17 +42,16 @@ class OnboardingView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final backdropBackgroundColor = isDarkMode
-        ? darkThemeBackgroundColor
-        : lightThemeBackgroundColorTopGradiant;
+    final backdropBackgroundColor =
+        isDarkMode ? darkThemeBackgroundColor : lightThemeBackgroundColor;
     final screenWidth = MediaQuery.of(context).size.width;
-    final buttonWidth = screenWidth > 768 ? screenWidth * 0.5 : null;
+    final isWideScreen = screenWidth > 500;
 
-    return Scaffold(
+    final pageContent = Scaffold(
       bottomNavigationBar: const Footer(),
       backgroundColor: backdropBackgroundColor,
       body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
+        padding: EdgeInsets.symmetric(horizontal: isWideScreen ? 30 : 16),
         child: Column(
           children: [
             const Spacer(flex: 1),
@@ -63,7 +62,7 @@ class OnboardingView extends StatelessWidget {
                   width: 109,
                   height: 116,
                   child: Lottie.asset(
-                    'logo_animation-gradient.json',
+                    'assets/logo_animation-gradient.json',
                     fit: BoxFit.contain,
                   ),
                 ),
@@ -89,7 +88,8 @@ class OnboardingView extends StatelessWidget {
                             orElse: () => false,
                           )) ...[
                             SizedBox(
-                              width: buttonWidth,
+                              width:
+                                  screenWidth > 768 ? screenWidth * 0.5 : null,
                               child: SelectableText(
                                 state.maybeWhen(
                                   error: (message) => message,
@@ -105,7 +105,7 @@ class OnboardingView extends StatelessWidget {
                             const SizedBox(height: 20),
                           ],
                           SizedBox(
-                            width: buttonWidth,
+                            width: screenWidth > 768 ? screenWidth * 0.5 : null,
                             child: HorizonGradientButton(
                               onPressed: isDisabled
                                   ? null
@@ -120,8 +120,9 @@ class OnboardingView extends StatelessWidget {
                           ),
                           const SizedBox(height: 16),
                           SizedBox(
-                            width: buttonWidth,
+                            width: screenWidth > 768 ? screenWidth * 0.5 : null,
                             child: HorizonOutlinedButton(
+                              isTransparent: true,
                               onPressed: isDisabled
                                   ? null
                                   : () {
@@ -141,6 +142,27 @@ class OnboardingView extends StatelessWidget {
               ),
             ),
           ],
+        ),
+      ),
+    );
+
+    if (!isWideScreen) {
+      return pageContent;
+    }
+
+    return Scaffold(
+      backgroundColor: isDarkMode ? Colors.black : Colors.white,
+      body: Center(
+        child: Container(
+          width: 500,
+          height: 812,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(18),
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(18),
+            child: pageContent,
+          ),
         ),
       ),
     );
