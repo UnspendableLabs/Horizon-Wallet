@@ -123,14 +123,14 @@ class TransactionServiceImpl implements TransactionService {
 
       Buffer privKeyJS =
           Buffer.from(Uint8List.fromList(hex.decode(privateKey)).toJS);
+
       final network = _getNetwork();
 
-      dynamic signer = ecpairFactory.fromPrivateKey(privKeyJS, network);
+      final signer = ecpairFactory.fromPrivateKey(privKeyJS, network);
 
       psbt.signInput(
           index, signer, sighashTypes?.map((e) => e.toJS).toList().toJS);
     }
-
     return psbt.toHex();
   }
 
@@ -146,11 +146,8 @@ class TransactionServiceImpl implements TransactionService {
     final bitcoinMessage.Signer signer =
         bitcoinMessage.createECPairSigner(ecpair_);
 
-    final Buffer signatureBuf =
-        bitcoinMessage.sign(
-        message, 
-        signer, 
-        (true).toJS // evidently, needs to be compressed
+    final Buffer signatureBuf = bitcoinMessage.sign(
+        message, signer, (true).toJS // evidently, needs to be compressed
         );
 
     final Uint8List signature = signatureBuf.toDart;
