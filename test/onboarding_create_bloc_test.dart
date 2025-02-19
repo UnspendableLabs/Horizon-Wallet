@@ -76,8 +76,8 @@ void main() {
           importWalletUseCase: mockImportWalletUseCase,
         );
       },
-      seed: () => OnboardingCreateState(
-        mnemonicState: MnemonicGeneratedStateGenerated(mnemonic: mnemonic),
+      seed: () => const OnboardingCreateState(
+        createMnemonicState: CreateMnemonicState.success(mnemonic: mnemonic),
       ),
       act: (bloc) => bloc.add(WalletCreated(password: password)),
       expect: () => [
@@ -107,8 +107,8 @@ void main() {
           importWalletUseCase: mockImportWalletUseCase,
         );
       },
-      seed: () => OnboardingCreateState(
-        mnemonicState: MnemonicGeneratedStateGenerated(mnemonic: mnemonic),
+      seed: () => const OnboardingCreateState(
+        createMnemonicState: CreateMnemonicState.success(mnemonic: mnemonic),
       ),
       act: (bloc) => bloc.add(WalletCreated(password: password)),
       expect: () => [
@@ -138,8 +138,8 @@ void main() {
           importWalletUseCase: mockImportWalletUseCase,
         );
       },
-      seed: () => OnboardingCreateState(
-        mnemonicState: MnemonicGeneratedStateGenerated(mnemonic: mnemonic),
+      seed: () => const OnboardingCreateState(
+        createMnemonicState: CreateMnemonicState.success(mnemonic: mnemonic),
       ),
       act: (bloc) => bloc.add(WalletCreated(password: password)),
       expect: () => [
@@ -172,8 +172,8 @@ void main() {
           importWalletUseCase: mockImportWalletUseCase,
         );
       },
-      seed: () => OnboardingCreateState(
-        mnemonicState: MnemonicGeneratedStateGenerated(mnemonic: mnemonic),
+      seed: () => const OnboardingCreateState(
+        createMnemonicState: CreateMnemonicState.success(mnemonic: mnemonic),
       ),
       act: (bloc) => bloc.add(WalletCreated(password: password)),
       expect: () => [
