@@ -60,7 +60,7 @@ class NumberedWordGrid extends StatelessWidget {
                 margin: itemMargin,
                 child: Container(
                   width: 105,
-                  height: 56,
+                  height: 44,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(18),
                     border: Border.all(color: customTheme.inputBorderColor),
@@ -69,7 +69,7 @@ class NumberedWordGrid extends StatelessWidget {
                   child: Row(
                     children: [
                       Padding(
-                        padding: const EdgeInsets.only(left: 6.0),
+                        padding: const EdgeInsets.only(left: 12.0),
                         child: Text(
                           "${wordIndex + 1}.",
                           style: TextStyle(
@@ -289,13 +289,13 @@ class ShowMnemonicStep extends StatelessWidget {
                     SelectableText(
                       'Seed Phrase',
                       textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.bodyLarge,
+                      style: Theme.of(context).textTheme.titleMedium,
                     ),
                     const SizedBox(height: 10),
                     SelectableText(
                       'Please write down your seed phrase and store it in a secure location. It is the only way to recover your wallet.',
                       textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.bodySmall,
+                      style: Theme.of(context).textTheme.titleSmall,
                     ),
                   ],
                 ),

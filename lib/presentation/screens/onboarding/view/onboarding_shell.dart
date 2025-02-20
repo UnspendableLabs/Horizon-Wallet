@@ -49,9 +49,7 @@ class _OnboardingShellState extends State<OnboardingShell> {
   @override
   Widget build(BuildContext context) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isWideScreen = screenWidth > 500;
+    final isSmallScreen = MediaQuery.of(context).size.width < 500;
 
     final shellContent = Scaffold(
       appBar: AppBar(
@@ -71,7 +69,7 @@ class _OnboardingShellState extends State<OnboardingShell> {
               // Step indicators
               Padding(
                 padding:
-                    EdgeInsets.symmetric(horizontal: isWideScreen ? 30 : 16),
+                    EdgeInsets.symmetric(horizontal: isSmallScreen ? 16 : 30),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: List.generate(widget.steps.length, (index) {
@@ -101,7 +99,7 @@ class _OnboardingShellState extends State<OnboardingShell> {
               // Bottom buttons
               Padding(
                 padding: EdgeInsets.symmetric(
-                    vertical: 30, horizontal: isWideScreen ? 30 : 16),
+                    vertical: 30, horizontal: isSmallScreen ? 20 : 40),
                 child: Row(
                   children: [
                     Expanded(
@@ -131,7 +129,7 @@ class _OnboardingShellState extends State<OnboardingShell> {
       ),
     );
 
-    if (!isWideScreen) {
+    if (isSmallScreen) {
       return shellContent;
     }
 

@@ -185,40 +185,43 @@ class _ChooseFormatStepState extends State<ChooseFormatStep> {
             children: [
               SelectableText(
                 'Import Your Wallet',
-                style: Theme.of(context).textTheme.bodyLarge,
+                style: Theme.of(context).textTheme.titleMedium,
               ),
               const SizedBox(height: 10),
               SelectableText(
                 'Choose the format of your recovery phrase',
-                style: Theme.of(context).textTheme.bodySmall,
+                style: Theme.of(context).textTheme.titleSmall,
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 14),
-              HorizonRedesignDropdown<String>(
-                hintText: 'Wallet Type',
-                selectedValue: selectedFormat,
-                onChanged: (value) {
-                  if (value != null) {
-                    setState(() {
-                      selectedFormat = value;
-                    });
-                    context.read<OnboardingImportBloc>().add(
-                          ImportFormatChanged(walletType: selectedFormat!),
-                        );
-                  }
-                },
-                items: [
-                  DropdownMenuItem(
-                    value: WalletType.horizon.name,
-                    child: Text(WalletType.horizon.description,
-                        style: Theme.of(context).textTheme.bodyMedium),
-                  ),
-                  DropdownMenuItem(
-                    value: WalletType.bip32.name,
-                    child: Text(WalletType.bip32.description,
-                        style: Theme.of(context).textTheme.bodyMedium),
-                  ),
-                ],
+              SizedBox(
+                width: double.infinity,
+                child: HorizonRedesignDropdown<String>(
+                  hintText: 'Wallet Type',
+                  selectedValue: selectedFormat,
+                  onChanged: (value) {
+                    if (value != null) {
+                      setState(() {
+                        selectedFormat = value;
+                      });
+                      context.read<OnboardingImportBloc>().add(
+                            ImportFormatChanged(walletType: selectedFormat!),
+                          );
+                    }
+                  },
+                  items: [
+                    DropdownMenuItem(
+                      value: WalletType.horizon.name,
+                      child: Text(WalletType.horizon.description,
+                          style: Theme.of(context).textTheme.bodySmall),
+                    ),
+                    DropdownMenuItem(
+                      value: WalletType.bip32.name,
+                      child: Text(WalletType.bip32.description,
+                          style: Theme.of(context).textTheme.bodySmall),
+                    ),
+                  ],
+                ),
               ),
             ],
           ),

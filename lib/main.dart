@@ -568,16 +568,16 @@ class MyApp extends StatelessWidget {
         color: Colors.black,
       ),
       textTheme: const TextTheme(
-          bodyLarge: TextStyle(
+          titleMedium: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.w700,
             color: Colors.black,
           ),
-          bodySmall: TextStyle(
+          titleSmall: TextStyle(
             fontSize: 12,
             color: subtitleLightTextColor,
           ),
-          bodyMedium: TextStyle(
+          bodySmall: TextStyle(
             fontSize: 12,
             color: Colors.black,
           )),
@@ -655,16 +655,16 @@ class MyApp extends StatelessWidget {
         color: Colors.white,
       ),
       textTheme: const TextTheme(
-          bodyLarge: TextStyle(
+          titleMedium: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.w700,
             color: Colors.white,
           ),
-          bodySmall: TextStyle(
+          titleSmall: TextStyle(
             fontSize: 12,
             color: subtitleDarkTextColor,
           ),
-          bodyMedium: TextStyle(
+          bodySmall: TextStyle(
             fontSize: 12,
             color: Colors.white,
           )),

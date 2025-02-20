@@ -77,14 +77,14 @@ class SeedInputState extends State<SeedInput> {
                 SelectableText(
                   widget.title ?? 'Please confirm your seed phrase',
                   textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.bodyLarge,
+                  style: Theme.of(context).textTheme.titleMedium,
                 ),
                 if (widget.subtitle != null) ...[
                   const SizedBox(height: 10),
                   SelectableText(
                     widget.subtitle!,
                     textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.bodySmall,
+                    style: Theme.of(context).textTheme.titleSmall,
                   ),
                 ],
               ],
@@ -106,7 +106,7 @@ class SeedInputState extends State<SeedInput> {
             ),
             label: Text(
               _showSeedPhrase ? 'Hide Phrase' : 'Show Phrase',
-              style: Theme.of(context).textTheme.bodyMedium,
+              style: Theme.of(context).textTheme.bodySmall,
             ),
           ),
         ),
@@ -179,7 +179,7 @@ class SeedInputState extends State<SeedInput> {
       padding: const EdgeInsets.all(5.0),
       child: Container(
         width: 105,
-        height: 56,
+        height: 44,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(18),
           color: hasText
@@ -201,7 +201,7 @@ class SeedInputState extends State<SeedInput> {
           child: Row(
             children: [
               Padding(
-                padding: const EdgeInsets.only(left: 6.0),
+                padding: const EdgeInsets.only(left: 12.0),
                 child: Text(
                   "${index + 1}.",
                   style: TextStyle(
@@ -222,7 +222,8 @@ class SeedInputState extends State<SeedInput> {
                   onChanged: (value) => handleInput(value, index),
                   decoration: InputDecoration(
                     isDense: true,
-                    contentPadding: const EdgeInsets.only(right: 20),
+                    contentPadding:
+                        const EdgeInsets.symmetric(vertical: 6, horizontal: 0),
                     border: InputBorder.none,
                     hintText: 'Word ${index + 1}',
                     hintStyle: theme.inputDecorationTheme.hintStyle,

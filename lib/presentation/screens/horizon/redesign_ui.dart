@@ -47,7 +47,8 @@ class HorizonGradientButton extends StatelessWidget {
         ),
         child: ElevatedButton(
           onPressed: onPressed,
-          child: Text(buttonText),
+          child: Text(buttonText,
+              style: const TextStyle(fontWeight: FontWeight.w600)),
         ),
       ),
     );
@@ -79,7 +80,11 @@ class HorizonOutlinedButton extends StatelessWidget {
                 foregroundColor: Colors.black,
               ),
         onPressed: onPressed,
-        child: Text(buttonText),
+        child: Text(buttonText,
+            style: TextStyle(
+                fontWeight: isTransparent == true
+                    ? FontWeight.normal
+                    : FontWeight.w600)),
       ),
     );
   }
@@ -302,7 +307,7 @@ class _HorizonRedesignDropdownState<T>
                               .child as Text)
                           .data!
                       : widget.hintText,
-                  style: Theme.of(context).textTheme.bodyMedium,
+                  style: Theme.of(context).textTheme.bodySmall,
                 ),
               ),
               Icon(
