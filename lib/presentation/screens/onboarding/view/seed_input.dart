@@ -135,7 +135,9 @@ class SeedInputState extends State<SeedInput> {
               });
             },
             icon: Icon(
-              _showSeedPhrase ? Icons.visibility_off : Icons.visibility,
+              _showSeedPhrase
+                  ? Icons.visibility_off_outlined
+                  : Icons.visibility_outlined,
             ),
             label: Text(
               _showSeedPhrase ? 'Hide Phrase' : 'Show Phrase',
