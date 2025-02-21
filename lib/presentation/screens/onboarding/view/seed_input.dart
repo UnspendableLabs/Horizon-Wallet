@@ -38,6 +38,11 @@ class SeedInputState extends State<SeedInput> {
   void initState() {
     super.initState();
     for (int i = 0; i < focusNodes.length; i++) {
+      focusNodes[i].addListener(() {
+        // Trigger rebuild when focus changes
+        setState(() {});
+      });
+
       focusNodes[i].onKeyEvent = (node, event) {
         if (event is KeyDownEvent &&
             event.logicalKey == LogicalKeyboardKey.tab) {
@@ -55,6 +60,7 @@ class SeedInputState extends State<SeedInput> {
       controller.dispose();
     }
     for (var node in focusNodes) {
+      node.removeListener(() {}); // Remove listeners
       node.dispose();
     }
     super.dispose();
@@ -177,66 +183,73 @@ class SeedInputState extends State<SeedInput> {
 
     return Padding(
       padding: const EdgeInsets.all(5.0),
-      child: Container(
-        width: 105,
-        height: 44,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(18),
-          color: hasText
-              ? customTheme.inputBackground
-              : customTheme.inputBackgroundEmpty,
-        ),
+      child: MouseRegion(
+        cursor: SystemMouseCursors.text,
         child: Container(
+          width: 105,
+          height: 44,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(18),
-            border: isIncorrect
-                ? Border.all(
-                    color: customTheme.errorColor,
-                    width: 1,
-                  )
-                : isFocused && hasText
-                    ? const GradientBoxBorder(width: 1)
-                    : Border.all(color: customTheme.inputBorderColor),
+            color: hasText
+                ? customTheme.inputBackground
+                : customTheme.inputBackgroundEmpty,
           ),
-          child: Row(
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(left: 12.0),
-                child: Text(
-                  "${index + 1}.",
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.normal,
-                    color: isIncorrect
-                        ? customTheme.errorColor
-                        : theme.inputDecorationTheme.hintStyle?.color,
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(18),
+              border: isIncorrect
+                  ? Border.all(
+                      color: customTheme.errorColor,
+                      width: 1,
+                    )
+                  : isFocused
+                      ? const GradientBoxBorder(width: 1)
+                      : Border.all(color: customTheme.inputBorderColor),
+            ),
+            child: Row(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(left: 12.0),
+                  child: Text(
+                    "${index + 1}.",
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.normal,
+                      color: isIncorrect
+                          ? customTheme.errorColor
+                          : theme.inputDecorationTheme.hintStyle?.color,
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(width: 6),
-              Expanded(
-                child: TextField(
-                  controller: controllers[index],
-                  focusNode: focusNodes[index],
-                  obscureText: !_showSeedPhrase,
-                  onChanged: (value) => handleInput(value, index),
-                  decoration: InputDecoration(
-                    isDense: true,
-                    contentPadding:
-                        const EdgeInsets.symmetric(vertical: 6, horizontal: 0),
-                    border: InputBorder.none,
-                    hintText: 'Word ${index + 1}',
-                    hintStyle: theme.inputDecorationTheme.hintStyle,
-                  ),
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: isIncorrect
-                        ? customTheme.errorColor
-                        : customTheme.inputTextColor,
+                const SizedBox(width: 6),
+                Expanded(
+                  child: TextField(
+                    controller: controllers[index],
+                    focusNode: focusNodes[index],
+                    obscureText: !_showSeedPhrase,
+                    onChanged: (value) => handleInput(value, index),
+                    onTap: () {
+                      FocusScope.of(context).requestFocus(focusNodes[index]);
+                    },
+                    decoration: InputDecoration(
+                      isDense: true,
+                      contentPadding: const EdgeInsets.symmetric(
+                          vertical: 6, horizontal: 0),
+                      border: InputBorder.none,
+                      hintText: 'Word ${index + 1}',
+                      hintStyle: theme.inputDecorationTheme.hintStyle,
+                    ),
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: isIncorrect
+                          ? customTheme.errorColor
+                          : customTheme.inputTextColor,
+                    ),
+                    showCursor: true,
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

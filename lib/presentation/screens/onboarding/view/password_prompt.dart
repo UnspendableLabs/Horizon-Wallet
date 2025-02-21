@@ -45,6 +45,14 @@ class PasswordPromptState extends State<PasswordPrompt> {
     super.initState();
     passwordController.addListener(_onInputChanged);
     passwordConfirmationController.addListener(_onInputChanged);
+
+    // Add focus listeners
+    passwordFocusNode.addListener(() {
+      setState(() {});
+    });
+    confirmPasswordFocusNode.addListener(() {
+      setState(() {});
+    });
   }
 
   void _onInputChanged() {
@@ -60,6 +68,10 @@ class PasswordPromptState extends State<PasswordPrompt> {
     passwordConfirmationController.removeListener(_onInputChanged);
     passwordController.dispose();
     passwordConfirmationController.dispose();
+
+    // Remove focus listeners
+    passwordFocusNode.removeListener(() {});
+    confirmPasswordFocusNode.removeListener(() {});
     passwordFocusNode.dispose();
     confirmPasswordFocusNode.dispose();
     super.dispose();
@@ -166,61 +178,68 @@ class PasswordPromptState extends State<PasswordPrompt> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              height: 56,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(18),
-                color: hasText
-                    ? customTheme.inputBackground
-                    : customTheme.inputBackgroundEmpty,
-              ),
+            MouseRegion(
+              cursor: SystemMouseCursors.text,
               child: Container(
+                height: 56,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(18),
-                  border: hasError
-                      ? Border.all(color: customTheme.errorColor, width: 1)
-                      : focusNode.hasFocus && hasText
-                          ? const GradientBoxBorder(width: 1)
-                          : Border.all(color: customTheme.inputBorderColor),
+                  color: hasText
+                      ? customTheme.inputBackground
+                      : customTheme.inputBackgroundEmpty,
                 ),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: TextFormField(
-                        controller: controller,
-                        focusNode: focusNode,
-                        obscureText: isObscured,
-                        onChanged: (_) => field.didChange(controller.text),
-                        style: TextStyle(
-                          fontSize: 12,
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(18),
+                    border: hasError
+                        ? Border.all(color: customTheme.errorColor, width: 1)
+                        : focusNode.hasFocus
+                            ? const GradientBoxBorder(width: 1)
+                            : Border.all(color: customTheme.inputBorderColor),
+                  ),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: TextFormField(
+                          controller: controller,
+                          focusNode: focusNode,
+                          obscureText: isObscured,
+                          onChanged: (_) => field.didChange(controller.text),
+                          onTap: () {
+                            FocusScope.of(context).requestFocus(focusNode);
+                          },
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: customTheme.inputTextColor,
+                          ),
+                          decoration: InputDecoration(
+                            isDense: theme.inputDecorationTheme.isDense,
+                            contentPadding:
+                                theme.inputDecorationTheme.contentPadding,
+                            border: theme.inputDecorationTheme.border,
+                            hintText: label,
+                            hintStyle: theme.inputDecorationTheme.hintStyle,
+                          ),
+                          showCursor: true,
+                        ),
+                      ),
+                      IconButton(
+                        icon: Icon(
+                          isObscured
+                              ? Icons.visibility_outlined
+                              : Icons.visibility_off_outlined,
                           color: customTheme.inputTextColor,
+                          size: 18,
                         ),
-                        decoration: InputDecoration(
-                          isDense: theme.inputDecorationTheme.isDense,
-                          contentPadding:
-                              theme.inputDecorationTheme.contentPadding,
-                          border: theme.inputDecorationTheme.border,
-                          hintText: label,
-                          hintStyle: theme.inputDecorationTheme.hintStyle,
-                        ),
+                        onPressed: onToggleObscured,
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                        focusNode: FocusNode(skipTraversal: true),
                       ),
-                    ),
-                    IconButton(
-                      icon: Icon(
-                        isObscured
-                            ? Icons.visibility_outlined
-                            : Icons.visibility_off_outlined,
-                        color: customTheme.inputTextColor,
-                        size: 18,
-                      ),
-                      onPressed: onToggleObscured,
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(),
-                      focusNode: FocusNode(skipTraversal: true),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),

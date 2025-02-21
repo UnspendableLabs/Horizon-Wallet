@@ -48,7 +48,7 @@ class HorizonGradientButton extends StatelessWidget {
         child: ElevatedButton(
           onPressed: onPressed,
           child: Text(buttonText,
-              style: const TextStyle(fontWeight: FontWeight.w600)),
+              style: const TextStyle(fontWeight: FontWeight.w500)),
         ),
       ),
     );
@@ -69,6 +69,8 @@ class HorizonOutlinedButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    const isExtension =
+        String.fromEnvironment('HORIZON_IS_EXTENSION') == 'true';
     return SizedBox(
       width: double.infinity,
       height: 62,
@@ -82,7 +84,7 @@ class HorizonOutlinedButton extends StatelessWidget {
         onPressed: onPressed,
         child: Text(buttonText,
             style: TextStyle(
-                fontWeight: isTransparent == true
+                fontWeight: isTransparent == true || isExtension
                     ? FontWeight.normal
                     : FontWeight.w600)),
       ),
@@ -275,46 +277,49 @@ class _HorizonRedesignDropdownState<T>
     final hasValue = widget.selectedValue != null;
     return CompositedTransformTarget(
       link: _layerLink,
-      child: GestureDetector(
-        onTap: _toggleDropdown,
-        child: Container(
-          height: 56,
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(18),
-            border: focusNode.hasFocus
-                ? const GradientBoxBorder(width: 1)
-                : Border.all(
-                    color: isDarkMode
-                        ? inputDarkBorderColor
-                        : inputLightBorderColor),
-            color: hasValue
-                ? (isDarkMode ? inputDarkBackground : inputLightBackground)
-                : (isDarkMode
-                    ? darkThemeBackgroundColor
-                    : lightThemeBackgroundColor),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Expanded(
-                child: Text(
-                  widget.selectedValue != null
-                      ? (widget.items
-                              .firstWhere(
-                                  (item) => item.value == widget.selectedValue)
-                              .child as Text)
-                          .data!
-                      : widget.hintText,
-                  style: Theme.of(context).textTheme.bodySmall,
+      child: MouseRegion(
+        cursor: SystemMouseCursors.click,
+        child: GestureDetector(
+          onTap: _toggleDropdown,
+          child: Container(
+            height: 56,
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(18),
+              border: focusNode.hasFocus
+                  ? const GradientBoxBorder(width: 1)
+                  : Border.all(
+                      color: isDarkMode
+                          ? inputDarkBorderColor
+                          : inputLightBorderColor),
+              color: hasValue
+                  ? (isDarkMode ? inputDarkBackground : inputLightBackground)
+                  : (isDarkMode
+                      ? darkThemeBackgroundColor
+                      : lightThemeBackgroundColor),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Expanded(
+                  child: Text(
+                    widget.selectedValue != null
+                        ? (widget.items
+                                .firstWhere((item) =>
+                                    item.value == widget.selectedValue)
+                                .child as Text)
+                            .data!
+                        : widget.hintText,
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
                 ),
-              ),
-              Icon(
-                _isOpen ? Icons.arrow_drop_up : Icons.arrow_drop_down,
-                size: 18,
-              ),
-            ],
+                Icon(
+                  _isOpen ? Icons.arrow_drop_up : Icons.arrow_drop_down,
+                  size: 18,
+                ),
+              ],
+            ),
           ),
         ),
       ),

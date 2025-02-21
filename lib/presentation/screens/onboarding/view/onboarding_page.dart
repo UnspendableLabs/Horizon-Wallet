@@ -39,10 +39,19 @@ class OnboardingScreenState extends State<OnboardingScreen> {
 class OnboardingView extends StatelessWidget {
   const OnboardingView({super.key});
 
-  String get _animationAsset {
-    return kDebugMode
-        ? 'logo_animation-gradient.json'
-        : 'assets/logo_animation-gradient.json';
+  dynamic buildAnimationAsset() {
+    if (const String.fromEnvironment('HORIZON_IS_EXTENSION') == 'true') {
+      return Image.asset(
+        'assets/app-bar-H-dark-mode.png',
+        fit: BoxFit.contain,
+      );
+    }
+    return Lottie.asset(
+      kDebugMode
+          ? 'logo_animation-gradient.json'
+          : 'assets/logo_animation-gradient.json',
+      fit: BoxFit.contain,
+    );
   }
 
   @override
@@ -64,10 +73,7 @@ class OnboardingView extends StatelessWidget {
                 child: SizedBox(
                   width: 109,
                   height: 116,
-                  child: Lottie.asset(
-                    _animationAsset,
-                    fit: BoxFit.contain,
-                  ),
+                  child: buildAnimationAsset(),
                 ),
               ),
             ),

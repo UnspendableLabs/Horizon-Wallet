@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
-import 'package:horizon/domain/repositories/node_info_repository.dart';
 import 'package:horizon/domain/repositories/config_repository.dart';
+import 'package:horizon/domain/repositories/node_info_repository.dart';
+import 'package:horizon/domain/services/platform_service.dart';
 import 'package:horizon/presentation/common/footer/bloc/footer_bloc.dart';
 import 'package:horizon/presentation/common/footer/bloc/footer_event.dart';
 import 'package:horizon/presentation/common/footer/bloc/footer_state.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:horizon/domain/services/platform_service.dart';
 
 class Footer extends StatelessWidget {
   const Footer({super.key});
@@ -51,7 +51,7 @@ class _FooterState extends State<_Footer> {
 
     TextStyle textStyle() => TextStyle(
           color: isDarkTheme ? Colors.white : Colors.black,
-          fontSize: screenWidth < 500 ? 10 : 16,
+          fontSize: 10,
           fontWeight: FontWeight.w300,
         );
 

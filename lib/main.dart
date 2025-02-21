@@ -562,6 +562,11 @@ class MyApp extends StatelessWidget {
             borderRadius: BorderRadius.circular(8),
           ),
           backgroundColor: transparentPurpleButtonColor,
+          textStyle: const TextStyle(
+            color: Colors.black,
+          ),
+          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          iconColor: Colors.black,
         ),
       ),
       iconTheme: const IconThemeData(
@@ -649,6 +654,11 @@ class MyApp extends StatelessWidget {
             borderRadius: BorderRadius.circular(8),
           ),
           backgroundColor: Colors.transparent,
+          textStyle: const TextStyle(
+            color: Colors.white,
+          ),
+          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          iconColor: Colors.white,
         ),
       ),
       iconTheme: const IconThemeData(
