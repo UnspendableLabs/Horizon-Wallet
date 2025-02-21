@@ -1,4 +1,3 @@
-import 'dart:math' show pi;
 
 import 'package:flutter/material.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
@@ -44,8 +43,8 @@ class _HorizonGradientButtonState extends State<HorizonGradientButton> {
                           Color.fromRGBO(210, 166, 176, 0.50),
                         ]
                       : const [
-                          Color(0xFF306E94),
                           Color(0xFF563A8E),
+                          Color(0xFF306E94),
                         ]
                   : brightness == Brightness.dark
                       ? const [
@@ -55,15 +54,13 @@ class _HorizonGradientButtonState extends State<HorizonGradientButton> {
                           createButtonDarkGradient4,
                         ]
                       : const [
-                          createButtonLightGradient1,
                           createButtonLightGradient3,
+                          createButtonLightGradient1,
                         ],
               stops: brightness == Brightness.dark
-                  ? const [0.0, 0.325, 0.65, 1.0] // For 4-color gradients
-                  : const [0.0, 1.0], // For 2-color gradients
-              transform: brightness == Brightness.dark
-                  ? null
-                  : const GradientRotation(139.18 * pi / 180),
+                  ? const [0.0, 0.325, 0.65, 1.0]
+                  : const [0.0, 1.0],
+              transform: null,
             ),
             borderRadius: BorderRadius.circular(50),
             boxShadow: isHovered
