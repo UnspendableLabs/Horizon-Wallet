@@ -3,7 +3,7 @@ import 'dart:math' show pi;
 import 'package:flutter/material.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
 
-class HorizonGradientButton extends StatelessWidget {
+class HorizonGradientButton extends StatefulWidget {
   final VoidCallback? onPressed;
   final String buttonText;
 
@@ -14,48 +14,90 @@ class HorizonGradientButton extends StatelessWidget {
   });
 
   @override
+  State<HorizonGradientButton> createState() => _HorizonGradientButtonState();
+}
+
+class _HorizonGradientButtonState extends State<HorizonGradientButton> {
+  bool isHovered = false;
+
+  @override
   Widget build(BuildContext context) {
     final brightness = Theme.of(context).brightness;
 
-    return SizedBox(
-      width: double.infinity,
-      height: 62,
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.centerLeft,
-            end: Alignment.centerRight,
-            colors: brightness == Brightness.dark
+    return MouseRegion(
+      onEnter: (_) => setState(() => isHovered = true),
+      onExit: (_) => setState(() => isHovered = false),
+      child: SizedBox(
+        width: double.infinity,
+        height: 62,
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+              colors: isHovered
+                  ? const [
+                      Color.fromRGBO(223, 217, 191, 0.50),
+                      Color.fromRGBO(238, 208, 154, 0.50),
+                      Color.fromRGBO(238, 179, 149, 0.50),
+                      Color.fromRGBO(210, 166, 176, 0.50),
+                    ]
+                  : brightness == Brightness.dark
+                      ? const [
+                          createButtonDarkGradient1,
+                          createButtonDarkGradient2,
+                          createButtonDarkGradient3,
+                          createButtonDarkGradient4,
+                        ]
+                      : const [
+                          createButtonLightGradient1,
+                          createButtonLightGradient3,
+                        ],
+              stops: brightness == Brightness.dark && !isHovered
+                  ? const [0.0, 0.325, 0.65, 1.0]
+                  : isHovered
+                      ? const [0.0, 0.325, 0.65, 1.0]
+                      : const [0.0, 1.0],
+              transform: brightness == Brightness.dark || isHovered
+                  ? null
+                  : const GradientRotation(139.18 * pi / 180),
+            ),
+            borderRadius: BorderRadius.circular(50),
+            boxShadow: isHovered
                 ? const [
-                    createButtonDarkGradient1,
-                    createButtonDarkGradient2,
-                    createButtonDarkGradient3,
-                    createButtonDarkGradient4,
+                    BoxShadow(
+                      color: Color.fromRGBO(255, 255, 255, 0.20),
+                      blurRadius: 10,
+                    )
                   ]
-                : const [
-                    createButtonLightGradient1,
-                    createButtonLightGradient3,
-                  ],
-            stops: brightness == Brightness.dark
-                ? const [0.0, 0.325, 0.65, 1.0]
-                : const [0.0, 1.0],
-            transform: brightness == Brightness.dark
-                ? null
-                : const GradientRotation(139.18 * pi / 180),
+                : null,
           ),
-          borderRadius: BorderRadius.circular(50),
-        ),
-        child: ElevatedButton(
-          onPressed: onPressed,
-          child: Text(buttonText,
-              style: const TextStyle(fontWeight: FontWeight.w500)),
+          child: ElevatedButton(
+            onPressed: widget.onPressed,
+            style: ButtonStyle(
+              elevation: WidgetStateProperty.all(0),
+              backgroundColor: WidgetStateProperty.all(Colors.transparent),
+              foregroundColor: WidgetStateProperty.all(
+                  Theme.of(context).textTheme.labelLarge?.color),
+              padding: WidgetStateProperty.all(EdgeInsets.zero),
+              shape: WidgetStateProperty.all(
+                RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(50),
+                ),
+              ),
+              overlayColor: WidgetStateProperty.all(Colors.transparent),
+              minimumSize: WidgetStateProperty.all(const Size.fromHeight(62)),
+            ),
+            child: Text(widget.buttonText,
+                style: const TextStyle(fontWeight: FontWeight.w500)),
+          ),
         ),
       ),
     );
   }
 }
 
-class HorizonOutlinedButton extends StatelessWidget {
+class HorizonOutlinedButton extends StatefulWidget {
   final VoidCallback? onPressed;
   final String buttonText;
   final bool? isTransparent;
@@ -68,25 +110,61 @@ class HorizonOutlinedButton extends StatelessWidget {
   });
 
   @override
+  State<HorizonOutlinedButton> createState() => _HorizonOutlinedButtonState();
+}
+
+class _HorizonOutlinedButtonState extends State<HorizonOutlinedButton> {
+  bool isHovered = false;
+
+  @override
   Widget build(BuildContext context) {
     const isExtension =
         String.fromEnvironment('HORIZON_IS_EXTENSION') == 'true';
-    return SizedBox(
-      width: double.infinity,
-      height: 62,
-      child: FilledButton(
-        style: isTransparent == true
-            ? Theme.of(context).filledButtonTheme.style
-            : FilledButton.styleFrom(
-                backgroundColor: tealButtonColor,
-                foregroundColor: Colors.black,
-              ),
-        onPressed: onPressed,
-        child: Text(buttonText,
-            style: TextStyle(
-                fontWeight: isTransparent == true || isExtension
+
+    return MouseRegion(
+      onEnter: widget.isTransparent == true
+          ? (_) => setState(() => isHovered = true)
+          : null,
+      onExit: widget.isTransparent == true
+          ? (_) => setState(() => isHovered = false)
+          : null,
+      child: SizedBox(
+        width: double.infinity,
+        height: 62,
+        child: Container(
+          decoration: widget.isTransparent == true && isHovered
+              ? BoxDecoration(
+                  borderRadius: BorderRadius.circular(50),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Color.fromRGBO(255, 255, 255, 0.10),
+                      blurRadius: 10,
+                    )
+                  ],
+                )
+              : null,
+          child: FilledButton(
+            style: widget.isTransparent == true ||
+                    (widget.isTransparent == true && isHovered)
+                ? Theme.of(context).filledButtonTheme.style
+                : FilledButton.styleFrom(
+                    backgroundColor: tealButtonColor,
+                    foregroundColor: Colors.black,
+                  ),
+            onPressed: widget.onPressed,
+            child: Text(
+              widget.buttonText,
+              style: TextStyle(
+                fontWeight: widget.isTransparent == true || isExtension
                     ? FontWeight.normal
-                    : FontWeight.w600)),
+                    : FontWeight.w600,
+                color: widget.isTransparent == true
+                    ? Theme.of(context).textTheme.bodySmall?.color
+                    : null,
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }

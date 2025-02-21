@@ -28,9 +28,36 @@ class SeedInput extends StatefulWidget {
   State<SeedInput> createState() => SeedInputState();
 }
 
+class _SeedWordController extends TextEditingController {
+  bool _obscureText = false;
+
+  set obscureText(bool value) {
+    if (_obscureText != value) {
+      _obscureText = value;
+      notifyListeners();
+    }
+  }
+
+  @override
+  TextSpan buildTextSpan({
+    required BuildContext context,
+    TextStyle? style,
+    required bool withComposing,
+  }) {
+    if (text.isEmpty) {
+      return TextSpan(style: style, text: '');
+    }
+
+    final String displayText = _obscureText ? '••••' : text;
+    return TextSpan(style: style, text: displayText);
+  }
+}
+
 class SeedInputState extends State<SeedInput> {
-  List<TextEditingController> controllers =
-      List.generate(12, (_) => TextEditingController());
+  late final List<_SeedWordController> controllers = List.generate(
+    12,
+    (_) => _SeedWordController(),
+  );
   List<FocusNode> focusNodes = List.generate(12, (_) => FocusNode());
   bool _showSeedPhrase = false;
 
@@ -224,9 +251,10 @@ class SeedInputState extends State<SeedInput> {
                 const SizedBox(width: 6),
                 Expanded(
                   child: TextField(
-                    controller: controllers[index],
+                    controller: controllers[index]
+                      ..obscureText = !_showSeedPhrase,
                     focusNode: focusNodes[index],
-                    obscureText: !_showSeedPhrase,
+                    obscureText: false,
                     onChanged: (value) => handleInput(value, index),
                     onTap: () {
                       FocusScope.of(context).requestFocus(focusNodes[index]);
