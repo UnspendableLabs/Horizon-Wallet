@@ -554,6 +554,10 @@ class MyApp extends StatelessWidget {
             fontSize: 16,
             fontWeight: FontWeight.w400,
           ),
+          disabledBackgroundColor: const Color.fromRGBO(10, 10, 10, 0.16),
+          disabledForegroundColor: Colors.white.withOpacity(0.5),
+        ).copyWith(
+          overlayColor: WidgetStateProperty.all(Colors.transparent),
         ),
       ),
       textButtonTheme: TextButtonThemeData(
@@ -646,6 +650,8 @@ class MyApp extends StatelessWidget {
             fontSize: 16,
             fontWeight: FontWeight.w400,
           ),
+          disabledBackgroundColor: const Color.fromRGBO(254, 251, 249, 0.16),
+          disabledForegroundColor: Colors.white.withOpacity(0.5),
         ).copyWith(
           overlayColor: WidgetStateProperty.all(Colors.transparent),
         ),

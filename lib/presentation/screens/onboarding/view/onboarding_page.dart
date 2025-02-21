@@ -5,12 +5,15 @@ import 'package:get_it/get_it.dart';
 import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
+import 'package:horizon/domain/repositories/config_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/presentation/common/footer/view/footer.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 import 'package:horizon/presentation/screens/onboarding/bloc/onboarding_bloc.dart';
 import 'package:horizon/presentation/screens/onboarding/bloc/onboarding_events.dart';
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
+import 'package:horizon/presentation/session/theme/bloc/theme_bloc.dart';
+import 'package:horizon/presentation/session/theme/bloc/theme_event.dart';
 import 'package:horizon/remote_data_bloc/remote_data_state.dart';
 import 'package:lottie/lottie.dart';
 
@@ -40,7 +43,8 @@ class OnboardingView extends StatelessWidget {
   const OnboardingView({super.key});
 
   dynamic buildAnimationAsset() {
-    if (const String.fromEnvironment('HORIZON_IS_EXTENSION') == 'true') {
+    final Config config = GetIt.I<Config>();
+    if (config.isWebExtension) {
       return Image.asset(
         'assets/app-bar-H-dark-mode.png',
         fit: BoxFit.contain,
@@ -54,6 +58,72 @@ class OnboardingView extends StatelessWidget {
     );
   }
 
+  Widget _buildThemeToggle(BuildContext context, bool isDarkMode) {
+    final Config config = GetIt.I<Config>();
+    if (config.network != Network.testnet4) return const SizedBox.shrink();
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 16.0, right: 16.0),
+      child: Align(
+        alignment: Alignment.topRight,
+        child: Container(
+          width: 80,
+          height: 40,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              MouseRegion(
+                cursor: SystemMouseCursors.click,
+                child: GestureDetector(
+                  onTap: () {
+                    if (isDarkMode) {
+                      context.read<ThemeBloc>().add(ThemeToggled());
+                    }
+                  },
+                  child: Container(
+                    width: 30,
+                    height: 30,
+                    decoration: const BoxDecoration(
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.wb_sunny,
+                      size: 20,
+                    ),
+                  ),
+                ),
+              ),
+              MouseRegion(
+                cursor: SystemMouseCursors.click,
+                child: GestureDetector(
+                  onTap: () {
+                    if (!isDarkMode) {
+                      context.read<ThemeBloc>().add(ThemeToggled());
+                    }
+                  },
+                  child: Container(
+                    width: 30,
+                    height: 30,
+                    decoration: const BoxDecoration(
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.dark_mode,
+                      size: 20,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
@@ -62,94 +132,106 @@ class OnboardingView extends StatelessWidget {
 
     final pageContent = Scaffold(
       bottomNavigationBar: const Footer(),
-      body: Padding(
-        padding: EdgeInsets.symmetric(horizontal: isWideScreen ? 30 : 16),
-        child: Column(
-          children: [
-            const Spacer(flex: 1),
-            Expanded(
-              flex: 4,
-              child: Center(
-                child: SizedBox(
-                  width: 109,
-                  height: 116,
-                  child: buildAnimationAsset(),
-                ),
-              ),
-            ),
-            const Spacer(flex: 1),
-            Padding(
-              padding: const EdgeInsets.only(bottom: 32),
+      body: Column(
+        children: [
+          _buildThemeToggle(context, isDarkMode),
+          Expanded(
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: isWideScreen ? 30 : 16),
               child: Column(
-                mainAxisSize: MainAxisSize.min,
                 children: [
-                  BlocBuilder<OnboardingBloc, RemoteDataState<bool>>(
-                    builder: (context, state) {
-                      final isDisabled = state.maybeWhen(
-                        error: (_) => true,
-                        orElse: () => false,
-                      );
-                      return Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          if (state.maybeWhen(
-                            error: (message) => true,
-                            orElse: () => false,
-                          )) ...[
-                            SizedBox(
-                              width:
-                                  screenWidth > 500 ? screenWidth * 0.5 : null,
-                              child: SelectableText(
-                                state.maybeWhen(
-                                  error: (message) => message,
-                                  orElse: () => '',
+                  const Spacer(flex: 1),
+                  Expanded(
+                    flex: 4,
+                    child: Center(
+                      child: SizedBox(
+                        width: 109,
+                        height: 116,
+                        child: buildAnimationAsset(),
+                      ),
+                    ),
+                  ),
+                  const Spacer(flex: 1),
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 32),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        BlocBuilder<OnboardingBloc, RemoteDataState<bool>>(
+                          builder: (context, state) {
+                            final isDisabled = state.maybeWhen(
+                              error: (_) => true,
+                              orElse: () => false,
+                            );
+                            return Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                if (state.maybeWhen(
+                                  error: (message) => true,
+                                  orElse: () => false,
+                                )) ...[
+                                  SizedBox(
+                                    width: screenWidth > 500
+                                        ? screenWidth * 0.5
+                                        : null,
+                                    child: SelectableText(
+                                      state.maybeWhen(
+                                        error: (message) => message,
+                                        orElse: () => '',
+                                      ),
+                                      style: const TextStyle(
+                                        color: Colors.red,
+                                        fontSize: 14,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 20),
+                                ],
+                                SizedBox(
+                                  width: screenWidth > 500
+                                      ? screenWidth * 0.5
+                                      : null,
+                                  child: HorizonGradientButton(
+                                    onPressed: isDisabled
+                                        ? null
+                                        : () {
+                                            final session = context
+                                                .read<SessionStateCubit>();
+                                            session.onOnboardingCreate();
+                                          },
+                                    buttonText: 'Create a new wallet',
+                                  ),
                                 ),
-                                style: const TextStyle(
-                                  color: Colors.red,
-                                  fontSize: 14,
+                                const SizedBox(height: 16),
+                                SizedBox(
+                                  width: screenWidth > 500
+                                      ? screenWidth * 0.5
+                                      : null,
+                                  child: HorizonOutlinedButton(
+                                    isTransparent: true,
+                                    onPressed: isDisabled
+                                        ? null
+                                        : () {
+                                            final session = context
+                                                .read<SessionStateCubit>();
+                                            session.onOnboardingImport();
+                                          },
+                                    buttonText: 'Load seed phrase',
+                                  ),
                                 ),
-                                textAlign: TextAlign.center,
-                              ),
-                            ),
-                            const SizedBox(height: 20),
-                          ],
-                          SizedBox(
-                            width: screenWidth > 500 ? screenWidth * 0.5 : null,
-                            child: HorizonGradientButton(
-                              onPressed: isDisabled
-                                  ? null
-                                  : () {
-                                      final session =
-                                          context.read<SessionStateCubit>();
-                                      session.onOnboardingCreate();
-                                    },
-                              buttonText: 'Create a new wallet',
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          SizedBox(
-                            width: screenWidth > 500 ? screenWidth * 0.5 : null,
-                            child: HorizonOutlinedButton(
-                              isTransparent: true,
-                              onPressed: isDisabled
-                                  ? null
-                                  : () {
-                                      final session =
-                                          context.read<SessionStateCubit>();
-                                      session.onOnboardingImport();
-                                    },
-                              buttonText: 'Load seed phrase',
-                            ),
-                          ),
-                        ],
-                      );
-                    },
+                              ],
+                            );
+                          },
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
 

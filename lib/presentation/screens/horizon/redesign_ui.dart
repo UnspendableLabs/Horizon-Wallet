@@ -36,12 +36,17 @@ class _HorizonGradientButtonState extends State<HorizonGradientButton> {
               begin: Alignment.centerLeft,
               end: Alignment.centerRight,
               colors: isHovered
-                  ? const [
-                      Color.fromRGBO(223, 217, 191, 0.50),
-                      Color.fromRGBO(238, 208, 154, 0.50),
-                      Color.fromRGBO(238, 179, 149, 0.50),
-                      Color.fromRGBO(210, 166, 176, 0.50),
-                    ]
+                  ? brightness == Brightness.dark
+                      ? const [
+                          Color.fromRGBO(223, 217, 191, 0.50),
+                          Color.fromRGBO(238, 208, 154, 0.50),
+                          Color.fromRGBO(238, 179, 149, 0.50),
+                          Color.fromRGBO(210, 166, 176, 0.50),
+                        ]
+                      : const [
+                          Color(0xFF306E94),
+                          Color(0xFF563A8E),
+                        ]
                   : brightness == Brightness.dark
                       ? const [
                           createButtonDarkGradient1,
@@ -53,12 +58,10 @@ class _HorizonGradientButtonState extends State<HorizonGradientButton> {
                           createButtonLightGradient1,
                           createButtonLightGradient3,
                         ],
-              stops: brightness == Brightness.dark && !isHovered
-                  ? const [0.0, 0.325, 0.65, 1.0]
-                  : isHovered
-                      ? const [0.0, 0.325, 0.65, 1.0]
-                      : const [0.0, 1.0],
-              transform: brightness == Brightness.dark || isHovered
+              stops: brightness == Brightness.dark
+                  ? const [0.0, 0.325, 0.65, 1.0] // For 4-color gradients
+                  : const [0.0, 1.0], // For 2-color gradients
+              transform: brightness == Brightness.dark
                   ? null
                   : const GradientRotation(139.18 * pi / 180),
             ),
@@ -120,35 +123,50 @@ class _HorizonOutlinedButtonState extends State<HorizonOutlinedButton> {
   Widget build(BuildContext context) {
     const isExtension =
         String.fromEnvironment('HORIZON_IS_EXTENSION') == 'true';
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     return MouseRegion(
-      onEnter: widget.isTransparent == true
+      onEnter: widget.onPressed != null
           ? (_) => setState(() => isHovered = true)
           : null,
-      onExit: widget.isTransparent == true
+      onExit: widget.onPressed != null
           ? (_) => setState(() => isHovered = false)
           : null,
+      cursor: widget.onPressed != null
+          ? SystemMouseCursors.click
+          : SystemMouseCursors.basic,
       child: SizedBox(
         width: double.infinity,
         height: 62,
         child: Container(
-          decoration: widget.isTransparent == true && isHovered
-              ? BoxDecoration(
-                  borderRadius: BorderRadius.circular(50),
-                  boxShadow: const [
-                    BoxShadow(
-                      color: Color.fromRGBO(255, 255, 255, 0.10),
-                      blurRadius: 10,
-                    )
-                  ],
-                )
-              : null,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(50),
+            boxShadow: (isHovered && widget.onPressed != null)
+                ? [
+                    if (widget.isTransparent == true)
+                      BoxShadow(
+                        color: isDarkMode
+                            ? const Color.fromRGBO(255, 255, 255, 0.10)
+                            : const Color.fromRGBO(0, 0, 0, 0.15),
+                        blurRadius: 10,
+                      )
+                    else
+                      BoxShadow(
+                        color: isDarkMode
+                            ? const Color.fromRGBO(255, 255, 255, 0.20)
+                            : const Color.fromRGBO(0, 0, 0, 0.15),
+                        blurRadius: 10,
+                      )
+                  ]
+                : null,
+          ),
           child: FilledButton(
-            style: widget.isTransparent == true ||
-                    (widget.isTransparent == true && isHovered)
+            style: widget.isTransparent == true
                 ? Theme.of(context).filledButtonTheme.style
                 : FilledButton.styleFrom(
-                    backgroundColor: tealButtonColor,
+                    backgroundColor: isHovered
+                        ? const Color.fromRGBO(30, 231, 197, 0.50)
+                        : tealButtonColor,
                     foregroundColor: Colors.black,
                   ),
             onPressed: widget.onPressed,
