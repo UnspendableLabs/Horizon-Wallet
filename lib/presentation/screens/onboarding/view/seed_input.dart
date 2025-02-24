@@ -98,6 +98,7 @@ class SeedInputState extends State<SeedInput> {
     final isSmallScreen = MediaQuery.of(context).size.width < 500;
     final theme = Theme.of(context);
     final customTheme = theme.extension<CustomThemeExtension>()!;
+    final isDarkMode = theme.brightness == Brightness.dark;
 
     return Column(
       children: [
@@ -128,7 +129,11 @@ class SeedInputState extends State<SeedInput> {
         Padding(
           padding: const EdgeInsets.all(10.0),
           child: TextButton.icon(
-            style: Theme.of(context).textButtonTheme.style,
+            style: Theme.of(context).textButtonTheme.style?.copyWith(
+                  backgroundColor: WidgetStateProperty.all(
+                    isDarkMode ? Colors.transparent : transparentPurple8,
+                  ),
+                ),
             onPressed: () {
               setState(() {
                 _showSeedPhrase = !_showSeedPhrase;

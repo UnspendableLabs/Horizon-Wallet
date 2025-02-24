@@ -22,7 +22,7 @@ const transparentPurple8 = Color.fromRGBO(137, 146, 246, 0.08);
 
 // Inputs
 const grey5 = Color(0xFF191919);
-const transparentWhite3 = Color.fromRGBO(254, 251, 249, 0.33);
+const transparentWhite33 = Color.fromRGBO(254, 251, 249, 0.33);
 const transparentWhite8 = Color.fromRGBO(254, 251, 249, 0.08);
 
 const grey1 = Color(0xFFCED3D7);

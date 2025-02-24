@@ -565,12 +565,17 @@ class MyApp extends StatelessWidget {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(8),
           ),
-          backgroundColor: transparentPurple8,
-          textStyle: const TextStyle(
-            color: Colors.black,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          minimumSize: Size.zero,
           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-          iconColor: Colors.black,
+          textStyle: const TextStyle(
+            fontFamily: 'Montserrat',
+            fontSize: 8,
+            fontWeight: FontWeight.w500,
+            height: 1.2, // This gives us 9.6px line height (8 * 1.2 = 9.6)
+            letterSpacing: 0,
+          ),
+          foregroundColor: transparentBlack33,
         ),
       ),
       iconTheme: const IconThemeData(
@@ -661,12 +666,17 @@ class MyApp extends StatelessWidget {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(8),
           ),
-          backgroundColor: Colors.transparent,
-          textStyle: const TextStyle(
-            color: Colors.white,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          minimumSize: Size.zero,
           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-          iconColor: Colors.white,
+          textStyle: const TextStyle(
+            fontFamily: 'Montserrat',
+            fontSize: 8,
+            fontWeight: FontWeight.w500,
+            height: 1.2, // This gives us 9.6px line height (8 * 1.2 = 9.6)
+            letterSpacing: 0,
+          ),
+          foregroundColor: transparentWhite33,
         ),
       ),
       iconTheme: const IconThemeData(
@@ -705,7 +715,7 @@ class MyApp extends StatelessWidget {
         hintStyle: TextStyle(
           fontSize: 12,
           fontWeight: FontWeight.normal,
-          color: transparentWhite3,
+          color: transparentWhite33,
         ),
       ),
       extensions: {
