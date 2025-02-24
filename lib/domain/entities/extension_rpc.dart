@@ -23,3 +23,22 @@ class RPCSignPsbtSuccessCallbackArgs {
 
 typedef RPCSignPsbtSuccessCallback = void Function(
     RPCSignPsbtSuccessCallbackArgs);
+
+class RPCSignMessageSuccessCallbackArgs {
+  final int tabId;
+  final String requestId;
+  final String signature;
+  final String messageHash;
+  final String address;
+
+  RPCSignMessageSuccessCallbackArgs(
+      {required this.tabId,
+      required this.requestId,
+      required this.signature,
+      required this.messageHash,
+      required this.address,
+      });
+}
+
+typedef RPCSignMessageSuccessCallback = void Function(
+    RPCSignMessageSuccessCallbackArgs);
