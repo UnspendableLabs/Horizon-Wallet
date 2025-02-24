@@ -21,39 +21,39 @@ import 'package:horizon/domain/repositories/action_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/config_repository.dart';
 import 'package:horizon/domain/repositories/imported_address_repository.dart';
+import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
+import 'package:horizon/domain/repositories/settings_repository.dart';
 import 'package:horizon/domain/repositories/version_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
-import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/error_service.dart';
 import 'package:horizon/domain/services/imported_address_service.dart';
+import 'package:horizon/domain/services/secure_kv_service.dart';
 import 'package:horizon/domain/services/wallet_service.dart';
 import 'package:horizon/presentation/common/footer/view/footer.dart';
+import 'package:horizon/presentation/common/redesign_colors.dart';
+import 'package:horizon/presentation/common/theme_extension.dart';
+import 'package:horizon/presentation/inactivity_monitor/inactivity_monitor_bloc.dart';
+import 'package:horizon/presentation/inactivity_monitor/inactivity_monitor_view.dart';
 import 'package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_bloc.dart';
 import 'package:horizon/presentation/screens/dashboard/address_form/bloc/address_form_bloc.dart';
 import 'package:horizon/presentation/screens/dashboard/import_address_pk_form/bloc/import_address_pk_bloc.dart';
 import 'package:horizon/presentation/screens/dashboard/view/dashboard_page.dart';
+import 'package:horizon/presentation/screens/login/login_view.dart';
 import 'package:horizon/presentation/screens/onboarding/view/onboarding_page.dart';
 import 'package:horizon/presentation/screens/onboarding_create/view/onboarding_create_page.dart';
 import 'package:horizon/presentation/screens/onboarding_import/view/onboarding_import_page.dart';
 import 'package:horizon/presentation/screens/privacy_policy.dart';
-import 'package:horizon/presentation/screens/login/login_view.dart';
+import 'package:horizon/presentation/screens/settings/settings_view.dart';
 import 'package:horizon/presentation/screens/tos.dart';
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:horizon/presentation/session/bloc/session_state.dart';
 import 'package:horizon/presentation/session/theme/bloc/theme_bloc.dart';
 import 'package:horizon/presentation/version_cubit.dart';
-import 'package:horizon/presentation/screens/settings/settings_view.dart';
 import 'package:horizon/setup.dart';
 import 'package:pub_semver/pub_semver.dart';
-
-import 'package:horizon/presentation/inactivity_monitor/inactivity_monitor_bloc.dart';
-import 'package:horizon/presentation/inactivity_monitor/inactivity_monitor_view.dart';
-
-import 'package:horizon/domain/repositories/settings_repository.dart';
-import 'package:horizon/domain/services/secure_kv_service.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 final _sectionNavigatorKey = GlobalKey<NavigatorState>();
@@ -522,6 +522,198 @@ class MyApp extends StatelessWidget {
     super.key,
   });
 
+  ThemeData _buildLightTheme() {
+    return ThemeData.light().copyWith(
+      scaffoldBackgroundColor: offWhite,
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          elevation: 0,
+          backgroundColor: Colors.transparent,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(50),
+          ),
+          padding: const EdgeInsets.all(20),
+          foregroundColor: Colors.white,
+          textStyle: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ),
+      filledButtonTheme: FilledButtonThemeData(
+        style: FilledButton.styleFrom(
+          elevation: 0,
+          backgroundColor: white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(50),
+            side: BorderSide.none,
+          ),
+          padding: const EdgeInsets.all(20),
+          foregroundColor: offBlack,
+          textStyle: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w400,
+          ),
+          disabledBackgroundColor: const Color.fromRGBO(10, 10, 10, 0.16),
+          disabledForegroundColor: Colors.white.withOpacity(0.5),
+        ).copyWith(
+          overlayColor: WidgetStateProperty.all(Colors.transparent),
+        ),
+      ),
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+          backgroundColor: transparentPurple8,
+          textStyle: const TextStyle(
+            color: Colors.black,
+          ),
+          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          iconColor: Colors.black,
+        ),
+      ),
+      iconTheme: const IconThemeData(
+        color: Colors.black,
+      ),
+      textTheme: const TextTheme(
+          titleMedium: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w700,
+            color: Colors.black,
+          ),
+          titleSmall: TextStyle(
+            fontSize: 12,
+            color: transparentBlack66,
+          ),
+          bodySmall: TextStyle(
+            fontSize: 12,
+            color: Colors.black,
+          )),
+      dropdownMenuTheme: const DropdownMenuThemeData(
+        textStyle: TextStyle(
+          fontSize: 12,
+          color: Colors.black,
+        ),
+        menuStyle: MenuStyle(
+          backgroundColor: WidgetStatePropertyAll(grey1),
+          surfaceTintColor: WidgetStatePropertyAll(Colors.transparent),
+          shadowColor: WidgetStatePropertyAll(Colors.transparent),
+          padding: WidgetStatePropertyAll(EdgeInsets.zero),
+        ),
+      ),
+      inputDecorationTheme: const InputDecorationTheme(
+        isDense: true,
+        contentPadding: EdgeInsets.zero,
+        border: InputBorder.none,
+        hintStyle: TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.normal,
+          color: transparentBlack33,
+        ),
+      ),
+      extensions: {
+        CustomThemeExtension.light,
+      },
+    );
+  }
+
+  ThemeData _buildDarkTheme() {
+    return ThemeData.dark().copyWith(
+      scaffoldBackgroundColor: offBlack,
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          elevation: 0,
+          backgroundColor: Colors.transparent,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(50),
+          ),
+          padding: const EdgeInsets.all(20),
+          foregroundColor: Colors.black,
+          textStyle: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ),
+      filledButtonTheme: FilledButtonThemeData(
+        style: FilledButton.styleFrom(
+          elevation: 0,
+          backgroundColor: black,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(50),
+            side: BorderSide.none,
+          ),
+          padding: const EdgeInsets.all(20),
+          foregroundColor: offWhite,
+          textStyle: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w400,
+          ),
+          disabledBackgroundColor: const Color.fromRGBO(254, 251, 249, 0.16),
+          disabledForegroundColor: Colors.white.withOpacity(0.5),
+        ).copyWith(
+          overlayColor: WidgetStateProperty.all(Colors.transparent),
+        ),
+      ),
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+          backgroundColor: Colors.transparent,
+          textStyle: const TextStyle(
+            color: Colors.white,
+          ),
+          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          iconColor: Colors.white,
+        ),
+      ),
+      iconTheme: const IconThemeData(
+        color: Colors.white,
+      ),
+      textTheme: const TextTheme(
+          titleMedium: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w700,
+            color: Colors.white,
+          ),
+          titleSmall: TextStyle(
+            fontSize: 12,
+            color: transparentWhite66,
+          ),
+          bodySmall: TextStyle(
+            fontSize: 12,
+            color: Colors.white,
+          )),
+      dropdownMenuTheme: const DropdownMenuThemeData(
+        textStyle: TextStyle(
+          fontSize: 12,
+          color: Colors.white,
+        ),
+        menuStyle: MenuStyle(
+          backgroundColor: WidgetStatePropertyAll(grey5),
+          surfaceTintColor: WidgetStatePropertyAll(Colors.transparent),
+          shadowColor: WidgetStatePropertyAll(Colors.transparent),
+          padding: WidgetStatePropertyAll(EdgeInsets.zero),
+        ),
+      ),
+      inputDecorationTheme: const InputDecorationTheme(
+        isDense: true,
+        contentPadding: EdgeInsets.zero,
+        border: InputBorder.none,
+        hintStyle: TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.normal,
+          color: transparentWhite3,
+        ),
+      ),
+      extensions: {
+        CustomThemeExtension.dark,
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     // if showWarning, just display a one off toast here?
@@ -599,8 +791,8 @@ class MyApp extends StatelessWidget {
         child: BlocBuilder<ThemeBloc, ThemeMode>(
           builder: (context, themeMode) {
             return MaterialApp.router(
-              theme: ThemeData.light(),
-              darkTheme: ThemeData.dark(),
+              theme: _buildLightTheme(),
+              darkTheme: _buildDarkTheme(),
               themeMode: themeMode,
               routeInformationParser: AppRouter.router.routeInformationParser,
               routerDelegate: AppRouter.router.routerDelegate,

@@ -17,7 +17,6 @@ class FakeOnboardingCreateEvent extends Fake implements OnboardingCreateEvent {}
 void main() {
   setUpAll(() {
     registerFallbackValue(FakeOnboardingCreateEvent());
-    registerFallbackValue(CreateWallet(password: ''));
   });
 
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
@@ -58,10 +57,6 @@ void main() {
           buildTestableWidget(
             PasswordPrompt(
               state: mockState,
-              onPressedBack: () {},
-              onPressedContinue: (password) {},
-              backButtonText: 'Back',
-              continueButtonText: 'Continue',
             ),
           ),
         );
@@ -70,16 +65,13 @@ void main() {
 
         expect(find.text('Please create a password'), findsOneWidget);
         expect(find.byType(TextField), findsNWidgets(2));
-        expect(find.text('Back'), findsOneWidget);
-        expect(find.text('Continue'), findsOneWidget);
       },
     );
   });
 
-  testWidgets('PasswordPrompt does not submit with empty password',
+  testWidgets('PasswordPrompt enforces confirmation',
       (WidgetTester tester) async {
     final mockState = MockOnboardingState();
-    bool continueSuccess = false;
 
     await tester.pumpWidget(
       buildTestableWidget(
@@ -87,46 +79,6 @@ void main() {
           builder: (BuildContext context, StateSetter setState) {
             return PasswordPrompt(
               state: mockState,
-              onPressedBack: () {},
-              onPressedContinue: (password) {
-                continueSuccess = true;
-              },
-              backButtonText: 'Back',
-              continueButtonText: 'Continue',
-            );
-          },
-        ),
-      ),
-    );
-
-    await tester.pumpAndSettle();
-
-    // Submit with empty password
-    await tester.enterText(find.byType(TextField).first, '');
-    await tester.pumpAndSettle();
-
-    await tester.tap(find.text('Continue'));
-    await tester.pumpAndSettle();
-    expect(find.text('Password cannot be empty'), findsOneWidget);
-    expect(continueSuccess, isFalse);
-  });
-  testWidgets('PasswordPrompt does not submit with empty password confirmation',
-      (WidgetTester tester) async {
-    final mockState = MockOnboardingState();
-    bool continueSuccess = false;
-
-    await tester.pumpWidget(
-      buildTestableWidget(
-        StatefulBuilder(
-          builder: (BuildContext context, StateSetter setState) {
-            return PasswordPrompt(
-              state: mockState,
-              onPressedBack: () {},
-              onPressedContinue: (password) {
-                continueSuccess = true;
-              },
-              backButtonText: 'Back',
-              continueButtonText: 'Continue',
             );
           },
         ),
@@ -139,20 +91,29 @@ void main() {
     await tester.enterText(find.byType(TextField).first, 'validpassword123');
     await tester.pumpAndSettle();
 
-    await tester.enterText(find.byType(TextField).last, '');
+    // Focus the confirmation field
+    await tester.tap(find.byType(TextField).last);
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('Continue'));
+    // Enter some text
+    await tester.enterText(find.byType(TextField).last, 'test');
     await tester.pumpAndSettle();
+
+    // Simulate backspacing each character
+    for (int i = 4; i > 0; i--) {
+      tester.testTextInput.updateEditingValue(TextEditingValue(
+        text: 'test'.substring(0, i - 1),
+        selection: TextSelection.collapsed(offset: i - 1),
+      ));
+      await tester.pumpAndSettle();
+    }
 
     expect(find.text('Please confirm your password'), findsNWidgets(1));
-    expect(continueSuccess, isFalse);
   });
 
   testWidgets(
-    'PasswordPrompt does not submit with mismatched password confirmation',
+    'PasswordPrompt shows error when passwords do not match',
     (WidgetTester tester) async {
-      bool continueSuccess = false;
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -160,12 +121,6 @@ void main() {
               value: mockBloc,
               child: PasswordPrompt(
                 state: mockState,
-                onPressedBack: () {},
-                onPressedContinue: (password) {
-                  continueSuccess = true;
-                },
-                backButtonText: 'Back',
-                continueButtonText: 'Continue',
               ),
             ),
           ),
@@ -180,20 +135,13 @@ void main() {
       await tester.enterText(find.byType(TextField).last, 'validpassword123');
       await tester.pumpAndSettle();
 
-      // Submit the form
-      await tester.tap(find.text('Continue'));
-      await tester.pumpAndSettle();
-
       expect(find.text('Passwords do not match'), findsOneWidget);
-
-      expect(continueSuccess, isFalse);
     },
   );
 
   testWidgets(
-    'PasswordPrompt does not submit when password is too short',
+    'PasswordPrompt shows error when password is too short',
     (WidgetTester tester) async {
-      bool continueSuccess = false;
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -201,12 +149,6 @@ void main() {
               value: mockBloc,
               child: PasswordPrompt(
                 state: mockBloc.state,
-                onPressedBack: () {},
-                onPressedContinue: (password) {
-                  continueSuccess = true;
-                },
-                backButtonText: 'Back',
-                continueButtonText: 'Continue',
               ),
             ),
           ),
@@ -217,24 +159,17 @@ void main() {
       await tester.enterText(find.byType(TextField).first, 'short');
       await tester.pumpAndSettle();
 
-      // Try to submit with mismatched confirmation
       await tester.enterText(find.byType(TextField).last, 'short');
       await tester.pumpAndSettle();
 
-      // Submit the form
-      await tester.tap(find.text('Continue'));
-      await tester.pumpAndSettle();
       expect(find.text('Password must be at least 8 characters'),
           findsNWidgets(2));
-
-      expect(continueSuccess, isFalse);
     },
   );
 
   testWidgets(
-    'PasswordPrompt submits when password is valid',
+    'PasswordPrompt allows password when confirmation is valid',
     (WidgetTester tester) async {
-      bool continueSuccess = false;
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -242,12 +177,6 @@ void main() {
               value: mockBloc,
               child: PasswordPrompt(
                 state: mockBloc.state,
-                onPressedBack: () {},
-                onPressedContinue: (password) {
-                  continueSuccess = true;
-                },
-                backButtonText: 'Back',
-                continueButtonText: 'Continue',
               ),
             ),
           ),
@@ -261,12 +190,6 @@ void main() {
       // Enter valid confirmation
       await tester.enterText(find.byType(TextField).last, 'password123');
       await tester.pumpAndSettle();
-
-      // Submit the form
-      await tester.tap(find.text('Continue'));
-      await tester.pumpAndSettle();
-
-      expect(continueSuccess, isTrue);
     },
   );
 

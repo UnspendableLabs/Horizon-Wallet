@@ -78,17 +78,17 @@ class _OnboardingImportPageState extends State<OnboardingImportPage> {
                       child: Container(
                         padding: const EdgeInsets.all(8.0),
                         decoration: BoxDecoration(
-                          color: redErrorTextTransparentDark,
+                          color: transparentRed2,
                           borderRadius: BorderRadius.circular(40.0),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.info, color: redErrorTextColor),
+                            const Icon(Icons.info, color: red1),
                             const SizedBox(width: 4),
                             SelectableText(
                               error,
-                              style: const TextStyle(color: redErrorTextColor),
+                              style: const TextStyle(color: red1),
                             ),
                           ],
                         ),
@@ -173,7 +173,6 @@ class _ChooseFormatStepState extends State<ChooseFormatStep> {
 
   @override
   Widget build(BuildContext context) {
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final isSmallScreen = MediaQuery.of(context).size.width < 500;
 
     return Column(
@@ -186,48 +185,43 @@ class _ChooseFormatStepState extends State<ChooseFormatStep> {
             children: [
               SelectableText(
                 'Import Your Wallet',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
-                  color: isDarkMode ? Colors.white : Colors.black,
-                ),
+                style: Theme.of(context).textTheme.titleMedium,
               ),
               const SizedBox(height: 10),
               SelectableText(
                 'Choose the format of your recovery phrase',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: isDarkMode
-                      ? subtitleDarkTextColor
-                      : subtitleLightTextColor,
-                ),
+                style: Theme.of(context).textTheme.titleSmall,
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 14),
-              HorizonRedesignDropdown<String>(
-                isDarkMode: isDarkMode,
-                hintText: 'Wallet Type',
-                selectedValue: selectedFormat,
-                onChanged: (value) {
-                  if (value != null) {
-                    setState(() {
-                      selectedFormat = value;
-                    });
-                    context.read<OnboardingImportBloc>().add(
-                          ImportFormatChanged(walletType: selectedFormat!),
-                        );
-                  }
-                },
-                items: [
-                  DropdownMenuItem(
-                    value: WalletType.horizon.name,
-                    child: Text(WalletType.horizon.description),
-                  ),
-                  DropdownMenuItem(
-                    value: WalletType.bip32.name,
-                    child: Text(WalletType.bip32.description),
-                  ),
-                ],
+              SizedBox(
+                width: double.infinity,
+                child: HorizonRedesignDropdown<String>(
+                  hintText: 'Wallet Type',
+                  selectedValue: selectedFormat,
+                  onChanged: (value) {
+                    if (value != null) {
+                      setState(() {
+                        selectedFormat = value;
+                      });
+                      context.read<OnboardingImportBloc>().add(
+                            ImportFormatChanged(walletType: selectedFormat!),
+                          );
+                    }
+                  },
+                  items: [
+                    DropdownMenuItem(
+                      value: WalletType.horizon.name,
+                      child: Text(WalletType.horizon.description,
+                          style: Theme.of(context).textTheme.bodySmall),
+                    ),
+                    DropdownMenuItem(
+                      value: WalletType.bip32.name,
+                      child: Text(WalletType.bip32.description,
+                          style: Theme.of(context).textTheme.bodySmall),
+                    ),
+                  ],
+                ),
               ),
             ],
           ),

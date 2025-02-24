@@ -1,65 +1,94 @@
-import 'dart:math' show pi;
-
 import 'package:flutter/material.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
 
-class HorizonGradientButton extends StatelessWidget {
+class HorizonGradientButton extends StatefulWidget {
   final VoidCallback? onPressed;
   final String buttonText;
-  final bool isDarkMode;
 
   const HorizonGradientButton({
     super.key,
     required this.onPressed,
     required this.buttonText,
-    required this.isDarkMode,
   });
 
   @override
+  State<HorizonGradientButton> createState() => _HorizonGradientButtonState();
+}
+
+class _HorizonGradientButtonState extends State<HorizonGradientButton> {
+  bool isHovered = false;
+
+  @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: double.infinity,
-      height: 62,
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.centerLeft,
-            end: Alignment.centerRight,
-            colors: isDarkMode
+    final brightness = Theme.of(context).brightness;
+
+    return MouseRegion(
+      onEnter: (_) => setState(() => isHovered = true),
+      onExit: (_) => setState(() => isHovered = false),
+      child: SizedBox(
+        width: double.infinity,
+        height: 62,
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+              colors: isHovered
+                  ? brightness == Brightness.dark
+                      ? const [
+                          Color.fromRGBO(223, 217, 191, 0.50),
+                          Color.fromRGBO(238, 208, 154, 0.50),
+                          Color.fromRGBO(238, 179, 149, 0.50),
+                          Color.fromRGBO(210, 166, 176, 0.50),
+                        ]
+                      : const [
+                          Color(0xFF563A8E),
+                          Color(0xFF306E94),
+                        ]
+                  : brightness == Brightness.dark
+                      ? const [
+                          goldenGradient1,
+                          yellow1,
+                          goldenGradient2,
+                          goldenGradient3,
+                        ]
+                      : const [
+                          duskGradient2,
+                          duskGradient1,
+                        ],
+              stops: brightness == Brightness.dark
+                  ? const [0.0, 0.325, 0.65, 1.0]
+                  : const [0.0, 1.0],
+              transform: null,
+            ),
+            borderRadius: BorderRadius.circular(50),
+            boxShadow: isHovered
                 ? const [
-                    createButtonDarkGradient1,
-                    createButtonDarkGradient2,
-                    createButtonDarkGradient3,
-                    createButtonDarkGradient4,
+                    BoxShadow(
+                      color: Color.fromRGBO(255, 255, 255, 0.20),
+                      blurRadius: 10,
+                    )
                   ]
-                : const [
-                    createButtonLightGradient1,
-                    createButtonLightGradient3,
-                  ],
-            stops:
-                isDarkMode ? const [0.0, 0.325, 0.65, 1.0] : const [0.0, 1.0],
-            transform:
-                isDarkMode ? null : const GradientRotation(139.18 * pi / 180),
+                : null,
           ),
-          borderRadius: BorderRadius.circular(50),
-        ),
-        child: ElevatedButton(
-          style: ElevatedButton.styleFrom(
-            elevation: 0,
-            backgroundColor: Colors.transparent,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(50),
+          child: ElevatedButton(
+            onPressed: widget.onPressed,
+            style: ButtonStyle(
+              elevation: WidgetStateProperty.all(0),
+              backgroundColor: WidgetStateProperty.all(Colors.transparent),
+              foregroundColor: WidgetStateProperty.all(
+                  Theme.of(context).textTheme.labelLarge?.color),
+              padding: WidgetStateProperty.all(EdgeInsets.zero),
+              shape: WidgetStateProperty.all(
+                RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(50),
+                ),
+              ),
+              overlayColor: WidgetStateProperty.all(Colors.transparent),
+              minimumSize: WidgetStateProperty.all(const Size.fromHeight(62)),
             ),
-            padding: const EdgeInsets.all(20),
-          ),
-          onPressed: onPressed,
-          child: Text(
-            buttonText,
-            style: TextStyle(
-              color: isDarkMode ? Colors.black : Colors.white,
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
-            ),
+            child: Text(widget.buttonText,
+                style: const TextStyle(fontWeight: FontWeight.w500)),
           ),
         ),
       ),
@@ -67,46 +96,87 @@ class HorizonGradientButton extends StatelessWidget {
   }
 }
 
-class HorizonOutlinedButton extends StatelessWidget {
+class HorizonOutlinedButton extends StatefulWidget {
   final VoidCallback? onPressed;
   final String buttonText;
-  final bool isDarkMode;
   final bool? isTransparent;
 
   const HorizonOutlinedButton({
     super.key,
     required this.onPressed,
     required this.buttonText,
-    required this.isDarkMode,
     this.isTransparent = false,
   });
 
   @override
+  State<HorizonOutlinedButton> createState() => _HorizonOutlinedButtonState();
+}
+
+class _HorizonOutlinedButtonState extends State<HorizonOutlinedButton> {
+  bool isHovered = false;
+
+  @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: double.infinity,
-      height: 62,
-      child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          elevation: 0,
-          backgroundColor: isTransparent == true
-              ? (isDarkMode ? importButtonDarkBackground : Colors.white)
-              : tealButtonColor,
-          shape: RoundedRectangleBorder(
+    const isExtension =
+        String.fromEnvironment('HORIZON_IS_EXTENSION') == 'true';
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
+    return MouseRegion(
+      onEnter: widget.onPressed != null
+          ? (_) => setState(() => isHovered = true)
+          : null,
+      onExit: widget.onPressed != null
+          ? (_) => setState(() => isHovered = false)
+          : null,
+      cursor: widget.onPressed != null
+          ? SystemMouseCursors.click
+          : SystemMouseCursors.basic,
+      child: SizedBox(
+        width: double.infinity,
+        height: 62,
+        child: Container(
+          decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(50),
-            side: BorderSide.none,
+            boxShadow: (isHovered && widget.onPressed != null)
+                ? [
+                    if (widget.isTransparent == true)
+                      BoxShadow(
+                        color: isDarkMode
+                            ? const Color.fromRGBO(255, 255, 255, 0.10)
+                            : const Color.fromRGBO(0, 0, 0, 0.15),
+                        blurRadius: 10,
+                      )
+                    else
+                      BoxShadow(
+                        color: isDarkMode
+                            ? const Color.fromRGBO(255, 255, 255, 0.20)
+                            : const Color.fromRGBO(0, 0, 0, 0.15),
+                        blurRadius: 10,
+                      )
+                  ]
+                : null,
           ),
-          padding: const EdgeInsets.all(20),
-        ),
-        onPressed: onPressed,
-        child: Text(
-          buttonText,
-          style: TextStyle(
-            color: isTransparent == true
-                ? (isDarkMode ? Colors.white : Colors.black)
-                : const Color.fromRGBO(9, 9, 9, 1),
-            fontSize: 16,
-            fontWeight: FontWeight.w400,
+          child: FilledButton(
+            style: widget.isTransparent == true
+                ? Theme.of(context).filledButtonTheme.style
+                : FilledButton.styleFrom(
+                    backgroundColor: isHovered
+                        ? const Color.fromRGBO(30, 231, 197, 0.50)
+                        : green2,
+                    foregroundColor: Colors.black,
+                  ),
+            onPressed: widget.onPressed,
+            child: Text(
+              widget.buttonText,
+              style: TextStyle(
+                fontWeight: widget.isTransparent == true || isExtension
+                    ? FontWeight.normal
+                    : FontWeight.w600,
+                color: widget.isTransparent == true
+                    ? Theme.of(context).textTheme.bodySmall?.color
+                    : null,
+              ),
+            ),
           ),
         ),
       ),
@@ -186,7 +256,6 @@ class HorizonRedesignDropdown<T> extends StatefulWidget {
   final Function(T?) onChanged;
   final T? selectedValue;
   final String hintText;
-  final bool isDarkMode;
 
   const HorizonRedesignDropdown({
     super.key,
@@ -194,7 +263,6 @@ class HorizonRedesignDropdown<T> extends StatefulWidget {
     required this.onChanged,
     required this.selectedValue,
     required this.hintText,
-    required this.isDarkMode,
   });
 
   @override
@@ -240,6 +308,8 @@ class _HorizonRedesignDropdownState<T>
   OverlayEntry _createOverlayEntry() {
     RenderBox renderBox = context.findRenderObject() as RenderBox;
     var size = renderBox.size;
+    final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
 
     return OverlayEntry(
       builder: (context) => Positioned(
@@ -247,39 +317,45 @@ class _HorizonRedesignDropdownState<T>
         child: CompositedTransformFollower(
           link: _layerLink,
           showWhenUnlinked: false,
-          offset: Offset(0.0, size.height + 10.0), // 10px spacing
-          child: Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(18),
-              border: const GradientBoxBorder(width: 1),
-              color: widget.isDarkMode
-                  ? darkThemeBackgroundColor
-                  : lightThemeBackgroundColor,
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: widget.items.map((item) {
-                return Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    onTap: () {
-                      widget.onChanged(item.value);
-                      _toggleDropdown();
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 16),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: item.child,
-                          ),
-                        ],
+          offset: Offset(0.0, size.height + 10.0),
+          child: Theme(
+            data: theme,
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(18),
+                border: const GradientBoxBorder(width: 1),
+                color: isDarkMode ? grey5 : grey1,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: widget.items.map((item) {
+                  return Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: () {
+                        widget.onChanged(item.value);
+                        _toggleDropdown();
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 16,
+                        ),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: DefaultTextStyle(
+                                style: theme.dropdownMenuTheme.textStyle!,
+                                child: item.child,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                );
-              }).toList(),
+                  );
+                }).toList(),
+              ),
             ),
           ),
         ),
@@ -289,59 +365,50 @@ class _HorizonRedesignDropdownState<T>
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final hasValue = widget.selectedValue != null;
     return CompositedTransformTarget(
       link: _layerLink,
-      child: GestureDetector(
-        onTap: _toggleDropdown,
-        child: Container(
-          height: 56,
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(18),
-            border: focusNode.hasFocus
-                ? const GradientBoxBorder(width: 1)
-                : Border.all(
-                    color: widget.isDarkMode
-                        ? inputDarkBorderColor
-                        : inputLightBorderColor),
-            color: hasValue
-                ? (widget.isDarkMode
-                    ? inputDarkBackground
-                    : inputLightBackground)
-                : (widget.isDarkMode
-                    ? darkThemeBackgroundColor
-                    : lightThemeBackgroundColor),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Expanded(
-                child: Text(
-                  widget.selectedValue != null
-                      ? (widget.items
-                              .firstWhere(
-                                  (item) => item.value == widget.selectedValue)
-                              .child as Text)
-                          .data!
-                      : widget.hintText,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: hasValue
-                        ? (widget.isDarkMode ? Colors.white : Colors.black)
-                        : (widget.isDarkMode
-                            ? inputDarkLabelColor
-                            : inputLightLabelColor),
+      child: MouseRegion(
+        cursor: SystemMouseCursors.click,
+        child: GestureDetector(
+          onTap: _toggleDropdown,
+          child: Container(
+            height: 56,
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(18),
+              border: focusNode.hasFocus
+                  ? const GradientBoxBorder(width: 1)
+                  : Border.all(
+                      color:
+                          isDarkMode ? transparentWhite8 : transparentBlack8),
+              color: hasValue
+                  ? (isDarkMode ? grey5 : grey1)
+                  : (isDarkMode ? offBlack : offWhite),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Expanded(
+                  child: Text(
+                    widget.selectedValue != null
+                        ? (widget.items
+                                .firstWhere((item) =>
+                                    item.value == widget.selectedValue)
+                                .child as Text)
+                            .data!
+                        : widget.hintText,
+                    style: Theme.of(context).textTheme.bodySmall,
                   ),
                 ),
-              ),
-              Icon(
-                _isOpen ? Icons.arrow_drop_up : Icons.arrow_drop_down,
-                color: widget.isDarkMode ? Colors.white : Colors.black,
-                size: 18,
-              ),
-            ],
+                Icon(
+                  _isOpen ? Icons.arrow_drop_up : Icons.arrow_drop_down,
+                  size: 18,
+                ),
+              ],
+            ),
           ),
         ),
       ),

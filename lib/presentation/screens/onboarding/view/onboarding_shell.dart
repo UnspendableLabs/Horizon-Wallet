@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 
 class OnboardingShell extends StatefulWidget {
@@ -50,21 +49,15 @@ class _OnboardingShellState extends State<OnboardingShell> {
   @override
   Widget build(BuildContext context) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final backdropBackgroundColor =
-        isDarkMode ? darkThemeBackgroundColor : lightThemeBackgroundColor;
-
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isWideScreen = screenWidth > 500;
+    final isSmallScreen = MediaQuery.of(context).size.width < 500;
 
     final shellContent = Scaffold(
-      backgroundColor: backdropBackgroundColor,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(
+          icon: const Icon(
             Icons.arrow_back,
-            color: isDarkMode ? Colors.white : Colors.black,
           ),
           onPressed: _handleStepBack,
         ),
@@ -76,7 +69,7 @@ class _OnboardingShellState extends State<OnboardingShell> {
               // Step indicators
               Padding(
                 padding:
-                    EdgeInsets.symmetric(horizontal: isWideScreen ? 30 : 16),
+                    EdgeInsets.symmetric(horizontal: isSmallScreen ? 16 : 30),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: List.generate(widget.steps.length, (index) {
@@ -106,13 +99,12 @@ class _OnboardingShellState extends State<OnboardingShell> {
               // Bottom buttons
               Padding(
                 padding: EdgeInsets.symmetric(
-                    vertical: 30, horizontal: isWideScreen ? 30 : 16),
+                    vertical: 30, horizontal: isSmallScreen ? 20 : 40),
                 child: Row(
                   children: [
                     Expanded(
                       child: HorizonOutlinedButton(
                         isTransparent: false,
-                        isDarkMode: isDarkMode,
                         onPressed: widget.nextButtonEnabled
                             ? _handleStepContinue
                             : null,
@@ -137,7 +129,7 @@ class _OnboardingShellState extends State<OnboardingShell> {
       ),
     );
 
-    if (!isWideScreen) {
+    if (isSmallScreen) {
       return shellContent;
     }
 

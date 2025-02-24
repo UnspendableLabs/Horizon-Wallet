@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:horizon/presentation/common/redesign_colors.dart';
+import 'package:horizon/presentation/common/theme_extension.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 
 class PasswordPrompt extends StatefulWidget {
@@ -45,6 +45,14 @@ class PasswordPromptState extends State<PasswordPrompt> {
     super.initState();
     passwordController.addListener(_onInputChanged);
     passwordConfirmationController.addListener(_onInputChanged);
+
+    // Add focus listeners
+    passwordFocusNode.addListener(() {
+      setState(() {});
+    });
+    confirmPasswordFocusNode.addListener(() {
+      setState(() {});
+    });
   }
 
   void _onInputChanged() {
@@ -60,6 +68,10 @@ class PasswordPromptState extends State<PasswordPrompt> {
     passwordConfirmationController.removeListener(_onInputChanged);
     passwordController.dispose();
     passwordConfirmationController.dispose();
+
+    // Remove focus listeners
+    passwordFocusNode.removeListener(() {});
+    confirmPasswordFocusNode.removeListener(() {});
     passwordFocusNode.dispose();
     confirmPasswordFocusNode.dispose();
     super.dispose();
@@ -72,98 +84,84 @@ class PasswordPromptState extends State<PasswordPrompt> {
 
   @override
   Widget build(BuildContext context) {
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final screenSize = MediaQuery.of(context).size;
-    final isSmallScreen = screenSize.width < 768;
-    final backdropBackgroundColor =
-        isDarkMode ? darkThemeBackgroundColor : lightThemeBackgroundColor;
+    final isSmallScreen = screenSize.width < 500;
 
-    return Container(
-      color: backdropBackgroundColor,
-      child: Column(
-        children: [
-          Padding(
-            padding:
-                EdgeInsets.symmetric(horizontal: isSmallScreen ? 20.0 : 40.0),
-            child: Column(
-              children: [
-                SelectableText(
-                  'Please create a password',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700,
-                    color: isDarkMode ? Colors.white : Colors.black,
-                  ),
-                ),
-                const SizedBox(height: 10),
-                SelectableText(
-                  'This password will be used to encrypt and decrypt your seed phrase, which will be stored locally. You will be able to use your wallet with just your password, but you will only be able to recover your wallet with your seed phrase.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.normal,
-                    color: isDarkMode
-                        ? subtitleDarkTextColor
-                        : subtitleLightTextColor,
-                  ),
-                ),
-              ],
-            ),
+    return Column(
+      children: [
+        Padding(
+          padding:
+              EdgeInsets.symmetric(horizontal: isSmallScreen ? 20.0 : 40.0),
+          child: Column(
+            children: [
+              SelectableText(
+                'Please create a password',
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              const SizedBox(height: 10),
+              SelectableText(
+                'This password will be used to encrypt and decrypt your seed phrase, which will be stored locally. You will be able to use your wallet with just your password, but you will only be able to recover your wallet with your seed phrase.',
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.titleSmall,
+              ),
+            ],
           ),
-          Expanded(
-            child: Form(
-              key: formKey,
-              child: Padding(
-                padding: EdgeInsets.symmetric(
-                    horizontal: isSmallScreen ? 20.0 : 40.0, vertical: 14.0),
-                child: Column(
-                  children: [
-                    buildPasswordField(
-                      isDarkMode,
-                      controller: passwordController,
-                      isObscured: _isPasswordObscured,
-                      onToggleObscured: () {
-                        setState(() {
-                          _isPasswordObscured = !_isPasswordObscured;
-                        });
-                      },
-                      label: 'Password',
-                    ),
-                    const SizedBox(height: 10),
-                    buildPasswordField(
-                      isDarkMode,
-                      controller: passwordConfirmationController,
-                      isObscured: _isPasswordConfirmationObscured,
-                      onToggleObscured: () {
-                        setState(() {
-                          _isPasswordConfirmationObscured =
-                              !_isPasswordConfirmationObscured;
-                        });
-                      },
-                      label: 'Confirm Password',
-                    ),
-                    if (widget.optionalErrorWidget != null) ...[
-                      const SizedBox(height: 16),
-                      widget.optionalErrorWidget!,
-                    ],
+        ),
+        Expanded(
+          child: Form(
+            key: formKey,
+            child: Padding(
+              padding: EdgeInsets.symmetric(
+                  horizontal: isSmallScreen ? 20.0 : 40.0, vertical: 14.0),
+              child: Column(
+                children: [
+                  buildPasswordField(
+                    context,
+                    controller: passwordController,
+                    isObscured: _isPasswordObscured,
+                    onToggleObscured: () {
+                      setState(() {
+                        _isPasswordObscured = !_isPasswordObscured;
+                      });
+                    },
+                    label: 'Password',
+                  ),
+                  const SizedBox(height: 10),
+                  buildPasswordField(
+                    context,
+                    controller: passwordConfirmationController,
+                    isObscured: _isPasswordConfirmationObscured,
+                    onToggleObscured: () {
+                      setState(() {
+                        _isPasswordConfirmationObscured =
+                            !_isPasswordConfirmationObscured;
+                      });
+                    },
+                    label: 'Confirm Password',
+                  ),
+                  if (widget.optionalErrorWidget != null) ...[
+                    const SizedBox(height: 16),
+                    widget.optionalErrorWidget!,
                   ],
-                ),
+                ],
               ),
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
   Widget buildPasswordField(
-    bool isDarkMode, {
+    BuildContext context, {
     required TextEditingController controller,
     required bool isObscured,
     required VoidCallback onToggleObscured,
     required String label,
   }) {
+    final theme = Theme.of(context);
+    final customTheme = theme.extension<CustomThemeExtension>()!;
     final hasText = controller.text.isNotEmpty;
     final focusNode =
         label == 'Password' ? passwordFocusNode : confirmPasswordFocusNode;
@@ -180,79 +178,68 @@ class PasswordPromptState extends State<PasswordPrompt> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              height: 56,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(18),
-                color: hasText
-                    ? (isDarkMode ? inputDarkBackground : inputLightBackground)
-                    : (isDarkMode
-                        ? darkThemeBackgroundColor
-                        : lightThemeBackgroundColor),
-              ),
+            MouseRegion(
+              cursor: SystemMouseCursors.text,
               child: Container(
+                height: 56,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(18),
-                  border: hasError
-                      ? Border.all(
-                          color: redErrorTextColor,
-                          width: 1,
-                        )
-                      : focusNode.hasFocus && hasText
-                          ? const GradientBoxBorder(
-                              width: 1,
-                            )
-                          : Border.all(
-                              color: isDarkMode
-                                  ? inputDarkBorderColor
-                                  : inputLightBorderColor,
-                            ),
+                  color: hasText
+                      ? customTheme.inputBackground
+                      : customTheme.inputBackgroundEmpty,
                 ),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Expanded(
-                      child: TextFormField(
-                        controller: controller,
-                        focusNode: focusNode,
-                        obscureText: isObscured,
-                        onChanged: (_) => field.didChange(controller.text),
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: isDarkMode ? Colors.white : Colors.black,
-                        ),
-                        decoration: InputDecoration(
-                          isDense: true,
-                          contentPadding: EdgeInsets.zero,
-                          border: InputBorder.none,
-                          hintText: label,
-                          hintStyle: TextStyle(
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(18),
+                    border: hasError
+                        ? Border.all(color: customTheme.errorColor, width: 1)
+                        : focusNode.hasFocus
+                            ? const GradientBoxBorder(width: 1)
+                            : Border.all(color: customTheme.inputBorderColor),
+                  ),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: TextFormField(
+                          controller: controller,
+                          focusNode: focusNode,
+                          obscureText: isObscured,
+                          onChanged: (_) => field.didChange(controller.text),
+                          onTap: () {
+                            FocusScope.of(context).requestFocus(focusNode);
+                          },
+                          style: TextStyle(
                             fontSize: 12,
-                            fontWeight: FontWeight.normal,
-                            color: isDarkMode
-                                ? inputDarkLabelColor
-                                : inputLightLabelColor,
+                            color: customTheme.inputTextColor,
                           ),
+                          decoration: InputDecoration(
+                            isDense: theme.inputDecorationTheme.isDense,
+                            contentPadding:
+                                theme.inputDecorationTheme.contentPadding,
+                            border: theme.inputDecorationTheme.border,
+                            hintText: label,
+                            hintStyle: theme.inputDecorationTheme.hintStyle,
+                          ),
+                          showCursor: true,
                         ),
                       ),
-                    ),
-                    IconButton(
-                      icon: Icon(
-                        isObscured
-                            ? Icons.visibility_outlined
-                            : Icons.visibility_off_outlined,
-                        color: isDarkMode ? Colors.white : Colors.black,
-                        size: 18,
+                      IconButton(
+                        icon: Icon(
+                          isObscured
+                              ? Icons.visibility_outlined
+                              : Icons.visibility_off_outlined,
+                          color: customTheme.inputTextColor,
+                          size: 18,
+                        ),
+                        onPressed: onToggleObscured,
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                        focusNode: FocusNode(skipTraversal: true),
                       ),
-                      onPressed: onToggleObscured,
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(),
-                      focusNode: FocusNode(skipTraversal: true),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -261,8 +248,8 @@ class PasswordPromptState extends State<PasswordPrompt> {
                 padding: const EdgeInsets.only(left: 16, top: 4),
                 child: Text(
                   field.errorText!,
-                  style: const TextStyle(
-                    color: redErrorTextColor,
+                  style: TextStyle(
+                    color: customTheme.errorColor,
                     fontSize: 12,
                   ),
                 ),
