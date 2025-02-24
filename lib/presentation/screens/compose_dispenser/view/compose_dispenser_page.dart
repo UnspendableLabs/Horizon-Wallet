@@ -46,12 +46,16 @@ class ComposeDispenserPageWrapper extends StatelessWidget {
         key: Key(currentAddress),
         create: (context) => ComposeDispenserBloc(
           logger: GetIt.I.get<Logger>(),
-          passwordRequired: GetIt.I<SettingsRepository>().requirePasswordForCryptoOperations,
+          passwordRequired:
+              GetIt.I<SettingsRepository>().requirePasswordForCryptoOperations,
           inMemoryKeyRepository: GetIt.I.get<InMemoryKeyRepository>(),
-          writelocalTransactionUseCase: GetIt.I.get<WriteLocalTransactionUseCase>(),
-          signAndBroadcastTransactionUseCase: GetIt.I.get<SignAndBroadcastTransactionUseCase>(),
+          writelocalTransactionUseCase:
+              GetIt.I.get<WriteLocalTransactionUseCase>(),
+          signAndBroadcastTransactionUseCase:
+              GetIt.I.get<SignAndBroadcastTransactionUseCase>(),
           composeTransactionUseCase: GetIt.I.get<ComposeTransactionUseCase>(),
-          fetchDispenserFormDataUseCase: GetIt.I.get<FetchDispenserFormDataUseCase>(),
+          fetchDispenserFormDataUseCase:
+              GetIt.I.get<FetchDispenserFormDataUseCase>(),
           analyticsService: GetIt.I.get<AnalyticsService>(),
           composeRepository: GetIt.I.get<ComposeRepository>(),
         )..add(AsyncFormDependenciesRequested(currentAddress: currentAddress)),
@@ -117,8 +121,8 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
 
         state.dialogState.maybeWhen(
           // if the current address has open dispensers and the user chooses to open on a new address, proceed to the new address flow
-          closeDialogAndOpenNewAddress:
-              (originalAddress, divisible, asset, giveQuantity, escrowQuantity, mainchainrate, feeRate) {
+          closeDialogAndOpenNewAddress: (originalAddress, divisible, asset,
+              giveQuantity, escrowQuantity, mainchainrate, feeRate) {
             // Close current dialog
             Navigator.of(context).pop();
 
@@ -152,11 +156,15 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
       child: ComposeBasePage<ComposeDispenserBloc, ComposeDispenserState>(
         hideSubmitButtons: hideSubmitButtons,
         dashboardActivityFeedBloc: widget.dashboardActivityFeedBloc,
-        onFeeChange: (fee) => context.read<ComposeDispenserBloc>().add(FeeOptionChanged(value: fee)),
-        buildInitialFormFields: (state, loading, formKey) => _buildInitialFormFields(state, loading, formKey),
+        onFeeChange: (fee) => context
+            .read<ComposeDispenserBloc>()
+            .add(FeeOptionChanged(value: fee)),
+        buildInitialFormFields: (state, loading, formKey) =>
+            _buildInitialFormFields(state, loading, formKey),
         onInitialCancel: () => _handleInitialCancel(),
         onInitialSubmit: (formKey) => _handleInitialSubmit(formKey),
-        buildConfirmationFormFields: (state, composeTransaction, formKey) => _buildConfirmationDetails(composeTransaction),
+        buildConfirmationFormFields: (state, composeTransaction, formKey) =>
+            _buildConfirmationDetails(composeTransaction),
         onConfirmationBack: () => _onConfirmationBack(),
         onConfirmationContinue: (composeTransaction, fee, formKey) {
           _onConfirmationContinue(composeTransaction, fee, formKey);
@@ -188,13 +196,16 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
         throw Exception("No balance found for selected asset");
       }
 
-      int giveQuantity =
-          getQuantityForDivisibility(divisible: balance.assetInfo.divisible, inputQuantity: giveQuantityController.text);
-      int escrowQuantity =
-          getQuantityForDivisibility(divisible: balance.assetInfo.divisible, inputQuantity: escrowQuantityController.text);
+      int giveQuantity = getQuantityForDivisibility(
+          divisible: balance.assetInfo.divisible,
+          inputQuantity: giveQuantityController.text);
+      int escrowQuantity = getQuantityForDivisibility(
+          divisible: balance.assetInfo.divisible,
+          inputQuantity: escrowQuantityController.text);
 
-      int mainchainrate =
-          getQuantityForDivisibility(divisible: true, inputQuantity: mainchainrateController.text); // Price in BTC
+      int mainchainrate = getQuantityForDivisibility(
+          divisible: true,
+          inputQuantity: mainchainrateController.text); // Price in BTC
 
       if (isCreateNewAddressFlow) {
         context.read<ComposeDispenserBloc>().add(ConfirmTransactionOnNewAddress(
@@ -224,11 +235,13 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
     }
   }
 
-  Widget _buildAssetInput(ComposeDispenserState state, bool loading, [String? label]) {
+  Widget _buildAssetInput(ComposeDispenserState state, bool loading,
+      [String? label]) {
     return state.balancesState.maybeWhen(
       orElse: () => const AssetDropdownLoading(),
       success: (balances) {
-        final addressBalances = balances.where((balance) => balance.utxo == null).toList();
+        final addressBalances =
+            balances.where((balance) => balance.utxo == null).toList();
 
         if (addressBalances.isEmpty) {
           return const HorizonUI.HorizonTextFormField(
@@ -278,11 +291,16 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
       mainchainrateController.clear();
     });
 
-    context.read<ComposeDispenserBloc>().add(ChangeAsset(asset: value, balance: balance));
+    context
+        .read<ComposeDispenserBloc>()
+        .add(ChangeAsset(asset: value, balance: balance));
   }
 
   Widget _buildGiveQuantityInput(
-      ComposeDispenserState state, void Function() handleInitialSubmit, bool loading, GlobalKey<FormState> formKey) {
+      ComposeDispenserState state,
+      void Function() handleInitialSubmit,
+      bool loading,
+      GlobalKey<FormState> formKey) {
     return state.balancesState.maybeWhen(orElse: () {
       return _buildGiveQuantityInputField(state, null, loading, formKey);
     }, success: (balances) {
@@ -292,7 +310,8 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
         );
       }
 
-      Balance? balance = balance_ ?? _getBalanceForSelectedAsset(balances, asset ?? balances[0].asset);
+      Balance? balance = balance_ ??
+          _getBalanceForSelectedAsset(balances, asset ?? balances[0].asset);
 
       if (balance == null) {
         return const HorizonUI.HorizonTextFormField(
@@ -304,8 +323,8 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
     });
   }
 
-  Widget _buildGiveQuantityInputField(
-      ComposeDispenserState state, Balance? balance, bool loading, GlobalKey<FormState> formKey) {
+  Widget _buildGiveQuantityInputField(ComposeDispenserState state,
+      Balance? balance, bool loading, GlobalKey<FormState> formKey) {
     return Stack(
       children: [
         HorizonUI.HorizonTextFormField(
@@ -316,7 +335,9 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
             setState(() {
               balance_ = balance;
             });
-            context.read<ComposeDispenserBloc>().add(ChangeGiveQuantity(value: value));
+            context
+                .read<ComposeDispenserBloc>()
+                .add(ChangeGiveQuantity(value: value));
           },
           label: 'Quantity',
           inputFormatters: [
@@ -324,7 +345,8 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
                 ? DecimalTextInputFormatter(decimalRange: 8)
                 : FilteringTextInputFormatter.digitsOnly,
           ],
-          keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: false),
+          keyboardType: const TextInputType.numberWithOptions(
+              decimal: true, signed: false),
           validator: (value) {
             if (value == null || value.isEmpty || value == '.') {
               return 'Please enter a quantity';
@@ -339,7 +361,9 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
           onFieldSubmitted: (value) {
             _handleInitialSubmit(formKey);
           },
-          autovalidateMode: _submitted ? AutovalidateMode.onUserInteraction : AutovalidateMode.disabled,
+          autovalidateMode: _submitted
+              ? AutovalidateMode.onUserInteraction
+              : AutovalidateMode.disabled,
         ),
         state.balancesState.maybeWhen(orElse: () {
           return const SizedBox.shrink();
@@ -363,7 +387,8 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
     );
   }
 
-  Widget _buildEscrowQuantityInput(ComposeDispenserState state, bool loading, GlobalKey<FormState> formKey) {
+  Widget _buildEscrowQuantityInput(
+      ComposeDispenserState state, bool loading, GlobalKey<FormState> formKey) {
     return state.balancesState.maybeWhen(orElse: () {
       return _buildEscrowQuantityInputField(state, null, loading, formKey);
     }, success: (balances) {
@@ -373,7 +398,8 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
         );
       }
 
-      Balance? balance = balance_ ?? _getBalanceForSelectedAsset(balances, asset ?? balances[0].asset);
+      Balance? balance = balance_ ??
+          _getBalanceForSelectedAsset(balances, asset ?? balances[0].asset);
 
       if (balance == null) {
         return const HorizonUI.HorizonTextFormField(
@@ -385,8 +411,8 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
     });
   }
 
-  Widget _buildEscrowQuantityInputField(
-      ComposeDispenserState state, Balance? balance, bool loading, GlobalKey<FormState> formKey) {
+  Widget _buildEscrowQuantityInputField(ComposeDispenserState state,
+      Balance? balance, bool loading, GlobalKey<FormState> formKey) {
     return HorizonUI.HorizonTextFormField(
       key: Key('escrow_quantity_input_${balance?.asset}'),
       controller: escrowQuantityController,
@@ -395,7 +421,9 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
         setState(() {
           balance_ = balance;
         });
-        context.read<ComposeDispenserBloc>().add(ChangeEscrowQuantity(value: value));
+        context
+            .read<ComposeDispenserBloc>()
+            .add(ChangeEscrowQuantity(value: value));
       },
       label: 'Escrow Quantity',
       inputFormatters: [
@@ -403,7 +431,8 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
             ? DecimalTextInputFormatter(decimalRange: 8)
             : FilteringTextInputFormatter.digitsOnly,
       ],
-      keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: false),
+      keyboardType:
+          const TextInputType.numberWithOptions(decimal: true, signed: false),
       validator: (value) {
         if (value == null || value.isEmpty || value == '.') {
           return 'Please enter an escrow quantity';
@@ -414,7 +443,8 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
           return "escrow quantity exceeds available balance";
         }
 
-        Decimal? giveQuantity = (giveQuantityController.text.isNotEmpty && giveQuantityController.text != '.')
+        Decimal? giveQuantity = (giveQuantityController.text.isNotEmpty &&
+                giveQuantityController.text != '.')
             ? Decimal.parse(giveQuantityController.text)
             : null;
         // Check if the escrow quantity is greater than or equal to the give quantity
@@ -427,11 +457,14 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
       onFieldSubmitted: (value) {
         _handleInitialSubmit(formKey);
       },
-      autovalidateMode: _submitted ? AutovalidateMode.onUserInteraction : AutovalidateMode.disabled,
+      autovalidateMode: _submitted
+          ? AutovalidateMode.onUserInteraction
+          : AutovalidateMode.disabled,
     );
   }
 
-  Widget _displayDispensersWarning(ComposeDispenserState state, bool loading, bool hasOpenDispensers) {
+  Widget _displayDispensersWarning(
+      ComposeDispenserState state, bool loading, bool hasOpenDispensers) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16.0),
@@ -524,7 +557,8 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
     );
   }
 
-  List<Widget> _buildInitialFormFields(ComposeDispenserState state, bool loading, GlobalKey<FormState> formKey) {
+  List<Widget> _buildInitialFormFields(
+      ComposeDispenserState state, bool loading, GlobalKey<FormState> formKey) {
     return [
       state.dialogState.maybeWhen(orElse: () {
         return const SizedBox.shrink();
@@ -603,7 +637,8 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
   }
 
   Widget _buildPricePerUnitInput(bool loading, GlobalKey<FormState> formKey) {
-    final hasGiveQuantity = giveQuantityController.text.isNotEmpty && giveQuantityController.text != '.';
+    final hasGiveQuantity = giveQuantityController.text.isNotEmpty &&
+        giveQuantityController.text != '.';
 
     return HorizonUI.HorizonTextFormField(
       key: const Key('price_per_unit_input'),
@@ -613,7 +648,8 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
       inputFormatters: [
         DecimalTextInputFormatter(decimalRange: 8),
       ],
-      keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: false),
+      keyboardType:
+          const TextInputType.numberWithOptions(decimal: true, signed: false),
       validator: (value) {
         if (value == null || value.isEmpty || value == '.') {
           return 'Per Unit Price is required';
@@ -627,7 +663,8 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
           final totalPriceBtc = pricePerUnit * giveQuantity;
 
           // Convert to satoshis (1 BTC = 100,000,000 satoshis)
-          final totalPriceSatoshis = (totalPriceBtc * Decimal.fromInt(100000000)).toBigInt().toInt();
+          final totalPriceSatoshis =
+              (totalPriceBtc * Decimal.fromInt(100000000)).toBigInt().toInt();
 
           if (totalPriceSatoshis < 546) {
             return 'Total price (price × quantity) must exceed dust limit of 546 satoshis';
@@ -641,12 +678,15 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
       onFieldSubmitted: (value) {
         _handleInitialSubmit(formKey);
       },
-      autovalidateMode: _submitted ? AutovalidateMode.onUserInteraction : AutovalidateMode.disabled,
+      autovalidateMode: _submitted
+          ? AutovalidateMode.onUserInteraction
+          : AutovalidateMode.disabled,
     );
   }
 
   List<Widget> _buildConfirmationDetails(dynamic composeTransaction) {
-    final params = (composeTransaction as ComposeDispenserResponseVerbose).params;
+    final params =
+        (composeTransaction as ComposeDispenserResponseVerbose).params;
     return [
       HorizonUI.HorizonTextFormField(
         label: "Source Address",
@@ -668,23 +708,28 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
       const SizedBox(height: 16.0),
       HorizonUI.HorizonTextFormField(
         label: "Escrow Quantity",
-        controller: TextEditingController(text: params.escrowQuantityNormalized),
+        controller:
+            TextEditingController(text: params.escrowQuantityNormalized),
         enabled: false,
       ),
       const SizedBox(height: 16.0),
       HorizonUI.HorizonTextFormField(
         label: 'Price Per Unit (BTC)',
-        controller: TextEditingController(text: satoshisToBtc(params.mainchainrate).toStringAsFixed(8)),
+        controller: TextEditingController(
+            text: satoshisToBtc(params.mainchainrate).toStringAsFixed(8)),
         enabled: false,
       ),
     ];
   }
 
   void _onConfirmationBack() {
-    context.read<ComposeDispenserBloc>().add(AsyncFormDependenciesRequested(currentAddress: widget.address));
+    context
+        .read<ComposeDispenserBloc>()
+        .add(AsyncFormDependenciesRequested(currentAddress: widget.address));
   }
 
-  void _onConfirmationContinue(dynamic composeTransaction, int fee, GlobalKey<FormState> formKey) {
+  void _onConfirmationContinue(
+      dynamic composeTransaction, int fee, GlobalKey<FormState> formKey) {
     if (formKey.currentState!.validate()) {
       context.read<ComposeDispenserBloc>().add(
             ReviewSubmitted<ComposeDispenserResponseVerbose>(
@@ -706,7 +751,9 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
   }
 
   void _onFinalizeCancel() {
-    context.read<ComposeDispenserBloc>().add(AsyncFormDependenciesRequested(currentAddress: widget.address));
+    context
+        .read<ComposeDispenserBloc>()
+        .add(AsyncFormDependenciesRequested(currentAddress: widget.address));
   }
 
   bool _shouldHideSubmitButtons(DialogState dialogState) {
@@ -733,7 +780,8 @@ class AssetDropdownLoading extends StatelessWidget {
         initialSelection: "",
         // enabled: false,
         label: const Text('Asset'),
-        dropdownMenuEntries: [const DropdownMenuEntry<String>(value: "", label: "")].toList(),
+        dropdownMenuEntries:
+            [const DropdownMenuEntry<String>(value: "", label: "")].toList(),
         menuStyle: MenuStyle(
           shape: WidgetStateProperty.all<RoundedRectangleBorder>(
             RoundedRectangleBorder(
@@ -766,5 +814,6 @@ _getBalanceForSelectedAsset(List<Balance> balances, String asset) {
     return null;
   }
 
-  return balances.firstWhereOrNull((balance) => balance.asset == asset) ?? balances[0];
+  return balances.firstWhereOrNull((balance) => balance.asset == asset) ??
+      balances[0];
 }
