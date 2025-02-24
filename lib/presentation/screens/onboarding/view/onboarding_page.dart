@@ -189,6 +189,7 @@ class OnboardingView extends StatelessWidget {
                                   const SizedBox(height: 20),
                                 ],
                                 SizedBox(
+                                  height: 64,
                                   width: screenWidth > 500
                                       ? screenWidth * 0.5
                                       : null,
@@ -205,6 +206,7 @@ class OnboardingView extends StatelessWidget {
                                 ),
                                 const SizedBox(height: 16),
                                 SizedBox(
+                                  height: 64,
                                   width: screenWidth > 500
                                       ? screenWidth * 0.5
                                       : null,

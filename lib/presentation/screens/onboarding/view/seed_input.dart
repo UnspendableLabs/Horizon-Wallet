@@ -108,10 +108,13 @@ class SeedInputState extends State<SeedInput> {
                 EdgeInsets.symmetric(horizontal: isSmallScreen ? 20.0 : 40.0),
             child: Column(
               children: [
-                SelectableText(
-                  widget.title ?? 'Please confirm your seed phrase',
-                  textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.titleMedium,
+                SizedBox(
+                  width: 170,
+                  child: SelectableText(
+                    widget.title ?? 'Please confirm your seed phrase',
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
                 ),
                 if (widget.subtitle != null) ...[
                   const SizedBox(height: 10),

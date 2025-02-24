@@ -546,7 +546,7 @@ class MyApp extends StatelessWidget {
           backgroundColor: white,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(50),
-            side: BorderSide.none,
+            side: const BorderSide(color: transparentBlack8),
           ),
           padding: const EdgeInsets.all(20),
           foregroundColor: offBlack,
@@ -647,7 +647,7 @@ class MyApp extends StatelessWidget {
           backgroundColor: black,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(50),
-            side: BorderSide.none,
+            side: const BorderSide(color: transparentWhite8),
           ),
           padding: const EdgeInsets.all(20),
           foregroundColor: offWhite,
