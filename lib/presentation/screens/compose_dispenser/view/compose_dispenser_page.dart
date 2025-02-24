@@ -413,6 +413,7 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
 
   Widget _buildEscrowQuantityInputField(ComposeDispenserState state,
       Balance? balance, bool loading, GlobalKey<FormState> formKey) {
+        
     return HorizonUI.HorizonTextFormField(
       key: Key('escrow_quantity_input_${balance?.asset}'),
       controller: escrowQuantityController,
