@@ -19,21 +19,21 @@ class CustomThemeExtension extends ThemeExtension<CustomThemeExtension> {
   });
 
   static const light = CustomThemeExtension(
-    inputBackground: inputLightBackground,
-    inputBackgroundEmpty: lightThemeBackgroundColor,
-    inputBorderColor: inputLightBorderColor,
+    inputBackground: grey1,
+    inputBackgroundEmpty: offWhite,
+    inputBorderColor: transparentBlack8,
     inputTextColor: Colors.black,
-    errorColor: redErrorTextColor,
-    errorBackgroundColor: redErrorTextTransparentLight,
+    errorColor: red1,
+    errorBackgroundColor: transparentRed16,
   );
 
   static const dark = CustomThemeExtension(
-    inputBackground: inputDarkBackground,
-    inputBackgroundEmpty: darkThemeBackgroundColor,
-    inputBorderColor: inputDarkBorderColor,
+    inputBackground: grey5,
+    inputBackgroundEmpty: offBlack,
+    inputBorderColor: transparentWhite8,
     inputTextColor: Colors.white,
-    errorColor: redErrorTextColor,
-    errorBackgroundColor: redErrorTextTransparentDark,
+    errorColor: red1,
+    errorBackgroundColor: transparentRed2,
   );
 
   @override

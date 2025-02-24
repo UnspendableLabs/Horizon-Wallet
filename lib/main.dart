@@ -524,7 +524,7 @@ class MyApp extends StatelessWidget {
 
   ThemeData _buildLightTheme() {
     return ThemeData.light().copyWith(
-      scaffoldBackgroundColor: lightThemeBackgroundColor,
+      scaffoldBackgroundColor: offWhite,
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           elevation: 0,
@@ -543,13 +543,13 @@ class MyApp extends StatelessWidget {
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
           elevation: 0,
-          backgroundColor: Colors.white,
+          backgroundColor: white,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(50),
             side: BorderSide.none,
           ),
           padding: const EdgeInsets.all(20),
-          foregroundColor: Colors.black,
+          foregroundColor: offBlack,
           textStyle: const TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w400,
@@ -565,7 +565,7 @@ class MyApp extends StatelessWidget {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(8),
           ),
-          backgroundColor: transparentPurpleButtonColor,
+          backgroundColor: transparentPurple8,
           textStyle: const TextStyle(
             color: Colors.black,
           ),
@@ -584,7 +584,7 @@ class MyApp extends StatelessWidget {
           ),
           titleSmall: TextStyle(
             fontSize: 12,
-            color: subtitleLightTextColor,
+            color: transparentBlack66,
           ),
           bodySmall: TextStyle(
             fontSize: 12,
@@ -596,7 +596,7 @@ class MyApp extends StatelessWidget {
           color: Colors.black,
         ),
         menuStyle: MenuStyle(
-          backgroundColor: WidgetStatePropertyAll(inputLightBackground),
+          backgroundColor: WidgetStatePropertyAll(grey1),
           surfaceTintColor: WidgetStatePropertyAll(Colors.transparent),
           shadowColor: WidgetStatePropertyAll(Colors.transparent),
           padding: WidgetStatePropertyAll(EdgeInsets.zero),
@@ -609,7 +609,7 @@ class MyApp extends StatelessWidget {
         hintStyle: TextStyle(
           fontSize: 12,
           fontWeight: FontWeight.normal,
-          color: inputLightLabelColor,
+          color: transparentBlack33,
         ),
       ),
       extensions: {
@@ -620,7 +620,7 @@ class MyApp extends StatelessWidget {
 
   ThemeData _buildDarkTheme() {
     return ThemeData.dark().copyWith(
-      scaffoldBackgroundColor: darkThemeBackgroundColor,
+      scaffoldBackgroundColor: offBlack,
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           elevation: 0,
@@ -639,13 +639,13 @@ class MyApp extends StatelessWidget {
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
           elevation: 0,
-          backgroundColor: importButtonDarkBackground,
+          backgroundColor: black,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(50),
             side: BorderSide.none,
           ),
           padding: const EdgeInsets.all(20),
-          foregroundColor: Colors.white,
+          foregroundColor: offWhite,
           textStyle: const TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w400,
@@ -680,7 +680,7 @@ class MyApp extends StatelessWidget {
           ),
           titleSmall: TextStyle(
             fontSize: 12,
-            color: subtitleDarkTextColor,
+            color: transparentWhite66,
           ),
           bodySmall: TextStyle(
             fontSize: 12,
@@ -692,7 +692,7 @@ class MyApp extends StatelessWidget {
           color: Colors.white,
         ),
         menuStyle: MenuStyle(
-          backgroundColor: WidgetStatePropertyAll(inputDarkBackground),
+          backgroundColor: WidgetStatePropertyAll(grey5),
           surfaceTintColor: WidgetStatePropertyAll(Colors.transparent),
           shadowColor: WidgetStatePropertyAll(Colors.transparent),
           padding: WidgetStatePropertyAll(EdgeInsets.zero),
@@ -705,7 +705,7 @@ class MyApp extends StatelessWidget {
         hintStyle: TextStyle(
           fontSize: 12,
           fontWeight: FontWeight.normal,
-          color: inputDarkLabelColor,
+          color: transparentWhite3,
         ),
       ),
       extensions: {

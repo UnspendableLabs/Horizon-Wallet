@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
 
@@ -48,14 +47,14 @@ class _HorizonGradientButtonState extends State<HorizonGradientButton> {
                         ]
                   : brightness == Brightness.dark
                       ? const [
-                          createButtonDarkGradient1,
-                          createButtonDarkGradient2,
-                          createButtonDarkGradient3,
-                          createButtonDarkGradient4,
+                          goldenGradient1,
+                          yellow1,
+                          goldenGradient2,
+                          goldenGradient3,
                         ]
                       : const [
-                          createButtonLightGradient3,
-                          createButtonLightGradient1,
+                          duskGradient2,
+                          duskGradient1,
                         ],
               stops: brightness == Brightness.dark
                   ? const [0.0, 0.325, 0.65, 1.0]
@@ -163,7 +162,7 @@ class _HorizonOutlinedButtonState extends State<HorizonOutlinedButton> {
                 : FilledButton.styleFrom(
                     backgroundColor: isHovered
                         ? const Color.fromRGBO(30, 231, 197, 0.50)
-                        : tealButtonColor,
+                        : green2,
                     foregroundColor: Colors.black,
                   ),
             onPressed: widget.onPressed,
@@ -325,7 +324,7 @@ class _HorizonRedesignDropdownState<T>
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(18),
                 border: const GradientBoxBorder(width: 1),
-                color: isDarkMode ? inputDarkBackground : inputLightBackground,
+                color: isDarkMode ? grey5 : grey1,
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -382,14 +381,11 @@ class _HorizonRedesignDropdownState<T>
               border: focusNode.hasFocus
                   ? const GradientBoxBorder(width: 1)
                   : Border.all(
-                      color: isDarkMode
-                          ? inputDarkBorderColor
-                          : inputLightBorderColor),
+                      color:
+                          isDarkMode ? transparentWhite8 : transparentBlack8),
               color: hasValue
-                  ? (isDarkMode ? inputDarkBackground : inputLightBackground)
-                  : (isDarkMode
-                      ? darkThemeBackgroundColor
-                      : lightThemeBackgroundColor),
+                  ? (isDarkMode ? grey5 : grey1)
+                  : (isDarkMode ? offBlack : offWhite),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,

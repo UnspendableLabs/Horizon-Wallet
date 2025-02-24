@@ -159,13 +159,13 @@ class SeedInputState extends State<SeedInput> {
                 children: [
                   const Icon(
                     Icons.warning_amber_rounded,
-                    color: redErrorTextColor,
+                    color: red1,
                     size: 18,
                   ),
                   const SizedBox(width: 4),
                   SelectableText(
                     widget.errorMessage!,
-                    style: const TextStyle(color: redErrorTextColor),
+                    style: const TextStyle(color: red1),
                   ),
                 ],
               ),

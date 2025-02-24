@@ -317,7 +317,7 @@ class ShowMnemonicStep extends StatelessWidget {
                       config.network == Network.testnet)
                     ElevatedButton.icon(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: tealButtonColor,
+                        backgroundColor: green2,
                         foregroundColor: Colors.black,
                       ),
                       onPressed: () {

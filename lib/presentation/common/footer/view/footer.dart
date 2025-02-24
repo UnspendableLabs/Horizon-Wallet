@@ -66,9 +66,7 @@ class _FooterState extends State<_Footer> {
             width: double.infinity,
             height: 30,
             decoration: BoxDecoration(
-              color: isDarkTheme
-                  ? darkThemeBackgroundColor
-                  : lightThemeBackgroundColor,
+              color: isDarkTheme ? offBlack : offWhite,
             ),
             child: Center(
               child: Wrap(

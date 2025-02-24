@@ -78,17 +78,17 @@ class _OnboardingImportPageState extends State<OnboardingImportPage> {
                       child: Container(
                         padding: const EdgeInsets.all(8.0),
                         decoration: BoxDecoration(
-                          color: redErrorTextTransparentDark,
+                          color: transparentRed2,
                           borderRadius: BorderRadius.circular(40.0),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.info, color: redErrorTextColor),
+                            const Icon(Icons.info, color: red1),
                             const SizedBox(width: 4),
                             SelectableText(
                               error,
-                              style: const TextStyle(color: redErrorTextColor),
+                              style: const TextStyle(color: red1),
                             ),
                           ],
                         ),
