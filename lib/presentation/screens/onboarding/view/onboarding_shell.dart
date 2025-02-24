@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 
 class OnboardingShell extends StatefulWidget {
@@ -70,25 +71,30 @@ class _OnboardingShellState extends State<OnboardingShell> {
               Padding(
                 padding:
                     EdgeInsets.symmetric(horizontal: isSmallScreen ? 16 : 30),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: List.generate(widget.steps.length, (index) {
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                child: Center(
+                  child: Container(
+                    width: 48,
+                    height: 8,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(4),
+                      color: transparentWhite33,
+                    ),
+                    child: FractionallySizedBox(
+                      alignment: Alignment.centerLeft,
+                      widthFactor: (_currentStep + 1) / widget.steps.length,
                       child: Container(
-                        width: 8,
-                        height: 8,
                         decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: index <= _currentStep
-                              ? (isDarkMode ? Colors.white : Colors.black)
-                              : (isDarkMode
-                                  ? Colors.white.withOpacity(0.3)
-                                  : Colors.black.withOpacity(0.3)),
+                          borderRadius: BorderRadius.circular(4),
+                          gradient: const LinearGradient(
+                            colors: [
+                              pinkGradient1,
+                              purpleGradient1,
+                            ],
+                          ),
                         ),
                       ),
-                    );
-                  }),
+                    ),
+                  ),
                 ),
               ),
               const SizedBox(height: 24),
