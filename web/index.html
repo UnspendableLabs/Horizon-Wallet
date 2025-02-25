@@ -120,6 +120,50 @@
       content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
       name="viewport"
     />
+    <link href="fonts/Montserrat-Regular.ttf" rel="preload" as="font" type="font/ttf" crossorigin>
+    <link href="fonts/Montserrat-Medium.ttf" rel="preload" as="font" type="font/ttf" crossorigin>
+    <link href="fonts/Montserrat-Bold.ttf" rel="preload" as="font" type="font/ttf" crossorigin>
+    <style>
+      @font-face {
+        font-family: 'Montserrat';
+        src: url('fonts/Montserrat-Regular.ttf') format('truetype');
+        font-weight: normal;
+        font-style: normal;
+      }
+      @font-face {
+        font-family: 'Montserrat';
+        src: url('fonts/Montserrat-Medium.ttf') format('truetype');
+        font-weight: 500;
+        font-style: normal;
+      }
+      @font-face {
+        font-family: 'Montserrat';
+        src: url('fonts/Montserrat-Bold.ttf') format('truetype');
+        font-weight: bold;
+        font-style: normal;
+      }
+    </style>
+    <!-- Add Material Icons font -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+    <!-- Add this to ensure Material Icons loads properly -->
+    <style>
+      /* Ensure Material Icons loads properly */
+      .material-icons {
+        font-family: 'Material Icons';
+        font-weight: normal;
+        font-style: normal;
+        font-size: 24px;
+        line-height: 1;
+        letter-spacing: normal;
+        text-transform: none;
+        display: inline-block;
+        white-space: nowrap;
+        word-wrap: normal;
+        direction: ltr;
+        -webkit-font-smoothing: antialiased;
+      }
+    </style>
   </head>
   <body>
     <picture id="splash">

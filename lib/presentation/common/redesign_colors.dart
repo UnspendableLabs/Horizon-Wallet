@@ -10,6 +10,9 @@ const yellow1 = Color(0xFFEED09A);
 const goldenGradient2 = Color(0xFFEEB395);
 const goldenGradient3 = Color(0xFFD2A6B0);
 
+const pinkGradient1 = Color(0xFFF6A7A8);
+const purpleGradient1 = Color(0xFFA3A7D3);
+
 // Light mode create button gradient colors
 const duskGradient1 = Color(0xFF3C8DBC);
 const duskGradient2 = Color(0xFF6C49B2);
@@ -22,7 +25,7 @@ const transparentPurple8 = Color.fromRGBO(137, 146, 246, 0.08);
 
 // Inputs
 const grey5 = Color(0xFF191919);
-const transparentWhite3 = Color.fromRGBO(254, 251, 249, 0.33);
+const transparentWhite33 = Color.fromRGBO(254, 251, 249, 0.33);
 const transparentWhite8 = Color.fromRGBO(254, 251, 249, 0.08);
 
 const grey1 = Color(0xFFCED3D7);

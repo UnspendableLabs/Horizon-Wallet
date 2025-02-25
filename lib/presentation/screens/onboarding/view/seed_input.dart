@@ -107,10 +107,13 @@ class SeedInputState extends State<SeedInput> {
                 EdgeInsets.symmetric(horizontal: isSmallScreen ? 20.0 : 40.0),
             child: Column(
               children: [
-                SelectableText(
-                  widget.title ?? 'Please confirm your seed phrase',
-                  textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.titleMedium,
+                SizedBox(
+                  width: 170,
+                  child: SelectableText(
+                    widget.title ?? 'Please confirm your seed phrase',
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
                 ),
                 if (widget.subtitle != null) ...[
                   const SizedBox(height: 10),
@@ -128,13 +131,21 @@ class SeedInputState extends State<SeedInput> {
         Padding(
           padding: const EdgeInsets.all(10.0),
           child: TextButton.icon(
-            style: Theme.of(context).textButtonTheme.style,
+            style: Theme.of(context).textButtonTheme.style?.copyWith(
+                  backgroundColor: WidgetStateProperty.all(
+                    transparentPurple8,
+                  ),
+                  padding: WidgetStateProperty.all(
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+                  ),
+                ),
             onPressed: () {
               setState(() {
                 _showSeedPhrase = !_showSeedPhrase;
               });
             },
             icon: Icon(
+              color: Theme.of(context).iconTheme.color,
               _showSeedPhrase
                   ? Icons.visibility_off_outlined
                   : Icons.visibility_outlined,

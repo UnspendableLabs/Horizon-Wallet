@@ -286,10 +286,13 @@ class ShowMnemonicStep extends StatelessWidget {
                     horizontal: isSmallScreen ? 20.0 : 40.0),
                 child: Column(
                   children: [
-                    SelectableText(
-                      'Seed Phrase',
-                      textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.titleMedium,
+                    SizedBox(
+                      width: 170,
+                      child: SelectableText(
+                        'Seed Phrase',
+                        textAlign: TextAlign.center,
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
                     ),
                     const SizedBox(height: 10),
                     SelectableText(

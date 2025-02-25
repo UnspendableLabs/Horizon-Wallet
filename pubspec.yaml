@@ -148,7 +148,7 @@ flutter:
   # example:
 
   fonts:
-    - family: Roboto
+    - family: Montserrat
       fonts:
         - asset: fonts/Montserrat-Black.ttf
         - asset: fonts/Montserrat-BlackItalic.ttf

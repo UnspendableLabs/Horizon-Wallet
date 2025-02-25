@@ -183,9 +183,12 @@ class _ChooseFormatStepState extends State<ChooseFormatStep> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              SelectableText(
-                'Import Your Wallet',
-                style: Theme.of(context).textTheme.titleMedium,
+              SizedBox(
+                width: 170,
+                child: SelectableText(
+                  'Import Your Wallet',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
               ),
               const SizedBox(height: 10),
               SelectableText(

@@ -8,7 +8,6 @@ import 'package:horizon/domain/services/platform_service.dart';
 import 'package:horizon/presentation/common/footer/bloc/footer_bloc.dart';
 import 'package:horizon/presentation/common/footer/bloc/footer_event.dart';
 import 'package:horizon/presentation/common/footer/bloc/footer_state.dart';
-import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class Footer extends StatelessWidget {
@@ -46,15 +45,6 @@ class _FooterState extends State<_Footer> {
 
   @override
   Widget build(BuildContext context) {
-    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
-    final screenWidth = MediaQuery.of(context).size.width;
-
-    TextStyle textStyle() => TextStyle(
-          color: isDarkTheme ? Colors.white : Colors.black,
-          fontSize: 10,
-          fontWeight: FontWeight.w300,
-        );
-
     final config = GetIt.I.get<Config>();
 
     return Material(
@@ -62,102 +52,51 @@ class _FooterState extends State<_Footer> {
       color: Colors.transparent,
       child: BlocBuilder<FooterBloc, FooterState>(
         builder: (context, state) {
-          return Container(
+          return SizedBox(
             width: double.infinity,
-            height: 30,
-            decoration: BoxDecoration(
-              color: isDarkTheme ? offBlack : offWhite,
-            ),
-            child: Center(
-              child: Wrap(
-                alignment: WrapAlignment.center,
-                spacing: screenWidth < 600 ? 4 : 20,
-                runSpacing: 4,
-                children: [
-                  TextButton(
-                    style: TextButton.styleFrom(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: screenWidth < 600 ? 4 : 16,
-                      ),
-                      minimumSize: Size.zero,
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    ),
-                    onPressed: () => context.go("/tos"),
-                    child: Text(
-                      'Terms of Service',
-                      style: textStyle(),
-                    ),
-                  ),
-                  TextButton(
-                    style: TextButton.styleFrom(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: screenWidth < 600 ? 4 : 16,
-                      ),
-                      minimumSize: Size.zero,
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    ),
-                    onPressed: () => context.go("/privacy-policy"),
-                    child: Text(
-                      'Privacy Policy',
-                      style: textStyle(),
-                    ),
-                  ),
-                  TextButton(
-                    style: TextButton.styleFrom(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: screenWidth < 600 ? 4 : 16,
-                      ),
-                      minimumSize: Size.zero,
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    ),
+            height: 38,
+            // padding: const EdgeInsets.symmetric(horizontal:  16),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                TextButton(
+                  onPressed: () => context.go("/tos"),
+                  child: const Text('Terms of Service'),
+                ),
+                // const SizedBox(width: 8),
+                TextButton(
+                  onPressed: () => context.go("/privacy-policy"),
+                  child: const Text('Privacy Policy'),
+                ),
+                // const SizedBox(width: 8),
+                TextButton(
+                  onPressed: () {
+                    launchUrl(Uri.parse(
+                        "https://github.com/UnspendableLabs/Horizon-Wallet/releases/tag/v${config.version.toString()}"));
+                  },
+                  child: Text(config.version.toString()),
+                ),
+                // const SizedBox(width: 8),
+                state.nodeInfoState.when(
+                  initial: () => const SizedBox.shrink(),
+                  loading: () => const SizedBox.shrink(),
+                  error: (error) => const SizedBox.shrink(),
+                  success: (nodeInfo) => TextButton(
                     onPressed: () {
                       launchUrl(Uri.parse(
-                          "https://github.com/UnspendableLabs/Horizon-Wallet/releases/tag/v${config.version.toString()}"));
+                          "https://github.com/CounterpartyXCP/counterparty-core/releases/tag/v${nodeInfo.version}"));
                     },
-                    child: Text(
-                      config.version.toString(),
-                      style: textStyle(),
-                    ),
+                    child: Text('Counterparty Core v${nodeInfo.version}'),
                   ),
-                  state.nodeInfoState.when(
-                    initial: () => const SizedBox.shrink(),
-                    loading: () => const SizedBox.shrink(),
-                    error: (error) => const SizedBox.shrink(),
-                    success: (nodeInfo) => TextButton(
-                      style: TextButton.styleFrom(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: screenWidth < 600 ? 4 : 16,
-                        ),
-                        minimumSize: Size.zero,
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                      ),
-                      onPressed: () {
-                        launchUrl(Uri.parse(
-                            "https://github.com/CounterpartyXCP/counterparty-core/releases/tag/v${nodeInfo.version}"));
-                      },
-                      child: Text(
-                        'Counterparty Core v${nodeInfo.version}',
-                        style: textStyle(),
-                      ),
-                    ),
+                ),
+                if (config.isWebExtension) ...[
+                  // const SizedBox(width: 8),
+                  TextButton(
+                    onPressed: _openInNewTab,
+                    child: const Text('Open in Tab'),
                   ),
-                  if (config.isWebExtension)
-                    TextButton(
-                      style: TextButton.styleFrom(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: screenWidth < 600 ? 4 : 16,
-                        ),
-                        minimumSize: Size.zero,
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                      ),
-                      onPressed: _openInNewTab,
-                      child: Text(
-                        'Open in Tab',
-                        style: textStyle(),
-                      ),
-                    ),
                 ],
-              ),
+              ],
             ),
           );
         },

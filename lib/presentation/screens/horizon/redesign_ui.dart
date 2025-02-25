@@ -131,51 +131,49 @@ class _HorizonOutlinedButtonState extends State<HorizonOutlinedButton> {
       cursor: widget.onPressed != null
           ? SystemMouseCursors.click
           : SystemMouseCursors.basic,
-      child: SizedBox(
+      child: Container(
         width: double.infinity,
-        height: 62,
-        child: Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(50),
-            boxShadow: (isHovered && widget.onPressed != null)
-                ? [
-                    if (widget.isTransparent == true)
-                      BoxShadow(
-                        color: isDarkMode
-                            ? const Color.fromRGBO(255, 255, 255, 0.10)
-                            : const Color.fromRGBO(0, 0, 0, 0.15),
-                        blurRadius: 10,
-                      )
-                    else
-                      BoxShadow(
-                        color: isDarkMode
-                            ? const Color.fromRGBO(255, 255, 255, 0.20)
-                            : const Color.fromRGBO(0, 0, 0, 0.15),
-                        blurRadius: 10,
-                      )
-                  ]
-                : null,
-          ),
-          child: FilledButton(
-            style: widget.isTransparent == true
-                ? Theme.of(context).filledButtonTheme.style
-                : FilledButton.styleFrom(
-                    backgroundColor: isHovered
-                        ? const Color.fromRGBO(30, 231, 197, 0.50)
-                        : green2,
-                    foregroundColor: Colors.black,
-                  ),
-            onPressed: widget.onPressed,
-            child: Text(
-              widget.buttonText,
-              style: TextStyle(
-                fontWeight: widget.isTransparent == true || isExtension
-                    ? FontWeight.normal
-                    : FontWeight.w600,
-                color: widget.isTransparent == true
-                    ? Theme.of(context).textTheme.bodySmall?.color
-                    : null,
-              ),
+        height: double.infinity,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(50),
+          boxShadow: (isHovered && widget.onPressed != null)
+              ? [
+                  if (widget.isTransparent == true)
+                    BoxShadow(
+                      color: isDarkMode
+                          ? const Color.fromRGBO(255, 255, 255, 0.10)
+                          : const Color.fromRGBO(0, 0, 0, 0.15),
+                      blurRadius: 10,
+                    )
+                  else
+                    BoxShadow(
+                      color: isDarkMode
+                          ? const Color.fromRGBO(255, 255, 255, 0.20)
+                          : const Color.fromRGBO(0, 0, 0, 0.15),
+                      blurRadius: 10,
+                    )
+                ]
+              : null,
+        ),
+        child: FilledButton(
+          style: widget.isTransparent == true
+              ? Theme.of(context).filledButtonTheme.style
+              : FilledButton.styleFrom(
+                  backgroundColor: isHovered
+                      ? const Color.fromRGBO(30, 231, 197, 0.50)
+                      : green2,
+                  foregroundColor: Colors.black,
+                ),
+          onPressed: widget.onPressed,
+          child: Text(
+            widget.buttonText,
+            style: TextStyle(
+              fontWeight: widget.isTransparent == true || isExtension
+                  ? FontWeight.normal
+                  : FontWeight.w600,
+              color: widget.isTransparent == true
+                  ? Theme.of(context).textTheme.bodySmall?.color
+                  : null,
             ),
           ),
         ),
