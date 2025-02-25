@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:horizon/common/uuid.dart';
-import 'package:horizon/presentation/common/shared_util.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_event.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_state.dart';
@@ -13,6 +12,7 @@ import 'package:horizon/domain/entities/bitcoin_tx.dart';
 import 'package:horizon/presentation/common/tx_hash_display.dart';
 import 'package:horizon/common/format.dart';
 import 'package:horizon/presentation/common/colors.dart';
+import 'package:horizon/presentation/screens/dashboard/view/balances_display.dart';
 import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
 import 'package:horizon/presentation/screens/compose_rbf/view/compose_rbf_view.dart';
 import 'package:horizon/domain/repositories/settings_repository.dart';
@@ -181,6 +181,13 @@ class ActivityFeedListItem extends StatelessWidget {
       required this.addresses,
       required this.isMobile});
 
+  String _formatQuantity(String? quantity) {
+    if (quantity == null) return '';
+    return quantity
+        .replaceAll(RegExp(r'(?<=\d)0+$'), '')
+        .replaceAll(RegExp(r'\.$'), '');
+  }
+
   @override
   Widget build(BuildContext context) {
     return ListTile(
@@ -345,7 +352,7 @@ class ActivityFeedListItem extends StatelessWidget {
             ),
             const Spacer(),
             Text(
-              "${tx.getAmountSentNormalized(addresses_).toStringAsFixed(8)} BTC",
+              "${_formatQuantity(tx.getAmountSentNormalized(addresses_).toStringAsFixed(8))} BTC",
               style: const TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w500,
@@ -364,7 +371,7 @@ class ActivityFeedListItem extends StatelessWidget {
             ),
             const Spacer(),
             Text(
-              "${tx.getAmountReceivedNormalized(addresses_).toStringAsFixed(8)} BTC",
+              "${_formatQuantity(tx.getAmountReceivedNormalized(addresses_).toStringAsFixed(8))} BTC",
               style: const TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w500,
@@ -401,12 +408,13 @@ class ActivityFeedListItem extends StatelessWidget {
             ),
             const Spacer(),
             Text(
-              "${params.quantityNormalized} ${params.asset}",
+              "${_formatQuantity(params.quantityNormalized)} ",
               style: const TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w500,
               ),
             ),
+            _buildAssetDisplay(params.asset),
           ],
         ),
       VerboseEnhancedSendEvent(params: var params)
@@ -422,12 +430,13 @@ class ActivityFeedListItem extends StatelessWidget {
             ),
             const Spacer(),
             Text(
-              "${params.quantityNormalized} ${params.asset}",
+              "${_formatQuantity(params.quantityNormalized)} ",
               style: const TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w500,
               ),
             ),
+            _buildAssetDisplay(params.asset),
           ],
         ),
       VerboseMpmaSendEvent(params: var params)
@@ -443,12 +452,13 @@ class ActivityFeedListItem extends StatelessWidget {
             ),
             const Spacer(),
             Text(
-              "${params.quantityNormalized} ${params.asset}",
+              "${_formatQuantity(params.quantityNormalized)} ",
               style: const TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w500,
               ),
             ),
+            _buildAssetDisplay(params.asset),
           ],
         ),
       VerboseMpmaSendEvent(params: var params)
@@ -464,12 +474,13 @@ class ActivityFeedListItem extends StatelessWidget {
             ),
             const Spacer(),
             Text(
-              "${params.quantityNormalized} ${params.asset}",
+              "${_formatQuantity(params.quantityNormalized)} ",
               style: const TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w500,
               ),
             ),
+            _buildAssetDisplay(params.asset),
           ],
         ),
       VerboseAssetIssuanceEvent(params: var params) =>
@@ -484,13 +495,7 @@ class ActivityFeedListItem extends StatelessWidget {
               ),
             ),
             const Spacer(),
-            Text(
-              displayAssetName(params.asset, params.assetLongname),
-              style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
+            _buildAssetDisplay(params.asset, params.assetLongname),
           ],
         ),
       VerboseDispenseEvent(params: var params) => Row(
@@ -504,12 +509,13 @@ class ActivityFeedListItem extends StatelessWidget {
             ),
             const Spacer(),
             Text(
-              "${params.dispenseQuantityNormalized} ${params.asset} for ${params.btcAmountNormalized} BTC",
+              "${_formatQuantity(params.dispenseQuantityNormalized)} ",
               style: const TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w500,
               ),
             ),
+            _buildAssetDisplay(params.asset),
           ],
         ),
       VerboseOpenDispenserEvent(params: var params) => Row(
@@ -522,13 +528,7 @@ class ActivityFeedListItem extends StatelessWidget {
               ),
             ),
             const Spacer(),
-            Text(
-              params.asset,
-              style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
+            _buildAssetDisplay(params.asset),
           ],
         ),
       VerboseRefillDispenserEvent(params: var params) => Row(
@@ -541,13 +541,7 @@ class ActivityFeedListItem extends StatelessWidget {
               ),
             ),
             const Spacer(),
-            Text(
-              params.asset,
-              style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
+            _buildAssetDisplay(params.asset),
           ],
         ),
       VerboseDispenserUpdateEvent(params: var params) => Row(
@@ -562,13 +556,7 @@ class ActivityFeedListItem extends StatelessWidget {
               ),
             ),
             const Spacer(),
-            Text(
-              params.asset,
-              style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
+            _buildAssetDisplay(params.asset),
           ],
         ),
       VerboseNewFairmintEvent(params: var params) => Row(
@@ -586,13 +574,7 @@ class ActivityFeedListItem extends StatelessWidget {
               ),
             ),
             const Spacer(),
-            Text(
-              params.asset ?? '',
-              style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
+            _buildAssetDisplay(params.asset),
           ],
         ),
       VerboseNewFairminterEvent(params: var params) => Row(
@@ -610,13 +592,7 @@ class ActivityFeedListItem extends StatelessWidget {
               ),
             ),
             const Spacer(),
-            Text(
-              params.asset ?? '',
-              style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
+            _buildAssetDisplay(params.asset),
           ],
         ),
       VerboseOpenOrderEvent(params: var params) => Row(
@@ -630,12 +606,21 @@ class ActivityFeedListItem extends StatelessWidget {
             ),
             const Spacer(),
             Text(
-              "${params.giveQuantityNormalized} ${params.giveAsset} / ${params.getQuantityNormalized} ${params.getAsset}",
+              "${_formatQuantity(params.giveQuantityNormalized)} ",
               style: const TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w500,
               ),
             ),
+            _buildAssetDisplay(params.giveAsset),
+            Text(
+              " / ${_formatQuantity(params.getQuantityNormalized)} ",
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            _buildAssetDisplay(params.getAsset),
           ],
         ),
       VerboseOrderMatchEvent(params: var params) => Row(
@@ -649,12 +634,21 @@ class ActivityFeedListItem extends StatelessWidget {
             ),
             const Spacer(),
             Text(
-              "${params.forwardQuantityNormalized} ${params.forwardAsset} / ${params.backwardQuantityNormalized} ${params.backwardAsset}",
+              "${_formatQuantity(params.forwardQuantityNormalized)} ",
               style: const TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w500,
               ),
             ),
+            _buildAssetDisplay(params.forwardAsset),
+            Text(
+              " / ${_formatQuantity(params.backwardQuantityNormalized)} ",
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            _buildAssetDisplay(params.backwardAsset),
           ],
         ),
       VerboseOrderUpdateEvent() => const Row(
@@ -712,12 +706,13 @@ class ActivityFeedListItem extends StatelessWidget {
             ),
             const Spacer(),
             Text(
-              "${params.asset} ${params.quantityNormalized}",
+              "${_formatQuantity(params.quantityNormalized)} ",
               style: const TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w500,
               ),
             ),
+            _buildAssetDisplay(params.asset),
           ],
         ),
       VerboseDetachFromUtxoEvent(params: var params) => Row(
@@ -731,12 +726,13 @@ class ActivityFeedListItem extends StatelessWidget {
             ),
             const Spacer(),
             Text(
-              "${params.asset} ${params.quantityNormalized}",
+              "${_formatQuantity(params.quantityNormalized)} ",
               style: const TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w500,
               ),
             ),
+            _buildAssetDisplay(params.asset),
           ],
         ),
       VerboseMoveToUtxoEvent(params: var params) => Row(
@@ -750,12 +746,13 @@ class ActivityFeedListItem extends StatelessWidget {
             ),
             const Spacer(),
             Text(
-              "${params.asset} ${params.quantityNormalized}",
+              "${_formatQuantity(params.quantityNormalized)} ",
               style: const TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w500,
               ),
             ),
+            _buildAssetDisplay(params.asset),
           ],
         ),
       AtomicSwapEvent(params: var params) => Row(
@@ -769,7 +766,15 @@ class ActivityFeedListItem extends StatelessWidget {
             ),
             const Spacer(),
             Text(
-              "${params.quantityNormalized} ${params.asset} for ${params.bitcoinSwapAmount} BTC",
+              "${_formatQuantity(params.quantityNormalized)} ",
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            _buildAssetDisplay(params.asset),
+            Text(
+              " for ${_formatQuantity(params.bitcoinSwapAmount)} BTC",
               style: const TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w500,
@@ -788,12 +793,13 @@ class ActivityFeedListItem extends StatelessWidget {
             ),
             const Spacer(),
             Text(
-              "${params.quantityNormalized} ${params.asset}",
+              "${_formatQuantity(params.quantityNormalized)} ",
               style: const TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w500,
               ),
             ),
+            _buildAssetDisplay(params.asset),
           ],
         ),
       AssetDividendEvent(params: var params) => Row(
@@ -806,8 +812,9 @@ class ActivityFeedListItem extends StatelessWidget {
               ),
             ),
             const Spacer(),
+            _buildAssetDisplay(params.dividendAsset),
             Text(
-              "${params.asset} - ${params.dividendAsset} ${params.quantityPerUnitNormalized} per unit",
+              " ${_formatQuantity(params.quantityPerUnitNormalized)} per unit",
               style: const TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w500,
@@ -820,7 +827,7 @@ class ActivityFeedListItem extends StatelessWidget {
         Row(
           children: [
             const Text(
-              "Sweep",
+              "Sweep out",
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
@@ -828,7 +835,7 @@ class ActivityFeedListItem extends StatelessWidget {
             ),
             const Spacer(),
             Text(
-              "${flagMapper[params.flags]} to ${params.destination}",
+              "${flagMapper[params.flags]}",
               style: const TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w500,
@@ -841,7 +848,7 @@ class ActivityFeedListItem extends StatelessWidget {
         Row(
           children: [
             const Text(
-              "Sweep",
+              "Sweep in",
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
@@ -849,7 +856,7 @@ class ActivityFeedListItem extends StatelessWidget {
             ),
             const Spacer(),
             Text(
-              "${flagMapper[params.flags]} from ${params.source}",
+              "${flagMapper[params.flags]}",
               style: const TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w500,
@@ -894,13 +901,7 @@ class ActivityFeedListItem extends StatelessWidget {
               ),
             ),
             const Spacer(),
-            Text(
-              displayAssetName(params.asset, params.assetLongname),
-              style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
+            _buildAssetDisplay(params.asset, params.assetLongname),
           ],
         );
       } else {
@@ -914,13 +915,7 @@ class ActivityFeedListItem extends StatelessWidget {
               ),
             ),
             const Spacer(),
-            Text(
-              displayAssetName(params.asset, params.assetLongname),
-              style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
+            _buildAssetDisplay(params.asset, params.assetLongname),
           ],
         );
       }
@@ -937,13 +932,7 @@ class ActivityFeedListItem extends StatelessWidget {
                 ),
               ),
               const Spacer(),
-              Text(
-                displayAssetName(params.asset, params.assetLongname),
-                style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
+              _buildAssetDisplay(params.asset, params.assetLongname),
             ],
           ),
         "lock_quantity" => Row(
@@ -956,13 +945,7 @@ class ActivityFeedListItem extends StatelessWidget {
                 ),
               ),
               const Spacer(),
-              Text(
-                displayAssetName(params.asset, params.assetLongname),
-                style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
+              _buildAssetDisplay(params.asset, params.assetLongname),
             ],
           ),
         "change_description" => Row(
@@ -975,13 +958,7 @@ class ActivityFeedListItem extends StatelessWidget {
                 ),
               ),
               const Spacer(),
-              Text(
-                displayAssetName(params.asset, params.assetLongname),
-                style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
+              _buildAssetDisplay(params.asset, params.assetLongname),
             ],
           ),
         "lock_description" => Row(
@@ -994,13 +971,7 @@ class ActivityFeedListItem extends StatelessWidget {
                 ),
               ),
               const Spacer(),
-              Text(
-                displayAssetName(params.asset, params.assetLongname),
-                style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
+              _buildAssetDisplay(params.asset, params.assetLongname),
             ],
           ),
         "open_fairminter" => Row(
@@ -1013,13 +984,7 @@ class ActivityFeedListItem extends StatelessWidget {
                 ),
               ),
               const Spacer(),
-              Text(
-                displayAssetName(params.asset, params.assetLongname),
-                style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
+              _buildAssetDisplay(params.asset, params.assetLongname),
             ],
           ),
         "fairmint" => Row(
@@ -1032,13 +997,7 @@ class ActivityFeedListItem extends StatelessWidget {
                 ),
               ),
               const Spacer(),
-              Text(
-                displayAssetName(params.asset, params.assetLongname),
-                style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
+              _buildAssetDisplay(params.asset, params.assetLongname),
             ],
           ),
         "transfer" => addresses.any((a) => a == params.source)
@@ -1052,13 +1011,7 @@ class ActivityFeedListItem extends StatelessWidget {
                     ),
                   ),
                   const Spacer(),
-                  Text(
-                    displayAssetName(params.asset, params.assetLongname),
-                    style: const TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
+                  _buildAssetDisplay(params.asset, params.assetLongname),
                 ],
               )
             : Row(
@@ -1071,13 +1024,7 @@ class ActivityFeedListItem extends StatelessWidget {
                     ),
                   ),
                   const Spacer(),
-                  Text(
-                    displayAssetName(params.asset, params.assetLongname),
-                    style: const TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
+                  _buildAssetDisplay(params.asset, params.assetLongname),
                 ],
               ),
         _ => Row(
@@ -1091,12 +1038,13 @@ class ActivityFeedListItem extends StatelessWidget {
               ),
               const Spacer(),
               Text(
-                "${params.quantityNormalized} ${displayAssetName(params.asset, params.assetLongname)}",
+                "${_formatQuantity(params.quantityNormalized)} ",
                 style: const TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w500,
                 ),
               ),
+              _buildAssetDisplay(params.asset, params.assetLongname),
             ],
           ),
       };
@@ -1126,12 +1074,13 @@ class ActivityFeedListItem extends StatelessWidget {
         ),
         const Spacer(),
         Text(
-          "${params.quantityNormalized} ${displayAssetName(params.asset, params.assetLongname)}",
+          "${_formatQuantity(params.quantityNormalized)} ",
           style: const TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.w500,
           ),
         ),
+        _buildAssetDisplay(params.asset, params.assetLongname),
       ],
     );
   }
@@ -1152,12 +1101,13 @@ class ActivityFeedListItem extends StatelessWidget {
                       ),
                       const Spacer(),
                       Text(
-                        "${data.quantityNormalized} ${data.asset}",
+                        "${_formatQuantity(data.quantityNormalized)} ",
                         style: const TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
+                      _buildAssetDisplay(data.asset),
                     ],
                   ))
               .toList(),
@@ -1173,12 +1123,13 @@ class ActivityFeedListItem extends StatelessWidget {
             ),
             const Spacer(),
             Text(
-              "${unpackedData.quantityNormalized} ${unpackedData.asset}",
+              "${_formatQuantity(unpackedData.quantityNormalized)} ",
               style: const TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w500,
               ),
             ),
+            _buildAssetDisplay(unpackedData.asset),
           ],
         ),
       TransactionInfoMoveToUtxo() => const Row(
@@ -1203,12 +1154,13 @@ class ActivityFeedListItem extends StatelessWidget {
             ),
             const Spacer(),
             Text(
-              "${unpackedData.quantityNormalized} ${unpackedData.asset}",
+              "${_formatQuantity(unpackedData.quantityNormalized)} ",
               style: const TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w500,
               ),
             ),
+            _buildAssetDisplay(unpackedData.asset),
           ],
         ),
       TransactionInfoIssuance(unpackedData: var unpackedData) => Row(
@@ -1222,12 +1174,13 @@ class ActivityFeedListItem extends StatelessWidget {
             ),
             const Spacer(),
             Text(
-              "${unpackedData.quantityNormalized} ${unpackedData.asset}",
+              "${_formatQuantity(unpackedData.quantityNormalized)} ",
               style: const TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w500,
               ),
             ),
+            _buildAssetDisplay(unpackedData.asset),
           ],
         ),
       TransactionInfo(btcAmount: var btcAmount)
@@ -1243,7 +1196,7 @@ class ActivityFeedListItem extends StatelessWidget {
             ),
             const Spacer(),
             Text(
-              "${satoshisToBtc(btcAmount).toStringAsFixed(8)} BTC",
+              "${_formatQuantity(satoshisToBtc(btcAmount).toStringAsFixed(8))} BTC",
               style: const TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w500,
@@ -1272,13 +1225,7 @@ class ActivityFeedListItem extends StatelessWidget {
               ),
             ),
             const Spacer(),
-            Text(
-              unpackedData.asset,
-              style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
+            _buildAssetDisplay(unpackedData.asset),
           ],
         ),
       TransactionInfoFairmint(unpackedData: var unpackedData) => Row(
@@ -1291,13 +1238,7 @@ class ActivityFeedListItem extends StatelessWidget {
               ),
             ),
             const Spacer(),
-            Text(
-              unpackedData.asset ?? '',
-              style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
+            _buildAssetDisplay(unpackedData.asset),
           ],
         ),
       TransactionInfoFairminter(unpackedData: var unpackedData) => Row(
@@ -1310,13 +1251,7 @@ class ActivityFeedListItem extends StatelessWidget {
               ),
             ),
             const Spacer(),
-            Text(
-              unpackedData.asset ?? '',
-              style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
+            _buildAssetDisplay(unpackedData.asset),
           ],
         ),
       TransactionInfoOrder(unpackedData: var unpackedData) => Row(
@@ -1330,12 +1265,21 @@ class ActivityFeedListItem extends StatelessWidget {
             ),
             const Spacer(),
             Text(
-              "${unpackedData.giveQuantityNormalized} ${unpackedData.giveAsset} / ${unpackedData.getQuantityNormalized} ${unpackedData.getAsset}",
+              "${_formatQuantity(unpackedData.giveQuantityNormalized)} ",
               style: const TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w500,
               ),
             ),
+            _buildAssetDisplay(unpackedData.giveAsset),
+            Text(
+              " / ${_formatQuantity(unpackedData.getQuantityNormalized)} ",
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            _buildAssetDisplay(unpackedData.getAsset),
           ],
         ),
       TransactionInfoCancel(unpackedData: var _) => const Row(
@@ -1379,12 +1323,13 @@ class ActivityFeedListItem extends StatelessWidget {
             ),
             const Spacer(),
             Text(
-              "${unpackedData.quantityNormalized} ${unpackedData.asset}",
+              "${_formatQuantity(unpackedData.quantityNormalized)} ",
               style: const TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w500,
               ),
             ),
+            _buildAssetDisplay(unpackedData.asset),
           ],
         ),
       TransactionInfoAssetDividend(unpackedData: var unpackedData) => Row(
@@ -1397,13 +1342,7 @@ class ActivityFeedListItem extends StatelessWidget {
               ),
             ),
             const Spacer(),
-            Text(
-              unpackedData.asset,
-              style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
+            _buildAssetDisplay(unpackedData.asset),
           ],
         ),
       TransactionInfoSweep(unpackedData: var unpackedData) => Row(
@@ -1508,6 +1447,25 @@ class ActivityFeedListItem extends StatelessWidget {
       uriType: URIType.btcexplorer,
     );
   }
+
+  Widget _buildAssetText(String text) {
+    return MiddleTruncatedText(
+      text: text,
+      width: 100,
+      charsToShow: 8,
+      style: const TextStyle(
+        fontSize: 12,
+        fontWeight: FontWeight.w500,
+      ),
+    );
+  }
+
+  Widget _buildAssetDisplay(String? asset, [String? assetLongname]) {
+    final displayName = assetLongname != null && assetLongname.isNotEmpty
+        ? assetLongname
+        : asset ?? '';
+    return _buildAssetText(displayName);
+  }
 }
 
 class DashboardActivityFeedScreen extends StatefulWidget {
@@ -1523,14 +1481,11 @@ class DashboardActivityFeedScreen extends StatefulWidget {
 
 class DashboardActivityFeedScreenState
     extends State<DashboardActivityFeedScreen> {
-  late int _displayedTransactionsCount;
-  static const int pageSize = 20;
   DashboardActivityFeedBloc? _bloc;
 
   @override
   void initState() {
     super.initState();
-    _displayedTransactionsCount = widget.initialItemCount;
     // Start polling after the first frame
     _bloc = context.read<DashboardActivityFeedBloc>();
 
@@ -1568,23 +1523,6 @@ class DashboardActivityFeedScreenState
         // }
 
         widgets.addAll(_buildContent(state));
-
-        if (state is DashboardActivityFeedStateCompleteOk &&
-            state.transactions.length > _displayedTransactionsCount) {
-          widgets.add(
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-              child: ElevatedButton(
-                onPressed: () {
-                  setState(() {
-                    _displayedTransactionsCount += pageSize;
-                  });
-                },
-                child: const Text("View More"),
-              ),
-            ),
-          );
-        }
 
         return SingleChildScrollView(
           child: Column(
@@ -1642,11 +1580,9 @@ class DashboardActivityFeedScreenState
         ];
       }
 
-      final displayedTransactions =
-          filteredTransactions.take(_displayedTransactionsCount).toList();
       final isMobile = MediaQuery.of(context).size.width < 600;
 
-      return displayedTransactions
+      return filteredTransactions
           .map((transaction) => ActivityFeedListItem(
                 key: ValueKey(uuid.v4()),
                 item: transaction,

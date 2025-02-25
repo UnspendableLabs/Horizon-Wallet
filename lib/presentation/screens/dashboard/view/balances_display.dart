@@ -190,6 +190,7 @@ class BalancesSliverState extends State<BalancesSliver> {
                             child: MiddleTruncatedText(
                               text: entry.key,
                               width: 150,
+                              charsToShow: 5,
                               style: const TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w600,
@@ -228,12 +229,14 @@ class MiddleTruncatedText extends StatelessWidget {
   final String text;
   final TextStyle? style;
   final double width;
+  final int charsToShow;
 
   const MiddleTruncatedText({
     super.key,
     required this.text,
     this.style,
     required this.width,
+    this.charsToShow = 5,
   });
 
   @override
@@ -250,8 +253,6 @@ class MiddleTruncatedText extends StatelessWidget {
         if (textPainter.width <= maxWidth) {
           return Text(text, style: style);
         }
-
-        const int charsToShow = 5;
 
         return Text(
           '${text.substring(0, charsToShow)}...${text.substring(text.length - charsToShow)}',
