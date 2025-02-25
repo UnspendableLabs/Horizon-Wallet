@@ -15,10 +15,11 @@ import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 import 'package:horizon/domain/repositories/events_repository.dart';
 import 'package:horizon/domain/repositories/imported_address_repository.dart';
+import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
+import 'package:horizon/domain/repositories/settings_repository.dart';
 import 'package:horizon/domain/repositories/transaction_local_repository.dart';
 import 'package:horizon/domain/repositories/unified_address_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
-import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/bitcoind_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
@@ -52,7 +53,6 @@ import 'package:horizon/presentation/screens/dashboard/view/dashboard_contents.d
 import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:sliver_tools/sliver_tools.dart';
-import 'package:horizon/domain/repositories/settings_repository.dart';
 
 class SignPsbtModal extends StatelessWidget {
   final int tabId;
@@ -905,14 +905,328 @@ class SendMenu extends StatelessWidget {
 //   }
 // }
 
+class DashboardPage extends StatefulWidget {
+  final List<String> addresses;
+  final ActionRepository actionRepository;
+
+  const DashboardPage({
+    super.key,
+    required this.addresses,
+    required this.actionRepository,
+  });
+
+  @override
+  DashboardPageState createState() => DashboardPageState();
+}
+
+class DashboardPageState extends State<DashboardPage>
+    with SingleTickerProviderStateMixin {
+  final accountSettingsRepository = GetIt.I.get<AccountSettingsRepository>();
+  final _scrollController = ScrollController();
+  bool shown = false;
+  late TabController _tabController;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 2, vsync: this);
+    final action = widget.actionRepository.dequeue();
+    action.fold(noop, (action) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _getHandler(action)();
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void Function() _getHandler(URLAction.Action action) {
+    return switch (action) {
+      // URLAction.DispenseAction(address: var address) => () =>
+      //     _handleDispenseAction(address),
+      // URLAction.FairmintAction(fairminterTxHash: var fairminterTxHash) => () =>
+      //     _handleFairmintAction(fairminterTxHash),
+      // URLAction.OpenOrderAction(
+      //   giveQuantity: var giveQuantity,
+      //   giveAsset: var giveAsset,
+      //   getQuantity: var getQuantity,
+      //   getAsset: var getAsset
+      // ) =>
+      //   () =>
+      //       _handleOrderAction(giveQuantity, giveAsset, getQuantity, getAsset),
+      URLAction.RPCGetAddressesAction(
+        tabId: var tabId,
+        requestId: var requestId
+      ) =>
+        () => _handleRPCGetAddressesAction(tabId, requestId),
+      URLAction.RPCSignPsbtAction(
+        tabId: var tabId,
+        requestId: var requestId,
+        psbt: var psbt,
+        signInputs: var signInputs,
+        sighashTypes: var sighashTypes
+      ) =>
+        () => _handleRPCSignPsbtAction(
+            tabId, requestId, psbt, signInputs, sighashTypes),
+      _ => noop
+    };
+  }
+
+  // void _handleOrderAction(
+  //     int giveQuantity, String giveAsset, int getQuantity, String getAsset) {
+  //   final dashboardActivityFeedBloc =
+  //       BlocProvider.of<DashboardActivityFeedBloc>(context);
+
+  //   HorizonUI.HorizonDialog.show(
+  //     context: context,
+  //     body: HorizonUI.HorizonDialog(
+  //       includeBackButton: false,
+  //       includeCloseButton: true,
+  //       title: "Open Order",
+  //       body: ComposeOrderPageWrapper(
+  //         currentAddress: widget.currentAddress?.address ??
+  //             widget.currentImportedAddress!.address,
+  //         dashboardActivityFeedBloc: dashboardActivityFeedBloc,
+  //         getFeeEstimatesUseCase: GetIt.I<GetFeeEstimatesUseCase>(),
+  //         composeTransactionUseCase: GetIt.I<ComposeTransactionUseCase>(),
+
+  //         // balanceRepository: GetIt.I<BalanceRepository>(),
+  //         assetRepository: GetIt.I<AssetRepository>(),
+  //         initialGiveAsset: giveAsset,
+  //         initialGiveQuantity: giveQuantity,
+  //         initialGetAsset: getAsset,
+  //         initialGetQuantity: getQuantity,
+  //       ),
+  //     ),
+  //   );
+  // }
+
+  // void _handleDispenseAction(String address) {
+  //   final dashboardActivityFeedBloc =
+  //       BlocProvider.of<DashboardActivityFeedBloc>(context);
+
+  //   HorizonUI.HorizonDialog.show(
+  //       context: context,
+  //       body: HorizonUI.HorizonDialog(
+  //           includeBackButton: false,
+  //           includeCloseButton: true,
+  //           title: "Trigger Dispense",
+  //           body: ComposeDispensePageWrapper(
+  //               initialDispenserAddress: address,
+  //               currentAddress: widget.currentAddress?.address ??
+  //                   widget.currentImportedAddress!.address,
+  //               dashboardActivityFeedBloc: dashboardActivityFeedBloc)));
+  // }
+
+  // void _handleFairmintAction(String intitialFairminterTxHash) {
+  //   final dashboardActivityFeedBloc =
+  //       BlocProvider.of<DashboardActivityFeedBloc>(context);
+
+  //   HorizonUI.HorizonDialog.show(
+  //       context: context,
+  //       body: HorizonUI.HorizonDialog(
+  //         title: "Compose Fairmint",
+  //         body: ComposeFairmintPageWrapper(
+  //           initialFairminterTxHash: intitialFairminterTxHash,
+  //           dashboardActivityFeedBloc: dashboardActivityFeedBloc,
+  //           currentAddress: widget.currentAddress?.address ??
+  //               widget.currentImportedAddress!.address,
+  //         ),
+  //         includeBackButton: false,
+  //         includeCloseButton: true,
+  //       ));
+  // }
+
+  void _handleRPCGetAddressesAction(int tabId, String requestId) {
+    HorizonUI.HorizonDialog.show(
+        context: context,
+        body: HorizonUI.HorizonDialog(
+          title: "Get Addresses",
+          body: Builder(builder: (context) {
+            final session = context.watch<SessionStateCubit>();
+            return session.state.maybeWhen(
+                orElse: () => const SizedBox.shrink(),
+                success: (state) {
+                  return GetAddressesModal(
+                      tabId: tabId,
+                      requestId: requestId,
+                      accounts: state.accounts,
+                      addressRepository: GetIt.I<AddressRepository>(),
+                      accountRepository: GetIt.I<AccountRepository>(),
+                      publicKeyService: GetIt.I<PublicKeyService>(),
+                      encryptionService: GetIt.I<EncryptionService>(),
+                      addressService: GetIt.I<AddressService>(),
+                      importedAddressService: GetIt.I<ImportedAddressService>(),
+                      walletRepository: GetIt.I<WalletRepository>(),
+                      importedAddressRepository:
+                          GetIt.I<ImportedAddressRepository>(),
+                      onSuccess: GetIt.I<RPCGetAddressesSuccessCallback>());
+                });
+          }),
+          includeBackButton: false,
+          includeCloseButton: true,
+        ));
+  }
+
+  void _handleRPCSignPsbtAction(int tabId, String requestId, String psbt,
+      Map<String, List<int>> signInputs, List<int>? sighashTypes) {
+    HorizonUI.HorizonDialog.show(
+        context: context,
+        body: HorizonUI.HorizonDialog(
+          title: "Sign Psbt",
+          body: SignPsbtModal(
+              tabId: tabId,
+              requestId: requestId,
+              unsignedPsbt: psbt,
+              signInputs: signInputs,
+              sighashTypes: sighashTypes,
+              accountRepository: GetIt.I<AccountRepository>(),
+              addressRepository: GetIt.I<UnifiedAddressRepository>(),
+              importedAddressService: GetIt.I.get<ImportedAddressService>(),
+              transactionService: GetIt.I.get<TransactionService>(),
+              bitcoindService: GetIt.I.get<BitcoindService>(),
+              balanceRepository: GetIt.I.get<BalanceRepository>(),
+              bitcoinRepository: GetIt.I.get<BitcoinRepository>(),
+              walletRepository: GetIt.I.get<WalletRepository>(),
+              encryptionService: GetIt.I.get<EncryptionService>(),
+              addressService: GetIt.I.get<AddressService>(),
+              onSuccess: GetIt.I<RPCSignPsbtSuccessCallback>()),
+          includeBackButton: false,
+          includeCloseButton: true,
+        ));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    const maxWidth = 926.0;
+    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmallScreen = screenWidth < 600;
+
+    Color backgroundColor = isDarkTheme ? darkNavyDarkTheme : greyLightTheme;
+    final backgroundColorInner =
+        isDarkTheme ? lightNavyDarkTheme : greyLightTheme;
+    final backgroundColorWrapper =
+        isDarkTheme ? darkNavyDarkTheme : Colors.white;
+
+    Widget buildTabContent() {
+      return Column(
+        children: [
+          TabBar(
+            controller: _tabController,
+            tabs: const [
+              Tab(text: 'Assets'),
+              Tab(text: 'Activity'),
+            ],
+          ),
+          Expanded(
+            child: TabBarView(
+              controller: _tabController,
+              children: [
+                // Assets tab
+                Container(
+                  margin: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: backgroundColorInner,
+                    borderRadius: BorderRadius.circular(30.0),
+                  ),
+                  child: CustomScrollView(
+                    slivers: [
+                      SliverPadding(
+                        padding: const EdgeInsets.all(8.0),
+                        sliver: BalancesDisplay(isDarkTheme: isDarkTheme),
+                      ),
+                    ],
+                  ),
+                ),
+                // Activity tab
+                Container(
+                  margin: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: backgroundColorInner,
+                    borderRadius: BorderRadius.circular(30.0),
+                  ),
+                  child: CustomScrollView(
+                    slivers: [
+                      SliverPadding(
+                        padding: const EdgeInsets.all(8.0),
+                        sliver: DashboardActivityFeedScreen(
+                          key: Key(widget.addresses.first),
+                          addresses: widget.addresses,
+                          initialItemCount: 4,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      );
+    }
+
+    final mainContent = Container(
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        gradient: isDarkTheme
+            ? RadialGradient(
+                center: Alignment.topRight,
+                radius: isSmallScreen ? 1.0 : 2.0,
+                colors: [
+                  blueDarkThemeGradiantColor,
+                  backgroundColor,
+                ],
+              )
+            : null,
+      ),
+      child: Container(
+        margin: const EdgeInsets.fromLTRB(8, 0, 8, 8),
+        child: CustomScrollView(
+          controller: _scrollController,
+          slivers: [
+            const SliverCrossAxisConstrained(
+              maxCrossAxisExtent: maxWidth,
+              child: TransparentHorizonSliverAppBar(
+                expandedHeight: kToolbarHeight,
+              ),
+            ),
+            SliverCrossAxisConstrained(
+              maxCrossAxisExtent: maxWidth,
+              child: SliverToBoxAdapter(
+                child: Container(
+                  margin: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: backgroundColorWrapper,
+                    borderRadius: BorderRadius.circular(30.0),
+                  ),
+                  height: 600, // Adjust height as needed
+                  child: buildTabContent(),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    return isSmallScreen
+        ? Row(children: [Expanded(child: mainContent)])
+        : mainContent;
+  }
+}
+
 class DashboardPageWrapper extends StatelessWidget {
   const DashboardPageWrapper({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final session = context
-        .watch<SessionStateCubit>()
-        .state; // we should only ever get to this page if session is success
+    final session = context.watch<SessionStateCubit>().state;
 
     return session.maybeWhen(
         success: (data) => MultiBlocProvider(
@@ -1127,529 +1441,3 @@ class DashboardPageWrapper extends StatelessWidget {
 //     );
 //   }
 // }
-
-class DashboardPage extends StatefulWidget {
-  final List<String> addresses;
-  final ActionRepository actionRepository;
-
-  const DashboardPage({
-    super.key,
-    required this.addresses,
-    required this.actionRepository,
-  });
-
-  @override
-  DashboardPageState createState() => DashboardPageState();
-}
-
-class DashboardPageState extends State<DashboardPage> {
-  final accountSettingsRepository = GetIt.I.get<AccountSettingsRepository>();
-  final _scrollController = ScrollController();
-  bool shown = false;
-
-  @override
-  void initState() {
-    super.initState();
-    final action = widget.actionRepository.dequeue();
-    action.fold(noop, (action) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _getHandler(action)();
-      });
-    });
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-    _scrollController.dispose();
-  }
-
-  void Function() _getHandler(URLAction.Action action) {
-    return switch (action) {
-      // URLAction.DispenseAction(address: var address) => () =>
-      //     _handleDispenseAction(address),
-      // URLAction.FairmintAction(fairminterTxHash: var fairminterTxHash) => () =>
-      //     _handleFairmintAction(fairminterTxHash),
-      // URLAction.OpenOrderAction(
-      //   giveQuantity: var giveQuantity,
-      //   giveAsset: var giveAsset,
-      //   getQuantity: var getQuantity,
-      //   getAsset: var getAsset
-      // ) =>
-      //   () =>
-      //       _handleOrderAction(giveQuantity, giveAsset, getQuantity, getAsset),
-      URLAction.RPCGetAddressesAction(
-        tabId: var tabId,
-        requestId: var requestId
-      ) =>
-        () => _handleRPCGetAddressesAction(tabId, requestId),
-      URLAction.RPCSignPsbtAction(
-        tabId: var tabId,
-        requestId: var requestId,
-        psbt: var psbt,
-        signInputs: var signInputs,
-        sighashTypes: var sighashTypes
-      ) =>
-        () => _handleRPCSignPsbtAction(
-            tabId, requestId, psbt, signInputs, sighashTypes),
-      _ => noop
-    };
-  }
-
-  // void _handleOrderAction(
-  //     int giveQuantity, String giveAsset, int getQuantity, String getAsset) {
-  //   final dashboardActivityFeedBloc =
-  //       BlocProvider.of<DashboardActivityFeedBloc>(context);
-
-  //   HorizonUI.HorizonDialog.show(
-  //     context: context,
-  //     body: HorizonUI.HorizonDialog(
-  //       includeBackButton: false,
-  //       includeCloseButton: true,
-  //       title: "Open Order",
-  //       body: ComposeOrderPageWrapper(
-  //         currentAddress: widget.currentAddress?.address ??
-  //             widget.currentImportedAddress!.address,
-  //         dashboardActivityFeedBloc: dashboardActivityFeedBloc,
-  //         getFeeEstimatesUseCase: GetIt.I<GetFeeEstimatesUseCase>(),
-  //         composeTransactionUseCase: GetIt.I<ComposeTransactionUseCase>(),
-
-  //         // balanceRepository: GetIt.I<BalanceRepository>(),
-  //         assetRepository: GetIt.I<AssetRepository>(),
-  //         initialGiveAsset: giveAsset,
-  //         initialGiveQuantity: giveQuantity,
-  //         initialGetAsset: getAsset,
-  //         initialGetQuantity: getQuantity,
-  //       ),
-  //     ),
-  //   );
-  // }
-
-  // void _handleDispenseAction(String address) {
-  //   final dashboardActivityFeedBloc =
-  //       BlocProvider.of<DashboardActivityFeedBloc>(context);
-
-  //   HorizonUI.HorizonDialog.show(
-  //       context: context,
-  //       body: HorizonUI.HorizonDialog(
-  //           includeBackButton: false,
-  //           includeCloseButton: true,
-  //           title: "Trigger Dispense",
-  //           body: ComposeDispensePageWrapper(
-  //               initialDispenserAddress: address,
-  //               currentAddress: widget.currentAddress?.address ??
-  //                   widget.currentImportedAddress!.address,
-  //               dashboardActivityFeedBloc: dashboardActivityFeedBloc)));
-  // }
-
-  // void _handleFairmintAction(String intitialFairminterTxHash) {
-  //   final dashboardActivityFeedBloc =
-  //       BlocProvider.of<DashboardActivityFeedBloc>(context);
-
-  //   HorizonUI.HorizonDialog.show(
-  //       context: context,
-  //       body: HorizonUI.HorizonDialog(
-  //         title: "Compose Fairmint",
-  //         body: ComposeFairmintPageWrapper(
-  //           initialFairminterTxHash: intitialFairminterTxHash,
-  //           dashboardActivityFeedBloc: dashboardActivityFeedBloc,
-  //           currentAddress: widget.currentAddress?.address ??
-  //               widget.currentImportedAddress!.address,
-  //         ),
-  //         includeBackButton: false,
-  //         includeCloseButton: true,
-  //       ));
-  // }
-
-  void _handleRPCGetAddressesAction(int tabId, String requestId) {
-    HorizonUI.HorizonDialog.show(
-        context: context,
-        body: HorizonUI.HorizonDialog(
-          title: "Get Addresses",
-          body: Builder(builder: (context) {
-            final session = context.watch<SessionStateCubit>();
-            return session.state.maybeWhen(
-                orElse: () => const SizedBox.shrink(),
-                success: (state) {
-                  return GetAddressesModal(
-                      tabId: tabId,
-                      requestId: requestId,
-                      accounts: state.accounts,
-                      addressRepository: GetIt.I<AddressRepository>(),
-                      accountRepository: GetIt.I<AccountRepository>(),
-                      publicKeyService: GetIt.I<PublicKeyService>(),
-                      encryptionService: GetIt.I<EncryptionService>(),
-                      addressService: GetIt.I<AddressService>(),
-                      importedAddressService: GetIt.I<ImportedAddressService>(),
-                      walletRepository: GetIt.I<WalletRepository>(),
-                      importedAddressRepository:
-                          GetIt.I<ImportedAddressRepository>(),
-                      onSuccess: GetIt.I<RPCGetAddressesSuccessCallback>());
-                });
-          }),
-          includeBackButton: false,
-          includeCloseButton: true,
-        ));
-  }
-
-  void _handleRPCSignPsbtAction(int tabId, String requestId, String psbt,
-      Map<String, List<int>> signInputs, List<int>? sighashTypes) {
-    HorizonUI.HorizonDialog.show(
-        context: context,
-        body: HorizonUI.HorizonDialog(
-          title: "Sign Psbt",
-          body: SignPsbtModal(
-              tabId: tabId,
-              requestId: requestId,
-              unsignedPsbt: psbt,
-              signInputs: signInputs,
-              sighashTypes: sighashTypes,
-              accountRepository: GetIt.I<AccountRepository>(),
-              addressRepository: GetIt.I<UnifiedAddressRepository>(),
-              importedAddressService: GetIt.I.get<ImportedAddressService>(),
-              transactionService: GetIt.I.get<TransactionService>(),
-              bitcoindService: GetIt.I.get<BitcoindService>(),
-              balanceRepository: GetIt.I.get<BalanceRepository>(),
-              bitcoinRepository: GetIt.I.get<BitcoinRepository>(),
-              walletRepository: GetIt.I.get<WalletRepository>(),
-              encryptionService: GetIt.I.get<EncryptionService>(),
-              addressService: GetIt.I.get<AddressService>(),
-              onSuccess: GetIt.I<RPCSignPsbtSuccessCallback>()),
-          includeBackButton: false,
-          includeCloseButton: true,
-        ));
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    const maxWidth = 926.0;
-
-    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
-    final screenWidth = MediaQuery.of(context).size.width;
-
-    Color backgroundColor = isDarkTheme ? darkNavyDarkTheme : greyLightTheme;
-    final backgroundColorInner =
-        isDarkTheme ? lightNavyDarkTheme : greyLightTheme;
-
-    final backgroundColorWrapper =
-        isDarkTheme ? darkNavyDarkTheme : Colors.white;
-
-    final isSmallScreen = screenWidth < 600;
-
-    // final state = context.watch<SessionStateCubit>().state;
-
-    // final Account? account = state.maybeWhen(
-    //   success: (state) => state.accounts.firstWhereOrNull(
-    //     (account) => account.uuid == state.currentAccountUuid,
-    //   ),
-    //   orElse: () => null,
-    // );
-
-    if (!isSmallScreen) {
-      // Scaffold for desktop
-      return Container(
-        // padding: const EdgeInsets.fromLTRB(4, 8, 8, 16),
-        decoration: BoxDecoration(
-          color: backgroundColor,
-          gradient: isDarkTheme
-              ? RadialGradient(
-                  center: Alignment.topRight,
-                  radius: 2.0,
-                  colors: [
-                    blueDarkThemeGradiantColor,
-                    backgroundColor,
-                  ],
-                )
-              : null,
-        ),
-        child: Builder(builder: (context) {
-          return Container(
-            margin: const EdgeInsets.fromLTRB(8, 0, 8, 8),
-            child: CustomScrollView(
-              controller: _scrollController,
-              slivers: [
-                const SliverCrossAxisConstrained(
-                    maxCrossAxisExtent: maxWidth,
-                    child: TransparentHorizonSliverAppBar(
-                      expandedHeight: kToolbarHeight,
-                    )),
-                SliverCrossAxisConstrained(
-                    maxCrossAxisExtent: maxWidth,
-                    child: SliverStack(children: [
-                      SliverPositioned.fill(
-                        child: Container(
-                          margin: const EdgeInsets.fromLTRB(8, 8, 8, 0),
-                          decoration: BoxDecoration(
-                            color: backgroundColor,
-                            borderRadius: BorderRadius.circular(30.0),
-                          ),
-                        ),
-                      ),
-                    ])),
-                SliverCrossAxisConstrained(
-                  maxCrossAxisExtent: maxWidth,
-                  child: SliverStack(
-                    children: [
-                      SliverPadding(
-                          padding:
-                              const EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 8.0),
-                          sliver: SliverToBoxAdapter(
-                              child: Row(children: [
-                            // Expanded(
-                            //     child: Container(
-                            //         decoration: BoxDecoration(
-                            //           color: backgroundColorWrapper,
-                            //           borderRadius: BorderRadius.circular(30.0),
-                            //         ),
-                            //         child: const WalletItemSidebar())),
-                            // const SizedBox(width: 8),
-                            Expanded(
-                                flex: 3,
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    color: backgroundColorWrapper,
-                                    borderRadius: BorderRadius.circular(30.0),
-                                  ),
-                                  child: Column(
-                                    children: [
-                                      // Builder(builder: (context) {
-                                      //   final dashboardActivityFeedBloc =
-                                      //       BlocProvider.of<
-                                      //               DashboardActivityFeedBloc>(
-                                      //           context);
-                                      //   return AddressActions(
-                                      //     isDarkTheme: isDarkTheme,
-                                      //     dashboardActivityFeedBloc:
-                                      //         dashboardActivityFeedBloc,
-                                      //     currentAddress:
-                                      //         widget.currentAddress?.address ??
-                                      //             widget.currentImportedAddress!
-                                      //                 .address,
-                                      //     screenWidth: screenWidth,
-                                      //     currentAccountUuid:
-                                      //         widget.accountUuid,
-                                      //   );
-                                      // }),
-                                      SizedBox(
-                                        height: 258,
-                                        child: Container(
-                                          margin: const EdgeInsets.fromLTRB(
-                                              8, 4, 8, 8),
-                                          decoration: BoxDecoration(
-                                            color: backgroundColorInner,
-                                            borderRadius:
-                                                BorderRadius.circular(30.0),
-                                          ),
-                                          child: CustomScrollView(
-                                            slivers: [
-                                              SliverPadding(
-                                                padding:
-                                                    const EdgeInsets.all(8.0),
-                                                sliver: BalancesDisplay(
-                                                    isDarkTheme: isDarkTheme),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                      SizedBox(
-                                        height: 352,
-                                        child: Container(
-                                          margin: const EdgeInsets.fromLTRB(
-                                              8, 4, 8, 8),
-                                          decoration: BoxDecoration(
-                                            color: backgroundColorInner,
-                                            borderRadius:
-                                                BorderRadius.circular(30.0),
-                                          ),
-                                          child: CustomScrollView(
-                                            slivers: [
-                                              SliverPadding(
-                                                padding:
-                                                    const EdgeInsets.all(8.0),
-                                                sliver:
-                                                    // TODO: update key
-                                                    DashboardActivityFeedScreen(
-                                                        key: Key(
-                                                          widget
-                                                              .addresses.first,
-                                                        ),
-                                                        addresses:
-                                                            widget.addresses,
-                                                        initialItemCount: 4),
-                                              )
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                )),
-                          ])))
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          );
-        }),
-      );
-    }
-
-    // Scaffold for mobile
-    return Container(
-      // padding: const EdgeInsets.fromLTRB(4, 8, 8, 16),
-      decoration: BoxDecoration(
-        color: backgroundColor,
-        gradient: isDarkTheme
-            ? RadialGradient(
-                center: Alignment.topRight,
-                radius: 1.0,
-                colors: [
-                  blueDarkThemeGradiantColor,
-                  backgroundColor,
-                ],
-              )
-            : null,
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Container(
-              margin: const EdgeInsets.fromLTRB(8, 0, 8, 8),
-              child: CustomScrollView(
-                controller: _scrollController,
-                slivers: [
-                  const SliverCrossAxisConstrained(
-                      maxCrossAxisExtent: maxWidth,
-                      child: TransparentHorizonSliverAppBar(
-                        expandedHeight: kToolbarHeight,
-                      )),
-                  SliverCrossAxisConstrained(
-                      maxCrossAxisExtent: maxWidth,
-                      child: SliverStack(children: [
-                        SliverPositioned.fill(
-                          child: Container(
-                            margin: const EdgeInsets.fromLTRB(8, 8, 8, 0),
-                            decoration: BoxDecoration(
-                              color: backgroundColor,
-                              borderRadius: BorderRadius.circular(30.0),
-                            ),
-                          ),
-                        ),
-                      ])),
-                  SliverCrossAxisConstrained(
-                    maxCrossAxisExtent: maxWidth,
-                    child: SliverStack(
-                      children: [
-                        SliverPositioned.fill(
-                          child: Container(
-                            margin: const EdgeInsets.fromLTRB(8, 8, 8, 0),
-                            decoration: BoxDecoration(
-                              color: backgroundColorWrapper,
-                              borderRadius: BorderRadius.circular(30.0),
-                            ),
-                          ),
-                        ),
-                        SliverPadding(
-                          padding:
-                              const EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 8.0),
-                          sliver: MultiSliver(children: [
-                            // SliverToBoxAdapter(
-                            //   child: WalletItemSelectionButton(
-                            //     isDarkTheme: isDarkTheme,
-                            //     onPressed: () =>
-                            //         showAccountList(context, isDarkTheme),
-                            //   ),
-                            // ),
-                            // if (account != null)
-                            //   Builder(builder: (context) {
-                            //     return context
-                            //         .read<SessionStateCubit>()
-                            //         .state
-                            //         .maybeWhen(
-                            //             success: (state) => state
-                            //                         .addresses.length >
-                            //                     1
-                            //                 ? SliverToBoxAdapter(
-                            //                     child: Padding(
-                            //                     padding:
-                            //                         const EdgeInsets.fromLTRB(
-                            //                             8.0, 8.0, 8.0, 0.0),
-                            //                     child: AddressSelectionButton(
-                            //                       isDarkTheme: isDarkTheme,
-                            //                       onPressed: () =>
-                            //                           showAddressList(context,
-                            //                               isDarkTheme, account),
-                            //                     ),
-                            //                   ))
-                            //                 : const SliverToBoxAdapter(
-                            //                     child: SizedBox.shrink()),
-                            //             orElse: () => const SliverToBoxAdapter(
-                            //                 child: SizedBox.shrink()));
-                            //   }),
-                            // SliverToBoxAdapter(
-                            //     child: Builder(builder: (context) {
-                            //   final dashboardActivityFeedBloc =
-                            //       BlocProvider.of<DashboardActivityFeedBloc>(
-                            //           context);
-                            //   return AddressActions(
-                            //     isDarkTheme: isDarkTheme,
-                            //     dashboardActivityFeedBloc:
-                            //         dashboardActivityFeedBloc,
-                            //     currentAddress:
-                            //         widget.currentAddress?.address ??
-                            //             widget.currentImportedAddress!.address,
-                            //     screenWidth: screenWidth,
-                            //   );
-                            // })),
-                            SliverStack(children: [
-                              SliverPositioned.fill(
-                                child: Container(
-                                  margin: const EdgeInsets.fromLTRB(8, 4, 8, 0),
-                                  decoration: BoxDecoration(
-                                    color: backgroundColorInner,
-                                    borderRadius: BorderRadius.circular(30.0),
-                                  ),
-                                ),
-                              ),
-                              SliverPadding(
-                                padding: const EdgeInsets.all(8.0),
-                                sliver:
-                                    BalancesDisplay(isDarkTheme: isDarkTheme),
-                              ),
-                            ]),
-                            SliverStack(children: [
-                              SliverPositioned.fill(
-                                child: Container(
-                                  margin: const EdgeInsets.fromLTRB(8, 8, 8, 0),
-                                  decoration: BoxDecoration(
-                                    color: backgroundColorInner,
-                                    borderRadius: BorderRadius.circular(30.0),
-                                  ),
-                                ),
-                              ),
-                              SliverPadding(
-                                padding: const EdgeInsets.all(8.0),
-                                sliver: DashboardActivityFeedScreen(
-                                  // TODO: update key
-                                  key: Key(widget.addresses.first),
-                                  addresses: widget.addresses,
-                                  initialItemCount: 3,
-                                ),
-                              ),
-                            ])
-                          ]),
-                        )
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
