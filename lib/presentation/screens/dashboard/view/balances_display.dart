@@ -30,71 +30,6 @@ class BalancesDisplayState extends State<BalancesDisplay> {
     return SliverToBoxAdapter(
       child: Column(
         children: [
-          // Padding(
-          //   padding: const EdgeInsets.all(8.0),
-          //   child: Row(
-          //     children: [
-          //       Expanded(
-          //         child: TextField(
-          //           key: const Key('search_input'), // Add this line
-          //           controller: _searchController,
-          //           decoration: InputDecoration(
-          //             labelText: 'Search assets',
-          //             prefixIcon: const Icon(Icons.search),
-          //             border: OutlineInputBorder(
-          //               borderRadius: BorderRadius.circular(10),
-          //             ),
-          //           ),
-          //         ),
-          //       ),
-          //       // const SizedBox(width: 8),
-          //       Column(
-          //         children: [
-          //           Row(
-          //             children: [
-          //               Checkbox(
-          //                 value: _showOwnedOnly,
-          //                 onChanged: (value) {
-          //                   setState(() {
-          //                     _showOwnedOnly = value ?? false;
-          //                   });
-          //                 },
-          //                 fillColor: WidgetStateProperty.resolveWith<Color>(
-          //                     (Set<WidgetState> states) {
-          //                   return widget.isDarkTheme
-          //                       ? darkThemeInputColor
-          //                       : whiteLightTheme; // Use transparent for unchecked state
-          //                 }),
-          //                 key: const Key('owned_checkbox'), // Add this line
-          //               ),
-          //               const Text('My issuances'),
-          //             ],
-          //           ),
-          //           Row(
-          //             children: [
-          //               Checkbox(
-          //                 value: _showUtxoOnly,
-          //                 onChanged: (value) {
-          //                   setState(() {
-          //                     _showUtxoOnly = value ?? false;
-          //                   });
-          //                 },
-          //                 fillColor: WidgetStateProperty.resolveWith<Color>(
-          //                     (Set<WidgetState> states) {
-          //                   return widget.isDarkTheme
-          //                       ? darkThemeInputColor
-          //                       : whiteLightTheme; // Use transparent for unchecked state
-          //                 }),
-          //                 key: const Key('utxo_checkbox'), // Add this line
-          //               ),
-          //               const Text('Utxo attached'),
-          //             ],
-          //           ),
-          //         ],
-          //       ),
-          //     ],
-          //   ),
-          // ),
           BalancesSliver(
             isDarkTheme: widget.isDarkTheme,
           ),
@@ -208,32 +143,65 @@ class BalancesSliverState extends State<BalancesSliver> {
           );
         }
 
-        // Build the table
+        // Build the list of asset entries
         return [
-          Table(
-            children: [
-              // Convert entries to TableRow widgets
-              ...balanceEntries.entries.map((entry) => TableRow(
-                    children: [
-                      // Asset name/longname column
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Text(
-                          entry.key,
-                          style: const TextStyle(fontSize: 14),
-                        ),
+          Column(
+            children: balanceEntries.entries.map((entry) {
+              return SizedBox(
+                // padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                height: 54,
+                child: Row(
+                  children: [
+                    // Star icon (placeholder)
+                    const Icon(
+                      Icons.star_border_outlined,
+                      size: 16,
+                    ),
+                    const SizedBox(width: 10),
+                    // Asset icon (placeholder)
+                    Container(
+                      width: 32,
+                      height: 32,
+                      decoration: const BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.grey, // Placeholder color
                       ),
-                      // Quantity column
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Text(
+                    ),
+                    const SizedBox(width: 10),
+                    // Asset name and details
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            entry.key,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    // Amount and percentage
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
                           entry.value.quantityNormalized,
-                          style: const TextStyle(fontSize: 14),
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
-                      ),
-                    ],
-                  )),
-            ],
+                      ],
+                    ),
+                  ],
+                ),
+              );
+            }).toList(),
           ),
         ];
       },

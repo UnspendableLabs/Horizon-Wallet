@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:get_it/get_it.dart';
+import 'package:go_router/go_router.dart';
 import 'package:horizon/common/fn.dart';
 import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/domain/entities/account.dart';
@@ -21,10 +23,12 @@ import 'package:horizon/domain/repositories/transaction_local_repository.dart';
 import 'package:horizon/domain/repositories/unified_address_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/address_service.dart';
+import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/domain/services/bitcoind_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/imported_address_service.dart';
 import 'package:horizon/domain/services/public_key_service.dart';
+import 'package:horizon/domain/services/secure_kv_service.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
 import 'package:horizon/presentation/common/colors.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
@@ -48,11 +52,19 @@ import 'package:horizon/presentation/screens/compose_sweep/view/compose_sweep_pa
 import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_bloc.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_event.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart';
+import 'package:horizon/presentation/screens/dashboard/bloc/reset/reset_bloc.dart';
+import 'package:horizon/presentation/screens/dashboard/bloc/reset/view/reset_dialog.dart';
+import 'package:horizon/presentation/screens/dashboard/import_address_pk_form/bloc/import_address_pk_bloc.dart';
+import 'package:horizon/presentation/screens/dashboard/import_address_pk_form/bloc/import_address_pk_event.dart';
+import 'package:horizon/presentation/screens/dashboard/import_address_pk_form/bloc/import_address_pk_state.dart';
+import 'package:horizon/presentation/screens/dashboard/import_address_pk_form/view/import_address_pk_form.dart';
 import 'package:horizon/presentation/screens/dashboard/view/activity_feed.dart';
 import 'package:horizon/presentation/screens/dashboard/view/balances_display.dart';
-import 'package:horizon/presentation/screens/dashboard/view/dashboard_contents.dart';
+import 'package:horizon/presentation/screens/dashboard/view_seed_phrase_form/view/view_seed_phrase_form.dart';
 import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
+import 'package:horizon/presentation/session/theme/bloc/theme_bloc.dart';
+import 'package:horizon/presentation/session/theme/bloc/theme_event.dart';
 import 'package:sliver_tools/sliver_tools.dart';
 
 class SignPsbtModal extends StatelessWidget {
@@ -814,98 +826,6 @@ class SendMenu extends StatelessWidget {
   }
 }
 
-// class AddressActions extends StatelessWidget {
-//   final bool isDarkTheme;
-//   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
-//   final String currentAddress;
-//   final String? currentAccountUuid;
-//   final double screenWidth;
-//   const AddressActions(
-//       {super.key,
-//       required this.isDarkTheme,
-//       required this.dashboardActivityFeedBloc,
-//       required this.currentAddress,
-//       required this.screenWidth,
-//       this.currentAccountUuid});
-//   @override
-//   Widget build(BuildContext context) {
-//     return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-//       Padding(
-//         padding: const EdgeInsets.fromLTRB(4.0, 8.0, 4.0, 4.0),
-//         child: Row(
-//           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-//           children: [
-//             SendMenu(
-//               currentAddress: currentAddress,
-//               isDarkTheme: isDarkTheme,
-//               icon: Icons.send,
-//               text: "SEND",
-//               iconSize: 18.0,
-//               dashboardActivityFeedBloc: dashboardActivityFeedBloc,
-//             ),
-//             AddressAction(
-//               tooltip: "Issue Asset",
-//               isDarkTheme: isDarkTheme,
-//               dialog: HorizonUI.HorizonDialog(
-//                 title: "Compose Issuance",
-//                 body: ComposeIssuancePageWrapper(
-//                   currentAddress: currentAddress,
-//                   dashboardActivityFeedBloc: dashboardActivityFeedBloc,
-//                 ),
-//                 includeBackButton: false,
-//                 includeCloseButton: true,
-//               ),
-//               icon: Icons.add,
-//               text: "ISSUE",
-//               iconSize: 18.0,
-//             ),
-//             AddressAction(
-//               tooltip: "Receive Asset",
-//               isDarkTheme: isDarkTheme,
-//               dialog: HorizonUI.HorizonDialog(
-//                 title: "Receive",
-//                 body: QRCodeDialog(
-//                   currentAddress: currentAddress,
-//                   currentAccountUuid: currentAccountUuid,
-//                 ),
-//                 includeBackButton: false,
-//                 includeCloseButton: true,
-//               ),
-//               icon: Icons.qr_code,
-//               text: "RECEIVE",
-//               iconSize: 18.0,
-//             ),
-//             MintMenu(
-//               currentAddress: currentAddress,
-//               isDarkTheme: isDarkTheme,
-//               icon: Icons.print,
-//               text: "MINT",
-//               iconSize: 18.0,
-//               dashboardActivityFeedBloc: dashboardActivityFeedBloc,
-//             ),
-//             DispenserButtonMenu(
-//               currentAddress: currentAddress,
-//               isDarkTheme: isDarkTheme,
-//               icon: Icons.more_vert,
-//               text: "DISPENSER",
-//               iconSize: 18.0,
-//               dashboardActivityFeedBloc: dashboardActivityFeedBloc,
-//             ),
-//             OrderButtonMenu(
-//               currentAddress: currentAddress,
-//               isDarkTheme: isDarkTheme,
-//               icon: Icons.toc,
-//               text: "ORDER",
-//               iconSize: 18.0,
-//               dashboardActivityFeedBloc: dashboardActivityFeedBloc,
-//             ),
-//           ],
-//         ),
-//       ),
-//     ]);
-//   }
-// }
-
 class DashboardPage extends StatefulWidget {
   final List<String> addresses;
   final ActionRepository actionRepository;
@@ -921,16 +841,21 @@ class DashboardPage extends StatefulWidget {
 }
 
 class DashboardPageState extends State<DashboardPage>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   final accountSettingsRepository = GetIt.I.get<AccountSettingsRepository>();
   final _scrollController = ScrollController();
   bool shown = false;
   late TabController _tabController;
+  late TabController _bottomTabController;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    _bottomTabController = TabController(length: 2, vsync: this);
+    _bottomTabController.addListener(() {
+      setState(() {}); // Rebuild to update the selected tab styling
+    });
     final action = widget.actionRepository.dequeue();
     action.fold(noop, (action) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -942,24 +867,13 @@ class DashboardPageState extends State<DashboardPage>
   @override
   void dispose() {
     _tabController.dispose();
+    _bottomTabController.dispose();
     _scrollController.dispose();
     super.dispose();
   }
 
   void Function() _getHandler(URLAction.Action action) {
     return switch (action) {
-      // URLAction.DispenseAction(address: var address) => () =>
-      //     _handleDispenseAction(address),
-      // URLAction.FairmintAction(fairminterTxHash: var fairminterTxHash) => () =>
-      //     _handleFairmintAction(fairminterTxHash),
-      // URLAction.OpenOrderAction(
-      //   giveQuantity: var giveQuantity,
-      //   giveAsset: var giveAsset,
-      //   getQuantity: var getQuantity,
-      //   getAsset: var getAsset
-      // ) =>
-      //   () =>
-      //       _handleOrderAction(giveQuantity, giveAsset, getQuantity, getAsset),
       URLAction.RPCGetAddressesAction(
         tabId: var tabId,
         requestId: var requestId
@@ -977,71 +891,6 @@ class DashboardPageState extends State<DashboardPage>
       _ => noop
     };
   }
-
-  // void _handleOrderAction(
-  //     int giveQuantity, String giveAsset, int getQuantity, String getAsset) {
-  //   final dashboardActivityFeedBloc =
-  //       BlocProvider.of<DashboardActivityFeedBloc>(context);
-
-  //   HorizonUI.HorizonDialog.show(
-  //     context: context,
-  //     body: HorizonUI.HorizonDialog(
-  //       includeBackButton: false,
-  //       includeCloseButton: true,
-  //       title: "Open Order",
-  //       body: ComposeOrderPageWrapper(
-  //         currentAddress: widget.currentAddress?.address ??
-  //             widget.currentImportedAddress!.address,
-  //         dashboardActivityFeedBloc: dashboardActivityFeedBloc,
-  //         getFeeEstimatesUseCase: GetIt.I<GetFeeEstimatesUseCase>(),
-  //         composeTransactionUseCase: GetIt.I<ComposeTransactionUseCase>(),
-
-  //         // balanceRepository: GetIt.I<BalanceRepository>(),
-  //         assetRepository: GetIt.I<AssetRepository>(),
-  //         initialGiveAsset: giveAsset,
-  //         initialGiveQuantity: giveQuantity,
-  //         initialGetAsset: getAsset,
-  //         initialGetQuantity: getQuantity,
-  //       ),
-  //     ),
-  //   );
-  // }
-
-  // void _handleDispenseAction(String address) {
-  //   final dashboardActivityFeedBloc =
-  //       BlocProvider.of<DashboardActivityFeedBloc>(context);
-
-  //   HorizonUI.HorizonDialog.show(
-  //       context: context,
-  //       body: HorizonUI.HorizonDialog(
-  //           includeBackButton: false,
-  //           includeCloseButton: true,
-  //           title: "Trigger Dispense",
-  //           body: ComposeDispensePageWrapper(
-  //               initialDispenserAddress: address,
-  //               currentAddress: widget.currentAddress?.address ??
-  //                   widget.currentImportedAddress!.address,
-  //               dashboardActivityFeedBloc: dashboardActivityFeedBloc)));
-  // }
-
-  // void _handleFairmintAction(String intitialFairminterTxHash) {
-  //   final dashboardActivityFeedBloc =
-  //       BlocProvider.of<DashboardActivityFeedBloc>(context);
-
-  //   HorizonUI.HorizonDialog.show(
-  //       context: context,
-  //       body: HorizonUI.HorizonDialog(
-  //         title: "Compose Fairmint",
-  //         body: ComposeFairmintPageWrapper(
-  //           initialFairminterTxHash: intitialFairminterTxHash,
-  //           dashboardActivityFeedBloc: dashboardActivityFeedBloc,
-  //           currentAddress: widget.currentAddress?.address ??
-  //               widget.currentImportedAddress!.address,
-  //         ),
-  //         includeBackButton: false,
-  //         includeCloseButton: true,
-  //       ));
-  // }
 
   void _handleRPCGetAddressesAction(int tabId, String requestId) {
     HorizonUI.HorizonDialog.show(
@@ -1100,6 +949,104 @@ class DashboardPageState extends State<DashboardPage>
           includeBackButton: false,
           includeCloseButton: true,
         ));
+  }
+
+  Widget buildSettingsTab() {
+    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
+
+    return ListView(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              const Text("Theme"),
+              const Spacer(),
+              Switch(
+                value: isDarkTheme,
+                onChanged: (value) {
+                  context.read<ThemeBloc>().add(ThemeToggled());
+                },
+              ),
+            ],
+          ),
+        ),
+        ListTile(
+          title: const Text('Settings'),
+          onTap: () => context.go("/settings"),
+        ),
+        ListTile(
+          title: const Text('View wallet seed phrase'),
+          onTap: () {
+            HorizonUI.HorizonDialog.show(
+              context: context,
+              body: const HorizonUI.HorizonDialog(
+                includeBackButton: false,
+                includeCloseButton: true,
+                title: "View wallet seed phrase",
+                body: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 16.0),
+                  child: ViewSeedPhraseFormWrapper(),
+                ),
+              ),
+            );
+          },
+        ),
+        ListTile(
+          title: const Text('Import new address private key'),
+          onTap: () {
+            HorizonUI.HorizonDialog.show(
+              context: context,
+              body: Builder(builder: (context) {
+                final bloc = context.watch<ImportAddressPkBloc>();
+                final cb = switch (bloc.state) {
+                  ImportAddressPkStep2() => () {
+                      bloc.add(ResetForm());
+                    },
+                  _ => () {
+                      Navigator.of(context).pop();
+                    },
+                };
+                return HorizonUI.HorizonDialog(
+                  onBackButtonPressed: cb,
+                  title: "Import address private key",
+                  body: const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16.0),
+                    child: ImportAddressPkForm(),
+                  ),
+                );
+              }),
+            );
+          },
+        ),
+        ListTile(
+          title: const Text('Reset wallet'),
+          onTap: () {
+            HorizonUI.HorizonDialog.show(
+              context: context,
+              body: BlocProvider(
+                create: (context) => ResetBloc(
+                  kvService: GetIt.I.get<SecureKVService>(),
+                  inMemoryKeyRepository: GetIt.I.get<InMemoryKeyRepository>(),
+                  walletRepository: GetIt.I.get<WalletRepository>(),
+                  accountRepository: GetIt.I.get<AccountRepository>(),
+                  addressRepository: GetIt.I.get<AddressRepository>(),
+                  importedAddressRepository:
+                      GetIt.I.get<ImportedAddressRepository>(),
+                  cacheProvider: GetIt.I.get<CacheProvider>(),
+                  analyticsService: GetIt.I.get<AnalyticsService>(),
+                ),
+                child: const ResetDialog(),
+              ),
+            );
+          },
+        ),
+        ListTile(
+          title: const Text('Lock Screen'),
+          onTap: () => context.read<SessionStateCubit>().onLogout(),
+        ),
+      ],
+    );
   }
 
   @override
@@ -1164,8 +1111,8 @@ class DashboardPageState extends State<DashboardPage>
           Expanded(
             child: TabBarView(
               controller: _tabController,
+              physics: const NeverScrollableScrollPhysics(),
               children: [
-                // Assets tab
                 Container(
                   margin: const EdgeInsets.fromLTRB(16, 8, 16, 8),
                   child: CustomScrollView(
@@ -1177,7 +1124,6 @@ class DashboardPageState extends State<DashboardPage>
                     ],
                   ),
                 ),
-                // Activity tab
                 Container(
                   margin: const EdgeInsets.fromLTRB(16, 8, 16, 8),
                   child: CustomScrollView(
@@ -1209,12 +1155,6 @@ class DashboardPageState extends State<DashboardPage>
         child: CustomScrollView(
           controller: _scrollController,
           slivers: [
-            const SliverCrossAxisConstrained(
-              maxCrossAxisExtent: maxWidth,
-              child: TransparentHorizonSliverAppBar(
-                expandedHeight: kToolbarHeight,
-              ),
-            ),
             SliverCrossAxisConstrained(
               maxCrossAxisExtent: maxWidth,
               child: SliverToBoxAdapter(
@@ -1235,9 +1175,138 @@ class DashboardPageState extends State<DashboardPage>
       ),
     );
 
-    return isSmallScreen
-        ? Row(children: [Expanded(child: mainContent)])
-        : mainContent;
+    return Scaffold(
+      body: TabBarView(
+        controller: _bottomTabController,
+        physics: const NeverScrollableScrollPhysics(),
+        children: [
+          mainContent,
+          buildSettingsTab(),
+        ],
+      ),
+      bottomNavigationBar: Container(
+        width: 375,
+        height: 90,
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        decoration: BoxDecoration(
+          border: Border(
+            top: BorderSide(
+              color: isDarkTheme
+                  ? Colors.white.withOpacity(0.1)
+                  : Colors.black.withOpacity(0.1),
+              width: 1,
+            ),
+          ),
+        ),
+        child: TabBar(
+          controller: _bottomTabController,
+          indicatorSize: TabBarIndicatorSize.tab,
+          indicatorColor: Colors.transparent,
+          dividerColor: Colors.transparent,
+          overlayColor: WidgetStateProperty.all(Colors.transparent),
+          splashFactory: NoSplash.splashFactory,
+          labelColor: isDarkTheme ? Colors.white : Colors.black,
+          unselectedLabelColor:
+              isDarkTheme ? transparentWhite33 : transparentBlack33,
+          tabs: [
+            Container(
+              width: 75,
+              height: 74,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: _bottomTabController.index == 0
+                      ? (isDarkTheme
+                          ? Colors.white.withOpacity(0.1)
+                          : Colors.black.withOpacity(0.1))
+                      : Colors.transparent,
+                  width: 1,
+                ),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.pie_chart_outline,
+                      size: 24,
+                      color: _bottomTabController.index == 0
+                          ? (isDarkTheme ? Colors.white : Colors.black)
+                          : (isDarkTheme
+                              ? transparentWhite33
+                              : transparentBlack33),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      'Portfolio',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: _bottomTabController.index == 0
+                            ? (isDarkTheme ? Colors.white : Colors.black)
+                            : (isDarkTheme
+                                ? transparentWhite33
+                                : transparentBlack33),
+                      ),
+                      softWrap: false,
+                      overflow: TextOverflow.visible,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            Container(
+              width: 75,
+              height: 74,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: _bottomTabController.index == 1
+                      ? (isDarkTheme
+                          ? Colors.white.withOpacity(0.1)
+                          : Colors.black.withOpacity(0.1))
+                      : Colors.transparent,
+                  width: 1,
+                ),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.settings,
+                      size: 24,
+                      color: _bottomTabController.index == 1
+                          ? (isDarkTheme ? Colors.white : Colors.black)
+                          : (isDarkTheme
+                              ? transparentWhite33
+                              : transparentBlack33),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      'Settings',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: _bottomTabController.index == 1
+                            ? (isDarkTheme ? Colors.white : Colors.black)
+                            : (isDarkTheme
+                                ? transparentWhite33
+                                : transparentBlack33),
+                      ),
+                      softWrap: false,
+                      overflow: TextOverflow.visible,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
 
@@ -1289,175 +1358,3 @@ class DashboardPageWrapper extends StatelessWidget {
         orElse: () => const SizedBox.shrink());
   }
 }
-
-// class QRCodeDialog extends StatelessWidget {
-//   final String currentAddress;
-//   final String? currentAccountUuid;
-
-//   const QRCodeDialog(
-//       {super.key, required this.currentAddress, this.currentAccountUuid});
-
-//   @override
-//   Widget build(BuildContext context) {
-//     final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
-//     final screenWidth = MediaQuery.of(context).size.width;
-//     return Column(
-//       mainAxisSize: MainAxisSize.min,
-//       children: [
-//         const SizedBox(height: 8.0),
-//         QrImageView(
-//           dataModuleStyle: QrDataModuleStyle(
-//             dataModuleShape: QrDataModuleShape.square,
-//             color: isDarkTheme ? mainTextWhite : royalBlueLightTheme,
-//           ),
-//           eyeStyle: QrEyeStyle(
-//               eyeShape: QrEyeShape.square,
-//               color: isDarkTheme ? mainTextWhite : royalBlueLightTheme),
-//           data: currentAddress,
-//           version: QrVersions.auto,
-//           size: 230.0,
-//         ),
-//         const SizedBox(height: 16.0),
-//         const Divider(
-//           thickness: 1.0,
-//         ),
-//         LayoutBuilder(
-//           builder: (context, constraints) {
-//             return Padding(
-//               padding: const EdgeInsets.all(16.0),
-//               child: Container(
-//                 width: 500,
-//                 decoration: BoxDecoration(
-//                   color: isDarkTheme ? darkNavyDarkTheme : noBackgroundColor,
-//                   borderRadius: BorderRadius.circular(10.0),
-//                   border: isDarkTheme
-//                       ? Border.all(color: noBackgroundColor)
-//                       : Border.all(color: greyLightThemeUnderlineColor),
-//                 ),
-//                 child: Row(
-//                   children: [
-//                     Expanded(
-//                       child: FittedBox(
-//                         fit: BoxFit.scaleDown,
-//                         child: SelectableText(
-//                           currentAddress,
-//                           style: const TextStyle(
-//                               overflow: TextOverflow.ellipsis, fontSize: 16),
-//                         ),
-//                       ),
-//                     ),
-//                     Container(
-//                       padding: const EdgeInsets.all(2.0),
-//                       child: screenWidth < 768.0
-//                           ? ElevatedButton(
-//                               style: ElevatedButton.styleFrom(
-//                                 elevation: 0,
-//                                 padding: const EdgeInsets.symmetric(
-//                                     horizontal: 20.0, vertical: 20.0),
-//                                 shape: RoundedRectangleBorder(
-//                                   borderRadius: BorderRadius.circular(8.0),
-//                                 ),
-//                               ),
-//                               onPressed: () {
-//                                 Clipboard.setData(
-//                                     ClipboardData(text: currentAddress));
-//                                 ScaffoldMessenger.of(context).showSnackBar(
-//                                   const SnackBar(
-//                                       content:
-//                                           Text('Address copied to clipboard')),
-//                                 );
-//                               },
-//                               child: const Icon(Icons.copy),
-//                             )
-//                           : ElevatedButton(
-//                               style: ElevatedButton.styleFrom(
-//                                 elevation: 0,
-//                                 padding: const EdgeInsets.symmetric(
-//                                     horizontal: 20.0, vertical: 20.0),
-//                                 shape: RoundedRectangleBorder(
-//                                   borderRadius: BorderRadius.circular(8.0),
-//                                 ),
-//                               ),
-//                               onPressed: () {
-//                                 Clipboard.setData(
-//                                     ClipboardData(text: currentAddress));
-//                                 ScaffoldMessenger.of(context).showSnackBar(
-//                                   const SnackBar(
-//                                       content:
-//                                           Text('Address copied to clipboard')),
-//                                 );
-//                               },
-//                               child: SizedBox(
-//                                 height: 32.0,
-//                                 child: Row(
-//                                   children: [
-//                                     Icon(Icons.copy,
-//                                         size: 14.0,
-//                                         color: isDarkTheme
-//                                             ? darkThemeInputLabelColor
-//                                             : lightThemeInputLabelColor),
-//                                     const SizedBox(width: 4.0, height: 16.0),
-//                                     Text("COPY",
-//                                         style: TextStyle(
-//                                             fontSize: 14.0,
-//                                             color: isDarkTheme
-//                                                 ? darkThemeInputLabelColor
-//                                                 : lightThemeInputLabelColor)),
-//                                   ],
-//                                 ),
-//                               ),
-//                             ),
-//                     ),
-//                   ],
-//                 ),
-//               ),
-//             );
-//           },
-//         ),
-//         if (currentAccountUuid != null)
-//           Builder(builder: (context) {
-//             final accountUuid =
-//                 context.read<SessionStateCubit>().state.maybeWhen(
-//                       success: (state) => state.currentAccountUuid,
-//                       orElse: () => null,
-//                     );
-
-//             // look up account
-//             Account account = context.read<SessionStateCubit>().state.maybeWhen(
-//                   success: (state) => state.accounts
-//                       .firstWhere((account) => account.uuid == accountUuid),
-//                   orElse: () => throw Exception("invariant: no account"),
-//                 );
-
-//             // don't support address creation for horizon accounts
-//             return switch (account.importFormat) {
-//               ImportFormat.horizon => const SizedBox.shrink(),
-//               _ => TextButton(
-//                   child: const Text("Add a new address"),
-//                   onPressed: () {
-//                     HorizonUI.HorizonDialog.show(
-//                       context: context,
-//                       body: HorizonUI.HorizonDialog(
-//                         title: "Add a new address\nto ${account.name}",
-//                         titleAlign: Alignment.center,
-//                         body: Padding(
-//                           padding: const EdgeInsets.symmetric(horizontal: 16.0),
-//                           child: AddAddressForm(
-//                             passwordRequired: GetIt.I
-//                                 .get<SettingsRepository>()
-//                                 .requirePasswordForCryptoOperations,
-//                             accountUuid: accountUuid!,
-//                           ),
-//                         ),
-//                         onBackButtonPressed: () {
-//                           Navigator.of(context).pop();
-//                         },
-//                       ),
-//                     );
-//                   })
-//             };
-//           })
-//       ],
-//     );
-//   }
-// }
