@@ -905,10 +905,9 @@ class DashboardActivityFeedScreenState
           );
         }
 
-        return SliverList(
-          delegate: SliverChildBuilderDelegate(
-            (context, index) => widgets[index],
-            childCount: widgets.length,
+        return SingleChildScrollView(
+          child: Column(
+            children: widgets,
           ),
         );
       },

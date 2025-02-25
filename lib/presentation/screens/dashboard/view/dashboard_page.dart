@@ -65,7 +65,6 @@ import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:horizon/presentation/session/theme/bloc/theme_bloc.dart';
 import 'package:horizon/presentation/session/theme/bloc/theme_event.dart';
-import 'package:sliver_tools/sliver_tools.dart';
 
 class SignPsbtModal extends StatelessWidget {
   final int tabId;
@@ -1051,10 +1050,7 @@ class DashboardPageState extends State<DashboardPage>
 
   @override
   Widget build(BuildContext context) {
-    const maxWidth = 926.0;
     final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isSmallScreen = screenWidth < 600;
 
     Widget buildTabContent() {
       return Column(
@@ -1078,30 +1074,34 @@ class DashboardPageState extends State<DashboardPage>
               unselectedLabelColor:
                   isDarkTheme ? transparentWhite33 : transparentBlack33,
               isScrollable: true,
-              tabAlignment: TabAlignment.start,
-              labelPadding: const EdgeInsets.symmetric(horizontal: 14),
+              padding: EdgeInsets.zero,
+              // labelPadding: const EdgeInsets.symmetric(horizontal: 14),
+              indicatorPadding: EdgeInsets.zero,
+              indicatorSize: TabBarIndicatorSize.tab,
               tabs: const [
                 SizedBox(
-                  width: 81,
                   height: 64,
                   child: Align(
                     alignment: Alignment.centerLeft,
                     child: Text(
                       'Assets',
-                      style:
-                          TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ),
                 ),
                 SizedBox(
-                  width: 81,
                   height: 64,
                   child: Align(
                     alignment: Alignment.centerLeft,
                     child: Text(
                       'Activity',
-                      style:
-                          TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ),
                 ),
@@ -1113,30 +1113,16 @@ class DashboardPageState extends State<DashboardPage>
               controller: _tabController,
               physics: const NeverScrollableScrollPhysics(),
               children: [
-                Container(
-                  margin: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-                  child: CustomScrollView(
-                    slivers: [
-                      SliverPadding(
-                        padding: const EdgeInsets.all(8.0),
-                        sliver: BalancesDisplay(isDarkTheme: isDarkTheme),
-                      ),
-                    ],
-                  ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 14),
+                  child: BalancesDisplay(isDarkTheme: isDarkTheme),
                 ),
-                Container(
-                  margin: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-                  child: CustomScrollView(
-                    slivers: [
-                      SliverPadding(
-                        padding: const EdgeInsets.all(8.0),
-                        sliver: DashboardActivityFeedScreen(
-                          key: Key(widget.addresses.first),
-                          addresses: widget.addresses,
-                          initialItemCount: 4,
-                        ),
-                      ),
-                    ],
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: DashboardActivityFeedScreen(
+                    key: Key(widget.addresses.first),
+                    addresses: widget.addresses,
+                    initialItemCount: 4,
                   ),
                 ),
               ],
@@ -1151,26 +1137,15 @@ class DashboardPageState extends State<DashboardPage>
         color: Theme.of(context).scaffoldBackgroundColor,
       ),
       child: Container(
-        margin: const EdgeInsets.fromLTRB(8, 0, 8, 8),
-        child: CustomScrollView(
-          controller: _scrollController,
-          slivers: [
-            SliverCrossAxisConstrained(
-              maxCrossAxisExtent: maxWidth,
-              child: SliverToBoxAdapter(
-                child: Container(
-                  margin: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).scaffoldBackgroundColor,
-                    borderRadius: BorderRadius.circular(30.0),
-                  ),
-                  height: MediaQuery.of(context).size.height -
-                      100, // Take up most of the screen height
-                  child: buildTabContent(),
-                ),
-              ),
-            ),
-          ],
+        // margin: const EdgeInsets.fromLTRB(8, 0, 8, 8),
+        child: Container(
+          // margin: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: Theme.of(context).scaffoldBackgroundColor,
+            borderRadius: BorderRadius.circular(30.0),
+          ),
+          height: MediaQuery.of(context).size.height - 100,
+          child: buildTabContent(),
         ),
       ),
     );

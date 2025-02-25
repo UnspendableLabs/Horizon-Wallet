@@ -27,13 +27,12 @@ class BalancesDisplayState extends State<BalancesDisplay> {
 
   @override
   Widget build(BuildContext context) {
-    return SliverToBoxAdapter(
-      child: Column(
-        children: [
-          BalancesSliver(
-            isDarkTheme: widget.isDarkTheme,
-          ),
-        ],
+    return SingleChildScrollView(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8.0),
+        child: BalancesSliver(
+          isDarkTheme: widget.isDarkTheme,
+        ),
       ),
     );
   }
@@ -72,7 +71,7 @@ class BalancesSliverState extends State<BalancesSliver> {
       builder: (context, state) {
         return ListView(
           shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
+          physics: const ClampingScrollPhysics(),
           children: _buildContent(state),
         );
       },
