@@ -1051,6 +1051,7 @@ class DashboardPageState extends State<DashboardPage>
   @override
   Widget build(BuildContext context) {
     final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
+    final isSmallScreen = MediaQuery.of(context).size.width < 500;
 
     Widget buildTabContent() {
       return Column(
@@ -1103,7 +1104,8 @@ class DashboardPageState extends State<DashboardPage>
               physics: const NeverScrollableScrollPhysics(),
               children: [
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 35),
+                  padding:
+                      EdgeInsets.symmetric(horizontal: isSmallScreen ? 16 : 35),
                   child: BalancesDisplay(isDarkTheme: isDarkTheme),
                 ),
                 Padding(

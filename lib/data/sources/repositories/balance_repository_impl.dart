@@ -92,7 +92,8 @@ class BalanceRepositoryImpl implements BalanceRepository {
               assetInfo: ai.AssetInfo(
                 assetLongname: a.assetInfo.assetLongname,
                 description: a.assetInfo.description,
-                // issuer: a.assetInfo.issuer,
+                issuer: a.assetInfo.issuer,
+                owner: a.assetInfo.owner,
                 divisible: a.assetInfo.divisible,
                 // locked: a.assetInfo.locked,
               ),
@@ -149,6 +150,8 @@ class BalanceRepositoryImpl implements BalanceRepository {
         assetInfo: ai.AssetInfo(
           assetLongname: balance.assetInfo.assetLongname,
           description: balance.assetInfo.description,
+          issuer: balance.assetInfo.issuer,
+          owner: balance.assetInfo.owner,
           divisible: balance.assetInfo.divisible,
         ),
         utxo: balance.utxo,
@@ -177,6 +180,8 @@ class BalanceRepositoryImpl implements BalanceRepository {
         assetInfo: ai.AssetInfo(
           assetLongname: balance.assetInfo.assetLongname,
           description: balance.assetInfo.description,
+          issuer: balance.assetInfo.issuer,
+          owner: balance.assetInfo.owner,
           divisible: balance.assetInfo.divisible,
         ),
       ));
