@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
@@ -65,44 +64,8 @@ class HorizonAppBarContent extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0),
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          mainAxisAlignment: MainAxisAlignment.end,
           children: [
-            Expanded(
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  Center(
-                    child: isDarkTheme
-                        ? SvgPicture.asset(
-                            'assets/logo-white.svg',
-                            width: 35,
-                            height: 35,
-                          )
-                        : SvgPicture.asset(
-                            'assets/logo-black.svg',
-                            width: 35,
-                            height: 35,
-                          ),
-                  ),
-                  const SizedBox(width: 8),
-                  Text('Horizon',
-                      style: TextStyle(
-                        color: isDarkTheme ? Colors.white : Colors.black,
-                        fontSize: isSmallScreen ? 25 : 30,
-                        fontWeight: FontWeight.w700,
-                      )),
-                  if (!isSmallScreen) const SizedBox(width: 8),
-                  if (!isSmallScreen)
-                    const Text('Wallet',
-                        style: TextStyle(
-                          color: neonBlueDarkTheme,
-                          fontSize: 30,
-                          fontWeight: FontWeight.w700,
-                        )),
-                  const SizedBox(width: 12),
-                ],
-              ),
-            ),
             Row(
               children: [
                 Container(

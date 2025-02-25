@@ -27,6 +27,7 @@ import 'package:horizon/domain/services/imported_address_service.dart';
 import 'package:horizon/domain/services/public_key_service.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
 import 'package:horizon/presentation/common/colors.dart';
+import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
 import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
 import 'package:horizon/presentation/forms/get_addresses/bloc/get_addresses_bloc.dart';
@@ -66,11 +67,11 @@ class SignPsbtModal extends StatelessWidget {
   final BalanceRepository balanceRepository;
   final RPCSignPsbtSuccessCallback onSuccess;
   final Map<String, List<int>> signInputs;
+  final List<int>? sighashTypes;
   final ImportedAddressService importedAddressService;
   final UnifiedAddressRepository addressRepository;
   final AccountRepository accountRepository;
   final BitcoinRepository bitcoinRepository;
-  final List<int>? sighashTypes;
 
   const SignPsbtModal(
       {super.key,
@@ -1108,21 +1109,57 @@ class DashboardPageState extends State<DashboardPage>
     final screenWidth = MediaQuery.of(context).size.width;
     final isSmallScreen = screenWidth < 600;
 
-    Color backgroundColor = isDarkTheme ? darkNavyDarkTheme : greyLightTheme;
-    final backgroundColorInner =
-        isDarkTheme ? lightNavyDarkTheme : greyLightTheme;
-    final backgroundColorWrapper =
-        isDarkTheme ? darkNavyDarkTheme : Colors.white;
-
     Widget buildTabContent() {
       return Column(
         children: [
-          TabBar(
-            controller: _tabController,
-            tabs: const [
-              Tab(text: 'Assets'),
-              Tab(text: 'Activity'),
-            ],
+          Container(
+            decoration: BoxDecoration(
+              border: Border(
+                bottom: BorderSide(
+                  color: isDarkTheme
+                      ? Colors.white.withOpacity(0.1)
+                      : Colors.black.withOpacity(0.1),
+                  width: 1,
+                ),
+              ),
+            ),
+            child: TabBar(
+              controller: _tabController,
+              indicatorWeight: 2,
+              indicatorColor: transparentPurple33,
+              labelColor: Theme.of(context).textTheme.bodyMedium?.color,
+              unselectedLabelColor:
+                  isDarkTheme ? transparentWhite33 : transparentBlack33,
+              isScrollable: true,
+              tabAlignment: TabAlignment.start,
+              labelPadding: const EdgeInsets.symmetric(horizontal: 14),
+              tabs: const [
+                SizedBox(
+                  width: 81,
+                  height: 64,
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      'Assets',
+                      style:
+                          TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
+                    ),
+                  ),
+                ),
+                SizedBox(
+                  width: 81,
+                  height: 64,
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      'Activity',
+                      style:
+                          TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
           Expanded(
             child: TabBarView(
@@ -1130,11 +1167,7 @@ class DashboardPageState extends State<DashboardPage>
               children: [
                 // Assets tab
                 Container(
-                  margin: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: backgroundColorInner,
-                    borderRadius: BorderRadius.circular(30.0),
-                  ),
+                  margin: const EdgeInsets.fromLTRB(16, 8, 16, 8),
                   child: CustomScrollView(
                     slivers: [
                       SliverPadding(
@@ -1146,11 +1179,7 @@ class DashboardPageState extends State<DashboardPage>
                 ),
                 // Activity tab
                 Container(
-                  margin: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: backgroundColorInner,
-                    borderRadius: BorderRadius.circular(30.0),
-                  ),
+                  margin: const EdgeInsets.fromLTRB(16, 8, 16, 8),
                   child: CustomScrollView(
                     slivers: [
                       SliverPadding(
@@ -1173,17 +1202,7 @@ class DashboardPageState extends State<DashboardPage>
 
     final mainContent = Container(
       decoration: BoxDecoration(
-        color: backgroundColor,
-        gradient: isDarkTheme
-            ? RadialGradient(
-                center: Alignment.topRight,
-                radius: isSmallScreen ? 1.0 : 2.0,
-                colors: [
-                  blueDarkThemeGradiantColor,
-                  backgroundColor,
-                ],
-              )
-            : null,
+        color: Theme.of(context).scaffoldBackgroundColor,
       ),
       child: Container(
         margin: const EdgeInsets.fromLTRB(8, 0, 8, 8),
@@ -1202,10 +1221,11 @@ class DashboardPageState extends State<DashboardPage>
                 child: Container(
                   margin: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: backgroundColorWrapper,
+                    color: Theme.of(context).scaffoldBackgroundColor,
                     borderRadius: BorderRadius.circular(30.0),
                   ),
-                  height: 600, // Adjust height as needed
+                  height: MediaQuery.of(context).size.height -
+                      100, // Take up most of the screen height
                   child: buildTabContent(),
                 ),
               ),
