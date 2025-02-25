@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:horizon/common/uuid.dart';
 import 'package:horizon/presentation/common/shared_util.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_event.dart';
@@ -185,11 +186,10 @@ class ActivityFeedListItem extends StatelessWidget {
     return ListTile(
       title: _buildTitle(),
       subtitle: _buildSubtitle(),
-      leading: _buildLeadingIcon(),
-      trailing: Row(mainAxisSize: MainAxisSize.min, children: [
-        _buildRBF() ?? const SizedBox.shrink(),
-        _buildTrailing(),
-      ]),
+      // TODO: ADD RBF
+      // trailing: Row(mainAxisSize: MainAxisSize.min, children: [
+      //   _buildRBF() ?? const SizedBox.shrink(),
+      // ]),
       // onTap: () {},
     );
   }
@@ -334,19 +334,55 @@ class ActivityFeedListItem extends StatelessWidget {
     final addresses_ = addresses.map((a) => a).toList();
 
     return switch (tx.getTransactionType(addresses_)) {
-      TransactionType.sender => SendTitle(
-          quantityNormalized:
-              tx.getAmountSentNormalized(addresses_).toStringAsFixed(8),
-          asset: 'BTC',
+      TransactionType.sender => Row(
+          children: [
+            const Text(
+              "Send",
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const Spacer(),
+            Text(
+              "${tx.getAmountSentNormalized(addresses_).toStringAsFixed(8)} BTC",
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
         ),
-      // TODO: assumes single party send?
-      TransactionType.recipient => ReceiveTitle(
-          quantityNormalized:
-              tx.getAmountReceivedNormalized(addresses_).toStringAsFixed(8),
-          asset: 'BTC',
+      TransactionType.recipient => Row(
+          children: [
+            const Text(
+              "Receive",
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const Spacer(),
+            Text(
+              "${tx.getAmountReceivedNormalized(addresses_).toStringAsFixed(8)} BTC",
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
         ),
-      TransactionType.neither =>
-        const SelectableText('Invariant: account neither sender or receiver')
+      TransactionType.neither => const Row(
+          children: [
+            Text(
+              "Invariant: account neither sender or receiver",
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
     };
   }
 
@@ -354,81 +390,492 @@ class ActivityFeedListItem extends StatelessWidget {
     return switch (event) {
       VerboseEnhancedSendEvent(params: var params)
           when _getSendSide(params.source) == SendSide.source =>
-        SendTitle(
-          quantityNormalized: params.quantityNormalized,
-          asset: params.asset,
+        Row(
+          children: [
+            const Text(
+              "Send",
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const Spacer(),
+            Text(
+              "${params.quantityNormalized} ${params.asset}",
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
         ),
       VerboseEnhancedSendEvent(params: var params)
           when _getSendSide(params.source) == SendSide.destination =>
-        ReceiveTitle(
-          quantityNormalized: params.quantityNormalized,
-          asset: params.asset,
+        Row(
+          children: [
+            const Text(
+              "Receive",
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const Spacer(),
+            Text(
+              "${params.quantityNormalized} ${params.asset}",
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
         ),
       VerboseMpmaSendEvent(params: var params)
           when _getSendSide(params.source) == SendSide.source =>
-        SendTitle(
-          quantityNormalized: params.quantityNormalized,
-          asset: params.asset,
-          isMpma: true,
+        Row(
+          children: [
+            const Text(
+              "MPMA Send",
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const Spacer(),
+            Text(
+              "${params.quantityNormalized} ${params.asset}",
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
         ),
       VerboseMpmaSendEvent(params: var params)
           when _getSendSide(params.source) == SendSide.destination =>
-        ReceiveTitle(
-          quantityNormalized: params.quantityNormalized,
-          asset: params.asset,
-          isMpma: true,
+        Row(
+          children: [
+            const Text(
+              "MPMA Receive",
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const Spacer(),
+            Text(
+              "${params.quantityNormalized} ${params.asset}",
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
         ),
       VerboseAssetIssuanceEvent(params: var params) =>
         _buildAssetIssuanceTitle(params),
-      VerboseResetIssuanceEvent(params: var params) => SelectableText(
-          "Reset Issuance ${displayAssetName(params.asset, params.assetLongname)}"),
-      VerboseDispenseEvent(params: var params) => SelectableText(
-          "Dispense ${params.dispenseQuantityNormalized} ${params.asset} for ${params.btcAmountNormalized} BTC"),
-      VerboseOpenDispenserEvent(params: var params) =>
-        SelectableText("Open Dispenser for ${params.asset}"),
-      VerboseRefillDispenserEvent(params: var params) =>
-        SelectableText("Refill Dispenser for ${params.asset}"),
-      VerboseDispenserUpdateEvent(params: var params) =>
-        _buildDispenserUpdateTitle(params),
-      VerboseNewFairmintEvent(params: var params) =>
-        _buildNewFairmintTitle(params),
-      VerboseNewFairminterEvent(params: var params) =>
-        _buildNewFairminterTitle(params),
-      VerboseOpenOrderEvent(params: var params) => SelectableText(
-          "Open Order: ${params.giveQuantityNormalized} ${params.giveAsset} /  ${params.getQuantityNormalized} ${params.getAsset} "),
-      VerboseOrderMatchEvent(params: var params) => SelectableText(
-          "Order Match: ${params.forwardQuantityNormalized} ${params.forwardAsset} / ${params.backwardQuantityNormalized} ${params.backwardAsset}"),
-      VerboseOrderUpdateEvent() => const SelectableText("Order Update"),
-      VerboseOrderFilledEvent(params: var _) =>
-        const SelectableText("Order Filled"),
-      VerboseCancelOrderEvent(params: var params) =>
-        const SelectableText("Order Cancelled"),
-      VerboseOrderExpirationEvent(params: var params) =>
-        const SelectableText("Order Expiration"),
-      VerboseNewFairminterEvent(params: var params) =>
-        _buildNewFairminterTitle(params),
-      VerboseAttachToUtxoEvent(params: var params) => SelectableText(
-          "Attach to UTXO ${params.asset} ${params.quantityNormalized}"),
-      VerboseDetachFromUtxoEvent(params: var params) => SelectableText(
-          "Detach from UTXO ${params.asset} ${params.quantityNormalized}"),
-      VerboseMoveToUtxoEvent(params: var params) => SelectableText(
-          "Move to UTXO ${params.asset} ${params.quantityNormalized}"),
-      AtomicSwapEvent(params: var params) => SelectableText(
-          "Swap ${params.quantityNormalized} ${params.asset} for ${params.bitcoinSwapAmount} BTC"),
-      AssetDestructionEvent(params: var params) =>
-        SelectableText("Destroy ${params.quantityNormalized} ${params.asset}"),
-      AssetDividendEvent(params: var params) => SelectableText(
-          "Dividend ${params.asset} - ${params.dividendAsset} ${params.quantityPerUnitNormalized} per unit"),
+      VerboseResetIssuanceEvent(params: var params) => Row(
+          children: [
+            const Text(
+              "Reset",
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const Spacer(),
+            Text(
+              displayAssetName(params.asset, params.assetLongname),
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      VerboseDispenseEvent(params: var params) => Row(
+          children: [
+            const Text(
+              "Dispense",
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const Spacer(),
+            Text(
+              "${params.dispenseQuantityNormalized} ${params.asset} for ${params.btcAmountNormalized} BTC",
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      VerboseOpenDispenserEvent(params: var params) => Row(
+          children: [
+            const Text(
+              "Open Dispenser",
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const Spacer(),
+            Text(
+              params.asset,
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      VerboseRefillDispenserEvent(params: var params) => Row(
+          children: [
+            const Text(
+              "Refill Dispenser",
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const Spacer(),
+            Text(
+              params.asset,
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      VerboseDispenserUpdateEvent(params: var params) => Row(
+          children: [
+            Text(
+              params.status == 10 || params.status == 11
+                  ? "Close Dispenser"
+                  : "Update Dispenser",
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const Spacer(),
+            Text(
+              params.asset,
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      VerboseNewFairmintEvent(params: var params) => Row(
+          children: [
+            Text(
+              params.status?.contains('invalid') ?? false
+                  ? "Fairmint (INVALID)"
+                  : "Fairmint",
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: params.status?.contains('invalid') ?? false
+                    ? redErrorText
+                    : null,
+              ),
+            ),
+            const Spacer(),
+            Text(
+              params.asset ?? '',
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      VerboseNewFairminterEvent(params: var params) => Row(
+          children: [
+            Text(
+              params.status?.contains('invalid') ?? false
+                  ? "Fairminter (INVALID)"
+                  : "Fairminter",
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: params.status?.contains('invalid') ?? false
+                    ? redErrorText
+                    : null,
+              ),
+            ),
+            const Spacer(),
+            Text(
+              params.asset ?? '',
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      VerboseOpenOrderEvent(params: var params) => Row(
+          children: [
+            const Text(
+              "Open Order",
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const Spacer(),
+            Text(
+              "${params.giveQuantityNormalized} ${params.giveAsset} / ${params.getQuantityNormalized} ${params.getAsset}",
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      VerboseOrderMatchEvent(params: var params) => Row(
+          children: [
+            const Text(
+              "Order Match",
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const Spacer(),
+            Text(
+              "${params.forwardQuantityNormalized} ${params.forwardAsset} / ${params.backwardQuantityNormalized} ${params.backwardAsset}",
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      VerboseOrderUpdateEvent() => const Row(
+          children: [
+            Text(
+              "Order Update",
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      VerboseOrderFilledEvent(params: var _) => const Row(
+          children: [
+            Text(
+              "Order Filled",
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      VerboseCancelOrderEvent(params: var _) => const Row(
+          children: [
+            Text(
+              "Cancel Order",
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      VerboseOrderExpirationEvent(params: var _) => const Row(
+          children: [
+            Text(
+              "Order Expiration",
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      VerboseAttachToUtxoEvent(params: var params) => Row(
+          children: [
+            const Text(
+              "Attach to UTXO",
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const Spacer(),
+            Text(
+              "${params.asset} ${params.quantityNormalized}",
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      VerboseDetachFromUtxoEvent(params: var params) => Row(
+          children: [
+            const Text(
+              "Detach from UTXO",
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const Spacer(),
+            Text(
+              "${params.asset} ${params.quantityNormalized}",
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      VerboseMoveToUtxoEvent(params: var params) => Row(
+          children: [
+            const Text(
+              "Move to UTXO",
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const Spacer(),
+            Text(
+              "${params.asset} ${params.quantityNormalized}",
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      AtomicSwapEvent(params: var params) => Row(
+          children: [
+            const Text(
+              "Swap",
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const Spacer(),
+            Text(
+              "${params.quantityNormalized} ${params.asset} for ${params.bitcoinSwapAmount} BTC",
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      AssetDestructionEvent(params: var params) => Row(
+          children: [
+            const Text(
+              "Destroy",
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const Spacer(),
+            Text(
+              "${params.quantityNormalized} ${params.asset}",
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      AssetDividendEvent(params: var params) => Row(
+          children: [
+            const Text(
+              "Dividend",
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const Spacer(),
+            Text(
+              "${params.asset} - ${params.dividendAsset} ${params.quantityPerUnitNormalized} per unit",
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
       SweepEvent(params: var params)
           when _getSendSide(params.source) == SendSide.source =>
-        SelectableText(
-            "Sweep ${flagMapper[params.flags]} to ${params.destination}"),
+        Row(
+          children: [
+            const Text(
+              "Sweep",
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const Spacer(),
+            Text(
+              "${flagMapper[params.flags]} to ${params.destination}",
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
       SweepEvent(params: var params)
           when _getSendSide(params.source) == SendSide.destination =>
-        SelectableText(
-            "Sweep ${flagMapper[params.flags]} from ${params.source}"),
-      BurnEvent(params: var params) => SelectableText(
-          "Burn ${params.burnedNormalized} BTC for ${params.earnedNormalized} XCP"),
+        Row(
+          children: [
+            const Text(
+              "Sweep",
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const Spacer(),
+            Text(
+              "${flagMapper[params.flags]} from ${params.source}",
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      BurnEvent(params: var params) => Row(
+          children: [
+            const Text(
+              "Burn",
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const Spacer(),
+            Text(
+              "${params.burnedNormalized} BTC for ${params.earnedNormalized} XCP",
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
       _ => SelectableText(
           'Invariant: title unsupported event type: ${event.runtimeType}'),
     };
@@ -437,66 +884,256 @@ class ActivityFeedListItem extends StatelessWidget {
   Widget _buildAssetIssuanceTitle(VerboseAssetIssuanceParams params) {
     if (params.transfer && params.assetEvents != 'fairmint') {
       if (addresses.any((a) => a == params.source)) {
-        return SelectableText(
-            "Transfer Out of ${displayAssetName(params.asset, params.assetLongname)}");
+        return Row(
+          children: [
+            const Text(
+              "Transfer Out",
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const Spacer(),
+            Text(
+              displayAssetName(params.asset, params.assetLongname),
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        );
       } else {
-        return SelectableText(
-            "Transfer In of ${displayAssetName(params.asset, params.assetLongname)}");
+        return Row(
+          children: [
+            const Text(
+              "Transfer In",
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const Spacer(),
+            Text(
+              displayAssetName(params.asset, params.assetLongname),
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        );
       }
     }
     if (params.assetEvents != null && params.assetEvents!.isNotEmpty) {
       return switch (params.assetEvents) {
-        "reissuance" => SelectableText(
-            "Reissue ${displayAssetName(params.asset, params.assetLongname)}"),
-        "lock_quantity" => SelectableText(
-            "Lock Quantity for ${displayAssetName(params.asset, params.assetLongname)}"),
-        "change_description" => SelectableText(
-            "Change Description for ${displayAssetName(params.asset, params.assetLongname)}"),
-        "lock_description" => SelectableText(
-            "Lock Description for ${displayAssetName(params.asset, params.assetLongname)}"),
-        "open_fairminter" => SelectableText(
-            "New Fairminter for ${displayAssetName(params.asset, params.assetLongname)}"),
-        "fairmint" => SelectableText(
-            "Fairmint for ${displayAssetName(params.asset, params.assetLongname)}"),
+        "reissuance" => Row(
+            children: [
+              const Text(
+                "Reissue",
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const Spacer(),
+              Text(
+                displayAssetName(params.asset, params.assetLongname),
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        "lock_quantity" => Row(
+            children: [
+              const Text(
+                "Lock Quantity",
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const Spacer(),
+              Text(
+                displayAssetName(params.asset, params.assetLongname),
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        "change_description" => Row(
+            children: [
+              const Text(
+                "Change Description",
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const Spacer(),
+              Text(
+                displayAssetName(params.asset, params.assetLongname),
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        "lock_description" => Row(
+            children: [
+              const Text(
+                "Lock Description",
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const Spacer(),
+              Text(
+                displayAssetName(params.asset, params.assetLongname),
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        "open_fairminter" => Row(
+            children: [
+              const Text(
+                "Fairminter",
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const Spacer(),
+              Text(
+                displayAssetName(params.asset, params.assetLongname),
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        "fairmint" => Row(
+            children: [
+              const Text(
+                "Fairmint",
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const Spacer(),
+              Text(
+                displayAssetName(params.asset, params.assetLongname),
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
         "transfer" => addresses.any((a) => a == params.source)
-            ? SelectableText(
-                "Transfer Out of ${displayAssetName(params.asset, params.assetLongname)}")
-            : SelectableText(
-                "Transfer In of ${displayAssetName(params.asset, params.assetLongname)}"),
-        _ => SelectableText(
-            "Issue ${params.quantityNormalized} ${displayAssetName(params.asset, params.assetLongname)}"),
+            ? Row(
+                children: [
+                  const Text(
+                    "Transfer Out",
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const Spacer(),
+                  Text(
+                    displayAssetName(params.asset, params.assetLongname),
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              )
+            : Row(
+                children: [
+                  const Text(
+                    "Transfer In",
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const Spacer(),
+                  Text(
+                    displayAssetName(params.asset, params.assetLongname),
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+        _ => Row(
+            children: [
+              const Text(
+                "Issue",
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const Spacer(),
+              Text(
+                "${params.quantityNormalized} ${displayAssetName(params.asset, params.assetLongname)}",
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
       };
     }
     if (params.asset == null || params.quantityNormalized == null) {
-      return const SelectableText('Issue (INVALID)',
-          style: TextStyle(color: redErrorText));
+      return const Row(
+        children: [
+          Text(
+            "Issue (INVALID)",
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: redErrorText,
+            ),
+          ),
+        ],
+      );
     }
-    return SelectableText(
-        "Issue ${params.quantityNormalized} ${displayAssetName(params.asset, params.assetLongname)}");
-  }
-
-  Widget _buildNewFairmintTitle(VerboseNewFairmintParams params) {
-    if (params.status?.contains('invalid') ?? false) {
-      return const SelectableText('New Fairmint (INVALID)',
-          style: TextStyle(color: redErrorText));
-    }
-    return SelectableText("New Fairmint for ${params.asset}");
-  }
-
-  Widget _buildNewFairminterTitle(VerboseNewFairminterParams params) {
-    if (params.status?.contains('invalid') ?? false) {
-      return const SelectableText('New Fairminter (INVALID)',
-          style: TextStyle(color: redErrorText));
-    }
-    return SelectableText("New Fairminter for ${params.asset}");
-  }
-
-  Widget _buildDispenserUpdateTitle(VerboseDispenserUpdateParams params) {
-    if (params.status == 10 || params.status == 11) {
-      return SelectableText("Close Dispenser for ${params.asset}");
-    } else {
-      return SelectableText("Update Dispenser for ${params.asset}");
-    }
+    return Row(
+      children: [
+        const Text(
+          "Issue",
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const Spacer(),
+        Text(
+          "${params.quantityNormalized} ${displayAssetName(params.asset, params.assetLongname)}",
+          style: const TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ],
+    );
   }
 
   Widget _buildTransactionInfoTitle(TransactionInfo info) {
@@ -504,107 +1141,292 @@ class ActivityFeedListItem extends StatelessWidget {
       TransactionInfoMpmaSend(unpackedData: var unpackedData) => Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: unpackedData.messageData
-              .map((data) => SendTitle(
-                    quantityNormalized: data.quantityNormalized!,
-                    asset: data.asset,
-                    isMpma: true,
+              .map((data) => Row(
+                    children: [
+                      const Text(
+                        "MPMA Send",
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const Spacer(),
+                      Text(
+                        "${data.quantityNormalized} ${data.asset}",
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
                   ))
               .toList(),
         ),
-      TransactionInfoAttach(
-        unpackedData: var unpackedData,
-      ) =>
-        SelectableText(
-            "Attach to UTXO ${unpackedData.quantityNormalized} ${unpackedData.asset}"),
-      TransactionInfoMoveToUtxo() => const SelectableText("Move to UTXO"),
-      TransactionInfoEnhancedSend(
-        unpackedData: var unpackedData,
-      ) =>
-        SendTitle(
-            quantityNormalized: unpackedData.quantityNormalized,
-            asset: unpackedData.asset),
-      TransactionInfoIssuance(
-        unpackedData: var unpackedData,
-      ) =>
-        SelectableText(
-            "Issue ${unpackedData.quantityNormalized} ${unpackedData.asset}"),
+      TransactionInfoAttach(unpackedData: var unpackedData) => Row(
+          children: [
+            const Text(
+              "Attach to UTXO",
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const Spacer(),
+            Text(
+              "${unpackedData.quantityNormalized} ${unpackedData.asset}",
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      TransactionInfoMoveToUtxo() => const Row(
+          children: [
+            Text(
+              "Move to UTXO",
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      TransactionInfoEnhancedSend(unpackedData: var unpackedData) => Row(
+          children: [
+            const Text(
+              "Send",
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const Spacer(),
+            Text(
+              "${unpackedData.quantityNormalized} ${unpackedData.asset}",
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      TransactionInfoIssuance(unpackedData: var unpackedData) => Row(
+          children: [
+            const Text(
+              "Issue",
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const Spacer(),
+            Text(
+              "${unpackedData.quantityNormalized} ${unpackedData.asset}",
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
       TransactionInfo(btcAmount: var btcAmount)
           when btcAmount != null && btcAmount > 0 =>
-        SendTitle(
-          quantityNormalized: satoshisToBtc(btcAmount).toStringAsFixed(8),
-          asset: 'BTC',
+        Row(
+          children: [
+            const Text(
+              "Send",
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const Spacer(),
+            Text(
+              "${satoshisToBtc(btcAmount).toStringAsFixed(8)} BTC",
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
         ),
-      TransactionInfoDispense(
-        unpackedData: var unpackedData,
-      ) =>
-        const SelectableText("Trigger Dispense"),
-      // btc send
-      TransactionInfoDispenser(
-        unpackedData: var unpackedData,
-      ) =>
-        SelectableText("Open or Update Dispenser for ${unpackedData.asset}"),
-      TransactionInfoFairmint(
-        unpackedData: var unpackedData,
-      ) =>
-        SelectableText("New Fairmint for ${unpackedData.asset}"),
-      TransactionInfoFairminter(
-        unpackedData: var unpackedData,
-      ) =>
-        SelectableText("New Fairminter for ${unpackedData.asset}"),
-      TransactionInfoOrder(
-        unpackedData: var unpackedData,
-      ) =>
-        SelectableText(
-            "Open Order: ${unpackedData.giveQuantityNormalized} ${unpackedData.giveAsset} /  ${unpackedData.getQuantityNormalized} ${unpackedData.getAsset}"),
-      TransactionInfoCancel(
-        unpackedData: var _,
-      ) =>
-        const SelectableText("Cancel Order"),
-      TransactionInfoDetach(
-        unpackedData: var unpackedData,
-      ) =>
-        SelectableText("Detach from UTXO ${unpackedData.destination}"),
-      TransactionInfoAssetDestruction(unpackedData: var unpackedData) =>
-        SelectableText(
-            "Destroy ${unpackedData.quantityNormalized} ${unpackedData.asset}"),
-      TransactionInfoAssetDividend(unpackedData: var unpackedData) =>
-        SelectableText("Dividend ${unpackedData.asset}"),
-      TransactionInfoSweep(unpackedData: var unpackedData) => SelectableText(
-          "Sweep ${flagMapper[unpackedData.flags]} to ${unpackedData.destination}"),
+      TransactionInfoDispense(unpackedData: var _) => const Row(
+          children: [
+            Text(
+              "Trigger Dispense",
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      TransactionInfoDispenser(unpackedData: var unpackedData) => Row(
+          children: [
+            const Text(
+              "Open or Update Dispenser",
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const Spacer(),
+            Text(
+              unpackedData.asset,
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      TransactionInfoFairmint(unpackedData: var unpackedData) => Row(
+          children: [
+            const Text(
+              "Fairmint",
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const Spacer(),
+            Text(
+              unpackedData.asset ?? '',
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      TransactionInfoFairminter(unpackedData: var unpackedData) => Row(
+          children: [
+            const Text(
+              "Fairminter",
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const Spacer(),
+            Text(
+              unpackedData.asset ?? '',
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      TransactionInfoOrder(unpackedData: var unpackedData) => Row(
+          children: [
+            const Text(
+              "Open Order",
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const Spacer(),
+            Text(
+              "${unpackedData.giveQuantityNormalized} ${unpackedData.giveAsset} / ${unpackedData.getQuantityNormalized} ${unpackedData.getAsset}",
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      TransactionInfoCancel(unpackedData: var _) => const Row(
+          children: [
+            Text(
+              "Cancel Order",
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      TransactionInfoDetach(unpackedData: var unpackedData) => Row(
+          children: [
+            const Text(
+              "Detach from UTXO",
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const Spacer(),
+            Text(
+              unpackedData.destination,
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      TransactionInfoAssetDestruction(unpackedData: var unpackedData) => Row(
+          children: [
+            const Text(
+              "Destroy",
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const Spacer(),
+            Text(
+              "${unpackedData.quantityNormalized} ${unpackedData.asset}",
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      TransactionInfoAssetDividend(unpackedData: var unpackedData) => Row(
+          children: [
+            const Text(
+              "Dividend",
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const Spacer(),
+            Text(
+              unpackedData.asset,
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      TransactionInfoSweep(unpackedData: var unpackedData) => Row(
+          children: [
+            const Text(
+              "Sweep",
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const Spacer(),
+            Text(
+              "${flagMapper[unpackedData.flags]} to ${unpackedData.destination}",
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
       _ => SelectableText(
           'Invariant: title unsupported TransactionInfo type: ${info.runtimeType}'),
-    };
-  }
-
-  Icon _getTransactionInfoLeading(TransactionInfo info) {
-    return switch (info) {
-      TransactionInfoMpmaSend() =>
-        const Icon(Icons.arrow_back, color: Colors.grey),
-      TransactionInfoEnhancedSend() =>
-        const Icon(Icons.arrow_back, color: Colors.grey),
-      TransactionInfoIssuance() => const Icon(Icons.toll, color: Colors.grey),
-      TransactionInfoDispenser() =>
-        const Icon(Icons.account_balance, color: Colors.grey),
-      TransactionInfoDispense() => const Icon(Icons.paid, color: Colors.grey),
-      TransactionInfoFairmint() => const Icon(Icons.money, color: Colors.grey),
-      TransactionInfoFairminter() =>
-        const Icon(Icons.print, color: Colors.grey),
-      TransactionInfoOrder() => const Icon(Icons.toc, color: Colors.grey),
-      TransactionInfoCancel() => const Icon(Icons.toc, color: Colors.grey),
-      TransactionInfoAttach() =>
-        const Icon(Icons.attach_file, color: Colors.grey),
-      TransactionInfoDetach() => const Icon(Icons.link_off, color: Colors.grey),
-      TransactionInfoMoveToUtxo() =>
-        const Icon(Icons.swap_horiz, color: Colors.grey),
-      TransactionInfoAssetDestruction() =>
-        const Icon(Icons.delete_forever, color: Colors.grey),
-      TransactionInfoAssetDividend() =>
-        const Icon(Icons.currency_exchange, color: Colors.grey),
-      TransactionInfo(btcAmount: var btcAmount) when btcAmount != null =>
-        const Icon(Icons.arrow_back, color: Colors.grey),
-      TransactionInfoSweep() =>
-        const Icon(Icons.cleaning_services, color: Colors.grey),
-      _ => const Icon(Icons.error),
     };
   }
 
@@ -641,7 +1463,8 @@ class ActivityFeedListItem extends StatelessWidget {
                       Padding(
                         padding: const EdgeInsets.fromLTRB(2, 0, 0, 0),
                         child: SelectableText(reason,
-                            style: const TextStyle(color: redErrorText)),
+                            style: const TextStyle(
+                                color: redErrorText, fontSize: 12)),
                       ),
                     ],
                   ),
@@ -684,148 +1507,6 @@ class ActivityFeedListItem extends StatelessWidget {
       hash: btx.txid,
       uriType: URIType.btcexplorer,
     );
-  }
-
-  Widget _buildTrailing() {
-    if (item.event != null) {
-      return _getEventTrailing(item.event!.state, item.event!.txHash);
-    } else if (item.info != null) {
-      return _getTransactionTrailing(item.info!.domain);
-    } else if (item.bitcoinTx != null) {
-      return _getBitcoinTxTrailing(item.bitcoinTx!);
-    } else {
-      return const Icon(Icons.error);
-    }
-  }
-
-  Widget _buildLeadingIcon() {
-    if (item.event != null) {
-      return _getEventLeadingIcon(item.event!);
-    } else if (item.info != null) {
-      return _getTransactionInfoLeading(item.info!);
-    } else {
-      return _getBitcoinTxLeadingIcon(item.bitcoinTx!);
-    }
-  }
-
-  Icon _getEventLeadingIcon(Event event) {
-    return switch (event) {
-      VerboseEnhancedSendEvent(params: var params)
-          when _getSendSide(params.source) == SendSide.source =>
-        const Icon(Icons.arrow_back, color: Colors.red),
-      VerboseEnhancedSendEvent(params: var params)
-          when _getSendSide(params.source) == SendSide.destination =>
-        const Icon(Icons.arrow_forward, color: Colors.green),
-      VerboseMpmaSendEvent(params: var params)
-          when _getSendSide(params.source) == SendSide.source =>
-        const Icon(Icons.arrow_back, color: Colors.red),
-      VerboseMpmaSendEvent(params: var params)
-          when _getSendSide(params.source) == SendSide.destination =>
-        const Icon(Icons.arrow_forward, color: Colors.green),
-      VerboseAssetIssuanceEvent(params: var _) =>
-        _getAssetIssuanceLeadingIcon(event),
-      VerboseResetIssuanceEvent(params: var _) =>
-        const Icon(Icons.toll, color: Colors.grey),
-      VerboseDispenseEvent(params: var _) =>
-        const Icon(Icons.paid, color: Colors.grey),
-      VerboseOpenDispenserEvent(params: var _) =>
-        const Icon(Icons.account_balance, color: Colors.grey),
-      VerboseRefillDispenserEvent(params: var _) =>
-        const Icon(Icons.account_balance, color: Colors.grey),
-      VerboseDispenserUpdateEvent(params: var params) =>
-        const Icon(Icons.account_balance, color: Colors.grey),
-      VerboseNewFairmintEvent(params: var _) =>
-        const Icon(Icons.money, color: Colors.grey),
-      VerboseNewFairminterEvent(params: var _) =>
-        const Icon(Icons.print, color: Colors.grey),
-      VerboseOpenOrderEvent(params: var _) =>
-        const Icon(Icons.toc, color: Colors.grey),
-      VerboseOrderMatchEvent(params: var _) =>
-        const Icon(Icons.toc, color: Colors.grey),
-      VerboseOrderUpdateEvent() => const Icon(Icons.toc, color: Colors.grey),
-      VerboseOrderFilledEvent(params: var _) =>
-        const Icon(Icons.toc, color: Colors.grey),
-      VerboseCancelOrderEvent(params: var _) =>
-        const Icon(Icons.toc, color: Colors.grey),
-      VerboseOrderExpirationEvent(params: var _) =>
-        const Icon(Icons.toc, color: Colors.grey),
-      VerboseAttachToUtxoEvent(params: var _) =>
-        const Icon(Icons.attach_file, color: Colors.grey),
-      VerboseDetachFromUtxoEvent(params: var _) =>
-        const Icon(Icons.link_off, color: Colors.grey),
-      VerboseMoveToUtxoEvent(params: var _) =>
-        const Icon(Icons.swap_horiz, color: Colors.grey),
-      AtomicSwapEvent(params: var _) =>
-        const Icon(Icons.swap_horiz, color: Colors.grey),
-      AssetDestructionEvent(params: var _) =>
-        const Icon(Icons.delete_forever, color: Colors.grey),
-      AssetDividendEvent(params: var _) =>
-        const Icon(Icons.currency_exchange, color: Colors.grey),
-      SweepEvent(params: var _) =>
-        const Icon(Icons.cleaning_services, color: Colors.grey),
-      BurnEvent(params: var _) =>
-        const Icon(Icons.local_fire_department, color: Colors.grey),
-      _ => const Icon(Icons.error),
-    };
-  }
-
-  Icon _getAssetIssuanceLeadingIcon(VerboseAssetIssuanceEvent event) {
-    if (event.params.assetEvents == "open_fairminter") {
-      return const Icon(Icons.print, color: Colors.grey);
-    } else if (event.params.assetEvents == "fairmint") {
-      return const Icon(Icons.money, color: Colors.grey);
-    }
-    return const Icon(Icons.toll, color: Colors.grey);
-  }
-
-  Icon _getBitcoinTxLeadingIcon(BitcoinTx btx) {
-    return switch (btx.getTransactionType(addresses)) {
-      TransactionType.sender => const Icon(Icons.arrow_back, color: Colors.red),
-      // TODO: assumes single party send?
-      TransactionType.recipient =>
-        const Icon(Icons.arrow_forward, color: Colors.green),
-      TransactionType.neither =>
-        const Icon(Icons.arrow_forward, color: Colors.green),
-    };
-  }
-
-  Widget _getEventTrailing(EventState state, String? txHash) => switch (state) {
-        EventStateMempool() =>
-          const TransactionStatusPill(status: TransactionStatus.mempool),
-        EventStateConfirmed(blockHeight: var blockHeight) =>
-          TransactionStatusPill(
-              status: TransactionStatus.confirmed,
-              text: _getConfirmations(item.confirmations, blockHeight)),
-      };
-
-  Widget _getTransactionTrailing(TransactionInfoDomain domain) {
-    return switch (domain) {
-      TransactionInfoDomainLocal() =>
-        const TransactionStatusPill(status: TransactionStatus.local),
-      TransactionInfoDomainMempool() =>
-        const TransactionStatusPill(status: TransactionStatus.mempool),
-      TransactionInfoDomainConfirmed() =>
-        const TransactionStatusPill(status: TransactionStatus.confirmed),
-    };
-  }
-
-  Widget _getBitcoinTxTrailing(BitcoinTx btx) {
-    return switch (btx.status) {
-      Status(confirmed: var confirmed, blockHeight: var blockHeight)
-          when confirmed =>
-        TransactionStatusPill(
-            status: TransactionStatus.confirmed,
-            text: _getConfirmations(item.confirmations, blockHeight)),
-      _ => const TransactionStatusPill(status: TransactionStatus.mempool),
-    };
-  }
-
-  String _getConfirmations(int? confirmations, int? blockHeight) {
-    return switch (confirmations) {
-      null => "#${numberWithCommas.format(blockHeight)}",
-      _ =>
-        "${confirmations > 6 ? '>6' : confirmations}${isMobile ? '' : ' confirmations'}",
-    };
   }
 }
 
@@ -967,7 +1648,7 @@ class DashboardActivityFeedScreenState
 
       return displayedTransactions
           .map((transaction) => ActivityFeedListItem(
-                key: ValueKey(transaction.id),
+                key: ValueKey(uuid.v4()),
                 item: transaction,
                 addresses: widget.addresses,
                 isMobile: isMobile,

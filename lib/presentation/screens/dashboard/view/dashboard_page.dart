@@ -1074,34 +1074,23 @@ class DashboardPageState extends State<DashboardPage>
               unselectedLabelColor:
                   isDarkTheme ? transparentWhite33 : transparentBlack33,
               isScrollable: true,
-              padding: EdgeInsets.zero,
-              // labelPadding: const EdgeInsets.symmetric(horizontal: 14),
-              indicatorPadding: EdgeInsets.zero,
-              indicatorSize: TabBarIndicatorSize.tab,
+              indicatorSize: TabBarIndicatorSize.label,
               tabs: const [
-                SizedBox(
-                  height: 64,
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      'Assets',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                      ),
+                Tab(
+                  child: Text(
+                    'Assets',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
                 ),
-                SizedBox(
-                  height: 64,
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      'Activity',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                      ),
+                Tab(
+                  child: Text(
+                    'Activity',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
                 ),
@@ -1114,7 +1103,7 @@ class DashboardPageState extends State<DashboardPage>
               physics: const NeverScrollableScrollPhysics(),
               children: [
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 14),
+                  padding: const EdgeInsets.symmetric(horizontal: 35),
                   child: BalancesDisplay(isDarkTheme: isDarkTheme),
                 ),
                 Padding(
@@ -1150,135 +1139,169 @@ class DashboardPageState extends State<DashboardPage>
       ),
     );
 
-    return Scaffold(
-      body: TabBarView(
-        controller: _bottomTabController,
-        physics: const NeverScrollableScrollPhysics(),
-        children: [
-          mainContent,
-          buildSettingsTab(),
-        ],
-      ),
-      bottomNavigationBar: Container(
-        width: 375,
-        height: 90,
-        padding: const EdgeInsets.symmetric(vertical: 8),
-        decoration: BoxDecoration(
-          border: Border(
-            top: BorderSide(
-              color: isDarkTheme
-                  ? Colors.white.withOpacity(0.1)
-                  : Colors.black.withOpacity(0.1),
-              width: 1,
+    return Container(
+      color: isDarkTheme ? Colors.black : Colors.white,
+      child: Center(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxWidth:
+                MediaQuery.of(context).size.width > 500 ? 500 : double.infinity,
+          ),
+          child: Scaffold(
+            backgroundColor: isDarkTheme ? Colors.black : Colors.white,
+            body: TabBarView(
+              controller: _bottomTabController,
+              physics: const NeverScrollableScrollPhysics(),
+              children: [
+                mainContent,
+                buildSettingsTab(),
+              ],
+            ),
+            bottomNavigationBar: Container(
+              width: 375,
+              height: 90,
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              decoration: BoxDecoration(
+                border: Border(
+                  top: BorderSide(
+                    color: isDarkTheme
+                        ? Colors.white.withOpacity(0.1)
+                        : Colors.black.withOpacity(0.1),
+                    width: 1,
+                  ),
+                  right: BorderSide(
+                    color:
+                        isDarkTheme && MediaQuery.of(context).size.width > 500
+                            ? Colors.white.withOpacity(0.1)
+                            : Colors.black.withOpacity(0.1),
+                    width: 1,
+                  ),
+                  left: BorderSide(
+                    color:
+                        isDarkTheme && MediaQuery.of(context).size.width > 500
+                            ? Colors.white.withOpacity(0.1)
+                            : Colors.black.withOpacity(0.1),
+                    width: 1,
+                  ),
+                ),
+              ),
+              child: TabBar(
+                controller: _bottomTabController,
+                indicatorSize: TabBarIndicatorSize.tab,
+                indicatorColor: Colors.transparent,
+                dividerColor: Colors.transparent,
+                overlayColor: WidgetStateProperty.all(Colors.transparent),
+                splashFactory: NoSplash.splashFactory,
+                labelColor: isDarkTheme ? Colors.white : Colors.black,
+                unselectedLabelColor:
+                    isDarkTheme ? transparentWhite33 : transparentBlack33,
+                tabs: [
+                  Container(
+                    width: 75,
+                    height: 74,
+                    decoration: BoxDecoration(
+                      color: _bottomTabController.index == 0 && !isDarkTheme
+                          ? offWhite
+                          : Colors.transparent,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: _bottomTabController.index == 0
+                            ? (isDarkTheme
+                                ? Colors.white.withOpacity(0.1)
+                                : Colors.black.withOpacity(0.1))
+                            : Colors.transparent,
+                        width: 1,
+                      ),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 8, horizontal: 8),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.pie_chart_outline,
+                            size: 24,
+                            color: _bottomTabController.index == 0
+                                ? (isDarkTheme ? Colors.white : Colors.black)
+                                : (isDarkTheme
+                                    ? transparentWhite33
+                                    : transparentBlack33),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            'Portfolio',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: _bottomTabController.index == 0
+                                  ? (isDarkTheme ? Colors.white : Colors.black)
+                                  : (isDarkTheme
+                                      ? transparentWhite33
+                                      : transparentBlack33),
+                            ),
+                            softWrap: false,
+                            overflow: TextOverflow.visible,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  Container(
+                    width: 75,
+                    height: 74,
+                    decoration: BoxDecoration(
+                      color: _bottomTabController.index == 1 && !isDarkTheme
+                          ? offWhite
+                          : Colors.transparent,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: _bottomTabController.index == 1
+                            ? (isDarkTheme
+                                ? Colors.white.withOpacity(0.1)
+                                : Colors.black.withOpacity(0.1))
+                            : Colors.transparent,
+                        width: 1,
+                      ),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 8, horizontal: 8),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.settings,
+                            size: 24,
+                            color: _bottomTabController.index == 1
+                                ? (isDarkTheme ? Colors.white : Colors.black)
+                                : (isDarkTheme
+                                    ? transparentWhite33
+                                    : transparentBlack33),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            'Settings',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: _bottomTabController.index == 1
+                                  ? (isDarkTheme ? Colors.white : Colors.black)
+                                  : (isDarkTheme
+                                      ? transparentWhite33
+                                      : transparentBlack33),
+                            ),
+                            softWrap: false,
+                            overflow: TextOverflow.visible,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
-        ),
-        child: TabBar(
-          controller: _bottomTabController,
-          indicatorSize: TabBarIndicatorSize.tab,
-          indicatorColor: Colors.transparent,
-          dividerColor: Colors.transparent,
-          overlayColor: WidgetStateProperty.all(Colors.transparent),
-          splashFactory: NoSplash.splashFactory,
-          labelColor: isDarkTheme ? Colors.white : Colors.black,
-          unselectedLabelColor:
-              isDarkTheme ? transparentWhite33 : transparentBlack33,
-          tabs: [
-            Container(
-              width: 75,
-              height: 74,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: _bottomTabController.index == 0
-                      ? (isDarkTheme
-                          ? Colors.white.withOpacity(0.1)
-                          : Colors.black.withOpacity(0.1))
-                      : Colors.transparent,
-                  width: 1,
-                ),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.pie_chart_outline,
-                      size: 24,
-                      color: _bottomTabController.index == 0
-                          ? (isDarkTheme ? Colors.white : Colors.black)
-                          : (isDarkTheme
-                              ? transparentWhite33
-                              : transparentBlack33),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      'Portfolio',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: _bottomTabController.index == 0
-                            ? (isDarkTheme ? Colors.white : Colors.black)
-                            : (isDarkTheme
-                                ? transparentWhite33
-                                : transparentBlack33),
-                      ),
-                      softWrap: false,
-                      overflow: TextOverflow.visible,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            Container(
-              width: 75,
-              height: 74,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: _bottomTabController.index == 1
-                      ? (isDarkTheme
-                          ? Colors.white.withOpacity(0.1)
-                          : Colors.black.withOpacity(0.1))
-                      : Colors.transparent,
-                  width: 1,
-                ),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.settings,
-                      size: 24,
-                      color: _bottomTabController.index == 1
-                          ? (isDarkTheme ? Colors.white : Colors.black)
-                          : (isDarkTheme
-                              ? transparentWhite33
-                              : transparentBlack33),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      'Settings',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: _bottomTabController.index == 1
-                            ? (isDarkTheme ? Colors.white : Colors.black)
-                            : (isDarkTheme
-                                ? transparentWhite33
-                                : transparentBlack33),
-                      ),
-                      softWrap: false,
-                      overflow: TextOverflow.visible,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
         ),
       ),
     );

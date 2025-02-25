@@ -131,7 +131,10 @@ class BalancesSliverState extends State<BalancesSliver> {
 
           // Format the total normalized quantity based on divisibility
           final totalQuantityNormalized = firstBalance.assetInfo.divisible
-              ? totalNormalized.toStringAsFixed(8)
+              ? totalNormalized
+                  .toStringAsFixed(8)
+                  .replaceAll(RegExp(r'(?<=\d)0+$'), '')
+                  .replaceAll(RegExp(r'\.$'), '')
               : totalNormalized.toStringAsFixed(0);
 
           balanceEntries[asset] = BalanceEntry(
@@ -143,9 +146,18 @@ class BalancesSliverState extends State<BalancesSliver> {
         }
 
         // Build the list of asset entries
+        final sortedEntries = balanceEntries.entries.toList()
+          ..sort((a, b) {
+            if (a.key == 'BTC') return -1;
+            if (b.key == 'BTC') return 1;
+            if (a.key == 'XCP') return -1;
+            if (b.key == 'XCP') return 1;
+            return a.key.compareTo(b.key);
+          });
+
         return [
           Column(
-            children: balanceEntries.entries.map((entry) {
+            children: sortedEntries.map((entry) {
               return SizedBox(
                 // padding: const EdgeInsets.symmetric(horizontal: 10.0),
                 height: 54,
@@ -173,11 +185,15 @@ class BalancesSliverState extends State<BalancesSliver> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Text(
-                            entry.key,
-                            style: const TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
+                          SizedBox(
+                            width: 150,
+                            child: MiddleTruncatedText(
+                              text: entry.key,
+                              width: 150,
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
                           ),
                         ],
@@ -203,6 +219,45 @@ class BalancesSliverState extends State<BalancesSliver> {
             }).toList(),
           ),
         ];
+      },
+    );
+  }
+}
+
+class MiddleTruncatedText extends StatelessWidget {
+  final String text;
+  final TextStyle? style;
+  final double width;
+
+  const MiddleTruncatedText({
+    super.key,
+    required this.text,
+    this.style,
+    required this.width,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final maxWidth = width;
+        final textPainter = TextPainter(
+          text: TextSpan(text: text, style: style),
+          textDirection: TextDirection.ltr,
+          maxLines: 1,
+        )..layout(maxWidth: double.infinity);
+
+        if (textPainter.width <= maxWidth) {
+          return Text(text, style: style);
+        }
+
+        const int charsToShow = 5;
+
+        return Text(
+          '${text.substring(0, charsToShow)}...${text.substring(text.length - charsToShow)}',
+          style: style,
+          maxLines: 1,
+        );
       },
     );
   }
