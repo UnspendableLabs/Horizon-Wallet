@@ -5,9 +5,12 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/common/format.dart';
+import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/domain/entities/compose_dispenser.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
+import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
+import 'package:horizon/domain/repositories/settings_repository.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_event.dart';
 import 'package:horizon/presentation/common/compose_base/view/compose_base_page.dart';
@@ -24,9 +27,6 @@ import 'package:horizon/presentation/screens/compose_send/view/asset_dropdown.da
 import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart";
 import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
-import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
-import 'package:horizon/domain/repositories/settings_repository.dart';
-import 'package:horizon/core/logging/logger.dart';
 
 class ComposeDispenserPageWrapper extends StatelessWidget {
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
@@ -413,6 +413,7 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
 
   Widget _buildEscrowQuantityInputField(ComposeDispenserState state,
       Balance? balance, bool loading, GlobalKey<FormState> formKey) {
+        
     return HorizonUI.HorizonTextFormField(
       key: Key('escrow_quantity_input_${balance?.asset}'),
       controller: escrowQuantityController,
@@ -637,24 +638,42 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
   }
 
   Widget _buildPricePerUnitInput(bool loading, GlobalKey<FormState> formKey) {
+    final hasGiveQuantity = giveQuantityController.text.isNotEmpty &&
+        giveQuantityController.text != '.';
+
     return HorizonUI.HorizonTextFormField(
       key: const Key('price_per_unit_input'),
       controller: mainchainrateController,
       label: 'Price Per Unit (BTC)',
-      enabled: !loading,
+      enabled: !loading && hasGiveQuantity,
       inputFormatters: [
-        DecimalTextInputFormatter(
-            decimalRange: 8), // Allow up to 8 decimal places for BTC
+        DecimalTextInputFormatter(decimalRange: 8),
       ],
-      keyboardType: const TextInputType.numberWithOptions(
-          decimal: false, signed: false), // No decimal allowed
+      keyboardType:
+          const TextInputType.numberWithOptions(decimal: true, signed: false),
       validator: (value) {
         if (value == null || value.isEmpty || value == '.') {
           return 'Per Unit Price is required';
         }
-        if (double.parse(value) < 0.000006) {
-          return 'Price must exceed dust limit of 600 satoshis';
+
+        try {
+          final pricePerUnit = Decimal.parse(value);
+          final giveQuantity = Decimal.parse(giveQuantityController.text);
+
+          // Calculate total price in BTC
+          final totalPriceBtc = pricePerUnit * giveQuantity;
+
+          // Convert to satoshis (1 BTC = 100,000,000 satoshis)
+          final totalPriceSatoshis =
+              (totalPriceBtc * Decimal.fromInt(100000000)).toBigInt().toInt();
+
+          if (totalPriceSatoshis < 546) {
+            return 'Total price (price × quantity) must exceed dust limit of 546 satoshis';
+          }
+        } catch (e) {
+          return 'Invalid price format';
         }
+
         return null;
       },
       onFieldSubmitted: (value) {
