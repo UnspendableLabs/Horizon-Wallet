@@ -227,7 +227,9 @@ void main() {
                   }
                   for (int i = 0; i < fairmintersResult.length; i++) {
                     if (!compareFairminters(
-                        fairmintersResult[i], fairminters[i])) return false;
+                        fairmintersResult[i], fairminters[i])) {
+                      return false;
+                    }
                   }
 
                   return true;
