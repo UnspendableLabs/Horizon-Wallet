@@ -2,20 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:get_it/get_it.dart';
-import 'package:horizon/domain/repositories/account_repository.dart';
-import 'package:horizon/domain/repositories/address_repository.dart';
-import 'package:horizon/domain/repositories/imported_address_repository.dart';
-import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
-import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
-import 'package:horizon/domain/services/secure_kv_service.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
-import 'package:horizon/presentation/screens/dashboard/bloc/reset/reset_bloc.dart';
-import 'package:horizon/presentation/screens/dashboard/bloc/reset/view/reset_dialog.dart';
 import 'package:horizon/presentation/screens/dashboard/view/dashboard_page.dart';
-import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
 import 'package:horizon/presentation/screens/settings/import_address/import_address_flow.dart';
+import 'package:horizon/presentation/screens/settings/reset_wallet/reset_wallet_flow.dart';
 import 'package:horizon/presentation/screens/settings/security_view.dart';
 import 'package:horizon/presentation/screens/settings/seed_phrase/seed_phrase_flow.dart';
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
@@ -406,29 +398,10 @@ class _SettingsViewState extends State<SettingsView> {
                               icon: Icons.restore,
                               isDarkTheme: isDarkTheme,
                               onTap: () {
-                                HorizonUI.HorizonDialog.show(
-                                  context: context,
-                                  body: BlocProvider(
-                                    create: (context) => ResetBloc(
-                                      kvService: GetIt.I.get<SecureKVService>(),
-                                      inMemoryKeyRepository:
-                                          GetIt.I.get<InMemoryKeyRepository>(),
-                                      walletRepository:
-                                          GetIt.I.get<WalletRepository>(),
-                                      accountRepository:
-                                          GetIt.I.get<AccountRepository>(),
-                                      addressRepository:
-                                          GetIt.I.get<AddressRepository>(),
-                                      importedAddressRepository: GetIt.I
-                                          .get<ImportedAddressRepository>(),
-                                      cacheProvider:
-                                          GetIt.I.get<CacheProvider>(),
-                                      analyticsService:
-                                          GetIt.I.get<AnalyticsService>(),
-                                    ),
-                                    child: const ResetDialog(),
-                                  ),
-                                );
+                                setState(() {
+                                  currentTitle = "Reset Wallet";
+                                  currentPage = const ResetWalletFlow();
+                                });
                               },
                             ),
                             SettingsItem(
