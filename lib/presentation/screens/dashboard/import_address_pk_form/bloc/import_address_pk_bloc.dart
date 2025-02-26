@@ -3,6 +3,7 @@ import 'package:horizon/domain/entities/imported_address.dart';
 import 'package:horizon/domain/entities/wallet.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/imported_address_repository.dart';
+import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
@@ -10,7 +11,6 @@ import 'package:horizon/domain/services/imported_address_service.dart';
 import 'package:horizon/domain/services/wallet_service.dart';
 import "package:horizon/presentation/screens/dashboard/import_address_pk_form/bloc/import_address_pk_event.dart";
 import 'package:horizon/presentation/screens/dashboard/import_address_pk_form/bloc/import_address_pk_state.dart';
-import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 
 class ImportAddressPkBloc
     extends Bloc<ImportAddressPkEvent, ImportAddressPkState> {
@@ -22,22 +22,19 @@ class ImportAddressPkBloc
   final ImportedAddressRepository importedAddressRepository;
   final ImportedAddressService importedAddressService;
   final InMemoryKeyRepository inMemoryKeyRepository;
-  ImportAddressPkBloc(
-      {required this.walletRepository,
-      required this.walletService,
-      required this.encryptionService,
-      required this.addressService,
-      required this.addressRepository,
-      required this.importedAddressRepository,
-      required this.importedAddressService,
-      required this.inMemoryKeyRepository})
-      : super(ImportAddressPkStep1()) {
-    on<Finalize>((event, emit) async {
-      emit(ImportAddressPkStep2(state: Step2Initial()));
-    });
 
+  ImportAddressPkBloc({
+    required this.walletRepository,
+    required this.walletService,
+    required this.encryptionService,
+    required this.addressService,
+    required this.addressRepository,
+    required this.importedAddressRepository,
+    required this.importedAddressService,
+    required this.inMemoryKeyRepository,
+  }) : super(ImportAddressPkInitial()) {
     on<Submit>((event, emit) async {
-      emit(ImportAddressPkStep2(state: Step2Loading()));
+      emit(ImportAddressPkLoading());
       try {
         Wallet? wallet = await walletRepository.getCurrentWallet();
 
@@ -50,25 +47,26 @@ class ImportAddressPkBloc
           await encryptionService.decrypt(
               wallet.encryptedPrivKey, event.password);
         } catch (e) {
-          emit(ImportAddressPkStep2(state: Step2Error("Incorrect password")));
+          emit(ImportAddressPkError("Incorrect password"));
           return;
         }
 
         late String address;
         try {
           address = await importedAddressService.getAddressFromWIF(
-              wif: event.wif, format: event.format);
+            wif: event.wif,
+            format: event.format,
+          );
         } catch (e) {
-          emit(ImportAddressPkStep2(
-              state: Step2Error('Invalid address private key')));
+          emit(ImportAddressPkError('Invalid address private key'));
           return;
         }
 
         final existingAddress = await addressRepository.getAddress(address);
         if (existingAddress != null) {
-          emit(ImportAddressPkStep2(
-              state: Step2Error(
-                  'Address ${event.format.name} $address already exists in your wallet')));
+          emit(ImportAddressPkError(
+            'Address ${event.format.name} $address already exists in your wallet',
+          ));
           return;
         }
 
@@ -82,7 +80,9 @@ class ImportAddressPkBloc
         );
 
         final String encryptionKey = await encryptionService.getDecryptionKey(
-            encryptedWIF, event.password);
+          encryptedWIF,
+          event.password,
+        );
 
         final currMap = await inMemoryKeyRepository.getMap();
         final newMap = {...currMap, address: encryptionKey};
@@ -93,23 +93,19 @@ class ImportAddressPkBloc
           await importedAddressRepository.insert(importedAddress);
         } catch (e) {
           if (e.toString().contains("UNIQUE")) {
-            emit(ImportAddressPkStep2(
-                state: Step2Error(
-                    'Address ${event.format.name} $address already exists in your wallet')));
+            emit(ImportAddressPkError(
+              'Address ${event.format.name} $address already exists in your wallet',
+            ));
           } else {
-            emit(ImportAddressPkStep2(state: Step2Error(e.toString())));
+            emit(ImportAddressPkError(e.toString()));
           }
           return;
         }
 
-        emit(ImportAddressPkStep2(state: Step2Success(importedAddress)));
+        emit(ImportAddressPkSuccess(importedAddress));
       } catch (e) {
-        emit(ImportAddressPkStep2(state: Step2Error(e.toString())));
+        emit(ImportAddressPkError(e.toString()));
       }
-    });
-
-    on<ResetForm>((event, emit) {
-      emit(ImportAddressPkStep1());
     });
   }
 }

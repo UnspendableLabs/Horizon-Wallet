@@ -2,13 +2,6 @@ import 'package:horizon/common/constants.dart';
 
 abstract class ImportAddressPkEvent {}
 
-class Finalize extends ImportAddressPkEvent {}
-
-class ResetForm extends ImportAddressPkEvent {
-  final String? wif;
-  ResetForm({this.wif});
-}
-
 class Submit extends ImportAddressPkEvent {
   final String wif;
   final String password;

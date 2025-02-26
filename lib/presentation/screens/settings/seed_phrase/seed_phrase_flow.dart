@@ -110,24 +110,21 @@ class _SeedPhraseFlowState extends State<SeedPhraseFlow> {
       ),
       child: BlocConsumer<ViewSeedPhraseBloc, ViewSeedPhraseState>(
         listener: (context, state) {
-          state.maybeWhen(
-            success: (success) {
-              setState(() {
-                _seedPhrase = success.seedPhrase;
-                _currentStep = 2;
-              });
-            },
-            initial: (initial) {
-              if (initial.error != null) {
-                setState(() {
-                  _error = initial.error;
-                });
-              }
-            },
-            orElse: () {},
-          );
+          if (state is ViewSeedPhraseError) {
+            setState(() {
+              _error = state.error;
+            });
+          } else if (state is ViewSeedPhraseSuccess) {
+            setState(() {
+              _seedPhrase = state.seedPhrase;
+              _currentStep = 2;
+              _error = null;
+            });
+          }
         },
         builder: (context, state) {
+          final isLoading = state is ViewSeedPhraseLoading;
+
           return Padding(
             padding: const EdgeInsets.all(20.0),
             child: Form(
@@ -166,30 +163,28 @@ class _SeedPhraseFlowState extends State<SeedPhraseFlow> {
                     children: [
                       Expanded(
                         child: FilledButton(
-                          onPressed: state.maybeWhen(
-                            loading: () => null,
-                            orElse: () => () {
-                              if (_formKey.currentState!.validate()) {
-                                context.read<ViewSeedPhraseBloc>().add(
-                                      ViewSeedPhrase(
-                                        password: _passwordController.text,
-                                      ),
-                                    );
-                              }
-                            },
-                          ),
-                          child: state.maybeWhen(
-                            loading: () => const SizedBox(
-                              height: 20,
-                              width: 20,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                valueColor:
-                                    AlwaysStoppedAnimation<Color>(Colors.white),
-                              ),
-                            ),
-                            orElse: () => const Text('Continue'),
-                          ),
+                          onPressed: isLoading
+                              ? null
+                              : () {
+                                  if (_formKey.currentState!.validate()) {
+                                    context.read<ViewSeedPhraseBloc>().add(
+                                          Submit(
+                                            password: _passwordController.text,
+                                          ),
+                                        );
+                                  }
+                                },
+                          child: isLoading
+                              ? const SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                        Colors.white),
+                                  ),
+                                )
+                              : const Text('Continue'),
                         ),
                       ),
                     ],

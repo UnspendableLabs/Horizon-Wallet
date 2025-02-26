@@ -13,12 +13,9 @@ import 'package:horizon/domain/services/secure_kv_service.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/reset/reset_bloc.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/reset/view/reset_dialog.dart';
-import 'package:horizon/presentation/screens/dashboard/import_address_pk_form/bloc/import_address_pk_bloc.dart';
-import 'package:horizon/presentation/screens/dashboard/import_address_pk_form/bloc/import_address_pk_event.dart';
-import 'package:horizon/presentation/screens/dashboard/import_address_pk_form/bloc/import_address_pk_state.dart';
-import 'package:horizon/presentation/screens/dashboard/import_address_pk_form/view/import_address_pk_form.dart';
 import 'package:horizon/presentation/screens/dashboard/view/dashboard_page.dart';
 import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
+import 'package:horizon/presentation/screens/settings/import_address/import_address_flow.dart';
 import 'package:horizon/presentation/screens/settings/security_view.dart';
 import 'package:horizon/presentation/screens/settings/seed_phrase/seed_phrase_flow.dart';
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
@@ -396,30 +393,12 @@ class _SettingsViewState extends State<SettingsView> {
                               icon: Icons.add_circle_outline,
                               isDarkTheme: isDarkTheme,
                               onTap: () {
-                                HorizonUI.HorizonDialog.show(
-                                  context: context,
-                                  body: Builder(builder: (context) {
-                                    final bloc =
-                                        context.watch<ImportAddressPkBloc>();
-                                    final cb = switch (bloc.state) {
-                                      ImportAddressPkStep2() => () {
-                                          bloc.add(ResetForm());
-                                        },
-                                      _ => () {
-                                          Navigator.of(context).pop();
-                                        },
-                                    };
-                                    return HorizonUI.HorizonDialog(
-                                      onBackButtonPressed: cb,
-                                      title: "Import address private key",
-                                      body: const Padding(
-                                        padding: EdgeInsets.symmetric(
-                                            horizontal: 16.0),
-                                        child: ImportAddressPkForm(),
-                                      ),
-                                    );
-                                  }),
-                                );
+                                setState(() {
+                                  currentTitle = "Import Address";
+                                  currentPage = ImportAddressFlow(
+                                    onNavigateBack: _navigateBack,
+                                  );
+                                });
                               },
                             ),
                             SettingsItem(
