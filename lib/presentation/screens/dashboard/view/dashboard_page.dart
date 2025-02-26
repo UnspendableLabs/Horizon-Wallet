@@ -833,7 +833,7 @@ class DashboardPageState extends State<DashboardPage>
   final _scrollController = ScrollController();
   bool shown = false;
   late TabController _tabController;
-  late TabController _bottomTabController;
+  late TabController bottomTabController;
   bool _isSearching = false;
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
@@ -842,8 +842,8 @@ class DashboardPageState extends State<DashboardPage>
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
-    _bottomTabController = TabController(length: 2, vsync: this);
-    _bottomTabController.addListener(() {
+    bottomTabController = TabController(length: 2, vsync: this);
+    bottomTabController.addListener(() {
       setState(() {}); // Rebuild to update the selected tab styling
     });
     _tabController.addListener(() {
@@ -867,7 +867,7 @@ class DashboardPageState extends State<DashboardPage>
   @override
   void dispose() {
     _tabController.dispose();
-    _bottomTabController.dispose();
+    bottomTabController.dispose();
     _scrollController.dispose();
     _searchController.dispose();
     super.dispose();
@@ -1151,7 +1151,7 @@ class DashboardPageState extends State<DashboardPage>
           child: Scaffold(
             backgroundColor: isDarkTheme ? Colors.black : Colors.white,
             body: TabBarView(
-              controller: _bottomTabController,
+              controller: bottomTabController,
               physics: const NeverScrollableScrollPhysics(),
               children: [
                 mainContent,
@@ -1187,7 +1187,7 @@ class DashboardPageState extends State<DashboardPage>
                 ),
               ),
               child: TabBar(
-                controller: _bottomTabController,
+                controller: bottomTabController,
                 indicatorSize: TabBarIndicatorSize.tab,
                 indicatorColor: Colors.transparent,
                 dividerColor: Colors.transparent,
@@ -1201,12 +1201,12 @@ class DashboardPageState extends State<DashboardPage>
                     width: 75,
                     height: 74,
                     decoration: BoxDecoration(
-                      color: _bottomTabController.index == 0 && !isDarkTheme
+                      color: bottomTabController.index == 0 && !isDarkTheme
                           ? offWhite
                           : Colors.transparent,
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                        color: _bottomTabController.index == 0
+                        color: bottomTabController.index == 0
                             ? (isDarkTheme
                                 ? Colors.white.withOpacity(0.1)
                                 : Colors.black.withOpacity(0.1))
@@ -1224,7 +1224,7 @@ class DashboardPageState extends State<DashboardPage>
                           Icon(
                             Icons.pie_chart_outline,
                             size: 24,
-                            color: _bottomTabController.index == 0
+                            color: bottomTabController.index == 0
                                 ? (isDarkTheme ? Colors.white : Colors.black)
                                 : (isDarkTheme
                                     ? transparentWhite33
@@ -1235,7 +1235,7 @@ class DashboardPageState extends State<DashboardPage>
                             'Portfolio',
                             style: TextStyle(
                               fontSize: 12,
-                              color: _bottomTabController.index == 0
+                              color: bottomTabController.index == 0
                                   ? (isDarkTheme ? Colors.white : Colors.black)
                                   : (isDarkTheme
                                       ? transparentWhite33
@@ -1252,12 +1252,12 @@ class DashboardPageState extends State<DashboardPage>
                     width: 75,
                     height: 74,
                     decoration: BoxDecoration(
-                      color: _bottomTabController.index == 1 && !isDarkTheme
+                      color: bottomTabController.index == 1 && !isDarkTheme
                           ? offWhite
                           : Colors.transparent,
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                        color: _bottomTabController.index == 1
+                        color: bottomTabController.index == 1
                             ? (isDarkTheme
                                 ? Colors.white.withOpacity(0.1)
                                 : Colors.black.withOpacity(0.1))
@@ -1275,7 +1275,7 @@ class DashboardPageState extends State<DashboardPage>
                           Icon(
                             Icons.settings,
                             size: 24,
-                            color: _bottomTabController.index == 1
+                            color: bottomTabController.index == 1
                                 ? (isDarkTheme ? Colors.white : Colors.black)
                                 : (isDarkTheme
                                     ? transparentWhite33
@@ -1286,7 +1286,7 @@ class DashboardPageState extends State<DashboardPage>
                             'Settings',
                             style: TextStyle(
                               fontSize: 12,
-                              color: _bottomTabController.index == 1
+                              color: bottomTabController.index == 1
                                   ? (isDarkTheme ? Colors.white : Colors.black)
                                   : (isDarkTheme
                                       ? transparentWhite33

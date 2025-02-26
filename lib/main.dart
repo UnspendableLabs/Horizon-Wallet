@@ -46,7 +46,6 @@ import 'package:horizon/presentation/screens/onboarding/view/onboarding_page.dar
 import 'package:horizon/presentation/screens/onboarding_create/view/onboarding_create_page.dart';
 import 'package:horizon/presentation/screens/onboarding_import/view/onboarding_import_page.dart';
 import 'package:horizon/presentation/screens/privacy_policy.dart';
-import 'package:horizon/presentation/screens/settings/settings_view.dart';
 import 'package:horizon/presentation/screens/tos.dart';
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:horizon/presentation/session/bloc/session_state.dart';
@@ -301,25 +300,6 @@ class AppRouter {
                                 bottomNavigationBar: const Footer(),
                                 body: VersionWarningSnackbar(
                                     child: DashboardPageWrapper(key: key)));
-                          },
-                          orElse: () => const LoadingScreen(),
-                        );
-                      }),
-                  GoRoute(
-                      path: "/settings",
-                      builder: (context, state) {
-                        final session = context.watch<SessionStateCubit>();
-
-                        // this technically isn't necessary, will always be
-                        // success
-                        return session.state.maybeWhen(
-                          success: (state) {
-                            final Key key = Key(state.wallet.uuid);
-
-                            return const Scaffold(
-                                bottomNavigationBar: Footer(),
-                                body: VersionWarningSnackbar(
-                                    child: SettingsView(showAppBar: true)));
                           },
                           orElse: () => const LoadingScreen(),
                         );
