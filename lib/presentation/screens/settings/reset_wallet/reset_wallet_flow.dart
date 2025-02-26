@@ -13,6 +13,7 @@ import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/reset/reset_bloc.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/reset/reset_event.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/reset/reset_state.dart';
+import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 
 class ResetWalletFlow extends StatefulWidget {
   const ResetWalletFlow({super.key});
@@ -154,8 +155,8 @@ class _ResetWalletFlowState extends State<ResetWalletFlow> {
       ),
       child: BlocConsumer<ResetBloc, ResetState>(
         listener: (context, state) {
-          if (state.resetState is Out) {
-            Navigator.of(context).pop();
+          if (state.status == ResetStatus.completed) {
+            context.read<SessionStateCubit>().onOnboarding();
           }
         },
         builder: (context, state) {

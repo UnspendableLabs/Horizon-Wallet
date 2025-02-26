@@ -16,7 +16,7 @@ final _privateConstructorUsedError = UnsupportedError(
 
 /// @nodoc
 mixin _$ResetState {
-  dynamic get resetState => throw _privateConstructorUsedError;
+  ResetStatus get status => throw _privateConstructorUsedError;
 
   @JsonKey(ignore: true)
   $ResetStateCopyWith<ResetState> get copyWith =>
@@ -29,7 +29,7 @@ abstract class $ResetStateCopyWith<$Res> {
           ResetState value, $Res Function(ResetState) then) =
       _$ResetStateCopyWithImpl<$Res, ResetState>;
   @useResult
-  $Res call({dynamic resetState});
+  $Res call({ResetStatus status});
 }
 
 /// @nodoc
@@ -45,13 +45,13 @@ class _$ResetStateCopyWithImpl<$Res, $Val extends ResetState>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? resetState = freezed,
+    Object? status = null,
   }) {
     return _then(_value.copyWith(
-      resetState: freezed == resetState
-          ? _value.resetState
-          : resetState // ignore: cast_nullable_to_non_nullable
-              as dynamic,
+      status: null == status
+          ? _value.status
+          : status // ignore: cast_nullable_to_non_nullable
+              as ResetStatus,
     ) as $Val);
   }
 }
@@ -64,7 +64,7 @@ abstract class _$$ResetStateImplCopyWith<$Res>
       __$$ResetStateImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({dynamic resetState});
+  $Res call({ResetStatus status});
 }
 
 /// @nodoc
@@ -78,10 +78,13 @@ class __$$ResetStateImplCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? resetState = freezed,
+    Object? status = null,
   }) {
     return _then(_$ResetStateImpl(
-      resetState: freezed == resetState ? _value.resetState! : resetState,
+      status: null == status
+          ? _value.status
+          : status // ignore: cast_nullable_to_non_nullable
+              as ResetStatus,
     ));
   }
 }
@@ -89,15 +92,15 @@ class __$$ResetStateImplCopyWithImpl<$Res>
 /// @nodoc
 
 class _$ResetStateImpl implements _ResetState {
-  const _$ResetStateImpl({this.resetState = In});
+  const _$ResetStateImpl({this.status = ResetStatus.initial});
 
   @override
   @JsonKey()
-  final dynamic resetState;
+  final ResetStatus status;
 
   @override
   String toString() {
-    return 'ResetState(resetState: $resetState)';
+    return 'ResetState(status: $status)';
   }
 
   @override
@@ -105,13 +108,11 @@ class _$ResetStateImpl implements _ResetState {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$ResetStateImpl &&
-            const DeepCollectionEquality()
-                .equals(other.resetState, resetState));
+            (identical(other.status, status) || other.status == status));
   }
 
   @override
-  int get hashCode =>
-      Object.hash(runtimeType, const DeepCollectionEquality().hash(resetState));
+  int get hashCode => Object.hash(runtimeType, status);
 
   @JsonKey(ignore: true)
   @override
@@ -121,10 +122,10 @@ class _$ResetStateImpl implements _ResetState {
 }
 
 abstract class _ResetState implements ResetState {
-  const factory _ResetState({final dynamic resetState}) = _$ResetStateImpl;
+  const factory _ResetState({final ResetStatus status}) = _$ResetStateImpl;
 
   @override
-  dynamic get resetState;
+  ResetStatus get status;
   @override
   @JsonKey(ignore: true)
   _$$ResetStateImplCopyWith<_$ResetStateImpl> get copyWith =>
