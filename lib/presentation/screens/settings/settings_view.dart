@@ -20,7 +20,7 @@ import 'package:horizon/presentation/screens/dashboard/import_address_pk_form/vi
 import 'package:horizon/presentation/screens/dashboard/view/dashboard_page.dart';
 import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
 import 'package:horizon/presentation/screens/settings/security_view.dart';
-import 'package:horizon/presentation/screens/settings/seed_phrase/seed_phrase_warning_view.dart';
+import 'package:horizon/presentation/screens/settings/seed_phrase/seed_phrase_flow.dart';
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:horizon/presentation/session/theme/bloc/theme_bloc.dart';
 import 'package:horizon/presentation/session/theme/bloc/theme_event.dart';
@@ -297,10 +297,25 @@ class ThemeToggle extends StatelessWidget {
   }
 }
 
-class SettingsView extends StatelessWidget {
+class SettingsView extends StatefulWidget {
   const SettingsView({
     super.key,
   });
+
+  @override
+  State<SettingsView> createState() => _SettingsViewState();
+}
+
+class _SettingsViewState extends State<SettingsView> {
+  Widget? currentPage;
+  String? currentTitle;
+
+  void _navigateBack() {
+    setState(() {
+      currentPage = null;
+      currentTitle = null;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -310,258 +325,212 @@ class SettingsView extends StatelessWidget {
         orElse: () => const CircularProgressIndicator(),
         success: (session) => Material(
               color: isDarkTheme ? Colors.black : Colors.white,
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Center(
-                      child: ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 500),
-                        child: Navigator(
-                          onGenerateRoute: (settings) {
-                            Widget page;
-                            if (settings.name == '/') {
-                              page = Scaffold(
-                                backgroundColor: Colors.transparent,
-                                appBar: AppBar(
-                                  backgroundColor: Colors.transparent,
-                                  elevation: 0,
-                                  centerTitle: false,
-                                  leadingWidth: 40,
-                                  toolbarHeight: 74,
-                                  title: Padding(
-                                    padding: const EdgeInsets.only(top: 18.0),
-                                    child: Text(
-                                      "Settings",
-                                      style: TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.w700,
-                                        color: isDarkTheme
-                                            ? Colors.white
-                                            : Colors.black,
-                                      ),
-                                    ),
-                                  ),
-                                  leading: Padding(
-                                    padding: const EdgeInsets.only(
-                                        left: 9.0, top: 18.0),
-                                    child: BackButton(
-                                      color: isDarkTheme
-                                          ? Colors.white
-                                          : Colors.black,
-                                      onPressed: () {
-                                        final bottomTabController = context
-                                            .findAncestorStateOfType<
-                                                DashboardPageState>()
-                                            ?.bottomTabController;
-                                        if (bottomTabController != null) {
-                                          bottomTabController.animateTo(0);
-                                        }
-                                      },
-                                    ),
-                                  ),
-                                ),
-                                body: ListView(
-                                  children: [
-                                    const SizedBox(height: 10),
-                                    SettingsItem(
-                                      title: 'Security',
-                                      icon: Icons.security,
-                                      isDarkTheme: isDarkTheme,
-                                      onTap: () {
-                                        Navigator.of(context).push(
-                                          MaterialPageRoute(
-                                            builder: (context) =>
-                                                const SecurityView(),
-                                          ),
-                                        );
-                                      },
-                                    ),
-                                    SettingsItem(
-                                      title: 'Seed phrase',
-                                      icon: Icons.key,
-                                      isDarkTheme: isDarkTheme,
-                                      onTap: () {
-                                        Navigator.of(context).push(
-                                          MaterialPageRoute(
-                                            builder: (context) =>
-                                                const SeedPhraseWarningView(),
-                                          ),
-                                        );
-                                      },
-                                    ),
-                                    SettingsItem(
-                                      title: 'Import new address',
-                                      icon: Icons.add_circle_outline,
-                                      isDarkTheme: isDarkTheme,
-                                      onTap: () {
-                                        HorizonUI.HorizonDialog.show(
-                                          context: context,
-                                          body: Builder(builder: (context) {
-                                            final bloc = context
-                                                .watch<ImportAddressPkBloc>();
-                                            final cb = switch (bloc.state) {
-                                              ImportAddressPkStep2() => () {
-                                                  bloc.add(ResetForm());
-                                                },
-                                              _ => () {
-                                                  Navigator.of(context).pop();
-                                                },
-                                            };
-                                            return HorizonUI.HorizonDialog(
-                                              onBackButtonPressed: cb,
-                                              title:
-                                                  "Import address private key",
-                                              body: const Padding(
-                                                padding: EdgeInsets.symmetric(
-                                                    horizontal: 16.0),
-                                                child: ImportAddressPkForm(),
-                                              ),
-                                            );
-                                          }),
-                                        );
-                                      },
-                                    ),
-                                    SettingsItem(
-                                      title: 'Reset wallet',
-                                      icon: Icons.restore,
-                                      isDarkTheme: isDarkTheme,
-                                      onTap: () {
-                                        HorizonUI.HorizonDialog.show(
-                                          context: context,
-                                          body: BlocProvider(
-                                            create: (context) => ResetBloc(
-                                              kvService: GetIt.I
-                                                  .get<SecureKVService>(),
-                                              inMemoryKeyRepository: GetIt.I
-                                                  .get<InMemoryKeyRepository>(),
-                                              walletRepository: GetIt.I
-                                                  .get<WalletRepository>(),
-                                              accountRepository: GetIt.I
-                                                  .get<AccountRepository>(),
-                                              addressRepository: GetIt.I
-                                                  .get<AddressRepository>(),
-                                              importedAddressRepository: GetIt.I
-                                                  .get<
-                                                      ImportedAddressRepository>(),
-                                              cacheProvider:
-                                                  GetIt.I.get<CacheProvider>(),
-                                              analyticsService: GetIt.I
-                                                  .get<AnalyticsService>(),
-                                            ),
-                                            child: const ResetDialog(),
-                                          ),
-                                        );
-                                      },
-                                    ),
-                                    SettingsItem(
-                                      title: 'Appearance',
-                                      icon: Icons.palette_outlined,
-                                      isDarkTheme: isDarkTheme,
-                                      trailing: ThemeToggle(
-                                        isDarkTheme: isDarkTheme,
-                                        onChanged: (value) {
-                                          context
-                                              .read<ThemeBloc>()
-                                              .add(ThemeToggled());
-                                        },
-                                      ),
-                                    ),
-                                    const SizedBox(height: 40),
-                                    Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 20.0),
-                                      child: ConstrainedBox(
-                                        constraints:
-                                            const BoxConstraints(maxWidth: 335),
-                                        child: Container(
-                                          height: 64,
-                                          decoration: BoxDecoration(
-                                            borderRadius:
-                                                BorderRadius.circular(18),
-                                            color: transparentPurple16,
-                                            border: Border.all(
-                                              color: isDarkTheme
-                                                  ? Colors.white
-                                                      .withOpacity(0.1)
-                                                  : Colors.black
-                                                      .withOpacity(0.1),
-                                              width: 1,
-                                            ),
-                                          ),
-                                          child: Material(
-                                            color: Colors.transparent,
-                                            child: InkWell(
-                                              borderRadius:
-                                                  BorderRadius.circular(18),
-                                              onTap: () {
-                                                context
-                                                    .read<SessionStateCubit>()
-                                                    .onLogout();
-                                              },
-                                              child: Padding(
-                                                padding:
-                                                    const EdgeInsets.fromLTRB(
-                                                        14, 11, 14, 11),
-                                                child: Row(
-                                                  children: [
-                                                    Icon(
-                                                      Icons.lock_outline,
-                                                      size: 24,
-                                                      color: isDarkTheme
-                                                          ? Colors.white
-                                                          : Colors.black,
-                                                    ),
-                                                    const SizedBox(width: 12),
-                                                    Expanded(
-                                                      child: Text(
-                                                        'Lock Screen',
-                                                        style: TextStyle(
-                                                          fontSize: 16,
-                                                          fontWeight:
-                                                              FontWeight.w500,
-                                                          color: isDarkTheme
-                                                              ? Colors.white
-                                                              : Colors.black,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                    Icon(
-                                                      Icons.chevron_right,
-                                                      size: 24,
-                                                      color: isDarkTheme
-                                                          ? Colors.white
-                                                              .withOpacity(0.5)
-                                                          : Colors.black
-                                                              .withOpacity(0.5),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              );
-                            } else {
-                              page = const SizedBox.shrink();
-                            }
-
-                            return MaterialPageRoute(
-                              builder: (_) => Material(
-                                color:
-                                    isDarkTheme ? Colors.black : Colors.white,
-                                child: page,
-                              ),
-                            );
-                          },
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 500),
+                  child: Scaffold(
+                    backgroundColor: Colors.transparent,
+                    appBar: AppBar(
+                      backgroundColor: Colors.transparent,
+                      elevation: 0,
+                      centerTitle: false,
+                      leadingWidth: 40,
+                      toolbarHeight: 74,
+                      title: Padding(
+                        padding: const EdgeInsets.only(top: 18.0),
+                        child: Text(
+                          currentTitle ?? "Settings",
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                            color: isDarkTheme ? Colors.white : Colors.black,
+                          ),
+                        ),
+                      ),
+                      leading: Padding(
+                        padding: const EdgeInsets.only(left: 9.0, top: 18.0),
+                        child: BackButton(
+                          color: isDarkTheme ? Colors.white : Colors.black,
+                          onPressed: currentPage != null
+                              ? _navigateBack
+                              : () {
+                                  final bottomTabController = context
+                                      .findAncestorStateOfType<
+                                          DashboardPageState>()
+                                      ?.bottomTabController;
+                                  if (bottomTabController != null) {
+                                    bottomTabController.animateTo(0);
+                                  }
+                                },
                         ),
                       ),
                     ),
+                    body: currentPage ??
+                        ListView(
+                          children: [
+                            const SizedBox(height: 10),
+                            SettingsItem(
+                              title: 'Security',
+                              icon: Icons.security,
+                              isDarkTheme: isDarkTheme,
+                              onTap: () {
+                                setState(() {
+                                  currentTitle = "Security";
+                                  currentPage = const SecurityView();
+                                });
+                              },
+                            ),
+                            SettingsItem(
+                              title: 'Seed phrase',
+                              icon: Icons.key,
+                              isDarkTheme: isDarkTheme,
+                              onTap: () {
+                                setState(() {
+                                  currentTitle = "Seed Phrase";
+                                  currentPage = const SeedPhraseFlow();
+                                });
+                              },
+                            ),
+                            SettingsItem(
+                              title: 'Import new address',
+                              icon: Icons.add_circle_outline,
+                              isDarkTheme: isDarkTheme,
+                              onTap: () {
+                                HorizonUI.HorizonDialog.show(
+                                  context: context,
+                                  body: Builder(builder: (context) {
+                                    final bloc =
+                                        context.watch<ImportAddressPkBloc>();
+                                    final cb = switch (bloc.state) {
+                                      ImportAddressPkStep2() => () {
+                                          bloc.add(ResetForm());
+                                        },
+                                      _ => () {
+                                          Navigator.of(context).pop();
+                                        },
+                                    };
+                                    return HorizonUI.HorizonDialog(
+                                      onBackButtonPressed: cb,
+                                      title: "Import address private key",
+                                      body: const Padding(
+                                        padding: EdgeInsets.symmetric(
+                                            horizontal: 16.0),
+                                        child: ImportAddressPkForm(),
+                                      ),
+                                    );
+                                  }),
+                                );
+                              },
+                            ),
+                            SettingsItem(
+                              title: 'Reset wallet',
+                              icon: Icons.restore,
+                              isDarkTheme: isDarkTheme,
+                              onTap: () {
+                                HorizonUI.HorizonDialog.show(
+                                  context: context,
+                                  body: BlocProvider(
+                                    create: (context) => ResetBloc(
+                                      kvService: GetIt.I.get<SecureKVService>(),
+                                      inMemoryKeyRepository:
+                                          GetIt.I.get<InMemoryKeyRepository>(),
+                                      walletRepository:
+                                          GetIt.I.get<WalletRepository>(),
+                                      accountRepository:
+                                          GetIt.I.get<AccountRepository>(),
+                                      addressRepository:
+                                          GetIt.I.get<AddressRepository>(),
+                                      importedAddressRepository: GetIt.I
+                                          .get<ImportedAddressRepository>(),
+                                      cacheProvider:
+                                          GetIt.I.get<CacheProvider>(),
+                                      analyticsService:
+                                          GetIt.I.get<AnalyticsService>(),
+                                    ),
+                                    child: const ResetDialog(),
+                                  ),
+                                );
+                              },
+                            ),
+                            SettingsItem(
+                              title: 'Appearance',
+                              icon: Icons.palette_outlined,
+                              isDarkTheme: isDarkTheme,
+                              trailing: ThemeToggle(
+                                isDarkTheme: isDarkTheme,
+                                onChanged: (value) {
+                                  context.read<ThemeBloc>().add(ThemeToggled());
+                                },
+                              ),
+                            ),
+                            const SizedBox(height: 40),
+                            Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 20.0),
+                              child: Container(
+                                height: 64,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(18),
+                                  color: transparentPurple16,
+                                  border: Border.all(
+                                    color: isDarkTheme
+                                        ? Colors.white.withOpacity(0.1)
+                                        : Colors.black.withOpacity(0.1),
+                                    width: 1,
+                                  ),
+                                ),
+                                child: Material(
+                                  color: Colors.transparent,
+                                  child: InkWell(
+                                    borderRadius: BorderRadius.circular(18),
+                                    onTap: () {
+                                      context
+                                          .read<SessionStateCubit>()
+                                          .onLogout();
+                                    },
+                                    child: Padding(
+                                      padding: const EdgeInsets.fromLTRB(
+                                          14, 11, 14, 11),
+                                      child: Row(
+                                        children: [
+                                          Icon(
+                                            Icons.lock_outline,
+                                            size: 24,
+                                            color: isDarkTheme
+                                                ? Colors.white
+                                                : Colors.black,
+                                          ),
+                                          const SizedBox(width: 12),
+                                          Expanded(
+                                            child: Text(
+                                              'Lock Screen',
+                                              style: TextStyle(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.w500,
+                                                color: isDarkTheme
+                                                    ? Colors.white
+                                                    : Colors.black,
+                                              ),
+                                            ),
+                                          ),
+                                          Icon(
+                                            Icons.chevron_right,
+                                            size: 24,
+                                            color: isDarkTheme
+                                                ? Colors.white.withOpacity(0.5)
+                                                : Colors.black.withOpacity(0.5),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                   ),
-                ],
+                ),
               ),
             ));
   }
