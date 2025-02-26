@@ -319,7 +319,7 @@ class AppRouter {
                             return const Scaffold(
                                 bottomNavigationBar: Footer(),
                                 body: VersionWarningSnackbar(
-                                    child: SettingsView()));
+                                    child: SettingsView(showAppBar: true)));
                           },
                           orElse: () => const LoadingScreen(),
                         );
