@@ -1075,7 +1075,9 @@ class DashboardPageState extends State<DashboardPage>
               unselectedLabelColor:
                   isDarkTheme ? transparentWhite33 : transparentBlack33,
               isScrollable: true,
+              padding: EdgeInsets.zero,
               indicatorSize: TabBarIndicatorSize.label,
+              tabAlignment: TabAlignment.start,
               tabs: const [
                 Tab(
                   child: Text(
