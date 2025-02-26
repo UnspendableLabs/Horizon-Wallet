@@ -116,6 +116,16 @@ class _HorizonOutlinedButtonState extends State<HorizonOutlinedButton> {
   bool isHovered = false;
 
   @override
+  void didUpdateWidget(HorizonOutlinedButton oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.onPressed != widget.onPressed && widget.onPressed == null) {
+      setState(() {
+        isHovered = false;
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     const isExtension =
         String.fromEnvironment('HORIZON_IS_EXTENSION') == 'true';
@@ -123,10 +133,10 @@ class _HorizonOutlinedButtonState extends State<HorizonOutlinedButton> {
 
     return MouseRegion(
       onEnter: widget.onPressed != null
-          ? (_) => setState(() => isHovered = true)
+          ? (_) => mounted ? setState(() => isHovered = true) : null
           : null,
       onExit: widget.onPressed != null
-          ? (_) => setState(() => isHovered = false)
+          ? (_) => mounted ? setState(() => isHovered = false) : null
           : null,
       cursor: widget.onPressed != null
           ? SystemMouseCursors.click
