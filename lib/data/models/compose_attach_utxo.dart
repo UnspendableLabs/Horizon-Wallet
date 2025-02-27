@@ -50,7 +50,6 @@ class ComposeAttachUtxoResponseParamsModel {
   final String quantityNormalized;
   final String? destinationVout;
   final AssetInfoModel assetInfo;
-  final int? utxoValue;
 
   ComposeAttachUtxoResponseParamsModel(
       {required this.source,
@@ -58,8 +57,7 @@ class ComposeAttachUtxoResponseParamsModel {
       required this.quantity,
       required this.quantityNormalized,
       this.destinationVout,
-      required this.assetInfo,
-      this.utxoValue});
+      required this.assetInfo});
 
   factory ComposeAttachUtxoResponseParamsModel.fromJson(
           Map<String, dynamic> json) =>
@@ -72,6 +70,5 @@ class ComposeAttachUtxoResponseParamsModel {
         quantityNormalized: quantityNormalized,
         destinationVout: destinationVout,
         assetInfo: assetInfo.toDomain(),
-        utxoValue: utxoValue,
       );
 }
