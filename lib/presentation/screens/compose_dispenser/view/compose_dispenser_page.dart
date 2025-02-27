@@ -349,12 +349,12 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
               decimal: true, signed: false),
           validator: (value) {
             if (value == null || value.isEmpty || value == '.') {
-              return 'Please enter a quantity';
+              return 'Please enter a Quantity';
             }
             Decimal input = Decimal.parse(value);
             Decimal max = Decimal.parse(balance?.quantityNormalized ?? '0');
             if (input > max) {
-              return "give quantity exceeds available balance";
+              return "Quantity exceeds available balance";
             }
             return null;
           },
@@ -435,12 +435,12 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
           const TextInputType.numberWithOptions(decimal: true, signed: false),
       validator: (value) {
         if (value == null || value.isEmpty || value == '.') {
-          return 'Please enter an escrow quantity';
+          return 'Please enter an Escrow Quantity';
         }
         Decimal escrowQuantity = Decimal.parse(value);
         Decimal max = Decimal.parse(balance?.quantityNormalized ?? '0');
         if (escrowQuantity > max) {
-          return "escrow quantity exceeds available balance";
+          return "Escrow Quantity exceeds available balance";
         }
 
         Decimal? giveQuantity = (giveQuantityController.text.isNotEmpty &&
@@ -450,7 +450,11 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
         // Check if the escrow quantity is greater than or equal to the give quantity
 
         if (giveQuantity != null && escrowQuantity < giveQuantity) {
-          return 'escrow quantity must be greater than or equal to give quantity';
+          return 'Escrow Quantity must be >= to Quantity';
+        }
+        if (giveQuantity != null &&
+            escrowQuantity % giveQuantity != Decimal.zero) {
+          return 'Escrow must be a multiple of Quantity';
         }
         return null;
       },
@@ -667,7 +671,7 @@ class ComposeDispenserPageState extends State<ComposeDispenserPage> {
               (totalPriceBtc * Decimal.fromInt(100000000)).toBigInt().toInt();
 
           if (totalPriceSatoshis < 546) {
-            return 'Total price (price × quantity) must exceed dust limit of 546 satoshis';
+            return 'Error: total price < dust limit';
           }
         } catch (e) {
           return 'Invalid price format';
