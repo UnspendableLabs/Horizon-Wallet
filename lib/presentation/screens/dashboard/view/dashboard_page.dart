@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:get_it/get_it.dart';
+import 'package:go_router/go_router.dart';
 import 'package:horizon/common/fn.dart';
 import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/domain/entities/account.dart';
@@ -15,17 +17,21 @@ import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 import 'package:horizon/domain/repositories/events_repository.dart';
 import 'package:horizon/domain/repositories/imported_address_repository.dart';
+import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
+import 'package:horizon/domain/repositories/settings_repository.dart';
 import 'package:horizon/domain/repositories/transaction_local_repository.dart';
 import 'package:horizon/domain/repositories/unified_address_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
-import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 import 'package:horizon/domain/services/address_service.dart';
+import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/domain/services/bitcoind_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/imported_address_service.dart';
 import 'package:horizon/domain/services/public_key_service.dart';
+import 'package:horizon/domain/services/secure_kv_service.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
 import 'package:horizon/presentation/common/colors.dart';
+import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
 import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
 import 'package:horizon/presentation/forms/get_addresses/bloc/get_addresses_bloc.dart';
@@ -46,13 +52,19 @@ import 'package:horizon/presentation/screens/compose_sweep/view/compose_sweep_pa
 import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_bloc.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_event.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart';
+import 'package:horizon/presentation/screens/dashboard/bloc/reset/reset_bloc.dart';
+import 'package:horizon/presentation/screens/dashboard/bloc/reset/view/reset_dialog.dart';
+import 'package:horizon/presentation/screens/dashboard/import_address_pk_form/bloc/import_address_pk_bloc.dart';
+import 'package:horizon/presentation/screens/dashboard/import_address_pk_form/bloc/import_address_pk_event.dart';
+import 'package:horizon/presentation/screens/dashboard/import_address_pk_form/bloc/import_address_pk_state.dart';
+import 'package:horizon/presentation/screens/dashboard/import_address_pk_form/view/import_address_pk_form.dart';
 import 'package:horizon/presentation/screens/dashboard/view/activity_feed.dart';
 import 'package:horizon/presentation/screens/dashboard/view/balances_display.dart';
-import 'package:horizon/presentation/screens/dashboard/view/dashboard_contents.dart';
+import 'package:horizon/presentation/screens/dashboard/view_seed_phrase_form/view/view_seed_phrase_form.dart';
 import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
-import 'package:sliver_tools/sliver_tools.dart';
-import 'package:horizon/domain/repositories/settings_repository.dart';
+import 'package:horizon/presentation/session/theme/bloc/theme_bloc.dart';
+import 'package:horizon/presentation/session/theme/bloc/theme_event.dart';
 
 class SignPsbtModal extends StatelessWidget {
   final int tabId;
@@ -66,11 +78,11 @@ class SignPsbtModal extends StatelessWidget {
   final BalanceRepository balanceRepository;
   final RPCSignPsbtSuccessCallback onSuccess;
   final Map<String, List<int>> signInputs;
+  final List<int>? sighashTypes;
   final ImportedAddressService importedAddressService;
   final UnifiedAddressRepository addressRepository;
   final AccountRepository accountRepository;
   final BitcoinRepository bitcoinRepository;
-  final List<int>? sighashTypes;
 
   const SignPsbtModal(
       {super.key,
@@ -813,321 +825,6 @@ class SendMenu extends StatelessWidget {
   }
 }
 
-// class AddressActions extends StatelessWidget {
-//   final bool isDarkTheme;
-//   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
-//   final String currentAddress;
-//   final String? currentAccountUuid;
-//   final double screenWidth;
-//   const AddressActions(
-//       {super.key,
-//       required this.isDarkTheme,
-//       required this.dashboardActivityFeedBloc,
-//       required this.currentAddress,
-//       required this.screenWidth,
-//       this.currentAccountUuid});
-//   @override
-//   Widget build(BuildContext context) {
-//     return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-//       Padding(
-//         padding: const EdgeInsets.fromLTRB(4.0, 8.0, 4.0, 4.0),
-//         child: Row(
-//           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-//           children: [
-//             SendMenu(
-//               currentAddress: currentAddress,
-//               isDarkTheme: isDarkTheme,
-//               icon: Icons.send,
-//               text: "SEND",
-//               iconSize: 18.0,
-//               dashboardActivityFeedBloc: dashboardActivityFeedBloc,
-//             ),
-//             AddressAction(
-//               tooltip: "Issue Asset",
-//               isDarkTheme: isDarkTheme,
-//               dialog: HorizonUI.HorizonDialog(
-//                 title: "Compose Issuance",
-//                 body: ComposeIssuancePageWrapper(
-//                   currentAddress: currentAddress,
-//                   dashboardActivityFeedBloc: dashboardActivityFeedBloc,
-//                 ),
-//                 includeBackButton: false,
-//                 includeCloseButton: true,
-//               ),
-//               icon: Icons.add,
-//               text: "ISSUE",
-//               iconSize: 18.0,
-//             ),
-//             AddressAction(
-//               tooltip: "Receive Asset",
-//               isDarkTheme: isDarkTheme,
-//               dialog: HorizonUI.HorizonDialog(
-//                 title: "Receive",
-//                 body: QRCodeDialog(
-//                   currentAddress: currentAddress,
-//                   currentAccountUuid: currentAccountUuid,
-//                 ),
-//                 includeBackButton: false,
-//                 includeCloseButton: true,
-//               ),
-//               icon: Icons.qr_code,
-//               text: "RECEIVE",
-//               iconSize: 18.0,
-//             ),
-//             MintMenu(
-//               currentAddress: currentAddress,
-//               isDarkTheme: isDarkTheme,
-//               icon: Icons.print,
-//               text: "MINT",
-//               iconSize: 18.0,
-//               dashboardActivityFeedBloc: dashboardActivityFeedBloc,
-//             ),
-//             DispenserButtonMenu(
-//               currentAddress: currentAddress,
-//               isDarkTheme: isDarkTheme,
-//               icon: Icons.more_vert,
-//               text: "DISPENSER",
-//               iconSize: 18.0,
-//               dashboardActivityFeedBloc: dashboardActivityFeedBloc,
-//             ),
-//             OrderButtonMenu(
-//               currentAddress: currentAddress,
-//               isDarkTheme: isDarkTheme,
-//               icon: Icons.toc,
-//               text: "ORDER",
-//               iconSize: 18.0,
-//               dashboardActivityFeedBloc: dashboardActivityFeedBloc,
-//             ),
-//           ],
-//         ),
-//       ),
-//     ]);
-//   }
-// }
-
-class DashboardPageWrapper extends StatelessWidget {
-  const DashboardPageWrapper({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    final session = context
-        .watch<SessionStateCubit>()
-        .state; // we should only ever get to this page if session is success
-
-    return session.maybeWhen(
-        success: (data) => MultiBlocProvider(
-              key: key,
-              providers: [
-                BlocProvider<BalancesBloc>(
-                  create: (context) => BalancesBloc(
-                    balanceRepository: GetIt.I.get<BalanceRepository>(),
-                    addresses: [
-                      ...data.addresses.map((e) => e.address),
-                      ...(data.importedAddresses?.map((e) => e.address) ?? [])
-                    ],
-                  )..add(Start(pollingInterval: const Duration(seconds: 60))),
-                ),
-                BlocProvider<DashboardActivityFeedBloc>(
-                  create: (context) => DashboardActivityFeedBloc(
-                    logger: GetIt.I.get<Logger>(),
-                    addresses: [
-                      ...data.addresses.map((e) => e.address),
-                      ...(data.importedAddresses?.map((e) => e.address) ?? [])
-                    ],
-                    eventsRepository: GetIt.I.get<EventsRepository>(),
-                    addressRepository: GetIt.I.get<AddressRepository>(),
-                    bitcoinRepository: GetIt.I.get<BitcoinRepository>(),
-                    transactionLocalRepository:
-                        GetIt.I.get<TransactionLocalRepository>(),
-                    pageSize: 1000,
-                  ),
-                ),
-              ],
-              child: DashboardPage(
-                key: key,
-                addresses: [
-                  ...data.addresses.map((e) => e.address),
-                  ...(data.importedAddresses?.map((e) => e.address) ?? [])
-                ],
-                actionRepository: GetIt.instance<ActionRepository>(),
-              ),
-            ),
-        orElse: () => const SizedBox.shrink());
-  }
-}
-
-// class QRCodeDialog extends StatelessWidget {
-//   final String currentAddress;
-//   final String? currentAccountUuid;
-
-//   const QRCodeDialog(
-//       {super.key, required this.currentAddress, this.currentAccountUuid});
-
-//   @override
-//   Widget build(BuildContext context) {
-//     final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
-//     final screenWidth = MediaQuery.of(context).size.width;
-//     return Column(
-//       mainAxisSize: MainAxisSize.min,
-//       children: [
-//         const SizedBox(height: 8.0),
-//         QrImageView(
-//           dataModuleStyle: QrDataModuleStyle(
-//             dataModuleShape: QrDataModuleShape.square,
-//             color: isDarkTheme ? mainTextWhite : royalBlueLightTheme,
-//           ),
-//           eyeStyle: QrEyeStyle(
-//               eyeShape: QrEyeShape.square,
-//               color: isDarkTheme ? mainTextWhite : royalBlueLightTheme),
-//           data: currentAddress,
-//           version: QrVersions.auto,
-//           size: 230.0,
-//         ),
-//         const SizedBox(height: 16.0),
-//         const Divider(
-//           thickness: 1.0,
-//         ),
-//         LayoutBuilder(
-//           builder: (context, constraints) {
-//             return Padding(
-//               padding: const EdgeInsets.all(16.0),
-//               child: Container(
-//                 width: 500,
-//                 decoration: BoxDecoration(
-//                   color: isDarkTheme ? darkNavyDarkTheme : noBackgroundColor,
-//                   borderRadius: BorderRadius.circular(10.0),
-//                   border: isDarkTheme
-//                       ? Border.all(color: noBackgroundColor)
-//                       : Border.all(color: greyLightThemeUnderlineColor),
-//                 ),
-//                 child: Row(
-//                   children: [
-//                     Expanded(
-//                       child: FittedBox(
-//                         fit: BoxFit.scaleDown,
-//                         child: SelectableText(
-//                           currentAddress,
-//                           style: const TextStyle(
-//                               overflow: TextOverflow.ellipsis, fontSize: 16),
-//                         ),
-//                       ),
-//                     ),
-//                     Container(
-//                       padding: const EdgeInsets.all(2.0),
-//                       child: screenWidth < 768.0
-//                           ? ElevatedButton(
-//                               style: ElevatedButton.styleFrom(
-//                                 elevation: 0,
-//                                 padding: const EdgeInsets.symmetric(
-//                                     horizontal: 20.0, vertical: 20.0),
-//                                 shape: RoundedRectangleBorder(
-//                                   borderRadius: BorderRadius.circular(8.0),
-//                                 ),
-//                               ),
-//                               onPressed: () {
-//                                 Clipboard.setData(
-//                                     ClipboardData(text: currentAddress));
-//                                 ScaffoldMessenger.of(context).showSnackBar(
-//                                   const SnackBar(
-//                                       content:
-//                                           Text('Address copied to clipboard')),
-//                                 );
-//                               },
-//                               child: const Icon(Icons.copy),
-//                             )
-//                           : ElevatedButton(
-//                               style: ElevatedButton.styleFrom(
-//                                 elevation: 0,
-//                                 padding: const EdgeInsets.symmetric(
-//                                     horizontal: 20.0, vertical: 20.0),
-//                                 shape: RoundedRectangleBorder(
-//                                   borderRadius: BorderRadius.circular(8.0),
-//                                 ),
-//                               ),
-//                               onPressed: () {
-//                                 Clipboard.setData(
-//                                     ClipboardData(text: currentAddress));
-//                                 ScaffoldMessenger.of(context).showSnackBar(
-//                                   const SnackBar(
-//                                       content:
-//                                           Text('Address copied to clipboard')),
-//                                 );
-//                               },
-//                               child: SizedBox(
-//                                 height: 32.0,
-//                                 child: Row(
-//                                   children: [
-//                                     Icon(Icons.copy,
-//                                         size: 14.0,
-//                                         color: isDarkTheme
-//                                             ? darkThemeInputLabelColor
-//                                             : lightThemeInputLabelColor),
-//                                     const SizedBox(width: 4.0, height: 16.0),
-//                                     Text("COPY",
-//                                         style: TextStyle(
-//                                             fontSize: 14.0,
-//                                             color: isDarkTheme
-//                                                 ? darkThemeInputLabelColor
-//                                                 : lightThemeInputLabelColor)),
-//                                   ],
-//                                 ),
-//                               ),
-//                             ),
-//                     ),
-//                   ],
-//                 ),
-//               ),
-//             );
-//           },
-//         ),
-//         if (currentAccountUuid != null)
-//           Builder(builder: (context) {
-//             final accountUuid =
-//                 context.read<SessionStateCubit>().state.maybeWhen(
-//                       success: (state) => state.currentAccountUuid,
-//                       orElse: () => null,
-//                     );
-
-//             // look up account
-//             Account account = context.read<SessionStateCubit>().state.maybeWhen(
-//                   success: (state) => state.accounts
-//                       .firstWhere((account) => account.uuid == accountUuid),
-//                   orElse: () => throw Exception("invariant: no account"),
-//                 );
-
-//             // don't support address creation for horizon accounts
-//             return switch (account.importFormat) {
-//               ImportFormat.horizon => const SizedBox.shrink(),
-//               _ => TextButton(
-//                   child: const Text("Add a new address"),
-//                   onPressed: () {
-//                     HorizonUI.HorizonDialog.show(
-//                       context: context,
-//                       body: HorizonUI.HorizonDialog(
-//                         title: "Add a new address\nto ${account.name}",
-//                         titleAlign: Alignment.center,
-//                         body: Padding(
-//                           padding: const EdgeInsets.symmetric(horizontal: 16.0),
-//                           child: AddAddressForm(
-//                             passwordRequired: GetIt.I
-//                                 .get<SettingsRepository>()
-//                                 .requirePasswordForCryptoOperations,
-//                             accountUuid: accountUuid!,
-//                           ),
-//                         ),
-//                         onBackButtonPressed: () {
-//                           Navigator.of(context).pop();
-//                         },
-//                       ),
-//                     );
-//                   })
-//             };
-//           })
-//       ],
-//     );
-//   }
-// }
-
 class DashboardPage extends StatefulWidget {
   final List<String> addresses;
   final ActionRepository actionRepository;
@@ -1142,14 +839,22 @@ class DashboardPage extends StatefulWidget {
   DashboardPageState createState() => DashboardPageState();
 }
 
-class DashboardPageState extends State<DashboardPage> {
+class DashboardPageState extends State<DashboardPage>
+    with TickerProviderStateMixin {
   final accountSettingsRepository = GetIt.I.get<AccountSettingsRepository>();
   final _scrollController = ScrollController();
   bool shown = false;
+  late TabController _tabController;
+  late TabController _bottomTabController;
 
   @override
   void initState() {
     super.initState();
+    _tabController = TabController(length: 2, vsync: this);
+    _bottomTabController = TabController(length: 2, vsync: this);
+    _bottomTabController.addListener(() {
+      setState(() {}); // Rebuild to update the selected tab styling
+    });
     final action = widget.actionRepository.dequeue();
     action.fold(noop, (action) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -1160,24 +865,14 @@ class DashboardPageState extends State<DashboardPage> {
 
   @override
   void dispose() {
-    super.dispose();
+    _tabController.dispose();
+    _bottomTabController.dispose();
     _scrollController.dispose();
+    super.dispose();
   }
 
   void Function() _getHandler(URLAction.Action action) {
     return switch (action) {
-      // URLAction.DispenseAction(address: var address) => () =>
-      //     _handleDispenseAction(address),
-      // URLAction.FairmintAction(fairminterTxHash: var fairminterTxHash) => () =>
-      //     _handleFairmintAction(fairminterTxHash),
-      // URLAction.OpenOrderAction(
-      //   giveQuantity: var giveQuantity,
-      //   giveAsset: var giveAsset,
-      //   getQuantity: var getQuantity,
-      //   getAsset: var getAsset
-      // ) =>
-      //   () =>
-      //       _handleOrderAction(giveQuantity, giveAsset, getQuantity, getAsset),
       URLAction.RPCGetAddressesAction(
         tabId: var tabId,
         requestId: var requestId
@@ -1195,71 +890,6 @@ class DashboardPageState extends State<DashboardPage> {
       _ => noop
     };
   }
-
-  // void _handleOrderAction(
-  //     int giveQuantity, String giveAsset, int getQuantity, String getAsset) {
-  //   final dashboardActivityFeedBloc =
-  //       BlocProvider.of<DashboardActivityFeedBloc>(context);
-
-  //   HorizonUI.HorizonDialog.show(
-  //     context: context,
-  //     body: HorizonUI.HorizonDialog(
-  //       includeBackButton: false,
-  //       includeCloseButton: true,
-  //       title: "Open Order",
-  //       body: ComposeOrderPageWrapper(
-  //         currentAddress: widget.currentAddress?.address ??
-  //             widget.currentImportedAddress!.address,
-  //         dashboardActivityFeedBloc: dashboardActivityFeedBloc,
-  //         getFeeEstimatesUseCase: GetIt.I<GetFeeEstimatesUseCase>(),
-  //         composeTransactionUseCase: GetIt.I<ComposeTransactionUseCase>(),
-
-  //         // balanceRepository: GetIt.I<BalanceRepository>(),
-  //         assetRepository: GetIt.I<AssetRepository>(),
-  //         initialGiveAsset: giveAsset,
-  //         initialGiveQuantity: giveQuantity,
-  //         initialGetAsset: getAsset,
-  //         initialGetQuantity: getQuantity,
-  //       ),
-  //     ),
-  //   );
-  // }
-
-  // void _handleDispenseAction(String address) {
-  //   final dashboardActivityFeedBloc =
-  //       BlocProvider.of<DashboardActivityFeedBloc>(context);
-
-  //   HorizonUI.HorizonDialog.show(
-  //       context: context,
-  //       body: HorizonUI.HorizonDialog(
-  //           includeBackButton: false,
-  //           includeCloseButton: true,
-  //           title: "Trigger Dispense",
-  //           body: ComposeDispensePageWrapper(
-  //               initialDispenserAddress: address,
-  //               currentAddress: widget.currentAddress?.address ??
-  //                   widget.currentImportedAddress!.address,
-  //               dashboardActivityFeedBloc: dashboardActivityFeedBloc)));
-  // }
-
-  // void _handleFairmintAction(String intitialFairminterTxHash) {
-  //   final dashboardActivityFeedBloc =
-  //       BlocProvider.of<DashboardActivityFeedBloc>(context);
-
-  //   HorizonUI.HorizonDialog.show(
-  //       context: context,
-  //       body: HorizonUI.HorizonDialog(
-  //         title: "Compose Fairmint",
-  //         body: ComposeFairmintPageWrapper(
-  //           initialFairminterTxHash: intitialFairminterTxHash,
-  //           dashboardActivityFeedBloc: dashboardActivityFeedBloc,
-  //           currentAddress: widget.currentAddress?.address ??
-  //               widget.currentImportedAddress!.address,
-  //         ),
-  //         includeBackButton: false,
-  //         includeCloseButton: true,
-  //       ));
-  // }
 
   void _handleRPCGetAddressesAction(int tabId, String requestId) {
     HorizonUI.HorizonDialog.show(
@@ -1320,336 +950,413 @@ class DashboardPageState extends State<DashboardPage> {
         ));
   }
 
+  Widget buildSettingsTab() {
+    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
+
+    return ListView(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              const Text("Theme"),
+              const Spacer(),
+              Switch(
+                value: isDarkTheme,
+                onChanged: (value) {
+                  context.read<ThemeBloc>().add(ThemeToggled());
+                },
+              ),
+            ],
+          ),
+        ),
+        ListTile(
+          title: const Text('Settings'),
+          onTap: () => context.go("/settings"),
+        ),
+        ListTile(
+          title: const Text('View wallet seed phrase'),
+          onTap: () {
+            HorizonUI.HorizonDialog.show(
+              context: context,
+              body: const HorizonUI.HorizonDialog(
+                includeBackButton: false,
+                includeCloseButton: true,
+                title: "View wallet seed phrase",
+                body: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 16.0),
+                  child: ViewSeedPhraseFormWrapper(),
+                ),
+              ),
+            );
+          },
+        ),
+        ListTile(
+          title: const Text('Import new address private key'),
+          onTap: () {
+            HorizonUI.HorizonDialog.show(
+              context: context,
+              body: Builder(builder: (context) {
+                final bloc = context.watch<ImportAddressPkBloc>();
+                final cb = switch (bloc.state) {
+                  ImportAddressPkStep2() => () {
+                      bloc.add(ResetForm());
+                    },
+                  _ => () {
+                      Navigator.of(context).pop();
+                    },
+                };
+                return HorizonUI.HorizonDialog(
+                  onBackButtonPressed: cb,
+                  title: "Import address private key",
+                  body: const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16.0),
+                    child: ImportAddressPkForm(),
+                  ),
+                );
+              }),
+            );
+          },
+        ),
+        ListTile(
+          title: const Text('Reset wallet'),
+          onTap: () {
+            HorizonUI.HorizonDialog.show(
+              context: context,
+              body: BlocProvider(
+                create: (context) => ResetBloc(
+                  kvService: GetIt.I.get<SecureKVService>(),
+                  inMemoryKeyRepository: GetIt.I.get<InMemoryKeyRepository>(),
+                  walletRepository: GetIt.I.get<WalletRepository>(),
+                  accountRepository: GetIt.I.get<AccountRepository>(),
+                  addressRepository: GetIt.I.get<AddressRepository>(),
+                  importedAddressRepository:
+                      GetIt.I.get<ImportedAddressRepository>(),
+                  cacheProvider: GetIt.I.get<CacheProvider>(),
+                  analyticsService: GetIt.I.get<AnalyticsService>(),
+                ),
+                child: const ResetDialog(),
+              ),
+            );
+          },
+        ),
+        ListTile(
+          title: const Text('Lock Screen'),
+          onTap: () => context.read<SessionStateCubit>().onLogout(),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    const maxWidth = 926.0;
-
     final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
-    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmallScreen = MediaQuery.of(context).size.width < 500;
 
-    Color backgroundColor = isDarkTheme ? darkNavyDarkTheme : greyLightTheme;
-    final backgroundColorInner =
-        isDarkTheme ? lightNavyDarkTheme : greyLightTheme;
-
-    final backgroundColorWrapper =
-        isDarkTheme ? darkNavyDarkTheme : Colors.white;
-
-    final isSmallScreen = screenWidth < 600;
-
-    // final state = context.watch<SessionStateCubit>().state;
-
-    // final Account? account = state.maybeWhen(
-    //   success: (state) => state.accounts.firstWhereOrNull(
-    //     (account) => account.uuid == state.currentAccountUuid,
-    //   ),
-    //   orElse: () => null,
-    // );
-
-    if (!isSmallScreen) {
-      // Scaffold for desktop
-      return Container(
-        // padding: const EdgeInsets.fromLTRB(4, 8, 8, 16),
-        decoration: BoxDecoration(
-          color: backgroundColor,
-          gradient: isDarkTheme
-              ? RadialGradient(
-                  center: Alignment.topRight,
-                  radius: 2.0,
-                  colors: [
-                    blueDarkThemeGradiantColor,
-                    backgroundColor,
-                  ],
-                )
-              : null,
-        ),
-        child: Builder(builder: (context) {
-          return Container(
-            margin: const EdgeInsets.fromLTRB(8, 0, 8, 8),
-            child: CustomScrollView(
-              controller: _scrollController,
-              slivers: [
-                const SliverCrossAxisConstrained(
-                    maxCrossAxisExtent: maxWidth,
-                    child: TransparentHorizonSliverAppBar(
-                      expandedHeight: kToolbarHeight,
-                    )),
-                SliverCrossAxisConstrained(
-                    maxCrossAxisExtent: maxWidth,
-                    child: SliverStack(children: [
-                      SliverPositioned.fill(
-                        child: Container(
-                          margin: const EdgeInsets.fromLTRB(8, 8, 8, 0),
-                          decoration: BoxDecoration(
-                            color: backgroundColor,
-                            borderRadius: BorderRadius.circular(30.0),
-                          ),
-                        ),
-                      ),
-                    ])),
-                SliverCrossAxisConstrained(
-                  maxCrossAxisExtent: maxWidth,
-                  child: SliverStack(
-                    children: [
-                      SliverPadding(
-                          padding:
-                              const EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 8.0),
-                          sliver: SliverToBoxAdapter(
-                              child: Row(children: [
-                            // Expanded(
-                            //     child: Container(
-                            //         decoration: BoxDecoration(
-                            //           color: backgroundColorWrapper,
-                            //           borderRadius: BorderRadius.circular(30.0),
-                            //         ),
-                            //         child: const WalletItemSidebar())),
-                            // const SizedBox(width: 8),
-                            Expanded(
-                                flex: 3,
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    color: backgroundColorWrapper,
-                                    borderRadius: BorderRadius.circular(30.0),
-                                  ),
-                                  child: Column(
-                                    children: [
-                                      // Builder(builder: (context) {
-                                      //   final dashboardActivityFeedBloc =
-                                      //       BlocProvider.of<
-                                      //               DashboardActivityFeedBloc>(
-                                      //           context);
-                                      //   return AddressActions(
-                                      //     isDarkTheme: isDarkTheme,
-                                      //     dashboardActivityFeedBloc:
-                                      //         dashboardActivityFeedBloc,
-                                      //     currentAddress:
-                                      //         widget.currentAddress?.address ??
-                                      //             widget.currentImportedAddress!
-                                      //                 .address,
-                                      //     screenWidth: screenWidth,
-                                      //     currentAccountUuid:
-                                      //         widget.accountUuid,
-                                      //   );
-                                      // }),
-                                      SizedBox(
-                                        height: 258,
-                                        child: Container(
-                                          margin: const EdgeInsets.fromLTRB(
-                                              8, 4, 8, 8),
-                                          decoration: BoxDecoration(
-                                            color: backgroundColorInner,
-                                            borderRadius:
-                                                BorderRadius.circular(30.0),
-                                          ),
-                                          child: CustomScrollView(
-                                            slivers: [
-                                              SliverPadding(
-                                                padding:
-                                                    const EdgeInsets.all(8.0),
-                                                sliver: BalancesDisplay(
-                                                    isDarkTheme: isDarkTheme),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                      SizedBox(
-                                        height: 352,
-                                        child: Container(
-                                          margin: const EdgeInsets.fromLTRB(
-                                              8, 4, 8, 8),
-                                          decoration: BoxDecoration(
-                                            color: backgroundColorInner,
-                                            borderRadius:
-                                                BorderRadius.circular(30.0),
-                                          ),
-                                          child: CustomScrollView(
-                                            slivers: [
-                                              SliverPadding(
-                                                padding:
-                                                    const EdgeInsets.all(8.0),
-                                                sliver:
-                                                    // TODO: update key
-                                                    DashboardActivityFeedScreen(
-                                                        key: Key(
-                                                          widget
-                                                              .addresses.first,
-                                                        ),
-                                                        addresses:
-                                                            widget.addresses,
-                                                        initialItemCount: 4),
-                                              )
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                )),
-                          ])))
-                    ],
+    Widget buildTabContent() {
+      return Column(
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              border: Border(
+                bottom: BorderSide(
+                  color: isDarkTheme
+                      ? Colors.white.withOpacity(0.1)
+                      : Colors.black.withOpacity(0.1),
+                  width: 1,
+                ),
+              ),
+            ),
+            child: TabBar(
+              controller: _tabController,
+              indicatorWeight: 2,
+              indicatorColor: transparentPurple33,
+              labelColor: Theme.of(context).textTheme.bodyMedium?.color,
+              unselectedLabelColor:
+                  isDarkTheme ? transparentWhite33 : transparentBlack33,
+              isScrollable: true,
+              padding: EdgeInsets.zero,
+              indicatorSize: TabBarIndicatorSize.label,
+              tabAlignment: TabAlignment.start,
+              tabs: const [
+                Tab(
+                  child: Text(
+                    'Assets',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+                Tab(
+                  child: Text(
+                    'Activity',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                 ),
               ],
             ),
-          );
-        }),
+          ),
+          Expanded(
+            child: TabBarView(
+              controller: _tabController,
+              physics: const NeverScrollableScrollPhysics(),
+              children: [
+                Padding(
+                  padding:
+                      EdgeInsets.symmetric(horizontal: isSmallScreen ? 16 : 35),
+                  child: BalancesDisplay(isDarkTheme: isDarkTheme),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: DashboardActivityFeedScreen(
+                    key: Key(widget.addresses.first),
+                    addresses: widget.addresses,
+                    initialItemCount: 4,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       );
     }
 
-    // Scaffold for mobile
-    return Container(
-      // padding: const EdgeInsets.fromLTRB(4, 8, 8, 16),
+    final mainContent = Container(
       decoration: BoxDecoration(
-        color: backgroundColor,
-        gradient: isDarkTheme
-            ? RadialGradient(
-                center: Alignment.topRight,
-                radius: 1.0,
-                colors: [
-                  blueDarkThemeGradiantColor,
-                  backgroundColor,
-                ],
-              )
-            : null,
+        color: Theme.of(context).scaffoldBackgroundColor,
       ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Container(
-              margin: const EdgeInsets.fromLTRB(8, 0, 8, 8),
-              child: CustomScrollView(
-                controller: _scrollController,
-                slivers: [
-                  const SliverCrossAxisConstrained(
-                      maxCrossAxisExtent: maxWidth,
-                      child: TransparentHorizonSliverAppBar(
-                        expandedHeight: kToolbarHeight,
-                      )),
-                  SliverCrossAxisConstrained(
-                      maxCrossAxisExtent: maxWidth,
-                      child: SliverStack(children: [
-                        SliverPositioned.fill(
-                          child: Container(
-                            margin: const EdgeInsets.fromLTRB(8, 8, 8, 0),
-                            decoration: BoxDecoration(
-                              color: backgroundColor,
-                              borderRadius: BorderRadius.circular(30.0),
-                            ),
+      child: Container(
+        // margin: const EdgeInsets.fromLTRB(8, 0, 8, 8),
+        child: Container(
+          // margin: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: Theme.of(context).scaffoldBackgroundColor,
+            borderRadius: BorderRadius.circular(30.0),
+          ),
+          height: MediaQuery.of(context).size.height - 100,
+          child: buildTabContent(),
+        ),
+      ),
+    );
+
+    return Container(
+      color: isDarkTheme ? Colors.black : Colors.white,
+      child: Center(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxWidth:
+                MediaQuery.of(context).size.width > 500 ? 500 : double.infinity,
+          ),
+          child: Scaffold(
+            backgroundColor: isDarkTheme ? Colors.black : Colors.white,
+            body: TabBarView(
+              controller: _bottomTabController,
+              physics: const NeverScrollableScrollPhysics(),
+              children: [
+                mainContent,
+                buildSettingsTab(),
+              ],
+            ),
+            bottomNavigationBar: Container(
+              width: 375,
+              height: 90,
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              decoration: BoxDecoration(
+                border: Border(
+                  top: BorderSide(
+                    color: isDarkTheme
+                        ? Colors.white.withOpacity(0.1)
+                        : Colors.black.withOpacity(0.1),
+                    width: 1,
+                  ),
+                  right: BorderSide(
+                    color:
+                        isDarkTheme && MediaQuery.of(context).size.width > 500
+                            ? Colors.white.withOpacity(0.1)
+                            : Colors.black.withOpacity(0.1),
+                    width: 1,
+                  ),
+                  left: BorderSide(
+                    color:
+                        isDarkTheme && MediaQuery.of(context).size.width > 500
+                            ? Colors.white.withOpacity(0.1)
+                            : Colors.black.withOpacity(0.1),
+                    width: 1,
+                  ),
+                ),
+              ),
+              child: TabBar(
+                controller: _bottomTabController,
+                indicatorSize: TabBarIndicatorSize.tab,
+                indicatorColor: Colors.transparent,
+                dividerColor: Colors.transparent,
+                overlayColor: WidgetStateProperty.all(Colors.transparent),
+                splashFactory: NoSplash.splashFactory,
+                labelColor: isDarkTheme ? Colors.white : Colors.black,
+                unselectedLabelColor:
+                    isDarkTheme ? transparentWhite33 : transparentBlack33,
+                tabs: [
+                  Container(
+                    width: 75,
+                    height: 74,
+                    decoration: BoxDecoration(
+                      color: _bottomTabController.index == 0 && !isDarkTheme
+                          ? offWhite
+                          : Colors.transparent,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: _bottomTabController.index == 0
+                            ? (isDarkTheme
+                                ? Colors.white.withOpacity(0.1)
+                                : Colors.black.withOpacity(0.1))
+                            : Colors.transparent,
+                        width: 1,
+                      ),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 8, horizontal: 8),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.pie_chart_outline,
+                            size: 24,
+                            color: _bottomTabController.index == 0
+                                ? (isDarkTheme ? Colors.white : Colors.black)
+                                : (isDarkTheme
+                                    ? transparentWhite33
+                                    : transparentBlack33),
                           ),
-                        ),
-                      ])),
-                  SliverCrossAxisConstrained(
-                    maxCrossAxisExtent: maxWidth,
-                    child: SliverStack(
-                      children: [
-                        SliverPositioned.fill(
-                          child: Container(
-                            margin: const EdgeInsets.fromLTRB(8, 8, 8, 0),
-                            decoration: BoxDecoration(
-                              color: backgroundColorWrapper,
-                              borderRadius: BorderRadius.circular(30.0),
+                          const SizedBox(height: 6),
+                          Text(
+                            'Portfolio',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: _bottomTabController.index == 0
+                                  ? (isDarkTheme ? Colors.white : Colors.black)
+                                  : (isDarkTheme
+                                      ? transparentWhite33
+                                      : transparentBlack33),
                             ),
+                            softWrap: false,
+                            overflow: TextOverflow.visible,
                           ),
-                        ),
-                        SliverPadding(
-                          padding:
-                              const EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 8.0),
-                          sliver: MultiSliver(children: [
-                            // SliverToBoxAdapter(
-                            //   child: WalletItemSelectionButton(
-                            //     isDarkTheme: isDarkTheme,
-                            //     onPressed: () =>
-                            //         showAccountList(context, isDarkTheme),
-                            //   ),
-                            // ),
-                            // if (account != null)
-                            //   Builder(builder: (context) {
-                            //     return context
-                            //         .read<SessionStateCubit>()
-                            //         .state
-                            //         .maybeWhen(
-                            //             success: (state) => state
-                            //                         .addresses.length >
-                            //                     1
-                            //                 ? SliverToBoxAdapter(
-                            //                     child: Padding(
-                            //                     padding:
-                            //                         const EdgeInsets.fromLTRB(
-                            //                             8.0, 8.0, 8.0, 0.0),
-                            //                     child: AddressSelectionButton(
-                            //                       isDarkTheme: isDarkTheme,
-                            //                       onPressed: () =>
-                            //                           showAddressList(context,
-                            //                               isDarkTheme, account),
-                            //                     ),
-                            //                   ))
-                            //                 : const SliverToBoxAdapter(
-                            //                     child: SizedBox.shrink()),
-                            //             orElse: () => const SliverToBoxAdapter(
-                            //                 child: SizedBox.shrink()));
-                            //   }),
-                            // SliverToBoxAdapter(
-                            //     child: Builder(builder: (context) {
-                            //   final dashboardActivityFeedBloc =
-                            //       BlocProvider.of<DashboardActivityFeedBloc>(
-                            //           context);
-                            //   return AddressActions(
-                            //     isDarkTheme: isDarkTheme,
-                            //     dashboardActivityFeedBloc:
-                            //         dashboardActivityFeedBloc,
-                            //     currentAddress:
-                            //         widget.currentAddress?.address ??
-                            //             widget.currentImportedAddress!.address,
-                            //     screenWidth: screenWidth,
-                            //   );
-                            // })),
-                            SliverStack(children: [
-                              SliverPositioned.fill(
-                                child: Container(
-                                  margin: const EdgeInsets.fromLTRB(8, 4, 8, 0),
-                                  decoration: BoxDecoration(
-                                    color: backgroundColorInner,
-                                    borderRadius: BorderRadius.circular(30.0),
-                                  ),
-                                ),
-                              ),
-                              SliverPadding(
-                                padding: const EdgeInsets.all(8.0),
-                                sliver:
-                                    BalancesDisplay(isDarkTheme: isDarkTheme),
-                              ),
-                            ]),
-                            SliverStack(children: [
-                              SliverPositioned.fill(
-                                child: Container(
-                                  margin: const EdgeInsets.fromLTRB(8, 8, 8, 0),
-                                  decoration: BoxDecoration(
-                                    color: backgroundColorInner,
-                                    borderRadius: BorderRadius.circular(30.0),
-                                  ),
-                                ),
-                              ),
-                              SliverPadding(
-                                padding: const EdgeInsets.all(8.0),
-                                sliver: DashboardActivityFeedScreen(
-                                  // TODO: update key
-                                  key: Key(widget.addresses.first),
-                                  addresses: widget.addresses,
-                                  initialItemCount: 3,
-                                ),
-                              ),
-                            ])
-                          ]),
-                        )
-                      ],
+                        ],
+                      ),
+                    ),
+                  ),
+                  Container(
+                    width: 75,
+                    height: 74,
+                    decoration: BoxDecoration(
+                      color: _bottomTabController.index == 1 && !isDarkTheme
+                          ? offWhite
+                          : Colors.transparent,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: _bottomTabController.index == 1
+                            ? (isDarkTheme
+                                ? Colors.white.withOpacity(0.1)
+                                : Colors.black.withOpacity(0.1))
+                            : Colors.transparent,
+                        width: 1,
+                      ),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 8, horizontal: 8),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.settings,
+                            size: 24,
+                            color: _bottomTabController.index == 1
+                                ? (isDarkTheme ? Colors.white : Colors.black)
+                                : (isDarkTheme
+                                    ? transparentWhite33
+                                    : transparentBlack33),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            'Settings',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: _bottomTabController.index == 1
+                                  ? (isDarkTheme ? Colors.white : Colors.black)
+                                  : (isDarkTheme
+                                      ? transparentWhite33
+                                      : transparentBlack33),
+                            ),
+                            softWrap: false,
+                            overflow: TextOverflow.visible,
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ],
               ),
             ),
           ),
-        ],
+        ),
       ),
     );
+  }
+}
+
+class DashboardPageWrapper extends StatelessWidget {
+  const DashboardPageWrapper({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final session = context.watch<SessionStateCubit>().state;
+
+    return session.maybeWhen(
+        success: (data) => MultiBlocProvider(
+              key: key,
+              providers: [
+                BlocProvider<BalancesBloc>(
+                  create: (context) => BalancesBloc(
+                    balanceRepository: GetIt.I.get<BalanceRepository>(),
+                    addresses: [
+                      ...data.addresses.map((e) => e.address),
+                      ...(data.importedAddresses?.map((e) => e.address) ?? [])
+                    ],
+                  )..add(Start(pollingInterval: const Duration(seconds: 60))),
+                ),
+                BlocProvider<DashboardActivityFeedBloc>(
+                  create: (context) => DashboardActivityFeedBloc(
+                    logger: GetIt.I.get<Logger>(),
+                    addresses: [
+                      ...data.addresses.map((e) => e.address),
+                      ...(data.importedAddresses?.map((e) => e.address) ?? [])
+                    ],
+                    eventsRepository: GetIt.I.get<EventsRepository>(),
+                    addressRepository: GetIt.I.get<AddressRepository>(),
+                    bitcoinRepository: GetIt.I.get<BitcoinRepository>(),
+                    transactionLocalRepository:
+                        GetIt.I.get<TransactionLocalRepository>(),
+                    pageSize: 1000,
+                  ),
+                ),
+              ],
+              child: DashboardPage(
+                key: key,
+                addresses: [
+                  ...data.addresses.map((e) => e.address),
+                  ...(data.importedAddresses?.map((e) => e.address) ?? [])
+                ],
+                actionRepository: GetIt.instance<ActionRepository>(),
+              ),
+            ),
+        orElse: () => const SizedBox.shrink());
   }
 }
