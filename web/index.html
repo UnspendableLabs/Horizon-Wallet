@@ -31,6 +31,45 @@
     <title>horizon</title>
     <link rel="manifest" href="manifest.json" />
 
+    <!-- Preconnect to Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <!-- Prevent Roboto font loading -->
+    <style>
+      @font-face {
+        font-family: 'Roboto';
+        src: local('Montserrat');
+        font-weight: normal;
+        font-style: normal;
+      }
+
+      /* Override any attempt to load Roboto from Google Fonts */
+      @font-face {
+        font-family: 'Roboto';
+        src: local('Montserrat');
+        font-weight: normal;
+        font-style: normal;
+        unicode-range: U+0000-FFFF;
+      }
+
+      @font-face {
+        font-family: 'Roboto';
+        src: local('Montserrat');
+        font-weight: bold;
+        font-style: normal;
+        unicode-range: U+0000-FFFF;
+      }
+
+      @font-face {
+        font-family: 'Roboto';
+        src: local('Montserrat');
+        font-weight: normal;
+        font-style: italic;
+        unicode-range: U+0000-FFFF;
+      }
+    </style>
+
     <script src="./assets/posthog.js" type="application/javascript"></script>
     <script src="./assets/mnemonic.js" type="application/javascript"></script>
     <script src="./assets/buffer.js" type="application/javascript"></script>
@@ -47,7 +86,7 @@
       src="./assets/horizon_utils.js"
       type="application/javascript"
     ></script>
-    
+
     <!-- This script adds the flutter initialization JS code -->
     <style id="splash-screen-style">
       html {
@@ -147,7 +186,7 @@
     <style>
       /* Ensure Material Icons loads properly */
       .material-icons {
-        font-family: 'Material Icons';
+        font-family: 'Material Icons' !important;
         font-weight: normal;
         font-style: normal;
         font-size: 24px;
@@ -159,6 +198,15 @@
         word-wrap: normal;
         direction: ltr;
         -webkit-font-smoothing: antialiased;
+      }
+
+      /* Force Flutter to use Montserrat for all text */
+      .flt-text-editing {
+        font-family: 'Montserrat' !important;
+      }
+
+      body {
+        font-family: 'Montserrat' !important;
       }
     </style>
   </head>

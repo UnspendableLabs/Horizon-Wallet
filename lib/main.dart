@@ -503,8 +503,37 @@ class MyApp extends StatelessWidget {
   });
 
   ThemeData _buildLightTheme() {
-    return ThemeData.light().copyWith(
+    final baseTextTheme = ThemeData.light().textTheme;
+    const customTextTheme = TextTheme(
+      titleMedium: TextStyle(
+        fontSize: 18,
+        fontWeight: FontWeight.w700,
+        color: Colors.black,
+        fontFamily: 'Montserrat',
+      ),
+      titleSmall: TextStyle(
+        fontSize: 12,
+        color: transparentBlack66,
+        fontFamily: 'Montserrat',
+      ),
+      bodyMedium: TextStyle(
+        fontSize: 16,
+        color: Colors.black,
+        fontFamily: 'Montserrat',
+      ),
+      bodySmall: TextStyle(
+        fontSize: 12,
+        color: Colors.black,
+        fontFamily: 'Montserrat',
+      ),
+    );
+
+    return ThemeData(
+      fontFamily: 'Montserrat',
+      brightness: Brightness.light,
       scaffoldBackgroundColor: offWhite,
+      primaryTextTheme: baseTextTheme.apply(fontFamily: 'Montserrat'),
+      textTheme: customTextTheme,
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           elevation: 0,
@@ -517,6 +546,7 @@ class MyApp extends StatelessWidget {
           textStyle: const TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w500,
+            fontFamily: 'Montserrat',
           ),
         ),
       ),
@@ -533,6 +563,7 @@ class MyApp extends StatelessWidget {
           textStyle: const TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w400,
+            fontFamily: 'Montserrat',
           ),
           disabledBackgroundColor: const Color.fromRGBO(10, 10, 10, 0.16),
           disabledForegroundColor: Colors.white.withOpacity(0.5),
@@ -561,28 +592,11 @@ class MyApp extends StatelessWidget {
       iconTheme: const IconThemeData(
         color: Colors.black,
       ),
-      textTheme: const TextTheme(
-          titleMedium: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w700,
-            color: Colors.black,
-          ),
-          titleSmall: TextStyle(
-            fontSize: 12,
-            color: transparentBlack66,
-          ),
-          bodyMedium: TextStyle(
-            fontSize: 16,
-            color: Colors.black,
-          ),
-          bodySmall: TextStyle(
-            fontSize: 12,
-            color: Colors.black,
-          )),
       dropdownMenuTheme: const DropdownMenuThemeData(
         textStyle: TextStyle(
           fontSize: 12,
           color: Colors.black,
+          fontFamily: 'Montserrat',
         ),
         menuStyle: MenuStyle(
           backgroundColor: WidgetStatePropertyAll(grey1),
@@ -599,17 +613,47 @@ class MyApp extends StatelessWidget {
           fontSize: 12,
           fontWeight: FontWeight.normal,
           color: transparentBlack33,
+          fontFamily: 'Montserrat',
         ),
       ),
-      extensions: {
+      extensions: const {
         CustomThemeExtension.light,
       },
     );
   }
 
   ThemeData _buildDarkTheme() {
-    return ThemeData.dark().copyWith(
+    final baseTextTheme = ThemeData.dark().textTheme;
+    const customTextTheme = TextTheme(
+      titleMedium: TextStyle(
+        fontSize: 18,
+        fontWeight: FontWeight.w700,
+        color: Colors.white,
+        fontFamily: 'Montserrat',
+      ),
+      titleSmall: TextStyle(
+        fontSize: 12,
+        color: transparentWhite66,
+        fontFamily: 'Montserrat',
+      ),
+      bodyMedium: TextStyle(
+        fontSize: 16,
+        color: Colors.white,
+        fontFamily: 'Montserrat',
+      ),
+      bodySmall: TextStyle(
+        fontSize: 12,
+        color: Colors.white,
+        fontFamily: 'Montserrat',
+      ),
+    );
+
+    return ThemeData(
+      fontFamily: 'Montserrat',
+      brightness: Brightness.dark,
       scaffoldBackgroundColor: offBlack,
+      primaryTextTheme: baseTextTheme.apply(fontFamily: 'Montserrat'),
+      textTheme: customTextTheme,
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           elevation: 0,
@@ -622,6 +666,7 @@ class MyApp extends StatelessWidget {
           textStyle: const TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w500,
+            fontFamily: 'Montserrat',
           ),
         ),
       ),
@@ -638,6 +683,7 @@ class MyApp extends StatelessWidget {
           textStyle: const TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w400,
+            fontFamily: 'Montserrat',
           ),
           disabledBackgroundColor: const Color.fromRGBO(254, 251, 249, 0.16),
           disabledForegroundColor: Colors.white.withOpacity(0.5),
@@ -666,28 +712,11 @@ class MyApp extends StatelessWidget {
       iconTheme: const IconThemeData(
         color: Colors.white,
       ),
-      textTheme: const TextTheme(
-          titleMedium: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w700,
-            color: Colors.white,
-          ),
-          titleSmall: TextStyle(
-            fontSize: 12,
-            color: transparentWhite66,
-          ),
-          bodyMedium: TextStyle(
-            fontSize: 16,
-            color: Colors.white,
-          ),
-          bodySmall: TextStyle(
-            fontSize: 12,
-            color: Colors.white,
-          )),
       dropdownMenuTheme: const DropdownMenuThemeData(
         textStyle: TextStyle(
           fontSize: 12,
           color: Colors.white,
+          fontFamily: 'Montserrat',
         ),
         menuStyle: MenuStyle(
           backgroundColor: WidgetStatePropertyAll(grey5),
@@ -704,9 +733,10 @@ class MyApp extends StatelessWidget {
           fontSize: 12,
           fontWeight: FontWeight.normal,
           color: transparentWhite33,
+          fontFamily: 'Montserrat',
         ),
       ),
-      extensions: {
+      extensions: const {
         CustomThemeExtension.dark,
       },
     );
