@@ -46,7 +46,6 @@ ComposeAttachUtxoResponseParamsModel
           destinationVout: json['destination_vout'] as String?,
           assetInfo: AssetInfoModel.fromJson(
               json['asset_info'] as Map<String, dynamic>),
-          utxoValue: (json['utxo_value'] as num?)?.toInt(),
         );
 
 Map<String, dynamic> _$ComposeAttachUtxoResponseParamsModelToJson(
@@ -58,5 +57,4 @@ Map<String, dynamic> _$ComposeAttachUtxoResponseParamsModelToJson(
       'quantity_normalized': instance.quantityNormalized,
       'destination_vout': instance.destinationVout,
       'asset_info': instance.assetInfo,
-      'utxo_value': instance.utxoValue,
     };
