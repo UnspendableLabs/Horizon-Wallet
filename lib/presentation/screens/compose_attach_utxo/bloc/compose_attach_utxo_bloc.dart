@@ -23,12 +23,10 @@ import 'package:horizon/domain/entities/decryption_strategy.dart';
 class ComposeAttachUtxoEventParams {
   final String asset;
   final int quantity;
-  final int utxoValue;
 
   ComposeAttachUtxoEventParams({
     required this.asset,
     required this.quantity,
-    this.utxoValue = 546,
   });
 }
 
@@ -172,17 +170,13 @@ class ComposeAttachUtxoBloc extends ComposeBaseBloc<ComposeAttachUtxoState> {
       final source = event.sourceAddress;
       final asset = event.params.asset;
       final quantity = event.params.quantity;
-      final utxoValue = event.params.utxoValue;
 
       final composeResponse = await composeTransactionUseCase
           .call<ComposeAttachUtxoParams, ComposeAttachUtxoResponse>(
               feeRate: feeRate,
               source: source,
               params: ComposeAttachUtxoParams(
-                  address: source,
-                  quantity: quantity,
-                  asset: asset,
-                  utxoValue: utxoValue),
+                  address: source, quantity: quantity, asset: asset),
               composeFn: composeRepository.composeAttachUtxo);
 
       emit(state.copyWith(
@@ -230,6 +224,18 @@ class ComposeAttachUtxoBloc extends ComposeBaseBloc<ComposeAttachUtxoState> {
           rawtransaction: s.composeTransaction.rawtransaction,
           onSuccess: (txHex, txHash) async {
             await writelocalTransactionUseCase.call(txHex, txHash);
+
+            // Use the source address as the key and tx hash as the value
+            final sourceAddress = s.composeTransaction.params.source;
+
+            // Fetch existing tx hashes for the source address
+            final txHashes = cacheProvider.getValue(sourceAddress) ?? [];
+
+            // Add the new tx hash
+            txHashes.add(txHash);
+
+            // Save back to the cache
+            await cacheProvider.setObject(sourceAddress, txHashes);
 
             logger.info('$txName broadcasted txHash: $txHash');
             analyticsService.trackAnonymousEvent('broadcast_tx_$txName',
