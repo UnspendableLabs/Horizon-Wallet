@@ -1,9 +1,6 @@
-abstract class ViewSeedPhraseFormEvent {
-  const ViewSeedPhraseFormEvent();
-}
+abstract class ViewSeedPhraseEvent {}
 
-class ViewSeedPhrase extends ViewSeedPhraseFormEvent {
+class Submit extends ViewSeedPhraseEvent {
   final String password;
-
-  const ViewSeedPhrase({required this.password}) : super();
+  Submit({required this.password});
 }

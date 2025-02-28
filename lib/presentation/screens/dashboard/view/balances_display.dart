@@ -8,8 +8,13 @@ import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_st
 
 class BalancesDisplay extends StatefulWidget {
   final bool isDarkTheme;
+  final String searchQuery;
 
-  const BalancesDisplay({super.key, required this.isDarkTheme});
+  const BalancesDisplay({
+    super.key,
+    required this.isDarkTheme,
+    this.searchQuery = '',
+  });
 
   @override
   BalancesDisplayState createState() => BalancesDisplayState();
@@ -33,6 +38,7 @@ class BalancesDisplayState extends State<BalancesDisplay> {
         padding: const EdgeInsets.symmetric(vertical: 8.0),
         child: BalancesSliver(
           isDarkTheme: widget.isDarkTheme,
+          searchQuery: widget.searchQuery,
         ),
       ),
     );
@@ -57,10 +63,12 @@ enum BalanceFilter { none, named, numeric, subassets, issuances }
 
 class BalancesSliver extends StatefulWidget {
   final bool isDarkTheme;
+  final String searchQuery;
 
   const BalancesSliver({
     super.key,
     required this.isDarkTheme,
+    this.searchQuery = '',
   });
 
   @override
@@ -69,6 +77,14 @@ class BalancesSliver extends StatefulWidget {
 
 class BalancesSliverState extends State<BalancesSliver> {
   BalanceFilter _currentFilter = BalanceFilter.none;
+
+  @override
+  void didUpdateWidget(BalancesSliver oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget is BalancesDisplay) {
+      // _searchQuery = (widget as BalancesDisplay).searchQuery;
+    }
+  }
 
   void _setFilter(BalanceFilter filter) {
     setState(() {
@@ -110,6 +126,21 @@ class BalancesSliverState extends State<BalancesSliver> {
   }
 
   bool _matchesFilter(String asset, List<Balance> balances) {
+    // First check if it matches the search query
+    if (widget.searchQuery.isNotEmpty) {
+      final searchLower = widget.searchQuery.toLowerCase();
+      final assetLower = asset.toLowerCase();
+      final assetLongname =
+          balances.first.assetInfo.assetLongname?.toLowerCase();
+
+      // Check if search query matches either the asset name or asset longname
+      if (!assetLower.contains(searchLower) &&
+          (assetLongname == null || !assetLongname.contains(searchLower))) {
+        return false;
+      }
+    }
+
+    // Then check if it matches the selected filter
     switch (_currentFilter) {
       case BalanceFilter.named:
         return !asset.startsWith('A') && asset != 'BTC';
@@ -118,7 +149,6 @@ class BalancesSliverState extends State<BalancesSliver> {
       case BalanceFilter.subassets:
         return asset.contains('.');
       case BalanceFilter.issuances:
-        // Check if any balance's address matches the asset owner
         return balances.any((balance) {
           return balance.address != null &&
               balance.assetInfo.owner != null &&
@@ -398,26 +428,30 @@ class _FilterButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        height: 32,
-        // width: 80,
-        padding: const EdgeInsets.symmetric(horizontal: 8),
-        decoration: BoxDecoration(
-          color: isSelected ? transparentPurple16 : Colors.transparent,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Center(
-          child: Text(
-            label,
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-              color: isDarkTheme ? offWhite : offBlack,
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        onTap: onTap,
+        behavior: HitTestBehavior.opaque,
+        child: Container(
+          height: 32,
+          // width: 80,
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          decoration: BoxDecoration(
+            color: isSelected ? transparentPurple16 : Colors.transparent,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Center(
+            child: Text(
+              label,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                color: isDarkTheme ? offWhite : offBlack,
+              ),
+              textAlign: TextAlign.center,
+              maxLines: 1,
             ),
-            textAlign: TextAlign.center,
-            maxLines: 1,
           ),
         ),
       ),

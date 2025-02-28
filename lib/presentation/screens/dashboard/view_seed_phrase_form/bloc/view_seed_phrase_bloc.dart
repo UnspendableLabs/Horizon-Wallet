@@ -5,43 +5,39 @@ import 'package:horizon/presentation/screens/dashboard/view_seed_phrase_form/blo
 import 'package:horizon/presentation/screens/dashboard/view_seed_phrase_form/bloc/view_seed_phrase_state.dart';
 
 class ViewSeedPhraseBloc
-    extends Bloc<ViewSeedPhraseFormEvent, ViewSeedPhraseState> {
+    extends Bloc<ViewSeedPhraseEvent, ViewSeedPhraseState> {
   final WalletRepository walletRepository;
   final EncryptionService encryptionService;
+
   ViewSeedPhraseBloc({
     required this.walletRepository,
     required this.encryptionService,
-  }) : super(const ViewSeedPhraseState.initial(ViewSeedPhraseStateInitial())) {
-    on<ViewSeedPhrase>((event, emit) async {
-      emit(const ViewSeedPhraseState.loading());
+  }) : super(ViewSeedPhraseInitial()) {
+    on<Submit>((event, emit) async {
+      emit(ViewSeedPhraseLoading());
       try {
         final wallet = await walletRepository.getCurrentWallet();
         if (wallet == null) {
-          emit(const ViewSeedPhraseState.initial(
-              ViewSeedPhraseStateInitial(error: 'Wallet not found')));
+          emit(ViewSeedPhraseError('Wallet not found'));
           return;
         }
 
         if (wallet.encryptedMnemonic == null) {
-          emit(const ViewSeedPhraseState.initial(
-              ViewSeedPhraseStateInitial(error: 'Wallet mnemonic not found')));
+          emit(ViewSeedPhraseError('Wallet mnemonic not found'));
           return;
         }
 
-        String seedPhrase;
         try {
-          seedPhrase = await encryptionService.decrypt(
-              wallet.encryptedMnemonic!, event.password);
+          final seedPhrase = await encryptionService.decrypt(
+            wallet.encryptedMnemonic!,
+            event.password,
+          );
+          emit(ViewSeedPhraseSuccess(seedPhrase: seedPhrase));
         } catch (e) {
-          emit(const ViewSeedPhraseState.initial(
-              ViewSeedPhraseStateInitial(error: 'Invalid password')));
-          return;
+          emit(ViewSeedPhraseError('Invalid password'));
         }
-
-        emit(ViewSeedPhraseState.success(
-            ViewSeedPhraseStateSuccess(seedPhrase: seedPhrase)));
       } catch (e) {
-        emit(const ViewSeedPhraseState.error('Error decrypting seed phrase'));
+        emit(ViewSeedPhraseError('Error decrypting seed phrase'));
       }
     });
   }
