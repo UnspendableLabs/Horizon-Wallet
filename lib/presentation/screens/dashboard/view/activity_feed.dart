@@ -59,9 +59,25 @@ class SendTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SelectableText(isMpma == true
-        ? "MPMA Send $quantityNormalized $asset"
-        : "Send $quantityNormalized $asset");
+    return Row(
+      children: [
+        SelectableText(
+          "Send ${isMpma == true ? ' MPMA' : ''}",
+          style: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const Spacer(),
+        SelectableText(
+          "$quantityNormalized $asset",
+          style: const TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ],
+    );
   }
 }
 
@@ -78,9 +94,25 @@ class ReceiveTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SelectableText(isMpma == true
-        ? "MPMA Receive $quantityNormalized $asset"
-        : "Receive $quantityNormalized $asset");
+    return Row(
+      children: [
+        SelectableText(
+          "Receive${isMpma == true ? ' MPMA' : ''}",
+          style: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const Spacer(),
+        Text(
+          "$quantityNormalized $asset",
+          style: const TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ],
+    );
   }
 }
 
@@ -341,47 +373,19 @@ class ActivityFeedListItem extends StatelessWidget {
     final addresses_ = addresses.map((a) => a).toList();
 
     return switch (tx.getTransactionType(addresses_)) {
-      TransactionType.sender => Row(
-          children: [
-            const Text(
-              "Send",
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const Spacer(),
-            Text(
-              "${_formatQuantity(tx.getAmountSentNormalized(addresses_).toStringAsFixed(8))} BTC",
-              style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
+      TransactionType.sender => SendTitle(
+          quantityNormalized: _formatQuantity(
+              tx.getAmountSentNormalized(addresses_).toStringAsFixed(8)),
+          asset: 'BTC',
         ),
-      TransactionType.recipient => Row(
-          children: [
-            const Text(
-              "Receive",
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const Spacer(),
-            Text(
-              "${_formatQuantity(tx.getAmountReceivedNormalized(addresses_).toStringAsFixed(8))} BTC",
-              style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
+      TransactionType.recipient => ReceiveTitle(
+          quantityNormalized: _formatQuantity(
+              tx.getAmountReceivedNormalized(addresses_).toStringAsFixed(8)),
+          asset: 'BTC',
         ),
       TransactionType.neither => const Row(
           children: [
-            Text(
+            SelectableText(
               "Invariant: account neither sender or receiver",
               style: TextStyle(
                 fontSize: 14,
@@ -397,91 +401,28 @@ class ActivityFeedListItem extends StatelessWidget {
     return switch (event) {
       VerboseEnhancedSendEvent(params: var params)
           when _getSendSide(params.source) == SendSide.source =>
-        Row(
-          children: [
-            const Text(
-              "Send",
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const Spacer(),
-            Text(
-              "${_formatQuantity(params.quantityNormalized)} ",
-              style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            _buildAssetDisplay(params.asset),
-          ],
-        ),
+        SendTitle(
+            asset: params.asset,
+            quantityNormalized: _formatQuantity(params.quantityNormalized),
+            isMpma: false),
       VerboseEnhancedSendEvent(params: var params)
           when _getSendSide(params.source) == SendSide.destination =>
-        Row(
-          children: [
-            const Text(
-              "Receive",
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const Spacer(),
-            Text(
-              "${_formatQuantity(params.quantityNormalized)} ",
-              style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            _buildAssetDisplay(params.asset),
-          ],
-        ),
+        ReceiveTitle(
+            quantityNormalized: _formatQuantity(params.quantityNormalized),
+            asset: params.asset),
       VerboseMpmaSendEvent(params: var params)
           when _getSendSide(params.source) == SendSide.source =>
-        Row(
-          children: [
-            const Text(
-              "MPMA Send",
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const Spacer(),
-            Text(
-              "${_formatQuantity(params.quantityNormalized)} ",
-              style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            _buildAssetDisplay(params.asset),
-          ],
+        SendTitle(
+          quantityNormalized: _formatQuantity(params.quantityNormalized),
+          asset: params.asset,
+          isMpma: true,
         ),
       VerboseMpmaSendEvent(params: var params)
           when _getSendSide(params.source) == SendSide.destination =>
-        Row(
-          children: [
-            const Text(
-              "MPMA Receive",
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const Spacer(),
-            Text(
-              "${_formatQuantity(params.quantityNormalized)} ",
-              style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            _buildAssetDisplay(params.asset),
-          ],
+        ReceiveTitle(
+          quantityNormalized: _formatQuantity(params.quantityNormalized),
+          asset: params.asset,
+          isMpma: true,
         ),
       VerboseAssetIssuanceEvent(params: var params) =>
         _buildAssetIssuanceTitle(params),
