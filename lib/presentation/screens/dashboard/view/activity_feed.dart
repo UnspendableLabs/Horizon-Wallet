@@ -104,7 +104,7 @@ class ReceiveTitle extends StatelessWidget {
           ),
         ),
         const Spacer(),
-        Text(
+        SelectableText(
           "$quantityNormalized $asset",
           style: const TextStyle(
             fontSize: 12,
@@ -428,73 +428,40 @@ class ActivityFeedListItem extends StatelessWidget {
         _buildAssetIssuanceTitle(params),
       VerboseResetIssuanceEvent(params: var params) => Row(
           children: [
-            const Text(
-              "Reset",
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
+            _buildTitleText("Reset"),
             const Spacer(),
             _buildAssetDisplay(params.asset, params.assetLongname),
           ],
         ),
       VerboseDispenseEvent(params: var params) => Row(
           children: [
-            const Text(
-              "Dispense",
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
+            _buildTitleText('Dispense'),
             const Spacer(),
-            Text(
-              "${_formatQuantity(params.dispenseQuantityNormalized)} ",
-              style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
+            _buildQuantityNormalizedText(
+                "${_formatQuantity(params.dispenseQuantityNormalized)} "),
             _buildAssetDisplay(params.asset),
           ],
         ),
       VerboseOpenDispenserEvent(params: var params) => Row(
           children: [
-            const Text(
-              "Open Dispenser",
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
+            _buildTitleText('Open Dispenser'),
             const Spacer(),
             _buildAssetDisplay(params.asset),
           ],
         ),
       VerboseRefillDispenserEvent(params: var params) => Row(
           children: [
-            const Text(
-              "Refill Dispenser",
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
+            _buildTitleText('Refill Dispenser'),
             const Spacer(),
             _buildAssetDisplay(params.asset),
           ],
         ),
       VerboseDispenserUpdateEvent(params: var params) => Row(
           children: [
-            Text(
+            _buildTitleText(
               params.status == 10 || params.status == 11
                   ? "Close Dispenser"
                   : "Update Dispenser",
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-              ),
             ),
             const Spacer(),
             _buildAssetDisplay(params.asset),
@@ -502,7 +469,7 @@ class ActivityFeedListItem extends StatelessWidget {
         ),
       VerboseNewFairmintEvent(params: var params) => Row(
           children: [
-            Text(
+            SelectableText(
               params.status?.contains('invalid') ?? false
                   ? "Fairmint (INVALID)"
                   : "Fairmint",
@@ -520,7 +487,7 @@ class ActivityFeedListItem extends StatelessWidget {
         ),
       VerboseNewFairminterEvent(params: var params) => Row(
           children: [
-            Text(
+            SelectableText(
               params.status?.contains('invalid') ?? false
                   ? "Fairminter (INVALID)"
                   : "Fairminter",
@@ -538,244 +505,107 @@ class ActivityFeedListItem extends StatelessWidget {
         ),
       VerboseOpenOrderEvent(params: var params) => Row(
           children: [
-            const Text(
-              "Open Order",
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
+            _buildTitleText('Open Order'),
             const Spacer(),
-            Text(
-              "${_formatQuantity(params.giveQuantityNormalized)} ",
-              style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
+            _buildQuantityNormalizedText(
+                "${_formatQuantity(params.giveQuantityNormalized)} "),
             _buildAssetDisplay(params.giveAsset),
-            Text(
-              " / ${_formatQuantity(params.getQuantityNormalized)} ",
-              style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
+            _buildQuantityNormalizedText(
+                " / ${_formatQuantity(params.getQuantityNormalized)} "),
             _buildAssetDisplay(params.getAsset),
           ],
         ),
       VerboseOrderMatchEvent(params: var params) => Row(
           children: [
-            const Text(
-              "Order Match",
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
+            _buildTitleText('Order Match'),
             const Spacer(),
-            Text(
-              "${_formatQuantity(params.forwardQuantityNormalized)} ",
-              style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
+            _buildQuantityNormalizedText(
+                "${_formatQuantity(params.forwardQuantityNormalized)} "),
             _buildAssetDisplay(params.forwardAsset),
-            Text(
-              " / ${_formatQuantity(params.backwardQuantityNormalized)} ",
-              style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
+            _buildQuantityNormalizedText(
+                " / ${_formatQuantity(params.backwardQuantityNormalized)} "),
             _buildAssetDisplay(params.backwardAsset),
           ],
         ),
-      VerboseOrderUpdateEvent() => const Row(
+      VerboseOrderUpdateEvent() => Row(
           children: [
-            Text(
-              "Order Update",
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
+            _buildTitleText('Order Update'),
           ],
         ),
-      VerboseOrderFilledEvent(params: var _) => const Row(
-          children: [
-            Text(
-              "Order Filled",
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
+      VerboseOrderFilledEvent(params: var _) => Row(
+          children: [_buildTitleText('Order Filled')],
         ),
-      VerboseCancelOrderEvent(params: var _) => const Row(
-          children: [
-            Text(
-              "Cancel Order",
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
+      VerboseCancelOrderEvent(params: var _) => Row(
+          children: [_buildTitleText('Cancel Order')],
         ),
-      VerboseOrderExpirationEvent(params: var _) => const Row(
-          children: [
-            Text(
-              "Order Expiration",
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
+      VerboseOrderExpirationEvent(params: var _) => Row(
+          children: [_buildTitleText('Order Expiration')],
         ),
       VerboseAttachToUtxoEvent(params: var params) => Row(
           children: [
-            const Text(
-              "Attach to UTXO",
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
+            _buildTitleText('Attach to UTXO'),
             const Spacer(),
-            Text(
-              "${_formatQuantity(params.quantityNormalized)} ",
-              style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
+            _buildQuantityNormalizedText(
+                "${_formatQuantity(params.quantityNormalized)} "),
             _buildAssetDisplay(params.asset),
           ],
         ),
       VerboseDetachFromUtxoEvent(params: var params) => Row(
           children: [
-            const Text(
-              "Detach from UTXO",
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
+            _buildTitleText('Detach from UTXO'),
             const Spacer(),
-            Text(
-              "${_formatQuantity(params.quantityNormalized)} ",
-              style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
+            _buildQuantityNormalizedText(
+                "${_formatQuantity(params.quantityNormalized)} "),
             _buildAssetDisplay(params.asset),
           ],
         ),
       VerboseMoveToUtxoEvent(params: var params) => Row(
           children: [
-            const Text(
-              "Move to UTXO",
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
+            _buildTitleText('Move to UTXO'),
             const Spacer(),
-            Text(
-              "${_formatQuantity(params.quantityNormalized)} ",
-              style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
+            _buildQuantityNormalizedText(
+                "${_formatQuantity(params.quantityNormalized)} "),
             _buildAssetDisplay(params.asset),
           ],
         ),
       AtomicSwapEvent(params: var params) => Row(
           children: [
-            const Text(
-              "Swap",
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
+            _buildTitleText('Swap'),
             const Spacer(),
-            Text(
-              "${_formatQuantity(params.quantityNormalized)} ",
-              style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
+            _buildQuantityNormalizedText(
+                "${_formatQuantity(params.quantityNormalized)} "),
             _buildAssetDisplay(params.asset),
-            Text(
-              " for ${_formatQuantity(params.bitcoinSwapAmount)} BTC",
-              style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
+            _buildQuantityNormalizedText(
+                ' for ${_formatQuantity(params.bitcoinSwapAmount)} BTC'),
           ],
         ),
       AssetDestructionEvent(params: var params) => Row(
           children: [
-            const Text(
-              "Destroy",
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
+            _buildTitleText('Destroy'),
             const Spacer(),
-            Text(
-              "${_formatQuantity(params.quantityNormalized)} ",
-              style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
+            _buildQuantityNormalizedText(
+                "${_formatQuantity(params.quantityNormalized)} "),
             _buildAssetDisplay(params.asset),
           ],
         ),
       AssetDividendEvent(params: var params) => Row(
           children: [
-            const Text(
-              "Dividend",
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
+            _buildTitleText('Dividend'),
             const Spacer(),
+            _buildQuantityNormalizedText(
+                "${_formatQuantity(params.quantityPerUnitNormalized)} "),
             _buildAssetDisplay(params.dividendAsset),
-            Text(
-              " ${_formatQuantity(params.quantityPerUnitNormalized)} per unit",
-              style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
+            _buildQuantityNormalizedText(
+                " ${_formatQuantity(params.quantityPerUnitNormalized)} per unit"),
           ],
         ),
       SweepEvent(params: var params)
           when _getSendSide(params.source) == SendSide.source =>
         Row(
           children: [
-            const Text(
-              "Sweep out",
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
+            _buildTitleText('Sweep out'),
             const Spacer(),
-            Text(
+            SelectableText(
               "${flagMapper[params.flags]}",
               style: const TextStyle(
                 fontSize: 12,
@@ -788,15 +618,9 @@ class ActivityFeedListItem extends StatelessWidget {
           when _getSendSide(params.source) == SendSide.destination =>
         Row(
           children: [
-            const Text(
-              "Sweep in",
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
+            _buildTitleText('Sweep in'),
             const Spacer(),
-            Text(
+            SelectableText(
               "${flagMapper[params.flags]}",
               style: const TextStyle(
                 fontSize: 12,
@@ -807,21 +631,10 @@ class ActivityFeedListItem extends StatelessWidget {
         ),
       BurnEvent(params: var params) => Row(
           children: [
-            const Text(
-              "Burn",
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
+            _buildTitleText('Burn'),
             const Spacer(),
-            Text(
-              "${params.burnedNormalized} BTC for ${params.earnedNormalized} XCP",
-              style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
+            _buildQuantityNormalizedText(
+                '${params.burnedNormalized} BTC for ${params.earnedNormalized} XCP'),
           ],
         ),
       _ => SelectableText(
@@ -834,13 +647,7 @@ class ActivityFeedListItem extends StatelessWidget {
       if (addresses.any((a) => a == params.source)) {
         return Row(
           children: [
-            const Text(
-              "Transfer Out",
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
+            _buildTitleText('Transfer Out'),
             const Spacer(),
             _buildAssetDisplay(params.asset, params.assetLongname),
           ],
@@ -848,13 +655,7 @@ class ActivityFeedListItem extends StatelessWidget {
       } else {
         return Row(
           children: [
-            const Text(
-              "Transfer In",
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
+            _buildTitleText('Transfer In'),
             const Spacer(),
             _buildAssetDisplay(params.asset, params.assetLongname),
           ],
@@ -865,126 +666,69 @@ class ActivityFeedListItem extends StatelessWidget {
       return switch (params.assetEvents) {
         "reissuance" => Row(
             children: [
-              const Text(
-                "Reissue",
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
+              _buildTitleText('Reissue'),
               const Spacer(),
               _buildAssetDisplay(params.asset, params.assetLongname),
             ],
           ),
         "lock_quantity" => Row(
             children: [
-              const Text(
-                "Lock Quantity",
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
+              _buildTitleText('Lock Quantity'),
               const Spacer(),
               _buildAssetDisplay(params.asset, params.assetLongname),
             ],
           ),
         "change_description" => Row(
             children: [
-              const Text(
-                "Change Description",
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
+              _buildTitleText('Change Description'),
               const Spacer(),
               _buildAssetDisplay(params.asset, params.assetLongname),
             ],
           ),
         "lock_description" => Row(
             children: [
-              const Text(
-                "Lock Description",
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
+              _buildTitleText('Lock Description'),
               const Spacer(),
               _buildAssetDisplay(params.asset, params.assetLongname),
             ],
           ),
         "open_fairminter" => Row(
             children: [
-              const Text(
-                "Fairminter",
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
+              _buildTitleText('Fairminter'),
               const Spacer(),
               _buildAssetDisplay(params.asset, params.assetLongname),
             ],
           ),
         "fairmint" => Row(
             children: [
-              const Text(
-                "Fairmint",
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
+              _buildTitleText('Fairmint'),
               const Spacer(),
+              _buildQuantityNormalizedText(
+                  " ${_formatQuantity(params.quantityNormalized)} "),
               _buildAssetDisplay(params.asset, params.assetLongname),
             ],
           ),
         "transfer" => addresses.any((a) => a == params.source)
             ? Row(
                 children: [
-                  const Text(
-                    "Transfer Out",
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
+                  _buildTitleText('Transfer Out'),
                   const Spacer(),
                   _buildAssetDisplay(params.asset, params.assetLongname),
                 ],
               )
             : Row(
                 children: [
-                  const Text(
-                    "Transfer In",
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
+                  _buildTitleText('Transfer In'),
                   const Spacer(),
                   _buildAssetDisplay(params.asset, params.assetLongname),
                 ],
               ),
         _ => Row(
             children: [
-              const Text(
-                "Issue",
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
+              _buildTitleText('Issue'),
               const Spacer(),
-              Text(
-                "${_formatQuantity(params.quantityNormalized)} ",
-                style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
+              _buildQuantityNormalizedText(
+                  "${_formatQuantity(params.quantityNormalized)} "),
               _buildAssetDisplay(params.asset, params.assetLongname),
             ],
           ),
@@ -993,7 +737,7 @@ class ActivityFeedListItem extends StatelessWidget {
     if (params.asset == null || params.quantityNormalized == null) {
       return const Row(
         children: [
-          Text(
+          SelectableText(
             "Issue (INVALID)",
             style: TextStyle(
               fontSize: 12,
@@ -1006,21 +750,10 @@ class ActivityFeedListItem extends StatelessWidget {
     }
     return Row(
       children: [
-        const Text(
-          "Issue",
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
+        _buildTitleText('Issue'),
         const Spacer(),
-        Text(
-          "${_formatQuantity(params.quantityNormalized)} ",
-          style: const TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
+        _buildQuantityNormalizedText(
+            "${_formatQuantity(params.quantityNormalized)} "),
         _buildAssetDisplay(params.asset, params.assetLongname),
       ],
     );
@@ -1033,21 +766,10 @@ class ActivityFeedListItem extends StatelessWidget {
           children: unpackedData.messageData
               .map((data) => Row(
                     children: [
-                      const Text(
-                        "MPMA Send",
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
+                      _buildTitleText('MPMA Send'),
                       const Spacer(),
-                      Text(
-                        "${_formatQuantity(data.quantityNormalized)} ",
-                        style: const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
+                      _buildQuantityNormalizedText(
+                          "${_formatQuantity(data.quantityNormalized)} "),
                       _buildAssetDisplay(data.asset),
                     ],
                   ))
@@ -1055,72 +777,34 @@ class ActivityFeedListItem extends StatelessWidget {
         ),
       TransactionInfoAttach(unpackedData: var unpackedData) => Row(
           children: [
-            const Text(
-              "Attach to UTXO",
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
+            _buildTitleText('Attach to UTXO'),
             const Spacer(),
-            Text(
-              "${_formatQuantity(unpackedData.quantityNormalized)} ",
-              style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
+            _buildQuantityNormalizedText(
+                "${_formatQuantity(unpackedData.quantityNormalized)} "),
             _buildAssetDisplay(unpackedData.asset),
           ],
         ),
-      TransactionInfoMoveToUtxo() => const Row(
+      TransactionInfoMoveToUtxo() => Row(
           children: [
-            Text(
-              "Move to UTXO",
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
+            _buildTitleText('Move to UTXO'),
           ],
         ),
       TransactionInfoEnhancedSend(unpackedData: var unpackedData) => Row(
           children: [
-            const Text(
-              "Send",
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
+            _buildTitleText('Send'),
             const Spacer(),
-            Text(
-              "${_formatQuantity(unpackedData.quantityNormalized)} ",
-              style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
+            _buildQuantityNormalizedText(
+                "${_formatQuantity(unpackedData.quantityNormalized)} "),
             _buildAssetDisplay(unpackedData.asset),
           ],
         ),
       TransactionInfoIssuance(unpackedData: var unpackedData) => Row(
           children: [
-            const Text(
-              "Issue",
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
+            _buildTitleText('Issue'),
             const Spacer(),
-            Text(
-              "${_formatQuantity(unpackedData.quantityNormalized)} ",
-              style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
+            _buildQuantityNormalizedText(
+                "${_formatQuantity(unpackedData.quantityNormalized)} "),
+            _buildAssetDisplay(unpackedData.asset),
             _buildAssetDisplay(unpackedData.asset),
           ],
         ),
@@ -1128,123 +812,60 @@ class ActivityFeedListItem extends StatelessWidget {
           when btcAmount != null && btcAmount > 0 =>
         Row(
           children: [
-            const Text(
-              "Send",
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
+            _buildTitleText('Send'),
             const Spacer(),
-            Text(
-              "${_formatQuantity(satoshisToBtc(btcAmount).toStringAsFixed(8))} BTC",
-              style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
+            _buildQuantityNormalizedText(
+                "${_formatQuantity(satoshisToBtc(btcAmount).toStringAsFixed(8))} BTC"),
           ],
         ),
-      TransactionInfoDispense(unpackedData: var _) => const Row(
+      TransactionInfoDispense(unpackedData: var _) => Row(
           children: [
-            Text(
-              "Trigger Dispense",
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
+            _buildTitleText('Trigger Dispense'),
           ],
         ),
       TransactionInfoDispenser(unpackedData: var unpackedData) => Row(
           children: [
-            const Text(
-              "Open or Update Dispenser",
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
+            _buildTitleText('Open or Update Dispenser'),
             const Spacer(),
             _buildAssetDisplay(unpackedData.asset),
           ],
         ),
       TransactionInfoFairmint(unpackedData: var unpackedData) => Row(
           children: [
-            const Text(
-              "Fairmint",
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
+            _buildTitleText('Fairmint'),
             const Spacer(),
             _buildAssetDisplay(unpackedData.asset),
           ],
         ),
       TransactionInfoFairminter(unpackedData: var unpackedData) => Row(
           children: [
-            const Text(
-              "Fairminter",
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
+            _buildTitleText('Fairminter'),
             const Spacer(),
             _buildAssetDisplay(unpackedData.asset),
           ],
         ),
       TransactionInfoOrder(unpackedData: var unpackedData) => Row(
           children: [
-            const Text(
-              "Open Order",
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
+            _buildTitleText('Open Order'),
             const Spacer(),
-            Text(
-              "${_formatQuantity(unpackedData.giveQuantityNormalized)} ",
-              style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
+            _buildQuantityNormalizedText(
+                "${_formatQuantity(unpackedData.giveQuantityNormalized)} "),
             _buildAssetDisplay(unpackedData.giveAsset),
-            Text(
-              " / ${_formatQuantity(unpackedData.getQuantityNormalized)} ",
-              style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
+            _buildQuantityNormalizedText(
+                " / ${_formatQuantity(unpackedData.getQuantityNormalized)} "),
             _buildAssetDisplay(unpackedData.getAsset),
           ],
         ),
-      TransactionInfoCancel(unpackedData: var _) => const Row(
+      TransactionInfoCancel(unpackedData: var _) => Row(
           children: [
-            Text(
-              "Cancel Order",
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
+            _buildTitleText('Cancel Order'),
           ],
         ),
       TransactionInfoDetach(unpackedData: var unpackedData) => Row(
           children: [
-            const Text(
-              "Detach from UTXO",
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
+            _buildTitleText('Detach from UTXO'),
             const Spacer(),
-            Text(
+            SelectableText(
               unpackedData.destination,
               style: const TextStyle(
                 fontSize: 12,
@@ -1255,48 +876,25 @@ class ActivityFeedListItem extends StatelessWidget {
         ),
       TransactionInfoAssetDestruction(unpackedData: var unpackedData) => Row(
           children: [
-            const Text(
-              "Destroy",
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
+            _buildTitleText('Destroy'),
             const Spacer(),
-            Text(
-              "${_formatQuantity(unpackedData.quantityNormalized)} ",
-              style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
+            _buildQuantityNormalizedText(
+                "${_formatQuantity(unpackedData.quantityNormalized)} "),
             _buildAssetDisplay(unpackedData.asset),
           ],
         ),
       TransactionInfoAssetDividend(unpackedData: var unpackedData) => Row(
           children: [
-            const Text(
-              "Dividend",
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
+            _buildTitleText('Dividend'),
             const Spacer(),
             _buildAssetDisplay(unpackedData.asset),
           ],
         ),
       TransactionInfoSweep(unpackedData: var unpackedData) => Row(
           children: [
-            const Text(
-              "Sweep",
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
+            _buildTitleText('Sweep'),
             const Spacer(),
-            Text(
+            SelectableText(
               "${flagMapper[unpackedData.flags]} to ${unpackedData.destination}",
               style: const TextStyle(
                 fontSize: 12,
@@ -1407,6 +1005,26 @@ class ActivityFeedListItem extends StatelessWidget {
         : asset ?? '';
     return _buildAssetText(displayName);
   }
+
+  Widget _buildTitleText(String title) {
+    return SelectableText(
+      title,
+      style: const TextStyle(
+        fontSize: 14,
+        fontWeight: FontWeight.w600,
+      ),
+    );
+  }
+
+  Widget _buildQuantityNormalizedText(String quantityNormalized) {
+    return SelectableText(
+      quantityNormalized,
+      style: const TextStyle(
+        fontSize: 12,
+        fontWeight: FontWeight.w500,
+      ),
+    );
+  }
 }
 
 class DashboardActivityFeedScreen extends StatefulWidget {
@@ -1487,7 +1105,7 @@ class DashboardActivityFeedScreenState
       return [
         SizedBox(
           height: 200,
-          child: Center(child: Text('Error: ${state.error}')),
+          child: Center(child: SelectableText('Error: ${state.error}')),
         )
       ];
     } else if (state is DashboardActivityFeedStateCompleteOk ||
