@@ -148,7 +148,7 @@ class _SecurityViewState extends State<SecurityView> {
               title: 'Require password',
               icon: Icons.lock_outline,
               isDarkTheme: isDarkTheme,
-              trailing: Switch(
+              trailing: HorizonToggle(
                 value: _requirePassword,
                 onChanged: _onPasswordRequirementChanged,
               ),

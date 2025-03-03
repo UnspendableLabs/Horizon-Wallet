@@ -598,3 +598,68 @@ class _BlurredBackgroundDropdownState<T>
     );
   }
 }
+
+class HorizonToggle extends StatefulWidget {
+  final bool value;
+  final ValueChanged<bool> onChanged;
+
+  const HorizonToggle({
+    super.key,
+    required this.value,
+    required this.onChanged,
+  });
+
+  @override
+  State<HorizonToggle> createState() => _HorizonToggleState();
+}
+
+class _HorizonToggleState extends State<HorizonToggle> {
+  @override
+  Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        onTap: () => widget.onChanged(!widget.value),
+        child: Container(
+          width: 60,
+          height: 32,
+          padding: const EdgeInsets.all(4),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(70),
+            border: Border.all(
+              color: isDarkMode ? transparentWhite8 : transparentBlack8,
+              width: 1,
+            ),
+            color: widget.value
+                ? green2
+                : isDarkMode
+                    ? transparentWhite8
+                    : transparentBlack8,
+          ),
+          child: AnimatedAlign(
+            duration: const Duration(milliseconds: 200),
+            alignment:
+                widget.value ? Alignment.centerRight : Alignment.centerLeft,
+            child: Container(
+              width: 24,
+              height: 24,
+              decoration: const BoxDecoration(
+                shape: BoxShape.circle,
+                color: offWhite,
+              ),
+              child: widget.value
+                  ? const Icon(
+                      Icons.check,
+                      color: green2,
+                      size: 16,
+                    )
+                  : null,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
