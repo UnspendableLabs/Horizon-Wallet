@@ -38,9 +38,7 @@ class SettingsItem extends StatelessWidget {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(18),
         border: Border.all(
-          color: isDarkTheme
-              ? Colors.white.withOpacity(0.1)
-              : Colors.black.withOpacity(0.1),
+          color: isDarkTheme ? transparentWhite8 : transparentBlack8,
           width: 1,
         ),
       ),
@@ -229,9 +227,7 @@ class ThemeToggle extends StatelessWidget {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(18),
           border: Border.all(
-            color: isDarkTheme
-                ? Colors.white.withOpacity(0.1)
-                : Colors.black.withOpacity(0.1),
+            color: isDarkTheme ? transparentWhite8 : transparentBlack8,
             width: 1,
           ),
         ),
@@ -260,9 +256,7 @@ class ThemeToggle extends StatelessWidget {
                   child: Icon(
                     Icons.dark_mode_outlined,
                     size: 20,
-                    color: isDarkTheme
-                        ? Colors.white
-                        : Colors.black.withOpacity(0.5),
+                    color: Theme.of(context).iconTheme.color,
                   ),
                 ),
                 Container(
@@ -272,9 +266,7 @@ class ThemeToggle extends StatelessWidget {
                   child: Icon(
                     Icons.light_mode_outlined,
                     size: 20,
-                    color: isDarkTheme
-                        ? Colors.white.withOpacity(0.5)
-                        : Colors.black,
+                    color: Theme.of(context).iconTheme.color,
                   ),
                 ),
               ],
@@ -426,8 +418,8 @@ class _SettingsViewState extends State<SettingsView> {
                                   color: transparentPurple16,
                                   border: Border.all(
                                     color: isDarkTheme
-                                        ? Colors.white.withOpacity(0.1)
-                                        : Colors.black.withOpacity(0.1),
+                                        ? transparentWhite8
+                                        : transparentBlack8,
                                     width: 1,
                                   ),
                                 ),
@@ -448,9 +440,9 @@ class _SettingsViewState extends State<SettingsView> {
                                           Icon(
                                             Icons.lock_outline,
                                             size: 24,
-                                            color: isDarkTheme
-                                                ? Colors.white
-                                                : Colors.black,
+                                            color: Theme.of(context)
+                                                .iconTheme
+                                                .color,
                                           ),
                                           const SizedBox(width: 12),
                                           Expanded(
@@ -459,18 +451,18 @@ class _SettingsViewState extends State<SettingsView> {
                                               style: TextStyle(
                                                 fontSize: 16,
                                                 fontWeight: FontWeight.w500,
-                                                color: isDarkTheme
-                                                    ? Colors.white
-                                                    : Colors.black,
+                                                color: Theme.of(context)
+                                                    .iconTheme
+                                                    .color,
                                               ),
                                             ),
                                           ),
                                           Icon(
                                             Icons.chevron_right,
                                             size: 24,
-                                            color: isDarkTheme
-                                                ? Colors.white.withOpacity(0.5)
-                                                : Colors.black.withOpacity(0.5),
+                                            color: Theme.of(context)
+                                                .iconTheme
+                                                .color,
                                           ),
                                         ],
                                       ),

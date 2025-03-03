@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
 
@@ -77,7 +79,7 @@ class _HorizonGradientButtonState extends State<HorizonGradientButton> {
               elevation: WidgetStateProperty.all(0),
               backgroundColor: WidgetStateProperty.all(Colors.transparent),
               foregroundColor: WidgetStateProperty.all(
-                  Theme.of(context).textTheme.labelLarge?.color),
+                  brightness == Brightness.dark ? offBlack : offWhite),
               padding: WidgetStateProperty.all(EdgeInsets.zero),
               shape: WidgetStateProperty.all(
                 RoundedRectangleBorder(
@@ -88,7 +90,9 @@ class _HorizonGradientButtonState extends State<HorizonGradientButton> {
               minimumSize: WidgetStateProperty.all(const Size.fromHeight(62)),
             ),
             child: Text(widget.buttonText,
-                style: const TextStyle(fontWeight: FontWeight.w500)),
+                style: const TextStyle(
+                  fontWeight: FontWeight.w500,
+                )),
           ),
         ),
       ),
@@ -417,6 +421,177 @@ class _HorizonRedesignDropdownState<T>
                 ),
               ],
             ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class BlurredBackgroundDropdown<T> extends StatefulWidget {
+  final List<DropdownMenuItem<T>> items;
+  final Function(T?) onChanged;
+  final T? selectedValue;
+  final String hintText;
+
+  const BlurredBackgroundDropdown({
+    super.key,
+    required this.items,
+    required this.onChanged,
+    required this.selectedValue,
+    required this.hintText,
+  });
+
+  @override
+  State<BlurredBackgroundDropdown<T>> createState() =>
+      _BlurredBackgroundDropdownState<T>();
+}
+
+class _BlurredBackgroundDropdownState<T>
+    extends State<BlurredBackgroundDropdown<T>> {
+  bool _isOpen = false;
+  OverlayEntry? _overlayEntry;
+  final focusNode = FocusNode();
+
+  @override
+  void initState() {
+    super.initState();
+    focusNode.addListener(() {
+      setState(() {});
+    });
+  }
+
+  @override
+  void dispose() {
+    _overlayEntry?.remove();
+    focusNode.dispose();
+    super.dispose();
+  }
+
+  void _toggleDropdown() {
+    setState(() {
+      _isOpen = !_isOpen;
+      if (_isOpen) {
+        _overlayEntry = _createOverlayEntry();
+        Overlay.of(context).insert(_overlayEntry!);
+      } else {
+        _overlayEntry?.remove();
+        _overlayEntry = null;
+      }
+    });
+  }
+
+  OverlayEntry _createOverlayEntry() {
+    final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
+
+    return OverlayEntry(
+      builder: (context) => Stack(
+        children: [
+          // Blurred background
+          Positioned.fill(
+            child: GestureDetector(
+              onTap: _toggleDropdown,
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+                child: Container(
+                  color: Colors.black.withOpacity(0.3),
+                ),
+              ),
+            ),
+          ),
+          // Centered dropdown content
+          Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(
+                minWidth: 200,
+                maxWidth: 200,
+              ),
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(18),
+                  border: const GradientBoxBorder(width: 1),
+                  color: isDarkMode ? grey5 : grey1,
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: widget.items.map((item) {
+                    return Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        onTap: () {
+                          widget.onChanged(item.value);
+                          _toggleDropdown();
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 16,
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              DefaultTextStyle(
+                                style: theme.dropdownMenuTheme.textStyle!,
+                                child: item.child,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final hasValue = widget.selectedValue != null;
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        onTap: _toggleDropdown,
+        child: Container(
+          height: 56,
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(18),
+            border: focusNode.hasFocus
+                ? const GradientBoxBorder(width: 1)
+                : Border.all(
+                    color: isDarkMode ? transparentWhite8 : transparentBlack8),
+            color: hasValue
+                ? (isDarkMode ? grey5 : grey1)
+                : (isDarkMode ? offBlack : offWhite),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Expanded(
+                child: Text(
+                  widget.selectedValue != null
+                      ? (widget.items
+                              .firstWhere(
+                                  (item) => item.value == widget.selectedValue)
+                              .child as Text)
+                          .data!
+                      : widget.hintText,
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+              ),
+              Icon(
+                _isOpen ? Icons.arrow_drop_up : Icons.arrow_drop_down,
+                size: 18,
+              ),
+            ],
           ),
         ),
       ),
