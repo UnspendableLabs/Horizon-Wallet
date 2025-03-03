@@ -591,6 +591,10 @@ class MyApp extends StatelessWidget {
             fontSize: 12,
             color: transparentBlack66,
           ),
+          bodyMedium: TextStyle(
+            fontSize: 16,
+            color: Colors.black,
+          ),
           bodySmall: TextStyle(
             fontSize: 12,
             color: Colors.black,
@@ -691,6 +695,10 @@ class MyApp extends StatelessWidget {
           titleSmall: TextStyle(
             fontSize: 12,
             color: transparentWhite66,
+          ),
+          bodyMedium: TextStyle(
+            fontSize: 16,
+            color: Colors.white,
           ),
           bodySmall: TextStyle(
             fontSize: 12,
