@@ -663,3 +663,231 @@ class _HorizonToggleState extends State<HorizonToggle> {
     );
   }
 }
+
+class HorizonTextField extends StatefulWidget {
+  final TextEditingController controller;
+  final String? label;
+  final String? hintText;
+  final String? errorText;
+  final bool obscureText;
+  final TextInputType? keyboardType;
+
+  const HorizonTextField({
+    super.key,
+    required this.controller,
+    this.label,
+    this.hintText,
+    this.errorText,
+    this.obscureText = false,
+    this.keyboardType,
+  });
+
+  @override
+  State<HorizonTextField> createState() => _HorizonTextFieldState();
+}
+
+class _HorizonTextFieldState extends State<HorizonTextField> {
+  final FocusNode _focusNode = FocusNode();
+
+  @override
+  void initState() {
+    super.initState();
+    _focusNode.addListener(() {
+      setState(() {});
+    });
+  }
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 295,
+          height: 56,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(18),
+            border: widget.errorText != null
+                ? Border.all(color: red1, width: 1)
+                : _focusNode.hasFocus
+                    ? const GradientBoxBorder(width: 1)
+                    : Border.all(
+                        color:
+                            isDarkMode ? transparentWhite8 : transparentBlack8,
+                        width: 1,
+                      ),
+          ),
+          child: Center(
+            child: TextFormField(
+              controller: widget.controller,
+              focusNode: _focusNode,
+              obscureText: widget.obscureText,
+              keyboardType: widget.keyboardType,
+              style: theme.textTheme.bodyMedium,
+              decoration: InputDecoration(
+                labelText: widget.label,
+                hintText: widget.hintText,
+                isDense: false,
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 0,
+                ),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(18),
+                  borderSide: BorderSide.none,
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(18),
+                  borderSide: BorderSide.none,
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(18),
+                  borderSide: BorderSide.none,
+                ),
+                focusedErrorBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(18),
+                  borderSide: BorderSide.none,
+                ),
+              ),
+            ),
+          ),
+        ),
+        if (widget.errorText != null) ...[
+          const SizedBox(height: 8),
+          Padding(
+            padding: const EdgeInsets.only(left: 12),
+            child: Text(
+              widget.errorText!,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: red1,
+              ),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+class HorizonPasswordPrompt extends StatefulWidget {
+  final Function(String) onPasswordSubmitted;
+  final VoidCallback onCancel;
+  final String buttonText;
+  final String title;
+
+  const HorizonPasswordPrompt({
+    super.key,
+    required this.onPasswordSubmitted,
+    required this.onCancel,
+    this.buttonText = 'Continue',
+    this.title = 'Enter Password',
+  });
+
+  @override
+  State<HorizonPasswordPrompt> createState() => _HorizonPasswordPromptState();
+}
+
+class _HorizonPasswordPromptState extends State<HorizonPasswordPrompt> {
+  final TextEditingController _controller = TextEditingController();
+  String? _error;
+  bool _isLoading = false;
+
+  void _handleSubmit() async {
+    if (_isLoading) return;
+
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+
+    try {
+      await widget.onPasswordSubmitted(_controller.text);
+    } catch (e) {
+      setState(() {
+        _error = "Invalid password";
+        _isLoading = false;
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
+
+    return Material(
+      type: MaterialType.transparency,
+      child: Stack(
+        children: [
+          // Blurred background
+          Positioned.fill(
+            child: GestureDetector(
+              onTap: widget.onCancel,
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+                child: Container(
+                  color: Colors.black.withOpacity(0.3),
+                ),
+              ),
+            ),
+          ),
+          // Centered dialog content
+          Center(
+            child: Container(
+              width: 335,
+              height: 234,
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(18),
+                border: const GradientBoxBorder(width: 1),
+                color: isDarkMode ? grey5 : grey1,
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Text(
+                    widget.title,
+                    style: theme.textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  HorizonTextField(
+                    controller: _controller,
+                    hintText: 'Password',
+                    errorText: _error,
+                    obscureText: true,
+                  ),
+                  SizedBox(
+                    height: 56,
+                    child: HorizonOutlinedButton(
+                      onPressed: _isLoading ? null : _handleSubmit,
+                      buttonText: widget.buttonText,
+                      isTransparent: false,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}

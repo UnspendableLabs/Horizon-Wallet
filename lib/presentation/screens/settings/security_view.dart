@@ -61,49 +61,19 @@ class _SecurityViewState extends State<SecurityView> {
       context: context,
       barrierDismissible: false,
       builder: (BuildContext dialogContext) {
-        String? error;
-        final TextEditingController controller = TextEditingController();
+        return HorizonPasswordPrompt(
+          onPasswordSubmitted: (password) async {
+            final wallet = await GetIt.I<WalletRepository>().getCurrentWallet();
+            await GetIt.I<EncryptionService>()
+                .decrypt(wallet!.encryptedPrivKey, password);
 
-        return StatefulBuilder(
-          builder: (context, setState) {
-            return AlertDialog(
-              title: const Text('Enter Password'),
-              content: TextField(
-                controller: controller,
-                obscureText: true,
-                decoration: InputDecoration(
-                  labelText: 'Password',
-                  errorText: error,
-                ),
-              ),
-              actions: <Widget>[
-                TextButton(
-                  onPressed: () => Navigator.of(dialogContext).pop(),
-                  child: const Text('Cancel'),
-                ),
-                TextButton(
-                  onPressed: () async {
-                    try {
-                      final enteredPassword = controller.text;
-                      final wallet =
-                          await GetIt.I<WalletRepository>().getCurrentWallet();
-                      await GetIt.I<EncryptionService>()
-                          .decrypt(wallet!.encryptedPrivKey, enteredPassword);
-
-                      if (dialogContext.mounted) {
-                        Navigator.of(dialogContext).pop(true);
-                      }
-                    } catch (e) {
-                      setState(() {
-                        error = "Invalid password";
-                      });
-                    }
-                  },
-                  child: const Text('OK'),
-                ),
-              ],
-            );
+            if (dialogContext.mounted) {
+              Navigator.of(dialogContext).pop(true);
+            }
           },
+          onCancel: () => Navigator.of(dialogContext).pop(),
+          buttonText: 'Continue',
+          title: 'Enter Password',
         );
       },
     ).then((value) {
