@@ -56,24 +56,53 @@ class _SecurityViewState extends State<SecurityView> {
 
   Future<bool> _showPasswordPrompt(BuildContext context) async {
     bool isAuthenticated = false;
+    String? errorText;
+    bool isLoading = false;
 
     await showDialog(
       context: context,
       barrierDismissible: false,
       builder: (BuildContext dialogContext) {
-        return HorizonPasswordPrompt(
-          onPasswordSubmitted: (password) async {
-            final wallet = await GetIt.I<WalletRepository>().getCurrentWallet();
-            await GetIt.I<EncryptionService>()
-                .decrypt(wallet!.encryptedPrivKey, password);
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return HorizonPasswordPrompt(
+              onPasswordSubmitted: (password) async {
+                setState(() {
+                  isLoading = true;
+                  errorText = null;
+                });
 
-            if (dialogContext.mounted) {
-              Navigator.of(dialogContext).pop(true);
-            }
+                try {
+                  final wallet =
+                      await GetIt.I<WalletRepository>().getCurrentWallet();
+                  await GetIt.I<EncryptionService>()
+                      .decrypt(wallet!.encryptedPrivKey, password);
+
+                  if (dialogContext.mounted) {
+                    Navigator.of(dialogContext).pop(true);
+                  }
+                } catch (e) {
+                  if (dialogContext.mounted) {
+                    setState(() {
+                      errorText = 'Invalid Password';
+                      isLoading = false;
+                    });
+                  }
+                }
+              },
+              onCancel: () {
+                setState(() {
+                  errorText = null;
+                  isLoading = false;
+                });
+                Navigator.of(dialogContext).pop();
+              },
+              buttonText: 'Continue',
+              title: 'Enter Password',
+              errorText: errorText,
+              isLoading: isLoading,
+            );
           },
-          onCancel: () => Navigator.of(dialogContext).pop(),
-          buttonText: 'Continue',
-          title: 'Enter Password',
         );
       },
     ).then((value) {

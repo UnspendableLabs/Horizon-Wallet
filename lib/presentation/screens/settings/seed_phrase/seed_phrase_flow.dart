@@ -20,11 +20,12 @@ class SeedPhraseFlow extends StatefulWidget {
 class _SeedPhraseFlowState extends State<SeedPhraseFlow> {
   int _currentStep = 0;
   String? _seedPhrase;
-  final _formKey = GlobalKey<FormState>();
   final _passwordController = TextEditingController();
   String? _error;
   bool _showSeedPhrase = false;
   bool _copied = false;
+  bool _showPasswordPrompt = false;
+  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -49,179 +50,140 @@ class _SeedPhraseFlowState extends State<SeedPhraseFlow> {
   }
 
   Widget _buildWarningStep() {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20.0, 0, 20.0, 20.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          // Warning icon and text group
-          Container(
-            margin: const EdgeInsets.all(18),
-            child: Column(
-              children: [
-                const Icon(
-                  Icons.warning_amber_rounded,
-                  color: red1,
-                  size: 48,
-                ),
-                const SizedBox(height: 8),
-                SizedBox(
-                  width: 170,
-                  child: Text(
-                    'Before you continue',
-                    textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          color: red1,
-                        ),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Please write down your seed phrase and store it in a secure location. It is the only way to recover your wallet.',
-                  textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.titleSmall,
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 14),
-          // Warning boxes container
-          Container(
-            padding: const EdgeInsets.fromLTRB(10, 14, 10, 14),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: red1),
-            ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                _buildWarningPoint(
-                  'View this in private',
-                  const Icon(Icons.visibility_outlined, size: 12),
-                ),
-                _buildWarningPoint(
-                  'Do not share with anyone',
-                  const Icon(Icons.lock_outline, size: 12),
-                ),
-                _buildWarningPoint(
-                  'Never enter it to any website or applications',
-                  const Icon(Icons.shield_outlined, size: 12),
-                ),
-              ],
-            ),
-          ),
-          const Spacer(),
-          SizedBox(
-            width: double.infinity,
-            height: 56,
-            child: HorizonOutlinedButton(
-              onPressed: () {
-                setState(() {
-                  _currentStep = 1;
-                });
-              },
-              buttonText: 'Continue',
-              isTransparent: true,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPasswordStep() {
-    return BlocProvider(
-      create: (context) => ViewSeedPhraseBloc(
-        walletRepository: GetIt.I.get<WalletRepository>(),
-        encryptionService: GetIt.I.get<EncryptionService>(),
-      ),
-      child: BlocConsumer<ViewSeedPhraseBloc, ViewSeedPhraseState>(
-        listener: (context, state) {
-          if (state is ViewSeedPhraseError) {
-            setState(() {
-              _error = state.error;
-            });
-          } else if (state is ViewSeedPhraseSuccess) {
-            setState(() {
-              _seedPhrase = state.seedPhrase;
-              _currentStep = 2;
-              _error = null;
-            });
-          }
-        },
-        builder: (context, state) {
-          final isLoading = state is ViewSeedPhraseLoading;
-
-          return Padding(
-            padding: const EdgeInsets.all(20.0),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Enter Password',
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Please enter your wallet password to view your seed phrase.',
-                    style: Theme.of(context).textTheme.bodyLarge,
-                  ),
-                  const SizedBox(height: 24),
-                  TextFormField(
-                    controller: _passwordController,
-                    obscureText: true,
-                    decoration: InputDecoration(
-                      labelText: 'Password',
-                      errorText: _error,
+    return Stack(
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(20.0, 0, 20.0, 20.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              // Warning icon and text group
+              Container(
+                margin: const EdgeInsets.all(18),
+                child: Column(
+                  children: [
+                    const Icon(
+                      Icons.warning_amber_rounded,
+                      color: red1,
+                      size: 48,
                     ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter your password';
-                      }
-                      return null;
-                    },
-                  ),
-                  const Spacer(),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: FilledButton(
-                          onPressed: isLoading
-                              ? null
-                              : () {
-                                  if (_formKey.currentState!.validate()) {
-                                    context.read<ViewSeedPhraseBloc>().add(
-                                          Submit(
-                                            password: _passwordController.text,
-                                          ),
-                                        );
-                                  }
-                                },
-                          child: isLoading
-                              ? const SizedBox(
-                                  height: 20,
-                                  width: 20,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    valueColor: AlwaysStoppedAnimation<Color>(
-                                        Colors.white),
-                                  ),
-                                )
-                              : const Text('Continue'),
-                        ),
+                    const SizedBox(height: 8),
+                    SizedBox(
+                      width: 170,
+                      child: Text(
+                        'Before you continue',
+                        textAlign: TextAlign.center,
+                        style:
+                            Theme.of(context).textTheme.titleMedium?.copyWith(
+                                  color: red1,
+                                ),
                       ),
-                    ],
-                  ),
-                ],
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Please write down your seed phrase and store it in a secure location. It is the only way to recover your wallet.',
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.titleSmall,
+                    ),
+                  ],
+                ),
               ),
+              const SizedBox(height: 14),
+              // Warning boxes container
+              Container(
+                padding: const EdgeInsets.fromLTRB(10, 14, 10, 14),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: red1),
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    _buildWarningPoint(
+                      'View this in private',
+                      const Icon(Icons.visibility_outlined, size: 12),
+                    ),
+                    _buildWarningPoint(
+                      'Do not share with anyone',
+                      const Icon(Icons.lock_outline, size: 12),
+                    ),
+                    _buildWarningPoint(
+                      'Never enter it to any website or applications',
+                      const Icon(Icons.shield_outlined, size: 12),
+                    ),
+                  ],
+                ),
+              ),
+              const Spacer(),
+              SizedBox(
+                width: double.infinity,
+                height: 56,
+                child: HorizonOutlinedButton(
+                  onPressed: () {
+                    setState(() {
+                      _showPasswordPrompt = true;
+                      _error = null;
+                    });
+                  },
+                  buttonText: 'Continue',
+                  isTransparent: true,
+                ),
+              ),
+            ],
+          ),
+        ),
+        if (_showPasswordPrompt)
+          BlocProvider(
+            create: (context) => ViewSeedPhraseBloc(
+              walletRepository: GetIt.I.get<WalletRepository>(),
+              encryptionService: GetIt.I.get<EncryptionService>(),
             ),
-          );
-        },
-      ),
+            child: BlocConsumer<ViewSeedPhraseBloc, ViewSeedPhraseState>(
+              listener: (context, state) {
+                if (state is ViewSeedPhraseLoading) {
+                  setState(() {
+                    _isLoading = true;
+                  });
+                } else if (state is ViewSeedPhraseError) {
+                  setState(() {
+                    _error = state.error;
+                    _isLoading = false;
+                  });
+                } else if (state is ViewSeedPhraseSuccess) {
+                  setState(() {
+                    _seedPhrase = state.seedPhrase;
+                    _currentStep = 1;
+                    _error = null;
+                    _isLoading = false;
+                    _showPasswordPrompt = false;
+                  });
+                }
+              },
+              builder: (context, state) {
+                return HorizonPasswordPrompt(
+                  onPasswordSubmitted: (password) async {
+                    context.read<ViewSeedPhraseBloc>().add(
+                          Submit(
+                            password: password,
+                          ),
+                        );
+                  },
+                  onCancel: () {
+                    setState(() {
+                      _showPasswordPrompt = false;
+                      _error = null;
+                      _isLoading = false;
+                    });
+                  },
+                  buttonText: 'Continue',
+                  title: 'Enter Password',
+                  errorText: _error,
+                  isLoading: _isLoading,
+                );
+              },
+            ),
+          ),
+      ],
     );
   }
 
@@ -365,7 +327,6 @@ class _SeedPhraseFlowState extends State<SeedPhraseFlow> {
             index: _currentStep,
             children: [
               _buildWarningStep(),
-              _buildPasswordStep(),
               _buildDisplayStep(),
             ],
           ),

@@ -787,6 +787,8 @@ class HorizonPasswordPrompt extends StatefulWidget {
   final VoidCallback onCancel;
   final String buttonText;
   final String title;
+  final String? errorText;
+  final bool isLoading;
 
   const HorizonPasswordPrompt({
     super.key,
@@ -794,6 +796,8 @@ class HorizonPasswordPrompt extends StatefulWidget {
     required this.onCancel,
     this.buttonText = 'Continue',
     this.title = 'Enter Password',
+    this.errorText,
+    this.isLoading = false,
   });
 
   @override
@@ -802,26 +806,11 @@ class HorizonPasswordPrompt extends StatefulWidget {
 
 class _HorizonPasswordPromptState extends State<HorizonPasswordPrompt> {
   final TextEditingController _controller = TextEditingController();
-  String? _error;
-  bool _isLoading = false;
   bool _obscurePassword = true;
 
   void _handleSubmit() async {
-    if (_isLoading) return;
-
-    setState(() {
-      _isLoading = true;
-      _error = null;
-    });
-
-    try {
-      await widget.onPasswordSubmitted(_controller.text);
-    } catch (e) {
-      setState(() {
-        _error = "Invalid password";
-        _isLoading = false;
-      });
-    }
+    if (widget.isLoading) return;
+    await widget.onPasswordSubmitted(_controller.text);
   }
 
   void _togglePasswordVisibility() {
@@ -881,7 +870,7 @@ class _HorizonPasswordPromptState extends State<HorizonPasswordPrompt> {
                   HorizonTextField(
                     controller: _controller,
                     hintText: 'Password',
-                    errorText: _error,
+                    errorText: widget.errorText,
                     obscureText: _obscurePassword,
                     suffixIcon: IconButton(
                       icon: Icon(
@@ -899,7 +888,7 @@ class _HorizonPasswordPromptState extends State<HorizonPasswordPrompt> {
                   SizedBox(
                     height: 56,
                     child: HorizonOutlinedButton(
-                      onPressed: _isLoading ? null : _handleSubmit,
+                      onPressed: widget.isLoading ? null : _handleSubmit,
                       buttonText: widget.buttonText,
                       isTransparent: false,
                     ),
