@@ -1,12 +1,12 @@
-import 'package:flutter_test/flutter_test.dart';
 import 'package:bloc_test/bloc_test.dart';
-import 'package:mocktail/mocktail.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:horizon/domain/entities/wallet.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
-import 'package:horizon/domain/entities/wallet.dart';
-import 'package:horizon/presentation/screens/dashboard/view_seed_phrase_form/bloc/view_seed_phrase_bloc.dart';
-import 'package:horizon/presentation/screens/dashboard/view_seed_phrase_form/bloc/view_seed_phrase_event.dart';
-import 'package:horizon/presentation/screens/dashboard/view_seed_phrase_form/bloc/view_seed_phrase_state.dart';
+import 'package:horizon/presentation/screens/settings/seed_phrase/bloc/view_seed_phrase_bloc.dart';
+import 'package:horizon/presentation/screens/settings/seed_phrase/bloc/view_seed_phrase_event.dart';
+import 'package:horizon/presentation/screens/settings/seed_phrase/bloc/view_seed_phrase_state.dart';
+import 'package:mocktail/mocktail.dart';
 
 class MockWalletRepository extends Mock implements WalletRepository {}
 
@@ -39,10 +39,7 @@ void main() {
 
   group('ViewSeedPhraseBloc', () {
     test('initial state is correct', () {
-      expect(
-        bloc.state,
-        const ViewSeedPhraseState.initial(ViewSeedPhraseStateInitial()),
-      );
+      expect(bloc.state, isA<ViewSeedPhraseInitial>());
     });
 
     blocTest<ViewSeedPhraseBloc, ViewSeedPhraseState>(
@@ -52,11 +49,13 @@ void main() {
             .thenAnswer((_) async => null);
         return bloc;
       },
-      act: (bloc) => bloc.add(const ViewSeedPhrase(password: testPassword)),
+      act: (bloc) => bloc.add(Submit(password: testPassword)),
       expect: () => [
-        const ViewSeedPhraseState.loading(),
-        const ViewSeedPhraseState.initial(
-          ViewSeedPhraseStateInitial(error: 'Wallet not found'),
+        isA<ViewSeedPhraseLoading>(),
+        isA<ViewSeedPhraseError>().having(
+          (state) => state.error,
+          'error',
+          'Wallet not found',
         ),
       ],
     );
@@ -76,11 +75,13 @@ void main() {
         );
         return bloc;
       },
-      act: (bloc) => bloc.add(const ViewSeedPhrase(password: testPassword)),
+      act: (bloc) => bloc.add(Submit(password: testPassword)),
       expect: () => [
-        const ViewSeedPhraseState.loading(),
-        const ViewSeedPhraseState.initial(
-          ViewSeedPhraseStateInitial(error: 'Wallet mnemonic not found'),
+        isA<ViewSeedPhraseLoading>(),
+        isA<ViewSeedPhraseError>().having(
+          (state) => state.error,
+          'error',
+          'Wallet mnemonic not found',
         ),
       ],
     );
@@ -102,11 +103,13 @@ void main() {
             .thenThrow(Exception('Invalid password'));
         return bloc;
       },
-      act: (bloc) => bloc.add(const ViewSeedPhrase(password: testPassword)),
+      act: (bloc) => bloc.add(Submit(password: testPassword)),
       expect: () => [
-        const ViewSeedPhraseState.loading(),
-        const ViewSeedPhraseState.initial(
-          ViewSeedPhraseStateInitial(error: 'Invalid password'),
+        isA<ViewSeedPhraseLoading>(),
+        isA<ViewSeedPhraseError>().having(
+          (state) => state.error,
+          'error',
+          'Invalid password',
         ),
       ],
       verify: (_) {
@@ -136,11 +139,13 @@ void main() {
             .thenAnswer((_) async => testDecryptedMnemonic);
         return bloc;
       },
-      act: (bloc) => bloc.add(const ViewSeedPhrase(password: testPassword)),
+      act: (bloc) => bloc.add(Submit(password: testPassword)),
       expect: () => [
-        const ViewSeedPhraseState.loading(),
-        const ViewSeedPhraseState.success(
-          ViewSeedPhraseStateSuccess(seedPhrase: testDecryptedMnemonic),
+        isA<ViewSeedPhraseLoading>(),
+        isA<ViewSeedPhraseSuccess>().having(
+          (state) => state.seedPhrase,
+          'seedPhrase',
+          testDecryptedMnemonic,
         ),
       ],
       verify: (_) {
@@ -159,10 +164,14 @@ void main() {
             .thenThrow(Exception('Unexpected error'));
         return bloc;
       },
-      act: (bloc) => bloc.add(const ViewSeedPhrase(password: testPassword)),
+      act: (bloc) => bloc.add(Submit(password: testPassword)),
       expect: () => [
-        const ViewSeedPhraseState.loading(),
-        const ViewSeedPhraseState.error('Error decrypting seed phrase'),
+        isA<ViewSeedPhraseLoading>(),
+        isA<ViewSeedPhraseError>().having(
+          (state) => state.error,
+          'error',
+          'Error decrypting seed phrase',
+        ),
       ],
       verify: (_) {
         verify(() => mockWalletRepository.getCurrentWallet()).called(1);

@@ -671,6 +671,7 @@ class HorizonTextField extends StatefulWidget {
   final String? errorText;
   final bool obscureText;
   final TextInputType? keyboardType;
+  final Widget? suffixIcon;
 
   const HorizonTextField({
     super.key,
@@ -680,6 +681,7 @@ class HorizonTextField extends StatefulWidget {
     this.errorText,
     this.obscureText = false,
     this.keyboardType,
+    this.suffixIcon,
   });
 
   @override
@@ -742,6 +744,7 @@ class _HorizonTextFieldState extends State<HorizonTextField> {
                   horizontal: 12,
                   vertical: 0,
                 ),
+                suffixIcon: widget.suffixIcon,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(18),
                   borderSide: BorderSide.none,
@@ -801,6 +804,7 @@ class _HorizonPasswordPromptState extends State<HorizonPasswordPrompt> {
   final TextEditingController _controller = TextEditingController();
   String? _error;
   bool _isLoading = false;
+  bool _obscurePassword = true;
 
   void _handleSubmit() async {
     if (_isLoading) return;
@@ -818,6 +822,12 @@ class _HorizonPasswordPromptState extends State<HorizonPasswordPrompt> {
         _isLoading = false;
       });
     }
+  }
+
+  void _togglePasswordVisibility() {
+    setState(() {
+      _obscurePassword = !_obscurePassword;
+    });
   }
 
   @override
@@ -872,7 +882,19 @@ class _HorizonPasswordPromptState extends State<HorizonPasswordPrompt> {
                     controller: _controller,
                     hintText: 'Password',
                     errorText: _error,
-                    obscureText: true,
+                    obscureText: _obscurePassword,
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _obscurePassword
+                            ? Icons.visibility_outlined
+                            : Icons.visibility_off_outlined,
+                        size: 18,
+                      ),
+                      onPressed: _togglePasswordVisibility,
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                      focusNode: FocusNode(skipTraversal: true),
+                    ),
                   ),
                   SizedBox(
                     height: 56,

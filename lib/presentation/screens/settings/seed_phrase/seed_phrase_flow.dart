@@ -5,9 +5,10 @@ import 'package:get_it/get_it.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
-import 'package:horizon/presentation/screens/dashboard/view_seed_phrase_form/bloc/view_seed_phrase_bloc.dart';
-import 'package:horizon/presentation/screens/dashboard/view_seed_phrase_form/bloc/view_seed_phrase_event.dart';
-import 'package:horizon/presentation/screens/dashboard/view_seed_phrase_form/bloc/view_seed_phrase_state.dart';
+import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
+import 'package:horizon/presentation/screens/settings/seed_phrase/bloc/view_seed_phrase_bloc.dart';
+import 'package:horizon/presentation/screens/settings/seed_phrase/bloc/view_seed_phrase_event.dart';
+import 'package:horizon/presentation/screens/settings/seed_phrase/bloc/view_seed_phrase_state.dart';
 
 class SeedPhraseFlow extends StatefulWidget {
   const SeedPhraseFlow({super.key});
@@ -49,52 +50,78 @@ class _SeedPhraseFlowState extends State<SeedPhraseFlow> {
 
   Widget _buildWarningStep() {
     return Padding(
-      padding: const EdgeInsets.all(20.0),
+      padding: const EdgeInsets.fromLTRB(20.0, 0, 20.0, 20.0),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          const Icon(
-            Icons.warning_amber_rounded,
-            color: Colors.orange,
-            size: 48,
-          ),
-          const SizedBox(height: 20),
-          Text(
-            'Security Warning',
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
+          // Warning icon and text group
+          Container(
+            margin: const EdgeInsets.all(18),
+            child: Column(
+              children: [
+                const Icon(
+                  Icons.warning_amber_rounded,
+                  color: red1,
+                  size: 48,
                 ),
+                const SizedBox(height: 8),
+                SizedBox(
+                  width: 170,
+                  child: Text(
+                    'Before you continue',
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          color: red1,
+                        ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Please write down your seed phrase and store it in a secure location. It is the only way to recover your wallet.',
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.titleSmall,
+                ),
+              ],
+            ),
           ),
-          const SizedBox(height: 16),
-          Text(
-            'Your seed phrase is the key to your wallet. Keep it safe and private:',
-            style: Theme.of(context).textTheme.bodyLarge,
-          ),
-          const SizedBox(height: 24),
-          _buildWarningPoint(
-            '• Never share your seed phrase with anyone',
-            'Legitimate services will never ask for it',
-          ),
-          const SizedBox(height: 16),
-          _buildWarningPoint(
-            '• Store it securely offline',
-            'Write it down and keep it in a safe place',
-          ),
-          const SizedBox(height: 16),
-          _buildWarningPoint(
-            '• Verify your surroundings',
-            'Make sure no one can see your screen',
+          const SizedBox(height: 14),
+          // Warning boxes container
+          Container(
+            padding: const EdgeInsets.fromLTRB(10, 14, 10, 14),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: red1),
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                _buildWarningPoint(
+                  'View this in private',
+                  const Icon(Icons.visibility_outlined, size: 12),
+                ),
+                _buildWarningPoint(
+                  'Do not share with anyone',
+                  const Icon(Icons.lock_outline, size: 12),
+                ),
+                _buildWarningPoint(
+                  'Never enter it to any website or applications',
+                  const Icon(Icons.shield_outlined, size: 12),
+                ),
+              ],
+            ),
           ),
           const Spacer(),
           SizedBox(
             width: double.infinity,
-            child: FilledButton(
+            height: 56,
+            child: HorizonOutlinedButton(
               onPressed: () {
                 setState(() {
                   _currentStep = 1;
                 });
               },
-              child: const Text('I Understand, Continue'),
+              buttonText: 'Continue',
+              isTransparent: true,
             ),
           ),
         ],
@@ -316,24 +343,16 @@ class _SeedPhraseFlowState extends State<SeedPhraseFlow> {
     );
   }
 
-  Widget _buildWarningPoint(String title, String subtitle) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          title,
-          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          subtitle,
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Theme.of(context).textTheme.bodySmall?.color,
-              ),
-        ),
-      ],
+  Widget _buildWarningPoint(String title, Icon icon) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 11),
+      child: Row(
+        children: [
+          icon,
+          const SizedBox(width: 4),
+          SelectableText(title, style: Theme.of(context).textTheme.bodySmall),
+        ],
+      ),
     );
   }
 
@@ -341,36 +360,6 @@ class _SeedPhraseFlowState extends State<SeedPhraseFlow> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        // Step indicators
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
-          child: Center(
-            child: Container(
-              width: 48,
-              height: 8,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(4),
-                color: transparentWhite33,
-              ),
-              child: FractionallySizedBox(
-                alignment: Alignment.centerLeft,
-                widthFactor: (_currentStep + 1) / 3,
-                child: Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(4),
-                    gradient: const LinearGradient(
-                      colors: [
-                        pinkGradient1,
-                        purpleGradient1,
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(height: 24),
         Expanded(
           child: IndexedStack(
             index: _currentStep,
