@@ -2,15 +2,11 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'reset_state.freezed.dart';
 
+enum ResetStatus { initial, completed }
+
 @freezed
 class ResetState with _$ResetState {
   const factory ResetState({
-    @Default(In) resetState,
+    @Default(ResetStatus.initial) ResetStatus status,
   }) = _ResetState;
 }
-
-abstract class LoggedInOrOut {}
-
-class In extends LoggedInOrOut {}
-
-class Out extends LoggedInOrOut {}

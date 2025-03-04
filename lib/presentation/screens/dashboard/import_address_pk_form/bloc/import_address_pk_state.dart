@@ -2,25 +2,16 @@ import 'package:horizon/domain/entities/imported_address.dart';
 
 sealed class ImportAddressPkState {}
 
-class ImportAddressPkStep1 extends ImportAddressPkState {}
+class ImportAddressPkInitial extends ImportAddressPkState {}
 
-class ImportAddressPkStep2 extends ImportAddressPkState {
-  final Step2State state;
-  ImportAddressPkStep2({required this.state});
-}
+class ImportAddressPkLoading extends ImportAddressPkState {}
 
-abstract class Step2State {}
-
-class Step2Initial extends Step2State {}
-
-class Step2Loading extends Step2State {}
-
-class Step2Error extends Step2State {
+class ImportAddressPkError extends ImportAddressPkState {
   final String error;
-  Step2Error(this.error);
+  ImportAddressPkError(this.error);
 }
 
-class Step2Success extends Step2State {
+class ImportAddressPkSuccess extends ImportAddressPkState {
   final ImportedAddress address;
-  Step2Success(this.address);
+  ImportAddressPkSuccess(this.address);
 }

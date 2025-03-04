@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 import 'package:horizon/common/fn.dart';
@@ -23,12 +22,10 @@ import 'package:horizon/domain/repositories/transaction_local_repository.dart';
 import 'package:horizon/domain/repositories/unified_address_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/address_service.dart';
-import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/domain/services/bitcoind_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/imported_address_service.dart';
 import 'package:horizon/domain/services/public_key_service.dart';
-import 'package:horizon/domain/services/secure_kv_service.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
 import 'package:horizon/presentation/common/colors.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
@@ -52,19 +49,11 @@ import 'package:horizon/presentation/screens/compose_sweep/view/compose_sweep_pa
 import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_bloc.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_event.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart';
-import 'package:horizon/presentation/screens/dashboard/bloc/reset/reset_bloc.dart';
-import 'package:horizon/presentation/screens/dashboard/bloc/reset/view/reset_dialog.dart';
-import 'package:horizon/presentation/screens/dashboard/import_address_pk_form/bloc/import_address_pk_bloc.dart';
-import 'package:horizon/presentation/screens/dashboard/import_address_pk_form/bloc/import_address_pk_event.dart';
-import 'package:horizon/presentation/screens/dashboard/import_address_pk_form/bloc/import_address_pk_state.dart';
-import 'package:horizon/presentation/screens/dashboard/import_address_pk_form/view/import_address_pk_form.dart';
 import 'package:horizon/presentation/screens/dashboard/view/activity_feed.dart';
 import 'package:horizon/presentation/screens/dashboard/view/balances_display.dart';
-import 'package:horizon/presentation/screens/dashboard/view_seed_phrase_form/view/view_seed_phrase_form.dart';
 import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
+import 'package:horizon/presentation/screens/settings/settings_view.dart';
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
-import 'package:horizon/presentation/session/theme/bloc/theme_bloc.dart';
-import 'package:horizon/presentation/session/theme/bloc/theme_event.dart';
 
 class SignPsbtModal extends StatelessWidget {
   final int tabId;
@@ -845,15 +834,36 @@ class DashboardPageState extends State<DashboardPage>
   final _scrollController = ScrollController();
   bool shown = false;
   late TabController _tabController;
-  late TabController _bottomTabController;
+  late TabController bottomTabController;
+  bool _isSearching = false;
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
-    _bottomTabController = TabController(length: 2, vsync: this);
-    _bottomTabController.addListener(() {
+    bottomTabController = TabController(length: 2, vsync: this);
+
+    bottomTabController.addListener(() {
       setState(() {}); // Rebuild to update the selected tab styling
+      // Update URL when tab changes
+      if (bottomTabController.index == 1) {
+        context.go('/dashboard?tab=settings');
+      } else {
+        context.go('/dashboard');
+      }
+    });
+
+    _tabController.addListener(() {
+      setState(() {
+        // If switching to Activity tab, close search
+        if (_tabController.index == 1 && _isSearching) {
+          _isSearching = false;
+          _searchController.clear();
+          _searchQuery = '';
+        }
+      });
     });
     final action = widget.actionRepository.dequeue();
     action.fold(noop, (action) {
@@ -864,10 +874,22 @@ class DashboardPageState extends State<DashboardPage>
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Handle initial tab from URL
+    final uri = GoRouterState.of(context).uri;
+    final tab = uri.queryParameters['tab'];
+    if (tab == 'settings' && bottomTabController.index != 1) {
+      bottomTabController.index = 1;
+    }
+  }
+
+  @override
   void dispose() {
     _tabController.dispose();
-    _bottomTabController.dispose();
+    bottomTabController.dispose();
     _scrollController.dispose();
+    _searchController.dispose();
     super.dispose();
   }
 
@@ -950,102 +972,24 @@ class DashboardPageState extends State<DashboardPage>
         ));
   }
 
-  Widget buildSettingsTab() {
-    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
+  void _toggleSearch() {
+    setState(() {
+      _isSearching = !_isSearching;
+      if (!_isSearching) {
+        _searchController.clear();
+        _searchQuery = '';
+      }
+    });
+  }
 
-    return ListView(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            children: [
-              const Text("Theme"),
-              const Spacer(),
-              Switch(
-                value: isDarkTheme,
-                onChanged: (value) {
-                  context.read<ThemeBloc>().add(ThemeToggled());
-                },
-              ),
-            ],
-          ),
-        ),
-        ListTile(
-          title: const Text('Settings'),
-          onTap: () => context.go("/settings"),
-        ),
-        ListTile(
-          title: const Text('View wallet seed phrase'),
-          onTap: () {
-            HorizonUI.HorizonDialog.show(
-              context: context,
-              body: const HorizonUI.HorizonDialog(
-                includeBackButton: false,
-                includeCloseButton: true,
-                title: "View wallet seed phrase",
-                body: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 16.0),
-                  child: ViewSeedPhraseFormWrapper(),
-                ),
-              ),
-            );
-          },
-        ),
-        ListTile(
-          title: const Text('Import new address private key'),
-          onTap: () {
-            HorizonUI.HorizonDialog.show(
-              context: context,
-              body: Builder(builder: (context) {
-                final bloc = context.watch<ImportAddressPkBloc>();
-                final cb = switch (bloc.state) {
-                  ImportAddressPkStep2() => () {
-                      bloc.add(ResetForm());
-                    },
-                  _ => () {
-                      Navigator.of(context).pop();
-                    },
-                };
-                return HorizonUI.HorizonDialog(
-                  onBackButtonPressed: cb,
-                  title: "Import address private key",
-                  body: const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 16.0),
-                    child: ImportAddressPkForm(),
-                  ),
-                );
-              }),
-            );
-          },
-        ),
-        ListTile(
-          title: const Text('Reset wallet'),
-          onTap: () {
-            HorizonUI.HorizonDialog.show(
-              context: context,
-              body: BlocProvider(
-                create: (context) => ResetBloc(
-                  kvService: GetIt.I.get<SecureKVService>(),
-                  inMemoryKeyRepository: GetIt.I.get<InMemoryKeyRepository>(),
-                  walletRepository: GetIt.I.get<WalletRepository>(),
-                  accountRepository: GetIt.I.get<AccountRepository>(),
-                  addressRepository: GetIt.I.get<AddressRepository>(),
-                  importedAddressRepository:
-                      GetIt.I.get<ImportedAddressRepository>(),
-                  cacheProvider: GetIt.I.get<CacheProvider>(),
-                  analyticsService: GetIt.I.get<AnalyticsService>(),
-                ),
-                child: const ResetDialog(),
-              ),
-            );
-          },
-        ),
-        ListTile(
-          title: const Text('Lock Screen'),
-          onTap: () => context.read<SessionStateCubit>().onLogout(),
-        ),
-      ],
-    );
+  void _onSearchChanged(String value) {
+    setState(() {
+      _searchQuery = value;
+    });
+  }
+
+  Widget buildSettingsTab() {
+    return const SettingsView();
   }
 
   @override
@@ -1067,36 +1011,106 @@ class DashboardPageState extends State<DashboardPage>
                 ),
               ),
             ),
-            child: TabBar(
-              controller: _tabController,
-              indicatorWeight: 2,
-              indicatorColor: transparentPurple33,
-              labelColor: Theme.of(context).textTheme.bodyMedium?.color,
-              unselectedLabelColor:
-                  isDarkTheme ? transparentWhite33 : transparentBlack33,
-              isScrollable: true,
-              padding: EdgeInsets.zero,
-              indicatorSize: TabBarIndicatorSize.label,
-              tabAlignment: TabAlignment.start,
-              tabs: const [
-                Tab(
-                  child: Text(
-                    'Assets',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
+            child: Row(
+              children: [
+                Expanded(
+                  flex: 3,
+                  child: TabBar(
+                    controller: _tabController,
+                    indicatorWeight: 2,
+                    indicatorColor: transparentPurple33,
+                    labelColor: Theme.of(context).textTheme.bodyMedium?.color,
+                    unselectedLabelColor:
+                        isDarkTheme ? transparentWhite33 : transparentBlack33,
+                    isScrollable: true,
+                    padding: EdgeInsets.zero,
+                    indicatorSize: TabBarIndicatorSize.label,
+                    tabAlignment: TabAlignment.start,
+                    tabs: const [
+                      Tab(
+                        child: Text(
+                          'Assets',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                      Tab(
+                        child: Text(
+                          'Activity',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                if (_isSearching && _tabController.index == 0)
+                  Expanded(
+                    flex: 2,
+                    child: Container(
+                      height: 32,
+                      margin: const EdgeInsets.only(right: 8),
+                      decoration: BoxDecoration(
+                        color: transparentPurple8,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Center(
+                        child: TextField(
+                          controller: _searchController,
+                          onChanged: _onSearchChanged,
+                          style: TextStyle(
+                            color: isDarkTheme ? Colors.white : Colors.black,
+                            fontSize: 14,
+                          ),
+                          textAlignVertical: TextAlignVertical.center,
+                          decoration: InputDecoration(
+                            isCollapsed: true,
+                            hintText: 'Search assets...',
+                            hintStyle: TextStyle(
+                              color: isDarkTheme
+                                  ? transparentWhite33
+                                  : transparentBlack33,
+                              fontSize: 14,
+                            ),
+                            border: InputBorder.none,
+                            contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 8),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: _tabController.index == 0 ? _toggleSearch : null,
+                    borderRadius: BorderRadius.circular(8),
+                    child: Container(
+                      width: 44,
+                      height: 32,
+                      decoration: BoxDecoration(
+                        color: transparentPurple8,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Center(
+                        child: Icon(
+                          _isSearching ? Icons.close : Icons.search_outlined,
+                          size: 25,
+                          color: _tabController.index == 0
+                              ? (isDarkTheme ? Colors.white : Colors.black)
+                              : (isDarkTheme
+                                  ? transparentWhite33
+                                  : transparentBlack33),
+                        ),
+                      ),
                     ),
                   ),
                 ),
-                Tab(
-                  child: Text(
-                    'Activity',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
+                const SizedBox(width: 16),
               ],
             ),
           ),
@@ -1108,7 +1122,10 @@ class DashboardPageState extends State<DashboardPage>
                 Padding(
                   padding:
                       EdgeInsets.symmetric(horizontal: isSmallScreen ? 16 : 35),
-                  child: BalancesDisplay(isDarkTheme: isDarkTheme),
+                  child: BalancesDisplay(
+                    isDarkTheme: isDarkTheme,
+                    searchQuery: _searchQuery,
+                  ),
                 ),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -1154,7 +1171,7 @@ class DashboardPageState extends State<DashboardPage>
           child: Scaffold(
             backgroundColor: isDarkTheme ? Colors.black : Colors.white,
             body: TabBarView(
-              controller: _bottomTabController,
+              controller: bottomTabController,
               physics: const NeverScrollableScrollPhysics(),
               children: [
                 mainContent,
@@ -1190,7 +1207,7 @@ class DashboardPageState extends State<DashboardPage>
                 ),
               ),
               child: TabBar(
-                controller: _bottomTabController,
+                controller: bottomTabController,
                 indicatorSize: TabBarIndicatorSize.tab,
                 indicatorColor: Colors.transparent,
                 dividerColor: Colors.transparent,
@@ -1204,12 +1221,12 @@ class DashboardPageState extends State<DashboardPage>
                     width: 75,
                     height: 74,
                     decoration: BoxDecoration(
-                      color: _bottomTabController.index == 0 && !isDarkTheme
+                      color: bottomTabController.index == 0 && !isDarkTheme
                           ? offWhite
                           : Colors.transparent,
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                        color: _bottomTabController.index == 0
+                        color: bottomTabController.index == 0
                             ? (isDarkTheme
                                 ? Colors.white.withOpacity(0.1)
                                 : Colors.black.withOpacity(0.1))
@@ -1227,7 +1244,7 @@ class DashboardPageState extends State<DashboardPage>
                           Icon(
                             Icons.pie_chart_outline,
                             size: 24,
-                            color: _bottomTabController.index == 0
+                            color: bottomTabController.index == 0
                                 ? (isDarkTheme ? Colors.white : Colors.black)
                                 : (isDarkTheme
                                     ? transparentWhite33
@@ -1238,7 +1255,7 @@ class DashboardPageState extends State<DashboardPage>
                             'Portfolio',
                             style: TextStyle(
                               fontSize: 12,
-                              color: _bottomTabController.index == 0
+                              color: bottomTabController.index == 0
                                   ? (isDarkTheme ? Colors.white : Colors.black)
                                   : (isDarkTheme
                                       ? transparentWhite33
@@ -1255,12 +1272,12 @@ class DashboardPageState extends State<DashboardPage>
                     width: 75,
                     height: 74,
                     decoration: BoxDecoration(
-                      color: _bottomTabController.index == 1 && !isDarkTheme
+                      color: bottomTabController.index == 1 && !isDarkTheme
                           ? offWhite
                           : Colors.transparent,
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                        color: _bottomTabController.index == 1
+                        color: bottomTabController.index == 1
                             ? (isDarkTheme
                                 ? Colors.white.withOpacity(0.1)
                                 : Colors.black.withOpacity(0.1))
@@ -1278,7 +1295,7 @@ class DashboardPageState extends State<DashboardPage>
                           Icon(
                             Icons.settings,
                             size: 24,
-                            color: _bottomTabController.index == 1
+                            color: bottomTabController.index == 1
                                 ? (isDarkTheme ? Colors.white : Colors.black)
                                 : (isDarkTheme
                                     ? transparentWhite33
@@ -1289,7 +1306,7 @@ class DashboardPageState extends State<DashboardPage>
                             'Settings',
                             style: TextStyle(
                               fontSize: 12,
-                              color: _bottomTabController.index == 1
+                              color: bottomTabController.index == 1
                                   ? (isDarkTheme ? Colors.white : Colors.black)
                                   : (isDarkTheme
                                       ? transparentWhite33
