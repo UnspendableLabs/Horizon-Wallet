@@ -304,6 +304,12 @@ class AppRouter {
                           orElse: () => const LoadingScreen(),
                         );
                       }),
+                  GoRoute(
+                      path: "/settings",
+                      redirect: (context, state) {
+                        // Redirect to dashboard with settings tab selected
+                        return "/dashboard?tab=settings";
+                      }),
                 ],
               ),
             ])

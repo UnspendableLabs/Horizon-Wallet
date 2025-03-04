@@ -138,68 +138,66 @@ class _SecurityViewState extends State<SecurityView> {
   Widget build(BuildContext context) {
     final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
 
-    return Scaffold(
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SettingsItem(
-              title: 'Require password',
-              icon: Icons.lock_outline,
-              isDarkTheme: isDarkTheme,
-              trailing: HorizonToggle(
-                value: _requirePassword,
-                onChanged: _onPasswordRequirementChanged,
-              ),
-              onTap: null,
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SettingsItem(
+            title: 'Require password',
+            icon: Icons.lock_outline,
+            isDarkTheme: isDarkTheme,
+            trailing: HorizonToggle(
+              value: _requirePassword,
+              onChanged: _onPasswordRequirementChanged,
             ),
-            const SizedBox(height: 8),
-            Center(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                child: Text(
-                  "Require password when signing transactions or granting access to wallet data.",
-                  textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.titleSmall,
-                ),
+            onTap: null,
+          ),
+          const SizedBox(height: 8),
+          Center(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20.0),
+              child: Text(
+                "Require password when signing transactions or granting access to wallet data.",
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.titleSmall,
               ),
             ),
-            const SizedBox(height: 16),
-            SettingsItem(
-              title: 'Inactivity Timeout',
-              icon: Icons.timer_outlined,
-              isDarkTheme: isDarkTheme,
-              trailing: SizedBox(
-                width: 120,
-                height: 40,
-                child: BlurredBackgroundDropdown<int>(
-                  items: _timeoutOptions.entries
-                      .map((entry) => DropdownMenuItem<int>(
-                            value: entry.key,
-                            child: Text(entry.value),
-                          ))
-                      .toList(),
-                  onChanged: _onTimeoutChanged,
-                  selectedValue: _selectedTimeout,
-                  hintText: 'Select timeout',
-                ),
-              ),
-              onTap: null,
-            ),
-            const SizedBox(height: 8),
-            Center(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                child: Text(
-                  "Period of inactivity before screen locks",
-                  textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.titleSmall,
-                ),
+          ),
+          const SizedBox(height: 16),
+          SettingsItem(
+            title: 'Inactivity Timeout',
+            icon: Icons.timer_outlined,
+            isDarkTheme: isDarkTheme,
+            trailing: SizedBox(
+              width: 120,
+              height: 40,
+              child: BlurredBackgroundDropdown<int>(
+                items: _timeoutOptions.entries
+                    .map((entry) => DropdownMenuItem<int>(
+                          value: entry.key,
+                          child: Text(entry.value),
+                        ))
+                    .toList(),
+                onChanged: _onTimeoutChanged,
+                selectedValue: _selectedTimeout,
+                hintText: 'Select timeout',
               ),
             ),
-          ],
-        ),
+            onTap: null,
+          ),
+          const SizedBox(height: 8),
+          Center(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20.0),
+              child: Text(
+                "Period of inactivity before screen locks",
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.titleSmall,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

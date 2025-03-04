@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
+import 'package:go_router/go_router.dart';
 import 'package:horizon/common/fn.dart';
 import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/domain/entities/account.dart';
@@ -843,9 +844,17 @@ class DashboardPageState extends State<DashboardPage>
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
     bottomTabController = TabController(length: 2, vsync: this);
+
     bottomTabController.addListener(() {
       setState(() {}); // Rebuild to update the selected tab styling
+      // Update URL when tab changes
+      if (bottomTabController.index == 1) {
+        context.go('/dashboard?tab=settings');
+      } else {
+        context.go('/dashboard');
+      }
     });
+
     _tabController.addListener(() {
       setState(() {
         // If switching to Activity tab, close search
@@ -862,6 +871,17 @@ class DashboardPageState extends State<DashboardPage>
         _getHandler(action)();
       });
     });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Handle initial tab from URL
+    final uri = GoRouterState.of(context).uri;
+    final tab = uri.queryParameters['tab'];
+    if (tab == 'settings' && bottomTabController.index != 1) {
+      bottomTabController.index = 1;
+    }
   }
 
   @override

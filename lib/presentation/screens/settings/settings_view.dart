@@ -14,6 +14,14 @@ import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:horizon/presentation/session/theme/bloc/theme_bloc.dart';
 import 'package:horizon/presentation/session/theme/bloc/theme_event.dart';
 
+enum SettingsPage {
+  main,
+  security,
+  seedPhrase,
+  importAddress,
+  resetWallet,
+}
+
 class SettingsItem extends StatelessWidget {
   final String title;
   final IconData icon;
@@ -288,14 +296,154 @@ class SettingsView extends StatefulWidget {
 }
 
 class _SettingsViewState extends State<SettingsView> {
-  Widget? currentPage;
-  String? currentTitle;
+  SettingsPage _currentPage = SettingsPage.main;
 
   void _navigateBack() {
     setState(() {
-      currentPage = null;
-      currentTitle = null;
+      _currentPage = SettingsPage.main;
     });
+  }
+
+  String _getPageTitle() {
+    switch (_currentPage) {
+      case SettingsPage.main:
+        return "Settings";
+      case SettingsPage.security:
+        return "Security";
+      case SettingsPage.seedPhrase:
+        return "Seed Phrase";
+      case SettingsPage.importAddress:
+        return "Import Address";
+      case SettingsPage.resetWallet:
+        return "Reset Wallet";
+    }
+  }
+
+  Widget _buildCurrentPage() {
+    switch (_currentPage) {
+      case SettingsPage.main:
+        return _buildMainSettings();
+      case SettingsPage.security:
+        return const SecurityView();
+      case SettingsPage.seedPhrase:
+        return const SeedPhraseFlow();
+      case SettingsPage.importAddress:
+        return ImportAddressFlow(onNavigateBack: _navigateBack);
+      case SettingsPage.resetWallet:
+        return const ResetWalletFlow();
+    }
+  }
+
+  Widget _buildMainSettings() {
+    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
+    return ListView(
+      children: [
+        const SizedBox(height: 10),
+        SettingsItem(
+          title: 'Security',
+          icon: Icons.security,
+          isDarkTheme: isDarkTheme,
+          onTap: () {
+            setState(() {
+              _currentPage = SettingsPage.security;
+            });
+          },
+        ),
+        SettingsItem(
+          title: 'Seed phrase',
+          icon: Icons.key,
+          isDarkTheme: isDarkTheme,
+          onTap: () {
+            setState(() {
+              _currentPage = SettingsPage.seedPhrase;
+            });
+          },
+        ),
+        SettingsItem(
+          title: 'Import new address',
+          icon: Icons.add_circle_outline,
+          isDarkTheme: isDarkTheme,
+          onTap: () {
+            setState(() {
+              _currentPage = SettingsPage.importAddress;
+            });
+          },
+        ),
+        SettingsItem(
+          title: 'Reset wallet',
+          icon: Icons.restore,
+          isDarkTheme: isDarkTheme,
+          onTap: () {
+            setState(() {
+              _currentPage = SettingsPage.resetWallet;
+            });
+          },
+        ),
+        SettingsItem(
+          title: 'Appearance',
+          icon: Icons.palette_outlined,
+          isDarkTheme: isDarkTheme,
+          trailing: ThemeToggle(
+            isDarkTheme: isDarkTheme,
+            onChanged: (value) {
+              context.read<ThemeBloc>().add(ThemeToggled());
+            },
+          ),
+        ),
+        const SizedBox(height: 40),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20.0),
+          child: Container(
+            height: 64,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(18),
+              color: transparentPurple16,
+              border: Border.all(
+                color: isDarkTheme ? transparentWhite8 : transparentBlack8,
+                width: 1,
+              ),
+            ),
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                borderRadius: BorderRadius.circular(18),
+                onTap: () {
+                  context.read<SessionStateCubit>().onLogout();
+                },
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(14, 11, 14, 11),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.lock_outline,
+                        size: 24,
+                        color: Theme.of(context).iconTheme.color,
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          'Lock Screen',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                            color: Theme.of(context).iconTheme.color,
+                          ),
+                        ),
+                      ),
+                      Icon(
+                        Icons.chevron_right,
+                        size: 24,
+                        color: Theme.of(context).iconTheme.color,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
   }
 
   @override
@@ -320,7 +468,7 @@ class _SettingsViewState extends State<SettingsView> {
                       title: Padding(
                         padding: const EdgeInsets.only(top: 18.0),
                         child: Text(
-                          currentTitle ?? "Settings",
+                          _getPageTitle(),
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.w700,
@@ -332,7 +480,7 @@ class _SettingsViewState extends State<SettingsView> {
                         padding: const EdgeInsets.only(left: 9.0, top: 18.0),
                         child: BackButton(
                           color: isDarkTheme ? Colors.white : Colors.black,
-                          onPressed: currentPage != null
+                          onPressed: _currentPage != SettingsPage.main
                               ? _navigateBack
                               : () {
                                   final bottomTabController = context
@@ -346,133 +494,7 @@ class _SettingsViewState extends State<SettingsView> {
                         ),
                       ),
                     ),
-                    body: currentPage ??
-                        ListView(
-                          children: [
-                            const SizedBox(height: 10),
-                            SettingsItem(
-                              title: 'Security',
-                              icon: Icons.security,
-                              isDarkTheme: isDarkTheme,
-                              onTap: () {
-                                setState(() {
-                                  currentTitle = "Security";
-                                  currentPage = const SecurityView();
-                                });
-                              },
-                            ),
-                            SettingsItem(
-                              title: 'Seed phrase',
-                              icon: Icons.key,
-                              isDarkTheme: isDarkTheme,
-                              onTap: () {
-                                setState(() {
-                                  currentTitle = "Seed Phrase";
-                                  currentPage = const SeedPhraseFlow();
-                                });
-                              },
-                            ),
-                            SettingsItem(
-                              title: 'Import new address',
-                              icon: Icons.add_circle_outline,
-                              isDarkTheme: isDarkTheme,
-                              onTap: () {
-                                setState(() {
-                                  currentTitle = "Import Address";
-                                  currentPage = ImportAddressFlow(
-                                    onNavigateBack: _navigateBack,
-                                  );
-                                });
-                              },
-                            ),
-                            SettingsItem(
-                              title: 'Reset wallet',
-                              icon: Icons.restore,
-                              isDarkTheme: isDarkTheme,
-                              onTap: () {
-                                setState(() {
-                                  currentTitle = "Reset Wallet";
-                                  currentPage = const ResetWalletFlow();
-                                });
-                              },
-                            ),
-                            SettingsItem(
-                              title: 'Appearance',
-                              icon: Icons.palette_outlined,
-                              isDarkTheme: isDarkTheme,
-                              trailing: ThemeToggle(
-                                isDarkTheme: isDarkTheme,
-                                onChanged: (value) {
-                                  context.read<ThemeBloc>().add(ThemeToggled());
-                                },
-                              ),
-                            ),
-                            const SizedBox(height: 40),
-                            Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 20.0),
-                              child: Container(
-                                height: 64,
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(18),
-                                  color: transparentPurple16,
-                                  border: Border.all(
-                                    color: isDarkTheme
-                                        ? transparentWhite8
-                                        : transparentBlack8,
-                                    width: 1,
-                                  ),
-                                ),
-                                child: Material(
-                                  color: Colors.transparent,
-                                  child: InkWell(
-                                    borderRadius: BorderRadius.circular(18),
-                                    onTap: () {
-                                      context
-                                          .read<SessionStateCubit>()
-                                          .onLogout();
-                                    },
-                                    child: Padding(
-                                      padding: const EdgeInsets.fromLTRB(
-                                          14, 11, 14, 11),
-                                      child: Row(
-                                        children: [
-                                          Icon(
-                                            Icons.lock_outline,
-                                            size: 24,
-                                            color: Theme.of(context)
-                                                .iconTheme
-                                                .color,
-                                          ),
-                                          const SizedBox(width: 12),
-                                          Expanded(
-                                            child: Text(
-                                              'Lock Screen',
-                                              style: TextStyle(
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.w500,
-                                                color: Theme.of(context)
-                                                    .iconTheme
-                                                    .color,
-                                              ),
-                                            ),
-                                          ),
-                                          Icon(
-                                            Icons.chevron_right,
-                                            size: 24,
-                                            color: Theme.of(context)
-                                                .iconTheme
-                                                .color,
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
+                    body: _buildCurrentPage(),
                   ),
                 ),
               ),
