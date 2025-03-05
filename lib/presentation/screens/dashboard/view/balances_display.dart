@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:horizon/domain/entities/balance.dart';
+import 'package:horizon/domain/entities/multi_address_balance.dart';
 import 'package:horizon/presentation/common/no_data.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_bloc.dart';
@@ -44,20 +44,6 @@ class BalancesDisplayState extends State<BalancesDisplay> {
       ),
     );
   }
-}
-
-class BalanceEntry {
-  final String asset;
-  final String? assetLongname;
-  final String quantityNormalized;
-  final String quantity;
-
-  BalanceEntry({
-    required this.asset,
-    required this.assetLongname,
-    required this.quantityNormalized,
-    required this.quantity,
-  });
 }
 
 enum BalanceFilter { none, named, numeric, subassets, issuances }
@@ -126,34 +112,55 @@ class BalancesSliverState extends State<BalancesSliver> {
     );
   }
 
-  bool _matchesFilter(String asset, List<Balance> balances) {
+  bool _matchesFilter(MultiAddressBalance balance) {
     // First check if it matches the search query
     if (widget.searchQuery.isNotEmpty) {
       final searchLower = widget.searchQuery.toLowerCase();
-      final assetLower = asset.toLowerCase();
-      final assetLongname =
-          balances.first.assetInfo.assetLongname?.toLowerCase();
+      final assetLower = balance.asset.toLowerCase();
+      final assetLongnameLower = balance.assetLongname?.toLowerCase();
+
+      if (balance.assetLongname != null && balance.assetLongname!.isNotEmpty) {
+        if (!assetLongnameLower!.contains(searchLower)) {
+          return false;
+        }
+        return true;
+      }
 
       // Check if search query matches either the asset name or asset longname
-      if (!assetLower.contains(searchLower) &&
-          (assetLongname == null || !assetLongname.contains(searchLower))) {
+      if (!assetLower.contains(searchLower)) {
         return false;
       }
+      return true;
     }
 
     // Then check if it matches the selected filter
     switch (_currentFilter) {
       case BalanceFilter.named:
-        return !asset.startsWith('A') && asset != 'BTC';
+        if (balance.assetLongname != null &&
+            balance.assetLongname!.isNotEmpty) {
+          return !balance.assetLongname!.startsWith('A');
+        }
+        return !balance.asset.startsWith('A') && balance.asset != 'BTC';
       case BalanceFilter.numeric:
-        return asset.startsWith('A');
+        if (balance.assetLongname != null &&
+            balance.assetLongname!.isNotEmpty) {
+          return balance.assetLongname!.startsWith('A');
+        }
+        return balance.asset.startsWith('A');
       case BalanceFilter.subassets:
-        return asset.contains('.');
+        if (balance.assetLongname != null &&
+            balance.assetLongname!.isNotEmpty) {
+          return balance.assetLongname!.contains('.');
+        }
+        return balance.asset.contains('.');
       case BalanceFilter.issuances:
-        return balances.any((balance) {
-          return balance.address != null &&
-              balance.assetInfo.owner != null &&
-              balance.address == balance.assetInfo.owner;
+        return balance.entries.any((entry) {
+          return (entry.address != null &&
+                  balance.assetInfo.owner != null &&
+                  entry.address == balance.assetInfo.owner) ||
+              (entry.utxo != null &&
+                  balance.assetInfo.owner != null &&
+                  entry.utxoAddress == balance.assetInfo.owner);
         });
       case BalanceFilter.none:
         return true;
@@ -182,8 +189,8 @@ class BalancesSliverState extends State<BalancesSliver> {
           child: Center(child: SelectableText(error)),
         )
       ],
-      ok: (aggregated) {
-        if (aggregated.isEmpty) {
+      ok: (balances) {
+        if (balances.isEmpty) {
           return [
             const NoData(
               title: 'No Balances',
@@ -191,59 +198,29 @@ class BalancesSliverState extends State<BalancesSliver> {
           ];
         }
 
-        final Map<String, BalanceEntry> balanceEntries = {};
+        final List<MultiAddressBalance> filteredBalances = [];
 
         // Iterate through each asset and its list of balances
-        for (final entry in aggregated.entries) {
-          if (!_matchesFilter(entry.key, entry.value)) {
+        for (final balance in balances) {
+          if (!_matchesFilter(balance)) {
             continue; // Pass both asset and balances
           }
 
-          final String asset = entry.key;
-          final List<Balance> balances = entry.value;
-
-          // Get the first balance to access asset info
-          final Balance firstBalance = balances.first;
-
-          // Sum up the normalized quantities
-          double totalNormalized = 0.0;
-          int totalQuantity = 0;
-
-          // Add up all quantities for this asset
-          for (final balance in balances) {
-            totalNormalized += double.parse(balance.quantityNormalized);
-            totalQuantity += balance.quantity;
-          }
-
-          // Format the total normalized quantity based on divisibility
-          final totalQuantityNormalized = firstBalance.assetInfo.divisible
-              ? totalNormalized
-                  .toStringAsFixed(8)
-                  .replaceAll(RegExp(r'(?<=\d)0+$'), '')
-                  .replaceAll(RegExp(r'\.$'), '')
-              : totalNormalized.toStringAsFixed(0);
-
-          balanceEntries[asset] = BalanceEntry(
-            asset: asset,
-            assetLongname: firstBalance.assetInfo.assetLongname,
-            quantityNormalized: totalQuantityNormalized,
-            quantity: totalQuantity.toString(),
-          );
+          filteredBalances.add(balance);
         }
 
-        // Build the list of asset entries
-        final sortedEntries = balanceEntries.entries.toList()
+        final sortedBalances = filteredBalances
           ..sort((a, b) {
-            if (a.key == 'BTC') return -1;
-            if (b.key == 'BTC') return 1;
-            if (a.key == 'XCP') return -1;
-            if (b.key == 'XCP') return 1;
-            return a.key.compareTo(b.key);
+            if (a.asset == 'BTC') return -1;
+            if (b.asset == 'BTC') return 1;
+            if (a.asset == 'XCP') return -1;
+            if (b.asset == 'XCP') return 1;
+            return a.asset.compareTo(b.asset);
           });
 
         return [
           Column(
-            children: sortedEntries.map((entry) {
+            children: sortedBalances.map((balance) {
               return MouseRegion(
                 cursor: SystemMouseCursors.click,
                 child: Material(
@@ -251,7 +228,8 @@ class BalancesSliverState extends State<BalancesSliver> {
                   child: InkWell(
                     onTap: () {
                       // Navigate to the asset details page
-                      context.go('/asset/${Uri.encodeComponent(entry.key)}');
+                      context
+                          .go('/asset/${Uri.encodeComponent(balance.asset)}');
                     },
                     borderRadius: BorderRadius.circular(10),
                     child: Container(
@@ -285,7 +263,8 @@ class BalancesSliverState extends State<BalancesSliver> {
                                 SizedBox(
                                   width: 150,
                                   child: MiddleTruncatedText(
-                                    text: entry.key,
+                                    text:
+                                        balance.assetLongname ?? balance.asset,
                                     width: 150,
                                     charsToShow: 5,
                                     style: const TextStyle(
@@ -303,7 +282,7 @@ class BalancesSliverState extends State<BalancesSliver> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Text(
-                                entry.value.quantityNormalized,
+                                balance.totalNormalized,
                                 style: const TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w500,

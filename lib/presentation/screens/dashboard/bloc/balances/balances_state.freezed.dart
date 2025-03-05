@@ -628,19 +628,19 @@ abstract class _Reloading implements BalancesState {
 mixin _$Result {
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
-    required TResult Function(Map<String, List<Balance>> aggregated) ok,
+    required TResult Function(List<MultiAddressBalance> balances) ok,
     required TResult Function(String error) error,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(Map<String, List<Balance>> aggregated)? ok,
+    TResult? Function(List<MultiAddressBalance> balances)? ok,
     TResult? Function(String error)? error,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
-    TResult Function(Map<String, List<Balance>> aggregated)? ok,
+    TResult Function(List<MultiAddressBalance> balances)? ok,
     TResult Function(String error)? error,
     required TResult orElse(),
   }) =>
@@ -688,7 +688,7 @@ abstract class _$$OkImplCopyWith<$Res> {
   factory _$$OkImplCopyWith(_$OkImpl value, $Res Function(_$OkImpl) then) =
       __$$OkImplCopyWithImpl<$Res>;
   @useResult
-  $Res call({Map<String, List<Balance>> aggregated});
+  $Res call({List<MultiAddressBalance> balances});
 }
 
 /// @nodoc
@@ -700,13 +700,13 @@ class __$$OkImplCopyWithImpl<$Res> extends _$ResultCopyWithImpl<$Res, _$OkImpl>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? aggregated = null,
+    Object? balances = null,
   }) {
     return _then(_$OkImpl(
-      null == aggregated
-          ? _value._aggregated
-          : aggregated // ignore: cast_nullable_to_non_nullable
-              as Map<String, List<Balance>>,
+      null == balances
+          ? _value._balances
+          : balances // ignore: cast_nullable_to_non_nullable
+              as List<MultiAddressBalance>,
     ));
   }
 }
@@ -714,22 +714,20 @@ class __$$OkImplCopyWithImpl<$Res> extends _$ResultCopyWithImpl<$Res, _$OkImpl>
 /// @nodoc
 
 class _$OkImpl implements _Ok {
-  const _$OkImpl(final Map<String, List<Balance>> aggregated)
-      : _aggregated = aggregated;
+  const _$OkImpl(final List<MultiAddressBalance> balances)
+      : _balances = balances;
 
-// List<Balance> balances,
-  final Map<String, List<Balance>> _aggregated;
-// List<Balance> balances,
+  final List<MultiAddressBalance> _balances;
   @override
-  Map<String, List<Balance>> get aggregated {
-    if (_aggregated is EqualUnmodifiableMapView) return _aggregated;
+  List<MultiAddressBalance> get balances {
+    if (_balances is EqualUnmodifiableListView) return _balances;
     // ignore: implicit_dynamic_type
-    return EqualUnmodifiableMapView(_aggregated);
+    return EqualUnmodifiableListView(_balances);
   }
 
   @override
   String toString() {
-    return 'Result.ok(aggregated: $aggregated)';
+    return 'Result.ok(balances: $balances)';
   }
 
   @override
@@ -737,13 +735,12 @@ class _$OkImpl implements _Ok {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$OkImpl &&
-            const DeepCollectionEquality()
-                .equals(other._aggregated, _aggregated));
+            const DeepCollectionEquality().equals(other._balances, _balances));
   }
 
   @override
-  int get hashCode => Object.hash(
-      runtimeType, const DeepCollectionEquality().hash(_aggregated));
+  int get hashCode =>
+      Object.hash(runtimeType, const DeepCollectionEquality().hash(_balances));
 
   @JsonKey(ignore: true)
   @override
@@ -754,30 +751,30 @@ class _$OkImpl implements _Ok {
   @override
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
-    required TResult Function(Map<String, List<Balance>> aggregated) ok,
+    required TResult Function(List<MultiAddressBalance> balances) ok,
     required TResult Function(String error) error,
   }) {
-    return ok(aggregated);
+    return ok(balances);
   }
 
   @override
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(Map<String, List<Balance>> aggregated)? ok,
+    TResult? Function(List<MultiAddressBalance> balances)? ok,
     TResult? Function(String error)? error,
   }) {
-    return ok?.call(aggregated);
+    return ok?.call(balances);
   }
 
   @override
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
-    TResult Function(Map<String, List<Balance>> aggregated)? ok,
+    TResult Function(List<MultiAddressBalance> balances)? ok,
     TResult Function(String error)? error,
     required TResult orElse(),
   }) {
     if (ok != null) {
-      return ok(aggregated);
+      return ok(balances);
     }
     return orElse();
   }
@@ -815,10 +812,9 @@ class _$OkImpl implements _Ok {
 }
 
 abstract class _Ok implements Result {
-  const factory _Ok(final Map<String, List<Balance>> aggregated) = _$OkImpl;
+  const factory _Ok(final List<MultiAddressBalance> balances) = _$OkImpl;
 
-// List<Balance> balances,
-  Map<String, List<Balance>> get aggregated;
+  List<MultiAddressBalance> get balances;
   @JsonKey(ignore: true)
   _$$OkImplCopyWith<_$OkImpl> get copyWith =>
       throw _privateConstructorUsedError;
@@ -888,7 +884,7 @@ class _$ErrorImpl implements _Error {
   @override
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
-    required TResult Function(Map<String, List<Balance>> aggregated) ok,
+    required TResult Function(List<MultiAddressBalance> balances) ok,
     required TResult Function(String error) error,
   }) {
     return error(this.error);
@@ -897,7 +893,7 @@ class _$ErrorImpl implements _Error {
   @override
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(Map<String, List<Balance>> aggregated)? ok,
+    TResult? Function(List<MultiAddressBalance> balances)? ok,
     TResult? Function(String error)? error,
   }) {
     return error?.call(this.error);
@@ -906,7 +902,7 @@ class _$ErrorImpl implements _Error {
   @override
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
-    TResult Function(Map<String, List<Balance>> aggregated)? ok,
+    TResult Function(List<MultiAddressBalance> balances)? ok,
     TResult Function(String error)? error,
     required TResult orElse(),
   }) {
