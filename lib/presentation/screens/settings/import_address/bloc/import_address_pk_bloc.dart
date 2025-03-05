@@ -91,6 +91,7 @@ class ImportAddressPkBloc
 
         try {
           await importedAddressRepository.insert(importedAddress);
+          emit(ImportAddressPkSuccess(importedAddress));
         } catch (e) {
           if (e.toString().contains("UNIQUE")) {
             emit(ImportAddressPkError(
@@ -101,8 +102,6 @@ class ImportAddressPkBloc
           }
           return;
         }
-
-        emit(ImportAddressPkSuccess(importedAddress));
       } catch (e) {
         emit(ImportAddressPkError(e.toString()));
       }
