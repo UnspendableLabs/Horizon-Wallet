@@ -35,6 +35,7 @@ import 'package:horizon/presentation/forms/get_addresses/bloc/get_addresses_bloc
 import 'package:horizon/presentation/forms/get_addresses/view/get_addresses_form.dart';
 import 'package:horizon/presentation/forms/sign_psbt/bloc/sign_psbt_bloc.dart';
 import 'package:horizon/presentation/forms/sign_psbt/view/sign_psbt_form.dart';
+import 'package:horizon/presentation/screens/asset/asset_view.dart';
 import 'package:horizon/presentation/screens/close_dispenser/view/close_dispenser_page.dart';
 import 'package:horizon/presentation/screens/compose_cancel/view/compose_cancel_view.dart';
 import 'package:horizon/presentation/screens/compose_destroy/view/compose_destroy_page.dart';
@@ -817,11 +818,15 @@ class SendMenu extends StatelessWidget {
 class DashboardPage extends StatefulWidget {
   final List<String> addresses;
   final ActionRepository actionRepository;
+  final String? initialRoute;
+  final String? assetName;
 
   const DashboardPage({
     super.key,
     required this.addresses,
     required this.actionRepository,
+    this.initialRoute,
+    this.assetName,
   });
 
   @override
@@ -998,6 +1003,14 @@ class DashboardPageState extends State<DashboardPage>
     final isSmallScreen = MediaQuery.of(context).size.width < 500;
 
     Widget buildTabContent() {
+      // If we're showing an asset view
+      if (widget.initialRoute == 'asset' && widget.assetName != null) {
+        return Container(
+          color: Theme.of(context).scaffoldBackgroundColor,
+          child: AssetView(assetName: widget.assetName!),
+        );
+      }
+
       return Column(
         children: [
           Container(
@@ -1330,7 +1343,14 @@ class DashboardPageState extends State<DashboardPage>
 }
 
 class DashboardPageWrapper extends StatelessWidget {
-  const DashboardPageWrapper({super.key});
+  final String? initialRoute;
+  final String? assetName;
+
+  const DashboardPageWrapper({
+    super.key,
+    this.initialRoute,
+    this.assetName,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -1372,6 +1392,8 @@ class DashboardPageWrapper extends StatelessWidget {
                   ...(data.importedAddresses?.map((e) => e.address) ?? [])
                 ],
                 actionRepository: GetIt.instance<ActionRepository>(),
+                initialRoute: initialRoute,
+                assetName: assetName,
               ),
             ),
         orElse: () => const SizedBox.shrink());

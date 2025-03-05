@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/presentation/common/no_data.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
@@ -243,63 +244,77 @@ class BalancesSliverState extends State<BalancesSliver> {
         return [
           Column(
             children: sortedEntries.map((entry) {
-              return SizedBox(
-                // padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                height: 54,
-                child: Row(
-                  children: [
-                    // Star icon (placeholder)
-                    const Icon(
-                      Icons.star_border_outlined,
-                      size: 16,
-                    ),
-                    const SizedBox(width: 10),
-                    // Asset icon (placeholder)
-                    Container(
-                      width: 32,
-                      height: 32,
-                      decoration: const BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.grey, // Placeholder color
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    // Asset name and details
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.center,
+              return MouseRegion(
+                cursor: SystemMouseCursors.click,
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: () {
+                      // Navigate to the asset details page
+                      context.go('/asset/${Uri.encodeComponent(entry.key)}');
+                    },
+                    borderRadius: BorderRadius.circular(10),
+                    child: Container(
+                      // padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                      height: 54,
+                      margin: const EdgeInsets.symmetric(vertical: 2),
+                      child: Row(
                         children: [
-                          SizedBox(
-                            width: 150,
-                            child: MiddleTruncatedText(
-                              text: entry.key,
-                              width: 150,
-                              charsToShow: 5,
-                              style: const TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                              ),
+                          // Star icon (placeholder)
+                          const Icon(
+                            Icons.star_border_outlined,
+                            size: 16,
+                          ),
+                          const SizedBox(width: 10),
+                          // Asset icon (placeholder)
+                          Container(
+                            width: 32,
+                            height: 32,
+                            decoration: const BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Colors.grey, // Placeholder color
                             ),
+                          ),
+                          const SizedBox(width: 10),
+                          // Asset name and details
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                SizedBox(
+                                  width: 150,
+                                  child: MiddleTruncatedText(
+                                    text: entry.key,
+                                    width: 150,
+                                    charsToShow: 5,
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          // Amount and percentage
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                entry.value.quantityNormalized,
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
                     ),
-                    // Amount and percentage
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          entry.value.quantityNormalized,
-                          style: const TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
+                  ),
                 ),
               );
             }).toList(),

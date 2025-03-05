@@ -39,13 +39,13 @@ import 'package:horizon/presentation/inactivity_monitor/inactivity_monitor_bloc.
 import 'package:horizon/presentation/inactivity_monitor/inactivity_monitor_view.dart';
 import 'package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_bloc.dart';
 import 'package:horizon/presentation/screens/dashboard/address_form/bloc/address_form_bloc.dart';
-import 'package:horizon/presentation/screens/settings/import_address/bloc/import_address_pk_bloc.dart';
 import 'package:horizon/presentation/screens/dashboard/view/dashboard_page.dart';
 import 'package:horizon/presentation/screens/login/login_view.dart';
 import 'package:horizon/presentation/screens/onboarding/view/onboarding_page.dart';
 import 'package:horizon/presentation/screens/onboarding_create/view/onboarding_create_page.dart';
 import 'package:horizon/presentation/screens/onboarding_import/view/onboarding_import_page.dart';
 import 'package:horizon/presentation/screens/privacy_policy.dart';
+import 'package:horizon/presentation/screens/settings/import_address/bloc/import_address_pk_bloc.dart';
 import 'package:horizon/presentation/screens/tos.dart';
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:horizon/presentation/session/bloc/session_state.dart';
@@ -300,6 +300,29 @@ class AppRouter {
                                 bottomNavigationBar: const Footer(),
                                 body: VersionWarningSnackbar(
                                     child: DashboardPageWrapper(key: key)));
+                          },
+                          orElse: () => const LoadingScreen(),
+                        );
+                      }),
+                  GoRoute(
+                      path: "/asset/:assetName",
+                      builder: (context, state) {
+                        final assetName =
+                            state.pathParameters['assetName'] ?? '';
+                        final session = context.watch<SessionStateCubit>();
+
+                        return session.state.maybeWhen(
+                          success: (sessionState) {
+                            final Key key = Key(sessionState.wallet.uuid);
+
+                            return Scaffold(
+                                bottomNavigationBar: const Footer(),
+                                body: VersionWarningSnackbar(
+                                    child: DashboardPageWrapper(
+                                  key: key,
+                                  initialRoute: 'asset',
+                                  assetName: assetName,
+                                )));
                           },
                           orElse: () => const LoadingScreen(),
                         );
