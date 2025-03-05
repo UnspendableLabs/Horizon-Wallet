@@ -183,7 +183,6 @@ class _ImportAddressFormState extends State<_ImportAddressForm> {
                     return null;
                   },
                 ),
-                const SizedBox(height: 10),
                 HorizonTextField(
                   controller: _privateKeyController,
                   hintText: 'Private Key',
@@ -208,7 +207,6 @@ class _ImportAddressFormState extends State<_ImportAddressForm> {
                     },
                   ),
                 ),
-                const SizedBox(height: 10),
                 HorizonRedesignDropdown<ImportAddressPkFormat>(
                   items: ImportAddressPkFormat.values.map((format) {
                     return DropdownMenuItem(
@@ -238,98 +236,69 @@ class _ImportAddressFormState extends State<_ImportAddressForm> {
                     ),
                   ),
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       const Icon(
                         Icons.warning_amber_rounded,
-                        color: Colors.orange,
+                        color: yellow1,
                         size: 24,
                       ),
                       const SizedBox(height: 8),
-                      Text(
-                        'Please be careful when importing private keys:',
-                        style: Theme.of(context).textTheme.bodyLarge,
+                      SelectableText(
+                        textAlign: TextAlign.center,
+                        'If you use this address in a non-Counterparty wallet, you risk losing your UTXO-attached asset. Please confirm you understand the risk.',
+                        style: Theme.of(context).textTheme.titleSmall,
                       ),
-                      const SizedBox(height: 8),
-                      _buildWarningPoint(
-                        '• Keep your private key secure',
-                        'Never share it with anyone',
-                      ),
-                      const SizedBox(height: 8),
-                      _buildWarningPoint(
-                        '• Verify the source',
-                        'Only import keys from trusted sources',
-                      ),
-                      const SizedBox(height: 8),
-                      _buildWarningPoint(
-                        '• Check your surroundings',
-                        'Make sure no one can see your screen',
+                      Container(
+                        height: 64,
+                        margin: const EdgeInsets.symmetric(
+                            horizontal: 0.0, vertical: 5.0),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(18),
+                          border: Border.all(
+                            color: isDarkMode
+                                ? transparentWhite8
+                                : transparentBlack8,
+                            width: 1,
+                          ),
+                        ),
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(18),
+                            child: Padding(
+                              padding:
+                                  const EdgeInsets.fromLTRB(14, 11, 14, 11),
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      'I understand the risk',
+                                      style:
+                                          Theme.of(context).textTheme.bodySmall,
+                                    ),
+                                  ),
+                                  HorizonToggle(
+                                    value: _toggleRecognized,
+                                    onChanged: (_) {
+                                      setState(() {
+                                        _toggleRecognized = !_toggleRecognized;
+                                      });
+                                    },
+                                    backgroundColor: yellow1,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(height: 24),
-                Container(
-                  height: 64,
-                  margin: const EdgeInsets.symmetric(
-                      horizontal: 0.0, vertical: 5.0),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(18),
-                    border: Border.all(
-                      color: isDarkMode ? transparentWhite8 : transparentBlack8,
-                      width: 1,
-                    ),
-                  ),
-                  child: Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(18),
-                      child: Padding(
-                        padding: const EdgeInsets.fromLTRB(14, 11, 14, 11),
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.key,
-                              size: 24,
-                              color: isDarkMode ? Colors.white : Colors.black,
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Text(
-                                'Import',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w500,
-                                  color:
-                                      isDarkMode ? Colors.white : Colors.black,
-                                ),
-                              ),
-                            ),
-                            HorizonToggle(
-                              value: _toggleRecognized,
-                              onChanged: (_) {
-                                setState(() {
-                                  _toggleRecognized = !_toggleRecognized;
-                                });
-                              },
-                              backgroundColor: yellow1,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
                 if (_errorMessage != null) ...[
                   const SizedBox(height: 16),
-                  Container(
-                    padding:
-                        const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-                    decoration: BoxDecoration(
-                      color: red1.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: red1),
-                    ),
+                  Center(
                     child: SelectableText(
                       _errorMessage!,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -355,27 +324,6 @@ class _ImportAddressFormState extends State<_ImportAddressForm> {
           ),
         );
       },
-    );
-  }
-
-  Widget _buildWarningPoint(String title, String subtitle) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          title,
-          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          subtitle,
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Theme.of(context).textTheme.bodySmall?.color,
-              ),
-        ),
-      ],
     );
   }
 }
