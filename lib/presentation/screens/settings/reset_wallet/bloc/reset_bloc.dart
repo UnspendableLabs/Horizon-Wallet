@@ -8,8 +8,8 @@ import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/domain/services/secure_kv_service.dart';
-import 'package:horizon/presentation/screens/dashboard/bloc/reset/reset_event.dart';
-import 'package:horizon/presentation/screens/dashboard/bloc/reset/reset_state.dart';
+import 'package:horizon/presentation/screens/settings/reset_wallet/bloc/reset_event.dart';
+import 'package:horizon/presentation/screens/settings/reset_wallet/bloc/reset_state.dart';
 import 'package:logger/logger.dart';
 
 class ResetBloc extends Bloc<ResetEvent, ResetState> {
