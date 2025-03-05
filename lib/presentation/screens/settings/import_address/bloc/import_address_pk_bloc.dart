@@ -9,8 +9,8 @@ import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/imported_address_service.dart';
 import 'package:horizon/domain/services/wallet_service.dart';
-import "package:horizon/presentation/screens/dashboard/import_address_pk_form/bloc/import_address_pk_event.dart";
-import 'package:horizon/presentation/screens/dashboard/import_address_pk_form/bloc/import_address_pk_state.dart';
+import "package:horizon/presentation/screens/settings/import_address/bloc/import_address_pk_event.dart";
+import 'package:horizon/presentation/screens/settings/import_address/bloc/import_address_pk_state.dart';
 
 class ImportAddressPkBloc
     extends Bloc<ImportAddressPkEvent, ImportAddressPkState> {

@@ -10,9 +10,11 @@ import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/imported_address_service.dart';
 import 'package:horizon/domain/services/wallet_service.dart';
-import 'package:horizon/presentation/screens/dashboard/import_address_pk_form/bloc/import_address_pk_bloc.dart';
-import 'package:horizon/presentation/screens/dashboard/import_address_pk_form/bloc/import_address_pk_event.dart';
-import 'package:horizon/presentation/screens/dashboard/import_address_pk_form/bloc/import_address_pk_state.dart';
+import 'package:horizon/presentation/common/redesign_colors.dart';
+import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
+import 'package:horizon/presentation/screens/settings/import_address/bloc/import_address_pk_bloc.dart';
+import 'package:horizon/presentation/screens/settings/import_address/bloc/import_address_pk_event.dart';
+import 'package:horizon/presentation/screens/settings/import_address/bloc/import_address_pk_state.dart';
 
 class ImportAddressFlow extends StatefulWidget {
   final VoidCallback onNavigateBack;
@@ -32,7 +34,9 @@ class _ImportAddressFlowState extends State<ImportAddressFlow> {
   final _addressNameController = TextEditingController();
   final _passwordController = TextEditingController();
   String? _error;
-  ImportAddressPkFormat _selectedFormat = ImportAddressPkFormat.segwit;
+  ImportAddressPkFormat? _selectedFormat;
+  bool _showPrivateKey = false;
+  bool _toggleRecognized = false;
 
   @override
   void dispose() {
@@ -40,6 +44,65 @@ class _ImportAddressFlowState extends State<ImportAddressFlow> {
     _addressNameController.dispose();
     _passwordController.dispose();
     super.dispose();
+  }
+
+  bool get _isFormValid {
+    return _formKey.currentState?.validate() == true &&
+        _selectedFormat != null &&
+        _toggleRecognized;
+  }
+
+  void _showPasswordPrompt(BuildContext context, bool isLoading) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) =>
+          BlocListener<ImportAddressPkBloc, ImportAddressPkState>(
+        listener: (context, state) {
+          if (state is ImportAddressPkSuccess) {
+            Navigator.of(context).pop();
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Private key successfully imported'),
+                  behavior: SnackBarBehavior.floating,
+                ),
+              );
+              widget.onNavigateBack();
+            }
+          } else if (state is ImportAddressPkError) {
+            setState(() {
+              _error = state.error;
+            });
+          }
+        },
+        child: HorizonPasswordPrompt(
+          onPasswordSubmitted: (password) {
+            if (_formKey.currentState!.validate() && _selectedFormat != null) {
+              context.read<ImportAddressPkBloc>().add(
+                    Submit(
+                      wif: _privateKeyController.text,
+                      password: password,
+                      format: _selectedFormat!,
+                      name: _addressNameController.text,
+                    ),
+                  );
+              Navigator.of(context).pop();
+            }
+          },
+          onCancel: () {
+            setState(() {
+              _error = null;
+            });
+            Navigator.of(context).pop();
+          },
+          buttonText: 'Import',
+          title: 'Enter Password',
+          errorText: _error,
+          isLoading: isLoading,
+        ),
+      ),
+    );
   }
 
   @override
@@ -75,6 +138,7 @@ class _ImportAddressFlowState extends State<ImportAddressFlow> {
         },
         builder: (context, state) {
           final isLoading = state is ImportAddressPkLoading;
+          final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
           return SingleChildScrollView(
             padding: const EdgeInsets.all(20.0),
@@ -83,58 +147,43 @@ class _ImportAddressFlowState extends State<ImportAddressFlow> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Icon(
-                    Icons.warning_amber_rounded,
-                    color: Colors.orange,
-                    size: 48,
-                  ),
-                  const SizedBox(height: 20),
-                  Text(
-                    'Import Private Key',
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Please be careful when importing private keys:',
-                    style: Theme.of(context).textTheme.bodyLarge,
-                  ),
-                  const SizedBox(height: 16),
-                  _buildWarningPoint(
-                    '• Keep your private key secure',
-                    'Never share it with anyone',
-                  ),
-                  const SizedBox(height: 12),
-                  _buildWarningPoint(
-                    '• Verify the source',
-                    'Only import keys from trusted sources',
-                  ),
-                  const SizedBox(height: 12),
-                  _buildWarningPoint(
-                    '• Check your surroundings',
-                    'Make sure no one can see your screen',
-                  ),
-                  const SizedBox(height: 32),
-                  TextFormField(
-                    controller: _privateKeyController,
-                    decoration: InputDecoration(
-                      labelText: 'Private Key',
-                      errorText: _error,
-                    ),
+                  HorizonTextField(
+                    controller: _addressNameController,
+                    hintText: 'Address Name',
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Please enter a private key';
+                        return "Address name is required";
                       }
                       return null;
                     },
                   ),
-                  const SizedBox(height: 16),
-                  DropdownButtonFormField<ImportAddressPkFormat>(
-                    value: _selectedFormat,
-                    decoration: const InputDecoration(
-                      labelText: 'Address Format',
+                  // const SizedBox(height: 10),
+                  HorizonTextField(
+                    controller: _privateKeyController,
+                    hintText: 'Private Key',
+                    obscureText: !_showPrivateKey,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return "Private key is required";
+                      }
+                      return null;
+                    },
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _showPrivateKey
+                            ? Icons.visibility_outlined
+                            : Icons.visibility_off_outlined,
+                        size: 18,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _showPrivateKey = !_showPrivateKey;
+                        });
+                      },
                     ),
+                  ),
+                  // const SizedBox(height: 10),
+                  HorizonRedesignDropdown<ImportAddressPkFormat>(
                     items: ImportAddressPkFormat.values.map((format) {
                       return DropdownMenuItem(
                         value: format,
@@ -148,63 +197,123 @@ class _ImportAddressFlowState extends State<ImportAddressFlow> {
                         });
                       }
                     },
+                    selectedValue: _selectedFormat,
+                    hintText: 'Select Format',
                   ),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _addressNameController,
-                    decoration: const InputDecoration(
-                      labelText: 'Address Name',
+                  const SizedBox(height: 24),
+                  Container(
+                    width: 335,
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(18),
+                      border: Border.all(
+                        color: yellow1,
+                        width: 1,
+                      ),
                     ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter a name';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _passwordController,
-                    obscureText: true,
-                    decoration: const InputDecoration(
-                      labelText: 'Wallet Password',
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Icon(
+                          Icons.warning_amber_rounded,
+                          color: Colors.orange,
+                          size: 24,
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Please be careful when importing private keys:',
+                          style: Theme.of(context).textTheme.bodyLarge,
+                        ),
+                        const SizedBox(height: 8),
+                        _buildWarningPoint(
+                          '• Keep your private key secure',
+                          'Never share it with anyone',
+                        ),
+                        const SizedBox(height: 8),
+                        _buildWarningPoint(
+                          '• Verify the source',
+                          'Only import keys from trusted sources',
+                        ),
+                        const SizedBox(height: 8),
+                        _buildWarningPoint(
+                          '• Check your surroundings',
+                          'Make sure no one can see your screen',
+                        ),
+                      ],
                     ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter your wallet password';
-                      }
-                      return null;
-                    },
                   ),
-                  const SizedBox(height: 32),
-                  SizedBox(
-                    width: double.infinity,
-                    child: FilledButton(
-                      onPressed: isLoading
-                          ? null
-                          : () {
-                              if (_formKey.currentState!.validate()) {
-                                context.read<ImportAddressPkBloc>().add(
-                                      Submit(
-                                        wif: _privateKeyController.text,
-                                        password: _passwordController.text,
-                                        format: _selectedFormat,
-                                        name: _addressNameController.text,
-                                      ),
-                                    );
-                              }
-                            },
-                      child: isLoading
-                          ? const SizedBox(
-                              height: 20,
-                              width: 20,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                valueColor:
-                                    AlwaysStoppedAnimation<Color>(Colors.white),
+                  const SizedBox(height: 24),
+                  Container(
+                    height: 64,
+                    margin: const EdgeInsets.symmetric(
+                        horizontal: 0.0, vertical: 5.0),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(18),
+                      border: Border.all(
+                        color:
+                            isDarkMode ? transparentWhite8 : transparentBlack8,
+                        width: 1,
+                      ),
+                    ),
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(18),
+                        child: Padding(
+                          padding: const EdgeInsets.fromLTRB(14, 11, 14, 11),
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.key,
+                                size: 24,
+                                color: isDarkMode ? Colors.white : Colors.black,
                               ),
-                            )
-                          : const Text('Import Address'),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Text(
+                                  'Import',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w500,
+                                    color: isDarkMode
+                                        ? Colors.white
+                                        : Colors.black,
+                                  ),
+                                ),
+                              ),
+                              HorizonToggle(
+                                value: _toggleRecognized,
+                                onChanged: (_) {
+                                  setState(() {
+                                    _toggleRecognized = !_toggleRecognized;
+                                  });
+                                },
+                                backgroundColor: yellow1,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  if (_error != null) ...[
+                    const SizedBox(height: 16),
+                    SelectableText(
+                      _error!,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: red1,
+                          ),
+                    ),
+                  ],
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    height: 64,
+                    child: HorizonOutlinedButton(
+                      onPressed: (isLoading || !_isFormValid)
+                          ? null
+                          : () => _showPasswordPrompt(context, isLoading),
+                      buttonText: 'Continue',
+                      isTransparent: false,
                     ),
                   ),
                 ],

@@ -602,11 +602,13 @@ class _BlurredBackgroundDropdownState<T>
 class HorizonToggle extends StatefulWidget {
   final bool value;
   final ValueChanged<bool> onChanged;
+  final Color? backgroundColor;
 
   const HorizonToggle({
     super.key,
     required this.value,
     required this.onChanged,
+    this.backgroundColor,
   });
 
   @override
@@ -633,7 +635,7 @@ class _HorizonToggleState extends State<HorizonToggle> {
               width: 1,
             ),
             color: widget.value
-                ? green2
+                ? (widget.backgroundColor ?? green2)
                 : isDarkMode
                     ? transparentWhite8
                     : transparentBlack8,
@@ -650,9 +652,9 @@ class _HorizonToggleState extends State<HorizonToggle> {
                 color: offWhite,
               ),
               child: widget.value
-                  ? const Icon(
+                  ? Icon(
                       Icons.check,
-                      color: green2,
+                      color: widget.backgroundColor ?? green2,
                       size: 16,
                     )
                   : null,
@@ -672,6 +674,7 @@ class HorizonTextField extends StatefulWidget {
   final bool obscureText;
   final TextInputType? keyboardType;
   final Widget? suffixIcon;
+  final String? Function(String?)? validator;
 
   const HorizonTextField({
     super.key,
@@ -682,6 +685,7 @@ class HorizonTextField extends StatefulWidget {
     this.obscureText = false,
     this.keyboardType,
     this.suffixIcon,
+    this.validator,
   });
 
   @override
@@ -690,6 +694,7 @@ class HorizonTextField extends StatefulWidget {
 
 class _HorizonTextFieldState extends State<HorizonTextField> {
   final FocusNode _focusNode = FocusNode();
+  bool _hasText = false;
 
   @override
   void initState() {
@@ -697,12 +702,20 @@ class _HorizonTextFieldState extends State<HorizonTextField> {
     _focusNode.addListener(() {
       setState(() {});
     });
+    widget.controller.addListener(_onTextChanged);
   }
 
   @override
   void dispose() {
+    widget.controller.removeListener(_onTextChanged);
     _focusNode.dispose();
     super.dispose();
+  }
+
+  void _onTextChanged() {
+    setState(() {
+      _hasText = widget.controller.text.isNotEmpty;
+    });
   }
 
   @override
@@ -715,19 +728,19 @@ class _HorizonTextFieldState extends State<HorizonTextField> {
       mainAxisSize: MainAxisSize.min,
       children: [
         Container(
-          width: 295,
+          width: double.infinity,
           height: 56,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(18),
-            border: widget.errorText != null
-                ? Border.all(color: red1, width: 1)
-                : _focusNode.hasFocus
-                    ? const GradientBoxBorder(width: 1)
-                    : Border.all(
-                        color:
-                            isDarkMode ? transparentWhite8 : transparentBlack8,
-                        width: 1,
-                      ),
+            border: _focusNode.hasFocus
+                ? const GradientBoxBorder(width: 1)
+                : Border.all(
+                    color: isDarkMode ? transparentWhite8 : transparentBlack8,
+                    width: 1,
+                  ),
+            color: _hasText
+                ? (isDarkMode ? grey5 : grey1)
+                : (isDarkMode ? offBlack : offWhite),
           ),
           child: Center(
             child: TextFormField(
@@ -736,6 +749,7 @@ class _HorizonTextFieldState extends State<HorizonTextField> {
               obscureText: widget.obscureText,
               keyboardType: widget.keyboardType,
               style: theme.textTheme.bodyMedium,
+              validator: widget.validator,
               decoration: InputDecoration(
                 labelText: widget.label,
                 hintText: widget.hintText,
@@ -765,12 +779,11 @@ class _HorizonTextFieldState extends State<HorizonTextField> {
             ),
           ),
         ),
-        if (widget.errorText != null) ...[
-          const SizedBox(height: 8),
+        if (widget.errorText != null || widget.validator != null) ...[
           Padding(
             padding: const EdgeInsets.only(left: 12),
             child: Text(
-              widget.errorText!,
+              widget.errorText ?? '',
               style: theme.textTheme.bodySmall?.copyWith(
                 color: red1,
               ),
