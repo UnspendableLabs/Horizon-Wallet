@@ -39,7 +39,7 @@ import 'package:horizon/presentation/inactivity_monitor/inactivity_monitor_bloc.
 import 'package:horizon/presentation/inactivity_monitor/inactivity_monitor_view.dart';
 import 'package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_bloc.dart';
 import 'package:horizon/presentation/screens/dashboard/address_form/bloc/address_form_bloc.dart';
-import 'package:horizon/presentation/screens/dashboard/import_address_pk_form/bloc/import_address_pk_bloc.dart';
+import 'package:horizon/presentation/screens/settings/import_address/bloc/import_address_pk_bloc.dart';
 import 'package:horizon/presentation/screens/dashboard/view/dashboard_page.dart';
 import 'package:horizon/presentation/screens/login/login_view.dart';
 import 'package:horizon/presentation/screens/onboarding/view/onboarding_page.dart';

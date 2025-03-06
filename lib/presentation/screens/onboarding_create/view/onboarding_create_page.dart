@@ -12,6 +12,7 @@ import 'package:horizon/domain/services/wallet_service.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/common/theme_extension.dart';
 import 'package:horizon/presentation/common/usecase/import_wallet_usecase.dart';
+import 'package:horizon/presentation/common/widgets/numbered_grid.dart';
 import 'package:horizon/presentation/screens/onboarding/view/onboarding_shell.dart';
 import 'package:horizon/presentation/screens/onboarding/view/password_prompt.dart';
 import 'package:horizon/presentation/screens/onboarding/view/seed_input.dart';
@@ -309,7 +310,7 @@ class ShowMnemonicStep extends StatelessWidget {
                     padding: EdgeInsets.symmetric(
                         vertical: 14.0,
                         horizontal: isSmallScreen ? 20.0 : 40.0),
-                    child: NumberedWordGrid(
+                    child: NumberedGrid(
                       isSmallScreen: isSmallScreen,
                       text: mnemonic,
                       itemMargin: const EdgeInsets.all(5.0),

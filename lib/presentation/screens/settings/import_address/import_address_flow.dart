@@ -10,37 +10,19 @@ import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/imported_address_service.dart';
 import 'package:horizon/domain/services/wallet_service.dart';
-import 'package:horizon/presentation/screens/dashboard/import_address_pk_form/bloc/import_address_pk_bloc.dart';
-import 'package:horizon/presentation/screens/dashboard/import_address_pk_form/bloc/import_address_pk_event.dart';
-import 'package:horizon/presentation/screens/dashboard/import_address_pk_form/bloc/import_address_pk_state.dart';
+import 'package:horizon/presentation/common/redesign_colors.dart';
+import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
+import 'package:horizon/presentation/screens/settings/import_address/bloc/import_address_pk_bloc.dart';
+import 'package:horizon/presentation/screens/settings/import_address/bloc/import_address_pk_event.dart';
+import 'package:horizon/presentation/screens/settings/import_address/bloc/import_address_pk_state.dart';
 
-class ImportAddressFlow extends StatefulWidget {
+class ImportAddressFlow extends StatelessWidget {
   final VoidCallback onNavigateBack;
 
   const ImportAddressFlow({
     super.key,
     required this.onNavigateBack,
   });
-
-  @override
-  State<ImportAddressFlow> createState() => _ImportAddressFlowState();
-}
-
-class _ImportAddressFlowState extends State<ImportAddressFlow> {
-  final _formKey = GlobalKey<FormState>();
-  final _privateKeyController = TextEditingController();
-  final _addressNameController = TextEditingController();
-  final _passwordController = TextEditingController();
-  String? _error;
-  ImportAddressPkFormat _selectedFormat = ImportAddressPkFormat.segwit;
-
-  @override
-  void dispose() {
-    _privateKeyController.dispose();
-    _addressNameController.dispose();
-    _passwordController.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -55,185 +37,293 @@ class _ImportAddressFlowState extends State<ImportAddressFlow> {
         importedAddressService: GetIt.I.get<ImportedAddressService>(),
         inMemoryKeyRepository: GetIt.I.get<InMemoryKeyRepository>(),
       ),
-      child: BlocConsumer<ImportAddressPkBloc, ImportAddressPkState>(
-        listener: (context, state) {
-          if (state is ImportAddressPkError) {
-            setState(() {
-              _error = state.error;
-            });
-          } else if (state is ImportAddressPkSuccess) {
-            if (mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Private key successfully imported'),
-                  behavior: SnackBarBehavior.floating,
-                ),
-              );
-              widget.onNavigateBack();
-            }
-          }
-        },
-        builder: (context, state) {
-          final isLoading = state is ImportAddressPkLoading;
+      child: _ImportAddressForm(onNavigateBack: onNavigateBack),
+    );
+  }
+}
 
-          return SingleChildScrollView(
-            padding: const EdgeInsets.all(20.0),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Icon(
-                    Icons.warning_amber_rounded,
-                    color: Colors.orange,
-                    size: 48,
+class _ImportAddressForm extends StatefulWidget {
+  final VoidCallback onNavigateBack;
+
+  const _ImportAddressForm({
+    required this.onNavigateBack,
+  });
+
+  @override
+  State<_ImportAddressForm> createState() => _ImportAddressFormState();
+}
+
+class _ImportAddressFormState extends State<_ImportAddressForm> {
+  final _formKey = GlobalKey<FormState>();
+  final _privateKeyController = TextEditingController();
+  final _addressNameController = TextEditingController();
+  bool _showPrivateKey = false;
+  bool _toggleRecognized = false;
+  ImportAddressPkFormat? _selectedFormat;
+  String? _errorMessage;
+  bool _isSubmitting = false;
+
+  @override
+  void dispose() {
+    _privateKeyController.dispose();
+    _addressNameController.dispose();
+    super.dispose();
+  }
+
+  bool get _isFormValid {
+    return _formKey.currentState?.validate() == true &&
+        _selectedFormat != null &&
+        _toggleRecognized;
+  }
+
+  Future<void> _showPasswordPrompt() async {
+    // Prevent multiple dialogs
+    if (_isSubmitting) return;
+
+    setState(() {
+      // Clear any previous error messages when opening the prompt
+      _errorMessage = null;
+    });
+
+    final password = await showDialog<String>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) {
+        return HorizonPasswordPrompt(
+          onPasswordSubmitted: (password) {
+            Navigator.of(dialogContext).pop(password);
+          },
+          onCancel: () {
+            Navigator.of(dialogContext).pop(null);
+          },
+          buttonText: 'Import',
+          title: 'Enter Password',
+          errorText: null,
+          isLoading: false,
+        );
+      },
+    );
+
+    // If user cancelled or dialog was dismissed
+    if (password == null) return;
+
+    if (!mounted) return;
+
+    // Set submitting state
+    setState(() {
+      _isSubmitting = true;
+    });
+
+    // Submit the form with the password
+    if (_formKey.currentState!.validate() && _selectedFormat != null) {
+      context.read<ImportAddressPkBloc>().add(
+            Submit(
+              wif: _privateKeyController.text,
+              password: password,
+              format: _selectedFormat!,
+              name: _addressNameController.text,
+            ),
+          );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocConsumer<ImportAddressPkBloc, ImportAddressPkState>(
+      listener: (context, state) {
+        if (state is ImportAddressPkLoading) {
+          setState(() {
+            _isSubmitting = true;
+            // Clear error message when loading
+            _errorMessage = null;
+          });
+        } else if (state is ImportAddressPkError) {
+          setState(() {
+            _isSubmitting = false;
+            _errorMessage = state.error;
+          });
+        } else if (state is ImportAddressPkSuccess) {
+          setState(() {
+            _isSubmitting = false;
+            _errorMessage = null;
+          });
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Private key successfully imported'),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+
+          widget.onNavigateBack();
+        } else if (state is ImportAddressPkInitial) {
+          setState(() {
+            _isSubmitting = false;
+          });
+        }
+      },
+      builder: (context, state) {
+        final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+        final isLoading = state is ImportAddressPkLoading || _isSubmitting;
+
+        return SingleChildScrollView(
+          padding: const EdgeInsets.all(20.0),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                HorizonTextField(
+                  controller: _addressNameController,
+                  hintText: 'Address Name',
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return "Address name is required";
+                    }
+                    return null;
+                  },
+                ),
+                HorizonTextField(
+                  controller: _privateKeyController,
+                  hintText: 'Private Key',
+                  obscureText: !_showPrivateKey,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return "Private key is required";
+                    }
+                    return null;
+                  },
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      _showPrivateKey
+                          ? Icons.visibility_outlined
+                          : Icons.visibility_off_outlined,
+                      size: 18,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        _showPrivateKey = !_showPrivateKey;
+                      });
+                    },
                   ),
-                  const SizedBox(height: 20),
-                  Text(
-                    'Import Private Key',
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
+                ),
+                HorizonRedesignDropdown<ImportAddressPkFormat>(
+                  items: ImportAddressPkFormat.values.map((format) {
+                    return DropdownMenuItem(
+                      value: format,
+                      child: Text(format.name),
+                    );
+                  }).toList(),
+                  onChanged: (value) {
+                    if (value != null) {
+                      setState(() {
+                        _selectedFormat = value;
+                      });
+                    }
+                  },
+                  selectedValue: _selectedFormat,
+                  hintText: 'Select Format',
+                ),
+                const SizedBox(height: 24),
+                Container(
+                  width: 335,
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(18),
+                    border: Border.all(
+                      color: yellow1,
+                      width: 1,
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      const Icon(
+                        Icons.warning_amber_rounded,
+                        color: yellow1,
+                        size: 24,
+                      ),
+                      const SizedBox(height: 8),
+                      SelectableText(
+                        textAlign: TextAlign.center,
+                        'If you use this address in a non-Counterparty wallet, you risk losing your UTXO-attached asset. Please confirm you understand the risk.',
+                        style: Theme.of(context).textTheme.titleSmall,
+                      ),
+                      Container(
+                        height: 64,
+                        margin: const EdgeInsets.symmetric(
+                            horizontal: 0.0, vertical: 5.0),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(18),
+                          border: Border.all(
+                            color: isDarkMode
+                                ? transparentWhite8
+                                : transparentBlack8,
+                            width: 1,
+                          ),
                         ),
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Please be careful when importing private keys:',
-                    style: Theme.of(context).textTheme.bodyLarge,
-                  ),
-                  const SizedBox(height: 16),
-                  _buildWarningPoint(
-                    '• Keep your private key secure',
-                    'Never share it with anyone',
-                  ),
-                  const SizedBox(height: 12),
-                  _buildWarningPoint(
-                    '• Verify the source',
-                    'Only import keys from trusted sources',
-                  ),
-                  const SizedBox(height: 12),
-                  _buildWarningPoint(
-                    '• Check your surroundings',
-                    'Make sure no one can see your screen',
-                  ),
-                  const SizedBox(height: 32),
-                  TextFormField(
-                    controller: _privateKeyController,
-                    decoration: InputDecoration(
-                      labelText: 'Private Key',
-                      errorText: _error,
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter a private key';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  DropdownButtonFormField<ImportAddressPkFormat>(
-                    value: _selectedFormat,
-                    decoration: const InputDecoration(
-                      labelText: 'Address Format',
-                    ),
-                    items: ImportAddressPkFormat.values.map((format) {
-                      return DropdownMenuItem(
-                        value: format,
-                        child: Text(format.name),
-                      );
-                    }).toList(),
-                    onChanged: (value) {
-                      if (value != null) {
-                        setState(() {
-                          _selectedFormat = value;
-                        });
-                      }
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _addressNameController,
-                    decoration: const InputDecoration(
-                      labelText: 'Address Name',
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter a name';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _passwordController,
-                    obscureText: true,
-                    decoration: const InputDecoration(
-                      labelText: 'Wallet Password',
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter your wallet password';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 32),
-                  SizedBox(
-                    width: double.infinity,
-                    child: FilledButton(
-                      onPressed: isLoading
-                          ? null
-                          : () {
-                              if (_formKey.currentState!.validate()) {
-                                context.read<ImportAddressPkBloc>().add(
-                                      Submit(
-                                        wif: _privateKeyController.text,
-                                        password: _passwordController.text,
-                                        format: _selectedFormat,
-                                        name: _addressNameController.text,
-                                      ),
-                                    );
-                              }
-                            },
-                      child: isLoading
-                          ? const SizedBox(
-                              height: 20,
-                              width: 20,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                valueColor:
-                                    AlwaysStoppedAnimation<Color>(Colors.white),
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(18),
+                            child: Padding(
+                              padding:
+                                  const EdgeInsets.fromLTRB(14, 11, 14, 11),
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      'I understand the risk',
+                                      style:
+                                          Theme.of(context).textTheme.bodySmall,
+                                    ),
+                                  ),
+                                  HorizonToggle(
+                                    value: _toggleRecognized,
+                                    onChanged: (_) {
+                                      setState(() {
+                                        _toggleRecognized = !_toggleRecognized;
+                                      });
+                                    },
+                                    backgroundColor: yellow1,
+                                  ),
+                                ],
                               ),
-                            )
-                          : const Text('Import Address'),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                if (_errorMessage != null) ...[
+                  const SizedBox(height: 16),
+                  Center(
+                    child: SelectableText(
+                      _errorMessage!,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: red1,
+                          ),
                     ),
                   ),
                 ],
-              ),
+                const SizedBox(height: 16),
+                SizedBox(
+                  height: 64,
+                  child: isLoading
+                      ? const Center(child: CircularProgressIndicator())
+                      : HorizonOutlinedButton(
+                          onPressed:
+                              (!_isFormValid) ? null : _showPasswordPrompt,
+                          buttonText: 'Continue',
+                          isTransparent: false,
+                        ),
+                ),
+              ],
             ),
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _buildWarningPoint(String title, String subtitle) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          title,
-          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          subtitle,
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Theme.of(context).textTheme.bodySmall?.color,
-              ),
-        ),
-      ],
+          ),
+        );
+      },
     );
   }
 }

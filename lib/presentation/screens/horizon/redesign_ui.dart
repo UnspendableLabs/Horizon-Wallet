@@ -602,11 +602,13 @@ class _BlurredBackgroundDropdownState<T>
 class HorizonToggle extends StatefulWidget {
   final bool value;
   final ValueChanged<bool> onChanged;
+  final Color? backgroundColor;
 
   const HorizonToggle({
     super.key,
     required this.value,
     required this.onChanged,
+    this.backgroundColor,
   });
 
   @override
@@ -633,7 +635,7 @@ class _HorizonToggleState extends State<HorizonToggle> {
               width: 1,
             ),
             color: widget.value
-                ? green2
+                ? (widget.backgroundColor ?? green2)
                 : isDarkMode
                     ? transparentWhite8
                     : transparentBlack8,
@@ -650,15 +652,265 @@ class _HorizonToggleState extends State<HorizonToggle> {
                 color: offWhite,
               ),
               child: widget.value
-                  ? const Icon(
+                  ? Icon(
                       Icons.check,
-                      color: green2,
+                      color: widget.backgroundColor ?? green2,
                       size: 16,
                     )
                   : null,
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+class HorizonTextField extends StatefulWidget {
+  final TextEditingController controller;
+  final String? label;
+  final String? hintText;
+  final String? errorText;
+  final bool obscureText;
+  final TextInputType? keyboardType;
+  final Widget? suffixIcon;
+  final String? Function(String?)? validator;
+
+  const HorizonTextField({
+    super.key,
+    required this.controller,
+    this.label,
+    this.hintText,
+    this.errorText,
+    this.obscureText = false,
+    this.keyboardType,
+    this.suffixIcon,
+    this.validator,
+  });
+
+  @override
+  State<HorizonTextField> createState() => _HorizonTextFieldState();
+}
+
+class _HorizonTextFieldState extends State<HorizonTextField> {
+  final FocusNode _focusNode = FocusNode();
+  bool _hasText = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _focusNode.addListener(() {
+      setState(() {});
+    });
+    widget.controller.addListener(_onTextChanged);
+  }
+
+  @override
+  void dispose() {
+    widget.controller.removeListener(_onTextChanged);
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  void _onTextChanged() {
+    setState(() {
+      _hasText = widget.controller.text.isNotEmpty;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: double.infinity,
+          height: 56,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(18),
+            border: _focusNode.hasFocus
+                ? const GradientBoxBorder(width: 1)
+                : Border.all(
+                    color: isDarkMode ? transparentWhite8 : transparentBlack8,
+                    width: 1,
+                  ),
+            color: _hasText
+                ? (isDarkMode ? grey5 : grey1)
+                : (isDarkMode ? offBlack : offWhite),
+          ),
+          child: Center(
+            child: TextFormField(
+              controller: widget.controller,
+              focusNode: _focusNode,
+              obscureText: widget.obscureText,
+              keyboardType: widget.keyboardType,
+              style: theme.textTheme.bodyMedium,
+              validator: widget.validator,
+              decoration: InputDecoration(
+                labelText: widget.label,
+                hintText: widget.hintText,
+                isDense: false,
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 0,
+                ),
+                suffixIcon: widget.suffixIcon,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(18),
+                  borderSide: BorderSide.none,
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(18),
+                  borderSide: BorderSide.none,
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(18),
+                  borderSide: BorderSide.none,
+                ),
+                focusedErrorBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(18),
+                  borderSide: BorderSide.none,
+                ),
+              ),
+            ),
+          ),
+        ),
+        if (widget.errorText != null || widget.validator != null) ...[
+          Padding(
+            padding: const EdgeInsets.only(left: 12),
+            child: Text(
+              widget.errorText ?? '',
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: red1,
+              ),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+class HorizonPasswordPrompt extends StatefulWidget {
+  final Function(String) onPasswordSubmitted;
+  final VoidCallback onCancel;
+  final String buttonText;
+  final String title;
+  final String? errorText;
+  final bool isLoading;
+
+  const HorizonPasswordPrompt({
+    super.key,
+    required this.onPasswordSubmitted,
+    required this.onCancel,
+    this.buttonText = 'Continue',
+    this.title = 'Enter Password',
+    this.errorText,
+    this.isLoading = false,
+  });
+
+  @override
+  State<HorizonPasswordPrompt> createState() => _HorizonPasswordPromptState();
+}
+
+class _HorizonPasswordPromptState extends State<HorizonPasswordPrompt> {
+  final TextEditingController _controller = TextEditingController();
+  bool _obscurePassword = true;
+
+  void _handleSubmit() async {
+    if (widget.isLoading) return;
+    await widget.onPasswordSubmitted(_controller.text);
+  }
+
+  void _togglePasswordVisibility() {
+    setState(() {
+      _obscurePassword = !_obscurePassword;
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
+
+    return Material(
+      type: MaterialType.transparency,
+      child: Stack(
+        children: [
+          // Blurred background
+          Positioned.fill(
+            child: GestureDetector(
+              onTap: widget.onCancel,
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+                child: Container(
+                  color: Colors.black.withOpacity(0.3),
+                ),
+              ),
+            ),
+          ),
+          // Centered dialog content
+          Center(
+            child: Container(
+              width: 335,
+              height: 234,
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(18),
+                border: const GradientBoxBorder(width: 1),
+                color: isDarkMode ? grey5 : grey1,
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Text(
+                    widget.title,
+                    style: theme.textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  HorizonTextField(
+                    controller: _controller,
+                    hintText: 'Password',
+                    errorText: widget.errorText,
+                    obscureText: _obscurePassword,
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _obscurePassword
+                            ? Icons.visibility_outlined
+                            : Icons.visibility_off_outlined,
+                        size: 18,
+                      ),
+                      onPressed: _togglePasswordVisibility,
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                      focusNode: FocusNode(skipTraversal: true),
+                    ),
+                  ),
+                  SizedBox(
+                    height: 56,
+                    child: HorizonOutlinedButton(
+                      onPressed: widget.isLoading ? null : _handleSubmit,
+                      buttonText: widget.buttonText,
+                      isTransparent: false,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
