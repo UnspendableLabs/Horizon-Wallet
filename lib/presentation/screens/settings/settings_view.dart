@@ -5,7 +5,6 @@ import 'package:get_it/get_it.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
-import 'package:horizon/presentation/screens/dashboard/view/dashboard_page.dart';
 import 'package:horizon/presentation/screens/settings/import_address/import_address_flow.dart';
 import 'package:horizon/presentation/screens/settings/reset_wallet/reset_wallet_flow.dart';
 import 'package:horizon/presentation/screens/settings/security_view.dart';
@@ -13,6 +12,7 @@ import 'package:horizon/presentation/screens/settings/seed_phrase/seed_phrase_fl
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:horizon/presentation/session/theme/bloc/theme_bloc.dart';
 import 'package:horizon/presentation/session/theme/bloc/theme_event.dart';
+import 'package:horizon/presentation/shell/app_shell.dart';
 
 enum SettingsPage {
   main,
@@ -483,13 +483,7 @@ class _SettingsViewState extends State<SettingsView> {
                           onPressed: _currentPage != SettingsPage.main
                               ? _navigateBack
                               : () {
-                                  final bottomTabController = context
-                                      .findAncestorStateOfType<
-                                          DashboardPageState>()
-                                      ?.bottomTabController;
-                                  if (bottomTabController != null) {
-                                    bottomTabController.animateTo(0);
-                                  }
+                                  AppShell.navigateToTab(context, 0);
                                 },
                         ),
                       ),

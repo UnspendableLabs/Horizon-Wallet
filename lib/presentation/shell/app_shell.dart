@@ -174,6 +174,14 @@ class AppShell extends StatefulWidget {
     required this.currentRoute,
   });
 
+  // Method to navigate to tabs from outside
+  static void navigateToTab(BuildContext context, int index) {
+    final state = context.findAncestorStateOfType<_AppShellState>();
+    if (state != null) {
+      state._bottomTabController.animateTo(index);
+    }
+  }
+
   @override
   State<AppShell> createState() => _AppShellState();
 }
@@ -182,6 +190,9 @@ class _AppShellState extends State<AppShell> with TickerProviderStateMixin {
   late TabController _bottomTabController;
   final ActionRepository actionRepository = GetIt.instance<ActionRepository>();
   Timer? _actionCheckTimer;
+
+  // Expose the bottom tab controller for external access
+  TabController get bottomTabController => _bottomTabController;
 
   @override
   void initState() {
@@ -217,6 +228,7 @@ class _AppShellState extends State<AppShell> with TickerProviderStateMixin {
   }
 
   void Function() _getHandler(URLAction.Action action) {
+    // TODO: handle each PRC action as we add back transactions
     return switch (action) {
       URLAction.RPCGetAddressesAction(
         tabId: var tabId,
