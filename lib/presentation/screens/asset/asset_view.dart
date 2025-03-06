@@ -2,11 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:horizon/domain/entities/multi_address_balance.dart';
+import 'package:horizon/presentation/common/filter_bar.dart';
+import 'package:horizon/presentation/common/icon_item_button.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/screens/asset/bloc/asset_view_bloc.dart';
 import 'package:horizon/presentation/screens/asset/bloc/asset_view_event.dart';
 import 'package:horizon/presentation/screens/dashboard/view/asset_icon.dart';
 import 'package:horizon/remote_data_bloc/remote_data_state.dart';
+
+enum BalanceViewFilter { address, utxo }
 
 class AssetView extends StatefulWidget {
   final String assetName;
@@ -20,11 +24,33 @@ class AssetView extends StatefulWidget {
   State<AssetView> createState() => _AssetViewState();
 }
 
-class _AssetViewState extends State<AssetView> {
+class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
+  late TabController _tabController;
+  BalanceViewFilter _currentFilter = BalanceViewFilter.address;
+
   @override
   void initState() {
     super.initState();
     context.read<AssetViewBloc>().add(PageLoaded());
+    _tabController = TabController(length: 2, vsync: this);
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  void _setFilter(Object filter) {
+    setState(() {
+      _currentFilter = filter as BalanceViewFilter;
+    });
+  }
+
+  void _clearFilter() {
+    setState(() {
+      _currentFilter = BalanceViewFilter.address;
+    });
   }
 
   @override
@@ -111,80 +137,245 @@ class _AssetViewState extends State<AssetView> {
                   ],
                 ),
               ),
-              // Asset page content
-              Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Asset details card
-                      Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(18),
-                          border: Border.all(
-                            color: isDarkTheme
-                                ? Colors.white.withOpacity(0.08)
-                                : Colors.black.withOpacity(0.08),
-                            width: 1,
+              // Tabs
+              Container(
+                decoration: BoxDecoration(
+                  border: Border(
+                    bottom: BorderSide(
+                      color: isDarkTheme
+                          ? Colors.white.withOpacity(0.1)
+                          : Colors.black.withOpacity(0.1),
+                      width: 1,
+                    ),
+                  ),
+                ),
+                child: Center(
+                  child: SizedBox(
+                    child: TabBar(
+                      controller: _tabController,
+                      indicatorWeight: 2,
+                      indicatorColor: transparentPurple33,
+                      labelColor: Theme.of(context).textTheme.bodyMedium?.color,
+                      unselectedLabelColor:
+                          isDarkTheme ? transparentWhite33 : transparentBlack33,
+                      indicatorSize: TabBarIndicatorSize.label,
+                      tabAlignment: TabAlignment.center,
+                      isScrollable: false,
+                      tabs: const [
+                        Tab(
+                          child: Text(
+                            'Balance Actions',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                            ),
                           ),
                         ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // Asset icon and name row
-                            Row(
+                        Tab(
+                          child: Text(
+                            'Issuance Actions',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              // Asset page content
+              Expanded(
+                child: TabBarView(
+                  controller: _tabController,
+                  physics: const NeverScrollableScrollPhysics(),
+                  children: [
+                    // Balance Actions Tab
+                    Column(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: FilterBar(
+                            isDarkTheme: isDarkTheme,
+                            currentFilter: _currentFilter,
+                            onFilterSelected: _setFilter,
+                            onClearFilter: _clearFilter,
+                            filterOptions: const [
+                              FilterOption(
+                                  label: 'Address Balances',
+                                  value: BalanceViewFilter.address),
+                              FilterOption(
+                                  label: 'Utxo Balances',
+                                  value: BalanceViewFilter.utxo),
+                            ],
+                          ),
+                        ),
+                        Expanded(
+                          child: SingleChildScrollView(
+                            child: Column(
                               children: [
-                                Container(
-                                  width: 40,
-                                  height: 40,
-                                  decoration: const BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: Colors.grey, // Placeholder color
+                                const SizedBox(height: 8),
+                                if (_currentFilter ==
+                                    BalanceViewFilter.address) ...[
+                                  IconItemButton(
+                                    title: 'Send',
+                                    icon: Icons.send_outlined,
+                                    isDarkTheme: isDarkTheme,
+                                    onTap: () {
+                                      // Handle Send
+                                    },
                                   ),
-                                ),
-                                const SizedBox(width: 16),
-                                Expanded(
-                                  child: Text(
-                                    widget.assetName,
-                                    style: TextStyle(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.w600,
-                                      color: isDarkTheme
-                                          ? Colors.white
-                                          : Colors.black,
-                                    ),
+                                  IconItemButton(
+                                    title: 'Receive',
+                                    icon: Icons.qr_code_scanner_outlined,
+                                    isDarkTheme: isDarkTheme,
+                                    onTap: () {
+                                      // Handle Receive
+                                    },
                                   ),
-                                ),
+                                  IconItemButton(
+                                    title: 'Attach',
+                                    icon: Icons.attach_file_outlined,
+                                    isDarkTheme: isDarkTheme,
+                                    onTap: () {
+                                      // Handle Attach
+                                    },
+                                  ),
+                                  IconItemButton(
+                                    title: 'Order',
+                                    icon: Icons.shopping_cart_outlined,
+                                    isDarkTheme: isDarkTheme,
+                                    onTap: () {
+                                      // Handle Order
+                                    },
+                                  ),
+                                  IconItemButton(
+                                    title: 'Destroy',
+                                    icon: Icons.delete_outline,
+                                    isDarkTheme: isDarkTheme,
+                                    onTap: () {
+                                      // Handle Destroy
+                                    },
+                                  ),
+                                  IconItemButton(
+                                    title: 'Dispenser',
+                                    icon: Icons.local_drink_outlined,
+                                    isDarkTheme: isDarkTheme,
+                                    onTap: () {
+                                      // Handle Dispenser
+                                    },
+                                  ),
+                                ] else if (_currentFilter ==
+                                    BalanceViewFilter.utxo) ...[
+                                  IconItemButton(
+                                    title: 'Send',
+                                    icon: Icons.send_outlined,
+                                    isDarkTheme: isDarkTheme,
+                                    onTap: () {
+                                      // Handle UTXO Send
+                                    },
+                                  ),
+                                  IconItemButton(
+                                    title: 'Detach',
+                                    icon: Icons.link_off,
+                                    isDarkTheme: isDarkTheme,
+                                    onTap: () {
+                                      // Handle Detach
+                                    },
+                                  ),
+                                  IconItemButton(
+                                    title: 'Swap',
+                                    icon: Icons.swap_horiz,
+                                    isDarkTheme: isDarkTheme,
+                                    onTap: () {
+                                      // Handle Swap
+                                    },
+                                  ),
+                                ],
+                                const SizedBox(height: 16),
                               ],
                             ),
-                            const SizedBox(height: 24),
-                            // More details can be added here in the future
-                            Text(
-                              'Asset Details',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w500,
-                                color:
-                                    isDarkTheme ? Colors.white : Colors.black,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              'More information about ${widget.assetName} will be displayed here.',
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: isDarkTheme
-                                    ? Colors.white.withOpacity(0.7)
-                                    : Colors.black.withOpacity(0.7),
-                              ),
-                            ),
-                          ],
+                          ),
                         ),
+                      ],
+                    ),
+
+                    // Issuance Actions Tab
+                    SingleChildScrollView(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          IconItemButton(
+                            title: 'Pay Dividend',
+                            icon: Icons.account_balance_wallet_outlined,
+                            isDarkTheme: isDarkTheme,
+                            onTap: () {
+                              // Handle Pay Dividend
+                            },
+                          ),
+                          IconItemButton(
+                            title: 'Reset Asset',
+                            icon: Icons.refresh_outlined,
+                            isDarkTheme: isDarkTheme,
+                            onTap: () {
+                              // Handle Reset Asset
+                            },
+                          ),
+                          IconItemButton(
+                            title: 'Issue More',
+                            icon: Icons.add_circle_outline,
+                            isDarkTheme: isDarkTheme,
+                            onTap: () {
+                              // Handle Issue More
+                            },
+                          ),
+                          IconItemButton(
+                            title: 'Issue Subasset',
+                            icon: Icons.subdirectory_arrow_right_outlined,
+                            isDarkTheme: isDarkTheme,
+                            onTap: () {
+                              // Handle Issue Subasset
+                            },
+                          ),
+                          IconItemButton(
+                            title: 'Update Description',
+                            icon: Icons.edit_note_outlined,
+                            isDarkTheme: isDarkTheme,
+                            onTap: () {
+                              // Handle Update Description
+                            },
+                          ),
+                          IconItemButton(
+                            title: 'Lock Supply',
+                            icon: Icons.lock_outline,
+                            isDarkTheme: isDarkTheme,
+                            onTap: () {
+                              // Handle Lock Supply
+                            },
+                          ),
+                          IconItemButton(
+                            title: 'Lock Description',
+                            icon: Icons.description_outlined,
+                            isDarkTheme: isDarkTheme,
+                            onTap: () {
+                              // Handle Lock Description
+                            },
+                          ),
+                          IconItemButton(
+                            title: 'Transfer Issuance Rights',
+                            icon: Icons.swap_horiz_outlined,
+                            isDarkTheme: isDarkTheme,
+                            onTap: () {
+                              // Handle Transfer Issuance Rights
+                            },
+                          ),
+                          const SizedBox(height: 16),
+                        ],
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
             ],

@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:horizon/domain/entities/multi_address_balance.dart';
+import 'package:horizon/presentation/common/filter_bar.dart';
 import 'package:horizon/presentation/common/no_data.dart';
-import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/common/shared_util.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_bloc.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_state.dart';
@@ -75,9 +75,9 @@ class BalancesSliverState extends State<BalancesSliver> {
     }
   }
 
-  void _setFilter(BalanceFilter filter) {
+  void _setFilter(Object filter) {
     setState(() {
-      _currentFilter = _currentFilter == filter ? BalanceFilter.none : filter;
+      _currentFilter = filter as BalanceFilter;
     });
   }
 
@@ -98,6 +98,14 @@ class BalancesSliverState extends State<BalancesSliver> {
               currentFilter: _currentFilter,
               onFilterSelected: _setFilter,
               onClearFilter: _clearFilter,
+              filterOptions: const [
+                FilterOption(label: 'Named', value: BalanceFilter.named),
+                FilterOption(label: 'Numeric', value: BalanceFilter.numeric),
+                FilterOption(
+                    label: 'Subassets', value: BalanceFilter.subassets),
+                FilterOption(
+                    label: 'Issuances', value: BalanceFilter.issuances),
+              ],
             ),
             const SizedBox(height: 16),
             Padding(
@@ -335,116 +343,6 @@ class MiddleTruncatedText extends StatelessWidget {
           maxLines: 1,
         );
       },
-    );
-  }
-}
-
-class FilterBar extends StatelessWidget {
-  final bool isDarkTheme;
-  final BalanceFilter currentFilter;
-  final Function(BalanceFilter) onFilterSelected;
-  final VoidCallback onClearFilter;
-
-  const FilterBar({
-    super.key,
-    required this.isDarkTheme,
-    required this.currentFilter,
-    required this.onFilterSelected,
-    required this.onClearFilter,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Container(
-        width: double.infinity,
-        height: 44,
-        padding: const EdgeInsets.symmetric(vertical: 6),
-        decoration: BoxDecoration(
-          color: isDarkTheme ? Colors.black : Colors.white,
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(
-            color: isDarkTheme ? transparentWhite8 : transparentBlack8,
-            width: 1,
-          ),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            _FilterButton(
-              label: 'Named',
-              isSelected: currentFilter == BalanceFilter.named,
-              onTap: () => onFilterSelected(BalanceFilter.named),
-              isDarkTheme: isDarkTheme,
-            ),
-            _FilterButton(
-              label: 'Numeric',
-              isSelected: currentFilter == BalanceFilter.numeric,
-              onTap: () => onFilterSelected(BalanceFilter.numeric),
-              isDarkTheme: isDarkTheme,
-            ),
-            _FilterButton(
-              label: 'Subassets',
-              isSelected: currentFilter == BalanceFilter.subassets,
-              onTap: () => onFilterSelected(BalanceFilter.subassets),
-              isDarkTheme: isDarkTheme,
-            ),
-            _FilterButton(
-              label: 'Issuances',
-              isSelected: currentFilter == BalanceFilter.issuances,
-              onTap: () => onFilterSelected(BalanceFilter.issuances),
-              isDarkTheme: isDarkTheme,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _FilterButton extends StatelessWidget {
-  final String label;
-  final bool isSelected;
-  final bool isDarkTheme;
-  final VoidCallback onTap;
-
-  const _FilterButton({
-    required this.label,
-    required this.isSelected,
-    required this.onTap,
-    required this.isDarkTheme,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return MouseRegion(
-      cursor: SystemMouseCursors.click,
-      child: GestureDetector(
-        onTap: onTap,
-        behavior: HitTestBehavior.opaque,
-        child: Container(
-          height: 32,
-          // width: 80,
-          padding: const EdgeInsets.symmetric(horizontal: 8),
-          decoration: BoxDecoration(
-            color: isSelected ? transparentPurple16 : Colors.transparent,
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Center(
-            child: Text(
-              label,
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-                color: isDarkTheme ? offWhite : offBlack,
-              ),
-              textAlign: TextAlign.center,
-              maxLines: 1,
-            ),
-          ),
-        ),
-      ),
     );
   }
 }
