@@ -36,6 +36,7 @@ import 'package:horizon/presentation/forms/get_addresses/view/get_addresses_form
 import 'package:horizon/presentation/forms/sign_psbt/bloc/sign_psbt_bloc.dart';
 import 'package:horizon/presentation/forms/sign_psbt/view/sign_psbt_form.dart';
 import 'package:horizon/presentation/screens/asset/asset_view.dart';
+import 'package:horizon/presentation/screens/asset/bloc/asset_view_bloc.dart';
 import 'package:horizon/presentation/screens/close_dispenser/view/close_dispenser_page.dart';
 import 'package:horizon/presentation/screens/compose_cancel/view/compose_cancel_view.dart';
 import 'package:horizon/presentation/screens/compose_destroy/view/compose_destroy_page.dart';
@@ -1007,7 +1008,14 @@ class DashboardPageState extends State<DashboardPage>
       if (widget.initialRoute == 'asset' && widget.assetName != null) {
         return Container(
           color: Theme.of(context).scaffoldBackgroundColor,
-          child: AssetView(assetName: widget.assetName!),
+          child: BlocProvider(
+            create: (context) => AssetViewBloc(
+              balanceRepository: GetIt.I<BalanceRepository>(),
+              addresses: widget.addresses,
+              asset: widget.assetName!,
+            ),
+            child: AssetView(assetName: widget.assetName!),
+          ),
         );
       }
 

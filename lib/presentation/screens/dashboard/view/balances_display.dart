@@ -4,8 +4,10 @@ import 'package:go_router/go_router.dart';
 import 'package:horizon/domain/entities/multi_address_balance.dart';
 import 'package:horizon/presentation/common/no_data.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
+import 'package:horizon/presentation/common/shared_util.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_bloc.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_state.dart';
+import 'package:horizon/presentation/screens/dashboard/view/asset_icon.dart';
 
 class BalancesDisplay extends StatefulWidget {
   final bool isDarkTheme;
@@ -245,14 +247,7 @@ class BalancesSliverState extends State<BalancesSliver> {
                           ),
                           const SizedBox(width: 10),
                           // Asset icon (placeholder)
-                          Container(
-                            width: 32,
-                            height: 32,
-                            decoration: const BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: Colors.grey, // Placeholder color
-                            ),
-                          ),
+                          AssetIcon(asset: balance.asset),
                           const SizedBox(width: 10),
                           // Asset name and details
                           Expanded(
@@ -281,8 +276,9 @@ class BalancesSliverState extends State<BalancesSliver> {
                             crossAxisAlignment: CrossAxisAlignment.end,
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Text(
-                                balance.totalNormalized,
+                              SelectableText(
+                                quantityRemoveTrailingZeros(
+                                    balance.totalNormalized),
                                 style: const TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w500,
