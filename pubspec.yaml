@@ -131,6 +131,8 @@ flutter:
     - assets/app-bar-H-dark-mode.png
     - assets/app-bar-H-light-mode.png
     - assets/logo_animation-gradient.json
+    - assets/xcp-img.png
+    - assets/btc-img.png
     - fonts/
 
   #   - .env

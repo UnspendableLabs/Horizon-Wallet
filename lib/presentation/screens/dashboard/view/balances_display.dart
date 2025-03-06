@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:horizon/domain/entities/balance.dart';
+import 'package:go_router/go_router.dart';
+import 'package:horizon/domain/entities/multi_address_balance.dart';
+import 'package:horizon/presentation/common/filter_bar.dart';
 import 'package:horizon/presentation/common/no_data.dart';
-import 'package:horizon/presentation/common/redesign_colors.dart';
+import 'package:horizon/presentation/common/shared_util.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_bloc.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_state.dart';
+import 'package:horizon/presentation/screens/dashboard/view/asset_icon.dart';
 
 class BalancesDisplay extends StatefulWidget {
   final bool isDarkTheme;
@@ -45,20 +48,6 @@ class BalancesDisplayState extends State<BalancesDisplay> {
   }
 }
 
-class BalanceEntry {
-  final String asset;
-  final String? assetLongname;
-  final String quantityNormalized;
-  final String quantity;
-
-  BalanceEntry({
-    required this.asset,
-    required this.assetLongname,
-    required this.quantityNormalized,
-    required this.quantity,
-  });
-}
-
 enum BalanceFilter { none, named, numeric, subassets, issuances }
 
 class BalancesSliver extends StatefulWidget {
@@ -86,9 +75,9 @@ class BalancesSliverState extends State<BalancesSliver> {
     }
   }
 
-  void _setFilter(BalanceFilter filter) {
+  void _setFilter(Object filter) {
     setState(() {
-      _currentFilter = _currentFilter == filter ? BalanceFilter.none : filter;
+      _currentFilter = filter as BalanceFilter;
     });
   }
 
@@ -109,6 +98,14 @@ class BalancesSliverState extends State<BalancesSliver> {
               currentFilter: _currentFilter,
               onFilterSelected: _setFilter,
               onClearFilter: _clearFilter,
+              filterOptions: const [
+                FilterOption(label: 'Named', value: BalanceFilter.named),
+                FilterOption(label: 'Numeric', value: BalanceFilter.numeric),
+                FilterOption(
+                    label: 'Subassets', value: BalanceFilter.subassets),
+                FilterOption(
+                    label: 'Issuances', value: BalanceFilter.issuances),
+              ],
             ),
             const SizedBox(height: 16),
             Padding(
@@ -125,34 +122,55 @@ class BalancesSliverState extends State<BalancesSliver> {
     );
   }
 
-  bool _matchesFilter(String asset, List<Balance> balances) {
+  bool _matchesFilter(MultiAddressBalance balance) {
     // First check if it matches the search query
     if (widget.searchQuery.isNotEmpty) {
       final searchLower = widget.searchQuery.toLowerCase();
-      final assetLower = asset.toLowerCase();
-      final assetLongname =
-          balances.first.assetInfo.assetLongname?.toLowerCase();
+      final assetLower = balance.asset.toLowerCase();
+      final assetLongnameLower = balance.assetLongname?.toLowerCase();
+
+      if (balance.assetLongname != null && balance.assetLongname!.isNotEmpty) {
+        if (!assetLongnameLower!.contains(searchLower)) {
+          return false;
+        }
+        return true;
+      }
 
       // Check if search query matches either the asset name or asset longname
-      if (!assetLower.contains(searchLower) &&
-          (assetLongname == null || !assetLongname.contains(searchLower))) {
+      if (!assetLower.contains(searchLower)) {
         return false;
       }
+      return true;
     }
 
     // Then check if it matches the selected filter
     switch (_currentFilter) {
       case BalanceFilter.named:
-        return !asset.startsWith('A') && asset != 'BTC';
+        if (balance.assetLongname != null &&
+            balance.assetLongname!.isNotEmpty) {
+          return !balance.assetLongname!.startsWith('A');
+        }
+        return !balance.asset.startsWith('A') && balance.asset != 'BTC';
       case BalanceFilter.numeric:
-        return asset.startsWith('A');
+        if (balance.assetLongname != null &&
+            balance.assetLongname!.isNotEmpty) {
+          return balance.assetLongname!.startsWith('A');
+        }
+        return balance.asset.startsWith('A');
       case BalanceFilter.subassets:
-        return asset.contains('.');
+        if (balance.assetLongname != null &&
+            balance.assetLongname!.isNotEmpty) {
+          return balance.assetLongname!.contains('.');
+        }
+        return balance.asset.contains('.');
       case BalanceFilter.issuances:
-        return balances.any((balance) {
-          return balance.address != null &&
-              balance.assetInfo.owner != null &&
-              balance.address == balance.assetInfo.owner;
+        return balance.entries.any((entry) {
+          return (entry.address != null &&
+                  balance.assetInfo.owner != null &&
+                  entry.address == balance.assetInfo.owner) ||
+              (entry.utxo != null &&
+                  balance.assetInfo.owner != null &&
+                  entry.utxoAddress == balance.assetInfo.owner);
         });
       case BalanceFilter.none:
         return true;
@@ -181,8 +199,8 @@ class BalancesSliverState extends State<BalancesSliver> {
           child: Center(child: SelectableText(error)),
         )
       ],
-      ok: (aggregated) {
-        if (aggregated.isEmpty) {
+      ok: (balances) {
+        if (balances.isEmpty) {
           return [
             const NoData(
               title: 'No Balances',
@@ -190,116 +208,96 @@ class BalancesSliverState extends State<BalancesSliver> {
           ];
         }
 
-        final Map<String, BalanceEntry> balanceEntries = {};
+        final List<MultiAddressBalance> filteredBalances = [];
 
         // Iterate through each asset and its list of balances
-        for (final entry in aggregated.entries) {
-          if (!_matchesFilter(entry.key, entry.value)) {
+        for (final balance in balances) {
+          if (!_matchesFilter(balance)) {
             continue; // Pass both asset and balances
           }
 
-          final String asset = entry.key;
-          final List<Balance> balances = entry.value;
-
-          // Get the first balance to access asset info
-          final Balance firstBalance = balances.first;
-
-          // Sum up the normalized quantities
-          double totalNormalized = 0.0;
-          int totalQuantity = 0;
-
-          // Add up all quantities for this asset
-          for (final balance in balances) {
-            totalNormalized += double.parse(balance.quantityNormalized);
-            totalQuantity += balance.quantity;
-          }
-
-          // Format the total normalized quantity based on divisibility
-          final totalQuantityNormalized = firstBalance.assetInfo.divisible
-              ? totalNormalized
-                  .toStringAsFixed(8)
-                  .replaceAll(RegExp(r'(?<=\d)0+$'), '')
-                  .replaceAll(RegExp(r'\.$'), '')
-              : totalNormalized.toStringAsFixed(0);
-
-          balanceEntries[asset] = BalanceEntry(
-            asset: asset,
-            assetLongname: firstBalance.assetInfo.assetLongname,
-            quantityNormalized: totalQuantityNormalized,
-            quantity: totalQuantity.toString(),
-          );
+          filteredBalances.add(balance);
         }
 
-        // Build the list of asset entries
-        final sortedEntries = balanceEntries.entries.toList()
+        final sortedBalances = filteredBalances
           ..sort((a, b) {
-            if (a.key == 'BTC') return -1;
-            if (b.key == 'BTC') return 1;
-            if (a.key == 'XCP') return -1;
-            if (b.key == 'XCP') return 1;
-            return a.key.compareTo(b.key);
+            if (a.asset == 'BTC') return -1;
+            if (b.asset == 'BTC') return 1;
+            if (a.asset == 'XCP') return -1;
+            if (b.asset == 'XCP') return 1;
+            return a.asset.compareTo(b.asset);
           });
 
         return [
           Column(
-            children: sortedEntries.map((entry) {
-              return SizedBox(
-                // padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                height: 54,
-                child: Row(
-                  children: [
-                    // Star icon (placeholder)
-                    const Icon(
-                      Icons.star_border_outlined,
-                      size: 16,
-                    ),
-                    const SizedBox(width: 10),
-                    // Asset icon (placeholder)
-                    Container(
-                      width: 32,
-                      height: 32,
-                      decoration: const BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.grey, // Placeholder color
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    // Asset name and details
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.center,
+            children: sortedBalances.map((balance) {
+              return MouseRegion(
+                cursor: SystemMouseCursors.click,
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: () {
+                      // Navigate to the asset details page
+                      context
+                          .go('/asset/${Uri.encodeComponent(balance.asset)}');
+                    },
+                    borderRadius: BorderRadius.circular(10),
+                    child: Container(
+                      // padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                      height: 54,
+                      margin: const EdgeInsets.symmetric(vertical: 2),
+                      child: Row(
                         children: [
-                          SizedBox(
-                            width: 150,
-                            child: MiddleTruncatedText(
-                              text: entry.key,
-                              width: 150,
-                              charsToShow: 5,
-                              style: const TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                              ),
+                          // Star icon (placeholder)
+                          const Icon(
+                            Icons.star_border_outlined,
+                            size: 16,
+                          ),
+                          const SizedBox(width: 10),
+                          // Asset icon (placeholder)
+                          AssetIcon(asset: balance.asset),
+                          const SizedBox(width: 10),
+                          // Asset name and details
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                SizedBox(
+                                  width: 150,
+                                  child: MiddleTruncatedText(
+                                    text:
+                                        balance.assetLongname ?? balance.asset,
+                                    width: 150,
+                                    charsToShow: 5,
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
+                          ),
+                          // Amount and percentage
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              SelectableText(
+                                quantityRemoveTrailingZeros(
+                                    balance.totalNormalized),
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
                     ),
-                    // Amount and percentage
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          entry.value.quantityNormalized,
-                          style: const TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
+                  ),
                 ),
               );
             }).toList(),
@@ -345,116 +343,6 @@ class MiddleTruncatedText extends StatelessWidget {
           maxLines: 1,
         );
       },
-    );
-  }
-}
-
-class FilterBar extends StatelessWidget {
-  final bool isDarkTheme;
-  final BalanceFilter currentFilter;
-  final Function(BalanceFilter) onFilterSelected;
-  final VoidCallback onClearFilter;
-
-  const FilterBar({
-    super.key,
-    required this.isDarkTheme,
-    required this.currentFilter,
-    required this.onFilterSelected,
-    required this.onClearFilter,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Container(
-        width: double.infinity,
-        height: 44,
-        padding: const EdgeInsets.symmetric(vertical: 6),
-        decoration: BoxDecoration(
-          color: isDarkTheme ? Colors.black : Colors.white,
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(
-            color: isDarkTheme ? transparentWhite8 : transparentBlack8,
-            width: 1,
-          ),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            _FilterButton(
-              label: 'Named',
-              isSelected: currentFilter == BalanceFilter.named,
-              onTap: () => onFilterSelected(BalanceFilter.named),
-              isDarkTheme: isDarkTheme,
-            ),
-            _FilterButton(
-              label: 'Numeric',
-              isSelected: currentFilter == BalanceFilter.numeric,
-              onTap: () => onFilterSelected(BalanceFilter.numeric),
-              isDarkTheme: isDarkTheme,
-            ),
-            _FilterButton(
-              label: 'Subassets',
-              isSelected: currentFilter == BalanceFilter.subassets,
-              onTap: () => onFilterSelected(BalanceFilter.subassets),
-              isDarkTheme: isDarkTheme,
-            ),
-            _FilterButton(
-              label: 'Issuances',
-              isSelected: currentFilter == BalanceFilter.issuances,
-              onTap: () => onFilterSelected(BalanceFilter.issuances),
-              isDarkTheme: isDarkTheme,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _FilterButton extends StatelessWidget {
-  final String label;
-  final bool isSelected;
-  final bool isDarkTheme;
-  final VoidCallback onTap;
-
-  const _FilterButton({
-    required this.label,
-    required this.isSelected,
-    required this.onTap,
-    required this.isDarkTheme,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return MouseRegion(
-      cursor: SystemMouseCursors.click,
-      child: GestureDetector(
-        onTap: onTap,
-        behavior: HitTestBehavior.opaque,
-        child: Container(
-          height: 32,
-          // width: 80,
-          padding: const EdgeInsets.symmetric(horizontal: 8),
-          decoration: BoxDecoration(
-            color: isSelected ? transparentPurple16 : Colors.transparent,
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Center(
-            child: Text(
-              label,
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-                color: isDarkTheme ? offWhite : offBlack,
-              ),
-              textAlign: TextAlign.center,
-              maxLines: 1,
-            ),
-          ),
-        ),
-      ),
     );
   }
 }

@@ -69,3 +69,9 @@ Account getHighestIndexAccount(List<Account> accounts) {
 bool addressIsSegwit(String sourceAddress) {
   return sourceAddress.startsWith("bc") || sourceAddress.startsWith("tb");
 }
+
+String quantityRemoveTrailingZeros(String quantity) {
+  return quantity
+      .replaceAll(RegExp(r'(?<=\d)0+$'), '')
+      .replaceAll(RegExp(r'\.$'), '');
+}

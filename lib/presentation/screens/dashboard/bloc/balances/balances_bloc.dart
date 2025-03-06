@@ -1,22 +1,10 @@
 import 'dart:async';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:horizon/domain/entities/balance.dart';
+import 'package:horizon/domain/entities/multi_address_balance.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_event.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_state.dart';
-
-Map<String, List<Balance>> aggregateBalancesByAsset(List<Balance> balances) {
-  var aggregatedBalances = <String, List<Balance>>{};
-
-  for (var balance in balances) {
-    aggregatedBalances[balance.assetInfo.assetLongname ?? balance.asset] ??= [];
-    aggregatedBalances[balance.assetInfo.assetLongname ?? balance.asset]!
-        .add(balance);
-  }
-
-  return aggregatedBalances;
-}
 
 class BalancesBloc extends Bloc<BalancesEvent, BalancesState> {
   final BalanceRepository balanceRepository;
@@ -60,12 +48,10 @@ class BalancesBloc extends Bloc<BalancesEvent, BalancesState> {
     );
 
     try {
-      final List<Balance> balances =
+      final List<MultiAddressBalance> balances =
           await balanceRepository.getBalancesForAddresses(addresses);
-      final Map<String, List<Balance>> allBalances =
-          aggregateBalancesByAsset(balances);
 
-      emit(BalancesState.complete(Result.ok(allBalances)));
+      emit(BalancesState.complete(Result.ok(balances)));
     } catch (e) {
       emit(BalancesState.complete(
           Result.error("Error fetching balances ${e.toString()}")));
