@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:horizon/presentation/common/footer/view/footer.dart';
+import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/version_cubit.dart';
 
 class AppShell extends StatefulWidget {
@@ -18,13 +19,23 @@ class AppShell extends StatefulWidget {
   State<AppShell> createState() => _AppShellState();
 }
 
-class _AppShellState extends State<AppShell> {
-  int _currentIndex = 0;
+class _AppShellState extends State<AppShell> with TickerProviderStateMixin {
+  late TabController _bottomTabController;
 
   @override
   void initState() {
     super.initState();
+    _bottomTabController = TabController(length: 2, vsync: this);
     _updateIndexFromRoute(widget.currentRoute);
+
+    _bottomTabController.addListener(() {
+      // Update URL when tab changes
+      if (_bottomTabController.index == 1) {
+        context.go('/settings');
+      } else {
+        context.go('/dashboard');
+      }
+    });
   }
 
   @override
@@ -36,12 +47,21 @@ class _AppShellState extends State<AppShell> {
   }
 
   void _updateIndexFromRoute(String route) {
-    if (route.startsWith('/dashboard')) {
-      setState(() => _currentIndex = 0);
-    } else if (route.startsWith('/settings')) {
-      setState(() => _currentIndex = 1);
+    if (route.startsWith('/settings')) {
+      if (_bottomTabController.index != 1) {
+        _bottomTabController.animateTo(1);
+      }
+    } else {
+      if (_bottomTabController.index != 0) {
+        _bottomTabController.animateTo(0);
+      }
     }
-    // For other routes, we maintain the current index
+  }
+
+  @override
+  void dispose() {
+    _bottomTabController.dispose();
+    super.dispose();
   }
 
   @override
@@ -58,17 +78,18 @@ class _AppShellState extends State<AppShell> {
           ),
           child: VersionWarningSnackbar(
             child: Scaffold(
-              backgroundColor: isDarkTheme ? Colors.black : Colors.white,
+              backgroundColor: isDarkTheme ? offBlack : offWhite,
               body: widget.child,
               bottomNavigationBar: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Bottom Navigation Bar
+                  // Bottom Navigation Bar - Styled exactly like dashboard_page.dart
                   Container(
                     width: double.infinity,
-                    height: 80,
+                    height: 90,
                     padding: const EdgeInsets.symmetric(vertical: 8),
                     decoration: BoxDecoration(
+                      color: isDarkTheme ? Colors.black : Colors.white,
                       border: Border(
                         top: BorderSide(
                           color: isDarkTheme
@@ -78,24 +99,133 @@ class _AppShellState extends State<AppShell> {
                         ),
                       ),
                     ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        _buildNavItem(
-                          icon: Icons.account_balance_wallet_outlined,
-                          label: 'Portfolio',
-                          index: 0,
-                          route: '/dashboard',
+                    child: TabBar(
+                      controller: _bottomTabController,
+                      indicatorSize: TabBarIndicatorSize.tab,
+                      indicatorColor: Colors.transparent,
+                      dividerColor: Colors.transparent,
+                      overlayColor: WidgetStateProperty.all(Colors.transparent),
+                      splashFactory: NoSplash.splashFactory,
+                      labelColor: isDarkTheme ? Colors.white : Colors.black,
+                      unselectedLabelColor:
+                          isDarkTheme ? transparentWhite33 : transparentBlack33,
+                      tabs: [
+                        Container(
+                          width: 75,
+                          height: 74,
+                          decoration: BoxDecoration(
+                            color:
+                                _bottomTabController.index == 0 && !isDarkTheme
+                                    ? offWhite
+                                    : Colors.transparent,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: _bottomTabController.index == 0
+                                  ? (isDarkTheme
+                                      ? Colors.white.withOpacity(0.1)
+                                      : Colors.black.withOpacity(0.1))
+                                  : Colors.transparent,
+                              width: 1,
+                            ),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 8, horizontal: 8),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.pie_chart_outline,
+                                  size: 24,
+                                  color: _bottomTabController.index == 0
+                                      ? (isDarkTheme
+                                          ? Colors.white
+                                          : Colors.black)
+                                      : (isDarkTheme
+                                          ? transparentWhite33
+                                          : transparentBlack33),
+                                ),
+                                const SizedBox(height: 6),
+                                Text(
+                                  'Portfolio',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: _bottomTabController.index == 0
+                                        ? (isDarkTheme
+                                            ? Colors.white
+                                            : Colors.black)
+                                        : (isDarkTheme
+                                            ? transparentWhite33
+                                            : transparentBlack33),
+                                  ),
+                                  softWrap: false,
+                                  overflow: TextOverflow.visible,
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
-                        _buildNavItem(
-                          icon: Icons.settings_outlined,
-                          label: 'Settings',
-                          index: 1,
-                          route: '/settings',
+                        Container(
+                          width: 75,
+                          height: 74,
+                          decoration: BoxDecoration(
+                            color:
+                                _bottomTabController.index == 1 && !isDarkTheme
+                                    ? offWhite
+                                    : Colors.transparent,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: _bottomTabController.index == 1
+                                  ? (isDarkTheme
+                                      ? Colors.white.withOpacity(0.1)
+                                      : Colors.black.withOpacity(0.1))
+                                  : Colors.transparent,
+                              width: 1,
+                            ),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 8, horizontal: 8),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.settings,
+                                  size: 24,
+                                  color: _bottomTabController.index == 1
+                                      ? (isDarkTheme
+                                          ? Colors.white
+                                          : Colors.black)
+                                      : (isDarkTheme
+                                          ? transparentWhite33
+                                          : transparentBlack33),
+                                ),
+                                const SizedBox(height: 6),
+                                Text(
+                                  'Settings',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: _bottomTabController.index == 1
+                                        ? (isDarkTheme
+                                            ? Colors.white
+                                            : Colors.black)
+                                        : (isDarkTheme
+                                            ? transparentWhite33
+                                            : transparentBlack33),
+                                  ),
+                                  softWrap: false,
+                                  overflow: TextOverflow.visible,
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
                       ],
                     ),
                   ),
+
                   // Footer
                   const Footer(),
                 ],
@@ -103,45 +233,6 @@ class _AppShellState extends State<AppShell> {
             ),
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildNavItem({
-    required IconData icon,
-    required String label,
-    required int index,
-    required String route,
-  }) {
-    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
-    final isSelected = _currentIndex == index;
-
-    return InkWell(
-      onTap: () {
-        setState(() => _currentIndex = index);
-        context.go(route);
-      },
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            icon,
-            color: isSelected
-                ? Colors.purple
-                : (isDarkTheme ? Colors.white : Colors.black).withOpacity(0.5),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 12,
-              color: isSelected
-                  ? Colors.purple
-                  : (isDarkTheme ? Colors.white : Colors.black)
-                      .withOpacity(0.5),
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -163,7 +254,9 @@ class VersionWarningState extends State<VersionWarningSnackbar> {
   void didChangeDependencies() {
     super.didChangeDependencies();
 
-    final versionInfo = context.read<VersionCubit>().state;
+    final versionInfo = context
+        .read<VersionCubit>()
+        .state; // we should only ever get to this page if session is success
 
     if (!_hasShownSnackbar && versionInfo.warning != null) {
       switch (versionInfo.warning!) {

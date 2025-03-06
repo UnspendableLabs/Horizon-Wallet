@@ -458,9 +458,9 @@ class _SettingsViewState extends State<SettingsView> {
                 child: ConstrainedBox(
                   constraints: const BoxConstraints(maxWidth: 500),
                   child: Scaffold(
-                    backgroundColor: Colors.transparent,
+                    backgroundColor: isDarkTheme ? offBlack : offWhite,
                     appBar: AppBar(
-                      backgroundColor: Colors.transparent,
+                      backgroundColor: isDarkTheme ? offBlack : offWhite,
                       elevation: 0,
                       centerTitle: false,
                       leadingWidth: 40,

@@ -26,22 +26,54 @@ class PortfolioView extends StatefulWidget {
 class _PortfolioViewState extends State<PortfolioView>
     with TickerProviderStateMixin {
   late TabController _tabController;
+  final TextEditingController _searchController = TextEditingController();
+  bool _isSearching = false;
+  String _searchQuery = '';
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+
+    _tabController.addListener(() {
+      setState(() {
+        // If switching to Activity tab, close search
+        if (_tabController.index == 1 && _isSearching) {
+          _isSearching = false;
+          _searchController.clear();
+          _searchQuery = '';
+        }
+      });
+    });
   }
 
   @override
   void dispose() {
     _tabController.dispose();
+    _searchController.dispose();
     super.dispose();
+  }
+
+  void _toggleSearch() {
+    setState(() {
+      _isSearching = !_isSearching;
+      if (!_isSearching) {
+        _searchController.clear();
+        _searchQuery = '';
+      }
+    });
+  }
+
+  void _onSearchChanged(String value) {
+    setState(() {
+      _searchQuery = value;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
+    final isSmallScreen = MediaQuery.of(context).size.width < 500;
 
     return context.watch<SessionStateCubit>().state.maybeWhen(
           orElse: () => const CircularProgressIndicator(),
@@ -77,40 +109,129 @@ class _PortfolioViewState extends State<PortfolioView>
               ],
               child: Column(
                 children: [
-                  // Tabs (Balances/Activity)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 24.0),
-                    child: Container(
-                      height: 44,
-                      margin: const EdgeInsets.symmetric(horizontal: 16),
-                      decoration: BoxDecoration(
-                        color: isDarkTheme
-                            ? white.withOpacity(0.05)
-                            : black.withOpacity(0.05),
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: TabBar(
-                        controller: _tabController,
-                        indicator: BoxDecoration(
-                          borderRadius: BorderRadius.circular(16),
+                  // Tab bar (Assets/Activity) with search
+                  Container(
+                    decoration: BoxDecoration(
+                      border: Border(
+                        bottom: BorderSide(
                           color: isDarkTheme
-                              ? white.withOpacity(0.08)
-                              : black.withOpacity(0.08),
+                              ? Colors.white.withOpacity(0.1)
+                              : Colors.black.withOpacity(0.1),
+                          width: 1,
                         ),
-                        dividerColor: Colors.transparent,
-                        labelColor: isDarkTheme ? Colors.white : Colors.black,
-                        labelStyle: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                        ),
-                        unselectedLabelColor: isDarkTheme
-                            ? transparentWhite66
-                            : transparentBlack66,
-                        tabs: const [
-                          Tab(text: 'Balances'),
-                          Tab(text: 'Activity'),
-                        ],
                       ),
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          flex: 3,
+                          child: TabBar(
+                            controller: _tabController,
+                            indicatorWeight: 2,
+                            indicatorColor: transparentPurple33,
+                            labelColor:
+                                Theme.of(context).textTheme.bodyMedium?.color,
+                            unselectedLabelColor: isDarkTheme
+                                ? transparentWhite33
+                                : transparentBlack33,
+                            isScrollable: true,
+                            padding: EdgeInsets.zero,
+                            indicatorSize: TabBarIndicatorSize.label,
+                            tabAlignment: TabAlignment.start,
+                            tabs: const [
+                              Tab(
+                                child: Text(
+                                  'Assets',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ),
+                              Tab(
+                                child: Text(
+                                  'Activity',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        if (_isSearching && _tabController.index == 0)
+                          Expanded(
+                            flex: 2,
+                            child: Container(
+                              height: 32,
+                              margin: const EdgeInsets.only(right: 8),
+                              decoration: BoxDecoration(
+                                color: transparentPurple8,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Center(
+                                child: TextField(
+                                  controller: _searchController,
+                                  onChanged: _onSearchChanged,
+                                  style: TextStyle(
+                                    color: isDarkTheme
+                                        ? Colors.white
+                                        : Colors.black,
+                                    fontSize: 14,
+                                  ),
+                                  textAlignVertical: TextAlignVertical.center,
+                                  decoration: InputDecoration(
+                                    isCollapsed: true,
+                                    hintText: 'Search assets...',
+                                    hintStyle: TextStyle(
+                                      color: isDarkTheme
+                                          ? transparentWhite33
+                                          : transparentBlack33,
+                                      fontSize: 14,
+                                    ),
+                                    border: InputBorder.none,
+                                    contentPadding: const EdgeInsets.symmetric(
+                                        horizontal: 12, vertical: 8),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            onTap: _tabController.index == 0
+                                ? _toggleSearch
+                                : null,
+                            borderRadius: BorderRadius.circular(8),
+                            child: Container(
+                              width: 44,
+                              height: 32,
+                              decoration: BoxDecoration(
+                                color: transparentPurple8,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Center(
+                                child: Icon(
+                                  _isSearching
+                                      ? Icons.close
+                                      : Icons.search_outlined,
+                                  size: 25,
+                                  color: _tabController.index == 0
+                                      ? (isDarkTheme
+                                          ? Colors.white
+                                          : Colors.black)
+                                      : (isDarkTheme
+                                          ? transparentWhite33
+                                          : transparentBlack33),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                      ],
                     ),
                   ),
 
@@ -118,19 +239,30 @@ class _PortfolioViewState extends State<PortfolioView>
                   Expanded(
                     child: TabBarView(
                       controller: _tabController,
+                      physics: const NeverScrollableScrollPhysics(),
                       children: [
                         // Balances tab
-                        BalancesDisplay(isDarkTheme: isDarkTheme),
+                        Padding(
+                          padding: EdgeInsets.symmetric(
+                              horizontal: isSmallScreen ? 16 : 35),
+                          child: BalancesDisplay(
+                            isDarkTheme: isDarkTheme,
+                            searchQuery: _searchQuery,
+                          ),
+                        ),
 
-                        // Activity tab - use the existing DashboardActivityFeedScreen
-                        DashboardActivityFeedScreen(
-                          addresses: [
-                            ...session.addresses.map((e) => e.address),
-                            ...(session.importedAddresses
-                                    ?.map((e) => e.address) ??
-                                [])
-                          ],
-                          initialItemCount: 20,
+                        // Activity tab
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          child: DashboardActivityFeedScreen(
+                            addresses: [
+                              ...session.addresses.map((e) => e.address),
+                              ...(session.importedAddresses
+                                      ?.map((e) => e.address) ??
+                                  [])
+                            ],
+                            initialItemCount: 20,
+                          ),
                         ),
                       ],
                     ),
