@@ -919,7 +919,7 @@ class _HorizonPasswordPromptState extends State<HorizonPasswordPrompt> {
 class HorizonActionButton extends StatefulWidget {
   final VoidCallback? onPressed;
   final String label;
-  final IconData icon;
+  final Widget icon;
   final bool isTransparent;
 
   const HorizonActionButton({
@@ -973,13 +973,7 @@ class _HorizonActionButtonState extends State<HorizonActionButton> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                widget.icon,
-                size: 24,
-                color: widget.isTransparent
-                    ? Theme.of(context).iconTheme.color
-                    : offBlack,
-              ),
+              widget.icon,
               const SizedBox(width: 4),
               Text(
                 widget.label,

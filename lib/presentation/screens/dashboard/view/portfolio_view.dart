@@ -16,6 +16,7 @@ import 'package:horizon/presentation/screens/dashboard/view/activity_feed.dart';
 import 'package:horizon/presentation/screens/dashboard/view/balances_display.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
+import 'package:horizon/utils/app_icons.dart';
 
 class PortfolioView extends StatefulWidget {
   const PortfolioView({super.key});
@@ -123,7 +124,8 @@ class _PortfolioViewState extends State<PortfolioView>
                             Expanded(
                               child: HorizonActionButton(
                                 label: 'Send',
-                                icon: Icons.arrow_upward,
+                                icon: AppIcons.sendIcon(
+                                    context: context, color: black),
                                 onPressed: () {
                                   // TODO: Implement send functionality
                                 },
@@ -133,7 +135,9 @@ class _PortfolioViewState extends State<PortfolioView>
                             Expanded(
                               child: HorizonActionButton(
                                 label: 'Receive',
-                                icon: Icons.arrow_downward,
+                                icon: AppIcons.receiveIcon(
+                                  context: context,
+                                ),
                                 isTransparent: true,
                                 onPressed: () {
                                   // TODO: Implement receive functionality
@@ -144,7 +148,9 @@ class _PortfolioViewState extends State<PortfolioView>
                             Expanded(
                               child: HorizonActionButton(
                                 label: 'Swap',
-                                icon: Icons.swap_horiz,
+                                icon: AppIcons.swapIcon(
+                                  context: context,
+                                ),
                                 isTransparent: true,
                                 onPressed: () {
                                   // TODO: Implement swap functionality
@@ -155,7 +161,9 @@ class _PortfolioViewState extends State<PortfolioView>
                             Expanded(
                               child: HorizonActionButton(
                                 label: 'Mint',
-                                icon: Icons.add_circle_outline,
+                                icon: AppIcons.mintIcon(
+                                  context: context,
+                                ),
                                 isTransparent: true,
                                 onPressed: () {
                                   // TODO: Implement mint functionality

@@ -133,6 +133,7 @@ flutter:
     - assets/logo_animation-gradient.json
     - assets/xcp-img.png
     - assets/btc-img.png
+    - assets/icons/
     - fonts/
 
   #   - .env
