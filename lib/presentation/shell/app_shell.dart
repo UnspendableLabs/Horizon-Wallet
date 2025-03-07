@@ -33,6 +33,7 @@ import 'package:horizon/presentation/forms/sign_psbt/view/sign_psbt_form.dart';
 import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:horizon/presentation/version_cubit.dart';
+import 'package:horizon/utils/app_icons.dart';
 
 class SignPsbtModal extends StatelessWidget {
   final int tabId;
@@ -408,9 +409,8 @@ class _AppShellState extends State<AppShell> with TickerProviderStateMixin {
                               mainAxisSize: MainAxisSize.min,
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Icon(
-                                  Icons.pie_chart_outline,
-                                  size: 24,
+                                AppIcons.pieChartIcon(
+                                  context: context,
                                   color: _bottomTabController.index == 0
                                       ? (isDarkTheme
                                           ? Colors.white
@@ -464,9 +464,8 @@ class _AppShellState extends State<AppShell> with TickerProviderStateMixin {
                               mainAxisSize: MainAxisSize.min,
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Icon(
-                                  Icons.settings,
-                                  size: 24,
+                                AppIcons.settingsIcon(
+                                  context: context,
                                   color: _bottomTabController.index == 1
                                       ? (isDarkTheme
                                           ? Colors.white

@@ -9,6 +9,7 @@ import 'package:horizon/presentation/screens/asset/bloc/asset_view_bloc.dart';
 import 'package:horizon/presentation/screens/asset/bloc/asset_view_event.dart';
 import 'package:horizon/presentation/screens/dashboard/view/asset_icon.dart';
 import 'package:horizon/remote_data_bloc/remote_data_state.dart';
+import 'package:horizon/utils/app_icons.dart';
 
 enum BalanceViewFilter { address, utxo }
 
@@ -220,7 +221,9 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
                                     BalanceViewFilter.address) ...[
                                   IconItemButton(
                                     title: 'Send',
-                                    icon: Icons.send_outlined,
+                                    icon: AppIcons.sendIcon(
+                                      context: context,
+                                    ),
                                     isDarkTheme: isDarkTheme,
                                     onTap: () {
                                       // Handle Send
@@ -228,7 +231,9 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
                                   ),
                                   IconItemButton(
                                     title: 'Receive',
-                                    icon: Icons.qr_code_scanner_outlined,
+                                    icon: AppIcons.receiveIcon(
+                                      context: context,
+                                    ),
                                     isDarkTheme: isDarkTheme,
                                     onTap: () {
                                       // Handle Receive
@@ -236,7 +241,9 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
                                   ),
                                   IconItemButton(
                                     title: 'Attach',
-                                    icon: Icons.attach_file_outlined,
+                                    icon: AppIcons.attachIcon(
+                                      context: context,
+                                    ),
                                     isDarkTheme: isDarkTheme,
                                     onTap: () {
                                       // Handle Attach
@@ -244,7 +251,9 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
                                   ),
                                   IconItemButton(
                                     title: 'Order',
-                                    icon: Icons.shopping_cart_outlined,
+                                    icon: AppIcons.orderIcon(
+                                      context: context,
+                                    ),
                                     isDarkTheme: isDarkTheme,
                                     onTap: () {
                                       // Handle Order
@@ -252,7 +261,9 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
                                   ),
                                   IconItemButton(
                                     title: 'Destroy',
-                                    icon: Icons.delete_outline,
+                                    icon: AppIcons.destroyIcon(
+                                      context: context,
+                                    ),
                                     isDarkTheme: isDarkTheme,
                                     onTap: () {
                                       // Handle Destroy
@@ -260,7 +271,9 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
                                   ),
                                   IconItemButton(
                                     title: 'Dispenser',
-                                    icon: Icons.local_drink_outlined,
+                                    icon: AppIcons.dispenserIcon(
+                                      context: context,
+                                    ),
                                     isDarkTheme: isDarkTheme,
                                     onTap: () {
                                       // Handle Dispenser
@@ -270,7 +283,9 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
                                     BalanceViewFilter.utxo) ...[
                                   IconItemButton(
                                     title: 'Send',
-                                    icon: Icons.send_outlined,
+                                    icon: AppIcons.sendIcon(
+                                      context: context,
+                                    ),
                                     isDarkTheme: isDarkTheme,
                                     onTap: () {
                                       // Handle UTXO Send
@@ -278,7 +293,9 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
                                   ),
                                   IconItemButton(
                                     title: 'Detach',
-                                    icon: Icons.link_off,
+                                    icon: AppIcons.detachIcon(
+                                      context: context,
+                                    ),
                                     isDarkTheme: isDarkTheme,
                                     onTap: () {
                                       // Handle Detach
@@ -286,7 +303,9 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
                                   ),
                                   IconItemButton(
                                     title: 'Swap',
-                                    icon: Icons.swap_horiz,
+                                    icon: AppIcons.swapIcon(
+                                      context: context,
+                                    ),
                                     isDarkTheme: isDarkTheme,
                                     onTap: () {
                                       // Handle Swap
@@ -309,7 +328,9 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
                         children: [
                           IconItemButton(
                             title: 'Pay Dividend',
-                            icon: Icons.account_balance_wallet_outlined,
+                            icon: AppIcons.dividendIcon(
+                              context: context,
+                            ),
                             isDarkTheme: isDarkTheme,
                             onTap: () {
                               // Handle Pay Dividend
@@ -317,15 +338,29 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
                           ),
                           IconItemButton(
                             title: 'Reset Asset',
-                            icon: Icons.refresh_outlined,
+                            icon: AppIcons.resetIcon(
+                              context: context,
+                            ),
                             isDarkTheme: isDarkTheme,
                             onTap: () {
                               // Handle Reset Asset
                             },
                           ),
                           IconItemButton(
+                            title: 'Create Fairminter',
+                            icon: AppIcons.mintIcon(
+                              context: context,
+                            ),
+                            isDarkTheme: isDarkTheme,
+                            onTap: () {
+                              // Handle Create Fairminter
+                            },
+                          ),
+                          IconItemButton(
                             title: 'Issue More',
-                            icon: Icons.add_circle_outline,
+                            icon: AppIcons.plusIcon(
+                              context: context,
+                            ),
                             isDarkTheme: isDarkTheme,
                             onTap: () {
                               // Handle Issue More
@@ -333,7 +368,9 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
                           ),
                           IconItemButton(
                             title: 'Issue Subasset',
-                            icon: Icons.subdirectory_arrow_right_outlined,
+                            icon: AppIcons.plusIcon(
+                              context: context,
+                            ),
                             isDarkTheme: isDarkTheme,
                             onTap: () {
                               // Handle Issue Subasset
@@ -341,7 +378,9 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
                           ),
                           IconItemButton(
                             title: 'Update Description',
-                            icon: Icons.edit_note_outlined,
+                            icon: AppIcons.editIcon(
+                              context: context,
+                            ),
                             isDarkTheme: isDarkTheme,
                             onTap: () {
                               // Handle Update Description
@@ -349,7 +388,9 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
                           ),
                           IconItemButton(
                             title: 'Lock Supply',
-                            icon: Icons.lock_outline,
+                            icon: AppIcons.lockIcon(
+                              context: context,
+                            ),
                             isDarkTheme: isDarkTheme,
                             onTap: () {
                               // Handle Lock Supply
@@ -357,7 +398,9 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
                           ),
                           IconItemButton(
                             title: 'Lock Description',
-                            icon: Icons.description_outlined,
+                            icon: AppIcons.lockIcon(
+                              context: context,
+                            ),
                             isDarkTheme: isDarkTheme,
                             onTap: () {
                               // Handle Lock Description
@@ -365,7 +408,9 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
                           ),
                           IconItemButton(
                             title: 'Transfer Issuance Rights',
-                            icon: Icons.swap_horiz_outlined,
+                            icon: AppIcons.transferIcon(
+                              context: context,
+                            ),
                             isDarkTheme: isDarkTheme,
                             onTap: () {
                               // Handle Transfer Issuance Rights

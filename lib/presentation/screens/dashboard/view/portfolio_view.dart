@@ -280,19 +280,27 @@ class _PortfolioViewState extends State<PortfolioView>
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Center(
-                                child: Icon(
-                                  _isSearching
-                                      ? Icons.close
-                                      : Icons.search_outlined,
-                                  size: 25,
-                                  color: _tabController.index == 0
-                                      ? (isDarkTheme
-                                          ? Colors.white
-                                          : Colors.black)
-                                      : (isDarkTheme
-                                          ? transparentWhite33
-                                          : transparentBlack33),
-                                ),
+                                child: _isSearching
+                                    ? AppIcons.closeIcon(
+                                        context: context,
+                                        color: _tabController.index == 0
+                                            ? (isDarkTheme
+                                                ? Colors.white
+                                                : Colors.black)
+                                            : (isDarkTheme
+                                                ? transparentWhite33
+                                                : transparentBlack33),
+                                      )
+                                    : AppIcons.searchIcon(
+                                        context: context,
+                                        color: _tabController.index == 0
+                                            ? (isDarkTheme
+                                                ? Colors.white
+                                                : Colors.black)
+                                            : (isDarkTheme
+                                                ? transparentWhite33
+                                                : transparentBlack33),
+                                      ),
                               ),
                             ),
                           ),

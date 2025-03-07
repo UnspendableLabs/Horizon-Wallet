@@ -3,7 +3,7 @@ import 'package:horizon/presentation/common/redesign_colors.dart';
 
 class IconItemButton extends StatelessWidget {
   final String title;
-  final IconData icon;
+  final Widget icon;
   final VoidCallback? onTap;
   final bool isDarkTheme;
   final Widget? trailing;
@@ -38,11 +38,7 @@ class IconItemButton extends StatelessWidget {
             padding: const EdgeInsets.fromLTRB(14, 11, 14, 11),
             child: Row(
               children: [
-                Icon(
-                  icon,
-                  size: 20,
-                  color: Theme.of(context).iconTheme.color,
-                ),
+                icon,
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
