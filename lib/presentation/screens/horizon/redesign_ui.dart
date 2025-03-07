@@ -915,3 +915,83 @@ class _HorizonPasswordPromptState extends State<HorizonPasswordPrompt> {
     );
   }
 }
+
+class HorizonActionButton extends StatefulWidget {
+  final VoidCallback? onPressed;
+  final String label;
+  final IconData icon;
+  final bool isTransparent;
+
+  const HorizonActionButton({
+    super.key,
+    required this.onPressed,
+    required this.label,
+    required this.icon,
+    this.isTransparent = false,
+  });
+
+  @override
+  State<HorizonActionButton> createState() => _HorizonActionButtonState();
+}
+
+class _HorizonActionButtonState extends State<HorizonActionButton> {
+  bool isHovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
+    return MouseRegion(
+      onEnter: widget.onPressed != null
+          ? (_) => setState(() => isHovered = true)
+          : null,
+      onExit: widget.onPressed != null
+          ? (_) => setState(() => isHovered = false)
+          : null,
+      cursor: widget.onPressed != null
+          ? SystemMouseCursors.click
+          : SystemMouseCursors.basic,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(
+          maxWidth: 100,
+          minHeight: 44,
+        ),
+        child: OutlinedButton(
+          onPressed: widget.onPressed,
+          style: widget.isTransparent
+              ? Theme.of(context).outlinedButtonTheme.style
+              : Theme.of(context).outlinedButtonTheme.style?.copyWith(
+                    side: WidgetStateProperty.all(
+                      const BorderSide(
+                        color: Colors.transparent,
+                      ),
+                    ),
+                    backgroundColor: WidgetStateProperty.all(isHovered
+                        ? const Color.fromRGBO(30, 231, 197, 0.80)
+                        : green2),
+                  ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                widget.icon,
+                size: 24,
+                color: widget.isTransparent
+                    ? Theme.of(context).iconTheme.color
+                    : offBlack,
+              ),
+              const SizedBox(width: 4),
+              Text(
+                widget.label,
+                style: widget.isTransparent
+                    ? Theme.of(context).textTheme.bodySmall
+                    : Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: offBlack, fontWeight: FontWeight.w600),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}

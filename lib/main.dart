@@ -564,6 +564,19 @@ class MyApp extends StatelessWidget {
           foregroundColor: transparentBlack33,
         ),
       ),
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(
+          backgroundColor: white,
+          foregroundColor: Colors.black,
+          padding: const EdgeInsets.fromLTRB(7, 11, 14, 11),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(18),
+            side: const BorderSide(
+              color: transparentBlack8,
+            ),
+          ),
+        ),
+      ),
       iconTheme: const IconThemeData(
         color: Colors.black,
       ),
@@ -682,6 +695,19 @@ class MyApp extends StatelessWidget {
             letterSpacing: 0,
           ),
           foregroundColor: transparentWhite33,
+        ),
+      ),
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(
+          backgroundColor: black,
+          foregroundColor: white,
+          padding: const EdgeInsets.fromLTRB(7, 11, 14, 11),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(18),
+            side: const BorderSide(
+              color: transparentWhite8,
+            ),
+          ),
         ),
       ),
       iconTheme: const IconThemeData(

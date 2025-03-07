@@ -14,6 +14,7 @@ import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_f
 import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_event.dart';
 import 'package:horizon/presentation/screens/dashboard/view/activity_feed.dart';
 import 'package:horizon/presentation/screens/dashboard/view/balances_display.dart';
+import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 
 class PortfolioView extends StatefulWidget {
@@ -109,6 +110,64 @@ class _PortfolioViewState extends State<PortfolioView>
               ],
               child: Column(
                 children: [
+                  // Action buttons row
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 16, horizontal: 16),
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        final spacing = constraints.maxWidth < 400 ? 6.0 : 8.0;
+                        return Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: HorizonActionButton(
+                                label: 'Send',
+                                icon: Icons.arrow_upward,
+                                onPressed: () {
+                                  // TODO: Implement send functionality
+                                },
+                              ),
+                            ),
+                            SizedBox(width: spacing),
+                            Expanded(
+                              child: HorizonActionButton(
+                                label: 'Receive',
+                                icon: Icons.arrow_downward,
+                                isTransparent: true,
+                                onPressed: () {
+                                  // TODO: Implement receive functionality
+                                },
+                              ),
+                            ),
+                            SizedBox(width: spacing),
+                            Expanded(
+                              child: HorizonActionButton(
+                                label: 'Swap',
+                                icon: Icons.swap_horiz,
+                                isTransparent: true,
+                                onPressed: () {
+                                  // TODO: Implement swap functionality
+                                },
+                              ),
+                            ),
+                            SizedBox(width: spacing),
+                            Expanded(
+                              child: HorizonActionButton(
+                                label: 'Mint',
+                                icon: Icons.add_circle_outline,
+                                isTransparent: true,
+                                onPressed: () {
+                                  // TODO: Implement mint functionality
+                                },
+                              ),
+                            ),
+                          ],
+                        );
+                      },
+                    ),
+                  ),
+
                   // Tab bar (Assets/Activity) with search
                   Container(
                     decoration: BoxDecoration(
