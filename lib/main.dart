@@ -56,6 +56,7 @@ import 'package:horizon/presentation/session/theme/bloc/theme_bloc.dart';
 import 'package:horizon/presentation/shell/app_shell.dart';
 import 'package:horizon/presentation/version_cubit.dart';
 import 'package:horizon/setup.dart';
+import 'package:horizon/utils/app_icons.dart';
 import 'package:pub_semver/pub_semver.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -400,8 +401,11 @@ void main() {
                 child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                  const Icon(Icons.warning_amber_rounded,
-                      size: 60.0, color: Colors.redAccent),
+                  AppIcons.warningIcon(
+                    width: 60.0,
+                    height: 60.0,
+                    color: red1,
+                  ),
                   const SizedBox(height: 16),
                   const Text(
                     "Upgrade Required!",

@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
+import 'package:horizon/utils/app_icons.dart';
 
 class HorizonGradientButton extends StatefulWidget {
   final VoidCallback? onPressed;
@@ -415,10 +416,17 @@ class _HorizonRedesignDropdownState<T>
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
                 ),
-                Icon(
-                  _isOpen ? Icons.arrow_drop_up : Icons.arrow_drop_down,
-                  size: 18,
-                ),
+                _isOpen
+                    ? AppIcons.caretUpIcon(
+                        context: context,
+                        width: 18,
+                        height: 18,
+                      )
+                    : AppIcons.caretDownIcon(
+                        context: context,
+                        width: 18,
+                        height: 18,
+                      ),
               ],
             ),
           ),
@@ -587,10 +595,17 @@ class _BlurredBackgroundDropdownState<T>
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
               ),
-              Icon(
-                _isOpen ? Icons.arrow_drop_up : Icons.arrow_drop_down,
-                size: 18,
-              ),
+              _isOpen
+                  ? AppIcons.caretUpIcon(
+                      context: context,
+                      width: 18,
+                      height: 18,
+                    )
+                  : AppIcons.caretDownIcon(
+                      context: context,
+                      width: 18,
+                      height: 18,
+                    ),
             ],
           ),
         ),
@@ -758,7 +773,8 @@ class _HorizonTextFieldState extends State<HorizonTextField> {
                   horizontal: 12,
                   vertical: 0,
                 ),
-                suffixIcon: widget.suffixIcon,
+                suffix: widget.suffixIcon,
+                // suffixIcon: widget.suffixIcon,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(18),
                   borderSide: BorderSide.none,
@@ -885,18 +901,27 @@ class _HorizonPasswordPromptState extends State<HorizonPasswordPrompt> {
                     hintText: 'Password',
                     errorText: widget.errorText,
                     obscureText: _obscurePassword,
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        _obscurePassword
-                            ? Icons.visibility_outlined
-                            : Icons.visibility_off_outlined,
-                        size: 18,
-                      ),
-                      onPressed: _togglePasswordVisibility,
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(),
-                      focusNode: FocusNode(skipTraversal: true),
+                    suffixIcon: AppIcons.iconButton(
+                      context: context,
+                      icon: _obscurePassword
+                          ? AppIcons.eyeOpenIcon(
+                              context: context, height: 18, width: 18)
+                          : AppIcons.eyeClosedIcon(
+                              context: context, height: 18, width: 18),
+                                                    onPressed: _togglePasswordVisibility,
+
                     ),
+                    // suffixIcon: IconButton(
+                    //   icon: Icon(
+                    //     _obscurePassword
+                         
+                    //     size: 18,
+                    //   ),
+                    //   onPressed: _togglePasswordVisibility,
+                    //   padding: EdgeInsets.zero,
+                    //   constraints: const BoxConstraints(),
+                    //   focusNode: FocusNode(skipTraversal: true),
+                    // ),
                   ),
                   SizedBox(
                     height: 56,

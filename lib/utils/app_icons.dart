@@ -26,18 +26,37 @@ class AppIcons {
   static const String lock = '$_iconPath/lock.svg';
   static const String transfer = '$_iconPath/transfer.svg';
   static const String plus = '$_iconPath/plus.svg';
+  static const String warning = '$_iconPath/warning.svg';
+  static const String backArrow = '$_iconPath/back_arrow.svg';
+  static const String rocket = '$_iconPath/rocket.svg';
+  static const String starOutlined = '$_iconPath/star_outlined.svg';
+  static const String caretUp = '$_iconPath/caret_up.svg';
+  static const String caretDown = '$_iconPath/caret_down.svg';
+  static const String check = '$_iconPath/check.svg';
+  static const String eyeOpen = '$_iconPath/eye_open.svg';
+  static const String eyeClosed = '$_iconPath/eye_closed.svg';
 
   /// Get an SVG icon as a widget with customizable parameters
   /// Uses the current theme's icon style if no color is specified
   static Widget getIcon(
     String iconPath, {
-    required BuildContext context,
+    required BuildContext? context,
     double? width,
     double? height,
     Color? color,
     BoxFit fit = BoxFit.contain,
   }) {
     // Use the theme's icon color if no color is specified
+    if (context == null) {
+      return SvgPicture.asset(
+        iconPath,
+        width: width,
+        height: height,
+        color: color,
+        fit: fit,
+      );
+    }
+
     final iconColor = color ?? Theme.of(context).iconTheme.color;
 
     return SvgPicture.asset(
@@ -391,10 +410,171 @@ class AppIcons {
     );
   }
 
+  /// Warning icon with theme-aware styling
+  static Widget warningIcon({
+    double? width,
+    double? height,
+    Color? color,
+    BoxFit fit = BoxFit.contain,
+  }) {
+    return getIcon(
+      warning,
+      context: null,
+      width: width,
+      height: height,
+      color: color,
+      fit: fit,
+    );
+  }
+
+  /// Back arrow icon with theme-aware styling
+  static Widget backArrowIcon({
+    required BuildContext context,
+    double? width,
+    double? height,
+    Color? color,
+    BoxFit fit = BoxFit.contain,
+  }) {
+    return getIcon(
+      backArrow,
+      context: context,
+      width: width,
+      height: height,
+      color: color,
+      fit: fit,
+    );
+  }
+
+  /// Rocket launch icon with theme-aware styling
+  static Widget rocketLaunchIcon({
+    required BuildContext context,
+    double? width,
+    double? height,
+    Color? color,
+    BoxFit fit = BoxFit.contain,
+  }) {
+    return getIcon(
+      rocket,
+      context: context,
+      width: width,
+      height: height,
+      color: color,
+      fit: fit,
+    );
+  }
+
+  /// Star outlined icon with theme-aware styling
+  static Widget starOutlinedIcon({
+    required BuildContext context,
+    double? width,
+    double? height,
+    Color? color,
+    BoxFit fit = BoxFit.contain,
+  }) {
+    return getIcon(
+      starOutlined,
+      context: context,
+      width: width,
+      height: height,
+      color: color,
+      fit: fit,
+    );
+  }
+
+  /// Caret up icon with theme-aware styling
+  static Widget caretUpIcon({
+    required BuildContext context,
+    double? width,
+    double? height,
+    Color? color,
+    BoxFit fit = BoxFit.contain,
+  }) {
+    return getIcon(
+      caretUp,
+      context: context,
+      width: width,
+      height: height,
+      color: color,
+      fit: fit,
+    );
+  }
+
+  /// Caret down icon with theme-aware styling
+  static Widget caretDownIcon({
+required BuildContext context,
+    double? width,
+    double? height,
+    Color? color,
+    BoxFit fit = BoxFit.contain,
+  }) {
+    return getIcon(
+      caretDown,
+      context: context,
+      width: width,
+      height: height,
+      color: color,
+      fit: fit,
+    );
+  }
+
+  /// Check icon with theme-aware styling
+  static Widget checkIcon({
+    required BuildContext context,
+    double? width,
+    double? height,
+    Color? color,
+    BoxFit fit = BoxFit.contain,
+  }) {
+    return getIcon(
+      check,
+      context: context,
+      width: width,
+      height: height,
+      color: color,
+      fit: fit,
+    );
+  }
+
+  /// Eye open icon with theme-aware styling
+  static Widget eyeOpenIcon({
+    required BuildContext context,
+    double? width,
+    double? height,
+    Color? color,
+    BoxFit fit = BoxFit.contain,
+  }) {
+    return getIcon(
+      eyeOpen,
+      context: context,
+      width: width,
+      height: height,
+      color: color,
+      fit: fit,
+    );
+  }
+
+  /// Eye closed icon with theme-aware styling
+  static Widget eyeClosedIcon({
+    required BuildContext context,
+    double? width,
+    double? height,
+    Color? color,
+    BoxFit fit = BoxFit.contain,
+  }) {
+    return getIcon(
+      eyeClosed,
+      context: context,
+      width: width,
+      height: height,
+      color: color,
+      fit: fit,
+    );
+  }
+
   /// Helper method to create a clickable icon button with theme-aware styling
   static Widget iconButton({
     required BuildContext context,
-    required String iconPath,
+    required Widget icon,
     required VoidCallback onPressed,
     double? width,
     double? height,
@@ -407,14 +587,7 @@ class AppIcons {
       borderRadius: BorderRadius.circular(8),
       child: Padding(
         padding: padding,
-        child: getIcon(
-          iconPath,
-          context: context,
-          width: width,
-          height: height,
-          color: color,
-          fit: fit,
-        ),
+        child: icon,
       ),
     );
   }

@@ -8,6 +8,7 @@ import 'package:horizon/presentation/common/shared_util.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_bloc.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_state.dart';
 import 'package:horizon/presentation/screens/dashboard/view/asset_icon.dart';
+import 'package:horizon/utils/app_icons.dart';
 
 class BalancesDisplay extends StatefulWidget {
   final bool isDarkTheme;
@@ -249,12 +250,12 @@ class BalancesSliverState extends State<BalancesSliver> {
                       child: Row(
                         children: [
                           // Star icon (placeholder)
-                          const Icon(
-                            Icons.star_border_outlined,
-                            size: 16,
+                          AppIcons.starOutlinedIcon(
+                            context: context,
+                            width: 16,
+                            height: 16,
                           ),
                           const SizedBox(width: 10),
-                          // Asset icon (placeholder)
                           AssetIcon(asset: balance.asset),
                           const SizedBox(width: 10),
                           // Asset name and details

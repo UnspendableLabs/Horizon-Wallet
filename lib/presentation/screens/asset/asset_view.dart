@@ -84,12 +84,12 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
                 ),
                 child: Row(
                   children: [
-                    IconButton(
-                      padding: EdgeInsets.zero,
-                      icon: Icon(
-                        Icons.arrow_back,
-                        color: isDarkTheme ? Colors.white : Colors.black,
-                        size: 24,
+                    AppIcons.iconButton(
+                      context: context,
+                      icon: AppIcons.backArrowIcon(
+                        context: context,
+                        width: 24,
+                        height: 24,
                       ),
                       onPressed: () {
                         context.go('/dashboard');

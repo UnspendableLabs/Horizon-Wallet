@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:horizon/common/uuid.dart';
+import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_event.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_state.dart';
@@ -17,6 +18,7 @@ import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
 import 'package:horizon/presentation/screens/compose_rbf/view/compose_rbf_view.dart';
 import 'package:horizon/domain/repositories/settings_repository.dart';
 import 'package:get_it/get_it.dart';
+import 'package:horizon/utils/app_icons.dart';
 
 class RBF extends StatelessWidget {
   final String txHash;
@@ -28,7 +30,8 @@ class RBF extends StatelessWidget {
   });
   @override
   Widget build(BuildContext context) {
-    return IconButton(
+    return AppIcons.iconButton(
+      context: context,
         onPressed: () {
           HorizonUI.HorizonDialog.show(
             context: context,
@@ -42,7 +45,9 @@ class RBF extends StatelessWidget {
                 address: address),
           );
         },
-        icon: const Icon(Icons.rocket_launch_sharp));
+        icon: AppIcons.rocketLaunchIcon(
+          context: context,
+        ));
   }
 }
 
@@ -933,16 +938,16 @@ class ActivityFeedListItem extends StatelessWidget {
                   padding: const EdgeInsets.fromLTRB(8.0, 0, 0, 0),
                   child: Row(
                     children: [
-                      const Icon(
-                        Icons.warning_amber_rounded, // Warning icon
-                        color: redErrorText, // Icon color
-                        size: 16.0, // Small icon size
+                      AppIcons.warningIcon(
+                        width: 16.0,
+                        height: 16.0,
+                        color: red1,
                       ),
                       Padding(
                         padding: const EdgeInsets.fromLTRB(2, 0, 0, 0),
                         child: SelectableText(reason,
                             style: const TextStyle(
-                                color: redErrorText, fontSize: 12)),
+                                color: red1, fontSize: 12)),
                       ),
                     ],
                   ),
