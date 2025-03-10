@@ -26,7 +26,6 @@ class BalancesBloc extends Bloc<BalancesEvent, BalancesState> {
       balanceRepository: repository ?? GetIt.I.get<BalanceRepository>(),
     );
 
-    // Fix: Compare address contents, not references
     if (_instance!._currentAddresses?.join(',') != addresses.join(',')) {
       _instance!._currentAddresses = addresses;
       _instance!.add(Fetch());
@@ -35,7 +34,6 @@ class BalancesBloc extends Bloc<BalancesEvent, BalancesState> {
     return _instance!;
   }
 
-  // Private constructor
   BalancesBloc._({
     required this.balanceRepository,
   }) : super(const BalancesState.initial()) {
@@ -74,13 +72,11 @@ class BalancesBloc extends Bloc<BalancesEvent, BalancesState> {
     }
   }
 
-  // Helper method to compare two lists of MultiAddressBalance
   bool _areBalancesEqual(
       List<MultiAddressBalance> a, List<MultiAddressBalance> b) {
     if (a.length != b.length) return false;
 
     // Simple comparison of total assets and their quantities
-    // For more detailed comparison, you might want to expand this
     final Map<String, String> aAssets = {
       for (var balance in a) balance.asset: balance.totalNormalized
     };
