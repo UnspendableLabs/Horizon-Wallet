@@ -80,26 +80,24 @@ class _PortfolioViewState extends State<PortfolioView>
     return context.watch<SessionStateCubit>().state.maybeWhen(
           orElse: () => const CircularProgressIndicator(),
           success: (session) {
+            // Collect all addresses with explicit List<String> type
+            final List<String> addresses = [
+              ...session.addresses.map((e) => e.address),
+              ...(session.importedAddresses?.map((e) => e.address) ?? [])
+            ];
+
             return MultiBlocProvider(
               providers: [
                 BlocProvider<BalancesBloc>(
-                  create: (context) => BalancesBloc(
-                    balanceRepository: GetIt.I.get<BalanceRepository>(),
-                    addresses: [
-                      ...session.addresses.map((e) => e.address),
-                      ...(session.importedAddresses?.map((e) => e.address) ??
-                          [])
-                    ],
-                  )..add(Start(pollingInterval: const Duration(seconds: 60))),
+                  create: (context) => BalancesBloc.getInstance(
+                    addresses: addresses,
+                    repository: GetIt.I.get<BalanceRepository>(),
+                  )..add(Start(pollingInterval: const Duration(seconds: 30))),
                 ),
                 BlocProvider<DashboardActivityFeedBloc>(
                   create: (context) => DashboardActivityFeedBloc(
                     logger: GetIt.I.get<Logger>(),
-                    addresses: [
-                      ...session.addresses.map((e) => e.address),
-                      ...(session.importedAddresses?.map((e) => e.address) ??
-                          [])
-                    ],
+                    addresses: addresses,
                     eventsRepository: GetIt.I.get<EventsRepository>(),
                     addressRepository: GetIt.I.get<AddressRepository>(),
                     bitcoinRepository: GetIt.I.get<BitcoinRepository>(),
@@ -330,12 +328,7 @@ class _PortfolioViewState extends State<PortfolioView>
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 16),
                           child: DashboardActivityFeedScreen(
-                            addresses: [
-                              ...session.addresses.map((e) => e.address),
-                              ...(session.importedAddresses
-                                      ?.map((e) => e.address) ??
-                                  [])
-                            ],
+                            addresses: addresses,
                             initialItemCount: 20,
                           ),
                         ),
