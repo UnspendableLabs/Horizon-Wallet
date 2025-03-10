@@ -9,6 +9,7 @@ import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 import 'package:horizon/presentation/screens/settings/seed_phrase/bloc/view_seed_phrase_bloc.dart';
 import 'package:horizon/presentation/screens/settings/seed_phrase/bloc/view_seed_phrase_event.dart';
 import 'package:horizon/presentation/screens/settings/seed_phrase/bloc/view_seed_phrase_state.dart';
+import 'package:horizon/utils/app_icons.dart';
 
 class SeedPhraseFlow extends StatefulWidget {
   const SeedPhraseFlow({super.key});
@@ -42,11 +43,7 @@ class _SeedPhraseFlowState extends State<SeedPhraseFlow> {
             margin: const EdgeInsets.all(18),
             child: Column(
               children: [
-                const Icon(
-                  Icons.warning_amber_rounded,
-                  color: red1,
-                  size: 48,
-                ),
+                AppIcons.warningIcon(color: red1, height: 48, width: 48),
                 const SizedBox(height: 8),
                 SizedBox(
                   width: 170,
@@ -80,15 +77,15 @@ class _SeedPhraseFlowState extends State<SeedPhraseFlow> {
               children: [
                 _buildWarningPoint(
                   'View this in private',
-                  const Icon(Icons.visibility_outlined, size: 12),
+                  AppIcons.eyeOpenIcon(context: context),
                 ),
                 _buildWarningPoint(
                   'Do not share with anyone',
-                  const Icon(Icons.lock_outline, size: 12),
+                  AppIcons.lockIcon(context: context),
                 ),
                 _buildWarningPoint(
                   'Never enter it to any website or applications',
-                  const Icon(Icons.shield_outlined, size: 12),
+                  AppIcons.shieldIcon(context: context),
                 ),
               ],
             ),
@@ -184,7 +181,7 @@ class _SeedPhraseFlowState extends State<SeedPhraseFlow> {
           Center(
             child: Padding(
               padding: const EdgeInsets.all(10.0),
-              child: TextButton.icon(
+              child: TextButton(
                 style: Theme.of(context).textButtonTheme.style?.copyWith(
                       backgroundColor: WidgetStateProperty.all(
                         transparentPurple8,
@@ -199,15 +196,22 @@ class _SeedPhraseFlowState extends State<SeedPhraseFlow> {
                     _showSeedPhrase = !_showSeedPhrase;
                   });
                 },
-                icon: Icon(
-                  color: Theme.of(context).iconTheme.color,
-                  _showSeedPhrase
-                      ? Icons.visibility_off_outlined
-                      : Icons.visibility_outlined,
-                ),
-                label: Text(
-                  _showSeedPhrase ? 'Hide Phrase' : 'Show Phrase',
-                  style: Theme.of(context).textTheme.bodySmall,
+                child: Container(
+                  width: 132,
+                  alignment: Alignment.center,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      _showSeedPhrase
+                          ? AppIcons.eyeOpenIcon(context: context)
+                          : AppIcons.eyeClosedIcon(context: context),
+                      const SizedBox(width: 8),
+                      Text(
+                        _showSeedPhrase ? 'Hide Phrase' : 'Show Phrase',
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -217,13 +221,13 @@ class _SeedPhraseFlowState extends State<SeedPhraseFlow> {
     );
   }
 
-  Widget _buildWarningPoint(String title, Icon icon) {
+  Widget _buildWarningPoint(String title, Widget icon) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 11),
       child: Row(
         children: [
           icon,
-          const SizedBox(width: 4),
+          const SizedBox(width: 8),
           SelectableText(title, style: Theme.of(context).textTheme.bodySmall),
         ],
       ),

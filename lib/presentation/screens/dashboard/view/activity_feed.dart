@@ -31,7 +31,7 @@ class RBF extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AppIcons.iconButton(
-      context: context,
+        context: context,
         onPressed: () {
           HorizonUI.HorizonDialog.show(
             context: context,
@@ -946,8 +946,7 @@ class ActivityFeedListItem extends StatelessWidget {
                       Padding(
                         padding: const EdgeInsets.fromLTRB(2, 0, 0, 0),
                         child: SelectableText(reason,
-                            style: const TextStyle(
-                                color: red1, fontSize: 12)),
+                            style: const TextStyle(color: red1, fontSize: 12)),
                       ),
                     ],
                   ),

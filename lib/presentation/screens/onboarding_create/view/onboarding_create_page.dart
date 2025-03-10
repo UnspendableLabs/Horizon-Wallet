@@ -173,17 +173,15 @@ class _OnboardingCreatePageState extends State<OnboardingCreatePage> {
                       child: Container(
                         padding: const EdgeInsets.all(8.0),
                         decoration: BoxDecoration(
-                          color: Colors.red.withOpacity(0.1),
+                          color: red1,
                           borderRadius: BorderRadius.circular(40.0),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.info, color: Colors.red),
-                            const SizedBox(width: 4),
                             SelectableText(
                               createStateError,
-                              style: const TextStyle(color: Colors.red),
+                              style: const TextStyle(color: red1),
                             ),
                           ],
                         ),

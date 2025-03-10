@@ -13,6 +13,7 @@ import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:horizon/presentation/session/theme/bloc/theme_bloc.dart';
 import 'package:horizon/presentation/session/theme/bloc/theme_event.dart';
 import 'package:horizon/presentation/shell/app_shell.dart';
+import 'package:horizon/utils/app_icons.dart';
 
 enum SettingsPage {
   main,
@@ -24,7 +25,7 @@ enum SettingsPage {
 
 class SettingsItem extends StatelessWidget {
   final String title;
-  final IconData icon;
+  final Widget? icon;
   final VoidCallback? onTap;
   final bool isDarkTheme;
   final Widget? trailing;
@@ -32,7 +33,7 @@ class SettingsItem extends StatelessWidget {
   const SettingsItem({
     super.key,
     required this.title,
-    required this.icon,
+    this.icon,
     this.onTap,
     required this.isDarkTheme,
     this.trailing,
@@ -59,12 +60,10 @@ class SettingsItem extends StatelessWidget {
             padding: const EdgeInsets.fromLTRB(14, 11, 14, 11),
             child: Row(
               children: [
-                Icon(
-                  icon,
-                  size: 24,
-                  color: isDarkTheme ? Colors.white : Colors.black,
-                ),
-                const SizedBox(width: 12),
+                icon ?? const SizedBox.shrink(),
+                icon != null
+                    ? const SizedBox(width: 12)
+                    : const SizedBox.shrink(),
                 Expanded(
                   child: Text(
                     title,
@@ -76,12 +75,9 @@ class SettingsItem extends StatelessWidget {
                   ),
                 ),
                 trailing ??
-                    Icon(
-                      Icons.chevron_right,
-                      size: 24,
-                      color: isDarkTheme
-                          ? Colors.white.withOpacity(0.5)
-                          : Colors.black.withOpacity(0.5),
+                    AppIcons.chevronRightIcon(
+                      context: context,
+                      color: isDarkTheme ? offWhite : offBlack,
                     ),
               ],
             ),
@@ -261,21 +257,15 @@ class ThemeToggle extends StatelessWidget {
                   width: 36,
                   height: 32,
                   alignment: Alignment.center,
-                  child: Icon(
-                    Icons.dark_mode_outlined,
-                    size: 20,
-                    color: Theme.of(context).iconTheme.color,
-                  ),
+                  child: AppIcons.moonIcon(
+                      context: context, height: 20, width: 20),
                 ),
                 Container(
                   width: 36,
                   height: 32,
                   alignment: Alignment.center,
-                  child: Icon(
-                    Icons.light_mode_outlined,
-                    size: 20,
-                    color: Theme.of(context).iconTheme.color,
-                  ),
+                  child:
+                      AppIcons.sunIcon(context: context, height: 20, width: 20),
                 ),
               ],
             ),
@@ -341,7 +331,7 @@ class _SettingsViewState extends State<SettingsView> {
         const SizedBox(height: 10),
         SettingsItem(
           title: 'Security',
-          icon: Icons.security,
+          icon: AppIcons.shieldIcon(context: context),
           isDarkTheme: isDarkTheme,
           onTap: () {
             setState(() {
@@ -351,7 +341,7 @@ class _SettingsViewState extends State<SettingsView> {
         ),
         SettingsItem(
           title: 'Seed phrase',
-          icon: Icons.key,
+          icon: AppIcons.copyIcon(context: context),
           isDarkTheme: isDarkTheme,
           onTap: () {
             setState(() {
@@ -361,7 +351,7 @@ class _SettingsViewState extends State<SettingsView> {
         ),
         SettingsItem(
           title: 'Import new address',
-          icon: Icons.add_circle_outline,
+          icon: AppIcons.receiveIcon(context: context),
           isDarkTheme: isDarkTheme,
           onTap: () {
             setState(() {
@@ -371,7 +361,7 @@ class _SettingsViewState extends State<SettingsView> {
         ),
         SettingsItem(
           title: 'Reset wallet',
-          icon: Icons.restore,
+          icon: AppIcons.refreshIcon(context: context),
           isDarkTheme: isDarkTheme,
           onTap: () {
             setState(() {
@@ -381,7 +371,7 @@ class _SettingsViewState extends State<SettingsView> {
         ),
         SettingsItem(
           title: 'Appearance',
-          icon: Icons.palette_outlined,
+          icon: AppIcons.spectaclesIcon(context: context),
           isDarkTheme: isDarkTheme,
           trailing: ThemeToggle(
             isDarkTheme: isDarkTheme,
@@ -414,11 +404,7 @@ class _SettingsViewState extends State<SettingsView> {
                   padding: const EdgeInsets.fromLTRB(14, 11, 14, 11),
                   child: Row(
                     children: [
-                      Icon(
-                        Icons.lock_outline,
-                        size: 24,
-                        color: Theme.of(context).iconTheme.color,
-                      ),
+                      AppIcons.lockIcon(context: context),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Text(
@@ -430,9 +416,8 @@ class _SettingsViewState extends State<SettingsView> {
                           ),
                         ),
                       ),
-                      Icon(
-                        Icons.chevron_right,
-                        size: 24,
+                      AppIcons.chevronRightIcon(
+                        context: context,
                         color: Theme.of(context).iconTheme.color,
                       ),
                     ],

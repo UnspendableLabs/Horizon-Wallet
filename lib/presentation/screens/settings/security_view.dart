@@ -144,7 +144,6 @@ class _SecurityViewState extends State<SecurityView> {
         children: [
           SettingsItem(
             title: 'Require password',
-            icon: Icons.lock_outline,
             isDarkTheme: isDarkTheme,
             trailing: HorizonToggle(
               value: _requirePassword,
@@ -166,7 +165,6 @@ class _SecurityViewState extends State<SecurityView> {
           const SizedBox(height: 16),
           SettingsItem(
             title: 'Inactivity Timeout',
-            icon: Icons.timer_outlined,
             isDarkTheme: isDarkTheme,
             trailing: SizedBox(
               width: 120,

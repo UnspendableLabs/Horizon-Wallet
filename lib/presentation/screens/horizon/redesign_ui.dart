@@ -908,13 +908,12 @@ class _HorizonPasswordPromptState extends State<HorizonPasswordPrompt> {
                               context: context, height: 18, width: 18)
                           : AppIcons.eyeClosedIcon(
                               context: context, height: 18, width: 18),
-                                                    onPressed: _togglePasswordVisibility,
-
+                      onPressed: _togglePasswordVisibility,
                     ),
                     // suffixIcon: IconButton(
                     //   icon: Icon(
                     //     _obscurePassword
-                         
+
                     //     size: 18,
                     //   ),
                     //   onPressed: _togglePasswordVisibility,

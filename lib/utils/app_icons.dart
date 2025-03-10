@@ -24,6 +24,7 @@ class AppIcons {
   static const String reset = '$_iconPath/reset.svg';
   static const String edit = '$_iconPath/edit.svg';
   static const String lock = '$_iconPath/lock.svg';
+  static const String unlock = '$_iconPath/unlock.svg';
   static const String transfer = '$_iconPath/transfer.svg';
   static const String plus = '$_iconPath/plus.svg';
   static const String warning = '$_iconPath/warning.svg';
@@ -35,6 +36,13 @@ class AppIcons {
   static const String check = '$_iconPath/check.svg';
   static const String eyeOpen = '$_iconPath/eye_open.svg';
   static const String eyeClosed = '$_iconPath/eye_closed.svg';
+  static const String moon = '$_iconPath/moon.svg';
+  static const String sun = '$_iconPath/sun.svg';
+  static const String shield = '$_iconPath/shield.svg';
+  static const String copy = '$_iconPath/copy.svg';
+  static const String refresh = '$_iconPath/refresh.svg';
+  static const String spectacles = '$_iconPath/spectacles.svg';
+  static const String chevronRight = '$_iconPath/chevron_right.svg';
 
   /// Get an SVG icon as a widget with customizable parameters
   /// Uses the current theme's icon style if no color is specified
@@ -356,7 +364,25 @@ class AppIcons {
     );
   }
 
-  /// Lock icon with theme-aware styling
+  /// unlock icon with theme-aware styling
+  static Widget unlockIcon({
+    required BuildContext context,
+    double? width,
+    double? height,
+    Color? color,
+    BoxFit fit = BoxFit.contain,
+  }) {
+    return getIcon(
+      unlock,
+      context: context,
+      width: width,
+      height: height,
+      color: color,
+      fit: fit,
+    );
+  }
+
+  /// unlock icon with theme-aware styling
   static Widget lockIcon({
     required BuildContext context,
     double? width,
@@ -365,7 +391,7 @@ class AppIcons {
     BoxFit fit = BoxFit.contain,
   }) {
     return getIcon(
-      lock,
+      unlock,
       context: context,
       width: width,
       height: height,
@@ -501,7 +527,7 @@ class AppIcons {
 
   /// Caret down icon with theme-aware styling
   static Widget caretDownIcon({
-required BuildContext context,
+    required BuildContext context,
     double? width,
     double? height,
     Color? color,
@@ -563,6 +589,132 @@ required BuildContext context,
   }) {
     return getIcon(
       eyeClosed,
+      context: context,
+      width: width,
+      height: height,
+      color: color,
+      fit: fit,
+    );
+  }
+
+  /// Moon icon with theme-aware styling
+  static Widget moonIcon({
+    required BuildContext context,
+    double? width,
+    double? height,
+    Color? color,
+    BoxFit fit = BoxFit.contain,
+  }) {
+    return getIcon(
+      moon,
+      context: context,
+      width: width,
+      height: height,
+      color: color,
+      fit: fit,
+    );
+  }
+
+  /// Sun icon with theme-aware styling
+  static Widget sunIcon({
+    required BuildContext context,
+    double? width,
+    double? height,
+    Color? color,
+    BoxFit fit = BoxFit.contain,
+  }) {
+    return getIcon(
+      sun,
+      context: context,
+      width: width,
+      height: height,
+      color: color,
+      fit: fit,
+    );
+  }
+
+  /// Sun icon with theme-aware styling
+  static Widget shieldIcon({
+    required BuildContext context,
+    double? width,
+    double? height,
+    Color? color,
+    BoxFit fit = BoxFit.contain,
+  }) {
+    return getIcon(
+      sun,
+      context: context,
+      width: width,
+      height: height,
+      color: color,
+      fit: fit,
+    );
+  }
+
+  /// Copy icon with theme-aware styling
+  static Widget copyIcon({
+    required BuildContext context,
+    double? width,
+    double? height,
+    Color? color,
+    BoxFit fit = BoxFit.contain,
+  }) {
+    return getIcon(
+      copy,
+      context: context,
+      width: width,
+      height: height,
+      color: color,
+      fit: fit,
+    );
+  }
+
+  /// Refresh icon with theme-aware styling
+  static Widget refreshIcon({
+    required BuildContext context,
+    double? width,
+    double? height,
+    Color? color,
+    BoxFit fit = BoxFit.contain,
+  }) {
+    return getIcon(
+      refresh,
+      context: context,
+      width: width,
+      height: height,
+      color: color,
+      fit: fit,
+    );
+  }
+
+  /// Spectacles icon with theme-aware styling
+  static Widget spectaclesIcon({
+    required BuildContext context,
+    double? width,
+    double? height,
+    Color? color,
+    BoxFit fit = BoxFit.contain,
+  }) {
+    return getIcon(
+      spectacles,
+      context: context,
+      width: width,
+      height: height,
+      color: color,
+      fit: fit,
+    );
+  }
+
+  /// Chevron right icon with theme-aware styling
+  static Widget chevronRightIcon({
+    required BuildContext context,
+    double? width,
+    double? height,
+    Color? color,
+    BoxFit fit = BoxFit.contain,
+  }) {
+    return getIcon(
+      chevronRight,
       context: context,
       width: width,
       height: height,

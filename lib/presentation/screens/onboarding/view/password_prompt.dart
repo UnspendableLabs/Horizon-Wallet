@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:horizon/presentation/common/theme_extension.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
+import 'package:horizon/utils/app_icons.dart';
 
 class PasswordPrompt extends StatefulWidget {
   final Widget? optionalErrorWidget;
@@ -225,18 +226,22 @@ class PasswordPromptState extends State<PasswordPrompt> {
                           showCursor: true,
                         ),
                       ),
-                      IconButton(
-                        icon: Icon(
-                          isObscured
-                              ? Icons.visibility_outlined
-                              : Icons.visibility_off_outlined,
-                          color: customTheme.inputTextColor,
-                          size: 18,
-                        ),
+                      AppIcons.iconButton(
+                        context: context,
+                        icon: isObscured
+                            ? AppIcons.eyeOpenIcon(
+                                context: context,
+                                width: 18,
+                                height: 18,
+                              )
+                            : AppIcons.eyeClosedIcon(
+                                context: context,
+                                width: 18,
+                                height: 18,
+                              ),
+                        color: customTheme.inputTextColor,
                         onPressed: onToggleObscured,
                         padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(),
-                        focusNode: FocusNode(skipTraversal: true),
                       ),
                     ],
                   ),

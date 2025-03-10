@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
+import 'package:horizon/utils/app_icons.dart';
 
 class OnboardingShell extends StatefulWidget {
   final List<Widget> steps;
@@ -56,9 +57,12 @@ class _OnboardingShellState extends State<OnboardingShell> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back,
+        leading: AppIcons.iconButton(
+          context: context,
+          icon: AppIcons.backArrowIcon(
+            context: context,
+            width: 20,
+            height: 20,
           ),
           onPressed: _handleStepBack,
         ),

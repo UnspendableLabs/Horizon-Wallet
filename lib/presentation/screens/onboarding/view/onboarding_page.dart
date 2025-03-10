@@ -15,6 +15,7 @@ import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:horizon/presentation/session/theme/bloc/theme_bloc.dart';
 import 'package:horizon/presentation/session/theme/bloc/theme_event.dart';
 import 'package:horizon/remote_data_bloc/remote_data_state.dart';
+import 'package:horizon/utils/app_icons.dart';
 import 'package:lottie/lottie.dart';
 
 class OnboardingScreen extends StatefulWidget {
@@ -89,9 +90,10 @@ class OnboardingView extends StatelessWidget {
                     decoration: const BoxDecoration(
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(
-                      Icons.wb_sunny,
-                      size: 20,
+                    child: AppIcons.sunIcon(
+                      context: context,
+                      width: 20,
+                      height: 20,
                     ),
                   ),
                 ),
@@ -110,9 +112,10 @@ class OnboardingView extends StatelessWidget {
                     decoration: const BoxDecoration(
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(
-                      Icons.dark_mode,
-                      size: 20,
+                    child: AppIcons.moonIcon(
+                      context: context,
+                      width: 20,
+                      height: 20,
                     ),
                   ),
                 ),

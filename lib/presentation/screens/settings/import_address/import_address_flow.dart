@@ -15,6 +15,7 @@ import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 import 'package:horizon/presentation/screens/settings/import_address/bloc/import_address_pk_bloc.dart';
 import 'package:horizon/presentation/screens/settings/import_address/bloc/import_address_pk_event.dart';
 import 'package:horizon/presentation/screens/settings/import_address/bloc/import_address_pk_state.dart';
+import 'package:horizon/utils/app_icons.dart';
 
 class ImportAddressFlow extends StatelessWidget {
   final VoidCallback onNavigateBack;
@@ -193,13 +194,11 @@ class _ImportAddressFormState extends State<_ImportAddressForm> {
                     }
                     return null;
                   },
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      _showPrivateKey
-                          ? Icons.visibility_outlined
-                          : Icons.visibility_off_outlined,
-                      size: 18,
-                    ),
+                  suffixIcon: AppIcons.iconButton(
+                    context: context,
+                    icon: _showPrivateKey
+                        ? AppIcons.eyeOpenIcon(context: context)
+                        : AppIcons.eyeClosedIcon(context: context),
                     onPressed: () {
                       setState(() {
                         _showPrivateKey = !_showPrivateKey;
@@ -238,11 +237,8 @@ class _ImportAddressFormState extends State<_ImportAddressForm> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      const Icon(
-                        Icons.warning_amber_rounded,
-                        color: yellow1,
-                        size: 24,
-                      ),
+                      AppIcons.warningIcon(
+                          color: yellow1, height: 24, width: 24),
                       const SizedBox(height: 8),
                       SelectableText(
                         textAlign: TextAlign.center,

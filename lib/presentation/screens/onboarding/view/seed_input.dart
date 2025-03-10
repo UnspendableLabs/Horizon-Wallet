@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/common/theme_extension.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
+import 'package:horizon/utils/app_icons.dart';
 
 class SeedInput extends StatefulWidget {
   final Function(String) onInputsUpdated;
@@ -130,7 +131,7 @@ class SeedInputState extends State<SeedInput> {
         buildInputFields(isSmallScreen),
         Padding(
           padding: const EdgeInsets.all(10.0),
-          child: TextButton.icon(
+          child: TextButton(
             style: Theme.of(context).textButtonTheme.style?.copyWith(
                   backgroundColor: WidgetStateProperty.all(
                     transparentPurple8,
@@ -144,15 +145,22 @@ class SeedInputState extends State<SeedInput> {
                 _showSeedPhrase = !_showSeedPhrase;
               });
             },
-            icon: Icon(
-              color: Theme.of(context).iconTheme.color,
-              _showSeedPhrase
-                  ? Icons.visibility_off_outlined
-                  : Icons.visibility_outlined,
-            ),
-            label: Text(
-              _showSeedPhrase ? 'Hide Phrase' : 'Show Phrase',
-              style: Theme.of(context).textTheme.bodySmall,
+            child: Container(
+              width: 132,
+              alignment: Alignment.center,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  _showSeedPhrase
+                      ? AppIcons.eyeOpenIcon(context: context)
+                      : AppIcons.eyeClosedIcon(context: context),
+                  const SizedBox(width: 8),
+                  Text(
+                    _showSeedPhrase ? 'Hide Phrase' : 'Show Phrase',
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -168,10 +176,10 @@ class SeedInputState extends State<SeedInput> {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(
-                    Icons.warning_amber_rounded,
+                  AppIcons.warningIcon(
                     color: red1,
-                    size: 18,
+                    width: 18,
+                    height: 18,
                   ),
                   const SizedBox(width: 4),
                   SelectableText(
