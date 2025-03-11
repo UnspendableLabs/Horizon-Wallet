@@ -1,9 +1,9 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 class AppIcons {
-  static const String _iconPath = '/icons';
-
+  static const String _iconPath = kDebugMode ? '/icons' : 'assets/icons';
   static const String receive = '$_iconPath/receive.svg';
   static const String send = '$_iconPath/send.svg';
   static const String swap = '$_iconPath/swap.svg';

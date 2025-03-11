@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 class AssetIcon extends StatelessWidget {
@@ -14,9 +15,9 @@ class AssetIcon extends StatelessWidget {
   Widget build(BuildContext context) {
     String assetPath;
     if (asset == 'BTC') {
-      assetPath = 'btc-img.png';
+      assetPath = kDebugMode ? 'btc-img.png' : 'assets/btc-img.png';
     } else {
-      assetPath = 'xcp-img.png';
+      assetPath = kDebugMode ? 'xcp-img.png' : 'assets/xcp-img.png';
     }
     return SizedBox(
       width: size,
