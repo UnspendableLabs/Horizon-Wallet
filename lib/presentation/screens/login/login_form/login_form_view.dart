@@ -26,16 +26,20 @@ class _LoginFormState extends State<LoginForm> {
 
   Widget buildAnimationAsset() {
     final Config config = GetIt.I<Config>();
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     if (config.isWebExtension) {
+      final appBarAsset =
+          isDarkMode ? 'app-bar-H-dark-mode.png' : 'app-bar-H-light-mode.png';
       return Image.asset(
-        'assets/app-bar-H-dark-mode.png',
+        'assets/$appBarAsset',
         fit: BoxFit.contain,
       );
     }
+    final animationAsset = isDarkMode
+        ? 'logo_animation-gradient-dark.json'
+        : 'logo_animation-gradient-light.json';
     return Lottie.asset(
-      kDebugMode
-          ? 'logo_animation-gradient.json'
-          : 'assets/logo_animation-gradient.json',
+      kDebugMode ? animationAsset : 'assets/$animationAsset',
       fit: BoxFit.contain,
     );
   }

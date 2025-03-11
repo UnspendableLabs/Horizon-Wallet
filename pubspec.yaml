@@ -126,11 +126,11 @@ flutter:
     - assets/logo-white.svg
     - assets/horizon-H-dark-mode.svg
     - assets/horizon-H-light-mode.svg
-    - assets/rainbow-gradiant.png
     - assets/horizon-logo.png
     - assets/app-bar-H-dark-mode.png
     - assets/app-bar-H-light-mode.png
-    - assets/logo_animation-gradient.json
+    - assets/logo_animation-gradient-dark.json
+    - assets/logo_animation-gradient-light.json
     - assets/xcp-img.png
     - assets/btc-img.png
     - assets/icons/
