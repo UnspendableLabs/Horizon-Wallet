@@ -963,7 +963,6 @@ class _HorizonActionButtonState extends State<HorizonActionButton> {
           : SystemMouseCursors.basic,
       child: ConstrainedBox(
         constraints: const BoxConstraints(
-          maxWidth: 100,
           minHeight: 44,
         ),
         child: OutlinedButton(
@@ -979,20 +978,29 @@ class _HorizonActionButtonState extends State<HorizonActionButton> {
                     backgroundColor: WidgetStateProperty.all(isHovered
                         ? const Color.fromRGBO(30, 231, 197, 0.80)
                         : green2),
+                    padding: WidgetStateProperty.all(
+                      const EdgeInsets.symmetric(horizontal: 2, vertical: 0),
+                    ),
                   ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              widget.icon,
-              const SizedBox(width: 4),
-              Text(
-                widget.label,
-                style: widget.isTransparent
-                    ? Theme.of(context).textTheme.bodySmall
-                    : Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: offBlack, fontWeight: FontWeight.w600),
-              ),
-            ],
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                widget.icon,
+                const SizedBox(width: 4),
+                Text(
+                  widget.label,
+                  style: widget.isTransparent
+                      ? Theme.of(context).textTheme.bodySmall
+                      : Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: offBlack,
+                            fontWeight: FontWeight.w600,
+                          ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

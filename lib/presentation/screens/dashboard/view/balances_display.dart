@@ -99,6 +99,8 @@ class BalancesSliverState extends State<BalancesSliver> {
               currentFilter: _currentFilter,
               onFilterSelected: _setFilter,
               onClearFilter: _clearFilter,
+              paddingHorizontal: 4,
+              allowDeselect: true,
               filterOptions: const [
                 FilterOption(label: 'Named', value: BalanceFilter.named),
                 FilterOption(label: 'Numeric', value: BalanceFilter.numeric),

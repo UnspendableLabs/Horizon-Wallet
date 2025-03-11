@@ -7,6 +7,8 @@ class FilterBar extends StatelessWidget {
   final Function(Object) onFilterSelected;
   final VoidCallback onClearFilter;
   final List<FilterOption> filterOptions;
+  final double? paddingHorizontal;
+  final bool allowDeselect;
 
   const FilterBar({
     super.key,
@@ -15,12 +17,14 @@ class FilterBar extends StatelessWidget {
     required this.onFilterSelected,
     required this.onClearFilter,
     required this.filterOptions,
+    this.paddingHorizontal,
+    this.allowDeselect = false,
   });
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: EdgeInsets.symmetric(horizontal: paddingHorizontal ?? 16),
       child: Container(
         width: double.infinity,
         height: 44,
@@ -36,10 +40,17 @@ class FilterBar extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: filterOptions.map((option) {
+            final isSelected = currentFilter == option.value;
             return FilterButton(
               label: option.label,
-              isSelected: currentFilter == option.value,
-              onTap: () => onFilterSelected(option.value),
+              isSelected: isSelected,
+              onTap: () {
+                if (isSelected && allowDeselect) {
+                  onClearFilter();
+                } else {
+                  onFilterSelected(option.value);
+                }
+              },
               isDarkTheme: isDarkTheme,
             );
           }).toList(),
