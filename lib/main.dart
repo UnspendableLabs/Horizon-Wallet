@@ -19,6 +19,7 @@ import 'package:horizon/domain/entities/wallet.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/action_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
+import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/repositories/config_repository.dart';
 import 'package:horizon/domain/repositories/imported_address_repository.dart';
 import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
@@ -32,24 +33,27 @@ import 'package:horizon/domain/services/error_service.dart';
 import 'package:horizon/domain/services/imported_address_service.dart';
 import 'package:horizon/domain/services/secure_kv_service.dart';
 import 'package:horizon/domain/services/wallet_service.dart';
-import 'package:horizon/presentation/common/footer/view/footer.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/common/theme_extension.dart';
 import 'package:horizon/presentation/inactivity_monitor/inactivity_monitor_bloc.dart';
 import 'package:horizon/presentation/inactivity_monitor/inactivity_monitor_view.dart';
+import 'package:horizon/presentation/screens/asset/asset_view.dart';
+import 'package:horizon/presentation/screens/asset/bloc/asset_view_bloc.dart';
 import 'package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_bloc.dart';
 import 'package:horizon/presentation/screens/dashboard/address_form/bloc/address_form_bloc.dart';
-import 'package:horizon/presentation/screens/dashboard/view/dashboard_page.dart';
+import 'package:horizon/presentation/screens/dashboard/view/portfolio_view.dart';
 import 'package:horizon/presentation/screens/login/login_view.dart';
 import 'package:horizon/presentation/screens/onboarding/view/onboarding_page.dart';
 import 'package:horizon/presentation/screens/onboarding_create/view/onboarding_create_page.dart';
 import 'package:horizon/presentation/screens/onboarding_import/view/onboarding_import_page.dart';
 import 'package:horizon/presentation/screens/privacy_policy.dart';
 import 'package:horizon/presentation/screens/settings/import_address/bloc/import_address_pk_bloc.dart';
+import 'package:horizon/presentation/screens/settings/settings_view.dart';
 import 'package:horizon/presentation/screens/tos.dart';
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:horizon/presentation/session/bloc/session_state.dart';
 import 'package:horizon/presentation/session/theme/bloc/theme_bloc.dart';
+import 'package:horizon/presentation/shell/app_shell.dart';
 import 'package:horizon/presentation/version_cubit.dart';
 import 'package:horizon/setup.dart';
 import 'package:pub_semver/pub_semver.dart';
@@ -122,70 +126,6 @@ class LoadingScreen extends StatelessWidget {
       );
 }
 
-class VersionWarningSnackbar extends StatefulWidget {
-  final Widget child;
-
-  const VersionWarningSnackbar({required this.child, super.key});
-
-  @override
-  VersionWarningState createState() => VersionWarningState();
-}
-
-class VersionWarningState extends State<VersionWarningSnackbar> {
-  bool _hasShownSnackbar = false;
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-
-    final versionInfo = context
-        .read<VersionCubit>()
-        .state; // we should only ever get to this page if session is success
-
-    if (!_hasShownSnackbar && versionInfo.warning != null) {
-      switch (versionInfo.warning!) {
-        case NewVersionAvailable():
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                  content: Text(
-                'There is a new version of Horizon Wallet: ${versionInfo.latest}.  Your version is ${versionInfo.current} ',
-              )),
-            );
-            _hasShownSnackbar = true;
-          });
-          break;
-        case VersionServiceUnreachable():
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                  content: Text(
-                'Version service unreachable.  Horizon Wallet may be out of date. Your version is ${versionInfo.current} ',
-              )),
-            );
-            _hasShownSnackbar = true;
-          });
-          break;
-      }
-    }
-
-    if (!_hasShownSnackbar && versionInfo.current < versionInfo.latest) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content: Text(
-            'There is a new version of Horizon Wallet: ${versionInfo.latest}.  Your version is ${versionInfo.current} ',
-          )),
-        );
-        _hasShownSnackbar = true;
-      });
-    }
-  }
-
-  @override
-  Widget build(context) => widget.child;
-}
-
 class AppRouter {
   static GoRouter router = GoRouter(
       navigatorKey: _rootNavigatorKey,
@@ -254,88 +194,74 @@ class AppRouter {
               transitionsBuilder:
                   (context, animation, secondaryAnimation, child) => child),
         ),
-        StatefulShellRoute.indexedStack(
-            builder:
-                (BuildContext context, GoRouterState state, navigationSession) {
-              return ValueChangeObserver(
-                  cacheKey: SettingsKeys.inactivityTimeout.toString(),
-                  defaultValue: 5,
-                  builder: (context, inactivityTimeout, onChanged) {
-                    return BlocProvider(
-                        key: Key("inactivity-timeout:$inactivityTimeout"),
-                        create: (_) {
-                          return InactivityMonitorBloc(
-                            logger: GetIt.I<Logger>(),
-                            kvService: GetIt.I<SecureKVService>(),
-                            inactivityTimeout:
-                                Duration(minutes: inactivityTimeout),
-                          );
-                        },
-                        child: InactivityMonitorView(
-                          onTimeout: () {
-                            final session = context.read<SessionStateCubit>();
-                            session.onLogout();
-                          },
-                          child: navigationSession,
-                        ));
-                  });
-              return navigationSession;
-            },
-            branches: [
-              StatefulShellBranch(
-                navigatorKey: _sectionNavigatorKey,
-                routes: [
-                  GoRoute(
-                      path: "/dashboard",
-                      builder: (context, state) {
-                        final session = context.watch<SessionStateCubit>();
-
-                        // this technically isn't necessary, will always be
-                        // success
-                        return session.state.maybeWhen(
-                          success: (state) {
-                            final Key key = Key(state.wallet.uuid);
-
-                            return Scaffold(
-                                bottomNavigationBar: const Footer(),
-                                body: VersionWarningSnackbar(
-                                    child: DashboardPageWrapper(key: key)));
-                          },
-                          orElse: () => const LoadingScreen(),
-                        );
-                      }),
-                  GoRoute(
-                      path: "/asset/:assetName",
-                      builder: (context, state) {
-                        final assetName =
-                            state.pathParameters['assetName'] ?? '';
-                        final session = context.watch<SessionStateCubit>();
-
-                        return session.state.maybeWhen(
+        ShellRoute(
+          builder: (BuildContext context, GoRouterState state, Widget child) {
+            // Check session state before showing the shell
+            return ValueChangeObserver(
+              cacheKey: SettingsKeys.inactivityTimeout.toString(),
+              defaultValue: 5,
+              builder: (context, inactivityTimeout, onChanged) {
+                return BlocProvider(
+                  key: Key("inactivity-timeout:$inactivityTimeout"),
+                  create: (_) {
+                    return InactivityMonitorBloc(
+                      logger: GetIt.I<Logger>(),
+                      kvService: GetIt.I<SecureKVService>(),
+                      inactivityTimeout: Duration(minutes: inactivityTimeout),
+                    );
+                  },
+                  child: InactivityMonitorView(
+                    onTimeout: () {
+                      final session = context.read<SessionStateCubit>();
+                      session.onLogout();
+                    },
+                    child: context.watch<SessionStateCubit>().state.maybeWhen(
                           success: (sessionState) {
-                            final Key key = Key(sessionState.wallet.uuid);
-
-                            return Scaffold(
-                                bottomNavigationBar: const Footer(),
-                                body: VersionWarningSnackbar(
-                                    child: DashboardPageWrapper(
-                                  key: key,
-                                  initialRoute: 'asset',
-                                  assetName: assetName,
-                                )));
+                            // Only show the shell if the user is logged in
+                            return AppShell(
+                              currentRoute: state.matchedLocation,
+                              actionRepository: GetIt.I<ActionRepository>(),
+                              child: child,
+                            );
                           },
                           orElse: () => const LoadingScreen(),
-                        );
-                      }),
-                  GoRoute(
-                      path: "/settings",
-                      redirect: (context, state) {
-                        // Redirect to dashboard with settings tab selected
-                        return "/dashboard?tab=settings";
-                      }),
-                ],
-              ),
-            ])
+                        ),
+                  ),
+                );
+              },
+            );
+          },
+          routes: [
+            GoRoute(
+              path: "/dashboard",
+              builder: (context, state) {
+                return const PortfolioView();
+              },
+            ),
+            GoRoute(
+              path: "/settings",
+              builder: (context, state) => const SettingsView(),
+            ),
+            GoRoute(
+              path: "/asset/:assetName",
+              builder: (context, state) {
+                final assetName = state.pathParameters['assetName'] ?? '';
+                final session = context.read<SessionStateCubit>().state;
+
+                return BlocProvider(
+                  create: (context) => AssetViewBloc(
+                    balanceRepository: GetIt.I<BalanceRepository>(),
+                    addresses: session.allAddresses,
+                    asset: assetName,
+                  ),
+                  child: AssetView(
+                    assetName: assetName,
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
       ],
       errorBuilder: (context, state) => ErrorScreen(
             error: state.error,
