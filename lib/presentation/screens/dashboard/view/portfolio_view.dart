@@ -81,259 +81,249 @@ class _PortfolioViewState extends State<PortfolioView>
     final List<String> addresses = session.allAddresses;
     final addressesKey = addresses.join(",");
 
-            return MultiBlocProvider(
-              providers: [
-                BlocProvider<BalancesBloc>(
-                            key: ValueKey('balances-bloc-$addressesKey'),
-
-                  create: (context) => BalancesBloc.getInstance(
-                    addresses: addresses,
-                    repository: GetIt.I.get<BalanceRepository>(),
-                  )..add(Start(pollingInterval: const Duration(seconds: 30))),
-                ),
-                BlocProvider<DashboardActivityFeedBloc>(
-                  create: (context) => DashboardActivityFeedBloc(
-                    logger: GetIt.I.get<Logger>(),
-                    addresses: addresses,
-                    eventsRepository: GetIt.I.get<EventsRepository>(),
-                    addressRepository: GetIt.I.get<AddressRepository>(),
-                    bitcoinRepository: GetIt.I.get<BitcoinRepository>(),
-                    transactionLocalRepository:
-                        GetIt.I.get<TransactionLocalRepository>(),
-                    pageSize: 1000,
-                  )..add(const Load()),
-                ),
-              ],
-              child: Column(
-                children: [
-                  // Action buttons row
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 16, horizontal: 16),
-                    child: LayoutBuilder(
-                      builder: (context, constraints) {
-                        final spacing = constraints.maxWidth < 400 ? 6.0 : 8.0;
-                        return Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Expanded(
-                              child: HorizonActionButton(
-                                label: 'Send',
-                                icon: AppIcons.sendIcon(
-                                    context: context, color: black),
-                                onPressed: () {
-                                  // TODO: Implement send functionality
-                                },
-                              ),
-                            ),
-                            SizedBox(width: spacing),
-                            Expanded(
-                              child: HorizonActionButton(
-                                label: 'Receive',
-                                icon: AppIcons.receiveIcon(
-                                  context: context,
-                                ),
-                                isTransparent: true,
-                                onPressed: () {
-                                  // TODO: Implement receive functionality
-                                },
-                              ),
-                            ),
-                            SizedBox(width: spacing),
-                            Expanded(
-                              child: HorizonActionButton(
-                                label: 'Swap',
-                                icon: AppIcons.swapIcon(
-                                  context: context,
-                                ),
-                                isTransparent: true,
-                                onPressed: () {
-                                  // TODO: Implement swap functionality
-                                },
-                              ),
-                            ),
-                            SizedBox(width: spacing),
-                            Expanded(
-                              child: HorizonActionButton(
-                                label: 'Mint',
-                                icon: AppIcons.mintIcon(
-                                  context: context,
-                                ),
-                                isTransparent: true,
-                                onPressed: () {
-                                  // TODO: Implement mint functionality
-                                },
-                              ),
-                            ),
-                          ],
-                        );
-                      },
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider<BalancesBloc>(
+          // Key based on addresses - if addresses change, a new bloc will be created
+          key: ValueKey('balances-bloc-$addressesKey'),
+          create: (context) => BalancesBloc(
+            balanceRepository: GetIt.I.get<BalanceRepository>(),
+            addresses: addresses,
+          )..add(Start(pollingInterval: const Duration(seconds: 30))),
+        ),
+        BlocProvider<DashboardActivityFeedBloc>(
+          create: (context) => DashboardActivityFeedBloc(
+            logger: GetIt.I.get<Logger>(),
+            addresses: addresses,
+            eventsRepository: GetIt.I.get<EventsRepository>(),
+            addressRepository: GetIt.I.get<AddressRepository>(),
+            bitcoinRepository: GetIt.I.get<BitcoinRepository>(),
+            transactionLocalRepository:
+                GetIt.I.get<TransactionLocalRepository>(),
+            pageSize: 1000,
+          )..add(const Load()),
+        ),
+      ],
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final spacing = constraints.maxWidth < 400 ? 6.0 : 8.0;
+                return Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: HorizonActionButton(
+                        label: 'Send',
+                        icon: AppIcons.sendIcon(context: context, color: black),
+                        onPressed: () {
+                          // TODO: Implement send functionality
+                        },
+                      ),
                     ),
+                    SizedBox(width: spacing),
+                    Expanded(
+                      child: HorizonActionButton(
+                        label: 'Receive',
+                        icon: AppIcons.receiveIcon(
+                          context: context,
+                        ),
+                        isTransparent: true,
+                        onPressed: () {
+                          // TODO: Implement receive functionality
+                        },
+                      ),
+                    ),
+                    SizedBox(width: spacing),
+                    Expanded(
+                      child: HorizonActionButton(
+                        label: 'Swap',
+                        icon: AppIcons.swapIcon(
+                          context: context,
+                        ),
+                        isTransparent: true,
+                        onPressed: () {
+                          // TODO: Implement swap functionality
+                        },
+                      ),
+                    ),
+                    SizedBox(width: spacing),
+                    Expanded(
+                      child: HorizonActionButton(
+                        label: 'Mint',
+                        icon: AppIcons.mintIcon(
+                          context: context,
+                        ),
+                        isTransparent: true,
+                        onPressed: () {
+                          // TODO: Implement mint functionality
+                        },
+                      ),
+                    ),
+                  ],
+                );
+              },
+            ),
+          ),
+          // Tab bar (Assets/Activity) with search
+          Container(
+            decoration: BoxDecoration(
+              border: Border(
+                bottom: BorderSide(
+                  color: isDarkTheme
+                      ? Colors.white.withOpacity(0.1)
+                      : Colors.black.withOpacity(0.1),
+                  width: 1,
+                ),
+              ),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  flex: 3,
+                  child: TabBar(
+                    controller: _tabController,
+                    indicatorWeight: 2,
+                    indicatorColor: transparentPurple33,
+                    labelColor: Theme.of(context).textTheme.bodyMedium?.color,
+                    unselectedLabelColor:
+                        isDarkTheme ? transparentWhite33 : transparentBlack33,
+                    isScrollable: true,
+                    padding: EdgeInsets.zero,
+                    indicatorSize: TabBarIndicatorSize.label,
+                    tabAlignment: TabAlignment.start,
+                    tabs: const [
+                      Tab(
+                        child: Text(
+                          'Assets',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                      Tab(
+                        child: Text(
+                          'Activity',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-
-                  // Tab bar (Assets/Activity) with search
-                  Container(
-                    decoration: BoxDecoration(
-                      border: Border(
-                        bottom: BorderSide(
-                          color: isDarkTheme
-                              ? Colors.white.withOpacity(0.1)
-                              : Colors.black.withOpacity(0.1),
-                          width: 1,
+                ),
+                if (_isSearching && _tabController.index == 0)
+                  Expanded(
+                    flex: 2,
+                    child: Container(
+                      height: 32,
+                      margin: const EdgeInsets.only(right: 8),
+                      decoration: BoxDecoration(
+                        color: transparentPurple8,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Center(
+                        child: TextField(
+                          controller: _searchController,
+                          onChanged: _onSearchChanged,
+                          style: TextStyle(
+                            color: isDarkTheme ? Colors.white : Colors.black,
+                            fontSize: 14,
+                          ),
+                          textAlignVertical: TextAlignVertical.center,
+                          decoration: InputDecoration(
+                            isCollapsed: true,
+                            hintText: 'Search assets...',
+                            hintStyle: TextStyle(
+                              color: isDarkTheme
+                                  ? transparentWhite33
+                                  : transparentBlack33,
+                              fontSize: 14,
+                            ),
+                            border: InputBorder.none,
+                            contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 8),
+                          ),
                         ),
                       ),
                     ),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          flex: 3,
-                          child: TabBar(
-                            controller: _tabController,
-                            indicatorWeight: 2,
-                            indicatorColor: transparentPurple33,
-                            labelColor:
-                                Theme.of(context).textTheme.bodyMedium?.color,
-                            unselectedLabelColor: isDarkTheme
-                                ? transparentWhite33
-                                : transparentBlack33,
-                            isScrollable: true,
-                            padding: EdgeInsets.zero,
-                            indicatorSize: TabBarIndicatorSize.label,
-                            tabAlignment: TabAlignment.start,
-                            tabs: const [
-                              Tab(
-                                child: Text(
-                                  'Assets',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ),
-                              Tab(
-                                child: Text(
-                                  'Activity',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        if (_isSearching && _tabController.index == 0)
-                          Expanded(
-                            flex: 2,
-                            child: Container(
-                              height: 32,
-                              margin: const EdgeInsets.only(right: 8),
-                              decoration: BoxDecoration(
-                                color: transparentPurple8,
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Center(
-                                child: TextField(
-                                  controller: _searchController,
-                                  onChanged: _onSearchChanged,
-                                  style: TextStyle(
-                                    color: isDarkTheme
+                  ),
+                Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: _tabController.index == 0 ? _toggleSearch : null,
+                    borderRadius: BorderRadius.circular(8),
+                    child: Container(
+                      width: 44,
+                      height: 32,
+                      decoration: BoxDecoration(
+                        color: transparentPurple8,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Center(
+                        child: _isSearching
+                            ? AppIcons.closeIcon(
+                                context: context,
+                                color: _tabController.index == 0
+                                    ? (isDarkTheme
                                         ? Colors.white
-                                        : Colors.black,
-                                    fontSize: 14,
-                                  ),
-                                  textAlignVertical: TextAlignVertical.center,
-                                  decoration: InputDecoration(
-                                    isCollapsed: true,
-                                    hintText: 'Search assets...',
-                                    hintStyle: TextStyle(
-                                      color: isDarkTheme
-                                          ? transparentWhite33
-                                          : transparentBlack33,
-                                      fontSize: 14,
-                                    ),
-                                    border: InputBorder.none,
-                                    contentPadding: const EdgeInsets.symmetric(
-                                        horizontal: 12, vertical: 8),
-                                  ),
-                                ),
+                                        : Colors.black)
+                                    : (isDarkTheme
+                                        ? transparentWhite33
+                                        : transparentBlack33),
+                              )
+                            : AppIcons.searchIcon(
+                                context: context,
+                                color: _tabController.index == 0
+                                    ? (isDarkTheme
+                                        ? Colors.white
+                                        : Colors.black)
+                                    : (isDarkTheme
+                                        ? transparentWhite33
+                                        : transparentBlack33),
                               ),
-                            ),
-                          ),
-                        Material(
-                          color: Colors.transparent,
-                          child: InkWell(
-                            onTap: _tabController.index == 0
-                                ? _toggleSearch
-                                : null,
-                            borderRadius: BorderRadius.circular(8),
-                            child: Container(
-                              width: 44,
-                              height: 32,
-                              decoration: BoxDecoration(
-                                color: transparentPurple8,
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Center(
-                                child: _isSearching
-                                    ? AppIcons.closeIcon(
-                                        context: context,
-                                        color: _tabController.index == 0
-                                            ? (isDarkTheme
-                                                ? Colors.white
-                                                : Colors.black)
-                                            : (isDarkTheme
-                                                ? transparentWhite33
-                                                : transparentBlack33),
-                                      )
-                                    : AppIcons.searchIcon(
-                                        context: context,
-                                        color: _tabController.index == 0
-                                            ? (isDarkTheme
-                                                ? Colors.white
-                                                : Colors.black)
-                                            : (isDarkTheme
-                                                ? transparentWhite33
-                                                : transparentBlack33),
-                                      ),
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                      ],
+                      ),
                     ),
                   ),
+                ),
+                const SizedBox(width: 16),
+              ],
+            ),
+          ),
 
-                  // Tab content (Balances/Activity)
-                  Expanded(
-                    child: TabBarView(
-                      controller: _tabController,
-                      physics: const NeverScrollableScrollPhysics(),
-                      children: [
-                        // Balances tab
-                        Padding(
-                          padding: EdgeInsets.symmetric(
-                              horizontal: isSmallScreen ? 16 : 35),
-                          child: BalancesDisplay(
-                            isDarkTheme: isDarkTheme,
-                            searchQuery: _searchQuery,
-                          ),
-                        ),
-
-                        // Activity tab
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          child: DashboardActivityFeedScreen(
-                            addresses: addresses,
-                            initialItemCount: 20,
-                          ),
-                        ),
-                      ],
-                    ),
+          // Tab content (Balances/Activity)
+          Expanded(
+            child: TabBarView(
+              controller: _tabController,
+              physics: const NeverScrollableScrollPhysics(),
+              children: [
+                // Balances tab
+                Padding(
+                  padding:
+                      EdgeInsets.symmetric(horizontal: isSmallScreen ? 16 : 35),
+                  child: BalancesDisplay(
+                    isDarkTheme: isDarkTheme,
+                    searchQuery: _searchQuery,
                   ),
-                ],
-              ),
-        );
+                ),
+
+                // Activity tab
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: DashboardActivityFeedScreen(
+                    addresses: addresses,
+                    initialItemCount: 20,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

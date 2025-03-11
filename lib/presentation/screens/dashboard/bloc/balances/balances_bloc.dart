@@ -1,41 +1,22 @@
 import 'dart:async';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:get_it/get_it.dart';
 import 'package:horizon/domain/entities/multi_address_balance.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_event.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_state.dart';
 
-/// A singleton version of BalancesBloc that persists data between navigations
+/// BalancesBloc manages the loading and caching of cryptocurrency balances
 class BalancesBloc extends Bloc<BalancesEvent, BalancesState> {
-  // Singleton instance
-  static BalancesBloc? _instance;
-
   final BalanceRepository balanceRepository;
+  final List<String> addresses;
   Timer? _pollingTimer;
-  List<String>? _currentAddresses;
   List<MultiAddressBalance>? _cachedBalances;
 
-  // Get singleton instance
-  static BalancesBloc getInstance({
-    required List<String> addresses,
-    BalanceRepository? repository,
-  }) {
-    _instance ??= BalancesBloc._(
-      balanceRepository: repository ?? GetIt.I.get<BalanceRepository>(),
-    );
-
-    if (_instance!._currentAddresses?.join(',') != addresses.join(',')) {
-      _instance!._currentAddresses = addresses;
-      _instance!.add(Fetch());
-    }
-
-    return _instance!;
-  }
-
-  BalancesBloc._({
+  /// Create a BalancesBloc with repository and addresses to monitor
+  BalancesBloc({
     required this.balanceRepository,
+    required this.addresses,
   }) : super(const BalancesState.initial()) {
     on<Fetch>(_onFetch);
     on<Start>(_onStart);
@@ -43,7 +24,7 @@ class BalancesBloc extends Bloc<BalancesEvent, BalancesState> {
   }
 
   Future<void> _onFetch(Fetch event, Emitter<BalancesState> emit) async {
-    if (_currentAddresses == null || _currentAddresses!.isEmpty) {
+    if (addresses.isEmpty) {
       emit(const BalancesState.complete(Result.ok([])));
       return;
     }
@@ -57,11 +38,11 @@ class BalancesBloc extends Bloc<BalancesEvent, BalancesState> {
 
     try {
       final balances =
-          await balanceRepository.getBalancesForAddresses(_currentAddresses!);
+          await balanceRepository.getBalancesForAddresses(addresses);
 
       // Only update state if the new data is different
       if (_cachedBalances == null ||
-          !_areBalancesEqual(_cachedBalances!, balances)) {
+          !MultiAddressBalance.areBalancesEqual(_cachedBalances!, balances)) {
         _cachedBalances = balances;
         emit(BalancesState.complete(Result.ok(balances)));
       }
@@ -70,25 +51,6 @@ class BalancesBloc extends Bloc<BalancesEvent, BalancesState> {
       emit(BalancesState.complete(
           Result.error('Error fetching balances: ${e.toString()}')));
     }
-  }
-
-  bool _areBalancesEqual(
-      List<MultiAddressBalance> a, List<MultiAddressBalance> b) {
-    if (a.length != b.length) return false;
-
-    // Simple comparison of total assets and their quantities
-    final Map<String, String> aAssets = {
-      for (var balance in a) balance.asset: balance.totalNormalized
-    };
-
-    for (var balance in b) {
-      final aQuantity = aAssets[balance.asset];
-      if (aQuantity == null || aQuantity != balance.totalNormalized) {
-        return false;
-      }
-    }
-
-    return true;
   }
 
   void _onStart(Start event, Emitter<BalancesState> emit) {
@@ -111,20 +73,8 @@ class BalancesBloc extends Bloc<BalancesEvent, BalancesState> {
 
   @override
   Future<void> close() {
-    // We don't want to close the singleton instance
-    // Instead, we just stop the polling
     _pollingTimer?.cancel();
     _pollingTimer = null;
-
-    // Don't call super.close() since we want to keep the bloc alive
-    return Future.value();
-  }
-
-  // Method to force disposal (only for testing or app termination)
-  void forceDispose() {
-    _pollingTimer?.cancel();
-    _pollingTimer = null;
-    _instance = null;
-    super.close();
+    return super.close();
   }
 }
