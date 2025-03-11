@@ -42,7 +42,7 @@ class BalancesBloc extends Bloc<BalancesEvent, BalancesState> {
 
       // Only update state if the new data is different
       if (_cachedBalances == null ||
-          !_areBalancesEqual(_cachedBalances!, balances)) {
+          !MultiAddressBalance.areBalancesEqual(_cachedBalances!, balances)) {
         _cachedBalances = balances;
         emit(BalancesState.complete(Result.ok(balances)));
       }
@@ -51,25 +51,6 @@ class BalancesBloc extends Bloc<BalancesEvent, BalancesState> {
       emit(BalancesState.complete(
           Result.error('Error fetching balances: ${e.toString()}')));
     }
-  }
-
-  bool _areBalancesEqual(
-      List<MultiAddressBalance> a, List<MultiAddressBalance> b) {
-    if (a.length != b.length) return false;
-
-    // Simple comparison of total assets and their quantities
-    final Map<String, String> aAssets = {
-      for (var balance in a) balance.asset: balance.totalNormalized
-    };
-
-    for (var balance in b) {
-      final aQuantity = aAssets[balance.asset];
-      if (aQuantity == null || aQuantity != balance.totalNormalized) {
-        return false;
-      }
-    }
-
-    return true;
   }
 
   void _onStart(Start event, Emitter<BalancesState> emit) {

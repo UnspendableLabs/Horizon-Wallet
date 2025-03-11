@@ -17,4 +17,23 @@ class MultiAddressBalance {
     required this.entries,
     required this.assetInfo,
   });
+
+  static bool areBalancesEqual(
+      List<MultiAddressBalance> a, List<MultiAddressBalance> b) {
+    if (a.length != b.length) return false;
+
+    // Simple comparison of total assets and their quantities
+    final Map<String, String> aAssets = {
+      for (var balance in a) balance.asset: balance.totalNormalized
+    };
+
+    for (var balance in b) {
+      final aQuantity = aAssets[balance.asset];
+      if (aQuantity == null || aQuantity != balance.totalNormalized) {
+        return false;
+      }
+    }
+
+    return true;
+  }
 }
