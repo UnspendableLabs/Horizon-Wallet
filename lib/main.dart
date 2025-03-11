@@ -234,15 +234,7 @@ class AppRouter {
             GoRoute(
               path: "/dashboard",
               builder: (context, state) {
-                final session = context.read<SessionStateCubit>().state;
-                return session.maybeWhen(
-                  success: (sessionState) {
-                    final Key key = Key(sessionState.wallet.uuid);
-                    return PortfolioView(key: key);
-                  },
-                  orElse: () => const SizedBox
-                      .shrink(), // Shell will handle showing LoadingScreen
-                );
+                return const PortfolioView();
               },
             ),
             GoRoute(
@@ -255,28 +247,15 @@ class AppRouter {
                 final assetName = state.pathParameters['assetName'] ?? '';
                 final session = context.read<SessionStateCubit>().state;
 
-                return session.maybeWhen(
-                  success: (sessionState) {
-                    final Key key = Key(sessionState.wallet.uuid);
-                    return BlocProvider(
-                      create: (context) => AssetViewBloc(
-                        balanceRepository: GetIt.I<BalanceRepository>(),
-                        addresses: [
-                          ...sessionState.addresses.map((e) => e.address),
-                          ...(sessionState.importedAddresses
-                                  ?.map((e) => e.address) ??
-                              [])
-                        ],
-                        asset: assetName,
-                      ),
-                      child: AssetView(
-                        key: key,
-                        assetName: assetName,
-                      ),
-                    );
-                  },
-                  orElse: () => const SizedBox
-                      .shrink(), // Shell will handle showing LoadingScreen
+                return BlocProvider(
+                  create: (context) => AssetViewBloc(
+                    balanceRepository: GetIt.I<BalanceRepository>(),
+                    addresses: session.allAddresses,
+                    asset: assetName,
+                  ),
+                  child: AssetView(
+                    assetName: assetName,
+                  ),
                 );
               },
             ),

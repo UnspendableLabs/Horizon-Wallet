@@ -25,6 +25,16 @@ extension SessionStateX on SessionState {
           throw Exception("SessionState.successOrThrow: expected success"));
 }
 
+extension SessionStateAddressesX on SessionState {
+  List<Address> get addresses => successOrThrow().addresses;
+  List<ImportedAddress> get importedAddresses =>
+      successOrThrow().importedAddresses ?? [];
+  List<String> get allAddresses => [
+        ...addresses.map((e) => e.address),
+        ...importedAddresses.map((e) => e.address)
+      ];
+}
+
 @freezed
 class SessionStateSuccess with _$SessionStateSuccess {
   // Private constructor
