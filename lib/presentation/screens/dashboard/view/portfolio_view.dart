@@ -16,6 +16,7 @@ import 'package:horizon/presentation/screens/dashboard/view/activity_feed.dart';
 import 'package:horizon/presentation/screens/dashboard/view/balances_display.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
+import 'package:horizon/presentation/session/bloc/session_state.dart';
 import 'package:horizon/utils/app_icons.dart';
 
 class PortfolioView extends StatefulWidget {
@@ -76,19 +77,15 @@ class _PortfolioViewState extends State<PortfolioView>
   Widget build(BuildContext context) {
     final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
     final isSmallScreen = MediaQuery.of(context).size.width < 500;
-
-    return context.watch<SessionStateCubit>().state.maybeWhen(
-          orElse: () => const CircularProgressIndicator(),
-          success: (session) {
-            // Collect all addresses with explicit List<String> type
-            final List<String> addresses = [
-              ...session.addresses.map((e) => e.address),
-              ...(session.importedAddresses?.map((e) => e.address) ?? [])
-            ];
+    final session = context.read<SessionStateCubit>().state;
+    final List<String> addresses = session.allAddresses;
+    final addressesKey = addresses.join(",");
 
             return MultiBlocProvider(
               providers: [
                 BlocProvider<BalancesBloc>(
+                            key: ValueKey('balances-bloc-$addressesKey'),
+
                   create: (context) => BalancesBloc.getInstance(
                     addresses: addresses,
                     repository: GetIt.I.get<BalanceRepository>(),
@@ -337,8 +334,6 @@ class _PortfolioViewState extends State<PortfolioView>
                   ),
                 ],
               ),
-            );
-          },
         );
   }
 }
