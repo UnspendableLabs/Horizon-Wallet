@@ -774,7 +774,6 @@ class _HorizonTextFieldState extends State<HorizonTextField> {
                   vertical: 0,
                 ),
                 suffix: widget.suffixIcon,
-                // suffixIcon: widget.suffixIcon,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(18),
                   borderSide: BorderSide.none,
@@ -910,17 +909,6 @@ class _HorizonPasswordPromptState extends State<HorizonPasswordPrompt> {
                               context: context, height: 18, width: 18),
                       onPressed: _togglePasswordVisibility,
                     ),
-                    // suffixIcon: IconButton(
-                    //   icon: Icon(
-                    //     _obscurePassword
-
-                    //     size: 18,
-                    //   ),
-                    //   onPressed: _togglePasswordVisibility,
-                    //   padding: EdgeInsets.zero,
-                    //   constraints: const BoxConstraints(),
-                    //   focusNode: FocusNode(skipTraversal: true),
-                    // ),
                   ),
                   SizedBox(
                     height: 56,
@@ -963,8 +951,6 @@ class _HorizonActionButtonState extends State<HorizonActionButton> {
 
   @override
   Widget build(BuildContext context) {
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-
     return MouseRegion(
       onEnter: widget.onPressed != null
           ? (_) => setState(() => isHovered = true)

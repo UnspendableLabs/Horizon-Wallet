@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-/// A utility class for managing SVG icons across the app.
 class AppIcons {
-  /// Folder path for icon assets
   static const String _iconPath = '/icons';
 
-  /// Available icons
   static const String receive = '$_iconPath/receive.svg';
   static const String send = '$_iconPath/send.svg';
   static const String swap = '$_iconPath/swap.svg';
@@ -44,8 +41,6 @@ class AppIcons {
   static const String spectacles = '$_iconPath/spectacles.svg';
   static const String chevronRight = '$_iconPath/chevron_right.svg';
 
-  /// Get an SVG icon as a widget with customizable parameters
-  /// Uses the current theme's icon style if no color is specified
   static Widget getIcon(
     String iconPath, {
     required BuildContext? context,
@@ -54,7 +49,6 @@ class AppIcons {
     Color? color,
     BoxFit fit = BoxFit.contain,
   }) {
-    // Use the theme's icon color if no color is specified
     if (context == null) {
       return SvgPicture.asset(
         iconPath,
@@ -76,7 +70,6 @@ class AppIcons {
     );
   }
 
-  /// Receive icon with theme-aware styling
   static Widget receiveIcon({
     required BuildContext context,
     double? width,
@@ -94,7 +87,6 @@ class AppIcons {
     );
   }
 
-  /// Send icon with theme-aware styling
   static Widget sendIcon({
     required BuildContext context,
     double? width,
@@ -112,7 +104,6 @@ class AppIcons {
     );
   }
 
-  /// Swap icon with theme-aware styling
   static Widget swapIcon({
     required BuildContext context,
     double? width,
@@ -130,7 +121,6 @@ class AppIcons {
     );
   }
 
-  /// Mint icon with theme-aware styling
   static Widget mintIcon({
     required BuildContext context,
     double? width,
@@ -148,7 +138,6 @@ class AppIcons {
     );
   }
 
-  /// Search icon with theme-aware styling
   static Widget searchIcon({
     required BuildContext context,
     double? width,
@@ -166,7 +155,6 @@ class AppIcons {
     );
   }
 
-  /// Close icon with theme-aware styling
   static Widget closeIcon({
     required BuildContext context,
     double? width,
@@ -184,7 +172,6 @@ class AppIcons {
     );
   }
 
-  /// Pie chart icon with theme-aware styling
   static Widget pieChartIcon({
     required BuildContext context,
     double? width,
@@ -202,7 +189,6 @@ class AppIcons {
     );
   }
 
-  /// Settings icon with theme-aware styling
   static Widget settingsIcon({
     required BuildContext context,
     double? width,
@@ -220,7 +206,6 @@ class AppIcons {
     );
   }
 
-  /// Attach icon with theme-aware styling
   static Widget attachIcon({
     required BuildContext context,
     double? width,
@@ -238,7 +223,6 @@ class AppIcons {
     );
   }
 
-  /// Order icon with theme-aware styling
   static Widget orderIcon({
     required BuildContext context,
     double? width,
@@ -256,7 +240,6 @@ class AppIcons {
     );
   }
 
-  /// Destroy icon with theme-aware styling
   static Widget destroyIcon({
     required BuildContext context,
     double? width,
@@ -274,7 +257,6 @@ class AppIcons {
     );
   }
 
-  /// Dispenser icon with theme-aware styling
   static Widget dispenserIcon({
     required BuildContext context,
     double? width,
@@ -292,7 +274,6 @@ class AppIcons {
     );
   }
 
-  /// Detach icon with theme-aware styling
   static Widget detachIcon({
     required BuildContext context,
     double? width,
@@ -310,7 +291,6 @@ class AppIcons {
     );
   }
 
-  /// Dividend icon with theme-aware styling
   static Widget dividendIcon({
     required BuildContext context,
     double? width,
@@ -328,7 +308,6 @@ class AppIcons {
     );
   }
 
-  /// Reset icon with theme-aware styling
   static Widget resetIcon({
     required BuildContext context,
     double? width,
@@ -346,7 +325,6 @@ class AppIcons {
     );
   }
 
-  /// Edit icon with theme-aware styling
   static Widget editIcon({
     required BuildContext context,
     double? width,
@@ -364,7 +342,6 @@ class AppIcons {
     );
   }
 
-  /// unlock icon with theme-aware styling
   static Widget unlockIcon({
     required BuildContext context,
     double? width,
@@ -382,7 +359,6 @@ class AppIcons {
     );
   }
 
-  /// unlock icon with theme-aware styling
   static Widget lockIcon({
     required BuildContext context,
     double? width,
@@ -400,7 +376,6 @@ class AppIcons {
     );
   }
 
-  /// Transfer icon with theme-aware styling
   static Widget transferIcon({
     required BuildContext context,
     double? width,
@@ -418,7 +393,6 @@ class AppIcons {
     );
   }
 
-  /// Plus icon with theme-aware styling
   static Widget plusIcon({
     required BuildContext context,
     double? width,
@@ -436,7 +410,6 @@ class AppIcons {
     );
   }
 
-  /// Warning icon with theme-aware styling
   static Widget warningIcon({
     double? width,
     double? height,
@@ -453,7 +426,6 @@ class AppIcons {
     );
   }
 
-  /// Back arrow icon with theme-aware styling
   static Widget backArrowIcon({
     required BuildContext context,
     double? width,
@@ -471,7 +443,6 @@ class AppIcons {
     );
   }
 
-  /// Rocket launch icon with theme-aware styling
   static Widget rocketLaunchIcon({
     required BuildContext context,
     double? width,
@@ -489,7 +460,6 @@ class AppIcons {
     );
   }
 
-  /// Star outlined icon with theme-aware styling
   static Widget starOutlinedIcon({
     required BuildContext context,
     double? width,
@@ -507,7 +477,6 @@ class AppIcons {
     );
   }
 
-  /// Caret up icon with theme-aware styling
   static Widget caretUpIcon({
     required BuildContext context,
     double? width,
@@ -525,7 +494,6 @@ class AppIcons {
     );
   }
 
-  /// Caret down icon with theme-aware styling
   static Widget caretDownIcon({
     required BuildContext context,
     double? width,
@@ -543,7 +511,6 @@ class AppIcons {
     );
   }
 
-  /// Check icon with theme-aware styling
   static Widget checkIcon({
     required BuildContext context,
     double? width,
@@ -561,7 +528,6 @@ class AppIcons {
     );
   }
 
-  /// Eye open icon with theme-aware styling
   static Widget eyeOpenIcon({
     required BuildContext context,
     double? width,
@@ -579,7 +545,6 @@ class AppIcons {
     );
   }
 
-  /// Eye closed icon with theme-aware styling
   static Widget eyeClosedIcon({
     required BuildContext context,
     double? width,
@@ -597,7 +562,6 @@ class AppIcons {
     );
   }
 
-  /// Moon icon with theme-aware styling
   static Widget moonIcon({
     required BuildContext context,
     double? width,
@@ -615,7 +579,6 @@ class AppIcons {
     );
   }
 
-  /// Sun icon with theme-aware styling
   static Widget sunIcon({
     required BuildContext context,
     double? width,
@@ -633,7 +596,6 @@ class AppIcons {
     );
   }
 
-  /// Sun icon with theme-aware styling
   static Widget shieldIcon({
     required BuildContext context,
     double? width,
@@ -651,7 +613,6 @@ class AppIcons {
     );
   }
 
-  /// Copy icon with theme-aware styling
   static Widget copyIcon({
     required BuildContext context,
     double? width,
@@ -669,7 +630,6 @@ class AppIcons {
     );
   }
 
-  /// Refresh icon with theme-aware styling
   static Widget refreshIcon({
     required BuildContext context,
     double? width,
@@ -687,7 +647,6 @@ class AppIcons {
     );
   }
 
-  /// Spectacles icon with theme-aware styling
   static Widget spectaclesIcon({
     required BuildContext context,
     double? width,
@@ -705,7 +664,6 @@ class AppIcons {
     );
   }
 
-  /// Chevron right icon with theme-aware styling
   static Widget chevronRightIcon({
     required BuildContext context,
     double? width,
@@ -723,7 +681,6 @@ class AppIcons {
     );
   }
 
-  /// Helper method to create a clickable icon button with theme-aware styling
   static Widget iconButton({
     required BuildContext context,
     required Widget icon,

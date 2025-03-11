@@ -203,8 +203,8 @@ class _SeedPhraseFlowState extends State<SeedPhraseFlow> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       _showSeedPhrase
-                          ? AppIcons.eyeOpenIcon(context: context)
-                          : AppIcons.eyeClosedIcon(context: context),
+                          ? AppIcons.eyeClosedIcon(context: context)
+                          : AppIcons.eyeOpenIcon(context: context),
                       const SizedBox(width: 8),
                       Text(
                         _showSeedPhrase ? 'Hide Phrase' : 'Show Phrase',
