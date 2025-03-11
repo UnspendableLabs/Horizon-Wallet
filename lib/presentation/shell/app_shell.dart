@@ -1,4 +1,3 @@
-import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -167,11 +166,12 @@ class GetAddressesModal extends StatelessWidget {
 class AppShell extends StatefulWidget {
   final Widget child;
   final String currentRoute;
-
+  final ActionRepository actionRepository;
   const AppShell({
     super.key,
     required this.child,
     required this.currentRoute,
+    required this.actionRepository,
   });
 
   // Method to navigate to tabs from outside
@@ -189,7 +189,6 @@ class AppShell extends StatefulWidget {
 class _AppShellState extends State<AppShell> with TickerProviderStateMixin {
   late TabController _bottomTabController;
   final ActionRepository actionRepository = GetIt.instance<ActionRepository>();
-  Timer? _actionCheckTimer;
 
   // Expose the bottom tab controller for external access
   TabController get bottomTabController => _bottomTabController;
@@ -209,17 +208,7 @@ class _AppShellState extends State<AppShell> with TickerProviderStateMixin {
       }
     });
 
-    // Initial check for pending actions
-    _checkForPendingActions();
-
-    // Set up periodic checks for actions
-    _actionCheckTimer = Timer.periodic(const Duration(seconds: 1), (_) {
-      _checkForPendingActions();
-    });
-  }
-
-  void _checkForPendingActions() {
-    final action = actionRepository.dequeue();
+    final action = widget.actionRepository.dequeue();
     action.fold(noop, (action) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _getHandler(action)();
@@ -312,9 +301,6 @@ class _AppShellState extends State<AppShell> with TickerProviderStateMixin {
     super.didUpdateWidget(oldWidget);
     if (widget.currentRoute != oldWidget.currentRoute) {
       _updateIndexFromRoute(widget.currentRoute);
-
-      // Check for pending actions when route changes
-      _checkForPendingActions();
     }
   }
 
@@ -332,7 +318,6 @@ class _AppShellState extends State<AppShell> with TickerProviderStateMixin {
 
   @override
   void dispose() {
-    _actionCheckTimer?.cancel();
     _bottomTabController.dispose();
     super.dispose();
   }

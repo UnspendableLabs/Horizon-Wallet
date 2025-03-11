@@ -220,6 +220,7 @@ class AppRouter {
                             // Only show the shell if the user is logged in
                             return AppShell(
                               currentRoute: state.matchedLocation,
+                              actionRepository: GetIt.I<ActionRepository>(),
                               child: child,
                             );
                           },
