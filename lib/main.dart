@@ -60,7 +60,6 @@ import 'package:horizon/utils/app_icons.dart';
 import 'package:pub_semver/pub_semver.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
-final _sectionNavigatorKey = GlobalKey<NavigatorState>();
 
 Future<void> setupRegtestWallet() async {
   // read env for regtest private key

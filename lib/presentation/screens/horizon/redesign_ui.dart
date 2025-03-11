@@ -208,13 +208,7 @@ class GradientBoxBorder extends BoxBorder {
   BorderSide get top => BorderSide.none;
 
   @override
-  BorderSide get right => BorderSide.none;
-
-  @override
   BorderSide get bottom => BorderSide.none;
-
-  @override
-  BorderSide get left => BorderSide.none;
 
   @override
   EdgeInsetsGeometry get dimensions => EdgeInsets.all(width);
@@ -993,7 +987,9 @@ class _HorizonActionButtonState extends State<HorizonActionButton> {
                 Text(
                   widget.label,
                   style: widget.isTransparent
-                      ? Theme.of(context).textTheme.bodySmall
+                      ? Theme.of(context).textTheme.bodySmall?.copyWith(
+                            fontWeight: FontWeight.w600,
+                          )
                       : Theme.of(context).textTheme.bodySmall?.copyWith(
                             color: offBlack,
                             fontWeight: FontWeight.w600,
