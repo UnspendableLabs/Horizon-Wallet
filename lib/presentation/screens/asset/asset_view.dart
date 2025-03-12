@@ -60,16 +60,14 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
     bool isLoading = false,
     MultiAddressBalance? balance,
   }) {
-    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
-
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
       decoration: BoxDecoration(
         border: Border(
           bottom: BorderSide(
-            color: isDarkTheme
-                ? Colors.white.withOpacity(0.1)
-                : Colors.black.withOpacity(0.1),
+            color:
+                Theme.of(context).inputDecorationTheme.outlineBorder?.color ??
+                    transparentBlack8,
             width: 1,
           ),
         ),
@@ -93,9 +91,11 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
                   width: 40,
                   height: 40,
                   decoration: BoxDecoration(
-                    color: isDarkTheme
-                        ? Colors.white.withOpacity(0.1)
-                        : Colors.black.withOpacity(0.1),
+                    color: Theme.of(context)
+                            .inputDecorationTheme
+                            .outlineBorder
+                            ?.color ??
+                        transparentBlack8,
                     shape: BoxShape.circle,
                   ),
                 )
@@ -111,8 +111,6 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
 
   // Helper method to build asset info text fields
   Widget _buildAssetInfo(BuildContext context, MultiAddressBalance balance) {
-    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -129,14 +127,23 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
                 textAlign: TextAlign.left,
                 balance.assetLongname!,
                 style: Theme.of(context).textTheme.bodyLarge!.copyWith(
-                    color:
-                        isDarkTheme ? transparentWhite33 : transparentBlack33,
+                    color: Theme.of(context)
+                            .textButtonTheme
+                            .style
+                            ?.foregroundColor
+                            ?.resolve({}) ??
+                        Colors.grey,
                     fontSize: 12))
             : const SizedBox.shrink(),
         SelectableText(
           balance.totalNormalized,
           style: Theme.of(context).textTheme.bodyLarge!.copyWith(
-              color: isDarkTheme ? transparentWhite33 : transparentBlack33,
+              color: Theme.of(context)
+                      .textButtonTheme
+                      .style
+                      ?.foregroundColor
+                      ?.resolve({}) ??
+                  Colors.grey,
               fontSize: 12),
         ),
       ],
@@ -145,8 +152,6 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
 
   // Helper method to build text placeholders for loading state
   Widget _buildLoadingTextPlaceholders(BuildContext context) {
-    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -155,9 +160,9 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
           width: 100,
           height: 16,
           decoration: BoxDecoration(
-            color: isDarkTheme
-                ? Colors.white.withOpacity(0.1)
-                : Colors.black.withOpacity(0.1),
+            color:
+                Theme.of(context).inputDecorationTheme.outlineBorder?.color ??
+                    transparentBlack8,
             borderRadius: BorderRadius.circular(4),
           ),
         ),
@@ -166,9 +171,9 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
           width: 150,
           height: 12,
           decoration: BoxDecoration(
-            color: isDarkTheme
-                ? Colors.white.withOpacity(0.08)
-                : Colors.black.withOpacity(0.08),
+            color:
+                Theme.of(context).inputDecorationTheme.outlineBorder?.color ??
+                    transparentBlack8,
             borderRadius: BorderRadius.circular(4),
           ),
         ),
@@ -177,9 +182,9 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
           width: 80,
           height: 12,
           decoration: BoxDecoration(
-            color: isDarkTheme
-                ? Colors.white.withOpacity(0.08)
-                : Colors.black.withOpacity(0.08),
+            color:
+                Theme.of(context).inputDecorationTheme.outlineBorder?.color ??
+                    transparentBlack8,
             borderRadius: BorderRadius.circular(4),
           ),
         ),
@@ -189,15 +194,13 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
 
   // Helper method to build tabs
   Widget _buildTabs(BuildContext context) {
-    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
-
     return Container(
       decoration: BoxDecoration(
         border: Border(
           bottom: BorderSide(
-            color: isDarkTheme
-                ? Colors.white.withOpacity(0.1)
-                : Colors.black.withOpacity(0.1),
+            color:
+                Theme.of(context).inputDecorationTheme.outlineBorder?.color ??
+                    transparentBlack8,
             width: 1,
           ),
         ),
@@ -209,8 +212,12 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
             indicatorWeight: 2,
             indicatorColor: transparentPurple33,
             labelColor: Theme.of(context).textTheme.bodyMedium?.color,
-            unselectedLabelColor:
-                isDarkTheme ? transparentWhite33 : transparentBlack33,
+            unselectedLabelColor: Theme.of(context)
+                    .textButtonTheme
+                    .style
+                    ?.foregroundColor
+                    ?.resolve({}) ??
+                Colors.grey,
             indicatorSize: TabBarIndicatorSize.label,
             tabAlignment: TabAlignment.center,
             isScrollable: false,
@@ -242,8 +249,6 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
 
   // Helper method to build action button skeletons for loading state
   Widget _buildLoadingActionButtons(BuildContext context, int count) {
-    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
-
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
       child: Column(
@@ -253,9 +258,11 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
             child: Container(
               height: 56,
               decoration: BoxDecoration(
-                color: isDarkTheme
-                    ? Colors.white.withOpacity(0.05)
-                    : Colors.black.withOpacity(0.05),
+                color: Theme.of(context)
+                        .inputDecorationTheme
+                        .outlineBorder
+                        ?.color ??
+                    transparentBlack8,
                 borderRadius: BorderRadius.circular(8),
               ),
             ),
@@ -270,7 +277,6 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
     required BuildContext context,
     required bool isLoading,
   }) {
-    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
     return Expanded(
       child: TabBarView(
         controller: _tabController,
@@ -293,7 +299,6 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
                     Padding(
                       padding: const EdgeInsets.all(16.0),
                       child: FilterBar(
-                        isDarkTheme: isDarkTheme,
                         currentFilter: _currentFilter,
                         onFilterSelected: _setFilter,
                         onClearFilter: _clearFilter,
@@ -319,7 +324,6 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
                                 icon: AppIcons.sendIcon(
                                   context: context,
                                 ),
-                                isDarkTheme: isDarkTheme,
                                 onTap: () {
                                   // Handle Send
                                 },
@@ -329,7 +333,6 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
                                 icon: AppIcons.receiveIcon(
                                   context: context,
                                 ),
-                                isDarkTheme: isDarkTheme,
                                 onTap: () {
                                   // Handle Receive
                                 },
@@ -339,7 +342,6 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
                                 icon: AppIcons.attachIcon(
                                   context: context,
                                 ),
-                                isDarkTheme: isDarkTheme,
                                 onTap: () {
                                   // Handle Attach
                                 },
@@ -349,7 +351,6 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
                                 icon: AppIcons.orderIcon(
                                   context: context,
                                 ),
-                                isDarkTheme: isDarkTheme,
                                 onTap: () {
                                   // Handle Order
                                 },
@@ -359,7 +360,6 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
                                 icon: AppIcons.destroyIcon(
                                   context: context,
                                 ),
-                                isDarkTheme: isDarkTheme,
                                 onTap: () {
                                   // Handle Destroy
                                 },
@@ -369,7 +369,6 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
                                 icon: AppIcons.dispenserIcon(
                                   context: context,
                                 ),
-                                isDarkTheme: isDarkTheme,
                                 onTap: () {
                                   // Handle Dispenser
                                 },
@@ -381,7 +380,6 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
                                 icon: AppIcons.sendIcon(
                                   context: context,
                                 ),
-                                isDarkTheme: isDarkTheme,
                                 onTap: () {
                                   // Handle UTXO Send
                                 },
@@ -391,7 +389,6 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
                                 icon: AppIcons.detachIcon(
                                   context: context,
                                 ),
-                                isDarkTheme: isDarkTheme,
                                 onTap: () {
                                   // Handle Detach
                                 },
@@ -401,7 +398,6 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
                                 icon: AppIcons.swapIcon(
                                   context: context,
                                 ),
-                                isDarkTheme: isDarkTheme,
                                 onTap: () {
                                   // Handle Swap
                                 },
@@ -431,7 +427,6 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
                         icon: AppIcons.dividendIcon(
                           context: context,
                         ),
-                        isDarkTheme: isDarkTheme,
                         onTap: () {
                           // Handle Pay Dividend
                         },
@@ -441,7 +436,6 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
                         icon: AppIcons.resetIcon(
                           context: context,
                         ),
-                        isDarkTheme: isDarkTheme,
                         onTap: () {
                           // Handle Reset Asset
                         },
@@ -451,7 +445,6 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
                         icon: AppIcons.mintIcon(
                           context: context,
                         ),
-                        isDarkTheme: isDarkTheme,
                         onTap: () {
                           // Handle Create Fairminter
                         },
@@ -461,7 +454,6 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
                         icon: AppIcons.plusIcon(
                           context: context,
                         ),
-                        isDarkTheme: isDarkTheme,
                         onTap: () {
                           // Handle Issue More
                         },
@@ -471,7 +463,6 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
                         icon: AppIcons.plusIcon(
                           context: context,
                         ),
-                        isDarkTheme: isDarkTheme,
                         onTap: () {
                           // Handle Issue Subasset
                         },
@@ -481,7 +472,6 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
                         icon: AppIcons.editIcon(
                           context: context,
                         ),
-                        isDarkTheme: isDarkTheme,
                         onTap: () {
                           // Handle Update Description
                         },
@@ -491,7 +481,6 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
                         icon: AppIcons.lockIcon(
                           context: context,
                         ),
-                        isDarkTheme: isDarkTheme,
                         onTap: () {
                           // Handle Lock Supply
                         },
@@ -501,7 +490,6 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
                         icon: AppIcons.lockIcon(
                           context: context,
                         ),
-                        isDarkTheme: isDarkTheme,
                         onTap: () {
                           // Handle Lock Description
                         },
@@ -511,7 +499,6 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
                         icon: AppIcons.transferIcon(
                           context: context,
                         ),
-                        isDarkTheme: isDarkTheme,
                         onTap: () {
                           // Handle Transfer Issuance Rights
                         },

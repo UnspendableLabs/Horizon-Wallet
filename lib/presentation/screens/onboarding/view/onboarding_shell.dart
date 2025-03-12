@@ -50,7 +50,6 @@ class _OnboardingShellState extends State<OnboardingShell> {
 
   @override
   Widget build(BuildContext context) {
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final isSmallScreen = MediaQuery.of(context).size.width < 500;
 
     final shellContent = Scaffold(
@@ -147,7 +146,7 @@ class _OnboardingShellState extends State<OnboardingShell> {
     }
 
     return Scaffold(
-      backgroundColor: isDarkMode ? Colors.black : Colors.white,
+      backgroundColor: Theme.of(context).dialogTheme.backgroundColor,
       body: Center(
         child: Container(
           width: 500,

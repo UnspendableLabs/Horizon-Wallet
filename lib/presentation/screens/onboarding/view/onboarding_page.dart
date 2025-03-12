@@ -249,7 +249,7 @@ class OnboardingView extends StatelessWidget {
     }
 
     return Scaffold(
-      backgroundColor: isDarkMode ? Colors.black : Colors.white,
+      backgroundColor: Theme.of(context).dialogTheme.backgroundColor,
       body: Center(
         child: Container(
           width: 500,

@@ -327,7 +327,7 @@ class _AppShellState extends State<AppShell> with TickerProviderStateMixin {
     final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
-      color: isDarkTheme ? Colors.black : Colors.white,
+      color: Theme.of(context).dialogTheme.backgroundColor,
       child: Center(
         child: ConstrainedBox(
           constraints: BoxConstraints(
@@ -336,7 +336,7 @@ class _AppShellState extends State<AppShell> with TickerProviderStateMixin {
           ),
           child: VersionWarningSnackbar(
             child: Scaffold(
-              backgroundColor: isDarkTheme ? offBlack : offWhite,
+              backgroundColor: Theme.of(context).scaffoldBackgroundColor,
               body: widget.child,
               bottomNavigationBar: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -347,12 +347,14 @@ class _AppShellState extends State<AppShell> with TickerProviderStateMixin {
                     height: 90,
                     padding: const EdgeInsets.symmetric(vertical: 8),
                     decoration: BoxDecoration(
-                      color: isDarkTheme ? Colors.black : Colors.white,
+                      color: Theme.of(context).dialogTheme.backgroundColor,
                       border: Border(
                         top: BorderSide(
-                          color: isDarkTheme
-                              ? Colors.white.withOpacity(0.1)
-                              : Colors.black.withOpacity(0.1),
+                          color: Theme.of(context)
+                                  .inputDecorationTheme
+                                  .outlineBorder
+                                  ?.color ??
+                              Colors.black.withOpacity(0.1),
                           width: 1,
                         ),
                       ),
@@ -364,9 +366,13 @@ class _AppShellState extends State<AppShell> with TickerProviderStateMixin {
                       dividerColor: Colors.transparent,
                       overlayColor: WidgetStateProperty.all(Colors.transparent),
                       splashFactory: NoSplash.splashFactory,
-                      labelColor: isDarkTheme ? Colors.white : Colors.black,
-                      unselectedLabelColor:
-                          isDarkTheme ? transparentWhite33 : transparentBlack33,
+                      labelColor: Theme.of(context).textTheme.bodyMedium?.color,
+                      unselectedLabelColor: Theme.of(context)
+                              .textButtonTheme
+                              .style
+                              ?.foregroundColor
+                              ?.resolve({}) ??
+                          Colors.grey,
                       tabs: [
                         Container(
                           width: 75,
@@ -379,9 +385,11 @@ class _AppShellState extends State<AppShell> with TickerProviderStateMixin {
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
                               color: _bottomTabController.index == 0
-                                  ? (isDarkTheme
-                                      ? Colors.white.withOpacity(0.1)
-                                      : Colors.black.withOpacity(0.1))
+                                  ? Theme.of(context)
+                                          .inputDecorationTheme
+                                          .outlineBorder
+                                          ?.color ??
+                                      Colors.black.withOpacity(0.1)
                                   : Colors.transparent,
                               width: 1,
                             ),
@@ -396,12 +404,16 @@ class _AppShellState extends State<AppShell> with TickerProviderStateMixin {
                                 AppIcons.pieChartIcon(
                                   context: context,
                                   color: _bottomTabController.index == 0
-                                      ? (isDarkTheme
-                                          ? Colors.white
-                                          : Colors.black)
-                                      : (isDarkTheme
-                                          ? transparentWhite33
-                                          : transparentBlack33),
+                                      ? Theme.of(context)
+                                          .textTheme
+                                          .bodyMedium
+                                          ?.color
+                                      : Theme.of(context)
+                                              .textButtonTheme
+                                              .style
+                                              ?.foregroundColor
+                                              ?.resolve({}) ??
+                                          Colors.grey,
                                 ),
                                 const SizedBox(height: 6),
                                 Text(
@@ -409,12 +421,16 @@ class _AppShellState extends State<AppShell> with TickerProviderStateMixin {
                                   style: TextStyle(
                                     fontSize: 12,
                                     color: _bottomTabController.index == 0
-                                        ? (isDarkTheme
-                                            ? Colors.white
-                                            : Colors.black)
-                                        : (isDarkTheme
-                                            ? transparentWhite33
-                                            : transparentBlack33),
+                                        ? (Theme.of(context)
+                                            .textTheme
+                                            .bodyMedium
+                                            ?.color)
+                                        : (Theme.of(context)
+                                                .textButtonTheme
+                                                .style
+                                                ?.foregroundColor
+                                                ?.resolve({}) ??
+                                            Colors.grey),
                                   ),
                                   softWrap: false,
                                   overflow: TextOverflow.visible,
@@ -434,9 +450,11 @@ class _AppShellState extends State<AppShell> with TickerProviderStateMixin {
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
                               color: _bottomTabController.index == 1
-                                  ? (isDarkTheme
-                                      ? Colors.white.withOpacity(0.1)
-                                      : Colors.black.withOpacity(0.1))
+                                  ? Theme.of(context)
+                                          .inputDecorationTheme
+                                          .outlineBorder
+                                          ?.color ??
+                                      Colors.black.withOpacity(0.1)
                                   : Colors.transparent,
                               width: 1,
                             ),
@@ -451,12 +469,16 @@ class _AppShellState extends State<AppShell> with TickerProviderStateMixin {
                                 AppIcons.settingsIcon(
                                   context: context,
                                   color: _bottomTabController.index == 1
-                                      ? (isDarkTheme
-                                          ? Colors.white
-                                          : Colors.black)
-                                      : (isDarkTheme
-                                          ? transparentWhite33
-                                          : transparentBlack33),
+                                      ? Theme.of(context)
+                                          .textTheme
+                                          .bodyMedium
+                                          ?.color
+                                      : Theme.of(context)
+                                              .textButtonTheme
+                                              .style
+                                              ?.foregroundColor
+                                              ?.resolve({}) ??
+                                          Colors.grey,
                                 ),
                                 const SizedBox(height: 6),
                                 Text(
@@ -464,12 +486,16 @@ class _AppShellState extends State<AppShell> with TickerProviderStateMixin {
                                   style: TextStyle(
                                     fontSize: 12,
                                     color: _bottomTabController.index == 1
-                                        ? (isDarkTheme
-                                            ? Colors.white
-                                            : Colors.black)
-                                        : (isDarkTheme
-                                            ? transparentWhite33
-                                            : transparentBlack33),
+                                        ? (Theme.of(context)
+                                            .textTheme
+                                            .bodyMedium
+                                            ?.color)
+                                        : (Theme.of(context)
+                                                .textButtonTheme
+                                                .style
+                                                ?.foregroundColor
+                                                ?.resolve({}) ??
+                                            Colors.grey),
                                   ),
                                   softWrap: false,
                                   overflow: TextOverflow.visible,

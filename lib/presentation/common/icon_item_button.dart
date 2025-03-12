@@ -5,7 +5,6 @@ class IconItemButton extends StatelessWidget {
   final String title;
   final Widget icon;
   final VoidCallback? onTap;
-  final bool isDarkTheme;
   final Widget? trailing;
 
   const IconItemButton({
@@ -13,7 +12,6 @@ class IconItemButton extends StatelessWidget {
     required this.title,
     required this.icon,
     this.onTap,
-    required this.isDarkTheme,
     this.trailing,
   });
 
@@ -25,7 +23,8 @@ class IconItemButton extends StatelessWidget {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(18),
         border: Border.all(
-          color: isDarkTheme ? transparentWhite8 : transparentBlack8,
+          color: Theme.of(context).inputDecorationTheme.outlineBorder?.color ??
+              transparentBlack8,
           width: 1,
         ),
       ),

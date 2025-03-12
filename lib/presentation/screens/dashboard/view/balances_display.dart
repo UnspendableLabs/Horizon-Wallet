@@ -11,12 +11,10 @@ import 'package:horizon/presentation/screens/dashboard/view/asset_icon.dart';
 import 'package:horizon/utils/app_icons.dart';
 
 class BalancesDisplay extends StatefulWidget {
-  final bool isDarkTheme;
   final String searchQuery;
 
   const BalancesDisplay({
     super.key,
-    required this.isDarkTheme,
     this.searchQuery = '',
   });
 
@@ -41,7 +39,6 @@ class BalancesDisplayState extends State<BalancesDisplay> {
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 8.0),
         child: BalancesSliver(
-          isDarkTheme: widget.isDarkTheme,
           searchQuery: widget.searchQuery,
         ),
       ),
@@ -52,12 +49,10 @@ class BalancesDisplayState extends State<BalancesDisplay> {
 enum BalanceFilter { none, named, numeric, subassets, issuances }
 
 class BalancesSliver extends StatefulWidget {
-  final bool isDarkTheme;
   final String searchQuery;
 
   const BalancesSliver({
     super.key,
-    required this.isDarkTheme,
     this.searchQuery = '',
   });
 
@@ -96,7 +91,6 @@ class BalancesSliverState extends State<BalancesSliver> {
         return Column(
           children: [
             FilterBar(
-              isDarkTheme: widget.isDarkTheme,
               currentFilter: _currentFilter,
               onFilterSelected: _setFilter,
               onClearFilter: _clearFilter,

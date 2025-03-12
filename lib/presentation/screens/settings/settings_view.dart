@@ -27,7 +27,6 @@ class SettingsItem extends StatelessWidget {
   final String title;
   final Widget? icon;
   final VoidCallback? onTap;
-  final bool isDarkTheme;
   final Widget? trailing;
 
   const SettingsItem({
@@ -35,7 +34,6 @@ class SettingsItem extends StatelessWidget {
     required this.title,
     this.icon,
     this.onTap,
-    required this.isDarkTheme,
     this.trailing,
   });
 
@@ -47,7 +45,8 @@ class SettingsItem extends StatelessWidget {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(18),
         border: Border.all(
-          color: isDarkTheme ? transparentWhite8 : transparentBlack8,
+          color: Theme.of(context).inputDecorationTheme.outlineBorder?.color ??
+              transparentBlack8,
           width: 1,
         ),
       ),
@@ -70,14 +69,14 @@ class SettingsItem extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
-                      color: isDarkTheme ? Colors.white : Colors.black,
+                      color: Theme.of(context).textTheme.bodyMedium?.color,
                     ),
                   ),
                 ),
                 trailing ??
                     AppIcons.chevronRightIcon(
                       context: context,
-                      color: isDarkTheme ? offWhite : offBlack,
+                      color: Theme.of(context).iconTheme.color,
                     ),
               ],
             ),
@@ -231,7 +230,9 @@ class ThemeToggle extends StatelessWidget {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(18),
           border: Border.all(
-            color: isDarkTheme ? transparentWhite8 : transparentBlack8,
+            color:
+                Theme.of(context).inputDecorationTheme.outlineBorder?.color ??
+                    transparentBlack8,
             width: 1,
           ),
         ),
@@ -325,14 +326,12 @@ class _SettingsViewState extends State<SettingsView> {
   }
 
   Widget _buildMainSettings() {
-    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
     return ListView(
       children: [
         const SizedBox(height: 10),
         SettingsItem(
           title: 'Security',
           icon: AppIcons.shieldIcon(context: context),
-          isDarkTheme: isDarkTheme,
           onTap: () {
             setState(() {
               _currentPage = SettingsPage.security;
@@ -342,7 +341,6 @@ class _SettingsViewState extends State<SettingsView> {
         SettingsItem(
           title: 'Seed phrase',
           icon: AppIcons.copyIcon(context: context),
-          isDarkTheme: isDarkTheme,
           onTap: () {
             setState(() {
               _currentPage = SettingsPage.seedPhrase;
@@ -352,7 +350,6 @@ class _SettingsViewState extends State<SettingsView> {
         SettingsItem(
           title: 'Import new address',
           icon: AppIcons.receiveIcon(context: context),
-          isDarkTheme: isDarkTheme,
           onTap: () {
             setState(() {
               _currentPage = SettingsPage.importAddress;
@@ -362,7 +359,6 @@ class _SettingsViewState extends State<SettingsView> {
         SettingsItem(
           title: 'Reset wallet',
           icon: AppIcons.refreshIcon(context: context),
-          isDarkTheme: isDarkTheme,
           onTap: () {
             setState(() {
               _currentPage = SettingsPage.resetWallet;
@@ -372,9 +368,8 @@ class _SettingsViewState extends State<SettingsView> {
         SettingsItem(
           title: 'Appearance',
           icon: AppIcons.spectaclesIcon(context: context),
-          isDarkTheme: isDarkTheme,
           trailing: ThemeToggle(
-            isDarkTheme: isDarkTheme,
+            isDarkTheme: Theme.of(context).brightness == Brightness.dark,
             onChanged: (value) {
               context.read<ThemeBloc>().add(ThemeToggled());
             },
@@ -389,7 +384,11 @@ class _SettingsViewState extends State<SettingsView> {
               borderRadius: BorderRadius.circular(18),
               color: transparentPurple16,
               border: Border.all(
-                color: isDarkTheme ? transparentWhite8 : transparentBlack8,
+                color: Theme.of(context)
+                        .inputDecorationTheme
+                        .outlineBorder
+                        ?.color ??
+                    transparentBlack8,
                 width: 1,
               ),
             ),
@@ -412,7 +411,8 @@ class _SettingsViewState extends State<SettingsView> {
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w500,
-                            color: Theme.of(context).iconTheme.color,
+                            color:
+                                Theme.of(context).textTheme.bodyMedium?.color,
                           ),
                         ),
                       ),
@@ -433,19 +433,18 @@ class _SettingsViewState extends State<SettingsView> {
 
   @override
   Widget build(BuildContext context) {
-    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
-
     return context.watch<SessionStateCubit>().state.maybeWhen(
         orElse: () => const CircularProgressIndicator(),
         success: (session) => Material(
-              color: isDarkTheme ? Colors.black : Colors.white,
+              color: Theme.of(context).dialogTheme.backgroundColor,
               child: Center(
                 child: ConstrainedBox(
                   constraints: const BoxConstraints(maxWidth: 500),
                   child: Scaffold(
-                    backgroundColor: isDarkTheme ? offBlack : offWhite,
+                    backgroundColor: Theme.of(context).scaffoldBackgroundColor,
                     appBar: AppBar(
-                      backgroundColor: isDarkTheme ? offBlack : offWhite,
+                      backgroundColor:
+                          Theme.of(context).scaffoldBackgroundColor,
                       elevation: 0,
                       centerTitle: false,
                       leadingWidth: 40,
@@ -457,14 +456,15 @@ class _SettingsViewState extends State<SettingsView> {
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.w700,
-                            color: isDarkTheme ? Colors.white : Colors.black,
+                            color:
+                                Theme.of(context).textTheme.bodyMedium?.color,
                           ),
                         ),
                       ),
                       leading: Padding(
                         padding: const EdgeInsets.only(left: 9.0, top: 18.0),
                         child: BackButton(
-                          color: isDarkTheme ? Colors.white : Colors.black,
+                          color: Theme.of(context).textTheme.bodyMedium?.color,
                           onPressed: _currentPage != SettingsPage.main
                               ? _navigateBack
                               : () {

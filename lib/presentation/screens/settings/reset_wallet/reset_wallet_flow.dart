@@ -105,8 +105,6 @@ class _ResetWalletFlowState extends State<ResetWalletFlow> {
   }
 
   Widget _buildConfirmationStep() {
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-
     return Padding(
       padding: const EdgeInsets.all(20.0),
       child: Column(
@@ -139,7 +137,11 @@ class _ResetWalletFlowState extends State<ResetWalletFlow> {
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(18),
                     border: Border.all(
-                      color: isDarkMode ? transparentWhite8 : transparentBlack8,
+                      color: Theme.of(context)
+                              .inputDecorationTheme
+                              .outlineBorder
+                              ?.color ??
+                          transparentBlack8,
                       width: 1,
                     ),
                   ),

@@ -490,6 +490,12 @@ class MyApp extends StatelessWidget {
       fontFamily: 'Montserrat',
       brightness: Brightness.light,
       scaffoldBackgroundColor: offWhite,
+      dialogTheme: DialogTheme(
+        backgroundColor: white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(18),
+        ),
+      ),
       primaryTextTheme: baseTextTheme.apply(fontFamily: 'Montserrat'),
       textTheme: customTextTheme,
       elevatedButtonTheme: ElevatedButtonThemeData(
@@ -579,6 +585,10 @@ class MyApp extends StatelessWidget {
       inputDecorationTheme: const InputDecorationTheme(
         isDense: true,
         contentPadding: EdgeInsets.zero,
+        outlineBorder: BorderSide(
+          color: transparentBlack8,
+          width: 1,
+        ),
         border: InputBorder.none,
         hintStyle: TextStyle(
           fontSize: 12,
@@ -623,6 +633,12 @@ class MyApp extends StatelessWidget {
       fontFamily: 'Montserrat',
       brightness: Brightness.dark,
       scaffoldBackgroundColor: offBlack,
+      dialogTheme: DialogTheme(
+        backgroundColor: black,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(18),
+        ),
+      ),
       primaryTextTheme: baseTextTheme.apply(fontFamily: 'Montserrat'),
       textTheme: customTextTheme,
       elevatedButtonTheme: ElevatedButtonThemeData(
@@ -712,6 +728,7 @@ class MyApp extends StatelessWidget {
       inputDecorationTheme: const InputDecorationTheme(
         isDense: true,
         contentPadding: EdgeInsets.zero,
+        outlineBorder: BorderSide(color: transparentWhite8, width: 1),
         border: InputBorder.none,
         hintStyle: TextStyle(
           fontSize: 12,

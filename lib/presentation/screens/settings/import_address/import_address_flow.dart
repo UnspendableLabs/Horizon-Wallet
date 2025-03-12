@@ -164,7 +164,6 @@ class _ImportAddressFormState extends State<_ImportAddressForm> {
         }
       },
       builder: (context, state) {
-        final isDarkMode = Theme.of(context).brightness == Brightness.dark;
         final isLoading = state is ImportAddressPkLoading || _isSubmitting;
 
         return SingleChildScrollView(
@@ -252,9 +251,11 @@ class _ImportAddressFormState extends State<_ImportAddressForm> {
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(18),
                           border: Border.all(
-                            color: isDarkMode
-                                ? transparentWhite8
-                                : transparentBlack8,
+                            color: Theme.of(context)
+                                    .inputDecorationTheme
+                                    .outlineBorder
+                                    ?.color ??
+                                transparentBlack8,
                             width: 1,
                           ),
                         ),

@@ -387,9 +387,9 @@ class _HorizonRedesignDropdownState<T>
               borderRadius: BorderRadius.circular(18),
               border: focusNode.hasFocus
                   ? const GradientBoxBorder(width: 1)
-                  : Border.all(
-                      color:
-                          isDarkMode ? transparentWhite8 : transparentBlack8),
+                  : Border.fromBorderSide(
+                      Theme.of(context).inputDecorationTheme.outlineBorder ??
+                          const BorderSide()),
               color: hasValue
                   ? (isDarkMode ? grey5 : grey1)
                   : (isDarkMode ? offBlack : offWhite),
@@ -567,8 +567,9 @@ class _BlurredBackgroundDropdownState<T>
             borderRadius: BorderRadius.circular(18),
             border: focusNode.hasFocus
                 ? const GradientBoxBorder(width: 1)
-                : Border.all(
-                    color: isDarkMode ? transparentWhite8 : transparentBlack8),
+                : Border.fromBorderSide(
+                    Theme.of(context).inputDecorationTheme.outlineBorder ??
+                        const BorderSide()),
             color: hasValue
                 ? (isDarkMode ? grey5 : grey1)
                 : (isDarkMode ? offBlack : offWhite),
@@ -627,8 +628,6 @@ class HorizonToggle extends StatefulWidget {
 class _HorizonToggleState extends State<HorizonToggle> {
   @override
   Widget build(BuildContext context) {
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-
     return MouseRegion(
       cursor: SystemMouseCursors.click,
       child: GestureDetector(
@@ -638,17 +637,16 @@ class _HorizonToggleState extends State<HorizonToggle> {
           height: 32,
           padding: const EdgeInsets.all(4),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(70),
-            border: Border.all(
-              color: isDarkMode ? transparentWhite8 : transparentBlack8,
-              width: 1,
-            ),
-            color: widget.value
-                ? (widget.backgroundColor ?? green2)
-                : isDarkMode
-                    ? transparentWhite8
-                    : transparentBlack8,
-          ),
+              borderRadius: BorderRadius.circular(70),
+              border: Border.fromBorderSide(
+                  Theme.of(context).inputDecorationTheme.outlineBorder ??
+                      const BorderSide()),
+              color: widget.value
+                  ? (widget.backgroundColor ?? green2)
+                  : Theme.of(context)
+                      .inputDecorationTheme
+                      .outlineBorder
+                      ?.color),
           child: AnimatedAlign(
             duration: const Duration(milliseconds: 200),
             alignment:
@@ -743,10 +741,9 @@ class _HorizonTextFieldState extends State<HorizonTextField> {
             borderRadius: BorderRadius.circular(18),
             border: _focusNode.hasFocus
                 ? const GradientBoxBorder(width: 1)
-                : Border.all(
-                    color: isDarkMode ? transparentWhite8 : transparentBlack8,
-                    width: 1,
-                  ),
+                : Border.fromBorderSide(
+                    Theme.of(context).inputDecorationTheme.outlineBorder ??
+                        const BorderSide()),
             color: _hasText
                 ? (isDarkMode ? grey5 : grey1)
                 : (isDarkMode ? offBlack : offWhite),
