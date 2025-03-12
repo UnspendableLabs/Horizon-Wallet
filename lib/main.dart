@@ -56,10 +56,10 @@ import 'package:horizon/presentation/session/theme/bloc/theme_bloc.dart';
 import 'package:horizon/presentation/shell/app_shell.dart';
 import 'package:horizon/presentation/version_cubit.dart';
 import 'package:horizon/setup.dart';
+import 'package:horizon/utils/app_icons.dart';
 import 'package:pub_semver/pub_semver.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
-final _sectionNavigatorKey = GlobalKey<NavigatorState>();
 
 Future<void> setupRegtestWallet() async {
   // read env for regtest private key
@@ -380,8 +380,11 @@ void main() {
                 child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                  const Icon(Icons.warning_amber_rounded,
-                      size: 60.0, color: Colors.redAccent),
+                  AppIcons.warningIcon(
+                    width: 60.0,
+                    height: 60.0,
+                    color: red1,
+                  ),
                   const SizedBox(height: 16),
                   const Text(
                     "Upgrade Required!",
@@ -487,6 +490,12 @@ class MyApp extends StatelessWidget {
       fontFamily: 'Montserrat',
       brightness: Brightness.light,
       scaffoldBackgroundColor: offWhite,
+      dialogTheme: DialogTheme(
+        backgroundColor: white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(18),
+        ),
+      ),
       primaryTextTheme: baseTextTheme.apply(fontFamily: 'Montserrat'),
       textTheme: customTextTheme,
       elevatedButtonTheme: ElevatedButtonThemeData(
@@ -544,6 +553,19 @@ class MyApp extends StatelessWidget {
           foregroundColor: transparentBlack33,
         ),
       ),
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(
+          backgroundColor: white,
+          foregroundColor: Colors.black,
+          padding: const EdgeInsets.fromLTRB(7, 11, 14, 11),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(18),
+            side: const BorderSide(
+              color: transparentBlack8,
+            ),
+          ),
+        ),
+      ),
       iconTheme: const IconThemeData(
         color: Colors.black,
       ),
@@ -563,6 +585,10 @@ class MyApp extends StatelessWidget {
       inputDecorationTheme: const InputDecorationTheme(
         isDense: true,
         contentPadding: EdgeInsets.zero,
+        outlineBorder: BorderSide(
+          color: transparentBlack8,
+          width: 1,
+        ),
         border: InputBorder.none,
         hintStyle: TextStyle(
           fontSize: 12,
@@ -607,6 +633,12 @@ class MyApp extends StatelessWidget {
       fontFamily: 'Montserrat',
       brightness: Brightness.dark,
       scaffoldBackgroundColor: offBlack,
+      dialogTheme: DialogTheme(
+        backgroundColor: black,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(18),
+        ),
+      ),
       primaryTextTheme: baseTextTheme.apply(fontFamily: 'Montserrat'),
       textTheme: customTextTheme,
       elevatedButtonTheme: ElevatedButtonThemeData(
@@ -664,6 +696,19 @@ class MyApp extends StatelessWidget {
           foregroundColor: transparentWhite33,
         ),
       ),
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(
+          backgroundColor: black,
+          foregroundColor: white,
+          padding: const EdgeInsets.fromLTRB(7, 11, 14, 11),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(18),
+            side: const BorderSide(
+              color: transparentWhite8,
+            ),
+          ),
+        ),
+      ),
       iconTheme: const IconThemeData(
         color: Colors.white,
       ),
@@ -683,6 +728,7 @@ class MyApp extends StatelessWidget {
       inputDecorationTheme: const InputDecorationTheme(
         isDense: true,
         contentPadding: EdgeInsets.zero,
+        outlineBorder: BorderSide(color: transparentWhite8, width: 1),
         border: InputBorder.none,
         hintStyle: TextStyle(
           fontSize: 12,

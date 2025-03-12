@@ -13,6 +13,7 @@ import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:horizon/presentation/session/theme/bloc/theme_bloc.dart';
 import 'package:horizon/presentation/session/theme/bloc/theme_event.dart';
 import 'package:horizon/presentation/shell/app_shell.dart';
+import 'package:horizon/utils/app_icons.dart';
 
 enum SettingsPage {
   main,
@@ -24,17 +25,15 @@ enum SettingsPage {
 
 class SettingsItem extends StatelessWidget {
   final String title;
-  final IconData icon;
+  final Widget? icon;
   final VoidCallback? onTap;
-  final bool isDarkTheme;
   final Widget? trailing;
 
   const SettingsItem({
     super.key,
     required this.title,
-    required this.icon,
+    this.icon,
     this.onTap,
-    required this.isDarkTheme,
     this.trailing,
   });
 
@@ -46,7 +45,8 @@ class SettingsItem extends StatelessWidget {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(18),
         border: Border.all(
-          color: isDarkTheme ? transparentWhite8 : transparentBlack8,
+          color: Theme.of(context).inputDecorationTheme.outlineBorder?.color ??
+              transparentBlack8,
           width: 1,
         ),
       ),
@@ -59,29 +59,24 @@ class SettingsItem extends StatelessWidget {
             padding: const EdgeInsets.fromLTRB(14, 11, 14, 11),
             child: Row(
               children: [
-                Icon(
-                  icon,
-                  size: 24,
-                  color: isDarkTheme ? Colors.white : Colors.black,
-                ),
-                const SizedBox(width: 12),
+                icon ?? const SizedBox.shrink(),
+                icon != null
+                    ? const SizedBox(width: 12)
+                    : const SizedBox.shrink(),
                 Expanded(
                   child: Text(
                     title,
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
-                      color: isDarkTheme ? Colors.white : Colors.black,
+                      color: Theme.of(context).textTheme.bodyMedium?.color,
                     ),
                   ),
                 ),
                 trailing ??
-                    Icon(
-                      Icons.chevron_right,
-                      size: 24,
-                      color: isDarkTheme
-                          ? Colors.white.withOpacity(0.5)
-                          : Colors.black.withOpacity(0.5),
+                    AppIcons.chevronRightIcon(
+                      context: context,
+                      color: Theme.of(context).iconTheme.color,
                     ),
               ],
             ),
@@ -235,7 +230,9 @@ class ThemeToggle extends StatelessWidget {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(18),
           border: Border.all(
-            color: isDarkTheme ? transparentWhite8 : transparentBlack8,
+            color:
+                Theme.of(context).inputDecorationTheme.outlineBorder?.color ??
+                    transparentBlack8,
             width: 1,
           ),
         ),
@@ -261,21 +258,15 @@ class ThemeToggle extends StatelessWidget {
                   width: 36,
                   height: 32,
                   alignment: Alignment.center,
-                  child: Icon(
-                    Icons.dark_mode_outlined,
-                    size: 20,
-                    color: Theme.of(context).iconTheme.color,
-                  ),
+                  child: AppIcons.moonIcon(
+                      context: context, height: 20, width: 20),
                 ),
                 Container(
                   width: 36,
                   height: 32,
                   alignment: Alignment.center,
-                  child: Icon(
-                    Icons.light_mode_outlined,
-                    size: 20,
-                    color: Theme.of(context).iconTheme.color,
-                  ),
+                  child:
+                      AppIcons.sunIcon(context: context, height: 20, width: 20),
                 ),
               ],
             ),
@@ -335,14 +326,12 @@ class _SettingsViewState extends State<SettingsView> {
   }
 
   Widget _buildMainSettings() {
-    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
     return ListView(
       children: [
         const SizedBox(height: 10),
         SettingsItem(
           title: 'Security',
-          icon: Icons.security,
-          isDarkTheme: isDarkTheme,
+          icon: AppIcons.shieldIcon(context: context),
           onTap: () {
             setState(() {
               _currentPage = SettingsPage.security;
@@ -351,8 +340,7 @@ class _SettingsViewState extends State<SettingsView> {
         ),
         SettingsItem(
           title: 'Seed phrase',
-          icon: Icons.key,
-          isDarkTheme: isDarkTheme,
+          icon: AppIcons.copyIcon(context: context),
           onTap: () {
             setState(() {
               _currentPage = SettingsPage.seedPhrase;
@@ -361,8 +349,7 @@ class _SettingsViewState extends State<SettingsView> {
         ),
         SettingsItem(
           title: 'Import new address',
-          icon: Icons.add_circle_outline,
-          isDarkTheme: isDarkTheme,
+          icon: AppIcons.receiveIcon(context: context),
           onTap: () {
             setState(() {
               _currentPage = SettingsPage.importAddress;
@@ -371,8 +358,7 @@ class _SettingsViewState extends State<SettingsView> {
         ),
         SettingsItem(
           title: 'Reset wallet',
-          icon: Icons.restore,
-          isDarkTheme: isDarkTheme,
+          icon: AppIcons.refreshIcon(context: context),
           onTap: () {
             setState(() {
               _currentPage = SettingsPage.resetWallet;
@@ -381,10 +367,9 @@ class _SettingsViewState extends State<SettingsView> {
         ),
         SettingsItem(
           title: 'Appearance',
-          icon: Icons.palette_outlined,
-          isDarkTheme: isDarkTheme,
+          icon: AppIcons.spectaclesIcon(context: context),
           trailing: ThemeToggle(
-            isDarkTheme: isDarkTheme,
+            isDarkTheme: Theme.of(context).brightness == Brightness.dark,
             onChanged: (value) {
               context.read<ThemeBloc>().add(ThemeToggled());
             },
@@ -399,7 +384,11 @@ class _SettingsViewState extends State<SettingsView> {
               borderRadius: BorderRadius.circular(18),
               color: transparentPurple16,
               border: Border.all(
-                color: isDarkTheme ? transparentWhite8 : transparentBlack8,
+                color: Theme.of(context)
+                        .inputDecorationTheme
+                        .outlineBorder
+                        ?.color ??
+                    transparentBlack8,
                 width: 1,
               ),
             ),
@@ -414,11 +403,7 @@ class _SettingsViewState extends State<SettingsView> {
                   padding: const EdgeInsets.fromLTRB(14, 11, 14, 11),
                   child: Row(
                     children: [
-                      Icon(
-                        Icons.lock_outline,
-                        size: 24,
-                        color: Theme.of(context).iconTheme.color,
-                      ),
+                      AppIcons.lockIcon(context: context),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Text(
@@ -426,13 +411,13 @@ class _SettingsViewState extends State<SettingsView> {
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w500,
-                            color: Theme.of(context).iconTheme.color,
+                            color:
+                                Theme.of(context).textTheme.bodyMedium?.color,
                           ),
                         ),
                       ),
-                      Icon(
-                        Icons.chevron_right,
-                        size: 24,
+                      AppIcons.chevronRightIcon(
+                        context: context,
                         color: Theme.of(context).iconTheme.color,
                       ),
                     ],
@@ -448,19 +433,18 @@ class _SettingsViewState extends State<SettingsView> {
 
   @override
   Widget build(BuildContext context) {
-    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
-
     return context.watch<SessionStateCubit>().state.maybeWhen(
         orElse: () => const CircularProgressIndicator(),
         success: (session) => Material(
-              color: isDarkTheme ? Colors.black : Colors.white,
+              color: Theme.of(context).dialogTheme.backgroundColor,
               child: Center(
                 child: ConstrainedBox(
                   constraints: const BoxConstraints(maxWidth: 500),
                   child: Scaffold(
-                    backgroundColor: isDarkTheme ? offBlack : offWhite,
+                    backgroundColor: Theme.of(context).scaffoldBackgroundColor,
                     appBar: AppBar(
-                      backgroundColor: isDarkTheme ? offBlack : offWhite,
+                      backgroundColor:
+                          Theme.of(context).scaffoldBackgroundColor,
                       elevation: 0,
                       centerTitle: false,
                       leadingWidth: 40,
@@ -472,14 +456,15 @@ class _SettingsViewState extends State<SettingsView> {
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.w700,
-                            color: isDarkTheme ? Colors.white : Colors.black,
+                            color:
+                                Theme.of(context).textTheme.bodyMedium?.color,
                           ),
                         ),
                       ),
                       leading: Padding(
                         padding: const EdgeInsets.only(left: 9.0, top: 18.0),
                         child: BackButton(
-                          color: isDarkTheme ? Colors.white : Colors.black,
+                          color: Theme.of(context).textTheme.bodyMedium?.color,
                           onPressed: _currentPage != SettingsPage.main
                               ? _navigateBack
                               : () {

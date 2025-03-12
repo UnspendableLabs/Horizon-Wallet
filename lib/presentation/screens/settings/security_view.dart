@@ -135,8 +135,6 @@ class _SecurityViewState extends State<SecurityView> {
 
   @override
   Widget build(BuildContext context) {
-    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
-
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Column(
@@ -144,8 +142,6 @@ class _SecurityViewState extends State<SecurityView> {
         children: [
           SettingsItem(
             title: 'Require password',
-            icon: Icons.lock_outline,
-            isDarkTheme: isDarkTheme,
             trailing: HorizonToggle(
               value: _requirePassword,
               onChanged: _onPasswordRequirementChanged,
@@ -166,8 +162,6 @@ class _SecurityViewState extends State<SecurityView> {
           const SizedBox(height: 16),
           SettingsItem(
             title: 'Inactivity Timeout',
-            icon: Icons.timer_outlined,
-            isDarkTheme: isDarkTheme,
             trailing: SizedBox(
               width: 120,
               height: 40,

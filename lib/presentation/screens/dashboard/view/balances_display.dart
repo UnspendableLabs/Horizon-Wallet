@@ -8,14 +8,13 @@ import 'package:horizon/presentation/common/shared_util.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_bloc.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_state.dart';
 import 'package:horizon/presentation/screens/dashboard/view/asset_icon.dart';
+import 'package:horizon/utils/app_icons.dart';
 
 class BalancesDisplay extends StatefulWidget {
-  final bool isDarkTheme;
   final String searchQuery;
 
   const BalancesDisplay({
     super.key,
-    required this.isDarkTheme,
     this.searchQuery = '',
   });
 
@@ -40,7 +39,6 @@ class BalancesDisplayState extends State<BalancesDisplay> {
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 8.0),
         child: BalancesSliver(
-          isDarkTheme: widget.isDarkTheme,
           searchQuery: widget.searchQuery,
         ),
       ),
@@ -51,12 +49,10 @@ class BalancesDisplayState extends State<BalancesDisplay> {
 enum BalanceFilter { none, named, numeric, subassets, issuances }
 
 class BalancesSliver extends StatefulWidget {
-  final bool isDarkTheme;
   final String searchQuery;
 
   const BalancesSliver({
     super.key,
-    required this.isDarkTheme,
     this.searchQuery = '',
   });
 
@@ -91,13 +87,15 @@ class BalancesSliverState extends State<BalancesSliver> {
   Widget build(BuildContext context) {
     return BlocBuilder<BalancesBloc, BalancesState>(
       builder: (context, state) {
+        final isMobile = MediaQuery.of(context).size.width < 500;
         return Column(
           children: [
             FilterBar(
-              isDarkTheme: widget.isDarkTheme,
               currentFilter: _currentFilter,
               onFilterSelected: _setFilter,
               onClearFilter: _clearFilter,
+              paddingHorizontal: 4,
+              allowDeselect: true,
               filterOptions: const [
                 FilterOption(label: 'Named', value: BalanceFilter.named),
                 FilterOption(label: 'Numeric', value: BalanceFilter.numeric),
@@ -113,7 +111,7 @@ class BalancesSliverState extends State<BalancesSliver> {
               child: ListView(
                 shrinkWrap: true,
                 physics: const ClampingScrollPhysics(),
-                children: _buildContent(state),
+                children: _buildContent(state, isMobile: isMobile),
               ),
             ),
           ],
@@ -177,7 +175,7 @@ class BalancesSliverState extends State<BalancesSliver> {
     }
   }
 
-  List<Widget> _buildContent(BalancesState state) {
+  List<Widget> _buildContent(BalancesState state, {bool isMobile = false}) {
     return state.when(
       initial: () => [const SizedBox.shrink()],
       loading: () => [
@@ -186,12 +184,12 @@ class BalancesSliverState extends State<BalancesSliver> {
           child: Center(child: CircularProgressIndicator()),
         )
       ],
-      complete: (result) => _buildBalanceList(result),
-      reloading: (result) => _buildBalanceList(result),
+      complete: (result) => _buildBalanceList(result, isMobile: isMobile),
+      reloading: (result) => _buildBalanceList(result, isMobile: isMobile),
     );
   }
 
-  List<Widget> _buildBalanceList(Result result) {
+  List<Widget> _buildBalanceList(Result result, {bool isMobile = false}) {
     return result.when(
       error: (error) => [
         SizedBox(
@@ -249,12 +247,12 @@ class BalancesSliverState extends State<BalancesSliver> {
                       child: Row(
                         children: [
                           // Star icon (placeholder)
-                          const Icon(
-                            Icons.star_border_outlined,
-                            size: 16,
+                          AppIcons.starOutlinedIcon(
+                            context: context,
+                            width: 16,
+                            height: 16,
                           ),
                           const SizedBox(width: 10),
-                          // Asset icon (placeholder)
                           AssetIcon(asset: balance.asset),
                           const SizedBox(width: 10),
                           // Asset name and details
@@ -264,12 +262,12 @@ class BalancesSliverState extends State<BalancesSliver> {
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 SizedBox(
-                                  width: 150,
+                                  width: double.infinity,
                                   child: MiddleTruncatedText(
                                     text:
                                         balance.assetLongname ?? balance.asset,
                                     width: 150,
-                                    charsToShow: 5,
+                                    charsToShow: isMobile ? 16 : 30,
                                     style: const TextStyle(
                                       fontSize: 14,
                                       fontWeight: FontWeight.w600,
@@ -336,9 +334,14 @@ class MiddleTruncatedText extends StatelessWidget {
         if (textPainter.width <= maxWidth) {
           return Text(text, style: style);
         }
+        if (text.length <= charsToShow) {
+          return Text(text, style: style);
+        }
+
+        final half = (charsToShow / 2).ceil();
 
         return Text(
-          '${text.substring(0, charsToShow)}...${text.substring(text.length - charsToShow)}',
+          '${text.substring(0, half)}...${text.substring(text.length - half)}',
           style: style,
           maxLines: 1,
         );

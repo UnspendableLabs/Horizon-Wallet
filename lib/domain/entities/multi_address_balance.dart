@@ -18,8 +18,7 @@ class MultiAddressBalance {
     required this.assetInfo,
   });
 
-  static bool areBalancesEqual(
-      List<MultiAddressBalance> a, List<MultiAddressBalance> b) {
+  static bool equals(List<MultiAddressBalance> a, List<MultiAddressBalance> b) {
     if (a.length != b.length) return false;
 
     // Simple comparison of total assets and their quantities

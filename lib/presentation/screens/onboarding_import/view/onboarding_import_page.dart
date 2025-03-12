@@ -84,8 +84,6 @@ class _OnboardingImportPageState extends State<OnboardingImportPage> {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.info, color: red1),
-                            const SizedBox(width: 4),
                             SelectableText(
                               error,
                               style: const TextStyle(color: red1),

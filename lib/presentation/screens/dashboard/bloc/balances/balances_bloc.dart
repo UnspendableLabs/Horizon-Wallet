@@ -42,7 +42,7 @@ class BalancesBloc extends Bloc<BalancesEvent, BalancesState> {
 
       // Only update state if the new data is different
       if (_cachedBalances == null ||
-          !MultiAddressBalance.areBalancesEqual(_cachedBalances!, balances)) {
+          !MultiAddressBalance.equals(_cachedBalances!, balances)) {
         _cachedBalances = balances;
         emit(BalancesState.complete(Result.ok(balances)));
       }

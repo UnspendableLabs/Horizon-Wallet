@@ -15,6 +15,7 @@ import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:horizon/presentation/session/theme/bloc/theme_bloc.dart';
 import 'package:horizon/presentation/session/theme/bloc/theme_event.dart';
 import 'package:horizon/remote_data_bloc/remote_data_state.dart';
+import 'package:horizon/utils/app_icons.dart';
 import 'package:lottie/lottie.dart';
 
 class OnboardingScreen extends StatefulWidget {
@@ -42,18 +43,22 @@ class OnboardingScreenState extends State<OnboardingScreen> {
 class OnboardingView extends StatelessWidget {
   const OnboardingView({super.key});
 
-  dynamic buildAnimationAsset() {
+  Widget buildAnimationAsset(BuildContext context) {
     final Config config = GetIt.I<Config>();
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     if (config.isWebExtension) {
+      final appBarAsset =
+          isDarkMode ? 'app-bar-H-dark-mode.png' : 'app-bar-H-light-mode.png';
       return Image.asset(
-        'assets/app-bar-H-dark-mode.png',
+        'assets/$appBarAsset',
         fit: BoxFit.contain,
       );
     }
+    final animationAsset = isDarkMode
+        ? 'logo_animation-gradient-dark.json'
+        : 'logo_animation-gradient-light.json';
     return Lottie.asset(
-      kDebugMode
-          ? 'logo_animation-gradient.json'
-          : 'assets/logo_animation-gradient.json',
+      kDebugMode ? animationAsset : 'assets/$animationAsset',
       fit: BoxFit.contain,
     );
   }
@@ -89,9 +94,10 @@ class OnboardingView extends StatelessWidget {
                     decoration: const BoxDecoration(
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(
-                      Icons.wb_sunny,
-                      size: 20,
+                    child: AppIcons.sunIcon(
+                      context: context,
+                      width: 20,
+                      height: 20,
                     ),
                   ),
                 ),
@@ -110,9 +116,10 @@ class OnboardingView extends StatelessWidget {
                     decoration: const BoxDecoration(
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(
-                      Icons.dark_mode,
-                      size: 20,
+                    child: AppIcons.moonIcon(
+                      context: context,
+                      width: 20,
+                      height: 20,
                     ),
                   ),
                 ),
@@ -147,7 +154,7 @@ class OnboardingView extends StatelessWidget {
                       child: SizedBox(
                         width: 109,
                         height: 116,
-                        child: buildAnimationAsset(),
+                        child: buildAnimationAsset(context),
                       ),
                     ),
                   ),
@@ -242,7 +249,7 @@ class OnboardingView extends StatelessWidget {
     }
 
     return Scaffold(
-      backgroundColor: isDarkMode ? Colors.black : Colors.white,
+      backgroundColor: Theme.of(context).dialogTheme.backgroundColor,
       body: Center(
         child: Container(
           width: 500,

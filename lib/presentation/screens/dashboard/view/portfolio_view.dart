@@ -14,8 +14,10 @@ import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_f
 import 'package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_event.dart';
 import 'package:horizon/presentation/screens/dashboard/view/activity_feed.dart';
 import 'package:horizon/presentation/screens/dashboard/view/balances_display.dart';
+import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:horizon/presentation/session/bloc/session_state.dart';
+import 'package:horizon/utils/app_icons.dart';
 
 class PortfolioView extends StatefulWidget {
   const PortfolioView({super.key});
@@ -73,7 +75,6 @@ class _PortfolioViewState extends State<PortfolioView>
 
   @override
   Widget build(BuildContext context) {
-    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
     final isSmallScreen = MediaQuery.of(context).size.width < 500;
     final session = context.read<SessionStateCubit>().state;
     final List<String> addresses = session.allAddresses;
@@ -104,14 +105,77 @@ class _PortfolioViewState extends State<PortfolioView>
       ],
       child: Column(
         children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final spacing = constraints.maxWidth < 400 ? 6.0 : 8.0;
+                return Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: HorizonActionButton(
+                        label: 'Send',
+                        icon: AppIcons.sendIcon(context: context, color: black),
+                        onPressed: () {
+                          // TODO: Implement send functionality
+                        },
+                      ),
+                    ),
+                    SizedBox(width: spacing),
+                    Expanded(
+                      child: HorizonActionButton(
+                        label: 'Receive',
+                        icon: AppIcons.receiveIcon(
+                          context: context,
+                        ),
+                        isTransparent: true,
+                        onPressed: () {
+                          // TODO: Implement receive functionality
+                        },
+                      ),
+                    ),
+                    SizedBox(width: spacing),
+                    Expanded(
+                      child: HorizonActionButton(
+                        label: 'Swap',
+                        icon: AppIcons.swapIcon(
+                          context: context,
+                        ),
+                        isTransparent: true,
+                        onPressed: () {
+                          // TODO: Implement swap functionality
+                        },
+                      ),
+                    ),
+                    SizedBox(width: spacing),
+                    Expanded(
+                      child: HorizonActionButton(
+                        label: 'Mint',
+                        icon: AppIcons.mintIcon(
+                          context: context,
+                        ),
+                        isTransparent: true,
+                        onPressed: () {
+                          // TODO: Implement mint functionality
+                        },
+                      ),
+                    ),
+                  ],
+                );
+              },
+            ),
+          ),
           // Tab bar (Assets/Activity) with search
           Container(
             decoration: BoxDecoration(
               border: Border(
                 bottom: BorderSide(
-                  color: isDarkTheme
-                      ? Colors.white.withOpacity(0.1)
-                      : Colors.black.withOpacity(0.1),
+                  color: Theme.of(context)
+                          .inputDecorationTheme
+                          .outlineBorder
+                          ?.color ??
+                      transparentBlack8,
                   width: 1,
                 ),
               ),
@@ -125,8 +189,12 @@ class _PortfolioViewState extends State<PortfolioView>
                     indicatorWeight: 2,
                     indicatorColor: transparentPurple33,
                     labelColor: Theme.of(context).textTheme.bodyMedium?.color,
-                    unselectedLabelColor:
-                        isDarkTheme ? transparentWhite33 : transparentBlack33,
+                    unselectedLabelColor: Theme.of(context)
+                            .textButtonTheme
+                            .style
+                            ?.foregroundColor
+                            ?.resolve({}) ??
+                        Colors.grey,
                     isScrollable: true,
                     padding: EdgeInsets.zero,
                     indicatorSize: TabBarIndicatorSize.label,
@@ -168,7 +236,8 @@ class _PortfolioViewState extends State<PortfolioView>
                           controller: _searchController,
                           onChanged: _onSearchChanged,
                           style: TextStyle(
-                            color: isDarkTheme ? Colors.white : Colors.black,
+                            color:
+                                Theme.of(context).textTheme.bodyMedium?.color,
                             fontSize: 14,
                           ),
                           textAlignVertical: TextAlignVertical.center,
@@ -176,9 +245,12 @@ class _PortfolioViewState extends State<PortfolioView>
                             isCollapsed: true,
                             hintText: 'Search assets...',
                             hintStyle: TextStyle(
-                              color: isDarkTheme
-                                  ? transparentWhite33
-                                  : transparentBlack33,
+                              color: Theme.of(context)
+                                      .textButtonTheme
+                                      .style
+                                      ?.foregroundColor
+                                      ?.resolve({}) ??
+                                  Colors.grey,
                               fontSize: 14,
                             ),
                             border: InputBorder.none,
@@ -202,15 +274,35 @@ class _PortfolioViewState extends State<PortfolioView>
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Center(
-                        child: Icon(
-                          _isSearching ? Icons.close : Icons.search_outlined,
-                          size: 25,
-                          color: _tabController.index == 0
-                              ? (isDarkTheme ? Colors.white : Colors.black)
-                              : (isDarkTheme
-                                  ? transparentWhite33
-                                  : transparentBlack33),
-                        ),
+                        child: _isSearching
+                            ? AppIcons.closeIcon(
+                                context: context,
+                                color: _tabController.index == 0
+                                    ? (Theme.of(context)
+                                        .textTheme
+                                        .bodyMedium
+                                        ?.color)
+                                    : (Theme.of(context)
+                                            .textButtonTheme
+                                            .style
+                                            ?.foregroundColor
+                                            ?.resolve({}) ??
+                                        Colors.grey),
+                              )
+                            : AppIcons.searchIcon(
+                                context: context,
+                                color: _tabController.index == 0
+                                    ? (Theme.of(context)
+                                        .textTheme
+                                        .bodyMedium
+                                        ?.color)
+                                    : (Theme.of(context)
+                                            .textButtonTheme
+                                            .style
+                                            ?.foregroundColor
+                                            ?.resolve({}) ??
+                                        Colors.grey),
+                              ),
                       ),
                     ),
                   ),
@@ -231,7 +323,6 @@ class _PortfolioViewState extends State<PortfolioView>
                   padding:
                       EdgeInsets.symmetric(horizontal: isSmallScreen ? 16 : 35),
                   child: BalancesDisplay(
-                    isDarkTheme: isDarkTheme,
                     searchQuery: _searchQuery,
                   ),
                 ),

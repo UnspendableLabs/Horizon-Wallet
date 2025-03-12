@@ -1,6 +1,9 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:formz/formz.dart';
+import 'package:get_it/get_it.dart';
+import 'package:horizon/domain/repositories/config_repository.dart';
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:lottie/lottie.dart';
 import "./login_form_bloc.dart" as b;
@@ -19,6 +22,26 @@ class _LoginFormState extends State<LoginForm> {
   void dispose() {
     _passwordController.dispose();
     super.dispose();
+  }
+
+  Widget buildAnimationAsset() {
+    final Config config = GetIt.I<Config>();
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    if (config.isWebExtension) {
+      final appBarAsset =
+          isDarkMode ? 'app-bar-H-dark-mode.png' : 'app-bar-H-light-mode.png';
+      return Image.asset(
+        'assets/$appBarAsset',
+        fit: BoxFit.contain,
+      );
+    }
+    final animationAsset = isDarkMode
+        ? 'logo_animation-gradient-dark.json'
+        : 'logo_animation-gradient-light.json';
+    return Lottie.asset(
+      kDebugMode ? animationAsset : 'assets/$animationAsset',
+      fit: BoxFit.contain,
+    );
   }
 
   @override
@@ -46,10 +69,7 @@ class _LoginFormState extends State<LoginForm> {
                   child: SizedBox(
                     width: 109,
                     height: 116,
-                    child: Lottie.asset(
-                      'logo_animation-gradient.json',
-                      fit: BoxFit.contain,
-                    ),
+                    child: buildAnimationAsset(),
                   ),
                 ),
                 TextField(

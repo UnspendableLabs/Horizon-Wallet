@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
+import 'package:horizon/utils/app_icons.dart';
 
 class HorizonGradientButton extends StatefulWidget {
   final VoidCallback? onPressed;
@@ -207,13 +208,7 @@ class GradientBoxBorder extends BoxBorder {
   BorderSide get top => BorderSide.none;
 
   @override
-  BorderSide get right => BorderSide.none;
-
-  @override
   BorderSide get bottom => BorderSide.none;
-
-  @override
-  BorderSide get left => BorderSide.none;
 
   @override
   EdgeInsetsGeometry get dimensions => EdgeInsets.all(width);
@@ -392,9 +387,9 @@ class _HorizonRedesignDropdownState<T>
               borderRadius: BorderRadius.circular(18),
               border: focusNode.hasFocus
                   ? const GradientBoxBorder(width: 1)
-                  : Border.all(
-                      color:
-                          isDarkMode ? transparentWhite8 : transparentBlack8),
+                  : Border.fromBorderSide(
+                      Theme.of(context).inputDecorationTheme.outlineBorder ??
+                          const BorderSide()),
               color: hasValue
                   ? (isDarkMode ? grey5 : grey1)
                   : (isDarkMode ? offBlack : offWhite),
@@ -415,10 +410,17 @@ class _HorizonRedesignDropdownState<T>
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
                 ),
-                Icon(
-                  _isOpen ? Icons.arrow_drop_up : Icons.arrow_drop_down,
-                  size: 18,
-                ),
+                _isOpen
+                    ? AppIcons.caretUpIcon(
+                        context: context,
+                        width: 18,
+                        height: 18,
+                      )
+                    : AppIcons.caretDownIcon(
+                        context: context,
+                        width: 18,
+                        height: 18,
+                      ),
               ],
             ),
           ),
@@ -565,8 +567,9 @@ class _BlurredBackgroundDropdownState<T>
             borderRadius: BorderRadius.circular(18),
             border: focusNode.hasFocus
                 ? const GradientBoxBorder(width: 1)
-                : Border.all(
-                    color: isDarkMode ? transparentWhite8 : transparentBlack8),
+                : Border.fromBorderSide(
+                    Theme.of(context).inputDecorationTheme.outlineBorder ??
+                        const BorderSide()),
             color: hasValue
                 ? (isDarkMode ? grey5 : grey1)
                 : (isDarkMode ? offBlack : offWhite),
@@ -587,10 +590,17 @@ class _BlurredBackgroundDropdownState<T>
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
               ),
-              Icon(
-                _isOpen ? Icons.arrow_drop_up : Icons.arrow_drop_down,
-                size: 18,
-              ),
+              _isOpen
+                  ? AppIcons.caretUpIcon(
+                      context: context,
+                      width: 18,
+                      height: 18,
+                    )
+                  : AppIcons.caretDownIcon(
+                      context: context,
+                      width: 18,
+                      height: 18,
+                    ),
             ],
           ),
         ),
@@ -618,8 +628,6 @@ class HorizonToggle extends StatefulWidget {
 class _HorizonToggleState extends State<HorizonToggle> {
   @override
   Widget build(BuildContext context) {
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-
     return MouseRegion(
       cursor: SystemMouseCursors.click,
       child: GestureDetector(
@@ -629,17 +637,16 @@ class _HorizonToggleState extends State<HorizonToggle> {
           height: 32,
           padding: const EdgeInsets.all(4),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(70),
-            border: Border.all(
-              color: isDarkMode ? transparentWhite8 : transparentBlack8,
-              width: 1,
-            ),
-            color: widget.value
-                ? (widget.backgroundColor ?? green2)
-                : isDarkMode
-                    ? transparentWhite8
-                    : transparentBlack8,
-          ),
+              borderRadius: BorderRadius.circular(70),
+              border: Border.fromBorderSide(
+                  Theme.of(context).inputDecorationTheme.outlineBorder ??
+                      const BorderSide()),
+              color: widget.value
+                  ? (widget.backgroundColor ?? green2)
+                  : Theme.of(context)
+                      .inputDecorationTheme
+                      .outlineBorder
+                      ?.color),
           child: AnimatedAlign(
             duration: const Duration(milliseconds: 200),
             alignment:
@@ -734,10 +741,9 @@ class _HorizonTextFieldState extends State<HorizonTextField> {
             borderRadius: BorderRadius.circular(18),
             border: _focusNode.hasFocus
                 ? const GradientBoxBorder(width: 1)
-                : Border.all(
-                    color: isDarkMode ? transparentWhite8 : transparentBlack8,
-                    width: 1,
-                  ),
+                : Border.fromBorderSide(
+                    Theme.of(context).inputDecorationTheme.outlineBorder ??
+                        const BorderSide()),
             color: _hasText
                 ? (isDarkMode ? grey5 : grey1)
                 : (isDarkMode ? offBlack : offWhite),
@@ -758,7 +764,7 @@ class _HorizonTextFieldState extends State<HorizonTextField> {
                   horizontal: 12,
                   vertical: 0,
                 ),
-                suffixIcon: widget.suffixIcon,
+                suffix: widget.suffixIcon,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(18),
                   borderSide: BorderSide.none,
@@ -885,17 +891,14 @@ class _HorizonPasswordPromptState extends State<HorizonPasswordPrompt> {
                     hintText: 'Password',
                     errorText: widget.errorText,
                     obscureText: _obscurePassword,
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        _obscurePassword
-                            ? Icons.visibility_outlined
-                            : Icons.visibility_off_outlined,
-                        size: 18,
-                      ),
+                    suffixIcon: AppIcons.iconButton(
+                      context: context,
+                      icon: _obscurePassword
+                          ? AppIcons.eyeOpenIcon(
+                              context: context, height: 18, width: 18)
+                          : AppIcons.eyeClosedIcon(
+                              context: context, height: 18, width: 18),
                       onPressed: _togglePasswordVisibility,
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(),
-                      focusNode: FocusNode(skipTraversal: true),
                     ),
                   ),
                   SizedBox(
@@ -911,6 +914,88 @@ class _HorizonPasswordPromptState extends State<HorizonPasswordPrompt> {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class HorizonActionButton extends StatefulWidget {
+  final VoidCallback? onPressed;
+  final String label;
+  final Widget icon;
+  final bool isTransparent;
+
+  const HorizonActionButton({
+    super.key,
+    required this.onPressed,
+    required this.label,
+    required this.icon,
+    this.isTransparent = false,
+  });
+
+  @override
+  State<HorizonActionButton> createState() => _HorizonActionButtonState();
+}
+
+class _HorizonActionButtonState extends State<HorizonActionButton> {
+  bool isHovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      onEnter: widget.onPressed != null
+          ? (_) => setState(() => isHovered = true)
+          : null,
+      onExit: widget.onPressed != null
+          ? (_) => setState(() => isHovered = false)
+          : null,
+      cursor: widget.onPressed != null
+          ? SystemMouseCursors.click
+          : SystemMouseCursors.basic,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(
+          minHeight: 44,
+        ),
+        child: OutlinedButton(
+          onPressed: widget.onPressed,
+          style: widget.isTransparent
+              ? Theme.of(context).outlinedButtonTheme.style
+              : Theme.of(context).outlinedButtonTheme.style?.copyWith(
+                    side: WidgetStateProperty.all(
+                      const BorderSide(
+                        color: Colors.transparent,
+                      ),
+                    ),
+                    backgroundColor: WidgetStateProperty.all(isHovered
+                        ? const Color.fromRGBO(30, 231, 197, 0.80)
+                        : green2),
+                    padding: WidgetStateProperty.all(
+                      const EdgeInsets.symmetric(horizontal: 2, vertical: 0),
+                    ),
+                  ),
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                widget.icon,
+                const SizedBox(width: 4),
+                Text(
+                  widget.label,
+                  style: widget.isTransparent
+                      ? Theme.of(context).textTheme.bodySmall?.copyWith(
+                            fontWeight: FontWeight.w600,
+                          )
+                      : Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: offBlack,
+                            fontWeight: FontWeight.w600,
+                          ),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }

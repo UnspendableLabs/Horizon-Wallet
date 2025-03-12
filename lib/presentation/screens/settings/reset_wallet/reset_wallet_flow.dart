@@ -15,6 +15,7 @@ import 'package:horizon/presentation/screens/settings/reset_wallet/bloc/reset_bl
 import 'package:horizon/presentation/screens/settings/reset_wallet/bloc/reset_event.dart';
 import 'package:horizon/presentation/screens/settings/reset_wallet/bloc/reset_state.dart';
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
+import 'package:horizon/utils/app_icons.dart';
 
 class ResetWalletFlow extends StatefulWidget {
   const ResetWalletFlow({super.key});
@@ -47,11 +48,7 @@ class _ResetWalletFlowState extends State<ResetWalletFlow> {
             margin: const EdgeInsets.all(18),
             child: Column(
               children: [
-                const Icon(
-                  Icons.warning_amber_rounded,
-                  color: red1,
-                  size: 48,
-                ),
+                AppIcons.warningIcon(color: red1, height: 48, width: 48),
                 const SizedBox(height: 8),
                 SizedBox(
                   width: 170,
@@ -79,11 +76,12 @@ class _ResetWalletFlowState extends State<ResetWalletFlow> {
               children: [
                 _buildWarningPoint(
                   'All wallet data will be irreversibly deleted. You can recover your wallet only with your seed phrase.',
-                  const Icon(Icons.visibility_outlined, size: 12),
+                  AppIcons.eyeOpenIcon(context: context),
                 ),
                 _buildWarningPoint(
-                    'Imported private keys won\'t reload when you recover your wallet. Make sure you have them written down.',
-                    const Icon(Icons.key_outlined)),
+                  'Imported private keys won\'t reload when you recover your wallet. Make sure you have them written down.',
+                  AppIcons.lockIcon(context: context),
+                ),
               ],
             ),
           ),
@@ -107,8 +105,6 @@ class _ResetWalletFlowState extends State<ResetWalletFlow> {
   }
 
   Widget _buildConfirmationStep() {
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-
     return Padding(
       padding: const EdgeInsets.all(20.0),
       child: Column(
@@ -127,11 +123,7 @@ class _ResetWalletFlowState extends State<ResetWalletFlow> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                const Icon(
-                  Icons.warning_amber_rounded,
-                  color: yellow1,
-                  size: 24,
-                ),
+                AppIcons.warningIcon(color: yellow1, height: 24, width: 24),
                 const SizedBox(height: 8),
                 SelectableText(
                   textAlign: TextAlign.center,
@@ -145,7 +137,11 @@ class _ResetWalletFlowState extends State<ResetWalletFlow> {
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(18),
                     border: Border.all(
-                      color: isDarkMode ? transparentWhite8 : transparentBlack8,
+                      color: Theme.of(context)
+                              .inputDecorationTheme
+                              .outlineBorder
+                              ?.color ??
+                          transparentBlack8,
                       width: 1,
                     ),
                   ),
@@ -234,11 +230,8 @@ class _ResetWalletFlowState extends State<ResetWalletFlow> {
                     margin: const EdgeInsets.all(18),
                     child: Column(
                       children: [
-                        const Icon(
-                          Icons.warning_amber_rounded,
-                          color: red1,
-                          size: 48,
-                        ),
+                        AppIcons.warningIcon(
+                            color: red1, height: 48, width: 48),
                         const SizedBox(height: 8),
                         SizedBox(
                           width: 220,
@@ -296,14 +289,14 @@ class _ResetWalletFlowState extends State<ResetWalletFlow> {
     );
   }
 
-  Widget _buildWarningPoint(String title, Icon icon) {
+  Widget _buildWarningPoint(String title, Widget icon) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 11),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           icon,
-          const SizedBox(width: 4),
+          const SizedBox(width: 8),
           Expanded(
             child: SelectableText(
               title,
