@@ -156,15 +156,12 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const SizedBox(width: 8),
-        Container(
-          width: 100,
-          height: 16,
-          decoration: BoxDecoration(
-            color:
-                Theme.of(context).inputDecorationTheme.outlineBorder?.color ??
-                    transparentBlack8,
-            borderRadius: BorderRadius.circular(4),
-          ),
+        SelectableText(
+          widget.assetName,
+          style: Theme.of(context)
+              .textTheme
+              .bodyMedium!
+              .copyWith(fontWeight: FontWeight.w700),
         ),
         const SizedBox(height: 4),
         Container(

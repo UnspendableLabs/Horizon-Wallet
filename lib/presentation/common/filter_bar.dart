@@ -91,7 +91,7 @@ class FilterButton extends StatelessWidget {
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
-                color: Theme.of(context).scaffoldBackgroundColor,
+                color: Theme.of(context).textTheme.bodyMedium?.color,
               ),
               textAlign: TextAlign.center,
               maxLines: 1,
