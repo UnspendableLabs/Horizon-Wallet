@@ -17,6 +17,7 @@ final _privateConstructorUsedError = UnsupportedError(
 /// @nodoc
 mixin _$ResetState {
   ResetStatus get status => throw _privateConstructorUsedError;
+  String? get errorMessage => throw _privateConstructorUsedError;
 
   @JsonKey(ignore: true)
   $ResetStateCopyWith<ResetState> get copyWith =>
@@ -29,7 +30,7 @@ abstract class $ResetStateCopyWith<$Res> {
           ResetState value, $Res Function(ResetState) then) =
       _$ResetStateCopyWithImpl<$Res, ResetState>;
   @useResult
-  $Res call({ResetStatus status});
+  $Res call({ResetStatus status, String? errorMessage});
 }
 
 /// @nodoc
@@ -46,12 +47,17 @@ class _$ResetStateCopyWithImpl<$Res, $Val extends ResetState>
   @override
   $Res call({
     Object? status = null,
+    Object? errorMessage = freezed,
   }) {
     return _then(_value.copyWith(
       status: null == status
           ? _value.status
           : status // ignore: cast_nullable_to_non_nullable
               as ResetStatus,
+      errorMessage: freezed == errorMessage
+          ? _value.errorMessage
+          : errorMessage // ignore: cast_nullable_to_non_nullable
+              as String?,
     ) as $Val);
   }
 }
@@ -64,7 +70,7 @@ abstract class _$$ResetStateImplCopyWith<$Res>
       __$$ResetStateImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({ResetStatus status});
+  $Res call({ResetStatus status, String? errorMessage});
 }
 
 /// @nodoc
@@ -79,12 +85,17 @@ class __$$ResetStateImplCopyWithImpl<$Res>
   @override
   $Res call({
     Object? status = null,
+    Object? errorMessage = freezed,
   }) {
     return _then(_$ResetStateImpl(
       status: null == status
           ? _value.status
           : status // ignore: cast_nullable_to_non_nullable
               as ResetStatus,
+      errorMessage: freezed == errorMessage
+          ? _value.errorMessage
+          : errorMessage // ignore: cast_nullable_to_non_nullable
+              as String?,
     ));
   }
 }
@@ -92,15 +103,18 @@ class __$$ResetStateImplCopyWithImpl<$Res>
 /// @nodoc
 
 class _$ResetStateImpl implements _ResetState {
-  const _$ResetStateImpl({this.status = ResetStatus.initial});
+  const _$ResetStateImpl(
+      {this.status = ResetStatus.initial, this.errorMessage});
 
   @override
   @JsonKey()
   final ResetStatus status;
+  @override
+  final String? errorMessage;
 
   @override
   String toString() {
-    return 'ResetState(status: $status)';
+    return 'ResetState(status: $status, errorMessage: $errorMessage)';
   }
 
   @override
@@ -108,11 +122,13 @@ class _$ResetStateImpl implements _ResetState {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$ResetStateImpl &&
-            (identical(other.status, status) || other.status == status));
+            (identical(other.status, status) || other.status == status) &&
+            (identical(other.errorMessage, errorMessage) ||
+                other.errorMessage == errorMessage));
   }
 
   @override
-  int get hashCode => Object.hash(runtimeType, status);
+  int get hashCode => Object.hash(runtimeType, status, errorMessage);
 
   @JsonKey(ignore: true)
   @override
@@ -122,10 +138,14 @@ class _$ResetStateImpl implements _ResetState {
 }
 
 abstract class _ResetState implements ResetState {
-  const factory _ResetState({final ResetStatus status}) = _$ResetStateImpl;
+  const factory _ResetState(
+      {final ResetStatus status,
+      final String? errorMessage}) = _$ResetStateImpl;
 
   @override
   ResetStatus get status;
+  @override
+  String? get errorMessage;
   @override
   @JsonKey(ignore: true)
   _$$ResetStateImplCopyWith<_$ResetStateImpl> get copyWith =>

@@ -66,9 +66,7 @@ class BalancesSliverState extends State<BalancesSliver> {
   @override
   void didUpdateWidget(BalancesSliver oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget is BalancesDisplay) {
-      // _searchQuery = (widget as BalancesDisplay).searchQuery;
-    }
+    if (widget is BalancesDisplay) {}
   }
 
   void _setFilter(Object filter) {
@@ -223,7 +221,9 @@ class BalancesSliverState extends State<BalancesSliver> {
             if (b.asset == 'BTC') return 1;
             if (a.asset == 'XCP') return -1;
             if (b.asset == 'XCP') return 1;
-            return a.asset.compareTo(b.asset);
+            final aName = a.assetLongname ?? a.asset;
+            final bName = b.assetLongname ?? b.asset;
+            return aName.compareTo(bName);
           });
 
         return [
@@ -241,12 +241,10 @@ class BalancesSliverState extends State<BalancesSliver> {
                     },
                     borderRadius: BorderRadius.circular(10),
                     child: Container(
-                      // padding: const EdgeInsets.symmetric(horizontal: 10.0),
                       height: 54,
                       margin: const EdgeInsets.symmetric(vertical: 2),
                       child: Row(
                         children: [
-                          // Star icon (placeholder)
                           AppIcons.starOutlinedIcon(
                             context: context,
                             width: 16,

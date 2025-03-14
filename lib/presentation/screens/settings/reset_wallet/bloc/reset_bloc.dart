@@ -39,24 +39,32 @@ class ResetBloc extends Bloc<ResetEvent, ResetState> {
 
   void _onReset(ResetEvent event, Emitter emit) async {
     logger.d('Reset event received');
-    await walletRepository.deleteAllWallets();
-    await accountRepository.deleteAllAccounts();
-    await addressRepository.deleteAllAddresses();
-    await importedAddressRepository.deleteAllImportedAddresses();
+    try {
+      await walletRepository.deleteAllWallets();
+      await accountRepository.deleteAllAccounts();
+      await addressRepository.deleteAllAddresses();
+      await importedAddressRepository.deleteAllImportedAddresses();
 
-    // logout effects
-    await inMemoryKeyRepository.delete();
-    await kvService.delete(key: kInactivityDeadlineKey);
+      // logout effects
+      await inMemoryKeyRepository.delete();
+      await kvService.delete(key: kInactivityDeadlineKey);
 
-    final isDarkMode = cacheProvider.getBool("isDarkMode");
+      final isDarkMode = cacheProvider.getBool("isDarkMode");
 
-    await cacheProvider.removeAll();
+      await cacheProvider.removeAll();
 
-    analyticsService.reset();
+      analyticsService.reset();
 
-    await cacheProvider.setBool("isDarkMode", isDarkMode ?? true);
+      await cacheProvider.setBool("isDarkMode", isDarkMode ?? true);
 
-    logger.d('emit reset state');
-    emit(const ResetState(status: ResetStatus.completed));
+      logger.d('emit reset state');
+      emit(const ResetState(status: ResetStatus.completed));
+    } catch (e) {
+      logger.e('Reset failed: $e');
+      emit(ResetState(
+        status: ResetStatus.error,
+        errorMessage: e.toString(),
+      ));
+    }
   }
 }

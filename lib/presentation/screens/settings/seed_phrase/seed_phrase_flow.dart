@@ -228,7 +228,12 @@ class _SeedPhraseFlowState extends State<SeedPhraseFlow> {
         children: [
           icon,
           const SizedBox(width: 8),
-          SelectableText(title, style: Theme.of(context).textTheme.bodySmall),
+          Expanded(
+            child: SelectableText(
+              title,
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+          ),
         ],
       ),
     );

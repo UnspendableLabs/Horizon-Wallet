@@ -267,6 +267,7 @@ class _PortfolioViewState extends State<PortfolioView>
                     onTap: _tabController.index == 0 ? _toggleSearch : null,
                     borderRadius: BorderRadius.circular(8),
                     child: Container(
+                      key: const Key('search_button'),
                       width: 44,
                       height: 32,
                       decoration: BoxDecoration(
@@ -323,6 +324,7 @@ class _PortfolioViewState extends State<PortfolioView>
                   padding:
                       EdgeInsets.symmetric(horizontal: isSmallScreen ? 16 : 35),
                   child: BalancesDisplay(
+                    key: const Key('balances_view'),
                     searchQuery: _searchQuery,
                   ),
                 ),
@@ -331,6 +333,7 @@ class _PortfolioViewState extends State<PortfolioView>
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: DashboardActivityFeedScreen(
+                    key: const Key('activity_feed_view'),
                     addresses: addresses,
                     initialItemCount: 20,
                   ),
