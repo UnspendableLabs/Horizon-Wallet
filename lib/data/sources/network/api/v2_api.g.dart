@@ -5815,6 +5815,7 @@ class _V2Api implements V2Api {
   Future<Response<ComposeFairmintVerboseModel>> composeFairmintVerbose(
     String address,
     String asset, [
+    int? quantity,
     num? satPerVbyte,
     String? inputsSet,
     bool? excludeUtxosWithBalances,
@@ -5823,6 +5824,7 @@ class _V2Api implements V2Api {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{
       r'asset': asset,
+      r'quantity': quantity,
       r'sat_per_vbyte': satPerVbyte,
       r'inputs_set': inputsSet,
       r'exclude_utxos_with_balances': excludeUtxosWithBalances,

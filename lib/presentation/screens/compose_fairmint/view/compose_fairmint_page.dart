@@ -1,4 +1,6 @@
 import 'package:decimal/decimal.dart';
+import 'package:flutter/services.dart';
+import 'package:horizon/common/format.dart';
 import 'package:rational/rational.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -203,7 +205,9 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
         return;
       }
 
-      if (quantityController.text.isEmpty) {
+      if (state.selectedFairminter!.price != null &&
+          state.selectedFairminter!.price! > 0 &&
+          quantityController.text.isEmpty) {
         setState(() {
           error = 'Please enter a quantity';
         });
@@ -211,23 +215,22 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
       }
 
       try {
-        final quantity = Decimal.parse(quantityController.text);
-        final maxMint =
-            Decimal.parse(state.selectedFairminter!.maxMintPerTxNormalized!);
-
-        if (quantity > maxMint) {
-          setState(() {
-            error =
-                'Quantity must be <= ${state.selectedFairminter!.maxMintPerTxNormalized}';
-          });
-          return;
+        int? quantity;
+        if (state.selectedFairminter!.price != null &&
+            state.selectedFairminter!.price! > 0) {
+          quantity = getQuantityForDivisibility(
+            inputQuantity: quantityController.text,
+            divisible: state.selectedFairminter!.divisible ?? false,
+          );
+        } else {
+          quantity = null;
         }
 
         context.read<ComposeFairmintBloc>().add(FormSubmitted(
               sourceAddress: widget.address,
               params: ComposeFairmintEventParams(
                 asset: state.selectedFairminter!.asset!,
-                quantity: quantity.toBigInt().toInt(),
+                quantity: quantity,
               ),
             ));
       } catch (e) {
@@ -363,7 +366,7 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
               SelectableText(
                   'Quantity per price: ${state.selectedFairminter!.quantityByPriceNormalized}'),
               SelectableText(
-                  'XCP price by sat: ${(Decimal.parse(state.selectedFairminter!.priceNormalized!) / Decimal.parse(state.selectedFairminter!.quantityByPriceNormalized!)).toDecimal(scaleOnInfinitePrecision: 8)}'),
+                  'XCP price by token: ${(Decimal.parse(state.selectedFairminter!.priceNormalized!) / Decimal.parse(state.selectedFairminter!.quantityByPriceNormalized!)).toDecimal(scaleOnInfinitePrecision: 8)}'),
               SelectableText(
                   'Max mint per tx: ${state.selectedFairminter!.maxMintPerTxNormalized}'),
               HorizonUI.HorizonTextFormField(
@@ -371,6 +374,11 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
                 controller: quantityController,
                 enabled: true,
                 autovalidateMode: AutovalidateMode.always,
+                inputFormatters: [
+                  state.selectedFairminter!.divisible == true
+                      ? DecimalTextInputFormatter(decimalRange: 8)
+                      : FilteringTextInputFormatter.digitsOnly,
+                ],
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Please enter a quantity';
