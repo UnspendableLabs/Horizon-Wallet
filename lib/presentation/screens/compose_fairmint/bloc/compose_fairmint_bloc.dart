@@ -22,9 +22,11 @@ import 'package:horizon/domain/entities/decryption_strategy.dart';
 
 class ComposeFairmintEventParams {
   final String asset;
+  final int? quantity;
 
   ComposeFairmintEventParams({
     required this.asset,
+    this.quantity,
   });
 }
 
