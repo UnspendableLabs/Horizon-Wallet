@@ -56,26 +56,26 @@ class MockCacheProvider extends Mock implements CacheProvider {}
 class MockSecureKVService extends Mock implements SecureKVService {}
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   late MockSessionStateCubit mockSessionCubit;
   late MockThemeBloc mockThemeBloc;
-  late MockWalletRepository mockWalletRepository;
-  late MockEncryptionService mockEncryptionService;
-  late MockWalletService mockWalletService;
-  late MockAddressService mockAddressService;
-  late MockAddressRepository mockAddressRepository;
-  late MockImportedAddressRepository mockImportedAddressRepository;
-  late MockImportedAddressService mockImportedAddressService;
-  late MockInMemoryKeyRepository mockInMemoryKeyRepository;
-  late MockAccountRepository mockAccountRepository;
-  late MockAnalyticsService mockAnalyticsService;
   late MockCacheProvider mockCacheProvider;
-  late MockSecureKVService mockSecureKVService;
   final getIt = GetIt.instance;
 
-  setUpAll(() {
-    TestWidgetsFlutterBinding.ensureInitialized();
+  setUpAll(() async {
+    mockCacheProvider = MockCacheProvider();
+    when(() => mockCacheProvider.init()).thenAnswer((_) async {});
+    when(() => mockCacheProvider.removeAll()).thenAnswer((_) async {});
+    when(() => mockCacheProvider.getValue<bool>(any(),
+        defaultValue: any(named: 'defaultValue'))).thenReturn(true);
+    when(() => mockCacheProvider.containsKey(any())).thenReturn(true);
 
-    // Register fallback value for ThemeEvent
+    // Initialize Settings with a mock cache provider
+    await Settings.init(
+      cacheProvider: mockCacheProvider,
+    );
+
     registerFallbackValue(ThemeToggled());
 
     // Create a minimal valid SVG string
@@ -106,36 +106,29 @@ void main() {
     );
   });
 
-  setUp(() {
+  setUp(() async {
     mockSessionCubit = MockSessionStateCubit();
     mockThemeBloc = MockThemeBloc();
-    mockWalletRepository = MockWalletRepository();
-    mockEncryptionService = MockEncryptionService();
-    mockWalletService = MockWalletService();
-    mockAddressService = MockAddressService();
-    mockAddressRepository = MockAddressRepository();
-    mockImportedAddressRepository = MockImportedAddressRepository();
-    mockImportedAddressService = MockImportedAddressService();
-    mockInMemoryKeyRepository = MockInMemoryKeyRepository();
-    mockAccountRepository = MockAccountRepository();
-    mockAnalyticsService = MockAnalyticsService();
-    mockCacheProvider = MockCacheProvider();
-    mockSecureKVService = MockSecureKVService();
+
+    // Reset and wait for GetIt to be ready
+    getIt.reset();
+    await getIt.allReady();
 
     // Register GetIt dependencies
-    getIt.registerSingleton<WalletRepository>(mockWalletRepository);
-    getIt.registerSingleton<EncryptionService>(mockEncryptionService);
-    getIt.registerSingleton<WalletService>(mockWalletService);
-    getIt.registerSingleton<AddressService>(mockAddressService);
-    getIt.registerSingleton<AddressRepository>(mockAddressRepository);
+    getIt.registerSingleton<WalletRepository>(MockWalletRepository());
+    getIt.registerSingleton<EncryptionService>(MockEncryptionService());
+    getIt.registerSingleton<WalletService>(MockWalletService());
+    getIt.registerSingleton<AddressService>(MockAddressService());
+    getIt.registerSingleton<AddressRepository>(MockAddressRepository());
     getIt.registerSingleton<ImportedAddressRepository>(
-        mockImportedAddressRepository);
-    getIt.registerSingleton<ImportedAddressService>(mockImportedAddressService);
-    getIt.registerSingleton<InMemoryKeyRepository>(mockInMemoryKeyRepository);
-    getIt.registerSingleton<AccountRepository>(mockAccountRepository);
-    getIt.registerSingleton<AnalyticsService>(mockAnalyticsService);
+        MockImportedAddressRepository());
+    getIt.registerSingleton<ImportedAddressService>(
+        MockImportedAddressService());
+    getIt.registerSingleton<InMemoryKeyRepository>(MockInMemoryKeyRepository());
+    getIt.registerSingleton<AccountRepository>(MockAccountRepository());
+    getIt.registerSingleton<AnalyticsService>(MockAnalyticsService());
+    getIt.registerSingleton<SecureKVService>(MockSecureKVService());
     getIt.registerSingleton<CacheProvider>(mockCacheProvider);
-    getIt.registerSingleton<SecureKVService>(mockSecureKVService);
 
     const successState = SessionState.success(SessionStateSuccess(
         redirect: false,
@@ -160,13 +153,10 @@ void main() {
     when(() => mockThemeBloc.state).thenReturn(ThemeMode.dark);
     when(() => mockThemeBloc.stream)
         .thenAnswer((_) => Stream.value(ThemeMode.dark));
-
-    // Initialize settings
-    Settings.init();
   });
 
-  tearDown(() {
-    getIt.reset();
+  tearDown(() async {
+    Settings.clearCache();
   });
 
   Widget buildTestWidget() {
