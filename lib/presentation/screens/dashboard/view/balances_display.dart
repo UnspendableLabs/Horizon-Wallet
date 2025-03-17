@@ -63,12 +63,6 @@ class BalancesSliver extends StatefulWidget {
 class BalancesSliverState extends State<BalancesSliver> {
   BalanceFilter _currentFilter = BalanceFilter.none;
 
-  @override
-  void didUpdateWidget(BalancesSliver oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (widget is BalancesDisplay) {}
-  }
-
   void _setFilter(Object filter) {
     setState(() {
       _currentFilter = filter as BalanceFilter;
