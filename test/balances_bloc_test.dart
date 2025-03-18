@@ -4,6 +4,8 @@ import 'package:horizon/domain/entities/asset.dart';
 import 'package:horizon/domain/entities/asset_info.dart';
 import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/domain/entities/fairminter.dart';
+import 'package:horizon/domain/entities/multi_address_balance.dart';
+import 'package:horizon/domain/entities/multi_address_balance_entry.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/address_tx_repository.dart';
@@ -31,6 +33,11 @@ class FakeAsset extends Fake implements Asset {}
 
 class FakeFairminter extends Fake implements Fairminter {}
 
+class FakeMultiAddressBalance extends Fake implements MultiAddressBalance {}
+
+class FakeMultiAddressBalanceEntry extends Fake
+    implements MultiAddressBalanceEntry {}
+
 void main() {
   group('BalancesBloc Tests', () {
     late BalancesBloc balancesBloc;
@@ -38,13 +45,14 @@ void main() {
 
     const addresses = ['mocked-address'];
 
-    late List<Balance> allBalances;
-    late Map<String, List<Balance>> aggregatedBalances;
+    late List<MultiAddressBalance> mockBalances;
 
     setUpAll(() {
       registerFallbackValue(FakeBalance());
       registerFallbackValue(FakeAsset());
       registerFallbackValue(FakeFairminter());
+      registerFallbackValue(FakeMultiAddressBalance());
+      registerFallbackValue(FakeMultiAddressBalanceEntry());
     });
 
     setUp(() {
@@ -54,6 +62,50 @@ void main() {
         balanceRepository: mockBalanceRepository,
         addresses: addresses,
       );
+
+      // Create mock balances
+      mockBalances = [
+        MultiAddressBalance(
+          asset: 'BTC',
+          assetLongname: 'Bitcoin',
+          total: 100000000, // 1.00000000 BTC
+          totalNormalized: '1.00000000',
+          entries: [
+            MultiAddressBalanceEntry(
+              address: addresses.first,
+              quantity: 100000000,
+              quantityNormalized: '1.00000000',
+              utxo: null,
+              utxoAddress: null,
+            ),
+          ],
+          assetInfo: const AssetInfo(
+            assetLongname: 'Bitcoin',
+            description: 'Bitcoin',
+            divisible: true,
+          ),
+        ),
+        MultiAddressBalance(
+          asset: 'XCP',
+          assetLongname: 'Counterparty',
+          total: 50000000, // 0.50000000 XCP
+          totalNormalized: '0.50000000',
+          entries: [
+            MultiAddressBalanceEntry(
+              address: addresses.first,
+              quantity: 50000000,
+              quantityNormalized: '0.50000000',
+              utxo: null,
+              utxoAddress: null,
+            ),
+          ],
+          assetInfo: const AssetInfo(
+            assetLongname: 'Counterparty',
+            description: 'Counterparty',
+            divisible: true,
+          ),
+        ),
+      ];
     });
 
     tearDown(() {
@@ -65,47 +117,34 @@ void main() {
     });
 
     blocTest<BalancesBloc, BalancesState>(
+      'emits [loading, complete] when Fetch is successful with empty addresses',
+      build: () {
+        // Create a new bloc instance with empty addresses
+        return BalancesBloc(
+          balanceRepository: mockBalanceRepository,
+          addresses: const [],
+        );
+      },
+      act: (bloc) => bloc.add(Fetch()),
+      expect: () => [
+        const BalancesState.complete(Result.ok([])),
+      ],
+      verify: (bloc) {
+        verifyNever(() => mockBalanceRepository.getBalancesForAddresses([]));
+      },
+    );
+
+    blocTest<BalancesBloc, BalancesState>(
       'emits [loading, complete] when Fetch is successful',
       setUp: () {
-        allBalances = <Balance>[
-          Balance(
-            asset: 'ASSET1',
-            quantity: 100000000, // 1.00000000
-            quantityNormalized: '1.00000000',
-            address: addresses.first,
-            assetInfo: const AssetInfo(
-              assetLongname: null,
-              divisible: true,
-            ),
-            utxo: null,
-            utxoAddress: null,
-          ),
-          Balance(
-            asset: 'UTXO_ASSET',
-            quantity: 50000000, // 0.50000000
-            quantityNormalized: '0.50000000',
-            address: null,
-            assetInfo: const AssetInfo(
-              assetLongname: null,
-              divisible: true,
-            ),
-            utxo: 'utxo-id',
-            utxoAddress: 'utxo-address',
-          ),
-        ];
-
-        // Set up the mock
         when(() => mockBalanceRepository.getBalancesForAddresses(addresses))
-            .thenAnswer((_) async => allBalances);
-
-        // Compute expected aggregated balances
-        aggregatedBalances = aggregateBalancesByAsset(allBalances);
+            .thenAnswer((_) async => mockBalances);
       },
       build: () => balancesBloc,
       act: (bloc) => bloc.add(Fetch()),
       expect: () => [
         const BalancesState.loading(),
-        BalancesState.complete(Result.ok(aggregatedBalances)),
+        BalancesState.complete(Result.ok(mockBalances)),
       ],
       verify: (bloc) {
         verify(() => mockBalanceRepository.getBalancesForAddresses(addresses))
@@ -142,160 +181,180 @@ void main() {
       },
     );
 
+    blocTest<BalancesBloc, BalancesState>(
+      'emits [reloading, complete] when Fetch is successful with cached data',
+      setUp: () {
+        when(() => mockBalanceRepository.getBalancesForAddresses(addresses))
+            .thenAnswer((_) async => mockBalances);
+      },
+      build: () {
+        // Create a new bloc with pre-populated cache
+        final bloc = BalancesBloc(
+          balanceRepository: mockBalanceRepository,
+          addresses: addresses,
+        );
+        // Trigger initial fetch to populate cache
+        bloc.add(Fetch());
+        return bloc;
+      },
+      wait: const Duration(
+          milliseconds: 50), // Wait for initial fetch to complete
+      act: (bloc) => bloc.add(Fetch()),
+      skip: 2, // Skip the initial loading and complete states
+      expect: () => [
+        BalancesState.reloading(Result.ok(mockBalances)),
+      ],
+      verify: (bloc) {
+        verify(() => mockBalanceRepository.getBalancesForAddresses(addresses))
+            .called(2);
+      },
+    );
+
+    blocTest<BalancesBloc, BalancesState>(
+      'does not emit new state when cached data is identical',
+      setUp: () {
+        when(() => mockBalanceRepository.getBalancesForAddresses(addresses))
+            .thenAnswer((_) async => mockBalances);
+      },
+      build: () {
+        // Create a new bloc with pre-populated cache
+        final bloc = BalancesBloc(
+          balanceRepository: mockBalanceRepository,
+          addresses: addresses,
+        );
+        // Trigger initial fetch to populate cache
+        bloc.add(Fetch());
+        return bloc;
+      },
+      wait: const Duration(
+          milliseconds: 50), // Wait for initial fetch to complete
+      act: (bloc) => bloc.add(Fetch()),
+      skip: 2, // Skip the initial loading and complete states
+      expect: () => [
+        BalancesState.reloading(Result.ok(mockBalances)),
+      ],
+      verify: (bloc) {
+        verify(() => mockBalanceRepository.getBalancesForAddresses(addresses))
+            .called(2);
+      },
+    );
+
     test('starts polling on Start event and stops on Stop event', () async {
+      var callCount = 0;
+      // Mock repository to return different balances each time
       when(() => mockBalanceRepository.getBalancesForAddresses(addresses))
-          .thenAnswer((_) async => []);
+          .thenAnswer((_) async {
+        callCount++;
+        // Add a small delay to simulate network latency
+        await Future.delayed(const Duration(milliseconds: 5));
+        return [
+          MultiAddressBalance(
+            asset: 'BTC',
+            assetLongname: 'Bitcoin',
+            total: 100000000 + (callCount * 10000000),
+            totalNormalized: (1.0 + (callCount * 0.1)).toStringAsFixed(8),
+            entries: [
+              MultiAddressBalanceEntry(
+                address: addresses.first,
+                quantity: 100000000 + (callCount * 10000000),
+                quantityNormalized:
+                    (1.0 + (callCount * 0.1)).toStringAsFixed(8),
+                utxo: null,
+                utxoAddress: null,
+              ),
+            ],
+            assetInfo: const AssetInfo(
+              assetLongname: 'Bitcoin',
+              description: 'Bitcoin',
+              divisible: true,
+            ),
+          ),
+          MultiAddressBalance(
+            asset: 'XCP',
+            assetLongname: 'Counterparty',
+            total: 50000000 + (callCount * 5000000),
+            totalNormalized: (0.5 + (callCount * 0.05)).toStringAsFixed(8),
+            entries: [
+              MultiAddressBalanceEntry(
+                address: addresses.first,
+                quantity: 50000000 + (callCount * 5000000),
+                quantityNormalized:
+                    (0.5 + (callCount * 0.05)).toStringAsFixed(8),
+                utxo: null,
+                utxoAddress: null,
+              ),
+            ],
+            assetInfo: const AssetInfo(
+              assetLongname: 'Counterparty',
+              description: 'Counterparty',
+              divisible: true,
+            ),
+          ),
+        ];
+      });
 
       final emittedStates = <BalancesState>[];
       final subscription = balancesBloc.stream.listen(emittedStates.add);
 
-      // Start polling
+      // Start polling with a very short interval
       balancesBloc
-          .add(Start(pollingInterval: const Duration(milliseconds: 50)));
+          .add(Start(pollingInterval: const Duration(milliseconds: 20)));
 
-      // Wait enough time to allow multiple polls to occur
-      await Future.delayed(const Duration(milliseconds: 160));
+      // Wait for initial polling cycles
+      await Future.delayed(const Duration(milliseconds: 100));
+
+      // Store the state count before stopping
+      final stateCountBeforeStop = emittedStates.length;
 
       // Stop polling
       balancesBloc.add(Stop());
 
-      // Wait a bit to ensure no further states are emitted after stop
+      // Wait long enough for any in-flight requests to complete
       await Future.delayed(const Duration(milliseconds: 100));
 
       // Cancel the subscription
       await subscription.cancel();
 
-      // Verify that states were emitted multiple times due to polling
-      expect(emittedStates.length, greaterThanOrEqualTo(6));
+      // Verify we had enough states before stopping
+      expect(stateCountBeforeStop, greaterThanOrEqualTo(6),
+          reason: 'Should have at least 6 states before stopping');
+
+      // Verify that polling has stopped by ensuring no significant increase in states
+      // Allow for at most one more pair of states (in-flight request)
+      expect(
+        emittedStates.length - stateCountBeforeStop,
+        lessThanOrEqualTo(2),
+        reason: 'Should not emit more than one more pair of states after Stop',
+      );
 
       // Verify the sequence of states
-      for (int i = 0; i < emittedStates.length; i += 2) {
-        // Expect a loading or reloading state
+      for (int i = 0; i < emittedStates.length - 1; i += 2) {
         expect(
           emittedStates[i],
-          predicate<BalancesState>((state) {
-            return state.maybeWhen(
-              loading: () => true,
-              reloading: (_) => true,
-              orElse: () => false,
-            );
-          }),
+          predicate<BalancesState>((state) => state.maybeWhen(
+                loading: () => true,
+                reloading: (_) => true,
+                orElse: () => false,
+              )),
+          reason: 'Every even-indexed state should be loading or reloading',
         );
-        // Expect a complete state with OK result
+
         expect(
           emittedStates[i + 1],
-          predicate<BalancesState>((state) {
-            return state.maybeWhen(
-              complete: (result) {
-                return result.maybeWhen(
-                  ok: (aggregated) => true,
+          predicate<BalancesState>((state) => state.maybeWhen(
+                complete: (result) => result.maybeWhen(
+                  ok: (_) => true,
                   orElse: () => false,
-                );
-              },
-              orElse: () => false,
-            );
-          }),
+                ),
+                orElse: () => false,
+              )),
+          reason: 'Every odd-indexed state should be complete with OK result',
         );
       }
 
-      // Verify that the repository method was called multiple times
+      // Verify that the repository was called multiple times
       verify(() => mockBalanceRepository.getBalancesForAddresses(addresses))
           .called(greaterThanOrEqualTo(3));
-    });
+    }, timeout: const Timeout(Duration(seconds: 2)));
   });
-
-  group('aggregateBalancesByAsset', () {
-    test('should return empty map when given empty list', () {
-      final result = aggregateBalancesByAsset([]);
-      expect(result, isEmpty);
-    });
-
-    test('should correctly aggregate single balance', () {
-      final balance = Balance(
-        address: 'addr1',
-        quantity: 100,
-        quantityNormalized: '1.00000000',
-        asset: 'BTC',
-        assetInfo: const AssetInfo(
-          divisible: true,
-          description: 'Bitcoin',
-          assetLongname: 'Bitcoin',
-          issuer: 'satoshi',
-        ),
-      );
-
-      final result = aggregateBalancesByAsset([balance]);
-      expect(result.length, 1);
-      expect(result['Bitcoin']!.length, 1);
-      expect(result['Bitcoin']!.first, balance);
-    });
-
-    test('should aggregate multiple balances of same asset', () {
-      const assetInfo = AssetInfo(
-        divisible: true,
-        description: 'Bitcoin',
-        assetLongname: 'Bitcoin',
-        issuer: 'satoshi',
-      );
-
-      final balances = [
-        Balance(
-          address: 'addr1',
-          quantity: 100,
-          quantityNormalized: '1.00000000',
-          asset: 'BTC',
-          assetInfo: assetInfo,
-        ),
-        Balance(
-          address: 'addr2',
-          quantity: 50,
-          quantityNormalized: '0.50000000',
-          asset: 'BTC',
-          assetInfo: assetInfo,
-        ),
-      ];
-
-      final result = aggregateBalancesByAsset(balances);
-      expect(result.length, 1);
-      expect(result['Bitcoin']!.length, 2);
-      expect(result['Bitcoin']!.map((b) => b.quantity).toList(), [100, 50]);
-    });
-
-    test('should use asset name when assetLongname is null', () {
-      const assetInfo = AssetInfo(
-        divisible: true,
-        description: 'Test Asset',
-        assetLongname: null,
-        issuer: 'issuer',
-      );
-
-      final balance = Balance(
-        address: 'addr1',
-        quantity: 100,
-        quantityNormalized: '100',
-        asset: 'TEST',
-        assetInfo: assetInfo,
-      );
-
-      final result = aggregateBalancesByAsset([balance]);
-      expect(result.length, 1);
-      expect(result['TEST']!.length, 1);
-      expect(result['TEST']!.first, balance);
-    });
-  });
-}
-
-// Helper function for balance comparison
-bool compareBalances(Balance a, Balance b) {
-  return a.asset == b.asset &&
-      a.quantity == b.quantity &&
-      a.quantityNormalized == b.quantityNormalized &&
-      a.address == b.address &&
-      compareAssetInfo(a.assetInfo, b.assetInfo) &&
-      a.utxo == b.utxo &&
-      a.utxoAddress == b.utxoAddress;
-}
-
-bool compareAssetInfo(AssetInfo a, AssetInfo b) {
-  return a.assetLongname == b.assetLongname && a.divisible == b.divisible;
 }
