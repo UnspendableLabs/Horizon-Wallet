@@ -8,6 +8,5 @@ enum ResetStatus { initial, completed }
 class ResetState with _$ResetState {
   const factory ResetState({
     @Default(ResetStatus.initial) ResetStatus status,
-    String? errorMessage,
   }) = _ResetState;
 }
