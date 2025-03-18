@@ -336,6 +336,9 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
                 context
                     .read<ComposeFairmintBloc>()
                     .add(FairminterChanged(value: value));
+                setState(() {
+                  quantityController.text = '';
+                });
               },
             ),
           ),
@@ -487,7 +490,7 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
     if (divisible == true) {
       return pricePerToken;
     }
-    return pricePerToken / SATOSHI_RATE;
+    return double.parse((pricePerToken).toStringAsFixed(8));
   }
 
   Decimal _getTotalXCPPriceForQuantity(
@@ -502,9 +505,13 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
       num quantityByPrice,
       bool? divisible) {
     final quantity = Decimal.parse(quantityInput);
-    final pricePerToken = Decimal.parse(
-        _getXCPPricePerToken(price, quantityByPrice, divisible).toString());
-    return quantity * pricePerToken;
+    final pricePerToken = Decimal.parse((price / quantityByPrice).toString());
+    if (divisible == true) {
+      return quantity * pricePerToken;
+    }
+
+    return ((quantity * pricePerToken).ceil() / Decimal.fromInt(SATOSHI_RATE))
+        .toDecimal(scaleOnInfinitePrecision: 8);
   }
 }
 
