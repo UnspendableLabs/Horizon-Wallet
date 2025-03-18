@@ -490,7 +490,7 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
     if (divisible == true) {
       return pricePerToken;
     }
-    return double.parse((pricePerToken).toStringAsFixed(8));
+    return pricePerToken / SATOSHI_RATE;
   }
 
   Decimal _getTotalXCPPriceForQuantity(
