@@ -1,7 +1,6 @@
 import 'package:decimal/decimal.dart';
 import 'package:flutter/services.dart';
 import 'package:horizon/common/format.dart';
-import 'package:rational/rational.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
@@ -143,16 +142,6 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
                             ),
                           ],
                         ),
-                        const SizedBox(height: 16.0),
-                        const HorizonUI.HorizonTextFormField(
-                          label: "Select a fairminter",
-                          enabled: false,
-                        ),
-                        const SizedBox(height: 16.0),
-                        HorizonUI.HorizonTextFormField(
-                            label: "Name of the asset to mint",
-                            controller: nameController,
-                            enabled: false),
                       ],
                   onInitialCancel: () => _handleInitialCancel(),
                   onInitialSubmit: (formKey) {},
@@ -362,11 +351,7 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
             if (state.selectedFairminter!.price != null &&
                 state.selectedFairminter!.price! > 0) ...[
               SelectableText(
-                  'Price: ${state.selectedFairminter!.priceNormalized}'),
-              SelectableText(
-                  'Quantity per price: ${state.selectedFairminter!.quantityByPriceNormalized}'),
-              SelectableText(
-                  'XCP price by token: ${(Decimal.parse(state.selectedFairminter!.priceNormalized!) / Decimal.parse(state.selectedFairminter!.quantityByPriceNormalized!)).toDecimal(scaleOnInfinitePrecision: 8)}'),
+                  'XCP price by token: ${_getXCPPricePerToken(state.selectedFairminter!.price!, state.selectedFairminter!.quantityByPrice!, state.selectedFairminter!.divisible)}'),
               SelectableText(
                   'Max mint per tx: ${state.selectedFairminter!.maxMintPerTxNormalized}'),
               HorizonUI.HorizonTextFormField(
@@ -383,6 +368,10 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
                   if (value == null || value.isEmpty) {
                     return 'Please enter a quantity';
                   }
+                  if (value == '.') {
+                    // Don't validate if the user is typing a decimal point
+                    return null;
+                  }
                   if (Decimal.parse(value) >
                       Decimal.parse(
                           state.selectedFairminter!.maxMintPerTxNormalized!)) {
@@ -395,8 +384,12 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
                 Builder(
                   builder: (context) {
                     try {
-                      return SelectableText(
-                          'Total XCP price: ${(Rational.parse(quantityController.text) / Rational.parse(state.selectedFairminter!.quantityByPriceNormalized!) * Rational.parse(state.selectedFairminter!.priceNormalized!)).toDecimal(scaleOnInfinitePrecision: 8)}');
+                      return Column(
+                        children: [
+                          SelectableText(
+                              'Total XCP price: ${_getTotalXCPPriceForQuantity(quantityController.text, state.selectedFairminter!.price!, state.selectedFairminter!.quantityByPrice!, state.selectedFairminter!.divisible)}'),
+                        ],
+                      );
                     } catch (e) {
                       return const SizedBox.shrink();
                     }
@@ -478,6 +471,41 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
     context
         .read<ComposeFairmintBloc>()
         .add(AsyncFormDependenciesRequested(currentAddress: widget.address));
+  }
+
+  num _getXCPPricePerToken(num price, num quantityByPrice, bool? divisible) {
+    // XCP price by token calculation:
+    // If price = XCP cost per price unit
+    // quantityByPrice = tokens received per price unit
+    // Then: pricePerToken = price / quantityByPrice
+    // This gives the XCP cost for a single token
+
+    final pricePerToken = price / quantityByPrice;
+    if (divisible == true) {
+      return pricePerToken;
+    }
+    return pricePerToken / SATOSHI_RATE;
+  }
+
+  Decimal _getTotalXCPPriceForQuantity(
+      // Total XCP price calculation:
+      // If quantity = tokens to mint
+      // quantityByPrice = tokens received per price unit
+      // price = XCP cost per price unit
+      // Then: totalXCP = (quantity / quantityByPrice) * price
+      // This gives the total XCP needed to mint the requested quantity of tokens
+      String quantityInput,
+      num price,
+      num quantityByPrice,
+      bool? divisible) {
+    final quantity = Decimal.parse(quantityInput);
+    final pricePerToken = Decimal.parse(
+        _getXCPPricePerToken(price, quantityByPrice, divisible).toString());
+    if (divisible == true) {
+      return quantity * pricePerToken;
+    }
+    return (quantity * pricePerToken / Decimal.fromInt(SATOSHI_RATE))
+        .toDecimal(scaleOnInfinitePrecision: 8);
   }
 }
 
