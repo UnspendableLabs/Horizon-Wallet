@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:bloc_test/bloc_test.dart';
+import 'package:horizon/domain/entities/address.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:horizon/domain/entities/imported_address.dart';
 import 'package:horizon/domain/entities/wallet.dart';
@@ -132,9 +133,6 @@ void main() {
           // Mock address not existing
           when(() => mockAddressRepository.getAddress(testAddress))
               .thenAnswer((_) async => null);
-          when(() =>
-                  mockImportedAddressRepository.getImportedAddress(testAddress))
-              .thenAnswer((_) async => null);
 
           // Mock successful WIF encryption
           when(() => mockEncryptionService.encrypt(testWIF, testPassword))
@@ -186,9 +184,6 @@ void main() {
                 format: testFormat,
               )).called(1);
           verify(() => mockAddressRepository.getAddress(testAddress)).called(1);
-          verify(() =>
-                  mockImportedAddressRepository.getImportedAddress(testAddress))
-              .called(1);
           verify(() => mockEncryptionService.encrypt(testWIF, testPassword))
               .called(1);
           verify(() => mockEncryptionService.getDecryptionKey(
@@ -279,14 +274,12 @@ void main() {
                 format: testFormat,
               )).thenAnswer((_) async => testAddress);
           when(() => mockAddressRepository.getAddress(testAddress))
-              .thenAnswer((_) async => null);
-          when(() =>
-                  mockImportedAddressRepository.getImportedAddress(testAddress))
-              .thenAnswer((_) async => const ImportedAddress(
+              .thenAnswer((_) async => const Address(
                     address: testAddress,
-                    encryptedWif: testEncryptedWIF,
-                    name: testName,
+                    accountUuid: 'test-account-uuid',
+                    index: 0,
                   ));
+
           return bloc;
         },
         act: (bloc) => bloc.add(submitEvent),

@@ -70,15 +70,6 @@ class ImportAddressPkBloc
           return;
         }
 
-        final existingImportedAddress =
-            await importedAddressRepository.getImportedAddress(address);
-        if (existingImportedAddress != null) {
-          emit(ImportAddressPkError(
-            'Address ${event.format.name} $address already exists in your wallet',
-          ));
-          return;
-        }
-
         final String encryptedWIF =
             await encryptionService.encrypt(event.wif, event.password);
 
