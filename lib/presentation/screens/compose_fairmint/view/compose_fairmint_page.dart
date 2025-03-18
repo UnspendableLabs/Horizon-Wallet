@@ -424,18 +424,21 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
       const SizedBox(height: 16.0),
       HorizonUI.HorizonTextFormField(
         label: "Mint Quantity",
-        controller: TextEditingController(text: _formatMintQuantity()),
+        controller: TextEditingController(text: _formatMintQuantity(params)),
         enabled: false,
       ),
     ];
   }
 
-  String _formatMintQuantity() {
+  String _formatMintQuantity(ComposeFairmintParams params) {
     final fairminter =
         context.read<ComposeFairmintBloc>().state.selectedFairminter;
 
     if (fairminter == null || fairminter.maxMintPerTxNormalized == null) {
       return '';
+    }
+    if (params.quantity != 0) {
+      return params.quantityNormalized!;
     }
 
     return fairminter.maxMintPerTxNormalized!;
@@ -501,11 +504,7 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
     final quantity = Decimal.parse(quantityInput);
     final pricePerToken = Decimal.parse(
         _getXCPPricePerToken(price, quantityByPrice, divisible).toString());
-    if (divisible == true) {
-      return quantity * pricePerToken;
-    }
-    return (quantity * pricePerToken / Decimal.fromInt(SATOSHI_RATE))
-        .toDecimal(scaleOnInfinitePrecision: 8);
+    return quantity * pricePerToken;
   }
 }
 
