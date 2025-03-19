@@ -48,6 +48,7 @@ class AppIcons {
     double? height,
     Color? color,
     BoxFit fit = BoxFit.contain,
+    Key? key,
   }) {
     if (context == null) {
       return SvgPicture.asset(
@@ -56,6 +57,7 @@ class AppIcons {
         height: height,
         color: color,
         fit: fit,
+        key: key,
       );
     }
 
@@ -67,6 +69,7 @@ class AppIcons {
       height: height ?? Theme.of(context).iconTheme.size,
       color: iconColor,
       fit: fit,
+      key: key,
     );
   }
 
@@ -203,6 +206,7 @@ class AppIcons {
       height: height,
       color: color,
       fit: fit,
+      key: const Key('settings_icon'),
     );
   }
 
