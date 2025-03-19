@@ -71,11 +71,6 @@ void main() {
       testWidgets(
           'getVirtualSize - ${testCase.addressType} (${testCase.ins} in, ${testCase.outs} out)',
           (WidgetTester tester) async {
-        // await tester.pumpWidget(MyApp(
-        //   currentVersion: Version(0, 0, 0),
-        //   latestVersion: Version(0, 0, 0),
-        // ));
-
         final virtualSize =
             transactionService.getVirtualSize(testCase.rawTransaction);
 

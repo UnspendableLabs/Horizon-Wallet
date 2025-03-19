@@ -294,15 +294,6 @@ void main() {
                   'Address ${addresses[i].address} does not match expected address ${expectedAddresses[i]}');
         }
 
-        // // For the lock screen specific part, use the same polling approach
-        // bool settingsFound = false;
-        // attempts = 0;
-        // while (!settingsFound && attempts < 100) {
-        //   await tester.pump(const Duration(milliseconds: 100));
-        //   settingsFound = find.byIcon(Icons.settings).evaluate().isNotEmpty;
-        //   attempts++;
-        // }
-
         final settingsButton = find.byKey(const Key('settings_icon'));
         expect(settingsButton, findsOneWidget);
         await tester.tap(settingsButton);
@@ -371,15 +362,6 @@ void main() {
 
         // Wait for the unlock process to complete
         await tester.pumpAndSettle();
-
-        // Keep pumping frames until the settings button appears or timeout occurs
-        // bool settingsFound2 = false;
-        // attempts = 0;
-        // while (!settingsFound2 && attempts < 100) {
-        //   await tester.pump(const Duration(milliseconds: 100));
-        //   settingsFound2 = find.byIcon(Icons.settings).evaluate().isNotEmpty;
-        //   attempts++;
-        // }
 
         final settingsButton2 = find.byKey(const Key('settings_icon'));
         expect(settingsButton2, findsOneWidget);
