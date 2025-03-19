@@ -165,7 +165,7 @@ class _OnboardingCreatePageState extends State<OnboardingCreatePage> {
             ),
             PasswordPrompt(
               key: _passwordStepKey,
-              state: state,
+              // state: state,
               onValidationChanged: () => setState(() {}),
               optionalErrorWidget: createStateError != null
                   ? Align(

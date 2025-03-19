@@ -7,6 +7,7 @@ import 'package:horizon/presentation/screens/onboarding_create/bloc/onboarding_c
 import 'package:horizon/presentation/screens/onboarding_create/bloc/onboarding_create_state.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:horizon/presentation/common/theme_extension.dart';
 
 class MockOnboardingState extends Mock {}
 
@@ -44,9 +45,25 @@ void main() {
 
   Widget buildTestableWidget(Widget child) {
     return MaterialApp(
-        home: Scaffold(
-      body: child,
-    ));
+      theme: ThemeData(
+        extensions: [
+          CustomThemeExtension(
+            inputBackground: Colors.white,
+            inputBackgroundEmpty: Colors.grey[100]!,
+            inputBorderColor: Colors.grey[300]!,
+            inputTextColor: Colors.black,
+            errorColor: Colors.red,
+            errorBackgroundColor: Colors.red[50]!,
+          ),
+        ],
+      ),
+      home: BlocProvider<OnboardingCreateBloc>.value(
+        value: mockBloc,
+        child: Scaffold(
+          body: child,
+        ),
+      ),
+    );
   }
 
   group('PasswordPrompt Widget Tests', () {
@@ -56,7 +73,7 @@ void main() {
         await tester.pumpWidget(
           buildTestableWidget(
             PasswordPrompt(
-              state: mockState,
+              key: GlobalKey<PasswordPromptState>(),
             ),
           ),
         );
@@ -71,14 +88,12 @@ void main() {
 
   testWidgets('PasswordPrompt enforces confirmation',
       (WidgetTester tester) async {
-    final mockState = MockOnboardingState();
-
     await tester.pumpWidget(
       buildTestableWidget(
         StatefulBuilder(
           builder: (BuildContext context, StateSetter setState) {
             return PasswordPrompt(
-              state: mockState,
+              key: GlobalKey<PasswordPromptState>(),
             );
           },
         ),
@@ -115,14 +130,9 @@ void main() {
     'PasswordPrompt shows error when passwords do not match',
     (WidgetTester tester) async {
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: BlocProvider<OnboardingCreateBloc>.value(
-              value: mockBloc,
-              child: PasswordPrompt(
-                state: mockState,
-              ),
-            ),
+        buildTestableWidget(
+          PasswordPrompt(
+            key: GlobalKey<PasswordPromptState>(),
           ),
         ),
       );
@@ -143,14 +153,9 @@ void main() {
     'PasswordPrompt shows error when password is too short',
     (WidgetTester tester) async {
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: BlocProvider<OnboardingCreateBloc>.value(
-              value: mockBloc,
-              child: PasswordPrompt(
-                state: mockBloc.state,
-              ),
-            ),
+        buildTestableWidget(
+          PasswordPrompt(
+            key: GlobalKey<PasswordPromptState>(),
           ),
         ),
       );
@@ -171,14 +176,9 @@ void main() {
     'PasswordPrompt allows password when confirmation is valid',
     (WidgetTester tester) async {
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: BlocProvider<OnboardingCreateBloc>.value(
-              value: mockBloc,
-              child: PasswordPrompt(
-                state: mockBloc.state,
-              ),
-            ),
+        buildTestableWidget(
+          PasswordPrompt(
+            key: GlobalKey<PasswordPromptState>(),
           ),
         ),
       );

@@ -70,7 +70,7 @@ class _OnboardingImportPageState extends State<OnboardingImportPage> {
             SeedInputStep(seedInputKey: _seedInputKey),
             PasswordPrompt(
               key: _passwordStepKey,
-              state: state,
+              // state: state,
               onValidationChanged: () => setState(() {}),
               optionalErrorWidget: error
                   ? Align(

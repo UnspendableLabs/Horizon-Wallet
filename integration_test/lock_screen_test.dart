@@ -406,9 +406,6 @@ void main() {
           final resetWalletButton = find.byType(HorizonOutlinedButton);
           expect(resetWalletButton, findsOneWidget);
           await tester.tap(resetWalletButton);
-
-          await tester.pumpAndSettle();
-
           // Wait for reset to complete
           for (var i = 0; i < 20; i++) {
             await tester.pump(const Duration(milliseconds: 100));
