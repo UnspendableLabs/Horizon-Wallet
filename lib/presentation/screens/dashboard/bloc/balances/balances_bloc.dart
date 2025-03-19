@@ -35,14 +35,15 @@ class BalancesBloc extends Bloc<BalancesEvent, BalancesState> {
       return;
     }
 
-    final starredAssets = cacheProvider.getValue<List<String>>(
-          starredAssetsKey,
-        ) ??
-        [];
+    final starredAssets = cacheProvider.getValue(starredAssetsKey);
+    final starredAssetsList = starredAssets != null
+        ? (starredAssets as List).map((e) => e.toString()).toList()
+        : <String>[];
 
     // If we have cached data, emit a reloading state
     if (_cachedBalances != null) {
-      emit(BalancesState.reloading(Result.ok(_cachedBalances!, starredAssets)));
+      emit(BalancesState.reloading(
+          Result.ok(_cachedBalances!, starredAssetsList)));
     } else {
       emit(const BalancesState.loading());
     }
@@ -55,7 +56,7 @@ class BalancesBloc extends Bloc<BalancesEvent, BalancesState> {
       if (_cachedBalances == null ||
           !MultiAddressBalance.equals(_cachedBalances!, balances)) {
         _cachedBalances = balances;
-        emit(BalancesState.complete(Result.ok(balances, starredAssets)));
+        emit(BalancesState.complete(Result.ok(balances, starredAssetsList)));
       }
       // If data is the same, we don't emit a new state
     } catch (e) {
@@ -94,19 +95,19 @@ class BalancesBloc extends Bloc<BalancesEvent, BalancesState> {
     final balances = _cachedBalances;
     if (balances == null) return;
 
-    final starredAssets = cacheProvider.getValue<List<String>>(
-          starredAssetsKey,
-        ) ??
-        [];
+    final starredAssets = cacheProvider.getValue(starredAssetsKey);
+    final starredAssetsList = starredAssets != null
+        ? (starredAssets as List).map((e) => e.toString()).toList()
+        : <String>[];
 
-    if (!starredAssets.contains(asset)) {
-      starredAssets.add(asset);
+    if (!starredAssetsList.contains(asset)) {
+      starredAssetsList.add(asset);
     } else {
-      starredAssets.remove(asset);
+      starredAssetsList.remove(asset);
     }
 
-    cacheProvider.setObject<List<String>>(starredAssetsKey, starredAssets);
+    cacheProvider.setObject(starredAssetsKey, starredAssetsList);
 
-    emit(BalancesState.complete(Result.ok(balances, starredAssets)));
+    emit(BalancesState.complete(Result.ok(balances, starredAssetsList)));
   }
 }

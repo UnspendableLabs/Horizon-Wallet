@@ -227,24 +227,27 @@ class BalancesSliverState extends State<BalancesSliver> {
               return Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  GestureDetector(
-                    onTap: () {
-                      // Toggle the starred status
-                      context
-                          .read<BalancesBloc>()
-                          .add(ToggleStarred(asset: balance.asset));
-                    },
-                    child: starredAssets.contains(balance.asset)
-                        ? AppIcons.starFilledIcon(
-                            context: context,
-                            width: 20,
-                            height: 20,
-                          )
-                        : AppIcons.starOutlinedIcon(
-                            context: context,
-                            width: 20,
-                            height: 20,
-                          ),
+                  MouseRegion(
+                    cursor: SystemMouseCursors.click,
+                    child: GestureDetector(
+                      onTap: () {
+                        // Toggle the starred status
+                        context
+                            .read<BalancesBloc>()
+                            .add(ToggleStarred(asset: balance.asset));
+                      },
+                      child: starredAssets.contains(balance.asset)
+                          ? AppIcons.starFilledIcon(
+                              context: context,
+                              width: 20,
+                              height: 20,
+                            )
+                          : AppIcons.starOutlinedIcon(
+                              context: context,
+                              width: 20,
+                              height: 20,
+                            ),
+                    ),
                   ),
                   const SizedBox(width: 8),
                   Expanded(
