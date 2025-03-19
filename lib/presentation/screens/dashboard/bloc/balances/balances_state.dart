@@ -15,6 +15,7 @@ class BalancesState with _$BalancesState {
 class Result with _$Result {
   const factory Result.ok(
     List<MultiAddressBalance> balances,
+    List<String?> starredAssets,
   ) = _Ok;
   const factory Result.error(String error) = _Error;
 }

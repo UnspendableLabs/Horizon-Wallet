@@ -221,7 +221,7 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
             tabAlignment: TabAlignment.center,
             isScrollable: false,
             tabs: [
-              Tab(
+              const Tab(
                 child: Text(
                   'Balance Actions',
                   style: TextStyle(
@@ -231,7 +231,7 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
                 ),
               ),
               if (!_isBitcoin)
-                Tab(
+                const Tab(
                   child: Text(
                     'Issuance Actions',
                     style: TextStyle(

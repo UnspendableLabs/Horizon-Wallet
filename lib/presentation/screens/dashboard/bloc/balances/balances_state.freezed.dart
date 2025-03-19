@@ -628,19 +628,25 @@ abstract class _Reloading implements BalancesState {
 mixin _$Result {
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
-    required TResult Function(List<MultiAddressBalance> balances) ok,
+    required TResult Function(
+            List<MultiAddressBalance> balances, List<String?> starredAssets)
+        ok,
     required TResult Function(String error) error,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(List<MultiAddressBalance> balances)? ok,
+    TResult? Function(
+            List<MultiAddressBalance> balances, List<String?> starredAssets)?
+        ok,
     TResult? Function(String error)? error,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
-    TResult Function(List<MultiAddressBalance> balances)? ok,
+    TResult Function(
+            List<MultiAddressBalance> balances, List<String?> starredAssets)?
+        ok,
     TResult Function(String error)? error,
     required TResult orElse(),
   }) =>
@@ -688,7 +694,7 @@ abstract class _$$OkImplCopyWith<$Res> {
   factory _$$OkImplCopyWith(_$OkImpl value, $Res Function(_$OkImpl) then) =
       __$$OkImplCopyWithImpl<$Res>;
   @useResult
-  $Res call({List<MultiAddressBalance> balances});
+  $Res call({List<MultiAddressBalance> balances, List<String?> starredAssets});
 }
 
 /// @nodoc
@@ -701,12 +707,17 @@ class __$$OkImplCopyWithImpl<$Res> extends _$ResultCopyWithImpl<$Res, _$OkImpl>
   @override
   $Res call({
     Object? balances = null,
+    Object? starredAssets = null,
   }) {
     return _then(_$OkImpl(
       null == balances
           ? _value._balances
           : balances // ignore: cast_nullable_to_non_nullable
               as List<MultiAddressBalance>,
+      null == starredAssets
+          ? _value._starredAssets
+          : starredAssets // ignore: cast_nullable_to_non_nullable
+              as List<String?>,
     ));
   }
 }
@@ -714,8 +725,10 @@ class __$$OkImplCopyWithImpl<$Res> extends _$ResultCopyWithImpl<$Res, _$OkImpl>
 /// @nodoc
 
 class _$OkImpl implements _Ok {
-  const _$OkImpl(final List<MultiAddressBalance> balances)
-      : _balances = balances;
+  const _$OkImpl(final List<MultiAddressBalance> balances,
+      final List<String?> starredAssets)
+      : _balances = balances,
+        _starredAssets = starredAssets;
 
   final List<MultiAddressBalance> _balances;
   @override
@@ -725,9 +738,17 @@ class _$OkImpl implements _Ok {
     return EqualUnmodifiableListView(_balances);
   }
 
+  final List<String?> _starredAssets;
+  @override
+  List<String?> get starredAssets {
+    if (_starredAssets is EqualUnmodifiableListView) return _starredAssets;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_starredAssets);
+  }
+
   @override
   String toString() {
-    return 'Result.ok(balances: $balances)';
+    return 'Result.ok(balances: $balances, starredAssets: $starredAssets)';
   }
 
   @override
@@ -735,12 +756,16 @@ class _$OkImpl implements _Ok {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$OkImpl &&
-            const DeepCollectionEquality().equals(other._balances, _balances));
+            const DeepCollectionEquality().equals(other._balances, _balances) &&
+            const DeepCollectionEquality()
+                .equals(other._starredAssets, _starredAssets));
   }
 
   @override
-  int get hashCode =>
-      Object.hash(runtimeType, const DeepCollectionEquality().hash(_balances));
+  int get hashCode => Object.hash(
+      runtimeType,
+      const DeepCollectionEquality().hash(_balances),
+      const DeepCollectionEquality().hash(_starredAssets));
 
   @JsonKey(ignore: true)
   @override
@@ -751,30 +776,36 @@ class _$OkImpl implements _Ok {
   @override
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
-    required TResult Function(List<MultiAddressBalance> balances) ok,
+    required TResult Function(
+            List<MultiAddressBalance> balances, List<String?> starredAssets)
+        ok,
     required TResult Function(String error) error,
   }) {
-    return ok(balances);
+    return ok(balances, starredAssets);
   }
 
   @override
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(List<MultiAddressBalance> balances)? ok,
+    TResult? Function(
+            List<MultiAddressBalance> balances, List<String?> starredAssets)?
+        ok,
     TResult? Function(String error)? error,
   }) {
-    return ok?.call(balances);
+    return ok?.call(balances, starredAssets);
   }
 
   @override
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
-    TResult Function(List<MultiAddressBalance> balances)? ok,
+    TResult Function(
+            List<MultiAddressBalance> balances, List<String?> starredAssets)?
+        ok,
     TResult Function(String error)? error,
     required TResult orElse(),
   }) {
     if (ok != null) {
-      return ok(balances);
+      return ok(balances, starredAssets);
     }
     return orElse();
   }
@@ -812,9 +843,11 @@ class _$OkImpl implements _Ok {
 }
 
 abstract class _Ok implements Result {
-  const factory _Ok(final List<MultiAddressBalance> balances) = _$OkImpl;
+  const factory _Ok(final List<MultiAddressBalance> balances,
+      final List<String?> starredAssets) = _$OkImpl;
 
   List<MultiAddressBalance> get balances;
+  List<String?> get starredAssets;
   @JsonKey(ignore: true)
   _$$OkImplCopyWith<_$OkImpl> get copyWith =>
       throw _privateConstructorUsedError;
@@ -884,7 +917,9 @@ class _$ErrorImpl implements _Error {
   @override
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
-    required TResult Function(List<MultiAddressBalance> balances) ok,
+    required TResult Function(
+            List<MultiAddressBalance> balances, List<String?> starredAssets)
+        ok,
     required TResult Function(String error) error,
   }) {
     return error(this.error);
@@ -893,7 +928,9 @@ class _$ErrorImpl implements _Error {
   @override
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(List<MultiAddressBalance> balances)? ok,
+    TResult? Function(
+            List<MultiAddressBalance> balances, List<String?> starredAssets)?
+        ok,
     TResult? Function(String error)? error,
   }) {
     return error?.call(this.error);
@@ -902,7 +939,9 @@ class _$ErrorImpl implements _Error {
   @override
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
-    TResult Function(List<MultiAddressBalance> balances)? ok,
+    TResult Function(
+            List<MultiAddressBalance> balances, List<String?> starredAssets)?
+        ok,
     TResult Function(String error)? error,
     required TResult orElse(),
   }) {
