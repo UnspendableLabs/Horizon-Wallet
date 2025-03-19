@@ -10,13 +10,10 @@ class PasswordPrompt extends StatefulWidget {
 
   const PasswordPrompt({
     super.key,
-    required this.state,
     this.optionalErrorWidget,
     this.onPasswordChanged,
     this.onValidationChanged,
   });
-
-  final dynamic state;
 
   @override
   PasswordPromptState createState() => PasswordPromptState();

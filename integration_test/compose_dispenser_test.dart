@@ -610,9 +610,8 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      expect(
-          find.text("give quantity exceeds available balance"), findsOneWidget);
-      expect(find.text("escrow quantity exceeds available balance"),
+      expect(find.text("Quantity exceeds available balance"), findsOneWidget);
+      expect(find.text("Escrow Quantity exceeds available balance"),
           findsOneWidget);
     });
 
@@ -691,14 +690,20 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Continue with existing address'), findsOneWidget);
-
       await tester.tap(find.widgetWithText(
           ElevatedButton, 'Continue with existing address'));
 
       await tester.pumpAndSettle();
 
       await tester.enterText(
-          find.byKey(const Key('price_per_unit_input')), '0.000005');
+          find.byKey(const Key('give_quantity_input_ASSET1_DIVISIBLE')), '1.0');
+
+      await tester.enterText(
+          find.byKey(const Key('escrow_quantity_input_ASSET1_DIVISIBLE')),
+          '1.0');
+
+      await tester.enterText(
+          find.byKey(const Key('price_per_unit_input')), '0.00000000');
 
       await tester.pumpAndSettle();
 
@@ -706,8 +711,7 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      expect(find.text('Price must exceed dust limit of 600 satoshis'),
-          findsOneWidget);
+      expect(find.text('Error: total price < dust limit'), findsOneWidget);
     });
 
     testWidgets('give_quantity <= escrow_quantity',
@@ -805,9 +809,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(
-          find.text(
-              'escrow quantity must be greater than or equal to give quantity'),
-          findsOneWidget);
+          find.text('Escrow Quantity must be >= to Quantity'), findsOneWidget);
     });
   });
 

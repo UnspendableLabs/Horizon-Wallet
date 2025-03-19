@@ -294,16 +294,7 @@ void main() {
                   'Address ${addresses[i].address} does not match expected address ${expectedAddresses[i]}');
         }
 
-        // For the lock screen specific part, use the same polling approach
-        bool settingsFound = false;
-        attempts = 0;
-        while (!settingsFound && attempts < 100) {
-          await tester.pump(const Duration(milliseconds: 100));
-          settingsFound = find.byIcon(Icons.settings).evaluate().isNotEmpty;
-          attempts++;
-        }
-
-        final settingsButton = find.byIcon(Icons.settings);
+        final settingsButton = find.byKey(const Key('settings_icon'));
         expect(settingsButton, findsOneWidget);
         await tester.tap(settingsButton);
         await tester.pumpAndSettle();
@@ -372,16 +363,7 @@ void main() {
         // Wait for the unlock process to complete
         await tester.pumpAndSettle();
 
-        // Keep pumping frames until the settings button appears or timeout occurs
-        bool settingsFound2 = false;
-        attempts = 0;
-        while (!settingsFound2 && attempts < 100) {
-          await tester.pump(const Duration(milliseconds: 100));
-          settingsFound2 = find.byIcon(Icons.settings).evaluate().isNotEmpty;
-          attempts++;
-        }
-
-        final settingsButton2 = find.byIcon(Icons.settings);
+        final settingsButton2 = find.byKey(const Key('settings_icon'));
         expect(settingsButton2, findsOneWidget);
         await tester.tap(settingsButton2);
         await tester.pumpAndSettle();
@@ -391,16 +373,40 @@ void main() {
         await tester.tap(resetButton);
         await tester.pumpAndSettle();
 
-        final resetCheckbox = find.byType(CheckboxListTile);
-        expect(resetCheckbox, findsOneWidget);
-        await tester.tap(resetCheckbox);
+        final continueResetButton1 = find.text('Continue');
+        expect(continueResetButton1, findsOneWidget);
+        await tester.tap(continueResetButton1);
         await tester.pumpAndSettle();
 
-        final continueResetButton = find.text('CONTINUE');
-        expect(continueResetButton, findsOneWidget);
-        await tester.tap(continueResetButton);
-
+        final toggle = find.byType(HorizonToggle);
+        expect(toggle, findsOneWidget);
+        await tester.tap(toggle);
         await tester.pumpAndSettle();
+
+        final continueResetButton2 = find.text('Continue');
+        expect(continueResetButton2, findsOneWidget);
+        await tester.tap(continueResetButton2);
+        await tester.pumpAndSettle();
+
+        final resetConfirmationField =
+            find.byKey(const Key('resetConfirmationTextField'));
+        expect(resetConfirmationField, findsOneWidget);
+        await tester.enterText(resetConfirmationField, 'RESET WALLET');
+        await tester.pumpAndSettle();
+
+        final resetWalletButton = find.byType(HorizonOutlinedButton);
+        expect(resetWalletButton, findsOneWidget);
+        await tester.tap(resetWalletButton);
+        // await tester.pumpAndSettle();
+
+        // Wait for reset to complete
+        for (var i = 0; i < 20; i++) {
+          await tester.pump(const Duration(milliseconds: 100));
+          if (find.text('Load seed phrase').evaluate().isNotEmpty) break;
+        }
+
+        final importSeedButtonAfterReset = find.text('Load seed phrase');
+        expect(importSeedButtonAfterReset, findsOneWidget);
       });
     }
   });

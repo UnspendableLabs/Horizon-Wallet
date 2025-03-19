@@ -62,9 +62,6 @@ void main() {
         latestVersion: Version(0, 0, 0),
       ));
 
-      // Wait for the app to settle
-      await tester.pumpAndSettle();
-
       // Wait for the Load seed phrase button to appear
       bool buttonFound = false;
       int attempts = 0;
