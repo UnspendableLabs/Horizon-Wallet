@@ -29,11 +29,13 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
   late TabController _tabController;
   BalanceViewFilter _currentFilter = BalanceViewFilter.address;
 
+  bool get _isBitcoin => widget.assetName.toUpperCase() == 'BTC';
+
   @override
   void initState() {
     super.initState();
     context.read<AssetViewBloc>().add(PageLoaded());
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(length: _isBitcoin ? 1 : 2, vsync: this);
   }
 
   @override
@@ -218,7 +220,7 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
             indicatorSize: TabBarIndicatorSize.label,
             tabAlignment: TabAlignment.center,
             isScrollable: false,
-            tabs: const [
+            tabs: [
               Tab(
                 child: Text(
                   'Balance Actions',
@@ -228,15 +230,16 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
                   ),
                 ),
               ),
-              Tab(
-                child: Text(
-                  'Issuance Actions',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
+              if (!_isBitcoin)
+                Tab(
+                  child: Text(
+                    'Issuance Actions',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                 ),
-              ),
             ],
           ),
         ),
@@ -293,28 +296,50 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
                 )
               : Column(
                   children: [
-                    Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: FilterBar(
-                        currentFilter: _currentFilter,
-                        onFilterSelected: _setFilter,
-                        onClearFilter: _clearFilter,
-                        filterOptions: const [
-                          FilterOption(
-                              label: 'Address Balances',
-                              value: BalanceViewFilter.address),
-                          FilterOption(
-                              label: 'Utxo Balances',
-                              value: BalanceViewFilter.utxo),
-                        ],
+                    if (!_isBitcoin)
+                      Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: FilterBar(
+                          currentFilter: _currentFilter,
+                          onFilterSelected: _setFilter,
+                          onClearFilter: _clearFilter,
+                          filterOptions: const [
+                            FilterOption(
+                                label: 'Address Balances',
+                                value: BalanceViewFilter.address),
+                            FilterOption(
+                                label: 'Utxo Balances',
+                                value: BalanceViewFilter.utxo),
+                          ],
+                          disabledOptions:
+                              _isBitcoin ? [BalanceViewFilter.utxo] : [],
+                        ),
                       ),
-                    ),
                     Expanded(
                       child: SingleChildScrollView(
                         child: Column(
                           children: [
                             const SizedBox(height: 8),
-                            if (_currentFilter ==
+                            if (_isBitcoin) ...[
+                              IconItemButton(
+                                title: 'Send',
+                                icon: AppIcons.sendIcon(
+                                  context: context,
+                                ),
+                                onTap: () {
+                                  // Handle Send
+                                },
+                              ),
+                              IconItemButton(
+                                title: 'Receive',
+                                icon: AppIcons.receiveIcon(
+                                  context: context,
+                                ),
+                                onTap: () {
+                                  // Handle Receive
+                                },
+                              ),
+                            ] else if (_currentFilter ==
                                 BalanceViewFilter.address) ...[
                               IconItemButton(
                                 title: 'Send',
@@ -409,101 +434,102 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
                 ),
 
           // Issuance Actions Tab
-          isLoading
-              ? SingleChildScrollView(
-                  padding: const EdgeInsets.all(16.0),
-                  child: _buildLoadingActionButtons(context, 9),
-                )
-              : SingleChildScrollView(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      IconItemButton(
-                        title: 'Pay Dividend',
-                        icon: AppIcons.dividendIcon(
-                          context: context,
+          if (!_isBitcoin)
+            isLoading
+                ? SingleChildScrollView(
+                    padding: const EdgeInsets.all(16.0),
+                    child: _buildLoadingActionButtons(context, 9),
+                  )
+                : SingleChildScrollView(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        IconItemButton(
+                          title: 'Pay Dividend',
+                          icon: AppIcons.dividendIcon(
+                            context: context,
+                          ),
+                          onTap: () {
+                            // Handle Pay Dividend
+                          },
                         ),
-                        onTap: () {
-                          // Handle Pay Dividend
-                        },
-                      ),
-                      IconItemButton(
-                        title: 'Reset Asset',
-                        icon: AppIcons.resetIcon(
-                          context: context,
+                        IconItemButton(
+                          title: 'Reset Asset',
+                          icon: AppIcons.resetIcon(
+                            context: context,
+                          ),
+                          onTap: () {
+                            // Handle Reset Asset
+                          },
                         ),
-                        onTap: () {
-                          // Handle Reset Asset
-                        },
-                      ),
-                      IconItemButton(
-                        title: 'Create Fairminter',
-                        icon: AppIcons.mintIcon(
-                          context: context,
+                        IconItemButton(
+                          title: 'Create Fairminter',
+                          icon: AppIcons.mintIcon(
+                            context: context,
+                          ),
+                          onTap: () {
+                            // Handle Create Fairminter
+                          },
                         ),
-                        onTap: () {
-                          // Handle Create Fairminter
-                        },
-                      ),
-                      IconItemButton(
-                        title: 'Issue More',
-                        icon: AppIcons.plusIcon(
-                          context: context,
+                        IconItemButton(
+                          title: 'Issue More',
+                          icon: AppIcons.plusIcon(
+                            context: context,
+                          ),
+                          onTap: () {
+                            // Handle Issue More
+                          },
                         ),
-                        onTap: () {
-                          // Handle Issue More
-                        },
-                      ),
-                      IconItemButton(
-                        title: 'Issue Subasset',
-                        icon: AppIcons.plusIcon(
-                          context: context,
+                        IconItemButton(
+                          title: 'Issue Subasset',
+                          icon: AppIcons.plusIcon(
+                            context: context,
+                          ),
+                          onTap: () {
+                            // Handle Issue Subasset
+                          },
                         ),
-                        onTap: () {
-                          // Handle Issue Subasset
-                        },
-                      ),
-                      IconItemButton(
-                        title: 'Update Description',
-                        icon: AppIcons.editIcon(
-                          context: context,
+                        IconItemButton(
+                          title: 'Update Description',
+                          icon: AppIcons.editIcon(
+                            context: context,
+                          ),
+                          onTap: () {
+                            // Handle Update Description
+                          },
                         ),
-                        onTap: () {
-                          // Handle Update Description
-                        },
-                      ),
-                      IconItemButton(
-                        title: 'Lock Supply',
-                        icon: AppIcons.lockIcon(
-                          context: context,
+                        IconItemButton(
+                          title: 'Lock Supply',
+                          icon: AppIcons.lockIcon(
+                            context: context,
+                          ),
+                          onTap: () {
+                            // Handle Lock Supply
+                          },
                         ),
-                        onTap: () {
-                          // Handle Lock Supply
-                        },
-                      ),
-                      IconItemButton(
-                        title: 'Lock Description',
-                        icon: AppIcons.lockIcon(
-                          context: context,
+                        IconItemButton(
+                          title: 'Lock Description',
+                          icon: AppIcons.lockIcon(
+                            context: context,
+                          ),
+                          onTap: () {
+                            // Handle Lock Description
+                          },
                         ),
-                        onTap: () {
-                          // Handle Lock Description
-                        },
-                      ),
-                      IconItemButton(
-                        title: 'Transfer Issuance Rights',
-                        icon: AppIcons.transferIcon(
-                          context: context,
+                        IconItemButton(
+                          title: 'Transfer Issuance Rights',
+                          icon: AppIcons.transferIcon(
+                            context: context,
+                          ),
+                          onTap: () {
+                            // Handle Transfer Issuance Rights
+                          },
                         ),
-                        onTap: () {
-                          // Handle Transfer Issuance Rights
-                        },
-                      ),
-                      const SizedBox(height: 16),
-                    ],
+                        const SizedBox(height: 16),
+                      ],
+                    ),
                   ),
-                ),
         ],
       ),
     );

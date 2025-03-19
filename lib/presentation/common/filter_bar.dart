@@ -8,6 +8,7 @@ class FilterBar extends StatelessWidget {
   final List<FilterOption> filterOptions;
   final double? paddingHorizontal;
   final bool allowDeselect;
+  final List<Object>? disabledOptions;
 
   const FilterBar({
     super.key,
@@ -17,6 +18,7 @@ class FilterBar extends StatelessWidget {
     required this.filterOptions,
     this.paddingHorizontal,
     this.allowDeselect = false,
+    this.disabledOptions,
   });
 
   @override
@@ -41,16 +43,20 @@ class FilterBar extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: filterOptions.map((option) {
             final isSelected = currentFilter == option.value;
+            final isDisabled = disabledOptions?.contains(option.value) ?? false;
             return FilterButton(
               label: option.label,
               isSelected: isSelected,
-              onTap: () {
-                if (isSelected && allowDeselect) {
-                  onClearFilter();
-                } else {
-                  onFilterSelected(option.value);
-                }
-              },
+              isDisabled: isDisabled,
+              onTap: isDisabled
+                  ? null
+                  : () {
+                      if (isSelected && allowDeselect) {
+                        onClearFilter();
+                      } else {
+                        onFilterSelected(option.value);
+                      }
+                    },
             );
           }).toList(),
         ),
@@ -62,19 +68,22 @@ class FilterBar extends StatelessWidget {
 class FilterButton extends StatelessWidget {
   final String label;
   final bool isSelected;
-  final VoidCallback onTap;
+  final bool isDisabled;
+  final VoidCallback? onTap;
 
   const FilterButton({
     super.key,
     required this.label,
     required this.isSelected,
+    required this.isDisabled,
     required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
     return MouseRegion(
-      cursor: SystemMouseCursors.click,
+      cursor:
+          isDisabled ? SystemMouseCursors.forbidden : SystemMouseCursors.click,
       child: GestureDetector(
         onTap: onTap,
         behavior: HitTestBehavior.opaque,
@@ -91,7 +100,14 @@ class FilterButton extends StatelessWidget {
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
-                color: Theme.of(context).textTheme.bodyMedium?.color,
+                color: isDisabled
+                    ? Theme.of(context)
+                            .textButtonTheme
+                            .style
+                            ?.foregroundColor
+                            ?.resolve({}) ??
+                        Colors.grey
+                    : Theme.of(context).textTheme.bodyMedium?.color,
               ),
               textAlign: TextAlign.center,
               maxLines: 1,
