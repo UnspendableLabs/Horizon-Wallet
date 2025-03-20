@@ -142,6 +142,8 @@ void main() {
       ],
       verify: (bloc) {
         verifyNever(() => mockBalanceRepository.getBalancesForAddresses([]));
+        verifyNever(() => mockCacheProvider.getValue('starredAssets'));
+        verifyNever(() => mockCacheProvider.setObject('starredAssets', any()));
       },
     );
 
@@ -163,6 +165,31 @@ void main() {
       ],
       verify: (bloc) {
         verify(() => mockBalanceRepository.getBalancesForAddresses(addresses))
+            .called(1);
+        verify(() => mockCacheProvider.getValue('starredAssets')).called(1);
+        verifyNever(() => mockCacheProvider.setObject('starredAssets', any()));
+      },
+    );
+
+    blocTest<BalancesBloc, BalancesState>(
+      'sets BTC and XCP as starred assets if they are not already in the cache',
+      setUp: () {
+        when(() => mockBalanceRepository.getBalancesForAddresses(addresses))
+            .thenAnswer((_) async => mockBalances);
+        when(() => mockCacheProvider.getValue(any())).thenReturn([]);
+        when(() => mockCacheProvider.setObject('starredAssets', ['XCP', 'BTC']))
+            .thenAnswer((_) async => Future<void>.value());
+      },
+      build: () => balancesBloc,
+      act: (bloc) => bloc.add(Fetch()),
+      expect: () => [
+        const BalancesState.loading(),
+        BalancesState.complete(Result.ok(mockBalances, ['XCP', 'BTC'])),
+      ],
+      verify: (bloc) {
+        verify(() => mockCacheProvider.getValue('starredAssets')).called(1);
+        verify(() =>
+                mockCacheProvider.setObject('starredAssets', ['XCP', 'BTC']))
             .called(1);
       },
     );
@@ -197,6 +224,8 @@ void main() {
       verify: (bloc) {
         verify(() => mockBalanceRepository.getBalancesForAddresses(addresses))
             .called(1);
+        verify(() => mockCacheProvider.getValue('starredAssets')).called(1);
+        verifyNever(() => mockCacheProvider.setObject(any(), any()));
       },
     );
 
@@ -231,6 +260,8 @@ void main() {
       verify: (bloc) {
         verify(() => mockBalanceRepository.getBalancesForAddresses(addresses))
             .called(2);
+        verify(() => mockCacheProvider.getValue('starredAssets')).called(2);
+        verifyNever(() => mockCacheProvider.setObject(any(), any()));
       },
     );
 
@@ -265,6 +296,8 @@ void main() {
       verify: (bloc) {
         verify(() => mockBalanceRepository.getBalancesForAddresses(addresses))
             .called(2);
+        verify(() => mockCacheProvider.getValue('starredAssets')).called(2);
+        verifyNever(() => mockCacheProvider.setObject(any(), any()));
       },
     );
 
