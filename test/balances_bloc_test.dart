@@ -14,6 +14,7 @@ import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_bl
 import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_event.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_state.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 
 // Mock Classes
 
@@ -24,6 +25,8 @@ class MockAccountRepository extends Mock implements AccountRepository {}
 class MockAddressRepository extends Mock implements AddressRepository {}
 
 class MockAddressTxRepository extends Mock implements AddressTxRepository {}
+
+class MockCacheProvider extends Mock implements CacheProvider {}
 
 // Fakes for fallback values
 
@@ -42,7 +45,7 @@ void main() {
   group('BalancesBloc Tests', () {
     late BalancesBloc balancesBloc;
     late MockBalanceRepository mockBalanceRepository;
-
+    late MockCacheProvider mockCacheProvider;
     const addresses = ['mocked-address'];
 
     late List<MultiAddressBalance> mockBalances;
@@ -57,10 +60,12 @@ void main() {
 
     setUp(() {
       mockBalanceRepository = MockBalanceRepository();
+      mockCacheProvider = MockCacheProvider();
 
       balancesBloc = BalancesBloc(
         balanceRepository: mockBalanceRepository,
         addresses: addresses,
+        cacheProvider: mockCacheProvider,
       );
 
       // Create mock balances
@@ -123,11 +128,17 @@ void main() {
         return BalancesBloc(
           balanceRepository: mockBalanceRepository,
           addresses: const [],
+          cacheProvider: mockCacheProvider,
         );
+      },
+      setUp: () {
+        when(() => mockCacheProvider.getValue(any())).thenReturn(null);
+        when(() => mockCacheProvider.setObject(any(), any()))
+            .thenAnswer((_) async {});
       },
       act: (bloc) => bloc.add(Fetch()),
       expect: () => [
-        const BalancesState.complete(Result.ok([])),
+        const BalancesState.complete(Result.ok([], [])),
       ],
       verify: (bloc) {
         verifyNever(() => mockBalanceRepository.getBalancesForAddresses([]));
@@ -139,12 +150,16 @@ void main() {
       setUp: () {
         when(() => mockBalanceRepository.getBalancesForAddresses(addresses))
             .thenAnswer((_) async => mockBalances);
+        when(() => mockCacheProvider.getValue(any()))
+            .thenReturn(['XCP', 'BTC']);
+        when(() => mockCacheProvider.setObject(any(), any()))
+            .thenAnswer((_) async {});
       },
       build: () => balancesBloc,
       act: (bloc) => bloc.add(Fetch()),
       expect: () => [
         const BalancesState.loading(),
-        BalancesState.complete(Result.ok(mockBalances)),
+        BalancesState.complete(Result.ok(mockBalances, ['XCP', 'BTC'])),
       ],
       verify: (bloc) {
         verify(() => mockBalanceRepository.getBalancesForAddresses(addresses))
@@ -157,6 +172,10 @@ void main() {
       build: () {
         when(() => mockBalanceRepository.getBalancesForAddresses(addresses))
             .thenThrow(Exception('Failed to fetch balances'));
+        when(() => mockCacheProvider.getValue(any()))
+            .thenReturn(['XCP', 'BTC']);
+        when(() => mockCacheProvider.setObject(any(), any()))
+            .thenAnswer((_) async {});
         return balancesBloc;
       },
       act: (bloc) => bloc.add(Fetch()),
@@ -186,12 +205,17 @@ void main() {
       setUp: () {
         when(() => mockBalanceRepository.getBalancesForAddresses(addresses))
             .thenAnswer((_) async => mockBalances);
+        when(() => mockCacheProvider.getValue(any()))
+            .thenReturn(['XCP', 'BTC']);
+        when(() => mockCacheProvider.setObject(any(), any()))
+            .thenAnswer((_) async {});
       },
       build: () {
         // Create a new bloc with pre-populated cache
         final bloc = BalancesBloc(
           balanceRepository: mockBalanceRepository,
           addresses: addresses,
+          cacheProvider: mockCacheProvider,
         );
         // Trigger initial fetch to populate cache
         bloc.add(Fetch());
@@ -202,7 +226,7 @@ void main() {
       act: (bloc) => bloc.add(Fetch()),
       skip: 2, // Skip the initial loading and complete states
       expect: () => [
-        BalancesState.reloading(Result.ok(mockBalances)),
+        BalancesState.reloading(Result.ok(mockBalances, ['XCP', 'BTC'])),
       ],
       verify: (bloc) {
         verify(() => mockBalanceRepository.getBalancesForAddresses(addresses))
@@ -215,12 +239,17 @@ void main() {
       setUp: () {
         when(() => mockBalanceRepository.getBalancesForAddresses(addresses))
             .thenAnswer((_) async => mockBalances);
+        when(() => mockCacheProvider.getValue(any()))
+            .thenReturn(['XCP', 'BTC']);
+        when(() => mockCacheProvider.setObject(any(), any()))
+            .thenAnswer((_) async {});
       },
       build: () {
         // Create a new bloc with pre-populated cache
         final bloc = BalancesBloc(
           balanceRepository: mockBalanceRepository,
           addresses: addresses,
+          cacheProvider: mockCacheProvider,
         );
         // Trigger initial fetch to populate cache
         bloc.add(Fetch());
@@ -231,7 +260,7 @@ void main() {
       act: (bloc) => bloc.add(Fetch()),
       skip: 2, // Skip the initial loading and complete states
       expect: () => [
-        BalancesState.reloading(Result.ok(mockBalances)),
+        BalancesState.reloading(Result.ok(mockBalances, ['XCP', 'BTC'])),
       ],
       verify: (bloc) {
         verify(() => mockBalanceRepository.getBalancesForAddresses(addresses))
@@ -292,6 +321,9 @@ void main() {
           ),
         ];
       });
+      when(() => mockCacheProvider.getValue(any())).thenReturn(['XCP', 'BTC']);
+      when(() => mockCacheProvider.setObject(any(), any()))
+          .thenAnswer((_) async {});
 
       final emittedStates = <BalancesState>[];
       final subscription = balancesBloc.stream.listen(emittedStates.add);
@@ -343,7 +375,7 @@ void main() {
           emittedStates[i + 1],
           predicate<BalancesState>((state) => state.maybeWhen(
                 complete: (result) => result.maybeWhen(
-                  ok: (_) => true,
+                  ok: (_, __) => true,
                   orElse: () => false,
                 ),
                 orElse: () => false,
@@ -356,5 +388,125 @@ void main() {
       verify(() => mockBalanceRepository.getBalancesForAddresses(addresses))
           .called(greaterThanOrEqualTo(3));
     }, timeout: const Timeout(Duration(seconds: 2)));
+
+    group('ToggleStarred functionality', () {
+      blocTest<BalancesBloc, BalancesState>(
+        'adding an asset to starred assets when not already starred',
+        setUp: () {
+          when(() => mockBalanceRepository.getBalancesForAddresses(addresses))
+              .thenAnswer((_) async => mockBalances);
+          when(() => mockCacheProvider.getValue(any()))
+              .thenReturn(['XCP', 'BTC']);
+          when(() => mockCacheProvider
+                  .setObject('starredAssets', ['XCP', 'BTC', 'ASSET_A']))
+              .thenAnswer((_) async => Future<void>.value());
+        },
+        build: () => BalancesBloc(
+          balanceRepository: mockBalanceRepository,
+          addresses: addresses,
+          cacheProvider: mockCacheProvider,
+        ),
+        act: (bloc) async {
+          // First do a fetch to populate the _cachedBalances field
+          bloc.add(Fetch());
+          await Future.delayed(const Duration(milliseconds: 50));
+
+          // Then toggle the starred status
+          bloc.add(ToggleStarred(asset: 'ASSET_A'));
+        },
+        skip: 2, // Skip the initial loading and complete states
+        expect: () => [
+          BalancesState.complete(
+              Result.ok(mockBalances, ['XCP', 'BTC', 'ASSET_A'])),
+        ],
+        verify: (bloc) {
+          verify(() => mockBalanceRepository.getBalancesForAddresses(addresses))
+              .called(1);
+          verify(() => mockCacheProvider.getValue('starredAssets'))
+              .called(2); // 1 for the fetch, 1 for the toggle
+          verify(() => mockCacheProvider
+              .setObject('starredAssets', ['XCP', 'BTC', 'ASSET_A'])).called(1);
+        },
+      );
+      blocTest<BalancesBloc, BalancesState>(
+        'removing an asset from starred assets when already starred',
+        setUp: () {
+          // Setup mock repository to return balances
+          when(() => mockBalanceRepository.getBalancesForAddresses(addresses))
+              .thenAnswer((_) async => mockBalances);
+
+          // Use the exact key
+          when(() => mockCacheProvider.getValue('starredAssets'))
+              .thenReturn(['XCP', 'BTC', 'ASSET_A']);
+
+          when(() =>
+                  mockCacheProvider.setObject('starredAssets', ['XCP', 'BTC']))
+              .thenAnswer((_) async => Future<void>.value());
+        },
+        build: () => BalancesBloc(
+          balanceRepository: mockBalanceRepository,
+          addresses: addresses,
+          cacheProvider: mockCacheProvider,
+        ),
+        act: (bloc) async {
+          // First do a fetch to populate the _cachedBalances field
+          bloc.add(Fetch());
+          await Future.delayed(const Duration(milliseconds: 50));
+
+          // Then toggle the starred status
+          bloc.add(ToggleStarred(asset: 'ASSET_A'));
+        },
+        skip: 2, // Skip the loading and complete states from the Fetch event
+        expect: () => [
+          BalancesState.complete(Result.ok(mockBalances, ['XCP', 'BTC'])),
+        ],
+        verify: (bloc) {
+          verify(() => mockBalanceRepository.getBalancesForAddresses(addresses))
+              .called(1);
+          verify(() => mockCacheProvider.getValue('starredAssets'))
+              .called(2); // 1 for the fetch, 1 for the toggle
+          verify(() =>
+                  mockCacheProvider.setObject('starredAssets', ['XCP', 'BTC']))
+              .called(1);
+        },
+      );
+
+      test('should not emit new state if _cachedBalances is null', () async {
+        // Create a fresh bloc instance
+        final testBloc = BalancesBloc(
+          balanceRepository: mockBalanceRepository,
+          addresses: addresses,
+          cacheProvider: mockCacheProvider,
+        );
+
+        when(() => mockCacheProvider.getValue('starredAssets'))
+            .thenReturn(['XCP', 'BTC']);
+        when(() => mockCacheProvider.setObject('starredAssets', ['XCP', 'BTC']))
+            .thenAnswer((_) async => Future<void>.value());
+
+        // Create a listener to check if any states are emitted
+        bool stateEmitted = false;
+        final subscription = testBloc.stream.listen((_) {
+          stateEmitted = true;
+        });
+
+        // Directly call ToggleStarred without a prior Fetch
+        testBloc.add(ToggleStarred(asset: 'ASSET_A'));
+
+        // Wait a bit to ensure any potential state would be emitted
+        await Future.delayed(const Duration(milliseconds: 50));
+
+        // Verify no state was emitted
+        expect(stateEmitted, isFalse);
+
+        // Verify the cache was still updated
+        verifyNever(() => mockCacheProvider
+            .setObject('starredAssets', ['XCP', 'BTC', 'ASSET_A']));
+
+        // Clean up
+        await subscription.cancel();
+        await testBloc.close();
+      });
+    });
   });
 }
