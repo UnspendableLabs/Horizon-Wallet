@@ -212,10 +212,22 @@ class BalancesSliverState extends State<BalancesSliver> {
 
         final sortedBalances = filteredBalances
           ..sort((a, b) {
+            // BTC is always first
             if (a.asset == 'BTC') return -1;
             if (b.asset == 'BTC') return 1;
+
+            // XCP is always second
             if (a.asset == 'XCP') return -1;
             if (b.asset == 'XCP') return 1;
+
+            // Then sort by starred status
+            final aStarred = starredAssets.contains(a.asset);
+            final bStarred = starredAssets.contains(b.asset);
+            if (aStarred != bStarred) {
+              return aStarred ? -1 : 1;
+            }
+
+            // Finally sort alphabetically
             final aName = a.assetLongname ?? a.asset;
             final bName = b.assetLongname ?? b.asset;
             return aName.compareTo(bName);
@@ -224,18 +236,23 @@ class BalancesSliverState extends State<BalancesSliver> {
         return [
           Column(
             children: sortedBalances.map((balance) {
+              final isBitcoinOrXcp =
+                  balance.asset == 'BTC' || balance.asset == 'XCP';
               return Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   MouseRegion(
-                    cursor: SystemMouseCursors.click,
+                    cursor: isBitcoinOrXcp
+                        ? SystemMouseCursors.basic
+                        : SystemMouseCursors.click,
                     child: GestureDetector(
-                      onTap: () {
-                        // Toggle the starred status
-                        context
-                            .read<BalancesBloc>()
-                            .add(ToggleStarred(asset: balance.asset));
-                      },
+                      onTap: () => isBitcoinOrXcp
+                          ? null
+                          :
+                          // Toggle the starred status
+                          context
+                              .read<BalancesBloc>()
+                              .add(ToggleStarred(asset: balance.asset)),
                       child: starredAssets.contains(balance.asset)
                           ? AppIcons.starFilledIcon(
                               context: context,

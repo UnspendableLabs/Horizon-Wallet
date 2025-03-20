@@ -40,6 +40,15 @@ class BalancesBloc extends Bloc<BalancesEvent, BalancesState> {
         ? (starredAssets as List).map((e) => e.toString()).toList()
         : <String>[];
 
+    // BTC and XCP are always starred and cannot be unstarred
+    // Add them to the list if they are not already there
+    final originalLength = starredAssetsList.length;
+    starredAssetsList.addAll(
+        ['XCP', 'BTC'].where((asset) => !starredAssetsList.contains(asset)));
+    if (starredAssetsList.length > originalLength) {
+      cacheProvider.setObject(starredAssetsKey, starredAssetsList);
+    }
+
     // If we have cached data, emit a reloading state
     if (_cachedBalances != null) {
       emit(BalancesState.reloading(
