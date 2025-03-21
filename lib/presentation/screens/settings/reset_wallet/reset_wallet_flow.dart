@@ -256,6 +256,7 @@ class _ResetWalletFlowState extends State<ResetWalletFlow> {
                       style: Theme.of(context).textTheme.titleSmall),
                   const SizedBox(height: 24),
                   HorizonTextField(
+                    key: const Key('resetConfirmationTextField'),
                     controller: _confirmationController,
                     hintText: 'Type "RESET WALLET" to confirm',
                     errorText: _error,
