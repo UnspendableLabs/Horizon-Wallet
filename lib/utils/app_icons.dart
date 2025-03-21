@@ -713,12 +713,18 @@ class AppIcons {
     EdgeInsetsGeometry padding = const EdgeInsets.all(8.0),
     BoxFit fit = BoxFit.contain,
   }) {
-    return InkWell(
-      onTap: onPressed,
-      borderRadius: BorderRadius.circular(8),
-      child: Padding(
-        padding: padding,
-        child: icon,
+    return SizedBox(
+      width: width,
+      height: height,
+      child: Center(
+        child: InkWell(
+          onTap: onPressed,
+          borderRadius: BorderRadius.circular(4),
+          child: Padding(
+            padding: EdgeInsets.zero,
+            child: icon,
+          ),
+        ),
       ),
     );
   }

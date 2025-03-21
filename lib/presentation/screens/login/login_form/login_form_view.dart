@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:formz/formz.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/domain/repositories/config_repository.dart';
+import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:lottie/lottie.dart';
 import "./login_form_bloc.dart" as b;
@@ -72,35 +73,31 @@ class _LoginFormState extends State<LoginForm> {
                     child: buildAnimationAsset(),
                   ),
                 ),
-                TextField(
+                HorizonTextField(
+                  enabled: !state.status.isInProgressOrSuccess,
+                  controller: _passwordController,
+                  label: 'Password',
+                  obscureText: true,
                   onChanged: (value) => context
                       .read<b.LoginFormBloc>()
                       .add(b.PasswordChanged(value)),
                   onSubmitted: (_) {
                     context.read<b.LoginFormBloc>().add(b.FormSubmitted());
                   },
-                  enabled: !state.status.isInProgressOrSuccess,
-                  controller: _passwordController,
-                  obscureText: true,
-                  decoration: InputDecoration(
-                    labelText: 'Password',
-                    errorText: !state.password.isPure &&
-                            state.password.error ==
-                                b.PasswordValidationError.empty
-                        ? 'Password is required'
-                        : null,
-                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Password is required';
+                    }
+                    return null;
+                  },
                 ),
-                OutlinedButton(
-                    style: OutlinedButton.styleFrom(
-                      minimumSize: const Size.fromHeight(
-                          40), // fromHeight use double.infinity as width and 40 is the height
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 50, vertical: 20),
-                    ),
-                    onPressed: () =>
-                        context.read<b.LoginFormBloc>().add(b.FormSubmitted()),
-                    child: const Text("UNLOCK"))
+                SizedBox(
+                    height: 50,
+                    child: HorizonOutlinedButton(
+                        onPressed: () => context
+                            .read<b.LoginFormBloc>()
+                            .add(b.FormSubmitted()),
+                        buttonText: "Unlock"))
               ]));
     });
   }

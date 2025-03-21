@@ -174,9 +174,7 @@ class _HorizonOutlinedButtonState extends State<HorizonOutlinedButton> {
           style: widget.isTransparent == true
               ? Theme.of(context).filledButtonTheme.style
               : FilledButton.styleFrom(
-                  backgroundColor: isHovered
-                      ? const Color.fromRGBO(30, 231, 197, 0.50)
-                      : green2,
+                  backgroundColor: isHovered ? green2Hover : green2,
                   foregroundColor: Colors.black,
                 ),
           onPressed: widget.onPressed,
@@ -682,6 +680,9 @@ class HorizonTextField extends StatefulWidget {
   final TextInputType? keyboardType;
   final Widget? suffixIcon;
   final String? Function(String?)? validator;
+  final dynamic Function(dynamic)? onSubmitted;
+  final dynamic Function(dynamic)? onChanged;
+  final bool enabled;
 
   const HorizonTextField({
     super.key,
@@ -693,6 +694,9 @@ class HorizonTextField extends StatefulWidget {
     this.keyboardType,
     this.suffixIcon,
     this.validator,
+    this.onSubmitted,
+    this.onChanged,
+    this.enabled = true,
   });
 
   @override
@@ -750,7 +754,10 @@ class _HorizonTextFieldState extends State<HorizonTextField> {
           ),
           child: Center(
             child: TextFormField(
+              onChanged: widget.onChanged,
+              onFieldSubmitted: widget.onSubmitted,
               controller: widget.controller,
+              enabled: widget.enabled,
               focusNode: _focusNode,
               obscureText: widget.obscureText,
               keyboardType: widget.keyboardType,
@@ -966,9 +973,8 @@ class _HorizonActionButtonState extends State<HorizonActionButton> {
                         color: Colors.transparent,
                       ),
                     ),
-                    backgroundColor: WidgetStateProperty.all(isHovered
-                        ? const Color.fromRGBO(30, 231, 197, 0.80)
-                        : green2),
+                    backgroundColor: WidgetStateProperty.all(
+                        isHovered ? green2Hover : green2),
                     padding: WidgetStateProperty.all(
                       const EdgeInsets.symmetric(horizontal: 2, vertical: 0),
                     ),

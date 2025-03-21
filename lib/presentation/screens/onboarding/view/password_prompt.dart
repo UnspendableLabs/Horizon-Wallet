@@ -226,15 +226,15 @@ class PasswordPromptState extends State<PasswordPrompt> {
                       AppIcons.iconButton(
                         context: context,
                         icon: isObscured
-                            ? AppIcons.eyeOpenIcon(
+                            ? AppIcons.eyeClosedIcon(
                                 context: context,
-                                width: 18,
-                                height: 18,
+                                width: 10,
+                                height: 10,
                               )
-                            : AppIcons.eyeClosedIcon(
+                            : AppIcons.eyeOpenIcon(
                                 context: context,
-                                width: 18,
-                                height: 18,
+                                width: 12,
+                                height: 12,
                               ),
                         color: customTheme.inputTextColor,
                         onPressed: onToggleObscured,

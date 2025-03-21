@@ -183,6 +183,7 @@ class _ChooseFormatStepState extends State<ChooseFormatStep> {
               SizedBox(
                 width: 170,
                 child: SelectableText(
+                  textAlign: TextAlign.center,
                   'Import Your Wallet',
                   style: Theme.of(context).textTheme.titleMedium,
                 ),

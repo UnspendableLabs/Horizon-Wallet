@@ -174,16 +174,6 @@ class _ImportAddressFormState extends State<_ImportAddressForm> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 HorizonTextField(
-                  controller: _addressNameController,
-                  hintText: 'Address Name',
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return "Address name is required";
-                    }
-                    return null;
-                  },
-                ),
-                HorizonTextField(
                   controller: _privateKeyController,
                   hintText: 'Private Key',
                   obscureText: !_showPrivateKey,
@@ -223,74 +213,79 @@ class _ImportAddressFormState extends State<_ImportAddressForm> {
                   hintText: 'Select Format',
                 ),
                 const SizedBox(height: 24),
-                Container(
-                  width: 335,
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(18),
-                    border: Border.all(
-                      color: yellow1,
-                      width: 1,
-                    ),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      AppIcons.warningIcon(
-                          color: yellow1, height: 24, width: 24),
-                      const SizedBox(height: 8),
-                      SelectableText(
-                        textAlign: TextAlign.center,
-                        'If you use this address in a non-Counterparty wallet, you risk losing your UTXO-attached asset. Please confirm you understand the risk.',
-                        style: Theme.of(context).textTheme.titleSmall,
+                Center(
+                  child: Container(
+                    alignment: Alignment.center,
+                    width: 335,
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(18),
+                      border: Border.all(
+                        color: yellow1,
+                        width: 1,
                       ),
-                      Container(
-                        height: 64,
-                        margin: const EdgeInsets.symmetric(
-                            horizontal: 0.0, vertical: 5.0),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(18),
-                          border: Border.all(
-                            color: Theme.of(context)
-                                    .inputDecorationTheme
-                                    .outlineBorder
-                                    ?.color ??
-                                transparentBlack8,
-                            width: 1,
-                          ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        AppIcons.warningIcon(
+                            color: yellow1, height: 24, width: 24),
+                        const SizedBox(height: 8),
+                        SelectableText(
+                          textAlign: TextAlign.center,
+                          'If you use this address in a non-Counterparty wallet, you risk losing your UTXO-attached asset. Please confirm you understand the risk.',
+                          style: Theme.of(context).textTheme.titleSmall,
                         ),
-                        child: Material(
-                          color: Colors.transparent,
-                          child: InkWell(
+                        Container(
+                          height: 64,
+                          margin: const EdgeInsets.symmetric(
+                              horizontal: 0.0, vertical: 5.0),
+                          decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(18),
-                            child: Padding(
-                              padding:
-                                  const EdgeInsets.fromLTRB(14, 11, 14, 11),
-                              child: Row(
-                                children: [
-                                  Expanded(
-                                    child: Text(
-                                      'I understand the risk',
-                                      style:
-                                          Theme.of(context).textTheme.bodySmall,
+                            border: Border.all(
+                              color: Theme.of(context)
+                                      .inputDecorationTheme
+                                      .outlineBorder
+                                      ?.color ??
+                                  transparentBlack8,
+                              width: 1,
+                            ),
+                          ),
+                          child: Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(18),
+                              child: Padding(
+                                padding:
+                                    const EdgeInsets.fromLTRB(14, 11, 14, 11),
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        'I understand the risk',
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodySmall,
+                                      ),
                                     ),
-                                  ),
-                                  HorizonToggle(
-                                    value: _toggleRecognized,
-                                    onChanged: (_) {
-                                      setState(() {
-                                        _toggleRecognized = !_toggleRecognized;
-                                      });
-                                    },
-                                    backgroundColor: yellow1,
-                                  ),
-                                ],
+                                    HorizonToggle(
+                                      value: _toggleRecognized,
+                                      onChanged: (_) {
+                                        setState(() {
+                                          _toggleRecognized =
+                                              !_toggleRecognized;
+                                        });
+                                      },
+                                      backgroundColor: yellow1,
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
                 if (_errorMessage != null) ...[

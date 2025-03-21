@@ -21,6 +21,7 @@ const duskGradient2 = Color(0xFF6C49B2);
 const black = Color(0xFF000000);
 const white = Color(0xFFEAEAEA);
 const green2 = Color(0xFF1EE7C5);
+const green2Hover = Color.fromRGBO(30, 231, 197, 0.5);
 const transparentPurple8 = Color.fromRGBO(137, 146, 246, 0.08);
 const transparentPurple33 = Color.fromRGBO(137, 146, 246, 0.33);
 const transparentPurple16 = Color.fromRGBO(137, 146, 246, 0.16);

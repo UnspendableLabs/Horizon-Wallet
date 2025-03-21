@@ -46,6 +46,12 @@ class _FooterState extends State<_Footer> {
   @override
   Widget build(BuildContext context) {
     final config = GetIt.I.get<Config>();
+    final widthSpacing = MediaQuery.of(context).size.width * 0.02;
+    final textButtonStyle = TextButton.styleFrom(
+      minimumSize: Size.zero,
+      padding: EdgeInsets.zero,
+      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+    );
 
     return Material(
       elevation: 0,
@@ -55,43 +61,53 @@ class _FooterState extends State<_Footer> {
           return SizedBox(
             width: double.infinity,
             height: 38,
-            // padding: const EdgeInsets.symmetric(horizontal:  16),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 TextButton(
+                  style: textButtonStyle,
                   onPressed: () => context.go("/tos"),
                   child: const Text('Terms of Service'),
                 ),
-                // const SizedBox(width: 8),
+                SizedBox(width: widthSpacing),
                 TextButton(
+                  style: textButtonStyle,
                   onPressed: () => context.go("/privacy-policy"),
                   child: const Text('Privacy Policy'),
                 ),
-                // const SizedBox(width: 8),
+                SizedBox(width: widthSpacing),
                 TextButton(
+                  style: textButtonStyle,
                   onPressed: () {
                     launchUrl(Uri.parse(
                         "https://github.com/UnspendableLabs/Horizon-Wallet/releases/tag/v${config.version.toString()}"));
                   },
                   child: Text(config.version.toString()),
                 ),
-                // const SizedBox(width: 8),
+                SizedBox(width: widthSpacing),
                 state.nodeInfoState.when(
                   initial: () => const SizedBox.shrink(),
                   loading: () => const SizedBox.shrink(),
                   error: (error) => const SizedBox.shrink(),
-                  success: (nodeInfo) => TextButton(
-                    onPressed: () {
-                      launchUrl(Uri.parse(
-                          "https://github.com/CounterpartyXCP/counterparty-core/releases/tag/v${nodeInfo.version}"));
-                    },
-                    child: Text('Counterparty Core v${nodeInfo.version}'),
+                  success: (nodeInfo) => Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      TextButton(
+                        style: textButtonStyle,
+                        onPressed: () {
+                          launchUrl(Uri.parse(
+                              "https://github.com/CounterpartyXCP/counterparty-core/releases/tag/v${nodeInfo.version}"));
+                        },
+                        child: Text('Counterparty Core v${nodeInfo.version}'),
+                      ),
+                      if (config.isWebExtension) SizedBox(width: widthSpacing),
+                    ],
                   ),
                 ),
                 if (config.isWebExtension) ...[
-                  // const SizedBox(width: 8),
+                  SizedBox(width: widthSpacing),
                   TextButton(
+                    style: textButtonStyle,
                     onPressed: _openInNewTab,
                     child: const Text('Open in Tab'),
                   ),
