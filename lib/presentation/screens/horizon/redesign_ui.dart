@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
+import 'package:horizon/presentation/common/theme_extension.dart';
 import 'package:horizon/utils/app_icons.dart';
 
 class HorizonGradientButton extends StatefulWidget {
@@ -495,7 +496,7 @@ class _BlurredBackgroundDropdownState<T>
               child: BackdropFilter(
                 filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
                 child: Container(
-                  color: Colors.black.withOpacity(0.3),
+                  color: transparentBlack33,
                 ),
               ),
             ),
@@ -732,8 +733,121 @@ class _HorizonTextFieldState extends State<HorizonTextField> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDarkMode = theme.brightness == Brightness.dark;
+    final customTheme = theme.extension<CustomThemeExtension>()!;
+    // final hasText = widget.controller.text.isNotEmpty;
 
+    return FormField<String>(
+      autovalidateMode: AutovalidateMode.onUserInteraction,
+      // validator: (value) {
+      //   print(value);
+      //   if (widget.validator != null) {
+      //     return widget.validator!(value);
+      //   }
+      //   return null;
+      // },
+      builder: (FormFieldState<String> field) {
+        final hasError = field.hasError;
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            MouseRegion(
+              cursor: SystemMouseCursors.text,
+              child: Container(
+                height: 56,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(18),
+                  color: _hasText
+                      ? customTheme.inputBackground
+                      : customTheme.inputBackgroundEmpty,
+                ),
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(18),
+                    border: hasError
+                        ? Border.all(color: customTheme.errorColor, width: 1)
+                        : _focusNode.hasFocus
+                            ? const GradientBoxBorder(width: 1)
+                            : Border.all(color: customTheme.inputBorderColor),
+                  ),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: TextFormField(
+                          enabled: widget.enabled,
+                          // validator: widget.validator,
+                          controller: widget.controller,
+                          focusNode: _focusNode,
+                          obscureText: widget.obscureText,
+                          onChanged: widget.onChanged,
+                          onFieldSubmitted: widget.onSubmitted,
+                          onTap: () {
+                            FocusScope.of(context).requestFocus(_focusNode);
+                          },
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: customTheme.inputTextColor,
+                          ),
+                          decoration: InputDecoration(
+                            labelText: widget.label,
+                            isDense: theme.inputDecorationTheme.isDense,
+                            contentPadding:
+                                theme.inputDecorationTheme.contentPadding,
+                            border: theme.inputDecorationTheme.border,
+                            hintText: widget.hintText,
+                            hintStyle: theme.inputDecorationTheme.hintStyle,
+                          ),
+                          showCursor: true,
+                        ),
+                      ),
+                      if (widget.suffixIcon != null) ...[
+                        widget.suffixIcon!,
+                      ],
+                      // AppIcons.iconButton(
+                      //   context: context,
+                      //   icon: widget.obscureText
+                      //       ? AppIcons.eyeClosedIcon(
+                      //           context: context,
+                      //           width: 10,
+                      //           height: 10,
+                      //         )
+                      //       : AppIcons.eyeOpenIcon(
+                      //           context: context,
+                      //           width: 12,
+                      //           height: 12,
+                      //         ),
+                      //   color: customTheme.inputTextColor,
+                      //   onPressed: widget.onPressed,
+                      //   padding: EdgeInsets.zero,
+                      // ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            if (field.hasError ||
+                (widget.errorText != null || widget.validator != null)) ...[
+              Padding(
+                padding: const EdgeInsets.only(left: 16, top: 4),
+                child: Text(
+                  field.errorText ?? widget.errorText ?? '',
+                  style: TextStyle(
+                    color: customTheme.errorColor,
+                    fontSize: 12,
+                  ),
+                ),
+              ),
+            ],
+          ],
+        );
+      },
+    );
+    // final theme = Theme.of(context);
+    // final isDarkMode = theme.brightness == Brightness.dark;
+
+/*
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
@@ -766,16 +880,6 @@ class _HorizonTextFieldState extends State<HorizonTextField> {
               decoration: InputDecoration(
                 labelText: widget.label,
                 hintText: widget.hintText,
-                isDense: false,
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 0,
-                ),
-                suffix: widget.suffixIcon,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(18),
-                  borderSide: BorderSide.none,
-                ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(18),
                   borderSide: BorderSide.none,
@@ -805,6 +909,7 @@ class _HorizonTextFieldState extends State<HorizonTextField> {
         ],
       ],
     );
+    */
   }
 }
 
@@ -867,7 +972,7 @@ class _HorizonPasswordPromptState extends State<HorizonPasswordPrompt> {
               child: BackdropFilter(
                 filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
                 child: Container(
-                  color: Colors.black.withOpacity(0.3),
+                  color: transparentBlack33,
                 ),
               ),
             ),
@@ -901,11 +1006,18 @@ class _HorizonPasswordPromptState extends State<HorizonPasswordPrompt> {
                     suffixIcon: AppIcons.iconButton(
                       context: context,
                       icon: _obscurePassword
-                          ? AppIcons.eyeOpenIcon(
-                              context: context, height: 18, width: 18)
-                          : AppIcons.eyeClosedIcon(
-                              context: context, height: 18, width: 18),
+                          ? AppIcons.eyeClosedIcon(
+                              context: context,
+                              width: 10,
+                              height: 10,
+                            )
+                          : AppIcons.eyeOpenIcon(
+                              context: context,
+                              width: 12,
+                              height: 12,
+                            ),
                       onPressed: _togglePasswordVisibility,
+                      padding: EdgeInsets.zero,
                     ),
                   ),
                   SizedBox(

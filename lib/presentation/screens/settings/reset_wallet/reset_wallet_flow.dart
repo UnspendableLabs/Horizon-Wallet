@@ -29,7 +29,6 @@ class _ResetWalletFlowState extends State<ResetWalletFlow> {
   final _formKey = GlobalKey<FormState>();
   final _confirmationController = TextEditingController();
   bool _hasConfirmedUnderstanding = false;
-  String? _error;
 
   @override
   void dispose() {
@@ -259,8 +258,8 @@ class _ResetWalletFlowState extends State<ResetWalletFlow> {
                     key: const Key('resetConfirmationTextField'),
                     controller: _confirmationController,
                     hintText: 'Type "RESET WALLET" to confirm',
-                    errorText: _error,
                     validator: (value) {
+                      print(value);
                       if (value != 'RESET WALLET') {
                         return 'Please type "RESET WALLET" exactly';
                       }

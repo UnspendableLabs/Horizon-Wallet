@@ -185,16 +185,26 @@ class _ImportAddressFormState extends State<_ImportAddressForm> {
                   },
                   suffixIcon: AppIcons.iconButton(
                     context: context,
-                    icon: _showPrivateKey
-                        ? AppIcons.eyeOpenIcon(context: context)
-                        : AppIcons.eyeClosedIcon(context: context),
+                    icon: !_showPrivateKey
+                        ? AppIcons.eyeClosedIcon(
+                            context: context,
+                            width: 10,
+                            height: 10,
+                          )
+                        : AppIcons.eyeOpenIcon(
+                            context: context,
+                            width: 12,
+                            height: 12,
+                          ),
                     onPressed: () {
                       setState(() {
                         _showPrivateKey = !_showPrivateKey;
                       });
                     },
+                    padding: EdgeInsets.zero,
                   ),
                 ),
+                const SizedBox(height: 10),
                 HorizonRedesignDropdown<ImportAddressPkFormat>(
                   items: ImportAddressPkFormat.values.map((format) {
                     return DropdownMenuItem(
