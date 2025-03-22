@@ -6,6 +6,7 @@ import 'package:horizon/domain/entities/multi_address_balance_entry.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/presentation/common/transaction_stepper/bloc/transaction_state.dart';
 import 'package:horizon/presentation/common/transaction_stepper/view/transaction_stepper.dart';
+import 'package:horizon/presentation/common/transactions/gradient_number_input.dart';
 import 'package:horizon/presentation/common/transactions/multi_address_balance_dropdown.dart';
 import 'package:horizon/presentation/common/transactions/token_name_field.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
@@ -83,7 +84,13 @@ class _SendPageState extends State<SendPage> {
                     selectedValue: selectedBalance,
                   ),
                   commonHeightSizedBox,
-                  TokenNameField(balance: balance)
+                  TokenNameField(balance: balance),
+                  commonHeightSizedBox,
+                  GradientNumberInput(
+                      balance: balance,
+                      selectedBalance: selectedBalance,
+                      controller: TextEditingController(),
+                      onChanged: (value) {})
                 ],
               ),
               // Second step - values extracted by TransactionStepper
