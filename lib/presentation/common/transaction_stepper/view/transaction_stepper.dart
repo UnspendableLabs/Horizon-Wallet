@@ -15,14 +15,11 @@ class TransactionStepper extends StatefulWidget {
   /// Widget for transaction submission (third step)
   final Widget transactionSubmission;
 
-  /// Callback when back button is pressed
+  /// Callback when back button is pressed at the first step
   final VoidCallback onBack;
 
   /// Callback when next button is pressed (different action per step)
   final List<VoidCallback> onNextActions;
-
-  /// Text for the next button
-  final List<String> nextButtonTexts;
 
   /// Loading state for the current step
   final bool isLoading;
@@ -33,6 +30,13 @@ class TransactionStepper extends StatefulWidget {
   /// Whether to show the back button
   final bool showBackButton;
 
+  // Default button texts for the three steps
+  static const List<String> defaultButtonTexts = [
+    'CONTINUE',
+    'REVIEW',
+    'SIGN & SUBMIT'
+  ];
+
   const TransactionStepper({
     super.key,
     required this.transactionInputs,
@@ -40,42 +44,41 @@ class TransactionStepper extends StatefulWidget {
     required this.transactionSubmission,
     required this.onBack,
     required this.onNextActions,
-    required this.nextButtonTexts,
     this.isLoading = false,
     this.nextButtonEnabled = true,
     this.showBackButton = true,
-  })  : assert(onNextActions.length == 3,
-            'Must provide 3 next actions for each step'),
-        assert(nextButtonTexts.length == 3,
-            'Must provide 3 button texts for each step');
+  }) : assert(onNextActions.length == 3,
+            'Must provide 3 next actions for each step');
 
   @override
   State<TransactionStepper> createState() => _TransactionStepperState();
 }
 
 class _TransactionStepperState extends State<TransactionStepper> {
+  // Step management is internal to the TransactionStepper
   int _currentStep = 0;
 
   void _handleNext() {
+    // Execute the action for the current step
     widget.onNextActions[_currentStep]();
-    // Let the bloc handle the actual step transition
+
+    // Move to the next step if not on the last step
+    if (_currentStep < 2) {
+      setState(() {
+        _currentStep++;
+      });
+    }
   }
 
   void _handleBack() {
     if (_currentStep > 0) {
+      // Go back to the previous step
       setState(() {
         _currentStep--;
       });
     } else {
+      // Exit the stepper if at the first step
       widget.onBack();
-    }
-  }
-
-  void goToStep(int step) {
-    if (step >= 0 && step < 3) {
-      setState(() {
-        _currentStep = step;
-      });
     }
   }
 
@@ -159,7 +162,8 @@ class _TransactionStepperState extends State<TransactionStepper> {
                           isTransparent: false,
                           onPressed:
                               widget.nextButtonEnabled ? _handleNext : null,
-                          buttonText: widget.nextButtonTexts[_currentStep],
+                          buttonText: TransactionStepper
+                              .defaultButtonTexts[_currentStep],
                         ),
                       ),
                     ),
