@@ -5,6 +5,8 @@ import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/common/theme_extension.dart';
 import 'package:horizon/utils/app_icons.dart';
 
+Widget commonHeightSizedBox = const SizedBox(height: 10);
+
 class HorizonGradientButton extends StatefulWidget {
   final VoidCallback? onPressed;
   final String buttonText;
@@ -262,6 +264,7 @@ class HorizonRedesignDropdown<T> extends StatefulWidget {
   final Function(T?) onChanged;
   final T? selectedValue;
   final String hintText;
+  final Widget Function(T)? selectedItemBuilder;
 
   const HorizonRedesignDropdown({
     super.key,
@@ -269,6 +272,7 @@ class HorizonRedesignDropdown<T> extends StatefulWidget {
     required this.onChanged,
     required this.selectedValue,
     required this.hintText,
+    this.selectedItemBuilder,
   });
 
   @override
@@ -398,16 +402,22 @@ class _HorizonRedesignDropdownState<T>
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Expanded(
-                  child: Text(
-                    widget.selectedValue != null
-                        ? (widget.items
-                                .firstWhere((item) =>
-                                    item.value == widget.selectedValue)
-                                .child as Text)
-                            .data!
-                        : widget.hintText,
-                    style: Theme.of(context).textTheme.bodySmall,
-                  ),
+                  child: widget.selectedValue != null
+                      ? widget.selectedItemBuilder != null
+                          ? widget
+                              .selectedItemBuilder!(widget.selectedValue as T)
+                          : Text(
+                              (widget.items
+                                      .firstWhere((item) =>
+                                          item.value == widget.selectedValue)
+                                      .child as Text)
+                                  .data!,
+                              style: Theme.of(context).textTheme.bodySmall,
+                            )
+                      : Text(
+                          widget.hintText,
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
                 ),
                 _isOpen
                     ? AppIcons.caretUpIcon(
@@ -714,7 +724,17 @@ class _HorizonTextFieldState extends State<HorizonTextField> {
     _focusNode.addListener(() {
       setState(() {});
     });
+    _hasText = widget.controller.text.isNotEmpty;
     widget.controller.addListener(_onTextChanged);
+  }
+
+  @override
+  void didUpdateWidget(HorizonTextField oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.controller != widget.controller ||
+        _hasText != widget.controller.text.isNotEmpty) {
+      _hasText = widget.controller.text.isNotEmpty;
+    }
   }
 
   @override
@@ -725,9 +745,12 @@ class _HorizonTextFieldState extends State<HorizonTextField> {
   }
 
   void _onTextChanged() {
-    setState(() {
-      _hasText = widget.controller.text.isNotEmpty;
-    });
+    final hasText = widget.controller.text.isNotEmpty;
+    if (_hasText != hasText) {
+      setState(() {
+        _hasText = hasText;
+      });
+    }
   }
 
   @override
@@ -794,6 +817,9 @@ class _HorizonTextFieldState extends State<HorizonTextField> {
                             color: customTheme.inputTextColor,
                           ),
                           decoration: InputDecoration(
+                            fillColor: _hasText
+                                ? customTheme.inputBackground
+                                : customTheme.inputBackgroundEmpty,
                             labelText: widget.label,
                             isDense: theme.inputDecorationTheme.isDense,
                             contentPadding:

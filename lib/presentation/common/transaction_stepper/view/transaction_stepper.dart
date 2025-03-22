@@ -5,26 +5,37 @@ import 'package:horizon/presentation/common/transaction_stepper/bloc/transaction
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 import 'package:horizon/utils/app_icons.dart';
 
+/// Represents the return type for step builders, containing both a title and widgets
+class StepContent {
+  final String title;
+  final List<Widget> widgets;
+
+  const StepContent({
+    required this.title,
+    required this.widgets,
+  });
+}
+
 /// A transaction stepper widget that handles the UI for transaction flows.
 /// Includes three steps: inputs, confirmation, and submission.
 class TransactionStepper<T> extends StatefulWidget {
   /// Widget builder for transaction inputs (first step)
   /// Receives balances, data, loading state and error message - all extracted from the state
-  /// Returns a list of widgets to be displayed in a column
-  final List<Widget> Function(MultiAddressBalance? balances, T? data,
+  /// Returns a StepContent with title and widgets
+  final StepContent Function(MultiAddressBalance? balances, T? data,
       bool isLoading, String? errorMessage) buildInputsStep;
 
   /// Widget builder for transaction confirmation (second step)
   /// Receives balances, data and error message - all extracted from the state
-  /// Returns a list of widgets to be displayed in a column
-  final List<Widget> Function(
+  /// Returns a StepContent with title and widgets
+  final StepContent Function(
           MultiAddressBalance? balances, T? data, String? errorMessage)
       buildConfirmationStep;
 
   /// Widget builder for transaction submission (third step)
   /// This step uses pattern matching directly so it needs the state
-  /// Returns a list of widgets to be displayed in a column
-  final List<Widget> Function(MultiAddressBalance? balances, T? data)
+  /// Returns a StepContent with title and widgets
+  final StepContent Function(MultiAddressBalance? balances, T? data)
       buildSubmissionStep;
 
   /// Callback when back button is pressed at the first step
@@ -185,32 +196,20 @@ class _TransactionStepperState<T> extends State<TransactionStepper<T>> {
       orElse: () => errorMessage,
     );
 
-    // Get the appropriate widget for the current step
-    Widget currentStepWidget;
+    // Get the appropriate StepContent for the current step
+    StepContent stepContent;
 
     if (_currentStep == 0) {
       // Inputs step - needs loading state too
-      final widgets =
+      stepContent =
           widget.buildInputsStep(balances, data, isLoading, extractedErrorMsg);
-      currentStepWidget = Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: widgets,
-      );
     } else if (_currentStep == 1) {
       // Confirmation step
-      final widgets =
+      stepContent =
           widget.buildConfirmationStep(balances, data, extractedErrorMsg);
-      currentStepWidget = Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: widgets,
-      );
     } else {
       // Submission step
-      final widgets = widget.buildSubmissionStep(balances, data);
-      currentStepWidget = Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: widgets,
-      );
+      stepContent = widget.buildSubmissionStep(balances, data);
     }
 
     // Prepare error widget if there's an error
@@ -304,12 +303,29 @@ class _TransactionStepperState<T> extends State<TransactionStepper<T>> {
               ),
               const SizedBox(height: 16),
 
+              // Step title
+              Padding(
+                padding:
+                    EdgeInsets.symmetric(horizontal: isSmallScreen ? 16 : 30),
+                child: Text(
+                  stepContent.title,
+                  style: Theme.of(context).textTheme.titleMedium,
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              const SizedBox(height: 24),
+
               // Error display at top if there is an error
               if (errorWidget != null) errorWidget,
 
               // Main content
               Expanded(
-                child: currentStepWidget,
+                child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: stepContent.widgets,
+                  ),
+                ),
               ),
               // Bottom buttons
               Padding(
