@@ -463,8 +463,15 @@ class _SettingsViewState extends State<SettingsView> {
                       ),
                       leading: Padding(
                         padding: const EdgeInsets.only(left: 9.0, top: 18.0),
-                        child: BackButton(
-                          color: Theme.of(context).textTheme.bodyMedium?.color,
+                        child: AppIcons.iconButton(
+                          context: context,
+                          width: 32,
+                          height: 32,
+                          icon: AppIcons.backArrowIcon(
+                              context: context,
+                              width: 24,
+                              height: 24,
+                              fit: BoxFit.fitHeight),
                           onPressed: _currentPage != SettingsPage.main
                               ? _navigateBack
                               : () {

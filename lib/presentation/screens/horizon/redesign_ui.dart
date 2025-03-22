@@ -734,19 +734,18 @@ class _HorizonTextFieldState extends State<HorizonTextField> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final customTheme = theme.extension<CustomThemeExtension>()!;
-    // final hasText = widget.controller.text.isNotEmpty;
 
     return FormField<String>(
       autovalidateMode: AutovalidateMode.onUserInteraction,
-      // validator: (value) {
-      //   print(value);
-      //   if (widget.validator != null) {
-      //     return widget.validator!(value);
-      //   }
-      //   return null;
-      // },
+      validator: widget.validator,
+      initialValue: widget.controller.text,
       builder: (FormFieldState<String> field) {
         final hasError = field.hasError;
+
+        // Update field value when controller changes
+        widget.controller.addListener(() {
+          field.didChange(widget.controller.text);
+        });
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -777,11 +776,15 @@ class _HorizonTextFieldState extends State<HorizonTextField> {
                       Expanded(
                         child: TextFormField(
                           enabled: widget.enabled,
-                          // validator: widget.validator,
                           controller: widget.controller,
                           focusNode: _focusNode,
                           obscureText: widget.obscureText,
-                          onChanged: widget.onChanged,
+                          onChanged: (value) {
+                            if (widget.onChanged != null) {
+                              widget.onChanged!(value);
+                            }
+                            field.didChange(value);
+                          },
                           onFieldSubmitted: widget.onSubmitted,
                           onTap: () {
                             FocusScope.of(context).requestFocus(_focusNode);
@@ -798,6 +801,11 @@ class _HorizonTextFieldState extends State<HorizonTextField> {
                             border: theme.inputDecorationTheme.border,
                             hintText: widget.hintText,
                             hintStyle: theme.inputDecorationTheme.hintStyle,
+                            errorStyle: const TextStyle(
+                              height: 0,
+                              fontSize: 0,
+                              color: Colors.transparent,
+                            ),
                           ),
                           showCursor: true,
                         ),
@@ -805,30 +813,12 @@ class _HorizonTextFieldState extends State<HorizonTextField> {
                       if (widget.suffixIcon != null) ...[
                         widget.suffixIcon!,
                       ],
-                      // AppIcons.iconButton(
-                      //   context: context,
-                      //   icon: widget.obscureText
-                      //       ? AppIcons.eyeClosedIcon(
-                      //           context: context,
-                      //           width: 10,
-                      //           height: 10,
-                      //         )
-                      //       : AppIcons.eyeOpenIcon(
-                      //           context: context,
-                      //           width: 12,
-                      //           height: 12,
-                      //         ),
-                      //   color: customTheme.inputTextColor,
-                      //   onPressed: widget.onPressed,
-                      //   padding: EdgeInsets.zero,
-                      // ),
                     ],
                   ),
                 ),
               ),
             ),
-            if (field.hasError ||
-                (widget.errorText != null || widget.validator != null)) ...[
+            if (hasError || widget.errorText != null) ...[
               Padding(
                 padding: const EdgeInsets.only(left: 16, top: 4),
                 child: Text(
@@ -844,72 +834,6 @@ class _HorizonTextFieldState extends State<HorizonTextField> {
         );
       },
     );
-    // final theme = Theme.of(context);
-    // final isDarkMode = theme.brightness == Brightness.dark;
-
-/*
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          width: double.infinity,
-          height: 56,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(18),
-            border: _focusNode.hasFocus
-                ? const GradientBoxBorder(width: 1)
-                : Border.fromBorderSide(
-                    Theme.of(context).inputDecorationTheme.outlineBorder ??
-                        const BorderSide()),
-            color: _hasText
-                ? (isDarkMode ? grey5 : grey1)
-                : (isDarkMode ? offBlack : offWhite),
-          ),
-          child: Center(
-            child: TextFormField(
-              onChanged: widget.onChanged,
-              onFieldSubmitted: widget.onSubmitted,
-              controller: widget.controller,
-              enabled: widget.enabled,
-              focusNode: _focusNode,
-              obscureText: widget.obscureText,
-              keyboardType: widget.keyboardType,
-              style: theme.textTheme.bodyMedium,
-              validator: widget.validator,
-              decoration: InputDecoration(
-                labelText: widget.label,
-                hintText: widget.hintText,
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(18),
-                  borderSide: BorderSide.none,
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(18),
-                  borderSide: BorderSide.none,
-                ),
-                focusedErrorBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(18),
-                  borderSide: BorderSide.none,
-                ),
-              ),
-            ),
-          ),
-        ),
-        if (widget.errorText != null || widget.validator != null) ...[
-          Padding(
-            padding: const EdgeInsets.only(left: 12),
-            child: Text(
-              widget.errorText ?? '',
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: red1,
-              ),
-            ),
-          ),
-        ],
-      ],
-    );
-    */
   }
 }
 
