@@ -1,21 +1,23 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:horizon/domain/entities/multi_address_balance.dart';
 
 part 'transaction_state.freezed.dart';
 
-/// Base interface that all transaction states must implement
-abstract interface class TransactionStateBase {
-  /// Get the current loading status
-  bool get isLoading;
-
-  /// Get the current error message, if any
-  String? get error;
-}
-
-/// Base state for loading status and errors
+/// Generic transaction state with type parameter T for success data
 @freezed
-class TransactionLoadingState with _$TransactionLoadingState {
-  const factory TransactionLoadingState.initial() = _Initial;
-  const factory TransactionLoadingState.loading() = _Loading;
-  const factory TransactionLoadingState.success() = _Success;
-  const factory TransactionLoadingState.error(String message) = _Error;
+class TransactionState<T> with _$TransactionState<T> {
+  /// Initial state before any data is loaded
+  const factory TransactionState.initial() = _Initial<T>;
+
+  /// Loading state while data is being fetched
+  const factory TransactionState.loading() = _Loading<T>;
+
+  /// Error state when something went wrong
+  const factory TransactionState.error(String message) = _Error<T>;
+
+  /// Success state with generic data of type T
+  const factory TransactionState.success({
+    required List<MultiAddressBalance> balances,
+    T? data,
+  }) = _Success<T>;
 }

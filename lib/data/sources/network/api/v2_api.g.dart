@@ -4598,12 +4598,16 @@ class _V2Api implements V2Api {
     String addresses, [
     CursorModel? cursor,
     int? limit,
+    String? asset,
+    String? type,
   ]) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{
       r'addresses': addresses,
       r'cursor': cursor?.toJson(),
       r'limit': limit,
+      r'asset': asset,
+      r'type': type,
     };
     queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};

@@ -6,7 +6,7 @@ import 'package:horizon/presentation/common/transaction_stepper/bloc/transaction
 
 /// Interface that all transaction blocs must implement
 abstract interface class TransactionBlocInterface<
-    T extends TransactionStateBase> {
+    T extends TransactionState<T>> {
   /// Handle dependencies requested when the page is loaded
   Future<void> onDependenciesRequested(
       DependenciesRequested event, Emitter<T> emit);
@@ -19,7 +19,7 @@ abstract interface class TransactionBlocInterface<
 }
 
 /// Base bloc for transaction flows
-abstract class TransactionBloc<T extends TransactionStateBase>
+abstract class TransactionBloc<T extends TransactionState<T>>
     extends Bloc<TransactionEvent, T> implements TransactionBlocInterface<T> {
   final String transactionType;
   late final ErrorService _errorService;

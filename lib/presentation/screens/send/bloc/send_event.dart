@@ -1,21 +1,25 @@
 import 'package:horizon/presentation/common/transaction_stepper/bloc/transaction_event.dart';
 
-/// Send-specific implementation of DependenciesRequested
+/// Event triggered when the send page is loaded
 class SendDependenciesRequested extends DependenciesRequested {
-  // No arguments needed
+  SendDependenciesRequested({
+    required super.assetName,
+    required super.addresses,
+  });
 }
 
-/// Send-specific implementation of TransactionComposed
+/// Event triggered when moving from input step to confirmation step in the send flow
 class SendTransactionComposed extends TransactionComposed {
-  // No arguments needed
+  final String? destinationAddress;
+  final String? amount;
+
+  SendTransactionComposed({
+    this.destinationAddress,
+    this.amount,
+  });
 }
 
-/// Send-specific implementation of TransactionSubmitted
+/// Event triggered when moving from confirmation step to submission step in the send flow
 class SendTransactionSubmitted extends TransactionSubmitted {
-  // No arguments needed
-}
-
-/// Event for when the user enters a password to sign the transaction
-class SendTransactionSigned extends TransactionEvent {
-  // No arguments needed
+  SendTransactionSubmitted();
 }

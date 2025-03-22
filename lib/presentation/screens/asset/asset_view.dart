@@ -9,8 +9,12 @@ import 'package:horizon/presentation/screens/asset/bloc/asset_view_bloc.dart';
 import 'package:horizon/presentation/screens/asset/bloc/asset_view_event.dart';
 import 'package:horizon/presentation/screens/dashboard/view/asset_icon.dart';
 import 'package:horizon/presentation/screens/send/view/send_page.dart';
+import 'package:horizon/presentation/session/bloc/session_cubit.dart';
+import 'package:horizon/presentation/session/bloc/session_state.dart';
 import 'package:horizon/remote_data_bloc/remote_data_state.dart';
 import 'package:horizon/utils/app_icons.dart';
+
+enum TransactionType { send }
 
 enum BalanceViewFilter { address, utxo }
 
@@ -57,14 +61,40 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
     });
   }
 
-  // Shows the send page as a full screen dialog
-  void _showSendPage() {
+  // Show the send page in a fullscreen dialog
+  void _showTransactionPage({required TransactionType type}) {
+    final session = context.read<SessionStateCubit>().state;
+
+    final page = switch (type) {
+      TransactionType.send => SendPage(
+          assetName: widget.assetName,
+          addresses: session.allAddresses,
+        ),
+    };
+
+    switch (type) {
+      case TransactionType.send:
+        showDialog(
+          context: context,
+          builder: (dialogContext) {
+            return Dialog.fullscreen(
+              child: page,
+            );
+          },
+        );
+        break;
+    }
     showDialog(
       context: context,
-      barrierDismissible: false,
-      builder: (context) => const Dialog.fullscreen(
-        child: SendPage(),
-      ),
+      builder: (dialogContext) {
+        final session = context.read<SessionStateCubit>().state;
+        return Dialog.fullscreen(
+          child: SendPage(
+            assetName: widget.assetName,
+            addresses: session.allAddresses,
+          ),
+        );
+      },
     );
   }
 
@@ -339,7 +369,8 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
                                   context: context,
                                 ),
                                 onTap: () {
-                                  _showSendPage();
+                                  _showTransactionPage(
+                                      type: TransactionType.send);
                                 },
                               ),
                               IconItemButton(
@@ -359,7 +390,8 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
                                   context: context,
                                 ),
                                 onTap: () {
-                                  _showSendPage();
+                                  _showTransactionPage(
+                                      type: TransactionType.send);
                                 },
                               ),
                               IconItemButton(

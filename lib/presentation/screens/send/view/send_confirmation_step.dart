@@ -1,17 +1,23 @@
 import 'package:flutter/material.dart';
-import 'package:horizon/presentation/screens/send/bloc/send_state.dart';
+import 'package:horizon/domain/entities/multi_address_balance.dart';
+import 'package:horizon/presentation/screens/send/bloc/send_bloc.dart';
 
 /// Second step of the send flow - super minimal
 class SendConfirmationStep extends StatelessWidget {
-  final SendState state;
+  final List<MultiAddressBalance> balances;
+  final SendData? data;
 
   const SendConfirmationStep({
     super.key,
-    required this.state,
+    required this.balances,
+    this.data,
   });
 
   @override
   Widget build(BuildContext context) {
+    // Get asset info if available
+    final assetName = balances.isNotEmpty ? balances.first.asset : null;
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16.0),
       child: Column(
@@ -25,36 +31,50 @@ class SendConfirmationStep extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 24),
-          const Card(
+          // Transaction summary
+          Card(
             child: Padding(
-              padding: EdgeInsets.all(16.0),
+              padding: const EdgeInsets.all(16.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    'Transaction Details',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  SizedBox(height: 8),
-                  Text('This is a placeholder for transaction details.'),
-                  SizedBox(height: 16),
-                  Text('Fee: 1000 sats'),
+                  // Show confirmation details
+                  _buildConfirmationDetail(
+                      'Destination', data?.destinationAddress),
+                  const SizedBox(height: 8),
+                  _buildConfirmationDetail('Amount', data?.amount),
+                  const SizedBox(height: 8),
+                  // Show asset if available
+                  if (assetName != null)
+                    _buildConfirmationDetail('Asset', assetName),
                 ],
               ),
             ),
           ),
-          if (state.error != null)
-            Padding(
-              padding: const EdgeInsets.only(top: 16.0),
-              child: Text(
-                state.error!,
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.error,
-                ),
-              ),
-            ),
         ],
       ),
+    );
+  }
+
+  // Helper to build a confirmation detail row
+  Widget _buildConfirmationDetail(String label, String? value) {
+    return Row(
+      children: [
+        Text(
+          '$label: ',
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        Expanded(
+          child: Text(
+            value ?? 'Not specified',
+            style: const TextStyle(
+              fontWeight: FontWeight.normal,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
