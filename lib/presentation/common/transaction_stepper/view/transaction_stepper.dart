@@ -10,25 +10,30 @@ import 'package:horizon/utils/app_icons.dart';
 class TransactionStepper<T> extends StatefulWidget {
   /// Widget builder for transaction inputs (first step)
   /// Receives balances, data, loading state and error message - all extracted from the state
-  final Widget Function(List<MultiAddressBalance> balances, T? data,
+  /// Returns a list of widgets to be displayed in a column
+  final List<Widget> Function(MultiAddressBalance? balances, T? data,
       bool isLoading, String? errorMessage) buildInputsStep;
 
   /// Widget builder for transaction confirmation (second step)
   /// Receives balances, data and error message - all extracted from the state
-  final Widget Function(
-          List<MultiAddressBalance> balances, T? data, String? errorMessage)
+  /// Returns a list of widgets to be displayed in a column
+  final List<Widget> Function(
+          MultiAddressBalance? balances, T? data, String? errorMessage)
       buildConfirmationStep;
 
   /// Widget builder for transaction submission (third step)
   /// This step uses pattern matching directly so it needs the state
-  final Widget Function(List<MultiAddressBalance> balances, T? data)
+  /// Returns a list of widgets to be displayed in a column
+  final List<Widget> Function(MultiAddressBalance? balances, T? data)
       buildSubmissionStep;
 
   /// Callback when back button is pressed at the first step
   final VoidCallback onBack;
 
-  /// Callback when next button is pressed (different action per step)
-  final List<VoidCallback> onNextActions;
+  /// Callbacks for each step's "Next" button
+  final VoidCallback onInputsStepNext;
+  final VoidCallback onConfirmationStepNext;
+  final VoidCallback onSubmissionStepNext;
 
   /// The transaction state
   final TransactionState<T> state;
@@ -52,12 +57,13 @@ class TransactionStepper<T> extends StatefulWidget {
     required this.buildConfirmationStep,
     required this.buildSubmissionStep,
     required this.onBack,
-    required this.onNextActions,
+    required this.onInputsStepNext,
+    required this.onConfirmationStepNext,
+    required this.onSubmissionStepNext,
     required this.state,
     this.nextButtonEnabled = true,
     this.showBackButton = true,
-  }) : assert(onNextActions.length == 3,
-            'Must provide 3 next actions for each step');
+  });
 
   @override
   State<TransactionStepper<T>> createState() => _TransactionStepperState<T>();
@@ -68,8 +74,18 @@ class _TransactionStepperState<T> extends State<TransactionStepper<T>> {
   int _currentStep = 0;
 
   void _handleNext() {
-    // Execute the action for the current step
-    widget.onNextActions[_currentStep]();
+    // Execute the appropriate action for the current step
+    switch (_currentStep) {
+      case 0:
+        widget.onInputsStepNext();
+        break;
+      case 1:
+        widget.onConfirmationStepNext();
+        break;
+      case 2:
+        widget.onSubmissionStepNext();
+        break;
+    }
 
     // Move to the next step if not on the last step
     if (_currentStep < 2) {
@@ -155,7 +171,7 @@ class _TransactionStepperState<T> extends State<TransactionStepper<T>> {
     bool isSmallScreen,
     bool showLoadingOverlay,
     String? errorMessage, {
-    List<MultiAddressBalance> balances = const [],
+    MultiAddressBalance? balances,
     T? data,
   }) {
     // Extract all state information for the builder functions
@@ -174,15 +190,27 @@ class _TransactionStepperState<T> extends State<TransactionStepper<T>> {
 
     if (_currentStep == 0) {
       // Inputs step - needs loading state too
-      currentStepWidget =
+      final widgets =
           widget.buildInputsStep(balances, data, isLoading, extractedErrorMsg);
+      currentStepWidget = Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: widgets,
+      );
     } else if (_currentStep == 1) {
       // Confirmation step
-      currentStepWidget =
+      final widgets =
           widget.buildConfirmationStep(balances, data, extractedErrorMsg);
+      currentStepWidget = Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: widgets,
+      );
     } else {
-      // Submission step - pass the whole state
-      currentStepWidget = widget.buildSubmissionStep(balances, data);
+      // Submission step
+      final widgets = widget.buildSubmissionStep(balances, data);
+      currentStepWidget = Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: widgets,
+      );
     }
 
     // Prepare error widget if there's an error

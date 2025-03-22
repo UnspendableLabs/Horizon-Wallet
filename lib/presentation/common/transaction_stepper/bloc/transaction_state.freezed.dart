@@ -21,8 +21,7 @@ mixin _$TransactionState<T> {
     required TResult Function() initial,
     required TResult Function() loading,
     required TResult Function(String message) error,
-    required TResult Function(List<MultiAddressBalance> balances, T? data)
-        success,
+    required TResult Function(MultiAddressBalance balances, T? data) success,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
@@ -30,7 +29,7 @@ mixin _$TransactionState<T> {
     TResult? Function()? initial,
     TResult? Function()? loading,
     TResult? Function(String message)? error,
-    TResult? Function(List<MultiAddressBalance> balances, T? data)? success,
+    TResult? Function(MultiAddressBalance balances, T? data)? success,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
@@ -38,7 +37,7 @@ mixin _$TransactionState<T> {
     TResult Function()? initial,
     TResult Function()? loading,
     TResult Function(String message)? error,
-    TResult Function(List<MultiAddressBalance> balances, T? data)? success,
+    TResult Function(MultiAddressBalance balances, T? data)? success,
     required TResult orElse(),
   }) =>
       throw _privateConstructorUsedError;
@@ -128,8 +127,7 @@ class _$InitialImpl<T> implements _Initial<T> {
     required TResult Function() initial,
     required TResult Function() loading,
     required TResult Function(String message) error,
-    required TResult Function(List<MultiAddressBalance> balances, T? data)
-        success,
+    required TResult Function(MultiAddressBalance balances, T? data) success,
   }) {
     return initial();
   }
@@ -140,7 +138,7 @@ class _$InitialImpl<T> implements _Initial<T> {
     TResult? Function()? initial,
     TResult? Function()? loading,
     TResult? Function(String message)? error,
-    TResult? Function(List<MultiAddressBalance> balances, T? data)? success,
+    TResult? Function(MultiAddressBalance balances, T? data)? success,
   }) {
     return initial?.call();
   }
@@ -151,7 +149,7 @@ class _$InitialImpl<T> implements _Initial<T> {
     TResult Function()? initial,
     TResult Function()? loading,
     TResult Function(String message)? error,
-    TResult Function(List<MultiAddressBalance> balances, T? data)? success,
+    TResult Function(MultiAddressBalance balances, T? data)? success,
     required TResult orElse(),
   }) {
     if (initial != null) {
@@ -243,8 +241,7 @@ class _$LoadingImpl<T> implements _Loading<T> {
     required TResult Function() initial,
     required TResult Function() loading,
     required TResult Function(String message) error,
-    required TResult Function(List<MultiAddressBalance> balances, T? data)
-        success,
+    required TResult Function(MultiAddressBalance balances, T? data) success,
   }) {
     return loading();
   }
@@ -255,7 +252,7 @@ class _$LoadingImpl<T> implements _Loading<T> {
     TResult? Function()? initial,
     TResult? Function()? loading,
     TResult? Function(String message)? error,
-    TResult? Function(List<MultiAddressBalance> balances, T? data)? success,
+    TResult? Function(MultiAddressBalance balances, T? data)? success,
   }) {
     return loading?.call();
   }
@@ -266,7 +263,7 @@ class _$LoadingImpl<T> implements _Loading<T> {
     TResult Function()? initial,
     TResult Function()? loading,
     TResult Function(String message)? error,
-    TResult Function(List<MultiAddressBalance> balances, T? data)? success,
+    TResult Function(MultiAddressBalance balances, T? data)? success,
     required TResult orElse(),
   }) {
     if (loading != null) {
@@ -384,8 +381,7 @@ class _$ErrorImpl<T> implements _Error<T> {
     required TResult Function() initial,
     required TResult Function() loading,
     required TResult Function(String message) error,
-    required TResult Function(List<MultiAddressBalance> balances, T? data)
-        success,
+    required TResult Function(MultiAddressBalance balances, T? data) success,
   }) {
     return error(message);
   }
@@ -396,7 +392,7 @@ class _$ErrorImpl<T> implements _Error<T> {
     TResult? Function()? initial,
     TResult? Function()? loading,
     TResult? Function(String message)? error,
-    TResult? Function(List<MultiAddressBalance> balances, T? data)? success,
+    TResult? Function(MultiAddressBalance balances, T? data)? success,
   }) {
     return error?.call(message);
   }
@@ -407,7 +403,7 @@ class _$ErrorImpl<T> implements _Error<T> {
     TResult Function()? initial,
     TResult Function()? loading,
     TResult Function(String message)? error,
-    TResult Function(List<MultiAddressBalance> balances, T? data)? success,
+    TResult Function(MultiAddressBalance balances, T? data)? success,
     required TResult orElse(),
   }) {
     if (error != null) {
@@ -469,7 +465,7 @@ abstract class _$$SuccessImplCopyWith<T, $Res> {
           _$SuccessImpl<T> value, $Res Function(_$SuccessImpl<T>) then) =
       __$$SuccessImplCopyWithImpl<T, $Res>;
   @useResult
-  $Res call({List<MultiAddressBalance> balances, T? data});
+  $Res call({MultiAddressBalance balances, T? data});
 }
 
 /// @nodoc
@@ -488,9 +484,9 @@ class __$$SuccessImplCopyWithImpl<T, $Res>
   }) {
     return _then(_$SuccessImpl<T>(
       balances: null == balances
-          ? _value._balances
+          ? _value.balances
           : balances // ignore: cast_nullable_to_non_nullable
-              as List<MultiAddressBalance>,
+              as MultiAddressBalance,
       data: freezed == data
           ? _value.data
           : data // ignore: cast_nullable_to_non_nullable
@@ -502,18 +498,10 @@ class __$$SuccessImplCopyWithImpl<T, $Res>
 /// @nodoc
 
 class _$SuccessImpl<T> implements _Success<T> {
-  const _$SuccessImpl(
-      {required final List<MultiAddressBalance> balances, this.data})
-      : _balances = balances;
+  const _$SuccessImpl({required this.balances, this.data});
 
-  final List<MultiAddressBalance> _balances;
   @override
-  List<MultiAddressBalance> get balances {
-    if (_balances is EqualUnmodifiableListView) return _balances;
-    // ignore: implicit_dynamic_type
-    return EqualUnmodifiableListView(_balances);
-  }
-
+  final MultiAddressBalance balances;
   @override
   final T? data;
 
@@ -527,15 +515,14 @@ class _$SuccessImpl<T> implements _Success<T> {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$SuccessImpl<T> &&
-            const DeepCollectionEquality().equals(other._balances, _balances) &&
+            (identical(other.balances, balances) ||
+                other.balances == balances) &&
             const DeepCollectionEquality().equals(other.data, data));
   }
 
   @override
   int get hashCode => Object.hash(
-      runtimeType,
-      const DeepCollectionEquality().hash(_balances),
-      const DeepCollectionEquality().hash(data));
+      runtimeType, balances, const DeepCollectionEquality().hash(data));
 
   @JsonKey(ignore: true)
   @override
@@ -549,8 +536,7 @@ class _$SuccessImpl<T> implements _Success<T> {
     required TResult Function() initial,
     required TResult Function() loading,
     required TResult Function(String message) error,
-    required TResult Function(List<MultiAddressBalance> balances, T? data)
-        success,
+    required TResult Function(MultiAddressBalance balances, T? data) success,
   }) {
     return success(balances, data);
   }
@@ -561,7 +547,7 @@ class _$SuccessImpl<T> implements _Success<T> {
     TResult? Function()? initial,
     TResult? Function()? loading,
     TResult? Function(String message)? error,
-    TResult? Function(List<MultiAddressBalance> balances, T? data)? success,
+    TResult? Function(MultiAddressBalance balances, T? data)? success,
   }) {
     return success?.call(balances, data);
   }
@@ -572,7 +558,7 @@ class _$SuccessImpl<T> implements _Success<T> {
     TResult Function()? initial,
     TResult Function()? loading,
     TResult Function(String message)? error,
-    TResult Function(List<MultiAddressBalance> balances, T? data)? success,
+    TResult Function(MultiAddressBalance balances, T? data)? success,
     required TResult orElse(),
   }) {
     if (success != null) {
@@ -621,10 +607,10 @@ class _$SuccessImpl<T> implements _Success<T> {
 
 abstract class _Success<T> implements TransactionState<T> {
   const factory _Success(
-      {required final List<MultiAddressBalance> balances,
+      {required final MultiAddressBalance balances,
       final T? data}) = _$SuccessImpl<T>;
 
-  List<MultiAddressBalance> get balances;
+  MultiAddressBalance get balances;
   T? get data;
   @JsonKey(ignore: true)
   _$$SuccessImplCopyWith<T, _$SuccessImpl<T>> get copyWith =>

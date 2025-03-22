@@ -3,7 +3,7 @@ import 'package:horizon/common/constants.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/presentation/common/transaction_stepper/bloc/transaction_event.dart';
 import 'package:horizon/presentation/common/transaction_stepper/bloc/transaction_state.dart';
-import 'package:horizon/presentation/screens/send/bloc/send_event.dart';
+import 'package:horizon/presentation/screens/transactions/send/bloc/send_event.dart';
 
 /// Send transaction data to be stored in the TransactionState.success state
 class SendData {

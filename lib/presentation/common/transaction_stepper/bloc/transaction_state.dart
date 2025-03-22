@@ -17,7 +17,7 @@ class TransactionState<T> with _$TransactionState<T> {
 
   /// Success state with generic data of type T
   const factory TransactionState.success({
-    required List<MultiAddressBalance> balances,
+    required MultiAddressBalance balances,
     T? data,
   }) = _Success<T>;
 }

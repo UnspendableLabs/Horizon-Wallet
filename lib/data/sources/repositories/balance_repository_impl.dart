@@ -47,14 +47,14 @@ class BalanceRepositoryImpl implements BalanceRepository {
   }
 
   @override
-  Future<List<mba.MultiAddressBalance>> getBalancesForAddressesAndAsset(
+  Future<mba.MultiAddressBalance> getBalancesForAddressesAndAsset(
       List<String> addresses, String assetName,
       [BalanceType? type]) async {
-    final List<mba.MultiAddressBalance> balances = [];
-    balances
-        .addAll(await _fetchBalancesByAllAddresses(addresses, assetName, type));
+    final List<mba.MultiAddressBalance> balances =
+        await _fetchBalancesByAllAddresses(addresses, assetName, type);
 
-    return balances;
+    // This multi-address balance is for a single asset, so though the response returns a list, there will only be one item
+    return balances.first;
   }
 
   Future<List<b.Balance>> _fetchBalances(String address) async {

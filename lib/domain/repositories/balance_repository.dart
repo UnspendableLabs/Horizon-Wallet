@@ -7,7 +7,7 @@ abstract class BalanceRepository {
       [bool? excludeUtxoAttached]);
   Future<List<MultiAddressBalance>> getBalancesForAddresses(
       List<String> addresses);
-  Future<List<MultiAddressBalance>> getBalancesForAddressesAndAsset(
+  Future<MultiAddressBalance> getBalancesForAddressesAndAsset(
       List<String> addresses, String assetName,
       [BalanceType? type]);
   Future<List<Balance>> getBalancesForAddressAndAssetVerbose(
