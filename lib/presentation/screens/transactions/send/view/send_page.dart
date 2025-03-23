@@ -10,6 +10,7 @@ import 'package:horizon/presentation/common/transaction_stepper/view/transaction
 import 'package:horizon/presentation/common/transactions/gradient_quantity_input.dart';
 import 'package:horizon/presentation/common/transactions/multi_address_balance_dropdown.dart';
 import 'package:horizon/presentation/common/transactions/token_name_field.dart';
+import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 import 'package:horizon/presentation/screens/transactions/send/bloc/send_bloc.dart';
 import 'package:horizon/presentation/screens/transactions/send/bloc/send_event.dart';
@@ -56,6 +57,7 @@ class _SendPageState extends State<SendPage> {
     return BlocProvider(
       create: (context) => SendBloc(
         balanceRepository: GetIt.I<BalanceRepository>(),
+        getFeeEstimatesUseCase: GetIt.I<GetFeeEstimatesUseCase>(),
       )..add(SendDependenciesRequested(
           assetName: widget.assetName, addresses: widget.addresses)),
       child: BlocConsumer<SendBloc, TransactionState<SendData>>(
@@ -65,12 +67,11 @@ class _SendPageState extends State<SendPage> {
         builder: (context, state) {
           return Scaffold(
             body: TransactionStepper<SendData>(
-              buildInputsStep: (balance, data, isLoading, errorMessage) =>
-                  StepContent(
+              buildInputsStep: (sharedTransactionState, data) => StepContent(
                 title: 'Enter Send Details',
                 widgets: [
                   MultiAddressBalanceDropdown(
-                    balances: balance,
+                    balances: sharedTransactionState?.balances,
                     onChanged: (value) {
                       setState(() {
                         selectedBalanceEntry = value;
@@ -81,12 +82,12 @@ class _SendPageState extends State<SendPage> {
                   ),
                   commonHeightSizedBox,
                   TokenNameField(
-                      balance: balance,
+                      balance: sharedTransactionState?.balances,
                       selectedBalanceEntry: selectedBalanceEntry),
                   commonHeightSizedBox,
-                  GradientNumberInput(
+                  GradientQuantityInput(
                     showMaxButton: true,
-                    balance: balance,
+                    balance: sharedTransactionState?.balances,
                     selectedBalanceEntry: selectedBalanceEntry,
                     controller: quantityController,
                     validator: (value) {
@@ -94,10 +95,13 @@ class _SendPageState extends State<SendPage> {
                         return 'Please enter an amount';
                       }
 
-                      if (selectedBalanceEntry != null && balance != null) {
+                      if (selectedBalanceEntry != null &&
+                          sharedTransactionState?.balances != null) {
                         try {
                           final enteredQuantity = getQuantityForDivisibility(
-                            divisible: balance.assetInfo.divisible,
+                            divisible: sharedTransactionState
+                                    ?.balances.assetInfo.divisible ??
+                                false,
                             inputQuantity: value,
                           );
 
@@ -115,7 +119,7 @@ class _SendPageState extends State<SendPage> {
                   )
                 ],
               ),
-              buildConfirmationStep: (balances, data, errorMessage) =>
+              buildConfirmationStep: (sharedTransactionState, data) =>
                   const StepContent(
                 title: 'Confirm Transaction',
                 widgets: [
@@ -125,7 +129,8 @@ class _SendPageState extends State<SendPage> {
                   ),
                 ],
               ),
-              buildSubmissionStep: (balances, data) => const StepContent(
+              buildSubmissionStep: (sharedTransactionState, data) =>
+                  const StepContent(
                 title: 'Transaction Submitted',
                 widgets: [
                   Padding(

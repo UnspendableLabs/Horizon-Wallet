@@ -1,23 +1,39 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:horizon/domain/entities/fee_estimates.dart';
+import 'package:horizon/domain/entities/fee_option.dart';
 import 'package:horizon/domain/entities/multi_address_balance.dart';
 
 part 'transaction_state.freezed.dart';
 
-/// Generic transaction state with type parameter T for success data
 @freezed
 class TransactionState<T> with _$TransactionState<T> {
-  /// Initial state before any data is loaded
   const factory TransactionState.initial() = _Initial<T>;
-
-  /// Loading state while data is being fetched
   const factory TransactionState.loading() = _Loading<T>;
 
-  /// Error state when something went wrong
   const factory TransactionState.error(String message) = _Error<T>;
 
-  /// Success state with generic data of type T
   const factory TransactionState.success({
-    required MultiAddressBalance balances,
-    T? data,
+    required SharedTransactionState sharedTransactionState,
+    T? data, // Generic data for transactions that may require state beyond the shared transaction state
   }) = _Success<T>;
+}
+
+class SharedTransactionState {
+  final MultiAddressBalance balances;
+  final FeeEstimates feeEstimates;
+  final FeeOption? feeOption;
+
+  SharedTransactionState(
+      {required this.balances, required this.feeEstimates, this.feeOption});
+
+  SharedTransactionState copyWith({
+    MultiAddressBalance? balances,
+    FeeEstimates? feeEstimates,
+    FeeOption? feeOption,
+  }) {
+    return SharedTransactionState(
+        balances: balances ?? this.balances,
+        feeEstimates: feeEstimates ?? this.feeEstimates,
+        feeOption: feeOption ?? this.feeOption);
+  }
 }

@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:horizon/domain/entities/multi_address_balance.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/common/transaction_stepper/bloc/transaction_state.dart';
+import 'package:horizon/presentation/common/transactions/transaction_fee_input.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 import 'package:horizon/utils/app_icons.dart';
+import 'package:horizon/domain/entities/fee_option.dart';
 
 /// Represents the return type for step builders, containing both a title and widgets
 class StepContent {
@@ -22,20 +23,21 @@ class TransactionStepper<T> extends StatefulWidget {
   /// Widget builder for transaction inputs (first step)
   /// Receives balances, data, loading state and error message - all extracted from the state
   /// Returns a StepContent with title and widgets
-  final StepContent Function(MultiAddressBalance? balances, T? data,
-      bool isLoading, String? errorMessage) buildInputsStep;
+  final StepContent Function(
+      SharedTransactionState? sharedTransactionState, T? data) buildInputsStep;
 
   /// Widget builder for transaction confirmation (second step)
   /// Receives balances, data and error message - all extracted from the state
   /// Returns a StepContent with title and widgets
   final StepContent Function(
-          MultiAddressBalance? balances, T? data, String? errorMessage)
+          SharedTransactionState? sharedTransactionState, T? data)
       buildConfirmationStep;
 
   /// Widget builder for transaction submission (third step)
   /// This step uses pattern matching directly so it needs the state
   /// Returns a StepContent with title and widgets
-  final StepContent Function(MultiAddressBalance? balances, T? data)
+  final StepContent Function(
+          SharedTransactionState? sharedTransactionState, T? data)
       buildSubmissionStep;
 
   /// Callback when back button is pressed at the first step
@@ -55,6 +57,9 @@ class TransactionStepper<T> extends StatefulWidget {
   /// Whether to show the back button
   final bool showBackButton;
 
+  /// Callback for when the user selects a fee option
+  final Function(FeeOption)? onFeeOptionSelected;
+
   // Default button texts for the three steps
   static const List<String> defaultButtonTexts = [
     'Review Transaction',
@@ -73,6 +78,7 @@ class TransactionStepper<T> extends StatefulWidget {
     required this.state,
     this.nextButtonEnabled = true,
     this.showBackButton = true,
+    this.onFeeOptionSelected,
   });
 
   @override
@@ -164,12 +170,12 @@ class _TransactionStepperState<T> extends State<TransactionStepper<T>> {
       ),
 
       // Success state - show content with data
-      success: (balances, data) => _buildMainContent(
+      success: (sharedTransactionState, data) => _buildMainContent(
         context,
         isSmallScreen,
         false, // No loading overlay
         null, // No error message
-        balances: balances,
+        sharedTransactionState: sharedTransactionState,
         data: data,
       ),
     );
@@ -181,15 +187,9 @@ class _TransactionStepperState<T> extends State<TransactionStepper<T>> {
     bool isSmallScreen,
     bool showLoadingOverlay,
     String? errorMessage, {
-    MultiAddressBalance? balances,
+    SharedTransactionState? sharedTransactionState,
     T? data,
   }) {
-    // Extract all state information for the builder functions
-    final isLoading = widget.state.maybeWhen(
-      loading: () => true,
-      orElse: () => false,
-    );
-
     final extractedErrorMsg = widget.state.maybeWhen(
       error: (message) => message,
       orElse: () => errorMessage,
@@ -200,15 +200,39 @@ class _TransactionStepperState<T> extends State<TransactionStepper<T>> {
 
     if (_currentStep == 0) {
       // Inputs step - needs loading state too
-      stepContent =
-          widget.buildInputsStep(balances, data, isLoading, extractedErrorMsg);
+      final inputsStepContent =
+          widget.buildInputsStep(sharedTransactionState, data);
+
+      // Add TransactionFeeInput to the widgets if we're on the first step
+      final updatedWidgets = [
+        ...inputsStepContent.widgets,
+        commonHeightSizedBox,
+        if (sharedTransactionState != null)
+          TransactionFeeInput(
+            feeEstimates: sharedTransactionState.feeEstimates,
+            selectedFeeOption: sharedTransactionState.feeOption ?? Medium(),
+            onFeeOptionSelected: (feeOption) {
+              // // Update the shared transaction state with the new fee option
+              // final updatedState = sharedTransactionState.copyWith(
+              //   feeOption: feeOption,
+              // );
+
+              // // Call the onFeeOptionSelected callback if available
+              // widget.onFeeOptionSelected?.call(feeOption);
+            },
+          )
+      ];
+
+      stepContent = StepContent(
+        title: inputsStepContent.title,
+        widgets: updatedWidgets,
+      );
     } else if (_currentStep == 1) {
       // Confirmation step
-      stepContent =
-          widget.buildConfirmationStep(balances, data, extractedErrorMsg);
+      stepContent = widget.buildConfirmationStep(sharedTransactionState, data);
     } else {
       // Submission step
-      stepContent = widget.buildSubmissionStep(balances, data);
+      stepContent = widget.buildSubmissionStep(sharedTransactionState, data);
     }
 
     // Prepare error widget if there's an error

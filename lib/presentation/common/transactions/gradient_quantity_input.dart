@@ -9,7 +9,7 @@ import 'package:horizon/presentation/common/theme_extension.dart';
 import 'package:horizon/presentation/common/transactions/input_loading_scaffold.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 
-class GradientNumberInput extends StatefulWidget {
+class GradientQuantityInput extends StatefulWidget {
   final MultiAddressBalance? balance;
   final MultiAddressBalanceEntry? selectedBalanceEntry;
   final TextEditingController controller;
@@ -18,7 +18,7 @@ class GradientNumberInput extends StatefulWidget {
   final String? Function(String?)? validator;
   final bool? showMaxButton;
 
-  const GradientNumberInput({
+  const GradientQuantityInput({
     super.key,
     required this.balance,
     this.selectedBalanceEntry,
@@ -30,10 +30,10 @@ class GradientNumberInput extends StatefulWidget {
   });
 
   @override
-  State<GradientNumberInput> createState() => _GradientNumberInputState();
+  State<GradientQuantityInput> createState() => _GradientQuantityInputState();
 }
 
-class _GradientNumberInputState extends State<GradientNumberInput> {
+class _GradientQuantityInputState extends State<GradientQuantityInput> {
   final FocusNode _focusNode = FocusNode();
   bool _hasText = false;
 
@@ -48,7 +48,7 @@ class _GradientNumberInputState extends State<GradientNumberInput> {
   }
 
   @override
-  void didUpdateWidget(GradientNumberInput oldWidget) {
+  void didUpdateWidget(GradientQuantityInput oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.controller != widget.controller ||
         _hasText != widget.controller.text.isNotEmpty) {

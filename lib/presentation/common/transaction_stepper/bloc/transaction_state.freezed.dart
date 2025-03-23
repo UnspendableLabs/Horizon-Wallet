@@ -21,7 +21,9 @@ mixin _$TransactionState<T> {
     required TResult Function() initial,
     required TResult Function() loading,
     required TResult Function(String message) error,
-    required TResult Function(MultiAddressBalance balances, T? data) success,
+    required TResult Function(
+            SharedTransactionState sharedTransactionState, T? data)
+        success,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
@@ -29,7 +31,8 @@ mixin _$TransactionState<T> {
     TResult? Function()? initial,
     TResult? Function()? loading,
     TResult? Function(String message)? error,
-    TResult? Function(MultiAddressBalance balances, T? data)? success,
+    TResult? Function(SharedTransactionState sharedTransactionState, T? data)?
+        success,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
@@ -37,7 +40,8 @@ mixin _$TransactionState<T> {
     TResult Function()? initial,
     TResult Function()? loading,
     TResult Function(String message)? error,
-    TResult Function(MultiAddressBalance balances, T? data)? success,
+    TResult Function(SharedTransactionState sharedTransactionState, T? data)?
+        success,
     required TResult orElse(),
   }) =>
       throw _privateConstructorUsedError;
@@ -127,7 +131,9 @@ class _$InitialImpl<T> implements _Initial<T> {
     required TResult Function() initial,
     required TResult Function() loading,
     required TResult Function(String message) error,
-    required TResult Function(MultiAddressBalance balances, T? data) success,
+    required TResult Function(
+            SharedTransactionState sharedTransactionState, T? data)
+        success,
   }) {
     return initial();
   }
@@ -138,7 +144,8 @@ class _$InitialImpl<T> implements _Initial<T> {
     TResult? Function()? initial,
     TResult? Function()? loading,
     TResult? Function(String message)? error,
-    TResult? Function(MultiAddressBalance balances, T? data)? success,
+    TResult? Function(SharedTransactionState sharedTransactionState, T? data)?
+        success,
   }) {
     return initial?.call();
   }
@@ -149,7 +156,8 @@ class _$InitialImpl<T> implements _Initial<T> {
     TResult Function()? initial,
     TResult Function()? loading,
     TResult Function(String message)? error,
-    TResult Function(MultiAddressBalance balances, T? data)? success,
+    TResult Function(SharedTransactionState sharedTransactionState, T? data)?
+        success,
     required TResult orElse(),
   }) {
     if (initial != null) {
@@ -241,7 +249,9 @@ class _$LoadingImpl<T> implements _Loading<T> {
     required TResult Function() initial,
     required TResult Function() loading,
     required TResult Function(String message) error,
-    required TResult Function(MultiAddressBalance balances, T? data) success,
+    required TResult Function(
+            SharedTransactionState sharedTransactionState, T? data)
+        success,
   }) {
     return loading();
   }
@@ -252,7 +262,8 @@ class _$LoadingImpl<T> implements _Loading<T> {
     TResult? Function()? initial,
     TResult? Function()? loading,
     TResult? Function(String message)? error,
-    TResult? Function(MultiAddressBalance balances, T? data)? success,
+    TResult? Function(SharedTransactionState sharedTransactionState, T? data)?
+        success,
   }) {
     return loading?.call();
   }
@@ -263,7 +274,8 @@ class _$LoadingImpl<T> implements _Loading<T> {
     TResult Function()? initial,
     TResult Function()? loading,
     TResult Function(String message)? error,
-    TResult Function(MultiAddressBalance balances, T? data)? success,
+    TResult Function(SharedTransactionState sharedTransactionState, T? data)?
+        success,
     required TResult orElse(),
   }) {
     if (loading != null) {
@@ -381,7 +393,9 @@ class _$ErrorImpl<T> implements _Error<T> {
     required TResult Function() initial,
     required TResult Function() loading,
     required TResult Function(String message) error,
-    required TResult Function(MultiAddressBalance balances, T? data) success,
+    required TResult Function(
+            SharedTransactionState sharedTransactionState, T? data)
+        success,
   }) {
     return error(message);
   }
@@ -392,7 +406,8 @@ class _$ErrorImpl<T> implements _Error<T> {
     TResult? Function()? initial,
     TResult? Function()? loading,
     TResult? Function(String message)? error,
-    TResult? Function(MultiAddressBalance balances, T? data)? success,
+    TResult? Function(SharedTransactionState sharedTransactionState, T? data)?
+        success,
   }) {
     return error?.call(message);
   }
@@ -403,7 +418,8 @@ class _$ErrorImpl<T> implements _Error<T> {
     TResult Function()? initial,
     TResult Function()? loading,
     TResult Function(String message)? error,
-    TResult Function(MultiAddressBalance balances, T? data)? success,
+    TResult Function(SharedTransactionState sharedTransactionState, T? data)?
+        success,
     required TResult orElse(),
   }) {
     if (error != null) {
@@ -465,7 +481,7 @@ abstract class _$$SuccessImplCopyWith<T, $Res> {
           _$SuccessImpl<T> value, $Res Function(_$SuccessImpl<T>) then) =
       __$$SuccessImplCopyWithImpl<T, $Res>;
   @useResult
-  $Res call({MultiAddressBalance balances, T? data});
+  $Res call({SharedTransactionState sharedTransactionState, T? data});
 }
 
 /// @nodoc
@@ -479,14 +495,14 @@ class __$$SuccessImplCopyWithImpl<T, $Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? balances = null,
+    Object? sharedTransactionState = null,
     Object? data = freezed,
   }) {
     return _then(_$SuccessImpl<T>(
-      balances: null == balances
-          ? _value.balances
-          : balances // ignore: cast_nullable_to_non_nullable
-              as MultiAddressBalance,
+      sharedTransactionState: null == sharedTransactionState
+          ? _value.sharedTransactionState
+          : sharedTransactionState // ignore: cast_nullable_to_non_nullable
+              as SharedTransactionState,
       data: freezed == data
           ? _value.data
           : data // ignore: cast_nullable_to_non_nullable
@@ -498,16 +514,16 @@ class __$$SuccessImplCopyWithImpl<T, $Res>
 /// @nodoc
 
 class _$SuccessImpl<T> implements _Success<T> {
-  const _$SuccessImpl({required this.balances, this.data});
+  const _$SuccessImpl({required this.sharedTransactionState, this.data});
 
   @override
-  final MultiAddressBalance balances;
+  final SharedTransactionState sharedTransactionState;
   @override
   final T? data;
 
   @override
   String toString() {
-    return 'TransactionState<$T>.success(balances: $balances, data: $data)';
+    return 'TransactionState<$T>.success(sharedTransactionState: $sharedTransactionState, data: $data)';
   }
 
   @override
@@ -515,14 +531,14 @@ class _$SuccessImpl<T> implements _Success<T> {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$SuccessImpl<T> &&
-            (identical(other.balances, balances) ||
-                other.balances == balances) &&
+            (identical(other.sharedTransactionState, sharedTransactionState) ||
+                other.sharedTransactionState == sharedTransactionState) &&
             const DeepCollectionEquality().equals(other.data, data));
   }
 
   @override
-  int get hashCode => Object.hash(
-      runtimeType, balances, const DeepCollectionEquality().hash(data));
+  int get hashCode => Object.hash(runtimeType, sharedTransactionState,
+      const DeepCollectionEquality().hash(data));
 
   @JsonKey(ignore: true)
   @override
@@ -536,9 +552,11 @@ class _$SuccessImpl<T> implements _Success<T> {
     required TResult Function() initial,
     required TResult Function() loading,
     required TResult Function(String message) error,
-    required TResult Function(MultiAddressBalance balances, T? data) success,
+    required TResult Function(
+            SharedTransactionState sharedTransactionState, T? data)
+        success,
   }) {
-    return success(balances, data);
+    return success(sharedTransactionState, data);
   }
 
   @override
@@ -547,9 +565,10 @@ class _$SuccessImpl<T> implements _Success<T> {
     TResult? Function()? initial,
     TResult? Function()? loading,
     TResult? Function(String message)? error,
-    TResult? Function(MultiAddressBalance balances, T? data)? success,
+    TResult? Function(SharedTransactionState sharedTransactionState, T? data)?
+        success,
   }) {
-    return success?.call(balances, data);
+    return success?.call(sharedTransactionState, data);
   }
 
   @override
@@ -558,11 +577,12 @@ class _$SuccessImpl<T> implements _Success<T> {
     TResult Function()? initial,
     TResult Function()? loading,
     TResult Function(String message)? error,
-    TResult Function(MultiAddressBalance balances, T? data)? success,
+    TResult Function(SharedTransactionState sharedTransactionState, T? data)?
+        success,
     required TResult orElse(),
   }) {
     if (success != null) {
-      return success(balances, data);
+      return success(sharedTransactionState, data);
     }
     return orElse();
   }
@@ -607,10 +627,10 @@ class _$SuccessImpl<T> implements _Success<T> {
 
 abstract class _Success<T> implements TransactionState<T> {
   const factory _Success(
-      {required final MultiAddressBalance balances,
+      {required final SharedTransactionState sharedTransactionState,
       final T? data}) = _$SuccessImpl<T>;
 
-  MultiAddressBalance get balances;
+  SharedTransactionState get sharedTransactionState;
   T? get data;
   @JsonKey(ignore: true)
   _$$SuccessImplCopyWith<T, _$SuccessImpl<T>> get copyWith =>

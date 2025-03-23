@@ -43,3 +43,13 @@ const red1 = Color.fromRGBO(251, 99, 104, 1);
 const transparentRed2 = Color.fromRGBO(251, 99, 104, 0.2);
 const transparentRed16 = Color.fromRGBO(251, 99, 104, 0.16);
 const red2 = Color.fromRGBO(93, 43, 59, 1);
+
+// Rainbow gradient
+const beige = Color(0xFFDFD9BF);
+const warmBeige = Color(0xFFEED09A);
+const softOrange = Color(0xFFEEB395);
+const coral = Color(0xFFE9A7AF);
+const violet = Color(0xFF9B86D7);
+const moderateBlue = Color(0xFF509FC0);
+const softTurquoise = Color(0xFF7DC2BC);
+const lightBeige = Color(0xFFDFD9BF);
