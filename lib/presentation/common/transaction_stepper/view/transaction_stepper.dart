@@ -57,9 +57,8 @@ class TransactionStepper<T> extends StatefulWidget {
 
   // Default button texts for the three steps
   static const List<String> defaultButtonTexts = [
-    'CONTINUE',
-    'REVIEW',
-    'SIGN & SUBMIT'
+    'Review Transaction',
+    'Sign and Submit',
   ];
 
   const TransactionStepper({
@@ -329,26 +328,29 @@ class _TransactionStepperState<T> extends State<TransactionStepper<T>> {
                 ),
               ),
               // Bottom buttons
-              Padding(
-                padding: EdgeInsets.symmetric(
-                    vertical: 30, horizontal: isSmallScreen ? 20 : 40),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: SizedBox(
-                        height: 64,
-                        child: HorizonOutlinedButton(
-                          isTransparent: false,
-                          onPressed:
-                              widget.nextButtonEnabled ? _handleNext : null,
-                          buttonText: TransactionStepper
-                              .defaultButtonTexts[_currentStep],
-                        ),
+              _currentStep < 2
+                  ? Padding(
+                      padding: EdgeInsets.symmetric(
+                          vertical: 30, horizontal: isSmallScreen ? 20 : 40),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: SizedBox(
+                              height: 64,
+                              child: HorizonOutlinedButton(
+                                isTransparent: false,
+                                onPressed: widget.nextButtonEnabled
+                                    ? _handleNext
+                                    : null,
+                                buttonText: TransactionStepper
+                                    .defaultButtonTexts[_currentStep],
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
-                  ],
-                ),
-              ),
+                    )
+                  : const SizedBox.shrink(),
             ],
           ),
           if (showLoadingOverlay)

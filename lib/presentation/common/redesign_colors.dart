@@ -7,6 +7,7 @@ const offWhite = Color(0xFFDEE4E8);
 // Dark mode create button gradient colors
 const goldenGradient1 = Color(0xFFDFD9BF);
 const yellow1 = Color(0xFFEED09A);
+const transparentYellow8 = Color.fromRGBO(238, 208, 154, 0.08);
 const goldenGradient2 = Color(0xFFEEB395);
 const goldenGradient3 = Color(0xFFD2A6B0);
 

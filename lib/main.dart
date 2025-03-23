@@ -484,6 +484,16 @@ class MyApp extends StatelessWidget {
         color: Colors.black,
         fontFamily: 'Montserrat',
       ),
+      labelMedium: TextStyle(
+        fontSize: 14,
+        color: Colors.black,
+        fontFamily: 'Montserrat',
+      ),
+      labelSmall: TextStyle(
+        fontSize: 12,
+        color: transparentBlack66,
+        fontFamily: 'Montserrat',
+      ),
     );
 
     return ThemeData(
@@ -625,6 +635,16 @@ class MyApp extends StatelessWidget {
       bodySmall: TextStyle(
         fontSize: 12,
         color: Colors.white,
+        fontFamily: 'Montserrat',
+      ),
+      labelMedium: TextStyle(
+        fontSize: 14,
+        color: Colors.white,
+        fontFamily: 'Montserrat',
+      ),
+      labelSmall: TextStyle(
+        fontSize: 12,
+        color: transparentWhite66,
         fontFamily: 'Montserrat',
       ),
     );

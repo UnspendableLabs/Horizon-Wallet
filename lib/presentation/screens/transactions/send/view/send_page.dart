@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:get_it/get_it.dart';
+import 'package:horizon/common/format.dart';
 import 'package:horizon/domain/entities/multi_address_balance_entry.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/presentation/common/transaction_stepper/bloc/transaction_state.dart';
 import 'package:horizon/presentation/common/transaction_stepper/view/transaction_stepper.dart';
-import 'package:horizon/presentation/common/transactions/gradient_number_input.dart';
+import 'package:horizon/presentation/common/transactions/gradient_quantity_input.dart';
 import 'package:horizon/presentation/common/transactions/multi_address_balance_dropdown.dart';
 import 'package:horizon/presentation/common/transactions/token_name_field.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
@@ -28,12 +29,11 @@ class SendPage extends StatefulWidget {
 }
 
 class _SendPageState extends State<SendPage> {
-  MultiAddressBalanceEntry? selectedBalance;
+  MultiAddressBalanceEntry? selectedBalanceEntry;
+  TextEditingController quantityController = TextEditingController();
 
-  // Handler for the inputs step "Next" button
   void _handleInputsStepNext(
       BuildContext context, TransactionState<SendData> state) {
-    // Get form field values - in a real app you'd use Form keys and controllers
     final formData = state.maybeWhen(
       success: (_, data) => data,
       orElse: () => null,
@@ -45,15 +45,11 @@ class _SendPageState extends State<SendPage> {
         ));
   }
 
-  // Handler for the confirmation step "Next" button
   void _handleConfirmationStepNext(BuildContext context) {
     context.read<SendBloc>().add(SendTransactionSubmitted());
   }
 
-  // Handler for the submission step "Next" button (no-op as it's not used)
-  void _handleSubmissionStepNext(BuildContext context) {
-    // No-op for the third step as we don't need it
-  }
+  void _handleSubmissionStepNext(BuildContext context) {}
 
   @override
   Widget build(BuildContext context) {
@@ -64,12 +60,11 @@ class _SendPageState extends State<SendPage> {
           assetName: widget.assetName, addresses: widget.addresses)),
       child: BlocConsumer<SendBloc, TransactionState<SendData>>(
         listener: (context, state) {
-          // Listen for success state to navigate away or show success message
+          // TODO: Implement listener
         },
         builder: (context, state) {
           return Scaffold(
             body: TransactionStepper<SendData>(
-              // First step - all values extracted by TransactionStepper
               buildInputsStep: (balance, data, isLoading, errorMessage) =>
                   StepContent(
                 title: 'Enter Send Details',
@@ -78,22 +73,48 @@ class _SendPageState extends State<SendPage> {
                     balances: balance,
                     onChanged: (value) {
                       setState(() {
-                        selectedBalance = value;
+                        selectedBalanceEntry = value;
+                        quantityController.clear();
                       });
                     },
-                    selectedValue: selectedBalance,
+                    selectedValue: selectedBalanceEntry,
                   ),
                   commonHeightSizedBox,
-                  TokenNameField(balance: balance),
+                  TokenNameField(
+                      balance: balance,
+                      selectedBalanceEntry: selectedBalanceEntry),
                   commonHeightSizedBox,
                   GradientNumberInput(
-                      balance: balance,
-                      selectedBalance: selectedBalance,
-                      controller: TextEditingController(),
-                      onChanged: (value) {})
+                    showMaxButton: true,
+                    balance: balance,
+                    selectedBalanceEntry: selectedBalanceEntry,
+                    controller: quantityController,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter an amount';
+                      }
+
+                      if (selectedBalanceEntry != null && balance != null) {
+                        try {
+                          final enteredQuantity = getQuantityForDivisibility(
+                            divisible: balance.assetInfo.divisible,
+                            inputQuantity: value,
+                          );
+
+                          if (enteredQuantity >
+                              selectedBalanceEntry!.quantity) {
+                            return 'Insufficient balance';
+                          }
+                        } catch (e) {
+                          return 'Invalid amount';
+                        }
+                      }
+
+                      return null;
+                    },
+                  )
                 ],
               ),
-              // Second step - values extracted by TransactionStepper
               buildConfirmationStep: (balances, data, errorMessage) =>
                   const StepContent(
                 title: 'Confirm Transaction',
@@ -104,7 +125,6 @@ class _SendPageState extends State<SendPage> {
                   ),
                 ],
               ),
-              // Third step - handles all states itself
               buildSubmissionStep: (balances, data) => const StepContent(
                 title: 'Transaction Submitted',
                 widgets: [
@@ -116,8 +136,7 @@ class _SendPageState extends State<SendPage> {
               ),
               onBack: () => context.pop(),
               state: state,
-              nextButtonEnabled:
-                  true, // Can be refined based on form validation
+              nextButtonEnabled: true,
               onInputsStepNext: () => _handleInputsStepNext(context, state),
               onConfirmationStepNext: () =>
                   _handleConfirmationStepNext(context),
