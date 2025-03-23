@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/common/theme_extension.dart';
 import 'package:horizon/utils/app_icons.dart';
@@ -720,6 +721,7 @@ class HorizonTextField extends StatefulWidget {
   final dynamic Function(dynamic)? onSubmitted;
   final dynamic Function(dynamic)? onChanged;
   final bool enabled;
+  final List<TextInputFormatter>? inputFormatters;
 
   const HorizonTextField({
     super.key,
@@ -734,6 +736,7 @@ class HorizonTextField extends StatefulWidget {
     this.onSubmitted,
     this.onChanged,
     this.enabled = true,
+    this.inputFormatters,
   });
 
   @override
@@ -837,6 +840,7 @@ class _HorizonTextFieldState extends State<HorizonTextField> {
                             }
                             field.didChange(value);
                           },
+                          inputFormatters: widget.inputFormatters,
                           onFieldSubmitted: widget.onSubmitted,
                           onTap: () {
                             FocusScope.of(context).requestFocus(_focusNode);

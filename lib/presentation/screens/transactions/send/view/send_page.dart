@@ -36,8 +36,11 @@ class _SendPageState extends State<SendPage> {
   MultiAddressBalanceEntry? selectedBalanceEntry;
   TextEditingController quantityController = TextEditingController();
   TextEditingController destinationAddressController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
+
   void _handleInputsStepNext(
       BuildContext context, TransactionState<SendState> state) {
+    // Form validation is now handled by the TransactionStepper
     // final formData = state.maybeWhen(
     //   success: (_, data) => data,
     //   orElse: () => null,
@@ -74,7 +77,8 @@ class _SendPageState extends State<SendPage> {
         builder: (context, state) {
           return Scaffold(
             body: TransactionStepper<SendState>(
-              buildInputsStep: (balances, feeEstimates, feeOption, data) =>
+              formKey: _formKey,
+              buildFormStep: (balances, feeEstimates, feeOption, data) =>
                   StepContent(
                 title: 'Enter Send Details',
                 widgets: [
@@ -160,7 +164,7 @@ class _SendPageState extends State<SendPage> {
               onBack: () => context.pop(),
               state: state,
               nextButtonEnabled: true,
-              onInputsStepNext: () => _handleInputsStepNext(context, state),
+              onFormStepNext: () => _handleInputsStepNext(context, state),
               onConfirmationStepNext: () =>
                   _handleConfirmationStepNext(context),
               onSubmissionStepNext: () => _handleSubmissionStepNext(context),

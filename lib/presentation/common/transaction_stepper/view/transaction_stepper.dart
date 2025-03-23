@@ -25,11 +25,8 @@ class TransactionStepper<T> extends StatefulWidget {
   /// Widget builder for transaction inputs (first step)
   /// Receives balances, data, loading state and error message - all extracted from the state
   /// Returns a StepContent with title and widgets
-  final StepContent Function(
-      MultiAddressBalance? balances,
-      FeeEstimates? feeEstimates,
-      FeeOption? feeOption,
-      T? data) buildInputsStep;
+  final StepContent Function(MultiAddressBalance? balances,
+      FeeEstimates? feeEstimates, FeeOption? feeOption, T? data) buildFormStep;
 
   /// Widget builder for transaction confirmation (second step)
   /// Receives balances, data and error message - all extracted from the state
@@ -53,7 +50,7 @@ class TransactionStepper<T> extends StatefulWidget {
   final VoidCallback onBack;
 
   /// Callbacks for each step's "Next" button
-  final VoidCallback onInputsStepNext;
+  final VoidCallback onFormStepNext;
   final VoidCallback onConfirmationStepNext;
   final VoidCallback onSubmissionStepNext;
 
@@ -69,6 +66,9 @@ class TransactionStepper<T> extends StatefulWidget {
   /// Whether to show the back button
   final bool showBackButton;
 
+  /// Form key for the first step
+  final GlobalKey<FormState> formKey;
+
   // Default button texts for the three steps
   static const List<String> defaultButtonTexts = [
     'Review Transaction',
@@ -77,17 +77,18 @@ class TransactionStepper<T> extends StatefulWidget {
 
   const TransactionStepper({
     super.key,
-    required this.buildInputsStep,
+    required this.buildFormStep,
     required this.buildConfirmationStep,
     required this.buildSubmissionStep,
     required this.onBack,
-    required this.onInputsStepNext,
+    required this.onFormStepNext,
     required this.onConfirmationStepNext,
     required this.onSubmissionStepNext,
     required this.onFeeOptionSelected,
     required this.state,
     this.nextButtonEnabled = true,
     this.showBackButton = true,
+    required this.formKey,
   });
 
   @override
@@ -102,7 +103,11 @@ class _TransactionStepperState<T> extends State<TransactionStepper<T>> {
     // Execute the appropriate action for the current step
     switch (_currentStep) {
       case 0:
-        widget.onInputsStepNext();
+        // Validate form before proceeding to next step
+        if (!widget.formKey.currentState!.validate()) {
+          return; // Stop if validation fails
+        }
+              widget.onFormStepNext();
         break;
       case 1:
         widget.onConfirmationStepNext();
@@ -212,7 +217,7 @@ class _TransactionStepperState<T> extends State<TransactionStepper<T>> {
     if (_currentStep == 0) {
       // Inputs step - needs loading state too
       final inputsStepContent =
-          widget.buildInputsStep(balances, feeEstimates, feeOption, data);
+          widget.buildFormStep(balances, feeEstimates, feeOption, data);
 
       // Add TransactionFeeInput to the widgets if we're on the first step
       final updatedWidgets = [
@@ -353,10 +358,18 @@ class _TransactionStepperState<T> extends State<TransactionStepper<T>> {
               Expanded(
                 child: SingleChildScrollView(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: stepContent.widgets,
-                  ),
+                  child: _currentStep == 0
+                      ? Form(
+                          key: widget.formKey,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: stepContent.widgets,
+                          ),
+                        )
+                      : Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: stepContent.widgets,
+                        ),
                 ),
               ),
               // Bottom buttons

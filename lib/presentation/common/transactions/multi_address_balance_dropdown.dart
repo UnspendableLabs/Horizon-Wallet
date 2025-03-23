@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:horizon/common/format.dart';
 import 'package:horizon/domain/entities/multi_address_balance.dart';
 import 'package:horizon/domain/entities/multi_address_balance_entry.dart';
 import 'package:horizon/presentation/common/transactions/input_loading_scaffold.dart';
@@ -31,7 +32,9 @@ class MultiAddressBalanceDropdown extends StatelessWidget {
                   children: [
                     Text(addressEntry.address!,
                         style: Theme.of(context).textTheme.bodySmall),
-                    Text(addressEntry.quantityNormalized,
+                    Text(
+                        quantityRemoveTrailingZeros(
+                            addressEntry.quantityNormalized),
                         style: Theme.of(context)
                             .textTheme
                             .titleSmall!

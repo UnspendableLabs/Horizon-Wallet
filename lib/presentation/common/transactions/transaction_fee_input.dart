@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/domain/entities/fee_option.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
+import 'package:horizon/presentation/common/shared_util.dart';
 import 'package:horizon/presentation/common/theme_extension.dart';
 import 'package:horizon/presentation/common/transactions/input_loading_scaffold.dart';
+import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 
 /// A component for selecting transaction fee rates
-class TransactionFeeInput extends StatelessWidget {
+class TransactionFeeInput extends StatefulWidget {
   /// Fee estimates for different priority levels
   final FeeEstimates? feeEstimates;
 
@@ -24,10 +26,24 @@ class TransactionFeeInput extends StatelessWidget {
   });
 
   @override
+  State<TransactionFeeInput> createState() => _TransactionFeeInputState();
+}
+
+class _TransactionFeeInputState extends State<TransactionFeeInput> {
+  bool _showCustomFeeInput = false;
+  final TextEditingController _customFeeController = TextEditingController();
+
+  @override
+  void dispose() {
+    _customFeeController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     final customTheme = Theme.of(context).extension<CustomThemeExtension>()!;
-    if (feeEstimates == null) {
+    if (widget.feeEstimates == null) {
       return const InputLoadingScaffold();
     }
 
@@ -79,6 +95,74 @@ class TransactionFeeInput extends StatelessWidget {
               ),
             ],
           ),
+          const SizedBox(height: 12),
+          MouseRegion(
+            cursor: SystemMouseCursors.click,
+            child: GestureDetector(
+              onTap: () {
+                setState(() {
+                  _showCustomFeeInput = true;
+                  if (widget.selectedFeeOption is! Custom) {
+                    widget.onFeeOptionSelected(Custom(0));
+                  }
+                });
+              },
+              child: Container(
+                height: 32,
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  color: transparentPurple8,
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Text(
+                      'Custom Fee',
+                      style: textTheme.bodySmall?.copyWith(
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          if (_showCustomFeeInput) ...[
+            commonHeightSizedBox,
+            Center(
+              child: HorizonTextField(
+                controller: _customFeeController,
+                label: 'Custom fee (sat/vbyte)',
+                inputFormatters: [
+                  DecimalTextInputFormatter(decimalRange: 2),
+                ],
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter a fee';
+                  }
+                  return null;
+                },
+                onChanged: (value) {
+                  if (value != null && value.isNotEmpty) {
+                    final fee = num.tryParse(value) ?? 0;
+                    widget.onFeeOptionSelected(Custom(fee));
+                  }
+                },
+                suffixIcon: IconButton(
+                  icon: const Icon(Icons.close, size: 16),
+                  onPressed: () {
+                    setState(() {
+                      _showCustomFeeInput = false;
+                      _customFeeController.clear();
+                      widget.onFeeOptionSelected(Medium());
+                    });
+                  },
+                ),
+              ),
+            ),
+          ],
         ],
       ),
     );
@@ -90,40 +174,44 @@ class TransactionFeeInput extends StatelessWidget {
     required BuildContext context,
     required CustomThemeExtension customTheme,
   }) {
-    final isSelected = selectedFeeOption.runtimeType == feeOption.runtimeType;
+    final isSelected =
+        widget.selectedFeeOption.runtimeType == feeOption.runtimeType;
     final textTheme = Theme.of(context).textTheme;
-    return GestureDetector(
-      onTap: () => onFeeOptionSelected(feeOption),
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? customTheme.inputBackground
-              : customTheme.inputBackgroundEmpty,
-          borderRadius: BorderRadius.circular(12),
-          border: isSelected
-              ? _buildGradientBorder(context)
-              : Border.all(
-                  color: customTheme.inputBorderColor,
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        onTap: () => widget.onFeeOptionSelected(feeOption),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? customTheme.inputBackground
+                : customTheme.inputBackgroundEmpty,
+            borderRadius: BorderRadius.circular(12),
+            border: isSelected
+                ? _buildGradientBorder(context)
+                : Border.all(
+                    color: customTheme.inputBorderColor,
+                  ),
+          ),
+          child: Column(
+            children: [
+              Text(
+                label,
+                style: textTheme.bodySmall?.copyWith(
+                  fontWeight: FontWeight.w500,
                 ),
-        ),
-        child: Column(
-          children: [
-            Text(
-              label,
-              style: textTheme.bodySmall?.copyWith(
-                fontWeight: FontWeight.w500,
               ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              _getFeeEstimate(feeOption),
-              style: textTheme.labelSmall?.copyWith(
-                fontSize: 10,
-                fontWeight: FontWeight.w400,
+              const SizedBox(height: 4),
+              Text(
+                _getFeeEstimate(feeOption),
+                style: textTheme.labelSmall?.copyWith(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w400,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -131,10 +219,10 @@ class TransactionFeeInput extends StatelessWidget {
 
   String _getFeeEstimate(FeeOption option) {
     return switch (option) {
-      Fast() => "${feeEstimates!.fast} sat/vbyte",
-      Medium() => "${feeEstimates!.medium} sat/vbyte",
-      Slow() => "${feeEstimates!.slow} sat/vbyte",
-      Custom() => "",
+      Fast() => "${widget.feeEstimates!.fast} sat/vbyte",
+      Medium() => "${widget.feeEstimates!.medium} sat/vbyte",
+      Slow() => "${widget.feeEstimates!.slow} sat/vbyte",
+      Custom() => "${_customFeeController.text} sat/vbyte",
     };
   }
 

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:horizon/common/format.dart';
 import 'package:horizon/domain/entities/multi_address_balance.dart';
 import 'package:horizon/domain/entities/multi_address_balance_entry.dart';
 import 'package:horizon/presentation/common/shared_util.dart';
@@ -49,7 +50,7 @@ class TokenNameField extends StatelessWidget {
                 ),
                 if (selectedBalanceEntry != null)
                   Text(
-                    "Balance: ${selectedBalanceEntry!.quantityNormalized}",
+                    "Balance: ${quantityRemoveTrailingZeros(selectedBalanceEntry!.quantityNormalized)}",
                     style: theme.textTheme.labelSmall,
                   ),
               ],
