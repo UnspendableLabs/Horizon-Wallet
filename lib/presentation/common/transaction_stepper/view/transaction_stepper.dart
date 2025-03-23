@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:horizon/domain/entities/fee_estimates.dart';
+import 'package:horizon/domain/entities/multi_address_balance.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/common/transaction_stepper/bloc/transaction_state.dart';
 import 'package:horizon/presentation/common/transactions/transaction_fee_input.dart';
@@ -24,21 +26,28 @@ class TransactionStepper<T> extends StatefulWidget {
   /// Receives balances, data, loading state and error message - all extracted from the state
   /// Returns a StepContent with title and widgets
   final StepContent Function(
-      SharedTransactionState? sharedTransactionState, T? data) buildInputsStep;
+      MultiAddressBalance? balances,
+      FeeEstimates? feeEstimates,
+      FeeOption? feeOption,
+      T? data) buildInputsStep;
 
   /// Widget builder for transaction confirmation (second step)
   /// Receives balances, data and error message - all extracted from the state
   /// Returns a StepContent with title and widgets
   final StepContent Function(
-          SharedTransactionState? sharedTransactionState, T? data)
-      buildConfirmationStep;
+      MultiAddressBalance? balances,
+      FeeEstimates? feeEstimates,
+      FeeOption? feeOption,
+      T? data) buildConfirmationStep;
 
   /// Widget builder for transaction submission (third step)
   /// This step uses pattern matching directly so it needs the state
   /// Returns a StepContent with title and widgets
   final StepContent Function(
-          SharedTransactionState? sharedTransactionState, T? data)
-      buildSubmissionStep;
+      MultiAddressBalance? balances,
+      FeeEstimates? feeEstimates,
+      FeeOption? feeOption,
+      T? data) buildSubmissionStep;
 
   /// Callback when back button is pressed at the first step
   final VoidCallback onBack;
@@ -127,10 +136,8 @@ class _TransactionStepperState<T> extends State<TransactionStepper<T>> {
   Widget build(BuildContext context) {
     final isSmallScreen = MediaQuery.of(context).size.width < 500;
 
-    // Use pattern matching to handle different states
-    return widget.state.when(
-      // Initial state - show loading indicator
-      initial: () => Scaffold(
+    if (widget.state.initial) {
+      return Scaffold(
         appBar: AppBar(
           backgroundColor: Colors.transparent,
           elevation: 0,
@@ -151,33 +158,40 @@ class _TransactionStepperState<T> extends State<TransactionStepper<T>> {
         body: const Center(
           child: CircularProgressIndicator(),
         ),
-      ),
+      );
+    }
 
-      // Loading state - show content with loading overlay
-      loading: () => _buildMainContent(
+    if (widget.state.loading) {
+      return _buildMainContent(
         context,
         isSmallScreen,
         true, // Show loading overlay
         null, // No error message
-      ),
+      );
+    }
 
-      // Error state - show content with error message
-      error: (message) => _buildMainContent(
+    if (widget.state.error != null) {
+      return _buildMainContent(
         context,
         isSmallScreen,
         false, // No loading overlay
-        message, // Show error message
-      ),
+        widget.state.error,
+      );
+    }
 
-      // Success state - show content with data
-      success: (sharedTransactionState, data) => _buildMainContent(
-        context,
-        isSmallScreen,
-        false, // No loading overlay
-        null, // No error message
-        sharedTransactionState: sharedTransactionState,
-        data: data,
-      ),
+    final balances = widget.state.getBalancesOrThrow();
+    final feeEstimates = widget.state.getFeeEstimatesOrThrow();
+    final data = widget.state.getDataOrThrow();
+
+    return _buildMainContent(
+      context,
+      isSmallScreen,
+      false, // No loading overlay
+      null, // No error message
+      balances: balances,
+      feeEstimates: feeEstimates,
+      feeOption: widget.state.feeOption,
+      data: data,
     );
   }
 
@@ -187,36 +201,32 @@ class _TransactionStepperState<T> extends State<TransactionStepper<T>> {
     bool isSmallScreen,
     bool showLoadingOverlay,
     String? errorMessage, {
-    SharedTransactionState? sharedTransactionState,
+    MultiAddressBalance? balances,
+    FeeEstimates? feeEstimates,
+    FeeOption? feeOption,
     T? data,
   }) {
-    final extractedErrorMsg = widget.state.maybeWhen(
-      error: (message) => message,
-      orElse: () => errorMessage,
-    );
-
     // Get the appropriate StepContent for the current step
     StepContent stepContent;
 
     if (_currentStep == 0) {
       // Inputs step - needs loading state too
       final inputsStepContent =
-          widget.buildInputsStep(sharedTransactionState, data);
+          widget.buildInputsStep(balances, feeEstimates, feeOption, data);
 
       // Add TransactionFeeInput to the widgets if we're on the first step
       final updatedWidgets = [
         ...inputsStepContent.widgets,
         commonHeightSizedBox,
-        if (sharedTransactionState != null)
-          TransactionFeeInput(
-            feeEstimates: sharedTransactionState.feeEstimates,
-            selectedFeeOption: sharedTransactionState.feeOption ?? Medium(),
-            onFeeOptionSelected: (feeOption) {
-              // Create a FeeOptionSelected instance and add it to the bloc
-              // final event = ;
-              widget.onFeeOptionSelected(feeOption);
-            },
-          )
+        TransactionFeeInput(
+          feeEstimates: feeEstimates,
+          selectedFeeOption: feeOption ?? Medium(),
+          onFeeOptionSelected: (feeOption) {
+            // Create a FeeOptionSelected instance and add it to the bloc
+            // final event = ;
+            widget.onFeeOptionSelected(feeOption);
+          },
+        )
       ];
 
       stepContent = StepContent(
@@ -225,15 +235,17 @@ class _TransactionStepperState<T> extends State<TransactionStepper<T>> {
       );
     } else if (_currentStep == 1) {
       // Confirmation step
-      stepContent = widget.buildConfirmationStep(sharedTransactionState, data);
+      stepContent =
+          widget.buildConfirmationStep(balances, feeEstimates, feeOption, data);
     } else {
       // Submission step
-      stepContent = widget.buildSubmissionStep(sharedTransactionState, data);
+      stepContent =
+          widget.buildSubmissionStep(balances, feeEstimates, feeOption, data);
     }
 
     // Prepare error widget if there's an error
     Widget? errorWidget;
-    if (extractedErrorMsg != null) {
+    if (errorMessage != null) {
       errorWidget = Container(
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         padding: const EdgeInsets.all(16),
@@ -260,7 +272,7 @@ class _TransactionStepperState<T> extends State<TransactionStepper<T>> {
             ),
             const SizedBox(height: 8),
             Text(
-              extractedErrorMsg,
+              errorMessage,
               style: Theme.of(context).textTheme.bodyMedium,
             ),
           ],

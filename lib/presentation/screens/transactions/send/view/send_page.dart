@@ -16,6 +16,7 @@ import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 import 'package:horizon/presentation/screens/transactions/send/bloc/send_bloc.dart';
 import 'package:horizon/presentation/screens/transactions/send/bloc/send_event.dart';
+import 'package:horizon/presentation/screens/transactions/send/bloc/send_state.dart';
 
 class SendPage extends StatefulWidget {
   final String assetName;
@@ -36,16 +37,16 @@ class _SendPageState extends State<SendPage> {
   TextEditingController quantityController = TextEditingController();
   TextEditingController destinationAddressController = TextEditingController();
   void _handleInputsStepNext(
-      BuildContext context, TransactionState<SendData> state) {
-    final formData = state.maybeWhen(
-      success: (_, data) => data,
-      orElse: () => null,
-    );
+      BuildContext context, TransactionState<SendState> state) {
+    // final formData = state.maybeWhen(
+    //   success: (_, data) => data,
+    //   orElse: () => null,
+    // );
 
-    context.read<SendBloc>().add(SendTransactionComposed(
-          destinationAddress: formData?.destinationAddress ?? "",
-          amount: formData?.amount ?? "",
-        ));
+    // context.read<SendBloc>().add(SendTransactionComposed(
+    //       destinationAddress: formData?.destinationAddress ?? "",
+    //       amount: formData?.amount ?? "",
+    //     ));
   }
 
   void _handleConfirmationStepNext(BuildContext context) {
@@ -66,18 +67,19 @@ class _SendPageState extends State<SendPage> {
         getFeeEstimatesUseCase: GetIt.I<GetFeeEstimatesUseCase>(),
       )..add(SendDependenciesRequested(
           assetName: widget.assetName, addresses: widget.addresses)),
-      child: BlocConsumer<SendBloc, TransactionState<SendData>>(
+      child: BlocConsumer<SendBloc, TransactionState<SendState>>(
         listener: (context, state) {
           // TODO: Implement listener
         },
         builder: (context, state) {
           return Scaffold(
-            body: TransactionStepper<SendData>(
-              buildInputsStep: (sharedTransactionState, data) => StepContent(
+            body: TransactionStepper<SendState>(
+              buildInputsStep: (balances, feeEstimates, feeOption, data) =>
+                  StepContent(
                 title: 'Enter Send Details',
                 widgets: [
                   MultiAddressBalanceDropdown(
-                    balances: sharedTransactionState?.balances,
+                    balances: balances,
                     onChanged: (value) {
                       setState(() {
                         selectedBalanceEntry = value;
@@ -100,12 +102,12 @@ class _SendPageState extends State<SendPage> {
                   ),
                   commonHeightSizedBox,
                   TokenNameField(
-                      balance: sharedTransactionState?.balances,
+                      balance: balances,
                       selectedBalanceEntry: selectedBalanceEntry),
                   commonHeightSizedBox,
                   GradientQuantityInput(
                     showMaxButton: true,
-                    balance: sharedTransactionState?.balances,
+                    balance: balances,
                     selectedBalanceEntry: selectedBalanceEntry,
                     controller: quantityController,
                     validator: (value) {
@@ -113,13 +115,10 @@ class _SendPageState extends State<SendPage> {
                         return 'Please enter an amount';
                       }
 
-                      if (selectedBalanceEntry != null &&
-                          sharedTransactionState?.balances != null) {
+                      if (selectedBalanceEntry != null && balances != null) {
                         try {
                           final enteredQuantity = getQuantityForDivisibility(
-                            divisible: sharedTransactionState
-                                    ?.balances.assetInfo.divisible ??
-                                false,
+                            divisible: balances.assetInfo.divisible ?? false,
                             inputQuantity: value,
                           );
 
@@ -137,8 +136,9 @@ class _SendPageState extends State<SendPage> {
                   )
                 ],
               ),
-              buildConfirmationStep: (sharedTransactionState, data) =>
-                  const StepContent(
+              buildConfirmationStep:
+                  (balances, feeEstimates, feeOption, data) =>
+                      const StepContent(
                 title: 'Confirm Transaction',
                 widgets: [
                   Padding(
@@ -147,7 +147,7 @@ class _SendPageState extends State<SendPage> {
                   ),
                 ],
               ),
-              buildSubmissionStep: (sharedTransactionState, data) =>
+              buildSubmissionStep: (balances, feeEstimates, feeOption, data) =>
                   const StepContent(
                 title: 'Transaction Submitted',
                 widgets: [

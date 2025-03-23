@@ -2,14 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/domain/entities/fee_option.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
+import 'package:horizon/presentation/common/transactions/input_loading_scaffold.dart';
 
 /// A component for selecting transaction fee rates
 class TransactionFeeInput extends StatelessWidget {
   /// Fee estimates for different priority levels
-  final FeeEstimates feeEstimates;
+  final FeeEstimates? feeEstimates;
 
   /// Currently selected fee option
-  final FeeOption selectedFeeOption;
+  final FeeOption? selectedFeeOption;
 
   /// Callback when a fee option is selected
   final Function(FeeOption) onFeeOptionSelected;
@@ -24,6 +25,10 @@ class TransactionFeeInput extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
+
+    if (feeEstimates == null) {
+      return const InputLoadingScaffold();
+    }
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -119,9 +124,9 @@ class TransactionFeeInput extends StatelessWidget {
 
   String _getFeeEstimate(FeeOption option) {
     return switch (option) {
-      Fast() => "${feeEstimates.fast} sat/vbyte",
-      Medium() => "${feeEstimates.medium} sat/vbyte",
-      Slow() => "${feeEstimates.slow} sat/vbyte",
+      Fast() => "${feeEstimates!.fast} sat/vbyte",
+      Medium() => "${feeEstimates!.medium} sat/vbyte",
+      Slow() => "${feeEstimates!.slow} sat/vbyte",
       Custom() => "",
     };
   }
