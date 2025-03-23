@@ -48,6 +48,9 @@ class TransactionStepper<T> extends StatefulWidget {
   final VoidCallback onConfirmationStepNext;
   final VoidCallback onSubmissionStepNext;
 
+  /// Callback for when a fee option is selected
+  final Function(FeeOption) onFeeOptionSelected;
+
   /// The transaction state
   final TransactionState<T> state;
 
@@ -56,9 +59,6 @@ class TransactionStepper<T> extends StatefulWidget {
 
   /// Whether to show the back button
   final bool showBackButton;
-
-  /// Callback for when the user selects a fee option
-  final Function(FeeOption)? onFeeOptionSelected;
 
   // Default button texts for the three steps
   static const List<String> defaultButtonTexts = [
@@ -75,10 +75,10 @@ class TransactionStepper<T> extends StatefulWidget {
     required this.onInputsStepNext,
     required this.onConfirmationStepNext,
     required this.onSubmissionStepNext,
+    required this.onFeeOptionSelected,
     required this.state,
     this.nextButtonEnabled = true,
     this.showBackButton = true,
-    this.onFeeOptionSelected,
   });
 
   @override
@@ -212,13 +212,9 @@ class _TransactionStepperState<T> extends State<TransactionStepper<T>> {
             feeEstimates: sharedTransactionState.feeEstimates,
             selectedFeeOption: sharedTransactionState.feeOption ?? Medium(),
             onFeeOptionSelected: (feeOption) {
-              // // Update the shared transaction state with the new fee option
-              // final updatedState = sharedTransactionState.copyWith(
-              //   feeOption: feeOption,
-              // );
-
-              // // Call the onFeeOptionSelected callback if available
-              // widget.onFeeOptionSelected?.call(feeOption);
+              // Create a FeeOptionSelected instance and add it to the bloc
+              // final event = ;
+              widget.onFeeOptionSelected(feeOption);
             },
           )
       ];

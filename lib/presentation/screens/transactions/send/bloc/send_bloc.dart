@@ -37,6 +37,7 @@ class SendBloc extends Bloc<TransactionEvent, TransactionState<SendData>> {
     on<SendDependenciesRequested>(_onDependenciesRequested);
     on<SendTransactionComposed>(_onTransactionComposed);
     on<SendTransactionSubmitted>(_onTransactionSubmitted);
+    on<FeeOptionSelected>(_onFeeOptionSelected);
   }
 
   void _onDependenciesRequested(
@@ -108,5 +109,27 @@ class SendBloc extends Bloc<TransactionEvent, TransactionState<SendData>> {
     // 1. Get the current data from the previous state
     // 2. Submit the transaction to the blockchain
     // 3. Emit success or error state based on the result
+  }
+
+  void _onFeeOptionSelected(
+    FeeOptionSelected event,
+    Emitter<TransactionState<SendData>> emit,
+  ) {
+    // Update the fee option in the state
+    state.maybeWhen(
+      success: (sharedTransactionState, data) {
+        final updatedState = sharedTransactionState.copyWith(
+          feeOption: event.feeOption,
+        );
+
+        emit(TransactionState.success(
+          sharedTransactionState: updatedState,
+          data: data,
+        ));
+      },
+      orElse: () {
+        // If we're not in a success state, do nothing
+      },
+    );
   }
 }

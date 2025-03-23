@@ -3,8 +3,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/common/format.dart';
+import 'package:horizon/domain/entities/fee_option.dart';
 import 'package:horizon/domain/entities/multi_address_balance_entry.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
+import 'package:horizon/presentation/common/transaction_stepper/bloc/transaction_event.dart';
 import 'package:horizon/presentation/common/transaction_stepper/bloc/transaction_state.dart';
 import 'package:horizon/presentation/common/transaction_stepper/view/transaction_stepper.dart';
 import 'package:horizon/presentation/common/transactions/gradient_quantity_input.dart';
@@ -32,7 +34,7 @@ class SendPage extends StatefulWidget {
 class _SendPageState extends State<SendPage> {
   MultiAddressBalanceEntry? selectedBalanceEntry;
   TextEditingController quantityController = TextEditingController();
-
+  TextEditingController destinationAddressController = TextEditingController();
   void _handleInputsStepNext(
       BuildContext context, TransactionState<SendData> state) {
     final formData = state.maybeWhen(
@@ -51,6 +53,10 @@ class _SendPageState extends State<SendPage> {
   }
 
   void _handleSubmissionStepNext(BuildContext context) {}
+
+  void _handleFeeOptionSelected(BuildContext context, FeeOption feeOption) {
+    context.read<SendBloc>().add(FeeOptionSelected(feeOption: feeOption));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -79,6 +85,18 @@ class _SendPageState extends State<SendPage> {
                       });
                     },
                     selectedValue: selectedBalanceEntry,
+                  ),
+                  commonHeightSizedBox,
+                  HorizonTextField(
+                    controller: destinationAddressController,
+                    label: 'Destination Address',
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter a destination address';
+                      }
+
+                      return null;
+                    },
                   ),
                   commonHeightSizedBox,
                   TokenNameField(
@@ -146,6 +164,8 @@ class _SendPageState extends State<SendPage> {
               onConfirmationStepNext: () =>
                   _handleConfirmationStepNext(context),
               onSubmissionStepNext: () => _handleSubmissionStepNext(context),
+              onFeeOptionSelected: (feeOption) =>
+                  _handleFeeOptionSelected(context, feeOption),
             ),
           );
         },

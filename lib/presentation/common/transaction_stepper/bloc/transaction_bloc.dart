@@ -16,6 +16,9 @@ abstract interface class TransactionBlocInterface<
 
   /// Handle transaction submission (moving from confirmation to submission)
   void onTransactionSubmitted(TransactionSubmitted event, Emitter<T> emit);
+
+  /// Handle fee option selection (optional override)
+  void onFeeOptionSelected(FeeOptionSelected event, Emitter<T> emit) {}
 }
 
 /// Base bloc for transaction flows
@@ -31,13 +34,12 @@ abstract class TransactionBloc<T extends TransactionState<T>>
     _errorService = GetIt.I.get<ErrorService>();
 
     on<DependenciesRequested>((event, emit) async {
-      _errorService.addBreadcrumb(
-        type: 'navigation',
-        category: 'transaction',
-        message: '$transactionType transaction page opened',
-      );
-
       await onDependenciesRequested(event, emit);
+    });
+
+    // Set up handler for fee option selection
+    on<FeeOptionSelected>((event, emit) {
+      onFeeOptionSelected(event, emit);
     });
 
     on<TransactionComposed>(onTransactionComposed);
@@ -53,4 +55,7 @@ abstract class TransactionBloc<T extends TransactionState<T>>
 
   @override
   void onTransactionSubmitted(TransactionSubmitted event, Emitter<T> emit);
+
+  @override
+  void onFeeOptionSelected(FeeOptionSelected event, Emitter<T> emit);
 }

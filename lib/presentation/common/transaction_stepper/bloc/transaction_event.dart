@@ -1,3 +1,5 @@
+import 'package:horizon/domain/entities/fee_option.dart';
+
 /// Base class for all transaction events
 abstract class TransactionEvent {}
 
@@ -8,6 +10,13 @@ class DependenciesRequested extends TransactionEvent {
   final List<String> addresses;
 
   DependenciesRequested({required this.assetName, required this.addresses});
+}
+
+/// Event triggered when a fee option is selected
+class FeeOptionSelected extends TransactionEvent {
+  final FeeOption feeOption;
+
+  FeeOptionSelected({required this.feeOption});
 }
 
 /// Event triggered when moving from input step to confirmation step

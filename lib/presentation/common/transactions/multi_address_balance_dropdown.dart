@@ -42,7 +42,7 @@ class MultiAddressBalanceDropdown extends StatelessWidget {
           .toList(),
       onChanged: onChanged,
       selectedValue: selectedValue,
-      hintText: 'Select an address',
+      hintText: 'Select source address',
       selectedItemBuilder: (addressEntry) => Text(
         addressEntry.address!,
         style: Theme.of(context).textTheme.bodySmall,

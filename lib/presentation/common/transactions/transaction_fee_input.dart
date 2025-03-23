@@ -89,7 +89,9 @@ class TransactionFeeInput extends StatelessWidget {
         decoration: BoxDecoration(
           color: isSelected ? grey5 : transparentBlack33,
           borderRadius: BorderRadius.circular(12),
-          border: isSelected ? _buildGradientBorder(context) : null,
+          border: isSelected
+              ? _buildGradientBorder(context)
+              : Border.all(color: grey5),
         ),
         child: Column(
           children: [
