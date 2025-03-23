@@ -199,7 +199,9 @@ class _HorizonOutlinedButtonState extends State<HorizonOutlinedButton> {
 }
 
 class GradientBoxBorder extends BoxBorder {
+  final BuildContext context;
   const GradientBoxBorder({
+    required this.context,
     this.width = 1.0,
   });
 
@@ -229,15 +231,26 @@ class GradientBoxBorder extends BoxBorder {
       ..strokeWidth = width
       ..style = PaintingStyle.stroke;
 
-    const Gradient gradient = LinearGradient(
+    // Check theme mode using MediaQuery
+    final brightness = Theme.of(context).brightness;
+    final isDarkMode = brightness == Brightness.dark;
+
+    final Gradient gradient = LinearGradient(
       begin: Alignment.centerLeft,
       end: Alignment.centerRight,
-      colors: [
-        Color.fromRGBO(250, 204, 206, 1),
-        Color.fromRGBO(246, 167, 168, 1),
-        Color.fromRGBO(163, 167, 211, 1),
-        Color.fromRGBO(202, 206, 250, 0.96),
-      ],
+      colors: isDarkMode
+          ? const [
+              Color.fromRGBO(250, 204, 206, 1),
+              Color.fromRGBO(246, 167, 168, 1),
+              Color.fromRGBO(163, 167, 211, 1),
+              Color.fromRGBO(202, 206, 250, 0.96),
+            ]
+          : const [
+              lightYellow,
+              greenCyan,
+              brightBlue,
+              moderateViolet,
+            ],
     );
 
     if (borderRadius != null) {
@@ -254,6 +267,7 @@ class GradientBoxBorder extends BoxBorder {
   @override
   ShapeBorder scale(double t) {
     return GradientBoxBorder(
+      context: context,
       width: width * t,
     );
   }
@@ -333,7 +347,10 @@ class _HorizonRedesignDropdownState<T>
             child: Container(
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(18),
-                border: const GradientBoxBorder(width: 1),
+                border: GradientBoxBorder(
+                  context: context,
+                  width: 1,
+                ),
                 color: isDarkMode ? grey5 : grey1,
               ),
               child: Column(
@@ -389,7 +406,10 @@ class _HorizonRedesignDropdownState<T>
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(18),
               border: focusNode.hasFocus
-                  ? const GradientBoxBorder(width: 1)
+                  ? GradientBoxBorder(
+                      context: context,
+                      width: 1,
+                    )
                   : Border.fromBorderSide(
                       Theme.of(context).inputDecorationTheme.outlineBorder ??
                           const BorderSide()),
@@ -521,7 +541,10 @@ class _BlurredBackgroundDropdownState<T>
               child: Container(
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(18),
-                  border: const GradientBoxBorder(width: 1),
+                  border: GradientBoxBorder(
+                    context: context,
+                    width: 1,
+                  ),
                   color: isDarkMode ? grey5 : grey1,
                 ),
                 child: Column(
@@ -575,7 +598,10 @@ class _BlurredBackgroundDropdownState<T>
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(18),
             border: focusNode.hasFocus
-                ? const GradientBoxBorder(width: 1)
+                ? GradientBoxBorder(
+                    context: context,
+                    width: 1,
+                  )
                 : Border.fromBorderSide(
                     Theme.of(context).inputDecorationTheme.outlineBorder ??
                         const BorderSide()),
@@ -789,7 +815,10 @@ class _HorizonTextFieldState extends State<HorizonTextField> {
                     border: hasError
                         ? Border.all(color: customTheme.errorColor, width: 1)
                         : _focusNode.hasFocus
-                            ? const GradientBoxBorder(width: 1)
+                            ? GradientBoxBorder(
+                                context: context,
+                                width: 1,
+                              )
                             : Border.all(color: customTheme.inputBorderColor),
                   ),
                   padding:
@@ -935,7 +964,10 @@ class _HorizonPasswordPromptState extends State<HorizonPasswordPrompt> {
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(18),
-                border: const GradientBoxBorder(width: 1),
+                border: GradientBoxBorder(
+                  context: context,
+                  width: 1,
+                ),
                 color: isDarkMode ? grey5 : grey1,
               ),
               child: Column(

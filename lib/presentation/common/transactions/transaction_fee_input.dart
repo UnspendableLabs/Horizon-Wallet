@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/domain/entities/fee_option.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
+import 'package:horizon/presentation/common/theme_extension.dart';
 import 'package:horizon/presentation/common/transactions/input_loading_scaffold.dart';
 
 /// A component for selecting transaction fee rates
@@ -25,7 +26,7 @@ class TransactionFeeInput extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
-
+    final customTheme = Theme.of(context).extension<CustomThemeExtension>()!;
     if (feeEstimates == null) {
       return const InputLoadingScaffold();
     }
@@ -33,7 +34,9 @@ class TransactionFeeInput extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        border: Border.all(color: grey5),
+        border: Border.all(
+          color: customTheme.inputBorderColor,
+        ),
         borderRadius: BorderRadius.circular(18),
       ),
       child: Column(
@@ -42,7 +45,6 @@ class TransactionFeeInput extends StatelessWidget {
           Text(
             'Fee Selection',
             style: textTheme.bodySmall?.copyWith(
-              color: Colors.white,
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -54,6 +56,7 @@ class TransactionFeeInput extends StatelessWidget {
                   label: 'Low',
                   feeOption: Slow(),
                   context: context,
+                  customTheme: customTheme,
                 ),
               ),
               const SizedBox(width: 8),
@@ -62,6 +65,7 @@ class TransactionFeeInput extends StatelessWidget {
                   label: 'Medium',
                   feeOption: Medium(),
                   context: context,
+                  customTheme: customTheme,
                 ),
               ),
               const SizedBox(width: 8),
@@ -70,6 +74,7 @@ class TransactionFeeInput extends StatelessWidget {
                   label: 'High',
                   feeOption: Fast(),
                   context: context,
+                  customTheme: customTheme,
                 ),
               ),
             ],
@@ -83,27 +88,30 @@ class TransactionFeeInput extends StatelessWidget {
     required String label,
     required FeeOption feeOption,
     required BuildContext context,
+    required CustomThemeExtension customTheme,
   }) {
     final isSelected = selectedFeeOption.runtimeType == feeOption.runtimeType;
     final textTheme = Theme.of(context).textTheme;
-
     return GestureDetector(
       onTap: () => onFeeOptionSelected(feeOption),
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
         decoration: BoxDecoration(
-          color: isSelected ? grey5 : transparentBlack33,
+          color: isSelected
+              ? customTheme.inputBackground
+              : customTheme.inputBackgroundEmpty,
           borderRadius: BorderRadius.circular(12),
           border: isSelected
               ? _buildGradientBorder(context)
-              : Border.all(color: grey5),
+              : Border.all(
+                  color: customTheme.inputBorderColor,
+                ),
         ),
         child: Column(
           children: [
             Text(
               label,
               style: textTheme.bodySmall?.copyWith(
-                color: Colors.white,
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -111,7 +119,6 @@ class TransactionFeeInput extends StatelessWidget {
             Text(
               _getFeeEstimate(feeOption),
               style: textTheme.labelSmall?.copyWith(
-                color: grey1,
                 fontSize: 10,
                 fontWeight: FontWeight.w400,
               ),

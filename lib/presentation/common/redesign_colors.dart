@@ -18,6 +18,12 @@ const purpleGradient1 = Color(0xFFA3A7D3);
 const duskGradient1 = Color(0xFF3C8DBC);
 const duskGradient2 = Color(0xFF6C49B2);
 
+// Light mode input border colors
+const lightYellow = Color(0xFFF9FBD8);
+const greenCyan = Color(0xFF9DE7CF);
+const brightBlue = Color(0xFF3C8DBC);
+const moderateViolet = Color(0xFF6C49B2);
+
 // Import button colors
 const black = Color(0xFF000000);
 const white = Color(0xFFEAEAEA);

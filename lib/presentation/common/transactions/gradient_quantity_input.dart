@@ -144,7 +144,10 @@ class _GradientQuantityInputState extends State<GradientQuantityInput> {
                             ? Border.all(
                                 color: customTheme.errorColor, width: 1)
                             : _focusNode.hasFocus
-                                ? const GradientBoxBorder(width: 1)
+                                ? GradientBoxBorder(
+                                    context: context,
+                                    width: 1,
+                                  )
                                 : Border.all(
                                     color: customTheme.inputBorderColor),
                       ),
@@ -235,16 +238,18 @@ class _GradientQuantityInputState extends State<GradientQuantityInput> {
                               vertical: 4,
                             ),
                             decoration: BoxDecoration(
-                              color: transparentYellow8,
+                              color: isDarkMode
+                                  ? transparentYellow8
+                                  : transparentPurple33,
                               borderRadius: BorderRadius.circular(4),
                             ),
-                            child: const Center(
+                            child: Center(
                               child: Text(
                                 'Max',
                                 style: TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w400,
-                                  color: yellow1,
+                                  color: isDarkMode ? yellow1 : duskGradient2,
                                 ),
                               ),
                             ),
