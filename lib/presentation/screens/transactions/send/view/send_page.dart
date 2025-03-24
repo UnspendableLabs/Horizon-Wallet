@@ -3,10 +3,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/common/format.dart';
+import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/domain/entities/fee_option.dart';
 import 'package:horizon/domain/entities/multi_address_balance_entry.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
+import 'package:horizon/domain/repositories/settings_repository.dart';
+import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/presentation/common/shared_util.dart';
 import 'package:horizon/presentation/common/transaction_stepper/bloc/transaction_event.dart';
 import 'package:horizon/presentation/common/transaction_stepper/bloc/transaction_state.dart';
@@ -17,6 +20,8 @@ import 'package:horizon/presentation/common/transactions/multi_address_balance_d
 import 'package:horizon/presentation/common/transactions/token_name_field.dart';
 import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
 import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
+import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transaction_usecase.dart';
+import 'package:horizon/presentation/common/usecase/write_local_transaction_usecase.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 import 'package:horizon/presentation/screens/transactions/send/bloc/send_bloc.dart';
 import 'package:horizon/presentation/screens/transactions/send/bloc/send_event.dart';
@@ -60,8 +65,10 @@ class _SendPageState extends State<SendPage> {
         ));
   }
 
-  void _handleConfirmationStepNext(BuildContext context) {
-    context.read<SendBloc>().add(SendTransactionSubmitted());
+  void _handleConfirmationStepNext(BuildContext context, {String? password}) {
+    context
+        .read<SendBloc>()
+        .add(SendTransactionBroadcasted(password: password));
   }
 
   void _handleSubmissionStepNext(BuildContext context) {}
@@ -78,6 +85,12 @@ class _SendPageState extends State<SendPage> {
         getFeeEstimatesUseCase: GetIt.I<GetFeeEstimatesUseCase>(),
         composeTransactionUseCase: GetIt.I<ComposeTransactionUseCase>(),
         composeRepository: GetIt.I<ComposeRepository>(),
+        signAndBroadcastTransactionUseCase:
+            GetIt.I<SignAndBroadcastTransactionUseCase>(),
+        writelocalTransactionUseCase: GetIt.I<WriteLocalTransactionUseCase>(),
+        analyticsService: GetIt.I<AnalyticsService>(),
+        logger: GetIt.I<Logger>(),
+        settingsRepository: GetIt.I<SettingsRepository>(),
       )..add(SendDependenciesRequested(
           assetName: widget.assetName, addresses: widget.addresses)),
       child: BlocConsumer<SendBloc,
@@ -193,8 +206,8 @@ class _SendPageState extends State<SendPage> {
               state: state,
               nextButtonEnabled: true,
               onFormStepNext: () => _handleInputsStepNext(context, state),
-              onConfirmationStepNext: () =>
-                  _handleConfirmationStepNext(context),
+              onConfirmationStepNext: ({String? password}) =>
+                  _handleConfirmationStepNext(context, password: password),
               onSubmissionStepNext: () => _handleSubmissionStepNext(context),
               onFeeOptionSelected: (feeOption) =>
                   _handleFeeOptionSelected(context, feeOption),

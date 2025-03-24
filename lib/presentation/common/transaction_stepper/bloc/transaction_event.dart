@@ -42,4 +42,4 @@ class TransactionComposed<T> extends TransactionEvent {
 }
 
 /// Event triggered when moving from confirmation step to submission step
-class TransactionSubmitted<T> extends TransactionEvent {}
+class TransactionBroadcasted<T> extends TransactionEvent {}

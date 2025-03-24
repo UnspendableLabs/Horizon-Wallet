@@ -39,6 +39,8 @@ class SendTransactionParams {
 }
 
 /// Event triggered when moving from confirmation step to submission step in the send flow
-class SendTransactionSubmitted extends TransactionSubmitted {
-  SendTransactionSubmitted();
+class SendTransactionBroadcasted extends TransactionEvent {
+  final String? password;
+
+  SendTransactionBroadcasted({this.password});
 }

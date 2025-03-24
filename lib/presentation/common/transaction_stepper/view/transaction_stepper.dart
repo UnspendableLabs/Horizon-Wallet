@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:get_it/get_it.dart';
 import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/domain/entities/fee_option.dart';
 import 'package:horizon/domain/entities/multi_address_balance.dart';
+import 'package:horizon/domain/repositories/settings_repository.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/common/transaction_stepper/bloc/transaction_bloc.dart';
 import 'package:horizon/presentation/common/transaction_stepper/bloc/transaction_state.dart';
@@ -56,7 +58,7 @@ class TransactionStepper<T, R> extends StatefulWidget {
 
   /// Callbacks for each step's "Next" button
   final VoidCallback onFormStepNext;
-  final VoidCallback onConfirmationStepNext;
+  final void Function({String? password}) onConfirmationStepNext;
   final VoidCallback onSubmissionStepNext;
 
   /// Callback for when a fee option is selected
@@ -105,7 +107,7 @@ class _TransactionStepperState<T, R> extends State<TransactionStepper<T, R>> {
   // Step management is internal to the TransactionStepper
   int _currentStep = 0;
 
-  void _handleNext() {
+  void _handleNext() async {
     // Execute the appropriate action for the current step
     switch (_currentStep) {
       case 0:
@@ -116,7 +118,66 @@ class _TransactionStepperState<T, R> extends State<TransactionStepper<T, R>> {
         widget.onFormStepNext();
         break;
       case 1:
-        widget.onConfirmationStepNext();
+        final requirePassword =
+            GetIt.I<SettingsRepository>().requirePasswordForCryptoOperations;
+
+        if (requirePassword) {
+          bool isAuthenticated = false;
+          String? errorText;
+          bool isLoading = false;
+
+          await showDialog(
+            context: context,
+            barrierDismissible: false,
+            builder: (BuildContext dialogContext) {
+              return StatefulBuilder(
+                builder: (context, setState) {
+                  return HorizonPasswordPrompt(
+                    onPasswordSubmitted: (password) async {
+                      setState(() {
+                        isLoading = true;
+                        errorText = null;
+                      });
+
+                      try {
+                        widget.onConfirmationStepNext(password: password);
+                        if (dialogContext.mounted) {
+                          Navigator.of(dialogContext).pop(true);
+                        }
+                      } catch (e) {
+                        if (dialogContext.mounted) {
+                          setState(() {
+                            errorText = 'Invalid Password';
+                            isLoading = false;
+                          });
+                        }
+                      }
+                    },
+                    onCancel: () {
+                      setState(() {
+                        errorText = null;
+                        isLoading = false;
+                      });
+                      Navigator.of(dialogContext).pop();
+                    },
+                    buttonText: 'Continue',
+                    title: 'Enter Password',
+                    errorText: errorText,
+                    isLoading: isLoading,
+                  );
+                },
+              );
+            },
+          ).then((value) {
+            isAuthenticated = (value == true);
+          });
+
+          if (!isAuthenticated) {
+            return;
+          }
+        } else {
+          widget.onConfirmationStepNext();
+        }
         break;
       case 2:
         widget.onSubmissionStepNext();
