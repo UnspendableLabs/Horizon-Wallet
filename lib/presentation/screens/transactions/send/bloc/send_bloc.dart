@@ -1,9 +1,13 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:horizon/common/constants.dart';
+import 'package:horizon/domain/entities/compose_send.dart';
 import 'package:horizon/domain/entities/fee_option.dart' as fee_option;
 import 'package:horizon/domain/repositories/balance_repository.dart';
+import 'package:horizon/domain/repositories/compose_repository.dart';
+import 'package:horizon/presentation/common/transaction_stepper/bloc/transaction_bloc.dart';
 import 'package:horizon/presentation/common/transaction_stepper/bloc/transaction_event.dart';
 import 'package:horizon/presentation/common/transaction_stepper/bloc/transaction_state.dart';
+import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
 import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
 import 'package:horizon/presentation/screens/transactions/send/bloc/send_event.dart';
 import 'package:horizon/presentation/screens/transactions/send/bloc/send_state.dart';
@@ -13,9 +17,13 @@ import 'package:horizon/presentation/screens/transactions/send/bloc/send_state.d
 class SendBloc extends Bloc<TransactionEvent, TransactionState<SendState>> {
   final BalanceRepository balanceRepository;
   final GetFeeEstimatesUseCase getFeeEstimatesUseCase;
+  final ComposeTransactionUseCase composeTransactionUseCase;
+  final ComposeRepository composeRepository;
   SendBloc({
     required this.balanceRepository,
     required this.getFeeEstimatesUseCase,
+    required this.composeTransactionUseCase,
+    required this.composeRepository,
   }) : super(TransactionState<SendState>(
           feeOption: fee_option.Medium(),
           dataState: const TransactionDataState.initial(),
@@ -65,28 +73,63 @@ class SendBloc extends Bloc<TransactionEvent, TransactionState<SendState>> {
   void _onTransactionComposed(
     SendTransactionComposed event,
     Emitter<TransactionState<SendState>> emit,
-  ) {
+  ) async {
     print('SendTransactionComposed');
 
-    // Get the current state data
-    // final currentData = state.maybeWhen(
-    //   success: (balances, data) => data ?? const SendData(),
-    //   orElse: () => const SendData(),
-    // );
+    // First, emit loading state for the compose operation
+    emit(state.copyWith(composeState: const ComposeStateLoading()));
+    if (event.sourceAddress.isEmpty) {
+      emit(state.copyWith(
+        composeState: const ComposeStateError('Source address is required'),
+      ));
+      return;
+    }
 
-    // // Update the data with new values
-    // final updatedData = currentData.copyWith(
-    //   destinationAddress: event.destinationAddress,
-    //   amount: event.amount,
-    // );
+    try {
+      final feeRate = getFeeRate(state);
+      final source = event.sourceAddress;
+      final destination = event.destinationAddress;
+      final asset = event.asset;
+      final quantity = event.quantity;
 
-    // // Preserve the current state's balances
-    // state.maybeWhen(
-    //   success: (balances, _) {
-    //     emit(TransactionState.success(balances: balances, data: updatedData));
-    //   },
-    //   orElse: () {},
-    // );
+      final composeResponse = await composeTransactionUseCase
+          .call<ComposeSendParams, ComposeSendResponse>(
+        feeRate: feeRate,
+        source: source,
+        params: ComposeSendParams(
+          source: source,
+          destination: destination,
+          asset: asset,
+          quantity: quantity,
+        ),
+        composeFn: composeRepository.composeSendVerbose,
+      );
+
+      // Create a map with all the compose data to store in ComposeState
+      final composeData = {
+        'composeTransaction': composeResponse,
+        'fee': composeResponse.btcFee,
+        'feeRate': feeRate,
+        'virtualSize': composeResponse.signedTxEstimatedSize.virtualSize,
+        'adjustedVirtualSize':
+            composeResponse.signedTxEstimatedSize.adjustedVirtualSize,
+      };
+
+      emit(state.copyWith(
+        composeState: ComposeStateSuccess(composeData),
+      ));
+      print(state.toString());
+    } on ComposeTransactionException catch (e) {
+      emit(state.copyWith(
+        composeState: ComposeStateError(e.message),
+      ));
+    } catch (e) {
+      emit(state.copyWith(
+        composeState: ComposeStateError(e is ComposeTransactionException
+            ? e.message
+            : 'An unexpected error occurred: ${e.toString()}'),
+      ));
+    }
   }
 
   void _onTransactionSubmitted(

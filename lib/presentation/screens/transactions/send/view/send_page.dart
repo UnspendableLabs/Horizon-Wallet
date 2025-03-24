@@ -6,12 +6,14 @@ import 'package:horizon/common/format.dart';
 import 'package:horizon/domain/entities/fee_option.dart';
 import 'package:horizon/domain/entities/multi_address_balance_entry.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
+import 'package:horizon/domain/repositories/compose_repository.dart';
 import 'package:horizon/presentation/common/transaction_stepper/bloc/transaction_event.dart';
 import 'package:horizon/presentation/common/transaction_stepper/bloc/transaction_state.dart';
 import 'package:horizon/presentation/common/transaction_stepper/view/transaction_stepper.dart';
 import 'package:horizon/presentation/common/transactions/gradient_quantity_input.dart';
 import 'package:horizon/presentation/common/transactions/multi_address_balance_dropdown.dart';
 import 'package:horizon/presentation/common/transactions/token_name_field.dart';
+import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
 import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 import 'package:horizon/presentation/screens/transactions/send/bloc/send_bloc.dart';
@@ -40,16 +42,18 @@ class _SendPageState extends State<SendPage> {
 
   void _handleInputsStepNext(
       BuildContext context, TransactionState<SendState> state) {
-    // Form validation is now handled by the TransactionStepper
-    // final formData = state.maybeWhen(
-    //   success: (_, data) => data,
-    //   orElse: () => null,
-    // );
-
-    // context.read<SendBloc>().add(SendTransactionComposed(
-    //       destinationAddress: formData?.destinationAddress ?? "",
-    //       amount: formData?.amount ?? "",
-    //     ));
+    final quantity = getQuantityForDivisibility(
+      divisible: state.getBalancesOrThrow().assetInfo.divisible,
+      inputQuantity: quantityController.text,
+    );
+    context.read<SendBloc>().add(SendTransactionComposed(
+          sourceAddress: selectedBalanceEntry?.address ?? "",
+          params: SendTransactionParams(
+            destinationAddress: destinationAddressController.text,
+            asset: widget.assetName,
+            quantity: quantity,
+          ),
+        ));
   }
 
   void _handleConfirmationStepNext(BuildContext context) {
@@ -68,6 +72,8 @@ class _SendPageState extends State<SendPage> {
       create: (context) => SendBloc(
         balanceRepository: GetIt.I<BalanceRepository>(),
         getFeeEstimatesUseCase: GetIt.I<GetFeeEstimatesUseCase>(),
+        composeTransactionUseCase: GetIt.I<ComposeTransactionUseCase>(),
+        composeRepository: GetIt.I<ComposeRepository>(),
       )..add(SendDependenciesRequested(
           assetName: widget.assetName, addresses: widget.addresses)),
       child: BlocConsumer<SendBloc, TransactionState<SendState>>(

@@ -107,7 +107,7 @@ class _TransactionStepperState<T> extends State<TransactionStepper<T>> {
         if (!widget.formKey.currentState!.validate()) {
           return; // Stop if validation fails
         }
-              widget.onFormStepNext();
+        widget.onFormStepNext();
         break;
       case 1:
         widget.onConfirmationStepNext();
@@ -166,7 +166,7 @@ class _TransactionStepperState<T> extends State<TransactionStepper<T>> {
       );
     }
 
-    if (widget.state.loading) {
+    if (widget.state.loadingFetch) {
       return _buildMainContent(
         context,
         isSmallScreen,
@@ -184,20 +184,24 @@ class _TransactionStepperState<T> extends State<TransactionStepper<T>> {
       );
     }
 
-    final balances = widget.state.getBalancesOrThrow();
-    final feeEstimates = widget.state.getFeeEstimatesOrThrow();
-    final data = widget.state.getDataOrThrow();
+    try {
+      final balances = widget.state.getBalancesOrThrow();
+      final feeEstimates = widget.state.getFeeEstimatesOrThrow();
+      final data = widget.state.getDataOrThrow();
 
-    return _buildMainContent(
-      context,
-      isSmallScreen,
-      false, // No loading overlay
-      null, // No error message
-      balances: balances,
-      feeEstimates: feeEstimates,
-      feeOption: widget.state.feeOption,
-      data: data,
-    );
+      return _buildMainContent(
+        context,
+        isSmallScreen,
+        false, // No loading overlay
+        null, // No error message
+        balances: balances,
+        feeEstimates: feeEstimates,
+        feeOption: widget.state.feeOption,
+        data: data,
+      );
+    } catch (e) {
+      return _buildErrorContent(context, e.toString(), isSmallScreen);
+    }
   }
 
   // Helper method to build the main stepper content
@@ -239,6 +243,21 @@ class _TransactionStepperState<T> extends State<TransactionStepper<T>> {
         widgets: updatedWidgets,
       );
     } else if (_currentStep == 1) {
+      // Check for ComposeState errors or loading before building confirmation step
+      if (widget.state.composeState is ComposeStateLoading) {
+        return _buildLoadingOverlay(context);
+      } else if (widget.state.composeState is ComposeStateError) {
+        final composeError =
+            (widget.state.composeState as ComposeStateError).error;
+        return _buildErrorContent(context, composeError, isSmallScreen);
+      } else if (widget.state.composeState is! ComposeStateSuccess) {
+        // We need compose data to show the confirmation step
+        return _buildErrorContent(
+            context,
+            "Transaction composition required before confirmation",
+            isSmallScreen);
+      }
+
       // Confirmation step
       stepContent =
           widget.buildConfirmationStep(balances, feeEstimates, feeOption, data);
@@ -407,6 +426,120 @@ class _TransactionStepperState<T> extends State<TransactionStepper<T>> {
             ),
         ],
       ),
+    );
+
+    if (isSmallScreen) {
+      return stepperContent;
+    }
+
+    return Scaffold(
+      backgroundColor: Theme.of(context).dialogTheme.backgroundColor,
+      body: Center(
+        child: Container(
+          width: 500,
+          height: 812,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(18),
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(18),
+            child: stepperContent,
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Helper method to build loading overlay
+  Widget _buildLoadingOverlay(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: widget.showBackButton
+            ? AppIcons.iconButton(
+                context: context,
+                width: 32,
+                height: 32,
+                icon: AppIcons.backArrowIcon(
+                    context: context,
+                    width: 24,
+                    height: 24,
+                    fit: BoxFit.fitHeight),
+                onPressed: _handleBack,
+              )
+            : null,
+      ),
+      body: const Center(
+        child: CircularProgressIndicator(),
+      ),
+    );
+  }
+
+  // Helper method to build error content
+  Widget _buildErrorContent(
+      BuildContext context, String errorMessage, bool isSmallScreen) {
+    final errorWidget = Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.red.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.red),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.error_outline, color: Colors.red),
+              const SizedBox(width: 8),
+              Text(
+                'Error',
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      color: Colors.red,
+                      fontWeight: FontWeight.bold,
+                    ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            errorMessage,
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
+          const SizedBox(height: 16),
+          SizedBox(
+            width: double.infinity,
+            child: HorizonOutlinedButton(
+              onPressed: _handleBack,
+              buttonText: 'Go Back',
+              isTransparent: false,
+            ),
+          ),
+        ],
+      ),
+    );
+
+    final stepperContent = Scaffold(
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: widget.showBackButton
+            ? AppIcons.iconButton(
+                context: context,
+                width: 32,
+                height: 32,
+                icon: AppIcons.backArrowIcon(
+                    context: context,
+                    width: 24,
+                    height: 24,
+                    fit: BoxFit.fitHeight),
+                onPressed: _handleBack,
+              )
+            : null,
+      ),
+      body: Center(child: errorWidget),
     );
 
     if (isSmallScreen) {

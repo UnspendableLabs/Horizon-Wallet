@@ -20,7 +20,26 @@ class FeeOptionSelected extends TransactionEvent {
 }
 
 /// Event triggered when moving from input step to confirmation step
-class TransactionComposed<T> extends TransactionEvent {}
+class TransactionComposed<T> extends TransactionEvent {
+  final String sourceAddress;
+  final T params;
+
+  TransactionComposed({
+    required this.sourceAddress,
+    required this.params,
+  });
+
+  /// Helper method for subclasses to validate parameters
+  bool validate() {
+    // Base validation that applies to all transactions
+    if (sourceAddress.isEmpty) {
+      return false;
+    }
+
+    // Specific validation is handled by subclasses
+    return true;
+  }
+}
 
 /// Event triggered when moving from confirmation step to submission step
 class TransactionSubmitted<T> extends TransactionEvent {}

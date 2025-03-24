@@ -9,13 +9,32 @@ class SendDependenciesRequested extends DependenciesRequested {
 }
 
 /// Event triggered when moving from input step to confirmation step in the send flow
-class SendTransactionComposed extends TransactionComposed {
-  final String? destinationAddress;
-  final String? amount;
-
+class SendTransactionComposed
+    extends TransactionComposed<SendTransactionParams> {
   SendTransactionComposed({
-    this.destinationAddress,
-    this.amount,
+    required super.sourceAddress,
+    required super.params,
+  });
+
+  /// Get destination address from params
+  String get destinationAddress => params.destinationAddress;
+
+  /// Get asset from params
+  String get asset => params.asset;
+
+  /// Get quantity from params
+  int get quantity => params.quantity;
+}
+
+class SendTransactionParams {
+  final String destinationAddress;
+  final String asset;
+  final int quantity;
+
+  SendTransactionParams({
+    required this.destinationAddress,
+    required this.asset,
+    required this.quantity,
   });
 }
 

@@ -10,12 +10,14 @@ class TransactionState<T> {
   final FeeState feeState;
   final FeeOption feeOption;
   final TransactionDataState<T> dataState;
+  final ComposeState composeState;
 
   TransactionState({
     required this.balancesState,
     required this.feeState,
     required this.feeOption,
     required this.dataState,
+    this.composeState = const ComposeStateInitial(),
   });
 
   String? get error {
@@ -34,10 +36,14 @@ class TransactionState<T> {
       orElse: () => null,
     );
 
-    return balancesError ?? feeError ?? dataError;
+    final composeError = composeState is ComposeStateError
+        ? (composeState as ComposeStateError).error
+        : null;
+
+    return balancesError ?? feeError ?? dataError ?? composeError;
   }
 
-  bool get loading {
+  bool get loadingFetch {
     return balancesState.maybeWhen(
           loading: () => true,
           orElse: () => false,
@@ -67,6 +73,10 @@ class TransactionState<T> {
         );
   }
 
+  bool get loadingCompose {
+    return composeState is ComposeStateLoading;
+  }
+
   MultiAddressBalance getBalancesOrThrow() {
     return balancesState.maybeWhen(
       success: (balances) => balances,
@@ -89,23 +99,32 @@ class TransactionState<T> {
     );
   }
 
+  Map<String, dynamic>? getComposeDataOrThrow() {
+    if (composeState is ComposeStateSuccess) {
+      return (composeState as ComposeStateSuccess).composeData;
+    }
+    throw StateError('ComposeState is not in a success state');
+  }
+
   TransactionState<T> copyWith({
     BalancesState? balancesState,
     FeeState? feeState,
     FeeOption? feeOption,
     TransactionDataState<T>? dataState,
+    ComposeState? composeState,
   }) {
     return TransactionState<T>(
       balancesState: balancesState ?? this.balancesState,
       feeState: feeState ?? this.feeState,
       feeOption: feeOption ?? this.feeOption,
       dataState: dataState ?? this.dataState,
+      composeState: composeState ?? this.composeState,
     );
   }
 
   @override
   String toString() {
-    return 'TransactionState(balancesState: $balancesState, feeState: $feeState, feeOption: $feeOption, dataState: $dataState)';
+    return 'TransactionState(balancesState: $balancesState, feeState: $feeState, feeOption: $feeOption, dataState: $dataState, composeState: $composeState)';
   }
 }
 
@@ -135,4 +154,27 @@ class TransactionDataState<T> with _$TransactionDataState<T> {
       _SuccessTransactionDataState;
   const factory TransactionDataState.error(String error) =
       _ErrorTransactionDataState;
+}
+
+// State to track composed transaction data across all transaction types
+sealed class ComposeState {
+  const ComposeState();
+}
+
+class ComposeStateInitial extends ComposeState {
+  const ComposeStateInitial();
+}
+
+class ComposeStateLoading extends ComposeState {
+  const ComposeStateLoading();
+}
+
+class ComposeStateError extends ComposeState {
+  final String error;
+  const ComposeStateError(this.error);
+}
+
+class ComposeStateSuccess extends ComposeState {
+  final Map<String, dynamic> composeData;
+  const ComposeStateSuccess(this.composeData);
 }
