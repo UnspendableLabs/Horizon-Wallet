@@ -7,9 +7,11 @@ import 'package:horizon/domain/entities/fee_option.dart';
 import 'package:horizon/domain/entities/multi_address_balance_entry.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
+import 'package:horizon/presentation/common/shared_util.dart';
 import 'package:horizon/presentation/common/transaction_stepper/bloc/transaction_event.dart';
 import 'package:horizon/presentation/common/transaction_stepper/bloc/transaction_state.dart';
 import 'package:horizon/presentation/common/transaction_stepper/view/transaction_stepper.dart';
+import 'package:horizon/presentation/common/transactions/display_field_with_label.dart';
 import 'package:horizon/presentation/common/transactions/gradient_quantity_input.dart';
 import 'package:horizon/presentation/common/transactions/multi_address_balance_dropdown.dart';
 import 'package:horizon/presentation/common/transactions/token_name_field.dart';
@@ -19,6 +21,8 @@ import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 import 'package:horizon/presentation/screens/transactions/send/bloc/send_bloc.dart';
 import 'package:horizon/presentation/screens/transactions/send/bloc/send_event.dart';
 import 'package:horizon/presentation/screens/transactions/send/bloc/send_state.dart';
+import 'package:horizon/presentation/common/transactions/quantity_display.dart';
+import 'package:horizon/domain/entities/compose_send.dart';
 
 class SendPage extends StatefulWidget {
   final String assetName;
@@ -40,8 +44,8 @@ class _SendPageState extends State<SendPage> {
   TextEditingController destinationAddressController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
-  void _handleInputsStepNext(
-      BuildContext context, TransactionState<SendState> state) {
+  void _handleInputsStepNext(BuildContext context,
+      TransactionState<SendState, ComposeSendResponse> state) {
     final quantity = getQuantityForDivisibility(
       divisible: state.getBalancesOrThrow().assetInfo.divisible,
       inputQuantity: quantityController.text,
@@ -76,13 +80,14 @@ class _SendPageState extends State<SendPage> {
         composeRepository: GetIt.I<ComposeRepository>(),
       )..add(SendDependenciesRequested(
           assetName: widget.assetName, addresses: widget.addresses)),
-      child: BlocConsumer<SendBloc, TransactionState<SendState>>(
+      child: BlocConsumer<SendBloc,
+          TransactionState<SendState, ComposeSendResponse>>(
         listener: (context, state) {
           // TODO: Implement listener
         },
         builder: (context, state) {
           return Scaffold(
-            body: TransactionStepper<SendState>(
+            body: TransactionStepper<SendState, ComposeSendResponse>(
               formKey: _formKey,
               buildFormStep: (balances, feeEstimates, feeOption, data) =>
                   StepContent(
@@ -125,7 +130,7 @@ class _SendPageState extends State<SendPage> {
                         return 'Please enter an amount';
                       }
 
-                      if (selectedBalanceEntry != null && balances != null) {
+                      if (selectedBalanceEntry != null) {
                         try {
                           final enteredQuantity = getQuantityForDivisibility(
                             divisible: balances.assetInfo.divisible ?? false,
@@ -146,14 +151,31 @@ class _SendPageState extends State<SendPage> {
                   )
                 ],
               ),
-              buildConfirmationStep:
-                  (balances, feeEstimates, feeOption, data) =>
-                      const StepContent(
+              buildConfirmationStep: (composeState) => StepContent(
                 title: 'Confirm Transaction',
                 widgets: [
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 16.0),
-                    child: Text('Review your send details'),
+                  QuantityDisplay(
+                    quantity:
+                        composeState.composeData.params.quantityNormalized,
+                  ),
+                  DisplayFieldWithLabel(
+                    label: const SelectableText('Token Name'),
+                    value: SelectableText(displayAssetName(
+                        composeState.composeData.params.asset,
+                        composeState
+                            .composeData.params.assetInfo.assetLongname)),
+                  ),
+                  commonHeightSizedBox,
+                  DisplayFieldWithLabel(
+                    label: const SelectableText('Source Address'),
+                    value:
+                        SelectableText(composeState.composeData.params.source),
+                  ),
+                  commonHeightSizedBox,
+                  DisplayFieldWithLabel(
+                    label: const SelectableText('Recipient Address'),
+                    value: SelectableText(
+                        composeState.composeData.params.destination),
                   ),
                 ],
               ),

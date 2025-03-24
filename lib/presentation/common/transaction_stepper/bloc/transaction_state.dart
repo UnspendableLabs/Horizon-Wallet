@@ -5,20 +5,20 @@ import 'package:horizon/domain/entities/multi_address_balance.dart';
 
 part 'transaction_state.freezed.dart';
 
-class TransactionState<T> {
+class TransactionState<T, R> {
   final BalancesState balancesState;
   final FeeState feeState;
   final FeeOption feeOption;
   final TransactionDataState<T> dataState;
-  final ComposeState composeState;
+  final ComposeState<R> composeState;
 
   TransactionState({
     required this.balancesState,
     required this.feeState,
     required this.feeOption,
     required this.dataState,
-    this.composeState = const ComposeStateInitial(),
-  });
+    ComposeState<R>? composeState,
+  }) : composeState = composeState ?? ComposeStateInitial<R>();
 
   String? get error {
     final balancesError = balancesState.maybeWhen(
@@ -36,8 +36,8 @@ class TransactionState<T> {
       orElse: () => null,
     );
 
-    final composeError = composeState is ComposeStateError
-        ? (composeState as ComposeStateError).error
+    final composeError = composeState is ComposeStateError<R>
+        ? (composeState as ComposeStateError<R>).error
         : null;
 
     return balancesError ?? feeError ?? dataError ?? composeError;
@@ -74,7 +74,14 @@ class TransactionState<T> {
   }
 
   bool get loadingCompose {
-    return composeState is ComposeStateLoading;
+    return composeState is ComposeStateLoading<R>;
+  }
+
+  bool get composeSuccessOrThrow {
+    if (composeState is ComposeStateSuccess<R>) {
+      return true;
+    }
+    throw StateError('ComposeState is not in a success state');
   }
 
   MultiAddressBalance getBalancesOrThrow() {
@@ -99,21 +106,25 @@ class TransactionState<T> {
     );
   }
 
-  Map<String, dynamic>? getComposeDataOrThrow() {
-    if (composeState is ComposeStateSuccess) {
-      return (composeState as ComposeStateSuccess).composeData;
+  ComposeStateSuccess<R> getComposeStateOrThrow() {
+    if (composeState is ComposeStateSuccess<R>) {
+      return (composeState as ComposeStateSuccess<R>);
     }
     throw StateError('ComposeState is not in a success state');
   }
 
-  TransactionState<T> copyWith({
+  R getComposeDataOrThrow() {
+    return getComposeStateOrThrow().composeData;
+  }
+
+  TransactionState<T, R> copyWith({
     BalancesState? balancesState,
     FeeState? feeState,
     FeeOption? feeOption,
     TransactionDataState<T>? dataState,
-    ComposeState? composeState,
+    ComposeState<R>? composeState,
   }) {
-    return TransactionState<T>(
+    return TransactionState<T, R>(
       balancesState: balancesState ?? this.balancesState,
       feeState: feeState ?? this.feeState,
       feeOption: feeOption ?? this.feeOption,
@@ -157,24 +168,24 @@ class TransactionDataState<T> with _$TransactionDataState<T> {
 }
 
 // State to track composed transaction data across all transaction types
-sealed class ComposeState {
+sealed class ComposeState<T> {
   const ComposeState();
 }
 
-class ComposeStateInitial extends ComposeState {
+class ComposeStateInitial<T> extends ComposeState<T> {
   const ComposeStateInitial();
 }
 
-class ComposeStateLoading extends ComposeState {
+class ComposeStateLoading<T> extends ComposeState<T> {
   const ComposeStateLoading();
 }
 
-class ComposeStateError extends ComposeState {
+class ComposeStateError<T> extends ComposeState<T> {
   final String error;
   const ComposeStateError(this.error);
 }
 
-class ComposeStateSuccess extends ComposeState {
-  final Map<String, dynamic> composeData;
+class ComposeStateSuccess<T> extends ComposeState<T> {
+  final T composeData;
   const ComposeStateSuccess(this.composeData);
 }

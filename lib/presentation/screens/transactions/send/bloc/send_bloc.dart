@@ -14,17 +14,19 @@ import 'package:horizon/presentation/screens/transactions/send/bloc/send_state.d
 
 /// Send transaction data to be stored in the TransactionState.success state
 
-class SendBloc extends Bloc<TransactionEvent, TransactionState<SendState>> {
+class SendBloc extends Bloc<TransactionEvent,
+    TransactionState<SendState, ComposeSendResponse>> {
   final BalanceRepository balanceRepository;
   final GetFeeEstimatesUseCase getFeeEstimatesUseCase;
   final ComposeTransactionUseCase composeTransactionUseCase;
   final ComposeRepository composeRepository;
+
   SendBloc({
     required this.balanceRepository,
     required this.getFeeEstimatesUseCase,
     required this.composeTransactionUseCase,
     required this.composeRepository,
-  }) : super(TransactionState<SendState>(
+  }) : super(TransactionState<SendState, ComposeSendResponse>(
           feeOption: fee_option.Medium(),
           dataState: const TransactionDataState.initial(),
           balancesState: const BalancesState.initial(),
@@ -38,7 +40,7 @@ class SendBloc extends Bloc<TransactionEvent, TransactionState<SendState>> {
 
   void _onDependenciesRequested(
     SendDependenciesRequested event,
-    Emitter<TransactionState<SendState>> emit,
+    Emitter<TransactionState<SendState, ComposeSendResponse>> emit,
   ) async {
     // First, emit loading state
     emit(state.copyWith(
@@ -72,7 +74,7 @@ class SendBloc extends Bloc<TransactionEvent, TransactionState<SendState>> {
 
   void _onTransactionComposed(
     SendTransactionComposed event,
-    Emitter<TransactionState<SendState>> emit,
+    Emitter<TransactionState<SendState, ComposeSendResponse>> emit,
   ) async {
     print('SendTransactionComposed');
 
@@ -105,18 +107,8 @@ class SendBloc extends Bloc<TransactionEvent, TransactionState<SendState>> {
         composeFn: composeRepository.composeSendVerbose,
       );
 
-      // Create a map with all the compose data to store in ComposeState
-      final composeData = {
-        'composeTransaction': composeResponse,
-        'fee': composeResponse.btcFee,
-        'feeRate': feeRate,
-        'virtualSize': composeResponse.signedTxEstimatedSize.virtualSize,
-        'adjustedVirtualSize':
-            composeResponse.signedTxEstimatedSize.adjustedVirtualSize,
-      };
-
       emit(state.copyWith(
-        composeState: ComposeStateSuccess(composeData),
+        composeState: ComposeStateSuccess(composeResponse),
       ));
       print(state.toString());
     } on ComposeTransactionException catch (e) {
@@ -134,25 +126,14 @@ class SendBloc extends Bloc<TransactionEvent, TransactionState<SendState>> {
 
   void _onTransactionSubmitted(
     SendTransactionSubmitted event,
-    Emitter<TransactionState<SendState>> emit,
+    Emitter<TransactionState<SendState, ComposeSendResponse>> emit,
   ) {
     print('SendTransactionSubmitted');
-
-    // First indicate that we're loading
-    // emit(const TransactionState.loading());
-
-    // In a real implementation, you would make an API call here
-    // For now, we'll just simulate success after a delay
-
-    // In a real implementation, you might want to:
-    // 1. Get the current data from the previous state
-    // 2. Submit the transaction to the blockchain
-    // 3. Emit success or error state based on the result
   }
 
   void _onFeeOptionSelected(
     FeeOptionSelected event,
-    Emitter<TransactionState<SendState>> emit,
+    Emitter<TransactionState<SendState, ComposeSendResponse>> emit,
   ) {
     // Update the fee option in the state
     emit(state.copyWith(

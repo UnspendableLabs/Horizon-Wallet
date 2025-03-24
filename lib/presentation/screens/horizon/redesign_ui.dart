@@ -847,6 +847,7 @@ class _HorizonTextFieldState extends State<HorizonTextField> {
                           },
                           style: TextStyle(
                             fontSize: 12,
+                            fontWeight: FontWeight.w500,
                             color: customTheme.inputTextColor,
                           ),
                           decoration: InputDecoration(
@@ -854,6 +855,7 @@ class _HorizonTextFieldState extends State<HorizonTextField> {
                                 ? customTheme.inputBackground
                                 : customTheme.inputBackgroundEmpty,
                             labelText: widget.label,
+                            labelStyle: theme.textTheme.bodySmall,
                             isDense: theme.inputDecorationTheme.isDense,
                             contentPadding:
                                 theme.inputDecorationTheme.contentPadding,

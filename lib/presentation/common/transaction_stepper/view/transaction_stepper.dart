@@ -21,30 +21,32 @@ class StepContent {
 
 /// A transaction stepper widget that handles the UI for transaction flows.
 /// Includes three steps: inputs, confirmation, and submission.
-class TransactionStepper<T> extends StatefulWidget {
+class TransactionStepper<T, R> extends StatefulWidget {
   /// Widget builder for transaction inputs (first step)
   /// Receives balances, data, loading state and error message - all extracted from the state
   /// Returns a StepContent with title and widgets
-  final StepContent Function(MultiAddressBalance? balances,
-      FeeEstimates? feeEstimates, FeeOption? feeOption, T? data) buildFormStep;
+  final StepContent Function(
+    MultiAddressBalance balances,
+    FeeEstimates feeEstimates,
+    FeeOption feeOption,
+    T? data,
+  ) buildFormStep;
 
   /// Widget builder for transaction confirmation (second step)
   /// Receives balances, data and error message - all extracted from the state
   /// Returns a StepContent with title and widgets
-  final StepContent Function(
-      MultiAddressBalance? balances,
-      FeeEstimates? feeEstimates,
-      FeeOption? feeOption,
-      T? data) buildConfirmationStep;
+  final StepContent Function(ComposeStateSuccess<R> composeState)
+      buildConfirmationStep;
 
   /// Widget builder for transaction submission (third step)
   /// This step uses pattern matching directly so it needs the state
   /// Returns a StepContent with title and widgets
   final StepContent Function(
-      MultiAddressBalance? balances,
-      FeeEstimates? feeEstimates,
-      FeeOption? feeOption,
-      T? data) buildSubmissionStep;
+    MultiAddressBalance balances,
+    FeeEstimates feeEstimates,
+    FeeOption feeOption,
+    T? data,
+  ) buildSubmissionStep;
 
   /// Callback when back button is pressed at the first step
   final VoidCallback onBack;
@@ -55,10 +57,10 @@ class TransactionStepper<T> extends StatefulWidget {
   final VoidCallback onSubmissionStepNext;
 
   /// Callback for when a fee option is selected
-  final Function(FeeOption) onFeeOptionSelected;
+  final void Function(FeeOption) onFeeOptionSelected;
 
   /// The transaction state
-  final TransactionState<T> state;
+  final TransactionState<T, R> state;
 
   /// Whether the next button should be enabled
   final bool nextButtonEnabled;
@@ -77,25 +79,26 @@ class TransactionStepper<T> extends StatefulWidget {
 
   const TransactionStepper({
     super.key,
+    required this.formKey,
     required this.buildFormStep,
     required this.buildConfirmationStep,
     required this.buildSubmissionStep,
     required this.onBack,
+    required this.state,
+    required this.nextButtonEnabled,
     required this.onFormStepNext,
     required this.onConfirmationStepNext,
     required this.onSubmissionStepNext,
     required this.onFeeOptionSelected,
-    required this.state,
-    this.nextButtonEnabled = true,
     this.showBackButton = true,
-    required this.formKey,
   });
 
   @override
-  State<TransactionStepper<T>> createState() => _TransactionStepperState<T>();
+  State<TransactionStepper<T, R>> createState() =>
+      _TransactionStepperState<T, R>();
 }
 
-class _TransactionStepperState<T> extends State<TransactionStepper<T>> {
+class _TransactionStepperState<T, R> extends State<TransactionStepper<T, R>> {
   // Step management is internal to the TransactionStepper
   int _currentStep = 0;
 
@@ -219,6 +222,11 @@ class _TransactionStepperState<T> extends State<TransactionStepper<T>> {
     StepContent stepContent;
 
     if (_currentStep == 0) {
+      // For the first step, ensure we have all required data
+      if (balances == null || feeEstimates == null || feeOption == null) {
+        return _buildLoadingOverlay(context);
+      }
+
       // Inputs step - needs loading state too
       final inputsStepContent =
           widget.buildFormStep(balances, feeEstimates, feeOption, data);
@@ -229,12 +237,8 @@ class _TransactionStepperState<T> extends State<TransactionStepper<T>> {
         commonHeightSizedBox,
         TransactionFeeInput(
           feeEstimates: feeEstimates,
-          selectedFeeOption: feeOption ?? Medium(),
-          onFeeOptionSelected: (feeOption) {
-            // Create a FeeOptionSelected instance and add it to the bloc
-            // final event = ;
-            widget.onFeeOptionSelected(feeOption);
-          },
+          selectedFeeOption: feeOption,
+          onFeeOptionSelected: widget.onFeeOptionSelected,
         )
       ];
 
@@ -260,11 +264,11 @@ class _TransactionStepperState<T> extends State<TransactionStepper<T>> {
 
       // Confirmation step
       stepContent =
-          widget.buildConfirmationStep(balances, feeEstimates, feeOption, data);
+          widget.buildConfirmationStep(widget.state.getComposeStateOrThrow());
     } else {
       // Submission step
-      stepContent =
-          widget.buildSubmissionStep(balances, feeEstimates, feeOption, data);
+      stepContent = widget.buildSubmissionStep(
+          balances!, feeEstimates!, feeOption!, data);
     }
 
     // Prepare error widget if there's an error
