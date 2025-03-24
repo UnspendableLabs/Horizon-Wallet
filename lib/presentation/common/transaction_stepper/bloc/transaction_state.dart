@@ -18,7 +18,7 @@ class TransactionState<T, R> {
     required this.feeOption,
     required this.dataState,
     ComposeState<R>? composeState,
-  }) : composeState = composeState ?? ComposeStateInitial<R>();
+  }) : composeState = composeState ?? const ComposeState.initial();
 
   String? get error {
     final balancesError = balancesState.maybeWhen(
@@ -36,9 +36,10 @@ class TransactionState<T, R> {
       orElse: () => null,
     );
 
-    final composeError = composeState is ComposeStateError<R>
-        ? (composeState as ComposeStateError<R>).error
-        : null;
+    final composeError = composeState.maybeWhen(
+      error: (error) => error,
+      orElse: () => null,
+    );
 
     return balancesError ?? feeError ?? dataError ?? composeError;
   }
@@ -74,14 +75,17 @@ class TransactionState<T, R> {
   }
 
   bool get loadingCompose {
-    return composeState is ComposeStateLoading<R>;
+    return composeState.maybeWhen(
+      loading: () => true,
+      orElse: () => false,
+    );
   }
 
   bool get composeSuccessOrThrow {
-    if (composeState is ComposeStateSuccess<R>) {
-      return true;
-    }
-    throw StateError('ComposeState is not in a success state');
+    return composeState.maybeWhen(
+      success: (_) => true,
+      orElse: () => throw StateError('ComposeState is not in a success state'),
+    );
   }
 
   MultiAddressBalance getBalancesOrThrow() {
@@ -107,14 +111,17 @@ class TransactionState<T, R> {
   }
 
   ComposeStateSuccess<R> getComposeStateOrThrow() {
-    if (composeState is ComposeStateSuccess<R>) {
-      return (composeState as ComposeStateSuccess<R>);
-    }
-    throw StateError('ComposeState is not in a success state');
+    return composeState.maybeWhen(
+      success: (data) => ComposeStateSuccess(data),
+      orElse: () => throw StateError('ComposeState is not in a success state'),
+    );
   }
 
   R getComposeDataOrThrow() {
-    return getComposeStateOrThrow().composeData;
+    return composeState.maybeWhen(
+      success: (data) => data,
+      orElse: () => throw StateError('ComposeState is not in a success state'),
+    );
   }
 
   TransactionState<T, R> copyWith({
@@ -167,25 +174,10 @@ class TransactionDataState<T> with _$TransactionDataState<T> {
       _ErrorTransactionDataState;
 }
 
-// State to track composed transaction data across all transaction types
-sealed class ComposeState<T> {
-  const ComposeState();
-}
-
-class ComposeStateInitial<T> extends ComposeState<T> {
-  const ComposeStateInitial();
-}
-
-class ComposeStateLoading<T> extends ComposeState<T> {
-  const ComposeStateLoading();
-}
-
-class ComposeStateError<T> extends ComposeState<T> {
-  final String error;
-  const ComposeStateError(this.error);
-}
-
-class ComposeStateSuccess<T> extends ComposeState<T> {
-  final T composeData;
-  const ComposeStateSuccess(this.composeData);
+@freezed
+class ComposeState<T> with _$ComposeState<T> {
+  const factory ComposeState.initial() = ComposeStateInitial;
+  const factory ComposeState.loading() = ComposeStateLoading;
+  const factory ComposeState.error(String error) = ComposeStateError;
+  const factory ComposeState.success(T composeData) = ComposeStateSuccess;
 }

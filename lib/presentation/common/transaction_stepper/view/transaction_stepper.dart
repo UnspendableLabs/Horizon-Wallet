@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:horizon/domain/entities/fee_estimates.dart';
+import 'package:horizon/domain/entities/fee_option.dart';
 import 'package:horizon/domain/entities/multi_address_balance.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
+import 'package:horizon/presentation/common/transaction_stepper/bloc/transaction_bloc.dart';
 import 'package:horizon/presentation/common/transaction_stepper/bloc/transaction_state.dart';
+import 'package:horizon/presentation/common/transactions/fee_confirmation.dart';
 import 'package:horizon/presentation/common/transactions/transaction_fee_input.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 import 'package:horizon/utils/app_icons.dart';
-import 'package:horizon/domain/entities/fee_option.dart';
+import 'package:horizon/domain/entities/compose_response.dart';
 
 /// Represents the return type for step builders, containing both a title and widgets
 class StepContent {
@@ -248,66 +251,65 @@ class _TransactionStepperState<T, R> extends State<TransactionStepper<T, R>> {
       );
     } else if (_currentStep == 1) {
       // Check for ComposeState errors or loading before building confirmation step
-      if (widget.state.composeState is ComposeStateLoading) {
-        return _buildLoadingOverlay(context);
-      } else if (widget.state.composeState is ComposeStateError) {
-        final composeError =
-            (widget.state.composeState as ComposeStateError).error;
-        return _buildErrorContent(context, composeError, isSmallScreen);
-      } else if (widget.state.composeState is! ComposeStateSuccess) {
-        // We need compose data to show the confirmation step
-        return _buildErrorContent(
-            context,
-            "Transaction composition required before confirmation",
-            isSmallScreen);
-      }
+      return widget.state.composeState.when(
+        initial: () => _buildErrorContent(
+          context,
+          "Transaction composition required before confirmation",
+          isSmallScreen,
+        ),
+        loading: () => _buildLoadingOverlay(context),
+        error: (error) => _buildErrorContent(context, error, isSmallScreen),
+        success: (composeData) {
+          // Confirmation step
+          final confirmationContent = widget
+              .buildConfirmationStep(widget.state.getComposeStateOrThrow());
+          final feeRate = getFeeRate(widget.state);
 
-      // Confirmation step
-      stepContent =
-          widget.buildConfirmationStep(widget.state.getComposeStateOrThrow());
+          final composeResponse =
+              widget.state.getComposeDataOrThrow() as ComposeResponse;
+
+          // Add FeeConfirmation to the widgets
+          final updatedWidgets = [
+            ...confirmationContent.widgets,
+            commonHeightSizedBox,
+            FeeConfirmation(
+              fee: "${composeResponse.btcFee} sats ($feeRate sats/vbyte)",
+              virtualSize: composeResponse.signedTxEstimatedSize.virtualSize,
+              adjustedVirtualSize:
+                  composeResponse.signedTxEstimatedSize.adjustedVirtualSize,
+            ),
+          ];
+
+          stepContent = StepContent(
+            title: confirmationContent.title,
+            widgets: updatedWidgets,
+          );
+
+          return _buildStepperContent(context, isSmallScreen,
+              showLoadingOverlay, errorMessage, stepContent, null);
+        },
+      );
     } else {
       // Submission step
-      stepContent = widget.buildSubmissionStep(
-          balances!, feeEstimates!, feeOption!, data);
+      if (balances == null || feeEstimates == null || feeOption == null) {
+        return _buildLoadingOverlay(context);
+      }
+      stepContent =
+          widget.buildSubmissionStep(balances, feeEstimates, feeOption, data);
     }
 
-    // Prepare error widget if there's an error
-    Widget? errorWidget;
-    if (errorMessage != null) {
-      errorWidget = Container(
-        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.red.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: Colors.red),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                const Icon(Icons.error_outline, color: Colors.red),
-                const SizedBox(width: 8),
-                Text(
-                  'Error',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        color: Colors.red,
-                        fontWeight: FontWeight.bold,
-                      ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Text(
-              errorMessage,
-              style: Theme.of(context).textTheme.bodyMedium,
-            ),
-          ],
-        ),
-      );
-    }
+    return _buildStepperContent(context, isSmallScreen, showLoadingOverlay,
+        errorMessage, stepContent, null);
+  }
 
+  Widget _buildStepperContent(
+    BuildContext context,
+    bool isSmallScreen,
+    bool showLoadingOverlay,
+    String? errorMessage,
+    StepContent stepContent,
+    Widget? errorWidget,
+  ) {
     final stepperContent = Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.transparent,

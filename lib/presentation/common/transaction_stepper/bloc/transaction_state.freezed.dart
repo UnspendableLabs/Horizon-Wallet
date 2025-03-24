@@ -1825,3 +1825,602 @@ abstract class _ErrorTransactionDataState<T>
           _$ErrorTransactionDataStateImpl<T>>
       get copyWith => throw _privateConstructorUsedError;
 }
+
+/// @nodoc
+mixin _$ComposeState<T> {
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function() initial,
+    required TResult Function() loading,
+    required TResult Function(String error) error,
+    required TResult Function(T composeData) success,
+  }) =>
+      throw _privateConstructorUsedError;
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function()? initial,
+    TResult? Function()? loading,
+    TResult? Function(String error)? error,
+    TResult? Function(T composeData)? success,
+  }) =>
+      throw _privateConstructorUsedError;
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function()? initial,
+    TResult Function()? loading,
+    TResult Function(String error)? error,
+    TResult Function(T composeData)? success,
+    required TResult orElse(),
+  }) =>
+      throw _privateConstructorUsedError;
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(ComposeStateInitial<T> value) initial,
+    required TResult Function(ComposeStateLoading<T> value) loading,
+    required TResult Function(ComposeStateError<T> value) error,
+    required TResult Function(ComposeStateSuccess<T> value) success,
+  }) =>
+      throw _privateConstructorUsedError;
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(ComposeStateInitial<T> value)? initial,
+    TResult? Function(ComposeStateLoading<T> value)? loading,
+    TResult? Function(ComposeStateError<T> value)? error,
+    TResult? Function(ComposeStateSuccess<T> value)? success,
+  }) =>
+      throw _privateConstructorUsedError;
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(ComposeStateInitial<T> value)? initial,
+    TResult Function(ComposeStateLoading<T> value)? loading,
+    TResult Function(ComposeStateError<T> value)? error,
+    TResult Function(ComposeStateSuccess<T> value)? success,
+    required TResult orElse(),
+  }) =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $ComposeStateCopyWith<T, $Res> {
+  factory $ComposeStateCopyWith(
+          ComposeState<T> value, $Res Function(ComposeState<T>) then) =
+      _$ComposeStateCopyWithImpl<T, $Res, ComposeState<T>>;
+}
+
+/// @nodoc
+class _$ComposeStateCopyWithImpl<T, $Res, $Val extends ComposeState<T>>
+    implements $ComposeStateCopyWith<T, $Res> {
+  _$ComposeStateCopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
+}
+
+/// @nodoc
+abstract class _$$ComposeStateInitialImplCopyWith<T, $Res> {
+  factory _$$ComposeStateInitialImplCopyWith(_$ComposeStateInitialImpl<T> value,
+          $Res Function(_$ComposeStateInitialImpl<T>) then) =
+      __$$ComposeStateInitialImplCopyWithImpl<T, $Res>;
+}
+
+/// @nodoc
+class __$$ComposeStateInitialImplCopyWithImpl<T, $Res>
+    extends _$ComposeStateCopyWithImpl<T, $Res, _$ComposeStateInitialImpl<T>>
+    implements _$$ComposeStateInitialImplCopyWith<T, $Res> {
+  __$$ComposeStateInitialImplCopyWithImpl(_$ComposeStateInitialImpl<T> _value,
+      $Res Function(_$ComposeStateInitialImpl<T>) _then)
+      : super(_value, _then);
+}
+
+/// @nodoc
+
+class _$ComposeStateInitialImpl<T> implements ComposeStateInitial<T> {
+  const _$ComposeStateInitialImpl();
+
+  @override
+  String toString() {
+    return 'ComposeState<$T>.initial()';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$ComposeStateInitialImpl<T>);
+  }
+
+  @override
+  int get hashCode => runtimeType.hashCode;
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function() initial,
+    required TResult Function() loading,
+    required TResult Function(String error) error,
+    required TResult Function(T composeData) success,
+  }) {
+    return initial();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function()? initial,
+    TResult? Function()? loading,
+    TResult? Function(String error)? error,
+    TResult? Function(T composeData)? success,
+  }) {
+    return initial?.call();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function()? initial,
+    TResult Function()? loading,
+    TResult Function(String error)? error,
+    TResult Function(T composeData)? success,
+    required TResult orElse(),
+  }) {
+    if (initial != null) {
+      return initial();
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(ComposeStateInitial<T> value) initial,
+    required TResult Function(ComposeStateLoading<T> value) loading,
+    required TResult Function(ComposeStateError<T> value) error,
+    required TResult Function(ComposeStateSuccess<T> value) success,
+  }) {
+    return initial(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(ComposeStateInitial<T> value)? initial,
+    TResult? Function(ComposeStateLoading<T> value)? loading,
+    TResult? Function(ComposeStateError<T> value)? error,
+    TResult? Function(ComposeStateSuccess<T> value)? success,
+  }) {
+    return initial?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(ComposeStateInitial<T> value)? initial,
+    TResult Function(ComposeStateLoading<T> value)? loading,
+    TResult Function(ComposeStateError<T> value)? error,
+    TResult Function(ComposeStateSuccess<T> value)? success,
+    required TResult orElse(),
+  }) {
+    if (initial != null) {
+      return initial(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class ComposeStateInitial<T> implements ComposeState<T> {
+  const factory ComposeStateInitial() = _$ComposeStateInitialImpl<T>;
+}
+
+/// @nodoc
+abstract class _$$ComposeStateLoadingImplCopyWith<T, $Res> {
+  factory _$$ComposeStateLoadingImplCopyWith(_$ComposeStateLoadingImpl<T> value,
+          $Res Function(_$ComposeStateLoadingImpl<T>) then) =
+      __$$ComposeStateLoadingImplCopyWithImpl<T, $Res>;
+}
+
+/// @nodoc
+class __$$ComposeStateLoadingImplCopyWithImpl<T, $Res>
+    extends _$ComposeStateCopyWithImpl<T, $Res, _$ComposeStateLoadingImpl<T>>
+    implements _$$ComposeStateLoadingImplCopyWith<T, $Res> {
+  __$$ComposeStateLoadingImplCopyWithImpl(_$ComposeStateLoadingImpl<T> _value,
+      $Res Function(_$ComposeStateLoadingImpl<T>) _then)
+      : super(_value, _then);
+}
+
+/// @nodoc
+
+class _$ComposeStateLoadingImpl<T> implements ComposeStateLoading<T> {
+  const _$ComposeStateLoadingImpl();
+
+  @override
+  String toString() {
+    return 'ComposeState<$T>.loading()';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$ComposeStateLoadingImpl<T>);
+  }
+
+  @override
+  int get hashCode => runtimeType.hashCode;
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function() initial,
+    required TResult Function() loading,
+    required TResult Function(String error) error,
+    required TResult Function(T composeData) success,
+  }) {
+    return loading();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function()? initial,
+    TResult? Function()? loading,
+    TResult? Function(String error)? error,
+    TResult? Function(T composeData)? success,
+  }) {
+    return loading?.call();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function()? initial,
+    TResult Function()? loading,
+    TResult Function(String error)? error,
+    TResult Function(T composeData)? success,
+    required TResult orElse(),
+  }) {
+    if (loading != null) {
+      return loading();
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(ComposeStateInitial<T> value) initial,
+    required TResult Function(ComposeStateLoading<T> value) loading,
+    required TResult Function(ComposeStateError<T> value) error,
+    required TResult Function(ComposeStateSuccess<T> value) success,
+  }) {
+    return loading(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(ComposeStateInitial<T> value)? initial,
+    TResult? Function(ComposeStateLoading<T> value)? loading,
+    TResult? Function(ComposeStateError<T> value)? error,
+    TResult? Function(ComposeStateSuccess<T> value)? success,
+  }) {
+    return loading?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(ComposeStateInitial<T> value)? initial,
+    TResult Function(ComposeStateLoading<T> value)? loading,
+    TResult Function(ComposeStateError<T> value)? error,
+    TResult Function(ComposeStateSuccess<T> value)? success,
+    required TResult orElse(),
+  }) {
+    if (loading != null) {
+      return loading(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class ComposeStateLoading<T> implements ComposeState<T> {
+  const factory ComposeStateLoading() = _$ComposeStateLoadingImpl<T>;
+}
+
+/// @nodoc
+abstract class _$$ComposeStateErrorImplCopyWith<T, $Res> {
+  factory _$$ComposeStateErrorImplCopyWith(_$ComposeStateErrorImpl<T> value,
+          $Res Function(_$ComposeStateErrorImpl<T>) then) =
+      __$$ComposeStateErrorImplCopyWithImpl<T, $Res>;
+  @useResult
+  $Res call({String error});
+}
+
+/// @nodoc
+class __$$ComposeStateErrorImplCopyWithImpl<T, $Res>
+    extends _$ComposeStateCopyWithImpl<T, $Res, _$ComposeStateErrorImpl<T>>
+    implements _$$ComposeStateErrorImplCopyWith<T, $Res> {
+  __$$ComposeStateErrorImplCopyWithImpl(_$ComposeStateErrorImpl<T> _value,
+      $Res Function(_$ComposeStateErrorImpl<T>) _then)
+      : super(_value, _then);
+
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? error = null,
+  }) {
+    return _then(_$ComposeStateErrorImpl<T>(
+      null == error
+          ? _value.error
+          : error // ignore: cast_nullable_to_non_nullable
+              as String,
+    ));
+  }
+}
+
+/// @nodoc
+
+class _$ComposeStateErrorImpl<T> implements ComposeStateError<T> {
+  const _$ComposeStateErrorImpl(this.error);
+
+  @override
+  final String error;
+
+  @override
+  String toString() {
+    return 'ComposeState<$T>.error(error: $error)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$ComposeStateErrorImpl<T> &&
+            (identical(other.error, error) || other.error == error));
+  }
+
+  @override
+  int get hashCode => Object.hash(runtimeType, error);
+
+  @JsonKey(ignore: true)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$ComposeStateErrorImplCopyWith<T, _$ComposeStateErrorImpl<T>>
+      get copyWith =>
+          __$$ComposeStateErrorImplCopyWithImpl<T, _$ComposeStateErrorImpl<T>>(
+              this, _$identity);
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function() initial,
+    required TResult Function() loading,
+    required TResult Function(String error) error,
+    required TResult Function(T composeData) success,
+  }) {
+    return error(this.error);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function()? initial,
+    TResult? Function()? loading,
+    TResult? Function(String error)? error,
+    TResult? Function(T composeData)? success,
+  }) {
+    return error?.call(this.error);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function()? initial,
+    TResult Function()? loading,
+    TResult Function(String error)? error,
+    TResult Function(T composeData)? success,
+    required TResult orElse(),
+  }) {
+    if (error != null) {
+      return error(this.error);
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(ComposeStateInitial<T> value) initial,
+    required TResult Function(ComposeStateLoading<T> value) loading,
+    required TResult Function(ComposeStateError<T> value) error,
+    required TResult Function(ComposeStateSuccess<T> value) success,
+  }) {
+    return error(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(ComposeStateInitial<T> value)? initial,
+    TResult? Function(ComposeStateLoading<T> value)? loading,
+    TResult? Function(ComposeStateError<T> value)? error,
+    TResult? Function(ComposeStateSuccess<T> value)? success,
+  }) {
+    return error?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(ComposeStateInitial<T> value)? initial,
+    TResult Function(ComposeStateLoading<T> value)? loading,
+    TResult Function(ComposeStateError<T> value)? error,
+    TResult Function(ComposeStateSuccess<T> value)? success,
+    required TResult orElse(),
+  }) {
+    if (error != null) {
+      return error(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class ComposeStateError<T> implements ComposeState<T> {
+  const factory ComposeStateError(final String error) =
+      _$ComposeStateErrorImpl<T>;
+
+  String get error;
+  @JsonKey(ignore: true)
+  _$$ComposeStateErrorImplCopyWith<T, _$ComposeStateErrorImpl<T>>
+      get copyWith => throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class _$$ComposeStateSuccessImplCopyWith<T, $Res> {
+  factory _$$ComposeStateSuccessImplCopyWith(_$ComposeStateSuccessImpl<T> value,
+          $Res Function(_$ComposeStateSuccessImpl<T>) then) =
+      __$$ComposeStateSuccessImplCopyWithImpl<T, $Res>;
+  @useResult
+  $Res call({T composeData});
+}
+
+/// @nodoc
+class __$$ComposeStateSuccessImplCopyWithImpl<T, $Res>
+    extends _$ComposeStateCopyWithImpl<T, $Res, _$ComposeStateSuccessImpl<T>>
+    implements _$$ComposeStateSuccessImplCopyWith<T, $Res> {
+  __$$ComposeStateSuccessImplCopyWithImpl(_$ComposeStateSuccessImpl<T> _value,
+      $Res Function(_$ComposeStateSuccessImpl<T>) _then)
+      : super(_value, _then);
+
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? composeData = freezed,
+  }) {
+    return _then(_$ComposeStateSuccessImpl<T>(
+      freezed == composeData
+          ? _value.composeData
+          : composeData // ignore: cast_nullable_to_non_nullable
+              as T,
+    ));
+  }
+}
+
+/// @nodoc
+
+class _$ComposeStateSuccessImpl<T> implements ComposeStateSuccess<T> {
+  const _$ComposeStateSuccessImpl(this.composeData);
+
+  @override
+  final T composeData;
+
+  @override
+  String toString() {
+    return 'ComposeState<$T>.success(composeData: $composeData)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$ComposeStateSuccessImpl<T> &&
+            const DeepCollectionEquality()
+                .equals(other.composeData, composeData));
+  }
+
+  @override
+  int get hashCode => Object.hash(
+      runtimeType, const DeepCollectionEquality().hash(composeData));
+
+  @JsonKey(ignore: true)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$ComposeStateSuccessImplCopyWith<T, _$ComposeStateSuccessImpl<T>>
+      get copyWith => __$$ComposeStateSuccessImplCopyWithImpl<T,
+          _$ComposeStateSuccessImpl<T>>(this, _$identity);
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function() initial,
+    required TResult Function() loading,
+    required TResult Function(String error) error,
+    required TResult Function(T composeData) success,
+  }) {
+    return success(composeData);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function()? initial,
+    TResult? Function()? loading,
+    TResult? Function(String error)? error,
+    TResult? Function(T composeData)? success,
+  }) {
+    return success?.call(composeData);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function()? initial,
+    TResult Function()? loading,
+    TResult Function(String error)? error,
+    TResult Function(T composeData)? success,
+    required TResult orElse(),
+  }) {
+    if (success != null) {
+      return success(composeData);
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(ComposeStateInitial<T> value) initial,
+    required TResult Function(ComposeStateLoading<T> value) loading,
+    required TResult Function(ComposeStateError<T> value) error,
+    required TResult Function(ComposeStateSuccess<T> value) success,
+  }) {
+    return success(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(ComposeStateInitial<T> value)? initial,
+    TResult? Function(ComposeStateLoading<T> value)? loading,
+    TResult? Function(ComposeStateError<T> value)? error,
+    TResult? Function(ComposeStateSuccess<T> value)? success,
+  }) {
+    return success?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(ComposeStateInitial<T> value)? initial,
+    TResult Function(ComposeStateLoading<T> value)? loading,
+    TResult Function(ComposeStateError<T> value)? error,
+    TResult Function(ComposeStateSuccess<T> value)? success,
+    required TResult orElse(),
+  }) {
+    if (success != null) {
+      return success(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class ComposeStateSuccess<T> implements ComposeState<T> {
+  const factory ComposeStateSuccess(final T composeData) =
+      _$ComposeStateSuccessImpl<T>;
+
+  T get composeData;
+  @JsonKey(ignore: true)
+  _$$ComposeStateSuccessImplCopyWith<T, _$ComposeStateSuccessImpl<T>>
+      get copyWith => throw _privateConstructorUsedError;
+}
