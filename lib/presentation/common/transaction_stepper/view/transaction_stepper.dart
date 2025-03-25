@@ -13,7 +13,6 @@ import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 import 'package:horizon/utils/app_icons.dart';
 import 'package:horizon/domain/entities/compose_response.dart';
 
-/// Represents the return type for step builders, containing both a title and widgets
 class StepContent {
   final String title;
   final List<Widget> widgets;
@@ -24,12 +23,10 @@ class StepContent {
   });
 }
 
-/// A transaction stepper widget that handles the UI for transaction flows.
-/// Includes three steps: inputs, confirmation, and submission.
+// A transaction stepper widget that handles the UI for transaction flows.
+// Includes three steps: inputs, confirmation, and submission.
 class TransactionStepper<T, R> extends StatefulWidget {
-  /// Widget builder for transaction inputs (first step)
-  /// Receives balances, data, loading state and error message - all extracted from the state
-  /// Returns a StepContent with title and widgets
+  // Transaction form step
   final StepContent Function(
     MultiAddressBalance balances,
     FeeEstimates feeEstimates,
@@ -37,38 +34,26 @@ class TransactionStepper<T, R> extends StatefulWidget {
     T? data,
   ) buildFormStep;
 
-  /// Widget builder for transaction confirmation (second step)
-  /// Receives balances, data and error message - all extracted from the state
-  /// Returns a StepContent with title and widgets
+  // Transaction confirmation step
   final StepContent Function(ComposeStateSuccess<R> composeState)
       buildConfirmationStep;
 
-  /// Widget builder for transaction submission (third step)
-  /// Only receives the transaction hex on success
-  /// Returns a StepContent with title and widgets
+  // Transaction submission step
   final StepContent Function(BroadcastStateSuccess data) buildSubmissionStep;
 
-  /// Callbacks for each step's "Next" button
+  // Callbacks for each step's "Next" button
   final VoidCallback onFormStepNext;
   final void Function({String? password}) onConfirmationStepNext;
-  final VoidCallback onSubmissionStepNext;
 
-  /// Callback for when a fee option is selected
+  // Callback for when a fee option is selected
   final void Function(FeeOption) onFeeOptionSelected;
 
-  /// The transaction state
+  // The transaction state
   final TransactionState<T, R> state;
 
-  /// Whether the next button should be enabled
-  final bool nextButtonEnabled;
-
-  /// Whether to show the back button
-  final bool showBackButton;
-
-  /// Form key for the first step
+  // Form key for the first step
   final GlobalKey<FormState> formKey;
 
-  // Default button texts for the three steps
   static const List<String> defaultButtonTexts = [
     'Review Transaction',
     'Sign and Submit',
@@ -81,12 +66,9 @@ class TransactionStepper<T, R> extends StatefulWidget {
     required this.buildConfirmationStep,
     required this.buildSubmissionStep,
     required this.state,
-    required this.nextButtonEnabled,
     required this.onFormStepNext,
     required this.onConfirmationStepNext,
-    required this.onSubmissionStepNext,
     required this.onFeeOptionSelected,
-    this.showBackButton = true,
   });
 
   @override
@@ -95,13 +77,13 @@ class TransactionStepper<T, R> extends StatefulWidget {
 }
 
 class _TransactionStepperState<T, R> extends State<TransactionStepper<T, R>> {
-  // Step management is internal to the TransactionStepper
   int _currentStep = 0;
 
+  // Handle the next button press
   void _handleNext() async {
-    // Execute the appropriate action for the current step
     switch (_currentStep) {
       case 0:
+        // case 0: form step to confirmation step
         // Validate form before proceeding to next step
         if (!widget.formKey.currentState!.validate()) {
           return; // Stop if validation fails
@@ -109,6 +91,7 @@ class _TransactionStepperState<T, R> extends State<TransactionStepper<T, R>> {
         widget.onFormStepNext();
         break;
       case 1:
+        // case 1: confirmation step to submission step
         final requirePassword =
             GetIt.I<SettingsRepository>().requirePasswordForCryptoOperations;
 
@@ -171,7 +154,8 @@ class _TransactionStepperState<T, R> extends State<TransactionStepper<T, R>> {
         }
         break;
       case 2:
-        widget.onSubmissionStepNext();
+        // case 2: submission step to close
+        // no need to do anything
         break;
     }
 
@@ -183,17 +167,10 @@ class _TransactionStepperState<T, R> extends State<TransactionStepper<T, R>> {
     }
   }
 
+  // Handle the back button press
   void _handleBack() {
-    print('Back button pressed. Current step: $_currentStep');
-    print('Context: $context');
-    print('Navigator.canPop: ${Navigator.canPop(context)}');
-    print(
-        'Navigator.canPop(root): ${Navigator.of(context, rootNavigator: true).canPop()}');
-
     if (_currentStep == 0) {
-      print('Attempting to pop dialog...');
       Navigator.of(context).pop();
-      print('After pop attempt');
     } else {
       setState(() {
         _currentStep--;
@@ -285,7 +262,6 @@ class _TransactionStepperState<T, R> extends State<TransactionStepper<T, R>> {
     }
   }
 
-  // Helper method to build the main stepper content
   Widget _buildMainContent(
     BuildContext context,
     bool isSmallScreen,
@@ -319,7 +295,7 @@ class _TransactionStepperState<T, R> extends State<TransactionStepper<T, R>> {
         );
       }
 
-      // Inputs step - needs loading state too
+      // Inputs step - needs loading state
       final inputsStepContent =
           widget.buildFormStep(balances, feeEstimates, feeOption, data);
 
@@ -423,7 +399,7 @@ class _TransactionStepperState<T, R> extends State<TransactionStepper<T, R>> {
         },
       );
     } else {
-      // Submission step - handle broadcast state internally
+      // Submission step - handle broadcast state
       return widget.state.broadcastState.when(
         initial: () => _buildStepperContent(
           context,
@@ -505,19 +481,14 @@ class _TransactionStepperState<T, R> extends State<TransactionStepper<T, R>> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        leading: widget.showBackButton
-            ? AppIcons.iconButton(
-                context: context,
-                width: 32,
-                height: 32,
-                icon: AppIcons.backArrowIcon(
-                    context: context,
-                    width: 24,
-                    height: 24,
-                    fit: BoxFit.fitHeight),
-                onPressed: _handleBack,
-              )
-            : null,
+        leading: AppIcons.iconButton(
+          context: context,
+          width: 32,
+          height: 32,
+          icon: AppIcons.backArrowIcon(
+              context: context, width: 24, height: 24, fit: BoxFit.fitHeight),
+          onPressed: _handleBack,
+        ),
       ),
       body: Stack(
         children: [
@@ -600,9 +571,7 @@ class _TransactionStepperState<T, R> extends State<TransactionStepper<T, R>> {
                               height: 64,
                               child: HorizonOutlinedButton(
                                 isTransparent: false,
-                                onPressed: widget.nextButtonEnabled
-                                    ? _handleNext
-                                    : null,
+                                onPressed: _handleNext,
                                 buttonText: TransactionStepper
                                     .defaultButtonTexts[_currentStep],
                               ),
@@ -643,19 +612,6 @@ class _TransactionStepperState<T, R> extends State<TransactionStepper<T, R>> {
             child: stepperContent,
           ),
         ),
-      ),
-    );
-  }
-
-  // Helper method to build loading overlay
-  Widget _buildLoadingOverlay(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-      ),
-      body: const Center(
-        child: CircularProgressIndicator(),
       ),
     );
   }
@@ -707,22 +663,16 @@ class _TransactionStepperState<T, R> extends State<TransactionStepper<T, R>> {
 
     final stepperContent = Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: widget.showBackButton
-            ? AppIcons.iconButton(
-                context: context,
-                width: 32,
-                height: 32,
-                icon: AppIcons.backArrowIcon(
-                    context: context,
-                    width: 24,
-                    height: 24,
-                    fit: BoxFit.fitHeight),
-                onPressed: _handleBack,
-              )
-            : null,
-      ),
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          leading: AppIcons.iconButton(
+            context: context,
+            width: 32,
+            height: 32,
+            icon: AppIcons.backArrowIcon(
+                context: context, width: 24, height: 24, fit: BoxFit.fitHeight),
+            onPressed: _handleBack,
+          )),
       body: Center(child: errorWidget),
     );
 

@@ -72,8 +72,6 @@ class _SendPageState extends State<SendPage> {
         .add(SendTransactionBroadcasted(password: password));
   }
 
-  void _handleSubmissionStepNext(BuildContext context) {}
-
   void _handleFeeOptionSelected(BuildContext context, FeeOption feeOption) {
     context.read<SendBloc>().add(FeeOptionSelected(feeOption: feeOption));
   }
@@ -147,7 +145,7 @@ class _SendPageState extends State<SendPage> {
                       if (selectedBalanceEntry != null) {
                         try {
                           final enteredQuantity = getQuantityForDivisibility(
-                            divisible: balances.assetInfo.divisible ?? false,
+                            divisible: balances.assetInfo.divisible,
                             inputQuantity: value,
                           );
 
@@ -204,11 +202,9 @@ class _SendPageState extends State<SendPage> {
                 ],
               ),
               state: state,
-              nextButtonEnabled: true,
               onFormStepNext: () => _handleInputsStepNext(context, state),
               onConfirmationStepNext: ({String? password}) =>
                   _handleConfirmationStepNext(context, password: password),
-              onSubmissionStepNext: () => _handleSubmissionStepNext(context),
               onFeeOptionSelected: (feeOption) =>
                   _handleFeeOptionSelected(context, feeOption),
             ),
