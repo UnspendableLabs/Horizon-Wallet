@@ -178,111 +178,55 @@ class _TransactionStepperState<T, R> extends State<TransactionStepper<T, R>> {
     }
   }
 
+  Widget _buildErrorWidget(BuildContext context, String errorMessage,
+      VoidCallback onBack, String buttonText) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        AppIcons.warningIcon(
+          color: red1,
+          width: 24,
+          height: 24,
+        ),
+        const SizedBox(height: 12),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Text(
+            errorMessage,
+            style: const TextStyle(color: red1),
+            textAlign: TextAlign.center,
+          ),
+        ),
+        const SizedBox(height: 24),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: SizedBox(
+            width: double.infinity,
+            height: 48,
+            child: HorizonOutlinedButton(
+              onPressed: onBack,
+              buttonText: buttonText,
+              isTransparent: true,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final isSmallScreen = MediaQuery.of(context).size.width < 500;
 
-    if (widget.state.initial) {
-      return _buildStepperContent(
-        context,
-        isSmallScreen,
-        false,
-        null,
-        const StepContent(
-          title: 'Enter Send Details',
-          widgets: [
-            Center(
-              child: CircularProgressIndicator(),
-            ),
-          ],
-        ),
-        null,
-      );
-    }
-
-    if (widget.state.loadingFetch) {
-      return _buildStepperContent(
-        context,
-        isSmallScreen,
-        false,
-        null,
-        const StepContent(
-          title: 'Enter Send Details',
-          widgets: [
-            Center(
-              child: CircularProgressIndicator(),
-            ),
-          ],
-        ),
-        null,
-      );
-    }
-
-    if (widget.state.error != null) {
-      return _buildStepperContent(
-        context,
-        isSmallScreen,
-        false,
-        null,
-        StepContent(
-          title: 'Enter Send Details',
-          widgets: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: Text(
-                widget.state.error!,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Theme.of(context).colorScheme.error,
-                    ),
-              ),
-            ),
-          ],
-        ),
-        null,
-      );
-    }
-
-    try {
-      final balances = widget.state.getBalancesOrThrow();
-      final feeEstimates = widget.state.getFeeEstimatesOrThrow();
-      final data = widget.state.getDataOrThrow();
-
-      return _buildMainContent(
-        context,
-        isSmallScreen,
-        false, // No loading overlay
-        null, // No error message
-        balances: balances,
-        feeEstimates: feeEstimates,
-        feeOption: widget.state.feeOption,
-        data: data,
-      );
-    } catch (e) {
-      return _buildErrorContent(context, e.toString(), isSmallScreen);
-    }
-  }
-
-  Widget _buildMainContent(
-    BuildContext context,
-    bool isSmallScreen,
-    bool showLoadingOverlay,
-    String? errorMessage, {
-    MultiAddressBalance? balances,
-    FeeEstimates? feeEstimates,
-    FeeOption? feeOption,
-    T? data,
-  }) {
     // Get the appropriate StepContent for the current step
     StepContent stepContent;
 
     if (_currentStep == 0) {
-      // For the first step, ensure we have all required data
-      if (balances == null || feeEstimates == null || feeOption == null) {
+      if (widget.state.formInitial) {
         return _buildStepperContent(
           context,
           isSmallScreen,
-          false,
-          null,
           const StepContent(
             title: 'Enter Send Details',
             widgets: [
@@ -291,9 +235,48 @@ class _TransactionStepperState<T, R> extends State<TransactionStepper<T, R>> {
               ),
             ],
           ),
-          null,
         );
       }
+
+      if (widget.state.formLoading) {
+        return _buildStepperContent(
+          context,
+          isSmallScreen,
+          const StepContent(
+            title: 'Enter Send Details',
+            widgets: [
+              Center(
+                child: CircularProgressIndicator(),
+              ),
+            ],
+          ),
+        );
+      }
+
+      if (widget.state.formLoadingError != null) {
+        return _buildStepperContent(
+          context,
+          isSmallScreen,
+          StepContent(
+            title: 'Enter Send Details',
+            widgets: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: Text(
+                  widget.state.formLoadingError!,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: Theme.of(context).colorScheme.error,
+                      ),
+                ),
+              ),
+            ],
+          ),
+        );
+      }
+      final balances = widget.state.getBalancesOrThrow();
+      final feeEstimates = widget.state.getFeeEstimatesOrThrow();
+      final feeOption = widget.state.feeOption;
+      final data = widget.state.getDataOrThrow();
 
       // Inputs step - needs loading state
       final inputsStepContent =
@@ -320,8 +303,6 @@ class _TransactionStepperState<T, R> extends State<TransactionStepper<T, R>> {
         initial: () => _buildStepperContent(
           context,
           isSmallScreen,
-          false,
-          null,
           const StepContent(
             title: 'Confirm Transaction',
             widgets: [
@@ -330,13 +311,10 @@ class _TransactionStepperState<T, R> extends State<TransactionStepper<T, R>> {
               ),
             ],
           ),
-          null,
         ),
         loading: () => _buildStepperContent(
           context,
           isSmallScreen,
-          false,
-          null,
           const StepContent(
             title: 'Confirm Transaction',
             widgets: [
@@ -345,28 +323,21 @@ class _TransactionStepperState<T, R> extends State<TransactionStepper<T, R>> {
               ),
             ],
           ),
-          null,
         ),
         error: (error) => _buildStepperContent(
           context,
           isSmallScreen,
-          false,
-          null,
           StepContent(
             title: 'Confirm Transaction',
             widgets: [
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: Text(
-                  error,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Theme.of(context).colorScheme.error,
-                      ),
-                ),
+              _buildErrorWidget(
+                context,
+                error,
+                () => setState(() => _currentStep--),
+                'Go back to transaction',
               ),
             ],
           ),
-          null,
         ),
         success: (composeData) {
           // Confirmation step
@@ -394,8 +365,7 @@ class _TransactionStepperState<T, R> extends State<TransactionStepper<T, R>> {
             widgets: updatedWidgets,
           );
 
-          return _buildStepperContent(context, isSmallScreen,
-              showLoadingOverlay, errorMessage, stepContent, null);
+          return _buildStepperContent(context, isSmallScreen, stepContent);
         },
       );
     } else {
@@ -404,8 +374,6 @@ class _TransactionStepperState<T, R> extends State<TransactionStepper<T, R>> {
         initial: () => _buildStepperContent(
           context,
           isSmallScreen,
-          showLoadingOverlay,
-          errorMessage,
           const StepContent(
             title: 'Transaction Submitted',
             widgets: [
@@ -415,13 +383,10 @@ class _TransactionStepperState<T, R> extends State<TransactionStepper<T, R>> {
               ),
             ],
           ),
-          null,
         ),
         loading: () => _buildStepperContent(
           context,
           isSmallScreen,
-          showLoadingOverlay,
-          errorMessage,
           const StepContent(
             title: 'Broadcasting Transaction',
             widgets: [
@@ -431,51 +396,37 @@ class _TransactionStepperState<T, R> extends State<TransactionStepper<T, R>> {
               ),
             ],
           ),
-          null,
         ),
         success: (data) => _buildStepperContent(
           context,
           isSmallScreen,
-          showLoadingOverlay,
-          errorMessage,
           widget.buildSubmissionStep(data),
-          null,
         ),
         error: (error) => _buildStepperContent(
           context,
           isSmallScreen,
-          showLoadingOverlay,
-          errorMessage,
           StepContent(
             title: 'Broadcast Failed',
             widgets: [
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: Text(
-                  'Failed to broadcast transaction: $error',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Theme.of(context).colorScheme.error,
-                      ),
-                ),
+              _buildErrorWidget(
+                context,
+                error,
+                () => Navigator.of(context).pop(),
+                'Close',
               ),
             ],
           ),
-          null,
         ),
       );
     }
 
-    return _buildStepperContent(context, isSmallScreen, showLoadingOverlay,
-        errorMessage, stepContent, null);
+    return _buildStepperContent(context, isSmallScreen, stepContent);
   }
 
   Widget _buildStepperContent(
     BuildContext context,
     bool isSmallScreen,
-    bool showLoadingOverlay,
-    String? errorMessage,
     StepContent stepContent,
-    Widget? errorWidget,
   ) {
     final stepperContent = Scaffold(
       appBar: AppBar(
@@ -538,9 +489,6 @@ class _TransactionStepperState<T, R> extends State<TransactionStepper<T, R>> {
               ),
               const SizedBox(height: 24),
 
-              // Error display at top if there is an error
-              if (errorWidget != null) errorWidget,
-
               // Main content
               Expanded(
                 child: SingleChildScrollView(
@@ -583,97 +531,8 @@ class _TransactionStepperState<T, R> extends State<TransactionStepper<T, R>> {
                   : const SizedBox.shrink(),
             ],
           ),
-          if (showLoadingOverlay)
-            Container(
-              color: transparentWhite33,
-              child: const Center(
-                child: CircularProgressIndicator(),
-              ),
-            ),
         ],
       ),
-    );
-
-    if (isSmallScreen) {
-      return stepperContent;
-    }
-
-    return Scaffold(
-      backgroundColor: Theme.of(context).dialogTheme.backgroundColor,
-      body: Center(
-        child: Container(
-          width: 500,
-          height: 812,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(18),
-          ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(18),
-            child: stepperContent,
-          ),
-        ),
-      ),
-    );
-  }
-
-  // Helper method to build error content
-  Widget _buildErrorContent(
-      BuildContext context, String errorMessage, bool isSmallScreen) {
-    final errorWidget = Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.red.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.red),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              const Icon(Icons.error_outline, color: Colors.red),
-              const SizedBox(width: 8),
-              Text(
-                'Error',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      color: Colors.red,
-                      fontWeight: FontWeight.bold,
-                    ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Text(
-            errorMessage,
-            style: Theme.of(context).textTheme.bodyMedium,
-          ),
-          const SizedBox(height: 16),
-          SizedBox(
-            width: double.infinity,
-            child: HorizonOutlinedButton(
-              onPressed: _handleBack,
-              buttonText: 'Go Back',
-              isTransparent: false,
-            ),
-          ),
-        ],
-      ),
-    );
-
-    final stepperContent = Scaffold(
-      appBar: AppBar(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          leading: AppIcons.iconButton(
-            context: context,
-            width: 32,
-            height: 32,
-            icon: AppIcons.backArrowIcon(
-                context: context, width: 24, height: 24, fit: BoxFit.fitHeight),
-            onPressed: _handleBack,
-          )),
-      body: Center(child: errorWidget),
     );
 
     if (isSmallScreen) {

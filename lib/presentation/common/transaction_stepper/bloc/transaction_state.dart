@@ -23,7 +23,7 @@ class TransactionState<T, R> {
   })  : composeState = composeState ?? const ComposeState.initial(),
         broadcastState = broadcastState ?? const BroadcastState.initial();
 
-  String? get error {
+  String? get formLoadingError {
     final balancesError = balancesState.maybeWhen(
       error: (error) => error,
       orElse: () => null,
@@ -39,15 +39,10 @@ class TransactionState<T, R> {
       orElse: () => null,
     );
 
-    final composeError = composeState.maybeWhen(
-      error: (error) => error,
-      orElse: () => null,
-    );
-
-    return balancesError ?? feeError ?? dataError ?? composeError;
+    return balancesError ?? feeError ?? dataError;
   }
 
-  bool get loadingFetch {
+  bool get formLoading {
     return balancesState.maybeWhen(
           loading: () => true,
           orElse: () => false,
@@ -62,7 +57,7 @@ class TransactionState<T, R> {
         );
   }
 
-  bool get initial {
+  bool get formInitial {
     return balancesState.maybeWhen(
           initial: () => true,
           orElse: () => false,
@@ -75,20 +70,6 @@ class TransactionState<T, R> {
           initial: () => true,
           orElse: () => false,
         );
-  }
-
-  bool get loadingCompose {
-    return composeState.maybeWhen(
-      loading: () => true,
-      orElse: () => false,
-    );
-  }
-
-  bool get composeSuccessOrThrow {
-    return composeState.maybeWhen(
-      success: (_) => true,
-      orElse: () => throw StateError('ComposeState is not in a success state'),
-    );
   }
 
   MultiAddressBalance getBalancesOrThrow() {
