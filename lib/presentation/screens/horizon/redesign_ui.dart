@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
+import 'package:horizon/presentation/common/theme_extension.dart';
 import 'package:horizon/utils/app_icons.dart';
 
 class HorizonGradientButton extends StatefulWidget {
@@ -174,9 +175,7 @@ class _HorizonOutlinedButtonState extends State<HorizonOutlinedButton> {
           style: widget.isTransparent == true
               ? Theme.of(context).filledButtonTheme.style
               : FilledButton.styleFrom(
-                  backgroundColor: isHovered
-                      ? const Color.fromRGBO(30, 231, 197, 0.50)
-                      : green2,
+                  backgroundColor: isHovered ? green2Hover : green2,
                   foregroundColor: Colors.black,
                 ),
           onPressed: widget.onPressed,
@@ -497,7 +496,7 @@ class _BlurredBackgroundDropdownState<T>
               child: BackdropFilter(
                 filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
                 child: Container(
-                  color: Colors.black.withOpacity(0.3),
+                  color: transparentBlack33,
                 ),
               ),
             ),
@@ -682,6 +681,9 @@ class HorizonTextField extends StatefulWidget {
   final TextInputType? keyboardType;
   final Widget? suffixIcon;
   final String? Function(String?)? validator;
+  final dynamic Function(dynamic)? onSubmitted;
+  final dynamic Function(dynamic)? onChanged;
+  final bool enabled;
 
   const HorizonTextField({
     super.key,
@@ -693,6 +695,9 @@ class HorizonTextField extends StatefulWidget {
     this.keyboardType,
     this.suffixIcon,
     this.validator,
+    this.onSubmitted,
+    this.onChanged,
+    this.enabled = true,
   });
 
   @override
@@ -728,75 +733,106 @@ class _HorizonTextFieldState extends State<HorizonTextField> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDarkMode = theme.brightness == Brightness.dark;
+    final customTheme = theme.extension<CustomThemeExtension>()!;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          width: double.infinity,
-          height: 56,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(18),
-            border: _focusNode.hasFocus
-                ? const GradientBoxBorder(width: 1)
-                : Border.fromBorderSide(
-                    Theme.of(context).inputDecorationTheme.outlineBorder ??
-                        const BorderSide()),
-            color: _hasText
-                ? (isDarkMode ? grey5 : grey1)
-                : (isDarkMode ? offBlack : offWhite),
-          ),
-          child: Center(
-            child: TextFormField(
-              controller: widget.controller,
-              focusNode: _focusNode,
-              obscureText: widget.obscureText,
-              keyboardType: widget.keyboardType,
-              style: theme.textTheme.bodyMedium,
-              validator: widget.validator,
-              decoration: InputDecoration(
-                labelText: widget.label,
-                hintText: widget.hintText,
-                isDense: false,
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 0,
-                ),
-                suffix: widget.suffixIcon,
-                border: OutlineInputBorder(
+    return FormField<String>(
+      autovalidateMode: AutovalidateMode.onUserInteraction,
+      validator: widget.validator,
+      initialValue: widget.controller.text,
+      builder: (FormFieldState<String> field) {
+        final hasError = field.hasError;
+
+        // Update field value when controller changes
+        widget.controller.addListener(() {
+          field.didChange(widget.controller.text);
+        });
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            MouseRegion(
+              cursor: SystemMouseCursors.text,
+              child: Container(
+                height: 56,
+                decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(18),
-                  borderSide: BorderSide.none,
+                  color: _hasText
+                      ? customTheme.inputBackground
+                      : customTheme.inputBackgroundEmpty,
                 ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(18),
-                  borderSide: BorderSide.none,
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(18),
-                  borderSide: BorderSide.none,
-                ),
-                focusedErrorBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(18),
-                  borderSide: BorderSide.none,
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(18),
+                    border: hasError
+                        ? Border.all(color: customTheme.errorColor, width: 1)
+                        : _focusNode.hasFocus
+                            ? const GradientBoxBorder(width: 1)
+                            : Border.all(color: customTheme.inputBorderColor),
+                  ),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: TextFormField(
+                          enabled: widget.enabled,
+                          controller: widget.controller,
+                          focusNode: _focusNode,
+                          obscureText: widget.obscureText,
+                          onChanged: (value) {
+                            if (widget.onChanged != null) {
+                              widget.onChanged!(value);
+                            }
+                            field.didChange(value);
+                          },
+                          onFieldSubmitted: widget.onSubmitted,
+                          onTap: () {
+                            FocusScope.of(context).requestFocus(_focusNode);
+                          },
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: customTheme.inputTextColor,
+                          ),
+                          decoration: InputDecoration(
+                            labelText: widget.label,
+                            isDense: theme.inputDecorationTheme.isDense,
+                            contentPadding:
+                                theme.inputDecorationTheme.contentPadding,
+                            border: theme.inputDecorationTheme.border,
+                            hintText: widget.hintText,
+                            hintStyle: theme.inputDecorationTheme.hintStyle,
+                            errorStyle: const TextStyle(
+                              height: 0,
+                              fontSize: 0,
+                              color: Colors.transparent,
+                            ),
+                          ),
+                          showCursor: true,
+                        ),
+                      ),
+                      if (widget.suffixIcon != null) ...[
+                        widget.suffixIcon!,
+                      ],
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
-        ),
-        if (widget.errorText != null || widget.validator != null) ...[
-          Padding(
-            padding: const EdgeInsets.only(left: 12),
-            child: Text(
-              widget.errorText ?? '',
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: red1,
+            if (hasError || widget.errorText != null) ...[
+              Padding(
+                padding: const EdgeInsets.only(left: 16, top: 4),
+                child: Text(
+                  field.errorText ?? widget.errorText ?? '',
+                  style: TextStyle(
+                    color: customTheme.errorColor,
+                    fontSize: 12,
+                  ),
+                ),
               ),
-            ),
-          ),
-        ],
-      ],
+            ],
+          ],
+        );
+      },
     );
   }
 }
@@ -860,7 +896,7 @@ class _HorizonPasswordPromptState extends State<HorizonPasswordPrompt> {
               child: BackdropFilter(
                 filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
                 child: Container(
-                  color: Colors.black.withOpacity(0.3),
+                  color: transparentBlack33,
                 ),
               ),
             ),
@@ -894,11 +930,18 @@ class _HorizonPasswordPromptState extends State<HorizonPasswordPrompt> {
                     suffixIcon: AppIcons.iconButton(
                       context: context,
                       icon: _obscurePassword
-                          ? AppIcons.eyeOpenIcon(
-                              context: context, height: 18, width: 18)
-                          : AppIcons.eyeClosedIcon(
-                              context: context, height: 18, width: 18),
+                          ? AppIcons.eyeClosedIcon(
+                              context: context,
+                              width: 10,
+                              height: 10,
+                            )
+                          : AppIcons.eyeOpenIcon(
+                              context: context,
+                              width: 12,
+                              height: 12,
+                            ),
                       onPressed: _togglePasswordVisibility,
+                      padding: EdgeInsets.zero,
                     ),
                   ),
                   SizedBox(
@@ -966,9 +1009,8 @@ class _HorizonActionButtonState extends State<HorizonActionButton> {
                         color: Colors.transparent,
                       ),
                     ),
-                    backgroundColor: WidgetStateProperty.all(isHovered
-                        ? const Color.fromRGBO(30, 231, 197, 0.80)
-                        : green2),
+                    backgroundColor: WidgetStateProperty.all(
+                        isHovered ? green2Hover : green2),
                     padding: WidgetStateProperty.all(
                       const EdgeInsets.symmetric(horizontal: 2, vertical: 0),
                     ),

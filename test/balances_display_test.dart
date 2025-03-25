@@ -374,7 +374,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Ignore asset loading errors
-            while (tester.takeException() != null) {}
+      while (tester.takeException() != null) {}
 
       final listItems = find.byType(InkWell);
       expect(listItems, findsNWidgets(5));

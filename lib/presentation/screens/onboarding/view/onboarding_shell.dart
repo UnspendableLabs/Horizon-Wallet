@@ -58,11 +58,10 @@ class _OnboardingShellState extends State<OnboardingShell> {
         elevation: 0,
         leading: AppIcons.iconButton(
           context: context,
+          width: 32,
+          height: 32,
           icon: AppIcons.backArrowIcon(
-            context: context,
-            width: 20,
-            height: 20,
-          ),
+              context: context, width: 24, height: 24, fit: BoxFit.fitHeight),
           onPressed: _handleStepBack,
         ),
       ),

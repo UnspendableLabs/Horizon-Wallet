@@ -266,7 +266,7 @@ class BalancesSliverState extends State<BalancesSliver> {
                             ),
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 12),
                   Expanded(
                     child: MouseRegion(
                       cursor: SystemMouseCursors.click,

@@ -152,8 +152,8 @@ class SeedInputState extends State<SeedInput> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   _showSeedPhrase
-                      ? AppIcons.eyeClosedIcon(context: context)
-                      : AppIcons.eyeOpenIcon(context: context),
+                      ? AppIcons.eyeOpenIcon(context: context)
+                      : AppIcons.eyeClosedIcon(context: context),
                   const SizedBox(width: 8),
                   Text(
                     _showSeedPhrase ? 'Hide Phrase' : 'Show Phrase',
