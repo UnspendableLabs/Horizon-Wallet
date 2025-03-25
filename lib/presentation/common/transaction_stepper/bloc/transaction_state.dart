@@ -11,6 +11,7 @@ class TransactionState<T, R> {
   final FeeOption feeOption;
   final TransactionDataState<T> dataState;
   final ComposeState<R> composeState;
+  final BroadcastState broadcastState;
 
   TransactionState({
     required this.balancesState,
@@ -18,7 +19,9 @@ class TransactionState<T, R> {
     required this.feeOption,
     required this.dataState,
     ComposeState<R>? composeState,
-  }) : composeState = composeState ?? const ComposeState.initial();
+    BroadcastState? broadcastState,
+  })  : composeState = composeState ?? const ComposeState.initial(),
+        broadcastState = broadcastState ?? const BroadcastState.initial();
 
   String? get error {
     final balancesError = balancesState.maybeWhen(
@@ -130,6 +133,7 @@ class TransactionState<T, R> {
     FeeOption? feeOption,
     TransactionDataState<T>? dataState,
     ComposeState<R>? composeState,
+    BroadcastState? broadcastState,
   }) {
     return TransactionState<T, R>(
       balancesState: balancesState ?? this.balancesState,
@@ -137,12 +141,13 @@ class TransactionState<T, R> {
       feeOption: feeOption ?? this.feeOption,
       dataState: dataState ?? this.dataState,
       composeState: composeState ?? this.composeState,
+      broadcastState: broadcastState ?? this.broadcastState,
     );
   }
 
   @override
   String toString() {
-    return 'TransactionState(balancesState: $balancesState, feeState: $feeState, feeOption: $feeOption, dataState: $dataState, composeState: $composeState)';
+    return 'TransactionState(balancesState: $balancesState, feeState: $feeState, feeOption: $feeOption, dataState: $dataState, composeState: $composeState, broadcastState: $broadcastState)';
   }
 }
 
@@ -180,4 +185,20 @@ class ComposeState<T> with _$ComposeState<T> {
   const factory ComposeState.loading() = ComposeStateLoading;
   const factory ComposeState.error(String error) = ComposeStateError;
   const factory ComposeState.success(T composeData) = ComposeStateSuccess;
+}
+
+@freezed
+class BroadcastState with _$BroadcastState {
+  const factory BroadcastState.initial() = _BroadcastInitial;
+  const factory BroadcastState.loading() = _BroadcastLoading;
+  const factory BroadcastState.success(BroadcastStateSuccess data) =
+      _BroadcastSuccess;
+  const factory BroadcastState.error(String error) = _BroadcastError;
+}
+
+class BroadcastStateSuccess {
+  final String txHex;
+  final String txHash;
+
+  BroadcastStateSuccess({required this.txHex, required this.txHash});
 }

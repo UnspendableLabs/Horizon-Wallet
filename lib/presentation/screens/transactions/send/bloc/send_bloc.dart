@@ -151,7 +151,8 @@ class SendBloc extends Bloc<TransactionEvent,
       final requirePassword =
           settingsRepository.requirePasswordForCryptoOperations;
 
-      // emit(state.copyWith(submitState: s.copyWith(loading: true)));
+      // Emit loading state
+      emit(state.copyWith(broadcastState: const BroadcastState.loading()));
 
       await signAndBroadcastTransactionUseCase.call(
           decryptionStrategy:
@@ -164,12 +165,19 @@ class SendBloc extends Bloc<TransactionEvent,
             logger.info('send broadcasted txHash: $txHash');
             analyticsService.trackAnonymousEvent('broadcast_tx_send',
                 properties: {'distinct_id': uuid.v4()});
+
+            // Emit success state with txHex
+            emit(state.copyWith(
+                broadcastState: BroadcastState.success(
+                    BroadcastStateSuccess(txHex: txHex, txHash: txHash))));
           },
           onError: (msg) {
             print('send broadcast error: $msg');
+            emit(state.copyWith(broadcastState: BroadcastState.error(msg)));
           });
     } catch (e) {
       print('send broadcast error: $e');
+      emit(state.copyWith(broadcastState: BroadcastState.error(e.toString())));
     }
   }
 

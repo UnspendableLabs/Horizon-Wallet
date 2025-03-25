@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:horizon/common/constants.dart';
 import 'package:horizon/domain/entities/multi_address_balance.dart';
 import 'package:horizon/presentation/common/filter_bar.dart';
 import 'package:horizon/presentation/common/icon_item_button.dart';
@@ -13,8 +14,6 @@ import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:horizon/presentation/session/bloc/session_state.dart';
 import 'package:horizon/remote_data_bloc/remote_data_state.dart';
 import 'package:horizon/utils/app_icons.dart';
-
-enum TransactionType { send }
 
 enum BalanceViewFilter { address, utxo }
 

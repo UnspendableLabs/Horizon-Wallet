@@ -2424,3 +2424,596 @@ abstract class ComposeStateSuccess<T> implements ComposeState<T> {
   _$$ComposeStateSuccessImplCopyWith<T, _$ComposeStateSuccessImpl<T>>
       get copyWith => throw _privateConstructorUsedError;
 }
+
+/// @nodoc
+mixin _$BroadcastState {
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function() initial,
+    required TResult Function() loading,
+    required TResult Function(BroadcastStateSuccess data) success,
+    required TResult Function(String error) error,
+  }) =>
+      throw _privateConstructorUsedError;
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function()? initial,
+    TResult? Function()? loading,
+    TResult? Function(BroadcastStateSuccess data)? success,
+    TResult? Function(String error)? error,
+  }) =>
+      throw _privateConstructorUsedError;
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function()? initial,
+    TResult Function()? loading,
+    TResult Function(BroadcastStateSuccess data)? success,
+    TResult Function(String error)? error,
+    required TResult orElse(),
+  }) =>
+      throw _privateConstructorUsedError;
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(_BroadcastInitial value) initial,
+    required TResult Function(_BroadcastLoading value) loading,
+    required TResult Function(_BroadcastSuccess value) success,
+    required TResult Function(_BroadcastError value) error,
+  }) =>
+      throw _privateConstructorUsedError;
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(_BroadcastInitial value)? initial,
+    TResult? Function(_BroadcastLoading value)? loading,
+    TResult? Function(_BroadcastSuccess value)? success,
+    TResult? Function(_BroadcastError value)? error,
+  }) =>
+      throw _privateConstructorUsedError;
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(_BroadcastInitial value)? initial,
+    TResult Function(_BroadcastLoading value)? loading,
+    TResult Function(_BroadcastSuccess value)? success,
+    TResult Function(_BroadcastError value)? error,
+    required TResult orElse(),
+  }) =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $BroadcastStateCopyWith<$Res> {
+  factory $BroadcastStateCopyWith(
+          BroadcastState value, $Res Function(BroadcastState) then) =
+      _$BroadcastStateCopyWithImpl<$Res, BroadcastState>;
+}
+
+/// @nodoc
+class _$BroadcastStateCopyWithImpl<$Res, $Val extends BroadcastState>
+    implements $BroadcastStateCopyWith<$Res> {
+  _$BroadcastStateCopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
+}
+
+/// @nodoc
+abstract class _$$BroadcastInitialImplCopyWith<$Res> {
+  factory _$$BroadcastInitialImplCopyWith(_$BroadcastInitialImpl value,
+          $Res Function(_$BroadcastInitialImpl) then) =
+      __$$BroadcastInitialImplCopyWithImpl<$Res>;
+}
+
+/// @nodoc
+class __$$BroadcastInitialImplCopyWithImpl<$Res>
+    extends _$BroadcastStateCopyWithImpl<$Res, _$BroadcastInitialImpl>
+    implements _$$BroadcastInitialImplCopyWith<$Res> {
+  __$$BroadcastInitialImplCopyWithImpl(_$BroadcastInitialImpl _value,
+      $Res Function(_$BroadcastInitialImpl) _then)
+      : super(_value, _then);
+}
+
+/// @nodoc
+
+class _$BroadcastInitialImpl implements _BroadcastInitial {
+  const _$BroadcastInitialImpl();
+
+  @override
+  String toString() {
+    return 'BroadcastState.initial()';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType && other is _$BroadcastInitialImpl);
+  }
+
+  @override
+  int get hashCode => runtimeType.hashCode;
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function() initial,
+    required TResult Function() loading,
+    required TResult Function(BroadcastStateSuccess data) success,
+    required TResult Function(String error) error,
+  }) {
+    return initial();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function()? initial,
+    TResult? Function()? loading,
+    TResult? Function(BroadcastStateSuccess data)? success,
+    TResult? Function(String error)? error,
+  }) {
+    return initial?.call();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function()? initial,
+    TResult Function()? loading,
+    TResult Function(BroadcastStateSuccess data)? success,
+    TResult Function(String error)? error,
+    required TResult orElse(),
+  }) {
+    if (initial != null) {
+      return initial();
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(_BroadcastInitial value) initial,
+    required TResult Function(_BroadcastLoading value) loading,
+    required TResult Function(_BroadcastSuccess value) success,
+    required TResult Function(_BroadcastError value) error,
+  }) {
+    return initial(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(_BroadcastInitial value)? initial,
+    TResult? Function(_BroadcastLoading value)? loading,
+    TResult? Function(_BroadcastSuccess value)? success,
+    TResult? Function(_BroadcastError value)? error,
+  }) {
+    return initial?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(_BroadcastInitial value)? initial,
+    TResult Function(_BroadcastLoading value)? loading,
+    TResult Function(_BroadcastSuccess value)? success,
+    TResult Function(_BroadcastError value)? error,
+    required TResult orElse(),
+  }) {
+    if (initial != null) {
+      return initial(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class _BroadcastInitial implements BroadcastState {
+  const factory _BroadcastInitial() = _$BroadcastInitialImpl;
+}
+
+/// @nodoc
+abstract class _$$BroadcastLoadingImplCopyWith<$Res> {
+  factory _$$BroadcastLoadingImplCopyWith(_$BroadcastLoadingImpl value,
+          $Res Function(_$BroadcastLoadingImpl) then) =
+      __$$BroadcastLoadingImplCopyWithImpl<$Res>;
+}
+
+/// @nodoc
+class __$$BroadcastLoadingImplCopyWithImpl<$Res>
+    extends _$BroadcastStateCopyWithImpl<$Res, _$BroadcastLoadingImpl>
+    implements _$$BroadcastLoadingImplCopyWith<$Res> {
+  __$$BroadcastLoadingImplCopyWithImpl(_$BroadcastLoadingImpl _value,
+      $Res Function(_$BroadcastLoadingImpl) _then)
+      : super(_value, _then);
+}
+
+/// @nodoc
+
+class _$BroadcastLoadingImpl implements _BroadcastLoading {
+  const _$BroadcastLoadingImpl();
+
+  @override
+  String toString() {
+    return 'BroadcastState.loading()';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType && other is _$BroadcastLoadingImpl);
+  }
+
+  @override
+  int get hashCode => runtimeType.hashCode;
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function() initial,
+    required TResult Function() loading,
+    required TResult Function(BroadcastStateSuccess data) success,
+    required TResult Function(String error) error,
+  }) {
+    return loading();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function()? initial,
+    TResult? Function()? loading,
+    TResult? Function(BroadcastStateSuccess data)? success,
+    TResult? Function(String error)? error,
+  }) {
+    return loading?.call();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function()? initial,
+    TResult Function()? loading,
+    TResult Function(BroadcastStateSuccess data)? success,
+    TResult Function(String error)? error,
+    required TResult orElse(),
+  }) {
+    if (loading != null) {
+      return loading();
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(_BroadcastInitial value) initial,
+    required TResult Function(_BroadcastLoading value) loading,
+    required TResult Function(_BroadcastSuccess value) success,
+    required TResult Function(_BroadcastError value) error,
+  }) {
+    return loading(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(_BroadcastInitial value)? initial,
+    TResult? Function(_BroadcastLoading value)? loading,
+    TResult? Function(_BroadcastSuccess value)? success,
+    TResult? Function(_BroadcastError value)? error,
+  }) {
+    return loading?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(_BroadcastInitial value)? initial,
+    TResult Function(_BroadcastLoading value)? loading,
+    TResult Function(_BroadcastSuccess value)? success,
+    TResult Function(_BroadcastError value)? error,
+    required TResult orElse(),
+  }) {
+    if (loading != null) {
+      return loading(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class _BroadcastLoading implements BroadcastState {
+  const factory _BroadcastLoading() = _$BroadcastLoadingImpl;
+}
+
+/// @nodoc
+abstract class _$$BroadcastSuccessImplCopyWith<$Res> {
+  factory _$$BroadcastSuccessImplCopyWith(_$BroadcastSuccessImpl value,
+          $Res Function(_$BroadcastSuccessImpl) then) =
+      __$$BroadcastSuccessImplCopyWithImpl<$Res>;
+  @useResult
+  $Res call({BroadcastStateSuccess data});
+}
+
+/// @nodoc
+class __$$BroadcastSuccessImplCopyWithImpl<$Res>
+    extends _$BroadcastStateCopyWithImpl<$Res, _$BroadcastSuccessImpl>
+    implements _$$BroadcastSuccessImplCopyWith<$Res> {
+  __$$BroadcastSuccessImplCopyWithImpl(_$BroadcastSuccessImpl _value,
+      $Res Function(_$BroadcastSuccessImpl) _then)
+      : super(_value, _then);
+
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? data = null,
+  }) {
+    return _then(_$BroadcastSuccessImpl(
+      null == data
+          ? _value.data
+          : data // ignore: cast_nullable_to_non_nullable
+              as BroadcastStateSuccess,
+    ));
+  }
+}
+
+/// @nodoc
+
+class _$BroadcastSuccessImpl implements _BroadcastSuccess {
+  const _$BroadcastSuccessImpl(this.data);
+
+  @override
+  final BroadcastStateSuccess data;
+
+  @override
+  String toString() {
+    return 'BroadcastState.success(data: $data)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$BroadcastSuccessImpl &&
+            (identical(other.data, data) || other.data == data));
+  }
+
+  @override
+  int get hashCode => Object.hash(runtimeType, data);
+
+  @JsonKey(ignore: true)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$BroadcastSuccessImplCopyWith<_$BroadcastSuccessImpl> get copyWith =>
+      __$$BroadcastSuccessImplCopyWithImpl<_$BroadcastSuccessImpl>(
+          this, _$identity);
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function() initial,
+    required TResult Function() loading,
+    required TResult Function(BroadcastStateSuccess data) success,
+    required TResult Function(String error) error,
+  }) {
+    return success(data);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function()? initial,
+    TResult? Function()? loading,
+    TResult? Function(BroadcastStateSuccess data)? success,
+    TResult? Function(String error)? error,
+  }) {
+    return success?.call(data);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function()? initial,
+    TResult Function()? loading,
+    TResult Function(BroadcastStateSuccess data)? success,
+    TResult Function(String error)? error,
+    required TResult orElse(),
+  }) {
+    if (success != null) {
+      return success(data);
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(_BroadcastInitial value) initial,
+    required TResult Function(_BroadcastLoading value) loading,
+    required TResult Function(_BroadcastSuccess value) success,
+    required TResult Function(_BroadcastError value) error,
+  }) {
+    return success(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(_BroadcastInitial value)? initial,
+    TResult? Function(_BroadcastLoading value)? loading,
+    TResult? Function(_BroadcastSuccess value)? success,
+    TResult? Function(_BroadcastError value)? error,
+  }) {
+    return success?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(_BroadcastInitial value)? initial,
+    TResult Function(_BroadcastLoading value)? loading,
+    TResult Function(_BroadcastSuccess value)? success,
+    TResult Function(_BroadcastError value)? error,
+    required TResult orElse(),
+  }) {
+    if (success != null) {
+      return success(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class _BroadcastSuccess implements BroadcastState {
+  const factory _BroadcastSuccess(final BroadcastStateSuccess data) =
+      _$BroadcastSuccessImpl;
+
+  BroadcastStateSuccess get data;
+  @JsonKey(ignore: true)
+  _$$BroadcastSuccessImplCopyWith<_$BroadcastSuccessImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class _$$BroadcastErrorImplCopyWith<$Res> {
+  factory _$$BroadcastErrorImplCopyWith(_$BroadcastErrorImpl value,
+          $Res Function(_$BroadcastErrorImpl) then) =
+      __$$BroadcastErrorImplCopyWithImpl<$Res>;
+  @useResult
+  $Res call({String error});
+}
+
+/// @nodoc
+class __$$BroadcastErrorImplCopyWithImpl<$Res>
+    extends _$BroadcastStateCopyWithImpl<$Res, _$BroadcastErrorImpl>
+    implements _$$BroadcastErrorImplCopyWith<$Res> {
+  __$$BroadcastErrorImplCopyWithImpl(
+      _$BroadcastErrorImpl _value, $Res Function(_$BroadcastErrorImpl) _then)
+      : super(_value, _then);
+
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? error = null,
+  }) {
+    return _then(_$BroadcastErrorImpl(
+      null == error
+          ? _value.error
+          : error // ignore: cast_nullable_to_non_nullable
+              as String,
+    ));
+  }
+}
+
+/// @nodoc
+
+class _$BroadcastErrorImpl implements _BroadcastError {
+  const _$BroadcastErrorImpl(this.error);
+
+  @override
+  final String error;
+
+  @override
+  String toString() {
+    return 'BroadcastState.error(error: $error)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$BroadcastErrorImpl &&
+            (identical(other.error, error) || other.error == error));
+  }
+
+  @override
+  int get hashCode => Object.hash(runtimeType, error);
+
+  @JsonKey(ignore: true)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$BroadcastErrorImplCopyWith<_$BroadcastErrorImpl> get copyWith =>
+      __$$BroadcastErrorImplCopyWithImpl<_$BroadcastErrorImpl>(
+          this, _$identity);
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function() initial,
+    required TResult Function() loading,
+    required TResult Function(BroadcastStateSuccess data) success,
+    required TResult Function(String error) error,
+  }) {
+    return error(this.error);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function()? initial,
+    TResult? Function()? loading,
+    TResult? Function(BroadcastStateSuccess data)? success,
+    TResult? Function(String error)? error,
+  }) {
+    return error?.call(this.error);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function()? initial,
+    TResult Function()? loading,
+    TResult Function(BroadcastStateSuccess data)? success,
+    TResult Function(String error)? error,
+    required TResult orElse(),
+  }) {
+    if (error != null) {
+      return error(this.error);
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(_BroadcastInitial value) initial,
+    required TResult Function(_BroadcastLoading value) loading,
+    required TResult Function(_BroadcastSuccess value) success,
+    required TResult Function(_BroadcastError value) error,
+  }) {
+    return error(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(_BroadcastInitial value)? initial,
+    TResult? Function(_BroadcastLoading value)? loading,
+    TResult? Function(_BroadcastSuccess value)? success,
+    TResult? Function(_BroadcastError value)? error,
+  }) {
+    return error?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(_BroadcastInitial value)? initial,
+    TResult Function(_BroadcastLoading value)? loading,
+    TResult Function(_BroadcastSuccess value)? success,
+    TResult Function(_BroadcastError value)? error,
+    required TResult orElse(),
+  }) {
+    if (error != null) {
+      return error(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class _BroadcastError implements BroadcastState {
+  const factory _BroadcastError(final String error) = _$BroadcastErrorImpl;
+
+  String get error;
+  @JsonKey(ignore: true)
+  _$$BroadcastErrorImplCopyWith<_$BroadcastErrorImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}

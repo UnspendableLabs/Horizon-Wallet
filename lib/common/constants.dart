@@ -49,3 +49,5 @@ enum BalanceType {
   utxo,
   address,
 }
+
+enum TransactionType { send }

@@ -44,14 +44,9 @@ class TransactionStepper<T, R> extends StatefulWidget {
       buildConfirmationStep;
 
   /// Widget builder for transaction submission (third step)
-  /// This step uses pattern matching directly so it needs the state
+  /// Only receives the transaction hex on success
   /// Returns a StepContent with title and widgets
-  final StepContent Function(
-    MultiAddressBalance balances,
-    FeeEstimates feeEstimates,
-    FeeOption feeOption,
-    T? data,
-  ) buildSubmissionStep;
+  final StepContent Function(BroadcastStateSuccess data) buildSubmissionStep;
 
   /// Callback when back button is pressed at the first step
   final VoidCallback onBack;
@@ -351,12 +346,70 @@ class _TransactionStepperState<T, R> extends State<TransactionStepper<T, R>> {
         },
       );
     } else {
-      // Submission step
-      if (balances == null || feeEstimates == null || feeOption == null) {
-        return _buildLoadingOverlay(context);
-      }
-      stepContent =
-          widget.buildSubmissionStep(balances, feeEstimates, feeOption, data);
+      // Submission step - handle broadcast state internally
+      return widget.state.broadcastState.when(
+        initial: () => _buildStepperContent(
+          context,
+          isSmallScreen,
+          showLoadingOverlay,
+          errorMessage,
+          const StepContent(
+            title: 'Transaction Submitted',
+            widgets: [
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16.0),
+                child: Text('Your transaction is being processed'),
+              ),
+            ],
+          ),
+          null,
+        ),
+        loading: () => _buildStepperContent(
+          context,
+          isSmallScreen,
+          showLoadingOverlay,
+          errorMessage,
+          const StepContent(
+            title: 'Broadcasting Transaction',
+            widgets: [
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16.0),
+                child: CircularProgressIndicator(),
+              ),
+            ],
+          ),
+          null,
+        ),
+        success: (data) => _buildStepperContent(
+          context,
+          isSmallScreen,
+          showLoadingOverlay,
+          errorMessage,
+          widget.buildSubmissionStep(data),
+          null,
+        ),
+        error: (error) => _buildStepperContent(
+          context,
+          isSmallScreen,
+          showLoadingOverlay,
+          errorMessage,
+          StepContent(
+            title: 'Broadcast Failed',
+            widgets: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: Text(
+                  'Failed to broadcast transaction: $error',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: Theme.of(context).colorScheme.error,
+                      ),
+                ),
+              ),
+            ],
+          ),
+          null,
+        ),
+      );
     }
 
     return _buildStepperContent(context, isSmallScreen, showLoadingOverlay,

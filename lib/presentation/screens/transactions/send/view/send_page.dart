@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:get_it/get_it.dart';
+import 'package:horizon/common/constants.dart';
 import 'package:horizon/common/format.dart';
 import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/domain/entities/fee_option.dart';
@@ -28,6 +29,7 @@ import 'package:horizon/presentation/screens/transactions/send/bloc/send_event.d
 import 'package:horizon/presentation/screens/transactions/send/bloc/send_state.dart';
 import 'package:horizon/presentation/common/transactions/quantity_display.dart';
 import 'package:horizon/domain/entities/compose_send.dart';
+import 'package:horizon/presentation/common/transactions/transaction_successful.dart';
 
 class SendPage extends StatefulWidget {
   final String assetName;
@@ -192,13 +194,13 @@ class _SendPageState extends State<SendPage> {
                   ),
                 ],
               ),
-              buildSubmissionStep: (balances, feeEstimates, feeOption, data) =>
-                  const StepContent(
-                title: 'Transaction Submitted',
+              buildSubmissionStep: (data) => StepContent(
+                title: 'Transaction Broadcasted',
                 widgets: [
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 16.0),
-                    child: Text('Your transaction is being processed'),
+                  TransactionSuccessful(
+                    transactionType: TransactionType.send,
+                    txHex: data.txHex,
+                    txHash: data.txHash,
                   ),
                 ],
               ),
