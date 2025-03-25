@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
@@ -88,6 +89,7 @@ class _PortfolioViewState extends State<PortfolioView>
           create: (context) => BalancesBloc(
             balanceRepository: GetIt.I.get<BalanceRepository>(),
             addresses: addresses,
+            cacheProvider: GetIt.I.get<CacheProvider>(),
           )..add(Start(pollingInterval: const Duration(seconds: 30))),
         ),
         BlocProvider<DashboardActivityFeedBloc>(

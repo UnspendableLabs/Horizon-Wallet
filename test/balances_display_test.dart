@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
@@ -30,10 +31,13 @@ class MockBalancesBloc extends MockBloc<BalancesEvent, BalancesState>
   final BalanceRepository balanceRepository;
   @override
   final List<String> addresses;
+  @override
+  final CacheProvider cacheProvider;
 
   MockBalancesBloc({
     required this.balanceRepository,
     required this.addresses,
+    required this.cacheProvider,
   });
 }
 
@@ -49,6 +53,8 @@ class MockConfig extends Mock implements Config {
 }
 
 class MockGoRouter extends Mock implements GoRouter {}
+
+class MockCacheProvider extends Mock implements CacheProvider {}
 
 // Define fake classes
 class FakeAddress extends Fake implements Address {
@@ -273,15 +279,16 @@ void main() {
     mockBalancesBloc = MockBalancesBloc(
       balanceRepository: MockBalanceRepository(),
       addresses: ['address1'],
+      cacheProvider: MockCacheProvider(),
     );
     mockGoRouter = MockGoRouter();
 
     // Mock successful state by default
     when(() => mockBalancesBloc.state).thenReturn(
-      BalancesState.complete(Result.ok(mockBalances)),
+      BalancesState.complete(Result.ok(mockBalances, [])),
     );
     when(() => mockBalancesBloc.stream).thenAnswer(
-      (_) => Stream.value(BalancesState.complete(Result.ok(mockBalances))),
+      (_) => Stream.value(BalancesState.complete(Result.ok(mockBalances, []))),
     );
   });
 
@@ -320,7 +327,6 @@ void main() {
 
       // Ignore asset loading errors
       tester.takeException();
-
       expect(find.byType(CircularProgressIndicator), findsOneWidget);
     });
 
@@ -345,10 +351,10 @@ void main() {
 
     testWidgets('displays empty state correctly', (tester) async {
       when(() => mockBalancesBloc.state).thenReturn(
-        const BalancesState.complete(Result.ok([])),
+        const BalancesState.complete(Result.ok([], [])),
       );
       when(() => mockBalancesBloc.stream).thenAnswer(
-        (_) => Stream.value(const BalancesState.complete(Result.ok([]))),
+        (_) => Stream.value(const BalancesState.complete(Result.ok([], []))),
       );
 
       await tester.pumpWidget(buildTestWidget());
@@ -368,7 +374,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Ignore asset loading errors
-      while (tester.takeException() != null) {}
+            while (tester.takeException() != null) {}
 
       final listItems = find.byType(InkWell);
       expect(listItems, findsNWidgets(5));
@@ -383,6 +389,38 @@ void main() {
           .widgetList<MiddleTruncatedText>(find.byType(MiddleTruncatedText));
       final names = truncatedTexts.map((widget) => widget.text).toList();
       expect(names, ['BTC', 'XCP', 'A12345', 'NAMEDASSET', 'PEPE.FROG']);
+    });
+
+    testWidgets(
+        'displays balances in correct starred order (BTC, XCP, then alphabetical)',
+        (tester) async {
+      when(() => mockBalancesBloc.state).thenReturn(
+        BalancesState.complete(
+            Result.ok(mockBalances, ['XCP', 'BTC', 'NAMEDASSET'])),
+      );
+      when(() => mockBalancesBloc.stream).thenAnswer(
+        (_) => Stream.value(BalancesState.complete(
+            Result.ok(mockBalances, ['XCP', 'BTC', 'NAMEDASSET']))),
+      );
+      await tester.pumpWidget(buildTestWidget());
+      await tester.pumpAndSettle();
+
+      // Ignore asset loading errors
+      tester.takeException();
+
+      final listItems = find.byType(InkWell);
+      expect(listItems, findsNWidgets(5));
+
+      // Verify order: BTC, XCP, NAMEDASSET, A12345, PEPE.FROG
+      final texts =
+          tester.widgetList<SelectableText>(find.byType(SelectableText));
+      final amounts = texts.map((widget) => widget.data).toList();
+      expect(amounts, ['1.0', '0.5', '0.01', '10.0', '0.5']);
+
+      final truncatedTexts = tester
+          .widgetList<MiddleTruncatedText>(find.byType(MiddleTruncatedText));
+      final names = truncatedTexts.map((widget) => widget.text).toList();
+      expect(names, ['BTC', 'XCP', 'NAMEDASSET', 'A12345', 'PEPE.FROG']);
     });
 
     testWidgets('search functionality filters balances correctly',
@@ -523,11 +561,11 @@ void main() {
       );
 
       when(() => mockBalancesBloc.state).thenReturn(
-        BalancesState.complete(Result.ok([longNameBalance])),
+        BalancesState.complete(Result.ok([longNameBalance], [])),
       );
       when(() => mockBalancesBloc.stream).thenAnswer(
-        (_) =>
-            Stream.value(BalancesState.complete(Result.ok([longNameBalance]))),
+        (_) => Stream.value(
+            BalancesState.complete(Result.ok([longNameBalance], []))),
       );
 
       await tester.pumpWidget(buildTestWidget());

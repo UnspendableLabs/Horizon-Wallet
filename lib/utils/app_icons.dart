@@ -28,6 +28,7 @@ class AppIcons {
   static const String backArrow = '$_iconPath/back_arrow.svg';
   static const String rocket = '$_iconPath/rocket.svg';
   static const String starOutlined = '$_iconPath/star_outlined.svg';
+  static const String starFilled = '$_iconPath/star_filled.svg';
   static const String caretUp = '$_iconPath/caret_up.svg';
   static const String caretDown = '$_iconPath/caret_down.svg';
   static const String check = '$_iconPath/check.svg';
@@ -473,6 +474,23 @@ class AppIcons {
   }) {
     return getIcon(
       starOutlined,
+      context: context,
+      width: width,
+      height: height,
+      color: color,
+      fit: fit,
+    );
+  }
+
+  static Widget starFilledIcon({
+    required BuildContext context,
+    double? width,
+    double? height,
+    Color? color,
+    BoxFit fit = BoxFit.contain,
+  }) {
+    return getIcon(
+      starFilled,
       context: context,
       width: width,
       height: height,
