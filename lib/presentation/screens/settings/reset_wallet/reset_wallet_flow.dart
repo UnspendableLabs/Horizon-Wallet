@@ -259,7 +259,6 @@ class _ResetWalletFlowState extends State<ResetWalletFlow> {
                     controller: _confirmationController,
                     hintText: 'Type "RESET WALLET" to confirm',
                     validator: (value) {
-                      print(value);
                       if (value != 'RESET WALLET') {
                         return 'Please type "RESET WALLET" exactly';
                       }
