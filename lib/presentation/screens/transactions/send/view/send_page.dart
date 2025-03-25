@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
-import 'package:horizon/common/constants.dart';
 import 'package:horizon/common/format.dart';
 import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/domain/entities/fee_option.dart';
@@ -28,7 +27,6 @@ import 'package:horizon/presentation/screens/transactions/send/bloc/send_event.d
 import 'package:horizon/presentation/screens/transactions/send/bloc/send_state.dart';
 import 'package:horizon/presentation/common/transactions/quantity_display.dart';
 import 'package:horizon/domain/entities/compose_send.dart';
-import 'package:horizon/presentation/common/transactions/transaction_successful.dart';
 
 class SendPage extends StatefulWidget {
   final String assetName;
@@ -74,6 +72,13 @@ class _SendPageState extends State<SendPage> {
 
   void _handleFeeOptionSelected(BuildContext context, FeeOption feeOption) {
     context.read<SendBloc>().add(FeeOptionSelected(feeOption: feeOption));
+  }
+
+  void _handleDependenciesRequested(BuildContext context) {
+    context.read<SendBloc>().add(SendDependenciesRequested(
+          assetName: widget.assetName,
+          addresses: widget.addresses,
+        ));
   }
 
   @override
@@ -191,17 +196,9 @@ class _SendPageState extends State<SendPage> {
                   ),
                 ],
               ),
-              buildSubmissionStep: (data) => StepContent(
-                title: 'Transaction Broadcasted',
-                widgets: [
-                  TransactionSuccessful(
-                    transactionType: TransactionType.send,
-                    txHex: data.txHex,
-                    txHash: data.txHash,
-                  ),
-                ],
-              ),
               state: state,
+              onDependenciesRequested: () =>
+                  _handleDependenciesRequested(context),
               onFormStepNext: () => _handleInputsStepNext(context, state),
               onConfirmationStepNext: ({String? password}) =>
                   _handleConfirmationStepNext(context, password: password),

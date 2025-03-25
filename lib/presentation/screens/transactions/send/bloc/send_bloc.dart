@@ -78,7 +78,6 @@ class SendBloc extends Bloc<TransactionEvent,
           balancesState: BalancesState.success(balances),
           feeState: FeeState.success(feeEstimates),
           dataState: TransactionDataState.success(SendState())));
-      print(state.toString());
     } catch (e) {
       // Emit error state with error message
       emit(state.copyWith(
@@ -93,8 +92,6 @@ class SendBloc extends Bloc<TransactionEvent,
     SendTransactionComposed event,
     Emitter<TransactionState<SendState, ComposeSendResponse>> emit,
   ) async {
-    print('SendTransactionComposed');
-
     // First, emit loading state for the compose operation
     emit(state.copyWith(composeState: const ComposeStateLoading()));
     if (event.sourceAddress.isEmpty) {
@@ -127,7 +124,6 @@ class SendBloc extends Bloc<TransactionEvent,
       emit(state.copyWith(
         composeState: ComposeStateSuccess(composeResponse),
       ));
-      print(state.toString());
     } on ComposeTransactionException catch (e) {
       emit(state.copyWith(
         composeState: ComposeStateError(e.message),
@@ -145,20 +141,19 @@ class SendBloc extends Bloc<TransactionEvent,
     SendTransactionBroadcasted event,
     Emitter<TransactionState<SendState, ComposeSendResponse>> emit,
   ) async {
-    print('SendTransactionBroadcasted');
-
     try {
       final requirePassword =
           settingsRepository.requirePasswordForCryptoOperations;
 
-      // Emit loading state
       emit(state.copyWith(broadcastState: const BroadcastState.loading()));
+
+      final composeData = state.getComposeDataOrThrow();
 
       await signAndBroadcastTransactionUseCase.call(
           decryptionStrategy:
               requirePassword ? Password(event.password!) : InMemoryKey(),
-          source: state.getComposeDataOrThrow().params.source,
-          rawtransaction: state.getComposeDataOrThrow().rawtransaction,
+          source: composeData.params.source,
+          rawtransaction: composeData.rawtransaction,
           onSuccess: (txHex, txHash) async {
             await writelocalTransactionUseCase.call(txHex, txHash);
 
@@ -172,11 +167,9 @@ class SendBloc extends Bloc<TransactionEvent,
                     BroadcastStateSuccess(txHex: txHex, txHash: txHash))));
           },
           onError: (msg) {
-            print('send broadcast error: $msg');
             emit(state.copyWith(broadcastState: BroadcastState.error(msg)));
           });
     } catch (e) {
-      print('send broadcast error: $e');
       emit(state.copyWith(broadcastState: BroadcastState.error(e.toString())));
     }
   }
@@ -189,6 +182,5 @@ class SendBloc extends Bloc<TransactionEvent,
     emit(state.copyWith(
       feeOption: event.feeOption,
     ));
-    print(state.toString());
   }
 }

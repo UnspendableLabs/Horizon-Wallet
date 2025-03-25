@@ -178,39 +178,46 @@ class _TransactionFeeInputState extends State<TransactionFeeInput> {
         widget.selectedFeeOption.runtimeType == feeOption.runtimeType;
     final textTheme = Theme.of(context).textTheme;
     return MouseRegion(
-      cursor: SystemMouseCursors.click,
+      cursor: _showCustomFeeInput
+          ? SystemMouseCursors.basic
+          : SystemMouseCursors.click,
       child: GestureDetector(
-        onTap: () => widget.onFeeOptionSelected(feeOption),
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-          decoration: BoxDecoration(
-            color: isSelected
-                ? customTheme.inputBackground
-                : customTheme.inputBackgroundEmpty,
-            borderRadius: BorderRadius.circular(12),
-            border: isSelected
-                ? _buildGradientBorder(context)
-                : Border.all(
-                    color: customTheme.inputBorderColor,
+        onTap: _showCustomFeeInput
+            ? null
+            : () => widget.onFeeOptionSelected(feeOption),
+        child: Opacity(
+          opacity: _showCustomFeeInput ? 0.5 : 1.0,
+          child: Container(
+            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+            decoration: BoxDecoration(
+              color: isSelected
+                  ? customTheme.inputBackground
+                  : customTheme.inputBackgroundEmpty,
+              borderRadius: BorderRadius.circular(12),
+              border: isSelected
+                  ? _buildGradientBorder(context)
+                  : Border.all(
+                      color: customTheme.inputBorderColor,
+                    ),
+            ),
+            child: Column(
+              children: [
+                Text(
+                  label,
+                  style: textTheme.bodySmall?.copyWith(
+                    fontWeight: FontWeight.w500,
                   ),
-          ),
-          child: Column(
-            children: [
-              Text(
-                label,
-                style: textTheme.bodySmall?.copyWith(
-                  fontWeight: FontWeight.w500,
                 ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                _getFeeEstimate(feeOption),
-                style: textTheme.labelSmall?.copyWith(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w400,
+                const SizedBox(height: 4),
+                Text(
+                  _getFeeEstimate(feeOption),
+                  style: textTheme.labelSmall?.copyWith(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w400,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

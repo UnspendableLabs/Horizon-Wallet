@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
+import 'package:horizon/common/constants.dart';
 import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/domain/entities/fee_option.dart';
 import 'package:horizon/domain/entities/multi_address_balance.dart';
@@ -9,6 +10,7 @@ import 'package:horizon/presentation/common/transaction_stepper/bloc/transaction
 import 'package:horizon/presentation/common/transaction_stepper/bloc/transaction_state.dart';
 import 'package:horizon/presentation/common/transactions/fee_confirmation.dart';
 import 'package:horizon/presentation/common/transactions/transaction_fee_input.dart';
+import 'package:horizon/presentation/common/transactions/transaction_successful.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 import 'package:horizon/utils/app_icons.dart';
 import 'package:horizon/domain/entities/compose_response.dart';
@@ -38,8 +40,8 @@ class TransactionStepper<T, R> extends StatefulWidget {
   final StepContent Function(ComposeStateSuccess<R> composeState)
       buildConfirmationStep;
 
-  // Transaction submission step
-  final StepContent Function(BroadcastStateSuccess data) buildSubmissionStep;
+  // Callback for when dependencies are requested
+  final VoidCallback onDependenciesRequested;
 
   // Callbacks for each step's "Next" button
   final VoidCallback onFormStepNext;
@@ -64,8 +66,8 @@ class TransactionStepper<T, R> extends StatefulWidget {
     required this.formKey,
     required this.buildFormStep,
     required this.buildConfirmationStep,
-    required this.buildSubmissionStep,
     required this.state,
+    required this.onDependenciesRequested,
     required this.onFormStepNext,
     required this.onConfirmationStepNext,
     required this.onFeeOptionSelected,
@@ -215,6 +217,19 @@ class _TransactionStepperState<T, R> extends State<TransactionStepper<T, R>> {
     );
   }
 
+  StepContent _buildSubmissionStep(BroadcastStateSuccess data) {
+    return StepContent(
+      title: 'Transaction Broadcasted',
+      widgets: [
+        TransactionSuccessful(
+          transactionType: TransactionType.send,
+          txHex: data.txHex,
+          txHash: data.txHash,
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final isSmallScreen = MediaQuery.of(context).size.width < 500;
@@ -235,6 +250,7 @@ class _TransactionStepperState<T, R> extends State<TransactionStepper<T, R>> {
               ),
             ],
           ),
+          showBackButton: false,
         );
       }
 
@@ -250,6 +266,7 @@ class _TransactionStepperState<T, R> extends State<TransactionStepper<T, R>> {
               ),
             ],
           ),
+          showBackButton: false,
         );
       }
 
@@ -260,17 +277,15 @@ class _TransactionStepperState<T, R> extends State<TransactionStepper<T, R>> {
           StepContent(
             title: 'Enter Send Details',
             widgets: [
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: Text(
-                  widget.state.formLoadingError!,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Theme.of(context).colorScheme.error,
-                      ),
-                ),
+              _buildErrorWidget(
+                context,
+                widget.state.formLoadingError!,
+                () => widget.onDependenciesRequested(),
+                'Reload',
               ),
             ],
           ),
+          showBackButton: true,
         );
       }
       final balances = widget.state.getBalancesOrThrow();
@@ -297,6 +312,8 @@ class _TransactionStepperState<T, R> extends State<TransactionStepper<T, R>> {
         title: inputsStepContent.title,
         widgets: updatedWidgets,
       );
+      return _buildStepperContent(context, isSmallScreen, stepContent,
+          showBackButton: true);
     } else if (_currentStep == 1) {
       // Check for ComposeState errors or loading before building confirmation step
       return widget.state.composeState.when(
@@ -311,6 +328,7 @@ class _TransactionStepperState<T, R> extends State<TransactionStepper<T, R>> {
               ),
             ],
           ),
+          showBackButton: false,
         ),
         loading: () => _buildStepperContent(
           context,
@@ -323,6 +341,7 @@ class _TransactionStepperState<T, R> extends State<TransactionStepper<T, R>> {
               ),
             ],
           ),
+          showBackButton: false,
         ),
         error: (error) => _buildStepperContent(
           context,
@@ -338,6 +357,7 @@ class _TransactionStepperState<T, R> extends State<TransactionStepper<T, R>> {
               ),
             ],
           ),
+          showBackButton: true,
         ),
         success: (composeData) {
           // Confirmation step
@@ -365,7 +385,8 @@ class _TransactionStepperState<T, R> extends State<TransactionStepper<T, R>> {
             widgets: updatedWidgets,
           );
 
-          return _buildStepperContent(context, isSmallScreen, stepContent);
+          return _buildStepperContent(context, isSmallScreen, stepContent,
+              showBackButton: true);
         },
       );
     } else {
@@ -383,6 +404,7 @@ class _TransactionStepperState<T, R> extends State<TransactionStepper<T, R>> {
               ),
             ],
           ),
+          showBackButton: false,
         ),
         loading: () => _buildStepperContent(
           context,
@@ -396,11 +418,13 @@ class _TransactionStepperState<T, R> extends State<TransactionStepper<T, R>> {
               ),
             ],
           ),
+          showBackButton: false,
         ),
         success: (data) => _buildStepperContent(
           context,
           isSmallScreen,
-          widget.buildSubmissionStep(data),
+          _buildSubmissionStep(data),
+          showBackButton: true,
         ),
         error: (error) => _buildStepperContent(
           context,
@@ -416,30 +440,46 @@ class _TransactionStepperState<T, R> extends State<TransactionStepper<T, R>> {
               ),
             ],
           ),
+          showBackButton: true,
         ),
       );
     }
-
-    return _buildStepperContent(context, isSmallScreen, stepContent);
   }
 
   Widget _buildStepperContent(
-    BuildContext context,
-    bool isSmallScreen,
-    StepContent stepContent,
-  ) {
+      BuildContext context, bool isSmallScreen, StepContent stepContent,
+      {required bool showBackButton}) {
     final stepperContent = Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        leading: AppIcons.iconButton(
-          context: context,
-          width: 32,
-          height: 32,
-          icon: AppIcons.backArrowIcon(
-              context: context, width: 24, height: 24, fit: BoxFit.fitHeight),
-          onPressed: _handleBack,
-        ),
+        leading: showBackButton
+            ? _currentStep == 2
+                ? AppIcons.iconButton(
+                    context: context,
+                    width: 32,
+                    height: 32,
+                    icon: AppIcons.closeIcon(
+                      context: context,
+                      width: 24,
+                      height: 24,
+                      fit: BoxFit.fitHeight,
+                    ),
+                    onPressed: () => Navigator.of(context).pop(),
+                  )
+                : AppIcons.iconButton(
+                    context: context,
+                    width: 32,
+                    height: 32,
+                    icon: AppIcons.backArrowIcon(
+                      context: context,
+                      width: 24,
+                      height: 24,
+                      fit: BoxFit.fitHeight,
+                    ),
+                    onPressed: _handleBack,
+                  )
+            : const SizedBox.shrink(),
       ),
       body: Stack(
         children: [
