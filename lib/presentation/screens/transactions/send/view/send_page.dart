@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/common/constants.dart';
 import 'package:horizon/common/format.dart';
@@ -204,7 +203,6 @@ class _SendPageState extends State<SendPage> {
                   ),
                 ],
               ),
-              onBack: () => context.pop(),
               state: state,
               nextButtonEnabled: true,
               onFormStepNext: () => _handleInputsStepNext(context, state),

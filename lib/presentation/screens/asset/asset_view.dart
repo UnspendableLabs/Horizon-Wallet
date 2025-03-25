@@ -83,18 +83,6 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
         );
         break;
     }
-    showDialog(
-      context: context,
-      builder: (dialogContext) {
-        final session = context.read<SessionStateCubit>().state;
-        return Dialog.fullscreen(
-          child: SendPage(
-            assetName: widget.assetName,
-            addresses: session.allAddresses,
-          ),
-        );
-      },
-    );
   }
 
   // Helper method to build the asset page header

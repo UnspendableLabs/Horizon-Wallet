@@ -61,8 +61,7 @@ class TransactionSuccessful extends StatelessWidget {
                                   ),
                         ),
                         TextSpan(
-                          text:
-                              txHex.replaceRange(6, txHex.length - 6, '...'),
+                          text: txHex.replaceRange(6, txHex.length - 6, '...'),
                           style:
                               Theme.of(context).textTheme.bodySmall?.copyWith(
                                     color: Theme.of(context)

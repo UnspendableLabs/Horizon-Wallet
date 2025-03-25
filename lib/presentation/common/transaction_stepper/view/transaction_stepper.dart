@@ -48,9 +48,6 @@ class TransactionStepper<T, R> extends StatefulWidget {
   /// Returns a StepContent with title and widgets
   final StepContent Function(BroadcastStateSuccess data) buildSubmissionStep;
 
-  /// Callback when back button is pressed at the first step
-  final VoidCallback onBack;
-
   /// Callbacks for each step's "Next" button
   final VoidCallback onFormStepNext;
   final void Function({String? password}) onConfirmationStepNext;
@@ -83,7 +80,6 @@ class TransactionStepper<T, R> extends StatefulWidget {
     required this.buildFormStep,
     required this.buildConfirmationStep,
     required this.buildSubmissionStep,
-    required this.onBack,
     required this.state,
     required this.nextButtonEnabled,
     required this.onFormStepNext,
@@ -188,14 +184,20 @@ class _TransactionStepperState<T, R> extends State<TransactionStepper<T, R>> {
   }
 
   void _handleBack() {
-    if (_currentStep > 0) {
-      // Go back to the previous step
+    print('Back button pressed. Current step: $_currentStep');
+    print('Context: $context');
+    print('Navigator.canPop: ${Navigator.canPop(context)}');
+    print(
+        'Navigator.canPop(root): ${Navigator.of(context, rootNavigator: true).canPop()}');
+
+    if (_currentStep == 0) {
+      print('Attempting to pop dialog...');
+      Navigator.of(context).pop();
+      print('After pop attempt');
+    } else {
       setState(() {
         _currentStep--;
       });
-    } else {
-      // Exit the stepper if at the first step
-      widget.onBack();
     }
   }
 
@@ -204,45 +206,62 @@ class _TransactionStepperState<T, R> extends State<TransactionStepper<T, R>> {
     final isSmallScreen = MediaQuery.of(context).size.width < 500;
 
     if (widget.state.initial) {
-      return Scaffold(
-        appBar: AppBar(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          leading: widget.showBackButton
-              ? AppIcons.iconButton(
-                  context: context,
-                  width: 32,
-                  height: 32,
-                  icon: AppIcons.backArrowIcon(
-                      context: context,
-                      width: 24,
-                      height: 24,
-                      fit: BoxFit.fitHeight),
-                  onPressed: widget.onBack,
-                )
-              : null,
+      return _buildStepperContent(
+        context,
+        isSmallScreen,
+        false,
+        null,
+        const StepContent(
+          title: 'Enter Send Details',
+          widgets: [
+            Center(
+              child: CircularProgressIndicator(),
+            ),
+          ],
         ),
-        body: const Center(
-          child: CircularProgressIndicator(),
-        ),
+        null,
       );
     }
 
     if (widget.state.loadingFetch) {
-      return _buildMainContent(
+      return _buildStepperContent(
         context,
         isSmallScreen,
-        true, // Show loading overlay
-        null, // No error message
+        false,
+        null,
+        const StepContent(
+          title: 'Enter Send Details',
+          widgets: [
+            Center(
+              child: CircularProgressIndicator(),
+            ),
+          ],
+        ),
+        null,
       );
     }
 
     if (widget.state.error != null) {
-      return _buildMainContent(
+      return _buildStepperContent(
         context,
         isSmallScreen,
-        false, // No loading overlay
-        widget.state.error,
+        false,
+        null,
+        StepContent(
+          title: 'Enter Send Details',
+          widgets: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: Text(
+                widget.state.error!,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: Theme.of(context).colorScheme.error,
+                    ),
+              ),
+            ),
+          ],
+        ),
+        null,
       );
     }
 
@@ -283,7 +302,21 @@ class _TransactionStepperState<T, R> extends State<TransactionStepper<T, R>> {
     if (_currentStep == 0) {
       // For the first step, ensure we have all required data
       if (balances == null || feeEstimates == null || feeOption == null) {
-        return _buildLoadingOverlay(context);
+        return _buildStepperContent(
+          context,
+          isSmallScreen,
+          false,
+          null,
+          const StepContent(
+            title: 'Enter Send Details',
+            widgets: [
+              Center(
+                child: CircularProgressIndicator(),
+              ),
+            ],
+          ),
+          null,
+        );
       }
 
       // Inputs step - needs loading state too
@@ -308,13 +341,57 @@ class _TransactionStepperState<T, R> extends State<TransactionStepper<T, R>> {
     } else if (_currentStep == 1) {
       // Check for ComposeState errors or loading before building confirmation step
       return widget.state.composeState.when(
-        initial: () => _buildErrorContent(
+        initial: () => _buildStepperContent(
           context,
-          "Transaction composition required before confirmation",
           isSmallScreen,
+          false,
+          null,
+          const StepContent(
+            title: 'Confirm Transaction',
+            widgets: [
+              Center(
+                child: CircularProgressIndicator(),
+              ),
+            ],
+          ),
+          null,
         ),
-        loading: () => _buildLoadingOverlay(context),
-        error: (error) => _buildErrorContent(context, error, isSmallScreen),
+        loading: () => _buildStepperContent(
+          context,
+          isSmallScreen,
+          false,
+          null,
+          const StepContent(
+            title: 'Confirm Transaction',
+            widgets: [
+              Center(
+                child: CircularProgressIndicator(),
+              ),
+            ],
+          ),
+          null,
+        ),
+        error: (error) => _buildStepperContent(
+          context,
+          isSmallScreen,
+          false,
+          null,
+          StepContent(
+            title: 'Confirm Transaction',
+            widgets: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: Text(
+                  error,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: Theme.of(context).colorScheme.error,
+                      ),
+                ),
+              ),
+            ],
+          ),
+          null,
+        ),
         success: (composeData) {
           // Confirmation step
           final confirmationContent = widget
@@ -576,19 +653,6 @@ class _TransactionStepperState<T, R> extends State<TransactionStepper<T, R>> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        leading: widget.showBackButton
-            ? AppIcons.iconButton(
-                context: context,
-                width: 32,
-                height: 32,
-                icon: AppIcons.backArrowIcon(
-                    context: context,
-                    width: 24,
-                    height: 24,
-                    fit: BoxFit.fitHeight),
-                onPressed: _handleBack,
-              )
-            : null,
       ),
       body: const Center(
         child: CircularProgressIndicator(),
