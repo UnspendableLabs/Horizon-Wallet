@@ -31,14 +31,6 @@ class TransactionSuccessful extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          child: SelectableText(
-            '${transactionType.name.toUpperCase()} Successful',
-            style: Theme.of(context).textTheme.titleLarge,
-          ),
-        ),
-        commonHeightSizedBox,
         Container(
           padding: const EdgeInsets.symmetric(vertical: 14.0),
           height: 56,
@@ -54,13 +46,9 @@ class TransactionSuccessful extends StatelessWidget {
             children: [
               Expanded(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 16.0, vertical: 12.0),
+                  padding: const EdgeInsets.only(left: 8.0),
                   child: RichText(
                     text: TextSpan(
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: Theme.of(context).textTheme.bodySmall?.color,
-                          ),
                       children: [
                         TextSpan(
                           text: 'Transaction id: ',
@@ -74,10 +62,19 @@ class TransactionSuccessful extends StatelessWidget {
                         ),
                         TextSpan(
                           text:
-                              txHash.replaceRange(6, txHash.length - 6, '...'),
+                              txHex.replaceRange(6, txHex.length - 6, '...'),
+                          style:
+                              Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    color: Theme.of(context)
+                                        .textTheme
+                                        .bodySmall
+                                        ?.color,
+                                  ),
                         ),
                       ],
                     ),
+                    overflow: TextOverflow.visible,
+                    maxLines: 1,
                   ),
                 ),
               ),
@@ -94,7 +91,7 @@ class TransactionSuccessful extends StatelessWidget {
                         ),
                       ),
                   onPressed: () {
-                    Clipboard.setData(ClipboardData(text: txHash));
+                    Clipboard.setData(ClipboardData(text: txHex));
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
                         content: Text('Tx id copied to clipboard'),
