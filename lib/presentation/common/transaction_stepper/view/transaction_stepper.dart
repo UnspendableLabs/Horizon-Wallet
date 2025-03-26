@@ -9,7 +9,7 @@ import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/common/transaction_stepper/bloc/transaction_bloc.dart';
 import 'package:horizon/presentation/common/transaction_stepper/bloc/transaction_state.dart';
 import 'package:horizon/presentation/common/transactions/fee_confirmation.dart';
-import 'package:horizon/presentation/common/transactions/transaction_fee_input.dart';
+import 'package:horizon/presentation/common/transactions/transaction_fee_selection.dart';
 import 'package:horizon/presentation/common/transactions/transaction_successful.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 import 'package:horizon/utils/app_icons.dart';
@@ -181,7 +181,7 @@ class _TransactionStepperState<T, R> extends State<TransactionStepper<T, R>> {
   }
 
   Widget _buildErrorWidget(BuildContext context, String errorMessage,
-      VoidCallback onBack, String buttonText) {
+      {required VoidCallback onBack, required String buttonText}) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -280,8 +280,8 @@ class _TransactionStepperState<T, R> extends State<TransactionStepper<T, R>> {
               _buildErrorWidget(
                 context,
                 widget.state.formLoadingError!,
-                () => widget.onDependenciesRequested(),
-                'Reload',
+                onBack: () => widget.onDependenciesRequested(),
+                buttonText: 'Reload',
               ),
             ],
           ),
@@ -293,15 +293,14 @@ class _TransactionStepperState<T, R> extends State<TransactionStepper<T, R>> {
       final feeOption = widget.state.feeOption;
       final data = widget.state.getDataOrThrow();
 
-      // Inputs step - needs loading state
       final inputsStepContent =
           widget.buildFormStep(balances, feeEstimates, feeOption, data);
 
-      // Add TransactionFeeInput to the widgets if we're on the first step
+      // Add TransactionFeeSelection to the widgets if we're on the first step
       final updatedWidgets = [
         ...inputsStepContent.widgets,
         commonHeightSizedBox,
-        TransactionFeeInput(
+        TransactionFeeSelection(
           feeEstimates: feeEstimates,
           selectedFeeOption: feeOption,
           onFeeOptionSelected: widget.onFeeOptionSelected,
@@ -352,8 +351,8 @@ class _TransactionStepperState<T, R> extends State<TransactionStepper<T, R>> {
               _buildErrorWidget(
                 context,
                 error,
-                () => setState(() => _currentStep--),
-                'Go back to transaction',
+                onBack: () => setState(() => _currentStep--),
+                buttonText: 'Go back to transaction',
               ),
             ],
           ),
@@ -435,8 +434,8 @@ class _TransactionStepperState<T, R> extends State<TransactionStepper<T, R>> {
               _buildErrorWidget(
                 context,
                 error,
-                () => Navigator.of(context).pop(),
-                'Close',
+                onBack: () => Navigator.of(context).pop(),
+                buttonText: 'Close',
               ),
             ],
           ),
@@ -453,6 +452,7 @@ class _TransactionStepperState<T, R> extends State<TransactionStepper<T, R>> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
+        // on the last step, show a close button rather than a back button
         leading: showBackButton
             ? _currentStep == 2
                 ? AppIcons.iconButton(
@@ -534,6 +534,7 @@ class _TransactionStepperState<T, R> extends State<TransactionStepper<T, R>> {
                 child: SingleChildScrollView(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: _currentStep == 0
+                      // wrap the first step in a form -- this will handle validating fields for us rather than passing the formKey into each input
                       ? Form(
                           key: widget.formKey,
                           child: Column(

@@ -13,7 +13,7 @@ import 'package:horizon/presentation/common/shared_util.dart';
 import 'package:horizon/presentation/common/transaction_stepper/bloc/transaction_event.dart';
 import 'package:horizon/presentation/common/transaction_stepper/bloc/transaction_state.dart';
 import 'package:horizon/presentation/common/transaction_stepper/view/transaction_stepper.dart';
-import 'package:horizon/presentation/common/transactions/display_field_with_label.dart';
+import 'package:horizon/presentation/common/transactions/confirmation_field_with_label.dart';
 import 'package:horizon/presentation/common/transactions/gradient_quantity_input.dart';
 import 'package:horizon/presentation/common/transactions/multi_address_balance_dropdown.dart';
 import 'package:horizon/presentation/common/transactions/token_name_field.dart';
@@ -48,7 +48,7 @@ class _SendPageState extends State<SendPage> {
   TextEditingController destinationAddressController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
-  void _handleInputsStepNext(BuildContext context,
+  void _handleOnFormStepNext(BuildContext context,
       TransactionState<SendState, ComposeSendResponse> state) {
     final quantity = getQuantityForDivisibility(
       divisible: state.getBalancesOrThrow().assetInfo.divisible,
@@ -175,7 +175,7 @@ class _SendPageState extends State<SendPage> {
                     quantity:
                         composeState.composeData.params.quantityNormalized,
                   ),
-                  DisplayFieldWithLabel(
+                  ConfirmationFieldWithLabel(
                     label: const SelectableText('Token Name'),
                     value: SelectableText(displayAssetName(
                         composeState.composeData.params.asset,
@@ -183,13 +183,13 @@ class _SendPageState extends State<SendPage> {
                             .composeData.params.assetInfo.assetLongname)),
                   ),
                   commonHeightSizedBox,
-                  DisplayFieldWithLabel(
+                  ConfirmationFieldWithLabel(
                     label: const SelectableText('Source Address'),
                     value:
                         SelectableText(composeState.composeData.params.source),
                   ),
                   commonHeightSizedBox,
-                  DisplayFieldWithLabel(
+                  ConfirmationFieldWithLabel(
                     label: const SelectableText('Recipient Address'),
                     value: SelectableText(
                         composeState.composeData.params.destination),
@@ -199,7 +199,7 @@ class _SendPageState extends State<SendPage> {
               state: state,
               onDependenciesRequested: () =>
                   _handleDependenciesRequested(context),
-              onFormStepNext: () => _handleInputsStepNext(context, state),
+              onFormStepNext: () => _handleOnFormStepNext(context, state),
               onConfirmationStepNext: ({String? password}) =>
                   _handleConfirmationStepNext(context, password: password),
               onFeeOptionSelected: (feeOption) =>

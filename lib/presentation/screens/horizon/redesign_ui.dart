@@ -232,7 +232,6 @@ class GradientBoxBorder extends BoxBorder {
       ..strokeWidth = width
       ..style = PaintingStyle.stroke;
 
-    // Check theme mode using MediaQuery
     final brightness = Theme.of(context).brightness;
     final isDarkMode = brightness == Brightness.dark;
 
@@ -240,12 +239,7 @@ class GradientBoxBorder extends BoxBorder {
       begin: Alignment.centerLeft,
       end: Alignment.centerRight,
       colors: isDarkMode
-          ? const [
-              Color.fromRGBO(250, 204, 206, 1),
-              Color.fromRGBO(246, 167, 168, 1),
-              Color.fromRGBO(163, 167, 211, 1),
-              Color.fromRGBO(202, 206, 250, 0.96),
-            ]
+          ? const [pinkRed, softPinkRed, hyacinth, transparentIvory]
           : const [
               lightYellow,
               greenCyan,

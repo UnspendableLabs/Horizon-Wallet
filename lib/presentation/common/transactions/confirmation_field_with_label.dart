@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
-class DisplayFieldWithLabel extends StatelessWidget {
+class ConfirmationFieldWithLabel extends StatelessWidget {
   final Widget label;
   final Widget value;
 
-  const DisplayFieldWithLabel({
+  const ConfirmationFieldWithLabel({
     super.key,
     required this.label,
     required this.value,

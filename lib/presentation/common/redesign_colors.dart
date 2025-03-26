@@ -24,6 +24,12 @@ const greenCyan = Color(0xFF9DE7CF);
 const brightBlue = Color(0xFF3C8DBC);
 const moderateViolet = Color(0xFF6C49B2);
 
+// dark mode input border colors
+const pinkRed = Color(0xFFFACCCE);
+const softPinkRed = Color(0xFFF6A7A8);
+const hyacinth = Color(0xFFA3A7D3);
+const transparentIvory = Color.fromRGBO(202, 206, 250, 0.96);
+
 // Import button colors
 const black = Color(0xFF000000);
 const white = Color(0xFFEAEAEA);
@@ -59,3 +65,8 @@ const violet = Color(0xFF9B86D7);
 const moderateBlue = Color(0xFF509FC0);
 const softTurquoise = Color(0xFF7DC2BC);
 const lightBeige = Color(0xFFDFD9BF);
+
+const x = Color.fromRGBO(250, 204, 206, 1);
+const y = Color.fromRGBO(246, 167, 168, 1);
+const v = Color.fromRGBO(163, 167, 211, 1);
+const z = Color.fromRGBO(202, 206, 250, 0.96);

@@ -7,18 +7,14 @@ import 'package:horizon/presentation/common/theme_extension.dart';
 import 'package:horizon/presentation/common/transactions/input_loading_scaffold.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 
-/// A component for selecting transaction fee rates
-class TransactionFeeInput extends StatefulWidget {
-  /// Fee estimates for different priority levels
+class TransactionFeeSelection extends StatefulWidget {
   final FeeEstimates? feeEstimates;
 
-  /// Currently selected fee option
   final FeeOption? selectedFeeOption;
 
-  /// Callback when a fee option is selected
   final Function(FeeOption) onFeeOptionSelected;
 
-  const TransactionFeeInput({
+  const TransactionFeeSelection({
     super.key,
     required this.feeEstimates,
     required this.selectedFeeOption,
@@ -26,10 +22,11 @@ class TransactionFeeInput extends StatefulWidget {
   });
 
   @override
-  State<TransactionFeeInput> createState() => _TransactionFeeInputState();
+  State<TransactionFeeSelection> createState() =>
+      _TransactionFeeSelectionState();
 }
 
-class _TransactionFeeInputState extends State<TransactionFeeInput> {
+class _TransactionFeeSelectionState extends State<TransactionFeeSelection> {
   bool _showCustomFeeInput = false;
   final TextEditingController _customFeeController = TextEditingController();
 

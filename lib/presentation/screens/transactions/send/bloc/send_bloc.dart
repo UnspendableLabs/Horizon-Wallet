@@ -19,8 +19,6 @@ import 'package:horizon/presentation/common/usecase/write_local_transaction_usec
 import 'package:horizon/presentation/screens/transactions/send/bloc/send_event.dart';
 import 'package:horizon/presentation/screens/transactions/send/bloc/send_state.dart';
 
-/// Send transaction data to be stored in the TransactionState.success state
-
 class SendBloc extends Bloc<TransactionEvent,
     TransactionState<SendState, ComposeSendResponse>> {
   final BalanceRepository balanceRepository;
@@ -59,7 +57,6 @@ class SendBloc extends Bloc<TransactionEvent,
     SendDependenciesRequested event,
     Emitter<TransactionState<SendState, ComposeSendResponse>> emit,
   ) async {
-    // First, emit loading state
     emit(state.copyWith(
       balancesState: const BalancesState.loading(),
       feeState: const FeeState.loading(),
@@ -67,32 +64,26 @@ class SendBloc extends Bloc<TransactionEvent,
     ));
 
     try {
-      // Fetch the balances
       final balances = await balanceRepository.getBalancesForAddressesAndAsset(
           event.addresses, event.assetName, BalanceType.address);
 
       final feeEstimates = await getFeeEstimatesUseCase.call();
 
-      // Emit success state with balances
       emit(state.copyWith(
           balancesState: BalancesState.success(balances),
           feeState: FeeState.success(feeEstimates),
           dataState: TransactionDataState.success(SendState())));
     } catch (e) {
-      // Emit error state with error message
       emit(state.copyWith(
           balancesState: BalancesState.error(e.toString()),
           feeState: FeeState.error(e.toString())));
     }
-
-    print('SendDependenciesRequested');
   }
 
   void _onTransactionComposed(
     SendTransactionComposed event,
     Emitter<TransactionState<SendState, ComposeSendResponse>> emit,
   ) async {
-    // First, emit loading state for the compose operation
     emit(state.copyWith(composeState: const ComposeStateLoading()));
     if (event.sourceAddress.isEmpty) {
       emit(state.copyWith(
@@ -161,7 +152,6 @@ class SendBloc extends Bloc<TransactionEvent,
             analyticsService.trackAnonymousEvent('broadcast_tx_send',
                 properties: {'distinct_id': uuid.v4()});
 
-            // Emit success state with txHex
             emit(state.copyWith(
                 broadcastState: BroadcastState.success(
                     BroadcastStateSuccess(txHex: txHex, txHash: txHash))));
@@ -178,7 +168,6 @@ class SendBloc extends Bloc<TransactionEvent,
     FeeOptionSelected event,
     Emitter<TransactionState<SendState, ComposeSendResponse>> emit,
   ) {
-    // Update the fee option in the state
     emit(state.copyWith(
       feeOption: event.feeOption,
     ));

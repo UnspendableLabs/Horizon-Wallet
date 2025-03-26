@@ -6,29 +6,24 @@ import 'package:horizon/domain/services/error_service.dart';
 import 'package:horizon/presentation/common/transaction_stepper/bloc/transaction_event.dart';
 import 'package:horizon/presentation/common/transaction_stepper/bloc/transaction_state.dart';
 
-/// Interface that all transaction blocs must implement
+// Interface that all transaction blocs must implement
 abstract interface class TransactionBlocInterface<
     T extends TransactionState<T, R>, R> {
-  /// Handle dependencies requested when the page is loaded
   Future<void> onDependenciesRequested(
       DependenciesRequested event, Emitter<T> emit);
 
-  /// Handle transaction composition (moving from input to confirmation)
   void onTransactionComposed(TransactionComposed event, Emitter<T> emit);
 
-  /// Handle transaction submission (moving from confirmation to submission)
   void onTransactionBroadcasted(TransactionBroadcasted event, Emitter<T> emit);
 
-  /// Handle fee option selection (optional override)
   void onFeeOptionSelected(FeeOptionSelected event, Emitter<T> emit) {}
 }
 
-/// Base bloc for transaction flows
 abstract class TransactionBloc<T extends TransactionState<T, R>, R>
     extends Bloc<TransactionEvent, T>
     implements TransactionBlocInterface<T, R> {
   final String transactionType;
-  late final ErrorService _errorService;
+  late final ErrorService _errorService; // TODO
 
   TransactionBloc(
     super.initialState, {
@@ -40,7 +35,6 @@ abstract class TransactionBloc<T extends TransactionState<T, R>, R>
       await onDependenciesRequested(event, emit);
     });
 
-    // Set up handler for fee option selection
     on<FeeOptionSelected>((event, emit) {
       onFeeOptionSelected(event, emit);
     });
