@@ -43,3 +43,11 @@ const String kInactivityDeadlineKey = 'inactivityDeadline';
 
 const String onboardingErrorMessage =
     'Something went wrong while opening your wallet. Please reach out to support@unspendablelabs.com or the Horizon Telegram channel https://t.me/horizonxcp for support.';
+
+enum BalanceType {
+  all,
+  utxo,
+  address,
+}
+
+enum TransactionType { send }

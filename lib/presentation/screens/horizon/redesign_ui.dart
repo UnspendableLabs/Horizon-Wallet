@@ -1,9 +1,12 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/common/theme_extension.dart';
 import 'package:horizon/utils/app_icons.dart';
+
+Widget commonHeightSizedBox = const SizedBox(height: 10);
 
 class HorizonGradientButton extends StatefulWidget {
   final VoidCallback? onPressed;
@@ -197,7 +200,9 @@ class _HorizonOutlinedButtonState extends State<HorizonOutlinedButton> {
 }
 
 class GradientBoxBorder extends BoxBorder {
+  final BuildContext context;
   const GradientBoxBorder({
+    required this.context,
     this.width = 1.0,
   });
 
@@ -227,15 +232,20 @@ class GradientBoxBorder extends BoxBorder {
       ..strokeWidth = width
       ..style = PaintingStyle.stroke;
 
-    const Gradient gradient = LinearGradient(
+    final brightness = Theme.of(context).brightness;
+    final isDarkMode = brightness == Brightness.dark;
+
+    final Gradient gradient = LinearGradient(
       begin: Alignment.centerLeft,
       end: Alignment.centerRight,
-      colors: [
-        Color.fromRGBO(250, 204, 206, 1),
-        Color.fromRGBO(246, 167, 168, 1),
-        Color.fromRGBO(163, 167, 211, 1),
-        Color.fromRGBO(202, 206, 250, 0.96),
-      ],
+      colors: isDarkMode
+          ? const [pinkRed, softPinkRed, hyacinth, transparentIvory]
+          : const [
+              lightYellow,
+              greenCyan,
+              brightBlue,
+              moderateViolet,
+            ],
     );
 
     if (borderRadius != null) {
@@ -252,6 +262,7 @@ class GradientBoxBorder extends BoxBorder {
   @override
   ShapeBorder scale(double t) {
     return GradientBoxBorder(
+      context: context,
       width: width * t,
     );
   }
@@ -262,6 +273,7 @@ class HorizonRedesignDropdown<T> extends StatefulWidget {
   final Function(T?) onChanged;
   final T? selectedValue;
   final String hintText;
+  final Widget Function(T)? selectedItemBuilder;
 
   const HorizonRedesignDropdown({
     super.key,
@@ -269,6 +281,7 @@ class HorizonRedesignDropdown<T> extends StatefulWidget {
     required this.onChanged,
     required this.selectedValue,
     required this.hintText,
+    this.selectedItemBuilder,
   });
 
   @override
@@ -329,7 +342,10 @@ class _HorizonRedesignDropdownState<T>
             child: Container(
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(18),
-                border: const GradientBoxBorder(width: 1),
+                border: GradientBoxBorder(
+                  context: context,
+                  width: 1,
+                ),
                 color: isDarkMode ? grey5 : grey1,
               ),
               child: Column(
@@ -385,7 +401,10 @@ class _HorizonRedesignDropdownState<T>
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(18),
               border: focusNode.hasFocus
-                  ? const GradientBoxBorder(width: 1)
+                  ? GradientBoxBorder(
+                      context: context,
+                      width: 1,
+                    )
                   : Border.fromBorderSide(
                       Theme.of(context).inputDecorationTheme.outlineBorder ??
                           const BorderSide()),
@@ -398,16 +417,22 @@ class _HorizonRedesignDropdownState<T>
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Expanded(
-                  child: Text(
-                    widget.selectedValue != null
-                        ? (widget.items
-                                .firstWhere((item) =>
-                                    item.value == widget.selectedValue)
-                                .child as Text)
-                            .data!
-                        : widget.hintText,
-                    style: Theme.of(context).textTheme.bodySmall,
-                  ),
+                  child: widget.selectedValue != null
+                      ? widget.selectedItemBuilder != null
+                          ? widget
+                              .selectedItemBuilder!(widget.selectedValue as T)
+                          : Text(
+                              (widget.items
+                                      .firstWhere((item) =>
+                                          item.value == widget.selectedValue)
+                                      .child as Text)
+                                  .data!,
+                              style: Theme.of(context).textTheme.bodySmall,
+                            )
+                      : Text(
+                          widget.hintText,
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
                 ),
                 _isOpen
                     ? AppIcons.caretUpIcon(
@@ -511,7 +536,10 @@ class _BlurredBackgroundDropdownState<T>
               child: Container(
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(18),
-                  border: const GradientBoxBorder(width: 1),
+                  border: GradientBoxBorder(
+                    context: context,
+                    width: 1,
+                  ),
                   color: isDarkMode ? grey5 : grey1,
                 ),
                 child: Column(
@@ -565,7 +593,10 @@ class _BlurredBackgroundDropdownState<T>
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(18),
             border: focusNode.hasFocus
-                ? const GradientBoxBorder(width: 1)
+                ? GradientBoxBorder(
+                    context: context,
+                    width: 1,
+                  )
                 : Border.fromBorderSide(
                     Theme.of(context).inputDecorationTheme.outlineBorder ??
                         const BorderSide()),
@@ -684,6 +715,7 @@ class HorizonTextField extends StatefulWidget {
   final dynamic Function(dynamic)? onSubmitted;
   final dynamic Function(dynamic)? onChanged;
   final bool enabled;
+  final List<TextInputFormatter>? inputFormatters;
 
   const HorizonTextField({
     super.key,
@@ -698,6 +730,7 @@ class HorizonTextField extends StatefulWidget {
     this.onSubmitted,
     this.onChanged,
     this.enabled = true,
+    this.inputFormatters,
   });
 
   @override
@@ -714,7 +747,17 @@ class _HorizonTextFieldState extends State<HorizonTextField> {
     _focusNode.addListener(() {
       setState(() {});
     });
+    _hasText = widget.controller.text.isNotEmpty;
     widget.controller.addListener(_onTextChanged);
+  }
+
+  @override
+  void didUpdateWidget(HorizonTextField oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.controller != widget.controller ||
+        _hasText != widget.controller.text.isNotEmpty) {
+      _hasText = widget.controller.text.isNotEmpty;
+    }
   }
 
   @override
@@ -725,9 +768,12 @@ class _HorizonTextFieldState extends State<HorizonTextField> {
   }
 
   void _onTextChanged() {
-    setState(() {
-      _hasText = widget.controller.text.isNotEmpty;
-    });
+    final hasText = widget.controller.text.isNotEmpty;
+    if (_hasText != hasText) {
+      setState(() {
+        _hasText = hasText;
+      });
+    }
   }
 
   @override
@@ -766,7 +812,10 @@ class _HorizonTextFieldState extends State<HorizonTextField> {
                     border: hasError
                         ? Border.all(color: customTheme.errorColor, width: 1)
                         : _focusNode.hasFocus
-                            ? const GradientBoxBorder(width: 1)
+                            ? GradientBoxBorder(
+                                context: context,
+                                width: 1,
+                              )
                             : Border.all(color: customTheme.inputBorderColor),
                   ),
                   padding:
@@ -785,16 +834,22 @@ class _HorizonTextFieldState extends State<HorizonTextField> {
                             }
                             field.didChange(value);
                           },
+                          inputFormatters: widget.inputFormatters,
                           onFieldSubmitted: widget.onSubmitted,
                           onTap: () {
                             FocusScope.of(context).requestFocus(_focusNode);
                           },
                           style: TextStyle(
                             fontSize: 12,
+                            fontWeight: FontWeight.w500,
                             color: customTheme.inputTextColor,
                           ),
                           decoration: InputDecoration(
+                            fillColor: _hasText
+                                ? customTheme.inputBackground
+                                : customTheme.inputBackgroundEmpty,
                             labelText: widget.label,
+                            labelStyle: theme.textTheme.bodySmall,
                             isDense: theme.inputDecorationTheme.isDense,
                             contentPadding:
                                 theme.inputDecorationTheme.contentPadding,
@@ -909,7 +964,10 @@ class _HorizonPasswordPromptState extends State<HorizonPasswordPrompt> {
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(18),
-                border: const GradientBoxBorder(width: 1),
+                border: GradientBoxBorder(
+                  context: context,
+                  width: 1,
+                ),
                 color: isDarkMode ? grey5 : grey1,
               ),
               child: Column(

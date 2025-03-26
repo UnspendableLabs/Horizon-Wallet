@@ -192,7 +192,10 @@ class PasswordPromptState extends State<PasswordPrompt> {
                     border: hasError
                         ? Border.all(color: customTheme.errorColor, width: 1)
                         : focusNode.hasFocus
-                            ? const GradientBoxBorder(width: 1)
+                            ? GradientBoxBorder(
+                                context: context,
+                                width: 1,
+                              )
                             : Border.all(color: customTheme.inputBorderColor),
                   ),
                   padding:

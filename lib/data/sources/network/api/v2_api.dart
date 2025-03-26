@@ -4986,6 +4986,8 @@ abstract class V2Api {
     @Query("addresses") String addresses, [
     @Query("cursor") CursorModel? cursor,
     @Query("limit") int? limit,
+    @Query("asset") String? asset,
+    @Query("type") String? type,
   ]);
 
   @GET("/utxos/{utxo}/balances?verbose=true")

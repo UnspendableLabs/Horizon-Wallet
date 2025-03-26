@@ -474,6 +474,12 @@ class MyApp extends StatelessWidget {
         color: transparentBlack66,
         fontFamily: 'Montserrat',
       ),
+      bodyLarge: TextStyle(
+        fontSize: 18,
+        color: Colors.black,
+        fontFamily: 'Montserrat',
+        fontWeight: FontWeight.w700,
+      ),
       bodyMedium: TextStyle(
         fontSize: 16,
         color: Colors.black,
@@ -482,6 +488,16 @@ class MyApp extends StatelessWidget {
       bodySmall: TextStyle(
         fontSize: 12,
         color: Colors.black,
+        fontFamily: 'Montserrat',
+      ),
+      labelMedium: TextStyle(
+        fontSize: 14,
+        color: Colors.black,
+        fontFamily: 'Montserrat',
+      ),
+      labelSmall: TextStyle(
+        fontSize: 12,
+        color: transparentBlack66,
         fontFamily: 'Montserrat',
       ),
     );
@@ -584,6 +600,12 @@ class MyApp extends StatelessWidget {
       ),
       inputDecorationTheme: const InputDecorationTheme(
         isDense: true,
+        labelStyle: TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.normal,
+          color: transparentBlack8,
+          fontFamily: 'Montserrat',
+        ),
         contentPadding: EdgeInsets.zero,
         outlineBorder: BorderSide(
           color: transparentBlack8,
@@ -617,6 +639,12 @@ class MyApp extends StatelessWidget {
         color: transparentWhite66,
         fontFamily: 'Montserrat',
       ),
+      bodyLarge: TextStyle(
+        fontSize: 18,
+        color: Colors.white,
+        fontFamily: 'Montserrat',
+        fontWeight: FontWeight.w700,
+      ),
       bodyMedium: TextStyle(
         fontSize: 16,
         color: Colors.white,
@@ -625,6 +653,16 @@ class MyApp extends StatelessWidget {
       bodySmall: TextStyle(
         fontSize: 12,
         color: Colors.white,
+        fontFamily: 'Montserrat',
+      ),
+      labelMedium: TextStyle(
+        fontSize: 14,
+        color: Colors.white,
+        fontFamily: 'Montserrat',
+      ),
+      labelSmall: TextStyle(
+        fontSize: 12,
+        color: transparentWhite66,
         fontFamily: 'Montserrat',
       ),
     );
@@ -726,6 +764,12 @@ class MyApp extends StatelessWidget {
         ),
       ),
       inputDecorationTheme: const InputDecorationTheme(
+        labelStyle: TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.normal,
+          color: transparentWhite8,
+          fontFamily: 'Montserrat',
+        ),
         isDense: true,
         contentPadding: EdgeInsets.zero,
         outlineBorder: BorderSide(color: transparentWhite8, width: 1),

@@ -251,7 +251,10 @@ class SeedInputState extends State<SeedInput> {
                       width: 1,
                     )
                   : isFocused
-                      ? const GradientBoxBorder(width: 1)
+                      ? GradientBoxBorder(
+                          context: context,
+                          width: 1,
+                        )
                       : Border.all(color: customTheme.inputBorderColor),
             ),
             child: Row(

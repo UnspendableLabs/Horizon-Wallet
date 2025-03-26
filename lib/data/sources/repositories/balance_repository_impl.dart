@@ -1,3 +1,4 @@
+import 'package:horizon/common/constants.dart';
 import 'package:horizon/common/format.dart';
 import 'package:horizon/data/models/cursor.dart' as cursor_model;
 import 'package:horizon/data/sources/network/api/v2_api.dart';
@@ -45,6 +46,17 @@ class BalanceRepositoryImpl implements BalanceRepository {
     return balances;
   }
 
+  @override
+  Future<mba.MultiAddressBalance> getBalancesForAddressesAndAsset(
+      List<String> addresses, String assetName,
+      [BalanceType? type]) async {
+    final List<mba.MultiAddressBalance> balances =
+        await _fetchBalancesByAllAddresses(addresses, assetName, type);
+
+    // This multi-address balance is for a single asset, so though the response returns a list, there will only be one item
+    return balances.first;
+  }
+
   Future<List<b.Balance>> _fetchBalances(String address) async {
     final List<b.Balance> balances = [];
     int limit = 50;
@@ -77,14 +89,16 @@ class BalanceRepositoryImpl implements BalanceRepository {
   }
 
   Future<List<mba.MultiAddressBalance>> _fetchBalancesByAllAddresses(
-      List<String> addresses) async {
+      List<String> addresses,
+      [String? asset,
+      BalanceType? type]) async {
     final List<mba.MultiAddressBalance> balances = [];
     int limit = 50;
     cursor_model.CursorModel? cursor;
 
     do {
       final response = await api.getBalancesByAddressesVerbose(
-          addresses.join(','), cursor, limit);
+          addresses.join(','), cursor, limit, asset, type?.name);
       for (var a in response.result ?? []) {
         balances.add(mba.MultiAddressBalance(
             asset: a.asset,
