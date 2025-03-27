@@ -86,11 +86,13 @@ class SendBloc extends Bloc<TransactionEvent,
         ),
       );
     } catch (e) {
+      logger.error('Error getting dependencies: $e');
       emit(
         state.copyWith(
           formState: state.formState.copyWith(
             balancesState: BalancesState.error(e.toString()),
             feeState: FeeState.error(e.toString()),
+            dataState: TransactionDataState.error(e.toString()),
           ),
         ),
       );

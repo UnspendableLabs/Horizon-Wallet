@@ -5,13 +5,13 @@ import 'package:horizon/utils/app_icons.dart';
 
 class TransactionError extends StatelessWidget {
   final String errorMessage;
-  final VoidCallback onButtonAction;
+  final VoidCallback onErrorButtonAction;
   final String buttonText;
 
   const TransactionError(
       {super.key,
       required this.errorMessage,
-      required this.onButtonAction,
+      required this.onErrorButtonAction,
       required this.buttonText});
 
   @override
@@ -41,7 +41,7 @@ class TransactionError extends StatelessWidget {
             width: double.infinity,
             height: 48,
             child: HorizonOutlinedButton(
-              onPressed: onButtonAction,
+              onPressed: onErrorButtonAction,
               buttonText: buttonText,
               isTransparent: true,
             ),

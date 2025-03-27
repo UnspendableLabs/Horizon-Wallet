@@ -28,7 +28,7 @@ class TransactionBroadcastPage extends StatelessWidget {
       ),
       error: (error) => TransactionError(
         errorMessage: error,
-        onButtonAction: () => Navigator.of(context).pop(),
+        onErrorButtonAction: () => Navigator.of(context).pop(),
         buttonText: 'Close',
       ),
     );

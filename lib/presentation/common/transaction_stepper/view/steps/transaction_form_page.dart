@@ -15,7 +15,7 @@ class TransactionFormPage<T> extends StatelessWidget {
       FeeOption? feeOption,
       required bool loading}) form;
   final TransactionFormState<T> formState;
-  final VoidCallback onButtonAction;
+  final VoidCallback onErrorButtonAction;
   final String errorButtonText;
   final Function(FeeOption) onFeeOptionSelected;
 
@@ -24,7 +24,7 @@ class TransactionFormPage<T> extends StatelessWidget {
     required this.form,
     required this.formState,
     required this.errorButtonText,
-    required this.onButtonAction,
+    required this.onErrorButtonAction,
     required this.onFeeOptionSelected,
   });
 
@@ -36,23 +36,21 @@ class TransactionFormPage<T> extends StatelessWidget {
     if (formState.isLoading) {
       final formContent = form(loading: true);
 
-      return Column(
-        children: [
-          formContent,
-          commonHeightSizedBox,
-          TransactionFeeSelection(
-            feeEstimates: null,
-            selectedFeeOption: null,
-            onFeeOptionSelected: onFeeOptionSelected,
-            loading: true,
-          ),
-        ],
-      );
+      final formFields = (formContent.child as Column).children;
+      formFields.add(commonHeightSizedBox);
+      formFields.add(TransactionFeeSelection(
+        feeEstimates: null,
+        selectedFeeOption: null,
+        onFeeOptionSelected: onFeeOptionSelected,
+        loading: true,
+      ));
+
+      return formContent;
     }
     if (formState.isError) {
       return TransactionError(
         errorMessage: formState.errorMessage,
-        onButtonAction: onButtonAction,
+        onErrorButtonAction: onErrorButtonAction,
         buttonText: errorButtonText,
       );
     }
@@ -63,23 +61,22 @@ class TransactionFormPage<T> extends StatelessWidget {
     final feeOption = formState.feeOption;
 
     final formContent = form(
-        balances: balances,
-        feeEstimates: feeEstimates,
-        data: data,
-        feeOption: feeOption,
-        loading: false);
-
-    return Column(
-      children: [
-        formContent,
-        commonHeightSizedBox,
-        TransactionFeeSelection(
-          feeEstimates: feeEstimates,
-          selectedFeeOption: feeOption,
-          onFeeOptionSelected: onFeeOptionSelected,
-          loading: false,
-        ),
-      ],
+      balances: balances,
+      feeEstimates: feeEstimates,
+      data: data,
+      feeOption: feeOption,
+      loading: false,
     );
+
+    final formFields = (formContent.child as Column).children;
+    formFields.add(commonHeightSizedBox);
+    formFields.add(TransactionFeeSelection(
+      feeEstimates: feeEstimates,
+      selectedFeeOption: feeOption,
+      onFeeOptionSelected: onFeeOptionSelected,
+      loading: false,
+    ));
+
+    return formContent;
   }
 }

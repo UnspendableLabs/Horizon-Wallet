@@ -1,22 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:horizon/domain/entities/compose_response.dart';
 import 'package:horizon/presentation/common/transaction_stepper/bloc/transaction_state.dart';
 import 'package:horizon/presentation/common/transactions/error.dart';
+import 'package:horizon/presentation/common/transactions/fee_confirmation.dart';
+import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 
 class TransactionComposePage<R> extends StatelessWidget {
   final Widget Function(ComposeStateSuccess<R> composeState)
       buildComposeContent;
   final ComposeState<R> composeState;
-  final VoidCallback onButtonAction;
+  final VoidCallback onErrorButtonAction;
   final String errorButtonText;
-  final VoidCallback backHandler;
 
   const TransactionComposePage({
     super.key,
     required this.buildComposeContent,
     required this.composeState,
     required this.errorButtonText,
-    required this.onButtonAction,
-    required this.backHandler,
+    required this.onErrorButtonAction,
   });
 
   @override
@@ -26,11 +27,25 @@ class TransactionComposePage<R> extends StatelessWidget {
       loading: () => const CircularProgressIndicator(),
       error: (errorMessage) => TransactionError(
         errorMessage: errorMessage,
-        onButtonAction: backHandler,
+        onErrorButtonAction: onErrorButtonAction,
         buttonText: errorButtonText,
       ),
-      success: (composeSuccess) =>
-          buildComposeContent(ComposeStateSuccess<R>(composeSuccess)),
+      success: (composeSuccess) {
+        final composeResponse = composeSuccess as ComposeResponse;
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            buildComposeContent(ComposeStateSuccess<R>(composeSuccess)),
+            commonHeightSizedBox,
+            FeeConfirmation(
+              fee: "${composeResponse.btcFee.toString()} sats",
+              virtualSize: composeResponse.signedTxEstimatedSize.virtualSize,
+              adjustedVirtualSize:
+                  composeResponse.signedTxEstimatedSize.adjustedVirtualSize,
+            ),
+          ],
+        );
+      },
     );
   }
 }

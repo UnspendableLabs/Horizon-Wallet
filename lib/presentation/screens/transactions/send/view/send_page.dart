@@ -117,7 +117,8 @@ class _SendPageState extends State<SendPage> {
                 buildForm: (formState) => TransactionFormPage<SendData>(
                   errorButtonText: 'Reload',
                   formState: formState,
-                  onButtonAction: () => _handleDependenciesRequested(context),
+                  onErrorButtonAction: () =>
+                      _handleDependenciesRequested(context),
                   onFeeOptionSelected: (feeOption) =>
                       _handleFeeOptionSelected(context, feeOption),
                   form: (
@@ -206,16 +207,17 @@ class _SendPageState extends State<SendPage> {
                     TransactionComposePage<ComposeSendResponse>(
                   composeState: composeState,
                   errorButtonText: 'Go back to transaction',
-                  onButtonAction: () => Navigator.of(context).pop(),
-                  backHandler: () => context
+                  onErrorButtonAction: () => context
                       .findAncestorStateOfType<TransactionStepperState>()
                       ?.handleBack(),
                   buildComposeContent: (composeState) => Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       QuantityDisplay(
                         quantity:
                             composeState.composeData.params.quantityNormalized,
                       ),
+                      commonHeightSizedBox,
                       ConfirmationFieldWithLabel(
                         label: const SelectableText('Token Name'),
                         value: SelectableText(displayAssetName(
@@ -240,9 +242,6 @@ class _SendPageState extends State<SendPage> {
                 ),
                 onNext: ({String? password}) =>
                     _handleConfirmationStepNext(context, password: password),
-                backHandler: () => context
-                    .findAncestorStateOfType<TransactionStepperState>()
-                    ?.handleBack(),
               ),
               state: state,
             ),

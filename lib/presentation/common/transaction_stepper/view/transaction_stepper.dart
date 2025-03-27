@@ -5,6 +5,7 @@ import 'package:horizon/domain/repositories/settings_repository.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/common/transaction_stepper/bloc/transaction_state.dart';
 import 'package:horizon/presentation/common/transaction_stepper/view/steps/transaction_broadcast_page.dart';
+import 'package:horizon/presentation/common/transaction_stepper/view/steps/transaction_compose_page.dart';
 import 'package:horizon/presentation/common/transaction_stepper/view/steps/transaction_form_page.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 import 'package:horizon/utils/app_icons.dart';
@@ -28,15 +29,14 @@ class FormStepContent<T> {
 
 class ConfirmationStepContent<R> {
   final String title;
-  final Widget Function(ComposeState<R> composeState) buildConfirmationContent;
+  final TransactionComposePage<R> Function(ComposeState<R> composeState)
+      buildConfirmationContent;
   final void Function({String? password}) onNext;
-  final VoidCallback backHandler;
 
   const ConfirmationStepContent({
     required this.title,
     required this.buildConfirmationContent,
     required this.onNext,
-    required this.backHandler,
   });
 }
 
