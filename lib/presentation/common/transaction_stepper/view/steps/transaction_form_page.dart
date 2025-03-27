@@ -7,7 +7,7 @@ import 'package:horizon/presentation/common/transactions/error.dart';
 import 'package:horizon/presentation/common/transactions/transaction_fee_selection.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 
-class TransactionFormStep<T> extends StatelessWidget {
+class TransactionFormPage<T> extends StatelessWidget {
   final Form Function(
       {MultiAddressBalance? balances,
       FeeEstimates? feeEstimates,
@@ -19,7 +19,7 @@ class TransactionFormStep<T> extends StatelessWidget {
   final String errorButtonText;
   final Function(FeeOption) onFeeOptionSelected;
 
-  const TransactionFormStep({
+  const TransactionFormPage({
     super.key,
     required this.form,
     required this.formState,

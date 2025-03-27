@@ -9,6 +9,7 @@ import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
 import 'package:horizon/domain/repositories/settings_repository.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
+import 'package:horizon/presentation/common/transaction_stepper/bloc/transaction_bloc.dart';
 import 'package:horizon/presentation/common/transaction_stepper/bloc/transaction_event.dart';
 import 'package:horizon/presentation/common/transaction_stepper/bloc/transaction_state.dart';
 import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
@@ -109,8 +110,7 @@ class SendBloc extends Bloc<TransactionEvent,
     }
 
     try {
-      // final feeRate = getFeeRate(state);
-      const feeRate = 2.4;
+      final feeRate = getFeeRate(state);
       final source = event.sourceAddress;
       final destination = event.destinationAddress;
       final asset = event.asset;

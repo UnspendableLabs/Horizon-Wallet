@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:horizon/presentation/common/transaction_stepper/bloc/transaction_state.dart';
 import 'package:horizon/presentation/common/transactions/error.dart';
 
-class TransactionCompose<R> extends StatelessWidget {
+class TransactionComposePage<R> extends StatelessWidget {
   final Widget Function(ComposeStateSuccess<R> composeState)
       buildComposeContent;
   final ComposeState<R> composeState;
@@ -10,7 +10,7 @@ class TransactionCompose<R> extends StatelessWidget {
   final String errorButtonText;
   final VoidCallback backHandler;
 
-  const TransactionCompose({
+  const TransactionComposePage({
     super.key,
     required this.buildComposeContent,
     required this.composeState,

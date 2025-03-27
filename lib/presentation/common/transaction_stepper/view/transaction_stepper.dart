@@ -4,14 +4,14 @@ import 'package:horizon/domain/entities/fee_option.dart';
 import 'package:horizon/domain/repositories/settings_repository.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/common/transaction_stepper/bloc/transaction_state.dart';
-import 'package:horizon/presentation/common/transaction_stepper/view/steps/transaction_broadcast.dart';
-import 'package:horizon/presentation/common/transaction_stepper/view/steps/transaction_form.dart';
+import 'package:horizon/presentation/common/transaction_stepper/view/steps/transaction_broadcast_page.dart';
+import 'package:horizon/presentation/common/transaction_stepper/view/steps/transaction_form_page.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 import 'package:horizon/utils/app_icons.dart';
 
 class FormStepContent<T> {
   final String title;
-  final TransactionFormStep<T> Function(TransactionFormState<T> formState)
+  final TransactionFormPage<T> Function(TransactionFormState<T> formState)
       buildForm;
   final VoidCallback onNext;
   final Function(FeeOption) onFeeOptionSelected;
@@ -332,7 +332,7 @@ class TransactionStepperState<T, R> extends State<TransactionStepper<T, R>> {
       return _buildStepperContent(
         context,
         isSmallScreen,
-        TransactionBroadcast(
+        TransactionBroadcastPage(
           broadcastState: widget.state.broadcastState,
         ),
         'Transaction Submitted',

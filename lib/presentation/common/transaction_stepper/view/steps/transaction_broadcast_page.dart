@@ -3,10 +3,10 @@ import 'package:horizon/presentation/common/transaction_stepper/bloc/transaction
 import 'package:horizon/presentation/common/transactions/error.dart';
 import 'package:horizon/presentation/common/transactions/transaction_successful.dart';
 
-class TransactionBroadcast extends StatelessWidget {
+class TransactionBroadcastPage extends StatelessWidget {
   final BroadcastState broadcastState;
 
-  const TransactionBroadcast({
+  const TransactionBroadcastPage({
     super.key,
     required this.broadcastState,
   });

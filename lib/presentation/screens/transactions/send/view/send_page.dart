@@ -13,7 +13,7 @@ import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/presentation/common/shared_util.dart';
 import 'package:horizon/presentation/common/transaction_stepper/bloc/transaction_event.dart';
 import 'package:horizon/presentation/common/transaction_stepper/bloc/transaction_state.dart';
-import 'package:horizon/presentation/common/transaction_stepper/view/steps/transaction_form.dart';
+import 'package:horizon/presentation/common/transaction_stepper/view/steps/transaction_form_page.dart';
 import 'package:horizon/presentation/common/transaction_stepper/view/transaction_stepper.dart';
 import 'package:horizon/presentation/common/transactions/confirmation_field_with_label.dart';
 import 'package:horizon/presentation/common/transactions/gradient_quantity_input.dart';
@@ -28,7 +28,7 @@ import 'package:horizon/presentation/screens/transactions/send/bloc/send_bloc.da
 import 'package:horizon/presentation/screens/transactions/send/bloc/send_event.dart';
 import 'package:horizon/presentation/common/transactions/quantity_display.dart';
 import 'package:horizon/domain/entities/compose_send.dart';
-import 'package:horizon/presentation/common/transaction_stepper/view/steps/transaction_compose.dart';
+import 'package:horizon/presentation/common/transaction_stepper/view/steps/transaction_compose_page.dart';
 
 class SendPage extends StatefulWidget {
   final String assetName;
@@ -114,7 +114,7 @@ class _SendPageState extends State<SendPage> {
                 onNext: () => _handleOnFormStepNext(context, state),
                 onFeeOptionSelected: (feeOption) =>
                     _handleFeeOptionSelected(context, feeOption),
-                buildForm: (formState) => TransactionFormStep<SendData>(
+                buildForm: (formState) => TransactionFormPage<SendData>(
                   errorButtonText: 'Reload',
                   formState: formState,
                   onButtonAction: () => _handleDependenciesRequested(context),
@@ -203,7 +203,7 @@ class _SendPageState extends State<SendPage> {
                   ConfirmationStepContent<ComposeSendResponse>(
                 title: 'Confirm Transaction',
                 buildConfirmationContent: (composeState) =>
-                    TransactionCompose<ComposeSendResponse>(
+                    TransactionComposePage<ComposeSendResponse>(
                   composeState: composeState,
                   errorButtonText: 'Go back to transaction',
                   onButtonAction: () => Navigator.of(context).pop(),
