@@ -14,7 +14,7 @@ import 'package:horizon/presentation/common/shared_util.dart';
 import 'package:horizon/presentation/common/transaction_stepper/bloc/transaction_event.dart';
 import 'package:horizon/presentation/common/transaction_stepper/bloc/transaction_state.dart';
 import 'package:horizon/presentation/common/transaction_stepper/view/steps/transaction_form.dart';
-import 'package:horizon/presentation/common/transaction_stepper/view/transaction_stepper_two.dart';
+import 'package:horizon/presentation/common/transaction_stepper/view/transaction_stepper.dart';
 import 'package:horizon/presentation/common/transactions/confirmation_field_with_label.dart';
 import 'package:horizon/presentation/common/transactions/gradient_quantity_input.dart';
 import 'package:horizon/presentation/common/transactions/multi_address_balance_dropdown.dart';
@@ -52,18 +52,19 @@ class _SendPageState extends State<SendPage> {
 
   void _handleOnFormStepNext(BuildContext context,
       TransactionState<SendData, ComposeSendResponse> state) {
-    // final quantity = getQuantityForDivisibility(
-    //   divisible: state.getBalancesOrThrow().assetInfo.divisible,
-    //   inputQuantity: quantityController.text,
-    // );
-    // context.read<SendBloc>().add(SendTransactionComposed(
-    //       sourceAddress: selectedBalanceEntry?.address ?? "",
-    //       params: SendTransactionParams(
-    //         destinationAddress: destinationAddressController.text,
-    //         asset: widget.assetName,
-    //         quantity: quantity,
-    //       ),
-    //     ));
+    final balances = state.formState.getBalancesOrThrow();
+    final quantity = getQuantityForDivisibility(
+      divisible: balances.assetInfo.divisible,
+      inputQuantity: quantityController.text,
+    );
+    context.read<SendBloc>().add(SendTransactionComposed(
+          sourceAddress: selectedBalanceEntry?.address ?? "",
+          params: SendTransactionParams(
+            destinationAddress: destinationAddressController.text,
+            asset: widget.assetName,
+            quantity: quantity,
+          ),
+        ));
   }
 
   void _handleConfirmationStepNext(BuildContext context, {String? password}) {
@@ -131,7 +132,7 @@ class _SendPageState extends State<SendPage> {
                       children: [
                         MultiAddressBalanceDropdown(
                           loading: loading,
-                          balances: balances!,
+                          balances: balances,
                           onChanged: (value) {
                             setState(() {
                               selectedBalanceEntry = value;
@@ -166,6 +167,9 @@ class _SendPageState extends State<SendPage> {
                           selectedBalanceEntry: selectedBalanceEntry,
                           controller: quantityController,
                           validator: (value) {
+                            if (balances == null) {
+                              return null;
+                            }
                             if (value == null || value.isEmpty) {
                               return 'Please enter an amount';
                             }
@@ -239,19 +243,6 @@ class _SendPageState extends State<SendPage> {
                 backHandler: () => context
                     .findAncestorStateOfType<TransactionStepperState>()
                     ?.handleBack(),
-              ),
-              submissionStepContent: SubmissionStepContent(
-                title: 'Transaction Submitted',
-                buildSubmissionContent: (broadcastState) => Column(
-                  children: [
-                    TransactionSuccessful(
-                      transactionType: TransactionType.send,
-                      txHex: broadcastState.txHex,
-                      txHash: broadcastState.txHash,
-                    ),
-                  ],
-                ),
-                onClose: () => Navigator.of(context).pop(),
               ),
               state: state,
             ),

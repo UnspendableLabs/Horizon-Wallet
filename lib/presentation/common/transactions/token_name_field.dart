@@ -20,7 +20,9 @@ class TokenNameField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final tokenName = displayAssetName(balance!.asset, balance!.assetLongname);
+    final tokenName = balance == null
+        ? ''
+        : displayAssetName(balance!.asset, balance!.assetLongname);
     final theme = Theme.of(context);
     final customTheme = theme.extension<CustomThemeExtension>()!;
 
@@ -34,7 +36,9 @@ class TokenNameField extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       child: Row(
         children: [
-          AssetIcon(asset: balance!.asset, size: 24),
+          balance == null
+              ? const SizedBox.shrink()
+              : AssetIcon(asset: balance!.asset, size: 24),
           const SizedBox(width: 8),
           Expanded(
             child: Column(
@@ -45,7 +49,7 @@ class TokenNameField extends StatelessWidget {
                   tokenName,
                   style: theme.textTheme.labelMedium,
                 ),
-                if (loading || selectedBalanceEntry != null)
+                if (selectedBalanceEntry != null)
                   Text(
                     "Balance: ${quantityRemoveTrailingZeros(selectedBalanceEntry!.quantityNormalized)}",
                     style: theme.textTheme.labelSmall,

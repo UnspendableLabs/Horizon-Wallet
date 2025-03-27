@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get_it/get_it.dart';
-import 'package:horizon/common/constants.dart';
 import 'package:horizon/domain/repositories/config_repository.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
@@ -9,14 +8,10 @@ import 'package:horizon/utils/app_icons.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class TransactionSuccessful extends StatelessWidget {
-  final TransactionType transactionType;
   final String txHex;
   final String txHash;
   const TransactionSuccessful(
-      {super.key,
-      required this.transactionType,
-      required this.txHex,
-      required this.txHash});
+      {super.key, required this.txHex, required this.txHash});
 
   Future<void> _launchExplorer() async {
     final config = GetIt.I<Config>();
