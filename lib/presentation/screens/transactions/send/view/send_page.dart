@@ -210,32 +210,40 @@ class _SendPageState extends State<SendPage> {
                   onErrorButtonAction: () => context
                       .findAncestorStateOfType<TransactionStepperState>()
                       ?.handleBack(),
-                  buildComposeContent: (composeState) => Column(
+                  buildComposeContent: (
+                          {ComposeStateSuccess<ComposeSendResponse>?
+                              composeState,
+                          required bool loading}) =>
+                      Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       QuantityDisplay(
+                        loading: loading,
                         quantity:
-                            composeState.composeData.params.quantityNormalized,
+                            composeState?.composeData.params.quantityNormalized,
                       ),
                       commonHeightSizedBox,
                       ConfirmationFieldWithLabel(
-                        label: const SelectableText('Token Name'),
-                        value: SelectableText(displayAssetName(
-                            composeState.composeData.params.asset,
-                            composeState
-                                .composeData.params.assetInfo.assetLongname)),
+                        loading: loading,
+                        label: 'Token Name',
+                        value: composeState?.composeData.params.asset != null
+                            ? displayAssetName(
+                                composeState!.composeData.params.asset,
+                                composeState
+                                    .composeData.params.assetInfo.assetLongname)
+                            : null,
                       ),
                       commonHeightSizedBox,
                       ConfirmationFieldWithLabel(
-                        label: const SelectableText('Source Address'),
-                        value: SelectableText(
-                            composeState.composeData.params.source),
+                        loading: loading,
+                        label: 'Source Address',
+                        value: composeState?.composeData.params.source,
                       ),
                       commonHeightSizedBox,
                       ConfirmationFieldWithLabel(
-                        label: const SelectableText('Recipient Address'),
-                        value: SelectableText(
-                            composeState.composeData.params.destination),
+                        loading: loading,
+                        label: 'Recipient Address',
+                        value: composeState?.composeData.params.destination,
                       ),
                     ],
                   ),

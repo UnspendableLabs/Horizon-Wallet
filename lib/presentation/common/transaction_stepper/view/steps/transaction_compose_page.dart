@@ -6,8 +6,9 @@ import 'package:horizon/presentation/common/transactions/fee_confirmation.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 
 class TransactionComposePage<R> extends StatelessWidget {
-  final Widget Function(ComposeStateSuccess<R> composeState)
-      buildComposeContent;
+  final Widget Function(
+      {ComposeStateSuccess<R>? composeState,
+      required bool loading}) buildComposeContent;
   final ComposeState<R> composeState;
   final VoidCallback onErrorButtonAction;
   final String errorButtonText;
@@ -24,7 +25,16 @@ class TransactionComposePage<R> extends StatelessWidget {
   Widget build(BuildContext context) {
     return composeState.when(
       initial: () => const SizedBox.shrink(),
-      loading: () => const CircularProgressIndicator(),
+      loading: () => Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          buildComposeContent(loading: true),
+          commonHeightSizedBox,
+          const FeeConfirmation(
+            loading: true,
+          ),
+        ],
+      ),
       error: (errorMessage) => TransactionError(
         errorMessage: errorMessage,
         onErrorButtonAction: onErrorButtonAction,
@@ -35,7 +45,9 @@ class TransactionComposePage<R> extends StatelessWidget {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            buildComposeContent(ComposeStateSuccess<R>(composeSuccess)),
+            buildComposeContent(
+                composeState: ComposeStateSuccess<R>(composeSuccess),
+                loading: false),
             commonHeightSizedBox,
             FeeConfirmation(
               fee: "${composeResponse.btcFee.toString()} sats",

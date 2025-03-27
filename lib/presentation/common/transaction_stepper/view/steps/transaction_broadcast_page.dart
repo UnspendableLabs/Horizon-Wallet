@@ -18,13 +18,13 @@ class TransactionBroadcastPage extends StatelessWidget {
         padding: EdgeInsets.symmetric(horizontal: 16.0),
         child: Text('Your transaction is being processed'),
       ),
-      loading: () => const Padding(
-        padding: EdgeInsets.symmetric(horizontal: 16.0),
-        child: CircularProgressIndicator(),
+      loading: () => const TransactionSuccessful(
+        loading: true,
       ),
       success: (data) => TransactionSuccessful(
         txHex: data.txHex,
         txHash: data.txHash,
+        loading: false,
       ),
       error: (error) => TransactionError(
         errorMessage: error,

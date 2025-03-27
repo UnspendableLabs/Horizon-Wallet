@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 
 class ConfirmationFieldWithLabel extends StatelessWidget {
-  final Widget label;
-  final Widget value;
+  final String label;
+  final String? value;
+  final bool loading;
 
   const ConfirmationFieldWithLabel({
     super.key,
     required this.label,
-    required this.value,
+    this.value,
+    this.loading = false,
   });
 
   @override
@@ -19,11 +21,11 @@ class ConfirmationFieldWithLabel extends StatelessWidget {
           style:
               Theme.of(context).textTheme.labelSmall?.copyWith(fontSize: 14) ??
                   const TextStyle(),
-          child: label,
+          child: SelectableText(label),
         ),
         DefaultTextStyle(
           style: Theme.of(context).textTheme.bodyLarge ?? const TextStyle(),
-          child: value,
+          child: SelectableText(loading || value == null ? '' : value!),
         ),
       ],
     );
