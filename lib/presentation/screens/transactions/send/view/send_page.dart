@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
+// import 'package:horizon/common/format.dart' as form;
 import 'package:horizon/common/format.dart';
 import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/domain/entities/fee_option.dart';
@@ -12,7 +13,8 @@ import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/presentation/common/shared_util.dart';
 import 'package:horizon/presentation/common/transaction_stepper/bloc/transaction_event.dart';
 import 'package:horizon/presentation/common/transaction_stepper/bloc/transaction_state.dart';
-import 'package:horizon/presentation/common/transaction_stepper/view/transaction_stepper.dart';
+import 'package:horizon/presentation/common/transaction_stepper/view/steps/transaction_form.dart';
+import 'package:horizon/presentation/common/transaction_stepper/view/transaction_stepper_two.dart';
 import 'package:horizon/presentation/common/transactions/confirmation_field_with_label.dart';
 import 'package:horizon/presentation/common/transactions/gradient_quantity_input.dart';
 import 'package:horizon/presentation/common/transactions/multi_address_balance_dropdown.dart';
@@ -24,7 +26,6 @@ import 'package:horizon/presentation/common/usecase/write_local_transaction_usec
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 import 'package:horizon/presentation/screens/transactions/send/bloc/send_bloc.dart';
 import 'package:horizon/presentation/screens/transactions/send/bloc/send_event.dart';
-import 'package:horizon/presentation/screens/transactions/send/bloc/send_state.dart';
 import 'package:horizon/presentation/common/transactions/quantity_display.dart';
 import 'package:horizon/domain/entities/compose_send.dart';
 
@@ -49,19 +50,19 @@ class _SendPageState extends State<SendPage> {
   final _formKey = GlobalKey<FormState>();
 
   void _handleOnFormStepNext(BuildContext context,
-      TransactionState<SendState, ComposeSendResponse> state) {
-    final quantity = getQuantityForDivisibility(
-      divisible: state.getBalancesOrThrow().assetInfo.divisible,
-      inputQuantity: quantityController.text,
-    );
-    context.read<SendBloc>().add(SendTransactionComposed(
-          sourceAddress: selectedBalanceEntry?.address ?? "",
-          params: SendTransactionParams(
-            destinationAddress: destinationAddressController.text,
-            asset: widget.assetName,
-            quantity: quantity,
-          ),
-        ));
+      TransactionState<SendData, ComposeSendResponse> state) {
+    // final quantity = getQuantityForDivisibility(
+    //   divisible: state.getBalancesOrThrow().assetInfo.divisible,
+    //   inputQuantity: quantityController.text,
+    // );
+    // context.read<SendBloc>().add(SendTransactionComposed(
+    //       sourceAddress: selectedBalanceEntry?.address ?? "",
+    //       params: SendTransactionParams(
+    //         destinationAddress: destinationAddressController.text,
+    //         asset: widget.assetName,
+    //         quantity: quantity,
+    //       ),
+    //     ));
   }
 
   void _handleConfirmationStepNext(BuildContext context, {String? password}) {
@@ -98,112 +99,148 @@ class _SendPageState extends State<SendPage> {
       )..add(SendDependenciesRequested(
           assetName: widget.assetName, addresses: widget.addresses)),
       child: BlocConsumer<SendBloc,
-          TransactionState<SendState, ComposeSendResponse>>(
+          TransactionState<SendData, ComposeSendResponse>>(
         listener: (context, state) {
           // TODO: Implement listener
         },
         builder: (context, state) {
           return Scaffold(
-            body: TransactionStepper<SendState, ComposeSendResponse>(
-              formKey: _formKey,
-              buildFormStep: (balances, feeEstimates, feeOption, data) =>
-                  StepContent(
+            body: TransactionStepper<SendData, ComposeSendResponse>(
+              formStepContent: FormStepContent<SendData>(
                 title: 'Enter Send Details',
-                widgets: [
-                  MultiAddressBalanceDropdown(
-                    balances: balances,
-                    onChanged: (value) {
-                      setState(() {
-                        selectedBalanceEntry = value;
-                        quantityController.clear();
-                      });
-                    },
-                    selectedValue: selectedBalanceEntry,
+                formKey: _formKey,
+                onNext: () => _handleOnFormStepNext(context, state),
+                onFeeOptionSelected: (feeOption) =>
+                    _handleFeeOptionSelected(context, feeOption),
+                buildForm: (formState) => TransactionFormStep<SendData>(
+                  errorButtonText: 'Reload',
+                  formState: formState,
+                  onButtonAction: () => _handleDependenciesRequested(context),
+                  onFeeOptionSelected: (feeOption) =>
+                      _handleFeeOptionSelected(context, feeOption),
+                  form: (
+                          {balances,
+                          feeEstimates,
+                          data,
+                          feeOption,
+                          required loading}) =>
+                      Form(
+                    key: _formKey,
+                    child: Column(
+                      children: [
+                        MultiAddressBalanceDropdown(
+                          loading: loading,
+                          balances: balances!,
+                          onChanged: (value) {
+                            setState(() {
+                              selectedBalanceEntry = value;
+                              quantityController.clear();
+                            });
+                          },
+                          selectedValue: selectedBalanceEntry,
+                        ),
+                        commonHeightSizedBox,
+                        HorizonTextField(
+                          enabled: !loading,
+                          controller: destinationAddressController,
+                          label: 'Destination Address',
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please enter a destination address';
+                            }
+                            return null;
+                          },
+                        ),
+                        commonHeightSizedBox,
+                        TokenNameField(
+                          loading: loading,
+                          balance: balances,
+                          selectedBalanceEntry: selectedBalanceEntry,
+                        ),
+                        commonHeightSizedBox,
+                        GradientQuantityInput(
+                          enabled: !loading,
+                          showMaxButton: true,
+                          balance: balances,
+                          selectedBalanceEntry: selectedBalanceEntry,
+                          controller: quantityController,
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please enter an amount';
+                            }
+
+                            if (selectedBalanceEntry != null) {
+                              try {
+                                final enteredQuantity =
+                                    getQuantityForDivisibility(
+                                  divisible: balances.assetInfo.divisible,
+                                  inputQuantity: value,
+                                );
+
+                                if (enteredQuantity >
+                                    selectedBalanceEntry!.quantity) {
+                                  return 'Insufficient balance';
+                                }
+                              } catch (e) {
+                                return 'Invalid amount';
+                              }
+                            }
+
+                            return null;
+                          },
+                        ),
+                      ],
+                    ),
                   ),
-                  commonHeightSizedBox,
-                  HorizonTextField(
-                    controller: destinationAddressController,
-                    label: 'Destination Address',
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter a destination address';
-                      }
-
-                      return null;
-                    },
-                  ),
-                  commonHeightSizedBox,
-                  TokenNameField(
-                      balance: balances,
-                      selectedBalanceEntry: selectedBalanceEntry),
-                  commonHeightSizedBox,
-                  GradientQuantityInput(
-                    showMaxButton: true,
-                    balance: balances,
-                    selectedBalanceEntry: selectedBalanceEntry,
-                    controller: quantityController,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter an amount';
-                      }
-
-                      if (selectedBalanceEntry != null) {
-                        try {
-                          final enteredQuantity = getQuantityForDivisibility(
-                            divisible: balances.assetInfo.divisible,
-                            inputQuantity: value,
-                          );
-
-                          if (enteredQuantity >
-                              selectedBalanceEntry!.quantity) {
-                            return 'Insufficient balance';
-                          }
-                        } catch (e) {
-                          return 'Invalid amount';
-                        }
-                      }
-
-                      return null;
-                    },
-                  )
-                ],
+                ),
               ),
-              buildConfirmationStep: (composeState) => StepContent(
+              confirmationStepContent:
+                  ConfirmationStepContent<ComposeSendResponse>(
                 title: 'Confirm Transaction',
-                widgets: [
-                  QuantityDisplay(
-                    quantity:
-                        composeState.composeData.params.quantityNormalized,
-                  ),
-                  ConfirmationFieldWithLabel(
-                    label: const SelectableText('Token Name'),
-                    value: SelectableText(displayAssetName(
-                        composeState.composeData.params.asset,
-                        composeState
-                            .composeData.params.assetInfo.assetLongname)),
-                  ),
-                  commonHeightSizedBox,
-                  ConfirmationFieldWithLabel(
-                    label: const SelectableText('Source Address'),
-                    value:
-                        SelectableText(composeState.composeData.params.source),
-                  ),
-                  commonHeightSizedBox,
-                  ConfirmationFieldWithLabel(
-                    label: const SelectableText('Recipient Address'),
-                    value: SelectableText(
-                        composeState.composeData.params.destination),
-                  ),
-                ],
+                buildConfirmationContent: (composeState) => Column(
+                  children: [
+                    QuantityDisplay(
+                      quantity:
+                          composeState.composeData.params.quantityNormalized,
+                    ),
+                    ConfirmationFieldWithLabel(
+                      label: const SelectableText('Token Name'),
+                      value: SelectableText(displayAssetName(
+                          composeState.composeData.params.asset,
+                          composeState
+                              .composeData.params.assetInfo.assetLongname)),
+                    ),
+                    commonHeightSizedBox,
+                    ConfirmationFieldWithLabel(
+                      label: const SelectableText('Source Address'),
+                      value: SelectableText(
+                          composeState.composeData.params.source),
+                    ),
+                    commonHeightSizedBox,
+                    ConfirmationFieldWithLabel(
+                      label: const SelectableText('Recipient Address'),
+                      value: SelectableText(
+                          composeState.composeData.params.destination),
+                    ),
+                  ],
+                ),
+                onNext: ({String? password}) =>
+                    _handleConfirmationStepNext(context, password: password),
+              ),
+              submissionStepContent: SubmissionStepContent(
+                title: 'Transaction Submitted',
+                buildSubmissionContent: (broadcastState) => Column(
+                  children: [
+                    TransactionSuccessful(
+                      transactionType: TransactionType.send,
+                      txHex: broadcastState.txHex,
+                      txHash: broadcastState.txHash,
+                    ),
+                  ],
+                ),
+                onClose: () => Navigator.of(context).pop(),
               ),
               state: state,
-              onDependenciesRequested: () =>
-                  _handleDependenciesRequested(context),
-              onFormStepNext: () => _handleOnFormStepNext(context, state),
-              onConfirmationStepNext: ({String? password}) =>
-                  _handleConfirmationStepNext(context, password: password),
-              onFeeOptionSelected: (feeOption) =>
-                  _handleFeeOptionSelected(context, feeOption),
             ),
           );
         },

@@ -4,25 +4,22 @@ import 'package:horizon/domain/entities/multi_address_balance.dart';
 import 'package:horizon/domain/entities/multi_address_balance_entry.dart';
 import 'package:horizon/presentation/common/shared_util.dart';
 import 'package:horizon/presentation/common/theme_extension.dart';
-import 'package:horizon/presentation/common/transactions/input_loading_scaffold.dart';
 import 'package:horizon/presentation/screens/dashboard/view/asset_icon.dart';
 
 class TokenNameField extends StatelessWidget {
   final MultiAddressBalance? balance;
   final MultiAddressBalanceEntry? selectedBalanceEntry;
+  final bool loading;
 
   const TokenNameField({
     super.key,
     required this.balance,
     this.selectedBalanceEntry,
+    required this.loading,
   });
 
   @override
   Widget build(BuildContext context) {
-    if (balance == null) {
-      return const InputLoadingScaffold();
-    }
-
     final tokenName = displayAssetName(balance!.asset, balance!.assetLongname);
     final theme = Theme.of(context);
     final customTheme = theme.extension<CustomThemeExtension>()!;
@@ -48,7 +45,7 @@ class TokenNameField extends StatelessWidget {
                   tokenName,
                   style: theme.textTheme.labelMedium,
                 ),
-                if (selectedBalanceEntry != null)
+                if (loading || selectedBalanceEntry != null)
                   Text(
                     "Balance: ${quantityRemoveTrailingZeros(selectedBalanceEntry!.quantityNormalized)}",
                     style: theme.textTheme.labelSmall,

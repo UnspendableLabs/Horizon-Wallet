@@ -9,7 +9,6 @@ import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
 import 'package:horizon/domain/repositories/settings_repository.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
-import 'package:horizon/presentation/common/transaction_stepper/bloc/transaction_bloc.dart';
 import 'package:horizon/presentation/common/transaction_stepper/bloc/transaction_event.dart';
 import 'package:horizon/presentation/common/transaction_stepper/bloc/transaction_state.dart';
 import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
@@ -17,10 +16,11 @@ import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
 import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transaction_usecase.dart';
 import 'package:horizon/presentation/common/usecase/write_local_transaction_usecase.dart';
 import 'package:horizon/presentation/screens/transactions/send/bloc/send_event.dart';
-import 'package:horizon/presentation/screens/transactions/send/bloc/send_state.dart';
+
+class SendData {}
 
 class SendBloc extends Bloc<TransactionEvent,
-    TransactionState<SendState, ComposeSendResponse>> {
+    TransactionState<SendData, ComposeSendResponse>> {
   final BalanceRepository balanceRepository;
   final GetFeeEstimatesUseCase getFeeEstimatesUseCase;
   final ComposeTransactionUseCase composeTransactionUseCase;
@@ -41,11 +41,15 @@ class SendBloc extends Bloc<TransactionEvent,
     required this.analyticsService,
     required this.logger,
     required this.settingsRepository,
-  }) : super(TransactionState<SendState, ComposeSendResponse>(
-          feeOption: fee_option.Medium(),
-          dataState: const TransactionDataState.initial(),
-          balancesState: const BalancesState.initial(),
-          feeState: const FeeState.initial(),
+  }) : super(TransactionState<SendData, ComposeSendResponse>(
+          formState: TransactionFormState<SendData>(
+            balancesState: const BalancesState.initial(),
+            feeState: const FeeState.initial(),
+            dataState: const TransactionDataState.initial(),
+            feeOption: fee_option.Medium(),
+          ),
+          composeState: const ComposeState.initial(),
+          broadcastState: const BroadcastState.initial(),
         )) {
     on<SendDependenciesRequested>(_onDependenciesRequested);
     on<SendTransactionComposed>(_onTransactionComposed);
@@ -55,12 +59,14 @@ class SendBloc extends Bloc<TransactionEvent,
 
   void _onDependenciesRequested(
     SendDependenciesRequested event,
-    Emitter<TransactionState<SendState, ComposeSendResponse>> emit,
+    Emitter<TransactionState<SendData, ComposeSendResponse>> emit,
   ) async {
     emit(state.copyWith(
-      balancesState: const BalancesState.loading(),
-      feeState: const FeeState.loading(),
-      dataState: const TransactionDataState.loading(),
+      formState: state.formState.copyWith(
+        balancesState: const BalancesState.loading(),
+        feeState: const FeeState.loading(),
+        dataState: const TransactionDataState.loading(),
+      ),
     ));
 
     try {
@@ -69,20 +75,30 @@ class SendBloc extends Bloc<TransactionEvent,
 
       final feeEstimates = await getFeeEstimatesUseCase.call();
 
-      emit(state.copyWith(
-          balancesState: BalancesState.success(balances),
-          feeState: FeeState.success(feeEstimates),
-          dataState: TransactionDataState.success(SendState())));
+      emit(
+        state.copyWith(
+          formState: state.formState.copyWith(
+            balancesState: BalancesState.success(balances),
+            feeState: FeeState.success(feeEstimates),
+            dataState: TransactionDataState.success(SendData()),
+          ),
+        ),
+      );
     } catch (e) {
-      emit(state.copyWith(
-          balancesState: BalancesState.error(e.toString()),
-          feeState: FeeState.error(e.toString())));
+      emit(
+        state.copyWith(
+          formState: state.formState.copyWith(
+            balancesState: BalancesState.error(e.toString()),
+            feeState: FeeState.error(e.toString()),
+          ),
+        ),
+      );
     }
   }
 
   void _onTransactionComposed(
     SendTransactionComposed event,
-    Emitter<TransactionState<SendState, ComposeSendResponse>> emit,
+    Emitter<TransactionState<SendData, ComposeSendResponse>> emit,
   ) async {
     emit(state.copyWith(composeState: const ComposeStateLoading()));
     if (event.sourceAddress.isEmpty) {
@@ -93,7 +109,8 @@ class SendBloc extends Bloc<TransactionEvent,
     }
 
     try {
-      final feeRate = getFeeRate(state);
+      // final feeRate = getFeeRate(state);
+      const feeRate = 2.4;
       final source = event.sourceAddress;
       final destination = event.destinationAddress;
       final asset = event.asset;
@@ -130,7 +147,7 @@ class SendBloc extends Bloc<TransactionEvent,
 
   void _onTransactionBroadcasted(
     SendTransactionBroadcasted event,
-    Emitter<TransactionState<SendState, ComposeSendResponse>> emit,
+    Emitter<TransactionState<SendData, ComposeSendResponse>> emit,
   ) async {
     try {
       final requirePassword =
@@ -166,10 +183,12 @@ class SendBloc extends Bloc<TransactionEvent,
 
   void _onFeeOptionSelected(
     FeeOptionSelected event,
-    Emitter<TransactionState<SendState, ComposeSendResponse>> emit,
+    Emitter<TransactionState<SendData, ComposeSendResponse>> emit,
   ) {
     emit(state.copyWith(
-      feeOption: event.feeOption,
+      formState: state.formState.copyWith(
+        feeOption: event.feeOption,
+      ),
     ));
   }
 }

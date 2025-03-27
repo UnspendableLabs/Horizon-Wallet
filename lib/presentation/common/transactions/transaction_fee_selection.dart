@@ -4,21 +4,20 @@ import 'package:horizon/domain/entities/fee_option.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/common/shared_util.dart';
 import 'package:horizon/presentation/common/theme_extension.dart';
-import 'package:horizon/presentation/common/transactions/input_loading_scaffold.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 
 class TransactionFeeSelection extends StatefulWidget {
   final FeeEstimates? feeEstimates;
-
   final FeeOption? selectedFeeOption;
-
   final Function(FeeOption) onFeeOptionSelected;
+  final bool loading;
 
   const TransactionFeeSelection({
     super.key,
     required this.feeEstimates,
     required this.selectedFeeOption,
     required this.onFeeOptionSelected,
+    this.loading = false,
   });
 
   @override
@@ -40,127 +39,131 @@ class _TransactionFeeSelectionState extends State<TransactionFeeSelection> {
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     final customTheme = Theme.of(context).extension<CustomThemeExtension>()!;
-    if (widget.feeEstimates == null) {
-      return const InputLoadingScaffold();
-    }
 
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        border: Border.all(
-          color: customTheme.inputBorderColor,
-        ),
-        borderRadius: BorderRadius.circular(18),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Fee Selection',
-            style: textTheme.bodySmall?.copyWith(
-              fontWeight: FontWeight.w500,
-            ),
+    return Opacity(
+      opacity: widget.loading ? 0.5 : 1.0,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          border: Border.all(
+            color: customTheme.inputBorderColor,
           ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(
-                child: _buildFeeButton(
-                  label: 'Low',
-                  feeOption: Slow(),
-                  context: context,
-                  customTheme: customTheme,
+          borderRadius: BorderRadius.circular(18),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Fee Selection',
+              style: textTheme.bodySmall?.copyWith(
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildFeeButton(
+                    label: 'Low',
+                    feeOption: Slow(),
+                    context: context,
+                    customTheme: customTheme,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: _buildFeeButton(
+                    label: 'Medium',
+                    feeOption: Medium(),
+                    context: context,
+                    customTheme: customTheme,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: _buildFeeButton(
+                    label: 'High',
+                    feeOption: Fast(),
+                    context: context,
+                    customTheme: customTheme,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            MouseRegion(
+              cursor: widget.loading
+                  ? SystemMouseCursors.basic
+                  : SystemMouseCursors.click,
+              child: GestureDetector(
+                onTap: widget.loading
+                    ? null
+                    : () {
+                        setState(() {
+                          _showCustomFeeInput = true;
+                          if (widget.selectedFeeOption is! Custom) {
+                            widget.onFeeOptionSelected(Custom(0));
+                          }
+                        });
+                      },
+                child: Container(
+                  height: 32,
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    color: transparentPurple8,
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Text(
+                        'Custom Fee',
+                        style: textTheme.bodySmall?.copyWith(
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: _buildFeeButton(
-                  label: 'Medium',
-                  feeOption: Medium(),
-                  context: context,
-                  customTheme: customTheme,
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: _buildFeeButton(
-                  label: 'High',
-                  feeOption: Fast(),
-                  context: context,
-                  customTheme: customTheme,
+            ),
+            if (_showCustomFeeInput && !widget.loading) ...[
+              commonHeightSizedBox,
+              Center(
+                child: HorizonTextField(
+                  controller: _customFeeController,
+                  label: 'Custom fee (sat/vbyte)',
+                  inputFormatters: [
+                    DecimalTextInputFormatter(decimalRange: 2),
+                  ],
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter a fee';
+                    }
+                    return null;
+                  },
+                  onChanged: (value) {
+                    if (value != null && value.isNotEmpty) {
+                      final fee = num.tryParse(value) ?? 0;
+                      widget.onFeeOptionSelected(Custom(fee));
+                    }
+                  },
+                  suffixIcon: IconButton(
+                    icon: const Icon(Icons.close, size: 16),
+                    onPressed: () {
+                      setState(() {
+                        _showCustomFeeInput = false;
+                        _customFeeController.clear();
+                        widget.onFeeOptionSelected(Medium());
+                      });
+                    },
+                  ),
                 ),
               ),
             ],
-          ),
-          const SizedBox(height: 12),
-          MouseRegion(
-            cursor: SystemMouseCursors.click,
-            child: GestureDetector(
-              onTap: () {
-                setState(() {
-                  _showCustomFeeInput = true;
-                  if (widget.selectedFeeOption is! Custom) {
-                    widget.onFeeOptionSelected(Custom(0));
-                  }
-                });
-              },
-              child: Container(
-                height: 32,
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12),
-                  color: transparentPurple8,
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Text(
-                      'Custom Fee',
-                      style: textTheme.bodySmall?.copyWith(
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-          if (_showCustomFeeInput) ...[
-            commonHeightSizedBox,
-            Center(
-              child: HorizonTextField(
-                controller: _customFeeController,
-                label: 'Custom fee (sat/vbyte)',
-                inputFormatters: [
-                  DecimalTextInputFormatter(decimalRange: 2),
-                ],
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter a fee';
-                  }
-                  return null;
-                },
-                onChanged: (value) {
-                  if (value != null && value.isNotEmpty) {
-                    final fee = num.tryParse(value) ?? 0;
-                    widget.onFeeOptionSelected(Custom(fee));
-                  }
-                },
-                suffixIcon: IconButton(
-                  icon: const Icon(Icons.close, size: 16),
-                  onPressed: () {
-                    setState(() {
-                      _showCustomFeeInput = false;
-                      _customFeeController.clear();
-                      widget.onFeeOptionSelected(Medium());
-                    });
-                  },
-                ),
-              ),
-            ),
           ],
-        ],
+        ),
       ),
     );
   }
@@ -175,15 +178,15 @@ class _TransactionFeeSelectionState extends State<TransactionFeeSelection> {
         widget.selectedFeeOption.runtimeType == feeOption.runtimeType;
     final textTheme = Theme.of(context).textTheme;
     return MouseRegion(
-      cursor: _showCustomFeeInput
+      cursor: (widget.loading || _showCustomFeeInput)
           ? SystemMouseCursors.basic
           : SystemMouseCursors.click,
       child: GestureDetector(
-        onTap: _showCustomFeeInput
+        onTap: (widget.loading || _showCustomFeeInput)
             ? null
             : () => widget.onFeeOptionSelected(feeOption),
         child: Opacity(
-          opacity: _showCustomFeeInput ? 0.5 : 1.0,
+          opacity: (widget.loading || _showCustomFeeInput) ? 0.5 : 1.0,
           child: Container(
             padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
             decoration: BoxDecoration(
@@ -222,6 +225,9 @@ class _TransactionFeeSelectionState extends State<TransactionFeeSelection> {
   }
 
   String _getFeeEstimate(FeeOption option) {
+    if (widget.loading) {
+      return "Loading...";
+    }
     return switch (option) {
       Fast() => "${widget.feeEstimates!.fast} sat/vbyte",
       Medium() => "${widget.feeEstimates!.medium} sat/vbyte",

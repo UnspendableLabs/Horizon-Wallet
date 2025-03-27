@@ -6,7 +6,6 @@ import 'package:horizon/domain/entities/fee_option.dart';
 import 'package:horizon/domain/entities/multi_address_balance.dart';
 import 'package:horizon/domain/repositories/settings_repository.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
-import 'package:horizon/presentation/common/transaction_stepper/bloc/transaction_bloc.dart';
 import 'package:horizon/presentation/common/transaction_stepper/bloc/transaction_state.dart';
 import 'package:horizon/presentation/common/transactions/fee_confirmation.dart';
 import 'package:horizon/presentation/common/transactions/transaction_fee_selection.dart';
