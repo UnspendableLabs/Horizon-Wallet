@@ -27,13 +27,15 @@ class FormStepContent<T> {
 
 class ConfirmationStepContent<R> {
   final String title;
-  final Column Function(ComposeState<R> composeState) buildConfirmationContent;
-  final VoidCallback Function({String? password}) onNext;
+  final Widget Function(ComposeState<R> composeState) buildConfirmationContent;
+  final void Function({String? password}) onNext;
+  final VoidCallback backHandler;
 
   const ConfirmationStepContent({
     required this.title,
     required this.buildConfirmationContent,
     required this.onNext,
+    required this.backHandler,
   });
 }
 
@@ -72,11 +74,21 @@ class TransactionStepper<T, R> extends StatefulWidget {
 
   @override
   State<TransactionStepper<T, R>> createState() =>
-      _TransactionStepperState<T, R>();
+      TransactionStepperState<T, R>();
 }
 
-class _TransactionStepperState<T, R> extends State<TransactionStepper<T, R>> {
+class TransactionStepperState<T, R> extends State<TransactionStepper<T, R>> {
   int _currentStep = 0;
+
+  void handleBack() {
+    if (_currentStep == 0) {
+      Navigator.of(context).pop();
+    } else {
+      setState(() {
+        _currentStep--;
+      });
+    }
+  }
 
   // Handle the next button press
   void _handleNext() async {
@@ -167,17 +179,6 @@ class _TransactionStepperState<T, R> extends State<TransactionStepper<T, R>> {
     }
   }
 
-  // Handle the back button press
-  void _handleBack() {
-    if (_currentStep == 0) {
-      Navigator.of(context).pop();
-    } else {
-      setState(() {
-        _currentStep--;
-      });
-    }
-  }
-
   Widget _buildStepperContent(BuildContext context, bool isSmallScreen,
       Widget stepContent, String title,
       {required bool showBackButton}) {
@@ -210,7 +211,7 @@ class _TransactionStepperState<T, R> extends State<TransactionStepper<T, R>> {
                       height: 24,
                       fit: BoxFit.fitHeight,
                     ),
-                    onPressed: _handleBack,
+                    onPressed: handleBack,
                   )
             : const SizedBox.shrink(),
       ),

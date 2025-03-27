@@ -28,6 +28,7 @@ import 'package:horizon/presentation/screens/transactions/send/bloc/send_bloc.da
 import 'package:horizon/presentation/screens/transactions/send/bloc/send_event.dart';
 import 'package:horizon/presentation/common/transactions/quantity_display.dart';
 import 'package:horizon/domain/entities/compose_send.dart';
+import 'package:horizon/presentation/common/transaction_stepper/view/steps/transaction_compose.dart';
 
 class SendPage extends StatefulWidget {
   final String assetName;
@@ -197,35 +198,47 @@ class _SendPageState extends State<SendPage> {
               confirmationStepContent:
                   ConfirmationStepContent<ComposeSendResponse>(
                 title: 'Confirm Transaction',
-                buildConfirmationContent: (composeState) => Column(
-                  children: [
-                    QuantityDisplay(
-                      quantity:
-                          composeState.composeData.params.quantityNormalized,
-                    ),
-                    ConfirmationFieldWithLabel(
-                      label: const SelectableText('Token Name'),
-                      value: SelectableText(displayAssetName(
-                          composeState.composeData.params.asset,
-                          composeState
-                              .composeData.params.assetInfo.assetLongname)),
-                    ),
-                    commonHeightSizedBox,
-                    ConfirmationFieldWithLabel(
-                      label: const SelectableText('Source Address'),
-                      value: SelectableText(
-                          composeState.composeData.params.source),
-                    ),
-                    commonHeightSizedBox,
-                    ConfirmationFieldWithLabel(
-                      label: const SelectableText('Recipient Address'),
-                      value: SelectableText(
-                          composeState.composeData.params.destination),
-                    ),
-                  ],
+                buildConfirmationContent: (composeState) =>
+                    TransactionCompose<ComposeSendResponse>(
+                  composeState: composeState,
+                  errorButtonText: 'Go back to transaction',
+                  onButtonAction: () => Navigator.of(context).pop(),
+                  backHandler: () => context
+                      .findAncestorStateOfType<TransactionStepperState>()
+                      ?.handleBack(),
+                  buildComposeContent: (composeState) => Column(
+                    children: [
+                      QuantityDisplay(
+                        quantity:
+                            composeState.composeData.params.quantityNormalized,
+                      ),
+                      ConfirmationFieldWithLabel(
+                        label: const SelectableText('Token Name'),
+                        value: SelectableText(displayAssetName(
+                            composeState.composeData.params.asset,
+                            composeState
+                                .composeData.params.assetInfo.assetLongname)),
+                      ),
+                      commonHeightSizedBox,
+                      ConfirmationFieldWithLabel(
+                        label: const SelectableText('Source Address'),
+                        value: SelectableText(
+                            composeState.composeData.params.source),
+                      ),
+                      commonHeightSizedBox,
+                      ConfirmationFieldWithLabel(
+                        label: const SelectableText('Recipient Address'),
+                        value: SelectableText(
+                            composeState.composeData.params.destination),
+                      ),
+                    ],
+                  ),
                 ),
                 onNext: ({String? password}) =>
                     _handleConfirmationStepNext(context, password: password),
+                backHandler: () => context
+                    .findAncestorStateOfType<TransactionStepperState>()
+                    ?.handleBack(),
               ),
               submissionStepContent: SubmissionStepContent(
                 title: 'Transaction Submitted',
