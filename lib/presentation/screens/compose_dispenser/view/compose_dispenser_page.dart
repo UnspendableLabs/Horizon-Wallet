@@ -23,7 +23,7 @@ import 'package:horizon/presentation/screens/compose_dispenser/bloc/compose_disp
 import 'package:horizon/presentation/screens/compose_dispenser/bloc/compose_dispenser_state.dart';
 import 'package:horizon/presentation/screens/compose_dispenser/usecase/fetch_form_data.dart';
 import 'package:horizon/presentation/screens/compose_dispenser_on_new_address/view/compose_dispenser_on_new_address_page.dart';
-import 'package:horizon/presentation/screens/compose_send/view/asset_dropdown.dart';
+import 'package:horizon/presentation/common/widgets/asset_dropdown.dart';
 import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart";
 import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
