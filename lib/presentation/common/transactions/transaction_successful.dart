@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get_it/get_it.dart';
-import 'package:horizon/common/constants.dart';
 import 'package:horizon/domain/repositories/config_repository.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
@@ -9,16 +8,20 @@ import 'package:horizon/utils/app_icons.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class TransactionSuccessful extends StatelessWidget {
-  final TransactionType transactionType;
-  final String txHex;
-  final String txHash;
-  const TransactionSuccessful(
-      {super.key,
-      required this.transactionType,
-      required this.txHex,
-      required this.txHash});
+  final String? txHex;
+  final String? txHash;
+  final bool loading;
+
+  const TransactionSuccessful({
+    super.key,
+    this.txHex,
+    this.txHash,
+    this.loading = false,
+  });
 
   Future<void> _launchExplorer() async {
+    if (loading || txHash == null) return;
+
     final config = GetIt.I<Config>();
     final uri = Uri.parse("${config.btcExplorerBase}/tx/$txHash");
     if (!await launchUrl(uri)) {
@@ -61,7 +64,11 @@ class TransactionSuccessful extends StatelessWidget {
                                   ),
                         ),
                         TextSpan(
-                          text: txHex.replaceRange(6, txHex.length - 6, '...'),
+                          text: loading
+                              ? ''
+                              : (txHex?.replaceRange(
+                                      6, txHex!.length - 6, '...') ??
+                                  ''),
                           style:
                               Theme.of(context).textTheme.bodySmall?.copyWith(
                                     color: Theme.of(context)
@@ -89,15 +96,17 @@ class TransactionSuccessful extends StatelessWidget {
                               horizontal: 10, vertical: 12),
                         ),
                       ),
-                  onPressed: () {
-                    Clipboard.setData(ClipboardData(text: txHex));
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Tx id copied to clipboard'),
-                        duration: Duration(seconds: 2),
-                      ),
-                    );
-                  },
+                  onPressed: loading || txHex == null
+                      ? null
+                      : () {
+                          Clipboard.setData(ClipboardData(text: txHex!));
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Tx id copied to clipboard'),
+                              duration: Duration(seconds: 2),
+                            ),
+                          );
+                        },
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -122,7 +131,7 @@ class TransactionSuccessful extends StatelessWidget {
         SizedBox(
           height: 64,
           child: HorizonOutlinedButton(
-            onPressed: _launchExplorer,
+            onPressed: loading ? null : _launchExplorer,
             buttonText: 'View transaction',
             isTransparent: true,
           ),
@@ -131,7 +140,7 @@ class TransactionSuccessful extends StatelessWidget {
         SizedBox(
           height: 64,
           child: HorizonOutlinedButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: loading ? null : () => Navigator.pop(context),
             buttonText: 'Close',
             isTransparent: true,
           ),

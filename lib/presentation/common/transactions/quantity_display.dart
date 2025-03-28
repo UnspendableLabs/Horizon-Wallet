@@ -3,11 +3,13 @@ import 'package:horizon/common/format.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
 
 class QuantityDisplay extends StatelessWidget {
-  final String quantity;
+  final String? quantity;
+  final bool loading;
 
   const QuantityDisplay({
     super.key,
-    required this.quantity,
+    this.quantity,
+    this.loading = false,
   });
 
   @override
@@ -46,19 +48,21 @@ class QuantityDisplay extends StatelessWidget {
               style: theme.textTheme.labelSmall?.copyWith(fontSize: 14),
             ),
           ),
-          ShaderMask(
-            shaderCallback: (bounds) {
-              return textGradient.createShader(bounds);
-            },
-            child: SelectableText(
-              quantityRemoveTrailingZeros(quantity),
-              style: const TextStyle(
-                fontSize: 50,
-                fontWeight: FontWeight.w400,
-                color: Colors.white, // This color will be replaced by gradient
+          if (!loading && quantity != null)
+            ShaderMask(
+              shaderCallback: (bounds) {
+                return textGradient.createShader(bounds);
+              },
+              child: SelectableText(
+                quantityRemoveTrailingZeros(quantity!),
+                style: const TextStyle(
+                  fontSize: 50,
+                  fontWeight: FontWeight.w400,
+                  color:
+                      Colors.white, // This color will be replaced by gradient
+                ),
               ),
             ),
-          ),
         ],
       ),
     );

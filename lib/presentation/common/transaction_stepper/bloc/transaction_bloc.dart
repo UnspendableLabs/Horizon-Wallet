@@ -58,8 +58,8 @@ abstract class TransactionBloc<T extends TransactionState<T, R>, R>
 }
 
 num getFeeRate(TransactionState<dynamic, dynamic> state) {
-  FeeEstimates feeEstimates = state.getFeeEstimatesOrThrow();
-  return switch (state.feeOption) {
+  FeeEstimates feeEstimates = state.formState.getFeeEstimatesOrThrow();
+  return switch (state.formState.feeOption) {
     FeeOption.Fast() => feeEstimates.fast,
     FeeOption.Medium() => feeEstimates.medium,
     FeeOption.Slow() => feeEstimates.slow,

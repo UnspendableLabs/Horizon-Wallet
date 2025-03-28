@@ -6,93 +6,15 @@ import 'package:horizon/domain/entities/multi_address_balance.dart';
 part 'transaction_state.freezed.dart';
 
 class TransactionState<T, R> {
-  final BalancesState balancesState;
-  final FeeState feeState;
-  final FeeOption feeOption;
-  final TransactionDataState<T> dataState;
+  final TransactionFormState<T> formState;
   final ComposeState<R> composeState;
   final BroadcastState broadcastState;
 
   TransactionState({
-    required this.balancesState,
-    required this.feeState,
-    required this.feeOption,
-    required this.dataState,
-    ComposeState<R>? composeState,
-    BroadcastState? broadcastState,
-  })  : composeState = composeState ?? const ComposeState.initial(),
-        broadcastState = broadcastState ?? const BroadcastState.initial();
-
-  String? get formLoadingError {
-    final balancesError = balancesState.maybeWhen(
-      error: (error) => error,
-      orElse: () => null,
-    );
-
-    final feeError = feeState.maybeWhen(
-      error: (error) => error,
-      orElse: () => null,
-    );
-
-    final dataError = dataState.maybeWhen(
-      error: (error) => error,
-      orElse: () => null,
-    );
-
-    return balancesError ?? feeError ?? dataError;
-  }
-
-  bool get formLoading {
-    return balancesState.maybeWhen(
-          loading: () => true,
-          orElse: () => false,
-        ) ||
-        feeState.maybeWhen(
-          loading: () => true,
-          orElse: () => false,
-        ) ||
-        dataState.maybeWhen(
-          loading: () => true,
-          orElse: () => false,
-        );
-  }
-
-  bool get formInitial {
-    return balancesState.maybeWhen(
-          initial: () => true,
-          orElse: () => false,
-        ) ||
-        feeState.maybeWhen(
-          initial: () => true,
-          orElse: () => false,
-        ) ||
-        dataState.maybeWhen(
-          initial: () => true,
-          orElse: () => false,
-        );
-  }
-
-  MultiAddressBalance getBalancesOrThrow() {
-    return balancesState.maybeWhen(
-      success: (balances) => balances,
-      orElse: () => throw StateError('BalancesState is not in a success state'),
-    );
-  }
-
-  FeeEstimates getFeeEstimatesOrThrow() {
-    return feeState.maybeWhen(
-      success: (feeEstimates) => feeEstimates,
-      orElse: () => throw StateError('FeeState is not in a success state'),
-    );
-  }
-
-  T? getDataOrThrow() {
-    return dataState.maybeWhen(
-      success: (data) => data,
-      orElse: () =>
-          throw StateError('TransactionDataState is not in a success state'),
-    );
-  }
+    required this.formState,
+    required this.composeState,
+    required this.broadcastState,
+  });
 
   ComposeStateSuccess<R> getComposeStateOrThrow() {
     return composeState.maybeWhen(
@@ -109,18 +31,12 @@ class TransactionState<T, R> {
   }
 
   TransactionState<T, R> copyWith({
-    BalancesState? balancesState,
-    FeeState? feeState,
-    FeeOption? feeOption,
-    TransactionDataState<T>? dataState,
+    TransactionFormState<T>? formState,
     ComposeState<R>? composeState,
     BroadcastState? broadcastState,
   }) {
     return TransactionState<T, R>(
-      balancesState: balancesState ?? this.balancesState,
-      feeState: feeState ?? this.feeState,
-      feeOption: feeOption ?? this.feeOption,
-      dataState: dataState ?? this.dataState,
+      formState: formState ?? this.formState,
       composeState: composeState ?? this.composeState,
       broadcastState: broadcastState ?? this.broadcastState,
     );
@@ -128,7 +44,129 @@ class TransactionState<T, R> {
 
   @override
   String toString() {
-    return 'TransactionState(balancesState: $balancesState, feeState: $feeState, feeOption: $feeOption, dataState: $dataState, composeState: $composeState, broadcastState: $broadcastState)';
+    return 'TransactionState(formState: $formState, composeState: $composeState, broadcastState: $broadcastState)';
+  }
+}
+
+class TransactionFormState<T> {
+  final BalancesState balancesState;
+  final FeeState feeState;
+  final TransactionDataState<T> dataState;
+  final FeeOption feeOption;
+
+  TransactionFormState({
+    required this.balancesState,
+    required this.feeState,
+    required this.dataState,
+    required this.feeOption,
+  });
+
+  TransactionFormState<T> copyWith({
+    BalancesState? balancesState,
+    FeeState? feeState,
+    TransactionDataState<T>? dataState,
+    FeeOption? feeOption,
+  }) {
+    return TransactionFormState<T>(
+      balancesState: balancesState ?? this.balancesState,
+      feeState: feeState ?? this.feeState,
+      dataState: dataState ?? this.dataState,
+      feeOption: feeOption ?? this.feeOption,
+    );
+  }
+
+  @override
+  String toString() {
+    return 'TransactionFormState(balancesState: $balancesState, feeState: $feeState, dataState: $dataState, feeOption: $feeOption)';
+  }
+
+  bool get isInitial {
+    return balancesState.maybeWhen(
+          initial: () => true,
+          orElse: () => false,
+        ) ||
+        feeState.maybeWhen(
+          initial: () => true,
+          orElse: () => false,
+        ) ||
+        dataState.maybeWhen(
+          initial: () => true,
+          orElse: () => false,
+        );
+  }
+
+  bool get isLoading {
+    return balancesState.maybeWhen(
+          loading: () => true,
+          orElse: () => false,
+        ) ||
+        feeState.maybeWhen(
+          loading: () => true,
+          orElse: () => false,
+        ) ||
+        dataState.maybeWhen(
+          loading: () => true,
+          orElse: () => false,
+        );
+  }
+
+  bool get isError {
+    return balancesState.maybeWhen(
+          error: (error) => true,
+          orElse: () => false,
+        ) ||
+        feeState.maybeWhen(
+          error: (error) => true,
+          orElse: () => false,
+        ) ||
+        dataState.maybeWhen(
+          error: (error) => true,
+          orElse: () => false,
+        );
+  }
+
+  String get errorMessage {
+    final balancesError = balancesState.maybeWhen(
+      error: (error) => error,
+      orElse: () => null,
+    );
+
+    final feeError = feeState.maybeWhen(
+      error: (error) => error,
+      orElse: () => null,
+    );
+
+    final dataError = dataState.maybeWhen(
+      error: (error) => error,
+      orElse: () => null,
+    );
+
+    return balancesError ??
+        feeError ??
+        dataError ??
+        'An unknown error occurred';
+  }
+
+  MultiAddressBalance getBalancesOrThrow() {
+    return balancesState.maybeWhen(
+      success: (balances) => balances,
+      orElse: () => throw StateError('BalancesState is not in a success state'),
+    );
+  }
+
+  FeeEstimates getFeeEstimatesOrThrow() {
+    return feeState.maybeWhen(
+      success: (feeEstimates) => feeEstimates,
+      orElse: () => throw StateError('FeeState is not in a success state'),
+    );
+  }
+
+  T getDataOrThrow() {
+    return dataState.maybeWhen(
+      success: (data) => data,
+      orElse: () =>
+          throw StateError('TransactionDataState is not in a success state'),
+    );
   }
 }
 
