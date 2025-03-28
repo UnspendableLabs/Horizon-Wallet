@@ -39,8 +39,8 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
   bool get _isBitcoin => widget.assetName.toUpperCase() == 'BTC';
 
   bool _isAssetOwner(MultiAddressBalance balance) {
-    final session = context.read<SessionStateCubit>().state;
-    return session.allAddresses.contains(balance.assetInfo.owner);
+    return balance.entries
+        .any((entry) => entry.address == balance.assetInfo.owner);
   }
 
   @override
@@ -553,27 +553,33 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
                           icon: AppIcons.resetIcon(
                             context: context,
                           ),
-                          onTap: () {
-                            // Handle Reset Asset
-                          },
+                          onTap: balance.assetInfo.locked
+                              ? null
+                              : () {
+                                  // Handle Reset Asset
+                                },
                         ),
                         IconItemButton(
                           title: 'Create Fairminter',
                           icon: AppIcons.mintIcon(
                             context: context,
                           ),
-                          onTap: () {
-                            // Handle Create Fairminter
-                          },
+                          onTap: balance.assetInfo.locked
+                              ? null
+                              : () {
+                                  // Handle Create Fairminter
+                                },
                         ),
                         IconItemButton(
                           title: 'Issue More',
                           icon: AppIcons.plusIcon(
                             context: context,
                           ),
-                          onTap: () {
-                            // Handle Issue More
-                          },
+                          onTap: balance.assetInfo.locked
+                              ? null
+                              : () {
+                                  // Handle Issue More
+                                },
                         ),
                         IconItemButton(
                           title: 'Issue Subasset',
@@ -589,28 +595,34 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
                           icon: AppIcons.editIcon(
                             context: context,
                           ),
-                          onTap: () {
-                            // Handle Update Description
-                          },
+                          onTap: balance.assetInfo.locked
+                              ? null
+                              : () {
+                                  // Handle Update Description
+                                },
                         ),
                         IconItemButton(
                           title: 'Lock Supply',
                           icon: AppIcons.lockIcon(
                             context: context,
                           ),
-                          onTap: () {
-                            _showTransactionPage(
-                                type: TransactionType.lockQuantity);
-                          },
+                          onTap: balance.assetInfo.locked
+                              ? null
+                              : () {
+                                  _showTransactionPage(
+                                      type: TransactionType.lockQuantity);
+                                },
                         ),
                         IconItemButton(
                           title: 'Lock Description',
                           icon: AppIcons.lockIcon(
                             context: context,
                           ),
-                          onTap: () {
-                            // Handle Lock Description
-                          },
+                          onTap: balance.assetInfo.locked
+                              ? null
+                              : () {
+                                  // Handle Lock Description
+                                },
                         ),
                         IconItemButton(
                           title: 'Transfer Issuance Rights',

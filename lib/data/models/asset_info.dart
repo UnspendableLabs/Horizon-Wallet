@@ -31,6 +31,7 @@ class AssetInfoModel {
         assetLongname: assetLongname,
         description: description,
         issuer: issuer,
-        owner: owner);
+        owner: owner,
+        locked: locked);
   }
 }

@@ -1,3 +1,4 @@
+import 'package:horizon/domain/entities/compose_issuance.dart';
 import 'package:horizon/presentation/common/transaction_stepper/bloc/transaction_event.dart';
 
 class LockQuantityDependenciesRequested extends DependenciesRequested {
@@ -8,14 +9,12 @@ class LockQuantityDependenciesRequested extends DependenciesRequested {
 }
 
 class LockQuantityTransactionComposed
-    extends TransactionComposed<LockQuantityTransactionParams> {
+    extends TransactionComposed<ComposeIssuanceParams> {
   LockQuantityTransactionComposed({
     required super.sourceAddress,
     required super.params,
   });
 }
-
-class LockQuantityTransactionParams {}
 
 class LockQuantityTransactionBroadcasted extends TransactionEvent {
   final String? password;

@@ -117,6 +117,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
               quantity: txVerbose.params.quantity,
               useEnhancedSend: txVerbose.params.useEnhancedSend,
               assetInfo: asset_info.AssetInfo(
+                  locked: txVerbose.params.assetInfo.locked,
                   assetLongname: txVerbose.params.assetInfo.assetLongname,
                   description: txVerbose.params.assetInfo.description,
                   divisible: txVerbose.params.assetInfo.divisible),

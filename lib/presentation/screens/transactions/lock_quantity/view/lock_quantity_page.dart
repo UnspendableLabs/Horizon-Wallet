@@ -5,19 +5,21 @@ import 'package:get_it/get_it.dart';
 import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/domain/entities/compose_issuance.dart';
 import 'package:horizon/domain/entities/fee_option.dart';
-import 'package:horizon/domain/entities/multi_address_balance_entry.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
 import 'package:horizon/domain/repositories/settings_repository.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
+import 'package:horizon/presentation/common/shared_util.dart';
 import 'package:horizon/presentation/common/transaction_stepper/bloc/transaction_event.dart';
 import 'package:horizon/presentation/common/transaction_stepper/bloc/transaction_state.dart';
 import 'package:horizon/presentation/common/transaction_stepper/view/steps/transaction_form_page.dart';
 import 'package:horizon/presentation/common/transaction_stepper/view/transaction_stepper.dart';
+import 'package:horizon/presentation/common/transactions/token_name_field.dart';
 import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
 import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
 import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transaction_usecase.dart';
 import 'package:horizon/presentation/common/usecase/write_local_transaction_usecase.dart';
+import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 import 'package:horizon/presentation/screens/transactions/lock_quantity/bloc/lock_quantity_bloc.dart';
 import 'package:horizon/presentation/screens/transactions/lock_quantity/bloc/lock_quantity_event.dart';
 import 'package:horizon/presentation/common/transaction_stepper/view/steps/transaction_compose_page.dart';
@@ -37,28 +39,33 @@ class LockQuantityPage extends StatefulWidget {
 }
 
 class _LockQuantityPageState extends State<LockQuantityPage> {
-  MultiAddressBalanceEntry? selectedBalanceEntry;
-  TextEditingController quantityController = TextEditingController();
-  TextEditingController destinationAddressController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
   void _handleOnFormStepNext(
       BuildContext context,
       TransactionState<LockQuantityData, ComposeIssuanceResponseVerbose>
           state) {
-    // final balances = state.formState.getBalancesOrThrow();
-    // final quantity = getQuantityForDivisibility(
-    //   divisible: balances.assetInfo.divisible,
-    //   inputQuantity: quantityController.text,
-    // );
-    // context.read<SendBloc>().add(SendTransactionComposed(
-    //       sourceAddress: selectedBalanceEntry?.address ?? "",
-    //       params: SendTransactionParams(
-    //         destinationAddress: destinationAddressController.text,
-    //         asset: widget.assetName,
-    //         quantity: quantity,
-    //       ),
-    //     ));
+    final loading = state.formState.isLoading;
+    if (loading) {
+      return;
+    }
+    final balances = state.formState.getBalancesOrThrow();
+    final ownerBalanceEntry =
+        state.formState.getDataOrThrow().ownerBalanceEntry;
+
+    context.read<LockQuantityBloc>().add(LockQuantityTransactionComposed(
+          sourceAddress: ownerBalanceEntry.address!,
+          params: ComposeIssuanceParams(
+            source: ownerBalanceEntry.address!,
+            name: displayAssetName(
+                widget.assetName, balances.assetInfo.assetLongname),
+            quantity: ownerBalanceEntry.quantity,
+            divisible: balances.assetInfo.divisible,
+            lock: true,
+            reset: false,
+            description: balances.assetInfo.description,
+          ),
+        ));
   }
 
   void _handleConfirmationStepNext(BuildContext context, {String? password}) {
@@ -106,97 +113,57 @@ class _LockQuantityPageState extends State<LockQuantityPage> {
             body: TransactionStepper<LockQuantityData,
                 ComposeIssuanceResponseVerbose>(
               formStepContent: FormStepContent<LockQuantityData>(
-                title: 'Enter Lock Quantity Details',
+                title: 'Lock Supply',
                 formKey: _formKey,
                 onNext: () => _handleOnFormStepNext(context, state),
                 onFeeOptionSelected: (feeOption) =>
                     _handleFeeOptionSelected(context, feeOption),
                 buildForm: (formState) => TransactionFormPage<LockQuantityData>(
-                  errorButtonText: 'Reload',
-                  formState: formState,
-                  onErrorButtonAction: () =>
-                      _handleDependenciesRequested(context),
-                  onFeeOptionSelected: (feeOption) =>
-                      _handleFeeOptionSelected(context, feeOption),
-                  form: (
-                          {balances,
-                          feeEstimates,
-                          data,
-                          feeOption,
-                          required loading}) =>
-                      Form(
-                    key: _formKey,
-                    child: Column(
-                      children: [
-                        Text('Lock Quantity'),
-                        // MultiAddressBalanceDropdown(
-                        //   loading: loading,
-                        //   balances: balances,
-                        //   onChanged: (value) {
-                        //     setState(() {
-                        //       selectedBalanceEntry = value;
-                        //       quantityController.clear();
-                        //     });
-                        //   },
-                        //   selectedValue: selectedBalanceEntry,
-                        // ),
-                        // commonHeightSizedBox,
-                        // HorizonTextField(
-                        //   enabled: !loading,
-                        //   controller: destinationAddressController,
-                        //   label: 'Destination Address',
-                        //   validator: (value) {
-                        //     if (value == null || value.isEmpty) {
-                        //       return 'Please enter a destination address';
-                        //     }
-                        //     return null;
-                        //   },
-                        // ),
-                        // commonHeightSizedBox,
-                        // TokenNameField(
-                        //   loading: loading,
-                        //   balance: balances,
-                        //   selectedBalanceEntry: selectedBalanceEntry,
-                        // ),
-                        // commonHeightSizedBox,
-                        // GradientQuantityInput(
-                        //   enabled: !loading,
-                        //   showMaxButton: true,
-                        //   balance: balances,
-                        //   selectedBalanceEntry: selectedBalanceEntry,
-                        //   controller: quantityController,
-                        //   validator: (value) {
-                        //     if (balances == null) {
-                        //       return null;
-                        //     }
-                        //     if (value == null || value.isEmpty) {
-                        //       return 'Please enter an amount';
-                        //     }
-
-                        //     if (selectedBalanceEntry != null) {
-                        //       try {
-                        //         final enteredQuantity =
-                        //             getQuantityForDivisibility(
-                        //           divisible: balances.assetInfo.divisible,
-                        //           inputQuantity: value,
-                        //         );
-
-                        //         if (enteredQuantity >
-                        //             selectedBalanceEntry!.quantity) {
-                        //           return 'Insufficient balance';
-                        //         }
-                        //       } catch (e) {
-                        //         return 'Invalid amount';
-                        //       }
-                        //     }
-
-                        //     return null;
-                        //   },
-                        // ),
-                      ],
-                    ),
-                  ),
-                ),
+                    errorButtonText: 'Reload',
+                    formState: formState,
+                    onErrorButtonAction: () =>
+                        _handleDependenciesRequested(context),
+                    onFeeOptionSelected: (feeOption) =>
+                        _handleFeeOptionSelected(context, feeOption),
+                    form: (
+                        {balances,
+                        feeEstimates,
+                        data,
+                        feeOption,
+                        required loading}) {
+                      return Form(
+                        key: _formKey,
+                        child: Column(
+                          children: [
+                            HorizonTextField(
+                              enabled: false,
+                              controller: TextEditingController(
+                                  text: loading
+                                      ? ''
+                                      : data!.ownerBalanceEntry.address),
+                              label: 'Source Address',
+                            ),
+                            commonHeightSizedBox,
+                            TokenNameField(
+                              loading: loading,
+                              balance: balances,
+                              selectedBalanceEntry:
+                                  loading ? null : data!.ownerBalanceEntry,
+                            ),
+                            commonHeightSizedBox,
+                            HorizonTextField(
+                              enabled: false,
+                              controller: TextEditingController(
+                                  text: loading
+                                      ? ''
+                                      : data!.ownerBalanceEntry
+                                          .quantityNormalized),
+                              label: 'Current Supply',
+                            ),
+                          ],
+                        ),
+                      );
+                    }),
               ),
               confirmationStepContent:
                   ConfirmationStepContent<ComposeIssuanceResponseVerbose>(

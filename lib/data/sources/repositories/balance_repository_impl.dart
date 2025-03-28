@@ -77,7 +77,7 @@ class BalanceRepositoryImpl implements BalanceRepository {
               description: a.assetInfo.description,
               // issuer: a.assetInfo.issuer,
               divisible: a.assetInfo.divisible,
-              // locked: a.assetInfo.locked,
+              locked: a.assetInfo.locked,
             ),
             utxo: a.utxo,
             utxoAddress: a.utxoAddress));
@@ -120,6 +120,7 @@ class BalanceRepositoryImpl implements BalanceRepository {
               divisible: a.assetInfo.divisible,
               owner: a.assetInfo.owner,
               issuer: a.assetInfo.issuer,
+              locked: a.assetInfo.locked,
             )));
       }
       cursor = response.nextCursor;
@@ -147,6 +148,7 @@ class BalanceRepositoryImpl implements BalanceRepository {
             assetLongname: 'BTC',
             description: 'Bitcoin',
             divisible: true,
+            locked: false,
           ));
     });
   }
@@ -176,7 +178,10 @@ class BalanceRepositoryImpl implements BalanceRepository {
           .cast<mba_entry.MultiAddressBalanceEntry>()
           .toList(),
       assetInfo: const ai.AssetInfo(
-          assetLongname: 'BTC', description: 'Bitcoin', divisible: true),
+          assetLongname: 'BTC',
+          description: 'Bitcoin',
+          divisible: true,
+          locked: false),
     );
   }
 
@@ -203,6 +208,7 @@ class BalanceRepositoryImpl implements BalanceRepository {
           issuer: balance.assetInfo.issuer,
           owner: balance.assetInfo.owner,
           divisible: balance.assetInfo.divisible,
+          locked: balance.assetInfo.locked,
         ),
         utxo: balance.utxo,
         utxoAddress: balance.utxoAddress,
@@ -233,6 +239,7 @@ class BalanceRepositoryImpl implements BalanceRepository {
           issuer: balance.assetInfo.issuer,
           owner: balance.assetInfo.owner,
           divisible: balance.assetInfo.divisible,
+          locked: balance.assetInfo.locked,
         ),
       ));
     }

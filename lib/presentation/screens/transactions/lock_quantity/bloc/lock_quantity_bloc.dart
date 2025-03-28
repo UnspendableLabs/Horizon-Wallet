@@ -5,10 +5,12 @@ import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/domain/entities/compose_issuance.dart';
 import 'package:horizon/domain/entities/decryption_strategy.dart';
 import 'package:horizon/domain/entities/fee_option.dart' as fee_option;
+import 'package:horizon/domain/entities/multi_address_balance_entry.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
 import 'package:horizon/domain/repositories/settings_repository.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
+import 'package:horizon/presentation/common/transaction_stepper/bloc/transaction_bloc.dart';
 import 'package:horizon/presentation/common/transaction_stepper/bloc/transaction_event.dart';
 import 'package:horizon/presentation/common/transaction_stepper/bloc/transaction_state.dart';
 import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
@@ -17,7 +19,12 @@ import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transacti
 import 'package:horizon/presentation/common/usecase/write_local_transaction_usecase.dart';
 import 'package:horizon/presentation/screens/transactions/lock_quantity/bloc/lock_quantity_event.dart';
 
-class LockQuantityData {}
+class LockQuantityData {
+  final MultiAddressBalanceEntry ownerBalanceEntry;
+  LockQuantityData({
+    required this.ownerBalanceEntry,
+  });
+}
 
 class LockQuantityBloc extends Bloc<TransactionEvent,
     TransactionState<LockQuantityData, ComposeIssuanceResponseVerbose>> {
@@ -76,15 +83,49 @@ class LockQuantityBloc extends Bloc<TransactionEvent,
 
       final feeEstimates = await getFeeEstimatesUseCase.call();
 
-      emit(
-        state.copyWith(
+      final ownerAddress = balances.assetInfo.owner;
+      if (!event.addresses.contains(ownerAddress)) {
+        emit(state.copyWith(
           formState: state.formState.copyWith(
-            balancesState: BalancesState.success(balances),
-            feeState: FeeState.success(feeEstimates),
-            dataState: TransactionDataState.success(LockQuantityData()),
+            balancesState:
+                const BalancesState.error('invariant: owner address not found'),
           ),
-        ),
-      );
+        ));
+        return;
+      }
+
+      final ownerBalanceEntries = balances.entries
+          .where((entry) => (entry.address == ownerAddress))
+          .toList();
+
+      if (ownerBalanceEntries.isEmpty) {
+        // we should never get here because issuance actions are only exposed to the owner addresses
+        emit(state.copyWith(
+          formState: state.formState.copyWith(
+            balancesState: const BalancesState.error('No owner balance found'),
+          ),
+        ));
+      } else if (ownerBalanceEntries.length > 1) {
+        // we should never get here because assets can only have one address owner
+        emit(state.copyWith(
+          formState: state.formState.copyWith(
+            balancesState:
+                const BalancesState.error('Multiple owner balances found'),
+          ),
+        ));
+      } else {
+        emit(
+          state.copyWith(
+            formState: state.formState.copyWith(
+              balancesState: BalancesState.success(balances),
+              feeState: FeeState.success(feeEstimates),
+              dataState: TransactionDataState.success(LockQuantityData(
+                ownerBalanceEntry: ownerBalanceEntries.first,
+              )),
+            ),
+          ),
+        );
+      }
     } catch (e) {
       logger.error('Error getting dependencies: $e');
       emit(
@@ -112,40 +153,39 @@ class LockQuantityBloc extends Bloc<TransactionEvent,
       return;
     }
 
-    // try {
-    //   final feeRate = getFeeRate(state);
-    //   final source = event.sourceAddress;
-    //   final destination = event.destinationAddress;
-    //   final asset = event.asset;
-    //   final quantity = event.quantity;
+    try {
+      final feeRate = getFeeRate(state);
 
-    //   final composeResponse = await composeTransactionUseCase
-    //       .call<ComposeSendParams, ComposeSendResponse>(
-    //     feeRate: feeRate,
-    //     source: source,
-    //     params: ComposeSendParams(
-    //       source: source,
-    //       destination: destination,
-    //       asset: asset,
-    //       quantity: quantity,
-    //     ),
-    //     composeFn: composeRepository.composeSendVerbose,
-    //   );
+      final composeResponse = await composeTransactionUseCase
+          .call<ComposeIssuanceParams, ComposeIssuanceResponseVerbose>(
+        feeRate: feeRate,
+        source: event.sourceAddress,
+        params: ComposeIssuanceParams(
+          source: event.sourceAddress,
+          name: event.params.name,
+          quantity: event.params.quantity,
+          divisible: event.params.divisible,
+          lock: event.params.lock,
+          reset: event.params.reset,
+          description: event.params.description,
+        ),
+        composeFn: composeRepository.composeIssuanceVerbose,
+      );
 
-    //   emit(state.copyWith(
-    //     composeState: ComposeStateSuccess(composeResponse),
-    //   ));
-    // } on ComposeTransactionException catch (e) {
-    //   emit(state.copyWith(
-    //     composeState: ComposeStateError(e.message),
-    //   ));
-    // } catch (e) {
-    //   emit(state.copyWith(
-    //     composeState: ComposeStateError(e is ComposeTransactionException
-    //         ? e.message
-    //         : 'An unexpected error occurred: ${e.toString()}'),
-    //   ));
-    // }
+      emit(state.copyWith(
+        composeState: ComposeStateSuccess(composeResponse),
+      ));
+    } on ComposeTransactionException catch (e) {
+      emit(state.copyWith(
+        composeState: ComposeStateError(e.message),
+      ));
+    } catch (e) {
+      emit(state.copyWith(
+        composeState: ComposeStateError(e is ComposeTransactionException
+            ? e.message
+            : 'An unexpected error occurred: ${e.toString()}'),
+      ));
+    }
   }
 
   void _onTransactionBroadcasted(
