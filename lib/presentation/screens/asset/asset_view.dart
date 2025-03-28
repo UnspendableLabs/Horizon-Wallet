@@ -11,6 +11,7 @@ import 'package:horizon/presentation/screens/asset/bloc/asset_view_bloc.dart';
 import 'package:horizon/presentation/screens/asset/bloc/asset_view_event.dart';
 import 'package:horizon/presentation/screens/dashboard/view/asset_icon.dart';
 import 'package:horizon/presentation/screens/dashboard/view/balances_display.dart';
+import 'package:horizon/presentation/screens/transactions/lock_quantity/view/lock_quantity_page.dart';
 import 'package:horizon/presentation/screens/transactions/send/view/send_page.dart';
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:horizon/presentation/session/bloc/session_state.dart';
@@ -76,20 +77,20 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
           assetName: widget.assetName,
           addresses: session.allAddresses,
         ),
+      TransactionType.lockQuantity => LockQuantityPage(
+          assetName: widget.assetName,
+          addresses: session.allAddresses,
+        ),
     };
 
-    switch (type) {
-      case TransactionType.send:
-        showDialog(
-          context: context,
-          builder: (dialogContext) {
-            return Dialog.fullscreen(
-              child: page,
-            );
-          },
+    showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return Dialog.fullscreen(
+          child: page,
         );
-        break;
-    }
+      },
+    );
   }
 
   // Helper method to build the asset page header
@@ -598,7 +599,8 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
                             context: context,
                           ),
                           onTap: () {
-                            // Handle Lock Supply
+                            _showTransactionPage(
+                                type: TransactionType.lockQuantity);
                           },
                         ),
                         IconItemButton(
@@ -685,7 +687,7 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
                 ],
               ),
             );
-          }).toList(),
+          }),
         ],
       ),
     );
