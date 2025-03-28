@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:horizon/domain/entities/compose_response.dart';
 import 'package:horizon/presentation/common/transaction_stepper/bloc/transaction_state.dart';
-import 'package:horizon/presentation/common/transactions/error.dart';
+import 'package:horizon/presentation/common/transactions/transaction_error.dart';
 import 'package:horizon/presentation/common/transactions/fee_confirmation.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 

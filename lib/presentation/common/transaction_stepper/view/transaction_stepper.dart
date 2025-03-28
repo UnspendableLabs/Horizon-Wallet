@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/domain/entities/fee_option.dart';
 import 'package:horizon/domain/repositories/settings_repository.dart';
+import 'package:horizon/domain/repositories/wallet_repository.dart';
+import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/common/transaction_stepper/bloc/transaction_state.dart';
 import 'package:horizon/presentation/common/transaction_stepper/view/steps/transaction_broadcast_page.dart';
@@ -29,7 +31,8 @@ class FormStepContent<T> {
 
 class ConfirmationStepContent<R> {
   final String title;
-  final TransactionComposePage<R> Function(ComposeState<R> composeState)
+  final TransactionComposePage<R> Function(
+          ComposeState<R> composeState, VoidCallback onErrorButtonAction)
       buildConfirmationContent;
   final void Function({String? password}) onNext;
 
@@ -113,13 +116,11 @@ class TransactionStepperState<T, R> extends State<TransactionStepper<T, R>> {
                         isLoading = true;
                         errorText = null;
                       });
-
                       try {
-                        widget.confirmationStepContent
-                            .onNext(password: password);
-                        if (dialogContext.mounted) {
-                          Navigator.of(dialogContext).pop(true);
-                        }
+                        final wallet = await GetIt.I<WalletRepository>()
+                            .getCurrentWallet();
+                        await GetIt.I<EncryptionService>()
+                            .decrypt(wallet!.encryptedPrivKey, password);
                       } catch (e) {
                         if (dialogContext.mounted) {
                           setState(() {
@@ -127,6 +128,12 @@ class TransactionStepperState<T, R> extends State<TransactionStepper<T, R>> {
                             isLoading = false;
                           });
                         }
+                        return;
+                      }
+
+                      widget.confirmationStepContent.onNext(password: password);
+                      if (dialogContext.mounted) {
+                        Navigator.of(dialogContext).pop(true);
                       }
                     },
                     onCancel: () {
@@ -323,7 +330,7 @@ class TransactionStepperState<T, R> extends State<TransactionStepper<T, R>> {
         context,
         isSmallScreen,
         widget.confirmationStepContent
-            .buildConfirmationContent(widget.state.composeState),
+            .buildConfirmationContent(widget.state.composeState, handleBack),
         widget.confirmationStepContent.title,
         showBackButton: true,
       );

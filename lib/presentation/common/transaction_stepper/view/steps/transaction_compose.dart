@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:horizon/presentation/common/transaction_stepper/bloc/transaction_state.dart';
-import 'package:horizon/presentation/common/transactions/error.dart';
+import 'package:horizon/presentation/common/transactions/transaction_error.dart';
 
 class TransactionCompose<R> extends StatelessWidget {
   final Widget Function(ComposeStateSuccess<R> composeState)

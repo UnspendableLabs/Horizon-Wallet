@@ -203,13 +203,11 @@ class _SendPageState extends State<SendPage> {
               confirmationStepContent:
                   ConfirmationStepContent<ComposeSendResponse>(
                 title: 'Confirm Transaction',
-                buildConfirmationContent: (composeState) =>
+                buildConfirmationContent: (composeState, onErrorButtonAction) =>
                     TransactionComposePage<ComposeSendResponse>(
                   composeState: composeState,
                   errorButtonText: 'Go back to transaction',
-                  onErrorButtonAction: () => context
-                      .findAncestorStateOfType<TransactionStepperState>()
-                      ?.handleBack(),
+                  onErrorButtonAction: onErrorButtonAction,
                   buildComposeContent: (
                           {ComposeStateSuccess<ComposeSendResponse>?
                               composeState,

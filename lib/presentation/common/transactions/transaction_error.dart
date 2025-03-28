@@ -28,7 +28,7 @@ class TransactionError extends StatelessWidget {
         const SizedBox(height: 12),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Text(
+          child: SelectableText(
             errorMessage,
             style: const TextStyle(color: red1),
             textAlign: TextAlign.center,
