@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:horizon/common/constants.dart';
+import 'package:horizon/common/format.dart';
 import 'package:horizon/domain/entities/multi_address_balance.dart';
 import 'package:horizon/presentation/common/filter_bar.dart';
 import 'package:horizon/presentation/common/icon_item_button.dart';
@@ -9,6 +10,7 @@ import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/screens/asset/bloc/asset_view_bloc.dart';
 import 'package:horizon/presentation/screens/asset/bloc/asset_view_event.dart';
 import 'package:horizon/presentation/screens/dashboard/view/asset_icon.dart';
+import 'package:horizon/presentation/screens/dashboard/view/balances_display.dart';
 import 'package:horizon/presentation/screens/transactions/send/view/send_page.dart';
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:horizon/presentation/session/bloc/session_state.dart';
@@ -35,11 +37,16 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
 
   bool get _isBitcoin => widget.assetName.toUpperCase() == 'BTC';
 
+  bool _isAssetOwner(MultiAddressBalance balance) {
+    final session = context.read<SessionStateCubit>().state;
+    return session.allAddresses.contains(balance.assetInfo.owner);
+  }
+
   @override
   void initState() {
     super.initState();
     context.read<AssetViewBloc>().add(PageLoaded());
-    _tabController = TabController(length: _isBitcoin ? 1 : 2, vsync: this);
+    _tabController = TabController(length: 1, vsync: this);
   }
 
   @override
@@ -222,57 +229,111 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
 
   // Helper method to build tabs
   Widget _buildTabs(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        border: Border(
-          bottom: BorderSide(
-            color:
-                Theme.of(context).inputDecorationTheme.outlineBorder?.color ??
-                    transparentBlack8,
-            width: 1,
-          ),
-        ),
-      ),
-      child: Center(
-        child: SizedBox(
-          child: TabBar(
-            controller: _tabController,
-            indicatorWeight: 2,
-            indicatorColor: transparentPurple33,
-            labelColor: Theme.of(context).textTheme.bodyMedium?.color,
-            unselectedLabelColor: Theme.of(context)
-                    .textButtonTheme
-                    .style
-                    ?.foregroundColor
-                    ?.resolve({}) ??
-                Colors.grey,
-            indicatorSize: TabBarIndicatorSize.label,
-            tabAlignment: TabAlignment.center,
-            isScrollable: false,
-            tabs: [
-              const Tab(
-                child: Text(
-                  'Balance Actions',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                  ),
+    return BlocBuilder<AssetViewBloc, RemoteDataState<MultiAddressBalance>>(
+      builder: (context, state) {
+        return state.when(
+          initial: () => const SizedBox.shrink(),
+          loading: () => Container(
+            decoration: BoxDecoration(
+              border: Border(
+                bottom: BorderSide(
+                  color: Theme.of(context)
+                          .inputDecorationTheme
+                          .outlineBorder
+                          ?.color ??
+                      transparentBlack8,
+                  width: 1,
                 ),
               ),
-              if (!_isBitcoin)
-                const Tab(
-                  child: Text(
-                    'Issuance Actions',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
+            ),
+            child: Center(
+              child: SizedBox(
+                child: TabBar(
+                  controller: _tabController,
+                  indicatorWeight: 2,
+                  indicatorColor: transparentPurple33,
+                  labelColor: Theme.of(context).textTheme.bodyMedium?.color,
+                  unselectedLabelColor: Theme.of(context)
+                          .textButtonTheme
+                          .style
+                          ?.foregroundColor
+                          ?.resolve({}) ??
+                      Colors.grey,
+                  indicatorSize: TabBarIndicatorSize.label,
+                  tabAlignment: TabAlignment.center,
+                  isScrollable: false,
+                  tabs: const [
+                    Tab(
+                      child: Text(
+                        'Balance Actions',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
                     ),
-                  ),
+                  ],
                 ),
-            ],
+              ),
+            ),
           ),
-        ),
-      ),
+          error: (_) => const SizedBox.shrink(),
+          success: (balance) => Container(
+            decoration: BoxDecoration(
+              border: Border(
+                bottom: BorderSide(
+                  color: Theme.of(context)
+                          .inputDecorationTheme
+                          .outlineBorder
+                          ?.color ??
+                      transparentBlack8,
+                  width: 1,
+                ),
+              ),
+            ),
+            child: Center(
+              child: SizedBox(
+                child: TabBar(
+                  controller: _tabController,
+                  indicatorWeight: 2,
+                  indicatorColor: transparentPurple33,
+                  labelColor: Theme.of(context).textTheme.bodyMedium?.color,
+                  unselectedLabelColor: Theme.of(context)
+                          .textButtonTheme
+                          .style
+                          ?.foregroundColor
+                          ?.resolve({}) ??
+                      Colors.grey,
+                  indicatorSize: TabBarIndicatorSize.label,
+                  tabAlignment: TabAlignment.center,
+                  isScrollable: false,
+                  tabs: [
+                    const Tab(
+                      child: Text(
+                        'Balance Actions',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                    if (!_isBitcoin && _isAssetOwner(balance))
+                      const Tab(
+                        child: Text(
+                          'Issuance Actions',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -307,174 +368,175 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
     required bool isLoading,
   }) {
     return Expanded(
-      child: TabBarView(
-        controller: _tabController,
-        physics: const NeverScrollableScrollPhysics(),
-        children: [
-          // Balance Actions Tab
-          isLoading
-              ? Column(
-                  children: [
-                    const SizedBox(height: 16),
-                    Expanded(
-                      child: SingleChildScrollView(
-                        child: _buildLoadingActionButtons(context, 6),
-                      ),
-                    ),
-                  ],
-                )
-              : Column(
-                  children: [
-                    if (!_isBitcoin)
-                      Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: FilterBar(
-                          currentFilter: _currentFilter,
-                          onFilterSelected: _setFilter,
-                          onClearFilter: _clearFilter,
-                          filterOptions: const [
-                            FilterOption(
-                                label: 'Address Balances',
-                                value: BalanceViewFilter.address),
-                            FilterOption(
-                                label: 'Utxo Balances',
-                                value: BalanceViewFilter.utxo),
-                          ],
-                          disabledOptions:
-                              _isBitcoin ? [BalanceViewFilter.utxo] : [],
+      child: BlocBuilder<AssetViewBloc, RemoteDataState<MultiAddressBalance>>(
+        builder: (context, state) {
+          return TabBarView(
+            controller: _tabController,
+            physics: const NeverScrollableScrollPhysics(),
+            children: [
+              // Balance Actions Tab
+              isLoading
+                  ? Column(
+                      children: [
+                        const SizedBox(height: 16),
+                        Expanded(
+                          child: SingleChildScrollView(
+                            child: Column(
+                              children: [
+                                _buildLoadingActionButtons(context, 6),
+                              ],
+                            ),
+                          ),
                         ),
+                      ],
+                    )
+                  : state.maybeWhen(
+                      success: (balance) => Column(
+                        children: [
+                          if (!_isBitcoin)
+                            Padding(
+                              padding: const EdgeInsets.all(16.0),
+                              child: FilterBar(
+                                currentFilter: _currentFilter,
+                                onFilterSelected: _setFilter,
+                                onClearFilter: _clearFilter,
+                                filterOptions: const [
+                                  FilterOption(
+                                      label: 'Address Balances',
+                                      value: BalanceViewFilter.address),
+                                  FilterOption(
+                                      label: 'Utxo Balances',
+                                      value: BalanceViewFilter.utxo),
+                                ],
+                                disabledOptions:
+                                    _isBitcoin ? [BalanceViewFilter.utxo] : [],
+                              ),
+                            ),
+                          Expanded(
+                            child: SingleChildScrollView(
+                              child: Column(
+                                children: [
+                                  if (_isBitcoin) ...[
+                                    IconItemButton(
+                                      title: 'Send',
+                                      icon: AppIcons.sendIcon(
+                                        context: context,
+                                      ),
+                                      onTap: () {
+                                        _showTransactionPage(
+                                            type: TransactionType.send);
+                                      },
+                                    ),
+                                    IconItemButton(
+                                      title: 'Receive',
+                                      icon: AppIcons.receiveIcon(
+                                        context: context,
+                                      ),
+                                      onTap: () {
+                                        // Handle Receive
+                                      },
+                                    ),
+                                  ] else if (_currentFilter ==
+                                      BalanceViewFilter.address) ...[
+                                    IconItemButton(
+                                      title: 'Send',
+                                      icon: AppIcons.sendIcon(
+                                        context: context,
+                                      ),
+                                      onTap: () {
+                                        _showTransactionPage(
+                                            type: TransactionType.send);
+                                      },
+                                    ),
+                                    IconItemButton(
+                                      title: 'Receive',
+                                      icon: AppIcons.receiveIcon(
+                                        context: context,
+                                      ),
+                                      onTap: () {
+                                        // Handle Receive
+                                      },
+                                    ),
+                                    IconItemButton(
+                                      title: 'Attach',
+                                      icon: AppIcons.attachIcon(
+                                        context: context,
+                                      ),
+                                      onTap: () {
+                                        // Handle Attach
+                                      },
+                                    ),
+                                    IconItemButton(
+                                      title: 'Order',
+                                      icon: AppIcons.orderIcon(
+                                        context: context,
+                                      ),
+                                      onTap: () {
+                                        // Handle Order
+                                      },
+                                    ),
+                                    IconItemButton(
+                                      title: 'Destroy',
+                                      icon: AppIcons.destroyIcon(
+                                        context: context,
+                                      ),
+                                      onTap: () {
+                                        // Handle Destroy
+                                      },
+                                    ),
+                                    IconItemButton(
+                                      title: 'Dispenser',
+                                      icon: AppIcons.dispenserIcon(
+                                        context: context,
+                                      ),
+                                      onTap: () {
+                                        // Handle Dispenser
+                                      },
+                                    ),
+                                  ] else if (_currentFilter ==
+                                      BalanceViewFilter.utxo) ...[
+                                    IconItemButton(
+                                      title: 'Send',
+                                      icon: AppIcons.sendIcon(
+                                        context: context,
+                                      ),
+                                      onTap: () {
+                                        // Handle UTXO Send
+                                      },
+                                    ),
+                                    IconItemButton(
+                                      title: 'Detach',
+                                      icon: AppIcons.detachIcon(
+                                        context: context,
+                                      ),
+                                      onTap: () {
+                                        // Handle Detach
+                                      },
+                                    ),
+                                    IconItemButton(
+                                      title: 'Swap',
+                                      icon: AppIcons.swapIcon(
+                                        context: context,
+                                      ),
+                                      onTap: () {
+                                        // Handle Swap
+                                      },
+                                    ),
+                                  ],
+                                  const SizedBox(height: 16),
+                                  _buildBalanceBreakdown(context, balance),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                    Expanded(
-                      child: SingleChildScrollView(
-                        child: Column(
-                          children: [
-                            const SizedBox(height: 8),
-                            if (_isBitcoin) ...[
-                              IconItemButton(
-                                title: 'Send',
-                                icon: AppIcons.sendIcon(
-                                  context: context,
-                                ),
-                                onTap: () {
-                                  _showTransactionPage(
-                                      type: TransactionType.send);
-                                },
-                              ),
-                              IconItemButton(
-                                title: 'Receive',
-                                icon: AppIcons.receiveIcon(
-                                  context: context,
-                                ),
-                                onTap: () {
-                                  // Handle Receive
-                                },
-                              ),
-                            ] else if (_currentFilter ==
-                                BalanceViewFilter.address) ...[
-                              IconItemButton(
-                                title: 'Send',
-                                icon: AppIcons.sendIcon(
-                                  context: context,
-                                ),
-                                onTap: () {
-                                  _showTransactionPage(
-                                      type: TransactionType.send);
-                                },
-                              ),
-                              IconItemButton(
-                                title: 'Receive',
-                                icon: AppIcons.receiveIcon(
-                                  context: context,
-                                ),
-                                onTap: () {
-                                  // Handle Receive
-                                },
-                              ),
-                              IconItemButton(
-                                title: 'Attach',
-                                icon: AppIcons.attachIcon(
-                                  context: context,
-                                ),
-                                onTap: () {
-                                  // Handle Attach
-                                },
-                              ),
-                              IconItemButton(
-                                title: 'Order',
-                                icon: AppIcons.orderIcon(
-                                  context: context,
-                                ),
-                                onTap: () {
-                                  // Handle Order
-                                },
-                              ),
-                              IconItemButton(
-                                title: 'Destroy',
-                                icon: AppIcons.destroyIcon(
-                                  context: context,
-                                ),
-                                onTap: () {
-                                  // Handle Destroy
-                                },
-                              ),
-                              IconItemButton(
-                                title: 'Dispenser',
-                                icon: AppIcons.dispenserIcon(
-                                  context: context,
-                                ),
-                                onTap: () {
-                                  // Handle Dispenser
-                                },
-                              ),
-                            ] else if (_currentFilter ==
-                                BalanceViewFilter.utxo) ...[
-                              IconItemButton(
-                                title: 'Send',
-                                icon: AppIcons.sendIcon(
-                                  context: context,
-                                ),
-                                onTap: () {
-                                  // Handle UTXO Send
-                                },
-                              ),
-                              IconItemButton(
-                                title: 'Detach',
-                                icon: AppIcons.detachIcon(
-                                  context: context,
-                                ),
-                                onTap: () {
-                                  // Handle Detach
-                                },
-                              ),
-                              IconItemButton(
-                                title: 'Swap',
-                                icon: AppIcons.swapIcon(
-                                  context: context,
-                                ),
-                                onTap: () {
-                                  // Handle Swap
-                                },
-                              ),
-                            ],
-                            const SizedBox(height: 16),
-                          ],
-                        ),
-                      ),
+                      orElse: () => const SizedBox.shrink(),
                     ),
-                  ],
-                ),
-
-          // Issuance Actions Tab
-          if (!_isBitcoin)
-            isLoading
-                ? SingleChildScrollView(
-                    padding: const EdgeInsets.all(16.0),
-                    child: _buildLoadingActionButtons(context, 9),
-                  )
-                : SingleChildScrollView(
-                    padding: const EdgeInsets.all(16.0),
+              if (!_isBitcoin)
+                state.maybeWhen(
+                  success: (balance) => SingleChildScrollView(
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         IconItemButton(
                           title: 'Pay Dividend',
@@ -558,9 +620,72 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
                           },
                         ),
                         const SizedBox(height: 16),
+                        _buildBalanceBreakdown(context, balance),
                       ],
                     ),
                   ),
+                  orElse: () => const SizedBox.shrink(),
+                ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  // Helper method to build the balance breakdown section
+  Widget _buildBalanceBreakdown(
+      BuildContext context, MultiAddressBalance balance) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 50.0, left: 16.0, right: 16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Title styled like a tab
+          TabBar(
+            controller: TabController(length: 1, vsync: this),
+            indicatorWeight: 2,
+            indicatorColor: transparentPurple33,
+            labelColor: Theme.of(context).textTheme.bodyMedium?.color,
+            indicatorSize: TabBarIndicatorSize.label,
+            tabAlignment: TabAlignment.start,
+            isScrollable: true,
+            tabs: const [
+              Tab(
+                child: Text(
+                  'Balance Breakdown',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          // Balance entries
+          ...balance.entries.map((entry) {
+            final displayId = entry.utxo ?? entry.address ?? '';
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 8.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: MiddleTruncatedText(
+                      text: displayId,
+                      width: 150,
+                      charsToShow: 10,
+                    ),
+                  ),
+                  SelectableText(
+                    quantityRemoveTrailingZeros(entry.quantityNormalized),
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                ],
+              ),
+            );
+          }).toList(),
         ],
       ),
     );
@@ -583,14 +708,24 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
             ],
           ),
           error: (error) => SelectableText(error),
-          success: (balance) => Column(
-            children: [
-              _buildHeader(
-                  context: context, isLoading: false, balance: balance),
-              _buildTabs(context),
-              _buildTabContent(context: context, isLoading: false),
-            ],
-          ),
+          success: (balance) {
+            if (_tabController.length !=
+                (_isBitcoin || !_isAssetOwner(balance) ? 1 : 2)) {
+              _tabController.dispose();
+              _tabController = TabController(
+                length: _isBitcoin || !_isAssetOwner(balance) ? 1 : 2,
+                vsync: this,
+              );
+            }
+            return Column(
+              children: [
+                _buildHeader(
+                    context: context, isLoading: false, balance: balance),
+                _buildTabs(context),
+                _buildTabContent(context: context, isLoading: false),
+              ],
+            );
+          },
         );
       },
     );

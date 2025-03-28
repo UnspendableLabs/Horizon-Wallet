@@ -22,17 +22,9 @@ class AssetViewBloc
 
   Future<void> _onPageLoaded(PageLoaded event, emit) async {
     emit(const RemoteDataState<MultiAddressBalance>.loading());
-    // TODO: use new endpoint when ready
-    final List<MultiAddressBalance> balances =
-        await balanceRepository.getBalancesForAddresses(addresses);
+    final MultiAddressBalance balances = await balanceRepository
+        .getBalancesForAddressesAndAsset(addresses, asset);
 
-    final balancesByAsset =
-        balances.where((balance) => balance.asset == asset).toList();
-    if (balancesByAsset.length > 1) {
-      emit(RemoteDataState<MultiAddressBalance>.error(
-          'Multiple balances found for asset $asset'));
-    } else {
-      emit(RemoteDataState<MultiAddressBalance>.success(balancesByAsset.first));
-    }
+    emit(RemoteDataState<MultiAddressBalance>.success(balances));
   }
 }
