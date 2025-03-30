@@ -88,6 +88,7 @@ void main() {
             assetLongname: 'Bitcoin',
             description: 'Bitcoin',
             divisible: true,
+            locked: true,
           ),
         ),
         MultiAddressBalance(
@@ -108,6 +109,7 @@ void main() {
             assetLongname: 'Counterparty',
             description: 'Counterparty',
             divisible: true,
+            locked: true,
           ),
         ),
       ];
@@ -329,6 +331,7 @@ void main() {
               assetLongname: 'Bitcoin',
               description: 'Bitcoin',
               divisible: true,
+              locked: false,
             ),
           ),
           MultiAddressBalance(
@@ -350,6 +353,7 @@ void main() {
               assetLongname: 'Counterparty',
               description: 'Counterparty',
               divisible: true,
+              locked: false,
             ),
           ),
         ];

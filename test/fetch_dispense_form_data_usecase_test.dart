@@ -2,8 +2,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/entities/address.dart';
-import 'package:horizon/domain/entities/asset_info.dart';
-import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
 import 'package:horizon/presentation/screens/compose_dispense/usecase/fetch_form_data.dart';
@@ -37,22 +35,6 @@ void main() {
       address: 'test-address',
       index: 0,
     );
-
-    const assetInfo = AssetInfo(
-      assetLongname: "BTC_LONGNAME",
-      divisible: true,
-      description: "Bitcoin Description",
-    );
-
-    final balances = [
-      Balance(
-        address: address.address,
-        asset: 'BTC',
-        quantity: 1000,
-        quantityNormalized: '0.00001000',
-        assetInfo: assetInfo, // Adding assetInfo to the balance entity
-      ),
-    ];
 
     const feeEstimates = FeeEstimates(fast: 10, medium: 5, slow: 2);
 

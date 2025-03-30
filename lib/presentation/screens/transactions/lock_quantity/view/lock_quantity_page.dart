@@ -14,6 +14,7 @@ import 'package:horizon/presentation/common/transaction_stepper/bloc/transaction
 import 'package:horizon/presentation/common/transaction_stepper/bloc/transaction_state.dart';
 import 'package:horizon/presentation/common/transaction_stepper/view/steps/transaction_form_page.dart';
 import 'package:horizon/presentation/common/transaction_stepper/view/transaction_stepper.dart';
+import 'package:horizon/presentation/common/transactions/confirmation_field_with_label.dart';
 import 'package:horizon/presentation/common/transactions/token_name_field.dart';
 import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
 import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
@@ -167,7 +168,7 @@ class _LockQuantityPageState extends State<LockQuantityPage> {
               ),
               confirmationStepContent:
                   ConfirmationStepContent<ComposeIssuanceResponseVerbose>(
-                title: 'Confirm Transaction',
+                title: 'Confirm Lock Supply Transaction',
                 buildConfirmationContent: (composeState, onErrorButtonAction) =>
                     TransactionComposePage<ComposeIssuanceResponseVerbose>(
                   composeState: composeState,
@@ -177,37 +178,27 @@ class _LockQuantityPageState extends State<LockQuantityPage> {
                           {ComposeStateSuccess<ComposeIssuanceResponseVerbose>?
                               composeState,
                           required bool loading}) =>
-                      const Column(
+                      Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // QuantityDisplay(
-                      //   loading: loading,
-                      //   quantity:
-                      //       composeState?.composeData.params.quantityNormalized,
-                      // ),
-                      // commonHeightSizedBox,
-                      // ConfirmationFieldWithLabel(
-                      //   loading: loading,
-                      //   label: 'Token Name',
-                      //   value: composeState?.composeData.params.asset != null
-                      //       ? displayAssetName(
-                      //           composeState!.composeData.params.asset,
-                      //           composeState
-                      //               .composeData.params.assetInfo.assetLongname)
-                      //       : null,
-                      // ),
-                      // commonHeightSizedBox,
-                      // ConfirmationFieldWithLabel(
-                      //   loading: loading,
-                      //   label: 'Source Address',
-                      //   value: composeState?.composeData.params.source,
-                      // ),
-                      // commonHeightSizedBox,
-                      // ConfirmationFieldWithLabel(
-                      //   loading: loading,
-                      //   label: 'Recipient Address',
-                      //   value: composeState?.composeData.params.destination,
-                      // ),
+                      ConfirmationFieldWithLabel(
+                        loading: loading,
+                        label: 'Token Name',
+                        value: composeState?.composeData.params.asset,
+                      ),
+                      commonHeightSizedBox,
+                      ConfirmationFieldWithLabel(
+                        loading: loading,
+                        label: 'Quantity',
+                        value:
+                            composeState?.composeData.params.quantityNormalized,
+                      ),
+                      commonHeightSizedBox,
+                      ConfirmationFieldWithLabel(
+                        loading: loading,
+                        label: 'Locked',
+                        value: composeState?.composeData.params.lock.toString(),
+                      ),
                     ],
                   ),
                 ),

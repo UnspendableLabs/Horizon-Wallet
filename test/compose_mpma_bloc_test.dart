@@ -265,6 +265,7 @@ void main() {
           quantityNormalized: '12',
           assetInfo: const AssetInfo(
             assetLongname: null,
+            locked: true,
             divisible: true,
           ),
         ),
@@ -276,6 +277,7 @@ void main() {
           assetInfo: const AssetInfo(
             assetLongname: null,
             divisible: false,
+            locked: true,
           ),
         ),
       ];

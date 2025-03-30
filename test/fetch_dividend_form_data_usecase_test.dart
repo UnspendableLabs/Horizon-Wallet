@@ -60,6 +60,7 @@ void main() {
       assetLongname: 'Test Asset Info',
       divisible: true,
       description: 'Test Description',
+      locked: false,
     );
 
     final mockBalances = [

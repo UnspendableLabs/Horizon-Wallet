@@ -5,4 +5,6 @@ abstract class FairminterRepository {
   TaskEither<String, List<Fairminter>> getAllFairminters();
   TaskEither<String, List<Fairminter>> getFairmintersByAddress(String address,
       [String? status]);
+  TaskEither<String, List<Fairminter>> getFairmintersByAsset(String asset,
+      [String? status]);
 }

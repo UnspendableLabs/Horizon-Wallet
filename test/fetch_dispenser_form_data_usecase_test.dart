@@ -51,6 +51,7 @@ void main() {
       assetLongname: "ASSET_LONGNAME",
       divisible: true,
       description: "ASSET_DESCRIPTION",
+      locked: false,
     );
 
     final balances = [
@@ -143,6 +144,7 @@ void main() {
       assetLongname: "ASSET_LONGNAME",
       divisible: true,
       description: "ASSET_DESCRIPTION",
+      locked: false,
     );
 
     final balances = [

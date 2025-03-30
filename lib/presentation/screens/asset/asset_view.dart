@@ -230,7 +230,7 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
 
   // Helper method to build tabs
   Widget _buildTabs(BuildContext context) {
-    return BlocBuilder<AssetViewBloc, RemoteDataState<MultiAddressBalance>>(
+    return BlocBuilder<AssetViewBloc, RemoteDataState<AssetViewData>>(
       builder: (context, state) {
         return state.when(
           initial: () => const SizedBox.shrink(),
@@ -279,7 +279,7 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
             ),
           ),
           error: (_) => const SizedBox.shrink(),
-          success: (balance) => Container(
+          success: (assetViewData) => Container(
             decoration: BoxDecoration(
               border: Border(
                 bottom: BorderSide(
@@ -318,7 +318,7 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
                         ),
                       ),
                     ),
-                    if (!_isBitcoin && _isAssetOwner(balance))
+                    if (!_isBitcoin && _isAssetOwner(assetViewData.balances))
                       const Tab(
                         child: Text(
                           'Issuance Actions',
@@ -369,7 +369,7 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
     required bool isLoading,
   }) {
     return Expanded(
-      child: BlocBuilder<AssetViewBloc, RemoteDataState<MultiAddressBalance>>(
+      child: BlocBuilder<AssetViewBloc, RemoteDataState<AssetViewData>>(
         builder: (context, state) {
           return TabBarView(
             controller: _tabController,
@@ -392,252 +392,263 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
                       ],
                     )
                   : state.maybeWhen(
-                      success: (balance) => Column(
-                        children: [
-                          if (!_isBitcoin)
-                            Padding(
-                              padding: const EdgeInsets.all(16.0),
-                              child: FilterBar(
-                                currentFilter: _currentFilter,
-                                onFilterSelected: _setFilter,
-                                onClearFilter: _clearFilter,
-                                filterOptions: const [
-                                  FilterOption(
-                                      label: 'Address Balances',
-                                      value: BalanceViewFilter.address),
-                                  FilterOption(
-                                      label: 'Utxo Balances',
-                                      value: BalanceViewFilter.utxo),
-                                ],
-                                disabledOptions:
-                                    _isBitcoin ? [BalanceViewFilter.utxo] : [],
-                              ),
-                            ),
-                          Expanded(
-                            child: SingleChildScrollView(
-                              child: Column(
-                                children: [
-                                  if (_isBitcoin) ...[
-                                    IconItemButton(
-                                      title: 'Send',
-                                      icon: AppIcons.sendIcon(
-                                        context: context,
-                                      ),
-                                      onTap: () {
-                                        _showTransactionPage(
-                                            type: TransactionType.send);
-                                      },
-                                    ),
-                                    IconItemButton(
-                                      title: 'Receive',
-                                      icon: AppIcons.receiveIcon(
-                                        context: context,
-                                      ),
-                                      onTap: () {
-                                        // Handle Receive
-                                      },
-                                    ),
-                                  ] else if (_currentFilter ==
-                                      BalanceViewFilter.address) ...[
-                                    IconItemButton(
-                                      title: 'Send',
-                                      icon: AppIcons.sendIcon(
-                                        context: context,
-                                      ),
-                                      onTap: () {
-                                        _showTransactionPage(
-                                            type: TransactionType.send);
-                                      },
-                                    ),
-                                    IconItemButton(
-                                      title: 'Receive',
-                                      icon: AppIcons.receiveIcon(
-                                        context: context,
-                                      ),
-                                      onTap: () {
-                                        // Handle Receive
-                                      },
-                                    ),
-                                    IconItemButton(
-                                      title: 'Attach',
-                                      icon: AppIcons.attachIcon(
-                                        context: context,
-                                      ),
-                                      onTap: () {
-                                        // Handle Attach
-                                      },
-                                    ),
-                                    IconItemButton(
-                                      title: 'Order',
-                                      icon: AppIcons.orderIcon(
-                                        context: context,
-                                      ),
-                                      onTap: () {
-                                        // Handle Order
-                                      },
-                                    ),
-                                    IconItemButton(
-                                      title: 'Destroy',
-                                      icon: AppIcons.destroyIcon(
-                                        context: context,
-                                      ),
-                                      onTap: () {
-                                        // Handle Destroy
-                                      },
-                                    ),
-                                    IconItemButton(
-                                      title: 'Dispenser',
-                                      icon: AppIcons.dispenserIcon(
-                                        context: context,
-                                      ),
-                                      onTap: () {
-                                        // Handle Dispenser
-                                      },
-                                    ),
-                                  ] else if (_currentFilter ==
-                                      BalanceViewFilter.utxo) ...[
-                                    IconItemButton(
-                                      title: 'Send',
-                                      icon: AppIcons.sendIcon(
-                                        context: context,
-                                      ),
-                                      onTap: () {
-                                        // Handle UTXO Send
-                                      },
-                                    ),
-                                    IconItemButton(
-                                      title: 'Detach',
-                                      icon: AppIcons.detachIcon(
-                                        context: context,
-                                      ),
-                                      onTap: () {
-                                        // Handle Detach
-                                      },
-                                    ),
-                                    IconItemButton(
-                                      title: 'Swap',
-                                      icon: AppIcons.swapIcon(
-                                        context: context,
-                                      ),
-                                      onTap: () {
-                                        // Handle Swap
-                                      },
-                                    ),
+                      success: (assetViewData) {
+                        final balances = assetViewData.balances;
+                        return Column(
+                          children: [
+                            if (!_isBitcoin)
+                              Padding(
+                                padding: const EdgeInsets.all(16.0),
+                                child: FilterBar(
+                                  currentFilter: _currentFilter,
+                                  onFilterSelected: _setFilter,
+                                  onClearFilter: _clearFilter,
+                                  filterOptions: const [
+                                    FilterOption(
+                                        label: 'Address Balances',
+                                        value: BalanceViewFilter.address),
+                                    FilterOption(
+                                        label: 'Utxo Balances',
+                                        value: BalanceViewFilter.utxo),
                                   ],
-                                  const SizedBox(height: 16),
-                                  _buildBalanceBreakdown(context, balance),
-                                ],
+                                  disabledOptions: _isBitcoin
+                                      ? [BalanceViewFilter.utxo]
+                                      : [],
+                                ),
+                              ),
+                            Expanded(
+                              child: SingleChildScrollView(
+                                child: Column(
+                                  children: [
+                                    if (_isBitcoin) ...[
+                                      IconItemButton(
+                                        title: 'Send',
+                                        icon: AppIcons.sendIcon(
+                                          context: context,
+                                        ),
+                                        onTap: () {
+                                          _showTransactionPage(
+                                              type: TransactionType.send);
+                                        },
+                                      ),
+                                      IconItemButton(
+                                        title: 'Receive',
+                                        icon: AppIcons.receiveIcon(
+                                          context: context,
+                                        ),
+                                        onTap: () {
+                                          // Handle Receive
+                                        },
+                                      ),
+                                    ] else if (_currentFilter ==
+                                        BalanceViewFilter.address) ...[
+                                      IconItemButton(
+                                        title: 'Send',
+                                        icon: AppIcons.sendIcon(
+                                          context: context,
+                                        ),
+                                        onTap: () {
+                                          _showTransactionPage(
+                                              type: TransactionType.send);
+                                        },
+                                      ),
+                                      IconItemButton(
+                                        title: 'Receive',
+                                        icon: AppIcons.receiveIcon(
+                                          context: context,
+                                        ),
+                                        onTap: () {
+                                          // Handle Receive
+                                        },
+                                      ),
+                                      IconItemButton(
+                                        title: 'Attach',
+                                        icon: AppIcons.attachIcon(
+                                          context: context,
+                                        ),
+                                        onTap: () {
+                                          // Handle Attach
+                                        },
+                                      ),
+                                      IconItemButton(
+                                        title: 'Order',
+                                        icon: AppIcons.orderIcon(
+                                          context: context,
+                                        ),
+                                        onTap: () {
+                                          // Handle Order
+                                        },
+                                      ),
+                                      IconItemButton(
+                                        title: 'Destroy',
+                                        icon: AppIcons.destroyIcon(
+                                          context: context,
+                                        ),
+                                        onTap: () {
+                                          // Handle Destroy
+                                        },
+                                      ),
+                                      IconItemButton(
+                                        title: 'Dispenser',
+                                        icon: AppIcons.dispenserIcon(
+                                          context: context,
+                                        ),
+                                        onTap: () {
+                                          // Handle Dispenser
+                                        },
+                                      ),
+                                    ] else if (_currentFilter ==
+                                        BalanceViewFilter.utxo) ...[
+                                      IconItemButton(
+                                        title: 'Send',
+                                        icon: AppIcons.sendIcon(
+                                          context: context,
+                                        ),
+                                        onTap: () {
+                                          // Handle UTXO Send
+                                        },
+                                      ),
+                                      IconItemButton(
+                                        title: 'Detach',
+                                        icon: AppIcons.detachIcon(
+                                          context: context,
+                                        ),
+                                        onTap: () {
+                                          // Handle Detach
+                                        },
+                                      ),
+                                      IconItemButton(
+                                        title: 'Swap',
+                                        icon: AppIcons.swapIcon(
+                                          context: context,
+                                        ),
+                                        onTap: () {
+                                          // Handle Swap
+                                        },
+                                      ),
+                                    ],
+                                    const SizedBox(height: 16),
+                                    _buildBalanceBreakdown(context, balances),
+                                  ],
+                                ),
                               ),
                             ),
-                          ),
-                        ],
-                      ),
+                          ],
+                        );
+                      },
                       orElse: () => const SizedBox.shrink(),
                     ),
               if (!_isBitcoin)
                 state.maybeWhen(
-                  success: (balance) => SingleChildScrollView(
-                    child: Column(
-                      children: [
-                        IconItemButton(
-                          title: 'Pay Dividend',
-                          icon: AppIcons.dividendIcon(
-                            context: context,
+                  success: (assetViewData) {
+                    final balances = assetViewData.balances;
+                    final fairminters = assetViewData.fairminters;
+                    final isLocked = balances.assetInfo.locked ||
+                        fairminters.any(
+                            (fairminter) => fairminter.asset == balances.asset);
+                    return SingleChildScrollView(
+                      child: Column(
+                        children: [
+                          IconItemButton(
+                            title: 'Pay Dividend',
+                            icon: AppIcons.dividendIcon(
+                              context: context,
+                            ),
+                            onTap: () {
+                              // Handle Pay Dividend
+                            },
                           ),
-                          onTap: () {
-                            // Handle Pay Dividend
-                          },
-                        ),
-                        IconItemButton(
-                          title: 'Reset Asset',
-                          icon: AppIcons.resetIcon(
-                            context: context,
+                          IconItemButton(
+                            title: 'Reset Asset',
+                            icon: AppIcons.resetIcon(
+                              context: context,
+                            ),
+                            onTap: isLocked
+                                ? null
+                                : () {
+                                    // Handle Reset Asset
+                                  },
                           ),
-                          onTap: balance.assetInfo.locked
-                              ? null
-                              : () {
-                                  // Handle Reset Asset
-                                },
-                        ),
-                        IconItemButton(
-                          title: 'Create Fairminter',
-                          icon: AppIcons.mintIcon(
-                            context: context,
+                          IconItemButton(
+                            title: 'Create Fairminter',
+                            icon: AppIcons.mintIcon(
+                              context: context,
+                            ),
+                            onTap: isLocked
+                                ? null
+                                : () {
+                                    // Handle Create Fairminter
+                                  },
                           ),
-                          onTap: balance.assetInfo.locked
-                              ? null
-                              : () {
-                                  // Handle Create Fairminter
-                                },
-                        ),
-                        IconItemButton(
-                          title: 'Issue More',
-                          icon: AppIcons.plusIcon(
-                            context: context,
+                          IconItemButton(
+                            title: 'Issue More',
+                            icon: AppIcons.plusIcon(
+                              context: context,
+                            ),
+                            onTap: isLocked
+                                ? null
+                                : () {
+                                    // Handle Issue More
+                                  },
                           ),
-                          onTap: balance.assetInfo.locked
-                              ? null
-                              : () {
-                                  // Handle Issue More
-                                },
-                        ),
-                        IconItemButton(
-                          title: 'Issue Subasset',
-                          icon: AppIcons.plusIcon(
-                            context: context,
+                          IconItemButton(
+                            title: 'Issue Subasset',
+                            icon: AppIcons.plusIcon(
+                              context: context,
+                            ),
+                            onTap: () {
+                              // Handle Issue Subasset
+                            },
                           ),
-                          onTap: () {
-                            // Handle Issue Subasset
-                          },
-                        ),
-                        IconItemButton(
-                          title: 'Update Description',
-                          icon: AppIcons.editIcon(
-                            context: context,
+                          IconItemButton(
+                            title: 'Update Description',
+                            icon: AppIcons.editIcon(
+                              context: context,
+                            ),
+                            onTap: isLocked
+                                ? null
+                                : () {
+                                    // Handle Update Description
+                                  },
                           ),
-                          onTap: balance.assetInfo.locked
-                              ? null
-                              : () {
-                                  // Handle Update Description
-                                },
-                        ),
-                        IconItemButton(
-                          title: 'Lock Supply',
-                          icon: AppIcons.lockIcon(
-                            context: context,
+                          IconItemButton(
+                            title: 'Lock Supply',
+                            icon: AppIcons.lockIcon(
+                              context: context,
+                            ),
+                            onTap: isLocked
+                                ? null
+                                : () {
+                                    _showTransactionPage(
+                                        type: TransactionType.lockQuantity);
+                                  },
                           ),
-                          onTap: balance.assetInfo.locked
-                              ? null
-                              : () {
-                                  _showTransactionPage(
-                                      type: TransactionType.lockQuantity);
-                                },
-                        ),
-                        IconItemButton(
-                          title: 'Lock Description',
-                          icon: AppIcons.lockIcon(
-                            context: context,
+                          IconItemButton(
+                            title: 'Lock Description',
+                            icon: AppIcons.lockIcon(
+                              context: context,
+                            ),
+                            onTap: isLocked
+                                ? null
+                                : () {
+                                    // Handle Lock Description
+                                  },
                           ),
-                          onTap: balance.assetInfo.locked
-                              ? null
-                              : () {
-                                  // Handle Lock Description
-                                },
-                        ),
-                        IconItemButton(
-                          title: 'Transfer Issuance Rights',
-                          icon: AppIcons.transferIcon(
-                            context: context,
+                          IconItemButton(
+                            title: 'Transfer Issuance Rights',
+                            icon: AppIcons.transferIcon(
+                              context: context,
+                            ),
+                            onTap: () {
+                              // Handle Transfer Issuance Rights
+                            },
                           ),
-                          onTap: () {
-                            // Handle Transfer Issuance Rights
-                          },
-                        ),
-                        const SizedBox(height: 16),
-                        _buildBalanceBreakdown(context, balance),
-                      ],
-                    ),
-                  ),
+                          const SizedBox(height: 16),
+                          _buildBalanceBreakdown(context, balances),
+                        ],
+                      ),
+                    );
+                  },
                   orElse: () => const SizedBox.shrink(),
                 ),
             ],
@@ -707,7 +718,7 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<AssetViewBloc, RemoteDataState<MultiAddressBalance>>(
+    return BlocConsumer<AssetViewBloc, RemoteDataState<AssetViewData>>(
       listener: (context, state) {
         // TODO: implement listener
       },
@@ -722,19 +733,25 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
             ],
           ),
           error: (error) => SelectableText(error),
-          success: (balance) {
+          success: (assetViewData) {
             if (_tabController.length !=
-                (_isBitcoin || !_isAssetOwner(balance) ? 1 : 2)) {
+                (_isBitcoin || !_isAssetOwner(assetViewData.balances)
+                    ? 1
+                    : 2)) {
               _tabController.dispose();
               _tabController = TabController(
-                length: _isBitcoin || !_isAssetOwner(balance) ? 1 : 2,
+                length: _isBitcoin || !_isAssetOwner(assetViewData.balances)
+                    ? 1
+                    : 2,
                 vsync: this,
               );
             }
             return Column(
               children: [
                 _buildHeader(
-                    context: context, isLoading: false, balance: balance),
+                    context: context,
+                    isLoading: false,
+                    balance: assetViewData.balances),
                 _buildTabs(context),
                 _buildTabContent(context: context, isLoading: false),
               ],

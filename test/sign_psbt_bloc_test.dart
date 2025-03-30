@@ -276,6 +276,7 @@ void main() {
                     assetLongname: null,
                     description: '',
                     divisible: true,
+                    locked: false,
                   ),
                 ),
               ]);
@@ -330,6 +331,7 @@ void main() {
                     assetLongname: null,
                     description: '',
                     divisible: true,
+                    locked: false,
                   ),
                 ),
               ]);
