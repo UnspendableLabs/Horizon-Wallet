@@ -1,9 +1,11 @@
 import 'package:horizon/presentation/common/transaction_stepper/bloc/transaction_event.dart';
 
 class SendDependenciesRequested extends DependenciesRequested {
+  final String assetName;
+  final List<String> addresses;
   SendDependenciesRequested({
-    required super.assetName,
-    required super.addresses,
+    required this.assetName,
+    required this.addresses,
   });
 }
 

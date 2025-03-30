@@ -2,12 +2,7 @@ import 'package:horizon/domain/entities/fee_option.dart';
 
 abstract class TransactionEvent {}
 
-class DependenciesRequested extends TransactionEvent {
-  final String assetName;
-  final List<String> addresses;
-
-  DependenciesRequested({required this.assetName, required this.addresses});
-}
+class DependenciesRequested extends TransactionEvent {}
 
 class FeeOptionSelected extends TransactionEvent {
   final FeeOption feeOption;

@@ -35,4 +35,19 @@ class MultiAddressBalance {
 
     return true;
   }
+
+  static final empty = MultiAddressBalance(
+    asset: '',
+    assetLongname: null,
+    total: 0,
+    totalNormalized: '0',
+    entries: [],
+    assetInfo: const AssetInfo(
+      assetLongname: null,
+      description: '',
+      divisible: true,
+      owner: null,
+      locked: false,
+    ),
+  );
 }
