@@ -166,6 +166,7 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
                 _buildConfirmationDetails(composeTransaction),
             onConfirmationBack: () => _onConfirmationBack(),
             onConfirmationContinue: (composeTransaction, fee, formKey) {
+              
               _onConfirmationContinue(composeTransaction, fee, formKey);
             },
             onFinalizeSubmit: (password, formKey) {
@@ -440,8 +441,14 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
                     try {
                       return Column(
                         children: [
-                          SelectableText(
-                              'Total XCP price: ${_getTotalXCPPriceForQuantity(quantityController.text, state.selectedFairminter!.price!, state.selectedFairminter!.quantityByPrice!, state.selectedFairminter!.divisible)}'),
+                          FairminterProperty(
+                              label: 'Total XCP price',
+                              property: _getTotalXCPPriceForQuantity(
+                                      quantityController.text,
+                                      state.selectedFairminter!.price!,
+                                      state.selectedFairminter!.quantityByPrice!,
+                                      state.selectedFairminter!.divisible)
+                                  .toString()),
                         ],
                       );
                     } catch (e) {
