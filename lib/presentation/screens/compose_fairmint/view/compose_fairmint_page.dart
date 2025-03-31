@@ -324,7 +324,7 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
               key: _dropdownKey, // Add the key here
               displayStringForOption: (fairminter) =>
                   displayAssetName(fairminter.asset!, fairminter.assetLongname),
-              label: "Select a fairminter",
+              label: "a fairminter",
               selectedValue: state.selectedFairminter,
               items: filteredFairminters
                   .map((fairminter) => DropdownMenuItem(
@@ -337,7 +337,7 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
                     .read<ComposeFairmintBloc>()
                     .add(FairminterChanged(value: value));
                 setState(() {
-                  quantityController.text = '';
+                  quantityController.text = '1';
                 });
               },
             ),
@@ -347,41 +347,92 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
       const SizedBox(height: 16.0),
       if (state.selectedFairminter != null)
         Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 16.0),
-            SelectableText(
-                'Quantity Locked After Fairminter Closes: ${state.selectedFairminter!.lockQuantity}'),
+            const Text("Mint Quantity",
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey,
+                )),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              spacing: 16,
+              children: [
+                Expanded(
+                  child: Slider(
+                      label: quantityController.text,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 0, vertical: 8),
+                      value: double.parse(quantityController.text),
+                      max: double.parse(
+                          state.selectedFairminter!.maxMintPerTxNormalized!),
+                      min: 1,
+                      divisions: double.parse(state
+                                  .selectedFairminter!.maxMintPerTxNormalized!)
+                              .toInt() -
+                          1,
+                      onChanged: (value) {
+                        setState(() {
+                          quantityController.text = value.toString();
+                        });
+                      }),
+                ),
+                Text(
+                  quantityController.text,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    color: Colors.white,
+                  ),
+                ),
+              ],
+            ),
+
+            // HorizonUI.HorizonTextFormField(
+            //   label: 'Quantity',
+            //   controller: quantityController,
+            //   enabled: true,
+            //   autovalidateMode: AutovalidateMode.always,
+            //   inputFormatters: [
+            //     state.selectedFairminter!.divisible == true
+            //         ? DecimalTextInputFormatter(decimalRange: 8)
+            //         : FilteringTextInputFormatter.digitsOnly,
+            //   ],
+            //   validator: (value) {
+            //     if (value == null || value.isEmpty) {
+            //       return 'Please enter a quantity';
+            //     }
+            //     if (value == '.') {
+            //       // Don't validate if the user is typing a decimal point
+            //       return null;
+            //     }
+            //     if (Decimal.parse(value) >
+            //         Decimal.parse(
+            //             state.selectedFairminter!.maxMintPerTxNormalized!)) {
+            //       return 'Quantity must be <= ${state.selectedFairminter!.maxMintPerTxNormalized}';
+            //     }
+            //     return null;
+            //   },
+            // ),
+            const SizedBox(height: 16.0),
+            FairminterProperty(
+              label: 'Quantity Locked After Fairminter Closes',
+              property: state.selectedFairminter!.lockQuantity.toString(),
+            ),
             if (state.selectedFairminter!.price != null &&
                 state.selectedFairminter!.price! > 0) ...[
-              SelectableText(
-                  'XCP price by token: ${_getXCPPricePerToken(state.selectedFairminter!.price!, state.selectedFairminter!.quantityByPrice!, state.selectedFairminter!.divisible)}'),
-              SelectableText(
-                  'Max mint per tx: ${state.selectedFairminter!.maxMintPerTxNormalized}'),
-              HorizonUI.HorizonTextFormField(
-                label: 'Quantity',
-                controller: quantityController,
-                enabled: true,
-                autovalidateMode: AutovalidateMode.always,
-                inputFormatters: [
-                  state.selectedFairminter!.divisible == true
-                      ? DecimalTextInputFormatter(decimalRange: 8)
-                      : FilteringTextInputFormatter.digitsOnly,
-                ],
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter a quantity';
-                  }
-                  if (value == '.') {
-                    // Don't validate if the user is typing a decimal point
-                    return null;
-                  }
-                  if (Decimal.parse(value) >
-                      Decimal.parse(
-                          state.selectedFairminter!.maxMintPerTxNormalized!)) {
-                    return 'Quantity must be <= ${state.selectedFairminter!.maxMintPerTxNormalized}';
-                  }
-                  return null;
-                },
+              FairminterProperty(
+                label: 'XCP Price By Token',
+                property: _getXCPPricePerToken(
+                        state.selectedFairminter!.price!,
+                        state.selectedFairminter!.quantityByPrice!,
+                        state.selectedFairminter!.divisible)
+                    .toString(),
+              ),
+              FairminterProperty(
+                label: 'Max Mint Per TX',
+                property: numberWithCommas.format(double.parse(
+                    state.selectedFairminter!.maxMintPerTxNormalized!)),
               ),
               if (quantityController.text.isNotEmpty) ...[
                 Builder(
@@ -522,6 +573,41 @@ class UpperCaseTextEditingController extends TextEditingController {
       text: newValue.text.toUpperCase(),
       selection: newValue.selection,
       composing: newValue.composing,
+    );
+  }
+}
+
+class FairminterProperty extends StatelessWidget {
+  final String label;
+  final String property;
+
+  const FairminterProperty({
+    super.key,
+    required this.label,
+    required this.property,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 12,
+            color: Colors.grey,
+          ),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          property,
+          style: const TextStyle(
+            fontSize: 14,
+            color: Colors.white,
+          ),
+        ),
+      ],
     );
   }
 }
