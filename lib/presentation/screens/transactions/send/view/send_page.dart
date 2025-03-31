@@ -102,9 +102,7 @@ class _SendPageState extends State<SendPage> {
           assetName: widget.assetName, addresses: widget.addresses)),
       child: BlocConsumer<SendBloc,
           TransactionState<SendData, ComposeSendResponse>>(
-        listener: (context, state) {
-          // TODO: Implement listener
-        },
+        listener: (context, state) {},
         builder: (context, state) {
           return Scaffold(
             body: TransactionStepper<SendData, ComposeSendResponse>(

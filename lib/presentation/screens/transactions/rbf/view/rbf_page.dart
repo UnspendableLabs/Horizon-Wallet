@@ -97,9 +97,7 @@ class _RBFPageState extends State<RBFPage> {
       )..add(RBFDependenciesRequested(
           txHash: widget.txHash, address: widget.address)),
       child: BlocConsumer<RBFBloc, TransactionState<RBFData, RBFComposeData>>(
-        listener: (context, state) {
-          // TODO: Implement listener
-        },
+        listener: (context, state) {},
         builder: (context, state) {
           return Scaffold(
             body: TransactionStepper<RBFData, RBFComposeData>(
