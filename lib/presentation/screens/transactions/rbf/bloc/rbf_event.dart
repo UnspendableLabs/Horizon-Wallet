@@ -1,4 +1,4 @@
-import 'package:horizon/domain/services/transaction_service.dart';
+import 'package:horizon/domain/entities/bitcoin_tx.dart';
 import 'package:horizon/presentation/common/transaction_stepper/bloc/transaction_event.dart';
 
 class RBFDependenciesRequested extends DependenciesRequested {
@@ -10,24 +10,24 @@ class RBFDependenciesRequested extends DependenciesRequested {
   });
 }
 
-class RBFTransactionComposed extends TransactionComposed<MakeRBFResponse> {
+class RBFTransactionComposed extends TransactionComposed<RBFTransactionParams> {
   RBFTransactionComposed({
     required super.sourceAddress,
     required super.params,
   });
 }
 
-// class SendTransactionParams {
-//   final String destinationAddress;
-//   final String asset;
-//   final int quantity;
+class RBFTransactionParams {
+  final BitcoinTx tx;
+  final String hex;
+  final int adjustedVirtualSize;
 
-//   SendTransactionParams({
-//     required this.destinationAddress,
-//     required this.asset,
-//     required this.quantity,
-//   });
-// }
+  RBFTransactionParams({
+    required this.tx,
+    required this.hex,
+    required this.adjustedVirtualSize,
+  });
+}
 
 class RBFTransactionBroadcasted extends TransactionEvent {
   final String? password;

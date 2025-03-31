@@ -10,6 +10,7 @@ import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 import 'package:horizon/domain/repositories/settings_repository.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
+import 'package:horizon/presentation/common/transaction_stepper/bloc/transaction_bloc.dart';
 import 'package:horizon/presentation/common/transaction_stepper/bloc/transaction_event.dart';
 import 'package:horizon/presentation/common/transaction_stepper/bloc/transaction_state.dart';
 import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
@@ -25,8 +26,19 @@ class RBFData {
   RBFData({required this.tx, required this.hex, required this.adjustedSize});
 }
 
+class RBFComposeData {
+  final MakeRBFResponse makeRBFResponse;
+  final num oldFee;
+  final String txid;
+
+  RBFComposeData(
+      {required this.makeRBFResponse,
+      required this.oldFee,
+      required this.txid});
+}
+
 class RBFBloc
-    extends Bloc<TransactionEvent, TransactionState<RBFData, MakeRBFResponse>> {
+    extends Bloc<TransactionEvent, TransactionState<RBFData, RBFComposeData>> {
   final GetFeeEstimatesUseCase getFeeEstimatesUseCase;
   final BitcoinRepository bitcoinRepository;
   final SignAndBroadcastTransactionUseCase signAndBroadcastTransactionUseCase;
@@ -45,7 +57,7 @@ class RBFBloc
     required this.logger,
     required this.settingsRepository,
     required this.transactionService,
-  }) : super(TransactionState<RBFData, MakeRBFResponse>(
+  }) : super(TransactionState<RBFData, RBFComposeData>(
           formState: TransactionFormState<RBFData>(
             balancesState: const BalancesState.initial(),
             feeState: const FeeState.initial(),
@@ -63,7 +75,7 @@ class RBFBloc
 
   void _onDependenciesRequested(
     RBFDependenciesRequested event,
-    Emitter<TransactionState<RBFData, MakeRBFResponse>> emit,
+    Emitter<TransactionState<RBFData, RBFComposeData>> emit,
   ) async {
     emit(state.copyWith(
       formState: state.formState.copyWith(
@@ -110,8 +122,36 @@ class RBFBloc
 
   void _onTransactionComposed(
     RBFTransactionComposed event,
-    Emitter<TransactionState<RBFData, MakeRBFResponse>> emit,
+    Emitter<TransactionState<RBFData, RBFComposeData>> emit,
   ) async {
+    final source = event.sourceAddress;
+    try {
+      final newFeeRate = getFeeRate(state);
+      num newFee = newFeeRate * event.params.adjustedVirtualSize;
+
+      MakeRBFResponse rbfResponse = await transactionService.makeRBF(
+        source: source,
+        txHex: event.params.hex,
+        oldFee: event.params.tx.fee,
+        newFee: newFee,
+      );
+
+      final rbfComposeData = RBFComposeData(
+        makeRBFResponse: rbfResponse,
+        oldFee: event.params.tx.fee,
+        txid: event.params.tx.txid,
+      );
+
+      emit(state.copyWith(composeState: ComposeStateSuccess(rbfComposeData)));
+    } on TransactionServiceException catch (e) {
+      emit(state.copyWith(
+        composeState: ComposeStateError(e.message),
+      ));
+    } catch (e) {
+      emit(state.copyWith(
+        composeState: ComposeStateError(e.toString()),
+      ));
+    }
     // emit(state.copyWith(composeState: const ComposeStateLoading()));
     // if (event.sourceAddress.isEmpty) {
     //   emit(state.copyWith(
@@ -158,7 +198,7 @@ class RBFBloc
 
   void _onTransactionBroadcasted(
     RBFTransactionBroadcasted event,
-    Emitter<TransactionState<RBFData, MakeRBFResponse>> emit,
+    Emitter<TransactionState<RBFData, RBFComposeData>> emit,
   ) async {
     // try {
     //   final requirePassword =
@@ -194,7 +234,7 @@ class RBFBloc
 
   void _onFeeOptionSelected(
     FeeOptionSelected event,
-    Emitter<TransactionState<RBFData, MakeRBFResponse>> emit,
+    Emitter<TransactionState<RBFData, RBFComposeData>> emit,
   ) {
     emit(state.copyWith(
       formState: state.formState.copyWith(

@@ -4,11 +4,11 @@ import 'package:get_it/get_it.dart';
 // import 'package:horizon/common/format.dart' as form;
 import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/domain/entities/fee_option.dart';
-import 'package:horizon/domain/entities/multi_address_balance_entry.dart';
 import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 import 'package:horizon/domain/repositories/settings_repository.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
+import 'package:horizon/presentation/common/transaction_stepper/bloc/transaction_event.dart';
 import 'package:horizon/presentation/common/transaction_stepper/bloc/transaction_state.dart';
 import 'package:horizon/presentation/common/transaction_stepper/view/steps/transaction_form_page.dart';
 import 'package:horizon/presentation/common/transaction_stepper/view/transaction_stepper.dart';
@@ -35,26 +35,20 @@ class RBFPage extends StatefulWidget {
 }
 
 class _RBFPageState extends State<RBFPage> {
-  MultiAddressBalanceEntry? selectedBalanceEntry;
-  TextEditingController quantityController = TextEditingController();
-  TextEditingController destinationAddressController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
   void _handleOnFormStepNext(
-      BuildContext context, TransactionState<RBFData, MakeRBFResponse> state) {
-    //   final balances = state.formState.getBalancesOrThrow();
-    //   final quantity = getQuantityForDivisibility(
-    //     divisible: balances.assetInfo.divisible,
-    //     inputQuantity: quantityController.text,
-    //   );
-    //   context.read<SendBloc>().add(SendTransactionComposed(
-    //         sourceAddress: selectedBalanceEntry?.address ?? "",
-    //         params: SendTransactionParams(
-    //           destinationAddress: destinationAddressController.text,
-    //           asset: widget.assetName,
-    //           quantity: quantity,
-    //         ),
-    //       ));
+      BuildContext context, TransactionState<RBFData, RBFComposeData> state) {
+    final data = state.formState.getDataOrThrow();
+
+    context.read<RBFBloc>().add(RBFTransactionComposed(
+          sourceAddress: widget.address,
+          params: RBFTransactionParams(
+            tx: data.tx,
+            hex: data.hex,
+            adjustedVirtualSize: data.adjustedSize,
+          ),
+        ));
   }
 
   void _handleConfirmationStepNext(BuildContext context, {String? password}) {
@@ -64,14 +58,14 @@ class _RBFPageState extends State<RBFPage> {
   }
 
   void _handleFeeOptionSelected(BuildContext context, FeeOption feeOption) {
-    // context.read<SendBloc>().add(FeeOptionSelected(feeOption: feeOption));
+    context.read<RBFBloc>().add(FeeOptionSelected(feeOption: feeOption));
   }
 
   void _handleDependenciesRequested(BuildContext context) {
-    // context.read<SendBloc>().add(SendDependenciesRequested(
-    //       assetName: widget.assetName,
-    //       addresses: widget.addresses,
-    //     ));
+    context.read<RBFBloc>().add(RBFDependenciesRequested(
+          txHash: widget.txHash,
+          address: widget.address,
+        ));
   }
 
   @override
@@ -89,13 +83,14 @@ class _RBFPageState extends State<RBFPage> {
         transactionService: GetIt.I<TransactionService>(),
       )..add(RBFDependenciesRequested(
           txHash: widget.txHash, address: widget.address)),
-      child: BlocConsumer<RBFBloc, TransactionState<RBFData, MakeRBFResponse>>(
+      child: BlocConsumer<RBFBloc, TransactionState<RBFData, RBFComposeData>>(
         listener: (context, state) {
           // TODO: Implement listener
         },
         builder: (context, state) {
           return Scaffold(
-            body: TransactionStepper<RBFData, MakeRBFResponse>(
+            body: TransactionStepper<RBFData, RBFComposeData>(
+              state: state,
               formStepContent: FormStepContent<RBFData>(
                 title: 'Accelerate Transaction',
                 formKey: _formKey,
@@ -119,11 +114,15 @@ class _RBFPageState extends State<RBFPage> {
                     key: _formKey,
                     child: Column(
                       children: [
-                        HorizonTextField(
-                          enabled: false,
-                          label: 'Transaction Hash',
-                          controller:
-                              TextEditingController(text: data?.tx.txid),
+                        SelectableText(
+                          'Transaction Hash:',
+                          style: Theme.of(context).textTheme.bodySmall,
+                          textAlign: TextAlign.left,
+                        ),
+                        SelectableText(
+                          widget.txHash,
+                          style: Theme.of(context).textTheme.bodyMedium,
+                          textAlign: TextAlign.left,
                         ),
                         commonHeightSizedBox,
                         HorizonTextField(
@@ -146,54 +145,69 @@ class _RBFPageState extends State<RBFPage> {
                   ),
                 ),
               ),
-              confirmationStepContent: ConfirmationStepContent<MakeRBFResponse>(
+              confirmationStepContent: ConfirmationStepContent<RBFComposeData>(
                 title: 'Confirm Transaction',
                 buildConfirmationContent: (composeState, onErrorButtonAction) =>
-                    TransactionComposePage<MakeRBFResponse>(
+                    TransactionComposePage<RBFComposeData>(
                   composeState: composeState,
                   errorButtonText: 'Go back to transaction',
                   onErrorButtonAction: onErrorButtonAction,
                   buildComposeContent: (
-                          {ComposeStateSuccess<MakeRBFResponse>? composeState,
+                          {ComposeStateSuccess<RBFComposeData>? composeState,
                           required bool loading}) =>
-                      const Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // QuantityDisplay(
-                      //   loading: loading,
-                      //   quantity:
-                      //       composeState?.composeData.params.quantityNormalized,
-                      // ),
-                      // commonHeightSizedBox,
-                      // ConfirmationFieldWithLabel(
-                      //   loading: loading,
-                      //   label: 'Token Name',
-                      //   value: composeState?.composeData.params.asset != null
-                      //       ? displayAssetName(
-                      //           composeState!.composeData.params.asset,
-                      //           composeState
-                      //               .composeData.params.assetInfo.assetLongname)
-                      //       : null,
-                      // ),
-                      // commonHeightSizedBox,
-                      // ConfirmationFieldWithLabel(
-                      //   loading: loading,
-                      //   label: 'Source Address',
-                      //   value: composeState?.composeData.params.source,
-                      // ),
-                      // commonHeightSizedBox,
-                      // ConfirmationFieldWithLabel(
-                      //   loading: loading,
-                      //   label: 'Recipient Address',
-                      //   value: composeState?.composeData.params.destination,
-                      // ),
-                    ],
-                  ),
+                      Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                        SelectableText(
+                          'Replacing:',
+                          style: Theme.of(context).textTheme.labelSmall,
+                        ),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: SelectableText(
+                                composeState?.composeData.txid ?? "",
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodyMedium!
+                                    .copyWith(
+                                      overflow: TextOverflow.visible,
+                                    ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16.0),
+                        SelectableText(
+                          'Fee:',
+                          style: Theme.of(context).textTheme.labelSmall,
+                        ),
+                        Row(
+                          children: [
+                            SelectableText(
+                              "${composeState?.composeData.oldFee} sats/vbyte",
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyMedium!
+                                  .copyWith(
+                                    decoration: TextDecoration.lineThrough,
+                                  ),
+                            ),
+                            const SizedBox(width: 8.0),
+                            SelectableText(
+                              "${composeState?.composeData.makeRBFResponse.fee} sats/vbyte",
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyMedium!
+                                  .copyWith(color: Colors.green),
+                            ),
+                          ],
+                        ),
+                      ]),
                 ),
                 onNext: ({String? password}) =>
                     _handleConfirmationStepNext(context, password: password),
               ),
-              state: state,
             ),
           );
         },
