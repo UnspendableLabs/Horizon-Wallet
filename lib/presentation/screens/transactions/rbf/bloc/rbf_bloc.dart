@@ -1,22 +1,39 @@
 import 'dart:math';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:fpdart/fpdart.dart';
 import 'package:horizon/common/fn.dart';
+import 'package:horizon/common/uuid.dart';
 import 'package:horizon/core/logging/logger.dart';
+import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/entities/bitcoin_tx.dart';
+import 'package:horizon/domain/entities/failure.dart';
 import 'package:horizon/domain/entities/fee_option.dart' as fee_option;
+import 'package:horizon/domain/entities/imported_address.dart';
 import 'package:horizon/domain/entities/multi_address_balance.dart';
+import 'package:horizon/domain/entities/unified_address.dart';
+import 'package:horizon/domain/entities/utxo.dart';
+import 'package:horizon/domain/entities/wallet.dart';
+import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/bitcoin_repository.dart';
+import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 import 'package:horizon/domain/repositories/settings_repository.dart';
+import 'package:horizon/domain/repositories/transaction_local_repository.dart';
+import 'package:horizon/domain/repositories/unified_address_repository.dart';
+import 'package:horizon/domain/repositories/wallet_repository.dart';
+import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
+import 'package:horizon/domain/services/bitcoind_service.dart';
+import 'package:horizon/domain/services/encryption_service.dart';
+import 'package:horizon/domain/services/imported_address_service.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
 import 'package:horizon/presentation/common/transaction_stepper/bloc/transaction_bloc.dart';
 import 'package:horizon/presentation/common/transaction_stepper/bloc/transaction_event.dart';
 import 'package:horizon/presentation/common/transaction_stepper/bloc/transaction_state.dart';
 import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
-import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transaction_usecase.dart';
 import 'package:horizon/presentation/common/usecase/write_local_transaction_usecase.dart';
 import 'package:horizon/presentation/screens/transactions/rbf/bloc/rbf_event.dart';
+import 'package:horizon/domain/entities/decryption_strategy.dart';
 
 class RBFData {
   final BitcoinTx tx;
@@ -30,33 +47,50 @@ class RBFComposeData {
   final MakeRBFResponse makeRBFResponse;
   final num oldFee;
   final String txid;
-
+  final String sourceAddress;
   RBFComposeData(
       {required this.makeRBFResponse,
       required this.oldFee,
-      required this.txid});
+      required this.txid,
+      required this.sourceAddress});
 }
 
 class RBFBloc
     extends Bloc<TransactionEvent, TransactionState<RBFData, RBFComposeData>> {
   final GetFeeEstimatesUseCase getFeeEstimatesUseCase;
   final BitcoinRepository bitcoinRepository;
-  final SignAndBroadcastTransactionUseCase signAndBroadcastTransactionUseCase;
-  final WriteLocalTransactionUseCase writelocalTransactionUseCase;
   final AnalyticsService analyticsService;
   final TransactionService transactionService;
   final Logger logger;
   final SettingsRepository settingsRepository;
+  final WalletRepository walletRepository;
+  final UnifiedAddressRepository addressRepository;
+  final InMemoryKeyRepository inMemoryKeyRepository;
+  final EncryptionService encryptionService;
+  final AddressService addressService;
+  final ImportedAddressService importedAddressService;
+  final BitcoindService bitcoindService;
+  final TransactionLocalRepository transactionLocalRepository;
+  final WriteLocalTransactionUseCase writelocalTransactionUseCase;
+  final AccountRepository accountRepository;
 
   RBFBloc({
     required this.getFeeEstimatesUseCase,
     required this.bitcoinRepository,
-    required this.signAndBroadcastTransactionUseCase,
-    required this.writelocalTransactionUseCase,
     required this.analyticsService,
     required this.logger,
     required this.settingsRepository,
     required this.transactionService,
+    required this.walletRepository,
+    required this.addressRepository,
+    required this.inMemoryKeyRepository,
+    required this.encryptionService,
+    required this.addressService,
+    required this.importedAddressService,
+    required this.bitcoindService,
+    required this.transactionLocalRepository,
+    required this.writelocalTransactionUseCase,
+    required this.accountRepository,
   }) : super(TransactionState<RBFData, RBFComposeData>(
           formState: TransactionFormState<RBFData>(
             balancesState: const BalancesState.initial(),
@@ -140,6 +174,7 @@ class RBFBloc
         makeRBFResponse: rbfResponse,
         oldFee: event.params.tx.fee,
         txid: event.params.tx.txid,
+        sourceAddress: source,
       );
 
       emit(state.copyWith(composeState: ComposeStateSuccess(rbfComposeData)));
@@ -152,84 +187,164 @@ class RBFBloc
         composeState: ComposeStateError(e.toString()),
       ));
     }
-    // emit(state.copyWith(composeState: const ComposeStateLoading()));
-    // if (event.sourceAddress.isEmpty) {
-    //   emit(state.copyWith(
-    //     composeState: const ComposeStateError('Source address is required'),
-    //   ));
-    //   return;
-    // }
-
-    // try {
-    //   final feeRate = getFeeRate(state);
-    //   final source = event.sourceAddress;
-    //   final destination = event.destinationAddress;
-    //   final asset = event.asset;
-    //   final quantity = event.quantity;
-
-    //   final composeResponse = await composeTransactionUseCase
-    //       .call<ComposeSendParams, ComposeSendResponse>(
-    //     feeRate: feeRate,
-    //     source: source,
-    //     params: ComposeSendParams(
-    //       source: source,
-    //       destination: destination,
-    //       asset: asset,
-    //       quantity: quantity,
-    //     ),
-    //     composeFn: composeRepository.composeSendVerbose,
-    //   );
-
-    //   emit(state.copyWith(
-    //     composeState: ComposeStateSuccess(composeResponse),
-    //   ));
-    // } on ComposeTransactionException catch (e) {
-    //   emit(state.copyWith(
-    //     composeState: ComposeStateError(e.message),
-    //   ));
-    // } catch (e) {
-    //   emit(state.copyWith(
-    //     composeState: ComposeStateError(e is ComposeTransactionException
-    //         ? e.message
-    //         : 'An unexpected error occurred: ${e.toString()}'),
-    //   ));
-    // }
   }
 
   void _onTransactionBroadcasted(
     RBFTransactionBroadcasted event,
     Emitter<TransactionState<RBFData, RBFComposeData>> emit,
   ) async {
-    // try {
-    //   final requirePassword =
-    //       settingsRepository.requirePasswordForCryptoOperations;
+    final composeData = state.getComposeDataOrThrow();
+    final address = composeData.sourceAddress;
 
-    //   emit(state.copyWith(broadcastState: const BroadcastState.loading()));
+    emit(state.copyWith(broadcastState: const BroadcastState.loading()));
 
-    //   final composeData = state.getComposeDataOrThrow();
+    try {
+      Wallet? wallet = await walletRepository.getCurrentWallet();
 
-    //   await signAndBroadcastTransactionUseCase.call(
-    //       decryptionStrategy:
-    //           requirePassword ? Password(event.password!) : InMemoryKey(),
-    //       source: composeData.params.source,
-    //       rawtransaction: composeData.rawtransaction,
-    //       onSuccess: (txHex, txHash) async {
-    //         await writelocalTransactionUseCase.call(txHex, txHash);
+      if (wallet == null) {
+        throw Exception("invariant: wallet not found");
+      }
 
-    //         logger.info('send broadcasted txHash: $txHash');
-    //         analyticsService.trackAnonymousEvent('broadcast_tx_send',
-    //             properties: {'distinct_id': uuid.v4()});
+      final passwordRequired =
+          settingsRepository.requirePasswordForCryptoOperations;
 
-    //         emit(state.copyWith(
-    //             broadcastState: BroadcastState.success(
-    //                 BroadcastStateSuccess(txHex: txHex, txHash: txHash))));
-    //       },
-    //       onError: (msg) {
-    //         emit(state.copyWith(broadcastState: BroadcastState.error(msg)));
-    //       });
-    // } catch (e) {
-    //   emit(state.copyWith(broadcastState: BroadcastState.error(e.toString())));
-    // }
+      String rootPrivateKey = passwordRequired
+          ? await encryptionService.decrypt(
+              wallet.encryptedPrivKey, event.password!)
+          : await encryptionService.decryptWithKey(
+              wallet.encryptedPrivKey, (await inMemoryKeyRepository.get())!);
+
+      String addressPrivateKey =
+          unwrapOrThrow<String, String>(await addressRepository
+              .get(address)
+              .flatMap((UnifiedAddress unifiedAddress) => getUAddressPrivateKey(
+                    passwordRequired
+                        ? Password(event.password!)
+                        : InMemoryKey(),
+                    rootPrivateKey,
+                    wallet.chainCodeHex,
+                    unifiedAddress,
+                  ))
+              .run());
+
+      Map<String, Utxo> utxoMap = {};
+
+      for (final entry in composeData.makeRBFResponse.inputsByTxHash.entries) {
+        final txHash = entry.key;
+        final inputIndices = entry.value;
+
+        final transaction = unwrapOrThrow<Failure, BitcoinTx>(
+            await bitcoinRepository.getTransaction(txHash));
+        for (final index in inputIndices) {
+          final input = transaction.vout[index];
+          final utxo = Utxo(
+              txid: txHash,
+              vout: index,
+              value: input.value,
+              address: address // TODO: temp hack
+              );
+          utxoMap["$txHash:$index"] = utxo;
+        }
+      }
+
+      final txHex = await transactionService.signTransaction(
+          composeData.makeRBFResponse.txHex,
+          addressPrivateKey,
+          address,
+          utxoMap);
+
+      final txHash = await bitcoindService.sendrawtransaction(txHex);
+
+      // not technically necessary since event shows up very quickly in practice
+      await writelocalTransactionUseCase.call(txHex, txHash);
+      transactionLocalRepository.delete(composeData.txid);
+
+      analyticsService.trackAnonymousEvent('broadcast_rbf',
+          properties: {'distinct_id': uuid.v4()});
+
+      emit(state.copyWith(
+          broadcastState: BroadcastState.success(
+              BroadcastStateSuccess(txHex: txHex, txHash: txHash))));
+    } catch (e) {
+      emit(state.copyWith(
+        broadcastState: BroadcastState.error(e.toString()),
+      ));
+    }
+  }
+
+  TaskEither<String, String> getUAddressPrivateKey(
+          DecryptionStrategy decryptionStrategy,
+          String rootPrivKey,
+          String chainCodeHex,
+          UnifiedAddress address) =>
+      switch (address) {
+        UAddress(address: var address) =>
+          getAddressPrivateKey(rootPrivKey, chainCodeHex, address),
+        UImportedAddress(importedAddress: var importedAddress) =>
+          getImportedAddressPrivateKey(importedAddress, decryptionStrategy)
+      };
+
+  TaskEither<String, String> getAddressPrivateKey(
+          String rootPrivKey, String chainCodeHex, Address address) =>
+      TaskEither.tryCatch(
+          () =>
+              _getAddressPrivKeyForAddress(rootPrivKey, chainCodeHex, address),
+          (e, s) => "Failed to derive address private key.");
+
+  TaskEither<String, String> getImportedAddressPrivateKey(
+          ImportedAddress importedAddress,
+          DecryptionStrategy decryptionStrategy) =>
+      TaskEither.tryCatch(
+          () => _getAddressPrivKeyForImportedAddress(
+              importedAddress, decryptionStrategy),
+          (e, s) => "Failed to derive address private key.");
+
+  Future<String> _getAddressPrivKeyForAddress(
+      String rootPrivKey, String chainCodeHex, Address address) async {
+    final account =
+        await accountRepository.getAccountByUuid(address.accountUuid);
+
+    if (account == null) {
+      throw Exception('Account not found.');
+    }
+
+    // Derive Address Private Key
+    final addressPrivKey = await addressService.deriveAddressPrivateKey(
+      rootPrivKey: rootPrivKey,
+      chainCodeHex: chainCodeHex,
+      purpose: account.purpose,
+      coin: account.coinType,
+      account: account.accountIndex,
+      change: '0',
+      index: address.index,
+      importFormat: account.importFormat,
+    );
+
+    return addressPrivKey;
+  }
+
+  Future<String> _getAddressPrivKeyForImportedAddress(
+      ImportedAddress importedAddress,
+      DecryptionStrategy decryptionStrategy) async {
+    late String decryptedAddressWif;
+    try {
+      final maybeKey =
+          (await inMemoryKeyRepository.getMap())[importedAddress.address];
+
+      decryptedAddressWif = switch (decryptionStrategy) {
+        Password(password: var password) => await encryptionService.decrypt(
+            importedAddress.encryptedWif, password),
+        InMemoryKey() => await encryptionService.decryptWithKey(
+            importedAddress.encryptedWif, maybeKey!)
+      };
+    } catch (e) {
+      throw Exception('Incorrect password.');
+    }
+
+    final addressPrivKey = await importedAddressService
+        .getAddressPrivateKeyFromWIF(wif: decryptedAddressWif);
+
+    return addressPrivKey;
   }
 
   void _onFeeOptionSelected(

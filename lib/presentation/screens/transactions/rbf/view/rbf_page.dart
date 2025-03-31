@@ -4,16 +4,24 @@ import 'package:get_it/get_it.dart';
 // import 'package:horizon/common/format.dart' as form;
 import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/domain/entities/fee_option.dart';
+import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/bitcoin_repository.dart';
+import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 import 'package:horizon/domain/repositories/settings_repository.dart';
+import 'package:horizon/domain/repositories/transaction_local_repository.dart';
+import 'package:horizon/domain/repositories/unified_address_repository.dart';
+import 'package:horizon/domain/repositories/wallet_repository.dart';
+import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
+import 'package:horizon/domain/services/bitcoind_service.dart';
+import 'package:horizon/domain/services/encryption_service.dart';
+import 'package:horizon/domain/services/imported_address_service.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
 import 'package:horizon/presentation/common/transaction_stepper/bloc/transaction_event.dart';
 import 'package:horizon/presentation/common/transaction_stepper/bloc/transaction_state.dart';
 import 'package:horizon/presentation/common/transaction_stepper/view/steps/transaction_form_page.dart';
 import 'package:horizon/presentation/common/transaction_stepper/view/transaction_stepper.dart';
 import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
-import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transaction_usecase.dart';
 import 'package:horizon/presentation/common/usecase/write_local_transaction_usecase.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 import 'package:horizon/presentation/screens/transactions/rbf/bloc/rbf_bloc.dart';
@@ -52,9 +60,7 @@ class _RBFPageState extends State<RBFPage> {
   }
 
   void _handleConfirmationStepNext(BuildContext context, {String? password}) {
-    // context
-    //     .read<SendBloc>()
-    //     .add(SendTransactionBroadcasted(password: password));
+    context.read<RBFBloc>().add(RBFTransactionBroadcasted(password: password));
   }
 
   void _handleFeeOptionSelected(BuildContext context, FeeOption feeOption) {
@@ -74,13 +80,20 @@ class _RBFPageState extends State<RBFPage> {
       create: (context) => RBFBloc(
         getFeeEstimatesUseCase: GetIt.I<GetFeeEstimatesUseCase>(),
         bitcoinRepository: GetIt.I<BitcoinRepository>(),
-        signAndBroadcastTransactionUseCase:
-            GetIt.I<SignAndBroadcastTransactionUseCase>(),
         writelocalTransactionUseCase: GetIt.I<WriteLocalTransactionUseCase>(),
         analyticsService: GetIt.I<AnalyticsService>(),
         logger: GetIt.I<Logger>(),
         settingsRepository: GetIt.I<SettingsRepository>(),
         transactionService: GetIt.I<TransactionService>(),
+        bitcoindService: GetIt.I<BitcoindService>(),
+        transactionLocalRepository: GetIt.I<TransactionLocalRepository>(),
+        accountRepository: GetIt.I<AccountRepository>(),
+        addressRepository: GetIt.I<UnifiedAddressRepository>(),
+        inMemoryKeyRepository: GetIt.I<InMemoryKeyRepository>(),
+        encryptionService: GetIt.I<EncryptionService>(),
+        addressService: GetIt.I<AddressService>(),
+        importedAddressService: GetIt.I<ImportedAddressService>(),
+        walletRepository: GetIt.I<WalletRepository>(),
       )..add(RBFDependenciesRequested(
           txHash: widget.txHash, address: widget.address)),
       child: BlocConsumer<RBFBloc, TransactionState<RBFData, RBFComposeData>>(
