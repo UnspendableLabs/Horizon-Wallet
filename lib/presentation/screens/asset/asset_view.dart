@@ -11,6 +11,8 @@ import 'package:horizon/presentation/screens/asset/bloc/asset_view_bloc.dart';
 import 'package:horizon/presentation/screens/asset/bloc/asset_view_event.dart';
 import 'package:horizon/presentation/screens/dashboard/view/asset_icon.dart';
 import 'package:horizon/presentation/screens/dashboard/view/balances_display.dart';
+import 'package:horizon/presentation/screens/transactions/dispenser/create_dispenser/view/create_dispenser_page.dart';
+import 'package:horizon/presentation/screens/transactions/dispenser/create_dispenser_on_new_address/view/create_dispenser_on_new_address_page.dart';
 import 'package:horizon/presentation/screens/transactions/lock_quantity/view/lock_quantity_page.dart';
 import 'package:horizon/presentation/screens/transactions/send/view/send_page.dart';
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
@@ -21,8 +23,10 @@ import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 
 enum BalanceViewFilter { address, utxo }
 
+enum DispenserOption { existingAddress, newAddress }
+
 class DispenserOptionsDialog extends StatelessWidget {
-  final Function(String) onOptionSelected;
+  final Function(DispenserOption) onOptionSelected;
 
   const DispenserOptionsDialog({
     super.key,
@@ -33,37 +37,45 @@ class DispenserOptionsDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return HorizonDialogContainer(
-      onCancel: () => Navigator.of(context).pop(),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Text(
-            'How do you want to proceed?',
-            style: theme.textTheme.titleLarge?.copyWith(
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+    return StatefulBuilder(
+      builder: (context, setState) {
+        return HorizonDialogContainer(
+          onCancel: () => Navigator.of(context).pop(),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              TextButton(
-                onPressed: () {
-                  onOptionSelected('existing');
-                },
-                child: const Text('Create dispenser on an existing address'),
+              Text(
+                'How do you want to proceed?',
+                style: theme.textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
               ),
-              TextButton(
-                onPressed: () {
-                  onOptionSelected('new');
-                },
-                child: const Text('Create dispenser on a new address'),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  TextButton(
+                    onPressed: () {
+                      onOptionSelected(DispenserOption.existingAddress);
+                      Navigator.of(context)
+                          .pop(DispenserOption.existingAddress);
+                    },
+                    child:
+                        const Text('Create dispenser on an existing address'),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      onOptionSelected(DispenserOption.newAddress);
+                      Navigator.of(context).pop(DispenserOption.newAddress);
+                    },
+                    child: const Text('Create dispenser on a new address'),
+                  ),
+                ],
               ),
             ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 }
@@ -120,23 +132,25 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
   void _showTransactionPage({required TransactionType type}) async {
     final session = context.read<SessionStateCubit>().state;
 
-    String? selectedDispenserOption;
+    DispenserOption? selectedDispenserOption;
     if (type == TransactionType.dispenser) {
-      selectedDispenserOption = await showDialog<String?>(
+      selectedDispenserOption = await showDialog<DispenserOption?>(
         context: context,
         builder: (dialogContext) {
-          return StatefulBuilder(
-            builder: (context, setState) {
-              return DispenserOptionsDialog(
-                onOptionSelected: (option) {
-                  Navigator.of(dialogContext).pop(option);
-                },
-              );
+          return DispenserOptionsDialog(
+            onOptionSelected: (option) {
+              // Option is now handled within the dialog
             },
           );
         },
       );
     }
+
+    // We need this mounted check because we're using the parent context to show the final dialog
+    // after an async operation (the dispenser options dialog). This ensures the widget is still
+    // in the tree before we try to show the next dialog. It's safe because we're only using
+    // the context for showing a new dialog, not for any state updates.
+    if (!mounted) return;
 
     final page = switch (type) {
       TransactionType.send => SendPage(
@@ -147,15 +161,17 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
           assetName: widget.assetName,
           addresses: session.allAddresses,
         ),
-      TransactionType.dispenser => Column(
-          children: [
-            Text('Dispenser - Selected option: $selectedDispenserOption'),
-            const Text('Dispenser'),
-            const Text('Dispenser'),
-          ],
-        ),
+      TransactionType.dispenser =>
+        selectedDispenserOption == DispenserOption.existingAddress
+            ? CreateDispenserPage(
+                assetName: widget.assetName,
+                addresses: session.allAddresses,
+              )
+            : CreateDispenserOnNewAddressPage(
+                assetName: widget.assetName,
+                addresses: session.allAddresses,
+              ),
     };
-
     showDialog(
       context: context,
       builder: (dialogContext) {

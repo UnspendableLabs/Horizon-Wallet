@@ -1,17 +1,18 @@
 import 'package:horizon/presentation/common/transaction_stepper/bloc/transaction_event.dart';
 
-class CreateDispenserDependenciesRequested extends DependenciesRequested {
+class CreateDispenserOnNewAddressDependenciesRequested
+    extends DependenciesRequested {
   final String assetName;
   final List<String> addresses;
-  CreateDispenserDependenciesRequested({
+  CreateDispenserOnNewAddressDependenciesRequested({
     required this.assetName,
     required this.addresses,
   });
 }
 
-class CreateDispenserComposed
-    extends TransactionComposed<CreateDispenserParams> {
-  CreateDispenserComposed({
+class CreateDispenserOnNewAddressComposed
+    extends TransactionComposed<CreateDispenserOnNewAddressParams> {
+  CreateDispenserOnNewAddressComposed({
     required super.sourceAddress,
     required super.params,
   });
@@ -23,20 +24,21 @@ class CreateDispenserComposed
   int get quantity => params.quantity;
 }
 
-class CreateDispenserParams {
+class CreateDispenserOnNewAddressParams {
   final String destinationAddress;
   final String asset;
   final int quantity;
 
-  CreateDispenserParams({
+  CreateDispenserOnNewAddressParams({
     required this.destinationAddress,
     required this.asset,
     required this.quantity,
   });
 }
 
-class CreateDispenserTransactionBroadcasted extends TransactionEvent {
+class CreateDispenserOnNewAddressTransactionBroadcasted
+    extends TransactionEvent {
   final String? password;
 
-  CreateDispenserTransactionBroadcasted({this.password});
+  CreateDispenserOnNewAddressTransactionBroadcasted({this.password});
 }
