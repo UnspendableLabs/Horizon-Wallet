@@ -183,6 +183,7 @@ class _HorizonOutlinedButtonState extends State<HorizonOutlinedButton> {
                 ),
           onPressed: widget.onPressed,
           child: Text(
+            textAlign: TextAlign.center,
             widget.buttonText,
             style: TextStyle(
               fontWeight: widget.isTransparent == true || isExtension

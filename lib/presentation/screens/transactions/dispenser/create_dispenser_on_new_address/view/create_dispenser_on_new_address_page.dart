@@ -5,6 +5,7 @@ import 'package:get_it/get_it.dart';
 import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/domain/entities/compose_dispenser.dart';
 import 'package:horizon/domain/entities/fee_option.dart';
+import 'package:horizon/domain/entities/multi_address_balance_entry.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
 import 'package:horizon/domain/repositories/settings_repository.dart';
@@ -12,13 +13,17 @@ import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/presentation/common/transaction_stepper/bloc/transaction_state.dart';
 import 'package:horizon/presentation/common/transaction_stepper/view/steps/transaction_form_page.dart';
 import 'package:horizon/presentation/common/transaction_stepper/view/transaction_stepper.dart';
+import 'package:horizon/presentation/common/transactions/gradient_quantity_input.dart';
+import 'package:horizon/presentation/common/transactions/token_name_field.dart';
 import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
 import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
 import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transaction_usecase.dart';
 import 'package:horizon/presentation/common/usecase/write_local_transaction_usecase.dart';
 import 'package:horizon/presentation/common/transaction_stepper/view/steps/transaction_compose_page.dart';
+import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 import 'package:horizon/presentation/screens/transactions/dispenser/create_dispenser_on_new_address/bloc/create_dispenser_on_new_address_bloc.dart';
 import 'package:horizon/presentation/screens/transactions/dispenser/create_dispenser_on_new_address/bloc/create_dispenser_on_new_address_event.dart';
+import 'package:horizon/presentation/screens/transactions/dispenser/dispenser_mult_address_balance_dropdown.dart';
 
 class CreateDispenserOnNewAddressPage extends StatefulWidget {
   final String assetName;
@@ -37,8 +42,10 @@ class CreateDispenserOnNewAddressPage extends StatefulWidget {
 
 class _CreateDispenserOnNewAddressPageState
     extends State<CreateDispenserOnNewAddressPage> {
-  // MultiAddressBalanceEntry? selectedBalanceEntry;
-  // TextEditingController quantityController = TextEditingController();
+  MultiAddressBalanceEntry? selectedBalanceEntry;
+  MultiAddressBalanceEntry? selectedBtcBalanceEntry;
+  TextEditingController giveQuantityController = TextEditingController();
+  TextEditingController escrowQuantityController = TextEditingController();
   // TextEditingController destinationAddressController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
@@ -105,7 +112,7 @@ class _CreateDispenserOnNewAddressPageState
             body: TransactionStepper<CreateDispenserOnNewAddressData,
                 ComposeDispenserResponseVerbose>(
               formStepContent: FormStepContent<CreateDispenserOnNewAddressData>(
-                title: 'Create Dispenser',
+                title: 'Create Dispenser on New Address',
                 formKey: _formKey,
                 onNext: () => _handleOnFormStepNext(context, state),
                 onFeeOptionSelected: (feeOption) =>
@@ -128,7 +135,45 @@ class _CreateDispenserOnNewAddressPageState
                     key: _formKey,
                     child: Column(
                       children: [
-                        Text('Create Dispenser on New Address'),
+                        DispenserMultiAddressBalanceDropdown(
+                          loading: loading,
+                          balances: balances,
+                          btcBalances: data?.btcBalances,
+                          onChanged: (value) {
+                            setState(() {
+                              selectedBalanceEntry = value;
+                              selectedBtcBalanceEntry = data
+                                  ?.btcBalances.entries
+                                  .firstWhere((entry) =>
+                                      entry.address == value?.address);
+                            });
+                          },
+                          selectedValue: selectedBalanceEntry,
+                        ),
+                        commonHeightSizedBox,
+                        TokenNameField(
+                          loading: loading,
+                          balance: balances,
+                          selectedBalanceEntry: selectedBalanceEntry,
+                        ),
+                        commonHeightSizedBox,
+                        GradientQuantityInput(
+                          enabled: !loading,
+                          showMaxButton: true,
+                          balance: balances,
+                          selectedBalanceEntry: selectedBalanceEntry,
+                          controller: giveQuantityController,
+                          label: 'Give Quantity',
+                        ),
+                        commonHeightSizedBox,
+                        GradientQuantityInput(
+                          enabled: !loading,
+                          showMaxButton: true,
+                          balance: balances,
+                          selectedBalanceEntry: selectedBalanceEntry,
+                          controller: escrowQuantityController,
+                          label: 'Escrow Quantity',
+                        ),
                         // MultiAddressBalanceDropdown(
                         //   loading: loading,
                         //   balances: balances,

@@ -26,11 +26,8 @@ enum BalanceViewFilter { address, utxo }
 enum DispenserOption { existingAddress, newAddress }
 
 class DispenserOptionsDialog extends StatelessWidget {
-  final Function(DispenserOption) onOptionSelected;
-
   const DispenserOptionsDialog({
     super.key,
-    required this.onOptionSelected,
   });
 
   @override
@@ -45,30 +42,32 @@ class DispenserOptionsDialog extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Text(
-                'How do you want to proceed?',
-                style: theme.textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              Row(
+              Text('How do you want to proceed?',
+                  style: theme.textTheme.bodyMedium),
+              Column(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  TextButton(
-                    onPressed: () {
-                      onOptionSelected(DispenserOption.existingAddress);
-                      Navigator.of(context)
-                          .pop(DispenserOption.existingAddress);
-                    },
-                    child:
-                        const Text('Create dispenser on an existing address'),
+                  SizedBox(
+                    height: 64,
+                    child: HorizonOutlinedButton(
+                      isTransparent: true,
+                      onPressed: () {
+                        Navigator.of(context)
+                            .pop(DispenserOption.existingAddress);
+                      },
+                      buttonText: 'Create dispenser on an existing address',
+                    ),
                   ),
-                  TextButton(
-                    onPressed: () {
-                      onOptionSelected(DispenserOption.newAddress);
-                      Navigator.of(context).pop(DispenserOption.newAddress);
-                    },
-                    child: const Text('Create dispenser on a new address'),
+                  commonHeightSizedBox,
+                  SizedBox(
+                    height: 64,
+                    child: HorizonOutlinedButton(
+                      isTransparent: true,
+                      onPressed: () {
+                        Navigator.of(context).pop(DispenserOption.newAddress);
+                      },
+                      buttonText: 'Create dispenser on a new address',
+                    ),
                   ),
                 ],
               ),
@@ -137,11 +136,7 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
       selectedDispenserOption = await showDialog<DispenserOption?>(
         context: context,
         builder: (dialogContext) {
-          return DispenserOptionsDialog(
-            onOptionSelected: (option) {
-              // Option is now handled within the dialog
-            },
-          );
+          return const DispenserOptionsDialog();
         },
       );
     }

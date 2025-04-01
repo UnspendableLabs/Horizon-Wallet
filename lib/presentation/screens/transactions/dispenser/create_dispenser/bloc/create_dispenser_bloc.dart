@@ -3,6 +3,7 @@ import 'package:horizon/common/constants.dart';
 import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/domain/entities/compose_dispenser.dart';
 import 'package:horizon/domain/entities/fee_option.dart' as fee_option;
+import 'package:horizon/domain/entities/multi_address_balance.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
 import 'package:horizon/domain/repositories/settings_repository.dart';
@@ -15,7 +16,11 @@ import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transacti
 import 'package:horizon/presentation/common/usecase/write_local_transaction_usecase.dart';
 import 'package:horizon/presentation/screens/transactions/dispenser/create_dispenser/bloc/create_dispenser_event.dart';
 
-class CreateDispenserData {}
+class CreateDispenserData {
+  final MultiAddressBalance btcBalances;
+
+  CreateDispenserData({required this.btcBalances});
+}
 
 class CreateDispenserBloc extends Bloc<TransactionEvent,
     TransactionState<CreateDispenserData, ComposeDispenserResponseVerbose>> {
@@ -77,12 +82,19 @@ class CreateDispenserBloc extends Bloc<TransactionEvent,
 
       final feeEstimates = await getFeeEstimatesUseCase.call();
 
+      final List<String> balanceAddresses =
+          balances.entries.map((entry) => entry.address!).toList();
+
+      final btcBalances =
+          await balanceRepository.getBtcBalancesForAddresses(balanceAddresses);
+
       emit(
         state.copyWith(
           formState: state.formState.copyWith(
             balancesState: BalancesState.success(balances),
             feeState: FeeState.success(feeEstimates),
-            dataState: TransactionDataState.success(CreateDispenserData()),
+            dataState: TransactionDataState.success(
+                CreateDispenserData(btcBalances: btcBalances)),
           ),
         ),
       );
