@@ -17,8 +17,56 @@ import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:horizon/presentation/session/bloc/session_state.dart';
 import 'package:horizon/remote_data_bloc/remote_data_state.dart';
 import 'package:horizon/utils/app_icons.dart';
+import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 
 enum BalanceViewFilter { address, utxo }
+
+class DispenserOptionsDialog extends StatelessWidget {
+  final Function(String) onOptionSelected;
+
+  const DispenserOptionsDialog({
+    super.key,
+    required this.onOptionSelected,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return HorizonDialogContainer(
+      onCancel: () => Navigator.of(context).pop(),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Text(
+            'How do you want to proceed?',
+            style: theme.textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              TextButton(
+                onPressed: () {
+                  onOptionSelected('existing');
+                },
+                child: const Text('Create dispenser on an existing address'),
+              ),
+              TextButton(
+                onPressed: () {
+                  onOptionSelected('new');
+                },
+                child: const Text('Create dispenser on a new address'),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
 
 class AssetView extends StatefulWidget {
   final String assetName;
@@ -69,8 +117,26 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
   }
 
   // Show the send page in a fullscreen dialog
-  void _showTransactionPage({required TransactionType type}) {
+  void _showTransactionPage({required TransactionType type}) async {
     final session = context.read<SessionStateCubit>().state;
+
+    String? selectedDispenserOption;
+    if (type == TransactionType.dispenser) {
+      selectedDispenserOption = await showDialog<String?>(
+        context: context,
+        builder: (dialogContext) {
+          return StatefulBuilder(
+            builder: (context, setState) {
+              return DispenserOptionsDialog(
+                onOptionSelected: (option) {
+                  Navigator.of(dialogContext).pop(option);
+                },
+              );
+            },
+          );
+        },
+      );
+    }
 
     final page = switch (type) {
       TransactionType.send => SendPage(
@@ -80,6 +146,13 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
       TransactionType.lockQuantity => LockQuantityPage(
           assetName: widget.assetName,
           addresses: session.allAddresses,
+        ),
+      TransactionType.dispenser => Column(
+          children: [
+            Text('Dispenser - Selected option: $selectedDispenserOption'),
+            const Text('Dispenser'),
+            const Text('Dispenser'),
+          ],
         ),
     };
 
@@ -494,7 +567,8 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
                                           context: context,
                                         ),
                                         onTap: () {
-                                          // Handle Dispenser
+                                          _showTransactionPage(
+                                              type: TransactionType.dispenser);
                                         },
                                       ),
                                     ] else if (_currentFilter ==

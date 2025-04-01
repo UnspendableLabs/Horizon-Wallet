@@ -107,7 +107,7 @@ class _SendPageState extends State<SendPage> {
           return Scaffold(
             body: TransactionStepper<SendData, ComposeSendResponse>(
               formStepContent: FormStepContent<SendData>(
-                title: 'Enter Send Details',
+                title: 'Send',
                 formKey: _formKey,
                 onNext: () => _handleOnFormStepNext(context, state),
                 onFeeOptionSelected: (feeOption) =>

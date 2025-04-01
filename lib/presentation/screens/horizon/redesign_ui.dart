@@ -938,8 +938,68 @@ class _HorizonPasswordPromptState extends State<HorizonPasswordPrompt> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDarkMode = theme.brightness == Brightness.dark;
 
+    return HorizonDialogContainer(
+      onCancel: widget.onCancel,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Text(
+            widget.title,
+            style: theme.textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          HorizonTextField(
+            controller: _controller,
+            hintText: 'Password',
+            errorText: widget.errorText,
+            obscureText: _obscurePassword,
+            suffixIcon: AppIcons.iconButton(
+              context: context,
+              icon: _obscurePassword
+                  ? AppIcons.eyeClosedIcon(
+                      context: context,
+                      width: 10,
+                      height: 10,
+                    )
+                  : AppIcons.eyeOpenIcon(
+                      context: context,
+                      width: 12,
+                      height: 12,
+                    ),
+              onPressed: _togglePasswordVisibility,
+              padding: EdgeInsets.zero,
+            ),
+          ),
+          SizedBox(
+            height: 56,
+            child: HorizonOutlinedButton(
+              onPressed: widget.isLoading ? null : _handleSubmit,
+              buttonText: widget.buttonText,
+              isTransparent: false,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class HorizonDialogContainer extends StatelessWidget {
+  final Widget child;
+  final VoidCallback onCancel;
+  const HorizonDialogContainer({
+    super.key,
+    required this.child,
+    required this.onCancel,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
     return Material(
       type: MaterialType.transparency,
       child: Stack(
@@ -947,7 +1007,7 @@ class _HorizonPasswordPromptState extends State<HorizonPasswordPrompt> {
           // Blurred background
           Positioned.fill(
             child: GestureDetector(
-              onTap: widget.onCancel,
+              onTap: onCancel,
               child: BackdropFilter(
                 filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
                 child: Container(
@@ -970,48 +1030,7 @@ class _HorizonPasswordPromptState extends State<HorizonPasswordPrompt> {
                 ),
                 color: isDarkMode ? grey5 : grey1,
               ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Text(
-                    widget.title,
-                    style: theme.textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  HorizonTextField(
-                    controller: _controller,
-                    hintText: 'Password',
-                    errorText: widget.errorText,
-                    obscureText: _obscurePassword,
-                    suffixIcon: AppIcons.iconButton(
-                      context: context,
-                      icon: _obscurePassword
-                          ? AppIcons.eyeClosedIcon(
-                              context: context,
-                              width: 10,
-                              height: 10,
-                            )
-                          : AppIcons.eyeOpenIcon(
-                              context: context,
-                              width: 12,
-                              height: 12,
-                            ),
-                      onPressed: _togglePasswordVisibility,
-                      padding: EdgeInsets.zero,
-                    ),
-                  ),
-                  SizedBox(
-                    height: 56,
-                    child: HorizonOutlinedButton(
-                      onPressed: widget.isLoading ? null : _handleSubmit,
-                      buttonText: widget.buttonText,
-                      isTransparent: false,
-                    ),
-                  ),
-                ],
-              ),
+              child: child,
             ),
           ),
         ],
