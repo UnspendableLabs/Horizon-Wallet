@@ -87,27 +87,36 @@ class ComposeFairmintPage extends StatefulWidget {
 class ComposeFairmintPageState extends State<ComposeFairmintPage> {
   TextEditingController fromAddressController = TextEditingController();
   TextEditingController nameController = UpperCaseTextEditingController();
-  TextEditingController quantityController = TextEditingController();
   String? error;
   // Add a key for the dropdown
   Key _dropdownKey = UniqueKey();
   bool showLockedOnly = false;
+  double numLots = 1;
+  double? maxLots;
 
   @override
   void initState() {
     super.initState();
     fromAddressController.text = widget.address;
-    quantityController.addListener(() {
-      setState(() {}); // Trigger rebuild when quantity changes
-    });
   }
 
   @override
   void dispose() {
-    quantityController.dispose();
     fromAddressController.dispose();
     nameController.dispose();
     super.dispose();
+  }
+
+  void _updateMaxLots(Fairminter? fairminter) {
+    if (fairminter != null &&
+        fairminter.maxMintPerTx != null &&
+        fairminter.quantityByPrice != null) {
+      maxLots = (fairminter.maxMintPerTx! / fairminter.quantityByPrice!)
+          .floor()
+          .toDouble();
+    } else {
+      maxLots = null;
+    }
   }
 
   @override
@@ -166,7 +175,6 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
                 _buildConfirmationDetails(composeTransaction),
             onConfirmationBack: () => _onConfirmationBack(),
             onConfirmationContinue: (composeTransaction, fee, formKey) {
-              
               _onConfirmationContinue(composeTransaction, fee, formKey);
             },
             onFinalizeSubmit: (password, formKey) {
@@ -195,21 +203,15 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
         return;
       }
 
-      if (state.selectedFairminter!.price != null &&
-          state.selectedFairminter!.price! > 0 &&
-          quantityController.text.isEmpty) {
-        setState(() {
-          error = 'Please enter a quantity';
-        });
-        return;
-      }
-
       try {
         int? quantity;
         if (state.selectedFairminter!.price != null &&
             state.selectedFairminter!.price! > 0) {
           quantity = getQuantityForDivisibility(
-            inputQuantity: quantityController.text,
+            inputQuantity: (numLots *
+                    double.parse(
+                        state.selectedFairminter!.quantityByPriceNormalized!))
+                .toString(),
             divisible: state.selectedFairminter!.divisible ?? false,
           );
         } else {
@@ -338,7 +340,7 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
                     .read<ComposeFairmintBloc>()
                     .add(FairminterChanged(value: value));
                 setState(() {
-                  quantityController.text = '1';
+                  _updateMaxLots(value);
                 });
               },
             ),
@@ -349,114 +351,93 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
       if (state.selectedFairminter != null)
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.start,
           children: [
             const SizedBox(height: 16.0),
-            const Text("Mint Quantity",
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey,
-                )),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              spacing: 16,
-              children: [
-                Expanded(
-                  child: Slider(
-                      label: quantityController.text,
+            if (state.selectedFairminter!.price != null &&
+                state.selectedFairminter!.price! > 0)
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text("No. of Lots",
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey,
+                      )),
+                  Slider(
+                      label: numLots.toString(),
                       padding: const EdgeInsets.symmetric(
                           horizontal: 0, vertical: 8),
-                      value: double.parse(quantityController.text),
-                      max: double.parse(
-                          state.selectedFairminter!.maxMintPerTxNormalized!),
+                      value: numLots,
+                      max: maxLots != null && maxLots! > 1 ? maxLots! : 1,
+                      divisions: maxLots != null && maxLots! > 1
+                          ? (maxLots! - 1).toInt()
+                          : null,
                       min: 1,
-                      divisions: double.parse(state
-                                  .selectedFairminter!.maxMintPerTxNormalized!)
-                              .toInt() -
-                          1,
                       onChanged: (value) {
                         setState(() {
-                          quantityController.text = value.toString();
+                          numLots = value.roundToDouble();
                         });
                       }),
-                ),
-                Text(
-                  quantityController.text,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    color: Colors.white,
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Text(
+                        numberWithCommas.format(numLots),
+                        textAlign: TextAlign.right,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-              ],
-            ),
-
-            // HorizonUI.HorizonTextFormField(
-            //   label: 'Quantity',
-            //   controller: quantityController,
-            //   enabled: true,
-            //   autovalidateMode: AutovalidateMode.always,
-            //   inputFormatters: [
-            //     state.selectedFairminter!.divisible == true
-            //         ? DecimalTextInputFormatter(decimalRange: 8)
-            //         : FilteringTextInputFormatter.digitsOnly,
-            //   ],
-            //   validator: (value) {
-            //     if (value == null || value.isEmpty) {
-            //       return 'Please enter a quantity';
-            //     }
-            //     if (value == '.') {
-            //       // Don't validate if the user is typing a decimal point
-            //       return null;
-            //     }
-            //     if (Decimal.parse(value) >
-            //         Decimal.parse(
-            //             state.selectedFairminter!.maxMintPerTxNormalized!)) {
-            //       return 'Quantity must be <= ${state.selectedFairminter!.maxMintPerTxNormalized}';
-            //     }
-            //     return null;
-            //   },
-            // ),
-            const SizedBox(height: 16.0),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    spacing: 64,
+                    children: [
+                      FairminterProperty(
+                        label: 'Lot Price',
+                        property:
+                            (satoshisToBtc(state.selectedFairminter!.price!))
+                                .toString(),
+                      ),
+                      // lot size
+                      FairminterProperty(
+                        label: 'Lot Size',
+                        property: numberWithCommas.format(double.parse(state
+                            .selectedFairminter!.quantityByPriceNormalized!)),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            const SizedBox(height: 8.0),
             FairminterProperty(
               label: 'Quantity Locked After Fairminter Closes',
               property: state.selectedFairminter!.lockQuantity.toString(),
             ),
-            if (state.selectedFairminter!.price != null &&
-                state.selectedFairminter!.price! > 0) ...[
-              FairminterProperty(
-                label: 'XCP Price By Token',
-                property: _getXCPPricePerToken(
-                        state.selectedFairminter!.price!,
-                        state.selectedFairminter!.quantityByPrice!,
-                        state.selectedFairminter!.divisible)
-                    .toString(),
-              ),
-              FairminterProperty(
-                label: 'Max Mint Per TX',
-                property: numberWithCommas.format(double.parse(
-                    state.selectedFairminter!.maxMintPerTxNormalized!)),
-              ),
-              if (quantityController.text.isNotEmpty) ...[
-                Builder(
-                  builder: (context) {
-                    try {
-                      return Column(
-                        children: [
-                          FairminterProperty(
-                              label: 'Total XCP price',
-                              property: _getTotalXCPPriceForQuantity(
-                                      quantityController.text,
-                                      state.selectedFairminter!.price!,
-                                      state.selectedFairminter!.quantityByPrice!,
-                                      state.selectedFairminter!.divisible)
-                                  .toString()),
-                        ],
-                      );
-                    } catch (e) {
-                      return const SizedBox.shrink();
-                    }
-                  },
+            const SizedBox(height: 8.0),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              spacing: 64,
+              children: [
+                FairminterProperty(
+                  label: 'Max Mint Per TX',
+                  property: numberWithCommas.format(double.parse(
+                      state.selectedFairminter!.maxMintPerTxNormalized!)),
                 ),
               ],
+            ),
+            if (state.selectedFairminter!.price != null &&
+                state.selectedFairminter!.price! > 0) ...[
+              const SizedBox(height: 8.0),
+              FairminterProperty(
+                label: 'Total XCP Price',
+                property: numberWithCommas.format(numLots *
+                    double.parse(state.selectedFairminter!.price!.toString()) * double.parse(state.selectedFairminter!.quantityByPriceNormalized!) /
+                    100000000),
+              ),
             ]
           ],
         ),
