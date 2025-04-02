@@ -93,6 +93,7 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
   bool showLockedOnly = false;
   double numLots = 1;
   double? maxLots;
+  double? maxMintPerTx;
 
   @override
   void initState() {
@@ -111,11 +112,18 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
     if (fairminter != null &&
         fairminter.maxMintPerTx != null &&
         fairminter.quantityByPrice != null) {
-      maxLots = (fairminter.maxMintPerTx! / fairminter.quantityByPrice!)
-          .floor()
-          .toDouble();
+      if (fairminter.maxMintPerTx! % fairminter.quantityByPrice! == 0) {
+        maxMintPerTx = fairminter.maxMintPerTx! / fairminter.quantityByPrice!;
+      } else {
+        maxMintPerTx = (fairminter.maxMintPerTx! -
+                (fairminter.maxMintPerTx! % fairminter.quantityByPrice!))
+            as double?;
+      }
+      maxLots =
+          (maxMintPerTx! / fairminter.quantityByPrice!).floor().toDouble();
     } else {
       maxLots = null;
+      maxMintPerTx = null;
     }
   }
 
@@ -435,7 +443,9 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
               FairminterProperty(
                 label: 'Total XCP Price',
                 property: numberWithCommas.format(numLots *
-                    double.parse(state.selectedFairminter!.price!.toString()) * double.parse(state.selectedFairminter!.quantityByPriceNormalized!) /
+                    double.parse(state.selectedFairminter!.price!.toString()) *
+                    double.parse(
+                        state.selectedFairminter!.quantityByPriceNormalized!) /
                     100000000),
               ),
             ]
@@ -518,40 +528,6 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
         .add(AsyncFormDependenciesRequested(currentAddress: widget.address));
   }
 
-  num _getXCPPricePerToken(num price, num quantityByPrice, bool? divisible) {
-    // XCP price by token calculation:
-    // If price = XCP cost per price unit
-    // quantityByPrice = tokens received per price unit
-    // Then: pricePerToken = price / quantityByPrice
-    // This gives the XCP cost for a single token
-
-    final pricePerToken = price / quantityByPrice;
-    if (divisible == true) {
-      return pricePerToken;
-    }
-    return pricePerToken / SATOSHI_RATE;
-  }
-
-  Decimal _getTotalXCPPriceForQuantity(
-      // Total XCP price calculation:
-      // If quantity = tokens to mint
-      // quantityByPrice = tokens received per price unit
-      // price = XCP cost per price unit
-      // Then: totalXCP = (quantity / quantityByPrice) * price
-      // This gives the total XCP needed to mint the requested quantity of tokens
-      String quantityInput,
-      num price,
-      num quantityByPrice,
-      bool? divisible) {
-    final quantity = Decimal.parse(quantityInput);
-    final pricePerToken = Decimal.parse((price / quantityByPrice).toString());
-    if (divisible == true) {
-      return quantity * pricePerToken;
-    }
-
-    return ((quantity * pricePerToken).ceil() / Decimal.fromInt(SATOSHI_RATE))
-        .toDecimal(scaleOnInfinitePrecision: 8);
-  }
 }
 
 class UpperCaseTextEditingController extends TextEditingController {
