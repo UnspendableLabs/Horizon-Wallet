@@ -1,4 +1,4 @@
-@JS("hwd.ecpair")
+@JS("__horizon_js_bundle__.ecpair")
 library;
 
 import 'dart:js_interop';

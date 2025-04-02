@@ -2,7 +2,7 @@ import 'dart:js_interop';
 import 'dart:js_util';
 import 'dart:typed_data';
 
-@JS("Buffer")
+@JS("__horizon_js_bundle__.buffer")
 extension type Buffer._(JSObject _) implements JSObject {
   external factory Buffer.from(JSUint8Array list);
 

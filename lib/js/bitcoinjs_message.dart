@@ -1,4 +1,4 @@
-@JS('hwd.bitcoinjsMessage')
+@JS('__horizon_js_bundle__.bitcoinjsMessage')
 library;
 
 import 'package:js/js.dart';

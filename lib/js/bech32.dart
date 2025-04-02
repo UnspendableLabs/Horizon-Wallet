@@ -1,4 +1,4 @@
-@JS('hwd.bech32.bech32')
+@JS('__horizon_js_bundle__.bech32.bech32')
 library;
 
 import 'dart:js_interop';

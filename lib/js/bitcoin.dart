@@ -1,4 +1,4 @@
-@JS('hwd.bitcoinjs')
+@JS('__horizon_js_bundle__.bitcoinjs')
 library;
 
 import 'dart:js_interop';
