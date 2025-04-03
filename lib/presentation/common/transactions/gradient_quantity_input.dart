@@ -18,6 +18,7 @@ class GradientQuantityInput extends StatefulWidget {
   final String? Function(String?)? validator;
   final bool? showMaxButton;
   final String? label;
+  final bool? emptySelectedBalanceEntryAllowed;
 
   const GradientQuantityInput({
     super.key,
@@ -29,6 +30,7 @@ class GradientQuantityInput extends StatefulWidget {
     this.validator,
     this.showMaxButton = false,
     this.label,
+    this.emptySelectedBalanceEntryAllowed = false,
   });
 
   @override
@@ -91,8 +93,9 @@ class _GradientQuantityInputState extends State<GradientQuantityInput> {
     final customTheme = theme.extension<CustomThemeExtension>()!;
     final isDivisible = widget.balance?.assetInfo.divisible == true;
     final isDarkMode = theme.brightness == Brightness.dark;
-    final isInputEnabled =
-        widget.enabled && widget.selectedBalanceEntry != null;
+    final isInputEnabled = widget.enabled &&
+        (widget.selectedBalanceEntry != null ||
+            widget.emptySelectedBalanceEntryAllowed == true);
 
     final Gradient textGradient = LinearGradient(
       begin: Alignment.centerLeft,

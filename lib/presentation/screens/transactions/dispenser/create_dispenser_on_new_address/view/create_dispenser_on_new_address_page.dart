@@ -13,17 +13,14 @@ import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/presentation/common/transaction_stepper/bloc/transaction_state.dart';
 import 'package:horizon/presentation/common/transaction_stepper/view/steps/transaction_form_page.dart';
 import 'package:horizon/presentation/common/transaction_stepper/view/transaction_stepper.dart';
-import 'package:horizon/presentation/common/transactions/gradient_quantity_input.dart';
-import 'package:horizon/presentation/common/transactions/token_name_field.dart';
 import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
 import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
 import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transaction_usecase.dart';
 import 'package:horizon/presentation/common/usecase/write_local_transaction_usecase.dart';
 import 'package:horizon/presentation/common/transaction_stepper/view/steps/transaction_compose_page.dart';
-import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
+import 'package:horizon/presentation/screens/transactions/dispenser/create_dispenser_form.dart';
 import 'package:horizon/presentation/screens/transactions/dispenser/create_dispenser_on_new_address/bloc/create_dispenser_on_new_address_bloc.dart';
 import 'package:horizon/presentation/screens/transactions/dispenser/create_dispenser_on_new_address/bloc/create_dispenser_on_new_address_event.dart';
-import 'package:horizon/presentation/screens/transactions/dispenser/dispenser_mult_address_balance_dropdown.dart';
 
 class CreateDispenserOnNewAddressPage extends StatefulWidget {
   final String assetName;
@@ -46,7 +43,7 @@ class _CreateDispenserOnNewAddressPageState
   MultiAddressBalanceEntry? selectedBtcBalanceEntry;
   TextEditingController giveQuantityController = TextEditingController();
   TextEditingController escrowQuantityController = TextEditingController();
-  // TextEditingController destinationAddressController = TextEditingController();
+  TextEditingController pricePerUnitController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
   void _handleOnFormStepNext(
@@ -69,7 +66,8 @@ class _CreateDispenserOnNewAddressPageState
     //     ));
   }
 
-  void _handleConfirmationStepNext(BuildContext context, {String? password}) {
+  void _handleConfirmationStepNext(BuildContext context,
+      {String? decryptionStrategy}) {
     // context
     //     .read<SendBloc>()
     //     .add(SendTransactionBroadcasted(password: password));
@@ -131,115 +129,24 @@ class _CreateDispenserOnNewAddressPageState
                           data,
                           feeOption,
                           required loading}) =>
-                      Form(
-                    key: _formKey,
-                    child: Column(
-                      children: [
-                        DispenserMultiAddressBalanceDropdown(
-                          loading: loading,
-                          balances: balances,
-                          btcBalances: data?.btcBalances,
-                          onChanged: (value) {
-                            setState(() {
-                              selectedBalanceEntry = value;
-                              selectedBtcBalanceEntry = data
-                                  ?.btcBalances.entries
-                                  .firstWhere((entry) =>
-                                      entry.address == value?.address);
-                            });
-                          },
-                          selectedValue: selectedBalanceEntry,
-                        ),
-                        commonHeightSizedBox,
-                        TokenNameField(
-                          loading: loading,
-                          balance: balances,
-                          selectedBalanceEntry: selectedBalanceEntry,
-                        ),
-                        commonHeightSizedBox,
-                        GradientQuantityInput(
-                          enabled: !loading,
-                          showMaxButton: true,
-                          balance: balances,
-                          selectedBalanceEntry: selectedBalanceEntry,
-                          controller: giveQuantityController,
-                          label: 'Give Quantity',
-                        ),
-                        commonHeightSizedBox,
-                        GradientQuantityInput(
-                          enabled: !loading,
-                          showMaxButton: true,
-                          balance: balances,
-                          selectedBalanceEntry: selectedBalanceEntry,
-                          controller: escrowQuantityController,
-                          label: 'Escrow Quantity',
-                        ),
-                        // MultiAddressBalanceDropdown(
-                        //   loading: loading,
-                        //   balances: balances,
-                        //   onChanged: (value) {
-                        //     setState(() {
-                        //       selectedBalanceEntry = value;
-                        //       quantityController.clear();
-                        //     });
-                        //   },
-                        //   selectedValue: selectedBalanceEntry,
-                        // ),
-                        // commonHeightSizedBox,
-                        // HorizonTextField(
-                        //   enabled: !loading,
-                        //   controller: destinationAddressController,
-                        //   label: 'Destination Address',
-                        //   validator: (value) {
-                        //     if (value == null || value.isEmpty) {
-                        //       return 'Please enter a destination address';
-                        //     }
-                        //     return null;
-                        //   },
-                        // ),
-                        // commonHeightSizedBox,
-                        // TokenNameField(
-                        //   loading: loading,
-                        //   balance: balances,
-                        //   selectedBalanceEntry: selectedBalanceEntry,
-                        // ),
-                        // commonHeightSizedBox,
-                        // GradientQuantityInput(
-                        //   enabled: !loading,
-                        //   showMaxButton: true,
-                        //   balance: balances,
-                        //   selectedBalanceEntry: selectedBalanceEntry,
-                        //   controller: quantityController,
-                        //   validator: (value) {
-                        //     if (balances == null) {
-                        //       return null;
-                        //     }
-                        //     if (value == null || value.isEmpty) {
-                        //       return 'Please enter an amount';
-                        //     }
-
-                        //     if (selectedBalanceEntry != null) {
-                        //       try {
-                        //         final enteredQuantity =
-                        //             getQuantityForDivisibility(
-                        //           divisible: balances.assetInfo.divisible,
-                        //           inputQuantity: value,
-                        //         );
-
-                        //         if (enteredQuantity >
-                        //             selectedBalanceEntry!.quantity) {
-                        //           return 'Insufficient balance';
-                        //         }
-                        //       } catch (e) {
-                        //         return 'Invalid amount';
-                        //       }
-                        //     }
-
-                        //     return null;
-                        //   },
-                        // ),
-                      ],
-                    ),
+                      CreateDispenserForm.create(
+                    loading: loading,
+                    balances: balances,
+                    btcBalances: data?.btcBalances,
+                    selectedBalanceEntry: selectedBalanceEntry,
+                    selectedBtcBalanceEntry: selectedBtcBalanceEntry,
+                    giveQuantityController: giveQuantityController,
+                    escrowQuantityController: escrowQuantityController,
+                    pricePerUnitController: pricePerUnitController,
+                    formKey: _formKey,
+                    onBalanceChanged: (value) {
+                      setState(() {
+                        selectedBalanceEntry = value;
+                        selectedBtcBalanceEntry = data?.btcBalances.entries
+                            .firstWhere(
+                                (entry) => entry.address == value?.address);
+                      });
+                    },
                   ),
                 ),
               ),
@@ -257,40 +164,12 @@ class _CreateDispenserOnNewAddressPageState
                           required bool loading}) =>
                       const Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // QuantityDisplay(
-                      //   loading: loading,
-                      //   quantity:
-                      //       composeState?.composeData.params.quantityNormalized,
-                      // ),
-                      // commonHeightSizedBox,
-                      // ConfirmationFieldWithLabel(
-                      //   loading: loading,
-                      //   label: 'Token Name',
-                      //   value: composeState?.composeData.params.asset != null
-                      //       ? displayAssetName(
-                      //           composeState!.composeData.params.asset,
-                      //           composeState
-                      //               .composeData.params.assetInfo.assetLongname)
-                      //       : null,
-                      // ),
-                      // commonHeightSizedBox,
-                      // ConfirmationFieldWithLabel(
-                      //   loading: loading,
-                      //   label: 'Source Address',
-                      //   value: composeState?.composeData.params.source,
-                      // ),
-                      // commonHeightSizedBox,
-                      // ConfirmationFieldWithLabel(
-                      //   loading: loading,
-                      //   label: 'Recipient Address',
-                      //   value: composeState?.composeData.params.destination,
-                      // ),
-                    ],
+                    children: [],
                   ),
                 ),
-                onNext: ({String? password}) =>
-                    _handleConfirmationStepNext(context, password: password),
+                onNext: ({required dynamic decryptionStrategy}) =>
+                    _handleConfirmationStepNext(context,
+                        decryptionStrategy: decryptionStrategy),
               ),
               state: state,
             ),

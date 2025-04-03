@@ -35,8 +35,6 @@ class CreateDispenserParams {
   });
 }
 
-class CreateDispenserTransactionBroadcasted extends TransactionEvent {
-  final String? password;
-
-  CreateDispenserTransactionBroadcasted({this.password});
+class CreateDispenserTransactionBroadcasted extends TransactionBroadcasted {
+  CreateDispenserTransactionBroadcasted({required super.decryptionStrategy});
 }

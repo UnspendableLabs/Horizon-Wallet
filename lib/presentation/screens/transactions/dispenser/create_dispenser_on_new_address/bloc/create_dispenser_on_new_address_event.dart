@@ -37,8 +37,7 @@ class CreateDispenserOnNewAddressParams {
 }
 
 class CreateDispenserOnNewAddressTransactionBroadcasted
-    extends TransactionEvent {
-  final String? password;
-
-  CreateDispenserOnNewAddressTransactionBroadcasted({this.password});
+    extends TransactionBroadcasted {
+  CreateDispenserOnNewAddressTransactionBroadcasted(
+      {required super.decryptionStrategy});
 }
