@@ -537,9 +537,6 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
         satoshisToBtc(fairminter.price!).toDouble() *
         double.parse(
             fairminter.quantityByPriceNormalized!);
-    if (price < 0.00000001) {
-      return price.toString();
-    }
     return numberWithCommas.format(price);
   }
 }
