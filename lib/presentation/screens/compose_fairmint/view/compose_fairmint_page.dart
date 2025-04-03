@@ -113,7 +113,7 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
         fairminter.maxMintPerTx != null &&
         fairminter.quantityByPrice != null) {
       if (fairminter.maxMintPerTx! % fairminter.quantityByPrice! == 0) {
-        maxMintPerTx = fairminter.maxMintPerTx! / fairminter.quantityByPrice!;
+        maxMintPerTx = fairminter.maxMintPerTx! as double?;
       } else {
         maxMintPerTx = (fairminter.maxMintPerTx! -
                 (fairminter.maxMintPerTx! % fairminter.quantityByPrice!))
@@ -348,6 +348,7 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
                     .read<ComposeFairmintBloc>()
                     .add(FairminterChanged(value: value));
                 setState(() {
+                  numLots = 1;
                   _updateMaxLots(value);
                 });
               },
@@ -405,7 +406,7 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
                     spacing: 64,
                     children: [
                       FairminterProperty(
-                        label: 'Lot Price',
+                        label: 'Lot Price (XCP)',
                         property:
                             (satoshisToBtc(state.selectedFairminter!.price!))
                                 .toString(),
@@ -442,11 +443,7 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
               const SizedBox(height: 8.0),
               FairminterProperty(
                 label: 'Total XCP Price',
-                property: numberWithCommas.format(numLots *
-                    double.parse(state.selectedFairminter!.price!.toString()) *
-                    double.parse(
-                        state.selectedFairminter!.quantityByPriceNormalized!) /
-                    100000000),
+                property: _getTotalXCPPrice(state.selectedFairminter!),
               ),
             ]
           ],
@@ -528,6 +525,16 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
         .add(AsyncFormDependenciesRequested(currentAddress: widget.address));
   }
 
+  String _getTotalXCPPrice(Fairminter fairminter) {
+    final price = numLots *
+        satoshisToBtc(fairminter.price!).toDouble() *
+        double.parse(
+            fairminter.quantityByPriceNormalized!);
+    if (price < 0.00000001) {
+      return price.toString();
+    }
+    return numberWithCommas.format(price);
+  }
 }
 
 class UpperCaseTextEditingController extends TextEditingController {
