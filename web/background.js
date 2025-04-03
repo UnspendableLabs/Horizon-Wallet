@@ -92,6 +92,22 @@ async function rpcSignPsbt(requestId, port, hex, signInputs, sighashTypes) {
   });
 }
 
+async function rpcSignMessage(requestId, port, message, address) {
+  const origin = getOriginFromPort(port);
+  const tabId = getTabIdFromPort(port);
+  const window = await popup({
+    url: `/index.html#?action=signMessage:ext,${tabId},${requestId},${message},${address}`,
+  });
+  listenForPopupClose({
+    id: window?.id,
+    tabId: tabId,
+    response: {
+      id: requestId,
+      error: "User rejected `signMessage` request",
+    },
+  });
+}
+
 async function rpcDispense(address) {
   await popup({ url: `/index.html#?action=dispense:ext,${address}` });
 }
@@ -125,6 +141,14 @@ async function rpcMessageHandler(message, port) {
         message["params"]["hex"],
         message["params"]["signInputs"],
         message["params"]["sighashTypes"],
+      );
+      break;
+    case "signMessage":
+      await rpcSignMessage(
+        message["id"],
+        port,
+        message["params"]["message"],
+        message["params"]["address"],
       );
       break;
     case "fairmint":

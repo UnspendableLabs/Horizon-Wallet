@@ -34,16 +34,19 @@ class AssetViewBloc
 
   Future<void> _onPageLoaded(PageLoaded event, emit) async {
     emit(const RemoteDataState<AssetViewData>.loading());
-    final MultiAddressBalance balances = await balanceRepository
-        .getBalancesForAddressesAndAsset(addresses, asset);
-    final List<Fairminter> fairminters = await fairminterRepository
-        .getFairmintersByAsset(asset, 'open')
-        .run()
-        .then((either) => either.fold(
-              (error) => throw FetchFairmintersException(
-                  error.toString()), // Handle failure
-              (fairminters) => fairminters, // Handle success
-            ));
+    final results = await Future.wait([
+      balanceRepository.getBalancesForAddressesAndAsset(addresses, asset),
+      fairminterRepository
+          .getFairmintersByAsset(asset, 'open')
+          .run()
+          .then((either) => either.fold(
+                (error) => throw FetchFairmintersException(error.toString()),
+                (fairminters) => fairminters,
+              )),
+    ]);
+
+    final MultiAddressBalance balances = results[0] as MultiAddressBalance;
+    final List<Fairminter> fairminters = results[1] as List<Fairminter>;
 
     emit(RemoteDataState<AssetViewData>.success(
         AssetViewData(balances: balances, fairminters: fairminters)));

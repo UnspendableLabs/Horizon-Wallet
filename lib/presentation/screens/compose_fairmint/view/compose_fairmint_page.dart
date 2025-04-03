@@ -1,4 +1,6 @@
-import 'package:collection/collection.dart';
+import 'package:decimal/decimal.dart';
+import 'package:flutter/services.dart';
+import 'package:horizon/common/format.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
@@ -83,13 +85,10 @@ class ComposeFairmintPage extends StatefulWidget {
 }
 
 class ComposeFairmintPageState extends State<ComposeFairmintPage> {
-  TextEditingController quantityController = TextEditingController();
   TextEditingController fromAddressController = TextEditingController();
   TextEditingController nameController = UpperCaseTextEditingController();
-
-  bool _submitted = false;
+  TextEditingController quantityController = TextEditingController();
   String? error;
-  bool _isAssetNameSelected = false;
   // Add a key for the dropdown
   Key _dropdownKey = UniqueKey();
   bool showLockedOnly = false;
@@ -98,6 +97,17 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
   void initState() {
     super.initState();
     fromAddressController.text = widget.address;
+    quantityController.addListener(() {
+      setState(() {}); // Trigger rebuild when quantity changes
+    });
+  }
+
+  @override
+  void dispose() {
+    quantityController.dispose();
+    fromAddressController.dispose();
+    nameController.dispose();
+    super.dispose();
   }
 
   @override
@@ -132,16 +142,6 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
                             ),
                           ],
                         ),
-                        const SizedBox(height: 16.0),
-                        const HorizonUI.HorizonTextFormField(
-                          label: "Select a fairminter",
-                          enabled: false,
-                        ),
-                        const SizedBox(height: 16.0),
-                        HorizonUI.HorizonTextFormField(
-                            label: "Name of the asset to mint",
-                            controller: nameController,
-                            enabled: false),
                       ],
                   onInitialCancel: () => _handleInitialCancel(),
                   onInitialSubmit: (formKey) {},
@@ -186,42 +186,50 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
 
   void _handleInitialSubmit(GlobalKey<FormState> formKey,
       List<Fairminter> fairminters, ComposeFairmintState state) {
-    setState(() {
-      _submitted = true;
-    });
     if (formKey.currentState!.validate()) {
-      if (!_isAssetNameSelected && state.selectedFairminter == null) {
+      if (state.selectedFairminter == null) {
         setState(() {
           error = 'Please select a fairminter';
         });
         return;
-      } else if (_isAssetNameSelected && nameController.text.isEmpty) {
+      }
+
+      if (state.selectedFairminter!.price != null &&
+          state.selectedFairminter!.price! > 0 &&
+          quantityController.text.isEmpty) {
         setState(() {
-          error = 'Please enter a fairminter name';
+          error = 'Please enter a quantity';
         });
         return;
       }
 
-      if (_isAssetNameSelected &&
-          !fairminters
-              .any((fairminter) => fairminter.asset == nameController.text)) {
-        setState(() {
-          error = 'Fairminter with name ${nameController.text} not found';
-        });
-        return;
-      }
+      try {
+        int? quantity;
+        if (state.selectedFairminter!.price != null &&
+            state.selectedFairminter!.price! > 0) {
+          quantity = getQuantityForDivisibility(
+            inputQuantity: quantityController.text,
+            divisible: state.selectedFairminter!.divisible ?? false,
+          );
+        } else {
+          quantity = null;
+        }
 
-      context.read<ComposeFairmintBloc>().add(FormSubmitted(
-            sourceAddress: widget.address,
-            params: ComposeFairmintEventParams(
-              asset: _isAssetNameSelected
-                  ? state.selectedFairminter!.asset ?? nameController.text
-                  : state.selectedFairminter!.asset!,
-            ),
-          ));
+        context.read<ComposeFairmintBloc>().add(FormSubmitted(
+              sourceAddress: widget.address,
+              params: ComposeFairmintEventParams(
+                asset: state.selectedFairminter!.asset!,
+                quantity: quantity,
+              ),
+            ));
+      } catch (e) {
+        setState(() {
+          error = 'Invalid quantity format';
+        });
+      }
     } else {
       setState(() {
-        error = 'unknown error: invalid form';
+        error = 'Please fix the validation errors';
       });
     }
   }
@@ -235,10 +243,7 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
     }
 
     final validFairminters = fairminters.where((fairminter) {
-      return fairminter.status != null &&
-          fairminter.status == 'open' &&
-          fairminter.price != null &&
-          fairminter.price! == 0;
+      return fairminter.status != null && fairminter.status == 'open';
     }).toList();
 
     final filteredFairminters = showLockedOnly
@@ -251,34 +256,30 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
         controller: fromAddressController,
         enabled: false,
       ),
-      const SizedBox(height: 16.0),
       Row(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
           if (showLockedOnly)
             TextButton.icon(
-              onPressed: _isAssetNameSelected
-                  ? null
-                  : () {
-                      setState(() {
-                        showLockedOnly = false;
-                        context
-                            .read<ComposeFairmintBloc>()
-                            .add(FairminterChanged(value: null));
-                        _dropdownKey = UniqueKey();
-                      });
-                    },
+              onPressed: () {
+                setState(() {
+                  showLockedOnly = false;
+                  context
+                      .read<ComposeFairmintBloc>()
+                      .add(FairminterChanged(value: null));
+                  _dropdownKey = UniqueKey();
+                });
+              },
               icon: const Icon(Icons.clear),
               label: const Text('Clear filter'),
               style: TextButton.styleFrom(
-                foregroundColor: _isAssetNameSelected ? Colors.grey : null,
+                foregroundColor: Colors.grey,
               ),
             ),
           PopupMenuButton<bool>(
-            enabled: !_isAssetNameSelected,
-            icon: Icon(
+            icon: const Icon(
               Icons.filter_list,
-              color: _isAssetNameSelected ? Colors.grey : null,
+              color: Colors.grey,
             ),
             itemBuilder: (context) => [
               PopupMenuItem(
@@ -318,107 +319,89 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
       const SizedBox(height: 16.0),
       Row(
         children: [
-          Radio<bool>(
-            value: false,
-            groupValue: _isAssetNameSelected,
-            onChanged: (value) {
-              setState(() {
-                error = null;
-                _isAssetNameSelected = value!;
-                if (!_isAssetNameSelected) {
-                  // Clear the asset name input when switching to dropdown
-                  nameController.clear();
-                }
-              });
-            },
-          ),
           Expanded(
-            child: _isAssetNameSelected
-                ? const HorizonUI.HorizonTextFormField(
-                    label: "Select a fairminter",
-                    enabled: false,
-                  )
-                : HorizonUI.HorizonSearchableDropdownMenu(
-                    key: _dropdownKey, // Add the key here
-                    displayStringForOption: (fairminter) => displayAssetName(
-                        fairminter.asset!, fairminter.assetLongname),
-                    label: "Select a fairminter",
-                    selectedValue:
-                        _isAssetNameSelected ? null : state.selectedFairminter,
-                    items: filteredFairminters
-                        .map((fairminter) => DropdownMenuItem(
-                            value: fairminter,
-                            child: Text(displayAssetName(
-                                fairminter.asset!, fairminter.assetLongname))))
-                        .toList(),
-                    onChanged: _isAssetNameSelected
-                        ? null
-                        : (Fairminter? value) {
-                            if (!_isAssetNameSelected) {
-                              context
-                                  .read<ComposeFairmintBloc>()
-                                  .add(FairminterChanged(value: value));
-                            }
-                          },
-                    enabled: !_isAssetNameSelected,
-                  ),
-          ),
-        ],
-      ),
-      const SizedBox(height: 16.0),
-      Row(
-        children: [
-          Radio<bool>(
-            value: true,
-            groupValue: _isAssetNameSelected,
-            onChanged: (value) {
-              setState(() {
-                error = null;
-                _isAssetNameSelected = value!;
-                if (_isAssetNameSelected) {
-                  // Clear the dropdown value when switching to asset name input
-                  context
-                      .read<ComposeFairmintBloc>()
-                      .add(FairminterChanged(value: null));
-                  // Reset the dropdown key to force a re-render
-                  _dropdownKey = UniqueKey();
-                  showLockedOnly = false;
-                }
-              });
-            },
-          ),
-          Expanded(
-            child: HorizonUI.HorizonTextFormField(
-              label: "Name of the asset to mint",
-              controller: nameController,
-              enabled: _isAssetNameSelected,
-              onChanged: (value) {
-                if (_isAssetNameSelected) {
-                  final Fairminter? fairminter = fairminters.firstWhereOrNull(
-                      (fairminter) => fairminter.asset == value);
-                  context
-                      .read<ComposeFairmintBloc>()
-                      .add(FairminterChanged(value: fairminter));
-                }
-              },
-              onFieldSubmitted: (value) {
-                if (_isAssetNameSelected) {
-                  _handleInitialSubmit(formKey, fairminters, state);
-                }
+            child: HorizonUI.HorizonSearchableDropdownMenu(
+              key: _dropdownKey, // Add the key here
+              displayStringForOption: (fairminter) =>
+                  displayAssetName(fairminter.asset!, fairminter.assetLongname),
+              label: "Select a fairminter",
+              selectedValue: state.selectedFairminter,
+              items: filteredFairminters
+                  .map((fairminter) => DropdownMenuItem(
+                      value: fairminter,
+                      child: Text(displayAssetName(
+                          fairminter.asset!, fairminter.assetLongname))))
+                  .toList(),
+              onChanged: (Fairminter? value) {
+                context
+                    .read<ComposeFairmintBloc>()
+                    .add(FairminterChanged(value: value));
+                setState(() {
+                  quantityController.text = '';
+                });
               },
             ),
           ),
         ],
       ),
-      state.selectedFairminter != null
-          ? Column(
-              children: [
-                const SizedBox(height: 16.0),
-                SelectableText(
-                    'Quantity Locked After Fairminter Closes: ${state.selectedFairminter!.lockQuantity}'),
+      const SizedBox(height: 16.0),
+      if (state.selectedFairminter != null)
+        Column(
+          children: [
+            const SizedBox(height: 16.0),
+            SelectableText(
+                'Quantity Locked After Fairminter Closes: ${state.selectedFairminter!.lockQuantity}'),
+            if (state.selectedFairminter!.price != null &&
+                state.selectedFairminter!.price! > 0) ...[
+              SelectableText(
+                  'XCP price by token: ${_getXCPPricePerToken(state.selectedFairminter!.price!, state.selectedFairminter!.quantityByPrice!, state.selectedFairminter!.divisible)}'),
+              SelectableText(
+                  'Max mint per tx: ${state.selectedFairminter!.maxMintPerTxNormalized}'),
+              HorizonUI.HorizonTextFormField(
+                label: 'Quantity',
+                controller: quantityController,
+                enabled: true,
+                autovalidateMode: AutovalidateMode.always,
+                inputFormatters: [
+                  state.selectedFairminter!.divisible == true
+                      ? DecimalTextInputFormatter(decimalRange: 8)
+                      : FilteringTextInputFormatter.digitsOnly,
+                ],
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter a quantity';
+                  }
+                  if (value == '.') {
+                    // Don't validate if the user is typing a decimal point
+                    return null;
+                  }
+                  if (Decimal.parse(value) >
+                      Decimal.parse(
+                          state.selectedFairminter!.maxMintPerTxNormalized!)) {
+                    return 'Quantity must be <= ${state.selectedFairminter!.maxMintPerTxNormalized}';
+                  }
+                  return null;
+                },
+              ),
+              if (quantityController.text.isNotEmpty) ...[
+                Builder(
+                  builder: (context) {
+                    try {
+                      return Column(
+                        children: [
+                          SelectableText(
+                              'Total XCP price: ${_getTotalXCPPriceForQuantity(quantityController.text, state.selectedFairminter!.price!, state.selectedFairminter!.quantityByPrice!, state.selectedFairminter!.divisible)}'),
+                        ],
+                      );
+                    } catch (e) {
+                      return const SizedBox.shrink();
+                    }
+                  },
+                ),
               ],
-            )
-          : const SizedBox.shrink(),
+            ]
+          ],
+        ),
       if (error != null)
         SelectableText(
           error!,
@@ -444,18 +427,21 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
       const SizedBox(height: 16.0),
       HorizonUI.HorizonTextFormField(
         label: "Mint Quantity",
-        controller: TextEditingController(text: _formatMintQuantity()),
+        controller: TextEditingController(text: _formatMintQuantity(params)),
         enabled: false,
       ),
     ];
   }
 
-  String _formatMintQuantity() {
+  String _formatMintQuantity(ComposeFairmintParams params) {
     final fairminter =
         context.read<ComposeFairmintBloc>().state.selectedFairminter;
 
     if (fairminter == null || fairminter.maxMintPerTxNormalized == null) {
       return '';
+    }
+    if (params.quantity != 0) {
+      return params.quantityNormalized!;
     }
 
     return fairminter.maxMintPerTxNormalized!;
@@ -491,6 +477,41 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
     context
         .read<ComposeFairmintBloc>()
         .add(AsyncFormDependenciesRequested(currentAddress: widget.address));
+  }
+
+  num _getXCPPricePerToken(num price, num quantityByPrice, bool? divisible) {
+    // XCP price by token calculation:
+    // If price = XCP cost per price unit
+    // quantityByPrice = tokens received per price unit
+    // Then: pricePerToken = price / quantityByPrice
+    // This gives the XCP cost for a single token
+
+    final pricePerToken = price / quantityByPrice;
+    if (divisible == true) {
+      return pricePerToken;
+    }
+    return pricePerToken / SATOSHI_RATE;
+  }
+
+  Decimal _getTotalXCPPriceForQuantity(
+      // Total XCP price calculation:
+      // If quantity = tokens to mint
+      // quantityByPrice = tokens received per price unit
+      // price = XCP cost per price unit
+      // Then: totalXCP = (quantity / quantityByPrice) * price
+      // This gives the total XCP needed to mint the requested quantity of tokens
+      String quantityInput,
+      num price,
+      num quantityByPrice,
+      bool? divisible) {
+    final quantity = Decimal.parse(quantityInput);
+    final pricePerToken = Decimal.parse((price / quantityByPrice).toString());
+    if (divisible == true) {
+      return quantity * pricePerToken;
+    }
+
+    return ((quantity * pricePerToken).ceil() / Decimal.fromInt(SATOSHI_RATE))
+        .toDecimal(scaleOnInfinitePrecision: 8);
   }
 }
 

@@ -30,34 +30,10 @@ void main(List<String> args) async {
     exit(1);
   }
 
-  if (apiBase == null) {
-    print('HORIZON_COUNTERPARTY_API_BASE is required.');
-    exit(1);
-  }
-
-  if (apiUsername == null) {
-    print('HORIZON_COUNTERPARTY_API_USERNAME is required.');
-    exit(1);
-  }
-
-  if (apiPassword == null) {
-    print('HORIZON_COUNTERPARTY_API_PASSWORD is required.');
-    exit(1);
-  }
-
   final originalIndexHtml = await buildIndexHtml();
   final originalManifest = await buildManifest(browser);
-  await buildFlutter(
-      network,
-      apiBase,
-      apiUsername,
-      apiPassword,
-      analyticsEnabled,
-      posthogApiKey,
-      posthogApiHost,
-      isSentryEnabled,
-      sentryDsn,
-      sentrySampleRate);
+  await buildFlutter(network, analyticsEnabled, posthogApiKey, posthogApiHost,
+      isSentryEnabled, sentryDsn, sentrySampleRate);
 
   // reset index.html
   await resetFile('web/index.html', originalIndexHtml);
@@ -65,9 +41,6 @@ void main(List<String> args) async {
 
 Future<void> buildFlutter(
     String network,
-    String apiBase,
-    String username,
-    String password,
     String analyticsEnabled,
     String posthogApiKey,
     String posthogApiHost,
@@ -85,9 +58,6 @@ Future<void> buildFlutter(
     '--release',
     '--dart-define=HORIZON_IS_EXTENSION=true',
     '--dart-define=HORIZON_NETWORK=$network',
-    '--dart-define=HORIZON_COUNTERPARTY_API_BASE=$apiBase',
-    '--dart-define=HORIZON_COUNTERPARTY_API_USERNAME=$username',
-    '--dart-define=HORIZON_COUNTERPARTY_API_PASSWORD=$password',
     '--dart-define=HORIZON_ANALYTICS_ENABLED=$analyticsEnabled',
     '--dart-define=HORIZON_POSTHOG_API_KEY=$posthogApiKey',
     '--dart-define=HORIZON_POSTHOG_API_HOST=$posthogApiHost',

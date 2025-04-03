@@ -20,4 +20,8 @@ class TransactionComposed<T> extends TransactionEvent {
   });
 }
 
-class TransactionBroadcasted<T> extends TransactionEvent {}
+class TransactionBroadcasted<T> extends TransactionEvent {
+  final dynamic decryptionStrategy;
+
+  TransactionBroadcasted({required this.decryptionStrategy});
+}
