@@ -31,10 +31,12 @@ class ComposeFairmintPageWrapper extends StatelessWidget {
   final DashboardActivityFeedBloc dashboardActivityFeedBloc;
   final String? initialFairminterTxHash;
   final String currentAddress;
+  final int? initialNumLots;
   const ComposeFairmintPageWrapper({
     required this.dashboardActivityFeedBloc,
     this.initialFairminterTxHash,
     required this.currentAddress,
+    this.initialNumLots,
     super.key,
   });
 
@@ -49,6 +51,7 @@ class ComposeFairmintPageWrapper extends StatelessWidget {
               GetIt.I<SettingsRepository>().requirePasswordForCryptoOperations,
           inMemoryKeyRepository: GetIt.I.get<InMemoryKeyRepository>(),
           initialFairminterTxHash: initialFairminterTxHash,
+          initialNumLots: initialNumLots,
           logger: GetIt.I.get<Logger>(),
           fetchComposeFairmintFormDataUseCase:
               GetIt.I.get<FetchComposeFairmintFormDataUseCase>(),
@@ -91,7 +94,7 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
   // Add a key for the dropdown
   Key _dropdownKey = UniqueKey();
   bool showLockedOnly = false;
-  double numLots = 1;
+  int numLots = 1;
   double? maxLots;
   double? maxMintPerTx;
 
@@ -99,6 +102,7 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
   void initState() {
     super.initState();
     fromAddressController.text = widget.address;
+    numLots = context.read<ComposeFairmintBloc>().state.initialNumLots ?? 1;
   }
 
   @override
@@ -121,6 +125,7 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
       }
       maxLots =
           (maxMintPerTx! / fairminter.quantityByPrice!).floor().toDouble();
+      
     } else {
       maxLots = null;
       maxMintPerTx = null;
@@ -261,6 +266,8 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
         ? validFairminters.where((f) => f.lockQuantity == true).toList()
         : validFairminters;
 
+    _updateMaxLots(state.selectedFairminter);
+
     return [
       HorizonUI.HorizonTextFormField(
         label: "Address that will be minting the asset",
@@ -377,7 +384,7 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
                       label: numLots.toString(),
                       padding: const EdgeInsets.symmetric(
                           horizontal: 0, vertical: 8),
-                      value: numLots,
+                      value: numLots.toDouble(),
                       max: maxLots != null && maxLots! > 1 ? maxLots! : 1,
                       divisions: maxLots != null && maxLots! > 1
                           ? (maxLots! - 1).toInt()
@@ -385,7 +392,7 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
                       min: 1,
                       onChanged: (value) {
                         setState(() {
-                          numLots = value.roundToDouble();
+                          numLots = value.round();
                         });
                       }),
                   Row(

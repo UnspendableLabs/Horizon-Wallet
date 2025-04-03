@@ -22,6 +22,7 @@ mixin _$ComposeFairmintState {
   FeeOption get feeOption => throw _privateConstructorUsedError;
   SubmitState get submitState => throw _privateConstructorUsedError;
   String? get initialFairminterTxHash => throw _privateConstructorUsedError;
+  int? get initialNumLots => throw _privateConstructorUsedError;
   Fairminter? get selectedFairminter =>
       throw _privateConstructorUsedError; // Fairmint specific properties
   FairmintersState get fairmintersState => throw _privateConstructorUsedError;
@@ -43,6 +44,7 @@ abstract class $ComposeFairmintStateCopyWith<$Res> {
       FeeOption feeOption,
       SubmitState submitState,
       String? initialFairminterTxHash,
+      int? initialNumLots,
       Fairminter? selectedFairminter,
       FairmintersState fairmintersState});
 
@@ -70,6 +72,7 @@ class _$ComposeFairmintStateCopyWithImpl<$Res,
     Object? feeOption = null,
     Object? submitState = null,
     Object? initialFairminterTxHash = freezed,
+    Object? initialNumLots = freezed,
     Object? selectedFairminter = freezed,
     Object? fairmintersState = null,
   }) {
@@ -94,6 +97,10 @@ class _$ComposeFairmintStateCopyWithImpl<$Res,
           ? _value.initialFairminterTxHash
           : initialFairminterTxHash // ignore: cast_nullable_to_non_nullable
               as String?,
+      initialNumLots: freezed == initialNumLots
+          ? _value.initialNumLots
+          : initialNumLots // ignore: cast_nullable_to_non_nullable
+              as int?,
       selectedFairminter: freezed == selectedFairminter
           ? _value.selectedFairminter
           : selectedFairminter // ignore: cast_nullable_to_non_nullable
@@ -144,6 +151,7 @@ abstract class _$$ComposeFairmintStateImplCopyWith<$Res>
       FeeOption feeOption,
       SubmitState submitState,
       String? initialFairminterTxHash,
+      int? initialNumLots,
       Fairminter? selectedFairminter,
       FairmintersState fairmintersState});
 
@@ -171,6 +179,7 @@ class __$$ComposeFairmintStateImplCopyWithImpl<$Res>
     Object? feeOption = null,
     Object? submitState = null,
     Object? initialFairminterTxHash = freezed,
+    Object? initialNumLots = freezed,
     Object? selectedFairminter = freezed,
     Object? fairmintersState = null,
   }) {
@@ -195,6 +204,10 @@ class __$$ComposeFairmintStateImplCopyWithImpl<$Res>
           ? _value.initialFairminterTxHash
           : initialFairminterTxHash // ignore: cast_nullable_to_non_nullable
               as String?,
+      initialNumLots: freezed == initialNumLots
+          ? _value.initialNumLots
+          : initialNumLots // ignore: cast_nullable_to_non_nullable
+              as int?,
       selectedFairminter: freezed == selectedFairminter
           ? _value.selectedFairminter
           : selectedFairminter // ignore: cast_nullable_to_non_nullable
@@ -216,6 +229,7 @@ class _$ComposeFairmintStateImpl extends _ComposeFairmintState {
       required this.feeOption,
       required this.submitState,
       this.initialFairminterTxHash,
+      this.initialNumLots,
       this.selectedFairminter,
       required this.fairmintersState})
       : super._();
@@ -232,6 +246,8 @@ class _$ComposeFairmintStateImpl extends _ComposeFairmintState {
   @override
   final String? initialFairminterTxHash;
   @override
+  final int? initialNumLots;
+  @override
   final Fairminter? selectedFairminter;
 // Fairmint specific properties
   @override
@@ -239,7 +255,7 @@ class _$ComposeFairmintStateImpl extends _ComposeFairmintState {
 
   @override
   String toString() {
-    return 'ComposeFairmintState(feeState: $feeState, balancesState: $balancesState, feeOption: $feeOption, submitState: $submitState, initialFairminterTxHash: $initialFairminterTxHash, selectedFairminter: $selectedFairminter, fairmintersState: $fairmintersState)';
+    return 'ComposeFairmintState(feeState: $feeState, balancesState: $balancesState, feeOption: $feeOption, submitState: $submitState, initialFairminterTxHash: $initialFairminterTxHash, initialNumLots: $initialNumLots, selectedFairminter: $selectedFairminter, fairmintersState: $fairmintersState)';
   }
 
   @override
@@ -258,6 +274,8 @@ class _$ComposeFairmintStateImpl extends _ComposeFairmintState {
             (identical(
                     other.initialFairminterTxHash, initialFairminterTxHash) ||
                 other.initialFairminterTxHash == initialFairminterTxHash) &&
+            (identical(other.initialNumLots, initialNumLots) ||
+                other.initialNumLots == initialNumLots) &&
             (identical(other.selectedFairminter, selectedFairminter) ||
                 other.selectedFairminter == selectedFairminter) &&
             (identical(other.fairmintersState, fairmintersState) ||
@@ -272,6 +290,7 @@ class _$ComposeFairmintStateImpl extends _ComposeFairmintState {
       feeOption,
       submitState,
       initialFairminterTxHash,
+      initialNumLots,
       selectedFairminter,
       fairmintersState);
 
@@ -291,6 +310,7 @@ abstract class _ComposeFairmintState extends ComposeFairmintState {
           required final FeeOption feeOption,
           required final SubmitState submitState,
           final String? initialFairminterTxHash,
+          final int? initialNumLots,
           final Fairminter? selectedFairminter,
           required final FairmintersState fairmintersState}) =
       _$ComposeFairmintStateImpl;
@@ -306,6 +326,8 @@ abstract class _ComposeFairmintState extends ComposeFairmintState {
   SubmitState get submitState;
   @override
   String? get initialFairminterTxHash;
+  @override
+  int? get initialNumLots;
   @override
   Fairminter? get selectedFairminter;
   @override // Fairmint specific properties

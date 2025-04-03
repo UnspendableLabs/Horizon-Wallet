@@ -17,6 +17,7 @@ class ComposeFairmintState with _$ComposeFairmintState, ComposeStateBase {
     required FeeOption feeOption,
     required SubmitState submitState,
     String? initialFairminterTxHash,
+    int? initialNumLots,
     Fairminter? selectedFairminter,
 
     // Fairmint specific properties
@@ -30,6 +31,7 @@ class ComposeFairmintState with _$ComposeFairmintState, ComposeStateBase {
       submitState: const FormStep(),
       fairmintersState: const FairmintersState.initial(),
       initialFairminterTxHash: null,
+      initialNumLots: null,
       selectedFairminter: null);
 }
 

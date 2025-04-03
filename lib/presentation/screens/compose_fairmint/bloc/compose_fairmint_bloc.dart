@@ -43,6 +43,7 @@ class ComposeFairmintBloc extends ComposeBaseBloc<ComposeFairmintState> {
   final WriteLocalTransactionUseCase writelocalTransactionUseCase;
   final BlockRepository blockRepository;
   final String? initialFairminterTxHash;
+  final int? initialNumLots;
 
   ComposeFairmintBloc({
     required this.passwordRequired,
@@ -56,6 +57,7 @@ class ComposeFairmintBloc extends ComposeBaseBloc<ComposeFairmintState> {
     required this.writelocalTransactionUseCase,
     required this.blockRepository,
     this.initialFairminterTxHash,
+    this.initialNumLots,
   }) : super(
           ComposeFairmintState(
             submitState: const FormStep(),
@@ -64,6 +66,7 @@ class ComposeFairmintBloc extends ComposeBaseBloc<ComposeFairmintState> {
             feeState: const FeeState.initial(),
             fairmintersState: const FairmintersState.initial(),
             initialFairminterTxHash: initialFairminterTxHash,
+            initialNumLots: initialNumLots,
             selectedFairminter: null,
           ),
           composePage: 'compose_fairmint',
