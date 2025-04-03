@@ -40,6 +40,9 @@ FairminterModel _$FairminterModelFromJson(Map<String, dynamic> json) =>
       blockTime: (json['block_time'] as num?)?.toInt(),
       maxMintPerTxNormalized: json['max_mint_per_tx_normalized'] as String?,
       hardCapNormalized: json['hard_cap_normalized'] as String?,
+      priceNormalized: json['price_normalized'] as String?,
+      quantityByPriceNormalized:
+          json['quantity_by_price_normalized'] as String?,
     );
 
 Map<String, dynamic> _$FairminterModelToJson(FairminterModel instance) =>
@@ -75,4 +78,6 @@ Map<String, dynamic> _$FairminterModelToJson(FairminterModel instance) =>
       'block_time': instance.blockTime,
       'max_mint_per_tx_normalized': instance.maxMintPerTxNormalized,
       'hard_cap_normalized': instance.hardCapNormalized,
+      'price_normalized': instance.priceNormalized,
+      'quantity_by_price_normalized': instance.quantityByPriceNormalized,
     };

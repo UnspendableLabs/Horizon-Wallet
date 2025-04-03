@@ -5284,6 +5284,7 @@ abstract class V2Api {
   Future<Response<ComposeFairmintVerboseModel>> composeFairmintVerbose(
     @Path("address") String address,
     @Query("asset") String asset, [
+    @Query("quantity") int? quantity,
     @Query("sat_per_vbyte") num? satPerVbyte,
     @Query("inputs_set") String? inputsSet,
     @Query("exclude_utxos_with_balances") bool? excludeUtxosWithBalances,

@@ -1,4 +1,4 @@
-@JS("bip32")
+@JS("__horizon_js_bundle__.bip32")
 library;
 
 import 'dart:js_interop';
