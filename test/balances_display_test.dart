@@ -186,6 +186,7 @@ void main() {
         description: 'BTC',
         divisible: true,
         owner: null,
+        locked: false,
       ),
     ),
     MultiAddressBalance(
@@ -207,6 +208,7 @@ void main() {
         description: 'Counterparty',
         divisible: true,
         owner: null,
+        locked: false,
       ),
     ),
     MultiAddressBalance(
@@ -228,6 +230,7 @@ void main() {
         description: '',
         divisible: true,
         owner: 'address2',
+        locked: true,
       ),
     ),
     MultiAddressBalance(
@@ -249,6 +252,7 @@ void main() {
         description: 'A NAMEDASSET',
         divisible: true,
         owner: 'address1',
+        locked: false,
       ),
     ),
     MultiAddressBalance(
@@ -269,6 +273,7 @@ void main() {
         assetLongname: 'PEPE.FROG',
         description: null,
         divisible: true,
+        locked: false,
         owner: 'address1',
       ),
     ),
@@ -557,6 +562,7 @@ void main() {
           description: 'Long name asset',
           divisible: true,
           owner: 'address1',
+          locked: true,
         ),
       );
 

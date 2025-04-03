@@ -49,6 +49,7 @@ void main() {
       assetInfo: const AssetInfo(
         description: testAssetName,
         divisible: true,
+        locked: false,
       ),
       utxo: null,
       utxoAddress: null,
@@ -149,6 +150,7 @@ void main() {
       assetInfo: const AssetInfo(
         description: testAssetName,
         divisible: true,
+        locked: false,
       ),
       utxo: null,
       utxoAddress: null,

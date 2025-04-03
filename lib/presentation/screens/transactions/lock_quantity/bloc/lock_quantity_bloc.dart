@@ -2,8 +2,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:horizon/common/constants.dart';
 import 'package:horizon/common/uuid.dart';
 import 'package:horizon/core/logging/logger.dart';
-import 'package:horizon/domain/entities/compose_send.dart';
+import 'package:horizon/domain/entities/compose_issuance.dart';
 import 'package:horizon/domain/entities/fee_option.dart' as fee_option;
+import 'package:horizon/domain/entities/multi_address_balance_entry.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
@@ -14,13 +15,18 @@ import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.
 import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
 import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transaction_usecase.dart';
 import 'package:horizon/presentation/common/usecase/write_local_transaction_usecase.dart';
-import 'package:horizon/presentation/screens/transactions/send/bloc/send_event.dart';
+import 'package:horizon/presentation/screens/transactions/lock_quantity/bloc/lock_quantity_event.dart';
 
-class SendData {}
+class LockQuantityData {
+  final MultiAddressBalanceEntry ownerBalanceEntry;
+  LockQuantityData({
+    required this.ownerBalanceEntry,
+  });
+}
 
-class SendBloc extends Bloc<TransactionEvent,
-    TransactionState<SendData, ComposeSendResponse>> {
-  final TransactionType transactionType = TransactionType.send;
+class LockQuantityBloc extends Bloc<TransactionEvent,
+    TransactionState<LockQuantityData, ComposeIssuanceResponseVerbose>> {
+  final TransactionType transactionType = TransactionType.lockQuantity;
   final BalanceRepository balanceRepository;
   final GetFeeEstimatesUseCase getFeeEstimatesUseCase;
   final ComposeTransactionUseCase composeTransactionUseCase;
@@ -30,7 +36,7 @@ class SendBloc extends Bloc<TransactionEvent,
   final AnalyticsService analyticsService;
   final Logger logger;
 
-  SendBloc({
+  LockQuantityBloc({
     required this.balanceRepository,
     required this.getFeeEstimatesUseCase,
     required this.composeTransactionUseCase,
@@ -39,8 +45,8 @@ class SendBloc extends Bloc<TransactionEvent,
     required this.writelocalTransactionUseCase,
     required this.analyticsService,
     required this.logger,
-  }) : super(TransactionState<SendData, ComposeSendResponse>(
-          formState: TransactionFormState<SendData>(
+  }) : super(TransactionState<LockQuantityData, ComposeIssuanceResponseVerbose>(
+          formState: TransactionFormState<LockQuantityData>(
             balancesState: const BalancesState.initial(),
             feeState: const FeeState.initial(),
             dataState: const TransactionDataState.initial(),
@@ -49,15 +55,16 @@ class SendBloc extends Bloc<TransactionEvent,
           composeState: const ComposeState.initial(),
           broadcastState: const BroadcastState.initial(),
         )) {
-    on<SendDependenciesRequested>(_onDependenciesRequested);
-    on<SendTransactionComposed>(_onTransactionComposed);
-    on<SendTransactionBroadcasted>(_onTransactionBroadcasted);
+    on<LockQuantityDependenciesRequested>(_onDependenciesRequested);
+    on<LockQuantityTransactionComposed>(_onTransactionComposed);
+    on<LockQuantityTransactionBroadcasted>(_onTransactionBroadcasted);
     on<FeeOptionSelected>(_onFeeOptionSelected);
   }
 
   void _onDependenciesRequested(
-    SendDependenciesRequested event,
-    Emitter<TransactionState<SendData, ComposeSendResponse>> emit,
+    LockQuantityDependenciesRequested event,
+    Emitter<TransactionState<LockQuantityData, ComposeIssuanceResponseVerbose>>
+        emit,
   ) async {
     emit(state.copyWith(
       formState: state.formState.copyWith(
@@ -73,15 +80,49 @@ class SendBloc extends Bloc<TransactionEvent,
 
       final feeEstimates = await getFeeEstimatesUseCase.call();
 
-      emit(
-        state.copyWith(
+      final ownerAddress = balances.assetInfo.owner;
+      if (!event.addresses.contains(ownerAddress)) {
+        emit(state.copyWith(
           formState: state.formState.copyWith(
-            balancesState: BalancesState.success(balances),
-            feeState: FeeState.success(feeEstimates),
-            dataState: TransactionDataState.success(SendData()),
+            balancesState:
+                const BalancesState.error('invariant: owner address not found'),
           ),
-        ),
-      );
+        ));
+        return;
+      }
+
+      final ownerBalanceEntries = balances.entries
+          .where((entry) => (entry.address == ownerAddress))
+          .toList();
+
+      if (ownerBalanceEntries.isEmpty) {
+        // we should never get here because issuance actions are only exposed to the owner addresses
+        emit(state.copyWith(
+          formState: state.formState.copyWith(
+            balancesState: const BalancesState.error('No owner balance found'),
+          ),
+        ));
+      } else if (ownerBalanceEntries.length > 1) {
+        // we should never get here because assets can only have one address owner
+        emit(state.copyWith(
+          formState: state.formState.copyWith(
+            balancesState:
+                const BalancesState.error('Multiple owner balances found'),
+          ),
+        ));
+      } else {
+        emit(
+          state.copyWith(
+            formState: state.formState.copyWith(
+              balancesState: BalancesState.success(balances),
+              feeState: FeeState.success(feeEstimates),
+              dataState: TransactionDataState.success(LockQuantityData(
+                ownerBalanceEntry: ownerBalanceEntries.first,
+              )),
+            ),
+          ),
+        );
+      }
     } catch (e) {
       logger.error('Error getting dependencies: $e');
       emit(
@@ -97,35 +138,29 @@ class SendBloc extends Bloc<TransactionEvent,
   }
 
   void _onTransactionComposed(
-    SendTransactionComposed event,
-    Emitter<TransactionState<SendData, ComposeSendResponse>> emit,
+    LockQuantityTransactionComposed event,
+    Emitter<TransactionState<LockQuantityData, ComposeIssuanceResponseVerbose>>
+        emit,
   ) async {
     emit(state.copyWith(composeState: const ComposeStateLoading()));
-    if (event.sourceAddress.isEmpty) {
-      emit(state.copyWith(
-        composeState: const ComposeStateError('Source address is required'),
-      ));
-      return;
-    }
 
     try {
       final feeRate = getFeeRate(state);
-      final source = event.sourceAddress;
-      final destination = event.destinationAddress;
-      final asset = event.asset;
-      final quantity = event.quantity;
 
       final composeResponse = await composeTransactionUseCase
-          .call<ComposeSendParams, ComposeSendResponse>(
+          .call<ComposeIssuanceParams, ComposeIssuanceResponseVerbose>(
         feeRate: feeRate,
-        source: source,
-        params: ComposeSendParams(
-          source: source,
-          destination: destination,
-          asset: asset,
-          quantity: quantity,
+        source: event.sourceAddress,
+        params: ComposeIssuanceParams(
+          source: event.sourceAddress,
+          name: event.params.name,
+          quantity: event.params.quantity,
+          divisible: event.params.divisible,
+          lock: event.params.lock,
+          reset: event.params.reset,
+          description: event.params.description,
         ),
-        composeFn: composeRepository.composeSendVerbose,
+        composeFn: composeRepository.composeIssuanceVerbose,
       );
 
       emit(state.copyWith(
@@ -145,8 +180,9 @@ class SendBloc extends Bloc<TransactionEvent,
   }
 
   void _onTransactionBroadcasted(
-    SendTransactionBroadcasted event,
-    Emitter<TransactionState<SendData, ComposeSendResponse>> emit,
+    LockQuantityTransactionBroadcasted event,
+    Emitter<TransactionState<LockQuantityData, ComposeIssuanceResponseVerbose>>
+        emit,
   ) async {
     try {
       emit(state.copyWith(broadcastState: const BroadcastState.loading()));
@@ -160,7 +196,7 @@ class SendBloc extends Bloc<TransactionEvent,
           onSuccess: (txHex, txHash) async {
             await writelocalTransactionUseCase.call(txHex, txHash);
 
-            logger.info('send broadcasted txHash: $txHash');
+            logger.info('lock quantity broadcasted txHash: $txHash');
             analyticsService.trackAnonymousEvent(
                 'broadcast_tx_${transactionType.name}',
                 properties: {'distinct_id': uuid.v4()});
@@ -179,7 +215,8 @@ class SendBloc extends Bloc<TransactionEvent,
 
   void _onFeeOptionSelected(
     FeeOptionSelected event,
-    Emitter<TransactionState<SendData, ComposeSendResponse>> emit,
+    Emitter<TransactionState<LockQuantityData, ComposeIssuanceResponseVerbose>>
+        emit,
   ) {
     emit(state.copyWith(
       formState: state.formState.copyWith(

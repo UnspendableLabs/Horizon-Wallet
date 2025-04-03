@@ -21,6 +21,7 @@ import 'package:horizon/domain/repositories/action_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/repositories/config_repository.dart';
+import 'package:horizon/domain/repositories/fairminter_repository.dart';
 import 'package:horizon/domain/repositories/imported_address_repository.dart';
 import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 import 'package:horizon/domain/repositories/settings_repository.dart';
@@ -251,6 +252,7 @@ class AppRouter {
                 return BlocProvider(
                   create: (context) => AssetViewBloc(
                     balanceRepository: GetIt.I<BalanceRepository>(),
+                    fairminterRepository: GetIt.I<FairminterRepository>(),
                     addresses: session.allAddresses,
                     asset: assetName,
                   ),

@@ -13,6 +13,7 @@ import 'package:horizon/presentation/screens/settings/reset_wallet/bloc/reset_bl
 import 'package:horizon/presentation/screens/settings/reset_wallet/bloc/reset_event.dart';
 import 'package:horizon/presentation/screens/settings/reset_wallet/bloc/reset_state.dart';
 import 'package:horizon/common/constants.dart';
+import 'sign_and_broadcast_transaction_usecase_test.dart';
 
 // Mock classes
 class MockWalletRepository extends Mock implements WalletRepository {}
@@ -38,6 +39,7 @@ void main() {
   late MockAccountRepository mockAccountRepository;
   late MockAddressRepository mockAddressRepository;
   late MockImportedAddressRepository mockImportedAddressRepository;
+  late MockTransactionLocalRepository mockTransactionLocalRepository;
   late MockCacheProvider mockCacheProvider;
   late MockAnalyticsService mockAnalyticsService;
   late MockInMemoryKeyRepository mockInMemoryKeyRepository;
@@ -52,12 +54,13 @@ void main() {
     mockAnalyticsService = MockAnalyticsService();
     mockInMemoryKeyRepository = MockInMemoryKeyRepository();
     mockSecureKVService = MockSecureKVService();
-
+    mockTransactionLocalRepository = MockTransactionLocalRepository();
     resetBloc = ResetBloc(
       walletRepository: mockWalletRepository,
       accountRepository: mockAccountRepository,
       addressRepository: mockAddressRepository,
       importedAddressRepository: mockImportedAddressRepository,
+      transactionLocalRepository: mockTransactionLocalRepository,
       cacheProvider: mockCacheProvider,
       analyticsService: mockAnalyticsService,
       inMemoryKeyRepository: mockInMemoryKeyRepository,

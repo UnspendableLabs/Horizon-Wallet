@@ -99,11 +99,11 @@ class TransactionFormState<T> {
     return balancesState.maybeWhen(
           loading: () => true,
           orElse: () => false,
-        ) ||
+        ) &&
         feeState.maybeWhen(
           loading: () => true,
           orElse: () => false,
-        ) ||
+        ) &&
         dataState.maybeWhen(
           loading: () => true,
           orElse: () => false,
