@@ -2,14 +2,17 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:horizon/common/constants.dart';
 import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/domain/entities/compose_dispenser.dart';
+import 'package:horizon/domain/entities/dispenser.dart';
 import 'package:horizon/domain/entities/fee_option.dart' as fee_option;
 import 'package:horizon/domain/entities/multi_address_balance.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
+import 'package:horizon/domain/repositories/dispenser_repository.dart';
 import 'package:horizon/domain/repositories/settings_repository.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/presentation/common/transaction_stepper/bloc/transaction_event.dart';
 import 'package:horizon/presentation/common/transaction_stepper/bloc/transaction_state.dart';
+import 'package:horizon/presentation/common/transactions/get_fee_option.dart';
 import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
 import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
 import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transaction_usecase.dart';
@@ -18,8 +21,21 @@ import 'package:horizon/presentation/screens/transactions/dispenser/create_dispe
 
 class CreateDispenserData {
   final MultiAddressBalance btcBalances;
+  final List<Dispenser>? openDispensers;
+  CreateDispenserData({
+    required this.btcBalances,
+    this.openDispensers,
+  });
 
-  CreateDispenserData({required this.btcBalances});
+  CreateDispenserData copyWith({
+    MultiAddressBalance? btcBalances,
+    List<Dispenser>? openDispensers,
+  }) {
+    return CreateDispenserData(
+      btcBalances: btcBalances ?? this.btcBalances,
+      openDispensers: openDispensers ?? this.openDispensers,
+    );
+  }
 }
 
 class CreateDispenserBloc extends Bloc<TransactionEvent,
@@ -33,11 +49,12 @@ class CreateDispenserBloc extends Bloc<TransactionEvent,
   final AnalyticsService analyticsService;
   final Logger logger;
   final SettingsRepository settingsRepository;
-
+  final DispenserRepository dispenserRepository;
   CreateDispenserBloc({
     required this.balanceRepository,
     required this.getFeeEstimatesUseCase,
     required this.composeTransactionUseCase,
+    required this.dispenserRepository,
     required this.composeRepository,
     required this.signAndBroadcastTransactionUseCase,
     required this.writelocalTransactionUseCase,
@@ -56,6 +73,7 @@ class CreateDispenserBloc extends Bloc<TransactionEvent,
           broadcastState: const BroadcastState.initial(),
         )) {
     on<CreateDispenserDependenciesRequested>(_onDependenciesRequested);
+    on<CreateDispenserAddressSelected>(_onAddressSelected);
     on<CreateDispenserComposed>(_onTransactionComposed);
     on<CreateDispenserTransactionBroadcasted>(_onTransactionBroadcasted);
     on<FeeOptionSelected>(_onFeeOptionSelected);
@@ -112,6 +130,38 @@ class CreateDispenserBloc extends Bloc<TransactionEvent,
     }
   }
 
+  void _onAddressSelected(
+    CreateDispenserAddressSelected event,
+    Emitter<
+            TransactionState<CreateDispenserData,
+                ComposeDispenserResponseVerbose>>
+        emit,
+  ) async {
+    final dispensers = await dispenserRepository
+        .getDispensersByAddress(event.address)
+        .run()
+        .then((either) => either.fold(
+              (error) => throw error, // Handle failure
+              (dispensers) => dispensers, // Handle success
+            ));
+
+    // Get the current data from the TransactionDataState
+    final currentData = state.formState.dataState.maybeWhen(
+      success: (data) => data,
+      orElse: () => throw StateError('No data available'),
+    );
+
+    // Create a new data object with updated dispensers using copyWith
+    final updatedData = currentData.copyWith(openDispensers: dispensers);
+
+    // Update the state with the new data
+    emit(state.copyWith(
+      formState: state.formState.copyWith(
+        dataState: TransactionDataState.success(updatedData),
+      ),
+    ));
+  }
+
   void _onTransactionComposed(
     CreateDispenserComposed event,
     Emitter<
@@ -119,48 +169,36 @@ class CreateDispenserBloc extends Bloc<TransactionEvent,
                 ComposeDispenserResponseVerbose>>
         emit,
   ) async {
-    // emit(state.copyWith(composeState: const ComposeStateLoading()));
-    // if (event.sourceAddress.isEmpty) {
-    //   emit(state.copyWith(
-    //     composeState: const ComposeStateError('Source address is required'),
-    //   ));
-    //   return;
-    // }
+    emit(state.copyWith(composeState: const ComposeStateLoading()));
 
-    // try {
-    //   final feeRate = getFeeRate(state);
-    //   final source = event.sourceAddress;
-    //   final destination = event.destinationAddress;
-    //   final asset = event.asset;
-    //   final quantity = event.quantity;
+    try {
+      final feeRate = getFeeRate(state);
+      final source = event.sourceAddress;
+      final asset = event.params.asset;
+      final giveQuantity = event.params.giveQuantity;
+      final escrowQuantity = event.params.escrowQuantity;
+      final mainchainrate = event.params.mainchainrate;
 
-    //   final composeResponse = await composeTransactionUseCase
-    //       .call<ComposeSendParams, ComposeSendResponse>(
-    //     feeRate: feeRate,
-    //     source: source,
-    //     params: ComposeSendParams(
-    //       source: source,
-    //       destination: destination,
-    //       asset: asset,
-    //       quantity: quantity,
-    //     ),
-    //     composeFn: composeRepository.composeSendVerbose,
-    //   );
+      final composeResponse = await composeTransactionUseCase
+          .call<ComposeDispenserParams, ComposeDispenserResponseVerbose>(
+              feeRate: feeRate,
+              source: source,
+              params: ComposeDispenserParams(
+                  source: source,
+                  asset: asset,
+                  giveQuantity: giveQuantity,
+                  escrowQuantity: escrowQuantity,
+                  mainchainrate: mainchainrate),
+              composeFn: composeRepository.composeDispenserVerbose);
 
-    //   emit(state.copyWith(
-    //     composeState: ComposeStateSuccess(composeResponse),
-    //   ));
-    // } on ComposeTransactionException catch (e) {
-    //   emit(state.copyWith(
-    //     composeState: ComposeStateError(e.message),
-    //   ));
-    // } catch (e) {
-    //   emit(state.copyWith(
-    //     composeState: ComposeStateError(e is ComposeTransactionException
-    //         ? e.message
-    //         : 'An unexpected error occurred: ${e.toString()}'),
-    //   ));
-    // }
+      emit(state.copyWith(
+        composeState: ComposeStateSuccess(composeResponse),
+      ));
+    } catch (e) {
+      emit(state.copyWith(
+        composeState: ComposeStateError(e.toString()),
+      ));
+    }
   }
 
   void _onTransactionBroadcasted(

@@ -130,6 +130,7 @@ class _CreateDispenserOnNewAddressPageState
                           feeOption,
                           required loading}) =>
                       CreateDispenserForm.create(
+                    context: context,
                     loading: loading,
                     balances: balances,
                     btcBalances: data?.btcBalances,

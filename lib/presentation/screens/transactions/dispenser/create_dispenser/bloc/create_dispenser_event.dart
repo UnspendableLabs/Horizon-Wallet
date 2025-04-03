@@ -9,29 +9,34 @@ class CreateDispenserDependenciesRequested extends DependenciesRequested {
   });
 }
 
+class CreateDispenserAddressSelected extends TransactionEvent {
+  final String address;
+  CreateDispenserAddressSelected({
+    required this.address,
+  });
+}
+
 class CreateDispenserComposed
     extends TransactionComposed<CreateDispenserParams> {
   CreateDispenserComposed({
     required super.sourceAddress,
     required super.params,
   });
-
-  String get destinationAddress => params.destinationAddress;
-
-  String get asset => params.asset;
-
-  int get quantity => params.quantity;
 }
 
 class CreateDispenserParams {
-  final String destinationAddress;
   final String asset;
-  final int quantity;
+  final int giveQuantity;
+  final int escrowQuantity;
+  final int mainchainrate;
+  final int status;
 
   CreateDispenserParams({
-    required this.destinationAddress,
     required this.asset,
-    required this.quantity,
+    required this.giveQuantity,
+    required this.escrowQuantity,
+    required this.mainchainrate,
+    required this.status,
   });
 }
 

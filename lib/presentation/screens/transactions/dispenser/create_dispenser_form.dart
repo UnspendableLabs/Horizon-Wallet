@@ -1,15 +1,19 @@
 import 'package:decimal/decimal.dart';
 import 'package:flutter/material.dart';
+import 'package:horizon/domain/entities/dispenser.dart';
 import 'package:horizon/domain/entities/multi_address_balance_entry.dart';
+import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/common/transactions/gradient_quantity_input.dart';
 import 'package:horizon/presentation/common/transactions/multi_address_balance_dropdown.dart';
 import 'package:horizon/presentation/common/transactions/token_name_field.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
+import 'package:horizon/utils/app_icons.dart';
 
 class CreateDispenserForm {
   // Creates a form for the dispenser creation screens
   // Returns a Form widget that can be used directly in the transaction form
   static Form create({
+    required BuildContext context,
     required bool loading,
     required dynamic balances,
     required dynamic btcBalances,
@@ -20,7 +24,9 @@ class CreateDispenserForm {
     required TextEditingController pricePerUnitController,
     required Function(MultiAddressBalanceEntry?) onBalanceChanged,
     required GlobalKey<FormState> formKey,
+    List<Dispenser>? openDispensers,
   }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Form(
       key: formKey,
       child: Column(
@@ -31,6 +37,21 @@ class CreateDispenserForm {
             onChanged: onBalanceChanged,
             selectedValue: selectedBalanceEntry,
           ),
+          commonHeightSizedBox,
+          if (openDispensers != null && openDispensers.isNotEmpty)
+            Row(
+              children: [
+                AppIcons.warningIcon(
+                  color: isDark ? yellow1 : duskGradient2,
+                ),
+                const SizedBox(width: 4),
+                SelectableText('Address has open dispensers',
+                    style: Theme.of(context)
+                        .textTheme
+                        .bodySmall
+                        ?.copyWith(color: isDark ? yellow1 : duskGradient2)),
+              ],
+            ),
           commonHeightSizedBox,
           TokenNameField(
             loading: loading,

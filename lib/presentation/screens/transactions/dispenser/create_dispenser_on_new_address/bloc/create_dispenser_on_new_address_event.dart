@@ -16,23 +16,23 @@ class CreateDispenserOnNewAddressComposed
     required super.sourceAddress,
     required super.params,
   });
-
-  String get destinationAddress => params.destinationAddress;
-
-  String get asset => params.asset;
-
-  int get quantity => params.quantity;
 }
 
 class CreateDispenserOnNewAddressParams {
-  final String destinationAddress;
   final String asset;
-  final int quantity;
+  final int giveQuantity;
+  final bool divisible;
+  final int escrowQuantity;
+  final int mainchainrate;
+  final bool sendExtraBtcToDispenser;
 
   CreateDispenserOnNewAddressParams({
-    required this.destinationAddress,
     required this.asset,
-    required this.quantity,
+    required this.giveQuantity,
+    required this.divisible,
+    required this.escrowQuantity,
+    required this.mainchainrate,
+    required this.sendExtraBtcToDispenser,
   });
 }
 

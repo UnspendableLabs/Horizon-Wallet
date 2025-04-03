@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
+import 'package:horizon/common/format.dart';
 // import 'package:horizon/common/format.dart' as form;
 import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/domain/entities/compose_dispenser.dart';
@@ -21,6 +22,7 @@ import 'package:horizon/presentation/screens/transactions/dispenser/create_dispe
 import 'package:horizon/presentation/screens/transactions/dispenser/create_dispenser/bloc/create_dispenser_event.dart';
 import 'package:horizon/presentation/common/transaction_stepper/view/steps/transaction_compose_page.dart';
 import 'package:horizon/presentation/screens/transactions/dispenser/create_dispenser_form.dart';
+import 'package:horizon/domain/repositories/dispenser_repository.dart';
 
 class CreateDispenserPage extends StatefulWidget {
   final String assetName;
@@ -48,19 +50,33 @@ class _CreateDispenserPageState extends State<CreateDispenserPage> {
       BuildContext context,
       TransactionState<CreateDispenserData, ComposeDispenserResponseVerbose>
           state) {
-    // final balances = state.formState.getBalancesOrThrow();
-    // final quantity = getQuantityForDivisibility(
-    //   divisible: balances.assetInfo.divisible,
-    //   inputQuantity: quantityController.text,
-    // );
-    // context.read<SendBloc>().add(SendTransactionComposed(
-    //       sourceAddress: selectedBalanceEntry?.address ?? "",
-    //       params: SendTransactionParams(
-    //         destinationAddress: destinationAddressController.text,
-    //         asset: widget.assetName,
-    //         quantity: quantity,
-    //       ),
-    //     ));
+    final balances = state.formState.getBalancesOrThrow();
+
+    final giveQuantity = getQuantityForDivisibility(
+      divisible: balances.assetInfo.divisible,
+      inputQuantity: giveQuantityController.text,
+    );
+
+    final escrowQuantity = getQuantityForDivisibility(
+      divisible: balances.assetInfo.divisible,
+      inputQuantity: escrowQuantityController.text,
+    );
+
+    final mainchainrate = getQuantityForDivisibility(
+      divisible: true,
+      inputQuantity: pricePerUnitController.text,
+    );
+
+    context.read<CreateDispenserBloc>().add(CreateDispenserComposed(
+          sourceAddress: selectedBalanceEntry?.address ?? "",
+          params: CreateDispenserParams(
+            asset: widget.assetName,
+            giveQuantity: giveQuantity,
+            escrowQuantity: escrowQuantity,
+            mainchainrate: mainchainrate,
+            status: 0,
+          ),
+        ));
   }
 
   void _handleConfirmationStepNext(BuildContext context,
@@ -95,6 +111,7 @@ class _CreateDispenserPageState extends State<CreateDispenserPage> {
         analyticsService: GetIt.I<AnalyticsService>(),
         logger: GetIt.I<Logger>(),
         settingsRepository: GetIt.I<SettingsRepository>(),
+        dispenserRepository: GetIt.I<DispenserRepository>(),
       )..add(CreateDispenserDependenciesRequested(
           assetName: widget.assetName, addresses: widget.addresses)),
       child: BlocConsumer<
@@ -127,6 +144,7 @@ class _CreateDispenserPageState extends State<CreateDispenserPage> {
                           feeOption,
                           required loading}) =>
                       CreateDispenserForm.create(
+                    context: context,
                     loading: loading,
                     balances: balances,
                     btcBalances: data?.btcBalances,
@@ -136,12 +154,16 @@ class _CreateDispenserPageState extends State<CreateDispenserPage> {
                     escrowQuantityController: escrowQuantityController,
                     pricePerUnitController: pricePerUnitController,
                     formKey: _formKey,
+                    openDispensers: data?.openDispensers,
                     onBalanceChanged: (value) {
                       setState(() {
                         selectedBalanceEntry = value;
                         selectedBtcBalanceEntry = data?.btcBalances.entries
                             .firstWhere(
                                 (entry) => entry.address == value?.address);
+                        context.read<CreateDispenserBloc>().add(
+                            CreateDispenserAddressSelected(
+                                address: value?.address ?? ""));
                       });
                     },
                   ),
