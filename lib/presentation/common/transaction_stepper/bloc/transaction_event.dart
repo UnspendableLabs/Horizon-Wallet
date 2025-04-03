@@ -1,3 +1,4 @@
+import 'package:horizon/domain/entities/decryption_strategy.dart';
 import 'package:horizon/domain/entities/fee_option.dart';
 
 abstract class TransactionEvent {}
@@ -20,8 +21,8 @@ class TransactionComposed<T> extends TransactionEvent {
   });
 }
 
-class TransactionBroadcasted<T> extends TransactionEvent {
-  final dynamic decryptionStrategy;
+class TransactionBroadcasted extends TransactionEvent {
+  final DecryptionStrategy decryptionStrategy;
 
   TransactionBroadcasted({required this.decryptionStrategy});
 }

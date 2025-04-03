@@ -35,8 +35,6 @@ class SendTransactionParams {
   });
 }
 
-class SendTransactionBroadcasted extends TransactionEvent {
-  final dynamic decryptionStrategy;
-
-  SendTransactionBroadcasted({required this.decryptionStrategy});
+class SendTransactionBroadcasted extends TransactionBroadcasted {
+  SendTransactionBroadcasted({required super.decryptionStrategy});
 }

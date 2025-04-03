@@ -59,8 +59,11 @@ class _RBFPageState extends State<RBFPage> {
         ));
   }
 
-  void _handleConfirmationStepNext(BuildContext context, {String? password}) {
-    context.read<RBFBloc>().add(RBFTransactionBroadcasted(password: password));
+  void _handleConfirmationStepNext(BuildContext context,
+      {required dynamic decryptionStrategy}) {
+    context
+        .read<RBFBloc>()
+        .add(RBFTransactionBroadcasted(decryptionStrategy: decryptionStrategy));
   }
 
   void _handleFeeOptionSelected(BuildContext context, FeeOption feeOption) {
@@ -216,8 +219,9 @@ class _RBFPageState extends State<RBFPage> {
                         ),
                       ]),
                 ),
-                onNext: ({String? password}) =>
-                    _handleConfirmationStepNext(context, password: password),
+                onNext: ({required dynamic decryptionStrategy}) =>
+                    _handleConfirmationStepNext(context,
+                        decryptionStrategy: decryptionStrategy),
               ),
             ),
           );

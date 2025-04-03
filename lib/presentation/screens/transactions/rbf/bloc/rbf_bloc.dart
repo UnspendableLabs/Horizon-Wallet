@@ -27,9 +27,9 @@ import 'package:horizon/domain/services/bitcoind_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/imported_address_service.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
-import 'package:horizon/presentation/common/transaction_stepper/bloc/transaction_bloc.dart';
 import 'package:horizon/presentation/common/transaction_stepper/bloc/transaction_event.dart';
 import 'package:horizon/presentation/common/transaction_stepper/bloc/transaction_state.dart';
+import 'package:horizon/presentation/common/transactions/get_fee_option.dart';
 import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
 import 'package:horizon/presentation/common/usecase/write_local_transaction_usecase.dart';
 import 'package:horizon/presentation/screens/transactions/rbf/bloc/rbf_event.dart';
@@ -209,8 +209,8 @@ class RBFBloc
           settingsRepository.requirePasswordForCryptoOperations;
 
       String rootPrivateKey = passwordRequired
-          ? await encryptionService.decrypt(
-              wallet.encryptedPrivKey, event.password!)
+          ? await encryptionService.decrypt(wallet.encryptedPrivKey,
+              (event.decryptionStrategy as Password).password)
           : await encryptionService.decryptWithKey(
               wallet.encryptedPrivKey, (await inMemoryKeyRepository.get())!);
 
@@ -218,9 +218,7 @@ class RBFBloc
           unwrapOrThrow<String, String>(await addressRepository
               .get(address)
               .flatMap((UnifiedAddress unifiedAddress) => getUAddressPrivateKey(
-                    passwordRequired
-                        ? Password(event.password!)
-                        : InMemoryKey(),
+                    event.decryptionStrategy,
                     rootPrivateKey,
                     wallet.chainCodeHex,
                     unifiedAddress,
