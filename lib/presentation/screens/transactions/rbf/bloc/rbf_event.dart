@@ -29,8 +29,6 @@ class RBFTransactionParams {
   });
 }
 
-class RBFTransactionBroadcasted extends TransactionEvent {
-  final String? password;
-
-  RBFTransactionBroadcasted({this.password});
+class RBFTransactionBroadcasted extends TransactionBroadcasted {
+  RBFTransactionBroadcasted({required super.decryptionStrategy});
 }

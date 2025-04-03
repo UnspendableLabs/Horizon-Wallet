@@ -18,8 +18,6 @@ class LockQuantityTransactionComposed
   });
 }
 
-class LockQuantityTransactionBroadcasted extends TransactionEvent {
-  final dynamic decryptionStrategy;
-
-  LockQuantityTransactionBroadcasted({required this.decryptionStrategy});
+class LockQuantityTransactionBroadcasted extends TransactionBroadcasted {
+  LockQuantityTransactionBroadcasted({required super.decryptionStrategy});
 }
