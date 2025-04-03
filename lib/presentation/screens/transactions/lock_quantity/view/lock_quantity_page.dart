@@ -104,9 +104,7 @@ class _LockQuantityPageState extends State<LockQuantityPage> {
           assetName: widget.assetName, addresses: widget.addresses)),
       child: BlocConsumer<LockQuantityBloc,
           TransactionState<LockQuantityData, ComposeIssuanceResponseVerbose>>(
-        listener: (context, state) {
-          // Listener
-        },
+        listener: (context, state) {},
         builder: (context, state) {
           return Scaffold(
             body: TransactionStepper<LockQuantityData,

@@ -41,7 +41,7 @@ class TransactionComposePage<R> extends StatelessWidget {
         buttonText: errorButtonText,
       ),
       success: (composeSuccess) {
-        final composeResponse = composeSuccess as ComposeResponse;
+        final composeResponse = composeSuccess;
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -49,12 +49,13 @@ class TransactionComposePage<R> extends StatelessWidget {
                 composeState: ComposeStateSuccess<R>(composeSuccess),
                 loading: false),
             commonHeightSizedBox,
-            FeeConfirmation(
-              fee: "${composeResponse.btcFee.toString()} sats",
-              virtualSize: composeResponse.signedTxEstimatedSize.virtualSize,
-              adjustedVirtualSize:
-                  composeResponse.signedTxEstimatedSize.adjustedVirtualSize,
-            ),
+            if (composeResponse is ComposeResponse)
+              FeeConfirmation(
+                fee: "${composeResponse.btcFee.toString()} sats",
+                virtualSize: composeResponse.signedTxEstimatedSize.virtualSize,
+                adjustedVirtualSize:
+                    composeResponse.signedTxEstimatedSize.adjustedVirtualSize,
+              ),
           ],
         );
       },

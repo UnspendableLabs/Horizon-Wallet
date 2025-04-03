@@ -14,10 +14,7 @@ import 'package:horizon/presentation/common/tx_hash_display.dart';
 import 'package:horizon/common/format.dart';
 import 'package:horizon/presentation/common/colors.dart';
 import 'package:horizon/presentation/screens/dashboard/view/balances_display.dart';
-import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
-import 'package:horizon/presentation/screens/compose_rbf/view/compose_rbf_view.dart';
-import 'package:horizon/domain/repositories/settings_repository.dart';
-import 'package:get_it/get_it.dart';
+import 'package:horizon/presentation/screens/transactions/rbf/view/rbf_page.dart';
 import 'package:horizon/utils/app_icons.dart';
 
 class RBF extends StatelessWidget {
@@ -33,16 +30,13 @@ class RBF extends StatelessWidget {
     return AppIcons.iconButton(
         context: context,
         onPressed: () {
-          HorizonUI.HorizonDialog.show(
+          showDialog(
             context: context,
-            body: ComposeRBFPageWrapper(
-                passwordRequired: GetIt.I
-                    .get<SettingsRepository>()
-                    .requirePasswordForCryptoOperations,
-                dashboardActivityFeedBloc:
-                    context.read<DashboardActivityFeedBloc>(),
-                txHash: txHash,
-                address: address),
+            builder: (dialogContext) {
+              return Dialog.fullscreen(
+                child: RBFPage(txHash: txHash, address: address),
+              );
+            },
           );
         },
         icon: AppIcons.rocketLaunchIcon(
@@ -159,9 +153,9 @@ class TransactionStatusPill extends StatelessWidget {
   String _getText() {
     return text ??
         switch (status) {
-          TransactionStatus.local => 'BROADCASTED',
-          TransactionStatus.mempool => 'MEMPOOL',
-          TransactionStatus.confirmed => 'CONFIRMED',
+          TransactionStatus.local => 'Broadcasted',
+          TransactionStatus.mempool => 'Mempool',
+          TransactionStatus.confirmed => 'Confirmed',
         };
   }
 
@@ -231,9 +225,9 @@ class ActivityFeedListItem extends StatelessWidget {
       title: _buildTitle(),
       subtitle: _buildSubtitle(),
       // TODO: ADD RBF
-      // trailing: Row(mainAxisSize: MainAxisSize.min, children: [
-      //   _buildRBF() ?? const SizedBox.shrink(),
-      // ]),
+      trailing: Row(mainAxisSize: MainAxisSize.min, children: [
+        _buildRBF() ?? const SizedBox.shrink(),
+      ]),
       // onTap: () {},
     );
   }
@@ -683,6 +677,13 @@ class ActivityFeedListItem extends StatelessWidget {
               _buildAssetDisplay(params.asset, params.assetLongname),
             ],
           ),
+        "lock_quantity reissuance" => Row(
+            children: [
+              _buildTitleText('Lock Quantity'),
+              const Spacer(),
+              _buildAssetDisplay(params.asset, params.assetLongname),
+            ],
+          ),
         "change_description" => Row(
             children: [
               _buildTitleText('Change Description'),
@@ -951,19 +952,44 @@ class ActivityFeedListItem extends StatelessWidget {
                     ],
                   ),
                 ),
-            }
+            },
+            const Spacer(),
+            TransactionStatusPill(
+              status: switch (event.state) {
+                EventStateMempool() => TransactionStatus.mempool,
+                EventStateConfirmed() => TransactionStatus.confirmed,
+              },
+            ),
           ],
         ),
       VerboseOrderExpirationEvent(params: var params) => Row(
           children: [
             const Text("order hash:"),
             const SizedBox(width: 10.0),
-            TxHashDisplay(hash: params.orderHash, uriType: URIType.hoex)
+            TxHashDisplay(hash: params.orderHash, uriType: URIType.hoex),
+            const Spacer(),
+            TransactionStatusPill(
+              status: switch (event.state) {
+                EventStateMempool() => TransactionStatus.mempool,
+                EventStateConfirmed() => TransactionStatus.confirmed,
+              },
+            ),
           ],
         ),
-      VerboseEvent(txHash: var hash) => hash != null
-          ? TxHashDisplay(hash: hash, uriType: URIType.hoex)
-          : const SizedBox.shrink(),
+      VerboseEvent(txHash: var hash) => Row(
+          children: [
+            hash != null
+                ? TxHashDisplay(hash: hash, uriType: URIType.hoex)
+                : const SizedBox.shrink(),
+            const Spacer(),
+            TransactionStatusPill(
+              status: switch (event.state) {
+                EventStateMempool() => TransactionStatus.mempool,
+                EventStateConfirmed() => TransactionStatus.confirmed,
+              },
+            ),
+          ],
+        ),
       _ => SelectableText(
           'Invariant: subtitle unsupported event type: ${event.runtimeType}'),
     };
@@ -978,16 +1004,37 @@ class ActivityFeedListItem extends StatelessWidget {
             TxHashDisplay(hash: unpackedData.orderHash, uriType: URIType.hoex)
           ],
         ),
-      TransactionInfo(btcAmount: var btcAmount) when btcAmount != null =>
-        TxHashDisplay(hash: info.hash, uriType: URIType.btcexplorer),
-      _ => TxHashDisplay(hash: info.hash, uriType: URIType.hoex)
+      TransactionInfo(btcAmount: var btcAmount) when btcAmount != null => Row(
+          children: [
+            TxHashDisplay(hash: info.hash, uriType: URIType.btcexplorer),
+            const Spacer(),
+            const TransactionStatusPill(status: TransactionStatus.local),
+          ],
+        ),
+      _ => Row(
+          children: [
+            TxHashDisplay(hash: info.hash, uriType: URIType.hoex),
+            const Spacer(),
+            const TransactionStatusPill(status: TransactionStatus.local),
+          ],
+        ),
     };
   }
 
   Widget _buildBitcoinTxSubtitle(BitcoinTx btx) {
-    return TxHashDisplay(
-      hash: btx.txid,
-      uriType: URIType.btcexplorer,
+    return Row(
+      children: [
+        TxHashDisplay(
+          hash: btx.txid,
+          uriType: URIType.btcexplorer,
+        ),
+        const Spacer(),
+        TransactionStatusPill(
+          status: btx.status.confirmed
+              ? TransactionStatus.confirmed
+              : TransactionStatus.mempool,
+        ),
+      ],
     );
   }
 
