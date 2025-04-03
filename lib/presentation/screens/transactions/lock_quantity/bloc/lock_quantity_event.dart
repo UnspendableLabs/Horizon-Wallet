@@ -17,7 +17,7 @@ class LockQuantityTransactionComposed
 }
 
 class LockQuantityTransactionBroadcasted extends TransactionEvent {
-  final String? password;
+  final dynamic decryptionStrategy;
 
-  LockQuantityTransactionBroadcasted({this.password});
+  LockQuantityTransactionBroadcasted({required this.decryptionStrategy});
 }

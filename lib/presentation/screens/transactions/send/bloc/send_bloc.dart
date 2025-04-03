@@ -3,15 +3,13 @@ import 'package:horizon/common/constants.dart';
 import 'package:horizon/common/uuid.dart';
 import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/domain/entities/compose_send.dart';
-import 'package:horizon/domain/entities/decryption_strategy.dart';
 import 'package:horizon/domain/entities/fee_option.dart' as fee_option;
 import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
-import 'package:horizon/domain/repositories/settings_repository.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
-import 'package:horizon/presentation/common/transaction_stepper/bloc/transaction_bloc.dart';
 import 'package:horizon/presentation/common/transaction_stepper/bloc/transaction_event.dart';
 import 'package:horizon/presentation/common/transaction_stepper/bloc/transaction_state.dart';
+import 'package:horizon/presentation/common/transactions/get_fee_option.dart';
 import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
 import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
 import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transaction_usecase.dart';
@@ -22,6 +20,7 @@ class SendData {}
 
 class SendBloc extends Bloc<TransactionEvent,
     TransactionState<SendData, ComposeSendResponse>> {
+  final TransactionType transactionType = TransactionType.send;
   final BalanceRepository balanceRepository;
   final GetFeeEstimatesUseCase getFeeEstimatesUseCase;
   final ComposeTransactionUseCase composeTransactionUseCase;
@@ -30,7 +29,6 @@ class SendBloc extends Bloc<TransactionEvent,
   final WriteLocalTransactionUseCase writelocalTransactionUseCase;
   final AnalyticsService analyticsService;
   final Logger logger;
-  final SettingsRepository settingsRepository;
 
   SendBloc({
     required this.balanceRepository,
@@ -41,7 +39,6 @@ class SendBloc extends Bloc<TransactionEvent,
     required this.writelocalTransactionUseCase,
     required this.analyticsService,
     required this.logger,
-    required this.settingsRepository,
   }) : super(TransactionState<SendData, ComposeSendResponse>(
           formState: TransactionFormState<SendData>(
             balancesState: const BalancesState.initial(),
@@ -152,23 +149,20 @@ class SendBloc extends Bloc<TransactionEvent,
     Emitter<TransactionState<SendData, ComposeSendResponse>> emit,
   ) async {
     try {
-      final requirePassword =
-          settingsRepository.requirePasswordForCryptoOperations;
-
       emit(state.copyWith(broadcastState: const BroadcastState.loading()));
 
       final composeData = state.getComposeDataOrThrow();
 
       await signAndBroadcastTransactionUseCase.call(
-          decryptionStrategy:
-              requirePassword ? Password(event.password!) : InMemoryKey(),
+          decryptionStrategy: event.decryptionStrategy,
           source: composeData.params.source,
           rawtransaction: composeData.rawtransaction,
           onSuccess: (txHex, txHash) async {
             await writelocalTransactionUseCase.call(txHex, txHash);
 
             logger.info('send broadcasted txHash: $txHash');
-            analyticsService.trackAnonymousEvent('broadcast_tx_send',
+            analyticsService.trackAnonymousEvent(
+                'broadcast_tx_${transactionType.name}',
                 properties: {'distinct_id': uuid.v4()});
 
             emit(state.copyWith(

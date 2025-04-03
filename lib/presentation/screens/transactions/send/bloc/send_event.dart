@@ -34,7 +34,7 @@ class SendTransactionParams {
 }
 
 class SendTransactionBroadcasted extends TransactionEvent {
-  final String? password;
+  final dynamic decryptionStrategy;
 
-  SendTransactionBroadcasted({this.password});
+  SendTransactionBroadcasted({required this.decryptionStrategy});
 }

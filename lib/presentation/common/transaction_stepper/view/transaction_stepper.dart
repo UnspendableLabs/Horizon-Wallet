@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
+import 'package:horizon/domain/entities/decryption_strategy.dart';
 import 'package:horizon/domain/entities/fee_option.dart';
 import 'package:horizon/domain/repositories/settings_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
@@ -34,7 +35,7 @@ class ConfirmationStepContent<R> {
   final TransactionComposePage<R> Function(
           ComposeState<R> composeState, VoidCallback onErrorButtonAction)
       buildConfirmationContent;
-  final void Function({String? password}) onNext;
+  final void Function({required dynamic decryptionStrategy}) onNext;
 
   const ConfirmationStepContent({
     required this.title,
@@ -131,7 +132,8 @@ class TransactionStepperState<T, R> extends State<TransactionStepper<T, R>> {
                         return;
                       }
 
-                      widget.confirmationStepContent.onNext(password: password);
+                      widget.confirmationStepContent
+                          .onNext(decryptionStrategy: Password(password));
                       if (dialogContext.mounted) {
                         Navigator.of(dialogContext).pop(true);
                       }
@@ -159,7 +161,8 @@ class TransactionStepperState<T, R> extends State<TransactionStepper<T, R>> {
             return;
           }
         } else {
-          widget.confirmationStepContent.onNext();
+          widget.confirmationStepContent
+              .onNext(decryptionStrategy: InMemoryKey());
         }
         setState(() {
           _currentStep++;

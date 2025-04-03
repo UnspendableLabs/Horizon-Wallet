@@ -7,7 +7,6 @@ import 'package:horizon/domain/entities/compose_issuance.dart';
 import 'package:horizon/domain/entities/fee_option.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
-import 'package:horizon/domain/repositories/settings_repository.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/presentation/common/shared_util.dart';
 import 'package:horizon/presentation/common/transaction_stepper/bloc/transaction_event.dart';
@@ -69,10 +68,10 @@ class _LockQuantityPageState extends State<LockQuantityPage> {
         ));
   }
 
-  void _handleConfirmationStepNext(BuildContext context, {String? password}) {
-    context
-        .read<LockQuantityBloc>()
-        .add(LockQuantityTransactionBroadcasted(password: password));
+  void _handleConfirmationStepNext(BuildContext context,
+      {dynamic decryptionStrategy}) {
+    context.read<LockQuantityBloc>().add(LockQuantityTransactionBroadcasted(
+        decryptionStrategy: decryptionStrategy));
   }
 
   void _handleFeeOptionSelected(BuildContext context, FeeOption feeOption) {
@@ -101,7 +100,6 @@ class _LockQuantityPageState extends State<LockQuantityPage> {
         writelocalTransactionUseCase: GetIt.I<WriteLocalTransactionUseCase>(),
         analyticsService: GetIt.I<AnalyticsService>(),
         logger: GetIt.I<Logger>(),
-        settingsRepository: GetIt.I<SettingsRepository>(),
       )..add(LockQuantityDependenciesRequested(
           assetName: widget.assetName, addresses: widget.addresses)),
       child: BlocConsumer<LockQuantityBloc,
@@ -202,8 +200,9 @@ class _LockQuantityPageState extends State<LockQuantityPage> {
                     ],
                   ),
                 ),
-                onNext: ({String? password}) =>
-                    _handleConfirmationStepNext(context, password: password),
+                onNext: ({dynamic decryptionStrategy}) =>
+                    _handleConfirmationStepNext(context,
+                        decryptionStrategy: decryptionStrategy),
               ),
               state: state,
             ),
