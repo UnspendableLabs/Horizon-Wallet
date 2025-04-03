@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:collection/collection.dart';
 import 'package:convert/convert.dart';
+import 'dart:convert';
 import 'package:get_it/get_it.dart';
 import 'package:hex/hex.dart';
 import 'package:horizon/domain/entities/utxo.dart';
@@ -14,6 +15,7 @@ import 'package:horizon/js/buffer.dart';
 import 'package:horizon/js/ecpair.dart' as ecpair;
 import 'package:horizon/js/horizon_utils.dart' as horizon_utils;
 import 'package:horizon/js/tiny_secp256k1.dart' as tinysecp256k1js;
+import 'package:horizon/js/bitcoinjs_message.dart' as bitcoinMessage;
 import 'package:horizon/presentation/common/shared_util.dart';
 import 'dart:math';
 
@@ -121,15 +123,38 @@ class TransactionServiceImpl implements TransactionService {
 
       Buffer privKeyJS =
           Buffer.from(Uint8List.fromList(hex.decode(privateKey)).toJS);
+
       final network = _getNetwork();
 
-      dynamic signer = ecpairFactory.fromPrivateKey(privKeyJS, network);
+      final signer = ecpairFactory.fromPrivateKey(privKeyJS, network);
 
       psbt.signInput(
           index, signer, sighashTypes?.map((e) => e.toJS).toList().toJS);
     }
-
     return psbt.toHex();
+  }
+
+  @override
+  String signMessage(String message, String privateKey) {
+    Buffer privKeyJS =
+        Buffer.from(Uint8List.fromList(hex.decode(privateKey)).toJS);
+
+    final network = _getNetwork();
+
+    final ecpair_ = ecpairFactory.fromPrivateKey(privKeyJS, network);
+
+    final bitcoinMessage.Signer signer =
+        bitcoinMessage.createECPairSigner(ecpair_);
+
+    final Buffer signatureBuf = bitcoinMessage.sign(
+        message, signer, (true).toJS // evidently, needs to be compressed
+        );
+
+    final Uint8List signature = signatureBuf.toDart;
+
+    final String b64 = base64Encode(signature);
+
+    return b64;
   }
 
   @override

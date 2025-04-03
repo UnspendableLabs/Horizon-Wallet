@@ -69,3 +69,14 @@ class RPCSignPsbtAction extends RPCAction {
   RPCSignPsbtAction(super.tabId, super.requestId, this.psbt, this.signInputs,
       this.sighashTypes);
 }
+
+class RPCSignMessageAction extends RPCAction {
+  @override
+  String get action => 'signMessage';
+  @override
+  CallerType get caller => CallerType.extension;
+  final String message;
+  final String address;
+  RPCSignMessageAction(
+      super.tabId, super.requestId, this.message, this.address);
+}
