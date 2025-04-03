@@ -1,22 +1,24 @@
-(function(f) {
+(function (f) {
   if (typeof exports === "object" && typeof module !== "undefined") {
-    module.exports = f(); 
+    module.exports = f();
   } else if (typeof define === "function" && define.amd) {
-    define([], f); 
+    define([], f);
   } else {
     var g;
     if (typeof window !== "undefined") {
-      g = window; 
+      g = window;
     } else if (typeof global !== "undefined") {
-      g = global; 
+      g = global;
     } else if (typeof self !== "undefined") {
-      g = self; 
+      g = self;
     } else {
-      g = this; 
+      g = this;
     }
-    g.horizon_utils = f(); 
+    g.horizon_utils = f();
   }
-})(function() {
+})(function () {
+  const bitcoin = __horizon_js_bundle__.bitcoinjs;
+
   const WITNESS_SCALE_FACTOR = 4;
   const MAX_PUB_KEYS_PER_MULTISIG = 20;
 

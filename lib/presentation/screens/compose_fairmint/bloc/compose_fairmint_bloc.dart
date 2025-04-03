@@ -22,9 +22,11 @@ import 'package:horizon/domain/entities/decryption_strategy.dart';
 
 class ComposeFairmintEventParams {
   final String asset;
+  final int? quantity;
 
   ComposeFairmintEventParams({
     required this.asset,
+    this.quantity,
   });
 }
 
@@ -151,12 +153,13 @@ class ComposeFairmintBloc extends ComposeBaseBloc<ComposeFairmintState> {
       final feeRate = _getFeeRate();
       final source = event.sourceAddress;
       final asset = event.params.asset;
-
+      final quantity = event.params.quantity;
       final composeResponse = await composeTransactionUseCase
           .call<ComposeFairmintParams, ComposeFairmintResponse>(
               feeRate: feeRate,
               source: source,
-              params: ComposeFairmintParams(source: source, asset: asset),
+              params: ComposeFairmintParams(
+                  source: source, asset: asset, quantity: quantity),
               composeFn: composeRepository.composeFairmintVerbose);
 
       emit(state.copyWith(

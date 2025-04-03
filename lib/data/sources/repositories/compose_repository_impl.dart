@@ -360,6 +360,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
       (currentInputSet) async {
         final sourceAddress = params.source;
         final asset = params.asset;
+        final quantity = params.quantity;
         const excludeUtxosWithBalances = true;
         const disableUtxoLocks = false;
 
@@ -369,6 +370,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
         final response = await api.composeFairmintVerbose(
             sourceAddress,
             asset,
+            quantity,
             satPerVbyte,
             inputsSetString,
             excludeUtxosWithBalances,

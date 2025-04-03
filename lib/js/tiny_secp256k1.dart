@@ -1,4 +1,4 @@
 import "dart:js_interop";
 
-@JS("tiny_secp256k1")
+@JS("__horizon_js_bundle__.tinysecp256k1")
 external JSObject get ecc;
