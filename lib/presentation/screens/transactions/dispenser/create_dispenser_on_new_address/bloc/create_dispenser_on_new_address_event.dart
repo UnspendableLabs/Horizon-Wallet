@@ -1,3 +1,4 @@
+import 'package:horizon/domain/entities/decryption_strategy.dart';
 import 'package:horizon/presentation/common/transaction_stepper/bloc/transaction_event.dart';
 
 class CreateDispenserOnNewAddressDependenciesRequested
@@ -12,9 +13,11 @@ class CreateDispenserOnNewAddressDependenciesRequested
 
 class CreateDispenserOnNewAddressComposed
     extends TransactionComposed<CreateDispenserOnNewAddressParams> {
+  final DecryptionStrategy decryptionStrategy;
   CreateDispenserOnNewAddressComposed({
     required super.sourceAddress,
     required super.params,
+    required this.decryptionStrategy,
   });
 }
 

@@ -25,6 +25,9 @@ class CreateDispenserForm {
     required Function(MultiAddressBalanceEntry?) onBalanceChanged,
     required GlobalKey<FormState> formKey,
     List<Dispenser>? openDispensers,
+    bool showSendExtraBtcToDispenserCheckbox = false,
+    bool sendExtraBtcToDispenser = false,
+    Function(bool?)? onSendExtraBtcToDispenserChanged,
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Form(
@@ -150,6 +153,14 @@ class CreateDispenserForm {
               return null;
             },
           ),
+          if (showSendExtraBtcToDispenserCheckbox) commonHeightSizedBox,
+          if (showSendExtraBtcToDispenserCheckbox)
+            CheckboxListTile(
+              title: SelectableText('Send Extra BTC to Dispenser',
+                  style: Theme.of(context).textTheme.bodySmall),
+              value: sendExtraBtcToDispenser,
+              onChanged: onSendExtraBtcToDispenserChanged,
+            ),
         ],
       ),
     );

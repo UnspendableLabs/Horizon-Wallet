@@ -11,6 +11,7 @@ import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
 import 'package:horizon/domain/repositories/settings_repository.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
+import 'package:horizon/presentation/common/transaction_stepper/bloc/transaction_event.dart';
 import 'package:horizon/presentation/common/transaction_stepper/bloc/transaction_state.dart';
 import 'package:horizon/presentation/common/transaction_stepper/view/steps/transaction_form_page.dart';
 import 'package:horizon/presentation/common/transaction_stepper/view/transaction_stepper.dart';
@@ -87,7 +88,9 @@ class _CreateDispenserPageState extends State<CreateDispenserPage> {
   }
 
   void _handleFeeOptionSelected(BuildContext context, FeeOption feeOption) {
-    // context.read<SendBloc>().add(FeeOptionSelected(feeOption: feeOption));
+    context
+        .read<CreateDispenserBloc>()
+        .add(FeeOptionSelected(feeOption: feeOption));
   }
 
   void _handleDependenciesRequested(BuildContext context) {
