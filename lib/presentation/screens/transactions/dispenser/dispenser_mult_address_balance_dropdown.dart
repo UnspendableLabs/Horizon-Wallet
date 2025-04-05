@@ -6,15 +6,17 @@ import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 import 'package:horizon/utils/app_icons.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
 
-class MultiAddressBalanceDropdown extends StatelessWidget {
+class DispenserMultiAddressBalanceDropdown extends StatelessWidget {
   final MultiAddressBalance? balances;
+  final MultiAddressBalance? btcBalances;
   final void Function(MultiAddressBalanceEntry?) onChanged;
   final MultiAddressBalanceEntry? selectedValue;
   final bool loading;
 
-  const MultiAddressBalanceDropdown({
+  const DispenserMultiAddressBalanceDropdown({
     super.key,
     required this.balances,
+    required this.btcBalances,
     required this.onChanged,
     required this.selectedValue,
     required this.loading,
@@ -22,7 +24,7 @@ class MultiAddressBalanceDropdown extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (loading || balances == null) {
+    if (loading || balances == null || btcBalances == null) {
       return Container(
         height: 56,
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -66,7 +68,7 @@ class MultiAddressBalanceDropdown extends StatelessWidget {
                     Text(addressEntry.address!,
                         style: Theme.of(context).textTheme.bodySmall),
                     Text(
-                        "Balance: ${quantityRemoveTrailingZeros(addressEntry.quantityNormalized)}",
+                        "Asset Balance: ${quantityRemoveTrailingZeros(addressEntry.quantityNormalized)}\t\tBTC Balance: ${quantityRemoveTrailingZeros(btcBalances!.entries.firstWhere((btcEntry) => btcEntry.address == addressEntry.address).quantityNormalized)}",
                         style: Theme.of(context)
                             .textTheme
                             .titleSmall!

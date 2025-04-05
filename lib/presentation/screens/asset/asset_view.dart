@@ -11,14 +11,73 @@ import 'package:horizon/presentation/screens/asset/bloc/asset_view_bloc.dart';
 import 'package:horizon/presentation/screens/asset/bloc/asset_view_event.dart';
 import 'package:horizon/presentation/screens/dashboard/view/asset_icon.dart';
 import 'package:horizon/presentation/screens/dashboard/view/balances_display.dart';
+import 'package:horizon/presentation/screens/transactions/dispenser/create_dispenser/view/create_dispenser_page.dart';
+import 'package:horizon/presentation/screens/transactions/dispenser/create_dispenser_on_new_address/view/create_dispenser_on_new_address_page.dart';
 import 'package:horizon/presentation/screens/transactions/lock_quantity/view/lock_quantity_page.dart';
 import 'package:horizon/presentation/screens/transactions/send/view/send_page.dart';
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:horizon/presentation/session/bloc/session_state.dart';
 import 'package:horizon/remote_data_bloc/remote_data_state.dart';
 import 'package:horizon/utils/app_icons.dart';
+import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 
 enum BalanceViewFilter { address, utxo }
+
+enum DispenserOption { existingAddress, newAddress }
+
+class DispenserOptionsDialog extends StatelessWidget {
+  const DispenserOptionsDialog({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return StatefulBuilder(
+      builder: (context, setState) {
+        return HorizonDialogContainer(
+          onCancel: () => Navigator.of(context).pop(),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Text('How do you want to proceed?',
+                  style: theme.textTheme.bodyMedium),
+              Column(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  SizedBox(
+                    height: 64,
+                    child: HorizonOutlinedButton(
+                      isTransparent: true,
+                      onPressed: () {
+                        Navigator.of(context)
+                            .pop(DispenserOption.existingAddress);
+                      },
+                      buttonText: 'Create dispenser on an existing address',
+                    ),
+                  ),
+                  commonHeightSizedBox,
+                  SizedBox(
+                    height: 64,
+                    child: HorizonOutlinedButton(
+                      isTransparent: true,
+                      onPressed: () {
+                        Navigator.of(context).pop(DispenserOption.newAddress);
+                      },
+                      buttonText: 'Create dispenser on a new address',
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
 
 class AssetView extends StatefulWidget {
   final String assetName;
@@ -69,8 +128,24 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
   }
 
   // Show the send page in a fullscreen dialog
-  void _showTransactionPage({required TransactionType type}) {
+  void _showTransactionPage({required TransactionType type}) async {
     final session = context.read<SessionStateCubit>().state;
+
+    DispenserOption? selectedDispenserOption;
+    if (type == TransactionType.dispenser) {
+      selectedDispenserOption = await showDialog<DispenserOption?>(
+        context: context,
+        builder: (dialogContext) {
+          return const DispenserOptionsDialog();
+        },
+      );
+    }
+
+    // We need this mounted check because we're using the parent context to show the final dialog
+    // after an async operation (the dispenser options dialog). This ensures the widget is still
+    // in the tree before we try to show the next dialog. It's safe because we're only using
+    // the context for showing a new dialog, not for any state updates.
+    if (!mounted) return;
 
     final page = switch (type) {
       TransactionType.send => SendPage(
@@ -81,8 +156,17 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
           assetName: widget.assetName,
           addresses: session.allAddresses,
         ),
+      TransactionType.dispenser =>
+        selectedDispenserOption == DispenserOption.existingAddress
+            ? CreateDispenserPage(
+                assetName: widget.assetName,
+                addresses: session.allAddresses,
+              )
+            : CreateDispenserOnNewAddressPage(
+                assetName: widget.assetName,
+                addresses: session.allAddresses,
+              ),
     };
-
     showDialog(
       context: context,
       builder: (dialogContext) {
@@ -494,7 +578,8 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
                                           context: context,
                                         ),
                                         onTap: () {
-                                          // Handle Dispenser
+                                          _showTransactionPage(
+                                              type: TransactionType.dispenser);
                                         },
                                       ),
                                     ] else if (_currentFilter ==

@@ -57,6 +57,12 @@ class BalanceRepositoryImpl implements BalanceRepository {
     return balances.first;
   }
 
+  @override
+  Future<mba.MultiAddressBalance> getBtcBalancesForAddresses(
+      List<String> addresses) async {
+    return await _getBtcBalancesForAddresses(addresses: addresses);
+  }
+
   Future<List<b.Balance>> _fetchBalances(String address) async {
     final List<b.Balance> balances = [];
     int limit = 50;

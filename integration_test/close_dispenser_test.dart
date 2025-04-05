@@ -8,7 +8,6 @@ import 'package:horizon/domain/services/error_service.dart';
 import 'package:horizon/presentation/screens/close_dispenser/bloc/close_dispenser_bloc.dart';
 import 'package:horizon/presentation/screens/close_dispenser/usecase/fetch_form_data.dart';
 import 'package:horizon/presentation/screens/close_dispenser/view/close_dispenser_page.dart';
-import 'package:horizon/presentation/screens/compose_dispenser/bloc/compose_dispenser_bloc.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
 import 'package:mocktail/mocktail.dart';
@@ -172,7 +171,7 @@ class MockComposeRepository extends Mock implements ComposeRepository {}
 class MockUtxoRepository extends Mock implements UtxoRepository {}
 
 class MockComposeDispenserEventParams extends Mock
-    implements ComposeDispenserEventParams {
+    implements ComposeDispenserParams {
   @override
   String get asset => 'ASSET_NAME';
 

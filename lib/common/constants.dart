@@ -50,4 +50,4 @@ enum BalanceType {
   address,
 }
 
-enum TransactionType { send, lockQuantity }
+enum TransactionType { send, dispenser, lockQuantity }

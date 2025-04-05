@@ -17,6 +17,8 @@ class GradientQuantityInput extends StatefulWidget {
   final bool enabled;
   final String? Function(String?)? validator;
   final bool? showMaxButton;
+  final String? label;
+  final bool? emptySelectedBalanceEntryAllowed;
 
   const GradientQuantityInput({
     super.key,
@@ -27,6 +29,8 @@ class GradientQuantityInput extends StatefulWidget {
     this.enabled = true,
     this.validator,
     this.showMaxButton = false,
+    this.label,
+    this.emptySelectedBalanceEntryAllowed = false,
   });
 
   @override
@@ -89,8 +93,9 @@ class _GradientQuantityInputState extends State<GradientQuantityInput> {
     final customTheme = theme.extension<CustomThemeExtension>()!;
     final isDivisible = widget.balance?.assetInfo.divisible == true;
     final isDarkMode = theme.brightness == Brightness.dark;
-    final isInputEnabled =
-        widget.enabled && widget.selectedBalanceEntry != null;
+    final isInputEnabled = widget.enabled &&
+        (widget.selectedBalanceEntry != null ||
+            widget.emptySelectedBalanceEntryAllowed == true);
 
     final Gradient textGradient = LinearGradient(
       begin: Alignment.centerLeft,
@@ -155,6 +160,19 @@ class _GradientQuantityInputState extends State<GradientQuantityInput> {
                       child: Stack(
                         alignment: Alignment.center,
                         children: [
+                          if (widget.label != null)
+                            Positioned(
+                              left: 12,
+                              top: 12,
+                              child: Text(
+                                widget.label!,
+                                style: theme.inputDecorationTheme.labelStyle
+                                    ?.copyWith(
+                                        color: isDarkMode
+                                            ? yellow1
+                                            : duskGradient2),
+                              ),
+                            ),
                           Positioned.fill(
                             child: TextField(
                               enabled: isInputEnabled,

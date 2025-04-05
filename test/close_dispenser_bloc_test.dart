@@ -20,7 +20,6 @@ import 'package:horizon/presentation/common/usecase/write_local_transaction_usec
 import 'package:horizon/presentation/screens/close_dispenser/bloc/close_dispenser_bloc.dart';
 import 'package:horizon/presentation/screens/close_dispenser/bloc/close_dispenser_state.dart';
 import 'package:horizon/presentation/screens/close_dispenser/usecase/fetch_form_data.dart';
-import 'package:horizon/presentation/screens/compose_dispenser/bloc/compose_dispenser_bloc.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 import 'package:horizon/core/logging/logger.dart';
@@ -55,7 +54,7 @@ class MockComposeDispenserResponseVerboseParams extends Mock
 class MockBalance extends Mock implements Balance {}
 
 class MockComposeDispenserEventParams extends Mock
-    implements ComposeDispenserEventParams {}
+    implements ComposeDispenserParams {}
 
 class MockErrorService extends Mock implements ErrorService {}
 
@@ -157,12 +156,13 @@ void main() {
   final mockAddress = FakeAddress().address;
   final mockComposeDispenserResponseVerbose =
       MockComposeDispenserResponseVerbose();
-  final composeTransactionParams = ComposeDispenserEventParams(
+  final composeTransactionParams = ComposeDispenserParams(
     asset: 'ASSET_NAME',
     giveQuantity: 1000,
     escrowQuantity: 500,
     mainchainrate: 1,
-    status: 0,
+    source: "test-address",
+    status: 10,
   );
 
   final composeDispenserParams = ComposeDispenserParams(

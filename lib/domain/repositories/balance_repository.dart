@@ -10,6 +10,8 @@ abstract class BalanceRepository {
   Future<MultiAddressBalance> getBalancesForAddressesAndAsset(
       List<String> addresses, String assetName,
       [BalanceType? type]);
+  Future<MultiAddressBalance> getBtcBalancesForAddresses(
+      List<String> addresses);
   Future<List<Balance>> getBalancesForAddressAndAssetVerbose(
       String address, String assetName);
   Future<List<Balance>> getBalancesForUTXO(String utxo);
