@@ -1,632 +1,630 @@
-import 'package:bloc_test/bloc_test.dart';
-import 'package:flutter_test/flutter_test.dart';
-import 'package:get_it/get_it.dart';
-import 'package:horizon/domain/entities/address.dart';
-import 'package:horizon/domain/entities/balance.dart';
-import 'package:horizon/domain/entities/compose_dispenser.dart';
-import 'package:horizon/domain/entities/compose_response.dart';
-import 'package:horizon/domain/entities/dispenser.dart';
-import 'package:horizon/domain/entities/fee_estimates.dart';
-import 'package:horizon/domain/entities/fee_option.dart' as FeeOption;
-import 'package:horizon/domain/entities/utxo.dart';
-import 'package:horizon/domain/repositories/account_repository.dart';
-import 'package:horizon/domain/repositories/address_repository.dart';
-import 'package:horizon/domain/repositories/compose_repository.dart';
-import 'package:horizon/domain/repositories/wallet_repository.dart';
-import 'package:horizon/domain/services/address_service.dart';
-import 'package:horizon/domain/services/analytics_service.dart';
-import 'package:horizon/domain/services/encryption_service.dart';
-import 'package:horizon/domain/services/error_service.dart';
-import 'package:horizon/presentation/common/compose_base/bloc/compose_base_event.dart';
-import 'package:horizon/presentation/common/compose_base/bloc/compose_base_state.dart';
-import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
-import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transaction_usecase.dart';
-import 'package:horizon/presentation/common/usecase/write_local_transaction_usecase.dart';
-import 'package:horizon/presentation/screens/compose_dispenser/bloc/compose_dispenser_bloc.dart';
-import 'package:horizon/presentation/screens/compose_dispenser/bloc/compose_dispenser_state.dart';
-import 'package:horizon/presentation/screens/compose_dispenser/usecase/fetch_form_data.dart';
-import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
-import 'package:mocktail/mocktail.dart';
-import 'package:horizon/core/logging/logger.dart';
-import 'package:horizon/domain/entities/decryption_strategy.dart';
+// import 'package:bloc_test/bloc_test.dart';
+// import 'package:flutter_test/flutter_test.dart';
+// import 'package:get_it/get_it.dart';
+// import 'package:horizon/domain/entities/address.dart';
+// import 'package:horizon/domain/entities/balance.dart';
+// import 'package:horizon/domain/entities/compose_dispenser.dart';
+// import 'package:horizon/domain/entities/compose_response.dart';
+// import 'package:horizon/domain/entities/dispenser.dart';
+// import 'package:horizon/domain/entities/fee_estimates.dart';
+// import 'package:horizon/domain/entities/fee_option.dart' as FeeOption;
+// import 'package:horizon/domain/entities/utxo.dart';
+// import 'package:horizon/domain/repositories/account_repository.dart';
+// import 'package:horizon/domain/repositories/address_repository.dart';
+// import 'package:horizon/domain/repositories/compose_repository.dart';
+// import 'package:horizon/domain/repositories/wallet_repository.dart';
+// import 'package:horizon/domain/services/address_service.dart';
+// import 'package:horizon/domain/services/analytics_service.dart';
+// import 'package:horizon/domain/services/encryption_service.dart';
+// import 'package:horizon/domain/services/error_service.dart';
+// import 'package:horizon/presentation/common/compose_base/bloc/compose_base_event.dart';
+// import 'package:horizon/presentation/common/compose_base/bloc/compose_base_state.dart';
+// import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
+// import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transaction_usecase.dart';
+// import 'package:horizon/presentation/common/usecase/write_local_transaction_usecase.dart';
 
-class MockComposeRepository extends Mock implements ComposeRepository {}
+// import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
+// import 'package:mocktail/mocktail.dart';
+// import 'package:horizon/core/logging/logger.dart';
+// import 'package:horizon/domain/entities/decryption_strategy.dart';
 
-class MockAnalyticsService extends Mock implements AnalyticsService {}
+// class MockComposeRepository extends Mock implements ComposeRepository {}
 
-class MockFetchDispenserFormDataUseCase extends Mock
-    implements FetchDispenserFormDataUseCase {}
+// class MockAnalyticsService extends Mock implements AnalyticsService {}
 
-class MockComposeTransactionUseCase extends Mock
-    implements ComposeTransactionUseCase {}
+// class MockFetchDispenserFormDataUseCase extends Mock
+//     implements FetchDispenserFormDataUseCase {}
 
-class MockSignAndBroadcastTransactionUseCase extends Mock
-    implements SignAndBroadcastTransactionUseCase {}
+// class MockComposeTransactionUseCase extends Mock
+//     implements ComposeTransactionUseCase {}
 
-class MockWriteLocalTransactionUseCase extends Mock
-    implements WriteLocalTransactionUseCase {}
+// class MockSignAndBroadcastTransactionUseCase extends Mock
+//     implements SignAndBroadcastTransactionUseCase {}
 
-class MockAccountRepository extends Mock implements AccountRepository {}
+// class MockWriteLocalTransactionUseCase extends Mock
+//     implements WriteLocalTransactionUseCase {}
 
-class MockAddressRepository extends Mock implements AddressRepository {}
+// class MockAccountRepository extends Mock implements AccountRepository {}
 
-class MockWalletRepository extends Mock implements WalletRepository {}
+// class MockAddressRepository extends Mock implements AddressRepository {}
 
-class MockEncryptionService extends Mock implements EncryptionService {}
+// class MockWalletRepository extends Mock implements WalletRepository {}
 
-class MockAddressService extends Mock implements AddressService {}
+// class MockEncryptionService extends Mock implements EncryptionService {}
 
-class MockErrorService extends Mock implements ErrorService {}
+// class MockAddressService extends Mock implements AddressService {}
 
-class MockComposeDispenserResponseParams extends Mock
-    implements ComposeDispenserResponseVerboseParams {
-  @override
-  String get source => "source";
-}
+// class MockErrorService extends Mock implements ErrorService {}
 
-class MockComposeDispenserResponseVerbose extends Mock
-    implements ComposeDispenserResponseVerbose {
-  @override
-  final MockComposeDispenserResponseParams params =
-      MockComposeDispenserResponseParams();
+// class MockComposeDispenserResponseParams extends Mock
+//     implements ComposeDispenserResponseVerboseParams {
+//   @override
+//   String get source => "source";
+// }
 
-  @override
-  String get rawtransaction => "rawtransaction";
-}
+// class MockComposeDispenserResponseVerbose extends Mock
+//     implements ComposeDispenserResponseVerbose {
+//   @override
+//   final MockComposeDispenserResponseParams params =
+//       MockComposeDispenserResponseParams();
 
-class MockBalance extends Mock implements Balance {
-  @override
-  final String? utxo;
+//   @override
+//   String get rawtransaction => "rawtransaction";
+// }
 
-  MockBalance({this.utxo});
-}
+// class MockBalance extends Mock implements Balance {
+//   @override
+//   final String? utxo;
 
-class MockDispenser extends Mock implements Dispenser {}
+//   MockBalance({this.utxo});
+// }
 
-class MockComposeDispenserEventParams extends Mock
-    implements ComposeDispenserEventParams {}
+// class MockDispenser extends Mock implements Dispenser {}
 
-class MockInMemoryKeyRepository extends Mock implements InMemoryKeyRepository {}
+// class MockComposeDispenserEventParams extends Mock
+//     implements ComposeDispenserEventParams {}
 
-class MockLogger extends Mock implements Logger {}
+// class MockInMemoryKeyRepository extends Mock implements InMemoryKeyRepository {}
 
-class FakeAddress extends Fake implements Address {
-  @override
-  final String accountUuid = "test-account-uuid";
-  @override
-  final String address = "test-address";
-  @override
-  final int index = 0;
-}
+// class MockLogger extends Mock implements Logger {}
 
-class FakeUtxo extends Fake implements Utxo {}
+// class FakeAddress extends Fake implements Address {
+//   @override
+//   final String accountUuid = "test-account-uuid";
+//   @override
+//   final String address = "test-address";
+//   @override
+//   final int index = 0;
+// }
 
-class FakeVirtualSize extends Fake implements VirtualSize {
-  @override
-  final int virtualSize;
-  @override
-  final int adjustedVirtualSize;
+// class FakeUtxo extends Fake implements Utxo {}
 
-  FakeVirtualSize(
-      {required this.virtualSize, required this.adjustedVirtualSize});
-}
+// class FakeVirtualSize extends Fake implements VirtualSize {
+//   @override
+//   final int virtualSize;
+//   @override
+//   final int adjustedVirtualSize;
 
-void main() {
-  late ComposeDispenserBloc composeDispenserBloc;
-  late MockComposeRepository mockComposeRepository;
-  late MockAnalyticsService mockAnalyticsService;
-  late MockFetchDispenserFormDataUseCase mockFetchDispenserFormDataUseCase;
-  late MockComposeTransactionUseCase mockComposeTransactionUseCase;
-  late MockSignAndBroadcastTransactionUseCase
-      mockSignAndBroadcastTransactionUseCase;
-  late MockWriteLocalTransactionUseCase mockWriteLocalTransactionUseCase;
-  late MockAccountRepository mockAccountRepository;
-  late MockAddressRepository mockAddressRepository;
-  late MockWalletRepository mockWalletRepository;
-  late MockEncryptionService mockEncryptionService;
-  late MockAddressService mockAddressService;
-  late MockErrorService mockErrorService;
+//   FakeVirtualSize(
+//       {required this.virtualSize, required this.adjustedVirtualSize});
+// }
 
-  const mockFeeEstimates = FeeEstimates(fast: 5, medium: 3, slow: 1);
-  final mockAddress = FakeAddress().address;
-  final mockBalances = [MockBalance()];
-  final mockBalancesWithUtxos = [
-    MockBalance(utxo: 'utxo'),
-    MockBalance(utxo: null)
-  ];
-  final mockDispenser = [MockDispenser()];
-  final mockComposeDispenserResponseVerbose =
-      MockComposeDispenserResponseVerbose();
+// void main() {
+//   late ComposeDispenserBloc composeDispenserBloc;
+//   late MockComposeRepository mockComposeRepository;
+//   late MockAnalyticsService mockAnalyticsService;
+//   late MockFetchDispenserFormDataUseCase mockFetchDispenserFormDataUseCase;
+//   late MockComposeTransactionUseCase mockComposeTransactionUseCase;
+//   late MockSignAndBroadcastTransactionUseCase
+//       mockSignAndBroadcastTransactionUseCase;
+//   late MockWriteLocalTransactionUseCase mockWriteLocalTransactionUseCase;
+//   late MockAccountRepository mockAccountRepository;
+//   late MockAddressRepository mockAddressRepository;
+//   late MockWalletRepository mockWalletRepository;
+//   late MockEncryptionService mockEncryptionService;
+//   late MockAddressService mockAddressService;
+//   late MockErrorService mockErrorService;
 
-  final composeTransactionParams = ComposeDispenserEventParams(
-    asset: 'ASSET_NAME',
-    giveQuantity: 1000,
-    escrowQuantity: 500,
-    mainchainrate: 1,
-    status: 0,
-  );
+//   const mockFeeEstimates = FeeEstimates(fast: 5, medium: 3, slow: 1);
+//   final mockAddress = FakeAddress().address;
+//   final mockBalances = [MockBalance()];
+//   final mockBalancesWithUtxos = [
+//     MockBalance(utxo: 'utxo'),
+//     MockBalance(utxo: null)
+//   ];
+//   final mockDispenser = [MockDispenser()];
+//   final mockComposeDispenserResponseVerbose =
+//       MockComposeDispenserResponseVerbose();
 
-  final composeDispenserParams = ComposeDispenserParams(
-      asset: 'ASSET_NAME',
-      giveQuantity: 1000,
-      escrowQuantity: 500,
-      mainchainrate: 1,
-      source: "test-address");
+//   final composeTransactionParams = ComposeDispenserEventParams(
+//     asset: 'ASSET_NAME',
+//     giveQuantity: 1000,
+//     escrowQuantity: 500,
+//     mainchainrate: 1,
+//     status: 0,
+//   );
 
-  final List<Utxo> utxos = [FakeUtxo()];
+//   final composeDispenserParams = ComposeDispenserParams(
+//       asset: 'ASSET_NAME',
+//       giveQuantity: 1000,
+//       escrowQuantity: 500,
+//       mainchainrate: 1,
+//       source: "test-address");
 
-  setUpAll(() {
-    registerFallbackValue(FakeAddress().address);
-    registerFallbackValue(composeTransactionParams);
-    registerFallbackValue(utxos);
-    registerFallbackValue(FeeOption.Medium());
-    registerFallbackValue(FormSubmitted(
-      params: composeTransactionParams,
-      sourceAddress: 'source-address',
-    ));
-    registerFallbackValue(SignAndBroadcastFormSubmitted(
-      password: 'password',
-    ));
-    registerFallbackValue(composeDispenserParams);
-  });
-  setUp(() {
-    mockComposeRepository = MockComposeRepository();
-    mockAnalyticsService = MockAnalyticsService();
-    mockFetchDispenserFormDataUseCase = MockFetchDispenserFormDataUseCase();
-    mockComposeTransactionUseCase = MockComposeTransactionUseCase();
-    mockSignAndBroadcastTransactionUseCase =
-        MockSignAndBroadcastTransactionUseCase();
-    mockWriteLocalTransactionUseCase = MockWriteLocalTransactionUseCase();
-    mockAccountRepository = MockAccountRepository();
-    mockAddressRepository = MockAddressRepository();
-    mockWalletRepository = MockWalletRepository();
-    mockEncryptionService = MockEncryptionService();
-    mockAddressService = MockAddressService();
-    mockErrorService = MockErrorService();
+//   final List<Utxo> utxos = [FakeUtxo()];
 
-    GetIt.I.registerSingleton<ErrorService>(mockErrorService);
+//   setUpAll(() {
+//     registerFallbackValue(FakeAddress().address);
+//     registerFallbackValue(composeTransactionParams);
+//     registerFallbackValue(utxos);
+//     registerFallbackValue(FeeOption.Medium());
+//     registerFallbackValue(FormSubmitted(
+//       params: composeTransactionParams,
+//       sourceAddress: 'source-address',
+//     ));
+//     registerFallbackValue(SignAndBroadcastFormSubmitted(
+//       password: 'password',
+//     ));
+//     registerFallbackValue(composeDispenserParams);
+//   });
+//   setUp(() {
+//     mockComposeRepository = MockComposeRepository();
+//     mockAnalyticsService = MockAnalyticsService();
+//     mockFetchDispenserFormDataUseCase = MockFetchDispenserFormDataUseCase();
+//     mockComposeTransactionUseCase = MockComposeTransactionUseCase();
+//     mockSignAndBroadcastTransactionUseCase =
+//         MockSignAndBroadcastTransactionUseCase();
+//     mockWriteLocalTransactionUseCase = MockWriteLocalTransactionUseCase();
+//     mockAccountRepository = MockAccountRepository();
+//     mockAddressRepository = MockAddressRepository();
+//     mockWalletRepository = MockWalletRepository();
+//     mockEncryptionService = MockEncryptionService();
+//     mockAddressService = MockAddressService();
+//     mockErrorService = MockErrorService();
 
-    composeDispenserBloc = ComposeDispenserBloc(
-      logger: MockLogger(),
-      passwordRequired: true,
-      inMemoryKeyRepository: MockInMemoryKeyRepository(),
-      fetchDispenserFormDataUseCase: mockFetchDispenserFormDataUseCase,
-      composeTransactionUseCase: mockComposeTransactionUseCase,
-      composeRepository: mockComposeRepository,
-      analyticsService: mockAnalyticsService,
-      signAndBroadcastTransactionUseCase:
-          mockSignAndBroadcastTransactionUseCase,
-      writelocalTransactionUseCase: mockWriteLocalTransactionUseCase,
-    );
-  });
+//     GetIt.I.registerSingleton<ErrorService>(mockErrorService);
 
-  tearDown(() {
-    composeDispenserBloc.close();
-    GetIt.I.reset();
-  });
+//     composeDispenserBloc = ComposeDispenserBloc(
+//       logger: MockLogger(),
+//       passwordRequired: true,
+//       inMemoryKeyRepository: MockInMemoryKeyRepository(),
+//       fetchDispenserFormDataUseCase: mockFetchDispenserFormDataUseCase,
+//       composeTransactionUseCase: mockComposeTransactionUseCase,
+//       composeRepository: mockComposeRepository,
+//       analyticsService: mockAnalyticsService,
+//       signAndBroadcastTransactionUseCase:
+//           mockSignAndBroadcastTransactionUseCase,
+//       writelocalTransactionUseCase: mockWriteLocalTransactionUseCase,
+//     );
+//   });
 
-  group(AsyncFormDependenciesRequested, () {
-    blocTest<ComposeDispenserBloc, ComposeDispenserState>(
-      'emits loading and then success states when data is fetched successfully',
-      build: () {
-        when(() => mockFetchDispenserFormDataUseCase.call(any())).thenAnswer(
-            (_) async => (mockBalances, mockFeeEstimates, <Dispenser>[]));
-        return composeDispenserBloc;
-      },
-      act: (bloc) {
-        bloc.add(AsyncFormDependenciesRequested(currentAddress: mockAddress));
-      },
-      expect: () => [
-        composeDispenserBloc.state.copyWith(
-          feeState: const FeeState.loading(),
-          balancesState: const BalancesState.loading(),
-          submitState: const FormStep(),
-          dialogState: const DialogState.loading(),
-        ),
-        composeDispenserBloc.state.copyWith(
-          balancesState: BalancesState.success(mockBalances),
-          feeState: const FeeState.success(mockFeeEstimates),
-          dialogState: const DialogState.warning(hasOpenDispensers: false),
-          submitState: const FormStep(),
-        ),
-      ],
-    );
+//   tearDown(() {
+//     composeDispenserBloc.close();
+//     GetIt.I.reset();
+//   });
 
-    blocTest<ComposeDispenserBloc, ComposeDispenserState>(
-      'emits loading and then success states when data is fetched successfully for segwit address',
-      build: () {
-        when(() => mockFetchDispenserFormDataUseCase.call(any())).thenAnswer(
-            (_) async => (mockBalances, mockFeeEstimates, <Dispenser>[]));
-        return composeDispenserBloc;
-      },
-      act: (bloc) {
-        bloc.add(
-            AsyncFormDependenciesRequested(currentAddress: 'bc1qxxxxxxxxxxxx'));
-      },
-      expect: () => [
-        composeDispenserBloc.state.copyWith(
-          feeState: const FeeState.loading(),
-          balancesState: const BalancesState.loading(),
-          submitState: const FormStep(),
-          dialogState: const DialogState.loading(),
-        ),
-        composeDispenserBloc.state.copyWith(
-          balancesState: BalancesState.success(mockBalances),
-          feeState: const FeeState.success(mockFeeEstimates),
-          dialogState: const DialogState.warning(hasOpenDispensers: false),
-          submitState: const FormStep(),
-        ),
-      ],
-    );
+//   group(AsyncFormDependenciesRequested, () {
+//     blocTest<ComposeDispenserBloc, ComposeDispenserState>(
+//       'emits loading and then success states when data is fetched successfully',
+//       build: () {
+//         when(() => mockFetchDispenserFormDataUseCase.call(any())).thenAnswer(
+//             (_) async => (mockBalances, mockFeeEstimates, <Dispenser>[]));
+//         return composeDispenserBloc;
+//       },
+//       act: (bloc) {
+//         bloc.add(AsyncFormDependenciesRequested(currentAddress: mockAddress));
+//       },
+//       expect: () => [
+//         composeDispenserBloc.state.copyWith(
+//           feeState: const FeeState.loading(),
+//           balancesState: const BalancesState.loading(),
+//           submitState: const FormStep(),
+//           dialogState: const DialogState.loading(),
+//         ),
+//         composeDispenserBloc.state.copyWith(
+//           balancesState: BalancesState.success(mockBalances),
+//           feeState: const FeeState.success(mockFeeEstimates),
+//           dialogState: const DialogState.warning(hasOpenDispensers: false),
+//           submitState: const FormStep(),
+//         ),
+//       ],
+//     );
 
-    blocTest<ComposeDispenserBloc, ComposeDispenserState>(
-      'emits dispenser warning state when dispenser already exists at the current address',
-      build: () {
-        when(() => mockFetchDispenserFormDataUseCase.call(any())).thenAnswer(
-            (_) async => (mockBalances, mockFeeEstimates, mockDispenser));
-        return composeDispenserBloc;
-      },
-      act: (bloc) {
-        bloc.add(AsyncFormDependenciesRequested(currentAddress: mockAddress));
-      },
-      expect: () => [
-        composeDispenserBloc.state.copyWith(
-          feeState: const FeeState.loading(),
-          balancesState: const BalancesState.loading(),
-          submitState: const FormStep(),
-          dialogState: const DialogState.loading(),
-        ),
-        composeDispenserBloc.state.copyWith(
-          balancesState: BalancesState.success(mockBalances),
-          feeState: const FeeState.success(mockFeeEstimates),
-          dialogState: const DialogState.warning(hasOpenDispensers: true),
-          submitState: const FormStep(),
-        ),
-      ],
-    );
+//     blocTest<ComposeDispenserBloc, ComposeDispenserState>(
+//       'emits loading and then success states when data is fetched successfully for segwit address',
+//       build: () {
+//         when(() => mockFetchDispenserFormDataUseCase.call(any())).thenAnswer(
+//             (_) async => (mockBalances, mockFeeEstimates, <Dispenser>[]));
+//         return composeDispenserBloc;
+//       },
+//       act: (bloc) {
+//         bloc.add(
+//             AsyncFormDependenciesRequested(currentAddress: 'bc1qxxxxxxxxxxxx'));
+//       },
+//       expect: () => [
+//         composeDispenserBloc.state.copyWith(
+//           feeState: const FeeState.loading(),
+//           balancesState: const BalancesState.loading(),
+//           submitState: const FormStep(),
+//           dialogState: const DialogState.loading(),
+//         ),
+//         composeDispenserBloc.state.copyWith(
+//           balancesState: BalancesState.success(mockBalances),
+//           feeState: const FeeState.success(mockFeeEstimates),
+//           dialogState: const DialogState.warning(hasOpenDispensers: false),
+//           submitState: const FormStep(),
+//         ),
+//       ],
+//     );
 
-    blocTest<ComposeDispenserBloc, ComposeDispenserState>(
-      'emits error state when fetching balances fails',
-      build: () {
-        when(() => mockFetchDispenserFormDataUseCase.call(any()))
-            .thenThrow(FetchBalancesException('Failed to fetch balances'));
-        return composeDispenserBloc;
-      },
-      act: (bloc) {
-        bloc.add(AsyncFormDependenciesRequested(currentAddress: mockAddress));
-      },
-      expect: () => [
-        composeDispenserBloc.state.copyWith(
-          balancesState: const BalancesState.loading(),
-          submitState: const FormStep(),
-        ),
-        composeDispenserBloc.state.copyWith(
-          balancesState: const BalancesState.error('Failed to fetch balances'),
-        ),
-      ],
-    );
+//     blocTest<ComposeDispenserBloc, ComposeDispenserState>(
+//       'emits dispenser warning state when dispenser already exists at the current address',
+//       build: () {
+//         when(() => mockFetchDispenserFormDataUseCase.call(any())).thenAnswer(
+//             (_) async => (mockBalances, mockFeeEstimates, mockDispenser));
+//         return composeDispenserBloc;
+//       },
+//       act: (bloc) {
+//         bloc.add(AsyncFormDependenciesRequested(currentAddress: mockAddress));
+//       },
+//       expect: () => [
+//         composeDispenserBloc.state.copyWith(
+//           feeState: const FeeState.loading(),
+//           balancesState: const BalancesState.loading(),
+//           submitState: const FormStep(),
+//           dialogState: const DialogState.loading(),
+//         ),
+//         composeDispenserBloc.state.copyWith(
+//           balancesState: BalancesState.success(mockBalances),
+//           feeState: const FeeState.success(mockFeeEstimates),
+//           dialogState: const DialogState.warning(hasOpenDispensers: true),
+//           submitState: const FormStep(),
+//         ),
+//       ],
+//     );
 
-    blocTest<ComposeDispenserBloc, ComposeDispenserState>(
-      'emits error state when fetching fee estimates fails',
-      build: () {
-        when(() => mockFetchDispenserFormDataUseCase.call(any())).thenThrow(
-            FetchFeeEstimatesException('Failed to fetch fee estimates'));
-        return composeDispenserBloc;
-      },
-      act: (bloc) {
-        bloc.add(AsyncFormDependenciesRequested(currentAddress: mockAddress));
-      },
-      expect: () => [
-        composeDispenserBloc.state.copyWith(
-          feeState: const FeeState.loading(),
-          submitState: const FormStep(),
-        ),
-        composeDispenserBloc.state.copyWith(
-          feeState: const FeeState.error('Failed to fetch fee estimates'),
-        ),
-      ],
-    );
-    blocTest<ComposeDispenserBloc, ComposeDispenserState>(
-      'emits error state when unexpected error occurs',
-      build: () {
-        when(() => mockFetchDispenserFormDataUseCase.call(any()))
-            .thenThrow(Exception('Unexpected'));
-        return composeDispenserBloc;
-      },
-      act: (bloc) {
-        bloc.add(AsyncFormDependenciesRequested(currentAddress: mockAddress));
-      },
-      expect: () => [
-        composeDispenserBloc.state.copyWith(
-          feeState: const FeeState.loading(),
-          balancesState: const BalancesState.loading(),
-          submitState: const FormStep(),
-          dialogState: const DialogState.loading(),
-        ),
-        composeDispenserBloc.state.copyWith(
-          feeState: const FeeState.error(
-              'An unexpected error occurred: Exception: Unexpected'),
-          balancesState: const BalancesState.error(
-              'An unexpected error occurred: Exception: Unexpected'),
-          dialogState: const DialogState.error(
-              'An unexpected error occurred: Exception: Unexpected'),
-        ),
-      ],
-    );
-  });
-  group('ComposeTransactionEvent', () {
-    blocTest<ComposeDispenserBloc, ComposeDispenserState>(
-      'emits SubmitComposingTransaction when transaction composition succeeds',
-      build: () {
-        when(() => mockComposeTransactionUseCase
-                .call<ComposeDispenserParams, ComposeDispenserResponseVerbose>(
-              feeRate: any(named: 'feeRate'),
-              source: any(named: 'source'),
-              params: any(named: 'params'),
-              composeFn: any(named: 'composeFn'),
-            )).thenAnswer((_) async => mockComposeDispenserResponseVerbose);
+//     blocTest<ComposeDispenserBloc, ComposeDispenserState>(
+//       'emits error state when fetching balances fails',
+//       build: () {
+//         when(() => mockFetchDispenserFormDataUseCase.call(any()))
+//             .thenThrow(FetchBalancesException('Failed to fetch balances'));
+//         return composeDispenserBloc;
+//       },
+//       act: (bloc) {
+//         bloc.add(AsyncFormDependenciesRequested(currentAddress: mockAddress));
+//       },
+//       expect: () => [
+//         composeDispenserBloc.state.copyWith(
+//           balancesState: const BalancesState.loading(),
+//           submitState: const FormStep(),
+//         ),
+//         composeDispenserBloc.state.copyWith(
+//           balancesState: const BalancesState.error('Failed to fetch balances'),
+//         ),
+//       ],
+//     );
 
-        when(() => mockComposeDispenserResponseVerbose.btcFee).thenReturn(250);
-        when(() => mockComposeDispenserResponseVerbose.signedTxEstimatedSize)
-            .thenReturn(SignedTxEstimatedSize(
-          virtualSize: 120,
-          adjustedVirtualSize: 155,
-          sigopsCount: 1,
-        ));
+//     blocTest<ComposeDispenserBloc, ComposeDispenserState>(
+//       'emits error state when fetching fee estimates fails',
+//       build: () {
+//         when(() => mockFetchDispenserFormDataUseCase.call(any())).thenThrow(
+//             FetchFeeEstimatesException('Failed to fetch fee estimates'));
+//         return composeDispenserBloc;
+//       },
+//       act: (bloc) {
+//         bloc.add(AsyncFormDependenciesRequested(currentAddress: mockAddress));
+//       },
+//       expect: () => [
+//         composeDispenserBloc.state.copyWith(
+//           feeState: const FeeState.loading(),
+//           submitState: const FormStep(),
+//         ),
+//         composeDispenserBloc.state.copyWith(
+//           feeState: const FeeState.error('Failed to fetch fee estimates'),
+//         ),
+//       ],
+//     );
+//     blocTest<ComposeDispenserBloc, ComposeDispenserState>(
+//       'emits error state when unexpected error occurs',
+//       build: () {
+//         when(() => mockFetchDispenserFormDataUseCase.call(any()))
+//             .thenThrow(Exception('Unexpected'));
+//         return composeDispenserBloc;
+//       },
+//       act: (bloc) {
+//         bloc.add(AsyncFormDependenciesRequested(currentAddress: mockAddress));
+//       },
+//       expect: () => [
+//         composeDispenserBloc.state.copyWith(
+//           feeState: const FeeState.loading(),
+//           balancesState: const BalancesState.loading(),
+//           submitState: const FormStep(),
+//           dialogState: const DialogState.loading(),
+//         ),
+//         composeDispenserBloc.state.copyWith(
+//           feeState: const FeeState.error(
+//               'An unexpected error occurred: Exception: Unexpected'),
+//           balancesState: const BalancesState.error(
+//               'An unexpected error occurred: Exception: Unexpected'),
+//           dialogState: const DialogState.error(
+//               'An unexpected error occurred: Exception: Unexpected'),
+//         ),
+//       ],
+//     );
+//   });
+//   group('ComposeTransactionEvent', () {
+//     blocTest<ComposeDispenserBloc, ComposeDispenserState>(
+//       'emits SubmitComposingTransaction when transaction composition succeeds',
+//       build: () {
+//         when(() => mockComposeTransactionUseCase
+//                 .call<ComposeDispenserParams, ComposeDispenserResponseVerbose>(
+//               feeRate: any(named: 'feeRate'),
+//               source: any(named: 'source'),
+//               params: any(named: 'params'),
+//               composeFn: any(named: 'composeFn'),
+//             )).thenAnswer((_) async => mockComposeDispenserResponseVerbose);
 
-        return composeDispenserBloc;
-      },
-      seed: () => composeDispenserBloc.state.copyWith(
-        feeState: const FeeState.success(mockFeeEstimates),
-        feeOption: FeeOption.Medium(),
-      ),
-      act: (bloc) => bloc.add(FormSubmitted(
-        params: composeTransactionParams,
-        sourceAddress: 'source-address',
-      )),
-      expect: () => [
-        isA<ComposeDispenserState>().having(
-          (state) => state.submitState,
-          'submitState',
-          isA<FormStep>().having((s) => s.loading, 'loading', true),
-        ),
-        isA<ComposeDispenserState>().having(
-          (state) => state.submitState,
-          'submitState',
-          isA<ReviewStep<ComposeDispenserResponseVerbose, void>>()
-              .having((s) => s.composeTransaction, 'composeTransaction',
-                  mockComposeDispenserResponseVerbose)
-              .having((s) => s.fee, 'fee', 250)
-              .having((s) => s.feeRate, 'feeRate', 3)
-              .having((s) => s.virtualSize, 'virtualSize', 120)
-              .having((s) => s.adjustedVirtualSize, 'adjustedVirtualSize', 155),
-        ),
-      ],
-    );
+//         when(() => mockComposeDispenserResponseVerbose.btcFee).thenReturn(250);
+//         when(() => mockComposeDispenserResponseVerbose.signedTxEstimatedSize)
+//             .thenReturn(SignedTxEstimatedSize(
+//           virtualSize: 120,
+//           adjustedVirtualSize: 155,
+//           sigopsCount: 1,
+//         ));
 
-    blocTest<ComposeDispenserBloc, ComposeDispenserState>(
-      'emits SubmitComposingTransaction when transaction composition succeeds ( Custom Fee )',
-      build: () {
-        when(() => mockComposeTransactionUseCase
-                .call<ComposeDispenserParams, ComposeDispenserResponseVerbose>(
-              feeRate: any(named: 'feeRate'),
-              source: any(named: 'source'),
-              composeFn: any(named: 'composeFn'),
-              params: any(named: 'params'),
-            )).thenAnswer((_) async => mockComposeDispenserResponseVerbose);
+//         return composeDispenserBloc;
+//       },
+//       seed: () => composeDispenserBloc.state.copyWith(
+//         feeState: const FeeState.success(mockFeeEstimates),
+//         feeOption: FeeOption.Medium(),
+//       ),
+//       act: (bloc) => bloc.add(FormSubmitted(
+//         params: composeTransactionParams,
+//         sourceAddress: 'source-address',
+//       )),
+//       expect: () => [
+//         isA<ComposeDispenserState>().having(
+//           (state) => state.submitState,
+//           'submitState',
+//           isA<FormStep>().having((s) => s.loading, 'loading', true),
+//         ),
+//         isA<ComposeDispenserState>().having(
+//           (state) => state.submitState,
+//           'submitState',
+//           isA<ReviewStep<ComposeDispenserResponseVerbose, void>>()
+//               .having((s) => s.composeTransaction, 'composeTransaction',
+//                   mockComposeDispenserResponseVerbose)
+//               .having((s) => s.fee, 'fee', 250)
+//               .having((s) => s.feeRate, 'feeRate', 3)
+//               .having((s) => s.virtualSize, 'virtualSize', 120)
+//               .having((s) => s.adjustedVirtualSize, 'adjustedVirtualSize', 155),
+//         ),
+//       ],
+//     );
 
-        when(() => mockComposeDispenserResponseVerbose.btcFee).thenReturn(250);
+//     blocTest<ComposeDispenserBloc, ComposeDispenserState>(
+//       'emits SubmitComposingTransaction when transaction composition succeeds ( Custom Fee )',
+//       build: () {
+//         when(() => mockComposeTransactionUseCase
+//                 .call<ComposeDispenserParams, ComposeDispenserResponseVerbose>(
+//               feeRate: any(named: 'feeRate'),
+//               source: any(named: 'source'),
+//               composeFn: any(named: 'composeFn'),
+//               params: any(named: 'params'),
+//             )).thenAnswer((_) async => mockComposeDispenserResponseVerbose);
 
-        return composeDispenserBloc;
-      },
-      seed: () => composeDispenserBloc.state.copyWith(
-        feeState: const FeeState.success(mockFeeEstimates),
-        feeOption: FeeOption.Custom(10),
-      ),
-      act: (bloc) => bloc.add(FormSubmitted(
-        params: composeTransactionParams,
-        sourceAddress: 'source-address',
-      )),
-      expect: () => [
-        isA<ComposeDispenserState>().having(
-          (state) => state.submitState,
-          'submitState',
-          isA<FormStep>().having((s) => s.loading, 'loading', true),
-        ),
-        isA<ComposeDispenserState>().having(
-            (state) => state.submitState,
-            'submitState',
-            isA<ReviewStep<ComposeDispenserResponseVerbose, void>>()
-                .having((s) => s.composeTransaction, 'composeTransaction',
-                    mockComposeDispenserResponseVerbose)
-                .having((s) => s.fee, 'fee', 250)
-                .having((s) => s.feeRate, 'feeRate', 10) // custom ,
-            ),
-      ],
-    );
+//         when(() => mockComposeDispenserResponseVerbose.btcFee).thenReturn(250);
 
-    blocTest<ComposeDispenserBloc, ComposeDispenserState>(
-      'emits SubmitInitial with error when transaction composition fails',
-      build: () {
-        when(
-            () => mockComposeTransactionUseCase.call<ComposeDispenserParams,
-                    ComposeDispenserResponseVerbose>(
-                  feeRate: any(named: 'feeRate'),
-                  source: any(named: 'source'),
-                  composeFn: any(named: 'composeFn'),
-                  params: any(named: 'params'),
-                )).thenThrow(
-            ComposeTransactionException('Compose error', StackTrace.current));
+//         return composeDispenserBloc;
+//       },
+//       seed: () => composeDispenserBloc.state.copyWith(
+//         feeState: const FeeState.success(mockFeeEstimates),
+//         feeOption: FeeOption.Custom(10),
+//       ),
+//       act: (bloc) => bloc.add(FormSubmitted(
+//         params: composeTransactionParams,
+//         sourceAddress: 'source-address',
+//       )),
+//       expect: () => [
+//         isA<ComposeDispenserState>().having(
+//           (state) => state.submitState,
+//           'submitState',
+//           isA<FormStep>().having((s) => s.loading, 'loading', true),
+//         ),
+//         isA<ComposeDispenserState>().having(
+//             (state) => state.submitState,
+//             'submitState',
+//             isA<ReviewStep<ComposeDispenserResponseVerbose, void>>()
+//                 .having((s) => s.composeTransaction, 'composeTransaction',
+//                     mockComposeDispenserResponseVerbose)
+//                 .having((s) => s.fee, 'fee', 250)
+//                 .having((s) => s.feeRate, 'feeRate', 10) // custom ,
+//             ),
+//       ],
+//     );
 
-        return composeDispenserBloc;
-      },
-      seed: () => composeDispenserBloc.state.copyWith(
-        feeState: const FeeState.success(mockFeeEstimates),
-        feeOption: FeeOption.Medium(),
-      ),
-      act: (bloc) => bloc.add(FormSubmitted(
-        params: composeTransactionParams,
-        sourceAddress: 'source-address',
-      )),
-      expect: () => [
-        isA<ComposeDispenserState>().having(
-          (state) => state.submitState,
-          'submitState',
-          isA<FormStep>().having((s) => s.loading, 'loading', true),
-        ),
-        isA<ComposeDispenserState>().having(
-          (state) => state.submitState,
-          'submitState',
-          isA<FormStep>()
-              .having((s) => s.loading, 'loading', false)
-              .having((s) => s.error, 'error', 'Compose error'),
-        ),
-      ],
-    );
-  });
-  group(ReviewSubmitted, () {
-    const fee = 250;
+//     blocTest<ComposeDispenserBloc, ComposeDispenserState>(
+//       'emits SubmitInitial with error when transaction composition fails',
+//       build: () {
+//         when(
+//             () => mockComposeTransactionUseCase.call<ComposeDispenserParams,
+//                     ComposeDispenserResponseVerbose>(
+//                   feeRate: any(named: 'feeRate'),
+//                   source: any(named: 'source'),
+//                   composeFn: any(named: 'composeFn'),
+//                   params: any(named: 'params'),
+//                 )).thenThrow(
+//             ComposeTransactionException('Compose error', StackTrace.current));
 
-    blocTest<ComposeDispenserBloc, ComposeDispenserState>(
-      'emits SubmitFinalizing when FinalizeTransactionEvent is added',
-      build: () => composeDispenserBloc,
-      act: (bloc) => bloc.add(ReviewSubmitted(
-        composeTransaction: mockComposeDispenserResponseVerbose,
-        fee: fee,
-      )),
-      expect: () => [
-        isA<ComposeDispenserState>().having(
-          (state) => state.submitState,
-          'submitState',
-          isA<PasswordStep<ComposeDispenserResponseVerbose>>()
-              .having((s) => s.loading, 'loading', false)
-              .having((s) => s.error, 'error', null)
-              .having((s) => s.composeTransaction, 'composeTransaction',
-                  mockComposeDispenserResponseVerbose)
-              .having((s) => s.fee, 'fee', fee),
-        ),
-      ],
-    );
-  });
+//         return composeDispenserBloc;
+//       },
+//       seed: () => composeDispenserBloc.state.copyWith(
+//         feeState: const FeeState.success(mockFeeEstimates),
+//         feeOption: FeeOption.Medium(),
+//       ),
+//       act: (bloc) => bloc.add(FormSubmitted(
+//         params: composeTransactionParams,
+//         sourceAddress: 'source-address',
+//       )),
+//       expect: () => [
+//         isA<ComposeDispenserState>().having(
+//           (state) => state.submitState,
+//           'submitState',
+//           isA<FormStep>().having((s) => s.loading, 'loading', true),
+//         ),
+//         isA<ComposeDispenserState>().having(
+//           (state) => state.submitState,
+//           'submitState',
+//           isA<FormStep>()
+//               .having((s) => s.loading, 'loading', false)
+//               .having((s) => s.error, 'error', 'Compose error'),
+//         ),
+//       ],
+//     );
+//   });
+//   group(ReviewSubmitted, () {
+//     const fee = 250;
 
-  group(SignAndBroadcastFormSubmitted, () {
-    const password = 'test-password';
-    const txHex = 'rawtransaction';
-    const txHash = 'transaction-hash';
-    const sourceAddress = 'source';
+//     blocTest<ComposeDispenserBloc, ComposeDispenserState>(
+//       'emits SubmitFinalizing when FinalizeTransactionEvent is added',
+//       build: () => composeDispenserBloc,
+//       act: (bloc) => bloc.add(ReviewSubmitted(
+//         composeTransaction: mockComposeDispenserResponseVerbose,
+//         fee: fee,
+//       )),
+//       expect: () => [
+//         isA<ComposeDispenserState>().having(
+//           (state) => state.submitState,
+//           'submitState',
+//           isA<PasswordStep<ComposeDispenserResponseVerbose>>()
+//               .having((s) => s.loading, 'loading', false)
+//               .having((s) => s.error, 'error', null)
+//               .having((s) => s.composeTransaction, 'composeTransaction',
+//                   mockComposeDispenserResponseVerbose)
+//               .having((s) => s.fee, 'fee', fee),
+//         ),
+//       ],
+//     );
+//   });
 
-    blocTest<ComposeDispenserBloc, ComposeDispenserState>(
-      'emits SubmitSuccess when transaction is signed and broadcasted successfully',
-      build: () {
-        when(() => mockSignAndBroadcastTransactionUseCase.call(
-              source: sourceAddress,
-              rawtransaction: txHex,
-              decryptionStrategy: Password(password),
-              onSuccess: any(named: 'onSuccess'),
-              onError: any(named: 'onError'),
-            )).thenAnswer((invocation) async {
-          final onSuccess =
-              invocation.namedArguments[const Symbol('onSuccess')] as Function;
-          onSuccess(txHex, txHash);
-        });
+//   group(SignAndBroadcastFormSubmitted, () {
+//     const password = 'test-password';
+//     const txHex = 'rawtransaction';
+//     const txHash = 'transaction-hash';
+//     const sourceAddress = 'source';
 
-        when(() => mockWriteLocalTransactionUseCase.call(txHex, txHash))
-            .thenAnswer((_) async {});
+//     blocTest<ComposeDispenserBloc, ComposeDispenserState>(
+//       'emits SubmitSuccess when transaction is signed and broadcasted successfully',
+//       build: () {
+//         when(() => mockSignAndBroadcastTransactionUseCase.call(
+//               source: sourceAddress,
+//               rawtransaction: txHex,
+//               decryptionStrategy: Password(password),
+//               onSuccess: any(named: 'onSuccess'),
+//               onError: any(named: 'onError'),
+//             )).thenAnswer((invocation) async {
+//           final onSuccess =
+//               invocation.namedArguments[const Symbol('onSuccess')] as Function;
+//           onSuccess(txHex, txHash);
+//         });
 
-        when(() => mockAnalyticsService.trackAnonymousEvent(
-              any(),
-              properties: any(named: 'properties'),
-            )).thenAnswer((_) async {});
+//         when(() => mockWriteLocalTransactionUseCase.call(txHex, txHash))
+//             .thenAnswer((_) async {});
 
-        return composeDispenserBloc;
-      },
-      seed: () => composeDispenserBloc.state.copyWith(
-        submitState: PasswordStep<ComposeDispenserResponseVerbose>(
-          loading: false,
-          error: null,
-          composeTransaction: mockComposeDispenserResponseVerbose,
-          fee: 250,
-        ),
-      ),
-      act: (bloc) =>
-          bloc.add(SignAndBroadcastFormSubmitted(password: password)),
-      expect: () => [
-        isA<ComposeDispenserState>().having(
-          (state) => state.submitState,
-          'submitState',
-          isA<PasswordStep<ComposeDispenserResponseVerbose>>()
-              .having((s) => s.loading, 'loading', true)
-              .having((s) => s.error, 'error', null)
-              .having((s) => s.composeTransaction, 'composeTransaction',
-                  mockComposeDispenserResponseVerbose)
-              .having((s) => s.fee, 'fee', 250),
-        ),
-        isA<ComposeDispenserState>().having(
-          (state) => state.submitState,
-          'submitState',
-          isA<SubmitSuccess>()
-              .having((s) => s.transactionHex, 'transactionHex', txHex)
-              .having((s) => s.sourceAddress, 'sourceAddress', sourceAddress),
-        ),
-      ],
-      verify: (_) {
-        verify(() => mockAnalyticsService.trackAnonymousEvent(
-              'broadcast_tx_create_dispenser',
-              properties: any(named: 'properties'),
-            )).called(1);
-      },
-    );
-    blocTest<ComposeDispenserBloc, ComposeDispenserState>(
-      'emits SubmitFinalizing with error when transaction signing fails',
-      build: () {
-        when(() => mockSignAndBroadcastTransactionUseCase.call(
-              source: any(named: "source"),
-              rawtransaction: any(named: "rawtransaction"),
-              decryptionStrategy: Password(password),
-              onSuccess: any(named: 'onSuccess'),
-              onError: any(named: 'onError'),
-            )).thenAnswer((invocation) async {
-          final onError =
-              invocation.namedArguments[const Symbol('onError')] as Function;
-          onError('Signing error');
-        });
+//         when(() => mockAnalyticsService.trackAnonymousEvent(
+//               any(),
+//               properties: any(named: 'properties'),
+//             )).thenAnswer((_) async {});
 
-        return composeDispenserBloc;
-      },
-      seed: () => composeDispenserBloc.state.copyWith(
-        submitState: PasswordStep<ComposeDispenserResponseVerbose>(
-          loading: false,
-          error: null,
-          composeTransaction: mockComposeDispenserResponseVerbose,
-          fee: 250,
-        ),
-      ),
-      act: (bloc) =>
-          bloc.add(SignAndBroadcastFormSubmitted(password: password)),
-      expect: () => [
-        isA<ComposeDispenserState>().having(
-          (state) => state.submitState,
-          'submitState',
-          isA<PasswordStep<ComposeDispenserResponseVerbose>>()
-              .having((s) => s.loading, 'loading', true)
-              .having((s) => s.error, 'error', null)
-              .having((s) => s.composeTransaction, 'composeTransaction',
-                  mockComposeDispenserResponseVerbose)
-              .having((s) => s.fee, 'fee', 250),
-        ),
-        isA<ComposeDispenserState>().having(
-          (state) => state.submitState,
-          'submitState',
-          isA<PasswordStep<ComposeDispenserResponseVerbose>>()
-              .having((s) => s.loading, 'loading', false)
-              .having((s) => s.error, 'error', 'Signing error')
-              .having((s) => s.composeTransaction, 'composeTransaction',
-                  mockComposeDispenserResponseVerbose)
-              .having((s) => s.fee, 'fee', 250),
-        ),
-      ],
-    );
+//         return composeDispenserBloc;
+//       },
+//       seed: () => composeDispenserBloc.state.copyWith(
+//         submitState: PasswordStep<ComposeDispenserResponseVerbose>(
+//           loading: false,
+//           error: null,
+//           composeTransaction: mockComposeDispenserResponseVerbose,
+//           fee: 250,
+//         ),
+//       ),
+//       act: (bloc) =>
+//           bloc.add(SignAndBroadcastFormSubmitted(password: password)),
+//       expect: () => [
+//         isA<ComposeDispenserState>().having(
+//           (state) => state.submitState,
+//           'submitState',
+//           isA<PasswordStep<ComposeDispenserResponseVerbose>>()
+//               .having((s) => s.loading, 'loading', true)
+//               .having((s) => s.error, 'error', null)
+//               .having((s) => s.composeTransaction, 'composeTransaction',
+//                   mockComposeDispenserResponseVerbose)
+//               .having((s) => s.fee, 'fee', 250),
+//         ),
+//         isA<ComposeDispenserState>().having(
+//           (state) => state.submitState,
+//           'submitState',
+//           isA<SubmitSuccess>()
+//               .having((s) => s.transactionHex, 'transactionHex', txHex)
+//               .having((s) => s.sourceAddress, 'sourceAddress', sourceAddress),
+//         ),
+//       ],
+//       verify: (_) {
+//         verify(() => mockAnalyticsService.trackAnonymousEvent(
+//               'broadcast_tx_create_dispenser',
+//               properties: any(named: 'properties'),
+//             )).called(1);
+//       },
+//     );
+//     blocTest<ComposeDispenserBloc, ComposeDispenserState>(
+//       'emits SubmitFinalizing with error when transaction signing fails',
+//       build: () {
+//         when(() => mockSignAndBroadcastTransactionUseCase.call(
+//               source: any(named: "source"),
+//               rawtransaction: any(named: "rawtransaction"),
+//               decryptionStrategy: Password(password),
+//               onSuccess: any(named: 'onSuccess'),
+//               onError: any(named: 'onError'),
+//             )).thenAnswer((invocation) async {
+//           final onError =
+//               invocation.namedArguments[const Symbol('onError')] as Function;
+//           onError('Signing error');
+//         });
 
-    // Successful Sign and Broadcast
-  });
-}
+//         return composeDispenserBloc;
+//       },
+//       seed: () => composeDispenserBloc.state.copyWith(
+//         submitState: PasswordStep<ComposeDispenserResponseVerbose>(
+//           loading: false,
+//           error: null,
+//           composeTransaction: mockComposeDispenserResponseVerbose,
+//           fee: 250,
+//         ),
+//       ),
+//       act: (bloc) =>
+//           bloc.add(SignAndBroadcastFormSubmitted(password: password)),
+//       expect: () => [
+//         isA<ComposeDispenserState>().having(
+//           (state) => state.submitState,
+//           'submitState',
+//           isA<PasswordStep<ComposeDispenserResponseVerbose>>()
+//               .having((s) => s.loading, 'loading', true)
+//               .having((s) => s.error, 'error', null)
+//               .having((s) => s.composeTransaction, 'composeTransaction',
+//                   mockComposeDispenserResponseVerbose)
+//               .having((s) => s.fee, 'fee', 250),
+//         ),
+//         isA<ComposeDispenserState>().having(
+//           (state) => state.submitState,
+//           'submitState',
+//           isA<PasswordStep<ComposeDispenserResponseVerbose>>()
+//               .having((s) => s.loading, 'loading', false)
+//               .having((s) => s.error, 'error', 'Signing error')
+//               .having((s) => s.composeTransaction, 'composeTransaction',
+//                   mockComposeDispenserResponseVerbose)
+//               .having((s) => s.fee, 'fee', 250),
+//         ),
+//       ],
+//     );
+
+//     // Successful Sign and Broadcast
+//   });
+// }

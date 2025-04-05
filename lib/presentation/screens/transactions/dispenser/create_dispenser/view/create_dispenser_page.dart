@@ -5,6 +5,7 @@ import 'package:horizon/common/format.dart';
 // import 'package:horizon/common/format.dart' as form;
 import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/domain/entities/compose_dispenser.dart';
+import 'package:horizon/domain/entities/decryption_strategy.dart';
 import 'package:horizon/domain/entities/fee_option.dart';
 import 'package:horizon/domain/entities/multi_address_balance_entry.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
@@ -84,10 +85,10 @@ class _CreateDispenserPageState extends State<CreateDispenserPage> {
   }
 
   void _handleConfirmationStepNext(BuildContext context,
-      {String? decryptionStrategy}) {
-    // context
-    //     .read<SendBloc>()
-    //     .add(SendTransactionBroadcasted(password: password));
+      {DecryptionStrategy? decryptionStrategy}) {
+    context.read<CreateDispenserBloc>().add(
+        CreateDispenserTransactionBroadcasted(
+            decryptionStrategy: decryptionStrategy!));
   }
 
   void _handleFeeOptionSelected(BuildContext context, FeeOption feeOption) {
@@ -97,10 +98,12 @@ class _CreateDispenserPageState extends State<CreateDispenserPage> {
   }
 
   void _handleDependenciesRequested(BuildContext context) {
-    // context.read<SendBloc>().add(SendDependenciesRequested(
-    //       assetName: widget.assetName,
-    //       addresses: widget.addresses,
-    //     ));
+    context
+        .read<CreateDispenserBloc>()
+        .add(CreateDispenserDependenciesRequested(
+          assetName: widget.assetName,
+          addresses: widget.addresses,
+        ));
   }
 
   @override
@@ -113,7 +116,7 @@ class _CreateDispenserPageState extends State<CreateDispenserPage> {
         composeRepository: GetIt.I<ComposeRepository>(),
         signAndBroadcastTransactionUseCase:
             GetIt.I<SignAndBroadcastTransactionUseCase>(),
-        writelocalTransactionUseCase: GetIt.I<WriteLocalTransactionUseCase>(),
+        writeLocalTransactionUseCase: GetIt.I<WriteLocalTransactionUseCase>(),
         analyticsService: GetIt.I<AnalyticsService>(),
         logger: GetIt.I<Logger>(),
         settingsRepository: GetIt.I<SettingsRepository>(),

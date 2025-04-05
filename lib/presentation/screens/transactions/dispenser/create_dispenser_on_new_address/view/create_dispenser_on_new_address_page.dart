@@ -175,10 +175,10 @@ class _CreateDispenserOnNewAddressPageState
   }
 
   void _handleConfirmationStepNext(BuildContext context,
-      {String? decryptionStrategy}) {
-    // context
-    //     .read<SendBloc>()
-    //     .add(SendTransactionBroadcasted(password: password));
+      {DecryptionStrategy? decryptionStrategy}) {
+    context.read<CreateDispenserOnNewAddressBloc>().add(
+        CreateDispenserOnNewAddressTransactionBroadcasted(
+            decryptionStrategy: decryptionStrategy!));
   }
 
   void _handleFeeOptionSelected(BuildContext context, FeeOption feeOption) {
@@ -188,10 +188,12 @@ class _CreateDispenserOnNewAddressPageState
   }
 
   void _handleDependenciesRequested(BuildContext context) {
-    // context.read<SendBloc>().add(SendDependenciesRequested(
-    //       assetName: widget.assetName,
-    //       addresses: widget.addresses,
-    //     ));
+    context.read<CreateDispenserOnNewAddressBloc>().add(
+          CreateDispenserOnNewAddressDependenciesRequested(
+            assetName: widget.assetName,
+            addresses: widget.addresses,
+          ),
+        );
   }
 
   @override
@@ -204,7 +206,7 @@ class _CreateDispenserOnNewAddressPageState
         composeRepository: GetIt.I<ComposeRepository>(),
         signAndBroadcastTransactionUseCase:
             GetIt.I<SignAndBroadcastTransactionUseCase>(),
-        writelocalTransactionUseCase: GetIt.I<WriteLocalTransactionUseCase>(),
+        writeLocalTransactionUseCase: GetIt.I<WriteLocalTransactionUseCase>(),
         analyticsService: GetIt.I<AnalyticsService>(),
         logger: GetIt.I<Logger>(),
         settingsRepository: GetIt.I<SettingsRepository>(),

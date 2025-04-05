@@ -72,12 +72,13 @@ class CreateDispenserOnNewAddressBloc extends Bloc<
     TransactionEvent,
     TransactionState<CreateDispenserOnNewAddressData,
         ComposeChainedDispenserResponse>> {
+  final TransactionType transactionType = TransactionType.dispenser;
   final BalanceRepository balanceRepository;
   final GetFeeEstimatesUseCase getFeeEstimatesUseCase;
   final ComposeTransactionUseCase composeTransactionUseCase;
   final ComposeRepository composeRepository;
   final SignAndBroadcastTransactionUseCase signAndBroadcastTransactionUseCase;
-  final WriteLocalTransactionUseCase writelocalTransactionUseCase;
+  final WriteLocalTransactionUseCase writeLocalTransactionUseCase;
   final AnalyticsService analyticsService;
   final Logger logger;
   final SettingsRepository settingsRepository;
@@ -99,7 +100,7 @@ class CreateDispenserOnNewAddressBloc extends Bloc<
     required this.composeTransactionUseCase,
     required this.composeRepository,
     required this.signAndBroadcastTransactionUseCase,
-    required this.writelocalTransactionUseCase,
+    required this.writeLocalTransactionUseCase,
     required this.analyticsService,
     required this.logger,
     required this.settingsRepository,
@@ -234,8 +235,6 @@ class CreateDispenserOnNewAddressBloc extends Bloc<
       decryptedPrivKey = await encryptionService.decryptWithKey(
           wallet.encryptedPrivKey, inMemoryKey!);
     }
-
-    // emit(state.copyWith(password: event.password));
 
     // Step 1. Derive new account + address
     final List<Account> accountsInWallet =
@@ -468,7 +467,50 @@ class CreateDispenserOnNewAddressBloc extends Bloc<
             TransactionState<CreateDispenserOnNewAddressData,
                 ComposeChainedDispenserResponse>>
         emit,
-  ) async {}
+  ) async {
+    emit(state.copyWith(
+      broadcastState: const BroadcastState.loading(),
+    ));
+    final composeData = state.getComposeDataOrThrow();
+
+    try {
+      Future.delayed(const Duration(seconds: 1));
+      final sendTxHash =
+          await bitcoindService.sendrawtransaction(composeData.signedAssetSend);
+
+      Future.delayed(const Duration(seconds: 10));
+      final dispenserTxHash =
+          await bitcoindService.sendrawtransaction(composeData.signedDispenser);
+
+      await writeLocalTransactionUseCase.call(
+        composeData.signedAssetSend,
+        sendTxHash,
+      );
+      await writeLocalTransactionUseCase.call(
+        composeData.signedDispenser,
+        dispenserTxHash,
+      );
+
+      await accountRepository.insert(composeData.newAccount);
+      await addressRepository.insert(composeData.newAddress);
+
+      logger
+          .info('${transactionType.name} broadcasted txHash: $dispenserTxHash');
+      analyticsService.trackAnonymousEvent(
+          'broadcast_tx_${transactionType.name}_chained',
+          properties: {'distinct_id': uuid.v4()});
+
+      emit(state.copyWith(
+          broadcastState: BroadcastState.success(BroadcastStateSuccess(
+        txHex: composeData.signedDispenser,
+        txHash: dispenserTxHash,
+      ))));
+    } catch (e) {
+      emit(state.copyWith(
+          broadcastState: BroadcastState.error(
+              'Error broadcasting transactions: ${e.toString()}')));
+    }
+  }
 
   void _onFeeOptionSelected(
     FeeOptionSelected event,

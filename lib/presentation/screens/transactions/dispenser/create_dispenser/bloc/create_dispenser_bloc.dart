@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:horizon/common/constants.dart';
+import 'package:horizon/common/uuid.dart';
 import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/domain/entities/compose_dispenser.dart';
 import 'package:horizon/domain/entities/dispenser.dart';
@@ -40,12 +41,13 @@ class CreateDispenserData {
 
 class CreateDispenserBloc extends Bloc<TransactionEvent,
     TransactionState<CreateDispenserData, ComposeDispenserResponseVerbose>> {
+  final TransactionType transactionType = TransactionType.dispenser;
   final BalanceRepository balanceRepository;
   final GetFeeEstimatesUseCase getFeeEstimatesUseCase;
   final ComposeTransactionUseCase composeTransactionUseCase;
   final ComposeRepository composeRepository;
   final SignAndBroadcastTransactionUseCase signAndBroadcastTransactionUseCase;
-  final WriteLocalTransactionUseCase writelocalTransactionUseCase;
+  final WriteLocalTransactionUseCase writeLocalTransactionUseCase;
   final AnalyticsService analyticsService;
   final Logger logger;
   final SettingsRepository settingsRepository;
@@ -57,7 +59,7 @@ class CreateDispenserBloc extends Bloc<TransactionEvent,
     required this.dispenserRepository,
     required this.composeRepository,
     required this.signAndBroadcastTransactionUseCase,
-    required this.writelocalTransactionUseCase,
+    required this.writeLocalTransactionUseCase,
     required this.analyticsService,
     required this.logger,
     required this.settingsRepository,
@@ -208,36 +210,33 @@ class CreateDispenserBloc extends Bloc<TransactionEvent,
                 ComposeDispenserResponseVerbose>>
         emit,
   ) async {
-    // try {
-    //   final requirePassword =
-    //       settingsRepository.requirePasswordForCryptoOperations;
+    try {
+      emit(state.copyWith(broadcastState: const BroadcastState.loading()));
 
-    //   emit(state.copyWith(broadcastState: const BroadcastState.loading()));
+      final composeData = state.getComposeDataOrThrow();
 
-    //   final composeData = state.getComposeDataOrThrow();
+      await signAndBroadcastTransactionUseCase.call(
+          decryptionStrategy: event.decryptionStrategy,
+          source: composeData.params.source,
+          rawtransaction: composeData.rawtransaction,
+          onSuccess: (txHex, txHash) async {
+            await writeLocalTransactionUseCase.call(txHex, txHash);
 
-    //   await signAndBroadcastTransactionUseCase.call(
-    //       decryptionStrategy:
-    //           requirePassword ? Password(event.password!) : InMemoryKey(),
-    //       source: composeData.params.source,
-    //       rawtransaction: composeData.rawtransaction,
-    //       onSuccess: (txHex, txHash) async {
-    //         await writelocalTransactionUseCase.call(txHex, txHash);
+            logger.info('${transactionType.name} broadcasted txHash: $txHash');
+            analyticsService.trackAnonymousEvent(
+                'broadcast_tx_${transactionType.name}',
+                properties: {'distinct_id': uuid.v4()});
 
-    //         logger.info('send broadcasted txHash: $txHash');
-    //         analyticsService.trackAnonymousEvent('broadcast_tx_send',
-    //             properties: {'distinct_id': uuid.v4()});
-
-    //         emit(state.copyWith(
-    //             broadcastState: BroadcastState.success(
-    //                 BroadcastStateSuccess(txHex: txHex, txHash: txHash))));
-    //       },
-    //       onError: (msg) {
-    //         emit(state.copyWith(broadcastState: BroadcastState.error(msg)));
-    //       });
-    // } catch (e) {
-    //   emit(state.copyWith(broadcastState: BroadcastState.error(e.toString())));
-    // }
+            emit(state.copyWith(
+                broadcastState: BroadcastState.success(
+                    BroadcastStateSuccess(txHex: txHex, txHash: txHash))));
+          },
+          onError: (msg) {
+            emit(state.copyWith(broadcastState: BroadcastState.error(msg)));
+          });
+    } catch (e) {
+      emit(state.copyWith(broadcastState: BroadcastState.error(e.toString())));
+    }
   }
 
   void _onFeeOptionSelected(
