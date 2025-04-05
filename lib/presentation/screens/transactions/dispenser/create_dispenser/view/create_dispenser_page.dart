@@ -15,10 +15,13 @@ import 'package:horizon/presentation/common/transaction_stepper/bloc/transaction
 import 'package:horizon/presentation/common/transaction_stepper/bloc/transaction_state.dart';
 import 'package:horizon/presentation/common/transaction_stepper/view/steps/transaction_form_page.dart';
 import 'package:horizon/presentation/common/transaction_stepper/view/transaction_stepper.dart';
+import 'package:horizon/presentation/common/transactions/confirmation_field_with_label.dart';
+import 'package:horizon/presentation/common/transactions/quantity_display.dart';
 import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
 import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
 import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transaction_usecase.dart';
 import 'package:horizon/presentation/common/usecase/write_local_transaction_usecase.dart';
+import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 import 'package:horizon/presentation/screens/transactions/dispenser/create_dispenser/bloc/create_dispenser_bloc.dart';
 import 'package:horizon/presentation/screens/transactions/dispenser/create_dispenser/bloc/create_dispenser_event.dart';
 import 'package:horizon/presentation/common/transaction_stepper/view/steps/transaction_compose_page.dart';
@@ -184,37 +187,41 @@ class _CreateDispenserPageState extends State<CreateDispenserPage> {
                           {ComposeStateSuccess<ComposeDispenserResponseVerbose>?
                               composeState,
                           required bool loading}) =>
-                      const Column(
+                      Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // QuantityDisplay(
-                      //   loading: loading,
-                      //   quantity:
-                      //       composeState?.composeData.params.quantityNormalized,
-                      // ),
-                      // commonHeightSizedBox,
-                      // ConfirmationFieldWithLabel(
-                      //   loading: loading,
-                      //   label: 'Token Name',
-                      //   value: composeState?.composeData.params.asset != null
-                      //       ? displayAssetName(
-                      //           composeState!.composeData.params.asset,
-                      //           composeState
-                      //               .composeData.params.assetInfo.assetLongname)
-                      //       : null,
-                      // ),
-                      // commonHeightSizedBox,
-                      // ConfirmationFieldWithLabel(
-                      //   loading: loading,
-                      //   label: 'Source Address',
-                      //   value: composeState?.composeData.params.source,
-                      // ),
-                      // commonHeightSizedBox,
-                      // ConfirmationFieldWithLabel(
-                      //   loading: loading,
-                      //   label: 'Recipient Address',
-                      //   value: composeState?.composeData.params.destination,
-                      // ),
+                      ConfirmationFieldWithLabel(
+                        label: "Source Address",
+                        value: composeState?.composeData.params.source,
+                      ),
+                      commonHeightSizedBox,
+                      ConfirmationFieldWithLabel(
+                        label: "Asset",
+                        value: composeState?.composeData.params.asset,
+                      ),
+                      commonHeightSizedBox,
+                      QuantityDisplay(
+                        label: "Give Quantity",
+                        loading: loading,
+                        quantity: composeState
+                            ?.composeData.params.giveQuantityNormalized,
+                      ),
+                      commonHeightSizedBox,
+                      QuantityDisplay(
+                        label: "Escrow Quantity",
+                        loading: loading,
+                        quantity: composeState
+                            ?.composeData.params.escrowQuantityNormalized,
+                      ),
+                      commonHeightSizedBox,
+                      QuantityDisplay(
+                        label: "Price Per Unit (BTC)",
+                        loading: loading,
+                        quantity: satoshisToBtc(composeState
+                                    ?.composeData.params.mainchainrate ??
+                                0) // won't be null
+                            .toStringAsFixed(8),
+                      ),
                     ],
                   ),
                 ),

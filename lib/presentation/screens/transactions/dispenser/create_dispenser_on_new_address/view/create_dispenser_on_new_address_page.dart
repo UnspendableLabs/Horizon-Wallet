@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/common/format.dart';
-// import 'package:horizon/common/format.dart' as form;
 import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/domain/entities/decryption_strategy.dart';
 import 'package:horizon/domain/entities/fee_option.dart';
@@ -26,6 +25,9 @@ import 'package:horizon/presentation/common/transaction_stepper/bloc/transaction
 import 'package:horizon/presentation/common/transaction_stepper/bloc/transaction_state.dart';
 import 'package:horizon/presentation/common/transaction_stepper/view/steps/transaction_form_page.dart';
 import 'package:horizon/presentation/common/transaction_stepper/view/transaction_stepper.dart';
+import 'package:horizon/presentation/common/transactions/confirmation_field_with_label.dart';
+import 'package:horizon/presentation/common/transactions/fee_confirmation.dart';
+import 'package:horizon/presentation/common/transactions/quantity_display.dart';
 import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
 import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
 import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transaction_usecase.dart';
@@ -283,18 +285,103 @@ class _CreateDispenserOnNewAddressPageState
                 title: 'Confirm Transaction',
                 buildConfirmationContent: (composeState, onErrorButtonAction) =>
                     TransactionComposePage<ComposeChainedDispenserResponse>(
-                  composeState: composeState,
-                  errorButtonText: 'Go back to transaction',
-                  onErrorButtonAction: onErrorButtonAction,
-                  buildComposeContent: (
-                          {ComposeStateSuccess<ComposeChainedDispenserResponse>?
-                              composeState,
-                          required bool loading}) =>
-                      const Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [],
-                  ),
-                ),
+                        composeState: composeState,
+                        errorButtonText: 'Go back to transaction',
+                        onErrorButtonAction: onErrorButtonAction,
+                        buildComposeContent: (
+                            {ComposeStateSuccess<
+                                    ComposeChainedDispenserResponse>?
+                                composeState,
+                            required bool loading}) {
+                          final assetSend = composeState?.composeData.assetSend;
+                          final openDispenser =
+                              composeState?.composeData.composeDispenser;
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              ConfirmationFieldWithLabel(
+                                label: "Source Address",
+                                value: composeState?.composeData.sourceAddress,
+                              ),
+                              commonHeightSizedBox,
+                              ConfirmationFieldWithLabel(
+                                label: "New Address Destination",
+                                value: composeState
+                                    ?.composeData.newAddress.address,
+                              ),
+                              commonHeightSizedBox,
+                              const Divider(),
+                              SelectableText('Confirm Send',
+                                  style:
+                                      Theme.of(context).textTheme.titleLarge),
+                              commonHeightSizedBox,
+                              ConfirmationFieldWithLabel(
+                                label: "Asset",
+                                value: assetSend?.params.asset,
+                              ),
+                              commonHeightSizedBox,
+                              QuantityDisplay(
+                                  label: "Asset Quantity",
+                                  quantity:
+                                      assetSend?.params.quantityNormalized),
+                              commonHeightSizedBox,
+                              QuantityDisplay(
+                                  label: "BTC Quantity to be sent",
+                                  quantity:
+                                      "${satoshisToBtc(composeState?.composeData.btcQuantity ?? 0)}"),
+                              SelectableText(
+                                  "Btc Quantity breakdown: ${openDispenser?.btcFee.toString()} sats for dispenser fee${(composeState?.composeData.btcQuantity ?? 0) > (openDispenser?.btcFee ?? 0) ? " and ${(composeState?.composeData.btcQuantity ?? 0) - (openDispenser?.btcFee ?? 0)} sats for extra btc" : ""}"),
+                              commonHeightSizedBox,
+                              FeeConfirmation(
+                                  fee: "${assetSend?.btcFee.toString()} sats",
+                                  virtualSize: assetSend
+                                          ?.signedTxEstimatedSize.virtualSize ??
+                                      0,
+                                  adjustedVirtualSize: assetSend
+                                          ?.signedTxEstimatedSize
+                                          .adjustedVirtualSize ??
+                                      0),
+                              commonHeightSizedBox,
+                              const Divider(),
+                              SelectableText('Confirm Dispenser',
+                                  style:
+                                      Theme.of(context).textTheme.titleLarge),
+                              commonHeightSizedBox,
+                              ConfirmationFieldWithLabel(
+                                label: "Asset",
+                                value: openDispenser?.params.asset,
+                              ),
+                              commonHeightSizedBox,
+                              QuantityDisplay(
+                                  label: "Give Quantity",
+                                  quantity: openDispenser
+                                      ?.params.giveQuantityNormalized),
+                              commonHeightSizedBox,
+                              QuantityDisplay(
+                                  label: "Escrow Quantity",
+                                  quantity: openDispenser
+                                      ?.params.escrowQuantityNormalized),
+                              commonHeightSizedBox,
+                              QuantityDisplay(
+                                  label: "Price Per Unit (BTC)",
+                                  quantity: satoshisToBtc(
+                                          openDispenser?.params.mainchainrate ??
+                                              0)
+                                      .toStringAsFixed(8)),
+                              commonHeightSizedBox,
+                              FeeConfirmation(
+                                  fee:
+                                      "${openDispenser?.btcFee.toString()} sats",
+                                  virtualSize: openDispenser
+                                          ?.signedTxEstimatedSize.virtualSize ??
+                                      0,
+                                  adjustedVirtualSize: openDispenser
+                                          ?.signedTxEstimatedSize
+                                          .adjustedVirtualSize ??
+                                      0),
+                            ],
+                          );
+                        }),
                 onNext: ({required dynamic decryptionStrategy}) =>
                     _handleConfirmationStepNext(context,
                         decryptionStrategy: decryptionStrategy),

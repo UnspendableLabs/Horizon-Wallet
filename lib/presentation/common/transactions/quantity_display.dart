@@ -5,11 +5,13 @@ import 'package:horizon/presentation/common/redesign_colors.dart';
 class QuantityDisplay extends StatelessWidget {
   final String? quantity;
   final bool loading;
+  final String? label;
 
   const QuantityDisplay({
     super.key,
     this.quantity,
     this.loading = false,
+    this.label,
   });
 
   @override
@@ -42,9 +44,8 @@ class QuantityDisplay extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            // padding: const EdgeInsets.symmetric(vertical: 10),
             child: SelectableText(
-              "You're sending",
+              label ?? "You're sending",
               style: theme.textTheme.labelSmall?.copyWith(fontSize: 14),
             ),
           ),

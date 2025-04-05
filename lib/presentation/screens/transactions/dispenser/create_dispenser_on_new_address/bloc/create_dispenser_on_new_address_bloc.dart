@@ -39,6 +39,7 @@ import 'package:horizon/presentation/screens/transactions/dispenser/create_dispe
 const int ADJUSTED_VIRTUAL_SIZE = 300;
 
 class ComposeChainedDispenserResponse {
+  final String sourceAddress;
   final String signedDispenser;
   final String signedAssetSend;
   final ComposeSendResponse assetSend;
@@ -49,6 +50,7 @@ class ComposeChainedDispenserResponse {
   final num feeRate;
 
   ComposeChainedDispenserResponse({
+    required this.sourceAddress,
     required this.signedDispenser,
     required this.signedAssetSend,
     required this.assetSend,
@@ -201,7 +203,7 @@ class CreateDispenserOnNewAddressBloc extends Bloc<
        *
        * The actual chaining occurs from signing + decoding each tx and passing the output of the previous tx as the input for the following tx
        * The first transaction is sent with low fee, and the last transaction is sent with a higher fee. This nature of chaining allows the second tx to impose an "efective" fee on both txs
-        */
+    */
     emit(state.copyWith(
       composeState: const ComposeState.loading(),
     ));
@@ -209,7 +211,8 @@ class CreateDispenserOnNewAddressBloc extends Bloc<
 
     if (wallet == null) {
       emit(state.copyWith(
-          composeState: const ComposeState.error('invariant: wallet not found')));
+          composeState:
+              const ComposeState.error('invariant: wallet not found')));
       return;
     }
 
@@ -222,7 +225,8 @@ class CreateDispenserOnNewAddressBloc extends Bloc<
             (event.decryptionStrategy as Password).password);
       } catch (e) {
         emit(state.copyWith(
-            composeState: const ComposeState.error('invariant: invalid password')));
+            composeState:
+                const ComposeState.error('invariant: invalid password')));
         return;
       }
     } else {
@@ -286,9 +290,6 @@ class CreateDispenserOnNewAddressBloc extends Bloc<
           end: 0,
         );
         newAddress = addresses.first;
-      default:
-        throw Exception(
-            'Unsupported import format: ${newAccount.importFormat}');
     }
 
     final newAddressBalances =
@@ -440,6 +441,7 @@ class CreateDispenserOnNewAddressBloc extends Bloc<
 
       emit(state.copyWith(
           composeState: ComposeState.success(ComposeChainedDispenserResponse(
+              sourceAddress: source,
               signedDispenser: signedComposeDispenserChain,
               signedAssetSend: signedConstructedAssetSend,
               assetSend: assetSend,
