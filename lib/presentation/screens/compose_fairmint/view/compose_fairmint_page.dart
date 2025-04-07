@@ -534,9 +534,8 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
 
   String _getTotalXCPPrice(Fairminter fairminter) {
     final price = numLots *
-        satoshisToBtc(fairminter.price!).toDouble() *
-        double.parse(
-            fairminter.quantityByPriceNormalized!);
+        satoshisToBtc(fairminter.price!).toDouble()
+;
     return numberWithCommas.format(price);
   }
 }
