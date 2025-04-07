@@ -204,6 +204,9 @@ class SignPsbtModal extends StatelessWidget {
       ),
       child: SignPsbtForm(
         key: Key(unsignedPsbt),
+
+        balanceRepository: balanceRepository,
+        bitcoinRepository: bitcoinRepository,
         passwordRequired:
             GetIt.I<SettingsRepository>().requirePasswordForCryptoOperations,
         onSuccess: (signedPsbtHex) {

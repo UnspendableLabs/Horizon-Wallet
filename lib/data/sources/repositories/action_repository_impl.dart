@@ -13,8 +13,14 @@ class ActionRepositoryImpl implements ActionRepository {
     }, (e, __) => "Failed to parse action");
   }
 
-  Action _parse(String str) {
+  Action _parse(String str_) {
+
+    final str = "signPsbt:ext,1423358358,d3f9feab-652d-46d1-9b66-7afba8949620,70736274ff01005202000000012e7ae437af2d7a03f0f7148079389bd1a7ef6fd8ad22581cc3129fce986dbba60000000000ffffffff01e803000000000000160014a8b21366aa1dae07bffe52c56f4619e01c523716000000000001011f2202000000000000160014a8b21366aa1dae07bffe52c56f4619e01c523716010304830000000000,eyJ0YjFxNHplcHhlNDJya2hxMDBsNzJ0ems3M3NldXF3OXlkY2tneW56djUiOlswXX0=,WzEzMSwxXQ==";
+
     final arr = Uri.decodeComponent(str).split(',').toList();
+
+
+
 
     return switch (arr) {
       [

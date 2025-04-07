@@ -1,17 +1,164 @@
 import 'package:formz/formz.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 import 'package:horizon/presentation/forms/sign_psbt/bloc/sign_psbt_bloc.dart';
 import 'package:horizon/presentation/forms/sign_psbt/bloc/sign_psbt_state.dart';
 import 'package:horizon/presentation/forms/sign_psbt/bloc/sign_psbt_event.dart';
+import 'package:horizon/domain/entities/bitcoin_decoded_tx.dart';
+import 'package:horizon/domain/services/bitcoind_service.dart';
+import 'package:horizon/domain/repositories/bitcoin_repository.dart';
+import 'package:horizon/domain/repositories/balance_repository.dart';
+
+import 'package:flutter/material.dart';
+import 'package:horizon/domain/entities/balance.dart'; // example import
+import 'package:horizon/domain/repositories/bitcoin_repository.dart';
+import 'package:horizon/domain/repositories/balance_repository.dart';
+
+/// A widget that shows information about a TX input (Vin),
+/// including extended info like BTC value and attached assets.
+class VinCard extends StatefulWidget {
+  final Vin vin;
+
+  // You’d pass in whichever services or repos are needed.
+  final BitcoinRepository bitcoinRepository;
+  final BalanceRepository balanceRepository;
+
+  const VinCard({
+    Key? key,
+    required this.vin,
+    required this.bitcoinRepository,
+    required this.balanceRepository,
+  }) : super(key: key);
+
+  @override
+  State<VinCard> createState() => _VinCardState();
+}
+
+class _VinCardState extends State<VinCard> {
+  // Data we want to load asynchronously:
+  int? btcValue;
+  List<Balance>?
+      attachedAssets; // or whatever type your “getBalancesForUTXO” returns
+  String? errorMessage;
+  bool isLoading = true;
+  String? address;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchVinData();
+  }
+
+  Future<void> _fetchVinData() async {
+    try {
+      // 1) Find the transaction containing this VIN’s UTXO.
+      // 2) From that transaction, get the vout value.
+      // 3) Query the balanceRepository to see if there are any assets on this UTXO.
+
+      final txDetailsEither =
+          await widget.bitcoinRepository.getTransaction(widget.vin.txid);
+
+      // The repository likely returns an Either, so we’ll fold or handle success/failure.
+      final txDetails = txDetailsEither.fold(
+        (failure) => throw Exception("Unable to get transaction: $failure"),
+        (ok) => ok,
+      );
+
+      // This is the BTC amount from the referenced output.
+      final int outputValue = txDetails.vout[widget.vin.vout].value;
+
+      String? address = txDetails.vout[widget.vin.vout].scriptpubkeyAddress;
+
+      print("\n\n\n");
+      print(txDetails.vout[widget.vin.vout].scriptpubkeyAddress);
+
+      print("\n\n\n");
+      // If your chain expects BTC in "satoshis," you might convert it.
+      // We’ll assume outputValue is already in BTC.
+
+      // Now get any assets attached:
+      final String utxoKey = "${widget.vin.txid}:${widget.vin.vout}";
+      final balances =
+          await widget.balanceRepository.getBalancesForUTXO(utxoKey);
+
+      setState(() {
+        btcValue = outputValue;
+        attachedAssets = balances;
+        isLoading = false;
+        this.address = address;
+      });
+    } catch (err) {
+      setState(() {
+        errorMessage = err.toString();
+        isLoading = false;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (isLoading) {
+      return const Card(
+        child: ListTile(
+          title: Text("Loading input data..."),
+        ),
+      );
+    }
+
+    if (errorMessage != null) {
+      return Card(
+        child: ListTile(
+          title: Text("Error loading input data"),
+          subtitle: Text(errorMessage!),
+        ),
+      );
+    }
+
+    // If we’re here, we have data
+    return Card(
+      child: ListTile(
+        title: Text('Input from TXID: ${widget.vin.txid}'),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('address ${address}'),
+            Text('Vout index: ${widget.vin.vout}'),
+            Text('ScriptSig (asm): ${widget.vin.scriptSig.asm}'),
+            if (widget.vin.txinwitness != null &&
+                widget.vin.txinwitness!.isNotEmpty)
+              Text('txinwitness: ${widget.vin.txinwitness}'),
+            Text('Sequence: ${widget.vin.sequence}'),
+            const SizedBox(height: 8),
+            if (btcValue != null) Text('Value: $btcValue BTC'),
+
+            // Render your asset details, if any
+            if (attachedAssets != null && attachedAssets!.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              Text('Assets: '),
+              for (final b in attachedAssets!)
+                Text('- ${b.asset}: ${b.quantityNormalized}')
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
 
 class SignPsbtForm extends StatefulWidget {
   final bool passwordRequired;
+  final BalanceRepository balanceRepository;
+  final BitcoinRepository bitcoinRepository;
 
   final void Function(String) onSuccess;
 
   const SignPsbtForm(
-      {super.key, required this.onSuccess, required this.passwordRequired});
+      {super.key,
+      required this.onSuccess,
+      required this.passwordRequired,
+      required this.bitcoinRepository,
+      required this.balanceRepository});
 
   @override
   State<SignPsbtForm> createState() => _SignPsbtFormState();
@@ -22,6 +169,26 @@ class _SignPsbtFormState extends State<SignPsbtForm> {
   void initState() {
     super.initState();
     context.read<SignPsbtBloc>().add(FetchFormEvent());
+  }
+
+  Widget _buildVoutCard(Vout output) {
+    return Card(
+      child: ListTile(
+        title: Text('Value: ${output.value} BTC'),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('ScriptPubKey (asm): ${output.scriptPubKey.asm}'),
+            const SizedBox(height: 4),
+            Text('Type: ${output.scriptPubKey.type}'),
+            const SizedBox(height: 4),
+            // Address might be null
+            if (output.scriptPubKey.address != null)
+              Text('Address: ${output.scriptPubKey.address}'),
+          ],
+        ),
+      ),
+    );
   }
 
   @override
@@ -44,8 +211,46 @@ class _SignPsbtFormState extends State<SignPsbtForm> {
           return Padding(
             padding: const EdgeInsets.all(16.0),
             child: Column(
-              mainAxisSize: MainAxisSize.min,
               children: [
+                Row(
+                  children: [
+                    const Text(
+                      "Inputs",
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+                Column(
+                  children: state.transaction!.vin.map((input) {
+                    return VinCard(
+                        vin: input,
+                        bitcoinRepository: widget.bitcoinRepository,
+                        balanceRepository: widget.balanceRepository);
+                  }).toList(),
+                ),
+                const SizedBox(height: 20),
+
+                // Outputs
+                Row(
+                  children: [
+                    Text(
+                      "Ouputs",
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Column(
+                  children: state.transaction!.vout.map((output) {
+                    return _buildVoutCard(output);
+                  }).toList(),
+                ),
                 const Text(
                   'Transaction Details',
                   style: TextStyle(
@@ -104,7 +309,7 @@ class _SignPsbtFormState extends State<SignPsbtForm> {
                           context.read<SignPsbtBloc>().add(SignPsbtSubmitted()),
                   child: state.submissionStatus.isInProgress
                       ? const CircularProgressIndicator()
-                      : const Text('Sign PSBT'),
+                      : const Text('Sign PSBT asfd'),
                 ),
                 const SizedBox(height: 20),
                 // Status/Error Message

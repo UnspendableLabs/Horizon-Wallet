@@ -1,4 +1,5 @@
 import "package:formz/formz.dart";
+import 'package:horizon/domain/entities/bitcoin_decoded_tx.dart';
 
 enum PasswordValidationError { empty }
 
@@ -15,6 +16,7 @@ class PasswordInput extends FormzInput<String, PasswordValidationError> {
 enum PsbtSignTypeEnum { buy, sell }
 
 class SignPsbtState with FormzMixin {
+  final DecodedTx? transaction;
   final PasswordInput password;
   final FormzSubmissionStatus submissionStatus;
   final String? signedPsbt;
@@ -24,6 +26,7 @@ class SignPsbtState with FormzMixin {
   final bool isFormDataLoaded;
 
   SignPsbtState({
+    this.transaction,
     this.password = const PasswordInput.pure(),
     this.submissionStatus = FormzSubmissionStatus.initial,
     this.signedPsbt,
@@ -36,6 +39,7 @@ class SignPsbtState with FormzMixin {
   List<FormzInput> get inputs => [password];
 
   SignPsbtState copyWith({
+    DecodedTx? transaction,
     PasswordInput? password,
     FormzSubmissionStatus? submissionStatus,
     String? signedPsbt,
@@ -44,6 +48,7 @@ class SignPsbtState with FormzMixin {
     bool? isFormDataLoaded,
   }) {
     return SignPsbtState(
+      transaction: transaction ?? this.transaction,
       password: password ?? this.password,
       submissionStatus: submissionStatus ?? this.submissionStatus,
       signedPsbt: signedPsbt ?? this.signedPsbt,

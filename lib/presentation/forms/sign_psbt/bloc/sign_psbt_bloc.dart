@@ -74,6 +74,9 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
 
       final decoded =
           await bitcoindService.decoderawtransaction(transactionHex);
+          emit(state.copyWith(
+           transaction: decoded
+          ));
 
       // Initialize variables
       PsbtSignTypeEnum? psbtSignType;
@@ -101,6 +104,7 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
         if (utxoBalances.isEmpty) {
           // psbt swap criteria not met, load form without transaction data
           emit(state.copyWith(
+
             isFormDataLoaded: true,
           ));
           return;
@@ -169,6 +173,7 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
       }
 
       emit(state.copyWith(
+        transaction: decoded,
         parsedPsbtState: ParsedPsbtState(
           psbtSignType: psbtSignType,
           asset: asset,
