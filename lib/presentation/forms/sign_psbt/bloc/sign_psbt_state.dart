@@ -1,5 +1,6 @@
 import "package:formz/formz.dart";
 import 'package:horizon/domain/entities/bitcoin_decoded_tx.dart';
+import "./sign_psbt_bloc.dart";
 
 enum PasswordValidationError { empty }
 
@@ -22,16 +23,20 @@ class SignPsbtState with FormzMixin {
   final String? signedPsbt;
   final String? error;
 
-  final ParsedPsbtState? parsedPsbtState;
+  final List<AugmentedInput>? augmentedInputs;
+  final List<AugmentedOutput>? augmentedOutputs;
+  // final ParsedPsbtState? parsedPsbtState;
   final bool isFormDataLoaded;
 
   SignPsbtState({
+    this.augmentedInputs,
+    this.augmentedOutputs,
     this.transaction,
     this.password = const PasswordInput.pure(),
     this.submissionStatus = FormzSubmissionStatus.initial,
     this.signedPsbt,
     this.error,
-    this.parsedPsbtState,
+    // this.parsedPsbtState,
     this.isFormDataLoaded = false,
   });
 
@@ -46,14 +51,18 @@ class SignPsbtState with FormzMixin {
     String? error,
     ParsedPsbtState? parsedPsbtState,
     bool? isFormDataLoaded,
+    List<AugmentedInput>? augmentedInputs,
+    List<AugmentedOutput>? augmentedOutputs,
   }) {
     return SignPsbtState(
+      augmentedOutputs: augmentedOutputs ?? this.augmentedOutputs,
+      augmentedInputs: augmentedInputs ?? this.augmentedInputs,
       transaction: transaction ?? this.transaction,
       password: password ?? this.password,
       submissionStatus: submissionStatus ?? this.submissionStatus,
       signedPsbt: signedPsbt ?? this.signedPsbt,
       error: error ?? this.error,
-      parsedPsbtState: parsedPsbtState ?? this.parsedPsbtState,
+      // parsedPsbtState: parsedPsbtState ?? this.parsedPsbtState,
       isFormDataLoaded: isFormDataLoaded ?? this.isFormDataLoaded,
     );
   }

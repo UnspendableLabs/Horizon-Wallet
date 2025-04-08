@@ -3,7 +3,9 @@ import 'package:formz/formz.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:horizon/common/format.dart';
 
+import 'package:horizon/domain/entities/failure.dart';
 import 'package:horizon/domain/entities/wallet.dart';
+import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/domain/entities/unified_address.dart';
 import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/entities/imported_address.dart';
@@ -20,11 +22,53 @@ import 'package:horizon/domain/services/imported_address_service.dart';
 import 'package:horizon/presentation/common/shared_util.dart';
 import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 import 'package:horizon/domain/entities/decryption_strategy.dart';
+import 'package:horizon/domain/entities/bitcoin_decoded_tx.dart' as dbtc;
+import 'package:horizon/domain/entities/bitcoin_tx.dart';
 
 import "./sign_psbt_state.dart";
 import "./sign_psbt_event.dart";
 
+// TODO: move to entity
+class AugmentedInput {
+  final dbtc.Vin vin;
+  final String? address;
+  final Vout prevOut;
+  final List<Balance> balances;
+  final bool signatureRequired;
+
+  const AugmentedInput({
+    required this.vin,
+    required this.prevOut,
+    required this.balances,
+    required this.signatureRequired,
+    this.address,
+  });
+
+  bool isUserOwned(Set<String> userAddresses) {
+    if (address == null) return false;
+    return userAddresses.contains(address);
+  }
+}
+
+class AugmentedOutput {
+  final dbtc.Vout vout;
+
+  const AugmentedOutput({
+    required this.vout,
+  });
+
+  get address => vout.scriptPubKey.address;
+
+  get value => vout.value;
+
+  bool isUserOwned(Set<String> userAddresses) {
+    if (address == null) return false;
+    return userAddresses.contains(address);
+  }
+}
+
 class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
+  final List<String> userAddresses = [];
   final bool passwordRequired;
   final String unsignedPsbt;
   final TransactionService transactionService;
@@ -74,115 +118,161 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
 
       final decoded =
           await bitcoindService.decoderawtransaction(transactionHex);
-          emit(state.copyWith(
-           transaction: decoded
-          ));
 
-      // Initialize variables
-      PsbtSignTypeEnum? psbtSignType;
-      String asset = '';
-      String getAmount = '';
-      double bitcoinAmount = 0;
-      double fee = 0;
+      emit(state.copyWith(transaction: decoded));
 
-      if (decoded.vin.length > 1) {
-        // buys will have vin length of 2
-        psbtSignType = PsbtSignTypeEnum.buy;
+      Either<Failure, List<AugmentedInput>> inputs =
+          await TaskEither.traverseListWithIndex(decoded.vin, (vin, index) {
+        return TaskEither<Failure, AugmentedInput>.Do(($) async {
+          final getTransactionTask =
+              TaskEither(() => bitcoinRepository.getTransaction(vin.txid));
 
-        final buyAssetInput = decoded.vin[1];
-        final utxo = "${buyAssetInput.txid}:${buyAssetInput.vout}";
+          final getBalancesTask = TaskEither<Failure, List<Balance>>.tryCatch(
+              () => balanceRepository
+                  .getBalancesForUTXO("${vin.txid}:${vin.vout}"),
+              (_, stacktrace) => const UnexpectedFailure(
+                    message: "Failed to get balances for UTXO",
+                  ));
 
-        // get the asset from the utxo balance
-        final utxoBalances = await balanceRepository.getBalancesForUTXO(utxo);
-        if (utxoBalances.length > 1) {
-          // psbt swap criteria not met, load form without transaction data
-          emit(state.copyWith(
-            isFormDataLoaded: true,
-          ));
-          return;
-        }
-        if (utxoBalances.isEmpty) {
-          // psbt swap criteria not met, load form without transaction data
-          emit(state.copyWith(
+          final transaction = await $(getTransactionTask);
+          final balances = await $(getBalancesTask);
 
-            isFormDataLoaded: true,
-          ));
-          return;
-        }
+          final prevout = transaction.vout[vin.vout];
+          final address = prevout.scriptpubkeyAddress;
 
-        // fetch the tx info for each input to get the value of each vin
-        double totalInputValue = 0;
-        for (final vin in decoded.vin) {
-          final txDetails =
-              await bitcoinRepository.getTransaction(vin.txid).then(
-                    (either) => either.fold(
-                      (error) => throw Exception("GetTransactionInfo failure"),
-                      (transactionInfo) => transactionInfo,
-                    ),
-                  );
-          totalInputValue += txDetails.vout[vin.vout].value;
-        }
+          final signatureRequired =
+              signInputs[address]?.contains(index) ?? false;
 
-        // the fee is the difference between the total input value and the total output value
-        double totalOutputValue =
-            decoded.vout.map((vout) => vout.value).fold(0, (a, b) => a + b);
-        fee = (((totalInputValue / SATOSHI_RATE) - totalOutputValue) *
-                    SATOSHI_RATE)
-                .truncate() /
-            SATOSHI_RATE; // truncate to 8 decimal places
+          return $(TaskEither.right(AugmentedInput(
+              address: address,
+              vin: vin,
+              prevOut: prevout,
+              balances: balances,
+              signatureRequired: signatureRequired)));
+        });
+      }).run();
 
-        asset = displayAssetName(
-          utxoBalances[0].asset,
-          utxoBalances[0].assetInfo.assetLongname,
-        );
-        getAmount = utxoBalances[0].quantityNormalized;
+      final augmentedInputs = inputs.getOrElse((error) {
+        throw error;
+      });
 
-        final bitcoinAssetOutput = decoded.vout[1];
-        bitcoinAmount = bitcoinAssetOutput.value;
-      } else if (decoded.vin.length == 1) {
-        // sells will have vin length of 1
-        psbtSignType = PsbtSignTypeEnum.sell;
+      final augmentedOutputs =
+          decoded.vout.map((o) => AugmentedOutput(vout: o)).toList();
 
-        final sellAssetInput = decoded.vin[0];
 
-        // get the asset from the utxo balance
-        final utxo = "${sellAssetInput.txid}:${sellAssetInput.vout}";
-        final utxoBalances = await balanceRepository.getBalancesForUTXO(utxo);
-        if (utxoBalances.length > 1) {
-          // we should never have more than one balance for a utxo
-          emit(state.copyWith(
-            isFormDataLoaded: true,
-          ));
-          return;
-        }
-        asset = displayAssetName(
-          utxoBalances[0].asset,
-          utxoBalances[0].assetInfo.assetLongname,
-        );
-        getAmount = utxoBalances[0].quantityNormalized;
-        final bitcoinAssetOutput = decoded.vout[0];
-        bitcoinAmount = bitcoinAssetOutput.value;
+      
 
-        // sells will not have a fee
-      } else {
-        // psbt swap criteria not met, load form without transaction data
-        emit(state.copyWith(
-          isFormDataLoaded: true,
-        ));
-        return;
-      }
 
       emit(state.copyWith(
-        transaction: decoded,
-        parsedPsbtState: ParsedPsbtState(
-          psbtSignType: psbtSignType,
-          asset: asset,
-          getAmount: getAmount,
-          bitcoinAmount: bitcoinAmount,
-          fee: fee,
-        ),
+        augmentedInputs: augmentedInputs,
+        augmentedOutputs: augmentedOutputs,
         isFormDataLoaded: true,
       ));
+
+      //
+      // PsbtSignTypeEnum? psbtSignType;
+      // String asset = '';
+      // String getAmount = '';
+      // double bitcoinAmount = 0;
+      // double fee = 0;
+      //
+      // if (decoded.vin.length > 1) {
+      //   // buys will have vin length of 2
+      //   psbtSignType = PsbtSignTypeEnum.buy;
+      //
+      //   final buyAssetInput = decoded.vin[1];
+      //   final utxo = "${buyAssetInput.txid}:${buyAssetInput.vout}";
+      //
+      //   // get the asset from the utxo balance
+      //   final utxoBalances = await balanceRepository.getBalancesForUTXO(utxo);
+      //   if (utxoBalances.length > 1) {
+      //     // psbt swap criteria not met, load form without transaction data
+      //     emit(state.copyWith(
+      //       isFormDataLoaded: true,
+      //     ));
+      //     return;
+      //   }
+      //   if (utxoBalances.isEmpty) {
+      //     // psbt swap criteria not met, load form without transaction data
+      //     emit(state.copyWith(
+      //       isFormDataLoaded: true,
+      //     ));
+      //     return;
+      //   }
+      //
+      //   // fetch the tx info for each input to get the value of each vin
+      //   double totalInputValue = 0;
+      //   for (final vin in decoded.vin) {
+      //     final txDetails =
+      //         await bitcoinRepository.getTransaction(vin.txid).then(
+      //               (either) => either.fold(
+      //                 (error) => throw Exception("GetTransactionInfo failure"),
+      //                 (transactionInfo) => transactionInfo,
+      //               ),
+      //             );
+      //     totalInputValue += txDetails.vout[vin.vout].value;
+      //   }
+      //
+      //   // the fee is the difference between the total input value and the total output value
+      //   double totalOutputValue =
+      //       decoded.vout.map((vout) => vout.value).fold(0, (a, b) => a + b);
+      //   fee = (((totalInputValue / SATOSHI_RATE) - totalOutputValue) *
+      //               SATOSHI_RATE)
+      //           .truncate() /
+      //       SATOSHI_RATE; // truncate to 8 decimal places
+      //
+      //   asset = displayAssetName(
+      //     utxoBalances[0].asset,
+      //     utxoBalances[0].assetInfo.assetLongname,
+      //   );
+      //   getAmount = utxoBalances[0].quantityNormalized;
+      //
+      //   final bitcoinAssetOutput = decoded.vout[1];
+      //   bitcoinAmount = bitcoinAssetOutput.value;
+      // } else if (decoded.vin.length == 1) {
+      //   // sells will have vin length of 1
+      //   psbtSignType = PsbtSignTypeEnum.sell;
+      //
+      //   final sellAssetInput = decoded.vin[0];
+      //
+      //   // get the asset from the utxo balance
+      //   final utxo = "${sellAssetInput.txid}:${sellAssetInput.vout}";
+      //   final utxoBalances = await balanceRepository.getBalancesForUTXO(utxo);
+      //   if (utxoBalances.length > 1) {
+      //     // we should never have more than one balance for a utxo
+      //     emit(state.copyWith(
+      //       isFormDataLoaded: true,
+      //     ));
+      //     return;
+      //   }
+      //   asset = displayAssetName(
+      //     utxoBalances[0].asset,
+      //     utxoBalances[0].assetInfo.assetLongname,
+      //   );
+      //   getAmount = utxoBalances[0].quantityNormalized;
+      //   final bitcoinAssetOutput = decoded.vout[0];
+      //   bitcoinAmount = bitcoinAssetOutput.value;
+      //
+      //   // sells will not have a fee
+      // } else {
+      //   // psbt swap criteria not met, load form without transaction data
+      //   emit(state.copyWith(
+      //     isFormDataLoaded: true,
+      //   ));
+      //   return;
+      // }
+
+      // emit(state.copyWith(
+      //   transaction: decoded,
+      // parsedPsbtState: ParsedPsbtState(
+      //   psbtSignType: psbtSignType,
+      //   asset: asset,
+      //   getAmount: getAmount,
+      //   bitcoinAmount: bitcoinAmount,
+      //   fee: fee,
+      // ),
+      //   isFormDataLoaded: true,
+      // ));
     } catch (e) {
       // if any failures were thrown, then psbt does not fit the criteria of a swap, and we just load the form without transaction data
       emit(state.copyWith(
