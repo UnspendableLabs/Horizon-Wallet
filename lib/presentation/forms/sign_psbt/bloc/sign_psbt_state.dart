@@ -23,12 +23,16 @@ class SignPsbtState with FormzMixin {
   final String? signedPsbt;
   final String? error;
 
+  final List<AssetDebit>? debits;
+  final List<AssetCredit>? credits;
   final List<AugmentedInput>? augmentedInputs;
   final List<AugmentedOutput>? augmentedOutputs;
   // final ParsedPsbtState? parsedPsbtState;
   final bool isFormDataLoaded;
 
   SignPsbtState({
+    this.debits,
+    this.credits,
     this.augmentedInputs,
     this.augmentedOutputs,
     this.transaction,
@@ -44,6 +48,8 @@ class SignPsbtState with FormzMixin {
   List<FormzInput> get inputs => [password];
 
   SignPsbtState copyWith({
+    List<AssetDebit>? debits,
+    List<AssetCredit>? credits,
     DecodedTx? transaction,
     PasswordInput? password,
     FormzSubmissionStatus? submissionStatus,
@@ -55,6 +61,8 @@ class SignPsbtState with FormzMixin {
     List<AugmentedOutput>? augmentedOutputs,
   }) {
     return SignPsbtState(
+      debits: debits ?? this.debits,
+      credits: credits ?? this.credits,
       augmentedOutputs: augmentedOutputs ?? this.augmentedOutputs,
       augmentedInputs: augmentedInputs ?? this.augmentedInputs,
       transaction: transaction ?? this.transaction,

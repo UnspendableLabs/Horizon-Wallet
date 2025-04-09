@@ -115,7 +115,7 @@ class SessionStateCubit extends Cubit<SessionState> {
             throw Exception("invariant: no accounts for this wallet");
           }
 
-          Account currentAccount = accounts.first;
+          Account currentAccount = accounts[0];
 
           List<Address> addresses =
               await addressRepository.getAllByAccountUuid(currentAccount.uuid);

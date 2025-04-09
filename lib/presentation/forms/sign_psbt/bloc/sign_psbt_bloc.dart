@@ -2,6 +2,8 @@ import "package:fpdart/fpdart.dart";
 import 'package:formz/formz.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:horizon/common/format.dart';
+import 'package:collection/collection.dart';
+import 'package:decimal/decimal.dart';
 
 import 'package:horizon/domain/entities/failure.dart';
 import 'package:horizon/domain/entities/wallet.dart';
@@ -24,9 +26,96 @@ import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 import 'package:horizon/domain/entities/decryption_strategy.dart';
 import 'package:horizon/domain/entities/bitcoin_decoded_tx.dart' as dbtc;
 import 'package:horizon/domain/entities/bitcoin_tx.dart';
+import 'package:horizon/presentation/session/bloc/session_state.dart';
 
 import "./sign_psbt_state.dart";
 import "./sign_psbt_event.dart";
+
+const int envelopeValue = 546;
+
+Map<String, int> aggregateCreditsAndDebits(
+  List<CreditOrDebit> allCreditsAndDebits,
+) {
+  final Map<String, int> result = {};
+
+  for (final cd in allCreditsAndDebits) {
+    // Identify the asset key: "BTC" or the asset name
+    final String assetKey = switch (cd) {
+      BitcoinCreditOrDebit() => "BTC",
+      CounterpartyCreditOrDebit(asset: var asset) => asset,
+    };
+
+    // Initialize the inner map if needed
+    result.putIfAbsent(assetKey, () => 0);
+    // Accumulate
+
+    if (cd.type == CreditOrDebitType.credit) {
+      result[assetKey] = result[assetKey]! + cd.quantity;
+      print("it's a crdit ${cd.quantity.toString()}");
+    } else {
+      // cd.type == CreditOrDebitType.debit
+      result[assetKey] = result[assetKey]! - cd.quantity;
+      print("it's a deb ${cd.quantity.toString()}");
+    }
+    print(result);
+  }
+  return result;
+}
+
+enum CreditOrDebitType { credit, debit }
+
+sealed class CreditOrDebit {
+  final CreditOrDebitType type;
+  final int quantity;
+  final String quantityNormalized;
+
+  const CreditOrDebit({
+    required this.type,
+    required this.quantity,
+    required this.quantityNormalized,
+  });
+}
+
+class BitcoinCreditOrDebit extends CreditOrDebit {
+  const BitcoinCreditOrDebit({
+    required super.type,
+    required super.quantity,
+    required super.quantityNormalized,
+  });
+}
+
+class CounterpartyCreditOrDebit extends CreditOrDebit {
+  final String asset;
+
+  const CounterpartyCreditOrDebit({
+    required this.asset,
+    required super.type,
+    required super.quantity,
+    required super.quantityNormalized,
+  });
+}
+
+class AssetCredit {
+  final String asset;
+  final int quantity;
+  final String quantityNormalized;
+
+  const AssetCredit(
+      {required this.asset,
+      required this.quantity,
+      required this.quantityNormalized});
+}
+
+class AssetDebit {
+  final String asset;
+  final int quantity;
+  final String quantityNormalized;
+
+  const AssetDebit(
+      {required this.asset,
+      required this.quantity,
+      required this.quantityNormalized});
+}
 
 // TODO: move to entity
 class AugmentedInput {
@@ -48,22 +137,112 @@ class AugmentedInput {
     if (address == null) return false;
     return userAddresses.contains(address);
   }
+
+  List<CreditOrDebit> getCreditOrDebits(Set<String> userAddresses) {
+    List<CreditOrDebit> arr = [];
+    // for now, we only show btc credits
+    if (isUserOwned(userAddresses)) {
+      if (balances.isNotEmpty) {
+        for (final balance in balances) {
+          arr.add(CounterpartyCreditOrDebit(
+            type: CreditOrDebitType.debit,
+            asset: balance.asset,
+            quantity: balance.quantity,
+            quantityNormalized: balance.quantityNormalized,
+          ));
+        }
+      } else {
+        print("bicoin debit value from prevout ${prevOut.value.toString()}");
+        arr.add(
+          BitcoinCreditOrDebit(
+            type: CreditOrDebitType.debit,
+            quantity: prevOut.value,
+            quantityNormalized: prevOut.value.toString(),
+          ),
+        );
+      }
+    }
+    return arr;
+  }
+
+  List<AssetDebit> getDebits(Set<String> userAddresses) {
+    List<AssetDebit> debits = [];
+
+    // if asset is attached, only track debits for atached asset, ignoring
+    // envelope
+    if (isUserOwned(userAddresses)) {
+      if (balances.isNotEmpty) {
+        for (final balance in balances) {
+          debits.add(AssetDebit(
+            asset: balance.asset,
+            quantity: balance.quantity,
+            quantityNormalized: balance.quantityNormalized,
+          ));
+        }
+      } else {
+        debits.add(AssetDebit(
+          asset: "BTC",
+          quantity: prevOut.value,
+          quantityNormalized: satoshisToBtc(prevOut.value).toString(),
+        ));
+      }
+    }
+
+    return debits;
+  }
 }
 
 class AugmentedOutput {
   final dbtc.Vout vout;
+  final List<Balance> balances;
 
-  const AugmentedOutput({
+  AugmentedOutput({
+    required this.balances,
     required this.vout,
   });
 
   get address => vout.scriptPubKey.address;
 
-  get value => vout.value;
+  int get value => (vout.value * 10e7).toInt();
 
   bool isUserOwned(Set<String> userAddresses) {
     if (address == null) return false;
     return userAddresses.contains(address);
+  }
+
+  List<AssetCredit> getCredits(Set<String> userAddresses) {
+    List<AssetCredit> credits = [];
+    // for now, we only show btc credits
+    if (isUserOwned(userAddresses)) {
+      if (balances.isNotEmpty) {
+        for (final balance in balances) {
+          credits.add(AssetCredit(
+            asset: balance.asset,
+            quantity: balance.quantity,
+            quantityNormalized: balance.quantityNormalized,
+          ));
+        }
+      } else {
+        credits.add(AssetCredit(
+            asset: "BTC",
+            quantity: value,
+            quantityNormalized: satoshisToBtc(value).toString()));
+      }
+    }
+    return credits;
+  }
+
+  List<CreditOrDebit> getCreditOrDebits(Set<String> userAddresses) {
+    List<CreditOrDebit> arr = [];
+    // for now, we only show btc credits
+    if (isUserOwned(userAddresses)) {
+      arr.add(BitcoinCreditOrDebit(
+        type: CreditOrDebitType.credit,
+        quantity: value,
+        quantityNormalized: value.toString(),
+      ));
+    }
+    return arr;
   }
 }
 
@@ -84,8 +263,10 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
   final Map<String, List<int>> signInputs;
   final List<int>? sighashTypes;
   final InMemoryKeyRepository inMemoryKeyRepository;
+  final SessionStateSuccess session;
 
   SignPsbtBloc({
+    required this.session,
     required this.passwordRequired,
     required this.unsignedPsbt,
     required this.transactionService,
@@ -156,14 +337,76 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
         throw error;
       });
 
-      final augmentedOutputs =
-          decoded.vout.map((o) => AugmentedOutput(vout: o)).toList();
+      // append asset balances to output that has same value as input
+      final augmentedOutputs = decoded.vout
+          .map((o) => AugmentedOutput(
+              vout: o,
+              balances: augmentedInputs.firstWhereOrNull((input) {
+                    return satoshisToBtc(input.prevOut.value).toDouble() ==
+                        o.value;
+                  })?.balances ??
+                  []))
+          .toList();
 
+      final addressSet =
+          session.addresses.map((address) => address.address).toSet();
 
-      
+      // final inputCreditsAndDebits = augmentedInputs
+      //     .map((i) => i.getCreditOrDebits(addressSet))
+      //     .flatten
+      //     .toList();
+      //
+      // final outputCreditsAndDebits = augmentedOutputs
+      //     .map((o) => o.getCreditOrDebits(addressSet))
+      //     .flatten
+      //     .toList();
+
+      // // aggregate the credits and debits
+      // final aggregatedCreditsAndDebits = aggregateCreditsAndDebits(
+      //     [...inputCreditsAndDebits, ...outputCreditsAndDebits]);
+
+      // CHAT gpt, help me aggregate these ( i.e. compute a value that is some of btc and counterparty debits anc credits)
+
+      final debits =
+          augmentedInputs.map((i) => i.getDebits(addressSet)).flatten.toList();
+
+      final credits = augmentedOutputs
+          .map((o) => o.getCredits(addressSet))
+          .flatten
+          .toList();
+
+      Map<String, Decimal> map = {};
+
+      for (final debit in debits) {
+        map.putIfAbsent(debit.asset, () => Decimal.zero);
+        map[debit.asset] =
+            map[debit.asset]! - Decimal.fromJson(debit.quantityNormalized);
+      }
+
+      for (final credit in credits) {
+        map.putIfAbsent(credit.asset, () => Decimal.zero);
+        map[credit.asset] =
+            map[credit.asset]! + Decimal.fromJson(credit.quantityNormalized);
+      }
+
+      final netDebits = map.entries
+          .filter((entry) => entry.value < Decimal.zero)
+          .map((e) => AssetDebit(
+              asset: e.key,
+              quantity: 0, // temp hack
+              quantityNormalized: e.value.abs().toString()));
+
+      final netCredits = map.entries
+          .filter((entry) => entry.value > Decimal.zero)
+          .map((e) => AssetCredit(
+              asset: e.key,
+              quantity: 0, // temp hack
+              quantityNormalized: e.value.toString()));
 
 
       emit(state.copyWith(
+        debits: netDebits.toList(),
+        credits: netCredits.toList(),
         augmentedInputs: augmentedInputs,
         augmentedOutputs: augmentedOutputs,
         isFormDataLoaded: true,
