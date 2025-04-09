@@ -115,6 +115,7 @@ class SessionStateCubit extends Cubit<SessionState> {
             throw Exception("invariant: no accounts for this wallet");
           }
 
+          // TODO: his should be persisted
           Account currentAccount = accounts[0];
 
           List<Address> addresses =

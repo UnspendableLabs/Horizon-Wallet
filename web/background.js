@@ -78,9 +78,6 @@ async function rpcSignPsbt(requestId, port, hex, signInputs, sighashTypes) {
     action = `signPsbt:ext,${tabId},${requestId},${hex},${encodedSignInputs},${encodedSighashTypes}`;
   }
 
-  console.log({ action })
-
-
   const window = await popup({
     url: `/index.html#?action=${action}`,
   });

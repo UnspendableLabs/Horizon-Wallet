@@ -223,7 +223,7 @@ void setup() {
     ConnectionErrorInterceptor(),
     BadResponseInterceptor(),
     BadCertificateInterceptor(),
-    // SimpleLogInterceptor(),
+    SimpleLogInterceptor(),
     RetryInterceptor(
       dio: dio,
       retries: 3,
@@ -250,7 +250,7 @@ void setup() {
     ConnectionErrorInterceptor(),
     BadResponseInterceptor(),
     BadCertificateInterceptor(),
-    // SimpleLogInterceptor(),
+    SimpleLogInterceptor(),
     RetryInterceptor(
       dio: dio,
       retries: 4,

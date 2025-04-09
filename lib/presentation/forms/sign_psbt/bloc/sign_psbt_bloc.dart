@@ -2,6 +2,7 @@ import "package:fpdart/fpdart.dart";
 import 'package:formz/formz.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:horizon/common/format.dart';
+import 'package:horizon/presentation/common/shared_util.dart';
 import 'package:collection/collection.dart';
 import 'package:decimal/decimal.dart';
 
@@ -21,7 +22,6 @@ import 'package:horizon/domain/repositories/unified_address_repository.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/imported_address_service.dart';
-import 'package:horizon/presentation/common/shared_util.dart';
 import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 import 'package:horizon/domain/entities/decryption_strategy.dart';
 import 'package:horizon/domain/entities/bitcoin_decoded_tx.dart' as dbtc;
@@ -30,70 +30,6 @@ import 'package:horizon/presentation/session/bloc/session_state.dart';
 
 import "./sign_psbt_state.dart";
 import "./sign_psbt_event.dart";
-
-const int envelopeValue = 546;
-
-Map<String, int> aggregateCreditsAndDebits(
-  List<CreditOrDebit> allCreditsAndDebits,
-) {
-  final Map<String, int> result = {};
-
-  for (final cd in allCreditsAndDebits) {
-    // Identify the asset key: "BTC" or the asset name
-    final String assetKey = switch (cd) {
-      BitcoinCreditOrDebit() => "BTC",
-      CounterpartyCreditOrDebit(asset: var asset) => asset,
-    };
-
-    // Initialize the inner map if needed
-    result.putIfAbsent(assetKey, () => 0);
-    // Accumulate
-
-    if (cd.type == CreditOrDebitType.credit) {
-      result[assetKey] = result[assetKey]! + cd.quantity;
-      print("it's a crdit ${cd.quantity.toString()}");
-    } else {
-      // cd.type == CreditOrDebitType.debit
-      result[assetKey] = result[assetKey]! - cd.quantity;
-      print("it's a deb ${cd.quantity.toString()}");
-    }
-    print(result);
-  }
-  return result;
-}
-
-enum CreditOrDebitType { credit, debit }
-
-sealed class CreditOrDebit {
-  final CreditOrDebitType type;
-  final int quantity;
-  final String quantityNormalized;
-
-  const CreditOrDebit({
-    required this.type,
-    required this.quantity,
-    required this.quantityNormalized,
-  });
-}
-
-class BitcoinCreditOrDebit extends CreditOrDebit {
-  const BitcoinCreditOrDebit({
-    required super.type,
-    required super.quantity,
-    required super.quantityNormalized,
-  });
-}
-
-class CounterpartyCreditOrDebit extends CreditOrDebit {
-  final String asset;
-
-  const CounterpartyCreditOrDebit({
-    required this.asset,
-    required super.type,
-    required super.quantity,
-    required super.quantityNormalized,
-  });
-}
 
 class AssetCredit {
   final String asset;
@@ -117,7 +53,6 @@ class AssetDebit {
       required this.quantityNormalized});
 }
 
-// TODO: move to entity
 class AugmentedInput {
   final dbtc.Vin vin;
   final String? address;
@@ -138,33 +73,6 @@ class AugmentedInput {
     return userAddresses.contains(address);
   }
 
-  List<CreditOrDebit> getCreditOrDebits(Set<String> userAddresses) {
-    List<CreditOrDebit> arr = [];
-    // for now, we only show btc credits
-    if (isUserOwned(userAddresses)) {
-      if (balances.isNotEmpty) {
-        for (final balance in balances) {
-          arr.add(CounterpartyCreditOrDebit(
-            type: CreditOrDebitType.debit,
-            asset: balance.asset,
-            quantity: balance.quantity,
-            quantityNormalized: balance.quantityNormalized,
-          ));
-        }
-      } else {
-        print("bicoin debit value from prevout ${prevOut.value.toString()}");
-        arr.add(
-          BitcoinCreditOrDebit(
-            type: CreditOrDebitType.debit,
-            quantity: prevOut.value,
-            quantityNormalized: prevOut.value.toString(),
-          ),
-        );
-      }
-    }
-    return arr;
-  }
-
   List<AssetDebit> getDebits(Set<String> userAddresses) {
     List<AssetDebit> debits = [];
 
@@ -174,7 +82,8 @@ class AugmentedInput {
       if (balances.isNotEmpty) {
         for (final balance in balances) {
           debits.add(AssetDebit(
-            asset: balance.asset,
+            asset: displayAssetName(
+                balance.asset, balance.assetInfo.assetLongname),
             quantity: balance.quantity,
             quantityNormalized: balance.quantityNormalized,
           ));
@@ -217,7 +126,8 @@ class AugmentedOutput {
       if (balances.isNotEmpty) {
         for (final balance in balances) {
           credits.add(AssetCredit(
-            asset: balance.asset,
+            asset: displayAssetName(
+                balance.asset, balance.assetInfo.assetLongname),
             quantity: balance.quantity,
             quantityNormalized: balance.quantityNormalized,
           ));
@@ -231,23 +141,9 @@ class AugmentedOutput {
     }
     return credits;
   }
-
-  List<CreditOrDebit> getCreditOrDebits(Set<String> userAddresses) {
-    List<CreditOrDebit> arr = [];
-    // for now, we only show btc credits
-    if (isUserOwned(userAddresses)) {
-      arr.add(BitcoinCreditOrDebit(
-        type: CreditOrDebitType.credit,
-        quantity: value,
-        quantityNormalized: value.toString(),
-      ));
-    }
-    return arr;
-  }
 }
 
 class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
-  final List<String> userAddresses = [];
   final bool passwordRequired;
   final String unsignedPsbt;
   final TransactionService transactionService;
@@ -300,8 +196,6 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
       final decoded =
           await bitcoindService.decoderawtransaction(transactionHex);
 
-      emit(state.copyWith(transaction: decoded));
-
       Either<Failure, List<AugmentedInput>> inputs =
           await TaskEither.traverseListWithIndex(decoded.vin, (vin, index) {
         return TaskEither<Failure, AugmentedInput>.Do(($) async {
@@ -351,22 +245,6 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
       final addressSet =
           session.addresses.map((address) => address.address).toSet();
 
-      // final inputCreditsAndDebits = augmentedInputs
-      //     .map((i) => i.getCreditOrDebits(addressSet))
-      //     .flatten
-      //     .toList();
-      //
-      // final outputCreditsAndDebits = augmentedOutputs
-      //     .map((o) => o.getCreditOrDebits(addressSet))
-      //     .flatten
-      //     .toList();
-
-      // // aggregate the credits and debits
-      // final aggregatedCreditsAndDebits = aggregateCreditsAndDebits(
-      //     [...inputCreditsAndDebits, ...outputCreditsAndDebits]);
-
-      // CHAT gpt, help me aggregate these ( i.e. compute a value that is some of btc and counterparty debits anc credits)
-
       final debits =
           augmentedInputs.map((i) => i.getDebits(addressSet)).flatten.toList();
 
@@ -403,7 +281,6 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
               quantity: 0, // temp hack
               quantityNormalized: e.value.toString()));
 
-
       emit(state.copyWith(
         debits: netDebits.toList(),
         credits: netCredits.toList(),
@@ -411,111 +288,6 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
         augmentedOutputs: augmentedOutputs,
         isFormDataLoaded: true,
       ));
-
-      //
-      // PsbtSignTypeEnum? psbtSignType;
-      // String asset = '';
-      // String getAmount = '';
-      // double bitcoinAmount = 0;
-      // double fee = 0;
-      //
-      // if (decoded.vin.length > 1) {
-      //   // buys will have vin length of 2
-      //   psbtSignType = PsbtSignTypeEnum.buy;
-      //
-      //   final buyAssetInput = decoded.vin[1];
-      //   final utxo = "${buyAssetInput.txid}:${buyAssetInput.vout}";
-      //
-      //   // get the asset from the utxo balance
-      //   final utxoBalances = await balanceRepository.getBalancesForUTXO(utxo);
-      //   if (utxoBalances.length > 1) {
-      //     // psbt swap criteria not met, load form without transaction data
-      //     emit(state.copyWith(
-      //       isFormDataLoaded: true,
-      //     ));
-      //     return;
-      //   }
-      //   if (utxoBalances.isEmpty) {
-      //     // psbt swap criteria not met, load form without transaction data
-      //     emit(state.copyWith(
-      //       isFormDataLoaded: true,
-      //     ));
-      //     return;
-      //   }
-      //
-      //   // fetch the tx info for each input to get the value of each vin
-      //   double totalInputValue = 0;
-      //   for (final vin in decoded.vin) {
-      //     final txDetails =
-      //         await bitcoinRepository.getTransaction(vin.txid).then(
-      //               (either) => either.fold(
-      //                 (error) => throw Exception("GetTransactionInfo failure"),
-      //                 (transactionInfo) => transactionInfo,
-      //               ),
-      //             );
-      //     totalInputValue += txDetails.vout[vin.vout].value;
-      //   }
-      //
-      //   // the fee is the difference between the total input value and the total output value
-      //   double totalOutputValue =
-      //       decoded.vout.map((vout) => vout.value).fold(0, (a, b) => a + b);
-      //   fee = (((totalInputValue / SATOSHI_RATE) - totalOutputValue) *
-      //               SATOSHI_RATE)
-      //           .truncate() /
-      //       SATOSHI_RATE; // truncate to 8 decimal places
-      //
-      //   asset = displayAssetName(
-      //     utxoBalances[0].asset,
-      //     utxoBalances[0].assetInfo.assetLongname,
-      //   );
-      //   getAmount = utxoBalances[0].quantityNormalized;
-      //
-      //   final bitcoinAssetOutput = decoded.vout[1];
-      //   bitcoinAmount = bitcoinAssetOutput.value;
-      // } else if (decoded.vin.length == 1) {
-      //   // sells will have vin length of 1
-      //   psbtSignType = PsbtSignTypeEnum.sell;
-      //
-      //   final sellAssetInput = decoded.vin[0];
-      //
-      //   // get the asset from the utxo balance
-      //   final utxo = "${sellAssetInput.txid}:${sellAssetInput.vout}";
-      //   final utxoBalances = await balanceRepository.getBalancesForUTXO(utxo);
-      //   if (utxoBalances.length > 1) {
-      //     // we should never have more than one balance for a utxo
-      //     emit(state.copyWith(
-      //       isFormDataLoaded: true,
-      //     ));
-      //     return;
-      //   }
-      //   asset = displayAssetName(
-      //     utxoBalances[0].asset,
-      //     utxoBalances[0].assetInfo.assetLongname,
-      //   );
-      //   getAmount = utxoBalances[0].quantityNormalized;
-      //   final bitcoinAssetOutput = decoded.vout[0];
-      //   bitcoinAmount = bitcoinAssetOutput.value;
-      //
-      //   // sells will not have a fee
-      // } else {
-      //   // psbt swap criteria not met, load form without transaction data
-      //   emit(state.copyWith(
-      //     isFormDataLoaded: true,
-      //   ));
-      //   return;
-      // }
-
-      // emit(state.copyWith(
-      //   transaction: decoded,
-      // parsedPsbtState: ParsedPsbtState(
-      //   psbtSignType: psbtSignType,
-      //   asset: asset,
-      //   getAmount: getAmount,
-      //   bitcoinAmount: bitcoinAmount,
-      //   fee: fee,
-      // ),
-      //   isFormDataLoaded: true,
-      // ));
     } catch (e) {
       // if any failures were thrown, then psbt does not fit the criteria of a swap, and we just load the form without transaction data
       emit(state.copyWith(
