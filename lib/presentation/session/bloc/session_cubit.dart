@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:collection/collection.dart';
 import 'package:horizon/domain/entities/account.dart';
 import 'package:horizon/domain/entities/imported_address.dart';
 import 'package:horizon/domain/entities/wallet.dart';
@@ -115,8 +116,13 @@ class SessionStateCubit extends Cubit<SessionState> {
             throw Exception("invariant: no accounts for this wallet");
           }
 
-          // TODO: his should be persisted
-          Account currentAccount = accounts[0];
+          String? currentAccountUuid =
+              cacheProvider.getString("current-account-uuid");
+
+          Account currentAccount = accounts.firstWhereOrNull(
+                (account) => account.uuid == currentAccountUuid,
+              ) ??
+              accounts.first;
 
           List<Address> addresses =
               await addressRepository.getAllByAccountUuid(currentAccount.uuid);
@@ -182,12 +188,19 @@ class SessionStateCubit extends Cubit<SessionState> {
 
     final state_ = state.maybeWhen(
         orElse: () => state,
-        success: (stateInner) => SessionState.success(stateInner.copyWith(
-              currentAccountUuid: account.uuid,
-              currentAddress: addresses.first,
-              addresses: addresses,
-              currentImportedAddress: null,
-            )));
+        success: (stateInner) {
+          cacheProvider.setString(
+            "current-account-uuid",
+            account.uuid,
+          );
+
+          return SessionState.success(stateInner.copyWith(
+            currentAccountUuid: account.uuid,
+            currentAddress: addresses.first,
+            addresses: addresses,
+            currentImportedAddress: null,
+          ));
+        });
 
     emit(state_);
   }
@@ -209,6 +222,7 @@ class SessionStateCubit extends Cubit<SessionState> {
   }
 
   void refresh() async {
+    // this seems to be called when you create a new account
     try {
       Wallet? wallet = await walletRepository.getCurrentWallet();
 
@@ -236,6 +250,9 @@ class SessionStateCubit extends Cubit<SessionState> {
 
       SessionStateSuccess success = state.successOrThrow();
 
+
+
+
       emit(SessionState.success(success.copyWith(
         redirect: true,
         wallet: wallet,
@@ -245,6 +262,14 @@ class SessionStateCubit extends Cubit<SessionState> {
         currentAddress: addresses.first,
         importedAddresses: importedAddresses,
       )));
+
+
+      cacheProvider.setString(
+        "current-account-uuid",
+        accounts.last.uuid,
+      );
+          
+
     } catch (error) {
       emit(SessionState.error(error.toString()));
     }
