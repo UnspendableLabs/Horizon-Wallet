@@ -69,6 +69,7 @@ import 'package:horizon/presentation/screens/dashboard/view/balances_display.dar
 import 'package:horizon/presentation/screens/dashboard/view/dashboard_contents.dart';
 import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
+import 'package:horizon/presentation/session/bloc/session_state.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:sliver_tools/sliver_tools.dart';
 import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
@@ -161,9 +162,11 @@ class SignPsbtModal extends StatelessWidget {
   final AccountRepository accountRepository;
   final BitcoinRepository bitcoinRepository;
   final List<int>? sighashTypes;
+  final SessionStateSuccess session;
 
   const SignPsbtModal(
       {super.key,
+      required this.session,
       required this.unsignedPsbt,
       required this.transactionService,
       required this.walletRepository,
@@ -185,6 +188,7 @@ class SignPsbtModal extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (_) => SignPsbtBloc(
+        session: session,
         passwordRequired:
             GetIt.I<SettingsRepository>().requirePasswordForCryptoOperations,
         inMemoryKeyRepository: GetIt.I<InMemoryKeyRepository>(),
@@ -204,6 +208,8 @@ class SignPsbtModal extends StatelessWidget {
       ),
       child: SignPsbtForm(
         key: Key(unsignedPsbt),
+        balanceRepository: balanceRepository,
+        bitcoinRepository: bitcoinRepository,
         passwordRequired:
             GetIt.I<SettingsRepository>().requirePasswordForCryptoOperations,
         onSuccess: (signedPsbtHex) {
@@ -1689,23 +1695,29 @@ class DashboardPageState extends State<DashboardPage> {
         context: context,
         body: HorizonUI.HorizonDialog(
           title: "Sign Psbt",
-          body: SignPsbtModal(
-              tabId: tabId,
-              requestId: requestId,
-              unsignedPsbt: psbt,
-              signInputs: signInputs,
-              sighashTypes: sighashTypes,
-              accountRepository: GetIt.I<AccountRepository>(),
-              addressRepository: GetIt.I<UnifiedAddressRepository>(),
-              importedAddressService: GetIt.I.get<ImportedAddressService>(),
-              transactionService: GetIt.I.get<TransactionService>(),
-              bitcoindService: GetIt.I.get<BitcoindService>(),
-              balanceRepository: GetIt.I.get<BalanceRepository>(),
-              bitcoinRepository: GetIt.I.get<BitcoinRepository>(),
-              walletRepository: GetIt.I.get<WalletRepository>(),
-              encryptionService: GetIt.I.get<EncryptionService>(),
-              addressService: GetIt.I.get<AddressService>(),
-              onSuccess: GetIt.I<RPCSignPsbtSuccessCallback>()),
+          body: Builder(builder: (context) {
+            final session =
+                context.watch<SessionStateCubit>().state.successOrThrow();
+
+            return SignPsbtModal(
+                session: session,
+                tabId: tabId,
+                requestId: requestId,
+                unsignedPsbt: psbt,
+                signInputs: signInputs,
+                sighashTypes: sighashTypes,
+                accountRepository: GetIt.I<AccountRepository>(),
+                addressRepository: GetIt.I<UnifiedAddressRepository>(),
+                importedAddressService: GetIt.I.get<ImportedAddressService>(),
+                transactionService: GetIt.I.get<TransactionService>(),
+                bitcoindService: GetIt.I.get<BitcoindService>(),
+                balanceRepository: GetIt.I.get<BalanceRepository>(),
+                bitcoinRepository: GetIt.I.get<BitcoinRepository>(),
+                walletRepository: GetIt.I.get<WalletRepository>(),
+                encryptionService: GetIt.I.get<EncryptionService>(),
+                addressService: GetIt.I.get<AddressService>(),
+                onSuccess: GetIt.I<RPCSignPsbtSuccessCallback>());
+          }),
           includeBackButton: false,
           includeCloseButton: true,
         ));
