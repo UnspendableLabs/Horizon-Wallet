@@ -281,7 +281,6 @@ class AppRouter {
                           child: navigationSession,
                         ));
                   });
-              return navigationSession;
             },
             branches: [
               StatefulShellBranch(
@@ -382,6 +381,8 @@ class AppRouter {
 
         final actionParam = state.uri.queryParameters['action'];
 
+        // final actionParam =
+        //     "signPsbt:ext,1423359416,f8000934-6448-42d7-9b3e-c6730b35b4c0,70736274ff0100b9020000000207c16ee316b62288b1bb0e0aeec6b1a25487ef91905bb0c9e9a013918dcbf2990100000000ffffffffa6bc2540e620a576b802c3d6445191c14941e3b2f3655425803aa8c4551400bf0000000000ffffffff032202000000000000160014c55822ac4bcc47841f834598e7ac1355ba5ac413e803000000000000160014c55822ac4bcc47841f834598e7ac1355ba5ac413da66070000000000160014c55822ac4bcc47841f834598e7ac1355ba5ac413000000000001011fa06c070000000000160014c55822ac4bcc47841f834598e7ac1355ba5ac413010304010000000001011f2202000000000000160014c55822ac4bcc47841f834598e7ac1355ba5ac41300000000,eyJ0YjFxYzR2ejl0enRlM3JjZzh1cmdrdncwdHFuMmthOTQzcW5scWh1cTciOlswXX0=,WzEzMSwxXQ==";
 
         if (actionParam != null) {
           final ActionRepository actionRepository =
