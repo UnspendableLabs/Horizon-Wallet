@@ -281,7 +281,6 @@ class AppRouter {
                           child: navigationSession,
                         ));
                   });
-              return navigationSession;
             },
             branches: [
               StatefulShellBranch(
@@ -381,7 +380,6 @@ class AppRouter {
             orElse: () => "/");
 
         final actionParam = state.uri.queryParameters['action'];
-
 
         if (actionParam != null) {
           final ActionRepository actionRepository =
