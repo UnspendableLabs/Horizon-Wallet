@@ -371,6 +371,20 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
             const SizedBox(height: 16.0),
             if (state.selectedFairminter!.price != null &&
                 state.selectedFairminter!.price! > 0)
+              FairminterProperty(
+                label: 'Lot Price (XCP)',
+                property:
+                    satoshisToBtc(state.selectedFairminter!.price!).toString(),
+              ),
+            SizedBox(height: 8.0),
+            FairminterProperty(
+              label: 'Lot Size',
+              property: numberWithCommas.format(double.parse(
+                  state.selectedFairminter!.quantityByPriceNormalized!)),
+            ),
+            SizedBox(height: 8.0),
+            if (state.selectedFairminter!.price != null &&
+                state.selectedFairminter!.price! > 0)
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
