@@ -125,7 +125,6 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
       }
       maxLots =
           (maxMintPerTx! / fairminter.quantityByPrice!).floor().toDouble();
-      
     } else {
       maxLots = null;
       maxMintPerTx = null;
@@ -375,83 +374,116 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text("No. of Lots",
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey,
-                      )),
-                  Slider(
+                  const Text(
+                    "No. of Lots",
+                    style: TextStyle(fontSize: 12, color: Colors.grey),
+                  ),
+                  const SizedBox(height: 8),
+                  if (maxLots != null && maxLots! <= 1000)
+                    Slider(
                       label: numLots.toString(),
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 0, vertical: 8),
-                      value: numLots.toDouble(),
-                      max: maxLots != null && maxLots! > 1 ? maxLots! : 1,
-                      divisions: maxLots != null && maxLots! > 1
-                          ? (maxLots! - 1).toInt()
-                          : null,
+                      value: numLots.toDouble().clamp(1.0, maxLots!),
                       min: 1,
+                      max: maxLots!,
+                      divisions: (maxLots! - 1).toInt(),
                       onChanged: (value) {
                         setState(() {
                           numLots = value.round();
                         });
-                      }),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      Text(
-                        numberWithCommas.format(numLots),
-                        textAlign: TextAlign.right,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          color: Colors.white,
-                        ),
+                      },
+                    )
+                  else ...[
+                    TextFormField(
+                      initialValue: numLots.toString(),
+                      keyboardType: TextInputType.number,
+                      decoration: const InputDecoration(
+                        isDense: true,
                       ),
-                    ],
-                  ),
+                      onChanged: (value) {
+                        final parsed = int.tryParse(value);
+                        if (parsed != null && parsed >= 1) {
+                          setState(() {
+                            numLots = maxLots != null && parsed > maxLots!
+                                ? maxLots!.toInt()
+                                : parsed;
+                          });
+                        }
+                      },
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      "Enter a value between 1 and ${numberWithCommas.format(maxLots ?? 1)}",
+                      style: const TextStyle(fontSize: 12, color: Colors.grey),
+                    ),
+                  ],
+                  const SizedBox(height: 8),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.start,
                     spacing: 64,
                     children: [
                       FairminterProperty(
-                        label: 'Lot Price (XCP)',
-                        property:
-                            (satoshisToBtc(state.selectedFairminter!.price!))
-                                .toString(),
-                      ),
-                      // lot size
-                      FairminterProperty(
-                        label: 'Lot Size',
-                        property: numberWithCommas.format(double.parse(state
-                            .selectedFairminter!.quantityByPriceNormalized!)),
+                        label: 'No. Lots',
+                        property: numberWithCommas.format(numLots),
                       ),
                     ],
                   ),
                 ],
               ),
-            const SizedBox(height: 8.0),
-            FairminterProperty(
-              label: 'Quantity Locked After Fairminter Closes',
-              property: state.selectedFairminter!.lockQuantity.toString(),
-            ),
-            const SizedBox(height: 8.0),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              spacing: 64,
-              children: [
-                FairminterProperty(
-                  label: 'Max Mint Per TX',
-                  property: numberWithCommas.format(double.parse(
-                      state.selectedFairminter!.maxMintPerTxNormalized!)),
-                ),
-              ],
-            ),
             if (state.selectedFairminter!.price != null &&
                 state.selectedFairminter!.price! > 0) ...[
               const SizedBox(height: 8.0),
               FairminterProperty(
-                label: 'Total XCP Price',
-                property: _getTotalXCPPrice(state.selectedFairminter!),
+                label: 'Lot Price (XCP)',
+                property:
+                    satoshisToBtc(state.selectedFairminter!.price!).toString(),
               ),
+              const SizedBox(height: 8.0),
+              FairminterProperty(
+                label: 'Lot Size',
+                property: numberWithCommas.format(double.parse(
+                    state.selectedFairminter!.quantityByPriceNormalized!)),
+              ),
+              // FairminterProperty(
+              //   label: 'Total XCP Price',
+              //   property:
+              //       "${_getTotalXCPPrice(state.selectedFairminter!)}",
+              // ),
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Text(
+                  "Total Price ( XCP )",
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Row(children: [
+                  Text(
+                    "${_getTotalXCPPrice(state.selectedFairminter!)}",
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text.rich(
+                    TextSpan(
+                      text: '',
+                      children: [
+                        TextSpan(
+                          text:
+                              '( $numLots lots X ${satoshisToBtc(state.selectedFairminter!.price!)} XCP )',
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontStyle: FontStyle.italic,
+                            color: Colors.grey,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ])
+              ])
             ]
           ],
         ),
@@ -533,9 +565,7 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
   }
 
   String _getTotalXCPPrice(Fairminter fairminter) {
-    final price = numLots *
-        satoshisToBtc(fairminter.price!).toDouble()
-;
+    final price = numLots * satoshisToBtc(fairminter.price!).toDouble();
     return numberWithCommas.format(price);
   }
 }
