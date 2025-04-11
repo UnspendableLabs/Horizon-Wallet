@@ -47,7 +47,9 @@ class SignMessageBloc extends Bloc<SignMessageEvent, SignMessageState> {
     required this.addressRepository,
     required this.accountRepository,
     required this.inMemoryKeyRepository,
-  }) : super(SignMessageState()) {
+  }) : super(SignMessageState(
+          message: message,
+        )) {
     on<PasswordChanged>(_handlePasswordChanged);
     on<SignMessageSubmitted>(_handleSignMessageSubmitted);
   }

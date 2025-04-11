@@ -33,25 +33,46 @@ class _SignMessageFormState extends State<SignMessageForm> {
       },
       child: BlocBuilder<SignMessageBloc, SignMessageState>(
         builder: (context, state) {
+          final theme = Theme.of(context);
+
           return Padding(
             padding: const EdgeInsets.all(16.0),
             child: Column(
-              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(height: 20),
+                Text(
+                  "Message to sign",
+                  style: theme.textTheme.labelSmall,
+                ),
+                const SizedBox(height: 20),
+                Text(state.message),
+                const SizedBox(height: 20),
+                const Divider(),
+
                 // Password Field
+
                 if (widget.passwordRequired)
-                  TextField(
-                    onChanged: (password) => context
-                        .read<SignMessageBloc>()
-                        .add(PasswordChanged(password)),
-                    decoration: InputDecoration(
-                      labelText: 'Password',
-                      errorText: state.password.displayError == null
-                          ? null
-                          : 'Password cannot be empty',
-                    ),
-                    obscureText: true,
+                  Column(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(0, 16, 0, 16),
+                        child: TextField(
+                          onChanged: (password) => context
+                              .read<SignMessageBloc>()
+                              .add(PasswordChanged(password)),
+                          decoration: InputDecoration(
+                            labelText: 'Password',
+                            errorText: state.password.displayError == null
+                                ? null
+                                : 'Password cannot be empty',
+                          ),
+                          obscureText: true,
+                        ),
+                      ),
+                      const Divider(),
+                    ],
                   ),
 
                 const SizedBox(height: 20),
