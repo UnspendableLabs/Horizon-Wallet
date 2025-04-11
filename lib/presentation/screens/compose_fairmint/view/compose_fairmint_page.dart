@@ -1,5 +1,3 @@
-import 'package:decimal/decimal.dart';
-import 'package:flutter/services.dart';
 import 'package:horizon/common/format.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -368,44 +366,38 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
+            if (state.selectedFairminter != null)
+              Text("${state.selectedFairminter!.mintedAssetCommissionInt}"),
             const SizedBox(height: 16.0),
-            if (state.selectedFairminter!.price != null &&
-                state.selectedFairminter!.price! > 0)
-              FairminterProperty(
-                label: 'Lot Price (XCP)',
-                property:
-                    satoshisToBtc(state.selectedFairminter!.price!).toString(),
-              ),
-            SizedBox(height: 8.0),
-            FairminterProperty(
-              label: 'Lot Size',
-              property: numberWithCommas.format(double.parse(
-                  state.selectedFairminter!.quantityByPriceNormalized!)),
-            ),
-            SizedBox(height: 8.0),
             if (state.selectedFairminter!.price != null &&
                 state.selectedFairminter!.price! > 0)
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    "No. of Lots",
-                    style: TextStyle(fontSize: 12, color: Colors.grey),
-                  ),
-                  const SizedBox(height: 8),
                   if (maxLots != null && maxLots! <= 1000)
-                    Slider(
-                      label: numLots.toString(),
-                      value: numLots.toDouble().clamp(1.0, maxLots!),
-                      min: 1,
-                      max: maxLots!,
-                      divisions: (maxLots! - 1).toInt(),
-                      onChanged: (value) {
-                        setState(() {
-                          numLots = value.round();
-                        });
-                      },
-                    )
+                    maxLots! > 1
+                        ? Column(children: [
+                            const Text(
+                              "No. of Lots",
+                              style:
+                                  TextStyle(fontSize: 12, color: Colors.grey),
+                            ),
+                            const SizedBox(height: 8),
+                            Slider(
+                                label: numLots.toString(),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 0, vertical: 8),
+                                value: numLots.toDouble(),
+                                max: maxLots!,
+                                divisions: maxLots!.toInt(),
+                                min: 1,
+                                onChanged: (value) {
+                                  setState(() {
+                                    numLots = value.round();
+                                  });
+                                })
+                          ])
+                        : const SizedBox.shrink()
                   else ...[
                     TextFormField(
                       initialValue: numLots.toString(),
@@ -431,73 +423,102 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
                     ),
                   ],
                   const SizedBox(height: 8),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    spacing: 64,
-                    children: [
-                      FairminterProperty(
-                        label: 'No. Lots',
-                        property: numberWithCommas.format(numLots),
-                      ),
-                    ],
-                  ),
                 ],
               ),
             if (state.selectedFairminter!.price != null &&
                 state.selectedFairminter!.price! > 0) ...[
               const SizedBox(height: 8.0),
-              FairminterProperty(
-                label: 'Lot Price (XCP)',
-                property:
-                    satoshisToBtc(state.selectedFairminter!.price!).toString(),
-              ),
-              const SizedBox(height: 8.0),
-              FairminterProperty(
-                label: 'Lot Size',
-                property: numberWithCommas.format(double.parse(
-                    state.selectedFairminter!.quantityByPriceNormalized!)),
-              ),
+              // FairminterProperty(
+              //   label: 'Lot Price (XCP)',
+              //   property:
+              //       satoshisToBtc(state.selectedFairminter!.price!).toString(),
+              // ),
+              // const SizedBox(height: 8.0),
+              // FairminterProperty(
+              //   label: 'Lot Size',
+              //   property: numberWithCommas.format(double.parse(
+              //       state.selectedFairminter!.quantityByPriceNormalized!)),
+              // ),
               // FairminterProperty(
               //   label: 'Total XCP Price',
               //   property:
               //       "${_getTotalXCPPrice(state.selectedFairminter!)}",
               // ),
-              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text(
-                  "Total Price ( XCP )",
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Row(children: [
-                  Text(
-                    "${_getTotalXCPPrice(state.selectedFairminter!)}",
-                    style: const TextStyle(
-                      fontSize: 14,
-                      color: Colors.white,
+
+              Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      "Quantity",
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey,
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  Text.rich(
-                    TextSpan(
-                      text: '',
+                    const SizedBox(height: 2),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        TextSpan(
-                          text:
-                              '( $numLots lots X ${satoshisToBtc(state.selectedFairminter!.price!)} XCP )',
+                        Text(
+                          "${numberWithCommas.format((numLots * double.parse(state.selectedFairminter!.quantityByPriceNormalized!) - (state.selectedFairminter!.mintedAssetCommissionInt != null ? state.selectedFairminter!.mintedAssetCommissionInt! / 10e7 * numLots * double.parse(state.selectedFairminter!.quantityByPriceNormalized!) : 0)))} ${state.selectedFairminter!.asset}",
+                          style: const TextStyle(
+                            fontSize: 18,
+                            color: Colors.white,
+                          ),
+                        ),
+                        Text(
+                          '+ ${numberWithCommas.format((numLots * double.parse(state.selectedFairminter!.quantityByPriceNormalized!)))} ( $numLots lots × ${numberWithCommas.format(double.parse(state.selectedFairminter!.quantityByPriceNormalized!))} ${state.selectedFairminter!.asset} )',
                           style: const TextStyle(
                             fontSize: 12,
-                            fontStyle: FontStyle.italic,
                             color: Colors.grey,
                           ),
                         ),
+                        if (state
+                                .selectedFairminter!.mintedAssetCommissionInt !=
+                            null) ...[
+                          const SizedBox(height: 2),
+                          Text(
+                            "- ${state.selectedFairminter!.mintedAssetCommissionInt! / 10e7 * numLots * double.parse(state.selectedFairminter!.quantityByPriceNormalized!)} ${state.selectedFairminter!.asset} commission",
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey,
+                            ),
+                          ),
+                        ],
                       ],
                     ),
+                  ],
+                ),
+                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  const Text(
+                    "Price",
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey,
+                    ),
                   ),
-                ])
-              ])
+                  Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          "${_getTotalXCPPrice(state.selectedFairminter!)} XCP",
+                          style: const TextStyle(
+                            fontSize: 18,
+                            color: Colors.white,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          '( $numLots lots X ${satoshisToBtc(state.selectedFairminter!.price!)} XCP )',
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey,
+                          ),
+                        ),
+                      ])
+                ]),
+              ]),
             ]
           ],
         ),
