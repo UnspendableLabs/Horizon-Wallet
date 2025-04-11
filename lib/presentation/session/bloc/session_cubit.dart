@@ -250,9 +250,6 @@ class SessionStateCubit extends Cubit<SessionState> {
 
       SessionStateSuccess success = state.successOrThrow();
 
-
-
-
       emit(SessionState.success(success.copyWith(
         redirect: true,
         wallet: wallet,
@@ -263,13 +260,10 @@ class SessionStateCubit extends Cubit<SessionState> {
         importedAddresses: importedAddresses,
       )));
 
-
       cacheProvider.setString(
         "current-account-uuid",
         accounts.last.uuid,
       );
-          
-
     } catch (error) {
       emit(SessionState.error(error.toString()));
     }

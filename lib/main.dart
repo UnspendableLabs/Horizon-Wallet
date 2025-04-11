@@ -381,7 +381,6 @@ class AppRouter {
 
         final actionParam = state.uri.queryParameters['action'];
 
-
         if (actionParam != null) {
           final ActionRepository actionRepository =
               GetIt.instance<ActionRepository>();
