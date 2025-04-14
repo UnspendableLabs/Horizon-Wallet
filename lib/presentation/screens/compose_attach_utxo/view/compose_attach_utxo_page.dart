@@ -265,7 +265,7 @@ class ComposeAttachUtxoPageState extends State<ComposeAttachUtxoPage> {
             label: 'Quantity to attach',
             inputFormatters: [
               balance.assetInfo.divisible == true
-                  ? DecimalTextInputFormatter(decimalRange: 20)
+                  ? DecimalTextInputFormatter(decimalRange: 8)
                   : FilteringTextInputFormatter.digitsOnly,
             ],
             validator: (value) {

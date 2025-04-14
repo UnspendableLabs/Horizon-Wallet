@@ -48,8 +48,14 @@ class ActionRepositoryImpl implements ActionRepository {
         DispenseAction(address, CallerType.extension),
       ["fairmint", String fairminterTxHash] =>
         FairmintAction(fairminterTxHash, CallerType.app),
+      ["fairmint", String fairminterTxHash, String numLots] => FairmintAction(
+          fairminterTxHash, CallerType.app,
+          numLots: int.tryParse(numLots)),
       ["fairmint:ext", String fairminterTxHash] =>
         FairmintAction(fairminterTxHash, CallerType.extension),
+      ["fairmint:ext", String fairminterTxHash, String numLots] =>
+        FairmintAction(fairminterTxHash, CallerType.extension,
+            numLots: int.tryParse(numLots)),
       ["getAddresses:ext", String tabId, String requestId] =>
         RPCGetAddressesAction(int.tryParse(tabId)!, requestId),
       [
@@ -71,6 +77,14 @@ class ActionRepositoryImpl implements ActionRepository {
       ] =>
         RPCSignPsbtAction(int.tryParse(tabId)!, requestId, psbt,
             _parseSignInputs(signInputs), null),
+      [
+        "signMessage:ext",
+        String tabId,
+        String requestId,
+        String message,
+        String address,
+      ] =>
+        RPCSignMessageAction(int.tryParse(tabId)!, requestId, message, address),
       _ => throw Exception()
     };
   }

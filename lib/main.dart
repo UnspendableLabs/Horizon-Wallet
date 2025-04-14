@@ -281,7 +281,6 @@ class AppRouter {
                           child: navigationSession,
                         ));
                   });
-              return navigationSession;
             },
             branches: [
               StatefulShellBranch(

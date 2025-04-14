@@ -25,7 +25,8 @@ class PublicKeyServiceImpl implements PublicKeyService {
 
     final network = _getNetwork();
 
-    ecpair.ECPair signer = ecpairFactory.fromPrivateKey(privKeyJS, network);
+    ecpair.ECPairInterface signer =
+        ecpairFactory.fromPrivateKey(privKeyJS, network);
 
     return signer.publicKey.toDart
         .map(((byte) => byte.toRadixString(16).padLeft(2, "0")))

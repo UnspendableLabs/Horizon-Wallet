@@ -22,9 +22,11 @@ import 'package:horizon/domain/entities/decryption_strategy.dart';
 
 class ComposeFairmintEventParams {
   final String asset;
+  final int? quantity;
 
   ComposeFairmintEventParams({
     required this.asset,
+    this.quantity,
   });
 }
 
@@ -41,6 +43,7 @@ class ComposeFairmintBloc extends ComposeBaseBloc<ComposeFairmintState> {
   final WriteLocalTransactionUseCase writelocalTransactionUseCase;
   final BlockRepository blockRepository;
   final String? initialFairminterTxHash;
+  final int? initialNumLots;
 
   ComposeFairmintBloc({
     required this.passwordRequired,
@@ -54,6 +57,7 @@ class ComposeFairmintBloc extends ComposeBaseBloc<ComposeFairmintState> {
     required this.writelocalTransactionUseCase,
     required this.blockRepository,
     this.initialFairminterTxHash,
+    this.initialNumLots,
   }) : super(
           ComposeFairmintState(
             submitState: const FormStep(),
@@ -62,6 +66,7 @@ class ComposeFairmintBloc extends ComposeBaseBloc<ComposeFairmintState> {
             feeState: const FeeState.initial(),
             fairmintersState: const FairmintersState.initial(),
             initialFairminterTxHash: initialFairminterTxHash,
+            initialNumLots: initialNumLots,
             selectedFairminter: null,
           ),
           composePage: 'compose_fairmint',
@@ -151,12 +156,13 @@ class ComposeFairmintBloc extends ComposeBaseBloc<ComposeFairmintState> {
       final feeRate = _getFeeRate();
       final source = event.sourceAddress;
       final asset = event.params.asset;
-
+      final quantity = event.params.quantity;
       final composeResponse = await composeTransactionUseCase
           .call<ComposeFairmintParams, ComposeFairmintResponse>(
               feeRate: feeRate,
               source: source,
-              params: ComposeFairmintParams(source: source, asset: asset),
+              params: ComposeFairmintParams(
+                  source: source, asset: asset, quantity: quantity),
               composeFn: composeRepository.composeFairmintVerbose);
 
       emit(state.copyWith(
