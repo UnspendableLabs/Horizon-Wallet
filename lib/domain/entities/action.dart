@@ -22,7 +22,8 @@ class FairmintAction extends Action {
   @override
   final CallerType caller;
   final String fairminterTxHash;
-  FairmintAction(this.fairminterTxHash, this.caller);
+  final int? numLots;
+  FairmintAction(this.fairminterTxHash, this.caller, {this.numLots});
 }
 
 class OpenOrderAction extends Action {

@@ -1558,8 +1558,11 @@ class DashboardPageState extends State<DashboardPage> {
     return switch (action) {
       URLAction.DispenseAction(address: var address) => () =>
           _handleDispenseAction(address),
-      URLAction.FairmintAction(fairminterTxHash: var fairminterTxHash) => () =>
-          _handleFairmintAction(fairminterTxHash),
+      URLAction.FairmintAction(
+        fairminterTxHash: var fairminterTxHash,
+        numLots: var numLots
+      ) =>
+        () => _handleFairmintAction(fairminterTxHash, numLots),
       URLAction.OpenOrderAction(
         giveQuantity: var giveQuantity,
         giveAsset: var giveAsset,
@@ -1639,7 +1642,7 @@ class DashboardPageState extends State<DashboardPage> {
                 dashboardActivityFeedBloc: dashboardActivityFeedBloc)));
   }
 
-  void _handleFairmintAction(String intitialFairminterTxHash) {
+  void _handleFairmintAction(String intitialFairminterTxHash, int? numLots) {
     final dashboardActivityFeedBloc =
         BlocProvider.of<DashboardActivityFeedBloc>(context);
 
@@ -1649,6 +1652,7 @@ class DashboardPageState extends State<DashboardPage> {
           title: "Compose Fairmint",
           body: ComposeFairmintPageWrapper(
             initialFairminterTxHash: intitialFairminterTxHash,
+            initialNumLots: numLots,
             dashboardActivityFeedBloc: dashboardActivityFeedBloc,
             currentAddress: widget.currentAddress?.address ??
                 widget.currentImportedAddress!.address,
