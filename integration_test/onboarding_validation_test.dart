@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/domain/entities/wallet.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
+import 'package:horizon/common/constants.dart';
 import 'package:horizon/main.dart';
 import 'package:horizon/setup.dart';
 import 'package:integration_test/integration_test.dart';
@@ -48,7 +49,7 @@ void main() {
 
         // Verify error message is shown
         expect(
-          find.text('Invalid state detected. Please contact support.'),
+          find.text(onboardingErrorMessage),
           findsOneWidget,
         );
 
