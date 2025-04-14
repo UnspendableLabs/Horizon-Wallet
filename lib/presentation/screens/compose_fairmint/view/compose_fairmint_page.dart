@@ -366,8 +366,6 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
-            if (state.selectedFairminter != null)
-              Text("${state.selectedFairminter!.mintedAssetCommissionInt}"),
             const SizedBox(height: 16.0),
             if (state.selectedFairminter!.price != null &&
                 state.selectedFairminter!.price! > 0)
@@ -400,6 +398,7 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
                         : const SizedBox.shrink()
                   else ...[
                     TextFormField(
+                      key: Key(state.selectedFairminter!.asset!),
                       initialValue: numLots.toString(),
                       keyboardType: TextInputType.number,
                       decoration: const InputDecoration(
@@ -428,97 +427,88 @@ class ComposeFairmintPageState extends State<ComposeFairmintPage> {
             if (state.selectedFairminter!.price != null &&
                 state.selectedFairminter!.price! > 0) ...[
               const SizedBox(height: 8.0),
-              // FairminterProperty(
-              //   label: 'Lot Price (XCP)',
-              //   property:
-              //       satoshisToBtc(state.selectedFairminter!.price!).toString(),
-              // ),
-              // const SizedBox(height: 8.0),
-              // FairminterProperty(
-              //   label: 'Lot Size',
-              //   property: numberWithCommas.format(double.parse(
-              //       state.selectedFairminter!.quantityByPriceNormalized!)),
-              // ),
-              // FairminterProperty(
-              //   label: 'Total XCP Price',
-              //   property:
-              //       "${_getTotalXCPPrice(state.selectedFairminter!)}",
-              // ),
-
-              Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                Column(
+              Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text(
-                      "Quantity",
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          "${numberWithCommas.format((numLots * double.parse(state.selectedFairminter!.quantityByPriceNormalized!) - (state.selectedFairminter!.mintedAssetCommissionInt != null ? state.selectedFairminter!.mintedAssetCommissionInt! / 10e7 * numLots * double.parse(state.selectedFairminter!.quantityByPriceNormalized!) : 0)))} ${state.selectedFairminter!.asset}",
-                          style: const TextStyle(
-                            fontSize: 18,
-                            color: Colors.white,
-                          ),
-                        ),
-                        Text(
-                          '+ ${numberWithCommas.format((numLots * double.parse(state.selectedFairminter!.quantityByPriceNormalized!)))} ( $numLots lots × ${numberWithCommas.format(double.parse(state.selectedFairminter!.quantityByPriceNormalized!))} ${state.selectedFairminter!.asset} )',
-                          style: const TextStyle(
+                        const Text(
+                          "Quantity",
+                          style: TextStyle(
                             fontSize: 12,
                             color: Colors.grey,
                           ),
                         ),
-                        if (state
-                                .selectedFairminter!.mintedAssetCommissionInt !=
-                            null) ...[
-                          const SizedBox(height: 2),
-                          Text(
-                            "- ${state.selectedFairminter!.mintedAssetCommissionInt! / 10e7 * numLots * double.parse(state.selectedFairminter!.quantityByPriceNormalized!)} ${state.selectedFairminter!.asset} commission",
-                            style: const TextStyle(
+                        const SizedBox(height: 2),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              "${numberWithCommas.format((numLots * double.parse(state.selectedFairminter!.quantityByPriceNormalized!) - (state.selectedFairminter!.mintedAssetCommissionInt != null ? state.selectedFairminter!.mintedAssetCommissionInt! / 10e7 * numLots * double.parse(state.selectedFairminter!.quantityByPriceNormalized!) : 0)))} ${state.selectedFairminter!.asset}",
+                              style: const TextStyle(
+                                fontSize: 18,
+                                color: Colors.white,
+                              ),
+                            ),
+                            Text(
+                              '+ ${numberWithCommas.format((numLots * double.parse(state.selectedFairminter!.quantityByPriceNormalized!)))} ( $numLots lots × ${numberWithCommas.format(double.parse(state.selectedFairminter!.quantityByPriceNormalized!))} ${state.selectedFairminter!.asset} )',
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey,
+                              ),
+                            ),
+                            if (state.selectedFairminter!
+                                        .mintedAssetCommissionInt !=
+                                    null &&
+                                state.selectedFairminter!
+                                        .mintedAssetCommissionInt! >
+                                    0) ...[
+                              const SizedBox(height: 2),
+                              Text(
+                                "- ${numberWithCommas.format(state.selectedFairminter!.mintedAssetCommissionInt! / 10e7 * numLots * double.parse(state.selectedFairminter!.quantityByPriceNormalized!))} ${state.selectedFairminter!.asset} commission",
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ],
+                    ),
+                    Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          const Text(
+                            "Price",
+                            style: TextStyle(
                               fontSize: 12,
                               color: Colors.grey,
                             ),
                           ),
-                        ],
-                      ],
-                    ),
-                  ],
-                ),
-                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  const Text(
-                    "Price",
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey,
-                    ),
-                  ),
-                  Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          "${_getTotalXCPPrice(state.selectedFairminter!)} XCP",
-                          style: const TextStyle(
-                            fontSize: 18,
-                            color: Colors.white,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          '( $numLots lots X ${satoshisToBtc(state.selectedFairminter!.price!)} XCP )',
-                          style: const TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey,
-                          ),
-                        ),
-                      ])
-                ]),
-              ]),
+                          Column(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                Text(
+                                  "${_getTotalXCPPrice(state.selectedFairminter!)} XCP",
+                                  style: const TextStyle(
+                                    fontSize: 18,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  '( $numLots lots X ${satoshisToBtc(state.selectedFairminter!.price!)} XCP )',
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                              ])
+                        ]),
+                  ]),
             ]
           ],
         ),
