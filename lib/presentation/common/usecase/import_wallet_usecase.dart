@@ -123,6 +123,10 @@ class ImportWalletUseCase {
         index: 0,
       );
 
+      print("address ${address.address}");
+      print("account uuid ${address.accountUuid}");
+      print("index ${address.index}");
+
       // get transactions for the address
       final bool addressHasTransactions =
           await addressesHaveTransactions([address]);
@@ -382,6 +386,7 @@ class ImportWalletUseCase {
       onSuccess();
       return;
     } catch (e, callstack) {
+      rethrow;
       if (e is PasswordException) {
         onError(e.message);
       } else if (e is MultipleWalletsException) {
@@ -454,20 +459,31 @@ class ImportWalletUseCase {
   }
 
   Future<bool> addressesHaveTransactions(List<Address> addresses) async {
-    final List<BitcoinTx> btcTransactions = await bitcoinRepository
-        .getTransactions(addresses.map((e) => e.address).toList())
-        .then((either) async {
-      return either.fold(
-        (error) => throw Exception("GetTransactionInfo failure"),
-        (transactions) => transactions,
-      );
-    });
+    try {
+      final List<BitcoinTx> btcTransactions = await bitcoinRepository
+          .getTransactions(addresses.map((e) => e.address).toList())
+          .then((either) async {
+        return either.fold(
+          (error) => throw Exception("GetTransactionInfo failure"),
+          (transactions) => transactions,
+        );
+      });
 
-    final int numCounterpartyTransactions =
-        await eventsRepository.numEventsForAddresses(
-            addresses: addresses.map((e) => e.address).toList());
+      print("[\n");
+      for (var address in addresses) {
+        print("address ${address.address} \n");
+      }
+      print("]");
 
-    return btcTransactions.isNotEmpty || numCounterpartyTransactions > 0;
+      final int numCounterpartyTransactions =
+          await eventsRepository.numEventsForAddresses(
+              addresses: addresses.map((e) => e.address).toList());
+
+      return btcTransactions.isNotEmpty;
+    } catch (e, callstack) {
+      print(callstack);
+      rethrow;
+    }
   }
 
   String _getCoinType() => switch (config.network) {

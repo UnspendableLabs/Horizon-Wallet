@@ -1320,7 +1320,12 @@ class EventsRepositoryImpl implements EventsRepository {
   }) async {
     final addressesParam = addresses.join(",");
 
+
+    print("addresses param $addressesParam");
+
     final response = await api_.getEventsByAddressesVerbose(addressesParam);
+
+    print("resopnse $response");
 
     if (response.error != null) {
       throw Exception("Error getting events by addresses: ${response.error}");

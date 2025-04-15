@@ -9,6 +9,7 @@ import 'package:horizon/data/sources/repositories/in_memory_key_repository_impl.
 import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 
 import 'package:horizon/data/services/address_service_impl.dart';
+import 'package:horizon/data/services/address_service_native.dart';
 import 'package:horizon/data/services/bip39_service_impl.dart';
 import 'package:horizon/data/services/bitcoind_service_impl.dart';
 import 'package:horizon/data/services/cache_provider_impl.dart';
@@ -223,7 +224,7 @@ void setup() {
     ConnectionErrorInterceptor(),
     BadResponseInterceptor(),
     BadCertificateInterceptor(),
-    SimpleLogInterceptor(),
+    // SimpleLogInterceptor(),
     RetryInterceptor(
       dio: dio,
       retries: 3,
@@ -250,7 +251,7 @@ void setup() {
     ConnectionErrorInterceptor(),
     BadResponseInterceptor(),
     BadCertificateInterceptor(),
-    SimpleLogInterceptor(),
+    // SimpleLogInterceptor(),
     RetryInterceptor(
       dio: dio,
       retries: 4,
@@ -357,7 +358,7 @@ void setup() {
   injector
       .registerSingleton<WalletService>(WalletServiceImpl(injector(), config));
   injector
-      .registerSingleton<AddressService>(AddressServiceImpl(config: config));
+      .registerSingleton<AddressService>(AddressServiceImplNative(config: config));
 
   injector.registerSingleton<ImportedAddressService>(
       ImportedAddressServiceImpl(config: config));
