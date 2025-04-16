@@ -373,7 +373,7 @@ class CreditParams {
 @JsonSerializable(fieldRename: FieldRename.snake)
 class DebitParams {
   final String action;
-  final String address;
+  final String? address;
   final String asset;
   final int blockIndex;
   final String event;

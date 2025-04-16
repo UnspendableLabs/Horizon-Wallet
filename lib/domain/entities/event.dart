@@ -257,7 +257,7 @@ class VerboseCreditEvent extends VerboseEvent {
 
 class DebitParams {
   final String action;
-  final String address;
+  final String? address;
   final String asset;
   final int blockIndex;
   final String event;

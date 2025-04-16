@@ -304,7 +304,7 @@ Map<String, dynamic> _$CreditParamsToJson(CreditParams instance) =>
 
 DebitParams _$DebitParamsFromJson(Map<String, dynamic> json) => DebitParams(
       action: json['action'] as String,
-      address: json['address'] as String,
+      address: json['address'] as String?,
       asset: json['asset'] as String,
       blockIndex: (json['block_index'] as num).toInt(),
       event: json['event'] as String,
@@ -2715,7 +2715,7 @@ Map<String, dynamic> _$VerboseCreditParamsToJson(
 VerboseDebitParams _$VerboseDebitParamsFromJson(Map<String, dynamic> json) =>
     VerboseDebitParams(
       action: json['action'] as String,
-      address: json['address'] as String,
+      address: json['address'] as String?,
       asset: json['asset'] as String,
       blockIndex: (json['block_index'] as num).toInt(),
       event: json['event'] as String,
