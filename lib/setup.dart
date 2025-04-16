@@ -11,11 +11,14 @@ import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 import 'package:horizon/data/services/address_service_impl.dart';
 import 'package:horizon/data/services/address_service_native.dart';
 import 'package:horizon/data/services/bip39_service_impl.dart';
+import 'package:horizon/data/services/bip39_service_native.dart';
 import 'package:horizon/data/services/bitcoind_service_impl.dart';
 import 'package:horizon/data/services/cache_provider_impl.dart';
 import 'package:horizon/data/services/encryption_service_web_worker_impl.dart';
+import 'package:horizon/data/services/encryption_service_native.dart';
 import 'package:dio_smart_retry/dio_smart_retry.dart';
 import 'package:horizon/data/services/imported_address_service_impl.dart';
+import 'package:horizon/data/services/imported_address_service_native.dart';
 import 'package:chrome_extension/tabs.dart';
 import 'package:horizon/data/services/platform_service_extension_impl.dart';
 import 'package:horizon/data/services/platform_service_web_impl.dart';
@@ -25,8 +28,11 @@ import "package:horizon/domain/repositories/address_repository.dart";
 import 'package:horizon/data/sources/local/db_manager.dart';
 
 import 'package:horizon/data/services/mnemonic_service_impl.dart';
+import 'package:horizon/data/services/mnemonic_service_native.dart';
 import 'package:horizon/data/services/transaction_service_impl.dart';
+import 'package:horizon/data/services/transaction_service_native.dart';
 import 'package:horizon/data/services/wallet_service_impl.dart';
+import 'package:horizon/data/services/wallet_service_native.dart';
 import 'package:horizon/data/sources/network/api/v2_api.dart';
 import 'package:horizon/data/sources/repositories/account_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/account_settings_repository_impl.dart';
@@ -62,6 +68,7 @@ import 'package:horizon/domain/services/transaction_service.dart';
 import 'package:horizon/domain/services/wallet_service.dart';
 
 import 'package:horizon/domain/services/public_key_service.dart';
+import 'package:horizon/data/services/public_key_service_native.dart';
 import 'package:horizon/data/services/public_key_service_impl.dart';
 
 import 'package:horizon/domain/repositories/version_repository.dart';
@@ -350,20 +357,19 @@ void setup() {
   injector.registerSingleton<AssetRepository>(
       AssetRepositoryImpl(api: GetIt.I.get<V2Api>()));
 
-  injector.registerSingleton<Bip39Service>(Bip39ServiceImpl());
+  injector.registerSingleton<Bip39Service>(Bip39ServiceNative());
   injector.registerSingleton<TransactionService>(
-      TransactionServiceImpl(config: config));
+      TransactionServiceNative(config: config));
+  injector.registerSingleton<EncryptionService>(EncryptionServiceNative());
   injector
-      .registerSingleton<EncryptionService>(EncryptionServiceWebWorkerImpl());
-  injector
-      .registerSingleton<WalletService>(WalletServiceImpl(injector(), config));
-  injector
-      .registerSingleton<AddressService>(AddressServiceImplNative(config: config));
+      .registerSingleton<WalletService>(WalletServiceNative(injector(), config));
+  injector.registerSingleton<AddressService>(
+      AddressServiceImplNative(config: config));
 
   injector.registerSingleton<ImportedAddressService>(
-      ImportedAddressServiceImpl(config: config));
+      ImportedAddressServiceNative(config: config));
   injector.registerSingleton<MnemonicService>(
-      MnemonicServiceImpl(GetIt.I.get<Bip39Service>()));
+      MnemonicServiceNative(GetIt.I.get<Bip39Service>()));
   injector.registerSingleton<BitcoindService>(
       BitcoindServiceCounterpartyProxyImpl(GetIt.I.get<V2Api>()));
 
@@ -621,7 +627,7 @@ void setup() {
       : VersionRepositoryImpl(config: config));
 
   injector.registerSingleton<PublicKeyService>(
-      PublicKeyServiceImpl(config: config));
+      PublicKeyServiceNative(config: config));
 
   // Register the appropriate platform service
   if (GetIt.I.get<Config>().isWebExtension) {
