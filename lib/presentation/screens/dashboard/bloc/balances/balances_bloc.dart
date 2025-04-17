@@ -1,182 +1,127 @@
 import 'dart:async';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:horizon/domain/entities/asset.dart';
-import 'package:horizon/domain/entities/balance.dart';
-import 'package:horizon/domain/entities/fairminter.dart';
-import 'package:horizon/domain/repositories/account_repository.dart';
-import 'package:horizon/domain/repositories/address_repository.dart';
-import 'package:horizon/domain/repositories/address_tx_repository.dart';
-import 'package:horizon/domain/repositories/asset_repository.dart';
+import 'package:flutter_settings_screens/flutter_settings_screens.dart';
+import 'package:horizon/domain/entities/multi_address_balance.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
-import 'package:horizon/domain/repositories/fairminter_repository.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_event.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_state.dart';
 
-// TODO: maybe abstract this away
-import 'package:decimal/decimal.dart';
+/// BalancesBloc manages the loading and caching of cryptocurrency balances
+class BalancesBloc extends Bloc<BalancesEvent, BalancesState> {
+  final BalanceRepository balanceRepository;
+  final List<String> addresses;
+  final CacheProvider cacheProvider;
+  Timer? _pollingTimer;
+  List<MultiAddressBalance>? _cachedBalances;
 
-(Map<String, Balance>, List<Balance>) aggregateBalancesByAsset(
-    List<Balance> balances) {
-  var aggregatedBalances = <String, Balance>{};
-  List<Balance> utxoBalances = [];
+  String starredAssetsKey = 'starredAssets';
 
-  for (var balance in balances) {
-    if (balance.utxo != null) {
-      utxoBalances.add(balance);
+  /// Create a BalancesBloc with repository and addresses to monitor
+  BalancesBloc({
+    required this.balanceRepository,
+    required this.addresses,
+    required this.cacheProvider,
+  }) : super(const BalancesState.initial()) {
+    on<Fetch>(_onFetch);
+    on<Start>(_onStart);
+    on<Stop>(_onStop);
+    on<ToggleStarred>(_onToggleStarred);
+  }
+
+  Future<void> _onFetch(Fetch event, Emitter<BalancesState> emit) async {
+    if (addresses.isEmpty) {
+      emit(const BalancesState.complete(Result.ok([], [])));
+      return;
+    }
+
+    final starredAssets = await cacheProvider.getValue(starredAssetsKey);
+    final starredAssetsList = starredAssets != null
+        ? (starredAssets as List).map((e) => e.toString()).toList()
+        : <String>[];
+
+    // BTC and XCP are always starred and cannot be unstarred
+    // Add them to the list if they are not already there
+    final originalLength = starredAssetsList.length;
+    starredAssetsList.addAll(
+        ['XCP', 'BTC'].where((asset) => !starredAssetsList.contains(asset)));
+    if (starredAssetsList.length > originalLength) {
+      await cacheProvider.setObject(starredAssetsKey, starredAssetsList);
+    }
+
+    // If we have cached data, emit a reloading state
+    if (_cachedBalances != null) {
+      emit(BalancesState.reloading(
+          Result.ok(_cachedBalances!, starredAssetsList)));
     } else {
-      Balance agg = aggregatedBalances[balance.asset] ??
-          Balance(
-              asset: balance.asset,
-              quantity: 0,
-              quantityNormalized: '0',
-              address: balance.address,
-              assetInfo: balance.assetInfo,
-              utxo: balance.utxo,
-              utxoAddress: balance.utxoAddress);
+      emit(const BalancesState.loading());
+    }
 
-      int nextQuantity = agg.quantity + balance.quantity;
+    try {
+      final balances =
+          await balanceRepository.getBalancesForAddresses(addresses);
 
-      Decimal nextQuantityNormalizedDecimal =
-          Decimal.parse(agg.quantityNormalized) +
-              Decimal.parse(balance.quantityNormalized);
-
-      String nextQuantityNormalized;
-      if (balance.assetInfo.divisible) {
-        nextQuantityNormalized =
-            nextQuantityNormalizedDecimal.toStringAsFixed(8);
-      } else {
-        nextQuantityNormalized = nextQuantityNormalizedDecimal.toString();
+      // Only update state if the new data is different
+      if (_cachedBalances == null ||
+          !MultiAddressBalance.equals(_cachedBalances!, balances)) {
+        _cachedBalances = balances;
+        emit(BalancesState.complete(Result.ok(balances, starredAssetsList)));
       }
-
-      Balance next = Balance(
-          asset: balance.asset,
-          quantity: nextQuantity,
-          quantityNormalized: nextQuantityNormalized,
-          address: balance.address,
-          assetInfo: balance.assetInfo,
-          utxo: balance.utxo,
-          utxoAddress: balance.utxoAddress);
-
-      aggregatedBalances[balance.asset] = next;
+      // If data is the same, we don't emit a new state
+    } catch (e) {
+      emit(BalancesState.complete(
+          Result.error('Error fetching balances: ${e.toString()}')));
     }
   }
 
-  return (aggregatedBalances, utxoBalances);
-}
+  void _onStart(Start event, Emitter<BalancesState> emit) {
+    // Stop any existing timer
+    _pollingTimer?.cancel();
 
-(Map<String, Balance>, List<Balance>) aggregateAndSortBalancesByAsset(
-    List<Balance> balances) {
-  var (aggregated, utxoBalances) = aggregateBalancesByAsset(balances);
-
-  var sortedEntries = aggregated.entries.toList()
-    ..sort((a, b) => b.value.quantity
-        .compareTo(a.value.quantity)); // Sort by quantity descending
-
-  var sortedUtxoBalances = utxoBalances.toList()
-    ..sort((a, b) =>
-        b.quantity.compareTo(a.quantity)); // Sort by quantity descending
-
-  return (Map.fromEntries(sortedEntries), sortedUtxoBalances);
-}
-
-class BalancesBloc extends Bloc<BalancesEvent, BalancesState> {
-  final BalanceRepository balanceRepository;
-  final AccountRepository accountRepository;
-  final AddressRepository addressRepository;
-  final AddressTxRepository addressTxRepository;
-  final AssetRepository assetRepository;
-  final FairminterRepository fairminterRepository;
-  final String currentAddress;
-
-  Timer? _timer;
-
-  BalancesBloc({
-    required this.balanceRepository,
-    required this.accountRepository,
-    required this.addressRepository,
-    required this.addressTxRepository,
-    required this.assetRepository,
-    required this.fairminterRepository,
-    required this.currentAddress,
-  }) : super(const BalancesState.initial()) {
-    on<Start>(_onStart);
-    on<Stop>(_onStop);
-    on<Fetch>(_onFetch);
-  }
-
-  void _onStart(event, emit) {
-    _timer?.cancel();
-    _timer = Timer.periodic(event.pollingInterval, (timer) {
+    // Start a new timer
+    _pollingTimer = Timer.periodic(event.pollingInterval, (_) {
       add(Fetch());
     });
-    // Fetch immediately on start
+
+    // Trigger an immediate fetch
     add(Fetch());
   }
 
-  void _onStop(event, emit) {
-    _timer?.cancel();
-    _timer = null;
-  }
-
-  Future<void> _onFetch(event, emit) async {
-    // emit loading if initial
-    // emit reloading if complete
-
-    state.map(
-      initial: (_) => emit(const BalancesState.loading()),
-      loading: (_) => null,
-      complete: (completeState) =>
-          emit(BalancesState.reloading(completeState.result)),
-      reloading: (_) => null,
-    );
-
-    try {
-      final List<String> addresses = [currentAddress];
-
-      final List<Balance> balances =
-          await balanceRepository.getBalancesForAddresses(addresses);
-      final (Map<String, Balance>, List<Balance>) allBalances =
-          aggregateAndSortBalancesByAsset(balances);
-
-      final Map<String, Balance> aggregated = allBalances.$1;
-      final List<Balance> utxoBalances = allBalances.$2;
-
-      final List<Asset> ownedAssets =
-          await assetRepository.getAllValidAssetsByOwnerVerbose(currentAddress);
-
-      final List<Fairminter> fairminters = await fairminterRepository
-          .getFairmintersByAddress(currentAddress, 'open')
-          .run()
-          .then((either) => either.fold(
-                (error) => throw FetchFairmintersException(
-                    error.toString()), // Handle failure
-                (fairminters) => fairminters, // Handle success
-              ));
-
-      emit(BalancesState.complete(Result.ok(
-          balances, aggregated, utxoBalances, ownedAssets, fairminters)));
-    } on FetchFairmintersException catch (e) {
-      emit(BalancesState.complete(Result.error(
-          "Error fetching fairminters for $currentAddress: ${e.message}")));
-    } catch (e) {
-      emit(BalancesState.complete(
-          Result.error("Error fetching balances for $currentAddress")));
-    }
+  void _onStop(Stop event, Emitter<BalancesState> emit) {
+    _pollingTimer?.cancel();
+    _pollingTimer = null;
   }
 
   @override
   Future<void> close() {
-    // Cancel the timer to prevent adding events after the Bloc is closed
-    _timer?.cancel();
+    _pollingTimer?.cancel();
+    _pollingTimer = null;
     return super.close();
   }
-}
 
-class FetchFairmintersException implements Exception {
-  final String message;
-  FetchFairmintersException(this.message);
+  Future<void> _onToggleStarred(
+      ToggleStarred event, Emitter<BalancesState> emit) async {
+    try {
+      final asset = event.asset;
+      final balances = _cachedBalances;
+      if (balances == null) return;
 
-  @override
-  String toString() => 'FetchFairmintersException: $message';
+      final starredAssets = await cacheProvider.getValue(starredAssetsKey);
+      final starredAssetsList = starredAssets != null
+          ? (starredAssets as List).map((e) => e.toString()).toList()
+          : <String>[];
+
+      if (!starredAssetsList.contains(asset)) {
+        starredAssetsList.add(asset);
+      } else {
+        starredAssetsList.remove(asset);
+      }
+
+      await cacheProvider.setObject(starredAssetsKey, starredAssetsList);
+
+      emit(BalancesState.complete(Result.ok(balances, starredAssetsList)));
+    } catch (e) {
+      // Do nothing
+    }
+  }
 }

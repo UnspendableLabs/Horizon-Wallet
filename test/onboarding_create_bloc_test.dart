@@ -54,7 +54,7 @@ void main() {
     GetIt.I.reset();
   });
 
-  group('OnboardingCreateBloc - CreateWallet', () {
+  group('OnboardingCreateBloc - WalletCreated', () {
     const mnemonic = 'test mnemonic';
     const password = 'testPassword';
 
@@ -76,10 +76,10 @@ void main() {
           importWalletUseCase: mockImportWalletUseCase,
         );
       },
-      seed: () => OnboardingCreateState(
-        mnemonicState: GenerateMnemonicStateGenerated(mnemonic: mnemonic),
+      seed: () => const OnboardingCreateState(
+        createMnemonicState: CreateMnemonicState.success(mnemonic: mnemonic),
       ),
-      act: (bloc) => bloc.add(CreateWallet(password: password)),
+      act: (bloc) => bloc.add(WalletCreated(password: password)),
       expect: () => [
         predicate<OnboardingCreateState>(
           (state) => state.createState is CreateStateLoading,
@@ -107,10 +107,10 @@ void main() {
           importWalletUseCase: mockImportWalletUseCase,
         );
       },
-      seed: () => OnboardingCreateState(
-        mnemonicState: GenerateMnemonicStateGenerated(mnemonic: mnemonic),
+      seed: () => const OnboardingCreateState(
+        createMnemonicState: CreateMnemonicState.success(mnemonic: mnemonic),
       ),
-      act: (bloc) => bloc.add(CreateWallet(password: password)),
+      act: (bloc) => bloc.add(WalletCreated(password: password)),
       expect: () => [
         predicate<OnboardingCreateState>(
           (state) => state.createState is CreateStateLoading,
@@ -138,10 +138,10 @@ void main() {
           importWalletUseCase: mockImportWalletUseCase,
         );
       },
-      seed: () => OnboardingCreateState(
-        mnemonicState: GenerateMnemonicStateGenerated(mnemonic: mnemonic),
+      seed: () => const OnboardingCreateState(
+        createMnemonicState: CreateMnemonicState.success(mnemonic: mnemonic),
       ),
-      act: (bloc) => bloc.add(CreateWallet(password: password)),
+      act: (bloc) => bloc.add(WalletCreated(password: password)),
       expect: () => [
         predicate<OnboardingCreateState>(
           (state) => state.createState is CreateStateLoading,
@@ -172,10 +172,10 @@ void main() {
           importWalletUseCase: mockImportWalletUseCase,
         );
       },
-      seed: () => OnboardingCreateState(
-        mnemonicState: GenerateMnemonicStateGenerated(mnemonic: mnemonic),
+      seed: () => const OnboardingCreateState(
+        createMnemonicState: CreateMnemonicState.success(mnemonic: mnemonic),
       ),
-      act: (bloc) => bloc.add(CreateWallet(password: password)),
+      act: (bloc) => bloc.add(WalletCreated(password: password)),
       expect: () => [
         predicate<OnboardingCreateState>(
           (state) => state.createState is CreateStateLoading,

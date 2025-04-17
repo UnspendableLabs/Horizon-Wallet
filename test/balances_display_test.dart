@@ -1,39 +1,60 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:horizon/common/constants.dart';
+import 'package:get_it/get_it.dart';
+import 'package:go_router/go_router.dart';
 import 'package:horizon/core/logging/logger.dart';
-import 'package:horizon/domain/entities/asset_info.dart';
-import 'package:horizon/domain/entities/fairminter.dart';
-import 'package:horizon/domain/repositories/address_repository.dart';
-import 'package:horizon/domain/repositories/bitcoin_repository.dart';
-import 'package:horizon/domain/repositories/events_repository.dart';
-import 'package:horizon/domain/repositories/transaction_local_repository.dart';
-import 'package:horizon/presentation/common/no_data.dart';
-import 'package:horizon/presentation/screens/dashboard/view/balances_display.dart';
 import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/entities/asset.dart';
+import 'package:horizon/domain/entities/asset_info.dart';
 import 'package:horizon/domain/entities/balance.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:mocktail/mocktail.dart';
+import 'package:horizon/domain/entities/multi_address_balance.dart';
+import 'package:horizon/domain/entities/multi_address_balance_entry.dart';
+import 'package:horizon/domain/repositories/events_repository.dart';
+import 'package:horizon/domain/repositories/balance_repository.dart';
+import 'package:horizon/presentation/common/no_data.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_bloc.dart';
+import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_event.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_state.dart';
-import 'package:get_it/get_it.dart';
-import 'package:horizon/domain/repositories/config_repository.dart';
+import 'package:horizon/presentation/screens/dashboard/view/balances_display.dart';
+import 'package:mocktail/mocktail.dart';
+import 'package:bloc_test/bloc_test.dart';
 
-class MockBalancesBloc extends Mock implements BalancesBloc {}
+abstract class Config {
+  bool get isMobile;
+}
+
+class MockBalancesBloc extends MockBloc<BalancesEvent, BalancesState>
+    implements BalancesBloc {
+  @override
+  final BalanceRepository balanceRepository;
+  @override
+  final List<String> addresses;
+  @override
+  final CacheProvider cacheProvider;
+
+  MockBalancesBloc({
+    required this.balanceRepository,
+    required this.addresses,
+    required this.cacheProvider,
+  });
+}
+
+class MockBalanceRepository extends Mock implements BalanceRepository {}
 
 class MockLogger extends Mock implements Logger {}
 
-class MockConfig extends Mock implements Config {}
-
 class MockEventsRepository extends Mock implements EventsRepository {}
 
-class MockTransactionLocalRepository extends Mock
-    implements TransactionLocalRepository {}
+class MockConfig extends Mock implements Config {
+  @override
+  bool get isMobile => false;
+}
 
-class MockAddressRepository extends Mock implements AddressRepository {}
+class MockGoRouter extends Mock implements GoRouter {}
 
-class MockBitcoinRepository extends Mock implements BitcoinRepository {}
+class MockCacheProvider extends Mock implements CacheProvider {}
 
 // Define fake classes
 class FakeAddress extends Fake implements Address {
@@ -109,13 +130,6 @@ class FakeBalance extends Fake implements Balance {
   });
 }
 
-class FakeFairminter extends Fake implements Fairminter {
-  @override
-  final String asset;
-
-  FakeFairminter({required this.asset});
-}
-
 class FakeUtxoBalance extends Fake implements Balance {
   @override
   final String? address;
@@ -148,1024 +162,452 @@ class FakeUtxoBalance extends Fake implements Balance {
 
 void main() {
   final getIt = GetIt.instance;
-  late BalancesBloc mockBalancesBloc;
+  late MockBalancesBloc mockBalancesBloc;
+  late MockGoRouter mockGoRouter;
 
-  // Define variables to be used in setUp() and tests
-  late List<Balance> balances;
-  late Map<String, Balance> aggregatedBalances;
-  late List<Asset> ownedAssets;
-  late List<Fairminter> fairminterAssets;
-  late List<Balance> utxoBalances;
-
-  setUp(() {
-    // Register mock Config
-    getIt.registerSingleton<Config>(MockConfig());
-
-    mockBalancesBloc = MockBalancesBloc();
-
-    // Register fallback values for mocktail
-    registerFallbackValue(FakeAddress(address: ''));
-    registerFallbackValue(
-      FakeAsset(
-        asset: '',
-        assetLongname: '',
-        owner: '',
-        issuer: '',
-        divisible: false,
+  // Test data
+  final mockBalances = [
+    MultiAddressBalance(
+      asset: 'BTC',
+      assetLongname: null,
+      total: 100000000,
+      totalNormalized: '1.00000000',
+      entries: [
+        MultiAddressBalanceEntry(
+          address: 'address1',
+          quantity: 100000000,
+          quantityNormalized: '1.00000000',
+          utxo: null,
+          utxoAddress: null,
+        ),
+      ],
+      assetInfo: const AssetInfo(
+        assetLongname: null,
+        description: 'BTC',
+        divisible: true,
+        owner: null,
         locked: false,
       ),
-    );
-    registerFallbackValue(
-      FakeBalance(
-        asset: '',
-        quantity: 0,
-        quantityNormalized: '0',
-        address: '',
-        utxo: null,
-        utxoAddress: '',
-        assetInfo: FakeAssetInfo(
-          assetLongname: '',
-          issuer: '',
-          divisible: false,
+    ),
+    MultiAddressBalance(
+      asset: 'XCP',
+      assetLongname: null,
+      total: 50000000,
+      totalNormalized: '0.50000000',
+      entries: [
+        MultiAddressBalanceEntry(
+          address: 'address1',
+          quantity: 50000000,
+          quantityNormalized: '0.50000000',
+          utxo: null,
+          utxoAddress: null,
         ),
-      ),
-    );
-    registerFallbackValue(FakeFairminter(asset: ''));
-    registerFallbackValue(FakeUtxoBalance(
-      utxo: '',
-      utxoAddress: '',
-      asset: '',
-      quantity: 0,
-      quantityNormalized: '0',
-      assetInfo: FakeAssetInfo(
-        assetLongname: '',
-        issuer: '',
-        divisible: false,
-      ),
-    ));
-
-    // Create fake assets and balances
-    final asset1 = FakeAsset(
-      asset: 'PEPENARDO',
-      assetLongname: 'PEPENARDO.PEPE',
-      owner: '1TestAddress',
-      issuer: '1IssuerAddress',
-      divisible: true,
-      locked: false,
-    );
-
-    final asset2 = FakeAsset(
-      asset: 'MAXVOLUME',
-      assetLongname: '',
-      owner: '1OtherAddress',
-      issuer: '1IssuerAddress',
-      divisible: true,
-      locked: false,
-    );
-
-    final fairUtxoAsset = FakeAsset(
-      asset: 'FAIR_UTXO',
-      assetLongname: '',
-      owner: '1TestAddress',
-      issuer: '1TestAddress',
-      divisible: true,
-      locked: false,
-    );
-
-    final assetInfo1 = FakeAssetInfo(
-      assetLongname: 'PEPENARDO.ASDF',
-      issuer: '1IssuerAddress',
-      divisible: true,
-    );
-
-    final assetInfo2 = FakeAssetInfo(
-      assetLongname: '',
-      issuer: '1IssuerAddress',
-      divisible: true,
-    );
-
-    final balance1 = FakeBalance(
-      asset: 'PEPENARDO',
-      quantity: 100000000,
-      quantityNormalized: '1.00000000',
-      address: '1TestAddress',
-      assetInfo: assetInfo1,
-    );
-
-    final balance2 = FakeBalance(
-      asset: 'MAXVOLUME',
-      quantity: 200000000,
-      quantityNormalized: '2.00000000',
-      address: '1TestAddress',
-      assetInfo: assetInfo2,
-    );
-
-    balances = [balance1, balance2];
-    aggregatedBalances = {
-      'PEPENARDO': balance1,
-      'MAXVOLUME': balance2,
-    };
-
-    final fairminterAsset1 = FakeFairminter(
-      asset: 'PEPENARDO',
-    );
-
-    fairminterAssets = [fairminterAsset1];
-    ownedAssets = [asset1, fairUtxoAsset];
-
-    final utxoBalanceOwned = FakeUtxoBalance(
-      utxo: '1:1',
-      utxoAddress: '1TestAddress',
-      asset: fairUtxoAsset.asset,
-      quantity: 100000000,
-      quantityNormalized: '1.00000000',
-      assetInfo: FakeAssetInfo(
-        assetLongname: fairUtxoAsset.assetLongname!,
-        issuer: fairUtxoAsset.issuer!,
-        divisible: fairUtxoAsset.divisible,
-      ),
-    );
-
-    final utxoBalanceUnowned = FakeUtxoBalance(
-      utxo: '1:1',
-      utxoAddress: '1TestAddress',
-      asset: '80K',
-      quantity: 100000000,
-      quantityNormalized: '1.00000000',
-      assetInfo: FakeAssetInfo(
-        assetLongname: '80K',
-        issuer: 'differentIssuer',
+      ],
+      assetInfo: const AssetInfo(
+        assetLongname: null,
+        description: 'Counterparty',
         divisible: true,
+        owner: null,
+        locked: false,
       ),
-    );
-
-    utxoBalances = [utxoBalanceUnowned, utxoBalanceOwned];
-
-    // Mock the state
-    when(() => mockBalancesBloc.state).thenReturn(
-      BalancesState.complete(
-        Result.ok(balances, aggregatedBalances, utxoBalances, ownedAssets,
-            fairminterAssets),
-      ),
-    );
-
-    // Mock the stream
-    when(() => mockBalancesBloc.stream).thenAnswer(
-      (_) => Stream<BalancesState>.value(
-        BalancesState.complete(
-          Result.ok(balances, aggregatedBalances, utxoBalances, ownedAssets,
-              fairminterAssets),
+    ),
+    MultiAddressBalance(
+      asset: 'A12345',
+      assetLongname: null,
+      total: 1000000000,
+      totalNormalized: '10.00000000',
+      entries: [
+        MultiAddressBalanceEntry(
+          address: 'address1',
+          quantity: 1000000000,
+          quantityNormalized: '10.00000000',
+          utxo: null,
+          utxoAddress: null,
         ),
+      ],
+      assetInfo: const AssetInfo(
+        assetLongname: '',
+        description: '',
+        divisible: true,
+        owner: 'address2',
+        locked: true,
       ),
+    ),
+    MultiAddressBalance(
+      asset: 'NAMEDASSET',
+      assetLongname: null,
+      total: 1000000,
+      totalNormalized: '0.01000000',
+      entries: [
+        MultiAddressBalanceEntry(
+          address: 'address1',
+          quantity: 1000000,
+          quantityNormalized: '0.01000000',
+          utxo: null,
+          utxoAddress: null,
+        ),
+      ],
+      assetInfo: const AssetInfo(
+        assetLongname: null,
+        description: 'A NAMEDASSET',
+        divisible: true,
+        owner: 'address1',
+        locked: false,
+      ),
+    ),
+    MultiAddressBalance(
+      asset: 'A98765',
+      assetLongname: 'PEPE.FROG',
+      total: 50000000,
+      totalNormalized: '0.50000000',
+      entries: [
+        MultiAddressBalanceEntry(
+          address: 'address1',
+          quantity: 50000000,
+          quantityNormalized: '0.50000000',
+          utxo: null,
+          utxoAddress: null,
+        ),
+      ],
+      assetInfo: const AssetInfo(
+        assetLongname: 'PEPE.FROG',
+        description: null,
+        divisible: true,
+        locked: false,
+        owner: 'address1',
+      ),
+    ),
+  ];
+
+  setUp(() {
+    getIt.registerSingleton<Config>(MockConfig());
+    mockBalancesBloc = MockBalancesBloc(
+      balanceRepository: MockBalanceRepository(),
+      addresses: ['address1'],
+      cacheProvider: MockCacheProvider(),
+    );
+    mockGoRouter = MockGoRouter();
+
+    // Mock successful state by default
+    when(() => mockBalancesBloc.state).thenReturn(
+      BalancesState.complete(Result.ok(mockBalances, [])),
+    );
+    when(() => mockBalancesBloc.stream).thenAnswer(
+      (_) => Stream.value(BalancesState.complete(Result.ok(mockBalances, []))),
     );
   });
 
   tearDown(() {
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMessageHandler('flutter/assets', null);
     getIt.reset();
   });
 
-  group('BalancesDisplay', () {
-    testWidgets('should filter balances based on search input',
-        (WidgetTester tester) async {
-      final address = FakeAddress(address: '1TestAddress');
-
-      await tester.pumpWidget(
-        MaterialApp(
-          home: BlocProvider<BalancesBloc>.value(
-            value: mockBalancesBloc,
-            child: Scaffold(
-              body: CustomScrollView(
-                slivers: [
-                  BalancesDisplay(
-                    isDarkTheme: false,
-                    currentAddress: address.address,
-                    initialItemCount: 10,
-                  ),
-                ],
-              ),
+  Widget buildTestWidget({String searchQuery = ''}) {
+    return MaterialApp(
+      home: MockGoRouterProvider(
+        goRouter: mockGoRouter,
+        child: BlocProvider<BalancesBloc>.value(
+          value: mockBalancesBloc,
+          child: Scaffold(
+            body: SingleChildScrollView(
+              child: BalancesDisplay(searchQuery: searchQuery),
             ),
           ),
         ),
-      );
+      ),
+    );
+  }
 
-      // Wait for the widget tree to build
-      await tester.pumpAndSettle();
-
-      // Verify that both assets are displayed
-      expect(find.byKey(const Key('assetName_PEPENARDO')), findsOneWidget);
-      expect(find.byKey(const Key('assetName_MAXVOLUME')), findsOneWidget);
-      expect(find.byKey(const Key('assetName_FAIR_UTXO')), findsOneWidget);
-      expect(find.byKey(const Key('assetName_80K')), findsOneWidget);
-
-      await tester.enterText(find.byKey(const Key('search_input')), 'pepe');
-      await tester.pumpAndSettle();
-
-      // Verify that only 'PEPENARDO' is displayed
-      expect(find.byKey(const Key('assetName_PEPENARDO')), findsOneWidget);
-      expect(find.byKey(const Key('assetName_MAXVOLUME')), findsNothing);
-      expect(find.byKey(const Key('assetName_FAIR_UTXO')), findsNothing);
-      expect(find.byKey(const Key('assetName_80K')), findsNothing);
-    });
-
-    testWidgets('should search by subasset name', (WidgetTester tester) async {
-      final address = FakeAddress(address: '1TestAddress');
-
-      await tester.pumpWidget(
-        MaterialApp(
-          home: BlocProvider<BalancesBloc>.value(
-            value: mockBalancesBloc,
-            child: Scaffold(
-              body: CustomScrollView(
-                slivers: [
-                  BalancesDisplay(
-                    isDarkTheme: false,
-                    currentAddress: address.address,
-                    initialItemCount: 10,
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      );
-
-      // Wait for the widget tree to build
-      await tester.pumpAndSettle();
-
-      // Verify that both assets are displayed
-      expect(find.byKey(const Key('assetName_PEPENARDO')), findsOneWidget);
-      expect(find.byKey(const Key('assetName_MAXVOLUME')), findsOneWidget);
-      expect(find.byKey(const Key('assetName_FAIR_UTXO')), findsOneWidget);
-      expect(find.byKey(const Key('assetName_80K')), findsOneWidget);
-
-      await tester.enterText(find.byKey(const Key('search_input')), 'asdf');
-      await tester.pumpAndSettle();
-
-      // Verify that only 'PEPENARDO' is displayed
-      expect(find.byKey(const Key('assetName_PEPENARDO')), findsOneWidget);
-      expect(find.byKey(const Key('assetName_MAXVOLUME')), findsNothing);
-      expect(find.byKey(const Key('assetName_FAIR_UTXO')), findsNothing);
-      expect(find.byKey(const Key('assetName_80K')), findsNothing);
-    });
-
-    testWidgets(
-        'should filter and display only owned assets when "Owned" is selected',
-        (WidgetTester tester) async {
-      final address = FakeAddress(address: '1TestAddress');
-
-      await tester.pumpWidget(
-        MaterialApp(
-          home: BlocProvider<BalancesBloc>.value(
-            value: mockBalancesBloc,
-            child: Scaffold(
-              body: CustomScrollView(
-                slivers: [
-                  BalancesDisplay(
-                    isDarkTheme: false,
-                    currentAddress: address.address,
-                    initialItemCount: 10,
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      );
-
-      // Wait for the widget tree to build
-      await tester.pumpAndSettle();
-
-      // Verify that both assets are displayed
-      expect(find.byKey(const Key('assetName_PEPENARDO')), findsOneWidget);
-      expect(find.byKey(const Key('assetName_MAXVOLUME')), findsOneWidget);
-      expect(find.byKey(const Key('assetName_FAIR_UTXO')), findsOneWidget);
-      expect(find.byKey(const Key('assetName_80K')), findsOneWidget);
-
-      // Tap the "Owned" checkbox
-      await tester.tap(find.byKey(const Key('owned_checkbox')));
-      await tester.pumpAndSettle();
-
-      // Verify that only the owned asset is displayed
-      expect(find.byKey(const Key('assetName_PEPENARDO')), findsOneWidget);
-      expect(find.byKey(const Key('assetName_MAXVOLUME')), findsNothing);
-      expect(find.byKey(const Key('assetName_FAIR_UTXO')), findsOneWidget);
-      expect(find.byKey(const Key('assetName_80K')), findsNothing);
-    });
-
-    testWidgets('should filter when "Utxo Attached" is selected',
-        (WidgetTester tester) async {
-      final address = FakeAddress(address: '1TestAddress');
-
-      await tester.pumpWidget(
-        MaterialApp(
-          home: BlocProvider<BalancesBloc>.value(
-            value: mockBalancesBloc,
-            child: Scaffold(
-              body: CustomScrollView(
-                slivers: [
-                  BalancesDisplay(
-                    isDarkTheme: false,
-                    currentAddress: address.address,
-                    initialItemCount: 10,
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      );
-
-      // Wait for the widget tree to build
-      await tester.pumpAndSettle();
-
-      // Verify that both assets are displayed
-      expect(find.byKey(const Key('assetName_PEPENARDO')), findsOneWidget);
-      expect(find.byKey(const Key('assetName_MAXVOLUME')), findsOneWidget);
-      expect(find.byKey(const Key('assetName_FAIR_UTXO')), findsOneWidget);
-      expect(find.byKey(const Key('assetName_80K')), findsOneWidget);
-
-      // Tap the "Utxo Attached" checkbox
-      await tester.tap(find.byKey(const Key('utxo_checkbox')));
-      await tester.pumpAndSettle();
-
-      // Verify that only the utxo asset is displayed
-      expect(find.byKey(const Key('assetName_PEPENARDO')), findsNothing);
-      expect(find.byKey(const Key('assetName_MAXVOLUME')), findsNothing);
-      expect(find.byKey(const Key('assetName_FAIR_UTXO')), findsOneWidget);
-      expect(find.byKey(const Key('assetName_80K')), findsOneWidget);
-    });
-
-    testWidgets('should filter based on search input and "Utxo Attached"',
-        (WidgetTester tester) async {
-      final address = FakeAddress(address: '1TestAddress');
-
-      await tester.pumpWidget(
-        MaterialApp(
-          home: BlocProvider<BalancesBloc>.value(
-            value: mockBalancesBloc,
-            child: Scaffold(
-              body: CustomScrollView(
-                slivers: [
-                  BalancesDisplay(
-                    isDarkTheme: false,
-                    currentAddress: address.address,
-                    initialItemCount: 10,
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      );
-
-      // Wait for the widget tree to build
-      await tester.pumpAndSettle();
-
-      // Verify that all assets are displayed
-      expect(find.byKey(const Key('assetName_PEPENARDO')), findsOneWidget);
-      expect(find.byKey(const Key('assetName_MAXVOLUME')), findsOneWidget);
-      expect(find.byKey(const Key('assetName_FAIR_UTXO')), findsOneWidget);
-      expect(find.byKey(const Key('assetName_80K')), findsOneWidget);
-
-      // Tap the "Utxo Attached" checkbox
-      await tester.tap(find.byKey(const Key('utxo_checkbox')));
-      await tester.pumpAndSettle();
-
-      // Verify that only the utxo assets are displayed
-      expect(find.byKey(const Key('assetName_PEPENARDO')), findsNothing);
-      expect(find.byKey(const Key('assetName_MAXVOLUME')), findsNothing);
-      expect(find.byKey(const Key('assetName_FAIR_UTXO')), findsOneWidget);
-      expect(find.byKey(const Key('assetName_80K')), findsOneWidget);
-
-      await tester.enterText(find.byKey(const Key('search_input')), 'fair');
-      await tester.pumpAndSettle();
-
-      // Verify that only the utxo searched asset is displayed
-      expect(find.byKey(const Key('assetName_PEPENARDO')), findsNothing);
-      expect(find.byKey(const Key('assetName_MAXVOLUME')), findsNothing);
-      expect(find.byKey(const Key('assetName_FAIR_UTXO')), findsOneWidget);
-      expect(find.byKey(const Key('assetName_80K')), findsNothing);
-
-      await tester.tap(find.byKey(const Key('owned_checkbox')));
-      await tester.pumpAndSettle();
-
-      // Verify that only searched, utxo, and owned asset is displayed
-      expect(find.byKey(const Key('assetName_PEPENARDO')), findsNothing);
-      expect(find.byKey(const Key('assetName_MAXVOLUME')), findsNothing);
-      expect(find.byKey(const Key('assetName_FAIR_UTXO')), findsOneWidget);
-      expect(find.byKey(const Key('assetName_80K')), findsNothing);
-
-      await tester.enterText(find.byKey(const Key('search_input')), '');
-      await tester.pumpAndSettle();
-
-      // Verify that owned and utxo asset is displayed
-      expect(find.byKey(const Key('assetName_PEPENARDO')), findsNothing);
-      expect(find.byKey(const Key('assetName_MAXVOLUME')), findsNothing);
-      expect(find.byKey(const Key('assetName_FAIR_UTXO')), findsOneWidget);
-      expect(find.byKey(const Key('assetName_80K')), findsNothing);
-    });
-
-    testWidgets(
-        'should filter and display assets based on search input and Owned filter combined',
-        (WidgetTester tester) async {
-      final address = FakeAddress(address: '1TestAddress');
-
-      // Create multiple assets with varying ownership and issuer details
-      final assets = [
-        // Asset owned and issued by the current address
-        FakeAsset(
-          asset: 'ASSET1',
-          assetLongname: 'ASSET1.LONG',
-          owner: '1TestAddress',
-          issuer: '1TestAddress',
-          divisible: true,
-          locked: false,
-        ),
-        // Asset owned by current address but issued by someone else
-        FakeAsset(
-          asset: 'ASSET2',
-          assetLongname: 'ASSET2.LONG',
-          owner: '1TestAddress',
-          issuer: '1IssuerAddress',
-          divisible: true,
-          locked: false,
-        ),
-        // UTXO asset owned by current address
-        FakeAsset(
-          asset: 'FAIR_UTXO',
-          assetLongname: '',
-          owner: '1TestAddress',
-          issuer: '1TestAddress',
-          divisible: true,
-          locked: false,
-        ),
-        // Asset not owned by current address
-        FakeAsset(
-          asset: 'ASSET3',
-          assetLongname: 'ASSET3.LONG',
-          owner: '1OtherOwner',
-          issuer: '1TestAddress',
-          divisible: true,
-          locked: false,
-        ),
-        // Asset not owned by current address
-        FakeAsset(
-          asset: 'ASSET4',
-          assetLongname: 'ASSET4.LONG',
-          owner: '1OtherOwner',
-          issuer: '1OtherIssuer',
-          divisible: true,
-          locked: false,
-        ),
-        // Asset not owned by current address but matches search term
-        FakeAsset(
-          asset: 'FILTERME',
-          assetLongname: 'FILTERME.LONG',
-          owner: '1OtherOwner',
-          issuer: '1OtherIssuer',
-          divisible: true,
-          locked: false,
-        ),
-      ];
-
-      final balances = [
-        FakeBalance(
-          asset: 'ASSET1',
-          quantity: 100000000,
-          quantityNormalized: '1.00000000',
-          address: '1TestAddress',
-          assetInfo: FakeAssetInfo(
-            assetLongname: 'ASSET1.LONG',
-            issuer: '1TestAddress',
-            divisible: true,
-          ),
-        ),
-        FakeBalance(
-          asset: 'ASSET2',
-          quantity: 200000000,
-          quantityNormalized: '2.00000000',
-          address: '1TestAddress',
-          assetInfo: FakeAssetInfo(
-            assetLongname: 'ASSET2.LONG',
-            issuer: '1IssuerAddress',
-            divisible: true,
-          ),
-        ),
-        FakeBalance(
-          asset: 'ASSET3',
-          quantity: 300000000,
-          quantityNormalized: '3.00000000',
-          address: '1OtherAddress',
-          assetInfo: FakeAssetInfo(
-            assetLongname: 'ASSET3.LONG',
-            issuer: '1TestAddress',
-            divisible: true,
-          ),
-        ),
-        FakeBalance(
-          asset: 'ASSET4',
-          quantity: 400000000,
-          quantityNormalized: '4.00000000',
-          address: '1OtherAddress',
-          assetInfo: FakeAssetInfo(
-            assetLongname: 'ASSET4.LONG',
-            issuer: '1OtherIssuer',
-            divisible: true,
-          ),
-        ),
-        FakeBalance(
-          asset: 'FILTERME',
-          quantity: 500000000,
-          quantityNormalized: '5.00000000',
-          address: '1OtherAddress',
-          assetInfo: FakeAssetInfo(
-            assetLongname: 'FILTERME.LONG',
-            issuer: '1OtherIssuer',
-            divisible: true,
-          ),
-        ),
-      ];
-
-      final aggregatedBalances = {
-        for (var balance in balances) balance.asset: balance,
-      };
-
-      final ownedAssets = [
-        assets[0], // ASSET1: Owned by current address
-        assets[1], // ASSET2: Owned by current address
-        assets[2], // FAIR_UTXO: Owned by current address
-      ];
-
-      utxoBalances = [
-        FakeUtxoBalance(
-          utxo: '1:1',
-          utxoAddress: '1TestAddress',
-          asset: assets[2].asset,
-          quantity: 100000000,
-          quantityNormalized: '1.00000000',
-          assetInfo: FakeAssetInfo(
-            assetLongname: assets[2].assetLongname!,
-            issuer: assets[2].issuer!,
-            divisible: assets[2].divisible,
-          ),
-        )
-      ];
-
-      // Mock the BalancesBloc state and stream with the new data
-      when(() => mockBalancesBloc.state).thenReturn(
-        BalancesState.complete(
-          Result.ok(balances, aggregatedBalances, utxoBalances, ownedAssets,
-              fairminterAssets),
-        ),
-      );
-
+  group('BalancesDisplay Widget Tests', () {
+    testWidgets('displays loading state correctly', (tester) async {
+      when(() => mockBalancesBloc.state)
+          .thenReturn(const BalancesState.loading());
       when(() => mockBalancesBloc.stream).thenAnswer(
-        (_) => Stream<BalancesState>.value(
-          BalancesState.complete(
-            Result.ok(balances, aggregatedBalances, utxoBalances, ownedAssets,
-                fairminterAssets),
-          ),
-        ),
+        (_) => Stream.value(const BalancesState.loading()),
       );
 
-      await tester.pumpWidget(
-        MaterialApp(
-          home: BlocProvider<BalancesBloc>.value(
-            value: mockBalancesBloc,
-            child: Scaffold(
-              body: CustomScrollView(
-                slivers: [
-                  BalancesDisplay(
-                    isDarkTheme: false,
-                    currentAddress: address.address,
-                    initialItemCount: 10,
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      );
+      await tester.pumpWidget(buildTestWidget());
+      await tester.pump();
 
-      // Wait for the widget tree to build
-      await tester.pumpAndSettle();
-
-      // Verify that all assets are displayed initially
-      expect(find.byKey(const Key('assetName_ASSET1')), findsOneWidget);
-      expect(find.byKey(const Key('assetName_ASSET2')), findsOneWidget);
-      expect(find.byKey(const Key('assetName_ASSET3')), findsOneWidget);
-      expect(find.byKey(const Key('assetName_ASSET4')), findsOneWidget);
-      expect(find.byKey(const Key('assetName_FILTERME')), findsOneWidget);
-      expect(find.byKey(const Key('assetName_FAIR_UTXO')), findsOneWidget);
-
-      // Enter search term 'ASSET'
-      await tester.enterText(find.byKey(const Key('search_input')), 'ASSET');
-      await tester.pumpAndSettle();
-
-      // Verify that assets with 'ASSET' in their name are displayed
-      expect(find.byKey(const Key('assetName_ASSET1')), findsOneWidget);
-      expect(find.byKey(const Key('assetName_ASSET2')), findsOneWidget);
-      expect(find.byKey(const Key('assetName_ASSET3')), findsOneWidget);
-      expect(find.byKey(const Key('assetName_ASSET4')), findsOneWidget);
-      expect(find.byKey(const Key('assetName_FILTERME')), findsNothing);
-      expect(find.byKey(const Key('assetName_FAIR_UTXO')), findsNothing);
-      // Tap the "Owned" checkbox
-      await tester.tap(find.byKey(const Key('owned_checkbox')));
-      await tester.pumpAndSettle();
-
-      // Verify that only owned assets with 'ASSET' in their name are displayed
-      expect(find.byKey(const Key('assetName_ASSET1')), findsOneWidget);
-      expect(find.byKey(const Key('assetName_ASSET2')), findsOneWidget);
-      expect(find.byKey(const Key('assetName_ASSET3')), findsNothing);
-      expect(find.byKey(const Key('assetName_ASSET4')), findsNothing);
-      expect(find.byKey(const Key('assetName_FILTERME')), findsNothing);
-      expect(find.byKey(const Key('assetName_FAIR_UTXO')), findsNothing);
-      // Change the search term to 'FILTERME'
-      await tester.enterText(find.byKey(const Key('search_input')), 'FILTERME');
-      await tester.pumpAndSettle();
-
-      // Verify that no assets are displayed since FILTERME is not owned by current address
-      expect(find.byKey(const Key('assetName_ASSET1')), findsNothing);
-      expect(find.byKey(const Key('assetName_ASSET2')), findsNothing);
-      expect(find.byKey(const Key('assetName_ASSET3')), findsNothing);
-      expect(find.byKey(const Key('assetName_ASSET4')), findsNothing);
-      expect(find.byKey(const Key('assetName_FILTERME')), findsNothing);
-      expect(find.byKey(const Key('assetName_FAIR_UTXO')), findsNothing);
-      // Uncheck "Owned" filter
-      await tester.tap(find.byKey(const Key('owned_checkbox')));
-      await tester.pumpAndSettle();
-
-      // Verify that assets owned by current address with 'FILTERME' in their name are displayed
-      expect(find.byKey(const Key('assetName_ASSET1')), findsNothing);
-      expect(find.byKey(const Key('assetName_ASSET2')), findsNothing);
-      expect(find.byKey(const Key('assetName_ASSET3')), findsNothing);
-      expect(find.byKey(const Key('assetName_ASSET4')), findsNothing);
-      expect(find.byKey(const Key('assetName_FAIR_UTXO')), findsNothing);
-      // Verify that 'FILTERME' asset is displayed now that owned filter is removed
-      expect(find.byKey(const Key('assetName_FILTERME')), findsOneWidget);
+      // Ignore asset loading errors
+      tester.takeException();
+      expect(find.byType(CircularProgressIndicator), findsOneWidget);
     });
 
-    testWidgets(
-        'should display error message when an error occurs in BalancesBloc',
-        (WidgetTester tester) async {
-      final address = FakeAddress(address: '1TestAddress');
-
-      // Mock the BalancesBloc to return an error state
+    testWidgets('displays error state correctly', (tester) async {
+      const errorMessage = 'Failed to load balances';
       when(() => mockBalancesBloc.state).thenReturn(
-        const BalancesState.complete(
-          Result.error('An error occurred'),
-        ),
+        const BalancesState.complete(Result.error(errorMessage)),
       );
-
       when(() => mockBalancesBloc.stream).thenAnswer(
-        (_) => Stream<BalancesState>.value(
-          const BalancesState.complete(
-            Result.error('An error occurred'),
-          ),
-        ),
+        (_) => Stream.value(
+            const BalancesState.complete(Result.error(errorMessage))),
       );
 
-      await tester.pumpWidget(
-        MaterialApp(
-          home: BlocProvider<BalancesBloc>.value(
-            value: mockBalancesBloc,
-            child: Scaffold(
-              body: CustomScrollView(
-                slivers: [
-                  BalancesDisplay(
-                    isDarkTheme: false,
-                    currentAddress: address.address,
-                    initialItemCount: 10,
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      );
+      await tester.pumpWidget(buildTestWidget());
+      await tester.pump();
 
-      // Wait for the widget tree to build
-      await tester.pumpAndSettle();
+      // Ignore asset loading errors
+      tester.takeException();
 
-      // Verify that the error message is displayed
-      expect(find.text('An error occurred'), findsOneWidget);
+      expect(find.text(errorMessage), findsOneWidget);
     });
 
-    testWidgets('should display empty state message when there are no balances',
-        (WidgetTester tester) async {
-      final address = FakeAddress(address: '1TestAddress');
-
-      // Mock the BalancesBloc to return an empty list of balances
+    testWidgets('displays empty state correctly', (tester) async {
       when(() => mockBalancesBloc.state).thenReturn(
-        const BalancesState.complete(
-          Result.ok([], {}, [], [], []),
-        ),
+        const BalancesState.complete(Result.ok([], [])),
       );
-
       when(() => mockBalancesBloc.stream).thenAnswer(
-        (_) => Stream<BalancesState>.value(
-          const BalancesState.complete(
-            Result.ok([], {}, [], [], []),
-          ),
-        ),
+        (_) => Stream.value(const BalancesState.complete(Result.ok([], []))),
       );
 
-      await tester.pumpWidget(
-        MaterialApp(
-          home: BlocProvider<BalancesBloc>.value(
-            value: mockBalancesBloc,
-            child: Scaffold(
-              body: CustomScrollView(
-                slivers: [
-                  BalancesDisplay(
-                    isDarkTheme: false,
-                    currentAddress: address.address,
-                    initialItemCount: 10,
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      );
+      await tester.pumpWidget(buildTestWidget());
+      await tester.pump();
 
-      // Wait for the widget tree to build
-      await tester.pumpAndSettle();
+      // Ignore asset loading errors
+      tester.takeException();
 
-      // Verify that the empty state message is displayed
       expect(find.byType(NoData), findsOneWidget);
-    });
-
-    testWidgets('should open ComposeSend dialog when send icon is tapped',
-        (WidgetTester tester) async {
-      final address = FakeAddress(address: '1TestAddress');
-
-      // Setup a balance with quantity > 0
-      final asset = FakeAsset(
-        asset: 'TESTASSET',
-        assetLongname: 'TESTASSET.LONG',
-        owner: '1OtherOwner',
-        issuer: '1OtherIssuer',
-        divisible: true,
-        locked: false,
-      );
-
-      final balance = FakeBalance(
-        asset: 'TESTASSET',
-        quantity: 100000000,
-        quantityNormalized: '1.00000000',
-        address: '1TestAddress',
-        assetInfo: FakeAssetInfo(
-          assetLongname: 'TESTASSET.LONG',
-          issuer: '1OtherIssuer',
-          divisible: true,
-        ),
-      );
-
-      final balances = [balance];
-      final aggregatedBalances = {balance.asset: balance};
-      final List<Asset> ownedAssets = [];
-
-      // Mock the BalancesBloc state and stream with the new data
-      when(() => mockBalancesBloc.state).thenReturn(
-        BalancesState.complete(
-          Result.ok(balances, aggregatedBalances, utxoBalances, ownedAssets,
-              fairminterAssets),
-        ),
-      );
-
-      when(() => mockBalancesBloc.stream).thenAnswer(
-        (_) => Stream<BalancesState>.value(
-          BalancesState.complete(
-            Result.ok(balances, aggregatedBalances, utxoBalances, ownedAssets,
-                fairminterAssets),
-          ),
-        ),
-      );
-
-      await tester.pumpWidget(
-        MaterialApp(
-          home: BlocProvider<BalancesBloc>.value(
-            value: mockBalancesBloc,
-            child: Scaffold(
-              body: CustomScrollView(
-                slivers: [
-                  BalancesDisplay(
-                    isDarkTheme: false,
-                    currentAddress: address.address,
-                    initialItemCount: 10,
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      );
-
-      // Wait for the widget tree to build
-      await tester.pumpAndSettle();
-
-      // Tap the send icon button for 'TESTASSET'
-      final sendButton = find.byIcon(Icons.send).first;
-
-      expect(sendButton, findsOneWidget);
+      expect(find.text('No Balances'), findsOneWidget);
     });
 
     testWidgets(
-        'should show correct popup menu items based on asset properties',
-        (WidgetTester tester) async {
-      final address = FakeAddress(address: '1TestAddress');
+        'displays balances in correct order (BTC, XCP, then alphabetical)',
+        (tester) async {
+      await tester.pumpWidget(buildTestWidget());
+      await tester.pumpAndSettle();
 
-      // Create test assets with different properties
-      final unlockedAsset = FakeAsset(
-        asset: 'UNLOCKED',
-        assetLongname: 'UNLOCKED.TEST',
-        owner: '1TestAddress', // owned by current address
-        issuer: '1TestAddress',
-        divisible: true,
-        locked: false,
-      );
+      // Ignore asset loading errors
+      while (tester.takeException() != null) {}
 
-      final lockedAsset = FakeAsset(
-        asset: 'LOCKED',
-        assetLongname: 'LOCKED.TEST',
-        owner: '1TestAddress', // owned by current address
-        issuer: '1TestAddress',
-        divisible: true,
-        locked: true,
-      );
+      final listItems = find.byType(InkWell);
+      expect(listItems, findsNWidgets(5));
 
-      final fairmintAsset = FakeAsset(
-        asset: 'FAIRMINT',
-        assetLongname: 'FAIRMINT.TEST',
-        owner: '1TestAddress', // owned by current address
-        issuer: '1TestAddress',
-        divisible: true,
-        locked: false,
-      );
+      // Verify order: BTC, XCP, A12345, NAMEDASSET, PEPE.FROG
+      final texts =
+          tester.widgetList<SelectableText>(find.byType(SelectableText));
+      final amounts = texts.map((widget) => widget.data).toList();
+      expect(amounts, ['1.0', '0.5', '10.0', '0.01', '0.5']);
 
-      final fairminter = FakeFairminter(
-        asset: 'FAIRMINT', // matches fairmintAsset
-      );
+      final truncatedTexts = tester
+          .widgetList<MiddleTruncatedText>(find.byType(MiddleTruncatedText));
+      final names = truncatedTexts.map((widget) => widget.text).toList();
+      expect(names, ['BTC', 'XCP', 'A12345', 'NAMEDASSET', 'PEPE.FROG']);
+    });
 
-      // Create corresponding balances
-      final balances = [
-        FakeBalance(
-          asset: 'UNLOCKED',
-          quantity: 100000000,
-          quantityNormalized: '1.00000000',
-          address: '1TestAddress',
-          assetInfo: FakeAssetInfo(
-            assetLongname: 'UNLOCKED.TEST',
-            issuer: '1TestAddress',
-            divisible: true,
-          ),
-        ),
-        FakeBalance(
-          asset: 'LOCKED',
-          quantity: 200000000,
-          quantityNormalized: '2.00000000',
-          address: '1TestAddress',
-          assetInfo: FakeAssetInfo(
-            assetLongname: 'LOCKED.TEST',
-            issuer: '1TestAddress',
-            divisible: true,
-          ),
-        ),
-        FakeBalance(
-          asset: 'FAIRMINT',
-          quantity: 300000000,
-          quantityNormalized: '3.00000000',
-          address: '1TestAddress',
-          assetInfo: FakeAssetInfo(
-            assetLongname: 'FAIRMINT.TEST',
-            issuer: '1TestAddress',
-            divisible: true,
-          ),
-        ),
-      ];
-
-      final aggregatedBalances = {
-        'UNLOCKED': balances[0],
-        'LOCKED': balances[1],
-        'FAIRMINT': balances[2],
-      };
-
-      final utxoBalance1 = FakeUtxoBalance(
-        utxo: '1:1',
-        utxoAddress: '1TestAddress',
-        asset: '80K',
-        quantity: 100000000,
-        quantityNormalized: '1.00000000',
-        assetInfo: FakeAssetInfo(
-          assetLongname: '80K',
-          issuer: 'differentIssuer',
-          divisible: true,
-        ),
-      );
-
-      final utxoBalances = [utxoBalance1];
-      final ownedAssets = [unlockedAsset, lockedAsset, fairmintAsset];
-      final fairminterAssets = [fairminter];
-
-      // Mock the BalancesBloc state and stream
+    testWidgets(
+        'displays balances in correct starred order (BTC, XCP, then alphabetical)',
+        (tester) async {
       when(() => mockBalancesBloc.state).thenReturn(
         BalancesState.complete(
-          Result.ok(balances, aggregatedBalances, utxoBalances, ownedAssets,
-              fairminterAssets),
-        ),
+            Result.ok(mockBalances, ['XCP', 'BTC', 'NAMEDASSET'])),
       );
-
       when(() => mockBalancesBloc.stream).thenAnswer(
-        (_) => Stream<BalancesState>.value(
-          BalancesState.complete(
-            Result.ok(balances, aggregatedBalances, utxoBalances, ownedAssets,
-                fairminterAssets),
+        (_) => Stream.value(BalancesState.complete(
+            Result.ok(mockBalances, ['XCP', 'BTC', 'NAMEDASSET']))),
+      );
+      await tester.pumpWidget(buildTestWidget());
+      await tester.pumpAndSettle();
+
+      // Ignore asset loading errors
+      tester.takeException();
+
+      final listItems = find.byType(InkWell);
+      expect(listItems, findsNWidgets(5));
+
+      // Verify order: BTC, XCP, NAMEDASSET, A12345, PEPE.FROG
+      final texts =
+          tester.widgetList<SelectableText>(find.byType(SelectableText));
+      final amounts = texts.map((widget) => widget.data).toList();
+      expect(amounts, ['1.0', '0.5', '0.01', '10.0', '0.5']);
+
+      final truncatedTexts = tester
+          .widgetList<MiddleTruncatedText>(find.byType(MiddleTruncatedText));
+      final names = truncatedTexts.map((widget) => widget.text).toList();
+      expect(names, ['BTC', 'XCP', 'NAMEDASSET', 'A12345', 'PEPE.FROG']);
+    });
+
+    testWidgets('search functionality filters balances correctly',
+        (tester) async {
+      await tester.pumpWidget(buildTestWidget(searchQuery: 'named'));
+      await tester.pumpAndSettle();
+
+      // Ignore asset loading errors
+      while (tester.takeException() != null) {}
+
+      expect(find.text('NAMEDASSET'), findsOneWidget);
+      expect(find.text('BTC'), findsNothing);
+      expect(find.text('XCP'), findsNothing);
+      expect(find.text('A12345'), findsNothing);
+      expect(find.text('PEPE.FROG'), findsNothing);
+    });
+    testWidgets('search functionality filters substring correctly',
+        (tester) async {
+      await tester.pumpWidget(buildTestWidget(searchQuery: 'rog'));
+      await tester.pumpAndSettle();
+
+      // Ignore asset loading errors
+      while (tester.takeException() != null) {}
+
+      expect(find.text('PEPE.FROG'), findsOneWidget);
+      expect(find.text('BTC'), findsNothing);
+      expect(find.text('XCP'), findsNothing);
+      expect(find.text('A12345'), findsNothing);
+      expect(find.text('NAMEDASSET'), findsNothing);
+    });
+
+    group('Filter Tests', () {
+      testWidgets('named filter shows only named assets', (tester) async {
+        await tester.pumpWidget(buildTestWidget());
+        await tester.pumpAndSettle();
+
+        // Ignore asset loading errors
+        while (tester.takeException() != null) {}
+
+        // Find and tap the Named filter
+        await tester.tap(find.text('Named'));
+        await tester.pumpAndSettle();
+
+        expect(find.text('NAMEDASSET'), findsOneWidget);
+        expect(find.text('A12345'), findsNothing);
+        expect(find.text('PEPE.FROG'), findsOneWidget);
+        expect(find.text('BTC'), findsNothing);
+        expect(find.text('XCP'), findsOneWidget);
+      });
+
+      testWidgets('numeric filter shows only numeric assets', (tester) async {
+        await tester.pumpWidget(buildTestWidget());
+        await tester.pumpAndSettle();
+
+        // Ignore asset loading errors
+        while (tester.takeException() != null) {}
+
+        await tester.tap(find.text('Numeric'));
+        await tester.pumpAndSettle();
+
+        expect(find.text('A12345'), findsOneWidget);
+        expect(find.text('NAMEDASSET'), findsNothing);
+        expect(find.text('PEPE.FROG'), findsNothing);
+        expect(find.text('BTC'), findsNothing);
+        expect(find.text('XCP'), findsNothing);
+      });
+
+      testWidgets('subassets filter shows only subassets', (tester) async {
+        await tester.pumpWidget(buildTestWidget());
+        await tester.pumpAndSettle();
+
+        // Ignore asset loading errors
+        while (tester.takeException() != null) {}
+
+        await tester.tap(find.text('Subassets'));
+        await tester.pumpAndSettle();
+
+        expect(find.text('PEPE.FROG'), findsOneWidget);
+        expect(find.text('A12345'), findsNothing);
+        expect(find.text('NAMEDASSET'), findsNothing);
+        expect(find.text('BTC'), findsNothing);
+      });
+
+      testWidgets('issuances filter shows only owned assets', (tester) async {
+        await tester.pumpWidget(buildTestWidget());
+        await tester.pumpAndSettle();
+
+        // Ignore asset loading errors
+        while (tester.takeException() != null) {}
+
+        await tester.tap(find.text('Issuances'));
+        await tester.pumpAndSettle();
+
+        // Should show assets where the owner matches the address
+        expect(find.text('NAMEDASSET'), findsOneWidget);
+        expect(find.text('XCP'), findsNothing);
+        expect(find.text('A12345'), findsNothing);
+        expect(find.text('PEPE.FROG'), findsOneWidget);
+        expect(find.text('BTC'), findsNothing);
+      });
+    });
+
+    testWidgets('clicking asset navigates to asset details', (tester) async {
+      await tester.pumpWidget(buildTestWidget());
+      await tester.pumpAndSettle();
+
+      // Ignore asset loading errors
+      while (tester.takeException() != null) {}
+
+      await tester.tap(find.text('BTC').first);
+      await tester.pumpAndSettle();
+
+      verify(() => mockGoRouter.go('/asset/BTC')).called(1);
+    });
+
+    testWidgets('long asset names are truncated correctly', (tester) async {
+      final isMobile = tester.view.physicalSize.width < 600;
+      final longNameBalance = MultiAddressBalance(
+        asset: 'VERY.LONG.ASSET.NAME.THAT.NEEDS.TRUNCATION',
+        assetLongname: 'Very Long Asset Name That Needs Truncation',
+        total: 1000000,
+        totalNormalized: '0.01000000',
+        entries: [
+          MultiAddressBalanceEntry(
+            address: 'address1',
+            quantity: 1000000,
+            quantityNormalized: '0.01000000',
+            utxo: null,
+            utxoAddress: null,
           ),
+        ],
+        assetInfo: const AssetInfo(
+          assetLongname: 'Very Long Asset Name That Needs Truncation',
+          description: 'Long name asset',
+          divisible: true,
+          owner: 'address1',
+          locked: true,
         ),
       );
 
-      await tester.pumpWidget(
-        MaterialApp(
-          home: BlocProvider<BalancesBloc>.value(
-            value: mockBalancesBloc,
-            child: Scaffold(
-              body: CustomScrollView(
-                slivers: [
-                  BalancesDisplay(
-                    isDarkTheme: false,
-                    currentAddress: address.address,
-                    initialItemCount: 10,
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
+      when(() => mockBalancesBloc.state).thenReturn(
+        BalancesState.complete(Result.ok([longNameBalance], [])),
+      );
+      when(() => mockBalancesBloc.stream).thenAnswer(
+        (_) => Stream.value(
+            BalancesState.complete(Result.ok([longNameBalance], []))),
       );
 
-      // Wait for the widget tree to build
+      await tester.pumpWidget(buildTestWidget());
       await tester.pumpAndSettle();
 
-      // Test unlocked asset menu
-      await tester.tap(find.byType(PopupMenuButton<IssuanceActionType>).first);
-      await tester.pumpAndSettle();
+      // Ignore asset loading errors
+      while (tester.takeException() != null) {}
 
-      expect(find.text('Reset Asset'), findsOneWidget);
-      expect(find.text('Lock Quantity'), findsOneWidget);
-      expect(find.text('Lock Description'), findsOneWidget);
-      expect(find.text('Change Description'), findsOneWidget);
-      expect(find.text('Issue More'), findsOneWidget);
-      expect(find.text('Issue Subasset'), findsOneWidget);
-      expect(find.text('Transfer Ownership'), findsOneWidget);
+      final truncatedText = find.byType(MiddleTruncatedText);
+      expect(truncatedText, findsOneWidget);
 
-      // All menu items should be enabled for unlocked asset
-      final menuItems = find.byType(PopupMenuItem<String>);
-      for (final menuItem in menuItems.evaluate()) {
-        expect((menuItem.widget as PopupMenuItem<String>).enabled, isTrue);
-      }
-
-      // Dismiss the menu
-      await tester.tapAt(const Offset(0, 0));
-      await tester.pumpAndSettle();
-
-      // Test locked asset menu
-      await tester.tap(find.byType(PopupMenuButton<IssuanceActionType>).at(1));
-      await tester.pumpAndSettle();
-
-      // Most items should be disabled for locked asset except Transfer Ownership
-      final lockedMenuItems = find.byType(PopupMenuItem<String>);
-      for (final menuItem in lockedMenuItems.evaluate()) {
-        final popupMenuItem = menuItem.widget as PopupMenuItem<String>;
-        if (popupMenuItem.child is Text &&
-            ((popupMenuItem.child as Text).data == 'Transfer Ownership' ||
-                (popupMenuItem.child as Text).data == 'Issue Subasset')) {
-          expect(popupMenuItem.enabled, isTrue);
-        } else {
-          expect(popupMenuItem.enabled, isFalse);
-        }
-      }
-
-      // Dismiss the menu
-      await tester.tapAt(const Offset(0, 0));
-      await tester.pumpAndSettle();
-
-      // Test fairminted asset menu
-      await tester.tap(find.byType(PopupMenuButton<IssuanceActionType>).last);
-      await tester.pumpAndSettle();
-
-      // Most items should be disabled for fairminted asset except Transfer Ownership
-      final fairmintMenuItems = find.byType(PopupMenuItem<String>);
-      for (final menuItem in fairmintMenuItems.evaluate()) {
-        final popupMenuItem = menuItem.widget as PopupMenuItem<String>;
-        if (popupMenuItem.child is Text &&
-            ((popupMenuItem.child as Text).data == 'Transfer Ownership' ||
-                (popupMenuItem.child as Text).data == 'Issue Subasset')) {
-          expect(popupMenuItem.enabled, isTrue);
-        } else {
-          expect(popupMenuItem.enabled, isFalse);
-        }
-      }
+      // Verify the text is actually truncated
+      final text = tester.widget<MiddleTruncatedText>(truncatedText);
+      expect(text.text, 'Very Long Asset Name That Needs Truncation');
+      expect(text.width, equals(150.0));
+      expect(text.charsToShow, equals(isMobile ? 16 : 30));
     });
   });
+}
+
+// Helper widget to provide mock GoRouter
+class MockGoRouterProvider extends StatelessWidget {
+  final GoRouter goRouter;
+  final Widget child;
+
+  const MockGoRouterProvider({
+    super.key,
+    required this.goRouter,
+    required this.child,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InheritedGoRouter(
+      goRouter: goRouter,
+      child: child,
+    );
+  }
 }

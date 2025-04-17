@@ -57,3 +57,9 @@ String quantityToQuantityNormalizedString({
     return quantityNormalized.toString();
   }
 }
+
+String quantityRemoveTrailingZeros(String quantity) {
+  return quantity
+      .replaceAll(RegExp(r'(?<=\d)0+$'), '')
+      .replaceAll(RegExp(r'\.$'), '');
+}

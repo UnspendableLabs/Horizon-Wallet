@@ -1,12 +1,12 @@
-import 'package:flutter_test/flutter_test.dart';
 import 'package:bloc_test/bloc_test.dart';
-import 'package:mocktail/mocktail.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:horizon/domain/entities/wallet.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
-import 'package:horizon/domain/entities/wallet.dart';
-import 'package:horizon/presentation/screens/dashboard/view_seed_phrase_form/bloc/view_seed_phrase_bloc.dart';
-import 'package:horizon/presentation/screens/dashboard/view_seed_phrase_form/bloc/view_seed_phrase_event.dart';
-import 'package:horizon/presentation/screens/dashboard/view_seed_phrase_form/bloc/view_seed_phrase_state.dart';
+import 'package:horizon/presentation/screens/settings/seed_phrase/bloc/view_seed_phrase_bloc.dart';
+import 'package:horizon/presentation/screens/settings/seed_phrase/bloc/view_seed_phrase_event.dart';
+import 'package:horizon/presentation/screens/settings/seed_phrase/bloc/view_seed_phrase_state.dart';
+import 'package:mocktail/mocktail.dart';
 
 class MockWalletRepository extends Mock implements WalletRepository {}
 
@@ -20,8 +20,16 @@ void main() {
   late MockEncryptionService mockEncryptionService;
 
   const testPassword = 'test-password';
+  const testSeedPhrase = 'test seed phrase';
   const testEncryptedMnemonic = 'encrypted-mnemonic';
-  const testDecryptedMnemonic = 'test seed phrase';
+
+  const testWallet = Wallet(
+      uuid: 'test-uuid',
+      name: 'Test Wallet',
+      encryptedPrivKey: 'encrypted-priv-key',
+      encryptedMnemonic: testEncryptedMnemonic,
+      chainCodeHex: 'chain-code',
+      publicKey: 'public-key');
 
   setUpAll(() {
     registerFallbackValue(FakeWallet());
@@ -37,136 +45,138 @@ void main() {
     );
   });
 
+  tearDown(() {
+    bloc.close();
+  });
+
   group('ViewSeedPhraseBloc', () {
-    test('initial state is correct', () {
-      expect(
-        bloc.state,
-        const ViewSeedPhraseState.initial(ViewSeedPhraseStateInitial()),
-      );
+    test('initial state is ViewSeedPhraseInitial', () {
+      expect(bloc.state, isA<ViewSeedPhraseInitial>());
     });
 
-    blocTest<ViewSeedPhraseBloc, ViewSeedPhraseState>(
-      'emits error when wallet not found',
-      build: () {
-        when(() => mockWalletRepository.getCurrentWallet())
-            .thenAnswer((_) async => null);
-        return bloc;
-      },
-      act: (bloc) => bloc.add(const ViewSeedPhrase(password: testPassword)),
-      expect: () => [
-        const ViewSeedPhraseState.loading(),
-        const ViewSeedPhraseState.initial(
-          ViewSeedPhraseStateInitial(error: 'Wallet not found'),
-        ),
-      ],
-    );
+    group('Submit', () {
+      final submitEvent = Submit(password: testPassword);
 
-    blocTest<ViewSeedPhraseBloc, ViewSeedPhraseState>(
-      'emits error when wallet mnemonic not found',
-      build: () {
-        when(() => mockWalletRepository.getCurrentWallet()).thenAnswer(
-          (_) async => const Wallet(
-            uuid: 'test-uuid',
-            name: 'Test Wallet',
-            publicKey: 'test-public-key',
-            encryptedPrivKey: 'test-encrypted-key',
-            encryptedMnemonic: null,
-            chainCodeHex: 'test-chain-code-hex',
-          ),
-        );
-        return bloc;
-      },
-      act: (bloc) => bloc.add(const ViewSeedPhrase(password: testPassword)),
-      expect: () => [
-        const ViewSeedPhraseState.loading(),
-        const ViewSeedPhraseState.initial(
-          ViewSeedPhraseStateInitial(error: 'Wallet mnemonic not found'),
-        ),
-      ],
-    );
+      blocTest<ViewSeedPhraseBloc, ViewSeedPhraseState>(
+        'emits [Loading, Success] when seed phrase retrieval is successful',
+        build: () {
+          // Mock successful wallet retrieval
+          when(() => mockWalletRepository.getCurrentWallet())
+              .thenAnswer((_) async => testWallet);
 
-    blocTest<ViewSeedPhraseBloc, ViewSeedPhraseState>(
-      'emits error when password is invalid',
-      build: () {
-        when(() => mockWalletRepository.getCurrentWallet()).thenAnswer(
-          (_) async => const Wallet(
-            uuid: 'test-uuid',
-            name: 'Test Wallet',
-            publicKey: 'test-public-key',
-            encryptedPrivKey: 'test-encrypted-key',
-            encryptedMnemonic: testEncryptedMnemonic,
-            chainCodeHex: 'test-chain-code-hex',
-          ),
-        );
-        when(() => mockEncryptionService.decrypt(any(), any()))
-            .thenThrow(Exception('Invalid password'));
-        return bloc;
-      },
-      act: (bloc) => bloc.add(const ViewSeedPhrase(password: testPassword)),
-      expect: () => [
-        const ViewSeedPhraseState.loading(),
-        const ViewSeedPhraseState.initial(
-          ViewSeedPhraseStateInitial(error: 'Invalid password'),
-        ),
-      ],
-      verify: (_) {
-        verify(() => mockWalletRepository.getCurrentWallet()).called(1);
-        verify(() => mockEncryptionService.decrypt(
-              testEncryptedMnemonic,
-              testPassword,
-            )).called(1);
-      },
-    );
+          // Mock successful decryption
+          when(() => mockEncryptionService.decrypt(
+                testEncryptedMnemonic,
+                testPassword,
+              )).thenAnswer((_) async => testSeedPhrase);
 
-    blocTest<ViewSeedPhraseBloc, ViewSeedPhraseState>(
-      'successfully decrypts and shows seed phrase',
-      build: () {
-        when(() => mockWalletRepository.getCurrentWallet()).thenAnswer(
-          (_) async => const Wallet(
-            uuid: 'test-uuid',
-            name: 'Test Wallet',
-            publicKey: 'test-public-key',
-            encryptedPrivKey: 'test-encrypted-key',
-            encryptedMnemonic: testEncryptedMnemonic,
-            chainCodeHex: 'test-chain-code-hex',
-          ),
-        );
-        when(() => mockEncryptionService.decrypt(
-                testEncryptedMnemonic, testPassword))
-            .thenAnswer((_) async => testDecryptedMnemonic);
-        return bloc;
-      },
-      act: (bloc) => bloc.add(const ViewSeedPhrase(password: testPassword)),
-      expect: () => [
-        const ViewSeedPhraseState.loading(),
-        const ViewSeedPhraseState.success(
-          ViewSeedPhraseStateSuccess(seedPhrase: testDecryptedMnemonic),
-        ),
-      ],
-      verify: (_) {
-        verify(() => mockWalletRepository.getCurrentWallet()).called(1);
-        verify(() => mockEncryptionService.decrypt(
-              testEncryptedMnemonic,
-              testPassword,
-            )).called(1);
-      },
-    );
+          return bloc;
+        },
+        act: (bloc) => bloc.add(submitEvent),
+        expect: () => [
+          isA<ViewSeedPhraseLoading>(),
+          isA<ViewSeedPhraseSuccess>().having(
+              (state) => state.seedPhrase, 'seedPhrase', testSeedPhrase),
+        ],
+        verify: (_) {
+          verify(() => mockWalletRepository.getCurrentWallet()).called(1);
+          verify(() => mockEncryptionService.decrypt(
+                testEncryptedMnemonic,
+                testPassword,
+              )).called(1);
+        },
+      );
 
-    blocTest<ViewSeedPhraseBloc, ViewSeedPhraseState>(
-      'emits error on unexpected exception',
-      build: () {
-        when(() => mockWalletRepository.getCurrentWallet())
-            .thenThrow(Exception('Unexpected error'));
-        return bloc;
-      },
-      act: (bloc) => bloc.add(const ViewSeedPhrase(password: testPassword)),
-      expect: () => [
-        const ViewSeedPhraseState.loading(),
-        const ViewSeedPhraseState.error('Error decrypting seed phrase'),
-      ],
-      verify: (_) {
-        verify(() => mockWalletRepository.getCurrentWallet()).called(1);
-      },
-    );
+      blocTest<ViewSeedPhraseBloc, ViewSeedPhraseState>(
+        'emits [Loading, Error] when wallet is null',
+        build: () {
+          when(() => mockWalletRepository.getCurrentWallet())
+              .thenAnswer((_) async => null);
+          return bloc;
+        },
+        act: (bloc) => bloc.add(submitEvent),
+        expect: () => [
+          isA<ViewSeedPhraseLoading>(),
+          isA<ViewSeedPhraseError>()
+              .having((state) => state.error, 'error', 'Wallet not found'),
+        ],
+        verify: (_) {
+          verify(() => mockWalletRepository.getCurrentWallet()).called(1);
+          verifyNever(() => mockEncryptionService.decrypt(any(), any()));
+        },
+      );
+
+      blocTest<ViewSeedPhraseBloc, ViewSeedPhraseState>(
+        'emits [Loading, Error] when wallet has no mnemonic',
+        build: () {
+          when(() => mockWalletRepository.getCurrentWallet()).thenAnswer(
+              (_) async => const Wallet(
+                  uuid: 'test-uuid',
+                  name: 'Test Wallet',
+                  encryptedPrivKey: 'encrypted-priv-key',
+                  encryptedMnemonic: null,
+                  chainCodeHex: 'chain-code',
+                  publicKey: 'public-key'));
+          return bloc;
+        },
+        act: (bloc) => bloc.add(submitEvent),
+        expect: () => [
+          isA<ViewSeedPhraseLoading>(),
+          isA<ViewSeedPhraseError>().having(
+              (state) => state.error, 'error', 'Wallet mnemonic not found'),
+        ],
+        verify: (_) {
+          verify(() => mockWalletRepository.getCurrentWallet()).called(1);
+          verifyNever(() => mockEncryptionService.decrypt(any(), any()));
+        },
+      );
+
+      blocTest<ViewSeedPhraseBloc, ViewSeedPhraseState>(
+        'emits [Loading, Error] when password is incorrect',
+        build: () {
+          when(() => mockWalletRepository.getCurrentWallet())
+              .thenAnswer((_) async => testWallet);
+
+          when(() => mockEncryptionService.decrypt(
+                testEncryptedMnemonic,
+                testPassword,
+              )).thenThrow(Exception('Decryption failed'));
+
+          return bloc;
+        },
+        act: (bloc) => bloc.add(submitEvent),
+        expect: () => [
+          isA<ViewSeedPhraseLoading>(),
+          isA<ViewSeedPhraseError>()
+              .having((state) => state.error, 'error', 'Invalid password'),
+        ],
+        verify: (_) {
+          verify(() => mockWalletRepository.getCurrentWallet()).called(1);
+          verify(() => mockEncryptionService.decrypt(
+                testEncryptedMnemonic,
+                testPassword,
+              )).called(1);
+        },
+      );
+
+      blocTest<ViewSeedPhraseBloc, ViewSeedPhraseState>(
+        'emits [Loading, Error] when wallet repository throws',
+        build: () {
+          when(() => mockWalletRepository.getCurrentWallet())
+              .thenThrow(Exception('Database error'));
+          return bloc;
+        },
+        act: (bloc) => bloc.add(submitEvent),
+        expect: () => [
+          isA<ViewSeedPhraseLoading>(),
+          isA<ViewSeedPhraseError>().having(
+              (state) => state.error, 'error', 'Error decrypting seed phrase'),
+        ],
+        verify: (_) {
+          verify(() => mockWalletRepository.getCurrentWallet()).called(1);
+          verifyNever(() => mockEncryptionService.decrypt(any(), any()));
+        },
+      );
+    });
   });
 }

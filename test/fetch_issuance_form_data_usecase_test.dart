@@ -36,6 +36,7 @@ void main() {
       assetLongname: "TEST_ASSET",
       divisible: true,
       description: "Test Asset Description",
+      locked: false,
     );
 
     final balances = [

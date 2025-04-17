@@ -118,8 +118,8 @@ void main() {
           )).thenAnswer((_) async => response);
 
       // Act
-      final result = await repository.getByAddressVerbose(
-        address: 'test_address',
+      final result = await repository.getByAddressesVerbose(
+        addresses: ['test_address'],
         limit: 10,
         cursor: Cursor.fromInt(1),
       );
@@ -220,7 +220,7 @@ void main() {
           )).thenAnswer((_) async => response);
 
       // Act
-      await repository.getByAddressVerbose(address: 'test_address');
+      await repository.getByAddressesVerbose(addresses: ['test_address']);
 
       // Assert
       verify(() => mockCacheProvider.getValue('test_address')).called(1);
@@ -256,7 +256,7 @@ void main() {
       // Act
       await EventsRepositoryImpl.updateAttachToUtxoCache(
         events,
-        address,
+        [address],
         mockCacheProvider,
       );
 
@@ -300,7 +300,7 @@ void main() {
       // Act
       await EventsRepositoryImpl.updateAttachToUtxoCache(
         events,
-        address,
+        [address],
         mockCacheProvider,
       );
 
@@ -338,7 +338,7 @@ void main() {
       // Act
       await EventsRepositoryImpl.updateAttachToUtxoCache(
         events,
-        address,
+        [address],
         mockCacheProvider,
       );
 
@@ -367,7 +367,7 @@ void main() {
       // Act
       await EventsRepositoryImpl.updateAttachToUtxoCache(
         events,
-        address,
+        [address],
         mockCacheProvider,
       );
 
@@ -375,6 +375,133 @@ void main() {
       verify(() => mockCacheProvider.getValue(address)).called(1);
       verifyNever(() => mockCacheProvider.setObject(any(), any()));
       verifyNever(() => mockCacheProvider.remove(any()));
+    });
+  });
+
+  group('multiple addresses', () {
+    test('getByAddressesVerbose returns events for multiple addresses',
+        () async {
+      // Arrange
+      final addresses = ['addr1', 'addr2', 'addr3'];
+
+      final apiEvents = [
+        // Events for addr1
+        api.VerboseDispenseEvent(
+          eventIndex: 1,
+          event: 'DISPENSE',
+          txHash: 'hash1',
+          blockIndex: 1,
+          blockTime: 1,
+          params: api.VerboseDispenseParams(
+            asset: 'TEST1',
+            blockIndex: 1,
+            destination: 'addr1',
+            source: 'source',
+            txHash: 'hash1',
+            txIndex: 1,
+            btcAmount: 100,
+            dispenseIndex: 1,
+            dispenseQuantity: 100,
+            dispenserTxHash: 'hash1',
+            btcAmountNormalized: '100',
+            dispenseQuantityNormalized: '100',
+          ),
+        ),
+        // Events for addr2
+        api.VerboseAssetIssuanceEvent(
+          eventIndex: 2,
+          event: 'ASSET_ISSUANCE',
+          txHash: 'hash2',
+          blockIndex: 2,
+          blockTime: 2,
+          params: api.VerboseAssetIssuanceParams(
+            asset: 'TEST2',
+            assetEvents: 'reset',
+            assetLongname: 'Test Asset 2',
+            quantity: 1000,
+            source: 'addr2',
+            status: 'valid',
+            transfer: false,
+            quantityNormalized: '1000',
+            feePaidNormalized: '0.001',
+            blockTime: 2,
+          ),
+        ),
+        // Events for addr3
+        api.VerboseAttachToUtxoEvent(
+          eventIndex: 3,
+          event: 'ATTACH_TO_UTXO',
+          txHash: 'hash3',
+          blockIndex: 3,
+          blockTime: 3,
+          params: api.VerboseAttachToUtxoParams(
+            asset: 'TEST3',
+            blockIndex: 3,
+            destination: 'addr3',
+            feePaid: 100,
+            quantityNormalized: '100',
+            feePaidNormalized: '100',
+            msgIndex: 1,
+            blockTime: 3,
+            source: 'source',
+            status: 'valid',
+            txHash: 'hash3',
+            txIndex: 1,
+            quantity: 100,
+            assetInfo: AssetInfoModel(
+              divisible: true,
+              description: 'description',
+              locked: true,
+            ),
+          ),
+        ),
+      ];
+
+      final response = MockResponse();
+      when(() => response.result).thenReturn(apiEvents);
+      when(() => response.nextCursor).thenReturn(null);
+      when(() => response.resultCount).thenReturn(apiEvents.length);
+
+      when(() => mockApi.getEventsByAddressesVerbose(
+            'addr1,addr2,addr3',
+            any(),
+            any(),
+            any(),
+          )).thenAnswer((_) async => response);
+
+      // Act
+      final result = await repository.getByAddressesVerbose(
+        addresses: addresses,
+        limit: 10,
+        cursor: Cursor.fromInt(1),
+      );
+
+      // Assert
+      verify(() => mockApi.getEventsByAddressesVerbose(
+            'addr1,addr2,addr3',
+            any(that: isA<cursor_model.CursorModel>()),
+            10,
+            null,
+          )).called(1);
+
+      // Verify we got all events
+      expect(result.$1.length, 3);
+      expect(result.$3, 3); // resultCount should be 3
+
+      // Verify events are mapped correctly
+      final events = result.$1;
+      expect(events[0].event, equals('DISPENSE'));
+      expect(events[0].txHash, equals('hash1'));
+      expect(events[1].event, equals('ASSET_ISSUANCE'));
+      expect(events[1].txHash, equals('hash2'));
+      expect(events[2].event, equals('ATTACH_TO_UTXO'));
+      expect(events[2].txHash, equals('hash3'));
+
+      // Verify event states
+      for (var event in events) {
+        expect(event.state, isA<EventStateConfirmed>());
+        expect(event.blockIndex, isNotNull);
+      }
     });
   });
 }

@@ -1,16 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/common/constants.dart';
 import 'package:horizon/domain/services/mnemonic_service.dart';
 import 'package:horizon/domain/services/wallet_service.dart';
-import 'package:horizon/presentation/common/colors.dart';
+import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/common/usecase/import_wallet_usecase.dart';
-import 'package:horizon/presentation/screens/onboarding/view/back_continue_buttons.dart';
-import 'package:horizon/presentation/screens/onboarding/view/import_format_dropdown.dart';
-import 'package:horizon/presentation/screens/onboarding/view/onboarding_app_bar.dart';
+import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
+import 'package:horizon/presentation/screens/onboarding/view/onboarding_shell.dart';
 import 'package:horizon/presentation/screens/onboarding/view/password_prompt.dart';
+import 'package:horizon/presentation/screens/onboarding/view/seed_input.dart';
 import 'package:horizon/presentation/screens/onboarding_import/bloc/onboarding_import_bloc.dart';
 import 'package:horizon/presentation/screens/onboarding_import/bloc/onboarding_import_event.dart';
 import 'package:horizon/presentation/screens/onboarding_import/bloc/onboarding_import_state.dart';
@@ -22,554 +21,244 @@ class OnboardingImportPageWrapper extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-        create: (context) => OnboardingImportBloc(
-              mnemonicService: GetIt.I<MnemonicService>(),
-              importWalletUseCase: GetIt.I<ImportWalletUseCase>(),
-              walletService: GetIt.I<WalletService>(),
-            ),
-        child: const OnboardingImportPage());
+      create: (context) => OnboardingImportBloc(
+        mnemonicService: GetIt.I<MnemonicService>(),
+        importWalletUseCase: GetIt.I<ImportWalletUseCase>(),
+        walletService: GetIt.I<WalletService>(),
+      ),
+      child: const OnboardingImportPage(),
+    );
   }
 }
 
 class OnboardingImportPage extends StatefulWidget {
   const OnboardingImportPage({super.key});
+
   @override
-  OnboardingImportPageState createState() => OnboardingImportPageState();
+  State<OnboardingImportPage> createState() => _OnboardingImportPageState();
 }
 
-class OnboardingImportPageState extends State<OnboardingImportPage> {
-  final TextEditingController _seedPhraseController =
-      TextEditingController(text: "");
-
-  @override
-  dispose() {
-    _seedPhraseController.dispose();
-    super.dispose();
-  }
+class _OnboardingImportPageState extends State<OnboardingImportPage> {
+  final _passwordStepKey = GlobalKey<PasswordPromptState>();
+  final _seedInputKey = GlobalKey<SeedInputState>();
 
   @override
   Widget build(BuildContext context) {
-    final screenSize = MediaQuery.of(context).size;
-    final isSmallScreen = screenSize.width < 768;
-    final EdgeInsetsGeometry padding = isSmallScreen
-        ? const EdgeInsets.all(8.0)
-        : EdgeInsets.symmetric(
-            horizontal: screenSize.width / 8,
-            vertical: screenSize.height / 16,
-          );
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final backdropBackgroundColor =
-        isDarkMode ? mediumNavyDarkTheme : lightBlueLightTheme;
-    final scaffoldBackgroundColor =
-        isDarkMode ? lightNavyDarkTheme : whiteLightTheme;
+    return BlocConsumer<OnboardingImportBloc, OnboardingImportState>(
+      listener: (context, state) {
+        state.importState.maybeWhen(
+          orElse: () => false,
+          success: () {
+            final session = context.read<SessionStateCubit>();
+            session.initialize();
+          },
+        );
+      },
+      builder: (context, state) {
+        final isLoading = state.importState.maybeWhen(
+          orElse: () => false,
+          loading: () => true,
+        );
+        final error = state.importState.maybeWhen(
+          orElse: () => false,
+          error: (error) => error,
+        );
 
-    return Container(
-      decoration: BoxDecoration(
-        color: backdropBackgroundColor,
-      ),
-      padding: padding,
-      child: Container(
-        decoration: BoxDecoration(
-          color: scaffoldBackgroundColor,
-          borderRadius: BorderRadius.circular(30),
-        ),
-        padding: const EdgeInsets.all(12),
-        child: Scaffold(
-          backgroundColor: scaffoldBackgroundColor,
-          body: BlocListener<OnboardingImportBloc, OnboardingImportState>(
-            listener: (context, state) async {
-              if (state.importState is ImportStateSuccess) {
-                final session = context.read<SessionStateCubit>();
-                // reload session to trigger redirect
-                session.initialize();
-              }
-            },
-            child: BlocBuilder<OnboardingImportBloc, OnboardingImportState>(
-                builder: (context, state) {
-              return Container(
-                decoration: BoxDecoration(
-                  color: scaffoldBackgroundColor,
-                  borderRadius: BorderRadius.circular(30),
-                ),
-                child: Scaffold(
-                  backgroundColor: scaffoldBackgroundColor,
-                  appBar: OnboardingAppBar(
-                    isDarkMode: isDarkMode,
-                    isSmallScreenWidth: isSmallScreen,
-                    isSmallScreenHeight: isSmallScreen,
-                    scaffoldBackgroundColor: scaffoldBackgroundColor,
-                  ),
-                  body: Stack(
-                    children: [
-                      Column(
-                        children: [
-                          Flexible(
-                              child: switch (state.currentStep) {
-                            OnboardingImportStep.chooseFormat =>
-                              const ChooseFormat(),
-                            OnboardingImportStep.inputSeed => SeedInputFields(
-                                mnemonicErrorState: state.mnemonicError,
-                              ),
-                            OnboardingImportStep.inputPassword =>
-                              PasswordPrompt(
-                                  state: state,
-                                  onPressedBack: () {
-                                    final session =
-                                        context.read<SessionStateCubit>();
-                                    session.onOnboarding();
-                                  },
-                                  onPressedContinue: (password) {
-                                    context
-                                        .read<OnboardingImportBloc>()
-                                        .add(ImportWallet(password: password));
-                                  },
-                                  backButtonText: 'CANCEL',
-                                  continueButtonText: 'LOGIN',
-                                  optionalErrorWidget: state.importState
-                                          is ImportStateError
-                                      ? Align(
-                                          alignment: Alignment.center,
-                                          child: Container(
-                                            padding: const EdgeInsets.all(8.0),
-                                            decoration: BoxDecoration(
-                                              color: redErrorTextTransparent,
-                                              borderRadius:
-                                                  BorderRadius.circular(40.0),
-                                            ),
-                                            child: Row(
-                                              mainAxisSize: MainAxisSize.min,
-                                              children: [
-                                                const Icon(Icons.info,
-                                                    color: redErrorText),
-                                                const SizedBox(width: 4),
-                                                SelectableText(
-                                                  state.importState.message,
-                                                  style: const TextStyle(
-                                                      color: redErrorText),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        )
-                                      : null),
-                            _ => const SelectableText(
-                                "invariant: invalid onboarding step"),
-                          }),
-                        ],
-                      ),
-                      if (state.importState is ImportStateLoading)
-                        Container(
-                          color: Colors.black.withOpacity(0.3),
-                          child: const Center(
-                            child: CircularProgressIndicator(),
-                          ),
+        return OnboardingShell(
+          steps: [
+            const ChooseFormatStep(),
+            SeedInputStep(seedInputKey: _seedInputKey),
+            PasswordPrompt(
+              key: _passwordStepKey,
+              onValidationChanged: () => setState(() {}),
+              optionalErrorWidget: error
+                  ? Align(
+                      alignment: Alignment.center,
+                      child: Container(
+                        padding: const EdgeInsets.all(8.0),
+                        decoration: BoxDecoration(
+                          color: transparentRed2,
+                          borderRadius: BorderRadius.circular(40.0),
                         ),
-                    ],
-                  ),
-                ),
-              );
-            }),
-          ),
-        ),
-      ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            SelectableText(
+                              error,
+                              style: const TextStyle(color: red1),
+                            ),
+                          ],
+                        ),
+                      ),
+                    )
+                  : null,
+            ),
+          ],
+          onBack: () {
+            if (state.currentStep == OnboardingImportStep.chooseFormat) {
+              final session = context.read<SessionStateCubit>();
+              session.onOnboarding();
+            } else if (state.currentStep == OnboardingImportStep.inputSeed) {
+              _seedInputKey.currentState?.clearInputs();
+              context
+                  .read<OnboardingImportBloc>()
+                  .add(ImportFormatBackPressed());
+            } else if (state.currentStep ==
+                OnboardingImportStep.inputPassword) {
+              _passwordStepKey.currentState?.clearPassword();
+              context.read<OnboardingImportBloc>().add(SeedInputBackPressed());
+            }
+          },
+          onNext: () {
+            if (state.currentStep == OnboardingImportStep.chooseFormat) {
+              context.read<OnboardingImportBloc>().add(ImportFormatSubmitted());
+            } else if (state.currentStep == OnboardingImportStep.inputSeed) {
+              context
+                  .read<OnboardingImportBloc>()
+                  .add(MnemonicSubmitted(mnemonic: state.mnemonic));
+            } else if (state.currentStep ==
+                OnboardingImportStep.inputPassword) {
+              final passwordState = _passwordStepKey.currentState;
+              if (passwordState != null && passwordState.isValid) {
+                context.read<OnboardingImportBloc>().add(
+                      ImportWallet(password: passwordState.password),
+                    );
+              }
+            }
+          },
+          backButtonText: 'Cancel',
+          nextButtonText:
+              state.currentStep == OnboardingImportStep.inputPassword
+                  ? 'Load Wallet'
+                  : 'Continue',
+          isLoading: isLoading,
+          nextButtonEnabled: _getNextButtonEnabled(state),
+        );
+      },
     );
   }
-}
 
-class ChooseFormat extends StatefulWidget {
-  const ChooseFormat({super.key});
-  @override
-  State<ChooseFormat> createState() => _ChooseFormatState();
-}
-
-class _ChooseFormatState extends State<ChooseFormat> {
-  String selectedFormat = ImportFormat.horizon.name;
-
-  @override
-  void initState() {
-    super.initState();
-    context
-        .read<OnboardingImportBloc>()
-        .add(ImportFormatChanged(walletType: selectedFormat));
+  bool _getNextButtonEnabled(OnboardingImportState state) {
+    if (state.currentStep == OnboardingImportStep.inputSeed) {
+      final isValid = _seedInputKey.currentState?.isValidMnemonic() ?? false;
+      final noErrors = state.mnemonicError == null;
+      return noErrors && isValid;
+    } else if (state.currentStep == OnboardingImportStep.inputPassword) {
+      final error = state.importState.maybeWhen(
+        orElse: () => false,
+        error: (error) => error,
+      );
+      final isValid = _passwordStepKey.currentState?.isValid ?? false;
+      return isValid && !error;
+    } else if (state.currentStep == OnboardingImportStep.chooseFormat) {
+      return state.walletType != null;
+    } else {
+      return true;
+    }
   }
+}
+
+class ChooseFormatStep extends StatefulWidget {
+  const ChooseFormatStep({super.key});
+
+  @override
+  State<ChooseFormatStep> createState() => _ChooseFormatStepState();
+}
+
+class _ChooseFormatStepState extends State<ChooseFormatStep> {
+  String? selectedFormat;
 
   @override
   Widget build(BuildContext context) {
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final isSmallScreen = MediaQuery.of(context).size.width < 768;
+    final isSmallScreen = MediaQuery.of(context).size.width < 500;
+
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const SelectableText("Choose the format of your seed phrase"),
-        const SizedBox(height: 16),
-        if (isSmallScreen) const SizedBox(height: 16),
-        ImportFormatDropdown(
-          onChanged: (String? newValue) {
-            setState(() {
-              selectedFormat = newValue!;
-            });
-            context
-                .read<OnboardingImportBloc>()
-                .add(ImportFormatChanged(walletType: selectedFormat));
-          },
-          selectedFormat: selectedFormat,
-        ),
-        const SizedBox(height: 16),
-        BackContinueButtons(
-          isDarkMode: isDarkMode,
-          isSmallScreenWidth: isSmallScreen,
-          backButtonText: 'CANCEL',
-          continueButtonText: 'CONTINUE',
-          onPressedBack: () {
-            final session = context.read<SessionStateCubit>();
-            session.onOnboarding();
-          },
-          onPressedContinue: () {
-            context.read<OnboardingImportBloc>().add(ImportFormatSubmitted());
-          },
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: isSmallScreen ? 20 : 40),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              SizedBox(
+                width: 170,
+                child: SelectableText(
+                  textAlign: TextAlign.center,
+                  'Import Your Wallet',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+              ),
+              const SizedBox(height: 10),
+              SelectableText(
+                'Choose the format of your recovery phrase',
+                style: Theme.of(context).textTheme.titleSmall,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 14),
+              SizedBox(
+                width: double.infinity,
+                child: HorizonRedesignDropdown<String>(
+                  hintText: 'Wallet Type',
+                  selectedValue: selectedFormat,
+                  onChanged: (value) {
+                    if (value != null) {
+                      setState(() {
+                        selectedFormat = value;
+                      });
+                      context.read<OnboardingImportBloc>().add(
+                            ImportFormatChanged(walletType: selectedFormat!),
+                          );
+                    }
+                  },
+                  items: [
+                    DropdownMenuItem(
+                      value: WalletType.horizon.name,
+                      child: Text(WalletType.horizon.description,
+                          style: Theme.of(context).textTheme.bodySmall),
+                    ),
+                    DropdownMenuItem(
+                      value: WalletType.bip32.name,
+                      child: Text(WalletType.bip32.description,
+                          style: Theme.of(context).textTheme.bodySmall),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ],
     );
   }
 }
 
-class SeedInputFields extends StatefulWidget {
-  final String? mnemonicErrorState;
-  const SeedInputFields({super.key, required this.mnemonicErrorState});
-  @override
-  State<SeedInputFields> createState() => _SeedInputFieldsState();
-}
+class SeedInputStep extends StatelessWidget {
+  final GlobalKey<SeedInputState> seedInputKey;
 
-class _SeedInputFieldsState extends State<SeedInputFields> {
-  List<TextEditingController> controllers =
-      List.generate(12, (_) => TextEditingController());
-  List<FocusNode> focusNodes = List.generate(12, (_) => FocusNode());
-  bool _showSeedPhrase = false;
-
-  @override
-  void initState() {
-    super.initState();
-    for (int i = 0; i < focusNodes.length; i++) {
-      focusNodes[i].onKeyEvent = (node, event) {
-        if (event is KeyDownEvent &&
-            event.logicalKey == LogicalKeyboardKey.tab) {
-          handleTabNavigation(i);
-          return KeyEventResult.handled;
-        }
-        return KeyEventResult.ignored;
-      };
-    }
-  }
-
-  @override
-  void dispose() {
-    for (var controller in controllers) {
-      controller.dispose();
-    }
-    for (var node in focusNodes) {
-      node.dispose();
-    }
-    super.dispose();
-  }
+  const SeedInputStep({
+    super.key,
+    required this.seedInputKey,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final isSmallScreen = MediaQuery.of(context).size.width < 768;
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final scaffoldBackgroundColor =
-        isDarkMode ? lightNavyDarkTheme : whiteLightTheme;
-    return Scaffold(
-      backgroundColor: scaffoldBackgroundColor,
-      body: Column(
-        children: [
-          isSmallScreen && widget.mnemonicErrorState != null
-              ? Align(
-                  alignment: Alignment.center,
-                  child: Container(
-                    padding: const EdgeInsets.all(8.0),
-                    decoration: BoxDecoration(
-                      color: redErrorTextTransparent,
-                      borderRadius: BorderRadius.circular(40.0),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(Icons.info, color: redErrorText),
-                        const SizedBox(width: 4),
-                        SelectableText(
-                          widget.mnemonicErrorState!,
-                          style: const TextStyle(color: redErrorText),
-                        ),
-                      ],
-                    ),
-                  ),
-                )
-              : const Text(""),
-          Expanded(
-            child: isSmallScreen
-                ? SingleChildScrollView(
-                    child: buildInputFields(isSmallScreen, isDarkMode),
-                  )
-                : buildInputFields(isSmallScreen, isDarkMode),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: TextButton.icon(
-              onPressed: () {
-                setState(() {
-                  _showSeedPhrase = !_showSeedPhrase;
-                });
-              },
-              icon: Icon(
-                _showSeedPhrase ? Icons.visibility_off : Icons.visibility,
-                color: isDarkMode ? mainTextWhite : mainTextBlack,
-              ),
-              label: Text(
-                _showSeedPhrase ? 'Hide Seed Phrase' : 'Show Seed Phrase',
-                style: TextStyle(
-                  color: isDarkMode ? mainTextWhite : mainTextBlack,
-                ),
-              ),
-            ),
-          ),
-          BackContinueButtons(
-            isDarkMode: isDarkMode,
-            isSmallScreenWidth: isSmallScreen,
-            backButtonText: 'CANCEL',
-            continueButtonText: 'CONTINUE',
-            onPressedBack: () {
-              final session = context.read<SessionStateCubit>();
-              session.onOnboarding();
-            },
-            onPressedContinue: () {
-              context.read<OnboardingImportBloc>().add(MnemonicSubmitted(
-                    mnemonic: controllers
-                        .map((controller) => controller.text)
-                        .join(' ')
-                        .trim(),
-                  ));
-            },
-            errorWidget: !isSmallScreen && widget.mnemonicErrorState != null
-                ? Align(
-                    alignment: Alignment.center,
-                    child: Container(
-                      padding: const EdgeInsets.all(8.0),
-                      decoration: BoxDecoration(
-                        color: redErrorTextTransparent,
-                        borderRadius: BorderRadius.circular(40.0),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(Icons.info, color: redErrorText),
-                          const SizedBox(width: 4),
-                          SelectableText(
-                            widget.mnemonicErrorState!,
-                            style: const TextStyle(color: redErrorText),
-                          ),
-                        ],
-                      ),
-                    ),
-                  )
-                : null,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget buildInputFields(bool isSmallScreen, bool isDarkMode) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        if (isSmallScreen) {
-          return SingleChildScrollView(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: Column(
-                    children: List.generate(6,
-                        (index) => buildCompactInputField(index, isDarkMode)),
-                  ),
-                ),
-                Expanded(
-                  child: Column(
-                    children: List.generate(
-                        6,
-                        (index) =>
-                            buildCompactInputField(index + 6, isDarkMode)),
-                  ),
-                ),
-              ],
-            ),
-          );
-        } else {
-          // Existing code for larger screens
-          return SingleChildScrollView(
-            child: ConstrainedBox(
-              constraints: BoxConstraints(
-                minHeight: constraints.maxHeight,
-              ),
-              child: IntrinsicHeight(
-                child: Column(
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: List.generate(2, (columnIndex) {
-                        return Expanded(
-                          child: Column(
-                            children: List.generate(6, (rowIndex) {
-                              int index = columnIndex * 6 + rowIndex;
-                              return buildInputField(index, isDarkMode);
-                            }),
-                          ),
-                        );
-                      }),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          );
-        }
+    return BlocBuilder<OnboardingImportBloc, OnboardingImportState>(
+      builder: (context, state) {
+        return SeedInput(
+          key: seedInputKey,
+          title: 'Seed Phrase',
+          subtitle:
+              'Enter your recovery phrase to restore access to your wallet. Make sure to enter the phrase exactly as it was saved.',
+          showTitle: true,
+          errorMessage: state.mnemonicError,
+          onInputChanged: () => context.findRenderObject()?.markNeedsPaint(),
+          onInputsUpdated: (mnemonic) {
+            context
+                .read<OnboardingImportBloc>()
+                .add(MnemonicChanged(mnemonic: mnemonic));
+          },
+        );
       },
     );
-  }
-
-  Widget buildCompactInputField(int index, bool isDarkMode) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 4.0),
-      child: Row(
-        children: [
-          SizedBox(
-            width: 20,
-            child: Text(
-              "${index + 1}.",
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.normal,
-                color: isDarkMode ? mainTextWhite : mainTextBlack,
-              ),
-              textAlign: TextAlign.right,
-            ),
-          ),
-          const SizedBox(width: 4),
-          Expanded(
-            child: SizedBox(
-              height: 40,
-              child: TextField(
-                controller: controllers[index],
-                focusNode: focusNodes[index],
-                obscureText: !_showSeedPhrase,
-                onChanged: (value) => handleInput(value, index),
-                decoration: InputDecoration(
-                  filled: true,
-                  fillColor:
-                      isDarkMode ? darkThemeInputColor : lightThemeInputColor,
-                  contentPadding:
-                      const EdgeInsets.symmetric(vertical: 0, horizontal: 8),
-                  hintText: 'Word ${index + 1}',
-                  hintStyle: TextStyle(
-                    fontSize: 14,
-                    color: isDarkMode
-                        ? darkThemeInputLabelColor
-                        : lightThemeInputLabelColor,
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8.0),
-                    borderSide: BorderSide.none,
-                  ),
-                ),
-                style: const TextStyle(fontSize: 14),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget buildInputField(int index, bool isDarkMode) {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Row(
-        children: [
-          SizedBox(
-            width: 24,
-            child: Text(
-              "${index + 1}. ",
-              style: TextStyle(
-                fontWeight: FontWeight.normal,
-                color: isDarkMode ? mainTextWhite : mainTextBlack,
-              ),
-              textAlign: TextAlign.right,
-            ),
-          ),
-          const SizedBox(width: 4),
-          Expanded(
-            child: TextField(
-              controller: controllers[index],
-              focusNode: focusNodes[index],
-              obscureText: !_showSeedPhrase,
-              onChanged: (value) => handleInput(value, index),
-              decoration: InputDecoration(
-                filled: true,
-                fillColor:
-                    isDarkMode ? darkThemeInputColor : lightThemeInputColor,
-                labelText: 'Word ${index + 1}',
-                labelStyle: TextStyle(
-                  fontWeight: FontWeight.normal,
-                  color: isDarkMode
-                      ? darkThemeInputLabelColor
-                      : lightThemeInputLabelColor,
-                ),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8.0),
-                  borderSide: BorderSide.none,
-                ),
-              ),
-              style: const TextStyle(fontSize: 16),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void handleInput(String value, int index) {
-    var words = value.split(RegExp(r'\s+'));
-    if (words.length > 1 && index < 11) {
-      for (int i = 0; i < words.length && (index + i) < 12; i++) {
-        controllers[index + i].text = words[i];
-        if ((index + i + 1) < 12) {
-          FocusScope.of(context).requestFocus(focusNodes[index + i + 1]);
-        }
-      }
-    }
-    updateMnemonic();
-  }
-
-  void handleTabNavigation(int index) {
-    int nextIndex;
-    if (index % 6 == 5) {
-      // Move to the next column
-      nextIndex = index + 7 - 6;
-    } else {
-      // Move down the current column
-      nextIndex = index + 1;
-    }
-
-    if (nextIndex < 12) {
-      FocusScope.of(context).requestFocus(focusNodes[nextIndex]);
-    } else {
-      FocusScope.of(context).unfocus();
-    }
-  }
-
-  void updateMnemonic() {
-    String mnemonic =
-        controllers.map((controller) => controller.text).join(' ').trim();
-    context
-        .read<OnboardingImportBloc>()
-        .add(MnemonicChanged(mnemonic: mnemonic));
   }
 }

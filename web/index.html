@@ -24,12 +24,51 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black" />
     <meta name="apple-mobile-web-app-title" content="horizon" />
-    <link rel="apple-touch-icon" href="favicon.svg" />
+    <link rel="apple-touch-icon" href="icon.png" />
 
-    <link href="favicon.svg" rel="icon" />
+    <link href="icon.png" rel="icon" />
 
     <title>horizon</title>
     <link rel="manifest" href="manifest.json" />
+
+    <!-- Preconnect to Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <!-- Prevent Roboto font loading -->
+    <style>
+      @font-face {
+        font-family: 'Roboto';
+        src: local('Montserrat');
+        font-weight: normal;
+        font-style: normal;
+      }
+
+      /* Override any attempt to load Roboto from Google Fonts */
+      @font-face {
+        font-family: 'Roboto';
+        src: local('Montserrat');
+        font-weight: normal;
+        font-style: normal;
+        unicode-range: U+0000-FFFF;
+      }
+
+      @font-face {
+        font-family: 'Roboto';
+        src: local('Montserrat');
+        font-weight: bold;
+        font-style: normal;
+        unicode-range: U+0000-FFFF;
+      }
+
+      @font-face {
+        font-family: 'Roboto';
+        src: local('Montserrat');
+        font-weight: normal;
+        font-style: italic;
+        unicode-range: U+0000-FFFF;
+      }
+    </style>
 
     <script src="./assets/posthog.js" type="application/javascript"></script>
     <script src="./assets/bundle.js" type="application/javascript"></script>
@@ -37,7 +76,7 @@
       src="./assets/horizon_utils.js"
       type="application/javascript"
     ></script>
-    
+
     <!-- This script adds the flutter initialization JS code -->
     <style id="splash-screen-style">
       html {
@@ -47,7 +86,7 @@
       body {
         margin: 0;
         min-height: 100%;
-        background-color: #1e1e38;
+        background-color: #0D0D0D;
         background-size: 100% 100%;
       }
 
@@ -58,6 +97,9 @@
         left: 50%;
         -ms-transform: translate(-50%, -50%);
         transform: translate(-50%, -50%);
+        width: 40vw;
+        max-width: 100px;
+        height: auto;
       }
 
       .contain {
@@ -104,31 +146,84 @@
       content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
       name="viewport"
     />
+    <link href="fonts/Montserrat-Regular.ttf" rel="preload" as="font" type="font/ttf" crossorigin>
+    <link href="fonts/Montserrat-Medium.ttf" rel="preload" as="font" type="font/ttf" crossorigin>
+    <link href="fonts/Montserrat-Bold.ttf" rel="preload" as="font" type="font/ttf" crossorigin>
+    <style>
+      @font-face {
+        font-family: 'Montserrat';
+        src: url('fonts/Montserrat-Regular.ttf') format('truetype');
+        font-weight: normal;
+        font-style: normal;
+      }
+      @font-face {
+        font-family: 'Montserrat';
+        src: url('fonts/Montserrat-Medium.ttf') format('truetype');
+        font-weight: 500;
+        font-style: normal;
+      }
+      @font-face {
+        font-family: 'Montserrat';
+        src: url('fonts/Montserrat-Bold.ttf') format('truetype');
+        font-weight: bold;
+        font-style: normal;
+      }
+    </style>
+    <!-- Add Material Icons font -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+    <!-- Add this to ensure Material Icons loads properly -->
+    <style>
+      /* Ensure Material Icons loads properly */
+      .material-icons {
+        font-family: 'Material Icons' !important;
+        font-weight: normal;
+        font-style: normal;
+        font-size: 24px;
+        line-height: 1;
+        letter-spacing: normal;
+        text-transform: none;
+        display: inline-block;
+        white-space: nowrap;
+        word-wrap: normal;
+        direction: ltr;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      /* Force Flutter to use Montserrat for all text */
+      .flt-text-editing {
+        font-family: 'Montserrat' !important;
+      }
+
+      body {
+        font-family: 'Montserrat' !important;
+      }
+    </style>
   </head>
   <body>
     <picture id="splash">
       <source
         srcset="
-          splash/img/light-1x.png 1x,
-          splash/img/light-2x.png 2x,
-          splash/img/light-3x.png 3x,
-          splash/img/light-4x.png 4x
+          splash/img/horizon-logo.png 1x,
+          splash/img/horizon-logo.png 2x,
+          splash/img/horizon-logo.png 3x,
+          splash/img/horizon-logo.png 4x
         "
         media="(prefers-color-scheme: light)"
       />
       <source
         srcset="
-          splash/img/dark-1x.png 1x,
-          splash/img/dark-2x.png 2x,
-          splash/img/dark-3x.png 3x,
-          splash/img/dark-4x.png 4x
+          splash/img/horizon-logo.png 1x,
+          splash/img/horizon-logo.png 2x,
+          splash/img/horizon-logo.png 3x,
+          splash/img/horizon-logo.png 4x
         "
         media="(prefers-color-scheme: dark)"
       />
       <img
         class="center"
         aria-hidden="true"
-        src="splash/img/light-1x.png"
+        src="splash/img/horizon-logo.png"
         alt=""
       />
     </picture>
