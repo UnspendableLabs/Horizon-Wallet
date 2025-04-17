@@ -8,3 +8,8 @@ class Start extends BalancesEvent {
 }
 
 class Stop extends BalancesEvent {}
+
+class ToggleStarred extends BalancesEvent {
+  final String asset;
+  ToggleStarred({required this.asset});
+}

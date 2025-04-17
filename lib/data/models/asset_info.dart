@@ -9,6 +9,7 @@ class AssetInfoModel {
   final String? description;
   final bool locked;
   final String? issuer;
+  final String? owner;
 
   AssetInfoModel({
     required this.divisible,
@@ -16,6 +17,7 @@ class AssetInfoModel {
     required this.description,
     required this.locked,
     this.issuer,
+    this.owner,
   });
 
   factory AssetInfoModel.fromJson(Map<String, dynamic> json) =>
@@ -28,6 +30,8 @@ class AssetInfoModel {
         divisible: divisible,
         assetLongname: assetLongname,
         description: description,
-        issuer: issuer);
+        issuer: issuer,
+        owner: owner,
+        locked: locked);
   }
 }

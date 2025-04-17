@@ -13,6 +13,7 @@ AssetInfoModel _$AssetInfoModelFromJson(Map<String, dynamic> json) =>
       description: json['description'] as String?,
       locked: json['locked'] as bool,
       issuer: json['issuer'] as String?,
+      owner: json['owner'] as String?,
     );
 
 Map<String, dynamic> _$AssetInfoModelToJson(AssetInfoModel instance) =>
@@ -22,4 +23,5 @@ Map<String, dynamic> _$AssetInfoModelToJson(AssetInfoModel instance) =>
       'description': instance.description,
       'locked': instance.locked,
       'issuer': instance.issuer,
+      'owner': instance.owner,
     };

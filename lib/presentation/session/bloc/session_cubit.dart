@@ -116,22 +116,11 @@ class SessionStateCubit extends Cubit<SessionState> {
             throw Exception("invariant: no accounts for this wallet");
           }
 
-          String? currentAccountUuid =
-              cacheProvider.getString("current-account-uuid");
-
-          Account currentAccount = accounts.firstWhereOrNull(
-                (account) => account.uuid == currentAccountUuid,
-              ) ??
-              accounts.first;
-
-          List<Address> addresses =
-              await addressRepository.getAllByAccountUuid(currentAccount.uuid);
+          List<Address> addresses = await addressRepository.getAll();
 
           if (addresses.isEmpty) {
             throw Exception("invariant: no addresses for this account");
           }
-
-          Address currentAddress = addresses.first;
 
           List<ImportedAddress> importedAddresses =
               await importedAddressRepository.getAll();
@@ -141,9 +130,7 @@ class SessionStateCubit extends Cubit<SessionState> {
             wallet: wallet,
             decryptionKey: decryptionKey,
             accounts: accounts,
-            currentAccountUuid: currentAccount.uuid,
             addresses: addresses,
-            currentAddress: currentAddress,
             importedAddresses: importedAddresses,
           )));
           return;
@@ -182,37 +169,6 @@ class SessionStateCubit extends Cubit<SessionState> {
     emit(const SessionState.onboarding(Onboarding.importPK()));
   }
 
-  void onAccountChanged(Account account) async {
-    List<Address> addresses =
-        await addressRepository.getAllByAccountUuid(account.uuid);
-
-    final state_ = state.maybeWhen(
-        orElse: () => state,
-        success: (stateInner) {
-          cacheProvider.setString(
-            "current-account-uuid",
-            account.uuid,
-          );
-
-          return SessionState.success(stateInner.copyWith(
-            currentAccountUuid: account.uuid,
-            currentAddress: addresses.first,
-            addresses: addresses,
-            currentImportedAddress: null,
-          ));
-        });
-
-    emit(state_);
-  }
-
-  void onAddressChanged(Address address) {
-    final state_ = state.maybeWhen(
-        orElse: () => state,
-        success: (stateInner) =>
-            SessionState.success(stateInner.copyWith(currentAddress: address)));
-    emit(state_);
-  }
-
   void onLogout() async {
     // logout effects
     await inMemoryKeyRepository.delete();
@@ -238,8 +194,7 @@ class SessionStateCubit extends Cubit<SessionState> {
         throw Exception("invariant: no accounts for this wallet");
       }
 
-      List<Address> addresses =
-          await addressRepository.getAllByAccountUuid(accounts.last.uuid);
+      List<Address> addresses = await addressRepository.getAll();
 
       if (addresses.isEmpty) {
         throw Exception("invariant: no addresses for this account");
@@ -255,8 +210,6 @@ class SessionStateCubit extends Cubit<SessionState> {
         wallet: wallet,
         accounts: accounts,
         addresses: addresses,
-        currentAccountUuid: accounts.last.uuid,
-        currentAddress: addresses.first,
         importedAddresses: importedAddresses,
       )));
 
@@ -267,93 +220,5 @@ class SessionStateCubit extends Cubit<SessionState> {
     } catch (error) {
       emit(SessionState.error(error.toString()));
     }
-  }
-
-  void refreshAndSelectNewAddress(String address, String accountUuid) async {
-    try {
-      Wallet? wallet = await walletRepository.getCurrentWallet();
-
-      if (wallet == null) {
-        emit(const SessionState.onboarding(Onboarding.initial()));
-        return;
-      }
-
-      List<Account> accounts =
-          await accountRepository.getAccountsByWalletUuid(wallet.uuid);
-
-      if (accounts.isEmpty) {
-        throw Exception("invariant: no accounts for this wallet");
-      }
-
-      Account? account = await accountRepository.getAccountByUuid(accountUuid);
-
-      if (account == null) {
-        throw Exception("invariant: no account for this uuid");
-      }
-
-      List<Address> addresses =
-          await addressRepository.getAllByAccountUuid(account.uuid);
-
-      if (addresses.isEmpty) {
-        throw Exception("invariant: no addresses for this account");
-      }
-
-      Address newAddress = addresses.firstWhere((element) {
-        return element.address == address;
-      });
-
-      List<ImportedAddress> importedAddresses =
-          await importedAddressRepository.getAll();
-
-      SessionStateSuccess success = state.successOrThrow();
-
-      emit(SessionState.success(success.copyWith(
-        redirect: true,
-        wallet: wallet,
-        accounts: accounts,
-        addresses: addresses,
-        currentAccountUuid: account.uuid,
-        currentAddress: newAddress,
-        importedAddresses: importedAddresses,
-      )));
-    } catch (error) {
-      emit(SessionState.error(error.toString()));
-    }
-  }
-
-  void refreshAndSelectNewImportedAddress(
-      ImportedAddress importedAddress) async {
-    try {
-      Wallet? wallet = await walletRepository.getCurrentWallet();
-
-      if (wallet == null) {
-        emit(const SessionState.onboarding(Onboarding.initial()));
-        return;
-      }
-
-      List<ImportedAddress> importedAddresses =
-          await importedAddressRepository.getAll();
-
-      final state_ = state.maybeWhen(
-          orElse: () => state,
-          success: (stateInner) => SessionState.success(stateInner.copyWith(
-              importedAddresses: importedAddresses,
-              currentImportedAddress: importedAddress,
-              currentAddress: null,
-              currentAccountUuid: null)));
-      emit(state_);
-    } catch (error) {
-      emit(SessionState.error(error.toString()));
-    }
-  }
-
-  void onImportedAddressChanged(ImportedAddress importedAddress) {
-    final state_ = state.maybeWhen(
-        orElse: () => state,
-        success: (stateInner) => SessionState.success(stateInner.copyWith(
-            currentImportedAddress: importedAddress,
-            currentAddress: null,
-            currentAccountUuid: null)));
-    emit(state_);
   }
 }

@@ -19,13 +19,10 @@ import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
 import 'package:horizon/domain/repositories/utxo_repository.dart';
 import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart";
-import 'package:horizon/presentation/session/bloc/session_cubit.dart';
-import 'package:horizon/presentation/session/bloc/session_state.dart';
 import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transaction_usecase.dart';
 import 'package:horizon/presentation/common/usecase/write_local_transaction_usecase.dart';
 import 'package:horizon/presentation/common/usecase/get_virtual_size_usecase.dart';
 
-import 'package:horizon/domain/entities/wallet.dart';
 import 'package:horizon/domain/entities/utxo.dart';
 import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/entities/asset_info.dart';
@@ -209,29 +206,6 @@ class MockDashboardActivityFeedBloc extends Mock
 
 class MockGetVirtualSizeUseCase extends Mock implements GetVirtualSizeUseCase {}
 
-class MockSessionStateCubit extends Mock implements SessionStateCubit {
-  @override
-  SessionState get state => const SessionState.success(SessionStateSuccess(
-        accounts: [],
-        redirect: false,
-        decryptionKey: "decryption_key",
-        wallet: Wallet(
-          name: 'Test Wallet',
-          uuid: 'test-wallet-uuid',
-          publicKey: '',
-          encryptedPrivKey: '',
-          chainCodeHex: '',
-        ),
-        currentAccountUuid: 'test-account-uuid',
-        addresses: [],
-        currentAddress: Address(
-          address: 'test-address',
-          accountUuid: 'test-account-uuid',
-          index: 0,
-        ),
-      ));
-}
-
 class MockWriteLocalTransactionUseCase extends Mock
     implements WriteLocalTransactionUseCase {}
 
@@ -283,7 +257,6 @@ void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
   late CloseDispenserBloc closeDispenserBloc;
   late MockDashboardActivityFeedBloc mockDashboardActivityFeedBloc;
-  late MockSessionStateCubit mockSessionStateCubit;
 
   // Add mock error service
   late MockErrorService mockErrorService;
@@ -320,7 +293,6 @@ void main() {
     mockAnalyticsService = MockAnalyticsService();
     mockComposeRepository = MockComposeRepository();
     mockWriteLocalTransactionUseCase = MockWriteLocalTransactionUseCase();
-    mockSessionStateCubit = MockSessionStateCubit();
     mockDashboardActivityFeedBloc = MockDashboardActivityFeedBloc();
 
     // Initialize bloc before use

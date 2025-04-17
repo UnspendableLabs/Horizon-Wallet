@@ -1,9 +1,13 @@
+import 'package:horizon/common/constants.dart';
 import 'package:horizon/common/format.dart';
 import 'package:horizon/data/models/cursor.dart' as cursor_model;
 import 'package:horizon/data/sources/network/api/v2_api.dart';
 import 'package:horizon/domain/entities/asset_info.dart' as ai;
 import 'package:horizon/domain/entities/balance.dart' as b;
 import 'package:horizon/domain/entities/cursor.dart' as cursor_entity;
+import 'package:horizon/domain/entities/multi_address_balance.dart' as mba;
+import 'package:horizon/domain/entities/multi_address_balance_entry.dart'
+    as mba_entry;
 import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 import 'package:horizon/domain/repositories/utxo_repository.dart';
@@ -34,12 +38,23 @@ class BalanceRepositoryImpl implements BalanceRepository {
   }
 
   @override
-  Future<List<b.Balance>> getBalancesForAddresses(
+  Future<List<mba.MultiAddressBalance>> getBalancesForAddresses(
       List<String> addresses) async {
-    final List<b.Balance> balances = [];
-    balances.addAll([await _getBtcBalance(address: addresses.first)]);
+    final List<mba.MultiAddressBalance> balances = [];
+    balances.addAll([await _getBtcBalancesForAddresses(addresses: addresses)]);
     balances.addAll(await _fetchBalancesByAllAddresses(addresses));
     return balances;
+  }
+
+  @override
+  Future<mba.MultiAddressBalance> getBalancesForAddressesAndAsset(
+      List<String> addresses, String assetName,
+      [BalanceType? type]) async {
+    final List<mba.MultiAddressBalance> balances =
+        await _fetchBalancesByAllAddresses(addresses, assetName, type);
+
+    // This multi-address balance is for a single asset, so though the response returns a list, there will only be one item
+    return balances.first;
   }
 
   Future<List<b.Balance>> _fetchBalances(String address) async {
@@ -62,7 +77,7 @@ class BalanceRepositoryImpl implements BalanceRepository {
               description: a.assetInfo.description,
               // issuer: a.assetInfo.issuer,
               divisible: a.assetInfo.divisible,
-              // locked: a.assetInfo.locked,
+              locked: a.assetInfo.locked,
             ),
             utxo: a.utxo,
             utxoAddress: a.utxoAddress));
@@ -73,32 +88,40 @@ class BalanceRepositoryImpl implements BalanceRepository {
     return balances;
   }
 
-  Future<List<b.Balance>> _fetchBalancesByAllAddresses(
-      List<String> addresses) async {
-    final List<b.Balance> balances = [];
+  Future<List<mba.MultiAddressBalance>> _fetchBalancesByAllAddresses(
+      List<String> addresses,
+      [String? asset,
+      BalanceType? type]) async {
+    final List<mba.MultiAddressBalance> balances = [];
     int limit = 50;
     cursor_model.CursorModel? cursor;
 
     do {
       final response = await api.getBalancesByAddressesVerbose(
-          addresses.join(','), cursor, limit);
-      for (MultiAddressBalanceVerbose a in response.result ?? []) {
-        for (MultiBalanceVerbose balance in a.addresses) {
-          balances.add(b.Balance(
-              address: balance.address,
-              quantity: balance.quantity,
-              quantityNormalized: balance.quantityNormalized,
-              asset: a.asset,
-              assetInfo: ai.AssetInfo(
-                assetLongname: a.assetInfo.assetLongname,
-                description: a.assetInfo.description,
-                // issuer: a.assetInfo.issuer,
-                divisible: a.assetInfo.divisible,
-                // locked: a.assetInfo.locked,
-              ),
-              utxo: balance.utxo,
-              utxoAddress: balance.utxoAddress));
-        }
+          addresses.join(','), cursor, limit, asset, type?.name);
+      for (var a in response.result ?? []) {
+        balances.add(mba.MultiAddressBalance(
+            asset: a.asset,
+            assetLongname: a.assetInfo.assetLongname,
+            total: a.total,
+            totalNormalized: a.totalNormalized,
+            entries: a.addresses
+                .map((e) => mba_entry.MultiAddressBalanceEntry(
+                    address: e.address,
+                    quantity: e.quantity,
+                    quantityNormalized: e.quantityNormalized,
+                    utxo: e.utxo,
+                    utxoAddress: e.utxoAddress))
+                .cast<mba_entry.MultiAddressBalanceEntry>()
+                .toList(),
+            assetInfo: ai.AssetInfo(
+              assetLongname: a.assetInfo.assetLongname,
+              description: a.assetInfo.description,
+              divisible: a.assetInfo.divisible,
+              owner: a.assetInfo.owner,
+              issuer: a.assetInfo.issuer,
+              locked: a.assetInfo.locked,
+            )));
       }
       cursor = response.nextCursor;
     } while (cursor != null);
@@ -125,8 +148,41 @@ class BalanceRepositoryImpl implements BalanceRepository {
             assetLongname: 'BTC',
             description: 'Bitcoin',
             divisible: true,
+            locked: false,
           ));
     });
+  }
+
+  Future<mba.MultiAddressBalance> _getBtcBalancesForAddresses(
+      {required List<String> addresses}) async {
+    // final List<mba.MultiAddressBalance> balances = [];
+    final List<b.Balance> balances_ = [];
+    for (var address in addresses) {
+      final balance = await _getBtcBalance(address: address);
+      balances_.add(balance);
+    }
+    final total = balances_.fold(0, (sum, balance) => sum + balance.quantity);
+    final totalNormalized = satoshisToBtc(total).toStringAsFixed(8);
+    return mba.MultiAddressBalance(
+      asset: 'BTC',
+      assetLongname: null,
+      total: total,
+      totalNormalized: totalNormalized,
+      entries: balances_
+          .map((e) => mba_entry.MultiAddressBalanceEntry(
+              address: e.address,
+              quantity: e.quantity,
+              quantityNormalized: e.quantityNormalized,
+              utxo: e.utxo,
+              utxoAddress: e.utxoAddress))
+          .cast<mba_entry.MultiAddressBalanceEntry>()
+          .toList(),
+      assetInfo: const ai.AssetInfo(
+          assetLongname: 'BTC',
+          description: 'Bitcoin',
+          divisible: true,
+          locked: false),
+    );
   }
 
   @override
@@ -149,7 +205,10 @@ class BalanceRepositoryImpl implements BalanceRepository {
         assetInfo: ai.AssetInfo(
           assetLongname: balance.assetInfo.assetLongname,
           description: balance.assetInfo.description,
+          issuer: balance.assetInfo.issuer,
+          owner: balance.assetInfo.owner,
           divisible: balance.assetInfo.divisible,
+          locked: balance.assetInfo.locked,
         ),
         utxo: balance.utxo,
         utxoAddress: balance.utxoAddress,
@@ -177,7 +236,10 @@ class BalanceRepositoryImpl implements BalanceRepository {
         assetInfo: ai.AssetInfo(
           assetLongname: balance.assetInfo.assetLongname,
           description: balance.assetInfo.description,
+          issuer: balance.assetInfo.issuer,
+          owner: balance.assetInfo.owner,
           divisible: balance.assetInfo.divisible,
+          locked: balance.assetInfo.locked,
         ),
       ));
     }

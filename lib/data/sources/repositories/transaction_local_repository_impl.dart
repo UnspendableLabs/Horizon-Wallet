@@ -25,6 +25,11 @@ class TransactionLocalRepositoryImpl implements TransactionLocalRepository {
   }
 
   @override
+  Future<void> deleteAllTransactions() async {
+    await transactionDao.deleteAllTransactions();
+  }
+
+  @override
   Future<void> insert(TransactionInfo transactionInfo) async {
     // can only save transactions created locally
     if (transactionInfo.domain.runtimeType != TransactionInfoDomainLocal) {

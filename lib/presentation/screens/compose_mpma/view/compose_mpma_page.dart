@@ -22,7 +22,7 @@ import 'package:horizon/presentation/common/usecase/write_local_transaction_usec
 import 'package:horizon/presentation/screens/compose_mpma/bloc/compose_mpma_bloc.dart';
 import 'package:horizon/presentation/screens/compose_mpma/bloc/compose_mpma_event.dart';
 import 'package:horizon/presentation/screens/compose_mpma/bloc/compose_mpma_state.dart';
-import 'package:horizon/presentation/screens/compose_send/view/asset_dropdown.dart';
+import 'package:horizon/presentation/common/widgets/asset_dropdown.dart';
 import "package:horizon/presentation/screens/dashboard/bloc/dashboard_activity_feed/dashboard_activity_feed_bloc.dart";
 import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';

@@ -7,6 +7,7 @@ import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/main.dart';
+import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 import 'package:horizon/setup.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:pub_semver/pub_semver.dart';
@@ -18,7 +19,7 @@ void main() {
       "stomach worry artefact bicycle finger doctor outdoor learn lecture powder agent body";
 
   group('Onboarding Integration Tests', () {
-    setUpAll(() async {
+    setUp(() async {
       // Perform any common setup here
       setup();
       await initSettings();
@@ -29,15 +30,13 @@ void main() {
       await GetIt.I.get<WalletRepository>().deleteAllWallets();
       await GetIt.I.get<AccountRepository>().deleteAllAccounts();
       await GetIt.I.get<AddressRepository>().deleteAllAddresses();
+      await Future.delayed(const Duration(milliseconds: 100));
 
       // Clean up settings
       Settings.clearCache();
 
       // Reset GetIt
       await GetIt.I.reset();
-
-      // Add a small delay to ensure cleanup is complete
-      await Future.delayed(const Duration(milliseconds: 100));
     });
 
     testWidgets('recover mnemonic', (WidgetTester tester) async {
@@ -63,27 +62,33 @@ void main() {
         latestVersion: Version(0, 0, 0),
       ));
 
-      // Wait for the app to settle
-      await tester.pumpAndSettle(const Duration(seconds: 3));
+      // Wait for the Load seed phrase button to appear
+      bool buttonFound = false;
+      int attempts = 0;
+      while (!buttonFound && attempts < 100) {
+        await tester.pump(const Duration(milliseconds: 100));
+        buttonFound = find.text('Load seed phrase').evaluate().isNotEmpty;
+        attempts++;
+      }
 
       // Find and tap the "LOAD SEED" button
-      final importSeedButton = find.text('LOAD SEED PHRASE');
+      final importSeedButton = find.text('Load seed phrase');
       expect(importSeedButton, findsOneWidget);
       await tester.tap(importSeedButton);
       await tester.pumpAndSettle();
 
       // Open the dropdown for import format
-      final dropdownFinder = find.byType(DropdownButton<String>);
+      final dropdownFinder = find.byType(HorizonRedesignDropdown<String>);
       await tester.tap(dropdownFinder);
       await tester.pumpAndSettle();
 
       // Select the specified import format
-      final formatOption = find.text("Horizon").last;
+      final formatOption = find.text("Horizon Native").last;
       await tester.tap(formatOption);
       await tester.pumpAndSettle();
 
       // Tap the "CONTINUE" button
-      final continueButton = find.text('CONTINUE');
+      final continueButton = find.text('Continue');
       expect(continueButton, findsOneWidget);
       await tester.tap(continueButton);
       await tester.pumpAndSettle();
@@ -95,7 +100,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Tap the "CONTINUE" button
-      final continueButtonAfterSeed = find.text('CONTINUE');
+      final continueButtonAfterSeed = find.text('Continue');
       expect(continueButtonAfterSeed, findsOneWidget);
       await tester.tap(continueButtonAfterSeed);
       await tester.pumpAndSettle();
@@ -114,7 +119,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Tap the "LOGIN" button
-      final loginButton = find.text('LOGIN');
+      final loginButton = find.text('Load Wallet');
       expect(loginButton, findsOneWidget);
 
       await tester.ensureVisible(loginButton);

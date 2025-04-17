@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
-import 'package:horizon/domain/entities/wallet.dart';
-import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/common/constants.dart';
+import 'package:horizon/domain/entities/account.dart';
+import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/main.dart';
 import 'package:horizon/setup.dart';
 import 'package:integration_test/integration_test.dart';
@@ -19,31 +19,33 @@ void main() {
 
     tearDown(() async {
       // Clean up after each test
-      await GetIt.I.get<WalletRepository>().deleteAllWallets();
+      await GetIt.I.get<AccountRepository>().deleteAllAccounts();
       GetIt.I.reset();
     });
 
     testWidgets('buttons should be disabled when wallet exists',
         (WidgetTester tester) async {
+      // Insert a test wallet before running the app
+      final accountRepository = GetIt.I.get<AccountRepository>();
+      await accountRepository.insert(
+        Account(
+          name: 'Test Wallet',
+          uuid: 'test-wallet-uuid',
+          walletUuid: 'test-wallet-uuid',
+          purpose: '84',
+          coinType: '0',
+          accountIndex: '0',
+          importFormat: ImportFormat.horizon,
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
       await tester.runAsync(() async {
         await tester.pumpWidget(MyApp(
           currentVersion: Version(0, 0, 0),
           latestVersion: Version(0, 0, 0),
         ));
-
-        await tester.pumpAndSettle();
-
-        // Insert a test wallet before running the app
-        final walletRepository = GetIt.I.get<WalletRepository>();
-        await walletRepository.insert(
-          const Wallet(
-            name: 'Test Wallet',
-            uuid: 'test-wallet-uuid',
-            publicKey: 'test-public-key',
-            encryptedPrivKey: 'test-encrypted-priv-key',
-            chainCodeHex: 'test-chain-code',
-          ),
-        );
 
         await tester.pumpAndSettle();
 
@@ -54,8 +56,8 @@ void main() {
         );
 
         // Find and verify both buttons are disabled
-        final createButton = find.text('CREATE A NEW WALLET');
-        final importButton = find.text('LOAD SEED PHRASE');
+        final createButton = find.text('Create a new wallet');
+        final importButton = find.text('Load seed phrase');
 
         expect(
             tester

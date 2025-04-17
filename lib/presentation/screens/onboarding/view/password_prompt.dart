@@ -1,25 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:horizon/presentation/common/colors.dart';
-import 'package:horizon/presentation/screens/onboarding/view/back_continue_buttons.dart';
+import 'package:horizon/presentation/common/theme_extension.dart';
+import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
+import 'package:horizon/utils/app_icons.dart';
 
 class PasswordPrompt extends StatefulWidget {
-  final Function() onPressedBack;
-  final Function(String) onPressedContinue;
-  final String backButtonText;
-  final String continueButtonText;
   final Widget? optionalErrorWidget;
+  final void Function(String)? onPasswordChanged;
+  final VoidCallback? onValidationChanged;
 
   const PasswordPrompt({
     super.key,
-    required this.state,
-    required this.onPressedBack,
-    required this.onPressedContinue,
-    required this.backButtonText,
-    required this.continueButtonText,
     this.optionalErrorWidget,
+    this.onPasswordChanged,
+    this.onValidationChanged,
   });
-
-  final dynamic state;
 
   @override
   PasswordPromptState createState() => PasswordPromptState();
@@ -32,207 +26,243 @@ class PasswordPromptState extends State<PasswordPrompt> {
   bool _isPasswordConfirmationObscured = true;
   final passwordController = TextEditingController();
   final passwordConfirmationController = TextEditingController();
-  bool _submitted = false;
+  final passwordFocusNode = FocusNode();
+  final confirmPasswordFocusNode = FocusNode();
+
+  String get password => passwordController.text;
+  bool get isValid {
+    if (passwordController.text.isEmpty ||
+        passwordConfirmationController.text.isEmpty) {
+      return false;
+    }
+    return formKey.currentState?.validate() ?? false;
+  }
 
   @override
   void initState() {
     super.initState();
+    passwordController.addListener(_onInputChanged);
+    passwordConfirmationController.addListener(_onInputChanged);
+
+    // Add focus listeners
+    passwordFocusNode.addListener(() {
+      setState(() {});
+    });
+    confirmPasswordFocusNode.addListener(() {
+      setState(() {});
+    });
+  }
+
+  void _onInputChanged() {
+    if (widget.onPasswordChanged != null && isValid) {
+      widget.onPasswordChanged!(password);
+    }
+    widget.onValidationChanged?.call();
   }
 
   @override
   void dispose() {
-    super.dispose();
+    passwordController.removeListener(_onInputChanged);
+    passwordConfirmationController.removeListener(_onInputChanged);
     passwordController.dispose();
     passwordConfirmationController.dispose();
+
+    // Remove focus listeners
+    passwordFocusNode.removeListener(() {});
+    confirmPasswordFocusNode.removeListener(() {});
+    passwordFocusNode.dispose();
+    confirmPasswordFocusNode.dispose();
+    super.dispose();
+  }
+
+  void clearPassword() {
+    passwordController.clear();
+    passwordConfirmationController.clear();
   }
 
   @override
   Widget build(BuildContext context) {
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final screenSize = MediaQuery.of(context).size;
+    final isSmallScreen = screenSize.width < 500;
 
-    final isSmallScreen = screenSize.width < 768;
-
-    return SingleChildScrollView(
-      child: SizedBox(
-        height: 500,
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Form(
-              key: formKey,
+    return Column(
+      children: [
+        Padding(
+          padding:
+              EdgeInsets.symmetric(horizontal: isSmallScreen ? 20.0 : 40.0),
+          child: Column(
+            children: [
+              SelectableText(
+                'Please create a password',
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              const SizedBox(height: 10),
+              SelectableText(
+                'This password will be used to encrypt and decrypt your seed phrase, which will be stored locally. You will be able to use your wallet with just your password, but you will only be able to recover your wallet with your seed phrase.',
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.titleSmall,
+              ),
+            ],
+          ),
+        ),
+        Expanded(
+          child: Form(
+            key: formKey,
+            child: Padding(
+              padding: EdgeInsets.symmetric(
+                  horizontal: isSmallScreen ? 20.0 : 40.0, vertical: 14.0),
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  !isSmallScreen
-                      ? const SizedBox(height: 32)
-                      : const SizedBox.shrink(),
-                  Text(
-                    'Please create a password',
-                    style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: isDarkMode ? mainTextWhite : mainTextBlack),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 8),
-                  Container(
-                    constraints: BoxConstraints(
-                        maxWidth: isSmallScreen
-                            ? screenSize.width
-                            : screenSize.width / 2),
-                    child: const Text(
-                      'This password will be used to encrypt and decrypt your seed phrase, which will be stored locally. You will be able to use your wallet with just your password, but you will only be able to recover your wallet with your seed phrase.',
-                      style: TextStyle(fontSize: 16),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                  const SizedBox(height: 32),
-                  Center(
-                    child: SizedBox(
-                      width: isSmallScreen
-                          ? screenSize.width
-                          : screenSize.width / 3,
-                      child: TextFormField(
-                        autovalidateMode: _submitted
-                            ? AutovalidateMode.onUserInteraction
-                            : AutovalidateMode.disabled,
-                        validator: (value) => validatePassword(value),
-                        onFieldSubmitted: (_) {
-                          setState(() {
-                            _submitted = true;
-                          });
-                          if (formKey.currentState!.validate()) {
-                            widget.onPressedContinue(passwordController.text);
-                          }
-                        },
-                        obscureText: _isPasswordObscured,
-                        enableSuggestions: false,
-                        autocorrect: false,
-                        controller: passwordController,
-                        decoration: InputDecoration(
-                          filled: true,
-                          fillColor: isDarkMode
-                              ? darkThemeInputColor
-                              : lightThemeInputColor,
-                          labelText: 'Password',
-                          labelStyle: TextStyle(
-                              color: isDarkMode
-                                  ? darkThemeInputLabelColor
-                                  : lightThemeInputLabelColor),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8.0),
-                            borderSide: BorderSide.none,
-                          ),
-                          suffixIcon: IconButton(
-                            icon: Icon(
-                              _isPasswordObscured
-                                  ? Icons.visibility_outlined
-                                  : Icons.visibility_off_outlined,
-                            ),
-                            onPressed: () {
-                              setState(() {
-                                _isPasswordObscured = !_isPasswordObscured;
-                              });
-                            },
-                            focusNode: FocusNode(skipTraversal: true),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Container(
-                    constraints: const BoxConstraints(
-                        minHeight: 48, minWidth: double.infinity),
-                    child: Center(
-                      child: SizedBox(
-                        width: isSmallScreen
-                            ? screenSize.width
-                            : screenSize.width / 3,
-                        child: TextFormField(
-                          autovalidateMode: _submitted
-                              ? AutovalidateMode.onUserInteraction
-                              : AutovalidateMode.disabled,
-                          validator: (value) => validatePasswordConfirmation(
-                              passwordController.text,
-                              passwordConfirmationController.text),
-                          onFieldSubmitted: (_) {
-                            setState(() {
-                              _submitted = true;
-                            });
-                            if (formKey.currentState!.validate()) {
-                              widget.onPressedContinue(passwordController.text);
-                            }
-                          },
-                          obscureText: _isPasswordConfirmationObscured,
-                          enableSuggestions: false,
-                          autocorrect: false,
-                          controller: passwordConfirmationController,
-                          decoration: InputDecoration(
-                            filled: true,
-                            fillColor: isDarkMode
-                                ? darkThemeInputColor
-                                : lightThemeInputColor,
-                            labelText: 'Confirm Password',
-                            labelStyle: TextStyle(
-                                color: isDarkMode
-                                    ? darkThemeInputLabelColor
-                                    : lightThemeInputLabelColor),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8.0),
-                              borderSide: BorderSide.none,
-                            ),
-                            suffixIcon: IconButton(
-                              icon: Icon(
-                                _isPasswordConfirmationObscured
-                                    ? Icons.visibility_outlined
-                                    : Icons.visibility_off_outlined,
-                              ),
-                              onPressed: () {
-                                setState(() {
-                                  _isPasswordConfirmationObscured =
-                                      !_isPasswordConfirmationObscured;
-                                });
-                              },
-                              focusNode: FocusNode(skipTraversal: true),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  widget.optionalErrorWidget != null
-                      ? Column(
-                          children: [
-                            const SizedBox(height: 16),
-                            widget.optionalErrorWidget!,
-                          ],
-                        )
-                      : const SizedBox.shrink(),
-                  const Spacer(),
-                  BackContinueButtons(
-                    isDarkMode: isDarkMode,
-                    isSmallScreenWidth: isSmallScreen,
-                    onPressedBack: widget.onPressedBack,
-                    onPressedContinue: () {
+                  buildPasswordField(
+                    context,
+                    controller: passwordController,
+                    isObscured: _isPasswordObscured,
+                    onToggleObscured: () {
                       setState(() {
-                        _submitted = true;
+                        _isPasswordObscured = !_isPasswordObscured;
                       });
-                      if (formKey.currentState!.validate()) {
-                        widget.onPressedContinue(passwordController.text);
-                      }
                     },
-                    backButtonText: widget.backButtonText,
-                    continueButtonText: widget.continueButtonText,
+                    label: 'Password',
                   ),
+                  const SizedBox(height: 10),
+                  buildPasswordField(
+                    context,
+                    controller: passwordConfirmationController,
+                    isObscured: _isPasswordConfirmationObscured,
+                    onToggleObscured: () {
+                      setState(() {
+                        _isPasswordConfirmationObscured =
+                            !_isPasswordConfirmationObscured;
+                      });
+                    },
+                    label: 'Confirm Password',
+                  ),
+                  if (widget.optionalErrorWidget != null) ...[
+                    const SizedBox(height: 16),
+                    widget.optionalErrorWidget!,
+                  ],
                 ],
               ),
             ),
           ),
         ),
-      ),
+      ],
+    );
+  }
+
+  Widget buildPasswordField(
+    BuildContext context, {
+    required TextEditingController controller,
+    required bool isObscured,
+    required VoidCallback onToggleObscured,
+    required String label,
+  }) {
+    final theme = Theme.of(context);
+    final customTheme = theme.extension<CustomThemeExtension>()!;
+    final hasText = controller.text.isNotEmpty;
+    final focusNode =
+        label == 'Password' ? passwordFocusNode : confirmPasswordFocusNode;
+
+    return FormField<String>(
+      autovalidateMode: AutovalidateMode.onUserInteraction,
+      validator: (value) => label == 'Password'
+          ? validatePassword(controller.text)
+          : validatePasswordConfirmation(
+              passwordController.text, controller.text),
+      builder: (FormFieldState<String> field) {
+        final hasError = field.hasError;
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            MouseRegion(
+              cursor: SystemMouseCursors.text,
+              child: Container(
+                height: 56,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(18),
+                  color: hasText
+                      ? customTheme.inputBackground
+                      : customTheme.inputBackgroundEmpty,
+                ),
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(18),
+                    border: hasError
+                        ? Border.all(color: customTheme.errorColor, width: 1)
+                        : focusNode.hasFocus
+                            ? GradientBoxBorder(
+                                context: context,
+                                width: 1,
+                              )
+                            : Border.all(color: customTheme.inputBorderColor),
+                  ),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: TextFormField(
+                          controller: controller,
+                          focusNode: focusNode,
+                          obscureText: isObscured,
+                          onChanged: (_) => field.didChange(controller.text),
+                          onTap: () {
+                            FocusScope.of(context).requestFocus(focusNode);
+                          },
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: customTheme.inputTextColor,
+                          ),
+                          decoration: InputDecoration(
+                            isDense: theme.inputDecorationTheme.isDense,
+                            contentPadding:
+                                theme.inputDecorationTheme.contentPadding,
+                            border: theme.inputDecorationTheme.border,
+                            hintText: label,
+                            hintStyle: theme.inputDecorationTheme.hintStyle,
+                          ),
+                          showCursor: true,
+                        ),
+                      ),
+                      AppIcons.iconButton(
+                        context: context,
+                        icon: isObscured
+                            ? AppIcons.eyeClosedIcon(
+                                context: context,
+                                width: 10,
+                                height: 10,
+                              )
+                            : AppIcons.eyeOpenIcon(
+                                context: context,
+                                width: 12,
+                                height: 12,
+                              ),
+                        color: customTheme.inputTextColor,
+                        onPressed: onToggleObscured,
+                        padding: EdgeInsets.zero,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            if (field.hasError) ...[
+              Padding(
+                padding: const EdgeInsets.only(left: 16, top: 4),
+                child: Text(
+                  field.errorText!,
+                  style: TextStyle(
+                    color: customTheme.errorColor,
+                    fontSize: 12,
+                  ),
+                ),
+              ),
+            ],
+          ],
+        );
+      },
     );
   }
 }
