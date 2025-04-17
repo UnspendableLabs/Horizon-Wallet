@@ -30,6 +30,7 @@ import 'package:horizon/presentation/forms/sign_psbt/bloc/sign_psbt_bloc.dart';
 import 'package:horizon/presentation/forms/sign_psbt/view/sign_psbt_form.dart';
 import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
+import 'package:horizon/presentation/session/bloc/session_state.dart';
 import 'package:horizon/presentation/version_cubit.dart';
 import 'package:horizon/utils/app_icons.dart';
 
@@ -72,8 +73,10 @@ class SignPsbtModal extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final session = context.watch<SessionStateCubit>().state.successOrThrow();
     return BlocProvider(
       create: (_) => SignPsbtBloc(
+        session: session,
         passwordRequired:
             GetIt.I<SettingsRepository>().requirePasswordForCryptoOperations,
         inMemoryKeyRepository: GetIt.I<InMemoryKeyRepository>(),
@@ -92,6 +95,8 @@ class SignPsbtModal extends StatelessWidget {
         accountRepository: accountRepository,
       ),
       child: SignPsbtForm(
+        bitcoinRepository: bitcoinRepository,
+        balanceRepository: balanceRepository,
         key: Key(unsignedPsbt),
         passwordRequired:
             GetIt.I<SettingsRepository>().requirePasswordForCryptoOperations,
