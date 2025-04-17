@@ -7,26 +7,10 @@ import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/main.dart';
+import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 import 'package:horizon/setup.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:pub_semver/pub_semver.dart';
-
-extension WidgetTesterExtension on WidgetTester {
-  Future<void> pumpUntilFound(
-    Finder finder, {
-    Duration timeout = const Duration(seconds: 30),
-  }) async {
-    bool found = false;
-    final DateTime start = DateTime.now();
-    while (!found) {
-      if (DateTime.now().difference(start) > timeout) {
-        throw Exception('Timed out waiting for ${finder.toString()}');
-      }
-      await pump(const Duration(milliseconds: 100));
-      found = finder.evaluate().isNotEmpty;
-    }
-  }
-}
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
@@ -186,6 +170,7 @@ void main() {
       Settings.clearCache();
 
       // Reset GetIt
+
       await GetIt.I.reset();
     });
 
@@ -198,6 +183,7 @@ void main() {
         FlutterError.onError = (FlutterErrorDetails details) {
           if (details.exceptionAsString().contains('A RenderFlex overflowed')) {
             // Ignore RenderFlex overflow errors
+
             return;
           }
           originalOnError(details);
@@ -213,18 +199,25 @@ void main() {
           latestVersion: Version(0, 0, 0),
         ));
 
-        // Wait for the app to settle
-        await tester.pumpAndSettle(const Duration(seconds: 1));
+        // Wait for the Load seed phrase button to appear using the same approach as app_test.dart
+        bool buttonFound = false;
+        int attempts = 0;
+        while (!buttonFound && attempts < 100) {
+          await tester.pump(const Duration(milliseconds: 100));
+          buttonFound = find.text('Load seed phrase').evaluate().isNotEmpty;
+          attempts++;
+        }
 
         // Find and tap the "LOAD SEED PHRASE" button
-        final importSeedButton = find.text('LOAD SEED PHRASE');
+
+        final importSeedButton = find.text('Load seed phrase');
         expect(importSeedButton, findsOneWidget);
         await tester.tap(importSeedButton);
         await tester.pumpAndSettle();
 
         // Now we should be on the "Choose the format of your seed phrase" screen
         // Open the dropdown for import format
-        final dropdownFinder = find.byType(DropdownButton<String>);
+        final dropdownFinder = find.byType(HorizonRedesignDropdown<String>);
         await tester.tap(dropdownFinder);
         await tester.pumpAndSettle();
 
@@ -239,8 +232,7 @@ void main() {
         await tester.tap(formatOption);
         await tester.pumpAndSettle();
 
-        // Tap the "CONTINUE" button
-        final continueButton = find.text('CONTINUE');
+        final continueButton = find.text('Continue');
         expect(continueButton, findsOneWidget);
         await tester.tap(continueButton);
         await tester.pumpAndSettle();
@@ -252,7 +244,7 @@ void main() {
         await tester.pumpAndSettle();
 
         // Tap the "CONTINUE" button
-        final continueButtonAfterSeed = find.text('CONTINUE');
+        final continueButtonAfterSeed = find.text('Continue');
         expect(continueButtonAfterSeed, findsOneWidget);
         await tester.tap(continueButtonAfterSeed);
         await tester.pumpAndSettle();
@@ -271,13 +263,13 @@ void main() {
         await tester.pumpAndSettle();
 
         // Ensure the "LOGIN" button is visible
-        final loginButton = find.text('LOGIN');
+        final loginButton = find.text('Load Wallet');
         expect(loginButton, findsOneWidget);
 
         await tester.ensureVisible(loginButton);
         await tester.pumpAndSettle();
 
-        // Now tap the "LOGIN" button
+        // Now tap the "Load wallet" button
         await tester.tap(loginButton);
         await tester.pumpAndSettle();
 
@@ -302,7 +294,7 @@ void main() {
                   'Address ${addresses[i].address} does not match expected address ${expectedAddresses[i]}');
         }
 
-        final settingsButton = find.byIcon(Icons.settings);
+        final settingsButton = find.byKey(const Key('settings_icon'));
         expect(settingsButton, findsOneWidget);
         await tester.tap(settingsButton);
         await tester.pumpAndSettle();
@@ -310,24 +302,68 @@ void main() {
         final lockScreen = find.text('Lock Screen');
         expect(lockScreen, findsOneWidget);
         await tester.tap(lockScreen);
+
+        // Wait for the TextField to appear
+        bool loginFormFound = false;
+        int attempts2 = 0;
+        while (!loginFormFound && attempts2 < 100) {
+          await tester.pump(const Duration(milliseconds: 100));
+          try {
+            loginFormFound = find.byType(TextField).evaluate().isNotEmpty;
+          } catch (e) {
+            print('Error while looking for login form: $e');
+          }
+          attempts2++;
+        }
+
+        if (!loginFormFound) {
+          throw Exception('Login form not found after 100 attempts');
+        }
+
+        // Find the TextField
+        final textField = find.byType(TextField);
+        expect(textField, findsOneWidget, reason: 'Password field not found');
+        print('textField found: $textField');
+
+        // Focus the text field
+        await tester.tap(textField);
+        await tester.pump();
+
+        // Use testTextInput directly
+        await tester.showKeyboard(textField);
+
+        // Clear any existing text
+        tester.testTextInput.updateEditingValue(const TextEditingValue(
+          text: '',
+          selection: TextSelection.collapsed(offset: 0),
+        ));
+        await tester.pump();
+
+        // Enter the password
+        tester.testTextInput.updateEditingValue(const TextEditingValue(
+          text: 'securepassword123',
+          selection: TextSelection.collapsed(offset: 16),
+        ));
+        await tester.pump();
+
+        // Submit the text
+        await tester.testTextInput.receiveAction(TextInputAction.done);
+        await tester.pump();
+
+        // Find and tap the unlock button
+        final unlockButton = find.widgetWithText(OutlinedButton, 'UNLOCK');
+        expect(unlockButton, findsOneWidget, reason: 'UNLOCK button not found');
+
+        await tester.ensureVisible(unlockButton);
+        await tester.pump();
+
+        await tester.tap(unlockButton);
+        await tester.pump();
+
+        // Wait for the unlock process to complete
         await tester.pumpAndSettle();
 
-        final password = find.byType(TextField);
-        await tester.enterText(password, "securepassword123");
-        await tester.pumpAndSettle();
-
-        final unlock = find.text('UNLOCK');
-        expect(unlock, findsOneWidget);
-        await tester.tap(unlock);
-        await tester.pumpAndSettle();
-
-        // Keep pumping frames until the settings button appears or timeout occurs
-        await tester.pumpUntilFound(
-          find.byIcon(Icons.settings),
-          timeout: const Duration(seconds: 10),
-        );
-
-        final settingsButton2 = find.byIcon(Icons.settings);
+        final settingsButton2 = find.byKey(const Key('settings_icon'));
         expect(settingsButton2, findsOneWidget);
         await tester.tap(settingsButton2);
         await tester.pumpAndSettle();
@@ -337,14 +373,19 @@ void main() {
         await tester.tap(resetButton);
         await tester.pumpAndSettle();
 
-        final resetCheckbox = find.byType(CheckboxListTile);
-        expect(resetCheckbox, findsOneWidget);
-        await tester.tap(resetCheckbox);
+        final continueResetButton1 = find.text('Continue');
+        expect(continueResetButton1, findsOneWidget);
+        await tester.tap(continueResetButton1);
         await tester.pumpAndSettle();
 
-        final continueResetButton = find.text('CONTINUE');
-        expect(continueResetButton, findsOneWidget);
-        await tester.tap(continueResetButton);
+        final toggle = find.byType(HorizonToggle);
+        expect(toggle, findsOneWidget);
+        await tester.tap(toggle);
+        await tester.pumpAndSettle();
+
+        final continueResetButton2 = find.text('Continue');
+        expect(continueResetButton2, findsOneWidget);
+        await tester.tap(continueResetButton2);
         await tester.pumpAndSettle();
 
         final resetConfirmationField =
@@ -353,11 +394,19 @@ void main() {
         await tester.enterText(resetConfirmationField, 'RESET WALLET');
         await tester.pumpAndSettle();
 
-        final confirmResetButton = find.byKey(const Key('continueButton'));
-        expect(confirmResetButton, findsOneWidget);
-        await tester.tap(confirmResetButton);
+        final resetWalletButton = find.byType(HorizonOutlinedButton);
+        expect(resetWalletButton, findsOneWidget);
+        await tester.tap(resetWalletButton);
+        // await tester.pumpAndSettle();
 
-        await tester.pumpAndSettle();
+        // Wait for reset to complete
+        for (var i = 0; i < 20; i++) {
+          await tester.pump(const Duration(milliseconds: 100));
+          if (find.text('Load seed phrase').evaluate().isNotEmpty) break;
+        }
+
+        final importSeedButtonAfterReset = find.text('Load seed phrase');
+        expect(importSeedButtonAfterReset, findsOneWidget);
       });
     }
   });

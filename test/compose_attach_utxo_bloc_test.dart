@@ -109,6 +109,7 @@ void main() {
     address: 'ADDRESS',
     quantityNormalized: '100',
     assetInfo: const AssetInfo(
+      locked: false,
       divisible: true,
       assetLongname: 'ASSET_NAME',
     ),
@@ -265,8 +266,8 @@ void main() {
                   quantity: 5,
                   address: 'ADDRESS',
                   quantityNormalized: '0.00000005',
-                  assetInfo:
-                      const AssetInfo(divisible: true, assetLongname: 'XCP'))
+                  assetInfo: const AssetInfo(
+                      divisible: true, assetLongname: 'XCP', locked: false))
             ],
             10,
           ),

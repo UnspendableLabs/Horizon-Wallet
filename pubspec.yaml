@@ -85,6 +85,8 @@ dependencies:
   pub_semver: ^2.1.4
   flutter_native_splash: ^2.4.3
   sentry_flutter: ^8.11.0
+  lottie: ^3.2.0
+  flutter_form_builder: ^9.5.0
 
 dev_dependencies:
   floor_generator: ^1.4.2
@@ -121,7 +123,16 @@ flutter:
   assets:
     - assets/logo-black.svg
     - assets/logo-white.svg
-    - assets/logo-blue-3d.png
+    - assets/horizon-H-dark-mode.svg
+    - assets/horizon-H-light-mode.svg
+    - assets/horizon-logo.png
+    - assets/app-bar-H-dark-mode.png
+    - assets/app-bar-H-light-mode.png
+    - assets/logo_animation-gradient-dark.json
+    - assets/logo_animation-gradient-light.json
+    - assets/xcp-img.png
+    - assets/btc-img.png
+    - assets/icons/
     - fonts/
 
   #   - .env
@@ -139,7 +150,7 @@ flutter:
   # example:
 
   fonts:
-    - family: Roboto
+    - family: Montserrat
       fonts:
         - asset: fonts/Montserrat-Black.ttf
         - asset: fonts/Montserrat-BlackItalic.ttf
@@ -169,5 +180,5 @@ flutter_native_splash:
   android: false
   ios: false
   web: true
-  color: "#1e1e38"
-  image: "assets/logo-blue-3d.png"
+  color: "#0D0D0D"
+  image: "assets/horizon-logo.png"

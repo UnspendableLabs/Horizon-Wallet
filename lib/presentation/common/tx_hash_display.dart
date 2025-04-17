@@ -75,6 +75,7 @@ class TxHashDisplayState extends State<TxHashDisplay> {
                 text: shortenedHash,
                 style: const TextStyle(
                   decoration: TextDecoration.underline,
+                  fontSize: 12,
                 ),
               ),
             ],

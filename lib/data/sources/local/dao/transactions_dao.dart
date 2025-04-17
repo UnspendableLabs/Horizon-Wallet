@@ -36,4 +36,8 @@ class TransactionsDao extends DatabaseAccessor<DB> with _$TransactionsDaoMixin {
           }))
         .get();
   }
+
+  Future<void> deleteAllTransactions() {
+    return delete(transactions).go();
+  }
 }

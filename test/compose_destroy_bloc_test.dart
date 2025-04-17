@@ -98,6 +98,7 @@ void main() {
     assetInfo: const AssetInfo(
       divisible: true,
       assetLongname: 'ASSET_NAME',
+      locked: false,
     ),
   );
 

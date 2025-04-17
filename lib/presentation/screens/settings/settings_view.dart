@@ -1,13 +1,91 @@
 import 'package:flutter/material.dart';
-import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
-import 'package:horizon/domain/repositories/settings_repository.dart';
-import 'package:go_router/go_router.dart';
-
 import 'package:get_it/get_it.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
+import 'package:horizon/presentation/common/redesign_colors.dart';
+import 'package:horizon/presentation/screens/settings/import_address/import_address_flow.dart';
+import 'package:horizon/presentation/screens/settings/reset_wallet/reset_wallet_flow.dart';
+import 'package:horizon/presentation/screens/settings/security_view.dart';
+import 'package:horizon/presentation/screens/settings/seed_phrase/seed_phrase_flow.dart';
+import 'package:horizon/presentation/session/bloc/session_cubit.dart';
+import 'package:horizon/presentation/session/theme/bloc/theme_bloc.dart';
+import 'package:horizon/presentation/session/theme/bloc/theme_event.dart';
+import 'package:horizon/presentation/shell/app_shell.dart';
+import 'package:horizon/utils/app_icons.dart';
+
+enum SettingsPage {
+  main,
+  security,
+  seedPhrase,
+  importAddress,
+  resetWallet,
+}
+
+class SettingsItem extends StatelessWidget {
+  final String title;
+  final Widget? icon;
+  final VoidCallback? onTap;
+  final Widget? trailing;
+
+  const SettingsItem({
+    super.key,
+    required this.title,
+    this.icon,
+    this.onTap,
+    this.trailing,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 64,
+      margin: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 5.0),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: Theme.of(context).inputDecorationTheme.outlineBorder?.color ??
+              transparentBlack8,
+          width: 1,
+        ),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(18),
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(14, 11, 14, 11),
+            child: Row(
+              children: [
+                icon ?? const SizedBox.shrink(),
+                icon != null
+                    ? const SizedBox(width: 12)
+                    : const SizedBox.shrink(),
+                Expanded(
+                  child: Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                      color: Theme.of(context).textTheme.bodyMedium?.color,
+                    ),
+                  ),
+                ),
+                trailing ??
+                    AppIcons.chevronRightIcon(
+                      context: context,
+                      color: Theme.of(context).iconTheme.color,
+                    ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
 
 class PasswordProtectedSwitch extends StatefulWidget {
   final String title;
@@ -131,58 +209,281 @@ class _PasswordProtectedSwitchState extends State<PasswordProtectedSwitch> {
   }
 }
 
-class SettingsView extends StatelessWidget {
-  const SettingsView({super.key});
+class ThemeToggle extends StatelessWidget {
+  final bool isDarkTheme;
+  final ValueChanged<bool> onChanged;
+
+  const ThemeToggle({
+    super.key,
+    required this.isDarkTheme,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () => onChanged(!isDarkTheme),
+      child: Container(
+        width: 94,
+        height: 44,
+        padding: const EdgeInsets.all(6),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(
+            color:
+                Theme.of(context).inputDecorationTheme.outlineBorder?.color ??
+                    transparentBlack8,
+            width: 1,
+          ),
+        ),
+        child: Stack(
+          children: [
+            AnimatedAlign(
+              duration: const Duration(milliseconds: 200),
+              alignment:
+                  isDarkTheme ? Alignment.centerLeft : Alignment.centerRight,
+              child: Container(
+                width: 36,
+                height: 32,
+                decoration: BoxDecoration(
+                  color: transparentPurple16,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Container(
+                  width: 36,
+                  height: 32,
+                  alignment: Alignment.center,
+                  child: AppIcons.moonIcon(
+                      context: context, height: 20, width: 20),
+                ),
+                Container(
+                  width: 36,
+                  height: 32,
+                  alignment: Alignment.center,
+                  child:
+                      AppIcons.sunIcon(context: context, height: 20, width: 20),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class SettingsView extends StatefulWidget {
+  const SettingsView({
+    super.key,
+  });
+
+  @override
+  State<SettingsView> createState() => _SettingsViewState();
+}
+
+class _SettingsViewState extends State<SettingsView> {
+  SettingsPage _currentPage = SettingsPage.main;
+
+  void _navigateBack() {
+    setState(() {
+      _currentPage = SettingsPage.main;
+    });
+  }
+
+  String _getPageTitle() {
+    switch (_currentPage) {
+      case SettingsPage.main:
+        return "Settings";
+      case SettingsPage.security:
+        return "Security";
+      case SettingsPage.seedPhrase:
+        return "Seed Phrase";
+      case SettingsPage.importAddress:
+        return "Import Address";
+      case SettingsPage.resetWallet:
+        return "Reset Wallet";
+    }
+  }
+
+  Widget _buildCurrentPage() {
+    switch (_currentPage) {
+      case SettingsPage.main:
+        return _buildMainSettings();
+      case SettingsPage.security:
+        return const SecurityView();
+      case SettingsPage.seedPhrase:
+        return const SeedPhraseFlow();
+      case SettingsPage.importAddress:
+        return ImportAddressFlow(onNavigateBack: _navigateBack);
+      case SettingsPage.resetWallet:
+        return const ResetWalletFlow();
+    }
+  }
+
+  Widget _buildMainSettings() {
+    return ListView(
+      children: [
+        const SizedBox(height: 10),
+        SettingsItem(
+          title: 'Security',
+          icon: AppIcons.shieldIcon(context: context),
+          onTap: () {
+            setState(() {
+              _currentPage = SettingsPage.security;
+            });
+          },
+        ),
+        SettingsItem(
+          title: 'Seed phrase',
+          icon: AppIcons.copyIcon(context: context),
+          onTap: () {
+            setState(() {
+              _currentPage = SettingsPage.seedPhrase;
+            });
+          },
+        ),
+        SettingsItem(
+          title: 'Import new address',
+          icon: AppIcons.receiveIcon(context: context),
+          onTap: () {
+            setState(() {
+              _currentPage = SettingsPage.importAddress;
+            });
+          },
+        ),
+        SettingsItem(
+          title: 'Reset wallet',
+          icon: AppIcons.refreshIcon(context: context),
+          onTap: () {
+            setState(() {
+              _currentPage = SettingsPage.resetWallet;
+            });
+          },
+        ),
+        SettingsItem(
+          title: 'Appearance',
+          icon: AppIcons.spectaclesIcon(context: context),
+          trailing: ThemeToggle(
+            isDarkTheme: Theme.of(context).brightness == Brightness.dark,
+            onChanged: (value) {
+              context.read<ThemeBloc>().add(ThemeToggled());
+            },
+          ),
+        ),
+        const SizedBox(height: 40),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20.0),
+          child: Container(
+            height: 64,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(18),
+              color: transparentPurple16,
+              border: Border.all(
+                color: Theme.of(context)
+                        .inputDecorationTheme
+                        .outlineBorder
+                        ?.color ??
+                    transparentBlack8,
+                width: 1,
+              ),
+            ),
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                borderRadius: BorderRadius.circular(18),
+                onTap: () {
+                  context.read<SessionStateCubit>().onLogout();
+                },
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(14, 11, 14, 11),
+                  child: Row(
+                    children: [
+                      AppIcons.lockIcon(context: context),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          'Lock Screen',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                            color:
+                                Theme.of(context).textTheme.bodyMedium?.color,
+                          ),
+                        ),
+                      ),
+                      AppIcons.chevronRightIcon(
+                        context: context,
+                        color: Theme.of(context).iconTheme.color,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return context.watch<SessionStateCubit>().state.maybeWhen(
         orElse: () => const CircularProgressIndicator(),
-        success: (session) =>
-            SettingsScreen(title: "Settings", hasAppBar: false, children: [
-              AppBar(
-                title: const Text("Settings"),
-                leading: BackButton(
-                  onPressed: () {
-                    context.go("/dashboard");
-                  },
+        success: (session) => Material(
+              color: Theme.of(context).dialogTheme.backgroundColor,
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 500),
+                  child: Scaffold(
+                    backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+                    appBar: AppBar(
+                      backgroundColor:
+                          Theme.of(context).scaffoldBackgroundColor,
+                      elevation: 0,
+                      centerTitle: false,
+                      leadingWidth: 40,
+                      toolbarHeight: 74,
+                      title: Padding(
+                        padding: const EdgeInsets.only(top: 18.0),
+                        child: Text(
+                          _getPageTitle(),
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                            color:
+                                Theme.of(context).textTheme.bodyMedium?.color,
+                          ),
+                        ),
+                      ),
+                      leading: Padding(
+                        padding: const EdgeInsets.only(left: 9.0, top: 18.0),
+                        child: AppIcons.iconButton(
+                          context: context,
+                          width: 32,
+                          height: 32,
+                          icon: AppIcons.backArrowIcon(
+                              context: context,
+                              width: 24,
+                              height: 24,
+                              fit: BoxFit.fitHeight),
+                          onPressed: _currentPage != SettingsPage.main
+                              ? _navigateBack
+                              : () {
+                                  AppShell.navigateToTab(context, 0);
+                                },
+                        ),
+                      ),
+                    ),
+                    body: _buildCurrentPage(),
+                  ),
                 ),
               ),
-              SettingsGroup(
-                title: "Security",
-                children: [
-                  PasswordProtectedSwitch(
-                    title: 'Require password',
-                    description:
-                        "Require password when signing transactions or granting access to wallet data.",
-                    settingKey: SettingsKeys.requiredPasswordForCryptoOperations
-                        .toString(),
-                    defaultValue: false,
-                  ),
-                  const Divider(height: 0.0),
-                  DropDownSettingsTile<int>(
-                    title: 'Inactivity Timeout',
-                    subtitle: 'Period of inactivity before screen locks',
-                    settingKey: SettingsKeys.inactivityTimeout.toString(),
-                    values: const <int, String>{
-                      1: '1 minute',
-                      5: '5 minutes',
-                      30: '30 minutes',
-                      120: '2 hours',
-                      360: '6 hours',
-                      720: '12 hours',
-                    },
-                    selected: Settings.getValue(
-                        SettingsKeys.inactivityTimeout.toString(),
-                        defaultValue: 5)!,
-                    onChange: (value) {
-                      Settings.setValue(
-                          SettingsKeys.inactivityTimeout.toString(), value,
-                          notify: true);
-                    },
-                  ),
-                ],
-              )
-            ]));
+            ));
   }
 }

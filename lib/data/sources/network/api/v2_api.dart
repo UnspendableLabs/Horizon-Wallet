@@ -4986,6 +4986,8 @@ abstract class V2Api {
     @Query("addresses") String addresses, [
     @Query("cursor") CursorModel? cursor,
     @Query("limit") int? limit,
+    @Query("asset") String? asset,
+    @Query("type") String? type,
   ]);
 
   @GET("/utxos/{utxo}/balances?verbose=true")
@@ -5272,6 +5274,15 @@ abstract class V2Api {
   @GET("/addresses/{address}/fairminters?verbose=true")
   Future<Response<List<FairminterModel>>> getFairmintersByAddress(
     @Path("address") String address, [
+    @Query("status") String? status,
+    @Query("cursor") CursorModel? cursor,
+    @Query("limit") int? limit,
+    @Query("offset") int? offset,
+  ]);
+
+  @GET("/assets/{asset}/fairminters?verbose=true")
+  Future<Response<List<FairminterModel>>> getFairmintersByAsset(
+    @Path("asset") String asset, [
     @Query("status") String? status,
     @Query("cursor") CursorModel? cursor,
     @Query("limit") int? limit,

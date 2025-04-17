@@ -25,13 +25,23 @@ extension SessionStateX on SessionState {
           throw Exception("SessionState.successOrThrow: expected success"));
 }
 
+extension SessionStateAddressesX on SessionState {
+  List<Address> get addresses => successOrThrow().addresses;
+  List<ImportedAddress> get importedAddresses =>
+      successOrThrow().importedAddresses ?? [];
+  List<String> get allAddresses => [
+        ...addresses.map((e) => e.address),
+        ...importedAddresses.map((e) => e.address)
+      ];
+}
+
 @freezed
 class SessionStateSuccess with _$SessionStateSuccess {
   // Private constructor
 
   @override
   String toString() {
-    return 'SessionStateSuccess(redirect: $redirect, wallet: $wallet, decryptionKey: <REDACTED>, accounts: $accounts, currentAccountUuid: $currentAccountUuid, addresses: $addresses, currentAddress: $currentAddress, importedAddresses: $importedAddresses, currentImportedAddress: $currentImportedAddress)';
+    return 'SessionStateSuccess(redirect: $redirect, wallet: $wallet, decryptionKey: <REDACTED>, accounts: $accounts, addresses: $addresses, importedAddresses: $importedAddresses)';
   }
 
   const factory SessionStateSuccess({
@@ -39,11 +49,8 @@ class SessionStateSuccess with _$SessionStateSuccess {
     required Wallet wallet,
     required String decryptionKey,
     required List<Account> accounts,
-    required String? currentAccountUuid,
     required List<Address> addresses,
-    required Address? currentAddress,
     List<ImportedAddress>? importedAddresses,
-    ImportedAddress? currentImportedAddress,
   }) = _SessionStateSuccess;
 }
 

@@ -10,8 +10,8 @@ abstract class EventsRepository {
   //   List<String>? whitelist,
   // });
   Future<(List<VerboseEvent>, Cursor? nextCursor, int? resultCount)>
-      getByAddressVerbose({
-    required String address,
+      getByAddressesVerbose({
+    required List<String> addresses,
     int? limit,
     Cursor? cursor,
     bool? unconfirmed = false,
@@ -24,15 +24,20 @@ abstract class EventsRepository {
   //   List<String>? whitelist,
   // });
 
-  Future<List<VerboseEvent>> getAllByAddressVerbose({
-    required String address,
+  Future<List<VerboseEvent>> getAllMempoolVerboseEventsForAddresses(
+    List<String> addresses,
+    List<String>? whitelist,
+  );
+
+  Future<List<VerboseEvent>> getAllByAddressesVerbose({
+    required List<String> addresses,
     bool? unconfirmed = false,
     List<String>? whitelist,
   });
 
   Future<(List<VerboseEvent>, Cursor? nextCursor, int? resultCount)>
-      getMempoolEventsByAddressVerbose({
-    required String address,
+      getMempoolEventsByAddressesVerbose({
+    required List<String> addresses,
     int? limit,
     Cursor? cursor,
     List<String>? whitelist,

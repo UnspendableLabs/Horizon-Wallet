@@ -17,12 +17,10 @@ class OnboardingImportBloc
     required this.walletService,
   }) : super(const OnboardingImportState()) {
     on<MnemonicChanged>((event, emit) async {
-      try {
-        print(event);
 
         if (event.mnemonic.isEmpty) {
           emit(state.copyWith(
-              mnemonicError: "Seed phrase is requiredasf",
+              mnemonicError: "Seed phrase is required",
               mnemonic: event.mnemonic));
           return;
         } else if (event.mnemonic.split(' ').length != 12) {
@@ -37,6 +35,7 @@ class OnboardingImportBloc
                   mnemonicService.validateMnemonic(event.mnemonic),
             WalletType.horizon =>
               mnemonicService.validateMnemonic(event.mnemonic),
+          null => false,
           };
 
           if (!validMnemonic) {
@@ -48,19 +47,13 @@ class OnboardingImportBloc
 
           emit(state.copyWith(mnemonic: event.mnemonic, mnemonicError: null));
         }
-      } catch (e, callstack) {
-        print("\n\n\n");
-        print(e);
-        print(callstack);
-        print("\n\n\n");
-      }
     });
 
     on<ImportFormatChanged>((event, emit) async {
       final walletType = switch (event.walletType) {
         "Horizon" => WalletType.horizon,
         "BIP32" => WalletType.bip32,
-        _ => throw Exception('Invariant: Invalid import format')
+        _ => null,
       };
       emit(state.copyWith(walletType: walletType));
     });
@@ -106,29 +99,44 @@ class OnboardingImportBloc
     });
 
     on<ImportWallet>((event, emit) async {
-      emit(state.copyWith(importState: ImportStateLoading()));
+      emit(state.copyWith(importState: const ImportState.loading()));
 
-      try {
-        print(event);
-
-        final password = event.password;
-
-        await importWalletUseCase.call(
-          password: password,
-          mnemonic: state.mnemonic,
-          walletType: state.walletType,
-          onError: (msg) {
-            emit(state.copyWith(importState: ImportStateError(message: msg)));
-          },
-          onSuccess: () {
-            emit(state.copyWith(importState: ImportStateSuccess()));
-          },
-        );
-      } catch (e, callstack) {
-        print(e);
-        print(callstack);
-        rethrow;
+      if (state.walletType == null) {
+        emit(state.copyWith(
+            importState: const ImportState.error(
+                message: "invariant: Wallet type is required")));
+        return;
       }
+      final password = event.password;
+
+      await importWalletUseCase.call(
+        password: password,
+        mnemonic: state.mnemonic,
+        walletType: state.walletType!,
+        onError: (msg) {
+          emit(state.copyWith(importState: ImportState.error(message: msg)));
+        },
+        onSuccess: () {
+          emit(state.copyWith(importState: const ImportState.success()));
+        },
+      );
+      return;
+    });
+
+    on<SeedInputBackPressed>((event, emit) async {
+      emit(state.copyWith(
+        currentStep: OnboardingImportStep.inputSeed,
+        mnemonicError: null,
+        mnemonic: '',
+      ));
+    });
+
+    on<ImportFormatBackPressed>((event, emit) async {
+      emit(state.copyWith(
+          currentStep: OnboardingImportStep.chooseFormat,
+          mnemonicError: null,
+          mnemonic: '',
+          walletType: null));
     });
   }
 }

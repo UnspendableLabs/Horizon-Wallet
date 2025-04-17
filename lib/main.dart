@@ -19,11 +19,14 @@ import 'package:horizon/domain/entities/wallet.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/action_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
+import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/repositories/config_repository.dart';
+import 'package:horizon/domain/repositories/fairminter_repository.dart';
 import 'package:horizon/domain/repositories/imported_address_repository.dart';
+import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
+import 'package:horizon/domain/repositories/settings_repository.dart';
 import 'package:horizon/domain/repositories/version_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
-import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 import 'package:horizon/domain/services/database_manager_service.dart';
 import 'package:horizon/domain/services/address_service.dart';
@@ -31,35 +34,35 @@ import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/error_service.dart';
 import 'package:horizon/domain/services/imported_address_service.dart';
+import 'package:horizon/domain/services/secure_kv_service.dart';
 import 'package:horizon/domain/services/wallet_service.dart';
-import 'package:horizon/presentation/common/colors.dart';
-import 'package:horizon/presentation/common/footer/view/footer.dart';
+import 'package:horizon/presentation/common/redesign_colors.dart';
+import 'package:horizon/presentation/common/theme_extension.dart';
+import 'package:horizon/presentation/inactivity_monitor/inactivity_monitor_bloc.dart';
+import 'package:horizon/presentation/inactivity_monitor/inactivity_monitor_view.dart';
+import 'package:horizon/presentation/screens/asset/asset_view.dart';
+import 'package:horizon/presentation/screens/asset/bloc/asset_view_bloc.dart';
 import 'package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_bloc.dart';
 import 'package:horizon/presentation/screens/dashboard/address_form/bloc/address_form_bloc.dart';
-import 'package:horizon/presentation/screens/dashboard/import_address_pk_form/bloc/import_address_pk_bloc.dart';
-import 'package:horizon/presentation/screens/dashboard/view/dashboard_page.dart';
+import 'package:horizon/presentation/screens/dashboard/view/portfolio_view.dart';
+import 'package:horizon/presentation/screens/login/login_view.dart';
 import 'package:horizon/presentation/screens/onboarding/view/onboarding_page.dart';
 import 'package:horizon/presentation/screens/onboarding_create/view/onboarding_create_page.dart';
 import 'package:horizon/presentation/screens/onboarding_import/view/onboarding_import_page.dart';
 import 'package:horizon/presentation/screens/privacy_policy.dart';
-import 'package:horizon/presentation/screens/login/login_view.dart';
+import 'package:horizon/presentation/screens/settings/import_address/bloc/import_address_pk_bloc.dart';
+import 'package:horizon/presentation/screens/settings/settings_view.dart';
 import 'package:horizon/presentation/screens/tos.dart';
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:horizon/presentation/session/bloc/session_state.dart';
 import 'package:horizon/presentation/session/theme/bloc/theme_bloc.dart';
+import 'package:horizon/presentation/shell/app_shell.dart';
 import 'package:horizon/presentation/version_cubit.dart';
-import 'package:horizon/presentation/screens/settings/settings_view.dart';
 import 'package:horizon/setup.dart';
+import 'package:horizon/utils/app_icons.dart';
 import 'package:pub_semver/pub_semver.dart';
 
-import 'package:horizon/presentation/inactivity_monitor/inactivity_monitor_bloc.dart';
-import 'package:horizon/presentation/inactivity_monitor/inactivity_monitor_view.dart';
-
-import 'package:horizon/domain/repositories/settings_repository.dart';
-import 'package:horizon/domain/services/secure_kv_service.dart';
-
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
-final _sectionNavigatorKey = GlobalKey<NavigatorState>();
 
 // Future<void> setupRegtestWallet() async {
 //   // read env for regtest private key
@@ -124,70 +127,6 @@ class LoadingScreen extends StatelessWidget {
   Widget build(BuildContext context) => const Scaffold(
         backgroundColor: Color(0x001e1e38),
       );
-}
-
-class VersionWarningSnackbar extends StatefulWidget {
-  final Widget child;
-
-  const VersionWarningSnackbar({required this.child, super.key});
-
-  @override
-  VersionWarningState createState() => VersionWarningState();
-}
-
-class VersionWarningState extends State<VersionWarningSnackbar> {
-  bool _hasShownSnackbar = false;
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-
-    final versionInfo = context
-        .read<VersionCubit>()
-        .state; // we should only ever get to this page if session is success
-
-    if (!_hasShownSnackbar && versionInfo.warning != null) {
-      switch (versionInfo.warning!) {
-        case NewVersionAvailable():
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                  content: Text(
-                'There is a new version of Horizon Wallet: ${versionInfo.latest}.  Your version is ${versionInfo.current} ',
-              )),
-            );
-            _hasShownSnackbar = true;
-          });
-          break;
-        case VersionServiceUnreachable():
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                  content: Text(
-                'Version service unreachable.  Horizon Wallet may be out of date. Your version is ${versionInfo.current} ',
-              )),
-            );
-            _hasShownSnackbar = true;
-          });
-          break;
-      }
-    }
-
-    if (!_hasShownSnackbar && versionInfo.current < versionInfo.latest) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content: Text(
-            'There is a new version of Horizon Wallet: ${versionInfo.latest}.  Your version is ${versionInfo.current} ',
-          )),
-        );
-        _hasShownSnackbar = true;
-      });
-    }
-  }
-
-  @override
-  Widget build(context) => widget.child;
 }
 
 class AppRouter {
@@ -258,87 +197,75 @@ class AppRouter {
               transitionsBuilder:
                   (context, animation, secondaryAnimation, child) => child),
         ),
-        StatefulShellRoute.indexedStack(
-            builder:
-                (BuildContext context, GoRouterState state, navigationSession) {
-              return ValueChangeObserver(
-                  cacheKey: SettingsKeys.inactivityTimeout.toString(),
-                  defaultValue: 5,
-                  builder: (context, inactivityTimeout, onChanged) {
-                    return BlocProvider(
-                        key: Key("inactivity-timeout:$inactivityTimeout"),
-                        create: (_) {
-                          return InactivityMonitorBloc(
-                            logger: GetIt.I<Logger>(),
-                            kvService: GetIt.I<SecureKVService>(),
-                            inactivityTimeout:
-                                Duration(minutes: inactivityTimeout),
-                          );
-                        },
-                        child: InactivityMonitorView(
-                          onTimeout: () {
-                            final session = context.read<SessionStateCubit>();
-                            session.onLogout();
-                          },
-                          child: navigationSession,
-                        ));
-                  });
-            },
-            branches: [
-              StatefulShellBranch(
-                navigatorKey: _sectionNavigatorKey,
-                routes: [
-                  GoRoute(
-                      path: "/dashboard",
-                      builder: (context, state) {
-                        final session = context.watch<SessionStateCubit>();
-
-                        // this technically isn't necessary, will always be
-                        // success
-                        return session.state.maybeWhen(
-                          success: (state) {
-                            late Key key;
-                            if (state.currentAddress != null) {
-                              key = Key(state.currentAddress!.address);
-                            } else if (state.currentImportedAddress != null) {
-                              key = Key(state.currentImportedAddress!.address);
-                            }
-
-                            return Scaffold(
-                                bottomNavigationBar: const Footer(),
-                                body: VersionWarningSnackbar(
-                                    child: DashboardPageWrapper(key: key)));
+        ShellRoute(
+          builder: (BuildContext context, GoRouterState state, Widget child) {
+            // Check session state before showing the shell
+            return ValueChangeObserver(
+              cacheKey: SettingsKeys.inactivityTimeout.toString(),
+              defaultValue: 5,
+              builder: (context, inactivityTimeout, onChanged) {
+                return BlocProvider(
+                  key: Key("inactivity-timeout:$inactivityTimeout"),
+                  create: (_) {
+                    return InactivityMonitorBloc(
+                      logger: GetIt.I<Logger>(),
+                      kvService: GetIt.I<SecureKVService>(),
+                      inactivityTimeout: Duration(minutes: inactivityTimeout),
+                    );
+                  },
+                  child: InactivityMonitorView(
+                    onTimeout: () {
+                      final session = context.read<SessionStateCubit>();
+                      session.onLogout();
+                    },
+                    child: context.watch<SessionStateCubit>().state.maybeWhen(
+                          success: (sessionState) {
+                            // Only show the shell if the user is logged in
+                            return AppShell(
+                              currentRoute: state.matchedLocation,
+                              actionRepository: GetIt.I<ActionRepository>(),
+                              child: child,
+                            );
                           },
                           orElse: () => const LoadingScreen(),
-                        );
-                      }),
-                  GoRoute(
-                      path: "/settings",
-                      builder: (context, state) {
-                        final session = context.watch<SessionStateCubit>();
+                        ),
+                  ),
+                );
+              },
+            );
+          },
+          routes: [
+            GoRoute(
+              path: "/dashboard",
+              builder: (context, state) {
+                return const PortfolioView();
+              },
+            ),
+            GoRoute(
+              path: "/settings",
+              builder: (context, state) => const SettingsView(),
+            ),
+            GoRoute(
+              path: "/asset/:assetName",
+              builder: (context, state) {
+                final assetName = state.pathParameters['assetName'] ?? '';
+                final session = context.read<SessionStateCubit>().state;
 
-                        // this technically isn't necessary, will always be
-                        // success
-                        return session.state.maybeWhen(
-                          success: (state) {
-                            late Key key;
-                            if (state.currentAddress != null) {
-                              key = Key(state.currentAddress!.address);
-                            } else if (state.currentImportedAddress != null) {
-                              key = Key(state.currentImportedAddress!.address);
-                            }
-
-                            return const Scaffold(
-                                bottomNavigationBar: Footer(),
-                                body: VersionWarningSnackbar(
-                                    child: SettingsView()));
-                          },
-                          orElse: () => const LoadingScreen(),
-                        );
-                      }),
-                ],
-              ),
-            ])
+                return BlocProvider(
+                  create: (context) => AssetViewBloc(
+                    balanceRepository: GetIt.I<BalanceRepository>(),
+                    fairminterRepository: GetIt.I<FairminterRepository>(),
+                    addresses: session.allAddresses,
+                    asset: assetName,
+                  ),
+                  child: AssetView(
+                    assetName: assetName,
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
       ],
       errorBuilder: (context, state) => ErrorScreen(
             error: state.error,
@@ -461,8 +388,11 @@ void main() {
                 child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                  const Icon(Icons.warning_amber_rounded,
-                      size: 60.0, color: Colors.redAccent),
+                  AppIcons.warningIcon(
+                    width: 60.0,
+                    height: 60.0,
+                    color: red1,
+                  ),
                   const SizedBox(height: 16),
                   const Text(
                     "Upgrade Required!",
@@ -531,247 +461,339 @@ class MyApp extends StatelessWidget {
   final Version latestVersion;
   final VersionWarning? warning;
 
-  MyApp({
+  const MyApp({
     required this.currentVersion,
     required this.latestVersion,
     this.warning,
     super.key,
   });
 
-  // Define light and dark themes
-  final ThemeData lightTheme = ThemeData(
-    // define a color scheme so it doesn't display flutter default purples
-    brightness: Brightness.light,
-    appBarTheme: const AppBarTheme(
-        backgroundColor: whiteLightTheme, scrolledUnderElevation: 0.0),
-    bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-      backgroundColor: noBackgroundColor,
-    ),
-    bottomAppBarTheme: const BottomAppBarTheme(
-      color: noBackgroundColor,
-    ),
-    primaryColor: const Color.fromRGBO(68, 69, 99, 1),
-    buttonTheme: const ButtonThemeData(
-      buttonColor: Color.fromRGBO(227, 237, 254, 1),
-    ),
-    textTheme: const TextTheme(
-      displayLarge: TextStyle(fontFamily: 'Montserrat'),
-      displayMedium: TextStyle(fontFamily: 'Montserrat'),
-      displaySmall: TextStyle(fontFamily: 'Montserrat'),
-      headlineLarge: TextStyle(fontFamily: 'Montserrat'),
-      headlineMedium: TextStyle(fontFamily: 'Montserrat'),
-      headlineSmall: TextStyle(fontFamily: 'Montserrat'),
-      titleLarge: TextStyle(fontFamily: 'Montserrat'),
-      titleMedium: TextStyle(fontFamily: 'Montserrat'),
-      titleSmall: TextStyle(fontFamily: 'Montserrat'),
+  ThemeData _buildLightTheme() {
+    final baseTextTheme = ThemeData.light().textTheme;
+    const customTextTheme = TextTheme(
+      titleMedium: TextStyle(
+        fontSize: 18,
+        fontWeight: FontWeight.w700,
+        color: Colors.black,
+        fontFamily: 'Montserrat',
+      ),
+      titleSmall: TextStyle(
+        fontSize: 12,
+        color: transparentBlack66,
+        fontFamily: 'Montserrat',
+      ),
       bodyLarge: TextStyle(
-          color: Color.fromRGBO(68, 69, 99, 1), fontFamily: 'Montserrat'),
+        fontSize: 18,
+        color: Colors.black,
+        fontFamily: 'Montserrat',
+        fontWeight: FontWeight.w700,
+      ),
       bodyMedium: TextStyle(
-          color: Color.fromRGBO(106, 106, 134, 1), fontFamily: 'Montserrat'),
-      bodySmall: TextStyle(fontFamily: 'Montserrat'),
-      labelLarge: TextStyle(fontFamily: 'Montserrat'),
-      labelMedium: TextStyle(fontFamily: 'Montserrat'),
-      labelSmall: TextStyle(fontFamily: 'Montserrat'),
-    ),
-    elevatedButtonTheme: ElevatedButtonThemeData(
-      style: ElevatedButton.styleFrom(
-        backgroundColor: elevatedButtonBackgroundLightTheme,
-        foregroundColor: elevatedButtonForegroundLightTheme,
+        fontSize: 16,
+        color: Colors.black,
+        fontFamily: 'Montserrat',
       ),
-    ),
-    filledButtonTheme: FilledButtonThemeData(
-      style: FilledButton.styleFrom(
-        backgroundColor: const Color.fromRGBO(68, 121, 252, 1),
-        foregroundColor: const Color.fromRGBO(227, 237, 254, 1),
+      bodySmall: TextStyle(
+        fontSize: 12,
+        color: Colors.black,
+        fontFamily: 'Montserrat',
       ),
-    ),
-    outlinedButtonTheme: OutlinedButtonThemeData(
-      style: OutlinedButton.styleFrom(
-        foregroundColor: const Color.fromRGBO(68, 121, 252, 1),
-        side: const BorderSide(
-          color: Color.fromRGBO(68, 121, 252, 1),
-        ),
+      labelMedium: TextStyle(
+        fontSize: 14,
+        color: Colors.black,
+        fontFamily: 'Montserrat',
       ),
-    ),
-    listTileTheme: const ListTileThemeData(
-        iconColor: elevatedButtonForegroundLightTheme,
-        textColor: elevatedButtonForegroundLightTheme,
-        selectedColor: royalBlueLightTheme),
-    dialogTheme: const DialogTheme(
-      contentTextStyle: TextStyle(color: mainTextBlack),
-      backgroundColor: dialogBackgroundColorLightTheme,
-    ),
-    bottomSheetTheme: const BottomSheetThemeData(
-      modalBackgroundColor: dialogBackgroundColorLightTheme,
-      backgroundColor: dialogBackgroundColorLightTheme,
-    ),
-    popupMenuTheme: const PopupMenuThemeData(
-      color: dialogBackgroundColorLightTheme,
-    ),
-    inputDecorationTheme: InputDecorationTheme(
-      filled: true,
-      fillColor: lightThemeInputColor,
-      floatingLabelBehavior: FloatingLabelBehavior.auto,
-      labelStyle: const TextStyle(
-          fontWeight: FontWeight.normal, color: lightThemeInputLabelColor),
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8.0),
-        borderSide: BorderSide.none,
+      labelSmall: TextStyle(
+        fontSize: 12,
+        color: transparentBlack66,
+        fontFamily: 'Montserrat',
       ),
-      errorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8.0),
-        borderSide: const BorderSide(color: redErrorText),
-      ),
-    ),
-    checkboxTheme: CheckboxThemeData(
-      side: BorderSide.none,
-      checkColor: WidgetStateProperty.all(royalBlueLightTheme),
-      fillColor: WidgetStateProperty.resolveWith<Color?>(
-        (Set<WidgetState> states) {
-          if (states.contains(WidgetState.selected)) {
-            return lightThemeInputColor; // Color when selected
-          }
-          return lightThemeInputColor; // Use default color when not selected
-        },
-      ),
-    ),
-    textButtonTheme: TextButtonThemeData(
-      style: TextButton.styleFrom(
-        foregroundColor: lightThemeInputLabelColor,
-        backgroundColor: noBackgroundColor,
-        textStyle: const TextStyle(
-          color: lightThemeInputLabelColor,
-        ),
-      ),
-    ),
-    dividerColor: greyLightThemeUnderlineColor,
-    cardTheme: CardTheme(
-      color: lightThemeInputColor,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(30.0),
-      ),
-    ),
-    canvasColor: lightThemeInputColor,
-    cardColor: lightThemeInputColor,
-  );
+    );
 
-  final ThemeData darkTheme = ThemeData(
-    // define a color scheme so it doesn't display flutter default purples
-    brightness: Brightness.dark,
-    appBarTheme: const AppBarTheme(
-      backgroundColor: lightNavyDarkTheme,
-      scrolledUnderElevation: 0.0,
-    ),
-    bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-      backgroundColor: noBackgroundColor,
-    ),
-    bottomAppBarTheme: const BottomAppBarTheme(
-      color: noBackgroundColor,
-    ),
-    primaryColor: Colors.white,
-    buttonTheme: const ButtonThemeData(
-      buttonColor: Color.fromRGBO(25, 25, 39, 1),
-    ),
-    textTheme: const TextTheme(
-      displayLarge: TextStyle(fontFamily: 'Montserrat'),
-      displayMedium: TextStyle(fontFamily: 'Montserrat'),
-      displaySmall: TextStyle(fontFamily: 'Montserrat'),
-      headlineLarge: TextStyle(fontFamily: 'Montserrat'),
-      headlineMedium: TextStyle(fontFamily: 'Montserrat'),
-      headlineSmall: TextStyle(fontFamily: 'Montserrat'),
-      titleLarge: TextStyle(fontFamily: 'Montserrat'),
-      titleMedium: TextStyle(fontFamily: 'Montserrat'),
-      titleSmall: TextStyle(fontFamily: 'Montserrat'),
-      bodyLarge: TextStyle(color: Colors.white, fontFamily: 'Montserrat'),
+    return ThemeData(
+      fontFamily: 'Montserrat',
+      brightness: Brightness.light,
+      scaffoldBackgroundColor: offWhite,
+      dialogTheme: DialogTheme(
+        backgroundColor: white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(18),
+        ),
+      ),
+      primaryTextTheme: baseTextTheme.apply(fontFamily: 'Montserrat'),
+      textTheme: customTextTheme,
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          elevation: 0,
+          backgroundColor: Colors.transparent,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(50),
+          ),
+          padding: const EdgeInsets.all(20),
+          foregroundColor: Colors.white,
+          textStyle: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w500,
+            fontFamily: 'Montserrat',
+          ),
+        ),
+      ),
+      filledButtonTheme: FilledButtonThemeData(
+        style: FilledButton.styleFrom(
+          elevation: 0,
+          backgroundColor: white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(50),
+            side: const BorderSide(color: transparentBlack8),
+          ),
+          padding: const EdgeInsets.all(20),
+          foregroundColor: offBlack,
+          textStyle: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w400,
+            fontFamily: 'Montserrat',
+          ),
+          disabledBackgroundColor: const Color.fromRGBO(10, 10, 10, 0.16),
+          disabledForegroundColor: Colors.white.withOpacity(0.5),
+        ).copyWith(
+          overlayColor: WidgetStateProperty.all(Colors.transparent),
+        ),
+      ),
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          minimumSize: Size.zero,
+          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          textStyle: const TextStyle(
+            fontFamily: 'Montserrat',
+            fontSize: 8,
+            fontWeight: FontWeight.w500,
+            height: 1.2, // This gives us 9.6px line height (8 * 1.2 = 9.6)
+            letterSpacing: 0,
+          ),
+          foregroundColor: transparentBlack33,
+        ),
+      ),
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(
+          backgroundColor: white,
+          foregroundColor: Colors.black,
+          padding: const EdgeInsets.fromLTRB(7, 11, 14, 11),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(18),
+            side: const BorderSide(
+              color: transparentBlack8,
+            ),
+          ),
+        ),
+      ),
+      iconTheme: const IconThemeData(
+        color: Colors.black,
+      ),
+      dropdownMenuTheme: const DropdownMenuThemeData(
+        textStyle: TextStyle(
+          fontSize: 12,
+          color: Colors.black,
+          fontFamily: 'Montserrat',
+        ),
+        menuStyle: MenuStyle(
+          backgroundColor: WidgetStatePropertyAll(grey1),
+          surfaceTintColor: WidgetStatePropertyAll(Colors.transparent),
+          shadowColor: WidgetStatePropertyAll(Colors.transparent),
+          padding: WidgetStatePropertyAll(EdgeInsets.zero),
+        ),
+      ),
+      inputDecorationTheme: const InputDecorationTheme(
+        isDense: true,
+        labelStyle: TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.normal,
+          color: transparentBlack8,
+          fontFamily: 'Montserrat',
+        ),
+        contentPadding: EdgeInsets.zero,
+        outlineBorder: BorderSide(
+          color: transparentBlack8,
+          width: 1,
+        ),
+        border: InputBorder.none,
+        hintStyle: TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.normal,
+          color: transparentBlack33,
+          fontFamily: 'Montserrat',
+        ),
+      ),
+      extensions: const {
+        CustomThemeExtension.light,
+      },
+    );
+  }
+
+  ThemeData _buildDarkTheme() {
+    final baseTextTheme = ThemeData.dark().textTheme;
+    const customTextTheme = TextTheme(
+      titleMedium: TextStyle(
+        fontSize: 18,
+        fontWeight: FontWeight.w700,
+        color: Colors.white,
+        fontFamily: 'Montserrat',
+      ),
+      titleSmall: TextStyle(
+        fontSize: 12,
+        color: transparentWhite66,
+        fontFamily: 'Montserrat',
+      ),
+      bodyLarge: TextStyle(
+        fontSize: 18,
+        color: Colors.white,
+        fontFamily: 'Montserrat',
+        fontWeight: FontWeight.w700,
+      ),
       bodyMedium: TextStyle(
-          color: Color.fromRGBO(141, 141, 153, 1), fontFamily: 'Montserrat'),
-      bodySmall: TextStyle(fontFamily: 'Montserrat'),
-      labelLarge: TextStyle(fontFamily: 'Montserrat'),
-      labelMedium: TextStyle(fontFamily: 'Montserrat'),
-      labelSmall: TextStyle(fontFamily: 'Montserrat'),
-    ),
-    elevatedButtonTheme: ElevatedButtonThemeData(
-      style: ElevatedButton.styleFrom(
-        backgroundColor: elevatedButtonBackgroundDarkTheme,
-        foregroundColor: elevatedButtonForegroundDarkTheme,
+        fontSize: 16,
+        color: Colors.white,
+        fontFamily: 'Montserrat',
       ),
-    ),
-    filledButtonTheme: FilledButtonThemeData(
-      style: FilledButton.styleFrom(
-        backgroundColor: filledButtonBackgroundDarkTheme,
-        foregroundColor: neonBlueDarkTheme,
+      bodySmall: TextStyle(
+        fontSize: 12,
+        color: Colors.white,
+        fontFamily: 'Montserrat',
       ),
-    ),
-    outlinedButtonTheme: OutlinedButtonThemeData(
-      style: OutlinedButton.styleFrom(
-        foregroundColor: const Color.fromRGBO(146, 209, 253, 1),
-        side: const BorderSide(
-          color: Color.fromRGBO(146, 209, 253, 1),
-        ),
+      labelMedium: TextStyle(
+        fontSize: 14,
+        color: Colors.white,
+        fontFamily: 'Montserrat',
       ),
-    ),
-    listTileTheme: const ListTileThemeData(
-        iconColor: elevatedButtonForegroundDarkTheme,
-        textColor: elevatedButtonForegroundDarkTheme,
-        selectedColor: neonBlueDarkTheme),
+      labelSmall: TextStyle(
+        fontSize: 12,
+        color: transparentWhite66,
+        fontFamily: 'Montserrat',
+      ),
+    );
 
-    dialogTheme: const DialogTheme(
-      contentTextStyle: TextStyle(color: mainTextWhite),
-      backgroundColor: dialogBackgroundColorDarkTheme,
-    ),
-    bottomSheetTheme: const BottomSheetThemeData(
-      modalBackgroundColor: dialogBackgroundColorDarkTheme,
-      backgroundColor: dialogBackgroundColorDarkTheme,
-    ),
-    popupMenuTheme: const PopupMenuThemeData(
-      color: darkNavyDarkTheme,
-    ),
-    inputDecorationTheme: InputDecorationTheme(
-      filled: true,
-      fillColor: darkThemeInputColor,
-      floatingLabelBehavior: FloatingLabelBehavior.auto,
-      labelStyle: const TextStyle(
-          fontWeight: FontWeight.normal, color: darkThemeInputLabelColor),
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8.0),
-        borderSide: BorderSide.none,
-      ),
-      errorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8.0),
-        borderSide: const BorderSide(color: redErrorText),
-      ),
-    ),
-    checkboxTheme: CheckboxThemeData(
-      side: BorderSide.none,
-      checkColor: WidgetStateProperty.all(neonBlueDarkTheme),
-      fillColor: WidgetStateProperty.resolveWith<Color?>(
-        (Set<WidgetState> states) {
-          if (states.contains(WidgetState.selected)) {
-            return filledButtonBackgroundDarkTheme; // Color when selected
-          }
-          return filledButtonBackgroundDarkTheme; // Use default color when not selected
-        },
-      ),
-    ),
-    textButtonTheme: TextButtonThemeData(
-      style: TextButton.styleFrom(
-        foregroundColor: darkThemeInputLabelColor,
-        backgroundColor: noBackgroundColor,
-        textStyle: const TextStyle(
-          color: darkThemeInputLabelColor,
+    return ThemeData(
+      fontFamily: 'Montserrat',
+      brightness: Brightness.dark,
+      scaffoldBackgroundColor: offBlack,
+      dialogTheme: DialogTheme(
+        backgroundColor: black,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(18),
         ),
       ),
-    ),
-    dividerColor: greyDarkThemeUnderlineColor,
-    cardTheme: CardTheme(
-      color: darkThemeInputColor,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(30.0),
+      primaryTextTheme: baseTextTheme.apply(fontFamily: 'Montserrat'),
+      textTheme: customTextTheme,
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          elevation: 0,
+          backgroundColor: Colors.transparent,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(50),
+          ),
+          padding: const EdgeInsets.all(20),
+          foregroundColor: Colors.black,
+          textStyle: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w500,
+            fontFamily: 'Montserrat',
+          ),
+        ),
       ),
-    ),
-    canvasColor: darkThemeInputColor,
-    cardColor: darkThemeInputColor,
-  );
+      filledButtonTheme: FilledButtonThemeData(
+        style: FilledButton.styleFrom(
+          elevation: 0,
+          backgroundColor: black,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(50),
+            side: const BorderSide(color: transparentWhite8),
+          ),
+          padding: const EdgeInsets.all(20),
+          foregroundColor: offWhite,
+          textStyle: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w400,
+            fontFamily: 'Montserrat',
+          ),
+          disabledBackgroundColor: const Color.fromRGBO(254, 251, 249, 0.16),
+          disabledForegroundColor: Colors.white.withOpacity(0.5),
+        ).copyWith(
+          overlayColor: WidgetStateProperty.all(Colors.transparent),
+        ),
+      ),
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          minimumSize: Size.zero,
+          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          textStyle: const TextStyle(
+            fontFamily: 'Montserrat',
+            fontSize: 8,
+            fontWeight: FontWeight.w500,
+            height: 1.2, // This gives us 9.6px line height (8 * 1.2 = 9.6)
+            letterSpacing: 0,
+          ),
+          foregroundColor: transparentWhite33,
+        ),
+      ),
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(
+          backgroundColor: black,
+          foregroundColor: white,
+          padding: const EdgeInsets.fromLTRB(7, 11, 14, 11),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(18),
+            side: const BorderSide(
+              color: transparentWhite8,
+            ),
+          ),
+        ),
+      ),
+      iconTheme: const IconThemeData(
+        color: Colors.white,
+      ),
+      dropdownMenuTheme: const DropdownMenuThemeData(
+        textStyle: TextStyle(
+          fontSize: 12,
+          color: Colors.white,
+          fontFamily: 'Montserrat',
+        ),
+        menuStyle: MenuStyle(
+          backgroundColor: WidgetStatePropertyAll(grey5),
+          surfaceTintColor: WidgetStatePropertyAll(Colors.transparent),
+          shadowColor: WidgetStatePropertyAll(Colors.transparent),
+          padding: WidgetStatePropertyAll(EdgeInsets.zero),
+        ),
+      ),
+      inputDecorationTheme: const InputDecorationTheme(
+        labelStyle: TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.normal,
+          color: transparentWhite8,
+          fontFamily: 'Montserrat',
+        ),
+        isDense: true,
+        contentPadding: EdgeInsets.zero,
+        outlineBorder: BorderSide(color: transparentWhite8, width: 1),
+        border: InputBorder.none,
+        hintStyle: TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.normal,
+          color: transparentWhite33,
+          fontFamily: 'Montserrat',
+        ),
+      ),
+      extensions: const {
+        CustomThemeExtension.dark,
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -850,8 +872,8 @@ class MyApp extends StatelessWidget {
         child: BlocBuilder<ThemeBloc, ThemeMode>(
           builder: (context, themeMode) {
             return MaterialApp.router(
-              theme: lightTheme,
-              darkTheme: darkTheme,
+              theme: _buildLightTheme(),
+              darkTheme: _buildDarkTheme(),
               themeMode: themeMode,
               routeInformationParser: AppRouter.router.routeInformationParser,
               routerDelegate: AppRouter.router.routerDelegate,

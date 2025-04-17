@@ -46,7 +46,7 @@ class DashboardActivityFeedBloc
     extends Bloc<DashboardActivityFeedEvent, DashboardActivityFeedState> {
   Logger logger;
   Timer? timer;
-  String currentAddress;
+  List<String> addresses;
   int pageSize;
   TransactionLocalRepository transactionLocalRepository;
   EventsRepository eventsRepository;
@@ -57,7 +57,7 @@ class DashboardActivityFeedBloc
 
   DashboardActivityFeedBloc(
       {required this.logger,
-      required this.currentAddress,
+      required this.addresses,
       required this.eventsRepository,
       required this.pageSize,
       required this.transactionLocalRepository,
@@ -92,8 +92,6 @@ class DashboardActivityFeedBloc
     // emit(nextState);
 
     try {
-      String address = currentAddress;
-
       String? mostRecentCounterpartyEventHash =
           currentState.mostRecentCounterpartyEventHash;
       String? mostRecentBitcoinTxHash = currentState.mostRecentBitcoinTxHash;
@@ -106,8 +104,10 @@ class DashboardActivityFeedBloc
         //     need to fetch all in order to dedupe by
         //     by txhash
 
-        newCounterpartyEvents = await eventsRepository.getAllByAddressVerbose(
-            address: address, unconfirmed: true, whitelist: DEFAULT_WHITELIST);
+        newCounterpartyEvents = await eventsRepository.getAllByAddressesVerbose(
+            addresses: addresses,
+            unconfirmed: true,
+            whitelist: DEFAULT_WHITELIST);
       } else {
         // 1b) otherwise, we need to get the list of all events
         //     above the most recent counterparty event hash
@@ -115,8 +115,8 @@ class DashboardActivityFeedBloc
         Cursor? nextCursor;
         while (!found) {
           final (remoteEvents, nextCursor_, _) =
-              await eventsRepository.getByAddressVerbose(
-                  address: address,
+              await eventsRepository.getByAddressesVerbose(
+                  addresses: addresses,
                   limit: pageSize,
                   unconfirmed: true,
                   cursor: nextCursor,
@@ -136,9 +136,9 @@ class DashboardActivityFeedBloc
             nextCursor = nextCursor_;
           }
         }
-        final (mempoolEvents, _, _) =
-            await eventsRepository.getMempoolEventsByAddressVerbose(
-                address: address, whitelist: DEFAULT_WHITELIST);
+        final mempoolEvents =
+            await eventsRepository.getAllMempoolVerboseEventsForAddresses(
+                addresses, DEFAULT_WHITELIST);
 
         newCounterpartyEvents
             .addAll(_filterCounterpartyMempoolEvents(mempoolEvents));
@@ -148,7 +148,7 @@ class DashboardActivityFeedBloc
       List<BitcoinTx> newBitcoinTransactions = [];
       if (mostRecentBitcoinTxHash == null) {
         // 2a) if null list of new btc transactions equal to all of them
-        final bitcoinTxsE = await bitcoinRepository.getTransactions([address]);
+        final bitcoinTxsE = await bitcoinRepository.getTransactions(addresses);
 
         // TODO: we should at least log that there was an error here.
         //       but correct behavior is to just ignore.
@@ -160,7 +160,7 @@ class DashboardActivityFeedBloc
             .toList();
       } else {
         // 2b otherwise, bitcoin transactions are all above last seen
-        final bitcoinTxsE = await bitcoinRepository.getTransactions([address]);
+        final bitcoinTxsE = await bitcoinRepository.getTransactions(addresses);
 
         // TODO: log possible excetion here
         final bitcoinTxs = bitcoinTxsE
@@ -233,18 +233,18 @@ class DashboardActivityFeedBloc
       String? nextMostRecentBitcoinTxHash;
       String? nextMostRecentCounterpartyEventHash;
 
-      final transactionMap = {
-        for (final tx in currentState.transactions) tx.hash: tx
-      };
+      // final transactionMap = {
+      //   for (final tx in currentState.transactions) tx.hash: tx
+      // };
       // new transaction count = deduplicated activity feed items
       // without correspondint hash in existing transactions
-      int newTransactionCount = 0;
+      // int newTransactionCount = 0;
 
-      for (final tx in deduplicatedActivityFeedItems) {
-        if (!transactionMap.containsKey(tx.hash)) {
-          newTransactionCount++;
-        }
-      }
+      // for (final tx in deduplicatedActivityFeedItems) {
+      //   if (!transactionMap.containsKey(tx.hash)) {
+      //     newTransactionCount++;
+      //   }
+      // }
 
       List<ActivityFeedItem> nextList = currentState.transactions.map(
         (tx) {
@@ -322,7 +322,7 @@ class DashboardActivityFeedBloc
 
       emit(DashboardActivityFeedStateCompleteOk(
         nextCursor: currentState.nextCursor,
-        newTransactionCount: newTransactionCount,
+        // newTransactionCount: newTransactionCount,
         mostRecentBitcoinTxHash:
             nextMostRecentBitcoinTxHash ?? currentState.mostRecentBitcoinTxHash,
         mostRecentCounterpartyEventHash: nextMostRecentCounterpartyEventHash ??
@@ -401,7 +401,7 @@ class DashboardActivityFeedBloc
       DashboardActivityFeedStateCompleteOk completeOk =>
         DashboardActivityFeedStateReloadingOk(
           transactions: completeOk.transactions,
-          newTransactionCount: 0,
+          // newTransactionCount: 0,
         ),
       DashboardActivityFeedStateCompleteError completeError =>
         DashboardActivityFeedStateReloadingError(
@@ -413,16 +413,16 @@ class DashboardActivityFeedBloc
 
     try {
       // get most recent confirmed tx
-      final addresses = [currentAddress];
 
       // query local transactions above most recent confirmed event
       final localTransactions =
           await transactionLocalRepository.getAllByAddresses(addresses);
 
-      final counterpartyEvents = await eventsRepository.getAllByAddressVerbose(
-          address: currentAddress,
-          unconfirmed: true,
-          whitelist: DEFAULT_WHITELIST);
+      final counterpartyEvents =
+          await eventsRepository.getAllByAddressesVerbose(
+              addresses: addresses,
+              unconfirmed: true,
+              whitelist: DEFAULT_WHITELIST);
 
       // Filter counterparty events
       List<VerboseEvent> counterpartyMempool =
@@ -557,7 +557,7 @@ class DashboardActivityFeedBloc
 
         emit(DashboardActivityFeedStateCompleteOk(
             nextCursor: null,
-            newTransactionCount: 0,
+            // newTransactionCount: 0,
             mostRecentBitcoinTxHash:
                 allBTCConfirmed.isNotEmpty ? allBTCConfirmed[0].txid : null,
             mostRecentCounterpartyEventHash: counterpartyEvents.isNotEmpty
