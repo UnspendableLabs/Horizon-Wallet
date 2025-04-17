@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:horizon/common/constants.dart';
 import 'package:horizon/core/logging/logger.dart';
@@ -49,6 +50,10 @@ class OnboardingBloc extends Bloc<OnboardingEvent, RemoteDataState<bool>> {
 
       emit(const RemoteDataState.success(true));
     } catch (e) {
+      if (kDebugMode) {
+        rethrow;
+      }
+
       logger.error('Error fetching onboarding state: $e');
       emit(const RemoteDataState.error(
           'An unexpected error occurred. Please try again.'));

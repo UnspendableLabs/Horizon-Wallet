@@ -17,32 +17,42 @@ class OnboardingImportBloc
     required this.walletService,
   }) : super(const OnboardingImportState()) {
     on<MnemonicChanged>((event, emit) async {
-      if (event.mnemonic.isEmpty) {
-        emit(state.copyWith(
-            mnemonicError: "Seed phrase is required",
-            mnemonic: event.mnemonic));
-        return;
-      } else if (event.mnemonic.split(' ').length != 12) {
-        emit(state.copyWith(
-            mnemonicError: "Seed phrase must be twelve words",
-            mnemonic: event.mnemonic));
-        return;
-      } else {
-        bool validMnemonic = switch (state.walletType) {
-          WalletType.bip32 =>
-            mnemonicService.validateCounterwalletMnemonic(event.mnemonic) ||
-                mnemonicService.validateMnemonic(event.mnemonic),
-          WalletType.horizon =>
-            mnemonicService.validateMnemonic(event.mnemonic),
-        };
+      try {
+        print(event);
 
-        if (!validMnemonic) {
+        if (event.mnemonic.isEmpty) {
           emit(state.copyWith(
-              mnemonicError: "Invalid seed phrase", mnemonic: event.mnemonic));
+              mnemonicError: "Seed phrase is requiredasf",
+              mnemonic: event.mnemonic));
           return;
-        }
+        } else if (event.mnemonic.split(' ').length != 12) {
+          emit(state.copyWith(
+              mnemonicError: "Seed phrase must be twelve words",
+              mnemonic: event.mnemonic));
+          return;
+        } else {
+          bool validMnemonic = switch (state.walletType) {
+            WalletType.bip32 =>
+              mnemonicService.validateCounterwalletMnemonic(event.mnemonic) ||
+                  mnemonicService.validateMnemonic(event.mnemonic),
+            WalletType.horizon =>
+              mnemonicService.validateMnemonic(event.mnemonic),
+          };
 
-        emit(state.copyWith(mnemonic: event.mnemonic, mnemonicError: null));
+          if (!validMnemonic) {
+            emit(state.copyWith(
+                mnemonicError: "Invalid seed phrase",
+                mnemonic: event.mnemonic));
+            return;
+          }
+
+          emit(state.copyWith(mnemonic: event.mnemonic, mnemonicError: null));
+        }
+      } catch (e, callstack) {
+        print("\n\n\n");
+        print(e);
+        print(callstack);
+        print("\n\n\n");
       }
     });
 
@@ -61,6 +71,9 @@ class OnboardingImportBloc
 
     on<MnemonicSubmitted>((event, emit) async {
       // Validate mnemonic before proceeding
+      print(state);
+      print(event);
+
       if (state.mnemonic.isEmpty) {
         emit(state.copyWith(mnemonicError: "Seed phrase is required"));
         return;
@@ -94,20 +107,28 @@ class OnboardingImportBloc
 
     on<ImportWallet>((event, emit) async {
       emit(state.copyWith(importState: ImportStateLoading()));
-      final password = event.password;
 
-      await importWalletUseCase.call(
-        password: password,
-        mnemonic: state.mnemonic,
-        walletType: state.walletType,
-        onError: (msg) {
-          emit(state.copyWith(importState: ImportStateError(message: msg)));
-        },
-        onSuccess: () {
-          emit(state.copyWith(importState: ImportStateSuccess()));
-        },
-      );
-      return;
+      try {
+        print(event);
+
+        final password = event.password;
+
+        await importWalletUseCase.call(
+          password: password,
+          mnemonic: state.mnemonic,
+          walletType: state.walletType,
+          onError: (msg) {
+            emit(state.copyWith(importState: ImportStateError(message: msg)));
+          },
+          onSuccess: () {
+            emit(state.copyWith(importState: ImportStateSuccess()));
+          },
+        );
+      } catch (e, callstack) {
+        print(e);
+        print(callstack);
+        rethrow;
+      }
     });
   }
 }

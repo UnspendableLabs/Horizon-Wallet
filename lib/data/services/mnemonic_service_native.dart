@@ -12,7 +12,7 @@ class MnemonicServiceNative implements MnemonicService {
 
   @override
   bool validateMnemonic(String mnemonic) {
-    throw UnimplementedError();
+    return bip39Service.validateMnemonic(mnemonic);
   }
 
   @override

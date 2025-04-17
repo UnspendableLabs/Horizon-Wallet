@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:horizon/common/constants.dart';
 import 'package:horizon/common/uuid.dart';
 import 'package:horizon/domain/entities/account.dart';
@@ -386,7 +387,10 @@ class ImportWalletUseCase {
       onSuccess();
       return;
     } catch (e, callstack) {
-      rethrow;
+      if (kDebugMode) {
+        rethrow;
+      }
+
       if (e is PasswordException) {
         onError(e.message);
       } else if (e is MultipleWalletsException) {
@@ -481,7 +485,9 @@ class ImportWalletUseCase {
 
       return btcTransactions.isNotEmpty;
     } catch (e, callstack) {
-      print(callstack);
+      if (kDebugMode) {
+        rethrow;
+      }
       rethrow;
     }
   }

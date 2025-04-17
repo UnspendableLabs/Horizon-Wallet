@@ -6,21 +6,21 @@ class EncryptionServiceNative implements EncryptionService {
 
   @override
   Future<String> encrypt(String data, String password) async {
-    throw UnimplementedError();
+    return data;
   }
 
   @override
   Future<String> decrypt(String data_, String password) async {
-    throw UnimplementedError();
+    return data_;
   }
 
   @override
   Future<String> decryptWithKey(String data_, String keyB64) async {
-    throw UnimplementedError();
+    return data_;
   }
 
   @override
   Future<String> getDecryptionKey(String data_, String password) async {
-    throw UnimplementedError();
+    return data_;
   }
 }

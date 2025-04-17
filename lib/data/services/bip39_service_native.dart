@@ -1,29 +1,35 @@
 import 'package:horizon/data/models/seed.dart';
 import 'package:horizon/domain/services/bip39.dart';
+import 'package:blockchain_utils/blockchain_utils.dart';
 
 class Bip39ServiceNative implements Bip39Service {
   @override
   String generateMnemonic() {
-    throw UnimplementedError();
+    Mnemonic mnemonic =
+        Bip39MnemonicGenerator().fromWordsNumber(Bip39WordsNum.wordsNum12);
+
+    return mnemonic.toString();
   }
 
   @override
-  Future<Seed> mnemonicToSeed(String mnemonic) async {
-    throw UnimplementedError();
+  Future<Seed> mnemonicToSeed(String mnemonicStr) async {
+    throw UnimplementedError("BIP39ServiceNative.mnemonicToSeed()");
   }
 
   @override
   Seed mnemonicToSeedSync(String mnemonic) {
-    throw UnimplementedError();
+    throw UnimplementedError("BIP39ServiceNative.mnemonicToSeedSync()");
   }
 
   @override
   String mnemonicToEntropy(String mnemonic) {
-    throw UnimplementedError();
+    throw UnimplementedError("BIP39ServiceNative.mnemonicToEntropy()");
   }
 
   @override
   bool validateMnemonic(String mnemonic, [List<String>? wordlist]) {
-    throw UnimplementedError();
+    final validator = Bip39MnemonicValidator();
+
+    return validator.validateWords(mnemonic);
   }
 }
