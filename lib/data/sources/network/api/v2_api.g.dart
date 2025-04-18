@@ -6455,6 +6455,49 @@ class _V2Api implements V2Api {
   }
 
   @override
+  Future<Response<List<dynamic>>> getEventsByAddressesVerboseOpaque(
+    String addresses, [
+    CursorModel? cursor,
+    int? limit,
+    String? eventName,
+  ]) async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{
+      r'addresses': addresses,
+      r'cursor': cursor?.toJson(),
+      r'limit': limit,
+      r'event_name': eventName,
+    };
+    queryParameters.removeWhere((k, v) => v == null);
+    final _headers = <String, dynamic>{};
+    const Map<String, dynamic>? _data = null;
+    final _result = await _dio.fetch<Map<String, dynamic>>(
+        _setStreamType<Response<List<dynamic>>>(Options(
+      method: 'GET',
+      headers: _headers,
+      extra: _extra,
+    )
+            .compose(
+              _dio.options,
+              '/addresses/events?verbose=true',
+              queryParameters: queryParameters,
+              data: _data,
+            )
+            .copyWith(
+                baseUrl: _combineBaseUrls(
+              _dio.options.baseUrl,
+              baseUrl,
+            ))));
+    final _value = Response<List<dynamic>>.fromJson(
+      _result.data!,
+      (json) => json is List<dynamic>
+          ? json.map<dynamic>((i) => i as Map<String, dynamic>).toList()
+          : List.empty(),
+    );
+    return _value;
+  }
+
+  @override
   Future<Response<List<VerboseEvent>>> getMempoolEventsByAddressesVerbose(
     String addresses, [
     CursorModel? cursor,

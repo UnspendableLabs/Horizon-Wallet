@@ -5425,6 +5425,14 @@ abstract class V2Api {
     @Query("event_name") String? eventName,
   ]);
 
+  @GET("/addresses/events?verbose=true")
+  Future<Response<List<dynamic>>> getEventsByAddressesVerboseOpaque(
+    @Query("addresses") String addresses, [
+    @Query("cursor") CursorModel? cursor,
+    @Query("limit") int? limit,
+    @Query("event_name") String? eventName,
+  ]);
+
   @GET("/addresses/mempool?verbose=true")
   Future<Response<List<VerboseEvent>>> getMempoolEventsByAddressesVerbose(
     @Query("addresses") String addresses, [
