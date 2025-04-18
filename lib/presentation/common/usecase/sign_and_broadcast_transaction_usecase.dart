@@ -91,6 +91,8 @@ class SignAndBroadcastTransactionUseCase<R extends ComposeResponse> {
         throw SignAndBroadcastTransactionException('Address not found.');
       }
 
+      print("94");
+
       late String addressPrivKey;
       if (address != null) {
         addressPrivKey =
@@ -100,9 +102,12 @@ class SignAndBroadcastTransactionUseCase<R extends ComposeResponse> {
             importedAddress!, decryptionStrategy);
       }
 
+
+
       // Sign Transaction
       final txHex = await transactionService.signTransaction(
           rawtransaction, addressPrivKey, source, utxoMap);
+
 
       // Broadcast Transaction
       try {
@@ -116,7 +121,11 @@ class SignAndBroadcastTransactionUseCase<R extends ComposeResponse> {
       onError(e.message);
     } on TransactionServiceException catch (e) {
       onError(e.message);
-    } catch (e) {
+    } catch (e, callstack) {
+      print(e);
+      print(callstack);
+
+      rethrow;
       onError('An unexpected error occurred.');
     }
   }

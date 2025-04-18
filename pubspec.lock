@@ -90,10 +90,10 @@ packages:
     dependency: "direct main"
     description:
       name: bitcoin_base
-      sha256: c934e20e090a4cb4e6b8e04dda5591bedd268439681d302a594457d0a35515f4
+      sha256: b26d9e0e1ff06eb299b57a5b60d18c183a255ab550928712b9798eef8a1488f7
       url: "https://pub.dev"
     source: hosted
-    version: "4.6.0"
+    version: "6.0.0"
   bloc:
     dependency: transitive
     description:
@@ -122,10 +122,10 @@ packages:
     dependency: transitive
     description:
       name: blockchain_utils
-      sha256: f78783b522b5247faab0a811bfa83bf121fccdbfbbae0c3488543a690d3de480
+      sha256: "104f5212ade36b01a67511b074feed2ece513876d45c8daace277818cdc16873"
       url: "https://pub.dev"
     source: hosted
-    version: "3.2.0"
+    version: "4.4.0"
   boolean_selector:
     dependency: transitive
     description:

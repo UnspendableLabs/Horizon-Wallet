@@ -25,18 +25,16 @@ class AddressServiceNative implements AddressService {
     final path = 'm/$purpose/$coin/$account/$change/$index';
     final privateKey = ECPrivate.fromHex(privKey);
 
-    final bip32 = Bip32Slip10Secp256k1.fromPrivateKey(
-      privateKey.toBytes(),
-      keyData: Bip32KeyData(
-        chainCode: Bip32ChainCode(BytesUtils.fromHexString(chainCodeHex)),
-      ),
-      keyNetVer: Bip84Conf.bitcoinTestNet.keyNetVer,
-    );
+    final bip32 = Bip32Slip10Secp256k1.fromPrivateKey(privateKey.toBytes(),
+        keyData: Bip32KeyData(
+          chainCode: Bip32ChainCode(BytesUtils.fromHexString(chainCodeHex)),
+        ),
+        keyNetVer: _getKeyNetVer());
 
     final child = bip32.derivePath(path);
     final address = P2WPKHAddrEncoder().encodeKey(
       child.publicKey.compressed,
-      Bip84Conf.bitcoinTestNet.addrParams,
+      _getAddrParams(),
     );
 
     return Address(
@@ -115,10 +113,26 @@ class AddressServiceNative implements AddressService {
     required String change,
     required int index,
     required ImportFormat importFormat,
-  }) {
-    throw UnimplementedError(
-      '[AddressServiceNative] deriveAddressPrivateKey() is not implemented for native platform.',
-    );
+  }) async {
+    String path = _getPathForImportFormat(
+        purpose: purpose,
+        coin: coin,
+        account: account,
+        change: change,
+        index: index,
+        importFormat: importFormat);
+
+    final privateKey = ECPrivate.fromHex(rootPrivKey);
+
+    final bip32 = Bip32Slip10Secp256k1.fromPrivateKey(privateKey.toBytes(),
+        keyData: Bip32KeyData(
+          chainCode: Bip32ChainCode(BytesUtils.fromHexString(chainCodeHex)),
+        ),
+        keyNetVer: _getKeyNetVer());
+
+    final child = bip32.derivePath(path);
+
+    return child.privateKey.toHex();
   }
 
   @override
@@ -136,6 +150,34 @@ class AddressServiceNative implements AddressService {
       '[AddressServiceNative] getAddressWIFFromPrivateKey() is not implemented for native platform.',
     );
   }
+
+  String _getPathForImportFormat(
+          {required String purpose,
+          required String coin,
+          required String account,
+          required String change,
+          required int index,
+          required ImportFormat importFormat}) =>
+      switch (importFormat) {
+        ImportFormat.horizon => 'm/$purpose/$coin/$account/$change/$index',
+        _ => 'm/$account/$change/$index',
+      };
+
+  Bip32KeyNetVersions _getKeyNetVer() => switch (config.network) {
+        Network.mainnet => Bip84Conf.bitcoinMainNet.keyNetVer,
+        Network.testnet => Bip84Conf.bitcoinTestNet.keyNetVer,
+        Network.testnet4 => Bip84Conf.bitcoinTestNet.keyNetVer,
+        Network.regtest => throw UnimplementedError(
+            'Regtest network is not supported in this implementation'),
+      };
+
+  Map<String, dynamic> _getAddrParams() => switch (config.network) {
+        Network.mainnet => Bip84Conf.bitcoinMainNet.addrParams,
+        Network.testnet => Bip84Conf.bitcoinTestNet.addrParams,
+        Network.testnet4 => Bip84Conf.bitcoinTestNet.addrParams,
+        Network.regtest => throw UnimplementedError(
+            'Regtest network is not supported in this implementation'),
+      };
 }
 
 AddressService createAddressServiceImpl({required Config config}) =>

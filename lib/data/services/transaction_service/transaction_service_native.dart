@@ -4,6 +4,9 @@ import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 import 'package:horizon/domain/repositories/config_repository.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
 
+import 'package:bitcoin_base/bitcoin_base.dart';
+import 'package:blockchain_utils/blockchain_utils.dart';
+
 class TransactionServiceNative implements TransactionService {
   final Config config;
   final BitcoinRepository bitcoinRepository = GetIt.I.get<BitcoinRepository>();
@@ -48,7 +51,20 @@ class TransactionServiceNative implements TransactionService {
     String sourceAddress,
     Map<String, Utxo> utxoMap,
   ) async {
-    _unimplemented('signTransaction');
+    final privateKey_ = ECPrivate.fromHex(privateKey);
+
+    BtcTransaction transaction = BtcTransaction.deserialize(
+        BytesUtils.fromHexString(unsignedTransaction));
+
+    PsbtBuilderV2 psbt = PsbtBuilderV2.create();
+
+    for (var input in transaction.inputs) {
+      final utxo = utxoMap["${input.txId}:${input.txIndex}"];
+      print(input.toString());
+      print(utxo);
+    }
+
+    throw UnimplementedError("signTransac");
   }
 
   @override
