@@ -34,7 +34,6 @@ dependencies:
   convert: ^3.1.1
   bech32: ^0.2.2
   pointycastle: ^3.7.4
-  flutter_js: ^0.8.0
 
   floor: ^1.4.2
   flutter_bloc: ^8.1.5

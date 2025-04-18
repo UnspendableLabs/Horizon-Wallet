@@ -463,6 +463,10 @@ class ImportWalletUseCase {
   }
 
   Future<bool> addressesHaveTransactions(List<Address> addresses) async {
+
+
+    return true;
+
     try {
       final List<BitcoinTx> btcTransactions = await bitcoinRepository
           .getTransactions(addresses.map((e) => e.address).toList())

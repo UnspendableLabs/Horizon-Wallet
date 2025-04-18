@@ -11,8 +11,8 @@ import 'package:horizon/common/constants.dart';
 import 'package:horizon/common/fn.dart';
 import 'package:horizon/common/uuid.dart';
 import 'package:horizon/core/logging/logger.dart';
-import 'package:horizon/data/services/regtest_utils.dart';
-import 'package:horizon/data/sources/local/db_manager.dart';
+// import 'package:horizon/data/services/regtest_utils.dart';
+
 import 'package:horizon/domain/entities/account.dart';
 import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/entities/wallet.dart';
@@ -24,6 +24,8 @@ import 'package:horizon/domain/repositories/imported_address_repository.dart';
 import 'package:horizon/domain/repositories/version_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
+import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
+import 'package:horizon/domain/services/database_manager_service.dart';
 import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
@@ -59,60 +61,60 @@ import 'package:horizon/domain/services/secure_kv_service.dart';
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 final _sectionNavigatorKey = GlobalKey<NavigatorState>();
 
-Future<void> setupRegtestWallet() async {
-  // read env for regtest private key
-  const regtestPrivateKey = String.fromEnvironment('REG_TEST_PK');
-  const regtestPassword = String.fromEnvironment('REG_TEST_PASSWORD');
-  const network = String.fromEnvironment('NETWORK');
-
-  if (regtestPrivateKey != "" &&
-      regtestPassword != "" &&
-      network == "regtest") {
-    RegTestUtils regTestUtils = RegTestUtils();
-    EncryptionService encryptionService = GetIt.I<EncryptionService>();
-    AddressService addressService = GetIt.I<AddressService>();
-    final accountRepository = GetIt.I<AccountRepository>();
-    final addressRepository = GetIt.I<AddressRepository>();
-    final walletRepository = GetIt.I<WalletRepository>();
-
-    final maybeCurrentWallet = await walletRepository.getCurrentWallet();
-    if (maybeCurrentWallet != null) {
-      return;
-    }
-
-    Wallet wallet =
-        await regTestUtils.fromBase58(regtestPrivateKey, regtestPassword);
-
-    String decryptedPrivKey = await encryptionService.decrypt(
-        wallet.encryptedPrivKey, regtestPassword);
-
-    //m/84'/1'/0'/0
-    Account account = Account(
-      name: 'Regtest #0',
-      walletUuid: wallet.uuid,
-      purpose: '84\'',
-      coinType: '1\'',
-      accountIndex: '0\'',
-      uuid: uuid.v4(),
-      importFormat: ImportFormat.horizon,
-    );
-
-    List<Address> addresses = await addressService.deriveAddressSegwitRange(
-        privKey: decryptedPrivKey,
-        chainCodeHex: wallet.chainCodeHex,
-        accountUuid: account.uuid,
-        purpose: account.purpose,
-        coin: account.coinType,
-        account: account.accountIndex,
-        change: '0',
-        start: 0,
-        end: 9);
-
-    await walletRepository.insert(wallet);
-    await accountRepository.insert(account);
-    await addressRepository.insertMany(addresses);
-  }
-}
+// Future<void> setupRegtestWallet() async {
+//   // read env for regtest private key
+//   const regtestPrivateKey = String.fromEnvironment('REG_TEST_PK');
+//   const regtestPassword = String.fromEnvironment('REG_TEST_PASSWORD');
+//   const network = String.fromEnvironment('NETWORK');
+//
+//   if (regtestPrivateKey != "" &&
+//       regtestPassword != "" &&
+//       network == "regtest") {
+//     RegTestUtils regTestUtils = RegTestUtils();
+//     EncryptionService encryptionService = GetIt.I<EncryptionService>();
+//     AddressService addressService = GetIt.I<AddressService>();
+//     final accountRepository = GetIt.I<AccountRepository>();
+//     final addressRepository = GetIt.I<AddressRepository>();
+//     final walletRepository = GetIt.I<WalletRepository>();
+//
+//     final maybeCurrentWallet = await walletRepository.getCurrentWallet();
+//     if (maybeCurrentWallet != null) {
+//       return;
+//     }
+//
+//     Wallet wallet =
+//         await regTestUtils.fromBase58(regtestPrivateKey, regtestPassword);
+//
+//     String decryptedPrivKey = await encryptionService.decrypt(
+//         wallet.encryptedPrivKey, regtestPassword);
+//
+//     //m/84'/1'/0'/0
+//     Account account = Account(
+//       name: 'Regtest #0',
+//       walletUuid: wallet.uuid,
+//       purpose: '84\'',
+//       coinType: '1\'',
+//       accountIndex: '0\'',
+//       uuid: uuid.v4(),
+//       importFormat: ImportFormat.horizon,
+//     );
+//
+//     List<Address> addresses = await addressService.deriveAddressSegwitRange(
+//         privKey: decryptedPrivKey,
+//         chainCodeHex: wallet.chainCodeHex,
+//         accountUuid: account.uuid,
+//         purpose: account.purpose,
+//         coin: account.coinType,
+//         account: account.accountIndex,
+//         change: '0',
+//         start: 0,
+//         end: 9);
+//
+//     await walletRepository.insert(wallet);
+//     await accountRepository.insert(account);
+//     await addressRepository.insertMany(addresses);
+//   }
+// }
 
 class LoadingScreen extends StatelessWidget {
   const LoadingScreen({this.from, super.key});
@@ -435,7 +437,7 @@ void main() {
   runZonedGuarded<Future<void>>(() async {
     WidgetsFlutterBinding.ensureInitialized();
 
-    await setupRegtestWallet();
+    // await setupRegtestWallet();
     await initSettings();
 
     final version = GetIt.I<Config>().version;
