@@ -4,8 +4,29 @@ import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 import 'package:horizon/domain/repositories/config_repository.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
 
+import 'package:horizon/presentation/common/shared_util.dart';
 import 'package:bitcoin_base/bitcoin_base.dart';
 import 'package:blockchain_utils/blockchain_utils.dart';
+
+class OPReturn implements BitcoinBaseAddress {
+  final Script script;
+  OPReturn(this.script);
+
+  @override
+  BitcoinAddressType get type => throw UnimplementedError();
+
+  @override
+  String get addressProgram => throw UnimplementedError();
+
+  @override
+  String pubKeyHash() => throw UnimplementedError();
+
+  @override
+  Script toScriptPubKey() => script;
+
+  @override
+  String toAddress(_) => "OP_RETURN";
+}
 
 class TransactionServiceNative implements TransactionService {
   final Config config;
@@ -51,20 +72,70 @@ class TransactionServiceNative implements TransactionService {
     String sourceAddress,
     Map<String, Utxo> utxoMap,
   ) async {
-    final privateKey_ = ECPrivate.fromHex(privateKey);
+    ECPrivate priv = ECPrivate.fromHex(privateKey);
+    ECPublic pub = priv.getPublic();
+    Script script = addressIsSegwit(sourceAddress)
+        ? pub.toSegwitAddress().toScriptPubKey()
+        : pub.toAddress().toScriptPubKey();
 
     BtcTransaction transaction = BtcTransaction.deserialize(
         BytesUtils.fromHexString(unsignedTransaction));
 
     PsbtBuilderV2 psbt = PsbtBuilderV2.create();
 
-    for (var input in transaction.inputs) {
-      final utxo = utxoMap["${input.txId}:${input.txIndex}"];
-      print(input.toString());
-      print(utxo);
+    for (TxInput input in transaction.inputs) {
+      final prev = utxoMap["${input.txId}:${input.txIndex}"];
+      if (prev == null) {
+        throw Exception("Missing UTXO for ${input.txId}:${input.txIndex}");
+      }
+
+      final psbtUtxo = PsbtUtxo(
+        utxo: BitcoinUtxo(
+          txHash: prev.txid,
+          vout: input.txIndex,
+          value: BigInt.from(prev.value),
+          scriptType: addressIsSegwit(sourceAddress)
+              ? SegwitAddressType.p2wpkh
+              : P2pkhAddressType.p2pkh,
+        ),
+        privateKeys: [priv],
+        scriptPubKey: script,
+      );
+
+      final psbtInput = PsbtTransactionInput.fromUtxo(psbtUtxo);
+
+      psbt.addInput(psbtInput);
     }
 
-    throw UnimplementedError("signTransac");
+    for (TxOutput output in transaction.outputs) {
+      final isOpReturn = output.scriptPubKey.script.isNotEmpty &&
+          output.scriptPubKey.script.first == BitcoinOpcode.opReturn.name;
+
+      final psbtOutput = PsbtTransactionOutput(
+        amount: output.amount,
+        address: isOpReturn
+            ? OPReturn(output.scriptPubKey)
+            : BitcoinScriptUtils.findAddressFromScriptPubKey(
+                output.scriptPubKey),
+      );
+
+      psbt.addOutput(psbtOutput);
+    }
+
+    PsbtBtcSigner signer = PsbtDefaultSigner(priv);
+
+    psbt.signAllInput((psbtSignerParams) {
+      if (psbtSignerParams.scriptPubKey != script) {
+        return null;
+      }
+      // assert(psbtSignerParams.address == sourceAddress);
+      return PsbtSignerResponse(
+          sighash: BitcoinOpCodeConst.sighashAll, signers: [signer]);
+    });
+
+    BtcTransaction signedTransaction = psbt.finalizeAll();
+
+    return signedTransaction.toHex();
   }
 
   @override

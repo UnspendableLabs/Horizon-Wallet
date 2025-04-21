@@ -162,7 +162,7 @@ class AnalyticsServiceStub implements AnalyticsService {
 void setup() {
   GetIt injector = GetIt.I;
 
-  injector.registerSingleton<Logger>(LoggerImpl(
+  injector.registerSingleton<Logger>(LoggerSilent(
     logger.Logger(
       filter: logger.ProductionFilter(),
       printer: logger.PrettyPrinter(
