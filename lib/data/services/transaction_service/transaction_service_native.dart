@@ -117,12 +117,38 @@ class TransactionServiceNative implements TransactionService {
   @override
   String signPsbt(String psbtHex, Map<int, String> inputPrivateKeyMap,
       [List<int>? sighashTypes]) {
-    _unimplemented('signPsbt');
+    final psbt = Psbt.fromHex(psbtHex);
+    final builder = PsbtBuilderV0(psbt);
+
+    for (final entry in inputPrivateKeyMap.entries) {
+      final index = entry.key;
+
+      final privateKey = entry.value;
+
+      final signer = PsbtDefaultSigner(
+        ECPrivate.fromHex(privateKey),
+      );
+
+      builder.signInput(
+          signer: (params) {
+            return PsbtSignerResponse(
+                signers: [signer],
+                sighash: sighashTypes!.reduce((a, b) => a | b));
+          },
+          index: index);
+    }
+
+    return psbt.toHex();
   }
 
   @override
   String psbtToUnsignedTransactionHex(String psbtHex) {
-    _unimplemented('psbtToUnsignedTransactionHex');
+
+    final psbt = Psbt.fromHex(psbtHex);
+
+    final builder = PsbtBuilderV0(psbt);
+
+    return builder.buildUnsignedTransaction().toHex();
   }
 
   @override

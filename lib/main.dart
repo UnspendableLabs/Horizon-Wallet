@@ -381,7 +381,11 @@ class AppRouter {
             // if the session state is not yet loaded, show a loading screen
             orElse: () => "/");
 
-        final actionParam = state.uri.queryParameters['action'];
+        // final actionParam = state.uri.queryParameters['action'];
+
+        final actionParam = "signPsbt:ext,1423360735,a9648546-c970-448e-8703-0a570a435689,70736274ff01005202000000017855d34b99dca23bb054e5473cfb259b81a3a60d808a3d7eec15b935e4885d100000000000ffffffff015802000000000000160014a8b21366aa1dae07bffe52c56f4619e01c523716000000000001011f2202000000000000160014a8b21366aa1dae07bffe52c56f4619e01c523716010304830000000000,eyJ0YjFxNHplcHhlNDJya2hxMDBsNzJ0ems3M3NldXF3OXlkY2tneW56djUiOlswXX0=,WzEzMSwxXQ==";
+
+        print("actionParam: $actionParam");
 
         if (actionParam != null) {
           final ActionRepository actionRepository =
