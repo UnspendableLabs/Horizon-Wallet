@@ -8,6 +8,9 @@ import 'package:horizon/presentation/common/shared_util.dart';
 import 'package:bitcoin_base/bitcoin_base.dart';
 import 'package:blockchain_utils/blockchain_utils.dart';
 
+const int witnessScaleFactor = 4;
+const int maxPubKeysPerMultisig = 20;
+
 class OPReturn implements BitcoinBaseAddress {
   final Script script;
   OPReturn(this.script);
@@ -46,7 +49,69 @@ class TransactionServiceNative implements TransactionService {
     required num oldFee,
     required num newFee,
   }) async {
-    _unimplemented('makeRBF');
+    if (newFee <= oldFee) {
+      throw Exception('New fee must be greater than old fee');
+    }
+    final feeDelta = newFee - oldFee;
+    final BtcTransaction transaction =
+        BtcTransaction.deserialize(BytesUtils.fromHexString(txHex));
+
+    if (transaction.outputs.isEmpty) {
+      throw Exception("Transaction has no outputs");
+    }
+
+    final inputs = transaction.inputs;
+
+    final int lastOutIndex = transaction.outputs.length - 1;
+    final TxOutput lastOut = transaction.outputs[lastOutIndex];
+
+    String lastOutAddress =
+        BitcoinScriptUtils.findAddressFromScriptPubKey(lastOut.scriptPubKey)
+            .toAddress(getNetwork(config: config));
+
+    if (lastOutAddress != source) {
+      throw Exception('Last output does not belong to source address');
+    }
+
+    final newValue = lastOut.amount.toInt() - feeDelta.toInt();
+    if (newValue < 0) {
+      throw Exception('Fee increase exceeds change output');
+    }
+
+    final outputs = <TxOutput>[...transaction.outputs.take(lastOutIndex)];
+
+    if (newValue > 0) {
+      outputs.add(TxOutput(
+        amount: BigInt.from(newValue),
+        scriptPubKey: lastOut.scriptPubKey,
+      ));
+    }
+
+    final newTransaction = BtcTransaction(
+        version: transaction.version,
+        // lockTime: transaction.lockTime,  cant set locktime
+        inputs: inputs,
+        outputs: outputs);
+
+    final updatedTxHex = newTransaction.toHex();
+
+    final virtualSize = newTransaction.getVSize();
+    final sigOps = countSigOps(rawtransaction: updatedTxHex);
+    final adjustedVirtualSize =
+        virtualSize > sigOps * 5 ? virtualSize : sigOps * 5;
+
+    final inputsByTxHash = <String, List<int>>{};
+    for (var input in inputs) {
+      inputsByTxHash.putIfAbsent(input.txId, () => []).add(input.txIndex);
+    }
+
+    return MakeRBFResponse(
+      txHex: updatedTxHex,
+      virtualSize: virtualSize,
+      fee: newFee,
+      adjustedVirtualSize: adjustedVirtualSize,
+      inputsByTxHash: inputsByTxHash,
+    );
   }
 
   @override
@@ -140,7 +205,16 @@ class TransactionServiceNative implements TransactionService {
 
   @override
   int getVirtualSize(String unsignedTransaction) {
-    _unimplemented('getVirtualSize');
+    final tx = BtcTransaction.deserialize(
+        BytesUtils.fromHexString(unsignedTransaction));
+
+    if (tx.hasWitness) {
+      return tx.getVSize();
+    } else {
+      final int baseSize = tx.inputs.length * 148 + tx.outputs.length * 34 + 10;
+
+      return baseSize;
+    }
   }
 
   @override
@@ -163,7 +237,55 @@ class TransactionServiceNative implements TransactionService {
 
   @override
   int countSigOps({required String rawtransaction}) {
-    _unimplemented('countSigOps');
+    final tx =
+        BtcTransaction.deserialize(BytesUtils.fromHexString(rawtransaction));
+    int nSigOps = 0;
+
+    nSigOps += _getLegacySigOpCount(tx) * witnessScaleFactor;
+
+    if (tx.inputs.isNotEmpty && _isCoinbaseInput(tx.inputs[0])) {
+      return nSigOps;
+    }
+
+    for (TxWitnessInput witness in tx.witnesses) {
+      if (witness.stack.isNotEmpty) {
+        nSigOps += 1;
+      }
+    }
+
+    return nSigOps;
+  }
+
+  bool _isCoinbaseInput(TxInput input) {
+    return input.txId == "0" * 64; // coinbase txid is all zeroes in raw format
+  }
+
+  int _getLegacySigOpCount(BtcTransaction tx) {
+    int count = 0;
+
+    for (final input in tx.inputs) {
+      count += _countLegacySigOps(input.scriptSig);
+    }
+
+    for (final output in tx.outputs) {
+      count += _countLegacySigOps(output.scriptPubKey);
+    }
+
+    return count;
+  }
+
+  int _countLegacySigOps(Script script) {
+    int count = 0;
+    for (final op in script.script) {
+      if (op == BitcoinOpcode.opCheckSig.name ||
+          op == BitcoinOpcode.opCheckSigVerify.name) {
+        count += 1;
+      } else if (op == BitcoinOpcode.opCheckMultiSig.name ||
+          op == BitcoinOpcode.opCheckMultiSigVerify.name) {
+        count += maxPubKeysPerMultisig;
+      }
+    }
+    return count;
   }
 
   @override
@@ -183,3 +305,13 @@ class TransactionServiceNative implements TransactionService {
 
 TransactionService createTransactionServiceImpl({required Config config}) =>
     TransactionServiceNative(config: config);
+
+BitcoinNetwork getNetwork({required Config config}) {
+  return switch (config.network) {
+    Network.mainnet => BitcoinNetwork.mainnet,
+    Network.testnet4 => BitcoinNetwork.testnet,
+    Network.testnet => BitcoinNetwork.testnet,
+    Network.regtest =>
+      throw UnimplementedError('Unsupported network: ${config.network}'),
+  };
+}
