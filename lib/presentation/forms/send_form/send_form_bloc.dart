@@ -14,11 +14,11 @@ import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.
 import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
 import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transaction_usecase.dart';
 import 'package:horizon/presentation/common/usecase/write_local_transaction_usecase.dart';
-import 'package:horizon/presentation/screens/transactions/send/bloc/send_event.dart';
+import 'package:horizon/presentation/forms/send_form/send_form_event.dart';
 
 class SendData {}
 
-class SendBloc extends Bloc<TransactionEvent,
+class SendFormBloc extends Bloc<TransactionEvent,
     TransactionState<SendData, ComposeSendResponse>> {
   final TransactionType transactionType = TransactionType.send;
   final BalanceRepository balanceRepository;
@@ -30,7 +30,7 @@ class SendBloc extends Bloc<TransactionEvent,
   final AnalyticsService analyticsService;
   final Logger logger;
 
-  SendBloc({
+  SendFormBloc({
     required this.balanceRepository,
     required this.getFeeEstimatesUseCase,
     required this.composeTransactionUseCase,
