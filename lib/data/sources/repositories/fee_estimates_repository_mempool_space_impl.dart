@@ -12,14 +12,15 @@ class FeeEstimatesRespositoryMempoolSpaceImpl
       : _mempoolSpaceApi = mempoolSpaceApi;
 
   @override
-  TaskEither<String, FeeEstimates> getFeeEstimates() {
+  TaskEither<String, FeeEstimates> getFeeEstimatesTask() {
     return TaskEither.tryCatch(
-      _getFeeEstimates,
+      getFeeEstimates,
       (error, stacktrace) => "GetFeeEstimates failure",
     );
   }
 
-  Future<FeeEstimates> _getFeeEstimates() async {
+  @override
+  Future<FeeEstimates> getFeeEstimates() async {
     final response = await _mempoolSpaceApi.getFeeEstimates();
 
     return FeeEstimates(

@@ -9,7 +9,7 @@ class GetFeeEstimatesUseCase {
   });
 
   Future<FeeEstimates> call() async {
-    return feeEstimatesRepository.getFeeEstimates().run().then(
+    return feeEstimatesRepository.getFeeEstimatesTask().run().then(
           (either) => either.fold(
             (error) => throw Exception("GetFeeEstimates failure"),
             (feeEstimates) => feeEstimates,
