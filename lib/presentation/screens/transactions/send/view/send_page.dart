@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:horizon/presentation/forms/send_form/send_form_view.dart';
+import 'package:horizon/presentation/forms/send_form_refactor/send_form_view.dart';
 import 'package:horizon/presentation/screens/transactions/send/bloc/send_page_bloc.dart';
 
 class SendPage extends StatefulWidget {
@@ -19,14 +19,10 @@ class SendPage extends StatefulWidget {
 class _SendPageState extends State<SendPage> {
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => SendPageBloc(
-        const SendPageState(),
-      ),
-      child: SendFormView(
-        addresses: widget.addresses,  
-        assetName: widget.assetName,
-      ),
+    return SendFormProvider(
+      addresses: widget.addresses,
+      assetName: widget.assetName,
     );
   }
 }
+

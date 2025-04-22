@@ -1,0 +1,2 @@
+/home/mmarcello/src/counterparty/Horizon-Wallet/android/app/.cxx/Debug/1k15w735/x86/CMakeFiles/edit_cache.dir
+/home/mmarcello/src/counterparty/Horizon-Wallet/android/app/.cxx/Debug/1k15w735/x86/CMakeFiles/rebuild_cache.dir
