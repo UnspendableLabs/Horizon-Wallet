@@ -1,5 +1,8 @@
 import 'package:equatable/equatable.dart';
 import 'package:horizon/domain/entities/multi_address_balance_entry.dart';
+import 'package:horizon/domain/entities/fee_option.dart';
+
+
 
 abstract class FormEvent extends Equatable {
   const FormEvent();
@@ -7,6 +10,22 @@ abstract class FormEvent extends Equatable {
   @override
   List<Object?> get props => [];
 }
+
+// TODO: same evnt shuold be shard by all forms.
+
+class FeeOptionChanged extends FormEvent {
+  final FeeOption value;
+  const FeeOptionChanged(this.value);
+  @override
+  List<Object?> get props => [value];
+}
+
+
+
+
+
+
+
 
 abstract class TextInputChanged extends FormEvent {
   final String value;

@@ -1,5 +1,38 @@
 import 'package:flow_builder/flow_builder.dart';
 import 'package:flutter/material.dart';
+import 'package:formz/formz.dart';
+
+import 'package:horizon/domain/entities/fee_option.dart';
+
+// TODO: refine FeeOptionError
+enum FeeOptionError { invalid }
+class FeeOptionInput extends FormzInput<FeeOption, FeeOptionError> {
+  FeeOptionInput.pure() : super.pure(Medium());
+  const FeeOptionInput.dirty(FeeOption value) : super.dirty(value);
+  @override
+  FeeOptionError? validator(FeeOption value) {
+    return switch (value) {
+      Custom(fee: var value) => value < 0 ? FeeOptionError.invalid : null,
+      _ => null
+    };
+  }
+}
+
+class TransactionFormModelBase with FormzMixin {
+
+  final FeeOptionInput feeOptionInput;
+
+
+  TransactionFormModelBase({ required this.feeOptionInput });
+
+
+
+  @override
+  List<FormzInput> get inputs =>
+      [feeOptionInput];
+}
+
+
 
 class TransactionFlowModel<T> {
   final T? formData;
