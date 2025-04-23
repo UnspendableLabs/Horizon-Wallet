@@ -199,6 +199,7 @@ class _ChooseFormatStepState extends State<ChooseFormatStep> {
                 width: double.infinity,
                 child: HorizonRedesignDropdown<String>(
                   hintText: 'Wallet Type',
+                  useModal: true,
                   selectedValue: selectedFormat,
                   onChanged: (value) {
                     if (value != null) {
