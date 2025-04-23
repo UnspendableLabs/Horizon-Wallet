@@ -274,6 +274,7 @@ class HorizonRedesignDropdown<T> extends StatefulWidget {
   final T? selectedValue;
   final String hintText;
   final Widget Function(T)? selectedItemBuilder;
+  final bool useModal;
 
   const HorizonRedesignDropdown({
     super.key,
@@ -282,6 +283,7 @@ class HorizonRedesignDropdown<T> extends StatefulWidget {
     required this.selectedValue,
     required this.hintText,
     this.selectedItemBuilder,
+    this.useModal = false,
   });
 
   @override
@@ -315,13 +317,93 @@ class _HorizonRedesignDropdownState<T>
     setState(() {
       _isOpen = !_isOpen;
       if (_isOpen) {
-        _overlayEntry = _createOverlayEntry();
+        _overlayEntry = widget.useModal
+            ? _createBlurredOverlayEntry()
+            : _createOverlayEntry();
         Overlay.of(context).insert(_overlayEntry!);
       } else {
         _overlayEntry?.remove();
         _overlayEntry = null;
       }
     });
+  }
+
+  OverlayEntry _createBlurredOverlayEntry() {
+    final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
+
+    return OverlayEntry(
+      builder: (context) => Material(
+        type: MaterialType.transparency,
+        child: GestureDetector(
+          onTap: _toggleDropdown,
+          child: Container(
+            width: double.infinity,
+            height: double.infinity,
+            color: Colors.transparent,
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+              child: Container(
+                color: transparentBlack33,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    ConstrainedBox(
+                      constraints: const BoxConstraints(
+                        maxWidth: 480, // Maximum width for larger screens
+                        minWidth: 200, // Minimum width for smaller screens
+                      ),
+                      child: Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 20),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(18),
+                            border: GradientBoxBorder(
+                              context: context,
+                              width: 1,
+                            ),
+                            color: isDarkMode ? grey5 : grey1,
+                          ),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: widget.items.map((item) {
+                              return Material(
+                                color: Colors.transparent,
+                                child: InkWell(
+                                  onTap: () {
+                                    widget.onChanged(item.value);
+                                    _toggleDropdown();
+                                  },
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 16,
+                                    ),
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        DefaultTextStyle(
+                                          style: theme.dropdownMenuTheme.textStyle!,
+                                          child: item.child,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              );
+                            }).toList(),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   OverlayEntry _createOverlayEntry() {
@@ -389,68 +471,128 @@ class _HorizonRedesignDropdownState<T>
   Widget build(BuildContext context) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final hasValue = widget.selectedValue != null;
-    return CompositedTransformTarget(
-      link: _layerLink,
-      child: MouseRegion(
-        cursor: SystemMouseCursors.click,
-        child: GestureDetector(
-          onTap: _toggleDropdown,
-          child: Container(
-            height: 56,
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(18),
-              border: focusNode.hasFocus
-                  ? GradientBoxBorder(
-                      context: context,
-                      width: 1,
-                    )
-                  : Border.fromBorderSide(
-                      Theme.of(context).inputDecorationTheme.outlineBorder ??
+    return widget.useModal
+        ? MouseRegion(
+            cursor: SystemMouseCursors.click,
+            child: GestureDetector(
+              onTap: _toggleDropdown,
+              child: Container(
+                height: 56,
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(18),
+                  border: focusNode.hasFocus
+                      ? GradientBoxBorder(
+                          context: context,
+                          width: 1,
+                        )
+                      : Border.fromBorderSide(Theme.of(context)
+                              .inputDecorationTheme
+                              .outlineBorder ??
                           const BorderSide()),
-              color: hasValue
-                  ? (isDarkMode ? grey5 : grey1)
-                  : (isDarkMode ? offBlack : offWhite),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Expanded(
-                  child: widget.selectedValue != null
-                      ? widget.selectedItemBuilder != null
-                          ? widget
-                              .selectedItemBuilder!(widget.selectedValue as T)
-                          : Text(
-                              (widget.items
-                                      .firstWhere((item) =>
-                                          item.value == widget.selectedValue)
-                                      .child as Text)
-                                  .data!,
-                              style: Theme.of(context).textTheme.bodySmall,
-                            )
-                      : Text(
-                          widget.hintText,
-                          style: Theme.of(context).textTheme.bodySmall,
-                        ),
+                  color: hasValue
+                      ? (isDarkMode ? grey5 : grey1)
+                      : (isDarkMode ? offBlack : offWhite),
                 ),
-                _isOpen
-                    ? AppIcons.caretUpIcon(
-                        context: context,
-                        width: 18,
-                        height: 18,
-                      )
-                    : AppIcons.caretDownIcon(
-                        context: context,
-                        width: 18,
-                        height: 18,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        widget.selectedValue != null
+                            ? (widget.items
+                                    .firstWhere((item) =>
+                                        item.value == widget.selectedValue)
+                                    .child as Text)
+                                .data!
+                            : widget.hintText,
+                        style: Theme.of(context).textTheme.bodySmall,
                       ),
-              ],
+                    ),
+                    _isOpen
+                        ? AppIcons.caretUpIcon(
+                            context: context,
+                            width: 18,
+                            height: 18,
+                          )
+                        : AppIcons.caretDownIcon(
+                            context: context,
+                            width: 18,
+                            height: 18,
+                          ),
+                  ],
+                ),
+              ),
             ),
-          ),
-        ),
-      ),
-    );
+          )
+        : CompositedTransformTarget(
+            link: _layerLink,
+            child: MouseRegion(
+              cursor: SystemMouseCursors.click,
+              child: GestureDetector(
+                onTap: _toggleDropdown,
+                child: Container(
+                  height: 56,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(18),
+                    border: focusNode.hasFocus
+                        ? GradientBoxBorder(
+                            context: context,
+                            width: 1,
+                          )
+                        : Border.fromBorderSide(Theme.of(context)
+                                .inputDecorationTheme
+                                .outlineBorder ??
+                            const BorderSide()),
+                    color: hasValue
+                        ? (isDarkMode ? grey5 : grey1)
+                        : (isDarkMode ? offBlack : offWhite),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Expanded(
+                        child: widget.selectedValue != null
+                            ? widget.selectedItemBuilder != null
+                                ? widget.selectedItemBuilder!(
+                                    widget.selectedValue as T)
+                                : Text(
+                                    (widget.items
+                                            .firstWhere((item) =>
+                                                item.value ==
+                                                widget.selectedValue)
+                                            .child as Text)
+                                        .data!,
+                                    style:
+                                        Theme.of(context).textTheme.bodySmall,
+                                  )
+                            : Text(
+                                widget.hintText,
+                                style: Theme.of(context).textTheme.bodySmall,
+                              ),
+                      ),
+                      _isOpen
+                          ? AppIcons.caretUpIcon(
+                              context: context,
+                              width: 18,
+                              height: 18,
+                            )
+                          : AppIcons.caretDownIcon(
+                              context: context,
+                              width: 18,
+                              height: 18,
+                            ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          );
   }
 }
 
