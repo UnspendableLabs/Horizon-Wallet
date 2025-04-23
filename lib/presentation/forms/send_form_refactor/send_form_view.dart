@@ -3,6 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
 import "package:horizon/domain/repositories/fee_estimates_repository.dart";
+import 'package:horizon/domain/entities/fee_estimates.dart';
+import 'package:horizon/domain/entities/fee_option.dart';
 import "package:horizon/presentation/forms/base/base_form_state.dart";
 import "package:horizon/presentation/forms/base/view/base_form_view.dart";
 import "package:horizon/presentation/forms/base/base_form_event.dart";
@@ -20,6 +22,9 @@ import "./loader/loader_bloc.dart";
 import "./form/form_bloc.dart";
 import "./form/form_state.dart";
 import "./form/form_event.dart";
+
+// TODO: do something with transaction error;
+import 'package:horizon/presentation/common/transactions/transaction_fee_selection.dart';
 
 import "generic.dart";
 
@@ -101,6 +106,7 @@ class SendAssetWizard extends StatelessWidget {
                     }),
                     body: SendAssetFormBody(
                       multiAddressBalance: data.multiAddressBalance,
+                      feeEstimates: data.feeEstimates,
                     ),
                   ),
                 ),
@@ -113,11 +119,15 @@ class SendAssetWizard extends StatelessWidget {
 
 class SendAssetFormBody extends StatelessWidget {
   final MultiAddressBalance multiAddressBalance;
+  final FeeEstimates feeEstimates;
 
   final _destinationController = TextEditingController();
   final _quantityController = TextEditingController();
 
-  SendAssetFormBody({required this.multiAddressBalance, super.key});
+  SendAssetFormBody(
+      {required this.multiAddressBalance,
+      required this.feeEstimates,
+      super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -183,6 +193,9 @@ class SendAssetFormBody extends StatelessWidget {
                   .add(QuantityInputChanged(value));
             },
             validator: (value) {
+              if ( state.quantityInput.isPure  )  {
+                return null;
+              }
               return switch (state.quantityInput.error) {
                 QuantityInputError.required => 'Value is required',
                 QuantityInputError.exceedsMax => 'Value exceeds max',
@@ -191,6 +204,14 @@ class SendAssetFormBody extends StatelessWidget {
               };
             },
           ),
+          const SizedBox(height: 10),
+          // TODO: think through how to make this mandatory
+          TransactionFeeSelection(
+              feeEstimates: feeEstimates,
+              selectedFeeOption: state.feeOptionInput.value,
+              onFeeOptionSelected: (value) {
+                context.read<SendAssetFormBloc>().add(FeeOptionChanged(value));
+              })
         ],
       ));
     });

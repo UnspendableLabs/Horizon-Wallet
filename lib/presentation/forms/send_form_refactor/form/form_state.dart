@@ -2,6 +2,32 @@ import 'package:formz/formz.dart';
 import "package:decimal/decimal.dart";
 import 'package:horizon/domain/entities/multi_address_balance_entry.dart';
 
+import 'package:horizon/domain/entities/fee_option.dart';
+// TODO: refine FeeOptionError
+
+enum FeeOptionError { invalid }
+
+class FeeOptionInput extends FormzInput<FeeOption, FeeOptionError> {
+  FeeOptionInput.pure() : super.pure(Medium());
+  const FeeOptionInput.dirty(FeeOption value) : super.dirty(value);
+  @override
+  FeeOptionError? validator(FeeOption value) {
+    return switch (value) {
+      Custom(fee: var value) => value < 0 ? FeeOptionError.invalid : null,
+      _ => null
+    };
+  }
+}
+
+class TransactionFormModelBase with FormzMixin {
+  final FeeOptionInput feeOptionInput;
+
+  TransactionFormModelBase({required this.feeOptionInput});
+
+  @override
+  List<FormzInput> get inputs => [feeOptionInput];
+}
+
 class AddressBalanceInput extends FormzInput<MultiAddressBalanceEntry, void> {
   const AddressBalanceInput.dirty({required MultiAddressBalanceEntry value})
       : super.dirty(value);
@@ -19,9 +45,9 @@ class DestinationInput extends FormzInput<String, DestinationInputError> {
 
   @override
   DestinationInputError? validator(String value) {
-    if (value.isEmpty) {
-      return DestinationInputError.required;
-    }
+    // if (value.isEmpty) {
+    //   return DestinationInputError.required;
+    // }
     // TODO: refine
     return null;
   }
@@ -45,10 +71,9 @@ class QuantityInput extends FormzInput<String, QuantityInputError> {
 
     final d = Decimal.tryParse(value);
 
-    if ( d == null) {
+    if (d == null) {
       return QuantityInputError.invalid;
     }
-
 
     if (d > maxValue) {
       return QuantityInputError.exceedsMax;
@@ -59,7 +84,7 @@ class QuantityInput extends FormzInput<String, QuantityInputError> {
   }
 }
 
-class FormModel with FormzMixin {
+class FormModel extends TransactionFormModelBase {
   final AddressBalanceInput addressBalanceInput;
   final DestinationInput destinationInput;
   final QuantityInput quantityInput;
@@ -67,8 +92,9 @@ class FormModel with FormzMixin {
   FormModel(
       {required this.addressBalanceInput,
       required this.destinationInput,
-      required this.quantityInput});
+      required this.quantityInput,
+      required super.feeOptionInput});
   @override
   List<FormzInput> get inputs =>
-      [addressBalanceInput, destinationInput, quantityInput];
+      [addressBalanceInput, destinationInput, quantityInput, ...super.inputs];
 }
