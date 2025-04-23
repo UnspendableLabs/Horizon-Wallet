@@ -165,7 +165,8 @@ class _SecurityViewState extends State<SecurityView> {
             trailing: SizedBox(
               width: 120,
               height: 40,
-              child: BlurredBackgroundDropdown<int>(
+              child: HorizonRedesignDropdown<int>(
+                useModal: true,
                 items: _timeoutOptions.entries
                     .map((entry) => DropdownMenuItem<int>(
                           value: entry.key,
