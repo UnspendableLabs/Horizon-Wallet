@@ -931,9 +931,9 @@ class _HorizonTextFieldState extends State<HorizonTextField> {
         final hasError = field.hasError;
 
         // Update field value when controller changes
-        widget.controller.addListener(() {
-          field.didChange(widget.controller.text);
-        });
+        // widget.controller.addListener(() {
+        //   field.didChange(widget.controller.text);
+        // });
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,

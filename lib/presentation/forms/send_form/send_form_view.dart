@@ -138,7 +138,7 @@ class _SendFormViewState extends State<SendFormView> {
                           },
                           selectedValue: selectedBalanceEntry,
                         ),
-                        commonHeightSizedBox,
+                        SizedBox(height: 10),
                         HorizonTextField(
                           enabled: !loading,
                           controller: destinationAddressController,
