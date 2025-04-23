@@ -11,6 +11,7 @@ class MultiAddressBalanceDropdown extends StatelessWidget {
   final void Function(MultiAddressBalanceEntry?) onChanged;
   final MultiAddressBalanceEntry? selectedValue;
   final bool loading;
+  final bool useModal;
 
   const MultiAddressBalanceDropdown({
     super.key,
@@ -18,6 +19,7 @@ class MultiAddressBalanceDropdown extends StatelessWidget {
     required this.onChanged,
     required this.selectedValue,
     required this.loading,
+    this.useModal = false,
   });
 
   @override
@@ -57,6 +59,7 @@ class MultiAddressBalanceDropdown extends StatelessWidget {
     }
 
     return HorizonRedesignDropdown<MultiAddressBalanceEntry>(
+      useModal: useModal,
       items: balances!.entries
           .map((addressEntry) => DropdownMenuItem<MultiAddressBalanceEntry>(
                 value: addressEntry,
