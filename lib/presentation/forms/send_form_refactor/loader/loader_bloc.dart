@@ -59,9 +59,9 @@ class SendAssetFormLoader
 
 typedef SendAssetFormState = BaseFormState<SendAssetFormLoaderData>;
 
-class SendAssetFormBloc
+class SendAssetFormLoaderBloc
     extends BaseFormBloc<SendAssetFormLoaderArgs, SendAssetFormLoaderData> {
-  SendAssetFormBloc({
+  SendAssetFormLoaderBloc({
     required SendAssetFormLoader loader,
   }) : super(loader: loader);
 }
