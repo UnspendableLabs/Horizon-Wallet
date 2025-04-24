@@ -13,12 +13,8 @@ jobs:
       TARGET_BROWSER: chromium
       HORIZON_IS_EXTENSION: true
       HORIZON_COUNTERPARTY_API_BASE: "https://api.unspendablelabs.com:4000/v2"
-      HORIZON_ANALYTICS_ENABLED: "true"
-      HORIZON_POSTHOG_API_KEY: ${{ secrets.POSTHOG_API_KEY }}
-      HORIZON_POSTHOG_API_HOST: "https://us.i.posthog.com"
+      HORIZON_ANALYTICS_ENABLED: "false"
       HORIZON_SENTRY_ENABLED: "false"
-      HORIZON_SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
-      HORIZON_SENTRY_SAMPLE_RATE: "0.5"
 
     steps:
       - uses: actions/checkout@v4
@@ -44,6 +40,8 @@ jobs:
       HORIZON_NETWORK: testnet4
       TARGET_BROWSER: chromium
       HORIZON_IS_EXTENSION: true
+      HORIZON_ANALYTICS_ENABLED: "false"
+      HORIZON_SENTRY_ENABLED: "false"
       
     steps:
       - uses: actions/checkout@v4
