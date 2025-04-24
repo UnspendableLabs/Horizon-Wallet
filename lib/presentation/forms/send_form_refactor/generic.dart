@@ -6,6 +6,7 @@ import 'package:horizon/domain/entities/fee_option.dart';
 
 // TODO: refine FeeOptionError
 enum FeeOptionError { invalid }
+
 class FeeOptionInput extends FormzInput<FeeOption, FeeOptionError> {
   FeeOptionInput.pure() : super.pure(Medium());
   const FeeOptionInput.dirty(FeeOption value) : super.dirty(value);
@@ -19,20 +20,13 @@ class FeeOptionInput extends FormzInput<FeeOption, FeeOptionError> {
 }
 
 class TransactionFormModelBase with FormzMixin {
-
   final FeeOptionInput feeOptionInput;
 
-
-  TransactionFormModelBase({ required this.feeOptionInput });
-
-
+  TransactionFormModelBase({required this.feeOptionInput});
 
   @override
-  List<FormzInput> get inputs =>
-      [feeOptionInput];
+  List<FormzInput> get inputs => [feeOptionInput];
 }
-
-
 
 class TransactionFlowModel<T> {
   final T? formData;
@@ -48,10 +42,12 @@ class TransactionFlowController<T>
 }
 
 class TransactionFlowView<T> extends StatefulWidget {
-  final Widget formView;
+  final Widget Function(BuildContext context) formView;
+  final Widget Function(BuildContext context) reviewView;
 
   const TransactionFlowView({
     required this.formView,
+    required this.reviewView,
     super.key,
   });
 
@@ -76,10 +72,10 @@ class _TransactionFlowView<T> extends State<TransactionFlowView<T>> {
       controller: _controller,
       onGeneratePages: (model, pages) {
         return [
-          MaterialPage(child: widget.formView),
+          MaterialPage(child: Builder(builder: widget.formView)),
           if (model.formData != null)
             MaterialPage(
-              child: Text('Review transaction flow'),
+              child: Builder(builder: widget.reviewView),
             ),
         ];
       },
