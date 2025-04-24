@@ -20,7 +20,9 @@ class FeeOptionChanged extends FormEvent {
   List<Object?> get props => [value];
 }
 
-
+class FormSubmitted extends FormEvent {
+  const FormSubmitted();
+}
 
 
 

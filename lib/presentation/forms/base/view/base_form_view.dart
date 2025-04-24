@@ -1,106 +1,128 @@
 import 'package:flutter/material.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
 
-// TODO: think through this pattern
-class FormLayout extends StatelessWidget {
-  final Widget child;
-
-  FormLayout({super.key, required this.child});
-
-  @override
-  Widget build(context) {
-    bool isSmallScreen = MediaQuery.of(context).size.width < 500;
-
-    if (isSmallScreen) {
-      return child;
-    }
-
-    return Scaffold(
-      backgroundColor: Theme.of(context).dialogTheme.backgroundColor,
-      body: Center(
-        child: Container(
-          width: 500,
-          height: 812,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(18),
-          ),
-          child:
-              ClipRRect(borderRadius: BorderRadius.circular(18), child: child),
-        ),
-      ),
-    );
-  }
-}
-
-class FormView extends StatelessWidget {
+// // TODO: think through this pattern
+// class FlowLayout extends StatelessWidget {
+//   final Widget child;
+//
+//   FlowLayout({super.key, required this.child});
+//
+//   @override
+//   Widget build(context) {
+//     bool isSmallScreen = MediaQuery.of(context).size.width < 500;
+//
+//     if (isSmallScreen) {
+//       return child;
+//     }
+//
+//     return Scaffold(
+//       backgroundColor: Theme.of(context).dialogTheme.backgroundColor,
+//       body: Center(
+//         child: Container(
+//           width: 500,
+//           height: 812,
+//           decoration: BoxDecoration(
+//             borderRadius: BorderRadius.circular(18),
+//           ),
+//           child:
+//               ClipRRect(borderRadius: BorderRadius.circular(18), child: child),
+//         ),
+//       ),
+//     );
+//   }
+// }
+//
+class FlowStep extends StatelessWidget {
   final double widthFactor;
   final String title;
   final Widget body;
-  final Widget? footer;
+  final Widget? leading;
 
-  const FormView({
+  const FlowStep({
     super.key,
     required this.widthFactor,
     required this.title,
     required this.body,
-    this.footer,
+    this.leading,
   });
 
   @override
   Widget build(context) {
     bool isSmallScreen = MediaQuery.of(context).size.width < 500;
 
-    return Column(children: [
-      // Step indicators
-      Padding(
-        padding: EdgeInsets.symmetric(horizontal: isSmallScreen ? 16 : 30),
-        child: Center(
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: leading
+         
+      ),
+        backgroundColor: Theme.of(context).dialogTheme.backgroundColor,
+        body: Center(
           child: Container(
-            width: 48,
-            height: 8,
+            width: 500,
+            height: 812,
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(4),
-              color: transparentWhite33,
+              borderRadius: BorderRadius.circular(18),
             ),
-            child: FractionallySizedBox(
-              alignment: Alignment.centerLeft,
-              widthFactor: widthFactor,
-              child: Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(4),
-                  gradient: const LinearGradient(
-                    colors: [
-                      pinkGradient1,
-                      purpleGradient1,
-                    ],
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(18),
+              child: Column(children: [
+                // Step indicators
+                Padding(
+                  padding:
+                      EdgeInsets.symmetric(horizontal: isSmallScreen ? 16 : 30),
+                  child: Center(
+                    child: Container(
+                      width: 48,
+                      height: 8,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(4),
+                        color: transparentWhite33,
+                      ),
+                      child: FractionallySizedBox(
+                        alignment: Alignment.centerLeft,
+                        widthFactor: widthFactor,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(4),
+                            gradient: const LinearGradient(
+                              colors: [
+                                pinkGradient1,
+                                purpleGradient1,
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
                   ),
                 ),
-              ),
+
+                const SizedBox(height: 16),
+
+                // Step title
+                Padding(
+                  padding:
+                      EdgeInsets.symmetric(horizontal: isSmallScreen ? 16 : 30),
+                  child: Text(
+                    title,
+                    style: Theme.of(context).textTheme.titleMedium,
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+                const SizedBox(height: 24),
+
+                // Main content
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: body,
+                  ),
+                ),
+              ]),
             ),
           ),
-        ),
-      ),
-      const SizedBox(height: 16),
-
-      // Step title
-      Padding(
-        padding: EdgeInsets.symmetric(horizontal: isSmallScreen ? 16 : 30),
-        child: Text(
-          title,
-          style: Theme.of(context).textTheme.titleMedium,
-          textAlign: TextAlign.center,
-        ),
-      ),
-      const SizedBox(height: 24),
-
-      // Main content
-      Expanded(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
-          child: body,
-        ),
-      ),
-      if (footer != null) footer!,
-    ]);
+        ));
   }
 }

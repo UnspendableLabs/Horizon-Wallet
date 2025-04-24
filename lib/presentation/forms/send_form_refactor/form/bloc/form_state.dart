@@ -2,7 +2,9 @@ import 'package:formz/formz.dart';
 import "package:decimal/decimal.dart";
 import 'package:horizon/domain/entities/multi_address_balance_entry.dart';
 
+import 'package:horizon/domain/entities/compose_send.dart';
 import 'package:horizon/domain/entities/fee_option.dart';
+import 'package:horizon/domain/entities/fee_estimates.dart';
 // TODO: refine FeeOptionError
 
 enum FeeOptionError { invalid }
@@ -19,10 +21,21 @@ class FeeOptionInput extends FormzInput<FeeOption, FeeOptionError> {
   }
 }
 
-class TransactionFormModelBase with FormzMixin {
+class TransactionFormModelBase<TComposeResponse> with FormzMixin {
+  final FeeEstimates feeEstimates;
   final FeeOptionInput feeOptionInput;
+  final FormzSubmissionStatus status;
+  final TComposeResponse? composeResponse;
+  final String? error;
 
-  TransactionFormModelBase({required this.feeOptionInput});
+  TransactionFormModelBase(
+      {required this.feeEstimates,
+      required this.feeOptionInput,
+      required this.status,
+      this.composeResponse, 
+      this.error,
+      });
+
 
   @override
   List<FormzInput> get inputs => [feeOptionInput];
@@ -84,7 +97,7 @@ class QuantityInput extends FormzInput<String, QuantityInputError> {
   }
 }
 
-class FormModel extends TransactionFormModelBase {
+class FormModel extends TransactionFormModelBase<ComposeSendResponse> {
   final AddressBalanceInput addressBalanceInput;
   final DestinationInput destinationInput;
   final QuantityInput quantityInput;
@@ -93,8 +106,34 @@ class FormModel extends TransactionFormModelBase {
       {required this.addressBalanceInput,
       required this.destinationInput,
       required this.quantityInput,
-      required super.feeOptionInput});
+      required super.feeOptionInput,
+      required super.feeEstimates,
+      super.composeResponse,
+      super.error,
+      super.status = FormzSubmissionStatus.initial});
   @override
   List<FormzInput> get inputs =>
       [addressBalanceInput, destinationInput, quantityInput, ...super.inputs];
+
+  FormModel copyWith({
+    AddressBalanceInput? addressBalanceInput,
+    DestinationInput? destinationInput,
+    QuantityInput? quantityInput,
+    FeeOptionInput? feeOptionInput,
+    FeeEstimates? feeEstimates,
+    FormzSubmissionStatus? status,
+    ComposeSendResponse? composeResponse,
+    String? error,
+  }) {
+    return FormModel(
+    error: error ?? this.error,
+      composeResponse: composeResponse,
+      addressBalanceInput: addressBalanceInput ?? this.addressBalanceInput,
+      destinationInput: destinationInput ?? this.destinationInput,
+      quantityInput: quantityInput ?? this.quantityInput,
+      feeOptionInput: feeOptionInput ?? this.feeOptionInput,
+      feeEstimates: feeEstimates ?? this.feeEstimates,
+      status: status ?? this.status,
+    );
+  }
 }
