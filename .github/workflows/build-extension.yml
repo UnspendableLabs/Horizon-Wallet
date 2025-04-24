@@ -1,0 +1,61 @@
+name: Build Extension
+
+on:
+  push:
+    branches:
+      - '*'
+
+jobs:
+  build-mainnet:
+    runs-on: ubuntu-latest
+    env:
+      HORIZON_NETWORK: mainnet
+      TARGET_BROWSER: chromium
+      HORIZON_IS_EXTENSION: true
+      HORIZON_ANALYTICS_ENABLED: false
+      HORIZON_SENTRY_ENABLED: false
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.29.2
+      - run: flutter pub get
+      
+      - name: Build Extension
+        run: |
+          dart tool/build_extension.dart
+
+      - name: Upload Extension
+        uses: actions/upload-artifact@v4
+        with:
+          name: mainnet-extension
+          path: build/web
+
+  build-testnet4:
+    runs-on: ubuntu-latest
+    env:
+      HORIZON_NETWORK: testnet4
+      TARGET_BROWSER: chromium
+      HORIZON_IS_EXTENSION: true
+      HORIZON_ANALYTICS_ENABLED: false
+      HORIZON_SENTRY_ENABLED: false
+      
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.29.2
+      - run: flutter pub get
+
+      - name: Build Extension
+        run: |
+          dart tool/build_extension.dart
+
+      - name: Upload Extension
+        uses: actions/upload-artifact@v4
+        with:
+          name: testnet4-extension
+          path: build/web
