@@ -12,9 +12,8 @@ jobs:
       HORIZON_NETWORK: mainnet
       TARGET_BROWSER: chromium
       HORIZON_IS_EXTENSION: true
-      HORIZON_COUNTERPARTY_API_BASE: "https://api.unspendablelabs.com:4000/v2"
-      HORIZON_ANALYTICS_ENABLED: "false"
-      HORIZON_SENTRY_ENABLED: "false"
+      HORIZON_ANALYTICS_ENABLED: false
+      HORIZON_SENTRY_ENABLED: false
 
     steps:
       - uses: actions/checkout@v4
@@ -40,8 +39,8 @@ jobs:
       HORIZON_NETWORK: testnet4
       TARGET_BROWSER: chromium
       HORIZON_IS_EXTENSION: true
-      HORIZON_ANALYTICS_ENABLED: "false"
-      HORIZON_SENTRY_ENABLED: "false"
+      HORIZON_ANALYTICS_ENABLED: false
+      HORIZON_SENTRY_ENABLED: false
       
     steps:
       - uses: actions/checkout@v4
