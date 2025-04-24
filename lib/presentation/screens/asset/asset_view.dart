@@ -73,6 +73,8 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
     final session = context.read<SessionStateCubit>().state;
 
     final page = switch (type) {
+
+      
       TransactionType.send => SendPage(
           assetName: widget.assetName,
           addresses: session.allAddresses,
@@ -427,8 +429,12 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
                                           context: context,
                                         ),
                                         onTap: () {
-                                          _showTransactionPage(
-                                              type: TransactionType.send);
+                                          context.go("/asset/${widget.assetName}/compose/send");
+                                          // Navigator.of(context).navigate(
+                                          //   '/transactions/send',
+                                          // );
+                                          // _showTransactionPage(
+                                          //     type: TransactionType.send);
                                         },
                                       ),
                                       IconItemButton(
@@ -448,8 +454,10 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
                                           context: context,
                                         ),
                                         onTap: () {
-                                          _showTransactionPage(
-                                              type: TransactionType.send);
+                                          context.go("/asset/${widget.assetName}/compose/send");
+
+                                          // _showTransactionPage(
+                                          //     type: TransactionType.send);
                                         },
                                       ),
                                       IconItemButton(

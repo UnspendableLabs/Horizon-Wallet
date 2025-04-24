@@ -59,6 +59,7 @@ import 'package:horizon/presentation/version_cubit.dart';
 import 'package:horizon/setup.dart';
 import 'package:horizon/utils/app_icons.dart';
 import 'package:pub_semver/pub_semver.dart';
+import 'package:horizon/presentation/screens/transactions/send/view/send_page.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 
@@ -258,6 +259,21 @@ class AppRouter {
                   ),
                   child: AssetView(
                     assetName: assetName,
+                  ),
+                );
+              },
+            ),
+            // CHATGPT: i need this route not to render an app footer
+            GoRoute(
+              path: "/asset/:assetName/compose/send",
+              pageBuilder: (context, state) {
+                final assetName = state.pathParameters['assetName'] ?? '';
+                final session = context.read<SessionStateCubit>().state;
+
+                return MaterialPage(
+                  child: SendPage(
+                    assetName: assetName,
+                    addresses: session.allAddresses,
                   ),
                 );
               },
