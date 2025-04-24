@@ -38,10 +38,10 @@ jobs:
           name: mainnet-extension.zip
           path: build/web
 
-  build-testnet:
+  build-testnet4:
     runs-on: ubuntu-latest
     env:
-      HORIZON_NETWORK: testnet
+      HORIZON_NETWORK: testnet4
       TARGET_BROWSER: chromium
       HORIZON_IS_EXTENSION: true
       
@@ -60,5 +60,5 @@ jobs:
       - name: Upload Extension
         uses: actions/upload-artifact@v4
         with:
-          name: testnet-extension.zip
+          name: testnet4-extension.zip
           path: build/web
