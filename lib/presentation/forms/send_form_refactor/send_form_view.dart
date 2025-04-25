@@ -82,66 +82,70 @@ class SendAssetFlow extends StatelessWidget {
                     initialAddressBalanceValue:
                         data.multiAddressBalance.entries.first),
                 child: TransactionFlowView<ComposeSendResponse>(
-                    formView: (context) => FlowStep(
-                          title: "Send asset",
-                          widthFactor: .33,
-                          leading: AppIcons.iconButton(
-                              context: context,
-                              width: 32,
-                              height: 32,
-                              icon: AppIcons.backArrowIcon(
-                                context: context,
-                                width: 24,
-                                height: 24,
-                                fit: BoxFit.fitHeight,
-                              ),
-                              onPressed: () {
-                                context.go(
-                                    "/asset/${data.multiAddressBalance.asset}");
-                              }),
-                          body: SendAssetFormBody(
-                            multiAddressBalance: data.multiAddressBalance,
-                            feeEstimates: data.feeEstimates,
-                            onSubmitSuccess: (formState) {
-                              context
-                                  .flow<
-                                      TransactionFlowModel<
-                                          ComposeSendResponse>>()
-                                  .update((_model) => TransactionFlowModel(
-                                        composeResponse:
-                                            formState.composeResponse,
-                                      ));
-                            },
-                          ),
+                  formView: (context) => FlowStep(
+                    title: "Send asset",
+                    widthFactor: .33,
+                    leading: AppIcons.iconButton(
+                        context: context,
+                        width: 32,
+                        height: 32,
+                        icon: AppIcons.backArrowIcon(
+                          context: context,
+                          width: 24,
+                          height: 24,
+                          fit: BoxFit.fitHeight,
                         ),
-                    reviewView: (context) => FlowStep(
-                        title: "Review Transaction",
-                        widthFactor: .66,
-                        leading: AppIcons.iconButton(
+                        onPressed: () {
+                          context
+                              .go("/asset/${data.multiAddressBalance.asset}");
+                        }),
+                    body: SendAssetFormBody(
+                      multiAddressBalance: data.multiAddressBalance,
+                      feeEstimates: data.feeEstimates,
+                      onSubmitSuccess: (formState) {
+                        context
+                            .flow<TransactionFlowModel<ComposeSendResponse>>()
+                            .update((_model) => TransactionFlowModel(
+                                  composeResponse: formState.composeResponse,
+                                ));
+                      },
+                    ),
+                  ),
+                  reviewView: (context) => FlowStep(
+                      title: "Review Transaction",
+                      widthFactor: .66,
+                      leading: AppIcons.iconButton(
+                          context: context,
+                          width: 32,
+                          height: 32,
+                          icon: AppIcons.backArrowIcon(
                             context: context,
-                            width: 32,
-                            height: 32,
-                            icon: AppIcons.backArrowIcon(
-                              context: context,
-                              width: 24,
-                              height: 24,
-                              fit: BoxFit.fitHeight,
-                            ),
-                            onPressed: () {
-                              context
-                                  .flow<
-                                      TransactionFlowModel<
-                                          ComposeSendResponse>>()
-                                  .update((_model) => TransactionFlowModel(
-                                      composeResponse: null));
-                            }),
-                        body: ReviewView(
-                            composeResponse: context
+                            width: 24,
+                            height: 24,
+                            fit: BoxFit.fitHeight,
+                          ),
+                          onPressed: () {
+                            context
                                 .flow<
                                     TransactionFlowModel<ComposeSendResponse>>()
-                                .state
-                                .composeResponse!))),
-              ),
+                                .update((_model) => TransactionFlowModel(
+                                    composeResponse: null));
+                          }),
+                      body: ReviewProvider(
+                          composeResponse: context
+                              .flow<TransactionFlowModel<ComposeSendResponse>>()
+                              .state
+                              .composeResponse!,
+                          getSource: (composeResponse) =>
+                              composeResponse.params.source,
+                          child: ReviewView(
+                              composeResponse: context
+                                  .flow<
+                                      TransactionFlowModel<
+                                          ComposeSendResponse>>()
+                                  .state
+                                  .composeResponse!))),
+                )),
             _ => Text(state.toString())
           };
         });
