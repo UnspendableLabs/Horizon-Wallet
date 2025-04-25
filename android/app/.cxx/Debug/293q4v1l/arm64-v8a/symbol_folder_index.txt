@@ -1,1 +1,0 @@
-/home/mmarcello/src/counterparty/Horizon-Wallet/build/app/intermediates/cxx/Debug/293q4v1l/obj/arm64-v8a
