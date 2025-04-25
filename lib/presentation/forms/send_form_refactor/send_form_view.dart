@@ -85,29 +85,32 @@ class SendAssetFlow extends StatelessWidget {
                     formView: (context) => FlowStep(
                           title: "Send asset",
                           widthFactor: .33,
-                        leading: AppIcons.iconButton(
-                            context: context,
-                            width: 32,
-                            height: 32,
-                            icon: AppIcons.backArrowIcon(
+                          leading: AppIcons.iconButton(
                               context: context,
-                              width: 24,
-                              height: 24,
-                              fit: BoxFit.fitHeight,
-                            ),
-                            onPressed: () {
-                              context.go("/asset/${data.multiAddressBalance.asset}");
-                            }),
+                              width: 32,
+                              height: 32,
+                              icon: AppIcons.backArrowIcon(
+                                context: context,
+                                width: 24,
+                                height: 24,
+                                fit: BoxFit.fitHeight,
+                              ),
+                              onPressed: () {
+                                context.go(
+                                    "/asset/${data.multiAddressBalance.asset}");
+                              }),
                           body: SendAssetFormBody(
                             multiAddressBalance: data.multiAddressBalance,
                             feeEstimates: data.feeEstimates,
-                            onSubmitSuccess: (composeResponse) {
+                            onSubmitSuccess: (formState) {
                               context
                                   .flow<
                                       TransactionFlowModel<
                                           ComposeSendResponse>>()
-                                  .update((_) => TransactionFlowModel(
-                                      formData: composeResponse));
+                                  .update((_model) => TransactionFlowModel(
+                                        composeResponse:
+                                            formState.composeResponse,
+                                      ));
                             },
                           ),
                         ),
@@ -129,15 +132,15 @@ class SendAssetFlow extends StatelessWidget {
                                   .flow<
                                       TransactionFlowModel<
                                           ComposeSendResponse>>()
-                                  .update((_) =>
-                                      TransactionFlowModel(formData: null));
+                                  .update((_model) => TransactionFlowModel(
+                                      composeResponse: null));
                             }),
                         body: ReviewView(
                             composeResponse: context
                                 .flow<
                                     TransactionFlowModel<ComposeSendResponse>>()
                                 .state
-                                .formData!))),
+                                .composeResponse!))),
               ),
             _ => Text(state.toString())
           };
