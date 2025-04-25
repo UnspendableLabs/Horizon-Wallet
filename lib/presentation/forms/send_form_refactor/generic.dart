@@ -29,9 +29,9 @@ class TransactionFormModelBase with FormzMixin {
 }
 
 class TransactionFlowModel<T> {
-  final T? formData;
+  final T? composeResponse;
 
-  TransactionFlowModel({this.formData});
+  TransactionFlowModel({this.composeResponse});
 }
 
 class TransactionFlowController<T>
@@ -73,7 +73,7 @@ class _TransactionFlowView<T> extends State<TransactionFlowView<T>> {
       onGeneratePages: (model, pages) {
         return [
           MaterialPage(child: Builder(builder: widget.formView)),
-          if (model.formData != null)
+          if (model.composeResponse != null)
             MaterialPage(
               child: Builder(builder: widget.reviewView),
             ),
