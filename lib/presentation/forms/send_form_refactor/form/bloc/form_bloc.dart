@@ -25,8 +25,9 @@ class SendAssetFormBloc extends Bloc<FormEvent, FormModel> {
       ComposeRepository? composeRepository,
       required FeeEstimates feeEstimates,
       required MultiAddressBalanceEntry initialAddressBalanceValue})
-      : composeTransactionUseCase = GetIt.I<ComposeTransactionUseCase>(),
-        composeRepository = GetIt.I<ComposeRepository>(),
+      : composeTransactionUseCase =
+            composeTransactionUseCase ?? GetIt.I<ComposeTransactionUseCase>(),
+        composeRepository = composeRepository ?? GetIt.I<ComposeRepository>(),
         super(FormModel(
           feeEstimates: feeEstimates,
           addressBalanceInput:
