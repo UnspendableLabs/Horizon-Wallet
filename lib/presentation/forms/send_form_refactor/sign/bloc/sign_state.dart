@@ -16,12 +16,12 @@ class PasswordInput extends FormzInput<String, PasswordValidationError> {
   }
 }
 
-class ReviewModel with FormzMixin {
+class SignModel with FormzMixin {
   final FormzSubmissionStatus status;
   final String? error;
   final String? txHex;
   final String? txHash;
-  ReviewModel({
+  SignModel({
     required this.status,
     this.error,
     this.txHex,
@@ -31,13 +31,13 @@ class ReviewModel with FormzMixin {
   @override
   List<FormzInput> get inputs => [];
 
-  ReviewModel copyWith({
+  SignModel copyWith({
     FormzSubmissionStatus? status,
     String? error,
     String? txHex,
     String? txHash,
   }) {
-    return ReviewModel(
+    return SignModel(
         status: status ?? this.status,
         error: error ?? this.error,
         txHex: txHex ?? this.txHex,
@@ -69,24 +69,24 @@ class PasswordFormModel {
   }
 }
 
-class ReviewState {
+class SignState {
   bool passwordRequired;
   bool showPasswordModal;
-  ReviewModel formModel;
+  SignModel formModel;
   PasswordFormModel passwordFormModel;
 
-  ReviewState(
+  SignState(
       {required this.passwordRequired,
       this.showPasswordModal = false,
       required this.formModel,
       required this.passwordFormModel});
 
-  ReviewState copyWith(
+  SignState copyWith(
       {bool? passwordRequired,
       bool? showPasswordModal,
-      ReviewModel? formModel,
+      SignModel? formModel,
       PasswordFormModel? passwordFormModel}) {
-    return ReviewState(
+    return SignState(
         showPasswordModal: showPasswordModal ?? this.showPasswordModal,
         passwordRequired: passwordRequired ?? this.passwordRequired,
         formModel: formModel ?? this.formModel,

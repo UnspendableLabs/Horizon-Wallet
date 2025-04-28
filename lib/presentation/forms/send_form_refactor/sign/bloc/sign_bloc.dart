@@ -4,8 +4,9 @@ import 'package:get_it/get_it.dart';
 import 'package:horizon/presentation/common/usecase/write_local_transaction_usecase.dart';
 
 import 'package:horizon/common/uuid.dart';
-import './review_event.dart';
-import './review_state.dart';
+import 'package:horizon/presentation/forms/send_form_refactor/sign/bloc/sign_state.dart';
+import './sign_event.dart';
+import './sign_state.dart';
 import 'package:horizon/domain/repositories/settings_repository.dart';
 import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transaction_usecase.dart';
 import 'package:horizon/domain/entities/decryption_strategy.dart';
@@ -15,8 +16,8 @@ import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
 
-class ReviewBloc<TComposeResponse extends ComposeResponse>
-    extends Bloc<ReviewEvent, ReviewState> {
+class SignBloc<TComposeResponse extends ComposeResponse>
+    extends Bloc<SignEvent, SignState> {
   final String name;
 
   final TComposeResponse composeResponse;
@@ -28,7 +29,7 @@ class ReviewBloc<TComposeResponse extends ComposeResponse>
   final Logger logger;
   final AnalyticsService analyticsService;
 
-  ReviewBloc({
+  SignBloc({
     required this.name,
     required this.getSource,
     required this.composeResponse,
@@ -48,11 +49,11 @@ class ReviewBloc<TComposeResponse extends ComposeResponse>
             GetIt.I<WriteLocalTransactionUseCase>(),
         logger = logger ?? GetIt.I<Logger>(),
         analyticsService = analyticsService ?? GetIt.I<AnalyticsService>(),
-        super(ReviewState(
+        super(SignState(
             passwordRequired:
                 (settingsRepository ?? GetIt.I<SettingsRepository>())
                     .requirePasswordForCryptoOperations,
-            formModel: ReviewModel(status: FormzSubmissionStatus.initial),
+            formModel: SignModel(status: FormzSubmissionStatus.initial),
             passwordFormModel: PasswordFormModel(
                 status: FormzSubmissionStatus.initial,
                 password: const PasswordInput.pure()))) {
@@ -161,8 +162,6 @@ class ReviewBloc<TComposeResponse extends ComposeResponse>
     Future<void> Function(String, String) onSuccess,
     Future<void> Function(String) onError,
   ) async {
-    print(
-        "sign and broadcast called with decryptionStrategy $decryptionStrategy");
 
     await signAndBroadcastTransactionUseCase.call(
         decryptionStrategy: decryptionStrategy,
@@ -176,11 +175,9 @@ class ReviewBloc<TComposeResponse extends ComposeResponse>
           analyticsService.trackAnonymousEvent('broadcast_tx_${name}',
               properties: {'distinct_id': uuid.v4()});
 
-          print("shouldn't on success be called?");
           onSuccess(txHex, txHash);
         },
         onError: (msg) {
-          print("on error is called $msg");
           onError(msg);
         });
   }

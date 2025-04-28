@@ -6,21 +6,21 @@ import 'package:horizon/presentation/common/shared_util.dart';
 import 'package:horizon/presentation/common/transactions/quantity_display.dart';
 import 'package:horizon/presentation/common/transactions/confirmation_field_with_label.dart';
 import 'package:horizon/presentation/common/transactions/fee_confirmation.dart';
-import 'package:horizon/presentation/forms/send_form_refactor/review/bloc/review_event.dart';
+import 'package:horizon/presentation/forms/send_form_refactor/sign/bloc/sign_event.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 import 'package:horizon/domain/entities/compose_response.dart';
 
-import "./bloc/review_bloc.dart";
-import "./bloc/review_state.dart";
+import "./bloc/sign_bloc.dart";
+import "./bloc/sign_state.dart";
 import 'package:formz/formz.dart';
 
-class ReviewProvider<TComposeResponse extends ComposeResponse>
+class SignProvider<TComposeResponse extends ComposeResponse>
     extends StatelessWidget {
   final String name;
   final Widget child;
   final TComposeResponse composeResponse;
   final String Function(TComposeResponse) getSource;
-  const ReviewProvider({
+  const SignProvider({
     required this.name,
     required this.getSource,
     required this.child,
@@ -29,8 +29,8 @@ class ReviewProvider<TComposeResponse extends ComposeResponse>
   });
   @override
   Widget build(BuildContext context) {
-    return BlocProvider<ReviewBloc<TComposeResponse>>(
-      create: (context) => ReviewBloc<TComposeResponse>(
+    return BlocProvider<SignBloc<TComposeResponse>>(
+      create: (context) => SignBloc<TComposeResponse>(
         name: name,
         composeResponse: composeResponse,
         getSource: getSource,
@@ -40,11 +40,11 @@ class ReviewProvider<TComposeResponse extends ComposeResponse>
   }
 }
 
-class ReviewView extends StatelessWidget {
+class SignView extends StatelessWidget {
   final ComposeSendResponse composeResponse;
   final void Function(String txHex, String texHash) onSubmitSuccess;
 
-  const ReviewView({
+  const SignView({
     required this.onSubmitSuccess,
     required this.composeResponse,
     super.key,
@@ -55,7 +55,7 @@ class ReviewView extends StatelessWidget {
     bool isSmallScreen = MediaQuery.of(context).size.width < 500;
     bool dialogIsOpen = false;
 
-    return BlocConsumer<ReviewBloc<ComposeSendResponse>, ReviewState>(
+    return BlocConsumer<SignBloc<ComposeSendResponse>, SignState>(
         listener: (outer, state) async {
       if (state.formModel.status.isSuccess) {
         onSubmitSuccess(
@@ -76,21 +76,21 @@ class ReviewView extends StatelessWidget {
           context: outer,
           barrierDismissible: false,
           builder: (BuildContext dialogContext) {
-            final bloc = context.read<ReviewBloc<ComposeSendResponse>>();
+            final bloc = context.read<SignBloc<ComposeSendResponse>>();
 
             return BlocProvider.value(
               value: bloc,
-              child: BlocBuilder<ReviewBloc<ComposeSendResponse>, ReviewState>(
+              child: BlocBuilder<SignBloc<ComposeSendResponse>, SignState>(
                   builder: (dialogContext, dialogState) {
                 return HorizonPasswordPrompt(
                   onPasswordSubmitted: (password) async {
                     dialogContext
-                        .read<ReviewBloc<ComposeSendResponse>>()
+                        .read<SignBloc<ComposeSendResponse>>()
                         .add(PasswordPromptSubmitted(password));
                   },
                   onCancel: () {
                     dialogContext
-                        .read<ReviewBloc<ComposeSendResponse>>()
+                        .read<SignBloc<ComposeSendResponse>>()
                         .add(PasswordPromptCancelClicked());
 
                     if (dialogContext.mounted) {
@@ -149,12 +149,19 @@ class ReviewView extends StatelessWidget {
                 child: SizedBox(
                   height: 64,
                   child: HorizonOutlinedButton(
-                      isTransparent: false,
-                      onPressed: () {
-                        context.read<ReviewBloc<ComposeSendResponse>>().add(
-                            const SignAndSubmitClicked()); // TODO: handle password
-                      },
-                      buttonText: "Sign and Submit"),
+                    isTransparent: false,
+                    onPressed: () {
+                      if (state.formModel.status.isInProgress ||
+                          state.formModel.status.isSuccess) {
+                        return;
+                      }
+                      context.read<SignBloc<ComposeSendResponse>>().add(
+                          const SignAndSubmitClicked()); // TODO: handle password
+                    },
+                    buttonText: state.formModel.status.isInProgress
+                        ? "Submitting..."
+                        : "Sign and Submit",
+                  ),
                 ),
               ),
             ],
