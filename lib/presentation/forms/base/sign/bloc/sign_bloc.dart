@@ -4,7 +4,6 @@ import 'package:get_it/get_it.dart';
 import 'package:horizon/presentation/common/usecase/write_local_transaction_usecase.dart';
 
 import 'package:horizon/common/uuid.dart';
-import 'package:horizon/presentation/forms/send_form_refactor/sign/bloc/sign_state.dart';
 import './sign_event.dart';
 import './sign_state.dart';
 import 'package:horizon/domain/repositories/settings_repository.dart';
@@ -92,10 +91,10 @@ class SignBloc<TComposeResponse extends ComposeResponse>
         emit(state.copyWith(
             // showPasswordModal: false,
             formModel: state.formModel.copyWith(
-              status: FormzSubmissionStatus.success,
-              txHex: txHex,
-              txHash: txHash,
-            )));
+          status: FormzSubmissionStatus.success,
+          txHex: txHex,
+          txHash: txHash,
+        )));
       }, (error) async {
         emit(state.copyWith(
             formModel: state.formModel
@@ -162,7 +161,6 @@ class SignBloc<TComposeResponse extends ComposeResponse>
     Future<void> Function(String, String) onSuccess,
     Future<void> Function(String) onError,
   ) async {
-
     await signAndBroadcastTransactionUseCase.call(
         decryptionStrategy: decryptionStrategy,
         source: getSource(composeResponse),
@@ -172,7 +170,7 @@ class SignBloc<TComposeResponse extends ComposeResponse>
 
           logger.info('send broadcasted txHash: $txHash');
 
-          analyticsService.trackAnonymousEvent('broadcast_tx_${name}',
+          analyticsService.trackAnonymousEvent('broadcast_tx_$name',
               properties: {'distinct_id': uuid.v4()});
 
           onSuccess(txHex, txHash);

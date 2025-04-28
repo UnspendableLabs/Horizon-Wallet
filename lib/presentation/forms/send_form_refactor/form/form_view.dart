@@ -13,11 +13,8 @@ import "./bloc/form_bloc.dart";
 import "./bloc/form_state.dart";
 import "./bloc/form_event.dart";
 
-import 'package:horizon/domain/entities/compose_send.dart';
 // TODO: do something with transaction error;
 import 'package:horizon/presentation/common/transactions/transaction_fee_selection.dart';
-
-
 
 class SendAssetFormBody extends StatefulWidget {
   final Function(FormModel) onSubmitSuccess;
@@ -181,4 +178,3 @@ class _SendAssetFormBodyState extends State<SendAssetFormBody> {
     );
   }
 }
-

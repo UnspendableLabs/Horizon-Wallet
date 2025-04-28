@@ -1,5 +1,4 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:collection/collection.dart';
 import 'package:horizon/domain/entities/account.dart';
 import 'package:horizon/domain/entities/imported_address.dart';
 import 'package:horizon/domain/entities/wallet.dart';

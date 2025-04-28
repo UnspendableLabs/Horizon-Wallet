@@ -1,37 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
 
-// // TODO: think through this pattern
-// class FlowLayout extends StatelessWidget {
-//   final Widget child;
-//
-//   FlowLayout({super.key, required this.child});
-//
-//   @override
-//   Widget build(context) {
-//     bool isSmallScreen = MediaQuery.of(context).size.width < 500;
-//
-//     if (isSmallScreen) {
-//       return child;
-//     }
-//
-//     return Scaffold(
-//       backgroundColor: Theme.of(context).dialogTheme.backgroundColor,
-//       body: Center(
-//         child: Container(
-//           width: 500,
-//           height: 812,
-//           decoration: BoxDecoration(
-//             borderRadius: BorderRadius.circular(18),
-//           ),
-//           child:
-//               ClipRRect(borderRadius: BorderRadius.circular(18), child: child),
-//         ),
-//       ),
-//     );
-//   }
-// }
-//
 class FlowStep extends StatelessWidget {
   final double widthFactor;
   final String title;
@@ -51,12 +20,10 @@ class FlowStep extends StatelessWidget {
     bool isSmallScreen = MediaQuery.of(context).size.width < 500;
 
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: leading
-         
-      ),
+        appBar: AppBar(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            leading: leading),
         backgroundColor: Theme.of(context).dialogTheme.backgroundColor,
         body: Center(
           child: Container(

@@ -50,7 +50,6 @@ import 'package:horizon/presentation/screens/dashboard/view/balances_display.dar
 import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:horizon/presentation/session/bloc/session_state.dart';
-import 'package:qr_flutter/qr_flutter.dart';
 import 'package:sliver_tools/sliver_tools.dart';
 import 'package:horizon/domain/repositories/settings_repository.dart';
 

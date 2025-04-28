@@ -9,4 +9,3 @@ class SendPageState {
 class SendPageBloc extends Bloc<SendBlocEvents, SendPageState> {
   SendPageBloc(super.initialState);
 }
-
