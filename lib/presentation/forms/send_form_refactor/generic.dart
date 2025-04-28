@@ -2,7 +2,15 @@ import 'package:flow_builder/flow_builder.dart';
 import 'package:flutter/material.dart';
 import 'package:formz/formz.dart';
 
+import "package:fpdart/fpdart.dart" as fp;
 import 'package:horizon/domain/entities/fee_option.dart';
+
+class SubmitSuccess {
+  String hex;
+  String hash;
+
+  SubmitSuccess({required this.hex, required this.hash});
+}
 
 // TODO: refine FeeOptionError
 enum FeeOptionError { invalid }
@@ -29,9 +37,21 @@ class TransactionFormModelBase with FormzMixin {
 }
 
 class TransactionFlowModel<T> {
-  final T? composeResponse;
+  final fp.Option<T> composeResponse;
+  final fp.Option<SubmitSuccess> submitSuccess;
 
-  TransactionFlowModel({this.composeResponse});
+  TransactionFlowModel(
+      {required this.composeResponse, required this.submitSuccess});
+
+  TransactionFlowModel<T> copyWith({
+    fp.Option<T>? composeResponse,
+    fp.Option<SubmitSuccess>? submitSuccess,
+  }) {
+    return TransactionFlowModel(
+      composeResponse: composeResponse ?? this.composeResponse,
+      submitSuccess: submitSuccess ?? this.submitSuccess,
+    );
+  }
 }
 
 class TransactionFlowController<T>
@@ -62,7 +82,10 @@ class _TransactionFlowView<T> extends State<TransactionFlowView<T>> {
   void initState() {
     super.initState();
     _controller = TransactionFlowController(
-      initialState: TransactionFlowModel(),
+      initialState: TransactionFlowModel(
+        composeResponse: const fp.Option.none(),
+        submitSuccess: const fp.Option.none(),
+      ),
     );
   }
 
@@ -73,10 +96,11 @@ class _TransactionFlowView<T> extends State<TransactionFlowView<T>> {
       onGeneratePages: (model, pages) {
         return [
           MaterialPage(child: Builder(builder: widget.formView)),
-          if (model.composeResponse != null)
+          if (model.composeResponse.isSome())
             MaterialPage(
               child: Builder(builder: widget.reviewView),
             ),
+          if (model.submitSuccess.isSome()) MaterialPage(child: Text("foo "))
         ];
       },
     );

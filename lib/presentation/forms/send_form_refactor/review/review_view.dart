@@ -16,10 +16,12 @@ import 'package:formz/formz.dart';
 
 class ReviewProvider<TComposeResponse extends ComposeResponse>
     extends StatelessWidget {
+  final String name;
   final Widget child;
   final TComposeResponse composeResponse;
   final String Function(TComposeResponse) getSource;
   const ReviewProvider({
+    required this.name,
     required this.getSource,
     required this.child,
     required this.composeResponse,
@@ -29,6 +31,7 @@ class ReviewProvider<TComposeResponse extends ComposeResponse>
   Widget build(BuildContext context) {
     return BlocProvider<ReviewBloc<TComposeResponse>>(
       create: (context) => ReviewBloc<TComposeResponse>(
+        name: name,
         composeResponse: composeResponse,
         getSource: getSource,
       ),
@@ -39,8 +42,10 @@ class ReviewProvider<TComposeResponse extends ComposeResponse>
 
 class ReviewView extends StatelessWidget {
   final ComposeSendResponse composeResponse;
+  final void Function(String txHex, String texHash) onSubmitSuccess;
 
   const ReviewView({
+    required this.onSubmitSuccess,
     required this.composeResponse,
     super.key,
   });
@@ -52,6 +57,13 @@ class ReviewView extends StatelessWidget {
 
     return BlocConsumer<ReviewBloc<ComposeSendResponse>, ReviewState>(
         listener: (outer, state) async {
+      if (state.formModel.status.isSuccess) {
+        onSubmitSuccess(
+          state.formModel.txHex!,
+          state.formModel.txHash!,
+        );
+      }
+
       if (!state.showPasswordModal && dialogIsOpen) {
         Navigator.of(outer, rootNavigator: true).pop();
         dialogIsOpen = false;
@@ -148,7 +160,6 @@ class ReviewView extends StatelessWidget {
             ],
           ),
         )
-        // TODO: fee details needs to be conserved
       ]);
     });
   }

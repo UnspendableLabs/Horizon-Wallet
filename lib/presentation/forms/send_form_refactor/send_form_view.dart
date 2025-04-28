@@ -1,5 +1,6 @@
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
+import "package:fpdart/fpdart.dart" as fp;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
@@ -34,6 +35,15 @@ import "generic.dart";
 import "./form/form_view.dart";
 import "./review/review_view.dart";
 import 'package:horizon/domain/entities/asset.dart';
+
+extension OptionGetOrThrow<T> on fp.Option<T> {
+  T getOrThrow([String? message = "invariant: isNone"]) {
+    return match(
+      () => throw Exception(message),
+      (value) => value,
+    );
+  }
+}
 
 class SendFormProvider extends StatelessWidget {
   final String assetName;
@@ -105,9 +115,9 @@ class SendAssetFlow extends StatelessWidget {
                       onSubmitSuccess: (formState) {
                         context
                             .flow<TransactionFlowModel<ComposeSendResponse>>()
-                            .update((_model) => TransactionFlowModel(
-                                  composeResponse: formState.composeResponse,
-                                ));
+                            .update((model) => model.copyWith(
+                                composeResponse: fp.Option.fromNullable(
+                                    formState.composeResponse)));
                       },
                     ),
                   ),
@@ -128,14 +138,17 @@ class SendAssetFlow extends StatelessWidget {
                             context
                                 .flow<
                                     TransactionFlowModel<ComposeSendResponse>>()
-                                .update((_model) => TransactionFlowModel(
-                                    composeResponse: null));
+                                .update((model) => model.copyWith(
+                                      composeResponse: const fp.Option.none(),
+                                    ));
                           }),
                       body: ReviewProvider(
+                          name: "send",
                           composeResponse: context
                               .flow<TransactionFlowModel<ComposeSendResponse>>()
                               .state
-                              .composeResponse!,
+                              .composeResponse
+                              .getOrThrow(),
                           getSource: (composeResponse) =>
                               composeResponse.params.source,
                           child: ReviewView(
@@ -144,7 +157,23 @@ class SendAssetFlow extends StatelessWidget {
                                       TransactionFlowModel<
                                           ComposeSendResponse>>()
                                   .state
-                                  .composeResponse!))),
+                                  .composeResponse
+                                  .getOrThrow(),
+                              onSubmitSuccess: (txHex, txHash) {
+                                print("blacy");
+                                context
+                                    .flow<
+                                        TransactionFlowModel<
+                                            ComposeSendResponse>>()
+                                    .update((model) => model.copyWith(
+                                          submitSuccess: fp.Option.of(
+                                            SubmitSuccess(
+                                              hex: txHex,
+                                              hash: txHash,
+                                            ),
+                                          ),
+                                        ));
+                              }))),
                 )),
             _ => Text(state.toString())
           };
