@@ -427,8 +427,13 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
                                           context: context,
                                         ),
                                         onTap: () {
-                                          _showTransactionPage(
-                                              type: TransactionType.send);
+                                          context.go(
+                                              "/asset/${widget.assetName}/compose/send");
+                                          // Navigator.of(context).navigate(
+                                          //   '/transactions/send',
+                                          // );
+                                          // _showTransactionPage(
+                                          //     type: TransactionType.send);
                                         },
                                       ),
                                       IconItemButton(
@@ -448,8 +453,11 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
                                           context: context,
                                         ),
                                         onTap: () {
-                                          _showTransactionPage(
-                                              type: TransactionType.send);
+                                          context.go(
+                                              "/asset/${widget.assetName}/compose/send");
+
+                                          // _showTransactionPage(
+                                          //     type: TransactionType.send);
                                         },
                                       ),
                                       IconItemButton(

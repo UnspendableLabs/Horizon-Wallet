@@ -380,10 +380,12 @@ class _HorizonRedesignDropdownState<T>
                                       vertical: 16,
                                     ),
                                     child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
                                       children: [
                                         DefaultTextStyle(
-                                          style: theme.dropdownMenuTheme.textStyle!,
+                                          style: theme
+                                              .dropdownMenuTheme.textStyle!,
                                           child: item.child,
                                         ),
                                       ],
@@ -931,9 +933,9 @@ class _HorizonTextFieldState extends State<HorizonTextField> {
         final hasError = field.hasError;
 
         // Update field value when controller changes
-        widget.controller.addListener(() {
-          field.didChange(widget.controller.text);
-        });
+        // widget.controller.addListener(() {
+        //   field.didChange(widget.controller.text);
+        // });
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
