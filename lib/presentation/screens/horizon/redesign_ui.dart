@@ -283,7 +283,7 @@ class HorizonRedesignDropdown<T> extends StatefulWidget {
     required this.selectedValue,
     required this.hintText,
     this.selectedItemBuilder,
-    this.useModal = false,
+    this.useModal = true,
   });
 
   @override
@@ -380,10 +380,12 @@ class _HorizonRedesignDropdownState<T>
                                       vertical: 16,
                                     ),
                                     child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
                                       children: [
                                         DefaultTextStyle(
-                                          style: theme.dropdownMenuTheme.textStyle!,
+                                          style: theme
+                                              .dropdownMenuTheme.textStyle!,
                                           child: item.child,
                                         ),
                                       ],
@@ -500,16 +502,23 @@ class _HorizonRedesignDropdownState<T>
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Expanded(
-                      child: Text(
-                        widget.selectedValue != null
-                            ? (widget.items
-                                    .firstWhere((item) =>
-                                        item.value == widget.selectedValue)
-                                    .child as Text)
-                                .data!
-                            : widget.hintText,
-                        style: Theme.of(context).textTheme.bodySmall,
-                      ),
+                      child: widget.selectedValue != null
+                          ? widget.selectedItemBuilder != null
+                              ? widget.selectedItemBuilder!(
+                                  widget.selectedValue as T)
+                              : Text(
+                                  (widget.items
+                                          .firstWhere((item) =>
+                                              item.value ==
+                                              widget.selectedValue)
+                                          .child as Text)
+                                      .data!,
+                                  style: Theme.of(context).textTheme.bodySmall,
+                                )
+                          : Text(
+                              widget.hintText,
+                              style: Theme.of(context).textTheme.bodySmall,
+                            ),
                     ),
                     _isOpen
                         ? AppIcons.caretUpIcon(

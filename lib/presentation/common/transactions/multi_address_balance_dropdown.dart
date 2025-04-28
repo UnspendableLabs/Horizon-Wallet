@@ -19,7 +19,7 @@ class MultiAddressBalanceDropdown extends StatelessWidget {
     required this.onChanged,
     required this.selectedValue,
     required this.loading,
-    this.useModal = false,
+    this.useModal = true,
   });
 
   @override
@@ -63,7 +63,8 @@ class MultiAddressBalanceDropdown extends StatelessWidget {
       items: balances!.entries
           .map((addressEntry) => DropdownMenuItem<MultiAddressBalanceEntry>(
                 value: addressEntry,
-                child: Column(
+                child: Expanded(
+                    child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(addressEntry.address!,
@@ -76,7 +77,7 @@ class MultiAddressBalanceDropdown extends StatelessWidget {
                             .titleSmall!
                             .copyWith(fontWeight: FontWeight.normal)),
                   ],
-                ),
+                )),
               ))
           .toList(),
       onChanged: onChanged,
