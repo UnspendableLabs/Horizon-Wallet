@@ -34,6 +34,7 @@ import 'package:horizon/domain/entities/compose_send.dart';
 import "generic.dart";
 import "./form/form_view.dart";
 import "./review/review_view.dart";
+import "./sign/sign_view.dart";
 import 'package:horizon/domain/entities/asset.dart';
 
 extension OptionGetOrThrow<T> on fp.Option<T> {
@@ -122,7 +123,7 @@ class SendAssetFlow extends StatelessWidget {
                     ),
                   ),
                   signView: (context) => FlowStep(
-                      title: "Review Transaction",
+                      title: "Sign And Submit",
                       widthFactor: .66,
                       leading: AppIcons.iconButton(
                           context: context,
@@ -142,7 +143,7 @@ class SendAssetFlow extends StatelessWidget {
                                       composeResponse: const fp.Option.none(),
                                     ));
                           }),
-                      body: ReviewProvider(
+                      body: SignProvider(
                           name: "send",
                           composeResponse: context
                               .flow<TransactionFlowModel<ComposeSendResponse>>()
@@ -151,7 +152,7 @@ class SendAssetFlow extends StatelessWidget {
                               .getOrThrow(),
                           getSource: (composeResponse) =>
                               composeResponse.params.source,
-                          child: ReviewView(
+                          child: SignView(
                               composeResponse: context
                                   .flow<
                                       TransactionFlowModel<
@@ -160,7 +161,6 @@ class SendAssetFlow extends StatelessWidget {
                                   .composeResponse
                                   .getOrThrow(),
                               onSubmitSuccess: (txHex, txHash) {
-                                print("blacy");
                                 context
                                     .flow<
                                         TransactionFlowModel<
@@ -174,6 +174,33 @@ class SendAssetFlow extends StatelessWidget {
                                           ),
                                         ));
                               }))),
+                  reviewView: (context) => FlowStep(
+                      title: "Review",
+                      widthFactor: .66,
+                      leading: AppIcons.iconButton(
+                          context: context,
+                          width: 32,
+                          height: 32,
+                          icon: AppIcons.closeIcon(
+                            context: context,
+                            width: 24,
+                            height: 24,
+                            fit: BoxFit.fitHeight,
+                          ),
+                          onPressed: () {
+                            context
+                                .go("/asset/${data.multiAddressBalance.asset}");
+                          }),
+                      body: Builder(builder: (context) {
+                        final submitSuccess = context
+                            .flow<TransactionFlowModel<ComposeSendResponse>>()
+                            .state
+                            .submitSuccess
+                            .getOrThrow();
+                        return ReviewView(
+                            txHex: submitSuccess.hex,
+                            txHash: submitSuccess.hash);
+                      })),
                 )),
             _ => Text(state.toString())
           };
