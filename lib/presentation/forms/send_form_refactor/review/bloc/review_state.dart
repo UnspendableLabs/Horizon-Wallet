@@ -19,9 +19,13 @@ class PasswordInput extends FormzInput<String, PasswordValidationError> {
 class ReviewModel with FormzMixin {
   final FormzSubmissionStatus status;
   final String? error;
+  final String? txHex;
+  final String? txHash;
   ReviewModel({
     required this.status,
     this.error,
+    this.txHex,
+    this.txHash,
   });
 
   @override
@@ -30,11 +34,14 @@ class ReviewModel with FormzMixin {
   ReviewModel copyWith({
     FormzSubmissionStatus? status,
     String? error,
+    String? txHex,
+    String? txHash,
   }) {
     return ReviewModel(
-      status: status ?? this.status,
-      error: error ?? this.error,
-    );
+        status: status ?? this.status,
+        error: error ?? this.error,
+        txHex: txHex ?? this.txHex,
+        txHash: txHash ?? this.txHash);
   }
 }
 
