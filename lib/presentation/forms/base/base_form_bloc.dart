@@ -8,7 +8,7 @@ abstract class Loader<Args, Data> {
 
 class BaseFormBloc<LoadArgs, LoadData>
     extends Bloc<BaseFormEvent, BaseFormState<LoadData>> {
-  Loader<LoadArgs, LoadData> _loader;
+  final Loader<LoadArgs, LoadData> _loader;
 
   BaseFormBloc({required Loader<LoadArgs, LoadData> loader})
       : _loader = loader,

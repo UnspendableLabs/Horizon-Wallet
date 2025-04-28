@@ -12,12 +12,11 @@ class ReviewView extends StatelessWidget {
   final String txHash;
   final VoidCallback? onClosePressed;
 
-  const ReviewView({
-    super.key,
-    required this.txHex,
-    required this.txHash,
-    this.onClosePressed
-  });
+  const ReviewView(
+      {super.key,
+      required this.txHex,
+      required this.txHash,
+      this.onClosePressed});
 
   Future<void> _launchExplorer() async {
     final config = GetIt.I<Config>();
@@ -62,8 +61,7 @@ class ReviewView extends StatelessWidget {
                                   ),
                         ),
                         TextSpan(
-                          text: txHex.replaceRange(
-                                  6, txHex.length - 6, '...') ,
+                          text: txHex.replaceRange(6, txHex.length - 6, '...'),
                           style:
                               Theme.of(context).textTheme.bodySmall?.copyWith(
                                     color: Theme.of(context)
@@ -92,14 +90,14 @@ class ReviewView extends StatelessWidget {
                         ),
                       ),
                   onPressed: () {
-                          Clipboard.setData(ClipboardData(text: txHex));
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Tx id copied to clipboard'),
-                              duration: Duration(seconds: 2),
-                            ),
-                          );
-                        },
+                    Clipboard.setData(ClipboardData(text: txHex));
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Tx id copied to clipboard'),
+                        duration: Duration(seconds: 2),
+                      ),
+                    );
+                  },
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -124,7 +122,7 @@ class ReviewView extends StatelessWidget {
         SizedBox(
           height: 64,
           child: HorizonOutlinedButton(
-            onPressed:  _launchExplorer,
+            onPressed: _launchExplorer,
             buttonText: 'View transaction',
             isTransparent: true,
           ),
@@ -133,7 +131,7 @@ class ReviewView extends StatelessWidget {
         SizedBox(
           height: 64,
           child: HorizonOutlinedButton(
-            onPressed:  onClosePressed,
+            onPressed: onClosePressed,
             buttonText: 'Close',
             isTransparent: true,
           ),

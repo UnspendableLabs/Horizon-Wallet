@@ -2,8 +2,6 @@ import 'package:equatable/equatable.dart';
 import 'package:horizon/domain/entities/multi_address_balance_entry.dart';
 import 'package:horizon/domain/entities/fee_option.dart';
 
-
-
 abstract class FormEvent extends Equatable {
   const FormEvent();
 
@@ -23,11 +21,6 @@ class FeeOptionChanged extends FormEvent {
 class FormSubmitted extends FormEvent {
   const FormSubmitted();
 }
-
-
-
-
-
 
 abstract class TextInputChanged extends FormEvent {
   final String value;

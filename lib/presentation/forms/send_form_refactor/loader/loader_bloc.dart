@@ -1,5 +1,4 @@
 import "package:horizon/presentation/forms/base/base_form_bloc.dart";
-import "package:horizon/presentation/forms/base/base_form_event.dart";
 import "package:horizon/presentation/forms/base/base_form_state.dart";
 import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/domain/entities/multi_address_balance.dart';
@@ -16,8 +15,8 @@ class SendAssetFormLoaderArgs {
   });
 
   String show() {
-    return "SendAssetFormLoaderArgs { " +
-        "assetName: $assetName, " +
+    return "SendAssetFormLoaderArgs { "
+        "assetName: $assetName, "
         "addresses: $addresses }";
   }
 }

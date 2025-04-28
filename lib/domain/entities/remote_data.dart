@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 
-sealed class RemoteData<T> extends Equatable{
+sealed class RemoteData<T> extends Equatable {
   @override
   List<Object?> get props => [];
 }

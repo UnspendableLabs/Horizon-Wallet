@@ -380,10 +380,12 @@ class _HorizonRedesignDropdownState<T>
                                       vertical: 16,
                                     ),
                                     child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
                                       children: [
                                         DefaultTextStyle(
-                                          style: theme.dropdownMenuTheme.textStyle!,
+                                          style: theme
+                                              .dropdownMenuTheme.textStyle!,
                                           child: item.child,
                                         ),
                                       ],
