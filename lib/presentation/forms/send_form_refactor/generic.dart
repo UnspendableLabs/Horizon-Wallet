@@ -64,10 +64,12 @@ class TransactionFlowController<T>
 class TransactionFlowView<T> extends StatefulWidget {
   final Widget Function(BuildContext context) formView;
   final Widget Function(BuildContext context) signView;
+  final Widget Function(BuildContext context) reviewView;
 
   const TransactionFlowView({
     required this.formView,
     required this.signView,
+    required this.reviewView,
     super.key,
   });
 
@@ -100,7 +102,10 @@ class _TransactionFlowView<T> extends State<TransactionFlowView<T>> {
             MaterialPage(
               child: Builder(builder: widget.signView),
             ),
-          if (model.submitSuccess.isSome()) MaterialPage(child: Text("foo "))
+          if (model.submitSuccess.isSome())
+            MaterialPage(
+              child: Builder(builder: widget.reviewView),
+            )
         ];
       },
     );
