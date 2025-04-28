@@ -121,7 +121,7 @@ class SendAssetFlow extends StatelessWidget {
                       },
                     ),
                   ),
-                  reviewView: (context) => FlowStep(
+                  signView: (context) => FlowStep(
                       title: "Review Transaction",
                       widthFactor: .66,
                       leading: AppIcons.iconButton(
