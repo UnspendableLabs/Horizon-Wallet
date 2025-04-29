@@ -207,7 +207,8 @@ class _AppShellState extends State<AppShell> with TickerProviderStateMixin {
     _bottomTabController.addListener(() {
       // Update URL when tab changes
 
-        
+      print("ASDF: ${_bottomTabController.index}");
+
       switch (_bottomTabController.index) {
         case 0:
           context.go('/dashboard');
@@ -315,19 +316,29 @@ class _AppShellState extends State<AppShell> with TickerProviderStateMixin {
   void didUpdateWidget(AppShell oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.currentRoute != oldWidget.currentRoute) {
+      print("widget.currentRoute ${widget.currentRoute}");
       _updateIndexFromRoute(widget.currentRoute);
     }
   }
 
   void _updateIndexFromRoute(String route) {
+    if (route.startsWith('/browser')) {
+      if (_bottomTabController.index != 2) {
+        _bottomTabController.animateTo(2);
+      }
+
+      return;
+    }
+
     if (route.startsWith('/settings')) {
       if (_bottomTabController.index != 1) {
         _bottomTabController.animateTo(1);
       }
-    } else {
-      if (_bottomTabController.index != 0) {
-        _bottomTabController.animateTo(0);
-      }
+
+      return;
+    }
+    if (_bottomTabController.index != 0) {
+      _bottomTabController.animateTo(0);
     }
   }
 

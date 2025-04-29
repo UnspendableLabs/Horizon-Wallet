@@ -63,6 +63,8 @@ import 'package:horizon/utils/app_icons.dart';
 import 'package:pub_semver/pub_semver.dart';
 import 'package:horizon/presentation/screens/transactions/send/view/send_page.dart';
 
+import 'package:horizon/presentation/browser/browser_view.dart';
+
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 
 // Future<void> setupRegtestWallet() async {
@@ -237,6 +239,13 @@ class AppRouter {
           },
           routes: [
             GoRoute(
+              path: "/browser",
+              builder: (context, state) {
+                return EmbeddedBrowserView(url: 'https://horizon.market');
+              },
+            ),
+
+            GoRoute(
               path: "/dashboard",
               builder: (context, state) {
                 return const PortfolioView();
@@ -326,7 +335,8 @@ class AppRouter {
 
         // final actionParam = state.uri.queryParameters['action'];
 
-        final actionParam = "signPsbt:ext,1423360735,a9648546-c970-448e-8703-0a570a435689,70736274ff01005202000000017855d34b99dca23bb054e5473cfb259b81a3a60d808a3d7eec15b935e4885d100000000000ffffffff015802000000000000160014a8b21366aa1dae07bffe52c56f4619e01c523716000000000001011f2202000000000000160014a8b21366aa1dae07bffe52c56f4619e01c523716010304830000000000,eyJ0YjFxNHplcHhlNDJya2hxMDBsNzJ0ems3M3NldXF3OXlkY2tneW56djUiOlswXX0=,WzEzMSwxXQ==";
+        final actionParam =
+            "signPsbt:ext,1423360735,a9648546-c970-448e-8703-0a570a435689,70736274ff01005202000000017855d34b99dca23bb054e5473cfb259b81a3a60d808a3d7eec15b935e4885d100000000000ffffffff015802000000000000160014a8b21366aa1dae07bffe52c56f4619e01c523716000000000001011f2202000000000000160014a8b21366aa1dae07bffe52c56f4619e01c523716010304830000000000,eyJ0YjFxNHplcHhlNDJya2hxMDBsNzJ0ems3M3NldXF3OXlkY2tneW56djUiOlswXX0=,WzEzMSwxXQ==";
 
         print("actionParam: $actionParam");
 
