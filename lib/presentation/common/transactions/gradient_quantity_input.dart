@@ -202,22 +202,24 @@ class _GradientQuantityInputState extends State<GradientQuantityInput> {
                               },
                             ),
                           ),
-                          Center(
-                            child: ShaderMask(
-                              shaderCallback: (bounds) {
-                                return textGradient.createShader(bounds);
-                              },
-                              child: Text(
-                                widget.controller.text.isEmpty
-                                    ? ''
-                                    : widget.controller.text,
-                                style: const TextStyle(
-                                  fontSize: 50,
-                                  fontWeight: FontWeight.w400,
-                                  color: Colors
-                                      .white, // This color will be replaced by gradient
+                          IgnorePointer(
+                            child: Center(
+                              child: ShaderMask(
+                                shaderCallback: (bounds) {
+                                  return textGradient.createShader(bounds);
+                                },
+                                child: Text(
+                                  widget.controller.text.isEmpty
+                                      ? ''
+                                      : widget.controller.text,
+                                  style: const TextStyle(
+                                    fontSize: 50,
+                                    fontWeight: FontWeight.w400,
+                                    color: Colors
+                                        .white, // This color will be replaced by gradient
+                                  ),
+                                  textAlign: TextAlign.center,
                                 ),
-                                textAlign: TextAlign.center,
                               ),
                             ),
                           ),
