@@ -18,7 +18,7 @@ import 'package:horizon/data/services/cache_provider_impl.dart';
 import 'package:dio_smart_retry/dio_smart_retry.dart';
 // import 'package:horizon/data/services/imported_address_service_impl.dart';
 import 'package:horizon/data/services/imported_address_service/imported_address_service_factory.dart';
-import 'package:chrome_extension/tabs.dart';
+// import 'package:chrome_extension/tabs.dart';
 // import 'package:horizon/data/services/platform_service_extension_impl.dart';
 import 'package:horizon/data/services/platform_service/platform_service_factory.dart';
 import "package:horizon/data/sources/repositories/address_repository_impl.dart";
@@ -141,7 +141,7 @@ import 'package:horizon/domain/entities/address_rpc.dart';
 import 'dart:convert';
 
 // will need to move this import elsewhere for compile to native
-import 'dart:html' as html;
+// import 'dart:html' as html;
 
 import 'package:horizon/domain/services/error_service.dart';
 import 'package:horizon/data/services/error_service_impl.dart';
@@ -548,74 +548,74 @@ void setup() {
   ));
 
   injector.registerLazySingleton<RPCGetAddressesSuccessCallback>(
-      // () => (args) => GetIt.I<Logger>().debug("""
-      //          RPCGetAddressesSuccessCallback called with:
-      //             tabId: ${args.tabId}
-      //             requestId: ${args.requestId}
-      //             addresses: ${args.addresses}
-      //     """));
-      () => config.isWebExtension
-          ? (args) {
-              chrome.tabs.sendMessage(
-                args.tabId,
-                {
-                  "id": args.requestId,
-                  "addresses": args.addresses.map((address) {
-                    return {
-                      "address": address.address,
-                      "type": switch (address.type) {
-                        AddressRpcType.p2wpkh => "p2wpkh",
-                        AddressRpcType.p2pkh => "p2pkh"
-                      },
-                      "publicKey": address.publicKey,
-                    };
-                  }).toList(),
-                },
-                null,
-              );
-
-              Future.delayed(const Duration(seconds: 0), html.window.close);
-            }
-          : (args) => GetIt.I<Logger>().debug("""
-           RPCGetAddressesSuccessCallback called with:
-              tabId: ${args.tabId}
-              requestId: ${args.requestId}
-              addresses: ${args.addresses}
-      """));
-
-  injector.registerLazySingleton<RPCSignPsbtSuccessCallback>(
-      // () => (args) => GetIt.I<Logger>().debug("""
-      //          RPCGetSignPsbtSuccessCallback called with:
-      //             tabId: ${args.tabId}
-      //             requestId: ${args.requestId}
-      //             signedPsbt: ${args.signedPsbt}
-      //     """));
-      () => config.isWebExtension
-          ? (args) {
-              chrome.tabs.sendMessage(
-                args.tabId,
-                {"id": args.requestId, "hex": args.signedPsbt},
-                null,
-              );
-
-              Future.delayed(const Duration(seconds: 0), html.window.close);
-            }
-          : (args) => GetIt.I<Logger>().debug("""
-           RPCGetSignPsbtSuccessCallback called with:
-              tabId: ${args.tabId}
-              requestId: ${args.requestId}
-              signedPsbt: ${args.signedPsbt}
-      """));
-
-  injector.registerLazySingleton<RPCSignMessageSuccessCallback>(
       () => (args) => GetIt.I<Logger>().debug("""
-               RPCSignMessageSuccessCallback called with:
+               RPCGetAddressesSuccessCallback called with:
                   tabId: ${args.tabId}
                   requestId: ${args.requestId}
-                  signature: ${args.signature}
-                  messageHash: ${args.messageHash}
-                  address: ${args.address}
+                  addresses: ${args.addresses}
           """));
+      // () => config.isWebExtension
+      //     ? (args) {
+      //         chrome.tabs.sendMessage(
+      //           args.tabId,
+      //           {
+      //             "id": args.requestId,
+      //             "addresses": args.addresses.map((address) {
+      //               return {
+      //                 "address": address.address,
+      //                 "type": switch (address.type) {
+      //                   AddressRpcType.p2wpkh => "p2wpkh",
+      //                   AddressRpcType.p2pkh => "p2pkh"
+      //                 },
+      //                 "publicKey": address.publicKey,
+      //               };
+      //             }).toList(),
+      //           },
+      //           null,
+      //         );
+      //
+      //         Future.delayed(const Duration(seconds: 0), html.window.close);
+      //       }
+      //     : (args) => GetIt.I<Logger>().debug("""
+      //      RPCGetAddressesSuccessCallback called with:
+      //         tabId: ${args.tabId}
+      //         requestId: ${args.requestId}
+      //         addresses: ${args.addresses}
+      // """));
+
+  injector.registerLazySingleton<RPCSignPsbtSuccessCallback>(
+      () => (args) => GetIt.I<Logger>().debug("""
+               RPCGetSignPsbtSuccessCallback called with:
+                  tabId: ${args.tabId}
+                  requestId: ${args.requestId}
+                  signedPsbt: ${args.signedPsbt}
+          """));
+  //     () => config.isWebExtension
+  //         ? (args) {
+  //             chrome.tabs.sendMessage(
+  //               args.tabId,
+  //               {"id": args.requestId, "hex": args.signedPsbt},
+  //               null,
+  //             );
+  //
+  //             Future.delayed(const Duration(seconds: 0), html.window.close);
+  //           }
+  //         : (args) => GetIt.I<Logger>().debug("""
+  //          RPCGetSignPsbtSuccessCallback called with:
+  //             tabId: ${args.tabId}
+  //             requestId: ${args.requestId}
+  //             signedPsbt: ${args.signedPsbt}
+  //     """));
+  //
+  // injector.registerLazySingleton<RPCSignMessageSuccessCallback>(
+  //     () => (args) => GetIt.I<Logger>().debug("""
+  //              RPCSignMessageSuccessCallback called with:
+  //                 tabId: ${args.tabId}
+  //                 requestId: ${args.requestId}
+  //                 signature: ${args.signature}
+  //                 messageHash: ${args.messageHash}
+  //                 address: ${args.address}
+  //         """));
   // () => config.isWebExtension
   //     ? (args) {
   //         chrome.tabs.sendMessage(
