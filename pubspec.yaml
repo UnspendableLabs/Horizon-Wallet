@@ -88,6 +88,7 @@ dependencies:
   lottie: ^3.2.0
   flutter_form_builder: ^9.5.0
   flow_builder: ^0.1.0
+  flutter_inappwebview: ^6.0.0
 
 dev_dependencies:
   floor_generator: ^1.4.2

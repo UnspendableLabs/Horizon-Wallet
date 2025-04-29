@@ -201,15 +201,25 @@ class _AppShellState extends State<AppShell> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-    _bottomTabController = TabController(length: 2, vsync: this);
+    _bottomTabController = TabController(length: 3, vsync: this);
     _updateIndexFromRoute(widget.currentRoute);
 
     _bottomTabController.addListener(() {
       // Update URL when tab changes
-      if (_bottomTabController.index == 1) {
-        context.go('/settings');
-      } else {
-        context.go('/dashboard');
+
+        
+      switch (_bottomTabController.index) {
+        case 0:
+          context.go('/dashboard');
+          break;
+        case 1:
+          context.go('/settings');
+          break;
+        case 2:
+          context.go('/browser');
+          break;
+        default:
+          context.go('/dashboard');
       }
     });
 
@@ -491,6 +501,71 @@ class _AppShellState extends State<AppShell> with TickerProviderStateMixin {
                                   style: TextStyle(
                                     fontSize: 12,
                                     color: _bottomTabController.index == 1
+                                        ? (Theme.of(context)
+                                            .textTheme
+                                            .bodyMedium
+                                            ?.color)
+                                        : (Theme.of(context)
+                                                .textButtonTheme
+                                                .style
+                                                ?.foregroundColor
+                                                ?.resolve({}) ??
+                                            Colors.grey),
+                                  ),
+                                  softWrap: false,
+                                  overflow: TextOverflow.visible,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        Container(
+                          width: 75,
+                          height: 74,
+                          decoration: BoxDecoration(
+                            color:
+                                _bottomTabController.index == 2 && !isDarkTheme
+                                    ? offWhite
+                                    : Colors.transparent,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: _bottomTabController.index == 2
+                                  ? Theme.of(context)
+                                          .inputDecorationTheme
+                                          .outlineBorder
+                                          ?.color ??
+                                      Colors.black.withOpacity(0.1)
+                                  : Colors.transparent,
+                              width: 1,
+                            ),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 8, horizontal: 8),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                AppIcons.settingsIcon(
+                                  context: context,
+                                  color: _bottomTabController.index == 2
+                                      ? Theme.of(context)
+                                          .textTheme
+                                          .bodyMedium
+                                          ?.color
+                                      : Theme.of(context)
+                                              .textButtonTheme
+                                              .style
+                                              ?.foregroundColor
+                                              ?.resolve({}) ??
+                                          Colors.grey,
+                                ),
+                                const SizedBox(height: 6),
+                                Text(
+                                  'Browser',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: _bottomTabController.index == 2
                                         ? (Theme.of(context)
                                             .textTheme
                                             .bodyMedium
