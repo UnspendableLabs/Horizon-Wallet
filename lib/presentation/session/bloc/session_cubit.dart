@@ -54,6 +54,8 @@ class SessionStateCubit extends Cubit<SessionState> {
       : super(const SessionState.initial());
 
   Future<GetSessionStateResponse> _getSessionState() async {
+    print("gert session state");
+
     Wallet? wallet = await walletRepository.getCurrentWallet();
 
     if (wallet == null) {
@@ -116,7 +118,16 @@ class SessionStateCubit extends Cubit<SessionState> {
             throw Exception("invariant: no accounts for this wallet");
           }
 
-          List<Address> addresses = await addressRepository.getAll();
+          String? currentAccountUuid =
+              cacheProvider.getString("current-account-uuid");
+
+          Account currentAccount = accounts.firstWhereOrNull(
+                (account) => account.uuid == currentAccountUuid,
+              ) ??
+              accounts.first;
+
+          List<Address> addresses =
+              await addressRepository.getAllByAccountUuid(currentAccount.uuid);
 
           if (addresses.isEmpty) {
             throw Exception("invariant: no addresses for this account");
@@ -132,10 +143,12 @@ class SessionStateCubit extends Cubit<SessionState> {
             accounts: accounts,
             addresses: addresses,
             importedAddresses: importedAddresses,
+            currentAccount: currentAccount,
           )));
           return;
       }
     } catch (error) {
+      print(error);
       emit(SessionState.error(error.toString()));
     }
   }
@@ -151,6 +164,26 @@ class SessionStateCubit extends Cubit<SessionState> {
             SessionState.success(stateInner.copyWith(redirect: false)));
 
     emit(state_);
+  }
+
+  void onAccountChanged(Account account) async {
+    List<Address> addresses =
+        await addressRepository.getAllByAccountUuid(account.uuid);
+
+    final current = state.successOrThrow();
+
+    final next = current.copyWith(
+      addresses: addresses,
+      currentAccount: account,
+    );
+
+    // TODO: it would be nice to not to have to do this effectful thing here
+    cacheProvider.setString(
+      "current-account-uuid",
+      account.uuid,
+    );
+
+    emit(SessionState.success(next));
   }
 
   void onOnboarding() {

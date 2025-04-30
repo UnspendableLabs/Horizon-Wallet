@@ -44,6 +44,7 @@ import 'package:horizon/presentation/screens/dashboard/account_form/bloc/account
 import 'package:horizon/presentation/screens/dashboard/address_form/bloc/address_form_bloc.dart';
 import 'package:horizon/presentation/screens/dashboard/view/portfolio_view.dart';
 import 'package:horizon/presentation/screens/login/login_view.dart';
+import 'package:horizon/presentation/screens/accounts/accounts_screen.dart';
 import 'package:horizon/presentation/screens/onboarding/view/onboarding_page.dart';
 import 'package:horizon/presentation/screens/onboarding_create/view/onboarding_create_page.dart';
 import 'package:horizon/presentation/screens/onboarding_import/view/onboarding_import_page.dart';
@@ -236,7 +237,54 @@ class AppRouter {
             GoRoute(
               path: "/dashboard",
               builder: (context, state) {
-                return const PortfolioView();
+                return Scaffold(
+                  backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+                  body: const PortfolioView(),
+                );
+              },
+            ),
+            GoRoute(
+              path: "/accounts",
+              name: "accounts",
+              builder: (context, state) {
+                return Scaffold(
+                    appBar: AppBar(
+                      backgroundColor:
+                          Theme.of(context).scaffoldBackgroundColor,
+                      elevation: 0,
+                      centerTitle: false,
+                      leadingWidth: 40,
+                      toolbarHeight: 74,
+                      title: Padding(
+                        padding: const EdgeInsets.only(top: 18.0),
+                        child: Text(
+                          "Accounts",
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                            color:
+                                Theme.of(context).textTheme.bodyMedium?.color,
+                          ),
+                        ),
+                      ),
+                      leading: Padding(
+                        padding: const EdgeInsets.only(left: 9.0, top: 18.0),
+                        child: AppIcons.iconButton(
+                          context: context,
+                          width: 32,
+                          height: 32,
+                          icon: AppIcons.backArrowIcon(
+                              context: context,
+                              width: 24,
+                              height: 24,
+                              fit: BoxFit.fitHeight),
+                          onPressed: () {
+                            context.go("/dashboard");
+                          }
+                        ),
+                      ),
+                    ),
+                    body: AccountsScreen());
               },
             ),
             GoRoute(

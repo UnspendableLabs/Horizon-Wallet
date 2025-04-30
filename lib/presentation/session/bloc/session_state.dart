@@ -45,6 +45,7 @@ class SessionStateSuccess with _$SessionStateSuccess {
   }
 
   const factory SessionStateSuccess({
+    required Account? currentAccount,
     required bool redirect,
     required Wallet wallet,
     required String decryptionKey,

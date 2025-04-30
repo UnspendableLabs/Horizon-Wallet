@@ -19,6 +19,8 @@ import 'package:chrome_extension/tabs.dart';
 import 'package:horizon/data/services/platform_service_extension_impl.dart';
 import 'package:horizon/data/services/platform_service_web_impl.dart';
 import "package:horizon/data/sources/repositories/address_repository_impl.dart";
+import "package:horizon/data/sources/repositories/address_respository_in_memory.dart";
+
 import 'package:horizon/data/sources/repositories/estimate_xcp_fee_repository_impl.dart';
 import "package:horizon/domain/repositories/address_repository.dart";
 import 'package:horizon/data/sources/local/db_manager.dart';
@@ -370,8 +372,15 @@ void setup() {
       AccountRepositoryImpl(injector.get<DatabaseManager>().database));
   injector.registerSingleton<WalletRepository>(
       WalletRepositoryImpl(injector.get<DatabaseManager>().database));
+
+  injector.registerSingleton<SecureKVService>(SecureKVServiceImpl());
+
+  injector.registerSingleton<InMemoryKeyRepository>(InMemoryKeyRepositoryImpl(
+    secureKVService: GetIt.I.get<SecureKVService>(),
+  ));
+
   injector.registerSingleton<AddressRepository>(
-      AddressRepositoryImpl(injector.get<DatabaseManager>().database));
+      AddressRepositoryInMemory());
   injector.registerSingleton<ImportedAddressRepository>(
       ImportedAddressRepositoryImpl(injector.get<DatabaseManager>().database));
 
@@ -489,11 +498,7 @@ void setup() {
           estimateXcpFeeRepository: GetIt.I.get<EstimateXcpFeeRepository>(),
           balanceRepository: injector.get<BalanceRepository>()));
 
-  injector.registerSingleton<SecureKVService>(SecureKVServiceImpl());
 
-  injector.registerSingleton<InMemoryKeyRepository>(InMemoryKeyRepositoryImpl(
-    secureKVService: GetIt.I.get<SecureKVService>(),
-  ));
 
   injector.registerSingleton<SignAndBroadcastTransactionUseCase>(
       SignAndBroadcastTransactionUseCase(
