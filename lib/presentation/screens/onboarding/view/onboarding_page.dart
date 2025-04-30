@@ -196,36 +196,29 @@ class OnboardingView extends StatelessWidget {
                                   const SizedBox(height: 20),
                                 ],
                                 SizedBox(
-                                  height: 64,
-                                  width: screenWidth > 500
-                                      ? screenWidth * 0.5
-                                      : null,
-                                  child: HorizonGradientButton(
-                                    onPressed: isDisabled
-                                        ? null
-                                        : () {
-                                            final session = context
-                                                .read<SessionStateCubit>();
-                                            session.onOnboardingCreate();
-                                          },
+                                  width: double.infinity,
+                                  child: HorizonButton(
+                                    disabled: isDisabled,
+                                    variant: ButtonVariant.gradient,
+                                    onPressed: () {
+                                      final session =
+                                          context.read<SessionStateCubit>();
+                                      session.onOnboardingCreate();
+                                    },
                                     buttonText: 'Create a new wallet',
                                   ),
                                 ),
                                 const SizedBox(height: 16),
                                 SizedBox(
-                                  height: 64,
-                                  width: screenWidth > 500
-                                      ? screenWidth * 0.5
-                                      : null,
-                                  child: HorizonOutlinedButton(
-                                    isTransparent: true,
-                                    onPressed: isDisabled
-                                        ? null
-                                        : () {
-                                            final session = context
-                                                .read<SessionStateCubit>();
-                                            session.onOnboardingImport();
-                                          },
+                                  width: double.infinity,
+                                  child: HorizonButton(
+                                    variant: ButtonVariant.black,
+                                    disabled: isDisabled,
+                                    onPressed: () {
+                                      final session = context
+                                          .read<SessionStateCubit>();
+                                      session.onOnboardingImport();
+                                    },
                                     buttonText: 'Load seed phrase',
                                   ),
                                 ),

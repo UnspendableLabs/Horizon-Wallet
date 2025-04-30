@@ -112,12 +112,9 @@ class _OnboardingShellState extends State<OnboardingShell> {
                   children: [
                     Expanded(
                       child: SizedBox(
-                        height: 64,
-                        child: HorizonOutlinedButton(
-                          isTransparent: false,
-                          onPressed: widget.nextButtonEnabled
-                              ? _handleStepContinue
-                              : null,
+                        child: HorizonButton(
+                          disabled: !widget.nextButtonEnabled,
+                          onPressed: _handleStepContinue,
                           buttonText: _currentStep == widget.steps.length - 1
                               ? widget.nextButtonText
                               : 'Continue',

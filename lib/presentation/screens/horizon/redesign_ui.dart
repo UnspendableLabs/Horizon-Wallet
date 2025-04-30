@@ -7,6 +7,233 @@ import 'package:horizon/presentation/common/theme_extension.dart';
 import 'package:horizon/utils/app_icons.dart';
 
 Widget commonHeightSizedBox = const SizedBox(height: 10);
+const double defaultButtonHeight = 54;
+
+enum ButtonVariant { black, green, gradient }
+
+class GradientContainer extends StatelessWidget {
+  final bool isHovered;
+  final Widget child;
+  final BoxDecoration? decoration;
+  const GradientContainer({
+    super.key,
+    required this.child,
+    this.isHovered = false,
+    this.decoration,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final brightness = Theme.of(context).brightness;
+    final colors = isHovered
+        ? brightness == Brightness.dark
+            ? const [
+                Color.fromRGBO(223, 217, 191, 0.50),
+                Color.fromRGBO(238, 208, 154, 0.50),
+                Color.fromRGBO(238, 179, 149, 0.50),
+                Color.fromRGBO(210, 166, 176, 0.50),
+              ]
+            : const [
+                Color(0xFF563A8E),
+                Color(0xFF306E94),
+              ]
+        : brightness == Brightness.dark
+            ? const [
+                goldenGradient1,
+                yellow1,
+                goldenGradient2,
+                goldenGradient3,
+              ]
+            : const [
+                duskGradient2,
+                duskGradient1,
+              ];
+
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: colors,
+        ),
+        borderRadius: decoration?.borderRadius,
+        border: decoration?.border,
+        boxShadow: decoration?.boxShadow,
+        color: decoration?.color,
+        image: decoration?.image,
+        shape: decoration?.shape ?? BoxShape.rectangle,
+      ),
+      child: child,
+    );
+  }
+}
+
+class HorizonButton extends StatefulWidget {
+  final String buttonText;
+  final VoidCallback? onPressed;
+  final ButtonVariant variant;
+  final double? width;
+  final double? height;
+  final bool disabled;
+  final Widget? child;
+  final Icon? icon;
+
+  const HorizonButton({
+    super.key,
+    required this.buttonText,
+    required this.onPressed,
+    this.width = double.infinity,
+    this.height = defaultButtonHeight,
+    this.variant = ButtonVariant.green,
+    this.disabled = false,
+    this.child,
+    this.icon,
+  });
+
+  @override
+  State<HorizonButton> createState() => _HorizonButtonState();
+}
+
+class _HorizonButtonState extends State<HorizonButton> {
+  bool isHovered = false;
+  @override
+  Widget build(BuildContext context) {
+    ButtonStyle style = ElevatedButton.styleFrom(
+      backgroundColor: green2,
+      foregroundColor: offBlack,
+    );
+
+    TextStyle textStyle = TextStyle(
+        color: style.foregroundColor?.resolve({}),
+        fontSize: 16,
+        fontWeight: FontWeight.w500);
+
+    BoxBorder? border;
+
+    BoxShadow boxShadow = const BoxShadow(
+      color: Color.fromRGBO(255, 255, 255, 0.2),
+      blurRadius: 10,
+      offset: Offset(0, 0),
+    );
+
+    switch (widget.variant) {
+      case ButtonVariant.black:
+        style = style.copyWith(
+          backgroundColor: WidgetStateProperty.all(black),
+          foregroundColor: WidgetStateProperty.all(offWhite),
+        );
+        textStyle = textStyle.copyWith(
+          color: offWhite,
+        );
+        border = Border.all(color: transparentWhite8, width: 1);
+        boxShadow = const BoxShadow(
+          color: Color.fromRGBO(255, 255, 255, 0.1),
+          blurRadius: 10,
+          offset: Offset(0, 0),
+        );
+      case ButtonVariant.green:
+        style = style.copyWith(
+          backgroundColor: WidgetStateProperty.all(green2),
+          foregroundColor: WidgetStateProperty.all(offBlack),
+        );
+        style = style.copyWith(
+          overlayColor: WidgetStateProperty.resolveWith<Color?>(
+            (Set<WidgetState> states) {
+              if (states.contains(WidgetState.pressed) ||
+                  states.contains(WidgetState.hovered)) {
+                return const Color.fromARGB(255, 23, 183, 156);
+              }
+              return null;
+            },
+          ),
+        );
+      case ButtonVariant.gradient:
+        style = style.copyWith(
+          backgroundColor: WidgetStateProperty.all(Colors.transparent),
+          foregroundColor: WidgetStateProperty.all(offBlack),
+        );
+    }
+
+    if (widget.disabled) {
+      style = style.copyWith(
+        backgroundColor: WidgetStateProperty.all(
+          const Color.fromRGBO(254, 251, 249, 0.16),
+        ),
+      );
+
+      textStyle = textStyle.copyWith(
+        color: const Color.fromRGBO(254, 251, 249, 0.16),
+      );
+    }
+
+    if (widget.variant == ButtonVariant.gradient) {
+      return SizedBox(
+        width: widget.width,
+        height: widget.height,
+        child: GradientContainer(
+          isHovered: isHovered,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(50),
+            boxShadow: isHovered
+                ? [
+                    boxShadow,
+                  ]
+                : null,
+          ),
+          child: ElevatedButton(
+            onPressed: widget.disabled ? null : widget.onPressed,
+            onHover: (value) => setState(() => isHovered = value),
+            style: style.copyWith(
+              minimumSize: WidgetStateProperty.all(
+                  Size.fromHeight(widget.height ?? defaultButtonHeight)),
+              padding: WidgetStateProperty.all(EdgeInsets.zero),
+              backgroundColor: WidgetStateProperty.all(Colors.transparent),
+              shadowColor: WidgetStateProperty.all(Colors.transparent),
+              elevation: WidgetStateProperty.all(0),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                if (widget.icon != null) ...[
+                  widget.icon!,
+                  const SizedBox(width: 4),
+                ],
+                widget.child ?? Text(widget.buttonText, style: textStyle)
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
+    return SizedBox(
+      width: widget.width,
+      height: widget.height,
+      child: Container(
+        decoration: BoxDecoration(
+          border: border,
+          borderRadius: BorderRadius.circular(50),
+          boxShadow: isHovered ? [boxShadow] : null,
+        ),
+        child: ElevatedButton(
+          onPressed: widget.disabled ? null : widget.onPressed,
+          onHover: (value) => setState(() => isHovered = value),
+          style: style,
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              if (widget.icon != null) ...[
+                widget.icon!,
+                const SizedBox(width: 4),
+              ],
+              widget.child ?? Text(widget.buttonText, style: textStyle)
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
 
 class HorizonGradientButton extends StatefulWidget {
   final VoidCallback? onPressed;
@@ -377,15 +604,14 @@ class _HorizonRedesignDropdownState<T>
                                   child: Container(
                                     padding: const EdgeInsets.symmetric(
                                       horizontal: 12,
-                                      vertical: 16,
+                                      vertical: 21,
                                     ),
                                     child: Row(
                                       mainAxisAlignment:
-                                          MainAxisAlignment.center,
+                                          MainAxisAlignment.spaceBetween,
                                       children: [
                                         DefaultTextStyle(
-                                          style: theme
-                                              .dropdownMenuTheme.textStyle!,
+                                          style: theme.dropdownMenuTheme.textStyle!,
                                           child: item.child,
                                         ),
                                       ],
@@ -435,6 +661,20 @@ class _HorizonRedesignDropdownState<T>
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: widget.items.map((item) {
+                  TextStyle textStyle = theme.dropdownMenuTheme.textStyle!;
+                  if (item.child is Text) {
+                    final Text text = item.child as Text;
+                    textStyle = textStyle.copyWith(
+                      color: text.style?.color,
+                      fontSize: text.style?.fontSize,
+                      fontWeight: text.style?.fontWeight,
+                      fontStyle: text.style?.fontStyle,
+                      letterSpacing: text.style?.letterSpacing,
+                      wordSpacing: text.style?.wordSpacing,
+                      height: text.style?.height,
+                      decoration: text.style?.decoration,
+                    );
+                  }
                   return Material(
                     color: Colors.transparent,
                     child: InkWell(
@@ -451,7 +691,7 @@ class _HorizonRedesignDropdownState<T>
                           children: [
                             Expanded(
                               child: DefaultTextStyle(
-                                style: theme.dropdownMenuTheme.textStyle!,
+                                style: textStyle,
                                 child: item.child,
                               ),
                             ),
@@ -711,10 +951,7 @@ class _BlurredBackgroundDropdownState<T>
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              DefaultTextStyle(
-                                style: theme.dropdownMenuTheme.textStyle!,
-                                child: item.child,
-                              ),
+                              item.child,
                             ],
                           ),
                         ),
