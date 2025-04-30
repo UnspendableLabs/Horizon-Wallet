@@ -971,6 +971,7 @@ abstract class _LoggedOut implements SessionState {
 
 /// @nodoc
 mixin _$SessionStateSuccess {
+  Account? get currentAccount => throw _privateConstructorUsedError;
   bool get redirect => throw _privateConstructorUsedError;
   Wallet get wallet => throw _privateConstructorUsedError;
   String get decryptionKey => throw _privateConstructorUsedError;
@@ -991,7 +992,8 @@ abstract class $SessionStateSuccessCopyWith<$Res> {
       _$SessionStateSuccessCopyWithImpl<$Res, SessionStateSuccess>;
   @useResult
   $Res call(
-      {bool redirect,
+      {Account? currentAccount,
+      bool redirect,
       Wallet wallet,
       String decryptionKey,
       List<Account> accounts,
@@ -1012,6 +1014,7 @@ class _$SessionStateSuccessCopyWithImpl<$Res, $Val extends SessionStateSuccess>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
+    Object? currentAccount = freezed,
     Object? redirect = null,
     Object? wallet = null,
     Object? decryptionKey = null,
@@ -1020,6 +1023,10 @@ class _$SessionStateSuccessCopyWithImpl<$Res, $Val extends SessionStateSuccess>
     Object? importedAddresses = freezed,
   }) {
     return _then(_value.copyWith(
+      currentAccount: freezed == currentAccount
+          ? _value.currentAccount
+          : currentAccount // ignore: cast_nullable_to_non_nullable
+              as Account?,
       redirect: null == redirect
           ? _value.redirect
           : redirect // ignore: cast_nullable_to_non_nullable
@@ -1057,7 +1064,8 @@ abstract class _$$SessionStateSuccessImplCopyWith<$Res>
   @override
   @useResult
   $Res call(
-      {bool redirect,
+      {Account? currentAccount,
+      bool redirect,
       Wallet wallet,
       String decryptionKey,
       List<Account> accounts,
@@ -1076,6 +1084,7 @@ class __$$SessionStateSuccessImplCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
+    Object? currentAccount = freezed,
     Object? redirect = null,
     Object? wallet = null,
     Object? decryptionKey = null,
@@ -1084,6 +1093,10 @@ class __$$SessionStateSuccessImplCopyWithImpl<$Res>
     Object? importedAddresses = freezed,
   }) {
     return _then(_$SessionStateSuccessImpl(
+      currentAccount: freezed == currentAccount
+          ? _value.currentAccount
+          : currentAccount // ignore: cast_nullable_to_non_nullable
+              as Account?,
       redirect: null == redirect
           ? _value.redirect
           : redirect // ignore: cast_nullable_to_non_nullable
@@ -1116,7 +1129,8 @@ class __$$SessionStateSuccessImplCopyWithImpl<$Res>
 
 class _$SessionStateSuccessImpl implements _SessionStateSuccess {
   const _$SessionStateSuccessImpl(
-      {required this.redirect,
+      {required this.currentAccount,
+      required this.redirect,
       required this.wallet,
       required this.decryptionKey,
       required final List<Account> accounts,
@@ -1126,6 +1140,8 @@ class _$SessionStateSuccessImpl implements _SessionStateSuccess {
         _addresses = addresses,
         _importedAddresses = importedAddresses;
 
+  @override
+  final Account? currentAccount;
   @override
   final bool redirect;
   @override
@@ -1164,6 +1180,8 @@ class _$SessionStateSuccessImpl implements _SessionStateSuccess {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$SessionStateSuccessImpl &&
+            (identical(other.currentAccount, currentAccount) ||
+                other.currentAccount == currentAccount) &&
             (identical(other.redirect, redirect) ||
                 other.redirect == redirect) &&
             (identical(other.wallet, wallet) || other.wallet == wallet) &&
@@ -1179,6 +1197,7 @@ class _$SessionStateSuccessImpl implements _SessionStateSuccess {
   @override
   int get hashCode => Object.hash(
       runtimeType,
+      currentAccount,
       redirect,
       wallet,
       decryptionKey,
@@ -1196,7 +1215,8 @@ class _$SessionStateSuccessImpl implements _SessionStateSuccess {
 
 abstract class _SessionStateSuccess implements SessionStateSuccess {
   const factory _SessionStateSuccess(
-          {required final bool redirect,
+          {required final Account? currentAccount,
+          required final bool redirect,
           required final Wallet wallet,
           required final String decryptionKey,
           required final List<Account> accounts,
@@ -1204,6 +1224,8 @@ abstract class _SessionStateSuccess implements SessionStateSuccess {
           final List<ImportedAddress>? importedAddresses}) =
       _$SessionStateSuccessImpl;
 
+  @override
+  Account? get currentAccount;
   @override
   bool get redirect;
   @override

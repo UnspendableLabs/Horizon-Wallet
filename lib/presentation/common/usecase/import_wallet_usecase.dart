@@ -17,7 +17,7 @@ import 'package:horizon/domain/services/mnemonic_service.dart';
 import 'package:horizon/domain/services/wallet_service.dart';
 
 // ignore_for_file: constant_identifier_names
-const DEFAULT_NUM_ACCOUNTS = 20;
+const DEFAULT_NUM_ACCOUNTS = 1;
 
 class PasswordException implements Exception {
   final String message;
@@ -112,33 +112,7 @@ class ImportWalletUseCase {
         importFormat: ImportFormat.horizon,
       );
 
-      Address address = await addressService.deriveAddressSegwit(
-        privKey: decryptedPrivKey,
-        chainCodeHex: wallet.chainCodeHex,
-        accountUuid: account.uuid,
-        purpose: account.purpose,
-        coin: account.coinType,
-        account: account.accountIndex,
-        change: '0',
-        index: 0,
-      );
-
-      // get transactions for the address
-      final bool addressHasTransactions =
-          await addressesHaveTransactions([address]);
-
-      // if there are any transactions or balances for the address, add the address to the account
-      if (addressHasTransactions) {
-        // add the address to the account if transactions are present
-        accountsWithBalances[account] = [address];
-      } else if (i == 0) {
-        // if no transactions are found on the first account, import just the first account + address and break
-        accountsWithBalances[account] = [address];
-        break;
-      } else {
-        // break the loop once an account with no transactions is reached
-        break;
-      }
+      accountsWithBalances[account] = [];
     }
 
     return accountsWithBalances;
@@ -171,8 +145,9 @@ class ImportWalletUseCase {
       _ => throw UnimplementedError(),
     };
 
+    // TODO: don't use account name, just use indices
     Account account = Account(
-        name: 'ACCOUNT 1',
+        name: 'Account 1',
         walletUuid: wallet.uuid,
         purpose: purpose,
         coinType: _getCoinType(),

@@ -167,6 +167,99 @@ class GetAddressesModal extends StatelessWidget {
     );
   }
 }
+class BottomTabNavigation extends StatelessWidget {
+  final TabController controller;
+  const BottomTabNavigation({super.key, required this.controller});
+
+  @override
+  Widget build(BuildContext context) {
+    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
+
+    return Container(
+      width: double.infinity,
+      height: 90,
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      decoration: BoxDecoration(
+        color: Theme.of(context).dialogTheme.backgroundColor,
+        border: Border(
+          top: BorderSide(
+            color: Theme.of(context)
+                    .inputDecorationTheme
+                    .outlineBorder
+                    ?.color ??
+                Colors.black.withOpacity(0.1),
+            width: 1,
+          ),
+        ),
+      ),
+      child: TabBar(
+        controller: controller,
+        indicatorSize: TabBarIndicatorSize.tab,
+        indicatorColor: Colors.transparent,
+        dividerColor: Colors.transparent,
+        overlayColor: WidgetStateProperty.all(Colors.transparent),
+        splashFactory: NoSplash.splashFactory,
+        labelColor: Theme.of(context).textTheme.bodyMedium?.color,
+        unselectedLabelColor: Theme.of(context)
+                .textButtonTheme
+                .style
+                ?.foregroundColor
+                ?.resolve({}) ??
+            Colors.grey,
+        tabs: [
+          _buildTab(context, controller.index == 0, AppIcons.pieChartIcon(context: context), 'Portfolio', isDarkTheme),
+          _buildTab(context, controller.index == 1, AppIcons.settingsIcon(context: context), 'Settings', isDarkTheme),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTab(BuildContext context, bool selected, Widget icon, String label, bool isDarkTheme) {
+    return Container(
+      width: 75,
+      height: 74,
+      decoration: BoxDecoration(
+        color: selected && !isDarkTheme ? offWhite : Colors.transparent,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: selected
+              ? Theme.of(context).inputDecorationTheme.outlineBorder?.color ??
+                  Colors.black.withOpacity(0.1)
+              : Colors.transparent,
+          width: 1,
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            icon,
+            const SizedBox(height: 6),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 12,
+                color: selected
+                    ? Theme.of(context).textTheme.bodyMedium?.color
+                    : Theme.of(context)
+                            .textButtonTheme
+                            .style
+                            ?.foregroundColor
+                            ?.resolve({}) ??
+                        Colors.grey,
+              ),
+              softWrap: false,
+              overflow: TextOverflow.visible,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 
 class AppShell extends StatefulWidget {
   final Widget child;
@@ -340,184 +433,7 @@ class _AppShellState extends State<AppShell> with TickerProviderStateMixin {
                 MediaQuery.of(context).size.width > 500 ? 500 : double.infinity,
           ),
           child: VersionWarningSnackbar(
-            child: Scaffold(
-              backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-              body: widget.child,
-              bottomNavigationBar: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Bottom Navigation Bar - Styled exactly like dashboard_page.dart
-                  Container(
-                    width: double.infinity,
-                    height: 90,
-                    padding: const EdgeInsets.symmetric(vertical: 8),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).dialogTheme.backgroundColor,
-                      border: Border(
-                        top: BorderSide(
-                          color: Theme.of(context)
-                                  .inputDecorationTheme
-                                  .outlineBorder
-                                  ?.color ??
-                              Colors.black.withOpacity(0.1),
-                          width: 1,
-                        ),
-                      ),
-                    ),
-                    child: TabBar(
-                      controller: _bottomTabController,
-                      indicatorSize: TabBarIndicatorSize.tab,
-                      indicatorColor: Colors.transparent,
-                      dividerColor: Colors.transparent,
-                      overlayColor: WidgetStateProperty.all(Colors.transparent),
-                      splashFactory: NoSplash.splashFactory,
-                      labelColor: Theme.of(context).textTheme.bodyMedium?.color,
-                      unselectedLabelColor: Theme.of(context)
-                              .textButtonTheme
-                              .style
-                              ?.foregroundColor
-                              ?.resolve({}) ??
-                          Colors.grey,
-                      tabs: [
-                        Container(
-                          width: 75,
-                          height: 74,
-                          decoration: BoxDecoration(
-                            color:
-                                _bottomTabController.index == 0 && !isDarkTheme
-                                    ? offWhite
-                                    : Colors.transparent,
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              color: _bottomTabController.index == 0
-                                  ? Theme.of(context)
-                                          .inputDecorationTheme
-                                          .outlineBorder
-                                          ?.color ??
-                                      Colors.black.withOpacity(0.1)
-                                  : Colors.transparent,
-                              width: 1,
-                            ),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                                vertical: 8, horizontal: 8),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                AppIcons.pieChartIcon(
-                                  context: context,
-                                  color: _bottomTabController.index == 0
-                                      ? Theme.of(context)
-                                          .textTheme
-                                          .bodyMedium
-                                          ?.color
-                                      : Theme.of(context)
-                                              .textButtonTheme
-                                              .style
-                                              ?.foregroundColor
-                                              ?.resolve({}) ??
-                                          Colors.grey,
-                                ),
-                                const SizedBox(height: 6),
-                                Text(
-                                  'Portfolio',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: _bottomTabController.index == 0
-                                        ? (Theme.of(context)
-                                            .textTheme
-                                            .bodyMedium
-                                            ?.color)
-                                        : (Theme.of(context)
-                                                .textButtonTheme
-                                                .style
-                                                ?.foregroundColor
-                                                ?.resolve({}) ??
-                                            Colors.grey),
-                                  ),
-                                  softWrap: false,
-                                  overflow: TextOverflow.visible,
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        Container(
-                          width: 75,
-                          height: 74,
-                          decoration: BoxDecoration(
-                            color:
-                                _bottomTabController.index == 1 && !isDarkTheme
-                                    ? offWhite
-                                    : Colors.transparent,
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              color: _bottomTabController.index == 1
-                                  ? Theme.of(context)
-                                          .inputDecorationTheme
-                                          .outlineBorder
-                                          ?.color ??
-                                      Colors.black.withOpacity(0.1)
-                                  : Colors.transparent,
-                              width: 1,
-                            ),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                                vertical: 8, horizontal: 8),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                AppIcons.settingsIcon(
-                                  context: context,
-                                  color: _bottomTabController.index == 1
-                                      ? Theme.of(context)
-                                          .textTheme
-                                          .bodyMedium
-                                          ?.color
-                                      : Theme.of(context)
-                                              .textButtonTheme
-                                              .style
-                                              ?.foregroundColor
-                                              ?.resolve({}) ??
-                                          Colors.grey,
-                                ),
-                                const SizedBox(height: 6),
-                                Text(
-                                  'Settings',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: _bottomTabController.index == 1
-                                        ? (Theme.of(context)
-                                            .textTheme
-                                            .bodyMedium
-                                            ?.color)
-                                        : (Theme.of(context)
-                                                .textButtonTheme
-                                                .style
-                                                ?.foregroundColor
-                                                ?.resolve({}) ??
-                                            Colors.grey),
-                                  ),
-                                  softWrap: false,
-                                  overflow: TextOverflow.visible,
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  // Footer
-                  const Footer(),
-                ],
-              ),
-            ),
+            child: widget.child,
           ),
         ),
       ),
