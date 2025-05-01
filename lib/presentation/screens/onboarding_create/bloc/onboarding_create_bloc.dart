@@ -5,6 +5,7 @@ import 'package:horizon/presentation/common/usecase/import_wallet_usecase.dart';
 import 'package:horizon/presentation/screens/onboarding_create/bloc/onboarding_create_event.dart';
 import 'package:horizon/presentation/screens/onboarding_create/bloc/onboarding_create_state.dart';
 import 'package:logger/logger.dart';
+import 'package:horizon/common/constants.dart';
 
 class OnboardingCreateBloc
     extends Bloc<OnboardingCreateEvent, OnboardingCreateState> {
@@ -28,11 +29,16 @@ class OnboardingCreateBloc
           success: (mnemonic) => mnemonic,
           orElse: () => '',
         );
-        await importWalletUseCase.callHorizon(
+        await importWalletUseCase.call(
           mnemonic: mnemonic,
           password: password,
-          deriveWallet: (secret, password) =>
-              walletService.deriveRoot(secret, password),
+          walletType: WalletType.horizon,
+          onError: (error) {
+            // no op
+          },
+          onSuccess: () {
+            // noop
+          },
         );
 
         emit(state.copyWith(createState: const CreateState.success()));

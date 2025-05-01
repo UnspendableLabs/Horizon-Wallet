@@ -5,7 +5,7 @@ import 'package:horizon/common/constants.dart';
 import 'package:horizon/domain/services/mnemonic_service.dart';
 import 'package:horizon/domain/services/wallet_service.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
-import 'package:horizon/presentation/common/usecase/import_wallet_usecase.dart';
+import 'package:horizon/presentation/common/usecase/set_mnemonic_usecase.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 import 'package:horizon/presentation/screens/onboarding/view/onboarding_shell.dart';
 import 'package:horizon/presentation/screens/onboarding/view/password_prompt.dart';
@@ -14,6 +14,7 @@ import 'package:horizon/presentation/screens/onboarding_import/bloc/onboarding_i
 import 'package:horizon/presentation/screens/onboarding_import/bloc/onboarding_import_event.dart';
 import 'package:horizon/presentation/screens/onboarding_import/bloc/onboarding_import_state.dart';
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
+import 'package:horizon/domain/repositories/account_v2_repository.dart';
 
 class OnboardingImportPageWrapper extends StatelessWidget {
   const OnboardingImportPageWrapper({super.key});
@@ -22,8 +23,9 @@ class OnboardingImportPageWrapper extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) => OnboardingImportBloc(
+        accountV2Repository: GetIt.I<AccountV2Repository>(),
         mnemonicService: GetIt.I<MnemonicService>(),
-        importWalletUseCase: GetIt.I<ImportWalletUseCase>(),
+        setMnemonicUseCase: GetIt.I<SetMnemonicUseCase>(),
         walletService: GetIt.I<WalletService>(),
       ),
       child: const OnboardingImportPage(),

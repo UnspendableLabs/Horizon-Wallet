@@ -2,7 +2,8 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:horizon/domain/entities/imported_address.dart';
 
 import 'package:horizon/domain/entities/wallet.dart';
-import 'package:horizon/domain/entities/account.dart';
+// import 'package:horizon/domain/entities/account.dart';
+import 'package:horizon/domain/entities/account_v2.dart';
 import 'package:horizon/domain/entities/address.dart';
 
 part 'session_state.freezed.dart';
@@ -41,15 +42,15 @@ class SessionStateSuccess with _$SessionStateSuccess {
 
   @override
   String toString() {
-    return 'SessionStateSuccess(redirect: $redirect, wallet: $wallet, decryptionKey: <REDACTED>, accounts: $accounts, addresses: $addresses, importedAddresses: $importedAddresses)';
+    return 'SessionStateSuccess(redirect: $redirect, decryptionKey: <REDACTED>, accounts: $accounts, addresses: $addresses, importedAddresses: $importedAddresses)';
   }
 
   const factory SessionStateSuccess({
-    required Account? currentAccount,
+    required AccountV2? currentAccount,
     required bool redirect,
-    required Wallet wallet,
+    // required Wallet wallet,
     required String decryptionKey,
-    required List<Account> accounts,
+    required List<AccountV2> accounts,
     required List<Address> addresses,
     List<ImportedAddress>? importedAddresses,
   }) = _SessionStateSuccess;

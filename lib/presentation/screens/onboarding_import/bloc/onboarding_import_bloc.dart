@@ -1,21 +1,31 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:horizon/common/constants.dart';
+import 'package:horizon/common/uuid.dart';
+
+import 'package:horizon/domain/entities/account_v2.dart';
+
 import 'package:horizon/domain/services/mnemonic_service.dart';
 import 'package:horizon/domain/services/wallet_service.dart';
-import 'package:horizon/presentation/common/usecase/import_wallet_usecase.dart';
+
+import 'package:horizon/domain/repositories/account_v2_repository.dart';
+
+import 'package:horizon/presentation/common/usecase/set_mnemonic_usecase.dart';
 import 'package:horizon/presentation/screens/onboarding_import/bloc/onboarding_import_event.dart';
 import 'package:horizon/presentation/screens/onboarding_import/bloc/onboarding_import_state.dart';
 
 class OnboardingImportBloc
     extends Bloc<OnboardingImportEvent, OnboardingImportState> {
   final MnemonicService mnemonicService;
-  final ImportWalletUseCase importWalletUseCase;
+  final SetMnemonicUseCase _setMnemonicUseCase;
   final WalletService walletService;
-  OnboardingImportBloc({
-    required this.mnemonicService,
-    required this.importWalletUseCase,
-    required this.walletService,
-  }) : super(const OnboardingImportState()) {
+  final AccountV2Repository accountV2Repository;
+  OnboardingImportBloc(
+      {required this.mnemonicService,
+      required this.walletService,
+      required setMnemonicUseCase,
+      required this.accountV2Repository})
+      : _setMnemonicUseCase = setMnemonicUseCase,
+        super(const OnboardingImportState()) {
     on<MnemonicChanged>((event, emit) async {
       if (event.mnemonic.isEmpty) {
         emit(state.copyWith(
@@ -61,7 +71,6 @@ class OnboardingImportBloc
     });
 
     on<MnemonicSubmitted>((event, emit) async {
-      // Validate mnemonic before proceeding
       if (state.mnemonic.isEmpty) {
         emit(state.copyWith(mnemonicError: "Seed phrase is required"));
         return;
@@ -96,25 +105,21 @@ class OnboardingImportBloc
     on<ImportWallet>((event, emit) async {
       emit(state.copyWith(importState: const ImportState.loading()));
 
-      if (state.walletType == null) {
-        emit(state.copyWith(
-            importState: const ImportState.error(
-                message: "invariant: Wallet type is required")));
-        return;
-      }
       final password = event.password;
 
-      await importWalletUseCase.call(
-        password: password,
-        mnemonic: state.mnemonic,
-        walletType: state.walletType!,
-        onError: (msg) {
-          emit(state.copyWith(importState: ImportState.error(message: msg)));
-        },
-        onSuccess: () {
-          emit(state.copyWith(importState: const ImportState.success()));
-        },
-      );
+      try {
+        await _setMnemonicUseCase.call(
+          mnemonic: state.mnemonic,
+          password: password,
+        );
+
+        await accountV2Repository.insert(AccountV2(uuid: uuid.v4(), index: 0));
+
+        emit(state.copyWith(importState: const ImportState.success()));
+      } catch (e) {
+        emit(state.copyWith(
+            importState: ImportState.error(message: e.toString())));
+      }
       return;
     });
 

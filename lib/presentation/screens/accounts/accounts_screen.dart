@@ -25,15 +25,23 @@ class AccountsScreen extends StatelessWidget {
               itemBuilder: (context, index) {
                 final account = accounts[index];
                 final isSelected = account.uuid == currentAccount?.uuid;
-            
+
                 return ListTile(
                   leading: GradientAvatar(
                     input: account.uuid,
+                    radius: 18,
                   ),
-                  title: Text(account.name),
-                  trailing: isSelected
-                      ? const Icon(Icons.check, color: Colors.green)
-                      : null,
+                  title: Text(
+                    account.name,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w500,
+                      fontSize: 14,
+                    ),
+                  ),
+                  subtitle: Text("computed btc balance",
+                      style: TextStyle(
+                        fontSize: 10,
+                      )),
                   onTap: () {
                     // Update session (if changing current account is allowed)
                     Navigator.of(context).pop(); // go back after selecting
@@ -42,19 +50,18 @@ class AccountsScreen extends StatelessWidget {
               },
             ),
           ),
-          Builder(
-            builder: (context) {
-              return Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: HorizonGradientButton(
-                  buttonText: 'New Account',
-                  onPressed: () {
-                    // TODO: Push to create account flow
-                  },
-                ),
-              );
-            }
-          ),
+          Builder(builder: (context) {
+            return Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: HorizonButton(
+                buttonText: "need a value here or else type error",
+                child: Text('New Account'),
+                onPressed: () {
+                  // TODO: Push to create account flow
+                },
+              ),
+            );
+          }),
         ],
       ),
     );

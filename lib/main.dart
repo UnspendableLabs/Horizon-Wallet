@@ -270,18 +270,17 @@ class AppRouter {
                       leading: Padding(
                         padding: const EdgeInsets.only(left: 9.0, top: 18.0),
                         child: AppIcons.iconButton(
-                          context: context,
-                          width: 32,
-                          height: 32,
-                          icon: AppIcons.backArrowIcon(
-                              context: context,
-                              width: 24,
-                              height: 24,
-                              fit: BoxFit.fitHeight),
-                          onPressed: () {
-                            context.go("/dashboard");
-                          }
-                        ),
+                            context: context,
+                            width: 32,
+                            height: 32,
+                            icon: AppIcons.backArrowIcon(
+                                context: context,
+                                width: 24,
+                                height: 24,
+                                fit: BoxFit.fitHeight),
+                            onPressed: () {
+                              context.go("/dashboard");
+                            }),
                       ),
                     ),
                     body: AccountsScreen());
@@ -348,7 +347,7 @@ class AppRouter {
               });
 
               if (data.redirect) {
-                return "/dashboard";
+                return "/accounts";
               }
             },
             // if the session state is not yet loaded, show a loading screen
@@ -856,7 +855,7 @@ class MyApp extends StatelessWidget {
               encryptionService: GetIt.I<EncryptionService>(),
               inMemoryKeyRepository: GetIt.I<InMemoryKeyRepository>(),
               cacheProvider: GetIt.I<CacheProvider>(),
-              walletRepository: GetIt.I<WalletRepository>(),
+              // walletRepository: GetIt.I<WalletRepository>(),
               accountRepository: GetIt.I<AccountRepository>(),
               addressRepository: GetIt.I<AddressRepository>(),
               importedAddressRepository: GetIt.I<ImportedAddressRepository>(),
