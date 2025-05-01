@@ -205,7 +205,9 @@ class OnboardingView extends StatelessWidget {
                                           context.read<SessionStateCubit>();
                                       session.onOnboardingCreate();
                                     },
-                                    buttonText: 'Create a new wallet',
+                                    child: TextButtonContent(
+                                      value: 'Create a new wallet',
+                                    ),
                                   ),
                                 ),
                                 const SizedBox(height: 16),
@@ -219,7 +221,9 @@ class OnboardingView extends StatelessWidget {
                                           .read<SessionStateCubit>();
                                       session.onOnboardingImport();
                                     },
-                                    buttonText: 'Load seed phrase',
+                                    child: TextButtonContent(
+                                      value: 'Load seed phrase',
+                                    ),
                                   ),
                                 ),
                               ],

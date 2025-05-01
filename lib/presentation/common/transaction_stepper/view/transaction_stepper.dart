@@ -274,11 +274,12 @@ class TransactionStepperState<T, R> extends State<TransactionStepper<T, R>> {
                       child: Row(
                         children: [
                           Expanded(
-                              child: HorizonButton(
-                                onPressed: _handleNext,
-                                buttonText: TransactionStepper
-                                    .defaultButtonTexts[_currentStep],
-                              ),
+                            child: HorizonButton(
+                              onPressed: _handleNext,
+                              child: TextButtonContent(
+                                  value: TransactionStepper
+                                      .defaultButtonTexts[_currentStep]),
+                            ),
                           ),
                         ],
                       ),

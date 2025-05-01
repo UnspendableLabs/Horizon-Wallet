@@ -134,7 +134,7 @@ class SeedInputState extends State<SeedInput> {
           child: TextButton(
             style: Theme.of(context).textButtonTheme.style?.copyWith(
                   backgroundColor: WidgetStateProperty.all(
-                    transparentPurple8,
+                    transparentPurple4,
                   ),
                   padding: WidgetStateProperty.all(
                     const EdgeInsets.symmetric(horizontal: 10, vertical: 12),

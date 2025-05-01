@@ -319,7 +319,6 @@ class ShowMnemonicStep extends StatelessWidget {
                       config.network == Network.testnet)
                     HorizonButton(
                       width: 150,
-                      buttonText: '',
                       onPressed: () {
                         Clipboard.setData(ClipboardData(text: mnemonic));
                         ScaffoldMessenger.of(context).showSnackBar(
@@ -329,15 +328,8 @@ class ShowMnemonicStep extends StatelessWidget {
                           ),
                         );
                       },  
-                      child: const Row(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        spacing: 2,
-                        children: [
-                          Icon(Icons.copy),
-                          Text('Copy'),
-                        ],
-                      ),
+                      child: TextButtonContent(value: "Copy"),
+                      icon: const Icon(Icons.copy),
                     ),
                       
                 ],
