@@ -569,7 +569,7 @@ class _HorizonRedesignDropdownState<T>
             height: double.infinity,
             color: Colors.transparent,
             child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+              filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
               child: Container(
                 color: transparentBlack33,
                 child: Column(
@@ -606,15 +606,12 @@ class _HorizonRedesignDropdownState<T>
                                       horizontal: 12,
                                       vertical: 21,
                                     ),
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        DefaultTextStyle(
-                                          style: theme.dropdownMenuTheme.textStyle!,
-                                          child: item.child,
-                                        ),
-                                      ],
+                                    child: SizedBox(
+                                      width: double.infinity,
+                                      child: DefaultTextStyle(
+                                        style: theme.dropdownMenuTheme.textStyle!,
+                                        child: item.child,
+                                      ),
                                     ),
                                   ),
                                 ),
