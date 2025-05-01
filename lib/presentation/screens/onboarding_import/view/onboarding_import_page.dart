@@ -215,12 +215,14 @@ class _ChooseFormatStepState extends State<ChooseFormatStep> {
                     DropdownMenuItem(
                       value: WalletType.horizon.name,
                       child: Text(WalletType.horizon.description,
-                          style: Theme.of(context).textTheme.bodySmall),
+                          style: Theme.of(context).textTheme.bodySmall,
+                          textAlign: TextAlign.left),
                     ),
                     DropdownMenuItem(
                       value: WalletType.bip32.name,
                       child: Text(WalletType.bip32.description,
-                          style: Theme.of(context).textTheme.bodySmall),
+                          style: Theme.of(context).textTheme.bodySmall,
+                          textAlign: TextAlign.left),
                     ),
                   ],
                 ),

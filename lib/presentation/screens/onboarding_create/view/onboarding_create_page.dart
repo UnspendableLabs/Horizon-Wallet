@@ -13,6 +13,7 @@ import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/common/theme_extension.dart';
 import 'package:horizon/presentation/common/usecase/import_wallet_usecase.dart';
 import 'package:horizon/presentation/common/widgets/numbered_grid.dart';
+import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 import 'package:horizon/presentation/screens/onboarding/view/onboarding_shell.dart';
 import 'package:horizon/presentation/screens/onboarding/view/password_prompt.dart';
 import 'package:horizon/presentation/screens/onboarding/view/seed_input.dart';
@@ -316,11 +317,9 @@ class ShowMnemonicStep extends StatelessWidget {
                   const SizedBox(height: 16),
                   if (config.network == Network.testnet4 ||
                       config.network == Network.testnet)
-                    ElevatedButton.icon(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: green2,
-                        foregroundColor: Colors.black,
-                      ),
+                    HorizonButton(
+                      width: 150,
+                      buttonText: '',
                       onPressed: () {
                         Clipboard.setData(ClipboardData(text: mnemonic));
                         ScaffoldMessenger.of(context).showSnackBar(
@@ -329,10 +328,18 @@ class ShowMnemonicStep extends StatelessWidget {
                             duration: Duration(seconds: 2),
                           ),
                         );
-                      },
-                      icon: const Icon(Icons.copy),
-                      label: const Text('COPY'),
+                      },  
+                      child: const Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        spacing: 2,
+                        children: [
+                          Icon(Icons.copy),
+                          Text('Copy'),
+                        ],
+                      ),
                     ),
+                      
                 ],
               ),
               const SizedBox(height: 16),

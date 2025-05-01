@@ -170,7 +170,7 @@ class _SecurityViewState extends State<SecurityView> {
                 items: _timeoutOptions.entries
                     .map((entry) => DropdownMenuItem<int>(
                           value: entry.key,
-                          child: Text(entry.value),
+                          child: Text(entry.value, textAlign: TextAlign.center),
                         ))
                     .toList(),
                 onChanged: _onTimeoutChanged,
