@@ -115,9 +115,11 @@ class _OnboardingShellState extends State<OnboardingShell> {
                         child: HorizonButton(
                           disabled: !widget.nextButtonEnabled,
                           onPressed: _handleStepContinue,
-                          buttonText: _currentStep == widget.steps.length - 1
-                              ? widget.nextButtonText
-                              : 'Continue',
+                          child: TextButtonContent(
+                            value: _currentStep == widget.steps.length - 1
+                                ? widget.nextButtonText
+                                : 'Continue',
+                          ),
                         ),
                       ),
                     ),

@@ -66,25 +66,36 @@ class GradientContainer extends StatelessWidget {
   }
 }
 
+sealed class ButtonContent {}
+
+class TextButtonContent extends ButtonContent {
+  String value;
+  TextButtonContent({required this.value});
+}
+
+class WidgetButtonContent extends ButtonContent {
+  Widget value;
+  WidgetButtonContent({required this.value});
+}
+
+
 class HorizonButton extends StatefulWidget {
-  final String buttonText;
   final VoidCallback? onPressed;
   final ButtonVariant variant;
   final double? width;
   final double? height;
   final bool disabled;
-  final Widget? child;
+  final ButtonContent child;
   final Icon? icon;
 
   const HorizonButton({
     super.key,
-    required this.buttonText,
     required this.onPressed,
+    required this.child,
     this.width = double.infinity,
     this.height = defaultButtonHeight,
     this.variant = ButtonVariant.green,
     this.disabled = false,
-    this.child,
     this.icon,
   });
 
@@ -197,7 +208,11 @@ class _HorizonButtonState extends State<HorizonButton> {
                   widget.icon!,
                   const SizedBox(width: 4),
                 ],
-                widget.child ?? Text(widget.buttonText, style: textStyle)
+                // widget.child ?? Text(widget.buttonText, style: textStyle)
+                if(widget.child is TextButtonContent)
+                  Text((widget.child as TextButtonContent).value, style: textStyle)
+                else if (widget.child is WidgetButtonContent)
+                  (widget.child as WidgetButtonContent).value
               ],
             ),
           ),
@@ -226,7 +241,10 @@ class _HorizonButtonState extends State<HorizonButton> {
                 widget.icon!,
                 const SizedBox(width: 4),
               ],
-              widget.child ?? Text(widget.buttonText, style: textStyle)
+              if (widget.child is TextButtonContent)
+                Text((widget.child as TextButtonContent).value, style: textStyle)
+              else if (widget.child is WidgetButtonContent)
+                (widget.child as WidgetButtonContent).value
             ],
           ),
         ),
