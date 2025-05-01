@@ -40,6 +40,7 @@ import 'package:horizon/data/sources/repositories/imported_address_repository_im
 import 'package:horizon/data/sources/repositories/node_info_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/utxo_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/wallet_repository_impl.dart';
+import 'package:horizon/data/sources/repositories/wallet_repository_dummy.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/account_settings_repository.dart';
 import 'package:horizon/domain/repositories/address_tx_repository.dart';
@@ -109,6 +110,7 @@ import 'package:horizon/data/sources/repositories/unified_address_repository_imp
 import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/data/services/analytics_service_impl.dart';
 import 'package:horizon/presentation/common/usecase/import_wallet_usecase.dart';
+import 'package:horizon/presentation/common/usecase/set_mnemonic_usecase.dart';
 import 'package:horizon/presentation/common/usecase/sign_chained_transaction_usecase.dart';
 import 'package:horizon/presentation/screens/close_dispenser/usecase/fetch_form_data.dart';
 
@@ -126,6 +128,7 @@ import 'package:horizon/presentation/screens/compose_dividend/usecase/fetch_form
 import 'package:horizon/presentation/screens/compose_fairmint/usecase/fetch_form_data.dart';
 import 'package:horizon/presentation/screens/compose_fairminter/usecase/fetch_form_data.dart';
 import 'package:horizon/presentation/screens/compose_issuance/usecase/fetch_form_data.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import 'package:logger/logger.dart' as logger;
 import 'package:horizon/core/logging/logger.dart';
@@ -142,6 +145,13 @@ import 'package:horizon/data/services/error_service_impl.dart';
 
 import 'package:horizon/domain/repositories/settings_repository.dart';
 import 'package:horizon/data/sources/repositories/settings_repository_impl.dart';
+
+import 'package:horizon/domain/repositories/mnemonic_repository.dart';
+import 'package:horizon/data/sources/repositories/mnemonic_repository_impl.dart';
+
+
+import 'package:horizon/domain/repositories/account_v2_repository.dart';
+import 'package:horizon/data/sources/repositories/account_repository_v2_impl.dart';
 
 void setup() {
   GetIt injector = GetIt.I;
@@ -370,17 +380,24 @@ void setup() {
 
   injector.registerSingleton<AccountRepository>(
       AccountRepositoryImpl(injector.get<DatabaseManager>().database));
-  injector.registerSingleton<WalletRepository>(
-      WalletRepositoryImpl(injector.get<DatabaseManager>().database));
+  
+  injector.registerSingleton<AccountV2Repository>(
+      AccountV2RepositoryImpl(injector.get<DatabaseManager>().database));
 
-  injector.registerSingleton<SecureKVService>(SecureKVServiceImpl());
+  injector.registerSingleton<WalletRepository>(
+      WalletRepositoryDummy(injector.get<DatabaseManager>().database));
+
+  injector.registerSingleton<SecureKVService>(
+      SecureKVServiceImpl(FlutterSecureStorage()));
+
+  injector.registerSingleton<MnemonicRepository>(
+      MnemonicRepositoryImpl(secureKVService: GetIt.I<SecureKVService>()));
 
   injector.registerSingleton<InMemoryKeyRepository>(InMemoryKeyRepositoryImpl(
     secureKVService: GetIt.I.get<SecureKVService>(),
   ));
 
-  injector.registerSingleton<AddressRepository>(
-      AddressRepositoryInMemory());
+  injector.registerSingleton<AddressRepository>(AddressRepositoryInMemory());
   injector.registerSingleton<ImportedAddressRepository>(
       ImportedAddressRepositoryImpl(injector.get<DatabaseManager>().database));
 
@@ -497,8 +514,6 @@ void setup() {
           getFeeEstimatesUseCase: GetIt.I.get<GetFeeEstimatesUseCase>(),
           estimateXcpFeeRepository: GetIt.I.get<EstimateXcpFeeRepository>(),
           balanceRepository: injector.get<BalanceRepository>()));
-
-
 
   injector.registerSingleton<SignAndBroadcastTransactionUseCase>(
       SignAndBroadcastTransactionUseCase(
@@ -635,6 +650,11 @@ void setup() {
   }
 
   injector.registerSingleton<SettingsRepository>(SettingsRepositoryImpl());
+
+  injector.registerSingleton<SetMnemonicUseCase>(SetMnemonicUseCase(
+     encryptionService: GetIt.I<EncryptionService>(),
+      inMemoryKeyRepository: GetIt.I<InMemoryKeyRepository>(),
+      mnemonicRepository: GetIt.I<MnemonicRepository>()));
 }
 
 class CustomDioException extends DioException {

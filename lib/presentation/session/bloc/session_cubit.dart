@@ -1,12 +1,15 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:collection/collection.dart';
-import 'package:horizon/domain/entities/account.dart';
+// import 'package:horizon/domain/entities/account.dart';
+import 'package:horizon/domain/entities/account_v2.dart';
 import 'package:horizon/domain/entities/imported_address.dart';
-import 'package:horizon/domain/entities/wallet.dart';
+// import 'package:horizon/domain/entities/wallet.dart';
 import 'package:horizon/domain/entities/address.dart';
-import 'package:horizon/domain/repositories/account_repository.dart';
+// import 'package:horizon/domain/repositories/account_repository.dart';
+import 'package:horizon/domain/repositories/account_v2_repository.dart';
+import 'package:horizon/domain/repositories/mnemonic_repository.dart';
 import 'package:horizon/domain/repositories/imported_address_repository.dart';
-import 'package:horizon/domain/repositories/wallet_repository.dart';
+// import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
@@ -14,16 +17,17 @@ import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 import 'package:horizon/domain/services/secure_kv_service.dart';
 import 'package:horizon/common/constants.dart';
+import 'package:get_it/get_it.dart';
+import 'package:horizon/extensions.dart';
 
 import './session_state.dart';
 
 sealed class GetSessionStateResponse {}
 
 class LoggedIn extends GetSessionStateResponse {
-  Wallet wallet;
   String decryptionKey;
 
-  LoggedIn({required this.wallet, required this.decryptionKey});
+  LoggedIn({required this.decryptionKey});
 }
 
 class LoggedOut extends GetSessionStateResponse {}
@@ -32,39 +36,43 @@ class NoWallet extends GetSessionStateResponse {}
 
 class SessionStateCubit extends Cubit<SessionState> {
   CacheProvider cacheProvider;
-  WalletRepository walletRepository;
-  AccountRepository accountRepository;
+  // WalletRepository walletRepository;
+  // AccountRepository accountRepository;
+  AccountV2Repository accountV2Repository;
   AddressRepository addressRepository;
   ImportedAddressRepository importedAddressRepository;
   AnalyticsService analyticsService;
   InMemoryKeyRepository inMemoryKeyRepository;
   final EncryptionService encryptionService;
   final SecureKVService kvService;
+  final MnemonicRepository _mnemonicRepository;
 
-  SessionStateCubit(
-      {required this.kvService,
-      required this.cacheProvider,
-      required this.walletRepository,
-      required this.accountRepository,
-      required this.addressRepository,
-      required this.importedAddressRepository,
-      required this.analyticsService,
-      required this.inMemoryKeyRepository,
-      required this.encryptionService})
-      : super(const SessionState.initial());
+  SessionStateCubit({
+    required this.kvService,
+    required this.cacheProvider,
+    // required this.walletRepository,
+    // required this.accountRepository,
+    required this.accountV2Repository,
+    required this.addressRepository,
+    required this.importedAddressRepository,
+    required this.analyticsService,
+    required this.inMemoryKeyRepository,
+    required this.encryptionService,
+    mnemonicRepository,
+  })  : _mnemonicRepository =
+            mnemonicRepository ?? GetIt.I<MnemonicRepository>(),
+        super(const SessionState.initial());
 
   Future<GetSessionStateResponse> _getSessionState() async {
-    print("gert session state");
+    final mnemonic = await _mnemonicRepository.get();
 
-    Wallet? wallet = await walletRepository.getCurrentWallet();
-
-    if (wallet == null) {
+    if (mnemonic.isNone()) {
       return NoWallet();
     }
 
-    final decryptionKey = await inMemoryKeyRepository.get();
+    final mnemonicKey = await inMemoryKeyRepository.getMnemonicKey();
 
-    if (decryptionKey == null) {
+    if (mnemonicKey == null) {
       return LoggedOut();
     }
 
@@ -86,9 +94,9 @@ class SessionStateCubit extends Cubit<SessionState> {
     }
 
     try {
-      encryptionService.decryptWithKey(wallet.encryptedPrivKey, decryptionKey);
+      encryptionService.decryptWithKey(mnemonic.getOrThrow(), mnemonicKey);
 
-      return LoggedIn(wallet: wallet, decryptionKey: decryptionKey);
+      return LoggedIn(decryptionKey: mnemonicKey);
     } catch (e) {
       return LoggedOut();
     }
@@ -107,12 +115,13 @@ class SessionStateCubit extends Cubit<SessionState> {
         case LoggedOut():
           emit(const SessionState.loggedOut());
           return;
-        case LoggedIn(wallet: var wallet, decryptionKey: var decryptionKey):
-          analyticsService.trackAnonymousEvent('wallet_opened',
-              properties: {'distinct_id': wallet.uuid});
+        case LoggedIn(decryptionKey: var decryptionKey):
 
-          List<Account> accounts =
-              await accountRepository.getAccountsByWalletUuid(wallet.uuid);
+          // TODO: we may need to handle to restore something here
+          // analyticsService.trackAnonymousEvent('wallet_opened',
+          //     properties: {'distinct_id': wallet.uuid});
+
+          List<AccountV2> accounts = await accountV2Repository.getAll();
 
           if (accounts.isEmpty) {
             throw Exception("invariant: no accounts for this wallet");
@@ -121,7 +130,7 @@ class SessionStateCubit extends Cubit<SessionState> {
           String? currentAccountUuid =
               cacheProvider.getString("current-account-uuid");
 
-          Account currentAccount = accounts.firstWhereOrNull(
+          AccountV2 currentAccount = accounts.firstWhereOrNull(
                 (account) => account.uuid == currentAccountUuid,
               ) ??
               accounts.first;
@@ -138,7 +147,7 @@ class SessionStateCubit extends Cubit<SessionState> {
 
           emit(SessionState.success(SessionStateSuccess(
             redirect: true,
-            wallet: wallet,
+            // wallet: wallet,
             decryptionKey: decryptionKey,
             accounts: accounts,
             addresses: addresses,
@@ -166,7 +175,7 @@ class SessionStateCubit extends Cubit<SessionState> {
     emit(state_);
   }
 
-  void onAccountChanged(Account account) async {
+  void onAccountChanged(AccountV2 account) async {
     List<Address> addresses =
         await addressRepository.getAllByAccountUuid(account.uuid);
 
@@ -213,15 +222,13 @@ class SessionStateCubit extends Cubit<SessionState> {
   void refresh() async {
     // this seems to be called when you create a new account
     try {
-      Wallet? wallet = await walletRepository.getCurrentWallet();
-
-      if (wallet == null) {
+      final mnemonic = await _mnemonicRepository.get();
+      if (mnemonic.isNone()) {
         emit(const SessionState.onboarding(Onboarding.initial()));
         return;
       }
 
-      List<Account> accounts =
-          await accountRepository.getAccountsByWalletUuid(wallet.uuid);
+      List<AccountV2> accounts = await accountV2Repository.getAll();
 
       if (accounts.isEmpty) {
         throw Exception("invariant: no accounts for this wallet");
@@ -240,7 +247,7 @@ class SessionStateCubit extends Cubit<SessionState> {
 
       emit(SessionState.success(success.copyWith(
         redirect: true,
-        wallet: wallet,
+        // wallet: wallet,
         accounts: accounts,
         addresses: addresses,
         importedAddresses: importedAddresses,
