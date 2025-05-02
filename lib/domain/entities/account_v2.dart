@@ -6,6 +6,5 @@ class AccountV2 {
     required this.index,
   });
 
-
-  String get name  => "account $index";
+  String get name => "account ${index + 1}";
 }

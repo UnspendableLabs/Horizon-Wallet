@@ -125,6 +125,9 @@ class SessionStateCubit extends Cubit<SessionState> {
 
           List<AccountV2> accounts = await _accountV2Repository.getAll();
 
+          print("accounts");
+          print(accounts);
+
           if (accounts.isEmpty) {
             throw Exception("invariant: no accounts for this wallet");
           }
