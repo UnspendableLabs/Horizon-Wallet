@@ -1277,9 +1277,11 @@ class _HorizonTextFieldState extends State<HorizonTextField> {
               ),
             ),
             if (hasError || widget.errorText != null) ...[
-              Padding(
+              Container(
+                width: double.infinity,
                 padding: const EdgeInsets.only(left: 16, top: 4),
                 child: Text(
+                  textAlign: TextAlign.center,
                   field.errorText ?? widget.errorText ?? '',
                   style: TextStyle(
                     color: customTheme.errorColor,

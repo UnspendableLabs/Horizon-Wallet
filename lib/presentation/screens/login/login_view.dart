@@ -7,6 +7,7 @@ import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 import 'package:horizon/domain/services/imported_address_service.dart';
 import 'package:horizon/domain/repositories/imported_address_repository.dart';
+import 'package:horizon/presentation/common/theme_toggle.dart';
 
 import "./login_form/login_form_view.dart";
 import "./login_form/login_form_bloc.dart";
@@ -16,35 +17,34 @@ class LoginView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider<LoginFormBloc>(
-        create: (context) => LoginFormBloc(
-              importedAddressRepository: GetIt.I<ImportedAddressRepository>(),
-              importedAddressService: GetIt.I<ImportedAddressService>(),
-              walletRepository: GetIt.I<WalletRepository>(),
-              encryptionService: GetIt.I<EncryptionService>(),
-              inMemoryKeyRepository: GetIt.I<InMemoryKeyRepository>(),
-            ),
-        child: Scaffold(
-            body: Center(
-          child: SizedBox(
-            height: 600,
-            width: 400,
-            child: Container(
-                decoration: BoxDecoration(
-                  border: Border.all(
-                    color: Theme.of(context)
-                            .inputDecorationTheme
-                            .border
-                            ?.borderSide
-                            .color ??
-                        Colors.transparent,
+      create: (context) => LoginFormBloc(
+        importedAddressRepository: GetIt.I<ImportedAddressRepository>(),
+        importedAddressService: GetIt.I<ImportedAddressService>(),
+        walletRepository: GetIt.I<WalletRepository>(),
+        encryptionService: GetIt.I<EncryptionService>(),
+        inMemoryKeyRepository: GetIt.I<InMemoryKeyRepository>(),
+      ),
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 500),
+          child: Scaffold(
+            backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+            body: Container(
+              padding: const EdgeInsets.all(16),
+              height: MediaQuery.of(context).size.height,
+              child: const Stack(
+                children: [
+                  Align(
+                    alignment: Alignment.topCenter,
+                    child: HorizonThemeToggle(),
                   ),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: const Padding(
-                  padding: EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 8.0),
-                  child: LoginForm(),
-                )),
+                  Align(alignment: Alignment.center, child: LoginForm()),
+                ],
+              )
+            ),
           ),
-        )));
+        ),
+      ),
+    );
   }
 }
