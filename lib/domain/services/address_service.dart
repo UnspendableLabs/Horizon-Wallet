@@ -4,6 +4,15 @@ import 'package:horizon/domain/entities/address.dart';
 enum AddressType { bech32, legacy }
 
 abstract class AddressService {
+
+
+  
+  Future<String> deriveAddressWIP({
+    required mnemonic,
+    required path,
+  });
+  
+
   Future<Address> deriveAddressSegwit(
       {required String privKey,
       required String chainCodeHex,

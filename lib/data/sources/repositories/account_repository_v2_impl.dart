@@ -4,6 +4,7 @@ import "package:horizon/data/sources/local/dao/accounts_v2_dao.dart";
 import "package:horizon/data/sources/local/db.dart" as local;
 import "package:horizon/domain/entities/account_v2.dart";
 import "package:horizon/domain/repositories/account_v2_repository.dart";
+import "package:fpdart/fpdart.dart";
 
 class AccountV2RepositoryImpl implements AccountV2Repository {
   // ignore: unused_field
@@ -11,6 +12,12 @@ class AccountV2RepositoryImpl implements AccountV2Repository {
   final AccountsV2Dao _accountDao;
 
   AccountV2RepositoryImpl(this._db) : _accountDao = AccountsV2Dao(_db);
+
+  @override
+  Future<Option<AccountV2>> getByID(String id) async {
+    return Option.fromNullable(await _accountDao.getByUuid(id))
+        .map((account) => AccountV2(uuid: account.uuid, index: account.index));
+  }
 
   @override
   Future<List<AccountV2>> getAll() async {

@@ -22,8 +22,6 @@ import 'package:horizon/presentation/session/bloc/session_state.dart';
 import 'package:horizon/utils/app_icons.dart';
 import 'package:horizon/presentation/common/gradient_avatar.dart';
 
-
-
 class PortfolioView extends StatefulWidget {
   const PortfolioView({super.key});
 

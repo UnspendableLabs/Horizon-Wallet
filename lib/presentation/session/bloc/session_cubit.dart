@@ -38,7 +38,7 @@ class SessionStateCubit extends Cubit<SessionState> {
   CacheProvider cacheProvider;
   // WalletRepository walletRepository;
   // AccountRepository accountRepository;
-  AccountV2Repository accountV2Repository;
+  AccountV2Repository _accountV2Repository;
   AddressRepository addressRepository;
   ImportedAddressRepository importedAddressRepository;
   AnalyticsService analyticsService;
@@ -52,14 +52,16 @@ class SessionStateCubit extends Cubit<SessionState> {
     required this.cacheProvider,
     // required this.walletRepository,
     // required this.accountRepository,
-    required this.accountV2Repository,
+    AccountV2Repository? accountV2Repository,
     required this.addressRepository,
     required this.importedAddressRepository,
     required this.analyticsService,
     required this.inMemoryKeyRepository,
     required this.encryptionService,
     mnemonicRepository,
-  })  : _mnemonicRepository =
+  })  : _accountV2Repository =
+            accountV2Repository ?? GetIt.I<AccountV2Repository>(),
+        _mnemonicRepository =
             mnemonicRepository ?? GetIt.I<MnemonicRepository>(),
         super(const SessionState.initial());
 
@@ -121,7 +123,7 @@ class SessionStateCubit extends Cubit<SessionState> {
           // analyticsService.trackAnonymousEvent('wallet_opened',
           //     properties: {'distinct_id': wallet.uuid});
 
-          List<AccountV2> accounts = await accountV2Repository.getAll();
+          List<AccountV2> accounts = await _accountV2Repository.getAll();
 
           if (accounts.isEmpty) {
             throw Exception("invariant: no accounts for this wallet");
@@ -228,7 +230,7 @@ class SessionStateCubit extends Cubit<SessionState> {
         return;
       }
 
-      List<AccountV2> accounts = await accountV2Repository.getAll();
+      List<AccountV2> accounts = await _accountV2Repository.getAll();
 
       if (accounts.isEmpty) {
         throw Exception("invariant: no accounts for this wallet");

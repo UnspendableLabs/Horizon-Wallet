@@ -14,4 +14,8 @@ class AccountsV2Dao extends DatabaseAccessor<DB> with _$AccountsV2DaoMixin {
       into(accountsV2).insert(account);
 
   Future<void> deleteAll() => delete(accountsV2).go();
+
+  Future<AccountsV2Data?> getByUuid(String uuid) =>
+      (select(accountsV2)..where((tbl) => tbl.uuid.equals(uuid)))
+          .getSingleOrNull();
 }

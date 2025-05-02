@@ -856,7 +856,7 @@ class MyApp extends StatelessWidget {
               inMemoryKeyRepository: GetIt.I<InMemoryKeyRepository>(),
               cacheProvider: GetIt.I<CacheProvider>(),
               // walletRepository: GetIt.I<WalletRepository>(),
-              accountRepository: GetIt.I<AccountRepository>(),
+              // accountRepository: GetIt.I<AccountRepository>(),
               addressRepository: GetIt.I<AddressRepository>(),
               importedAddressRepository: GetIt.I<ImportedAddressRepository>(),
               analyticsService: GetIt.I<AnalyticsService>())
