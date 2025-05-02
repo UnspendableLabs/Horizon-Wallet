@@ -69,7 +69,18 @@ class AddressRepositoryInMemory implements AddressRepository {
 
     // should maybe be a declarative configuration?????
 
-    final paths = ["m/84'/0'/${account.index}'/0/0"];
+    final paths = [
+      "m/84'/0'/${account.index}'/0/0",
+      "m/84'/0'/${account.index}'/0/1",
+      "m/84'/0'/${account.index}'/0/2",
+      "m/84'/0'/${account.index}'/0/3",
+      "m/84'/0'/${account.index}'/0/4",
+      "m/84'/0'/${account.index}'/0/5",
+      "m/84'/0'/${account.index}'/0/6",
+      "m/84'/0'/${account.index}'/0/7",
+      "m/84'/0'/${account.index}'/0/8",
+      "m/84'/0'/${account.index}'/0/9",
+    ];
 
     // for now, we can just reuse Address but i'm not sure we even
     // want to write accounts to the DB, in fact, i think it is more likely that we
@@ -81,8 +92,16 @@ class AddressRepositoryInMemory implements AddressRepository {
 
     List<Address> addresses = [];
     for (final path in paths) {
+      print("we are deriving");
+
+      final start = DateTime.now();
+
       String address_ = await _addressService.deriveAddressWIP(
           path: path, mnemonic: mnemonic);
+
+      final duration = DateTime.now().difference(start);
+
+      print("we are done deriving: ${duration.inMilliseconds} ms");
 
       Address address = Address(
         address: address_,

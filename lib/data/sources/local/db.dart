@@ -6,6 +6,7 @@ import 'package:horizon/data/sources/local/tables/accounts_v2_table.dart';
 import 'package:horizon/data/sources/local/tables/addresses_table.dart';
 import 'package:horizon/data/sources/local/tables/imported_addresses_table.dart';
 import "package:horizon/data/sources/local/tables/wallets_table.dart";
+import "package:horizon/data/sources/local/tables/wallet_configs_table.dart";
 import "package:horizon/data/sources/local/tables/transactions_table.dart";
 import 'schema_versions.dart';
 
@@ -18,7 +19,7 @@ part "db.g.dart";
 const ENV = "dev";
 
 @DriftDatabase(
-    tables: [Wallets, Accounts, Addresses, Transactions, ImportedAddresses, AccountsV2])
+    tables: [Wallets, Accounts, Addresses, Transactions, ImportedAddresses, AccountsV2, WalletConfigs])
 class DB extends _$DB {
   DB(super.e);
 

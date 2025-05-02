@@ -1889,6 +1889,276 @@ class AccountsV2Companion extends UpdateCompanion<AccountsV2Data> {
   }
 }
 
+class $WalletConfigsTable extends WalletConfigs
+    with TableInfo<$WalletConfigsTable, WalletConfig> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $WalletConfigsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _networkMeta =
+      const VerificationMeta('network');
+  @override
+  late final GeneratedColumn<String> network = GeneratedColumn<String>(
+      'network', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _basePathMeta =
+      const VerificationMeta('basePath');
+  @override
+  late final GeneratedColumn<String> basePath = GeneratedColumn<String>(
+      'base_path', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _accountIndexStartMeta =
+      const VerificationMeta('accountIndexStart');
+  @override
+  late final GeneratedColumn<int> accountIndexStart = GeneratedColumn<int>(
+      'account_index_start', aliasedName, false,
+      type: DriftSqlType.int, requiredDuringInsert: true);
+  static const VerificationMeta _accountIndexEndMeta =
+      const VerificationMeta('accountIndexEnd');
+  @override
+  late final GeneratedColumn<int> accountIndexEnd = GeneratedColumn<int>(
+      'account_index_end', aliasedName, false,
+      type: DriftSqlType.int, requiredDuringInsert: true);
+  @override
+  List<GeneratedColumn> get $columns =>
+      [network, basePath, accountIndexStart, accountIndexEnd];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'wallet_configs';
+  @override
+  VerificationContext validateIntegrity(Insertable<WalletConfig> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('network')) {
+      context.handle(_networkMeta,
+          network.isAcceptableOrUnknown(data['network']!, _networkMeta));
+    } else if (isInserting) {
+      context.missing(_networkMeta);
+    }
+    if (data.containsKey('base_path')) {
+      context.handle(_basePathMeta,
+          basePath.isAcceptableOrUnknown(data['base_path']!, _basePathMeta));
+    } else if (isInserting) {
+      context.missing(_basePathMeta);
+    }
+    if (data.containsKey('account_index_start')) {
+      context.handle(
+          _accountIndexStartMeta,
+          accountIndexStart.isAcceptableOrUnknown(
+              data['account_index_start']!, _accountIndexStartMeta));
+    } else if (isInserting) {
+      context.missing(_accountIndexStartMeta);
+    }
+    if (data.containsKey('account_index_end')) {
+      context.handle(
+          _accountIndexEndMeta,
+          accountIndexEnd.isAcceptableOrUnknown(
+              data['account_index_end']!, _accountIndexEndMeta));
+    } else if (isInserting) {
+      context.missing(_accountIndexEndMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {network, basePath};
+  @override
+  WalletConfig map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return WalletConfig(
+      network: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}network'])!,
+      basePath: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}base_path'])!,
+      accountIndexStart: attachedDatabase.typeMapping.read(
+          DriftSqlType.int, data['${effectivePrefix}account_index_start'])!,
+      accountIndexEnd: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}account_index_end'])!,
+    );
+  }
+
+  @override
+  $WalletConfigsTable createAlias(String alias) {
+    return $WalletConfigsTable(attachedDatabase, alias);
+  }
+}
+
+class WalletConfig extends DataClass implements Insertable<WalletConfig> {
+  final String network;
+  final String basePath;
+  final int accountIndexStart;
+  final int accountIndexEnd;
+  const WalletConfig(
+      {required this.network,
+      required this.basePath,
+      required this.accountIndexStart,
+      required this.accountIndexEnd});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['network'] = Variable<String>(network);
+    map['base_path'] = Variable<String>(basePath);
+    map['account_index_start'] = Variable<int>(accountIndexStart);
+    map['account_index_end'] = Variable<int>(accountIndexEnd);
+    return map;
+  }
+
+  WalletConfigsCompanion toCompanion(bool nullToAbsent) {
+    return WalletConfigsCompanion(
+      network: Value(network),
+      basePath: Value(basePath),
+      accountIndexStart: Value(accountIndexStart),
+      accountIndexEnd: Value(accountIndexEnd),
+    );
+  }
+
+  factory WalletConfig.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return WalletConfig(
+      network: serializer.fromJson<String>(json['network']),
+      basePath: serializer.fromJson<String>(json['basePath']),
+      accountIndexStart: serializer.fromJson<int>(json['accountIndexStart']),
+      accountIndexEnd: serializer.fromJson<int>(json['accountIndexEnd']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'network': serializer.toJson<String>(network),
+      'basePath': serializer.toJson<String>(basePath),
+      'accountIndexStart': serializer.toJson<int>(accountIndexStart),
+      'accountIndexEnd': serializer.toJson<int>(accountIndexEnd),
+    };
+  }
+
+  WalletConfig copyWith(
+          {String? network,
+          String? basePath,
+          int? accountIndexStart,
+          int? accountIndexEnd}) =>
+      WalletConfig(
+        network: network ?? this.network,
+        basePath: basePath ?? this.basePath,
+        accountIndexStart: accountIndexStart ?? this.accountIndexStart,
+        accountIndexEnd: accountIndexEnd ?? this.accountIndexEnd,
+      );
+  @override
+  String toString() {
+    return (StringBuffer('WalletConfig(')
+          ..write('network: $network, ')
+          ..write('basePath: $basePath, ')
+          ..write('accountIndexStart: $accountIndexStart, ')
+          ..write('accountIndexEnd: $accountIndexEnd')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(network, basePath, accountIndexStart, accountIndexEnd);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is WalletConfig &&
+          other.network == this.network &&
+          other.basePath == this.basePath &&
+          other.accountIndexStart == this.accountIndexStart &&
+          other.accountIndexEnd == this.accountIndexEnd);
+}
+
+class WalletConfigsCompanion extends UpdateCompanion<WalletConfig> {
+  final Value<String> network;
+  final Value<String> basePath;
+  final Value<int> accountIndexStart;
+  final Value<int> accountIndexEnd;
+  final Value<int> rowid;
+  const WalletConfigsCompanion({
+    this.network = const Value.absent(),
+    this.basePath = const Value.absent(),
+    this.accountIndexStart = const Value.absent(),
+    this.accountIndexEnd = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  WalletConfigsCompanion.insert({
+    required String network,
+    required String basePath,
+    required int accountIndexStart,
+    required int accountIndexEnd,
+    this.rowid = const Value.absent(),
+  })  : network = Value(network),
+        basePath = Value(basePath),
+        accountIndexStart = Value(accountIndexStart),
+        accountIndexEnd = Value(accountIndexEnd);
+  static Insertable<WalletConfig> custom({
+    Expression<String>? network,
+    Expression<String>? basePath,
+    Expression<int>? accountIndexStart,
+    Expression<int>? accountIndexEnd,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (network != null) 'network': network,
+      if (basePath != null) 'base_path': basePath,
+      if (accountIndexStart != null) 'account_index_start': accountIndexStart,
+      if (accountIndexEnd != null) 'account_index_end': accountIndexEnd,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  WalletConfigsCompanion copyWith(
+      {Value<String>? network,
+      Value<String>? basePath,
+      Value<int>? accountIndexStart,
+      Value<int>? accountIndexEnd,
+      Value<int>? rowid}) {
+    return WalletConfigsCompanion(
+      network: network ?? this.network,
+      basePath: basePath ?? this.basePath,
+      accountIndexStart: accountIndexStart ?? this.accountIndexStart,
+      accountIndexEnd: accountIndexEnd ?? this.accountIndexEnd,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (network.present) {
+      map['network'] = Variable<String>(network.value);
+    }
+    if (basePath.present) {
+      map['base_path'] = Variable<String>(basePath.value);
+    }
+    if (accountIndexStart.present) {
+      map['account_index_start'] = Variable<int>(accountIndexStart.value);
+    }
+    if (accountIndexEnd.present) {
+      map['account_index_end'] = Variable<int>(accountIndexEnd.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('WalletConfigsCompanion(')
+          ..write('network: $network, ')
+          ..write('basePath: $basePath, ')
+          ..write('accountIndexStart: $accountIndexStart, ')
+          ..write('accountIndexEnd: $accountIndexEnd, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$DB extends GeneratedDatabase {
   _$DB(QueryExecutor e) : super(e);
   late final $WalletsTable wallets = $WalletsTable(this);
@@ -1898,6 +2168,7 @@ abstract class _$DB extends GeneratedDatabase {
   late final $ImportedAddressesTable importedAddresses =
       $ImportedAddressesTable(this);
   late final $AccountsV2Table accountsV2 = $AccountsV2Table(this);
+  late final $WalletConfigsTable walletConfigs = $WalletConfigsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -1908,6 +2179,7 @@ abstract class _$DB extends GeneratedDatabase {
         addresses,
         transactions,
         importedAddresses,
-        accountsV2
+        accountsV2,
+        walletConfigs
       ];
 }
