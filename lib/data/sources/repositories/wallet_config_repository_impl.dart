@@ -27,13 +27,31 @@ class WalletConfigRepositoryImpl implements WalletConfigRepository {
   Future<List<entity.WalletConfig>> getAll() async {
     final configs = await _walletConfigsDao.getAll();
 
-    return [defaultMainnet, defaultTestnet4] +
-        configs
+
+    return  configs
             .map((config) => entity.WalletConfig(
                 network: config.network,
                 basePath: config.basePath,
                 accountIndexStart: config.accountIndexStart,
                 accountIndexEnd: config.accountIndexEnd))
             .toList();
+  }
+
+  @override
+  Future<bool> update(entity.WalletConfig config) async {
+    return await _walletConfigsDao.update_(local.WalletConfig(
+        network: config.network,
+        basePath: config.basePath,
+        accountIndexStart: config.accountIndexStart,
+        accountIndexEnd: config.accountIndexEnd));
+  }
+
+  @override
+  Future<int> create(entity.WalletConfig config) async {
+    return await _walletConfigsDao.create(local.WalletConfig(
+        network: config.network,
+        basePath: config.basePath,
+        accountIndexStart: config.accountIndexStart,
+        accountIndexEnd: config.accountIndexEnd));
   }
 }

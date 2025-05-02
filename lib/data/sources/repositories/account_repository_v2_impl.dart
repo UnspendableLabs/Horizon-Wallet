@@ -34,6 +34,10 @@ class AccountV2RepositoryImpl implements AccountV2Repository {
   Future<List<AccountV2>> getAll() async {
     final walletConfigs = await _walletConfigRepository.getAll();
     final mainnetConfig = walletConfigs.first;
+
+    
+    print("mainnetConfig ${mainnetConfig.accountIndexEnd}");
+
     return List.generate(mainnetConfig.accountIndexEnd + 1, (i) => i)
         .map((i) => AccountV2(uuid: uuid.v4(), index: i))
         .toList();

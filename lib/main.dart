@@ -138,16 +138,15 @@ class AppRouter {
             builder: (context, state) {
               return const LoadingScreen();
             }),
-        if (GetIt.instance<Config>().isDatabaseViewerEnabled)
-          GoRoute(
-            path: "/db",
-            pageBuilder: (context, state) => CustomTransitionPage<void>(
-                key: state.pageKey,
-                child:
-                    DriftDbViewer(GetIt.instance<DatabaseManager>().database),
-                transitionsBuilder:
-                    (context, animation, secondaryAnimation, child) => child),
-          ),
+        // if (GetIt.instance<Config>().isDatabaseViewerEnabled)
+        GoRoute(
+          path: "/db",
+          pageBuilder: (context, state) => CustomTransitionPage<void>(
+              key: state.pageKey,
+              child: DriftDbViewer(GetIt.instance<DatabaseManager>().database),
+              transitionsBuilder:
+                  (context, animation, secondaryAnimation, child) => child),
+        ),
         GoRoute(
           path: "/privacy-policy",
           pageBuilder: (context, state) => CustomTransitionPage<void>(
