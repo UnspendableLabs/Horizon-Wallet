@@ -12,12 +12,33 @@ import 'package:horizon/js/bitcoin.dart' as bitcoin;
 import 'package:horizon/js/buffer.dart';
 import 'package:horizon/js/ecpair.dart' as ecpair;
 import 'package:horizon/js/tiny_secp256k1.dart' as tinysecp256k1js;
+import 'package:horizon/js/bip39.dart' as bip39;
 
 class AddressServiceImpl implements AddressService {
   final Config config;
   final bip32.BIP32Factory _bip32 = bip32.BIP32Factory(tinysecp256k1js.ecc);
 
   AddressServiceImpl({required this.config});
+
+  @override
+  Future<String> deriveAddressWIP({
+    required mnemonic,
+    required path, }) async { // final String basePath = 'm/84\'/1\'/0\'/0/';
+    final network = _getNetwork();
+
+    JSUint8Array seed = await bip39.mnemonicToSeed(mnemonic).toDart;
+
+    bip32.BIP32Interface root = _bip32.fromSeed(seed as Buffer, network);
+
+    bip32.BIP32Interface child = _deriveChildKey(
+        path: path,
+        privKey: hex.encode(root.privateKey!.toDart),
+        chainCodeHex: hex.encode(root.chainCode.toDart));
+
+    String address = _bech32FromBip32(child);
+
+    return address;
+  }
 
   @override
   Future<Address> deriveAddressSegwit(

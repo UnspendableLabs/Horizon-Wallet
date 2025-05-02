@@ -336,34 +336,35 @@ class _AppShellState extends State<AppShell> with TickerProviderStateMixin {
   }
 
   void _handleRPCGetAddressesAction(int tabId, String requestId) {
-    HorizonUI.HorizonDialog.show(
-        context: context,
-        body: HorizonUI.HorizonDialog(
-          title: "Get Addresses",
-          body: Builder(builder: (context) {
-            final session = context.watch<SessionStateCubit>();
-            return session.state.maybeWhen(
-                orElse: () => const SizedBox.shrink(),
-                success: (state) {
-                  return GetAddressesModal(
-                      tabId: tabId,
-                      requestId: requestId,
-                      accounts: state.accounts,
-                      addressRepository: GetIt.I<AddressRepository>(),
-                      accountRepository: GetIt.I<AccountRepository>(),
-                      publicKeyService: GetIt.I<PublicKeyService>(),
-                      encryptionService: GetIt.I<EncryptionService>(),
-                      addressService: GetIt.I<AddressService>(),
-                      importedAddressService: GetIt.I<ImportedAddressService>(),
-                      walletRepository: GetIt.I<WalletRepository>(),
-                      importedAddressRepository:
-                          GetIt.I<ImportedAddressRepository>(),
-                      onSuccess: GetIt.I<RPCGetAddressesSuccessCallback>());
-                });
-          }),
-          includeBackButton: false,
-          includeCloseButton: true,
-        ));
+    throw UnimplementedError();
+    // HorizonUI.HorizonDialog.show(
+    //     context: context,
+    //     body: HorizonUI.HorizonDialog(
+    //       title: "Get Addresses",
+    //       body: Builder(builder: (context) {
+    //         final session = context.watch<SessionStateCubit>();
+    //         return session.state.maybeWhen(
+    //             orElse: () => const SizedBox.shrink(),
+    //             success: (state) {
+    //               return GetAddressesModal(
+    //                   tabId: tabId,
+    //                   requestId: requestId,
+    //                   accounts: [],
+    //                   addressRepository: GetIt.I<AddressRepository>(),
+    //                   accountRepository: GetIt.I<AccountRepository>(),
+    //                   publicKeyService: GetIt.I<PublicKeyService>(),
+    //                   encryptionService: GetIt.I<EncryptionService>(),
+    //                   addressService: GetIt.I<AddressService>(),
+    //                   importedAddressService: GetIt.I<ImportedAddressService>(),
+    //                   walletRepository: GetIt.I<WalletRepository>(),
+    //                   importedAddressRepository:
+    //                       GetIt.I<ImportedAddressRepository>(),
+    //                   onSuccess: GetIt.I<RPCGetAddressesSuccessCallback>());
+    //             });
+    //       }),
+    //       includeBackButton: false,
+    //       includeCloseButton: true,
+    //     ));
   }
 
   void _handleRPCSignPsbtAction(int tabId, String requestId, String psbt,
