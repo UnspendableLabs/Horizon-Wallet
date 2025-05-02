@@ -149,9 +149,11 @@ import 'package:horizon/data/sources/repositories/settings_repository_impl.dart'
 import 'package:horizon/domain/repositories/mnemonic_repository.dart';
 import 'package:horizon/data/sources/repositories/mnemonic_repository_impl.dart';
 
-
 import 'package:horizon/domain/repositories/account_v2_repository.dart';
 import 'package:horizon/data/sources/repositories/account_repository_v2_impl.dart';
+
+import 'package:horizon/domain/repositories/wallet_config_repository.dart';
+import 'package:horizon/data/sources/repositories/wallet_config_repository_impl.dart';
 
 void setup() {
   GetIt injector = GetIt.I;
@@ -380,7 +382,10 @@ void setup() {
 
   injector.registerSingleton<AccountRepository>(
       AccountRepositoryImpl(injector.get<DatabaseManager>().database));
-  
+
+  injector.registerSingleton<WalletConfigRepository>(
+      WalletConfigRepositoryImpl(injector.get<DatabaseManager>().database));
+
   injector.registerSingleton<AccountV2Repository>(
       AccountV2RepositoryImpl(injector.get<DatabaseManager>().database));
 
@@ -652,7 +657,7 @@ void setup() {
   injector.registerSingleton<SettingsRepository>(SettingsRepositoryImpl());
 
   injector.registerSingleton<SetMnemonicUseCase>(SetMnemonicUseCase(
-     encryptionService: GetIt.I<EncryptionService>(),
+      encryptionService: GetIt.I<EncryptionService>(),
       inMemoryKeyRepository: GetIt.I<InMemoryKeyRepository>(),
       mnemonicRepository: GetIt.I<MnemonicRepository>()));
 }
