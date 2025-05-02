@@ -4,13 +4,16 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:formz/formz.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/domain/repositories/config_repository.dart';
+import 'package:horizon/presentation/common/colors.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
+import 'package:horizon/utils/app_icons.dart';
 import 'package:lottie/lottie.dart';
 import "./login_form_bloc.dart" as b;
 
 class LoginForm extends StatefulWidget {
   const LoginForm({super.key});
+  
   @override
   _LoginFormState createState() => _LoginFormState();
 }
@@ -18,6 +21,7 @@ class LoginForm extends StatefulWidget {
 class _LoginFormState extends State<LoginForm> {
   final _key = GlobalKey<FormState>();
   final TextEditingController _passwordController = TextEditingController();
+  bool _obscurePassword = true;
 
   @override
   void dispose() {
@@ -64,7 +68,8 @@ class _LoginFormState extends State<LoginForm> {
       return Form(
           key: _key,
           child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Center(
                   child: SizedBox(
@@ -73,17 +78,47 @@ class _LoginFormState extends State<LoginForm> {
                     child: buildAnimationAsset(),
                   ),
                 ),
+                const SizedBox(height: 20),
+                const Text(
+                  "Welcome Back!",
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: gray1,
+                  ),
+                ),
+                const SizedBox(height: 60),
                 HorizonTextField(
                   enabled: !state.status.isInProgressOrSuccess,
                   controller: _passwordController,
                   label: 'Password',
-                  obscureText: true,
+                  obscureText: _obscurePassword,
                   onChanged: (value) => context
                       .read<b.LoginFormBloc>()
                       .add(b.PasswordChanged(value)),
                   onSubmitted: (_) {
                     context.read<b.LoginFormBloc>().add(b.FormSubmitted());
                   },
+                  suffixIcon: AppIcons.iconButton(
+                      context: context,
+                      icon: _obscurePassword
+                          ? AppIcons.eyeClosedIcon(
+                              context: context,
+                              width: 10,
+                              height: 10,
+                            )
+                          : AppIcons.eyeOpenIcon(
+                              context: context,
+                              width: 12,
+                              height: 12,
+                            ),
+                      onPressed: (){
+                        setState(() {
+                          _obscurePassword = !_obscurePassword;
+                        });
+                      },
+                      padding: EdgeInsets.zero,
+                    ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Password is required';
@@ -91,13 +126,16 @@ class _LoginFormState extends State<LoginForm> {
                     return null;
                   },
                 ),
-                SizedBox(
-                    height: 50,
-                    child: HorizonOutlinedButton(
-                        onPressed: () => context
-                            .read<b.LoginFormBloc>()
-                            .add(b.FormSubmitted()),
-                        buttonText: "Unlock"))
+                const SizedBox(height: 28),
+                HorizonButton(
+                  onPressed: () => context
+                      .read<b.LoginFormBloc>()
+                      .add(b.FormSubmitted()),
+                  child: TextButtonContent(
+                    value: "Unlock",
+
+                  ),
+                ),
               ]));
     });
   }

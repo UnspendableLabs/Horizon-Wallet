@@ -99,7 +99,7 @@ class PasswordPromptState extends State<PasswordPrompt> {
               ),
               const SizedBox(height: 10),
               SelectableText(
-                'This password will be used to encrypt and decrypt your seed phrase, which will be stored locally. You will be able to use your wallet with just your password, but you will only be able to recover your wallet with your seed phrase.',
+                "This password encrypts and decrypts your recovery phrase. You will be able to access your wallet with just the password, but you'll need the seed phrase to restore it.",
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.titleSmall,
               ),
