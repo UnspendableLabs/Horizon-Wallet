@@ -3,6 +3,7 @@ import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:get_it/get_it.dart';
 
 import 'package:horizon/data/services/secure_kv_service_impl.dart';
+import 'package:horizon/domain/entities/address_v2.dart';
 import 'package:horizon/domain/services/secure_kv_service.dart';
 
 import 'package:horizon/data/sources/repositories/in_memory_key_repository_impl.dart';
@@ -154,6 +155,9 @@ import 'package:horizon/data/sources/repositories/account_repository_v2_impl.dar
 
 import 'package:horizon/domain/repositories/wallet_config_repository.dart';
 import 'package:horizon/data/sources/repositories/wallet_config_repository_impl.dart';
+
+import "package:horizon/domain/repositories/address_v2_repository.dart";
+import 'package:horizon/data/sources/repositories/address_v2_repository_impl.dart';
 
 void setup() {
   GetIt injector = GetIt.I;
@@ -660,6 +664,9 @@ void setup() {
       encryptionService: GetIt.I<EncryptionService>(),
       inMemoryKeyRepository: GetIt.I<InMemoryKeyRepository>(),
       mnemonicRepository: GetIt.I<MnemonicRepository>()));
+
+  injector.registerSingleton<AddressV2Repository>(
+      AddressV2RepositoryImpl(injector.get<DatabaseManager>().database));
 }
 
 class CustomDioException extends DioException {

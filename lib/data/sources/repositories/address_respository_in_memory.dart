@@ -57,8 +57,8 @@ class AddressRepositoryInMemory implements AddressRepository {
 
   @override
   Future<List<Address>> getAllByAccountUuid(String accountUuid) async {
-    final account =
-        (await _accountV2Repository.getByID(accountUuid)).getOrThrow();
+    // final account =
+    //     (await _accountV2Repository.getByID(accountUuid)).getOrThrow();
 
     final encryptedMnemonic = (await _mnemonicRepository.get()).getOrThrow();
 
@@ -70,16 +70,16 @@ class AddressRepositoryInMemory implements AddressRepository {
     // should maybe be a declarative configuration?????
 
     final paths = [
-      "m/84'/0'/${account.index}'/0/0",
-      "m/84'/0'/${account.index}'/0/1",
-      "m/84'/0'/${account.index}'/0/2",
-      "m/84'/0'/${account.index}'/0/3",
-      "m/84'/0'/${account.index}'/0/4",
-      "m/84'/0'/${account.index}'/0/5",
-      "m/84'/0'/${account.index}'/0/6",
-      "m/84'/0'/${account.index}'/0/7",
-      "m/84'/0'/${account.index}'/0/8",
-      "m/84'/0'/${account.index}'/0/9",
+      "m/84'/0'/0'/0/0",
+      "m/84'/0'/0'/0/1",
+      "m/84'/0'/0'/0/2",
+      "m/84'/0'/0'/0/3",
+      "m/84'/0'/0'/0/4",
+      "m/84'/0'/0'/0/5",
+      "m/84'/0'/0'/0/6",
+      "m/84'/0'/0'/0/7",
+      "m/84'/0'/0'/0/8",
+      "m/84'/0'/0'/0/9",
     ];
 
     // for now, we can just reuse Address but i'm not sure we even
@@ -106,7 +106,7 @@ class AddressRepositoryInMemory implements AddressRepository {
       Address address = Address(
         address: address_,
         index: 0,
-        accountUuid: account.uuid,
+        accountUuid: "", // TODO: get rid of account uuid
       );
 
       addresses.add(address);

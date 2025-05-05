@@ -6,7 +6,9 @@ import 'package:horizon/presentation/session/bloc/session_state.dart';
 import 'package:horizon/presentation/common/gradient_avatar.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 import 'package:horizon/utils/app_icons.dart';
+import 'package:horizon/utils/app_icons.dart';
 
+import 'package:formz/formz.dart';
 import "./bloc/generate_account_bloc.dart";
 
 class AccountsScreen extends StatelessWidget {
@@ -20,8 +22,16 @@ class AccountsScreen extends StatelessWidget {
 
     return BlocProvider(
       create: (_) => GenerateAccountBloc(),
-      child: BlocBuilder<GenerateAccountBloc, GenerateAccountState>(
-          builder: (context, state) {
+      child: BlocConsumer<GenerateAccountBloc, GenerateAccountState>(
+          listener: (context, state) {
+        // Chat gpt
+        // if formz submission sttus has changed to success, i need to run
+
+        if (state.status.isSuccess) {
+          print("is this called constantyly?");
+          context.read<SessionStateCubit>().refresh();
+        }
+      }, builder: (context, state) {
         return Scaffold(
           body: Column(
             children: [
@@ -30,11 +40,14 @@ class AccountsScreen extends StatelessWidget {
                   itemCount: accounts.length,
                   itemBuilder: (context, index) {
                     final account = accounts[index];
-                    final isSelected = account.uuid == currentAccount?.uuid;
+
+                    // TODO: need to make this actully work
+
+                    final isSelected = account.hash == currentAccount!.hash;
 
                     return ListTile(
                       leading: GradientAvatar(
-                        input: account.uuid,
+                        input: account.hash,
                         radius: 18,
                       ),
                       title: Text(
@@ -44,13 +57,16 @@ class AccountsScreen extends StatelessWidget {
                           fontSize: 14,
                         ),
                       ),
-                      subtitle: Text("computed btc balance",
+                      subtitle: Text("computed btc balance $isSelected",
                           style: TextStyle(
                             fontSize: 10,
                           )),
                       onTap: () {
+                        context
+                            .read<SessionStateCubit>()
+                            .onAccountChanged(account);
                         // Update session (if changing current account is allowed)
-                        Navigator.of(context).pop(); // go back after selecting
+                        // Navigator.of(context).pop(); // go back after selecting
                       },
                     );
                   },

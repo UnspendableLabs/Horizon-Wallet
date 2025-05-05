@@ -1,11 +1,15 @@
 class WalletConfig {
+  String uuid;
   String network;
   String basePath;
   int accountIndexStart;
   int accountIndexEnd;
 
+
   WalletConfig(
-      {required this.network,
+      {
+        required this.uuid,
+        required this.network,
       required this.basePath,
       this.accountIndexStart = 0,
       required this.accountIndexEnd});
@@ -17,6 +21,7 @@ class WalletConfig {
     int? accountIndexEnd,
   }) {
     return WalletConfig(
+      uuid: uuid,
       network: network ?? this.network,
       basePath: basePath ?? this.basePath,
       accountIndexStart: accountIndexStart ?? this.accountIndexStart,

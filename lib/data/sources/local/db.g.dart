@@ -1895,6 +1895,13 @@ class $WalletConfigsTable extends WalletConfigs
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
   $WalletConfigsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _uuidMeta = const VerificationMeta('uuid');
+  @override
+  late final GeneratedColumn<String> uuid = GeneratedColumn<String>(
+      'uuid', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: true,
+      $customConstraints: 'UNIQUE NOT NULL');
   static const VerificationMeta _networkMeta =
       const VerificationMeta('network');
   @override
@@ -1921,7 +1928,7 @@ class $WalletConfigsTable extends WalletConfigs
       type: DriftSqlType.int, requiredDuringInsert: true);
   @override
   List<GeneratedColumn> get $columns =>
-      [network, basePath, accountIndexStart, accountIndexEnd];
+      [uuid, network, basePath, accountIndexStart, accountIndexEnd];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -1932,6 +1939,12 @@ class $WalletConfigsTable extends WalletConfigs
       {bool isInserting = false}) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
+    if (data.containsKey('uuid')) {
+      context.handle(
+          _uuidMeta, uuid.isAcceptableOrUnknown(data['uuid']!, _uuidMeta));
+    } else if (isInserting) {
+      context.missing(_uuidMeta);
+    }
     if (data.containsKey('network')) {
       context.handle(_networkMeta,
           network.isAcceptableOrUnknown(data['network']!, _networkMeta));
@@ -1969,6 +1982,8 @@ class $WalletConfigsTable extends WalletConfigs
   WalletConfig map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return WalletConfig(
+      uuid: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}uuid'])!,
       network: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}network'])!,
       basePath: attachedDatabase.typeMapping
@@ -1987,18 +2002,21 @@ class $WalletConfigsTable extends WalletConfigs
 }
 
 class WalletConfig extends DataClass implements Insertable<WalletConfig> {
+  final String uuid;
   final String network;
   final String basePath;
   final int accountIndexStart;
   final int accountIndexEnd;
   const WalletConfig(
-      {required this.network,
+      {required this.uuid,
+      required this.network,
       required this.basePath,
       required this.accountIndexStart,
       required this.accountIndexEnd});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
+    map['uuid'] = Variable<String>(uuid);
     map['network'] = Variable<String>(network);
     map['base_path'] = Variable<String>(basePath);
     map['account_index_start'] = Variable<int>(accountIndexStart);
@@ -2008,6 +2026,7 @@ class WalletConfig extends DataClass implements Insertable<WalletConfig> {
 
   WalletConfigsCompanion toCompanion(bool nullToAbsent) {
     return WalletConfigsCompanion(
+      uuid: Value(uuid),
       network: Value(network),
       basePath: Value(basePath),
       accountIndexStart: Value(accountIndexStart),
@@ -2019,6 +2038,7 @@ class WalletConfig extends DataClass implements Insertable<WalletConfig> {
       {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return WalletConfig(
+      uuid: serializer.fromJson<String>(json['uuid']),
       network: serializer.fromJson<String>(json['network']),
       basePath: serializer.fromJson<String>(json['basePath']),
       accountIndexStart: serializer.fromJson<int>(json['accountIndexStart']),
@@ -2029,6 +2049,7 @@ class WalletConfig extends DataClass implements Insertable<WalletConfig> {
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
+      'uuid': serializer.toJson<String>(uuid),
       'network': serializer.toJson<String>(network),
       'basePath': serializer.toJson<String>(basePath),
       'accountIndexStart': serializer.toJson<int>(accountIndexStart),
@@ -2037,11 +2058,13 @@ class WalletConfig extends DataClass implements Insertable<WalletConfig> {
   }
 
   WalletConfig copyWith(
-          {String? network,
+          {String? uuid,
+          String? network,
           String? basePath,
           int? accountIndexStart,
           int? accountIndexEnd}) =>
       WalletConfig(
+        uuid: uuid ?? this.uuid,
         network: network ?? this.network,
         basePath: basePath ?? this.basePath,
         accountIndexStart: accountIndexStart ?? this.accountIndexStart,
@@ -2050,6 +2073,7 @@ class WalletConfig extends DataClass implements Insertable<WalletConfig> {
   @override
   String toString() {
     return (StringBuffer('WalletConfig(')
+          ..write('uuid: $uuid, ')
           ..write('network: $network, ')
           ..write('basePath: $basePath, ')
           ..write('accountIndexStart: $accountIndexStart, ')
@@ -2060,11 +2084,12 @@ class WalletConfig extends DataClass implements Insertable<WalletConfig> {
 
   @override
   int get hashCode =>
-      Object.hash(network, basePath, accountIndexStart, accountIndexEnd);
+      Object.hash(uuid, network, basePath, accountIndexStart, accountIndexEnd);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is WalletConfig &&
+          other.uuid == this.uuid &&
           other.network == this.network &&
           other.basePath == this.basePath &&
           other.accountIndexStart == this.accountIndexStart &&
@@ -2072,12 +2097,14 @@ class WalletConfig extends DataClass implements Insertable<WalletConfig> {
 }
 
 class WalletConfigsCompanion extends UpdateCompanion<WalletConfig> {
+  final Value<String> uuid;
   final Value<String> network;
   final Value<String> basePath;
   final Value<int> accountIndexStart;
   final Value<int> accountIndexEnd;
   final Value<int> rowid;
   const WalletConfigsCompanion({
+    this.uuid = const Value.absent(),
     this.network = const Value.absent(),
     this.basePath = const Value.absent(),
     this.accountIndexStart = const Value.absent(),
@@ -2085,16 +2112,19 @@ class WalletConfigsCompanion extends UpdateCompanion<WalletConfig> {
     this.rowid = const Value.absent(),
   });
   WalletConfigsCompanion.insert({
+    required String uuid,
     required String network,
     required String basePath,
     required int accountIndexStart,
     required int accountIndexEnd,
     this.rowid = const Value.absent(),
-  })  : network = Value(network),
+  })  : uuid = Value(uuid),
+        network = Value(network),
         basePath = Value(basePath),
         accountIndexStart = Value(accountIndexStart),
         accountIndexEnd = Value(accountIndexEnd);
   static Insertable<WalletConfig> custom({
+    Expression<String>? uuid,
     Expression<String>? network,
     Expression<String>? basePath,
     Expression<int>? accountIndexStart,
@@ -2102,6 +2132,7 @@ class WalletConfigsCompanion extends UpdateCompanion<WalletConfig> {
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
+      if (uuid != null) 'uuid': uuid,
       if (network != null) 'network': network,
       if (basePath != null) 'base_path': basePath,
       if (accountIndexStart != null) 'account_index_start': accountIndexStart,
@@ -2111,12 +2142,14 @@ class WalletConfigsCompanion extends UpdateCompanion<WalletConfig> {
   }
 
   WalletConfigsCompanion copyWith(
-      {Value<String>? network,
+      {Value<String>? uuid,
+      Value<String>? network,
       Value<String>? basePath,
       Value<int>? accountIndexStart,
       Value<int>? accountIndexEnd,
       Value<int>? rowid}) {
     return WalletConfigsCompanion(
+      uuid: uuid ?? this.uuid,
       network: network ?? this.network,
       basePath: basePath ?? this.basePath,
       accountIndexStart: accountIndexStart ?? this.accountIndexStart,
@@ -2128,6 +2161,9 @@ class WalletConfigsCompanion extends UpdateCompanion<WalletConfig> {
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
+    if (uuid.present) {
+      map['uuid'] = Variable<String>(uuid.value);
+    }
     if (network.present) {
       map['network'] = Variable<String>(network.value);
     }
@@ -2149,6 +2185,7 @@ class WalletConfigsCompanion extends UpdateCompanion<WalletConfig> {
   @override
   String toString() {
     return (StringBuffer('WalletConfigsCompanion(')
+          ..write('uuid: $uuid, ')
           ..write('network: $network, ')
           ..write('basePath: $basePath, ')
           ..write('accountIndexStart: $accountIndexStart, ')

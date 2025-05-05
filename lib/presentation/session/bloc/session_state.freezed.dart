@@ -976,7 +976,7 @@ mixin _$SessionStateSuccess {
       throw _privateConstructorUsedError; // required Wallet wallet,
   String get decryptionKey => throw _privateConstructorUsedError;
   List<AccountV2> get accounts => throw _privateConstructorUsedError;
-  List<Address> get addresses => throw _privateConstructorUsedError;
+  List<AddressV2> get addresses => throw _privateConstructorUsedError;
   List<ImportedAddress>? get importedAddresses =>
       throw _privateConstructorUsedError;
 
@@ -996,7 +996,7 @@ abstract class $SessionStateSuccessCopyWith<$Res> {
       bool redirect,
       String decryptionKey,
       List<AccountV2> accounts,
-      List<Address> addresses,
+      List<AddressV2> addresses,
       List<ImportedAddress>? importedAddresses});
 }
 
@@ -1040,7 +1040,7 @@ class _$SessionStateSuccessCopyWithImpl<$Res, $Val extends SessionStateSuccess>
       addresses: null == addresses
           ? _value.addresses
           : addresses // ignore: cast_nullable_to_non_nullable
-              as List<Address>,
+              as List<AddressV2>,
       importedAddresses: freezed == importedAddresses
           ? _value.importedAddresses
           : importedAddresses // ignore: cast_nullable_to_non_nullable
@@ -1062,7 +1062,7 @@ abstract class _$$SessionStateSuccessImplCopyWith<$Res>
       bool redirect,
       String decryptionKey,
       List<AccountV2> accounts,
-      List<Address> addresses,
+      List<AddressV2> addresses,
       List<ImportedAddress>? importedAddresses});
 }
 
@@ -1104,7 +1104,7 @@ class __$$SessionStateSuccessImplCopyWithImpl<$Res>
       addresses: null == addresses
           ? _value._addresses
           : addresses // ignore: cast_nullable_to_non_nullable
-              as List<Address>,
+              as List<AddressV2>,
       importedAddresses: freezed == importedAddresses
           ? _value._importedAddresses
           : importedAddresses // ignore: cast_nullable_to_non_nullable
@@ -1121,7 +1121,7 @@ class _$SessionStateSuccessImpl implements _SessionStateSuccess {
       required this.redirect,
       required this.decryptionKey,
       required final List<AccountV2> accounts,
-      required final List<Address> addresses,
+      required final List<AddressV2> addresses,
       final List<ImportedAddress>? importedAddresses})
       : _accounts = accounts,
         _addresses = addresses,
@@ -1142,9 +1142,9 @@ class _$SessionStateSuccessImpl implements _SessionStateSuccess {
     return EqualUnmodifiableListView(_accounts);
   }
 
-  final List<Address> _addresses;
+  final List<AddressV2> _addresses;
   @override
-  List<Address> get addresses {
+  List<AddressV2> get addresses {
     if (_addresses is EqualUnmodifiableListView) return _addresses;
     // ignore: implicit_dynamic_type
     return EqualUnmodifiableListView(_addresses);
@@ -1203,7 +1203,7 @@ abstract class _SessionStateSuccess implements SessionStateSuccess {
           required final bool redirect,
           required final String decryptionKey,
           required final List<AccountV2> accounts,
-          required final List<Address> addresses,
+          required final List<AddressV2> addresses,
           final List<ImportedAddress>? importedAddresses}) =
       _$SessionStateSuccessImpl;
 
@@ -1216,7 +1216,7 @@ abstract class _SessionStateSuccess implements SessionStateSuccess {
   @override
   List<AccountV2> get accounts;
   @override
-  List<Address> get addresses;
+  List<AddressV2> get addresses;
   @override
   List<ImportedAddress>? get importedAddresses;
   @override

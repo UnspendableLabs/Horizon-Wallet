@@ -2,15 +2,19 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:collection/collection.dart';
 // import 'package:horizon/domain/entities/account.dart';
 import 'package:horizon/domain/entities/account_v2.dart';
+import 'package:horizon/domain/entities/address_v2.dart';
+import 'package:horizon/domain/entities/wallet_config.dart';
 import 'package:horizon/domain/entities/imported_address.dart';
 // import 'package:horizon/domain/entities/wallet.dart';
 import 'package:horizon/domain/entities/address.dart';
 // import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/account_v2_repository.dart';
+import 'package:horizon/domain/repositories/address_v2_repository.dart';
 import 'package:horizon/domain/repositories/mnemonic_repository.dart';
 import 'package:horizon/domain/repositories/imported_address_repository.dart';
 // import 'package:horizon/domain/repositories/wallet_repository.dart';
-import 'package:horizon/domain/repositories/address_repository.dart';
+import 'package:horizon/domain/repositories/address_v2_repository.dart';
+import 'package:horizon/domain/repositories/wallet_config_repository.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
@@ -38,8 +42,9 @@ class SessionStateCubit extends Cubit<SessionState> {
   CacheProvider cacheProvider;
   // WalletRepository walletRepository;
   // AccountRepository accountRepository;
+  WalletConfigRepository _walletConfigRepository;
   AccountV2Repository _accountV2Repository;
-  AddressRepository addressRepository;
+  AddressV2Repository _addressV2Repository;
   ImportedAddressRepository importedAddressRepository;
   AnalyticsService analyticsService;
   InMemoryKeyRepository inMemoryKeyRepository;
@@ -52,8 +57,10 @@ class SessionStateCubit extends Cubit<SessionState> {
     required this.cacheProvider,
     // required this.walletRepository,
     // required this.accountRepository,
+
+    WalletConfigRepository? walletConfigRepository,
     AccountV2Repository? accountV2Repository,
-    required this.addressRepository,
+    AddressV2Repository? addressV2Repository,
     required this.importedAddressRepository,
     required this.analyticsService,
     required this.inMemoryKeyRepository,
@@ -63,6 +70,10 @@ class SessionStateCubit extends Cubit<SessionState> {
             accountV2Repository ?? GetIt.I<AccountV2Repository>(),
         _mnemonicRepository =
             mnemonicRepository ?? GetIt.I<MnemonicRepository>(),
+        _walletConfigRepository =
+            walletConfigRepository ?? GetIt.I<WalletConfigRepository>(),
+        _addressV2Repository =
+            addressV2Repository ?? GetIt.I<AddressV2Repository>(),
         super(const SessionState.initial());
 
   Future<GetSessionStateResponse> _getSessionState() async {
@@ -119,29 +130,32 @@ class SessionStateCubit extends Cubit<SessionState> {
           return;
         case LoggedIn(decryptionKey: var decryptionKey):
 
+          // TODO: for now we just take the first wallet config
+          // until we actually save "current"
+          WalletConfig walletConfig =
+              (await _walletConfigRepository.getAll()).first;
+
           // TODO: we may need to handle to restore something here
           // analyticsService.trackAnonymousEvent('wallet_opened',
           //     properties: {'distinct_id': wallet.uuid});
 
-          List<AccountV2> accounts = await _accountV2Repository.getAll();
+          List<AccountV2> accounts =
+              await _accountV2Repository.getByWalletConfig(
+            walletConfigID: walletConfig.uuid,
+          );
 
-          print("accounts");
-          print(accounts);
+          String? currentAccountHash =
+              cacheProvider.getString("current-account-hash");
 
-          if (accounts.isEmpty) {
-            throw Exception("invariant: no accounts for this wallet");
-          }
-
-          String? currentAccountUuid =
-              cacheProvider.getString("current-account-uuid");
-
+          // TODO: save selected account index
           AccountV2 currentAccount = accounts.firstWhereOrNull(
-                (account) => account.uuid == currentAccountUuid,
+                (account) => account.hash == currentAccountHash,
               ) ??
               accounts.first;
 
-          List<Address> addresses =
-              await addressRepository.getAllByAccountUuid(currentAccount.uuid);
+          // TODO: the arg here doesn't matter
+          List<AddressV2> addresses =
+              await _addressV2Repository.getByAccount(currentAccount);
 
           if (addresses.isEmpty) {
             throw Exception("invariant: no addresses for this account");
@@ -181,8 +195,8 @@ class SessionStateCubit extends Cubit<SessionState> {
   }
 
   void onAccountChanged(AccountV2 account) async {
-    List<Address> addresses =
-        await addressRepository.getAllByAccountUuid(account.uuid);
+    List<AddressV2> addresses =
+        await _addressV2Repository.getByAccount(account);
 
     final current = state.successOrThrow();
 
@@ -191,10 +205,10 @@ class SessionStateCubit extends Cubit<SessionState> {
       currentAccount: account,
     );
 
-    // TODO: it would be nice to not to have to do this effectful thing here
+    // // TODO: it would be nice to not to have to do this effectful thing here
     cacheProvider.setString(
-      "current-account-uuid",
-      account.uuid,
+      "current-account-hash",
+      account.hash,
     );
 
     emit(SessionState.success(next));
@@ -232,14 +246,30 @@ class SessionStateCubit extends Cubit<SessionState> {
         emit(const SessionState.onboarding(Onboarding.initial()));
         return;
       }
+      WalletConfig walletConfig =
+          (await _walletConfigRepository.getAll()).first;
 
-      List<AccountV2> accounts = await _accountV2Repository.getAll();
+      List<AccountV2> accounts = await _accountV2Repository.getByWalletConfig(
+        walletConfigID: walletConfig.uuid,
+      );
 
-      if (accounts.isEmpty) {
-        throw Exception("invariant: no accounts for this wallet");
-      }
+      String? currentAccountHash =
+          cacheProvider.getString("current-account-hash");
 
-      List<Address> addresses = await addressRepository.getAll();
+      // TODO: save selected account index
+      AccountV2 currentAccount =
+          accounts.firstWhereOrNull(
+                (account) => account.hash == currentAccountHash,
+              ) ??
+          accounts.first;
+      // List<AccountV2> accounts = await _accountV2Repository.getAll();
+
+      // if (accounts.isEmpty) {
+      //   throw Exception("invariant: no accounts for this wallet");
+      // }
+
+      List<AddressV2> addresses =
+          await _addressV2Repository.getByAccount(currentAccount);
 
       if (addresses.isEmpty) {
         throw Exception("invariant: no addresses for this account");
@@ -258,10 +288,10 @@ class SessionStateCubit extends Cubit<SessionState> {
         importedAddresses: importedAddresses,
       )));
 
-      cacheProvider.setString(
-        "current-account-uuid",
-        accounts.last.uuid,
-      );
+      // cacheProvider.setString(
+      //   "current-account-uuid",
+      //   accounts.last.uuid,
+      // );
     } catch (error) {
       emit(SessionState.error(error.toString()));
     }
