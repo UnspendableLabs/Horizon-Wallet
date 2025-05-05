@@ -67,6 +67,178 @@ class LoadingScreen extends StatelessWidget {
       );
 }
 
+class BottomTabNavigation extends StatelessWidget {
+  final int currentIndex;
+
+  const BottomTabNavigation({super.key, required this.currentIndex});
+
+  static const tabRoutes = ['/dashboard', '/settings'];
+
+  @override
+  Widget build(BuildContext context) {
+    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
+
+    return Container(
+      width: double.infinity,
+      height: 90,
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      decoration: BoxDecoration(
+        color: Theme.of(context).dialogTheme.backgroundColor,
+        border: Border(
+          top: BorderSide(
+            color:
+                Theme.of(context).inputDecorationTheme.outlineBorder?.color ??
+                    Colors.black.withOpacity(0.1),
+            width: 1,
+          ),
+        ),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          _buildTab(
+            context,
+            index: 0,
+            selected: currentIndex == 0,
+            icon: AppIcons.pieChartIcon(context: context),
+            label: 'Portfolio',
+            isDarkTheme: isDarkTheme,
+          ),
+          _buildTab(
+            context,
+            index: 1,
+            selected: currentIndex == 1,
+            icon: AppIcons.settingsIcon(context: context),
+            label: 'Settings',
+            isDarkTheme: isDarkTheme,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTab(
+    BuildContext context, {
+    required int index,
+    required bool selected,
+    required Widget icon,
+    required String label,
+    required bool isDarkTheme,
+  }) {
+    return GestureDetector(
+      onTap: () => context.go(tabRoutes[index]),
+      child: BottomNavItem(
+        selected: selected,
+        icon: icon,
+        label: label,
+        isDarkTheme: isDarkTheme,
+      ),
+    );
+  }
+}
+
+class BottomNavItem extends StatelessWidget {
+  final bool selected;
+  final Widget icon;
+  final String label;
+  final bool isDarkTheme;
+
+  const BottomNavItem({
+    super.key,
+    required this.selected,
+    required this.icon,
+    required this.label,
+    required this.isDarkTheme,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 75,
+      height: 74,
+      decoration: BoxDecoration(
+        color: selected && !isDarkTheme ? offWhite : Colors.transparent,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: selected
+              ? Theme.of(context).inputDecorationTheme.outlineBorder?.color ??
+                  Colors.black.withOpacity(0.1)
+              : Colors.transparent,
+          width: 1,
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            icon,
+            const SizedBox(height: 6),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 12,
+                color: selected
+                    ? Theme.of(context).textTheme.bodyMedium?.color
+                    : Theme.of(context)
+                            .textButtonTheme
+                            .style
+                            ?.foregroundColor
+                            ?.resolve({}) ??
+                        Colors.grey,
+              ),
+              softWrap: false,
+              overflow: TextOverflow.visible,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// class ScaffoldWithBottomNavigation extends StatelessWidget {
+//   final Widget child;
+//   final int currentIndex;
+//
+//   const ScaffoldWithBottomNavigation({
+//     super.key,
+//     required this.child,
+//     required this.currentIndex,
+//   });
+//
+//   static const tabs = [
+//     '/dashboard',
+//     '/settings',
+//   ];
+//
+//   void _onTabTapped(BuildContext context, int index) {
+//     context.go(tabs[index]);
+//   }
+//
+//   @override
+//   Widget build(BuildContext context) {
+//     return Scaffold(
+//       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+//       body: child,
+//       bottomNavigationBar: BottomNavigationBar(
+//         currentIndex: currentIndex,
+//         onTap: (index) => _onTabTapped(context, index),
+//         items: const [
+//           BottomNavigationBarItem(
+//             icon: Icon(Icons.home),
+//             label: 'Dashboard',
+//           ),
+//           BottomNavigationBarItem(
+//             icon: Icon(Icons.settings),
+//             label: 'Settings',
+//           ),
+//         ],
+//       ),
+//     );
+//   }
+// }
+
 class AppRouter {
   static GoRouter router = GoRouter(
       navigatorKey: _rootNavigatorKey,
@@ -176,20 +348,23 @@ class AppRouter {
               path: "/dashboard",
               builder: (context, state) {
                 return Scaffold(
-                  backgroundColor: Theme.of(context).scaffoldBackgroundColor,
                   body: const PortfolioView(),
-                  // CHAT GPT I NEED HELP WITH A SANE WAY / FLEXIBLE WAY OF ADDING BOTTOM TABS
-                  bottomNavigationBar: BottomNavigationBar(
-                    items: [
-                      BottomNavigationBarItem(
-                          icon: Icon(Icons.home), label: 'Section A'),
-                      BottomNavigationBarItem(
-                          icon: Icon(Icons.settings), label: 'settings'),
-                    ],
+                  bottomNavigationBar: BottomTabNavigation(
                     currentIndex: 0,
                   ),
+
+                  // CHAT GPT I NEED HELP WITH A SANE WAY / FLEXIBLE WAY OF ADDING BOTTOM TABS
                 );
               },
+            ),
+            GoRoute(
+              path: "/settings",
+              builder: (context, state) => Scaffold(
+                body: const SettingsView(),
+                bottomNavigationBar: BottomTabNavigation(
+                  currentIndex: 1,
+                ),
+              ),
             ),
             GoRoute(
               path: "/accounts",
@@ -233,10 +408,6 @@ class AppRouter {
                     ),
                     body: AccountsScreen());
               },
-            ),
-            GoRoute(
-              path: "/settings",
-              builder: (context, state) => const SettingsView(),
             ),
             GoRoute(
               path: "/asset/:assetName",
