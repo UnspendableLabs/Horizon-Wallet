@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:collection/collection.dart';
+import 'package:flutter/foundation.dart';
 // import 'package:horizon/domain/entities/account.dart';
 import 'package:horizon/domain/entities/account_v2.dart';
 import 'package:horizon/domain/entities/address_v2.dart';
@@ -194,7 +195,7 @@ class SessionStateCubit extends Cubit<SessionState> {
     emit(state_);
   }
 
-  void onAccountChanged(AccountV2 account) async {
+  void onAccountChanged(AccountV2 account, [VoidCallback? cb]) async {
     List<AddressV2> addresses =
         await _addressV2Repository.getByAccount(account);
 
@@ -211,7 +212,14 @@ class SessionStateCubit extends Cubit<SessionState> {
       account.hash,
     );
 
+
     emit(SessionState.success(next));
+
+
+    if ( cb != null) {
+      cb();
+    }
+
   }
 
   void onOnboarding() {
@@ -257,10 +265,9 @@ class SessionStateCubit extends Cubit<SessionState> {
           cacheProvider.getString("current-account-hash");
 
       // TODO: save selected account index
-      AccountV2 currentAccount =
-          accounts.firstWhereOrNull(
-                (account) => account.hash == currentAccountHash,
-              ) ??
+      AccountV2 currentAccount = accounts.firstWhereOrNull(
+            (account) => account.hash == currentAccountHash,
+          ) ??
           accounts.first;
       // List<AccountV2> accounts = await _accountV2Repository.getAll();
 

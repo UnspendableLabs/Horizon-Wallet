@@ -7,6 +7,7 @@ import 'package:horizon/presentation/common/gradient_avatar.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 import 'package:horizon/utils/app_icons.dart';
 import 'package:horizon/utils/app_icons.dart';
+import 'package:go_router/go_router.dart';
 
 import 'package:formz/formz.dart';
 import "./bloc/generate_account_bloc.dart";
@@ -64,7 +65,11 @@ class AccountsScreen extends StatelessWidget {
                       onTap: () {
                         context
                             .read<SessionStateCubit>()
-                            .onAccountChanged(account);
+                            .onAccountChanged(account, () {
+                          context.go("/dashboard");
+                        });
+
+                        // TODO: this isn't totally ideal
                         // Update session (if changing current account is allowed)
                         // Navigator.of(context).pop(); // go back after selecting
                       },
