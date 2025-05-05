@@ -41,6 +41,7 @@ class AppIcons {
   static const String refresh = '$_iconPath/refresh.svg';
   static const String spectacles = '$_iconPath/spectacles.svg';
   static const String chevronRight = '$_iconPath/chevron_right.svg';
+  static const String wallet = '$_iconPath/wallet.svg';
 
   static Widget getIcon(
     String iconPath, {
@@ -83,6 +84,23 @@ class AppIcons {
   }) {
     return getIcon(
       receive,
+      context: context,
+      width: width,
+      height: height,
+      color: color,
+      fit: fit,
+    );
+  }
+
+  static Widget walletIcon({
+    required BuildContext context,
+    double? width,
+    double? height,
+    Color? color,
+    BoxFit fit = BoxFit.contain,
+  }) {
+    return getIcon(
+      wallet,
       context: context,
       width: width,
       height: height,

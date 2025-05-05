@@ -1,5 +1,6 @@
 import 'package:horizon/domain/repositories/settings_repository.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
+import "package:fpdart/fpdart.dart";
 
 class SettingsRepositoryImpl implements SettingsRepository {
   @override
@@ -15,4 +16,16 @@ class SettingsRepositoryImpl implements SettingsRepository {
   @override
   int get lostFocusTimeout =>
       Settings.getValue<int>(SettingsKeys.lostFocusTimeout.toString()) ?? 1;
+
+  @override
+  Network get network => Option.fromNullable(
+          Settings.getValue<String>((SettingsKeys.network.toString())))
+      .flatMap(
+        NetworkX.fromString,
+      )
+      .getOrElse(() => Network.mainnet);
+
+  @override
+  Future<void> setNetwork(Network value) =>
+      Settings.setValue(SettingsKeys.network.toString(), value.name);
 }
