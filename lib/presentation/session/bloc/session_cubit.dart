@@ -288,7 +288,7 @@ class SessionStateCubit extends Cubit<SessionState> {
       SessionStateSuccess success = state.successOrThrow();
 
       emit(SessionState.success(success.copyWith(
-        redirect: true,
+        redirect: false, // not sure about this....
         // wallet: wallet,
         accounts: accounts,
         addresses: addresses,

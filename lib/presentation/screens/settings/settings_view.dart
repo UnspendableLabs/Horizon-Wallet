@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
+import 'package:horizon/domain/repositories/settings_repository.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/screens/settings/import_address/import_address_flow.dart';
@@ -14,9 +15,12 @@ import 'package:horizon/presentation/session/theme/bloc/theme_bloc.dart';
 import 'package:horizon/presentation/session/theme/bloc/theme_event.dart';
 import 'package:horizon/presentation/shell/app_shell.dart';
 import 'package:horizon/utils/app_icons.dart';
+import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
+import 'package:fpdart/fpdart.dart' show Option;
 
 enum SettingsPage {
   main,
+  network,
   security,
   seedPhrase,
   importAddress,
@@ -36,7 +40,6 @@ class SettingsItem extends StatelessWidget {
     this.onTap,
     this.trailing,
   });
-
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -279,9 +282,13 @@ class ThemeToggle extends StatelessWidget {
 }
 
 class SettingsView extends StatefulWidget {
-  const SettingsView({
+  SettingsRepository _settingsRepository;
+
+  SettingsView({
+    SettingsRepository? settingsRepository,
     super.key,
-  });
+  }) : _settingsRepository =
+            settingsRepository ?? GetIt.I<SettingsRepository>();
 
   @override
   State<SettingsView> createState() => _SettingsViewState();
@@ -300,6 +307,8 @@ class _SettingsViewState extends State<SettingsView> {
     switch (_currentPage) {
       case SettingsPage.main:
         return "Settings";
+      case SettingsPage.network:
+        return "Network";
       case SettingsPage.security:
         return "Security";
       case SettingsPage.seedPhrase:
@@ -315,6 +324,8 @@ class _SettingsViewState extends State<SettingsView> {
     switch (_currentPage) {
       case SettingsPage.main:
         return _buildMainSettings();
+      case SettingsPage.network:
+        return Text("Network");
       case SettingsPage.security:
         return const SecurityView();
       case SettingsPage.seedPhrase:
@@ -374,6 +385,55 @@ class _SettingsViewState extends State<SettingsView> {
             onChanged: (value) {
               context.read<ThemeBloc>().add(ThemeToggled());
             },
+          ),
+        ),
+        const SizedBox(height: 10),
+        SettingsItem(
+          title: 'Network',
+          icon: AppIcons.walletIcon(context: context),
+          // trailing: Row(children: [
+          //   Text(widget._settingsRepository.network.name),
+          //   AppIcons.chevronRightIcon(
+          //     context: context,
+          //     color: Theme.of(context).iconTheme.color,
+          //   ),
+          // ]),
+
+          onTap: () {
+            // no op
+          },
+
+          trailing: SizedBox(
+            width: 120,
+            height: 40,
+            child: ValueChangeObserver(
+                defaultValue: Network.mainnet,
+                cacheKey: SettingsKeys.network.toString(),
+                builder: (context, value, _) {
+                  return HorizonRedesignDropdown<String>(
+                    useModal: true,
+                    onChanged: (value) {
+                      Option.fromNullable(value)
+                          .flatMap(NetworkX.fromString)
+                          .fold(() {
+                        print("invariant");
+                      }, (Network network) {
+                        widget._settingsRepository.setNetwork(network);
+                      });
+                    },
+                    items: Network.values
+                        .map((network) => DropdownMenuItem<String>(
+                              value: network.name,
+                              child: Text(
+                                network.name, // or a prettier label if desired
+                                textAlign: TextAlign.center,
+                              ),
+                            ))
+                        .toList(),
+                    selectedValue: widget._settingsRepository.network.name,
+                    hintText: 'Select timeout',
+                  );
+                }),
           ),
         ),
         const SizedBox(height: 40),

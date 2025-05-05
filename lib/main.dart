@@ -312,7 +312,7 @@ class AppRouter {
             return ValueChangeObserver(
               cacheKey: SettingsKeys.inactivityTimeout.toString(),
               defaultValue: 5,
-              builder: (context, inactivityTimeout, onChanged) {
+              builder: (context, inactivityTimeout, _) {
                 return BlocProvider(
                   key: Key("inactivity-timeout:$inactivityTimeout"),
                   create: (_) {
@@ -360,7 +360,7 @@ class AppRouter {
             GoRoute(
               path: "/settings",
               builder: (context, state) => Scaffold(
-                body: const SettingsView(),
+                body: SettingsView(),
                 bottomNavigationBar: BottomTabNavigation(
                   currentIndex: 1,
                 ),
@@ -466,7 +466,7 @@ class AppRouter {
               });
 
               if (data.redirect) {
-                return "/accounts";
+                return "/settings";
               }
             },
             // if the session state is not yet loaded, show a loading screen

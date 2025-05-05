@@ -1,6 +1,6 @@
 import 'package:pub_semver/pub_semver.dart';
-
-enum Network { mainnet, testnet, testnet4, regtest }
+import "package:horizon/domain/entities/network.dart";
+export "package:horizon/domain/entities/network.dart";
 
 abstract class Config {
   Version get version;
