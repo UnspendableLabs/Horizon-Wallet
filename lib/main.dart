@@ -7,15 +7,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
-import 'package:horizon/common/constants.dart';
 import 'package:horizon/common/fn.dart';
-import 'package:horizon/common/uuid.dart';
 import 'package:horizon/core/logging/logger.dart';
-import 'package:horizon/data/services/regtest_utils.dart';
 import 'package:horizon/data/sources/local/db_manager.dart';
-import 'package:horizon/domain/entities/account.dart';
-import 'package:horizon/domain/entities/address.dart';
-import 'package:horizon/domain/entities/wallet.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/action_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
@@ -62,61 +56,6 @@ import 'package:horizon/utils/app_icons.dart';
 import 'package:pub_semver/pub_semver.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
-
-Future<void> setupRegtestWallet() async {
-  // read env for regtest private key
-  const regtestPrivateKey = String.fromEnvironment('REG_TEST_PK');
-  const regtestPassword = String.fromEnvironment('REG_TEST_PASSWORD');
-  const network = String.fromEnvironment('NETWORK');
-
-  if (regtestPrivateKey != "" &&
-      regtestPassword != "" &&
-      network == "regtest") {
-    RegTestUtils regTestUtils = RegTestUtils();
-    EncryptionService encryptionService = GetIt.I<EncryptionService>();
-    AddressService addressService = GetIt.I<AddressService>();
-    final accountRepository = GetIt.I<AccountRepository>();
-    final addressRepository = GetIt.I<AddressRepository>();
-    final walletRepository = GetIt.I<WalletRepository>();
-
-    final maybeCurrentWallet = await walletRepository.getCurrentWallet();
-    if (maybeCurrentWallet != null) {
-      return;
-    }
-
-    Wallet wallet =
-        await regTestUtils.fromBase58(regtestPrivateKey, regtestPassword);
-
-    String decryptedPrivKey = await encryptionService.decrypt(
-        wallet.encryptedPrivKey, regtestPassword);
-
-    //m/84'/1'/0'/0
-    Account account = Account(
-      name: 'Regtest #0',
-      walletUuid: wallet.uuid,
-      purpose: '84\'',
-      coinType: '1\'',
-      accountIndex: '0\'',
-      uuid: uuid.v4(),
-      importFormat: ImportFormat.horizon,
-    );
-
-    List<Address> addresses = await addressService.deriveAddressSegwitRange(
-        privKey: decryptedPrivKey,
-        chainCodeHex: wallet.chainCodeHex,
-        accountUuid: account.uuid,
-        purpose: account.purpose,
-        coin: account.coinType,
-        account: account.accountIndex,
-        change: '0',
-        start: 0,
-        end: 9);
-
-    await walletRepository.insert(wallet);
-    await accountRepository.insert(account);
-    await addressRepository.insertMany(addresses);
-  }
-}
 
 class LoadingScreen extends StatelessWidget {
   const LoadingScreen({this.from, super.key});
@@ -239,6 +178,16 @@ class AppRouter {
                 return Scaffold(
                   backgroundColor: Theme.of(context).scaffoldBackgroundColor,
                   body: const PortfolioView(),
+                  // CHAT GPT I NEED HELP WITH A SANE WAY / FLEXIBLE WAY OF ADDING BOTTOM TABS
+                  bottomNavigationBar: BottomNavigationBar(
+                    items: [
+                      BottomNavigationBarItem(
+                          icon: Icon(Icons.home), label: 'Section A'),
+                      BottomNavigationBarItem(
+                          icon: Icon(Icons.settings), label: 'settings'),
+                    ],
+                    currentIndex: 0,
+                  ),
                 );
               },
             ),
@@ -408,7 +357,6 @@ void main() {
   runZonedGuarded<Future<void>>(() async {
     WidgetsFlutterBinding.ensureInitialized();
 
-    await setupRegtestWallet();
     await initSettings();
 
     final version = GetIt.I<Config>().version;
