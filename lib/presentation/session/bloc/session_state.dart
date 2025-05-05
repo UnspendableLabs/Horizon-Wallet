@@ -4,7 +4,7 @@ import 'package:horizon/domain/entities/imported_address.dart';
 import 'package:horizon/domain/entities/wallet.dart';
 // import 'package:horizon/domain/entities/account.dart';
 import 'package:horizon/domain/entities/account_v2.dart';
-import 'package:horizon/domain/entities/address.dart';
+import 'package:horizon/domain/entities/address_v2.dart';
 
 part 'session_state.freezed.dart';
 
@@ -27,7 +27,7 @@ extension SessionStateX on SessionState {
 }
 
 extension SessionStateAddressesX on SessionState {
-  List<Address> get addresses => successOrThrow().addresses;
+  List<AddressV2> get addresses => successOrThrow().addresses;
   List<ImportedAddress> get importedAddresses =>
       successOrThrow().importedAddresses ?? [];
   List<String> get allAddresses => [
@@ -51,7 +51,7 @@ class SessionStateSuccess with _$SessionStateSuccess {
     // required Wallet wallet,
     required String decryptionKey,
     required List<AccountV2> accounts,
-    required List<Address> addresses,
+    required List<AddressV2> addresses,
     List<ImportedAddress>? importedAddresses,
   }) = _SessionStateSuccess;
 }

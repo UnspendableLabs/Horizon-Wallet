@@ -9,6 +9,11 @@ class WalletConfigsDao extends DatabaseAccessor<DB>
     with _$WalletConfigsDaoMixin {
   WalletConfigsDao(super.db);
 
+  Future<WalletConfig?> getByID(String uuid) async {
+    return (select(walletConfigs)..where((tbl) => tbl.uuid.equals(uuid)))
+        .getSingleOrNull();
+  }
+
   Future<List<WalletConfig>> getAll() async {
     return select(walletConfigs).get();
   }
@@ -16,7 +21,7 @@ class WalletConfigsDao extends DatabaseAccessor<DB>
   Future<int> create(WalletConfig config) async {
     return into(walletConfigs).insert(config);
   }
-  
+
   Future<bool> update_(WalletConfig config) async {
     return update(walletConfigs).replace(config);
   }

@@ -127,7 +127,7 @@ class _PortfolioViewState extends State<PortfolioView>
                     child: Row(
                       children: [
                         GradientAvatar(
-                          input: session.currentAccount!.uuid,
+                          input: session.currentAccount!.hash,
                           radius: 12,
                         ),
                         const SizedBox(width: 12),

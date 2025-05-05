@@ -1,3 +1,4 @@
+import 'package:get_it/get_it.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:horizon/common/constants.dart';
 import 'package:horizon/common/uuid.dart';
@@ -8,6 +9,7 @@ import 'package:horizon/domain/services/mnemonic_service.dart';
 import 'package:horizon/domain/services/wallet_service.dart';
 
 import 'package:horizon/domain/repositories/account_v2_repository.dart';
+import 'package:horizon/domain/repositories/wallet_config_repository.dart';
 
 import 'package:horizon/presentation/common/usecase/set_mnemonic_usecase.dart';
 import 'package:horizon/presentation/screens/onboarding_import/bloc/onboarding_import_event.dart';
@@ -19,12 +21,16 @@ class OnboardingImportBloc
   final SetMnemonicUseCase _setMnemonicUseCase;
   final WalletService walletService;
   final AccountV2Repository accountV2Repository;
+  final WalletConfigRepository _walletConfigRepository;
   OnboardingImportBloc(
       {required this.mnemonicService,
       required this.walletService,
       required setMnemonicUseCase,
-      required this.accountV2Repository})
+      required this.accountV2Repository,
+      WalletConfigRepository? walletConfigRepository})
       : _setMnemonicUseCase = setMnemonicUseCase,
+        _walletConfigRepository =
+            walletConfigRepository ?? GetIt.I<WalletConfigRepository>(),
         super(const OnboardingImportState()) {
     on<MnemonicChanged>((event, emit) async {
       if (event.mnemonic.isEmpty) {
@@ -113,7 +119,9 @@ class OnboardingImportBloc
           password: password,
         );
 
-        await accountV2Repository.insert(AccountV2(uuid: uuid.v4(), index: 0));
+        await _walletConfigRepository.initialize();
+
+        // await accountV2Repository.insert(AccountV2(uuid: uuid.v4(), index: 0));
 
         emit(state.copyWith(importState: const ImportState.success()));
       } catch (e) {
