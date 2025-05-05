@@ -5,8 +5,6 @@ import 'package:horizon/presentation/session/bloc/session_state.dart';
 
 import 'package:horizon/presentation/common/gradient_avatar.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
-import 'package:horizon/utils/app_icons.dart';
-import 'package:horizon/utils/app_icons.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:formz/formz.dart';
@@ -25,11 +23,7 @@ class AccountsScreen extends StatelessWidget {
       create: (_) => GenerateAccountBloc(),
       child: BlocConsumer<GenerateAccountBloc, GenerateAccountState>(
           listener: (context, state) {
-        // Chat gpt
-        // if formz submission sttus has changed to success, i need to run
-
         if (state.status.isSuccess) {
-          print("is this called constantyly?");
           context.read<SessionStateCubit>().refresh();
         }
       }, builder: (context, state) {
