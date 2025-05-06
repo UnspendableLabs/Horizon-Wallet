@@ -224,17 +224,18 @@ void setup() {
     receiveTimeout: const Duration(seconds: 3),
   ));
 
+  // this is no longer required
   // Add basic auth interceptor
-  dio.interceptors.add(InterceptorsWrapper(
-    onRequest: (options, handler) {
-      String username = config.counterpartyApiUsername;
-      String password = config.counterpartyApiPassword;
-      String basicAuth =
-          'Basic ${base64Encode(utf8.encode('$username:$password'))}';
-      options.headers['Authorization'] = basicAuth;
-      return handler.next(options);
-    },
-  ));
+  // dio.interceptors.add(InterceptorsWrapper(
+  //   onRequest: (options, handler) {
+  //     String username = config.counterpartyApiUsername;
+  //     String password = config.counterpartyApiPassword;
+  //     String basicAuth =
+  //         'Basic ${base64Encode(utf8.encode('$username:$password'))}';
+  //     options.headers['Authorization'] = basicAuth;
+  //     return handler.next(options);
+  //   },
+  // ));
 
   dio.interceptors.addAll([
     TimeoutInterceptor(),
@@ -341,6 +342,8 @@ void setup() {
     // blockCypherApi: BlockCypherApi(dio: blockCypherDio)
   ));
   injector.registerSingleton<CacheProvider>(HiveCache());
+  
+  injector.registerSingleton<SettingsRepository>(SettingsRepositoryImpl());
 
   injector.registerSingleton<DatabaseManager>(DatabaseManager());
 
@@ -658,7 +661,6 @@ void setup() {
     GetIt.I.registerSingleton<PlatformService>(PlatformServiceWebImpl());
   }
 
-  injector.registerSingleton<SettingsRepository>(SettingsRepositoryImpl());
 
   injector.registerSingleton<SetMnemonicUseCase>(SetMnemonicUseCase(
       encryptionService: GetIt.I<EncryptionService>(),

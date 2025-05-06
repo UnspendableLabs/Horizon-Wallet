@@ -1,7 +1,7 @@
 import "package:collection/collection.dart";
 import "package:fpdart/fpdart.dart";
 
-enum Network { mainnet, testnet, testnet4, regtest }
+enum Network { mainnet, testnet4 }
 
 extension NetworkX on Network {
   static Option<Network> fromString(String value) {

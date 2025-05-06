@@ -35,12 +35,13 @@ class MempoolSpaceApi {
         _configRepository = configRepository;
 
   Future<MempoolSpaceFeesRecommendedResponse> getFeeEstimates() async {
+
     String url = switch (_configRepository.network) {
       Network.mainnet => 'https://mempool.space/api/v1/fees/recommended',
-      Network.testnet => 'https://mempool.space/api/v1/fees/recommended',
+      // Network.testnet => 'https://mempool.space/api/v1/fees/recommended',
       Network.testnet4 => 'https://mempool.space/api/v1/fees/recommended',
-      Network.regtest => throw UnsupportedError(
-          'MempoolSpace.getFeeEstimates not supported on regtest network.')
+      // Network.regtest => throw UnsupportedError(
+      //     'MempoolSpace.getFeeEstimates not supported on regtest network.')
     };
 
     final response = await _dio.get(url);

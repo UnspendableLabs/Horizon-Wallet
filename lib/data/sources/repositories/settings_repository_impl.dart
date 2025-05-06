@@ -1,4 +1,5 @@
 import 'package:horizon/domain/repositories/settings_repository.dart';
+import 'package:horizon/domain/entities/base_path.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import "package:fpdart/fpdart.dart";
 
@@ -24,6 +25,13 @@ class SettingsRepositoryImpl implements SettingsRepository {
         NetworkX.fromString,
       )
       .getOrElse(() => Network.mainnet);
+
+  // basePath and network need to be kepts in a sync...
+  @override
+  BasePath get basePath => BasePath((Network network) => switch (network) {
+        Network.mainnet => "84'/0'/",
+        Network.testnet4 => "84'/1'/",
+      });
 
   @override
   Future<void> setNetwork(Network value) =>
