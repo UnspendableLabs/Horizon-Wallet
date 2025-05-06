@@ -23,16 +23,29 @@ class AddressServiceImpl implements AddressService {
   @override
   Future<String> deriveAddressWIP({
     required mnemonic, required path, }) async { // final String basePath = 'm/84\'/1\'/0\'/0/'; final network = _getNetwork();
+
+
+    print("this is being called, i dare say");
+
     JSUint8Array seed = await bip39.mnemonicToSeed(mnemonic).toDart;
 
+    print("seed $seed");
+
     final network = _getNetwork();
+    
+    print("seed $network");
 
     bip32.BIP32Interface root = _bip32.fromSeed(seed as Buffer, network);
+
+    print("bip32 root $root");
 
     bip32.BIP32Interface child = _deriveChildKey(
         path: path,
         privKey: hex.encode(root.privateKey!.toDart),
         chainCodeHex: hex.encode(root.chainCode.toDart));
+    
+    print("child $child");
+
 
     String address = _bech32FromBip32(child);
 

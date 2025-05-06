@@ -118,11 +118,11 @@ class OnboardingImportBloc
 
         final basePath = state.walletType!.basePath;
 
-        await _walletConfigRepository.findOrCreate(
-          basePath: basePath.get(Network.mainnet),
-          network: Network.mainnet,
-        );
-
+        // await _walletConfigRepository.findOrCreate(
+        //   basePath: basePath.get(Network.mainnet),
+        //   network: Network.mainnet,
+        // );
+        //
         _settingsRepository.setBasePath(basePath);
 
         // await accountV2Repository.insert(AccountV2(uuid: uuid.v4(), index: 0));

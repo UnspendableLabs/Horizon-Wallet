@@ -5,14 +5,14 @@ class BasePath {
   BasePath(this.get);
 
   static final horizon = BasePath((Network network) => switch (network) {
-        Network.mainnet => "84'/0'/",
-        Network.testnet4 => "84'/1'/",
+        Network.mainnet => "m/84'/0'/",
+        Network.testnet4 => "m/84'/1'/",
       });
 
   // counterwallet / freewallet
   static final legacy = BasePath((Network network) => switch (network) {
-        Network.mainnet => "/",
-        Network.testnet4 => "/",
+        Network.mainnet => "m/",
+        Network.testnet4 => "m/",
       });
 
   String serialize() {
@@ -24,9 +24,9 @@ class BasePath {
     if (parts.length != 2) {
       throw Exception("Invalid serialized base path");
     }
-    return BasePath((Network network) => switch(network) {
-        Network.mainnet => parts[0],
-        Network.testnet4 => parts[1]
-      });
+    return BasePath((Network network) => switch (network) {
+          Network.mainnet => parts[0],
+          Network.testnet4 => parts[1]
+        });
   }
 }
