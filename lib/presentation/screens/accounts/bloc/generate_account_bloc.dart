@@ -3,6 +3,7 @@ import 'package:get_it/get_it.dart';
 import 'package:horizon/domain/repositories/wallet_config_repository.dart';
 import 'package:formz/formz.dart';
 import "package:equatable/equatable.dart";
+import 'package:horizon/domain/entities/wallet_config.dart';
 
 abstract class GenerateAccountEvent {}
 
@@ -21,7 +22,9 @@ class GenerateAccountState extends Equatable {
 
 class GenerateAccountBloc
     extends Bloc<GenerateAccountEvent, GenerateAccountState> {
+  // TODO: passing in wallet config here is slight smell
   final WalletConfigRepository _walletConfigRepository;
+
   GenerateAccountBloc({
     WalletConfigRepository? walletConfigRepository,
   })  : _walletConfigRepository =
@@ -32,20 +35,25 @@ class GenerateAccountBloc
         status: FormzSubmissionStatus.inProgress,
       ));
 
+      final walletConfig =
+          await _walletConfigRepository.getCurrent();
+
+      print("walletConfig.basePath: ${walletConfig.network}");
+      print("walletConfig.basePath: ${walletConfig.basePath}");
       // TODO: current config needs to be dynamic.
-      final walletConfigs = await _walletConfigRepository.getAll();
-      final mainnetConfig = walletConfigs.first;
 
       try {
-        final create = await _walletConfigRepository.update(mainnetConfig
-            .copyWith(accountIndexEnd: mainnetConfig.accountIndexEnd + 1));
+        await _walletConfigRepository.update(walletConfig.copyWith(
+            accountIndexEnd: walletConfig.accountIndexEnd + 1));
         emit(GenerateAccountState(
           status: FormzSubmissionStatus.success,
         ));
         emit(GenerateAccountState(
           status: FormzSubmissionStatus.initial,
         ));
-      } catch (e, callstack) {
+      } catch (e, _) {
+        print(e);
+        print(_);
         emit(GenerateAccountState(
           status: FormzSubmissionStatus.failure,
         ));

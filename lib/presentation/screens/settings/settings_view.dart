@@ -416,9 +416,12 @@ class _SettingsViewState extends State<SettingsView> {
                       Option.fromNullable(value)
                           .flatMap(NetworkX.fromString)
                           .fold(() {
-                        print("invariant");
+                        print("TODO: invariant logging");
                       }, (Network network) {
-                        widget._settingsRepository.setNetwork(network);
+                        context.read<SessionStateCubit>().onNetworkChanged(
+                            network,
+                            () =>
+                                widget._settingsRepository.setNetwork(network));
                       });
                     },
                     items: Network.values

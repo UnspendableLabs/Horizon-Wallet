@@ -22,11 +22,10 @@ class AddressServiceImpl implements AddressService {
 
   @override
   Future<String> deriveAddressWIP({
-    required mnemonic,
-    required path, }) async { // final String basePath = 'm/84\'/1\'/0\'/0/';
-    final network = _getNetwork();
-
+    required mnemonic, required path, }) async { // final String basePath = 'm/84\'/1\'/0\'/0/'; final network = _getNetwork();
     JSUint8Array seed = await bip39.mnemonicToSeed(mnemonic).toDart;
+
+    final network = _getNetwork();
 
     bip32.BIP32Interface root = _bip32.fromSeed(seed as Buffer, network);
 
@@ -235,16 +234,16 @@ class AddressServiceImpl implements AddressService {
 
   _getNetwork() => switch (config.network) {
         Network.mainnet => ecpair.bitcoin,
-        Network.testnet => ecpair.testnet,
+        // Network.testnet => ecpair.testnet,
         Network.testnet4 => ecpair.testnet,
-        Network.regtest => ecpair.regtest,
+        // Network.regtest => ecpair.regtest,
       };
 
   _getNetworkBech32() => switch (config.network) {
         Network.mainnet => ecpair.bitcoin.bech32,
-        Network.testnet => ecpair.testnet.bech32,
+        // Network.testnet => ecpair.testnet.bech32,
         Network.testnet4 => ecpair.testnet.bech32,
-        Network.regtest => ecpair.regtest.bech32,
+        // Network.regtest => ecpair.regtrst.bech32,
       };
 
   String _getPathForImportFormat(
