@@ -8,7 +8,7 @@ abstract class WalletConfigRepository {
   Future<Option<WalletConfig>> getByID({required String id});
   Future<int> create(WalletConfig walletConfig);
   Future<bool> update(WalletConfig walletConfig);
-  Future<int> initialize();
+  // Future<int> initialize();
   Future<WalletConfig> findOrCreate(
       {required String basePath, required Network network});
 

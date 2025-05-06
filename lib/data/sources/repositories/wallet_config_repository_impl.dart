@@ -33,15 +33,6 @@ class WalletConfigRepositoryImpl implements WalletConfigRepository {
     );
   }
 
-  @override
-  Future<int> initialize() async {
-    return await _walletConfigsDao.create(local.WalletConfig(
-        network: "mainnet",
-        basePath: "84'/0'/",
-        accountIndexStart: 0,
-        accountIndexEnd: 0,
-        uuid: uuid.v4()));
-  }
 
   @override
   Future<Option<entity.WalletConfig>> getByID({required String id}) async {

@@ -2,6 +2,7 @@ import 'package:horizon/domain/repositories/settings_repository.dart';
 import 'package:horizon/domain/entities/base_path.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import "package:fpdart/fpdart.dart";
+import "package:horizon/extensions.dart";
 
 class SettingsRepositoryImpl implements SettingsRepository {
   @override
@@ -27,13 +28,18 @@ class SettingsRepositoryImpl implements SettingsRepository {
       .getOrElse(() => Network.mainnet);
 
   // basePath and network need to be kepts in a sync...
+
   @override
-  BasePath get basePath => BasePath((Network network) => switch (network) {
-        Network.mainnet => "84'/0'/",
-        Network.testnet4 => "84'/1'/",
-      });
+  BasePath get basePath => Option.fromNullable(
+          Settings.getValue<String>((SettingsKeys.basePath.toString())))
+      .map(BasePath.deserialize)
+      .getOrThrow("invariant: basePath is not set");
 
   @override
   Future<void> setNetwork(Network value) =>
       Settings.setValue(SettingsKeys.network.toString(), value.name);
+
+  @override
+  Future<void> setBasePath(BasePath value) =>
+      Settings.setValue(SettingsKeys.basePath.toString(), value.serialize());
 }

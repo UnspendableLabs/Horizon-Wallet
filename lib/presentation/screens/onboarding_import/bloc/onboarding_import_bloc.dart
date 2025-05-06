@@ -2,6 +2,7 @@ import 'package:get_it/get_it.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:horizon/common/constants.dart';
 import 'package:horizon/common/uuid.dart';
+import "package:horizon/domain/entities/network.dart";
 
 import 'package:horizon/domain/entities/account_v2.dart';
 
@@ -10,6 +11,7 @@ import 'package:horizon/domain/services/wallet_service.dart';
 
 import 'package:horizon/domain/repositories/account_v2_repository.dart';
 import 'package:horizon/domain/repositories/wallet_config_repository.dart';
+import 'package:horizon/domain/repositories/settings_repository.dart';
 
 import 'package:horizon/presentation/common/usecase/set_mnemonic_usecase.dart';
 import 'package:horizon/presentation/screens/onboarding_import/bloc/onboarding_import_event.dart';
@@ -22,15 +24,19 @@ class OnboardingImportBloc
   final WalletService walletService;
   final AccountV2Repository accountV2Repository;
   final WalletConfigRepository _walletConfigRepository;
+  final SettingsRepository _settingsRepository;
   OnboardingImportBloc(
       {required this.mnemonicService,
       required this.walletService,
       required setMnemonicUseCase,
       required this.accountV2Repository,
-      WalletConfigRepository? walletConfigRepository})
+      WalletConfigRepository? walletConfigRepository,
+      SettingsRepository? settingsRepository})
       : _setMnemonicUseCase = setMnemonicUseCase,
         _walletConfigRepository =
             walletConfigRepository ?? GetIt.I<WalletConfigRepository>(),
+        _settingsRepository =
+            settingsRepository ?? GetIt.I<SettingsRepository>(),
         super(const OnboardingImportState()) {
     on<MnemonicChanged>((event, emit) async {
       if (event.mnemonic.isEmpty) {
@@ -44,22 +50,27 @@ class OnboardingImportBloc
             mnemonic: event.mnemonic));
         return;
       } else {
-        bool validMnemonic = switch (state.walletType) {
-          WalletType.bip32 =>
-            mnemonicService.validateCounterwalletMnemonic(event.mnemonic) ||
-                mnemonicService.validateMnemonic(event.mnemonic),
-          WalletType.horizon =>
-            mnemonicService.validateMnemonic(event.mnemonic),
-          null => false,
-        };
+        WalletType? inferredWalletType;
+        bool isValid = false;
 
-        if (!validMnemonic) {
-          emit(state.copyWith(
-              mnemonicError: "Invalid seed phrase", mnemonic: event.mnemonic));
-          return;
+        if (mnemonicService.validateMnemonic(event.mnemonic)) {
+          inferredWalletType = WalletType.horizon;
+          isValid = true;
+        } else if (mnemonicService
+            .validateCounterwalletMnemonic(event.mnemonic)) {
+          inferredWalletType = WalletType.bip32;
+          isValid = true;
         }
 
-        emit(state.copyWith(mnemonic: event.mnemonic, mnemonicError: null));
+        if (!isValid) {
+          emit(state.copyWith(mnemonicError: "Invalid seed phrase"));
+          return;
+        }
+        emit(state.copyWith(
+          mnemonic: event.mnemonic,
+          mnemonicError: null,
+          walletType: inferredWalletType,
+        ));
       }
     });
 
@@ -83,22 +94,8 @@ class OnboardingImportBloc
       } else if (state.mnemonic.split(' ').length != 12) {
         emit(state.copyWith(mnemonicError: "Seed phrase must be twelve words"));
         return;
-      } else {
-        bool validMnemonic = false;
-
-        if (state.walletType == WalletType.bip32) {
-          validMnemonic =
-              mnemonicService.validateCounterwalletMnemonic(event.mnemonic) ||
-                  mnemonicService.validateMnemonic(event.mnemonic);
-        } else if (state.walletType == WalletType.horizon) {
-          validMnemonic = mnemonicService.validateMnemonic(event.mnemonic);
-        }
-
-        if (!validMnemonic) {
-          emit(state.copyWith(
-              mnemonicError: "Invalid seed phrase", mnemonic: event.mnemonic));
-          return;
-        }
+      } else if (state.mnemonicError != null) {
+        return;
       }
 
       emit(state.copyWith(
@@ -119,7 +116,14 @@ class OnboardingImportBloc
           password: password,
         );
 
-        await _walletConfigRepository.initialize();
+        final basePath = state.walletType!.basePath;
+
+        await _walletConfigRepository.findOrCreate(
+          basePath: basePath.get(Network.mainnet),
+          network: Network.mainnet,
+        );
+
+        _settingsRepository.setBasePath(basePath);
 
         // await accountV2Repository.insert(AccountV2(uuid: uuid.v4(), index: 0));
 
@@ -141,7 +145,7 @@ class OnboardingImportBloc
 
     on<ImportFormatBackPressed>((event, emit) async {
       emit(state.copyWith(
-          currentStep: OnboardingImportStep.chooseFormat,
+          currentStep: OnboardingImportStep.inputSeed,
           mnemonicError: null,
           mnemonic: '',
           walletType: null));

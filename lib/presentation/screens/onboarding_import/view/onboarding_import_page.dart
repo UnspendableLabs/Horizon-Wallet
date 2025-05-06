@@ -68,7 +68,6 @@ class _OnboardingImportPageState extends State<OnboardingImportPage> {
 
         return OnboardingShell(
           steps: [
-            const ChooseFormatStep(),
             SeedInputStep(seedInputKey: _seedInputKey),
             PasswordPrompt(
               key: _passwordStepKey,
@@ -97,10 +96,7 @@ class _OnboardingImportPageState extends State<OnboardingImportPage> {
             ),
           ],
           onBack: () {
-            if (state.currentStep == OnboardingImportStep.chooseFormat) {
-              final session = context.read<SessionStateCubit>();
-              session.onOnboarding();
-            } else if (state.currentStep == OnboardingImportStep.inputSeed) {
+            if (state.currentStep == OnboardingImportStep.inputSeed) {
               _seedInputKey.currentState?.clearInputs();
               context
                   .read<OnboardingImportBloc>()
@@ -112,9 +108,7 @@ class _OnboardingImportPageState extends State<OnboardingImportPage> {
             }
           },
           onNext: () {
-            if (state.currentStep == OnboardingImportStep.chooseFormat) {
-              context.read<OnboardingImportBloc>().add(ImportFormatSubmitted());
-            } else if (state.currentStep == OnboardingImportStep.inputSeed) {
+            if (state.currentStep == OnboardingImportStep.inputSeed) {
               context
                   .read<OnboardingImportBloc>()
                   .add(MnemonicSubmitted(mnemonic: state.mnemonic));
@@ -152,8 +146,6 @@ class _OnboardingImportPageState extends State<OnboardingImportPage> {
       );
       final isValid = _passwordStepKey.currentState?.isValid ?? false;
       return isValid && !error;
-    } else if (state.currentStep == OnboardingImportStep.chooseFormat) {
-      return state.walletType != null;
     } else {
       return true;
     }

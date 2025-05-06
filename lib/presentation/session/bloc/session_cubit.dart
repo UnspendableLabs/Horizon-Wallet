@@ -26,6 +26,7 @@ import 'package:horizon/domain/services/secure_kv_service.dart';
 import 'package:horizon/common/constants.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/extensions.dart';
+import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 
 import './session_state.dart';
 
@@ -353,7 +354,6 @@ class SessionStateCubit extends Cubit<SessionState> {
         addresses: addresses,
         importedAddresses: importedAddresses,
         walletConfig: walletConfig,
-
       )));
 
       // cacheProvider.setString(
@@ -364,4 +364,21 @@ class SessionStateCubit extends Cubit<SessionState> {
       emit(SessionState.error(error.toString()));
     }
   }
+}
+
+class SessionRepository {
+  final SessionStateCubit sessionCubit;
+  SessionState state;
+
+  SessionRepository({required this.sessionCubit})
+      : state = sessionCubit.state,
+        super() {
+    sessionCubit.stream.listen(_onSessionStateChanged);
+  }
+
+  void _onSessionStateChanged(SessionState newState) {
+    state = newState;
+  }
+
+  SessionStateSuccess get success => sessionCubit.state.successOrThrow();
 }
