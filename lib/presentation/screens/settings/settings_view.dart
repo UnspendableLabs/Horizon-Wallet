@@ -24,6 +24,7 @@ enum SettingsPage {
   security,
   seedPhrase,
   importAddress,
+  advanced,
   resetWallet,
 }
 
@@ -305,6 +306,8 @@ class _SettingsViewState extends State<SettingsView> {
 
   String _getPageTitle() {
     switch (_currentPage) {
+      case SettingsPage.advanced:
+        return "Advanced";
       case SettingsPage.main:
         return "Settings";
       case SettingsPage.network:
@@ -326,6 +329,57 @@ class _SettingsViewState extends State<SettingsView> {
         return _buildMainSettings();
       case SettingsPage.network:
         return Text("Network");
+      case SettingsPage.advanced:
+        return Column(
+          children: [
+            SettingsItem(
+              title: 'Wallet Type',
+              onTap: () {
+                // no op
+              },
+              trailing: SizedBox(
+                width: 120,
+                height: 40,
+                child: ValueChangeObserver(
+                    defaultValue: Network.mainnet,
+                    cacheKey: SettingsKeys.network.toString(),
+                    builder: (context, value, _) {
+                      return HorizonRedesignDropdown<String>(
+                        useModal: true,
+                        onChanged: (value) {
+                          Option.fromNullable(value)
+                              .flatMap(NetworkX.fromString)
+                              .fold(() {
+                            print("TODO: invariant logging");
+                          }, (Network network) {
+                            context.read<SessionStateCubit>().onNetworkChanged(
+                                network,
+                                () => widget._settingsRepository
+                                    .setNetwork(network));
+                          });
+                        },
+                        items: Network.values
+                            .map((network) => DropdownMenuItem<String>(
+                                  value: network.name,
+                                  child: Text(
+                                    network
+                                        .name, // or a prettier label if desired
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ))
+                            .toList(),
+                        selectedValue: widget._settingsRepository.network.name,
+                        hintText: 'Select timeout',
+                      );
+                    }),
+              ),
+            ),
+            SettingsItem(
+              title: 'Base Path',
+              trailing: Text("base path"),
+            ),
+          ],
+        );
       case SettingsPage.security:
         return const SecurityView();
       case SettingsPage.seedPhrase:
@@ -438,6 +492,14 @@ class _SettingsViewState extends State<SettingsView> {
                   );
                 }),
           ),
+        ),
+        SettingsItem(
+          title: 'Advanced',
+          onTap: () {
+            setState(() {
+              _currentPage = SettingsPage.advanced;
+            });
+          },
         ),
         const SizedBox(height: 40),
         Padding(

@@ -4,7 +4,7 @@ import 'package:horizon/common/constants.dart';
 part 'onboarding_import_state.freezed.dart';
 
 /// Enum to represent the current step in the import flow
-enum OnboardingImportStep { chooseFormat, inputSeed, inputPassword }
+enum OnboardingImportStep { inputSeed, inputPassword }
 
 @freezed
 class OnboardingImportState with _$OnboardingImportState {
@@ -12,7 +12,7 @@ class OnboardingImportState with _$OnboardingImportState {
     @Default("") String mnemonic,
     String? mnemonicError,
     WalletType? walletType,
-    @Default(OnboardingImportStep.chooseFormat) currentStep,
+    @Default(OnboardingImportStep.inputSeed) currentStep,
     @Default(ImportState.initial()) importState,
   }) = _OnboardingImportState;
 }

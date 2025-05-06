@@ -5,6 +5,7 @@ import 'package:get_it/get_it.dart';
 import 'package:horizon/data/services/secure_kv_service_impl.dart';
 import 'package:horizon/domain/entities/address_v2.dart';
 import 'package:horizon/domain/services/secure_kv_service.dart';
+import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 
 import 'package:horizon/data/sources/repositories/in_memory_key_repository_impl.dart';
 import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
@@ -342,7 +343,7 @@ void setup() {
     // blockCypherApi: BlockCypherApi(dio: blockCypherDio)
   ));
   injector.registerSingleton<CacheProvider>(HiveCache());
-  
+
   injector.registerSingleton<SettingsRepository>(SettingsRepositoryImpl());
 
   injector.registerSingleton<DatabaseManager>(DatabaseManager());
@@ -661,7 +662,6 @@ void setup() {
     GetIt.I.registerSingleton<PlatformService>(PlatformServiceWebImpl());
   }
 
-
   injector.registerSingleton<SetMnemonicUseCase>(SetMnemonicUseCase(
       encryptionService: GetIt.I<EncryptionService>(),
       inMemoryKeyRepository: GetIt.I<InMemoryKeyRepository>(),
@@ -669,6 +669,17 @@ void setup() {
 
   injector.registerSingleton<AddressV2Repository>(
       AddressV2RepositoryImpl(injector.get<DatabaseManager>().database));
+
+  injector.registerSingleton<SessionStateCubit>(SessionStateCubit(
+      kvService: GetIt.I<SecureKVService>(),
+      encryptionService: GetIt.I<EncryptionService>(),
+      inMemoryKeyRepository: GetIt.I<InMemoryKeyRepository>(),
+      cacheProvider: GetIt.I<CacheProvider>(),
+      // walletRepository: GetIt.I<WalletRepository>(),
+      // accountRepository: GetIt.I<AccountRepository>(),
+      // addressRepository: GetIt.I<AddressRepository>(),
+      importedAddressRepository: GetIt.I<ImportedAddressRepository>(),
+      analyticsService: GetIt.I<AnalyticsService>()));
 }
 
 class CustomDioException extends DioException {

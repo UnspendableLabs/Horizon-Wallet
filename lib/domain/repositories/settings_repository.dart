@@ -7,6 +7,7 @@ enum SettingsKeys {
   inactivityTimeout,
   lostFocusTimeout,
   network,
+  basePath,
 }
 
 abstract class SettingsRepository {
@@ -16,4 +17,5 @@ abstract class SettingsRepository {
   int get lostFocusTimeout;
   Network get network;
   Future<void> setNetwork(Network value);
+  Future<void> setBasePath(BasePath value);
 }
