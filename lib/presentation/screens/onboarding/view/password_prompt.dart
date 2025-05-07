@@ -5,7 +5,6 @@ import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 import 'package:horizon/utils/app_icons.dart';
 import 'package:password_strength_checker/password_strength_checker.dart';
 
-
 class PasswordPrompt extends StatefulWidget {
   final Widget? optionalErrorWidget;
   final void Function(String)? onPasswordChanged;
@@ -306,7 +305,6 @@ class PasswordPromptState extends State<PasswordPrompt> {
 
 PasswordStrength? evaluatePasswordStrength(String password) {
   if (password.isEmpty) return null;
-
   return PasswordStrength.calculate(text: password);
 }
 
