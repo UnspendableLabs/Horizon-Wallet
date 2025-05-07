@@ -62,11 +62,6 @@ class _LoginFormState extends State<LoginForm> {
         setState(() {
           _invalidPassword = true;
         });
-        // ScaffoldMessenger.of(context).showSnackBar(
-        //   const SnackBar(
-        //     content: Text('Invalid Password'),
-        //   ),
-        // );
       }
     }, builder: (context, state) {
       return Form(
