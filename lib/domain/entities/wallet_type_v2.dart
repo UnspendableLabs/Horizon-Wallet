@@ -1,9 +1,9 @@
-enum WalletTypeV2 {
-  horizon, 
-  freewallet,
-  counterwallet,
-  // custom
-}
+// enum WalletTypeV2 {
+//   horizon, 
+//   freewallet,
+//   counterwallet,
+//   // custom
+// }
 
 // extension WalletTypeV2X on WalletTypeV2 {
 //

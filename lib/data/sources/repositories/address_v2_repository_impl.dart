@@ -51,12 +51,16 @@ class AddressV2RepositoryImpl implements AddressV2Repository {
 
     final paths = List.generate(numAddresses + 1, (i) => i)
         .map((index) =>
-            (index, "${walletConfig.basePath}${account.index}'/0/$index"))
+            (index, "${walletConfig.basePath}${account.index}/0/$index"))
         .toList();
+
+    print(paths);
+
     List<AddressV2> addresses = [];
     for (final path in paths) {
 
       final start = DateTime.now();
+
 
       String address_ = await _addressService.deriveAddressWIP(
           path: path.$2, mnemonic: mnemonic);

@@ -1,5 +1,6 @@
 import "package:horizon/domain/entities/wallet_config.dart";
 import "package:horizon/domain/entities/network.dart";
+import "package:horizon/domain/entities/seed_derivation.dart";
 import "package:fpdart/fpdart.dart";
 
 abstract class WalletConfigRepository {
@@ -10,6 +11,7 @@ abstract class WalletConfigRepository {
   Future<bool> update(WalletConfig walletConfig);
   // Future<int> initialize();
   Future<WalletConfig> findOrCreate(
-      {required String basePath, required Network network});
-
+      {required String basePath,
+      required Network network,
+      SeedDerivation? seedDerivation});
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:get_it/get_it.dart';
+import 'package:horizon/domain/entities/wallet_type_v2.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/repositories/settings_repository.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
@@ -10,6 +11,7 @@ import 'package:horizon/presentation/screens/settings/import_address/import_addr
 import 'package:horizon/presentation/screens/settings/reset_wallet/reset_wallet_flow.dart';
 import 'package:horizon/presentation/screens/settings/security_view.dart';
 import 'package:horizon/presentation/screens/settings/seed_phrase/seed_phrase_flow.dart';
+import 'package:horizon/presentation/screens/settings/advanced/settings_advanced.dart';
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:horizon/presentation/session/theme/bloc/theme_bloc.dart';
 import 'package:horizon/presentation/session/theme/bloc/theme_event.dart';
@@ -332,52 +334,55 @@ class _SettingsViewState extends State<SettingsView> {
       case SettingsPage.advanced:
         return Column(
           children: [
-            SettingsItem(
-              title: 'Wallet Type',
-              onTap: () {
-                // no op
-              },
-              trailing: SizedBox(
-                width: 120,
-                height: 40,
-                child: ValueChangeObserver(
-                    defaultValue: Network.mainnet,
-                    cacheKey: SettingsKeys.network.toString(),
-                    builder: (context, value, _) {
-                      return HorizonRedesignDropdown<String>(
-                        useModal: true,
-                        onChanged: (value) {
-                          Option.fromNullable(value)
-                              .flatMap(NetworkX.fromString)
-                              .fold(() {
-                            print("TODO: invariant logging");
-                          }, (Network network) {
-                            context.read<SessionStateCubit>().onNetworkChanged(
-                                network,
-                                () => widget._settingsRepository
-                                    .setNetwork(network));
-                          });
-                        },
-                        items: Network.values
-                            .map((network) => DropdownMenuItem<String>(
-                                  value: network.name,
-                                  child: Text(
-                                    network
-                                        .name, // or a prettier label if desired
-                                    textAlign: TextAlign.center,
-                                  ),
-                                ))
-                            .toList(),
-                        selectedValue: widget._settingsRepository.network.name,
-                        hintText: 'Select timeout',
-                      );
-                    }),
-              ),
-            ),
-            SettingsItem(
-              title: 'Base Path',
-              trailing: Text("base path"),
-            ),
+            SettingsAdvancedProvider(
+              child: SettingsAdvanced(),
+            )
+            // SettingsItem(
+            //   title: 'Wallet Type',
+            //   onTap: () {
+            //     // no op
+            //   },
+            //   trailing: SizedBox(
+            //     width: 120,
+            //     height: 40,
+            //     child: ValueChangeObserver(
+            //         defaultValue: Network.mainnet,
+            //         cacheKey: SettingsKeys.network.toString(),
+            //         builder: (context, value, _) {
+            //           return HorizonRedesignDropdown<String>(
+            //             useModal: true,
+            //             onChanged: (value) {
+            //               Option.fromNullable(value)
+            //                   .flatMap(NetworkX.fromString)
+            //                   .fold(() {
+            //                 print("TODO: invariant logging");
+            //               }, (Network network) {
+            //                 context.read<SessionStateCubit>().onNetworkChanged(
+            //                     network,
+            //                     () => widget._settingsRepository
+            //                         .setNetwork(network));
+            //               });
+            //             },
+            //             items: Network.values
+            //                 .map((network) => DropdownMenuItem<String>(
+            //                       value: network.name,
+            //                       child: Text(
+            //                         network
+            //                             .name, // or a prettier label if desired
+            //                         textAlign: TextAlign.center,
+            //                       ),
+            //                     ))
+            //                 .toList(),
+            //             selectedValue: widget._settingsRepository.network.name,
+            //             hintText: 'Select timeout',
+            //           );
+            //         }),
+            //   ),
+            // ),
+            // SettingsItem(
+            //   title: 'Base Path',
+            //   trailing: Text("base path"),
+            // ),
           ],
         );
       case SettingsPage.security:
