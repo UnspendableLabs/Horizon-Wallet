@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:horizon/common/constants.dart';
 import 'package:horizon/common/uuid.dart';
 import "package:horizon/domain/entities/network.dart";
+import "package:horizon/domain/entities/seed_derivation.dart";
 
 import 'package:horizon/domain/entities/account_v2.dart';
 
@@ -118,16 +119,21 @@ class OnboardingImportBloc
 
         final basePath = state.walletType!.basePath;
 
-        // await _walletConfigRepository.findOrCreate(
-        //   basePath: basePath.get(Network.mainnet),
-        //   network: Network.mainnet,
-        // );
-        //
+        await _walletConfigRepository.findOrCreate(
+          basePath: basePath.get(Network.mainnet),
+          network: Network.mainnet,
+          seedDerivation: switch ( state.walletType!) {
+            WalletType.horizon => SeedDerivation.bip39MnemonicToSeed,
+            WalletType.bip32 => SeedDerivation.bip39MnemonicToEntropy,
+          }
+        );
+
         _settingsRepository.setBasePath(basePath);
 
         // await accountV2Repository.insert(AccountV2(uuid: uuid.v4(), index: 0));
 
         emit(state.copyWith(importState: const ImportState.success()));
+
       } catch (e) {
         emit(state.copyWith(
             importState: ImportState.error(message: e.toString())));

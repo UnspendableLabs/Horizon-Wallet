@@ -1926,9 +1926,21 @@ class $WalletConfigsTable extends WalletConfigs
   late final GeneratedColumn<int> accountIndexEnd = GeneratedColumn<int>(
       'account_index_end', aliasedName, false,
       type: DriftSqlType.int, requiredDuringInsert: true);
+  static const VerificationMeta _seedDerivationMeta =
+      const VerificationMeta('seedDerivation');
   @override
-  List<GeneratedColumn> get $columns =>
-      [uuid, network, basePath, accountIndexStart, accountIndexEnd];
+  late final GeneratedColumn<String> seedDerivation = GeneratedColumn<String>(
+      'seed_derivation', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  @override
+  List<GeneratedColumn> get $columns => [
+        uuid,
+        network,
+        basePath,
+        accountIndexStart,
+        accountIndexEnd,
+        seedDerivation
+      ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -1973,6 +1985,14 @@ class $WalletConfigsTable extends WalletConfigs
     } else if (isInserting) {
       context.missing(_accountIndexEndMeta);
     }
+    if (data.containsKey('seed_derivation')) {
+      context.handle(
+          _seedDerivationMeta,
+          seedDerivation.isAcceptableOrUnknown(
+              data['seed_derivation']!, _seedDerivationMeta));
+    } else if (isInserting) {
+      context.missing(_seedDerivationMeta);
+    }
     return context;
   }
 
@@ -1992,6 +2012,8 @@ class $WalletConfigsTable extends WalletConfigs
           DriftSqlType.int, data['${effectivePrefix}account_index_start'])!,
       accountIndexEnd: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}account_index_end'])!,
+      seedDerivation: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}seed_derivation'])!,
     );
   }
 
@@ -2007,12 +2029,14 @@ class WalletConfig extends DataClass implements Insertable<WalletConfig> {
   final String basePath;
   final int accountIndexStart;
   final int accountIndexEnd;
+  final String seedDerivation;
   const WalletConfig(
       {required this.uuid,
       required this.network,
       required this.basePath,
       required this.accountIndexStart,
-      required this.accountIndexEnd});
+      required this.accountIndexEnd,
+      required this.seedDerivation});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -2021,6 +2045,7 @@ class WalletConfig extends DataClass implements Insertable<WalletConfig> {
     map['base_path'] = Variable<String>(basePath);
     map['account_index_start'] = Variable<int>(accountIndexStart);
     map['account_index_end'] = Variable<int>(accountIndexEnd);
+    map['seed_derivation'] = Variable<String>(seedDerivation);
     return map;
   }
 
@@ -2031,6 +2056,7 @@ class WalletConfig extends DataClass implements Insertable<WalletConfig> {
       basePath: Value(basePath),
       accountIndexStart: Value(accountIndexStart),
       accountIndexEnd: Value(accountIndexEnd),
+      seedDerivation: Value(seedDerivation),
     );
   }
 
@@ -2043,6 +2069,7 @@ class WalletConfig extends DataClass implements Insertable<WalletConfig> {
       basePath: serializer.fromJson<String>(json['basePath']),
       accountIndexStart: serializer.fromJson<int>(json['accountIndexStart']),
       accountIndexEnd: serializer.fromJson<int>(json['accountIndexEnd']),
+      seedDerivation: serializer.fromJson<String>(json['seedDerivation']),
     );
   }
   @override
@@ -2054,6 +2081,7 @@ class WalletConfig extends DataClass implements Insertable<WalletConfig> {
       'basePath': serializer.toJson<String>(basePath),
       'accountIndexStart': serializer.toJson<int>(accountIndexStart),
       'accountIndexEnd': serializer.toJson<int>(accountIndexEnd),
+      'seedDerivation': serializer.toJson<String>(seedDerivation),
     };
   }
 
@@ -2062,13 +2090,15 @@ class WalletConfig extends DataClass implements Insertable<WalletConfig> {
           String? network,
           String? basePath,
           int? accountIndexStart,
-          int? accountIndexEnd}) =>
+          int? accountIndexEnd,
+          String? seedDerivation}) =>
       WalletConfig(
         uuid: uuid ?? this.uuid,
         network: network ?? this.network,
         basePath: basePath ?? this.basePath,
         accountIndexStart: accountIndexStart ?? this.accountIndexStart,
         accountIndexEnd: accountIndexEnd ?? this.accountIndexEnd,
+        seedDerivation: seedDerivation ?? this.seedDerivation,
       );
   @override
   String toString() {
@@ -2077,14 +2107,15 @@ class WalletConfig extends DataClass implements Insertable<WalletConfig> {
           ..write('network: $network, ')
           ..write('basePath: $basePath, ')
           ..write('accountIndexStart: $accountIndexStart, ')
-          ..write('accountIndexEnd: $accountIndexEnd')
+          ..write('accountIndexEnd: $accountIndexEnd, ')
+          ..write('seedDerivation: $seedDerivation')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode =>
-      Object.hash(uuid, network, basePath, accountIndexStart, accountIndexEnd);
+  int get hashCode => Object.hash(uuid, network, basePath, accountIndexStart,
+      accountIndexEnd, seedDerivation);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -2093,7 +2124,8 @@ class WalletConfig extends DataClass implements Insertable<WalletConfig> {
           other.network == this.network &&
           other.basePath == this.basePath &&
           other.accountIndexStart == this.accountIndexStart &&
-          other.accountIndexEnd == this.accountIndexEnd);
+          other.accountIndexEnd == this.accountIndexEnd &&
+          other.seedDerivation == this.seedDerivation);
 }
 
 class WalletConfigsCompanion extends UpdateCompanion<WalletConfig> {
@@ -2102,6 +2134,7 @@ class WalletConfigsCompanion extends UpdateCompanion<WalletConfig> {
   final Value<String> basePath;
   final Value<int> accountIndexStart;
   final Value<int> accountIndexEnd;
+  final Value<String> seedDerivation;
   final Value<int> rowid;
   const WalletConfigsCompanion({
     this.uuid = const Value.absent(),
@@ -2109,6 +2142,7 @@ class WalletConfigsCompanion extends UpdateCompanion<WalletConfig> {
     this.basePath = const Value.absent(),
     this.accountIndexStart = const Value.absent(),
     this.accountIndexEnd = const Value.absent(),
+    this.seedDerivation = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   WalletConfigsCompanion.insert({
@@ -2117,18 +2151,21 @@ class WalletConfigsCompanion extends UpdateCompanion<WalletConfig> {
     required String basePath,
     required int accountIndexStart,
     required int accountIndexEnd,
+    required String seedDerivation,
     this.rowid = const Value.absent(),
   })  : uuid = Value(uuid),
         network = Value(network),
         basePath = Value(basePath),
         accountIndexStart = Value(accountIndexStart),
-        accountIndexEnd = Value(accountIndexEnd);
+        accountIndexEnd = Value(accountIndexEnd),
+        seedDerivation = Value(seedDerivation);
   static Insertable<WalletConfig> custom({
     Expression<String>? uuid,
     Expression<String>? network,
     Expression<String>? basePath,
     Expression<int>? accountIndexStart,
     Expression<int>? accountIndexEnd,
+    Expression<String>? seedDerivation,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -2137,6 +2174,7 @@ class WalletConfigsCompanion extends UpdateCompanion<WalletConfig> {
       if (basePath != null) 'base_path': basePath,
       if (accountIndexStart != null) 'account_index_start': accountIndexStart,
       if (accountIndexEnd != null) 'account_index_end': accountIndexEnd,
+      if (seedDerivation != null) 'seed_derivation': seedDerivation,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -2147,6 +2185,7 @@ class WalletConfigsCompanion extends UpdateCompanion<WalletConfig> {
       Value<String>? basePath,
       Value<int>? accountIndexStart,
       Value<int>? accountIndexEnd,
+      Value<String>? seedDerivation,
       Value<int>? rowid}) {
     return WalletConfigsCompanion(
       uuid: uuid ?? this.uuid,
@@ -2154,6 +2193,7 @@ class WalletConfigsCompanion extends UpdateCompanion<WalletConfig> {
       basePath: basePath ?? this.basePath,
       accountIndexStart: accountIndexStart ?? this.accountIndexStart,
       accountIndexEnd: accountIndexEnd ?? this.accountIndexEnd,
+      seedDerivation: seedDerivation ?? this.seedDerivation,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -2176,6 +2216,9 @@ class WalletConfigsCompanion extends UpdateCompanion<WalletConfig> {
     if (accountIndexEnd.present) {
       map['account_index_end'] = Variable<int>(accountIndexEnd.value);
     }
+    if (seedDerivation.present) {
+      map['seed_derivation'] = Variable<String>(seedDerivation.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -2190,6 +2233,7 @@ class WalletConfigsCompanion extends UpdateCompanion<WalletConfig> {
           ..write('basePath: $basePath, ')
           ..write('accountIndexStart: $accountIndexStart, ')
           ..write('accountIndexEnd: $accountIndexEnd, ')
+          ..write('seedDerivation: $seedDerivation, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();

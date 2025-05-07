@@ -4,15 +4,21 @@ class BasePath {
   String Function(Network network) get;
   BasePath(this.get);
 
+  static const horizonMainnet = "m/84'/0'/";
+  static const horizonTestnet = "m/84'/1'/";
+
+  static const legacy_ = "m/";
+
+
   static final horizon = BasePath((Network network) => switch (network) {
-        Network.mainnet => "m/84'/0'/",
-        Network.testnet4 => "m/84'/1'/",
+        Network.mainnet => horizonMainnet,
+        Network.testnet4 => horizonTestnet,
       });
 
   // counterwallet / freewallet
   static final legacy = BasePath((Network network) => switch (network) {
-        Network.mainnet => "m/",
-        Network.testnet4 => "m/",
+        Network.mainnet => legacy_,
+        Network.testnet4 => legacy_,
       });
 
   String serialize() {
