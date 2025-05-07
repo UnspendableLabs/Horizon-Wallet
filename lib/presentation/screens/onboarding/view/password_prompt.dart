@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:horizon/presentation/common/colors.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/common/theme_extension.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 import 'package:horizon/utils/app_icons.dart';
+import 'package:password_strength_checker/password_strength_checker.dart';
+
 
 class PasswordPrompt extends StatefulWidget {
   final Widget? optionalErrorWidget;
@@ -122,13 +123,13 @@ class PasswordPromptState extends State<PasswordPrompt> {
                     controller: passwordController,
                     isObscured: _isPasswordObscured,
                     strengthWidget: Text(
-                      strength ?? '',
+                      strength?.name ?? '',
                       style: theme.textTheme.labelSmall?.copyWith(
-                        color: strength == 'weak'
-                            ? yellow1
-                            : strength == 'medium'
+                        color: strength == PasswordStrength.secure
+                            ? green2
+                            : strength == PasswordStrength.strong
                                 ? greenCyan
-                                : green2,
+                                : yellow1,
                       ),
                     ),
                     onToggleObscured: () {
@@ -303,25 +304,10 @@ class PasswordPromptState extends State<PasswordPrompt> {
   }
 }
 
-String? evaluatePasswordStrength(String password) {
+PasswordStrength? evaluatePasswordStrength(String password) {
   if (password.isEmpty) return null;
 
-  int strength = 0;
-
-  // Criteria checks
-  if (password.length >= 8) strength++;
-  if (RegExp(r'[A-Z]').hasMatch(password)) strength++;
-  if (RegExp(r'[a-z]').hasMatch(password)) strength++;
-  if (RegExp(r'[0-9]').hasMatch(password)) strength++;
-  if (RegExp(r'[!@#\$&*~]').hasMatch(password)) strength++;
-
-  if (password.length < 6 || strength <= 2) {
-    return 'weak';
-  } else if (strength == 3 || strength == 4) {
-    return 'medium';
-  } else {
-    return 'strong';
-  }
+  return PasswordStrength.calculate(text: password);
 }
 
 String? validatePassword(String? password) {
