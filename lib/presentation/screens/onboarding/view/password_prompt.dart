@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/common/theme_extension.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 import 'package:horizon/utils/app_icons.dart';
+import 'package:password_strength_checker/password_strength_checker.dart';
 
 class PasswordPrompt extends StatefulWidget {
   final Widget? optionalErrorWidget;
@@ -84,7 +86,8 @@ class PasswordPromptState extends State<PasswordPrompt> {
   Widget build(BuildContext context) {
     final screenSize = MediaQuery.of(context).size;
     final isSmallScreen = screenSize.width < 500;
-
+    final theme = Theme.of(context);
+    final strength = evaluatePasswordStrength(passwordController.text);
     return Column(
       children: [
         Padding(
@@ -118,6 +121,16 @@ class PasswordPromptState extends State<PasswordPrompt> {
                     context,
                     controller: passwordController,
                     isObscured: _isPasswordObscured,
+                    strengthWidget: Text(
+                      strength?.name ?? '',
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        color: strength == PasswordStrength.secure
+                            ? green2
+                            : strength == PasswordStrength.strong
+                                ? greenCyan
+                                : yellow1,
+                      ),
+                    ),
                     onToggleObscured: () {
                       setState(() {
                         _isPasswordObscured = !_isPasswordObscured;
@@ -130,6 +143,16 @@ class PasswordPromptState extends State<PasswordPrompt> {
                     context,
                     controller: passwordConfirmationController,
                     isObscured: _isPasswordConfirmationObscured,
+                    passwordMatchWidget: password.isNotEmpty &&
+                            passwordConfirmationController.text ==
+                                passwordController.text
+                        ? AppIcons.checkIcon(
+                            context: context,
+                            width: 12,
+                            height: 12,
+                            color: green2,
+                          )
+                        : null,
                     onToggleObscured: () {
                       setState(() {
                         _isPasswordConfirmationObscured =
@@ -157,6 +180,8 @@ class PasswordPromptState extends State<PasswordPrompt> {
     required bool isObscured,
     required VoidCallback onToggleObscured,
     required String label,
+    Widget? strengthWidget,
+    Widget? passwordMatchWidget,
   }) {
     final theme = Theme.of(context);
     final customTheme = theme.extension<CustomThemeExtension>()!;
@@ -201,6 +226,7 @@ class PasswordPromptState extends State<PasswordPrompt> {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Expanded(
                         child: TextFormField(
@@ -226,13 +252,21 @@ class PasswordPromptState extends State<PasswordPrompt> {
                           showCursor: true,
                         ),
                       ),
+                      if (strengthWidget != null) ...[
+                        strengthWidget,
+                        const SizedBox(width: 8),
+                      ],
+                      if (passwordMatchWidget != null) ...[
+                        passwordMatchWidget,
+                        const SizedBox(width: 8),
+                      ],
                       AppIcons.iconButton(
                         context: context,
                         icon: isObscured
                             ? AppIcons.eyeClosedIcon(
                                 context: context,
-                                width: 10,
-                                height: 10,
+                                width: 12,
+                                height: 12,
                               )
                             : AppIcons.eyeOpenIcon(
                                 context: context,
@@ -249,10 +283,12 @@ class PasswordPromptState extends State<PasswordPrompt> {
               ),
             ),
             if (field.hasError) ...[
-              Padding(
+              Container(
+                width: double.infinity,
                 padding: const EdgeInsets.only(left: 16, top: 4),
                 child: Text(
                   field.errorText!,
+                  textAlign: TextAlign.center,
                   style: TextStyle(
                     color: customTheme.errorColor,
                     fontSize: 12,
@@ -265,6 +301,11 @@ class PasswordPromptState extends State<PasswordPrompt> {
       },
     );
   }
+}
+
+PasswordStrength? evaluatePasswordStrength(String password) {
+  if (password.isEmpty) return null;
+  return PasswordStrength.calculate(text: password);
 }
 
 String? validatePassword(String? password) {

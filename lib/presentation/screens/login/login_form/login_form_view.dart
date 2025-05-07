@@ -22,6 +22,7 @@ class _LoginFormState extends State<LoginForm> {
   final _key = GlobalKey<FormState>();
   final TextEditingController _passwordController = TextEditingController();
   bool _obscurePassword = true;
+  bool _invalidPassword = false;
 
   @override
   void dispose() {
@@ -58,11 +59,9 @@ class _LoginFormState extends State<LoginForm> {
         session.initialize();
       }
       if (state.status.isFailure) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Invalid Password'),
-          ),
-        );
+        setState(() {
+          _invalidPassword = true;
+        });
       }
     }, builder: (context, state) {
       return Form(
@@ -93,9 +92,14 @@ class _LoginFormState extends State<LoginForm> {
                   controller: _passwordController,
                   label: 'Password',
                   obscureText: _obscurePassword,
-                  onChanged: (value) => context
-                      .read<b.LoginFormBloc>()
-                      .add(b.PasswordChanged(value)),
+                  onChanged: (value) {
+                    setState(() {
+                      _invalidPassword = false;
+                    });
+                    context
+                        .read<b.LoginFormBloc>()
+                        .add(b.PasswordChanged(value));
+                  },
                   onSubmitted: (_) {
                     context.read<b.LoginFormBloc>().add(b.FormSubmitted());
                   },
@@ -122,6 +126,9 @@ class _LoginFormState extends State<LoginForm> {
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Password is required';
+                    }
+                    if (_invalidPassword) {
+                      return 'Invalid Password';
                     }
                     return null;
                   },
