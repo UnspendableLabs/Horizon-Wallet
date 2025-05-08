@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:convert/convert.dart';
 import 'package:horizon/common/constants.dart';
 import 'package:horizon/domain/entities/address.dart';
+import 'package:horizon/domain/entities/seed.dart';
 import 'package:horizon/domain/repositories/config_repository.dart';
 import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/js/bech32.dart' as bech32;
@@ -22,20 +23,15 @@ class AddressServiceImpl implements AddressService {
 
   @override
   Future<String> deriveAddressWIP({
-    required mnemonic, required path, }) async { // final String basePath = 'm/84\'/1\'/0\'/0/'; final network = _getNetwork();
+    required String path,
+    required Seed seed,
+  }) async {
+    // final String basePath = 'm/84\'/1\'/0\'/0/'; final network = _getNetwork();
 
-
-    print("this is being called, i dare say");
-
-    JSUint8Array seed = await bip39.mnemonicToSeed(mnemonic).toDart;
-
-    print("seed $seed");
-
+    // TODO: just pull off of wallet config
     final network = _getNetwork();
-    
-    print("seed $network");
 
-    bip32.BIP32Interface root = _bip32.fromSeed(seed as Buffer, network);
+    bip32.BIP32Interface root = _bip32.fromSeed(Buffer.from(seed.bytes.toJS), network);
 
     print("bip32 root $root");
 
@@ -43,9 +39,8 @@ class AddressServiceImpl implements AddressService {
         path: path,
         privKey: hex.encode(root.privateKey!.toDart),
         chainCodeHex: hex.encode(root.chainCode.toDart));
-    
-    print("child $child");
 
+    print("child $child");
 
     String address = _bech32FromBip32(child);
 

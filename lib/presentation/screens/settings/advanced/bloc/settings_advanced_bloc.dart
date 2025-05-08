@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter/foundation.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/domain/entities/wallet_config.dart';
 import 'package:horizon/domain/entities/base_path.dart';
@@ -23,6 +24,12 @@ abstract class SettingsAdvancedEvent {}
 class ImportFormatChanged extends SettingsAdvancedEvent {
   final ImportFormat importFormat;
   ImportFormatChanged(this.importFormat);
+}
+
+class SaveChangesClicked extends SettingsAdvancedEvent {
+  void Function(WalletConfig config)? onSuccess;
+
+  SaveChangesClicked({this.onSuccess});
 }
 
 class SettingsAdvancedState extends Equatable {
@@ -61,17 +68,17 @@ class SettingsAdvancedState extends Equatable {
       [status, importFormatChange, walletConfigChange, walletConfigError];
 
   Option<ImportFormat> get inferredImportFormat {
+    print(initialWalletConfig.basePath.serialize());
+    print(initialWalletConfig.seedDerivation);
     return switch ((
-      initialWalletConfig.basePath,
+      initialWalletConfig.basePath.serialize(),
       initialWalletConfig.seedDerivation
     )) {
-      (BasePath.horizonMainnet, SeedDerivation.bip39MnemonicToSeed) =>
+      (BasePath.horizonSerialized, SeedDerivation.bip39MnemonicToSeed) =>
         const Option.of(ImportFormat.horizon),
-      (BasePath.horizonTestnet, SeedDerivation.bip39MnemonicToSeed) =>
-        const Option.of(ImportFormat.horizon),
-      (BasePath.legacy_, SeedDerivation.bip39MnemonicToEntropy) =>
+      (BasePath.legacySerialized, SeedDerivation.bip39MnemonicToEntropy) =>
         const Option.of(ImportFormat.freewallet),
-      (BasePath.legacy_, SeedDerivation.mnemonicJSToHex) =>
+      (BasePath.legacySerialized, SeedDerivation.mnemonicJSToHex) =>
         const Option.of(ImportFormat.counterwallet),
       _ => const Option.none(),
     };
@@ -98,23 +105,29 @@ class SettingsAdvancedBloc
         _seedService = seedService ?? GetIt.I<SeedService>(),
         super(SettingsAdvancedState(initialWalletConfig: walletConfig)) {
     on<ImportFormatChanged>(_handleImportFormatChanged);
+    on<SaveChangesClicked>(_handleSaveChangesClicked);
   }
 
   _handleImportFormatChanged(ImportFormatChanged event, emit) async {
+
+    print("inferred");
+    print(state.inferredImportFormat);
+
     Option<ImportFormat> importFormatChange = state.inferredImportFormat
         .flatMap((inferredImportFormat) =>
             inferredImportFormat == event.importFormat
                 ? const Option.none()
                 : Option.of(event.importFormat));
 
+
     Option<WalletConfig> walletConfigChange =
         importFormatChange.map<WalletConfig>((importFormatChange) {
       final current = state.initialWalletConfig;
 
       final basePathChange = switch (importFormatChange) {
-        ImportFormat.horizon => BasePath.horizon.get(current.network),
-        ImportFormat.counterwallet => BasePath.legacy.get(current.network),
-        ImportFormat.freewallet => BasePath.legacy.get(current.network),
+        ImportFormat.horizon => BasePath.horizon,
+        ImportFormat.counterwallet => BasePath.legacy,
+        ImportFormat.freewallet => BasePath.legacy,
       };
 
       final seedDerivationChange = switch (importFormatChange) {
@@ -141,5 +154,41 @@ class SettingsAdvancedBloc
       walletConfigChange: walletConfigChange,
       walletConfigError: walletConfigError,
     ));
+  }
+
+  _handleSaveChangesClicked(
+      SaveChangesClicked event, Emitter<SettingsAdvancedState> emit) async {
+    emit(state.copyWith(status: FormzSubmissionStatus.inProgress));
+
+    await TaskEither.fromOption(state.walletConfigChange,
+            () => "invariant: walletConfigChange is None")
+        .flatMap((walletConfigChange) => TaskEither.tryCatch(
+            () => _walletConfigRepository.createOrUpdate(walletConfigChange),
+            (_, __) => "Error updating wallet config"))
+        .match(
+      (error) {
+        print("error $error");
+
+        emit(state.copyWith(
+          status: FormzSubmissionStatus.failure,
+        ));
+      },
+      (WalletConfig newWallet) {
+        print("success???");
+        emit(state.copyWith(
+          status: FormzSubmissionStatus.success,
+          // walletConfigChange:
+          //     const Option.none(), // Clear after successful save
+        ));
+
+        if (event.onSuccess != null) {
+          print("callback time???");
+
+          event.onSuccess!(newWallet);
+        } else {
+          print("no callback");
+        }
+      },
+    ).run();
   }
 }

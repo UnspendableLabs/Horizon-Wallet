@@ -4,7 +4,9 @@ import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/domain/repositories/wallet_config_repository.dart';
+import 'package:horizon/domain/entities/wallet_config.dart';
 import "./bloc/settings_advanced_bloc.dart";
+import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 
 import 'package:fpdart/fpdart.dart';
@@ -88,15 +90,19 @@ class SettingsAdvanced extends StatelessWidget {
                         .toList(),
                     selectedValue: state.importFormatChange.isSome()
                         ? state.importFormatChange.getOrThrow().name
-                        : state.inferredImportFormat.getOrThrow().name,
+                        : state.inferredImportFormat
+                            .map((f) => f.name)
+                            .getOrElse(() => ""),
                   ),
                 ),
               ),
               SettingsItem(
                   title: "Base Path",
                   trailing: state.walletConfigChange.fold(
-                      () => Text(state.initialWalletConfig.basePath),
-                      (configChange) => Text(configChange.basePath))),
+                      () => Text(state.initialWalletConfig.basePath
+                          .get(state.initialWalletConfig.network)),
+                      (configChange) => Text(configChange.basePath
+                          .get(state.initialWalletConfig.network)))),
               SettingsItem(
                   title: "Seed Derivation",
                   trailing: state.walletConfigChange.fold(
@@ -111,12 +117,26 @@ class SettingsAdvanced extends StatelessWidget {
                         child: HorizonButton(
                             disabled: state.walletConfigError.isSome(),
                             buttonText: "Save Changes",
-                            onPressed: () {}),
+                            onPressed: () {
+                              context.read<SettingsAdvancedBloc>().add(
+                                  SaveChangesClicked(onSuccess:
+                                      (WalletConfig newWalletConfig) {
+                                print("we are in the dirty stinking callback");
+
+                                context
+                                    .read<SessionStateCubit>()
+                                    .onWalletConfigChanged(
+                                      newWalletConfig,
+                                    );
+
+                                print("we are in the AFTER stinking callback");
+                              }));
+                            }),
                       )),
               state.walletConfigError.fold(
                 () => SizedBox.shrink(),
                 (error) => Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 20 , 20, 0),
+                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
                   child: Text(
                     error,
                     style: TextStyle(color: Colors.red),

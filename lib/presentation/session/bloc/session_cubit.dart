@@ -7,6 +7,7 @@ import 'package:horizon/domain/entities/network.dart';
 import 'package:horizon/domain/entities/address_v2.dart';
 import 'package:horizon/domain/entities/wallet_config.dart';
 import 'package:horizon/domain/entities/imported_address.dart';
+import 'package:horizon/domain/entities/base_path.dart';
 // import 'package:horizon/domain/entities/wallet.dart';
 import 'package:horizon/domain/entities/address.dart';
 // import 'package:horizon/domain/repositories/account_repository.dart';
@@ -27,6 +28,7 @@ import 'package:horizon/common/constants.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/extensions.dart';
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
+import "package:fpdart/fpdart.dart";
 
 import './session_state.dart';
 
@@ -138,17 +140,8 @@ class SessionStateCubit extends Cubit<SessionState> {
           emit(const SessionState.loggedOut());
           return;
         case LoggedIn(decryptionKey: var decryptionKey):
-          final network = _settingsRepository.network;
-          final basePath = _settingsRepository.basePath;
-
-          // TODO: for now we just take the first wallet config
-          // until we actually save "current"
           WalletConfig walletConfig =
-              await _walletConfigRepository.findOrCreate(
-            basePath: basePath.get(network),
-            network: network,
-          );
-
+              await _walletConfigRepository.getCurrent();
           // TODO: we may need to handle to restore something here
           // analyticsService.trackAnonymousEvent('wallet_opened',
           //     properties: {'distinct_id': wallet.uuid});
@@ -210,12 +203,15 @@ class SessionStateCubit extends Cubit<SessionState> {
   }
 
   void onNetworkChanged(Network network, [VoidCallback? cb]) async {
-    final basePath = _settingsRepository.basePath;
+    WalletConfig current = await _walletConfigRepository.getCurrent();
 
     WalletConfig walletConfig = await _walletConfigRepository.findOrCreate(
-      basePath: basePath.get(network),
+      basePath: current.basePath,
       network: network,
+      seedDerivation: current.seedDerivation,
     );
+
+    await _settingsRepository.setWalletConfigID(walletConfig.uuid);
 
     List<AccountV2> accounts = await _accountV2Repository.getByWalletConfig(
       walletConfigID: walletConfig.uuid,
@@ -246,6 +242,21 @@ class SessionStateCubit extends Cubit<SessionState> {
       importedAddresses: importedAddresses, // TODO: imported addresses
       currentAccount: currentAccount,
     )));
+
+    if (cb != null) {
+      cb();
+    }
+  }
+
+  void onWalletConfigChanged(WalletConfig config, [VoidCallback? cb]) async {
+
+    print("onWalletConfigChanged ${config.uuid}");
+
+    await _settingsRepository.setWalletConfigID(config.uuid);
+
+    print("after onWalletConfigChanged ${config.uuid}");
+
+    refresh();
 
     if (cb != null) {
       cb();
@@ -310,13 +321,7 @@ class SessionStateCubit extends Cubit<SessionState> {
         return;
       }
 
-      final network = _settingsRepository.network;
-      final basePath = _settingsRepository.basePath;
-
-      WalletConfig walletConfig = await _walletConfigRepository.findOrCreate(
-        basePath: basePath.get(network),
-        network: network,
-      );
+      WalletConfig walletConfig = await _walletConfigRepository.getCurrent();
 
       List<AccountV2> accounts = await _accountV2Repository.getByWalletConfig(
         walletConfigID: walletConfig.uuid,

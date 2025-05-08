@@ -22,5 +22,5 @@ class WalletConfigs extends Table {
   TextColumn get seedDerivation => text()();
 
   @override
-  Set<Column> get primaryKey => {network, basePath};
+  Set<Column> get primaryKey => {network, basePath, seedDerivation};
 }

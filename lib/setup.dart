@@ -413,7 +413,9 @@ void setup() {
     secureKVService: GetIt.I.get<SecureKVService>(),
   ));
 
-  injector.registerSingleton<AddressRepository>(AddressRepositoryInMemory());
+  injector.registerSingleton<AddressRepository>(AddressRepositoryImpl(
+    injector.get<DatabaseManager>().database,
+  ));
   injector.registerSingleton<ImportedAddressRepository>(
       ImportedAddressRepositoryImpl(injector.get<DatabaseManager>().database));
 
@@ -670,6 +672,7 @@ void setup() {
       inMemoryKeyRepository: GetIt.I<InMemoryKeyRepository>(),
       mnemonicRepository: GetIt.I<MnemonicRepository>()));
 
+  injector.registerSingleton<SeedService>(SeedServiceImpl());
   injector.registerSingleton<AddressV2Repository>(
       AddressV2RepositoryImpl(injector.get<DatabaseManager>().database));
 
@@ -684,7 +687,6 @@ void setup() {
       importedAddressRepository: GetIt.I<ImportedAddressRepository>(),
       analyticsService: GetIt.I<AnalyticsService>()));
 
-  injector.registerSingleton<SeedService>(SeedServiceImpl());
 }
 
 class CustomDioException extends DioException {

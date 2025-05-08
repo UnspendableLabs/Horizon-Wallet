@@ -1,10 +1,11 @@
 import 'package:horizon/domain/entities/seed_derivation.dart';
+import 'package:horizon/domain/entities/base_path.dart';
 import 'package:horizon/domain/entities/network.dart';
 
 class WalletConfig {
   String uuid;
   Network network;
-  String basePath;
+  BasePath basePath;
   int accountIndexStart;
   int accountIndexEnd;
   SeedDerivation seedDerivation;
@@ -15,11 +16,11 @@ class WalletConfig {
       required this.basePath,
       this.accountIndexStart = 0,
       required this.accountIndexEnd,
-      this.seedDerivation = SeedDerivation.bip39MnemonicToSeed });
+      required this.seedDerivation});
 
   WalletConfig copyWith({
     Network? network,
-    String? basePath,
+    BasePath? basePath,
     int? accountIndexStart,
     int? accountIndexEnd,
     SeedDerivation? seedDerivation,
@@ -32,5 +33,17 @@ class WalletConfig {
       accountIndexEnd: accountIndexEnd ?? this.accountIndexEnd,
       seedDerivation: seedDerivation ?? this.seedDerivation,
     );
+  }
+
+  @override
+  String toString() {
+    return 'WalletConfig('
+        'uuid: $uuid, '
+        'network: $network, '
+        'basePath: $basePath, '
+        'accountIndexStart: $accountIndexStart, '
+        'accountIndexEnd: $accountIndexEnd, '
+        'seedDerivation: $seedDerivation'
+        ')';
   }
 }
