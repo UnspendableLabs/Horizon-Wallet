@@ -60,12 +60,12 @@ class AddressRepositoryInMemory implements AddressRepository {
     // final account =
     //     (await _accountV2Repository.getByID(accountUuid)).getOrThrow();
 
-    final encryptedMnemonic = (await _mnemonicRepository.get()).getOrThrow();
+    final encryptedMnemonic = (await _mnemonicRepository.get().run()).getOrThrow();
 
-    final inMemoryKey = await _inMemoryKeyRepository.getMnemonicKey();
+    final inMemoryKey = await _inMemoryKeyRepository.getMnemonicKey().run();
 
     final mnemonic = await _encryptionService.decryptWithKey(
-        encryptedMnemonic, inMemoryKey!);
+        encryptedMnemonic, inMemoryKey.getOrThrow());
 
     // should maybe be a declarative configuration?????
 

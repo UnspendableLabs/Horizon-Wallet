@@ -120,20 +120,21 @@ class OnboardingImportBloc
         final basePath = state.walletType!.basePath;
 
         await _walletConfigRepository.findOrCreate(
-          basePath: basePath.get(Network.mainnet),
-          network: Network.mainnet,
-          seedDerivation: switch ( state.walletType!) {
-            WalletType.horizon => SeedDerivation.bip39MnemonicToSeed,
-            WalletType.bip32 => SeedDerivation.bip39MnemonicToEntropy,
-          }
-        );
+            basePath: basePath.get(Network.mainnet),
+            network: Network.mainnet,
+            seedDerivation: switch (state.walletType!) {
+              WalletType.horizon => SeedDerivation.bip39MnemonicToSeed,
+              // We select mnemonicJSToHex for BIP32 because
+              // we prefer counterwallet seed derivation method
+              // to freewallet. 
+              WalletType.bip32 => SeedDerivation.mnemonicJSToHex,
+            });
 
         _settingsRepository.setBasePath(basePath);
 
         // await accountV2Repository.insert(AccountV2(uuid: uuid.v4(), index: 0));
 
         emit(state.copyWith(importState: const ImportState.success()));
-
       } catch (e) {
         emit(state.copyWith(
             importState: ImportState.error(message: e.toString())));

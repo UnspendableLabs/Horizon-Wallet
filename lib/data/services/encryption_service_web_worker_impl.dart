@@ -6,6 +6,7 @@ import 'package:horizon/domain/services/encryption_service.dart';
 import 'dart:convert';
 import 'package:encrypt/encrypt.dart';
 import 'package:horizon/common/normalize_b64.dart';
+import "package:fpdart/fpdart.dart";
 
 class Salt {
   /// Internal List of salt bytes
@@ -118,6 +119,16 @@ class EncryptionServiceWebWorkerImpl implements EncryptionService {
     } else {
       throw Exception('Web Worker not supported');
     }
+  }
+
+  @override
+  TaskEither<String, String> decryptWithKeyT(String data_, String keyB64) {
+    return TaskEither.tryCatch(
+      () => decryptWithKey(data_, keyB64),
+
+      // TODO: bubble up actual error
+      (error, _) => error.toString(),
+    );
   }
 
   @override
