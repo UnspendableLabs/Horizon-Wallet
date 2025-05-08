@@ -4,70 +4,142 @@ import 'package:horizon/domain/entities/wallet_config.dart';
 import 'package:horizon/domain/entities/base_path.dart';
 import 'package:horizon/domain/entities/network.dart';
 import 'package:horizon/domain/entities/seed_derivation.dart';
+import 'package:horizon/domain/entities/seed.dart';
 import 'package:horizon/domain/repositories/wallet_config_repository.dart';
 import "package:equatable/equatable.dart";
 import 'package:formz/formz.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:horizon/common/constants.dart';
+import 'package:horizon/extensions.dart';
+import 'package:horizon/domain/services/encryption_service.dart';
+import 'package:horizon/domain/services/seed_service.dart';
+import 'package:horizon/domain/repositories/mnemonic_repository.dart';
+import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 
 abstract class SettingsAdvancedEvent {}
 
 // class SettingsAdvancedLoaded extends SettingsAdvancedEvent {}
 
-class SeedDerivationChanged extends SettingsAdvancedEvent {
-  final SeedDerivation seedDerivation;
-  SeedDerivationChanged(this.seedDerivation);
+class ImportFormatChanged extends SettingsAdvancedEvent {
+  final ImportFormat importFormat;
+  ImportFormatChanged(this.importFormat);
 }
 
 class SettingsAdvancedState extends Equatable {
   final WalletConfig initialWalletConfig;
+  final Option<ImportFormat> importFormatChange;
+  final Option<WalletConfig> walletConfigChange;
+  final Option<String> walletConfigError;
 
   final FormzSubmissionStatus status;
 
-  const SettingsAdvancedState({
-    required this.initialWalletConfig,
-    this.status = FormzSubmissionStatus.initial,
-  });
+  const SettingsAdvancedState(
+      {required this.initialWalletConfig,
+      this.status = FormzSubmissionStatus.initial,
+      this.importFormatChange = const Option.none(),
+      this.walletConfigChange = const Option.none(),
+      this.walletConfigError = const Option.none()});
+
+  SettingsAdvancedState copyWith({
+    WalletConfig? initialWalletConfig,
+    FormzSubmissionStatus? status,
+    Option<ImportFormat>? importFormatChange,
+    Option<WalletConfig>? walletConfigChange,
+    Option<String>? walletConfigError,
+  }) {
+    return SettingsAdvancedState(
+      initialWalletConfig: initialWalletConfig ?? this.initialWalletConfig,
+      status: status ?? this.status,
+      importFormatChange: importFormatChange ?? this.importFormatChange,
+      walletConfigChange: walletConfigChange ?? this.walletConfigChange,
+      walletConfigError: walletConfigError ?? this.walletConfigError,
+    );
+  }
 
   @override
-  List<Object?> get props => [status];
+  List<Object?> get props =>
+      [status, importFormatChange, walletConfigChange, walletConfigError];
 
   Option<ImportFormat> get inferredImportFormat {
-
-  print("initialWalletConfig.basePath ${initialWalletConfig.basePath}");
-  print("initialWalletConfig.seedDerivation ${initialWalletConfig.seedDerivation}");
-
-   return   switch ((
-        initialWalletConfig.basePath,
-        initialWalletConfig.seedDerivation
-      )) {
-        (BasePath.horizonMainnet, SeedDerivation.bip39MnemonicToSeed) =>
-          const Option.of(ImportFormat.horizon),
-        (BasePath.horizonTestnet, SeedDerivation.bip39MnemonicToSeed) =>
-          const Option.of(ImportFormat.horizon),
-        (BasePath.legacy_, SeedDerivation.bip39MnemonicToEntropy) =>
-          const Option.of(ImportFormat.freewallet),
-        (BasePath.legacy_, SeedDerivation.mnemonicJSToHex) =>
-          const Option.of(ImportFormat.counterwallet),
-        _ => const Option.none(),
-      };
+    return switch ((
+      initialWalletConfig.basePath,
+      initialWalletConfig.seedDerivation
+    )) {
+      (BasePath.horizonMainnet, SeedDerivation.bip39MnemonicToSeed) =>
+        const Option.of(ImportFormat.horizon),
+      (BasePath.horizonTestnet, SeedDerivation.bip39MnemonicToSeed) =>
+        const Option.of(ImportFormat.horizon),
+      (BasePath.legacy_, SeedDerivation.bip39MnemonicToEntropy) =>
+        const Option.of(ImportFormat.freewallet),
+      (BasePath.legacy_, SeedDerivation.mnemonicJSToHex) =>
+        const Option.of(ImportFormat.counterwallet),
+      _ => const Option.none(),
+    };
   }
 }
 
 class SettingsAdvancedBloc
     extends Bloc<SettingsAdvancedEvent, SettingsAdvancedState> {
   final WalletConfigRepository _walletConfigRepository;
+  MnemonicRepository _mnemonicRepository;
+  EncryptionService _encryptionService;
+  InMemoryKeyRepository _inMemoryKeyRepository;
+  SeedService _seedService;
 
   SettingsAdvancedBloc({
     required WalletConfig walletConfig,
     WalletConfigRepository? walletConfigRepository,
+    SeedService? seedService,
   })  : _walletConfigRepository =
             walletConfigRepository ?? GetIt.I<WalletConfigRepository>(),
+        _encryptionService = GetIt.I<EncryptionService>(),
+        _mnemonicRepository = GetIt.I<MnemonicRepository>(),
+        _inMemoryKeyRepository = GetIt.I<InMemoryKeyRepository>(),
+        _seedService = seedService ?? GetIt.I<SeedService>(),
         super(SettingsAdvancedState(initialWalletConfig: walletConfig)) {
-    on<SeedDerivationChanged>(_handleSeedDerivationChanged);
+    on<ImportFormatChanged>(_handleImportFormatChanged);
   }
 
-  _handleSeedDerivationChanged(event, emit) async {
-    final current = _walletConfigRepository.getCurrent();
+  _handleImportFormatChanged(ImportFormatChanged event, emit) async {
+    Option<ImportFormat> importFormatChange = state.inferredImportFormat
+        .flatMap((inferredImportFormat) =>
+            inferredImportFormat == event.importFormat
+                ? const Option.none()
+                : Option.of(event.importFormat));
+
+    Option<WalletConfig> walletConfigChange =
+        importFormatChange.map<WalletConfig>((importFormatChange) {
+      final current = state.initialWalletConfig;
+
+      final basePathChange = switch (importFormatChange) {
+        ImportFormat.horizon => BasePath.horizon.get(current.network),
+        ImportFormat.counterwallet => BasePath.legacy.get(current.network),
+        ImportFormat.freewallet => BasePath.legacy.get(current.network),
+      };
+
+      final seedDerivationChange = switch (importFormatChange) {
+        ImportFormat.horizon => SeedDerivation.bip39MnemonicToSeed,
+        ImportFormat.counterwallet => SeedDerivation.mnemonicJSToHex,
+        ImportFormat.freewallet => SeedDerivation.bip39MnemonicToEntropy,
+      };
+
+      final change = current.copyWith(
+        basePath: basePathChange,
+        seedDerivation: seedDerivationChange,
+      );
+
+      return change;
+    });
+
+    final walletConfigError = await walletConfigChange
+        .map((cfg) => _seedService.getForWalletConfig(walletConfig: cfg))
+        .map((taskEither) => taskEither.swap().run().then(Option.fromEither))
+        .getOrElse(() => Future.value(const Option.none()));
+
+    emit(state.copyWith(
+      importFormatChange: importFormatChange,
+      walletConfigChange: walletConfigChange,
+      walletConfigError: walletConfigError,
+    ));
   }
 }

@@ -105,7 +105,7 @@ class LoginFormBloc extends Bloc<FormEvent, FormState> {
     try {
       final password = state.password.value;
 
-      final encryptedMnemonic = (await _mnemonicRepository.get()).getOrThrow();
+      final encryptedMnemonic = (await _mnemonicRepository.get().run()).getOrThrow();
 
       String decryptionKey =
           await encryptionService.getDecryptionKey(encryptedMnemonic, password);

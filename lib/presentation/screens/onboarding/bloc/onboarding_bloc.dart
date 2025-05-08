@@ -35,7 +35,7 @@ class OnboardingBloc extends Bloc<OnboardingEvent, RemoteDataState<bool>> {
     try {
       emit(const RemoteDataState.loading());
 
-      final mnemonic = await _mnemonicRepository.get();
+      final mnemonic = await _mnemonicRepository.get().run();
       if (mnemonic.isSome()) {
         emit(const RemoteDataState.error(onboardingErrorMessage));
         return;

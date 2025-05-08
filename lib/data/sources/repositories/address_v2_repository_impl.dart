@@ -34,12 +34,12 @@ class AddressV2RepositoryImpl implements AddressV2Repository {
 // TODO: this whole thing is a little busy
   @override
   Future<List<AddressV2>> getByAccount(AccountV2 account) async {
-    final encryptedMnemonic = (await _mnemonicRepository.get()).getOrThrow();
+    final encryptedMnemonic = (await _mnemonicRepository.get().run()).getOrThrow();
 
-    final inMemoryKey = await _inMemoryKeyRepository.getMnemonicKey();
+    final inMemoryKey = await _inMemoryKeyRepository.getMnemonicKey().run();
 
     final mnemonic = await _encryptionService.decryptWithKey(
-        encryptedMnemonic, inMemoryKey!);
+        encryptedMnemonic, inMemoryKey.getOrThrow());
 
     final walletConfig_ =
         await _walletConfigRepository.getByID(id: account.walletConfigID);

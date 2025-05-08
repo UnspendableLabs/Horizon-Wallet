@@ -1,49 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:horizon/extensions.dart';
+import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/domain/repositories/wallet_config_repository.dart';
 import "./bloc/settings_advanced_bloc.dart";
+import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 
 import 'package:fpdart/fpdart.dart';
 import 'package:flutter/material.dart';
+import 'package:horizon/common/constants.dart';
 
-class AsyncExample extends StatelessWidget {
-  Future<String> fetchData() async {
-    await Future.delayed(Duration(seconds: 2));
-    return 'Hello from the future!';
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text("Async Builder Example")),
-      body: Center(
-        child: FutureBuilder<String>(
-          future: fetchData(),
-          builder: (context, snapshot) {
-            // While waiting for the future
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return CircularProgressIndicator();
-            }
-
-            // If the future completes with error
-            if (snapshot.hasError) {
-              return Text('Error: ${snapshot.error}');
-            }
-
-            // If the future completes with data
-            if (snapshot.hasData) {
-              return Text('Data: ${snapshot.data}');
-            }
-
-            // Default case (shouldn't usually reach here)
-            return Text('No data');
-          },
-        ),
-      ),
-    );
-  }
-}
+import "../settings_view.dart" show SettingsItem;
 
 class SettingsAdvancedProvider extends StatelessWidget {
   WalletConfigRepository _walletConfigRepository;
@@ -91,50 +59,70 @@ class SettingsAdvanced extends StatelessWidget {
         builder: (context, state) {
           return Column(
             children: [
-              Text(state.inferredImportFormat
-                  .map((format) => format.name)
-                  .getOrElse(() => "custom"))
-              // SettingsItem(
-              //   title: 'Wallet Type',
-              //   onTap: () {
-              //     // no op
-              //   },
-              //   trailing: SizedBox(
-              //     width: 120,
-              //     height: 40,
-              //     child: ValueChangeObserver(
-              //         defaultValue: Network.mainnet,
-              //         cacheKey: SettingsKeys.network.toString(),
-              //         builder: (context, value, _) {
-              //           return HorizonRedesignDropdown<String>(
-              //             useModal: true,
-              //             onChanged: (value) {
-              //               Option.fromNullable(value)
-              //   jlatMap(NetworkX.fromString)
-              //                   .fold(() {
-              //                 print("TODO: invariant logging");
-              //               }, (Network network) {
-              //                 context.read<SessionStateCubit>().onNetworkChanged(
-              //                     network,
-              //                     () =>
-              //                         widget._settingsRepository.setNetwork(network));
-              //               });
-              //             },
-              //             items: Network.values
-              //                 .map((network) => DropdownMenuItem<String>(
-              //                       value: network.name,
-              //                       child: Text(
-              //                         network.name, // or a prettier label if desired
-              //                         textAlign: TextAlign.center,
-              //                       ),
-              //                     ))
-              //                 .toList(),
-              //             selectedValue: widget._settingsRepository.network.name,
-              //             hintText: 'Select timeout',
-              //           );
-              //         }),
-              //   ),
-              // ),
+              SettingsItem(
+                title: 'Wallet Type',
+                trailing: SizedBox(
+                  width: 140,
+                  height: 40,
+                  child: HorizonRedesignDropdown<String>(
+                    hintText: 'Select wallet type',
+                    useModal: true,
+                    onChanged: (value) {
+                      print("value $value");
+                      context.read<SettingsAdvancedBloc>().add(
+                            ImportFormatChanged(
+                              ImportFormat.values
+                                  .firstWhere((e) => e.name == value),
+                            ),
+                          );
+                    },
+                    items: ImportFormat.values
+                        .map((importFormat) => DropdownMenuItem<String>(
+                              value: importFormat.name,
+                              child: Text(
+                                importFormat
+                                    .name, // or a prettier label if desired
+                                textAlign: TextAlign.center,
+                              ),
+                            ))
+                        .toList(),
+                    selectedValue: state.importFormatChange.isSome()
+                        ? state.importFormatChange.getOrThrow().name
+                        : state.inferredImportFormat.getOrThrow().name,
+                  ),
+                ),
+              ),
+              SettingsItem(
+                  title: "Base Path",
+                  trailing: state.walletConfigChange.fold(
+                      () => Text(state.initialWalletConfig.basePath),
+                      (configChange) => Text(configChange.basePath))),
+              SettingsItem(
+                  title: "Seed Derivation",
+                  trailing: state.walletConfigChange.fold(
+                      () => Text(state.initialWalletConfig.seedDerivation.name),
+                      (configChange) =>
+                          Text(configChange.seedDerivation.name))),
+              SizedBox(height: 40),
+              state.walletConfigChange.fold(
+                  () => SizedBox.shrink(),
+                  (walletConfig) => Padding(
+                        padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
+                        child: HorizonButton(
+                            disabled: state.walletConfigError.isSome(),
+                            buttonText: "Save Changes",
+                            onPressed: () {}),
+                      )),
+              state.walletConfigError.fold(
+                () => SizedBox.shrink(),
+                (error) => Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 20 , 20, 0),
+                  child: Text(
+                    error,
+                    style: TextStyle(color: Colors.red),
+                  ),
+                ),
+              ),
             ],
           );
         });

@@ -68,6 +68,9 @@ import 'package:horizon/domain/services/wallet_service.dart';
 import 'package:horizon/domain/services/public_key_service.dart';
 import 'package:horizon/data/services/public_key_service_impl.dart';
 
+import 'package:horizon/domain/services/seed_service.dart';
+import 'package:horizon/data/services/seed_service_impl.dart';
+
 import 'package:horizon/domain/repositories/version_repository.dart';
 import 'package:horizon/data/sources/repositories/version_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/version_repository_extension_impl.dart';
@@ -680,6 +683,8 @@ void setup() {
       // addressRepository: GetIt.I<AddressRepository>(),
       importedAddressRepository: GetIt.I<ImportedAddressRepository>(),
       analyticsService: GetIt.I<AnalyticsService>()));
+
+  injector.registerSingleton<SeedService>(SeedServiceImpl());
 }
 
 class CustomDioException extends DioException {

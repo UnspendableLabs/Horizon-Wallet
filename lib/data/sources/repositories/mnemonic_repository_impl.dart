@@ -11,10 +11,8 @@ class MnemonicRepositoryImpl implements MnemonicRepository {
   MnemonicRepositoryImpl({required this.secureKVService});
 
   @override
-  Future<Option<String>> get() async {
-    String? value = await secureKVService.read(key: _key);
-
-    return Option.fromNullable(value);
+  Task<Option<String>> get()  {
+    return Task(() => secureKVService.read(key: _key)).map(Option.fromNullable);
   }
 
   @override
