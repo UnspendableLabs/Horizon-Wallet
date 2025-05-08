@@ -9,6 +9,7 @@ import "package:horizon/domain/repositories/address_v2_repository.dart";
 import "package:horizon/domain/repositories/wallet_config_repository.dart";
 import "package:fpdart/fpdart.dart";
 import 'package:horizon/domain/services/encryption_service.dart';
+import 'package:horizon/domain/services/seed_service.dart';
 import 'package:horizon/domain/repositories/mnemonic_repository.dart';
 import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 
@@ -21,6 +22,7 @@ class AddressV2RepositoryImpl implements AddressV2Repository {
   MnemonicRepository _mnemonicRepository;
   EncryptionService _encryptionService;
   InMemoryKeyRepository _inMemoryKeyRepository;
+  SeedService _seedService;
 
   // TODO: shuold be able to inject deps here?
   AddressV2RepositoryImpl(this._db)
@@ -28,45 +30,38 @@ class AddressV2RepositoryImpl implements AddressV2Repository {
         _encryptionService = GetIt.I<EncryptionService>(),
         _mnemonicRepository = GetIt.I<MnemonicRepository>(),
         _walletConfigRepository = GetIt.I<WalletConfigRepository>(),
+        _seedService = GetIt.I<SeedService>(),
         _inMemoryKeyRepository = GetIt.I<InMemoryKeyRepository>();
 
 // TODO: make option
 // TODO: this whole thing is a little busy
   @override
   Future<List<AddressV2>> getByAccount(AccountV2 account) async {
-    final encryptedMnemonic = (await _mnemonicRepository.get().run()).getOrThrow();
-
-    final inMemoryKey = await _inMemoryKeyRepository.getMnemonicKey().run();
-
-    final mnemonic = await _encryptionService.decryptWithKey(
-        encryptedMnemonic, inMemoryKey.getOrThrow());
-
     final walletConfig_ =
         await _walletConfigRepository.getByID(id: account.walletConfigID);
 
     final walletConfig = walletConfig_.getOrThrow();
 
+    final seed = await _seedService
+        .getForWalletConfig(walletConfig: walletConfig_.getOrThrow())
+        .run();
+
     // # TODO: need to make the number of addresses configurable and stored
     final numAddresses = 1;
 
-    final paths = List.generate(numAddresses + 1, (i) => i)
-        .map((index) =>
-            (index, "${walletConfig.basePath}${account.index}/0/$index"))
+    final paths = List.generate(numAddresses, (i) => i)
+        .map((index) => (
+              index,
+              "${walletConfig.basePath.get(walletConfig.network)}${account.index}'/0/$index"
+            ))
         .toList();
 
     print(paths);
 
     List<AddressV2> addresses = [];
     for (final path in paths) {
-
-      final start = DateTime.now();
-
-
       String address_ = await _addressService.deriveAddressWIP(
-          path: path.$2, mnemonic: mnemonic);
-
-      final duration = DateTime.now().difference(start);
-
+          path: path.$2, seed: seed.getRight().getOrThrow());
 
       AddressV2 address = AddressV2(
         address: address_,

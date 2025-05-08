@@ -1997,7 +1997,7 @@ class $WalletConfigsTable extends WalletConfigs
   }
 
   @override
-  Set<GeneratedColumn> get $primaryKey => {network, basePath};
+  Set<GeneratedColumn> get $primaryKey => {network, basePath, seedDerivation};
   @override
   WalletConfig map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';

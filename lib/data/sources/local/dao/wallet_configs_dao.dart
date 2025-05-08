@@ -2,6 +2,7 @@ import 'package:drift/drift.dart';
 import 'package:horizon/data/sources/local/db.dart';
 import 'package:horizon/data/sources/local/tables/wallet_configs_table.dart';
 import "package:horizon/domain/entities/network.dart";
+import 'package:horizon/domain/entities/seed_derivation.dart';
 
 part 'wallet_configs_dao.g.dart';
 
@@ -27,11 +28,15 @@ class WalletConfigsDao extends DatabaseAccessor<DB>
     return update(walletConfigs).replace(config);
   }
 
-  Future<WalletConfig?> getByBasePathAndNetwork(
-      {required String basePath, required Network network}) async {
+  Future<WalletConfig?> getByPrimaryKey(
+      {required String basePath,
+      required Network network,
+      required SeedDerivation seedDerivation}) async {
     return (select(walletConfigs)
           ..where((tbl) =>
-              tbl.basePath.equals(basePath) & tbl.network.equals(network.name)))
+              tbl.basePath.equals(basePath) &
+              tbl.network.equals(network.name) &
+              tbl.seedDerivation.equals(seedDerivation.name)))
         .getSingleOrNull();
   }
 }

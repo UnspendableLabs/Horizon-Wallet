@@ -2,6 +2,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:horizon/domain/entities/imported_address.dart';
 
 import 'package:horizon/domain/entities/wallet.dart';
+import 'package:horizon/domain/entities/network.dart';
 import 'package:horizon/domain/entities/wallet_config.dart';
 // import 'package:horizon/domain/entities/account.dart';
 import 'package:horizon/domain/entities/account_v2.dart';
@@ -53,10 +54,10 @@ class SessionStateSuccess with _$SessionStateSuccess {
     required String decryptionKey,
     required List<AccountV2> accounts,
     required List<AddressV2> addresses,
-
     List<ImportedAddress>? importedAddresses,
     required WalletConfig walletConfig,
   }) = _SessionStateSuccess;
+
 }
 
 @freezed

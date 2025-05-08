@@ -9,6 +9,8 @@ class BasePath {
 
   static const legacy_ = "m/";
 
+  static const horizonSerialized = "$horizonMainnet|$horizonTestnet";
+  static const legacySerialized = "$legacy_|$legacy_";
 
   static final horizon = BasePath((Network network) => switch (network) {
         Network.mainnet => horizonMainnet,

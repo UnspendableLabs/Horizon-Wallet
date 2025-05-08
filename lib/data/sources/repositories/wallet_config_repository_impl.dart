@@ -2,6 +2,7 @@ import "package:horizon/data/sources/local/dao/wallet_configs_dao.dart";
 import "package:horizon/data/sources/local/db.dart" as local;
 import "package:horizon/domain/entities/wallet_config.dart" as entity;
 import "package:horizon/domain/entities/seed_derivation.dart";
+import "package:horizon/domain/entities/base_path.dart";
 import "package:horizon/domain/repositories/wallet_config_repository.dart";
 import "package:horizon/common/uuid.dart";
 import "package:fpdart/fpdart.dart";
@@ -26,13 +27,13 @@ class WalletConfigRepositoryImpl implements WalletConfigRepository {
 
   @override
   Future<entity.WalletConfig> getCurrent() async {
-    final network = _settingsRepository.network;
-    final basePath = _settingsRepository.basePath;
+    if (_settingsRepository.walletConfigID == null) {
+      throw Exception("WalletConfigID is null");
+    }
 
-    return findOrCreate(
-      basePath: basePath.get(network),
-      network: network,
-    );
+    final walletConfig = await getByID(id: _settingsRepository.walletConfigID!);
+
+    return walletConfig.getOrThrow();
   }
 
   @override
@@ -41,10 +42,12 @@ class WalletConfigRepositoryImpl implements WalletConfigRepository {
 
     return Option.fromNullable(config).map(
       (config) => entity.WalletConfig(
+        seedDerivation: SeedDerivation.values
+            .firstWhere((e) => e.name == config.seedDerivation),
         uuid: config.uuid,
         network: NetworkX.fromString(config.network)
             .getOrElse(() => Network.mainnet),
-        basePath: config.basePath,
+        basePath: BasePath.deserialize(config.basePath),
         accountIndexStart: config.accountIndexStart,
         accountIndexEnd: config.accountIndexEnd,
       ),
@@ -57,10 +60,12 @@ class WalletConfigRepositoryImpl implements WalletConfigRepository {
 
     return configs
         .map((config) => entity.WalletConfig(
+            seedDerivation: SeedDerivation.values
+                .firstWhere((e) => e.name == config.seedDerivation),
             uuid: config.uuid,
             network: NetworkX.fromString(config.network)
                 .getOrElse(() => Network.mainnet),
-            basePath: config.basePath,
+            basePath: BasePath.deserialize(config.basePath),
             accountIndexStart: config.accountIndexStart,
             accountIndexEnd: config.accountIndexEnd))
         .toList();
@@ -72,7 +77,7 @@ class WalletConfigRepositoryImpl implements WalletConfigRepository {
         seedDerivation: config.seedDerivation.name,
         uuid: config.uuid,
         network: config.network.name,
-        basePath: config.basePath,
+        basePath: config.basePath.serialize(),
         accountIndexStart: config.accountIndexStart,
         accountIndexEnd: config.accountIndexEnd));
   }
@@ -83,19 +88,20 @@ class WalletConfigRepositoryImpl implements WalletConfigRepository {
         seedDerivation: config.seedDerivation.name,
         uuid: config.uuid,
         network: config.network.name,
-        basePath: config.basePath,
+        basePath: config.basePath.serialize(),
         accountIndexStart: config.accountIndexStart,
         accountIndexEnd: config.accountIndexEnd));
   }
 
   @override
   Future<entity.WalletConfig> findOrCreate(
-      {required String basePath,
+      {required BasePath basePath,
       required Network network,
-      SeedDerivation? seedDerivation}) async {
-    final config = await _walletConfigsDao.getByBasePathAndNetwork(
-      basePath: basePath,
+      required SeedDerivation seedDerivation}) async {
+    final config = await _walletConfigsDao.getByPrimaryKey(
+      basePath: basePath.serialize(),
       network: network,
+      seedDerivation: seedDerivation,
     );
 
     if (config != null) {
@@ -108,16 +114,43 @@ class WalletConfigRepositoryImpl implements WalletConfigRepository {
             : SeedDerivation.bip39MnemonicToSeed.name,
         uuid: uuid.v4(),
         network: network.name,
-        basePath: basePath,
+        basePath: basePath.serialize(),
         accountIndexStart: 0,
         accountIndexEnd: 0));
 
-    final newConfig = (await _walletConfigsDao.getByBasePathAndNetwork(
-      basePath: basePath,
+    final newConfig = (await _walletConfigsDao.getByPrimaryKey(
+      basePath: basePath.serialize(),
       network: network,
+      seedDerivation: seedDerivation,
     ))!;
 
     return _mapToEntity(newConfig);
+  }
+
+  @override
+  Future<entity.WalletConfig> createOrUpdate(entity.WalletConfig config) async {
+    final existing = await _walletConfigsDao.getByPrimaryKey(
+      basePath: config.basePath.serialize(),
+      network: config.network,
+      seedDerivation: config.seedDerivation,
+    );
+
+    final localConfig = local.WalletConfig(
+      uuid: existing?.uuid ?? uuid.v4(),
+      seedDerivation: config.seedDerivation.name,
+      network: config.network.name,
+      basePath: config.basePath.serialize(),
+      accountIndexStart: config.accountIndexStart,
+      accountIndexEnd: config.accountIndexEnd,
+    );
+
+    if (existing != null) {
+      await _walletConfigsDao.update_(localConfig);
+    } else {
+      await _walletConfigsDao.create(localConfig);
+    }
+
+    return getByID(id: localConfig.uuid).then((value) => value.getOrThrow());
   }
 }
 
@@ -128,7 +161,7 @@ entity.WalletConfig _mapToEntity(local.WalletConfig config) =>
       uuid: config.uuid,
       network:
           NetworkX.fromString(config.network).getOrElse(() => Network.mainnet),
-      basePath: config.basePath,
+      basePath: BasePath.deserialize(config.basePath),
       accountIndexStart: config.accountIndexStart,
       accountIndexEnd: config.accountIndexEnd,
     );

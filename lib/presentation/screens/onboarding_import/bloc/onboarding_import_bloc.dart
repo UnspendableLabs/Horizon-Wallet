@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:horizon/common/constants.dart';
 import 'package:horizon/common/uuid.dart';
 import "package:horizon/domain/entities/network.dart";
+import "package:horizon/domain/entities/wallet_config.dart";
 import "package:horizon/domain/entities/seed_derivation.dart";
 
 import 'package:horizon/domain/entities/account_v2.dart';
@@ -119,19 +120,22 @@ class OnboardingImportBloc
 
         final basePath = state.walletType!.basePath;
 
-        await _walletConfigRepository.findOrCreate(
-            basePath: basePath.get(Network.mainnet),
+        WalletConfig walletConfig = await _walletConfigRepository.findOrCreate(
+            basePath: basePath,
             network: Network.mainnet,
             seedDerivation: switch (state.walletType!) {
               WalletType.horizon => SeedDerivation.bip39MnemonicToSeed,
               // We select mnemonicJSToHex for BIP32 because
               // we prefer counterwallet seed derivation method
-              // to freewallet. 
+              // to freewallet.
               WalletType.bip32 => SeedDerivation.mnemonicJSToHex,
             });
 
-        _settingsRepository.setBasePath(basePath);
+        print("before set wawlletconif iid ${walletConfig.uuid}");
 
+        await _settingsRepository.setWalletConfigID(walletConfig.uuid);
+
+        print("after set wawlletconif iid ${walletConfig.uuid}");
         // await accountV2Repository.insert(AccountV2(uuid: uuid.v4(), index: 0));
 
         emit(state.copyWith(importState: const ImportState.success()));

@@ -467,7 +467,7 @@ class _SettingsViewState extends State<SettingsView> {
             height: 40,
             child: ValueChangeObserver(
                 defaultValue: Network.mainnet,
-                cacheKey: SettingsKeys.network.toString(),
+                cacheKey: SettingsKeys.walletConfigID.toString(),
                 builder: (context, value, _) {
                   return HorizonRedesignDropdown<String>(
                     useModal: true,
@@ -478,9 +478,8 @@ class _SettingsViewState extends State<SettingsView> {
                         print("TODO: invariant logging");
                       }, (Network network) {
                         context.read<SessionStateCubit>().onNetworkChanged(
-                            network,
-                            () =>
-                                widget._settingsRepository.setNetwork(network));
+                              network,
+                            );
                       });
                     },
                     items: Network.values
@@ -492,7 +491,13 @@ class _SettingsViewState extends State<SettingsView> {
                               ),
                             ))
                         .toList(),
-                    selectedValue: widget._settingsRepository.network.name,
+                    selectedValue: context
+                        .read<SessionStateCubit>()
+                        .state
+                        .maybeWhen(
+                            orElse: () => Network.mainnet.name,
+                            success: (session) =>
+                                session.walletConfig.network.name),
                     hintText: 'Select timeout',
                   );
                 }),
