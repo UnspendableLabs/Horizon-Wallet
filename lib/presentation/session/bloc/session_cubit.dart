@@ -1,6 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
+import 'package:horizon/domain/entities/http_clients.dart';
 // import 'package:horizon/domain/entities/account.dart';
 import 'package:horizon/domain/entities/account_v2.dart';
 import 'package:horizon/domain/entities/network.dart';
@@ -29,8 +30,25 @@ import 'package:get_it/get_it.dart';
 import 'package:horizon/extensions.dart';
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import "package:fpdart/fpdart.dart";
+import 'package:horizon/data/sources/network/api/v2_api.dart';
+import 'package:dio/dio.dart';
 
+import 'package:horizon/domain/repositories/config_repository.dart';
 import './session_state.dart';
+
+V2Api counterpartyClientForNetwork(Network network) {
+  return V2Api(Dio(BaseOptions(
+    baseUrl: switch (network) {
+      Network.mainnet => 'https://api.unspendablelabs.com:4000/v2',
+      Network.testnet4 => 'https://testnet4.counterparty.io:44000/v2/',
+    },
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    connectTimeout: const Duration(seconds: 5),
+    receiveTimeout: const Duration(seconds: 3),
+  )));
+}
 
 sealed class GetSessionStateResponse {}
 
@@ -173,7 +191,9 @@ class SessionStateCubit extends Cubit<SessionState> {
 
           emit(SessionState.success(SessionStateSuccess(
             redirect: true,
-            // wallet: wallet,
+            httpClients: HttpClients(
+              counterparty: counterpartyClientForNetwork(walletConfig.network),
+            ),
             walletConfig: walletConfig,
             decryptionKey: decryptionKey,
             accounts: accounts,
@@ -236,6 +256,10 @@ class SessionStateCubit extends Cubit<SessionState> {
 
     emit(SessionState.success(success.copyWith(
       redirect: false, // not sure about this....
+      walletConfig: walletConfig,
+      httpClients: HttpClients(
+        counterparty: counterpartyClientForNetwork(walletConfig.network),
+      ),
       // wallet: wallet,
       accounts: accounts,
       addresses: addresses,
@@ -249,7 +273,6 @@ class SessionStateCubit extends Cubit<SessionState> {
   }
 
   void onWalletConfigChanged(WalletConfig config, [VoidCallback? cb]) async {
-
     print("onWalletConfigChanged ${config.uuid}");
 
     await _settingsRepository.setWalletConfigID(config.uuid);

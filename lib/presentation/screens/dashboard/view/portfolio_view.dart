@@ -79,7 +79,9 @@ class _PortfolioViewState extends State<PortfolioView>
   @override
   Widget build(BuildContext context) {
     final isSmallScreen = MediaQuery.of(context).size.width < 500;
-    final session = context.read<SessionStateCubit>().state.successOrThrow();
+    final session = context.select<SessionStateCubit, SessionStateSuccess>(
+      (cubit) => cubit.state.successOrThrow(),
+    );
     final List<String> addresses =
         context.read<SessionStateCubit>().state.allAddresses;
     final addressesKey = addresses.join(",");
@@ -90,6 +92,7 @@ class _PortfolioViewState extends State<PortfolioView>
           // Key based on addresses - if addresses change, a new bloc will be created
           key: ValueKey('balances-bloc-$addressesKey'),
           create: (context) => BalancesBloc(
+            httpClients: session.httpClients,
             balanceRepository: GetIt.I.get<BalanceRepository>(),
             addresses: addresses,
             cacheProvider: GetIt.I.get<CacheProvider>(),

@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:convert/convert.dart';
 import 'package:horizon/common/constants.dart';
 import 'package:horizon/domain/entities/address.dart';
+import 'package:horizon/domain/entities/network.dart';
 import 'package:horizon/domain/entities/seed.dart';
 import 'package:horizon/domain/repositories/config_repository.dart';
 import 'package:horizon/domain/services/address_service.dart';
@@ -25,24 +26,17 @@ class AddressServiceImpl implements AddressService {
   Future<String> deriveAddressWIP({
     required String path,
     required Seed seed,
+    required Network network,
   }) async {
-    // final String basePath = 'm/84\'/1\'/0\'/0/'; final network = _getNetwork();
-
-    // TODO: just pull off of wallet config
-    final network = _getNetwork();
-
-    bip32.BIP32Interface root = _bip32.fromSeed(Buffer.from(seed.bytes.toJS), network);
-
-    print("bip32 root $root");
+    bip32.BIP32Interface root =
+        _bip32.fromSeed(Buffer.from(seed.bytes.toJS), network.toJS);
 
     bip32.BIP32Interface child = _deriveChildKey(
         path: path,
         privKey: hex.encode(root.privateKey!.toDart),
         chainCodeHex: hex.encode(root.chainCode.toDart));
 
-    print("child $child");
-
-    String address = _bech32FromBip32(child);
+    String address = _bech32FromBip32(child, network.toBech32Prefix);
 
     return address;
   }
@@ -63,7 +57,7 @@ class AddressServiceImpl implements AddressService {
     bip32.BIP32Interface child = _deriveChildKey(
         path: path, privKey: privKey, chainCodeHex: chainCodeHex);
 
-    String address = _bech32FromBip32(child);
+    String address = _bech32FromBip32(child, _getNetwork().toBech32Prefix);
 
     return Address(
       address: address,
@@ -127,7 +121,8 @@ class AddressServiceImpl implements AddressService {
         (root as bip32.BIP32Interface).derivePath(path);
 
     String address = switch (type) {
-      AddressType.bech32 => _bech32FromBip32(child),
+      AddressType.bech32 =>
+        _bech32FromBip32(child, _getNetwork().toBech32Prefix),
       AddressType.legacy => _legacyFromBip32(child),
     };
 
@@ -228,7 +223,7 @@ class AddressServiceImpl implements AddressService {
     return payment.address;
   }
 
-  String _bech32FromBip32(bip32.BIP32Interface child) {
+  String _bech32FromBip32(bip32.BIP32Interface child, String bech32_) {
     List<int> identifier = child.identifier.toDart;
     List<int> words = bech32
         .toWords(identifier.map((el) => el.toJS).toList().toJS)
@@ -236,8 +231,7 @@ class AddressServiceImpl implements AddressService {
         .map((el) => el.toDartInt)
         .toList();
     words.insert(0, 0);
-    return bech32.encode(
-        _getNetworkBech32(), words.map((el) => el.toJS).toList().toJS);
+    return bech32.encode(bech32_, words.map((el) => el.toJS).toList().toJS);
   }
 
   _getNetwork() => switch (config.network) {
@@ -247,12 +241,14 @@ class AddressServiceImpl implements AddressService {
         // Network.regtest => ecpair.regtest,
       };
 
-  _getNetworkBech32() => switch (config.network) {
-        Network.mainnet => ecpair.bitcoin.bech32,
-        // Network.testnet => ecpair.testnet.bech32,
-        Network.testnet4 => ecpair.testnet.bech32,
-        // Network.regtest => ecpair.regtrst.bech32,
-      };
+  // _getNetworkBech32() => switch (config.network) {
+  //       Network.mainnet => ecpair.bitcoin.bech32,
+  //       // Network.testnet => ecpair.testnet.bech32,
+  //       Network.testnet4 => ecpair.testnet.bech32,
+  //       // Network.regtest => ecpair.regtrst.bech32,
+  //     };
+  //
+  // _getNetworkBech32() => ecpair.testnet.bech32;
 
   String _getPathForImportFormat(
           {required String purpose,
