@@ -315,8 +315,7 @@ class ShowMnemonicStep extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  if (config.network == Network.testnet4 ||
-                      config.network == Network.testnet)
+                  if (config.network == Network.testnet4 )
                     HorizonButton(
                       width: 150,
                       onPressed: () {

@@ -23,6 +23,8 @@ import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 import 'package:horizon/presentation/screens/transactions/lock_quantity/bloc/lock_quantity_bloc.dart';
 import 'package:horizon/presentation/screens/transactions/lock_quantity/bloc/lock_quantity_event.dart';
 import 'package:horizon/presentation/common/transaction_stepper/view/steps/transaction_compose_page.dart';
+import 'package:horizon/presentation/session/bloc/session_cubit.dart';
+import 'package:horizon/presentation/session/bloc/session_state.dart';
 
 class LockQuantityPage extends StatefulWidget {
   final String assetName;
@@ -89,8 +91,12 @@ class _LockQuantityPageState extends State<LockQuantityPage> {
 
   @override
   Widget build(BuildContext context) {
+    final session = context.select<SessionStateCubit, SessionStateSuccess>(
+      (cubit) => cubit.state.successOrThrow(),
+    );
     return BlocProvider(
       create: (context) => LockQuantityBloc(
+        httpClients: session.httpClients,
         balanceRepository: GetIt.I<BalanceRepository>(),
         getFeeEstimatesUseCase: GetIt.I<GetFeeEstimatesUseCase>(),
         composeTransactionUseCase: GetIt.I<ComposeTransactionUseCase>(),

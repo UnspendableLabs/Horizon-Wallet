@@ -2,8 +2,12 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:horizon/domain/entities/imported_address.dart';
 
 import 'package:horizon/domain/entities/wallet.dart';
-import 'package:horizon/domain/entities/account.dart';
-import 'package:horizon/domain/entities/address.dart';
+import 'package:horizon/domain/entities/network.dart';
+import 'package:horizon/domain/entities/wallet_config.dart';
+// import 'package:horizon/domain/entities/account.dart';
+import 'package:horizon/domain/entities/account_v2.dart';
+import 'package:horizon/domain/entities/address_v2.dart';
+import 'package:horizon/domain/entities/http_clients.dart';
 
 part 'session_state.freezed.dart';
 
@@ -26,7 +30,7 @@ extension SessionStateX on SessionState {
 }
 
 extension SessionStateAddressesX on SessionState {
-  List<Address> get addresses => successOrThrow().addresses;
+  List<AddressV2> get addresses => successOrThrow().addresses;
   List<ImportedAddress> get importedAddresses =>
       successOrThrow().importedAddresses ?? [];
   List<String> get allAddresses => [
@@ -41,16 +45,19 @@ class SessionStateSuccess with _$SessionStateSuccess {
 
   @override
   String toString() {
-    return 'SessionStateSuccess(redirect: $redirect, wallet: $wallet, decryptionKey: <REDACTED>, accounts: $accounts, addresses: $addresses, importedAddresses: $importedAddresses)';
+    return 'SessionStateSuccess(redirect: $redirect, decryptionKey: <REDACTED>, accounts: $accounts, addresses: $addresses, importedAddresses: $importedAddresses)';
   }
 
   const factory SessionStateSuccess({
+    required AccountV2? currentAccount,
     required bool redirect,
-    required Wallet wallet,
+    // required Wallet wallet,
     required String decryptionKey,
-    required List<Account> accounts,
-    required List<Address> addresses,
+    required List<AccountV2> accounts,
+    required List<AddressV2> addresses,
     List<ImportedAddress>? importedAddresses,
+    required WalletConfig walletConfig,
+    required HttpClients httpClients,
   }) = _SessionStateSuccess;
 }
 

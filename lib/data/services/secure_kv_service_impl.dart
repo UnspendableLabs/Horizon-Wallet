@@ -2,7 +2,9 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:horizon/domain/services/secure_kv_service.dart';
 
 class SecureKVServiceImpl implements SecureKVService {
-  final storage = const FlutterSecureStorage();
+  FlutterSecureStorage storage;
+
+  SecureKVServiceImpl(this.storage);
 
   @override
   Future<void> write({required String key, required String value}) async {

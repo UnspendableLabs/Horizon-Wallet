@@ -17,7 +17,7 @@ import 'package:horizon/domain/services/mnemonic_service.dart';
 import 'package:horizon/domain/services/wallet_service.dart';
 
 // ignore_for_file: constant_identifier_names
-const DEFAULT_NUM_ACCOUNTS = 20;
+const DEFAULT_NUM_ACCOUNTS = 1;
 
 class PasswordException implements Exception {
   final String message;
@@ -112,33 +112,7 @@ class ImportWalletUseCase {
         importFormat: ImportFormat.horizon,
       );
 
-      Address address = await addressService.deriveAddressSegwit(
-        privKey: decryptedPrivKey,
-        chainCodeHex: wallet.chainCodeHex,
-        accountUuid: account.uuid,
-        purpose: account.purpose,
-        coin: account.coinType,
-        account: account.accountIndex,
-        change: '0',
-        index: 0,
-      );
-
-      // get transactions for the address
-      final bool addressHasTransactions =
-          await addressesHaveTransactions([address]);
-
-      // if there are any transactions or balances for the address, add the address to the account
-      if (addressHasTransactions) {
-        // add the address to the account if transactions are present
-        accountsWithBalances[account] = [address];
-      } else if (i == 0) {
-        // if no transactions are found on the first account, import just the first account + address and break
-        accountsWithBalances[account] = [address];
-        break;
-      } else {
-        // break the loop once an account with no transactions is reached
-        break;
-      }
+      accountsWithBalances[account] = [];
     }
 
     return accountsWithBalances;
@@ -171,8 +145,9 @@ class ImportWalletUseCase {
       _ => throw UnimplementedError(),
     };
 
+    // TODO: don't use account name, just use indices
     Account account = Account(
-        name: 'ACCOUNT 1',
+        name: 'Account 1',
         walletUuid: wallet.uuid,
         purpose: purpose,
         coinType: _getCoinType(),
@@ -395,63 +370,63 @@ class ImportWalletUseCase {
     }
   }
 
-  Future<void> callHorizon({
-    required String mnemonic,
-    required String password,
-    required Future<Wallet> Function(String, String) deriveWallet,
-  }) async {
-    Wallet wallet = await deriveWallet(mnemonic, password);
-    String decryptedPrivKey;
-    try {
-      decryptedPrivKey =
-          await encryptionService.decrypt(wallet.encryptedPrivKey, password);
-    } catch (e) {
-      throw PasswordException('invariant: Invalid password');
-    }
-
-    // m/84'/1'/0'/0
-    Account account0 = Account(
-      name: 'ACCOUNT 1',
-      walletUuid: wallet.uuid,
-      purpose: '84\'',
-      coinType: '${_getCoinType()}\'',
-      accountIndex: '0\'',
-      uuid: uuid.v4(),
-      importFormat: ImportFormat.horizon,
-    );
-
-    Address address = await addressService.deriveAddressSegwit(
-      privKey: decryptedPrivKey,
-      chainCodeHex: wallet.chainCodeHex,
-      accountUuid: account0.uuid,
-      purpose: account0.purpose,
-      coin: account0.coinType,
-      account: account0.accountIndex,
-      change: '0',
-      index: 0,
-    );
-
-    final existingWallet = await walletRepository.getCurrentWallet();
-    if (existingWallet != null) {
-      throw MultipleWalletsException(onboardingErrorMessage);
-    }
-
-    await walletRepository.insert(wallet);
-    await accountRepository.insert(account0);
-    await addressRepository.insert(address);
-
-    // write decryption key to secure storage ( i.e. create a valid session )
-    final currentWallet = await walletRepository.getCurrentWallet();
-
-    if (currentWallet == null) {
-      throw Exception('Wallet insert failed');
-    }
-
-    String decryptionKey = await encryptionService.getDecryptionKey(
-        currentWallet.encryptedPrivKey, password);
-
-    await inMemoryKeyRepository.set(key: decryptionKey);
-  }
+  // Future<void> callHorizon({
+  //   required String mnemonic,
+  //   required String password,
+  //   required Future<Wallet> Function(String, String) deriveWallet,
+  // }) async {
+  //   Wallet wallet = await deriveWallet(mnemonic, password);
+  //   String decryptedPrivKey;
+  //   try {
+  //     decryptedPrivKey =
+  //         await encryptionService.decrypt(wallet.encryptedPrivKey, password);
+  //   } catch (e) {
+  //     throw PasswordException('invariant: Invalid password');
+  //   }
+  //
+  //   // m/84'/1'/0'/0
+  //   Account account0 = Account(
+  //     name: 'ACCOUNT 1',
+  //     walletUuid: wallet.uuid,
+  //     purpose: '84\'',
+  //     coinType: '${_getCoinType()}\'',
+  //     accountIndex: '0\'',
+  //     uuid: uuid.v4(),
+  //     importFormat: ImportFormat.horizon,
+  //   );
+  //
+  //   Address address = await addressService.deriveAddressSegwit(
+  //     privKey: decryptedPrivKey,
+  //     chainCodeHex: wallet.chainCodeHex,
+  //     accountUuid: account0.uuid,
+  //     purpose: account0.purpose,
+  //     coin: account0.coinType,
+  //     account: account0.accountIndex,
+  //     change: '0',
+  //     index: 0,
+  //   );
+  //
+  //   final existingWallet = await walletRepository.getCurrentWallet();
+  //   if (existingWallet != null) {
+  //     throw MultipleWalletsException(onboardingErrorMessage);
+  //   }
+  //
+  //   await walletRepository.insert(wallet);
+  //   await accountRepository.insert(account0);
+  //   await addressRepository.insert(address);
+  //
+  //   // write decryption key to secure storage ( i.e. create a valid session )
+  //   final currentWallet = await walletRepository.getCurrentWallet();
+  //
+  //   if (currentWallet == null) {
+  //     throw Exception('Wallet insert failed');
+  //   }
+  //
+  //   String decryptionKey = await encryptionService.getDecryptionKey(
+  //       currentWallet.encryptedPrivKey, password);
+  //
+  //   await inMemoryKeyRepository.set(key: decryptionKey);
+  // }
 
   Future<bool> addressesHaveTransactions(List<Address> addresses) async {
     final List<BitcoinTx> btcTransactions = await bitcoinRepository

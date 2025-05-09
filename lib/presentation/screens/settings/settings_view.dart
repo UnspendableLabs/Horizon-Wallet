@@ -2,24 +2,32 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:get_it/get_it.dart';
+import 'package:horizon/domain/entities/wallet_type_v2.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
+import 'package:horizon/domain/repositories/settings_repository.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/screens/settings/import_address/import_address_flow.dart';
 import 'package:horizon/presentation/screens/settings/reset_wallet/reset_wallet_flow.dart';
 import 'package:horizon/presentation/screens/settings/security_view.dart';
 import 'package:horizon/presentation/screens/settings/seed_phrase/seed_phrase_flow.dart';
+import 'package:horizon/presentation/screens/settings/advanced/settings_advanced.dart';
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
+import 'package:horizon/presentation/session/bloc/session_state.dart';
 import 'package:horizon/presentation/session/theme/bloc/theme_bloc.dart';
 import 'package:horizon/presentation/session/theme/bloc/theme_event.dart';
 import 'package:horizon/presentation/shell/app_shell.dart';
 import 'package:horizon/utils/app_icons.dart';
+import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
+import 'package:fpdart/fpdart.dart' show Option;
 
 enum SettingsPage {
   main,
+  network,
   security,
   seedPhrase,
   importAddress,
+  advanced,
   resetWallet,
 }
 
@@ -36,7 +44,6 @@ class SettingsItem extends StatelessWidget {
     this.onTap,
     this.trailing,
   });
-
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -278,9 +285,13 @@ class ThemeToggle extends StatelessWidget {
 }
 
 class SettingsView extends StatefulWidget {
-  const SettingsView({
+  SettingsRepository _settingsRepository;
+
+  SettingsView({
+    SettingsRepository? settingsRepository,
     super.key,
-  });
+  }) : _settingsRepository =
+            settingsRepository ?? GetIt.I<SettingsRepository>();
 
   @override
   State<SettingsView> createState() => _SettingsViewState();
@@ -297,8 +308,12 @@ class _SettingsViewState extends State<SettingsView> {
 
   String _getPageTitle() {
     switch (_currentPage) {
+      case SettingsPage.advanced:
+        return "Advanced";
       case SettingsPage.main:
         return "Settings";
+      case SettingsPage.network:
+        return "Network";
       case SettingsPage.security:
         return "Security";
       case SettingsPage.seedPhrase:
@@ -314,6 +329,62 @@ class _SettingsViewState extends State<SettingsView> {
     switch (_currentPage) {
       case SettingsPage.main:
         return _buildMainSettings();
+      case SettingsPage.network:
+        return Text("Network");
+      case SettingsPage.advanced:
+        return Column(
+          children: [
+            SettingsAdvancedProvider(
+              child: SettingsAdvanced(),
+            )
+            // SettingsItem(
+            //   title: 'Wallet Type',
+            //   onTap: () {
+            //     // no op
+            //   },
+            //   trailing: SizedBox(
+            //     width: 120,
+            //     height: 40,
+            //     child: ValueChangeObserver(
+            //         defaultValue: Network.mainnet,
+            //         cacheKey: SettingsKeys.network.toString(),
+            //         builder: (context, value, _) {
+            //           return HorizonRedesignDropdown<String>(
+            //             useModal: true,
+            //             onChanged: (value) {
+            //               Option.fromNullable(value)
+            //                   .flatMap(NetworkX.fromString)
+            //                   .fold(() {
+            //                 print("TODO: invariant logging");
+            //               }, (Network network) {
+            //                 context.read<SessionStateCubit>().onNetworkChanged(
+            //                     network,
+            //                     () => widget._settingsRepository
+            //                         .setNetwork(network));
+            //               });
+            //             },
+            //             items: Network.values
+            //                 .map((network) => DropdownMenuItem<String>(
+            //                       value: network.name,
+            //                       child: Text(
+            //                         network
+            //                             .name, // or a prettier label if desired
+            //                         textAlign: TextAlign.center,
+            //                       ),
+            //                     ))
+            //                 .toList(),
+            //             selectedValue: widget._settingsRepository.network.name,
+            //             hintText: 'Select timeout',
+            //           );
+            //         }),
+            //   ),
+            // ),
+            // SettingsItem(
+            //   title: 'Base Path',
+            //   trailing: Text("base path"),
+            // ),
+          ],
+        );
       case SettingsPage.security:
         return const SecurityView();
       case SettingsPage.seedPhrase:
@@ -374,6 +445,71 @@ class _SettingsViewState extends State<SettingsView> {
               context.read<ThemeBloc>().add(ThemeToggled());
             },
           ),
+        ),
+        const SizedBox(height: 10),
+        SettingsItem(
+          title: 'Network',
+          icon: AppIcons.walletIcon(context: context),
+          // trailing: Row(children: [
+          //   Text(widget._settingsRepository.network.name),
+          //   AppIcons.chevronRightIcon(
+          //     context: context,
+          //     color: Theme.of(context).iconTheme.color,
+          //   ),
+          // ]),
+
+          onTap: () {
+            // no op
+          },
+
+          trailing: SizedBox(
+            width: 120,
+            height: 40,
+            child: ValueChangeObserver(
+                defaultValue: "",
+                cacheKey: SettingsKeys.walletConfigID.toString(),
+                builder: (context, value, x) {
+                  return HorizonRedesignDropdown<String>(
+                    useModal: true,
+                    onChanged: (value) {
+                      Option.fromNullable(value)
+                          .flatMap(NetworkX.fromString)
+                          .fold(() {
+                        print("TODO: invariant logging");
+                      }, (Network network) {
+                        context.read<SessionStateCubit>().onNetworkChanged(
+                              network,
+                            );
+                      });
+                    },
+                    items: Network.values
+                        .map((network) => DropdownMenuItem<String>(
+                              value: network.name,
+                              child: Text(
+                                network.name, // or a prettier label if desired
+                                textAlign: TextAlign.center,
+                              ),
+                            ))
+                        .toList(),
+                    selectedValue: context
+                        .read<SessionStateCubit>()
+                        .state
+                        .successOrThrow()
+                        .walletConfig
+                        .network
+                        .name,
+                    hintText: '',
+                  );
+                }),
+          ),
+        ),
+        SettingsItem(
+          title: 'Advanced',
+          onTap: () {
+            setState(() {
+              _currentPage = SettingsPage.advanced;
+            });
+          },
         ),
         const SizedBox(height: 40),
         Padding(

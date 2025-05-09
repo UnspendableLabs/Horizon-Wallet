@@ -19,8 +19,8 @@ class ConfigImpl implements Config {
     const networkString =
         String.fromEnvironment('HORIZON_NETWORK', defaultValue: 'mainnet');
     return switch (networkString.toLowerCase()) {
-      'testnet' => Network.testnet,
-      'regtest' => Network.regtest,
+      // 'testnet' => Network.testnet,
+      // 'regtest' => Network.regtest,
       'testnet4' => Network.testnet4,
       'mainnet' => Network.mainnet,
       _ => throw Exception('Unknown network: $networkString'),
@@ -35,9 +35,9 @@ class ConfigImpl implements Config {
 
   String get _defaultCounterpartyApiBase => switch (network) {
         Network.mainnet => 'https://api.unspendablelabs.com:4000/v2',
-        Network.testnet => 'https://api.unspendablelabs.com:14000/v2',
+        // Network.testnet => 'https://api.unspendablelabs.com:14000/v2',
         Network.testnet4 => 'https://testnet4.counterparty.io:44000/v2/',
-        Network.regtest => 'http://localhost:24000/v2'
+        // Network.regtest => 'http://localhost:24000/v2'
       };
 
   @override
@@ -49,9 +49,9 @@ class ConfigImpl implements Config {
 
   String get _defaultCounterpartyApiUsername => switch (network) {
         Network.mainnet => '',
-        Network.testnet => '',
+        // Network.testnet => '',
         Network.testnet4 => '',
-        Network.regtest => '',
+        // Network.regtest => '',
       };
 
   @override
@@ -63,9 +63,9 @@ class ConfigImpl implements Config {
 
   String get _defaultCounterpartyApiPassword => switch (network) {
         Network.mainnet => '',
-        Network.testnet => '',
+        // Network.testnet => '',
         Network.testnet4 => '',
-        Network.regtest => '',
+        // Network.regtest => '',
       };
 
   @override
@@ -76,26 +76,26 @@ class ConfigImpl implements Config {
 
   String get _defaultEsploraBase => switch (network) {
         Network.mainnet => "https://api.unspendablelabs.com:3000",
-        Network.testnet => "https://api.unspendablelabs.com:13000",
+        // Network.testnet => "https://api.unspendablelabs.com:13000",
         Network.testnet4 => 'https://testnet4.counterparty.io:43000',
-        Network.regtest => "http://127.0.0.1:3002",
+        // Network.regtest => "http://127.0.0.1:3002",
       };
 
   @override
   String get horizonExplorerBase => switch (network) {
         Network.mainnet => "https://horizon.market/explorer",
-        Network.testnet => "https://testnet-explorer.unspendablelabs.com",
+        // Network.testnet => "https://testnet-explorer.unspendablelabs.com",
         Network.testnet4 =>
           "https://mempool.space/testnet4", // TODO: update when testnet4 explorer is ready
-        Network.regtest => "http://127.0.0.1:3000",
+        // Network.regtest => "http://127.0.0.1:3000",
       };
 
   @override
   String get btcExplorerBase => switch (network) {
         Network.mainnet => "https://mempool.space",
-        Network.testnet => "https://mempool.space/testnet",
+        // Network.testnet => "https://mempool.space/testnet",
         Network.testnet4 => "https://mempool.space/testnet4",
-        Network.regtest => "http://127.0.0.1:3000",
+        // Network.regtest => "http://127.0.0.1:3000",
       };
 
   @override
@@ -124,9 +124,9 @@ class ConfigImpl implements Config {
 
   String get _defaultSentryDsn => switch (network) {
         Network.mainnet => '',
-        Network.testnet => '',
+        // Network.testnet => '',
         Network.testnet4 => '',
-        Network.regtest => '',
+        // Network.regtest => '',
       };
 
   @override

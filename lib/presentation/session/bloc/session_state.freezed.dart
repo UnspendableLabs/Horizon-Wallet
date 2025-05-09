@@ -971,13 +971,16 @@ abstract class _LoggedOut implements SessionState {
 
 /// @nodoc
 mixin _$SessionStateSuccess {
-  bool get redirect => throw _privateConstructorUsedError;
-  Wallet get wallet => throw _privateConstructorUsedError;
+  AccountV2? get currentAccount => throw _privateConstructorUsedError;
+  bool get redirect =>
+      throw _privateConstructorUsedError; // required Wallet wallet,
   String get decryptionKey => throw _privateConstructorUsedError;
-  List<Account> get accounts => throw _privateConstructorUsedError;
-  List<Address> get addresses => throw _privateConstructorUsedError;
+  List<AccountV2> get accounts => throw _privateConstructorUsedError;
+  List<AddressV2> get addresses => throw _privateConstructorUsedError;
   List<ImportedAddress>? get importedAddresses =>
       throw _privateConstructorUsedError;
+  WalletConfig get walletConfig => throw _privateConstructorUsedError;
+  HttpClients get httpClients => throw _privateConstructorUsedError;
 
   @JsonKey(ignore: true)
   $SessionStateSuccessCopyWith<SessionStateSuccess> get copyWith =>
@@ -991,12 +994,14 @@ abstract class $SessionStateSuccessCopyWith<$Res> {
       _$SessionStateSuccessCopyWithImpl<$Res, SessionStateSuccess>;
   @useResult
   $Res call(
-      {bool redirect,
-      Wallet wallet,
+      {AccountV2? currentAccount,
+      bool redirect,
       String decryptionKey,
-      List<Account> accounts,
-      List<Address> addresses,
-      List<ImportedAddress>? importedAddresses});
+      List<AccountV2> accounts,
+      List<AddressV2> addresses,
+      List<ImportedAddress>? importedAddresses,
+      WalletConfig walletConfig,
+      HttpClients httpClients});
 }
 
 /// @nodoc
@@ -1012,22 +1017,24 @@ class _$SessionStateSuccessCopyWithImpl<$Res, $Val extends SessionStateSuccess>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
+    Object? currentAccount = freezed,
     Object? redirect = null,
-    Object? wallet = null,
     Object? decryptionKey = null,
     Object? accounts = null,
     Object? addresses = null,
     Object? importedAddresses = freezed,
+    Object? walletConfig = null,
+    Object? httpClients = null,
   }) {
     return _then(_value.copyWith(
+      currentAccount: freezed == currentAccount
+          ? _value.currentAccount
+          : currentAccount // ignore: cast_nullable_to_non_nullable
+              as AccountV2?,
       redirect: null == redirect
           ? _value.redirect
           : redirect // ignore: cast_nullable_to_non_nullable
               as bool,
-      wallet: null == wallet
-          ? _value.wallet
-          : wallet // ignore: cast_nullable_to_non_nullable
-              as Wallet,
       decryptionKey: null == decryptionKey
           ? _value.decryptionKey
           : decryptionKey // ignore: cast_nullable_to_non_nullable
@@ -1035,15 +1042,23 @@ class _$SessionStateSuccessCopyWithImpl<$Res, $Val extends SessionStateSuccess>
       accounts: null == accounts
           ? _value.accounts
           : accounts // ignore: cast_nullable_to_non_nullable
-              as List<Account>,
+              as List<AccountV2>,
       addresses: null == addresses
           ? _value.addresses
           : addresses // ignore: cast_nullable_to_non_nullable
-              as List<Address>,
+              as List<AddressV2>,
       importedAddresses: freezed == importedAddresses
           ? _value.importedAddresses
           : importedAddresses // ignore: cast_nullable_to_non_nullable
               as List<ImportedAddress>?,
+      walletConfig: null == walletConfig
+          ? _value.walletConfig
+          : walletConfig // ignore: cast_nullable_to_non_nullable
+              as WalletConfig,
+      httpClients: null == httpClients
+          ? _value.httpClients
+          : httpClients // ignore: cast_nullable_to_non_nullable
+              as HttpClients,
     ) as $Val);
   }
 }
@@ -1057,12 +1072,14 @@ abstract class _$$SessionStateSuccessImplCopyWith<$Res>
   @override
   @useResult
   $Res call(
-      {bool redirect,
-      Wallet wallet,
+      {AccountV2? currentAccount,
+      bool redirect,
       String decryptionKey,
-      List<Account> accounts,
-      List<Address> addresses,
-      List<ImportedAddress>? importedAddresses});
+      List<AccountV2> accounts,
+      List<AddressV2> addresses,
+      List<ImportedAddress>? importedAddresses,
+      WalletConfig walletConfig,
+      HttpClients httpClients});
 }
 
 /// @nodoc
@@ -1076,22 +1093,24 @@ class __$$SessionStateSuccessImplCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
+    Object? currentAccount = freezed,
     Object? redirect = null,
-    Object? wallet = null,
     Object? decryptionKey = null,
     Object? accounts = null,
     Object? addresses = null,
     Object? importedAddresses = freezed,
+    Object? walletConfig = null,
+    Object? httpClients = null,
   }) {
     return _then(_$SessionStateSuccessImpl(
+      currentAccount: freezed == currentAccount
+          ? _value.currentAccount
+          : currentAccount // ignore: cast_nullable_to_non_nullable
+              as AccountV2?,
       redirect: null == redirect
           ? _value.redirect
           : redirect // ignore: cast_nullable_to_non_nullable
               as bool,
-      wallet: null == wallet
-          ? _value.wallet
-          : wallet // ignore: cast_nullable_to_non_nullable
-              as Wallet,
       decryptionKey: null == decryptionKey
           ? _value.decryptionKey
           : decryptionKey // ignore: cast_nullable_to_non_nullable
@@ -1099,15 +1118,23 @@ class __$$SessionStateSuccessImplCopyWithImpl<$Res>
       accounts: null == accounts
           ? _value._accounts
           : accounts // ignore: cast_nullable_to_non_nullable
-              as List<Account>,
+              as List<AccountV2>,
       addresses: null == addresses
           ? _value._addresses
           : addresses // ignore: cast_nullable_to_non_nullable
-              as List<Address>,
+              as List<AddressV2>,
       importedAddresses: freezed == importedAddresses
           ? _value._importedAddresses
           : importedAddresses // ignore: cast_nullable_to_non_nullable
               as List<ImportedAddress>?,
+      walletConfig: null == walletConfig
+          ? _value.walletConfig
+          : walletConfig // ignore: cast_nullable_to_non_nullable
+              as WalletConfig,
+      httpClients: null == httpClients
+          ? _value.httpClients
+          : httpClients // ignore: cast_nullable_to_non_nullable
+              as HttpClients,
     ));
   }
 }
@@ -1116,33 +1143,36 @@ class __$$SessionStateSuccessImplCopyWithImpl<$Res>
 
 class _$SessionStateSuccessImpl implements _SessionStateSuccess {
   const _$SessionStateSuccessImpl(
-      {required this.redirect,
-      required this.wallet,
+      {required this.currentAccount,
+      required this.redirect,
       required this.decryptionKey,
-      required final List<Account> accounts,
-      required final List<Address> addresses,
-      final List<ImportedAddress>? importedAddresses})
+      required final List<AccountV2> accounts,
+      required final List<AddressV2> addresses,
+      final List<ImportedAddress>? importedAddresses,
+      required this.walletConfig,
+      required this.httpClients})
       : _accounts = accounts,
         _addresses = addresses,
         _importedAddresses = importedAddresses;
 
   @override
-  final bool redirect;
+  final AccountV2? currentAccount;
   @override
-  final Wallet wallet;
+  final bool redirect;
+// required Wallet wallet,
   @override
   final String decryptionKey;
-  final List<Account> _accounts;
+  final List<AccountV2> _accounts;
   @override
-  List<Account> get accounts {
+  List<AccountV2> get accounts {
     if (_accounts is EqualUnmodifiableListView) return _accounts;
     // ignore: implicit_dynamic_type
     return EqualUnmodifiableListView(_accounts);
   }
 
-  final List<Address> _addresses;
+  final List<AddressV2> _addresses;
   @override
-  List<Address> get addresses {
+  List<AddressV2> get addresses {
     if (_addresses is EqualUnmodifiableListView) return _addresses;
     // ignore: implicit_dynamic_type
     return EqualUnmodifiableListView(_addresses);
@@ -1160,31 +1190,43 @@ class _$SessionStateSuccessImpl implements _SessionStateSuccess {
   }
 
   @override
+  final WalletConfig walletConfig;
+  @override
+  final HttpClients httpClients;
+
+  @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$SessionStateSuccessImpl &&
+            (identical(other.currentAccount, currentAccount) ||
+                other.currentAccount == currentAccount) &&
             (identical(other.redirect, redirect) ||
                 other.redirect == redirect) &&
-            (identical(other.wallet, wallet) || other.wallet == wallet) &&
             (identical(other.decryptionKey, decryptionKey) ||
                 other.decryptionKey == decryptionKey) &&
             const DeepCollectionEquality().equals(other._accounts, _accounts) &&
             const DeepCollectionEquality()
                 .equals(other._addresses, _addresses) &&
             const DeepCollectionEquality()
-                .equals(other._importedAddresses, _importedAddresses));
+                .equals(other._importedAddresses, _importedAddresses) &&
+            (identical(other.walletConfig, walletConfig) ||
+                other.walletConfig == walletConfig) &&
+            (identical(other.httpClients, httpClients) ||
+                other.httpClients == httpClients));
   }
 
   @override
   int get hashCode => Object.hash(
       runtimeType,
+      currentAccount,
       redirect,
-      wallet,
       decryptionKey,
       const DeepCollectionEquality().hash(_accounts),
       const DeepCollectionEquality().hash(_addresses),
-      const DeepCollectionEquality().hash(_importedAddresses));
+      const DeepCollectionEquality().hash(_importedAddresses),
+      walletConfig,
+      httpClients);
 
   @JsonKey(ignore: true)
   @override
@@ -1196,26 +1238,31 @@ class _$SessionStateSuccessImpl implements _SessionStateSuccess {
 
 abstract class _SessionStateSuccess implements SessionStateSuccess {
   const factory _SessionStateSuccess(
-          {required final bool redirect,
-          required final Wallet wallet,
-          required final String decryptionKey,
-          required final List<Account> accounts,
-          required final List<Address> addresses,
-          final List<ImportedAddress>? importedAddresses}) =
-      _$SessionStateSuccessImpl;
+      {required final AccountV2? currentAccount,
+      required final bool redirect,
+      required final String decryptionKey,
+      required final List<AccountV2> accounts,
+      required final List<AddressV2> addresses,
+      final List<ImportedAddress>? importedAddresses,
+      required final WalletConfig walletConfig,
+      required final HttpClients httpClients}) = _$SessionStateSuccessImpl;
 
   @override
+  AccountV2? get currentAccount;
+  @override
   bool get redirect;
-  @override
-  Wallet get wallet;
-  @override
+  @override // required Wallet wallet,
   String get decryptionKey;
   @override
-  List<Account> get accounts;
+  List<AccountV2> get accounts;
   @override
-  List<Address> get addresses;
+  List<AddressV2> get addresses;
   @override
   List<ImportedAddress>? get importedAddresses;
+  @override
+  WalletConfig get walletConfig;
+  @override
+  HttpClients get httpClients;
   @override
   @JsonKey(ignore: true)
   _$$SessionStateSuccessImplCopyWith<_$SessionStateSuccessImpl> get copyWith =>

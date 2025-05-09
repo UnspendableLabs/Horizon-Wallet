@@ -16,6 +16,7 @@ import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
 import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transaction_usecase.dart';
 import 'package:horizon/presentation/common/usecase/write_local_transaction_usecase.dart';
 import 'package:horizon/presentation/screens/transactions/lock_quantity/bloc/lock_quantity_event.dart';
+import 'package:horizon/domain/entities/http_clients.dart';
 
 class LockQuantityData {
   final MultiAddressBalanceEntry ownerBalanceEntry;
@@ -35,6 +36,7 @@ class LockQuantityBloc extends Bloc<TransactionEvent,
   final WriteLocalTransactionUseCase writelocalTransactionUseCase;
   final AnalyticsService analyticsService;
   final Logger logger;
+  final HttpClients httpClients;
 
   LockQuantityBloc({
     required this.balanceRepository,
@@ -45,6 +47,7 @@ class LockQuantityBloc extends Bloc<TransactionEvent,
     required this.writelocalTransactionUseCase,
     required this.analyticsService,
     required this.logger,
+    required this.httpClients,
   }) : super(TransactionState<LockQuantityData, ComposeIssuanceResponseVerbose>(
           formState: TransactionFormState<LockQuantityData>(
             balancesState: const BalancesState.initial(),
@@ -76,7 +79,10 @@ class LockQuantityBloc extends Bloc<TransactionEvent,
 
     try {
       final balances = await balanceRepository.getBalancesForAddressesAndAsset(
-          event.addresses, event.assetName, BalanceType.address);
+          client: httpClients.counterparty,
+          addresses: event.addresses,
+          assetName: event.assetName,
+          type: BalanceType.address);
 
       final feeEstimates = await getFeeEstimatesUseCase.call();
 

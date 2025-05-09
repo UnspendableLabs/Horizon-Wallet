@@ -28,6 +28,8 @@ import 'package:horizon/presentation/screens/transactions/send/bloc/send_event.d
 import 'package:horizon/presentation/common/transactions/quantity_display.dart';
 import 'package:horizon/domain/entities/compose_send.dart';
 import 'package:horizon/presentation/common/transaction_stepper/view/steps/transaction_compose_page.dart';
+import 'package:horizon/presentation/session/bloc/session_cubit.dart';
+import 'package:horizon/presentation/session/bloc/session_state.dart';
 
 class SendPage extends StatefulWidget {
   final String assetName;
@@ -85,172 +87,180 @@ class _SendPageState extends State<SendPage> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => SendBloc(
-        balanceRepository: GetIt.I<BalanceRepository>(),
-        getFeeEstimatesUseCase: GetIt.I<GetFeeEstimatesUseCase>(),
-        composeTransactionUseCase: GetIt.I<ComposeTransactionUseCase>(),
-        composeRepository: GetIt.I<ComposeRepository>(),
-        signAndBroadcastTransactionUseCase:
-            GetIt.I<SignAndBroadcastTransactionUseCase>(),
-        writelocalTransactionUseCase: GetIt.I<WriteLocalTransactionUseCase>(),
-        analyticsService: GetIt.I<AnalyticsService>(),
-        logger: GetIt.I<Logger>(),
-      )..add(SendDependenciesRequested(
-          assetName: widget.assetName, addresses: widget.addresses)),
-      child: BlocConsumer<SendBloc,
-          TransactionState<SendData, ComposeSendResponse>>(
-        listener: (context, state) {},
-        builder: (context, state) {
-          return Scaffold(
-            body: TransactionStepper<SendData, ComposeSendResponse>(
-              formStepContent: FormStepContent<SendData>(
-                title: 'Enter Send Details',
-                formKey: _formKey,
-                onNext: () => _handleOnFormStepNext(context, state),
-                onFeeOptionSelected: (feeOption) =>
-                    _handleFeeOptionSelected(context, feeOption),
-                buildForm: (formState) => TransactionFormPage<SendData>(
-                  errorButtonText: 'Reload',
-                  formState: formState,
-                  onErrorButtonAction: () =>
-                      _handleDependenciesRequested(context),
+    final session = context.select<SessionStateCubit, SessionStateSuccess>(
+      (cubit) => cubit.state.successOrThrow(),
+    );
+
+    return Builder(builder: (context) {
+      return BlocProvider(
+        create: (context) => SendBloc(
+          httpClients: session.httpClients,
+          balanceRepository: GetIt.I<BalanceRepository>(),
+          getFeeEstimatesUseCase: GetIt.I<GetFeeEstimatesUseCase>(),
+          composeTransactionUseCase: GetIt.I<ComposeTransactionUseCase>(),
+          composeRepository: GetIt.I<ComposeRepository>(),
+          signAndBroadcastTransactionUseCase:
+              GetIt.I<SignAndBroadcastTransactionUseCase>(),
+          writelocalTransactionUseCase: GetIt.I<WriteLocalTransactionUseCase>(),
+          analyticsService: GetIt.I<AnalyticsService>(),
+          logger: GetIt.I<Logger>(),
+        )..add(SendDependenciesRequested(
+            assetName: widget.assetName, addresses: widget.addresses)),
+        child: BlocConsumer<SendBloc,
+            TransactionState<SendData, ComposeSendResponse>>(
+          listener: (context, state) {},
+          builder: (context, state) {
+            return Scaffold(
+              body: TransactionStepper<SendData, ComposeSendResponse>(
+                formStepContent: FormStepContent<SendData>(
+                  title: 'Enter Send Details',
+                  formKey: _formKey,
+                  onNext: () => _handleOnFormStepNext(context, state),
                   onFeeOptionSelected: (feeOption) =>
                       _handleFeeOptionSelected(context, feeOption),
-                  form: (
-                          {balances,
-                          feeEstimates,
-                          data,
-                          feeOption,
-                          required loading}) =>
-                      Form(
-                    key: _formKey,
-                    child: Column(
-                      children: [
-                        MultiAddressBalanceDropdown(
-                          loading: loading,
-                          balances: balances,
-                          onChanged: (value) {
-                            setState(() {
-                              selectedBalanceEntry = value;
-                              quantityController.clear();
-                            });
-                          },
-                          selectedValue: selectedBalanceEntry,
-                        ),
-                        commonHeightSizedBox,
-                        HorizonTextField(
-                          enabled: !loading,
-                          controller: destinationAddressController,
-                          label: 'Destination Address',
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Please enter a destination address';
-                            }
-                            return null;
-                          },
-                        ),
-                        commonHeightSizedBox,
-                        TokenNameField(
-                          loading: loading,
-                          balance: balances,
-                          selectedBalanceEntry: selectedBalanceEntry,
-                        ),
-                        commonHeightSizedBox,
-                        GradientQuantityInput(
-                          enabled: !loading,
-                          showMaxButton: true,
-                          balance: balances,
-                          selectedBalanceEntry: selectedBalanceEntry,
-                          controller: quantityController,
-                          validator: (value) {
-                            if (balances == null) {
-                              return null;
-                            }
-                            if (value == null || value.isEmpty) {
-                              return 'Please enter an amount';
-                            }
-
-                            if (selectedBalanceEntry != null) {
-                              try {
-                                final enteredQuantity =
-                                    getQuantityForDivisibility(
-                                  divisible: balances.assetInfo.divisible,
-                                  inputQuantity: value,
-                                );
-
-                                if (enteredQuantity >
-                                    selectedBalanceEntry!.quantity) {
-                                  return 'Insufficient balance';
-                                }
-                              } catch (e) {
-                                return 'Invalid amount';
+                  buildForm: (formState) => TransactionFormPage<SendData>(
+                    errorButtonText: 'Reload',
+                    formState: formState,
+                    onErrorButtonAction: () =>
+                        _handleDependenciesRequested(context),
+                    onFeeOptionSelected: (feeOption) =>
+                        _handleFeeOptionSelected(context, feeOption),
+                    form: (
+                            {balances,
+                            feeEstimates,
+                            data,
+                            feeOption,
+                            required loading}) =>
+                        Form(
+                      key: _formKey,
+                      child: Column(
+                        children: [
+                          MultiAddressBalanceDropdown(
+                            loading: loading,
+                            balances: balances,
+                            onChanged: (value) {
+                              setState(() {
+                                selectedBalanceEntry = value;
+                                quantityController.clear();
+                              });
+                            },
+                            selectedValue: selectedBalanceEntry,
+                          ),
+                          commonHeightSizedBox,
+                          HorizonTextField(
+                            enabled: !loading,
+                            controller: destinationAddressController,
+                            label: 'Destination Address',
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Please enter a destination address';
                               }
-                            }
+                              return null;
+                            },
+                          ),
+                          commonHeightSizedBox,
+                          TokenNameField(
+                            loading: loading,
+                            balance: balances,
+                            selectedBalanceEntry: selectedBalanceEntry,
+                          ),
+                          commonHeightSizedBox,
+                          GradientQuantityInput(
+                            enabled: !loading,
+                            showMaxButton: true,
+                            balance: balances,
+                            selectedBalanceEntry: selectedBalanceEntry,
+                            controller: quantityController,
+                            validator: (value) {
+                              if (balances == null) {
+                                return null;
+                              }
+                              if (value == null || value.isEmpty) {
+                                return 'Please enter an amount';
+                              }
 
-                            return null;
-                          },
+                              if (selectedBalanceEntry != null) {
+                                try {
+                                  final enteredQuantity =
+                                      getQuantityForDivisibility(
+                                    divisible: balances.assetInfo.divisible,
+                                    inputQuantity: value,
+                                  );
+
+                                  if (enteredQuantity >
+                                      selectedBalanceEntry!.quantity) {
+                                    return 'Insufficient balance';
+                                  }
+                                } catch (e) {
+                                  return 'Invalid amount';
+                                }
+                              }
+
+                              return null;
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                confirmationStepContent:
+                    ConfirmationStepContent<ComposeSendResponse>(
+                  title: 'Confirm Transaction',
+                  buildConfirmationContent:
+                      (composeState, onErrorButtonAction) =>
+                          TransactionComposePage<ComposeSendResponse>(
+                    composeState: composeState,
+                    errorButtonText: 'Go back to transaction',
+                    onErrorButtonAction: onErrorButtonAction,
+                    buildComposeContent: (
+                            {ComposeStateSuccess<ComposeSendResponse>?
+                                composeState,
+                            required bool loading}) =>
+                        Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        QuantityDisplay(
+                          loading: loading,
+                          quantity: composeState
+                              ?.composeData.params.quantityNormalized,
+                        ),
+                        commonHeightSizedBox,
+                        ConfirmationFieldWithLabel(
+                          loading: loading,
+                          label: 'Token Name',
+                          value: composeState?.composeData.params.asset != null
+                              ? displayAssetName(
+                                  composeState!.composeData.params.asset,
+                                  composeState.composeData.params.assetInfo
+                                      .assetLongname)
+                              : null,
+                        ),
+                        commonHeightSizedBox,
+                        ConfirmationFieldWithLabel(
+                          loading: loading,
+                          label: 'Source Address',
+                          value: composeState?.composeData.params.source,
+                        ),
+                        commonHeightSizedBox,
+                        ConfirmationFieldWithLabel(
+                          loading: loading,
+                          label: 'Recipient Address',
+                          value: composeState?.composeData.params.destination,
                         ),
                       ],
                     ),
                   ),
+                  onNext: ({dynamic decryptionStrategy}) =>
+                      _handleConfirmationStepNext(context,
+                          decryptionStrategy: decryptionStrategy),
                 ),
+                state: state,
               ),
-              confirmationStepContent:
-                  ConfirmationStepContent<ComposeSendResponse>(
-                title: 'Confirm Transaction',
-                buildConfirmationContent: (composeState, onErrorButtonAction) =>
-                    TransactionComposePage<ComposeSendResponse>(
-                  composeState: composeState,
-                  errorButtonText: 'Go back to transaction',
-                  onErrorButtonAction: onErrorButtonAction,
-                  buildComposeContent: (
-                          {ComposeStateSuccess<ComposeSendResponse>?
-                              composeState,
-                          required bool loading}) =>
-                      Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      QuantityDisplay(
-                        loading: loading,
-                        quantity:
-                            composeState?.composeData.params.quantityNormalized,
-                      ),
-                      commonHeightSizedBox,
-                      ConfirmationFieldWithLabel(
-                        loading: loading,
-                        label: 'Token Name',
-                        value: composeState?.composeData.params.asset != null
-                            ? displayAssetName(
-                                composeState!.composeData.params.asset,
-                                composeState
-                                    .composeData.params.assetInfo.assetLongname)
-                            : null,
-                      ),
-                      commonHeightSizedBox,
-                      ConfirmationFieldWithLabel(
-                        loading: loading,
-                        label: 'Source Address',
-                        value: composeState?.composeData.params.source,
-                      ),
-                      commonHeightSizedBox,
-                      ConfirmationFieldWithLabel(
-                        loading: loading,
-                        label: 'Recipient Address',
-                        value: composeState?.composeData.params.destination,
-                      ),
-                    ],
-                  ),
-                ),
-                onNext: ({dynamic decryptionStrategy}) =>
-                    _handleConfirmationStepNext(context,
-                        decryptionStrategy: decryptionStrategy),
-              ),
-              state: state,
-            ),
-          );
-        },
-      ),
-    );
+            );
+          },
+        ),
+      );
+    });
   }
 }
