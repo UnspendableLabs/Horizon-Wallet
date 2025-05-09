@@ -70,7 +70,8 @@ sealed class ButtonContent {}
 
 class TextButtonContent extends ButtonContent {
   String value;
-  TextButtonContent({required this.value});
+  TextStyle? style;
+  TextButtonContent({required this.value, this.style});
 }
 
 class WidgetButtonContent extends ButtonContent {
@@ -86,7 +87,8 @@ class HorizonButton extends StatefulWidget {
   final double? height;
   final bool disabled;
   final ButtonContent child;
-  final Icon? icon;
+  final Widget? icon;
+  final double? borderRadius;
 
   const HorizonButton({
     super.key,
@@ -97,6 +99,7 @@ class HorizonButton extends StatefulWidget {
     this.variant = ButtonVariant.green,
     this.disabled = false,
     this.icon,
+    this.borderRadius = 50,
   });
 
   @override
@@ -110,12 +113,21 @@ class _HorizonButtonState extends State<HorizonButton> {
     ButtonStyle style = ElevatedButton.styleFrom(
       backgroundColor: green2,
       foregroundColor: offBlack,
+      padding: EdgeInsets.zero,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(widget.borderRadius ?? 50),
+         
+      ),
     );
+
 
     TextStyle textStyle = TextStyle(
         color: style.foregroundColor?.resolve({}),
         fontSize: 16,
-        fontWeight: FontWeight.w500);
+        fontWeight: FontWeight.w500
+
+        );
+
 
     BoxBorder? border;
 
@@ -174,6 +186,14 @@ class _HorizonButtonState extends State<HorizonButton> {
         color: const Color.fromRGBO(254, 251, 249, 0.16),
       );
     }
+    
+    if (widget.child is TextButtonContent && (widget.child as TextButtonContent).style != null) {
+      textStyle = textStyle.copyWith(
+        color: (widget.child as TextButtonContent).style?.color,
+        fontSize: (widget.child as TextButtonContent).style?.fontSize,
+        fontWeight: (widget.child as TextButtonContent).style?.fontWeight,
+      );
+    }
 
     if (widget.variant == ButtonVariant.gradient) {
       return SizedBox(
@@ -182,7 +202,7 @@ class _HorizonButtonState extends State<HorizonButton> {
         child: GradientContainer(
           isHovered: isHovered,
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(50),
+            borderRadius: BorderRadius.circular(widget.borderRadius ?? 50),
             boxShadow: isHovered
                 ? [
                     boxShadow,
@@ -224,9 +244,10 @@ class _HorizonButtonState extends State<HorizonButton> {
       width: widget.width,
       height: widget.height,
       child: Container(
+        padding: EdgeInsets.zero,
         decoration: BoxDecoration(
           border: border,
-          borderRadius: BorderRadius.circular(50),
+          borderRadius: BorderRadius.circular(widget.borderRadius ?? 50),
           boxShadow: isHovered ? [boxShadow] : null,
         ),
         child: ElevatedButton(

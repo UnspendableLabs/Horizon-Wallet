@@ -108,56 +108,65 @@ class _PortfolioViewState extends State<PortfolioView>
       child: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+            padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 10),
             child: LayoutBuilder(
               builder: (context, constraints) {
-                final spacing = constraints.maxWidth < 400 ? 6.0 : 8.0;
+                const spacing = 11.0;
                 return Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Expanded(
-                      child: HorizonActionButton(
-                        label: 'Send',
-                        icon: AppIcons.sendIcon(context: context, color: black),
+                      child: HorizonButton(
+                        child: TextButtonContent(value: 'Send', style: const TextStyle(fontSize: 12,)),
+                        height: 44,
+                        borderRadius: 18,
+                        variant: ButtonVariant.green,
+                        icon: AppIcons.sendIcon(context: context, color: black,),
                         onPressed: () {
                           // TODO: Implement send functionality
                         },
                       ),
                     ),
-                    SizedBox(width: spacing),
+                    const SizedBox(width: spacing),
                     Expanded(
-                      child: HorizonActionButton(
-                        label: 'Receive',
+                      child: HorizonButton(
+                        child: TextButtonContent(value: 'Receive', style: const TextStyle(fontSize: 12,)),
+                        height: 44,
+                        borderRadius: 18,
+                        variant: ButtonVariant.black,
                         icon: AppIcons.receiveIcon(
                           context: context,
                         ),
-                        isTransparent: true,
                         onPressed: () {
                           // TODO: Implement receive functionality
                         },
                       ),
                     ),
-                    SizedBox(width: spacing),
+                    const SizedBox(width: spacing),
                     Expanded(
-                      child: HorizonActionButton(
-                        label: 'Swap',
+                      child: HorizonButton(
+                        child: TextButtonContent(value: 'Swap', style: const TextStyle(fontSize: 12,)),
+                        height: 44,
+                        borderRadius: 18,
+                        variant: ButtonVariant.black,
                         icon: AppIcons.swapIcon(
                           context: context,
                         ),
-                        isTransparent: true,
                         onPressed: () {
                           // TODO: Implement swap functionality
                         },
                       ),
                     ),
-                    SizedBox(width: spacing),
+                    const SizedBox(width: spacing),
                     Expanded(
-                      child: HorizonActionButton(
-                        label: 'Mint',
+                      child: HorizonButton(
+                        child: TextButtonContent(value: 'Mint', style: const TextStyle(fontSize: 12,)),
+                        height: 44,
+                        borderRadius: 18,
+                        variant: ButtonVariant.black,
                         icon: AppIcons.mintIcon(
                           context: context,
                         ),
-                        isTransparent: true,
                         onPressed: () {
                           // TODO: Implement mint functionality
                         },
@@ -189,6 +198,7 @@ class _PortfolioViewState extends State<PortfolioView>
                   child: TabBar(
                     controller: _tabController,
                     indicatorWeight: 2,
+                    dividerHeight: 0,
                     indicatorColor: transparentPurple33,
                     labelColor: Theme.of(context).textTheme.bodyMedium?.color,
                     unselectedLabelColor: Theme.of(context)
@@ -203,6 +213,7 @@ class _PortfolioViewState extends State<PortfolioView>
                     tabAlignment: TabAlignment.start,
                     tabs: const [
                       Tab(
+                        height: 62,
                         child: Text(
                           'Assets',
                           style: TextStyle(
@@ -212,6 +223,7 @@ class _PortfolioViewState extends State<PortfolioView>
                         ),
                       ),
                       Tab(
+                        height: 62,
                         child: Text(
                           'Activity',
                           style: TextStyle(
