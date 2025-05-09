@@ -13,22 +13,22 @@ import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 import 'package:horizon/domain/repositories/utxo_repository.dart';
 
 class BalanceRepositoryImpl implements BalanceRepository {
-  final V2Api api;
   final UtxoRepository utxoRepository;
   final BitcoinRepository bitcoinRepository;
 
   BalanceRepositoryImpl({
-    required this.api,
     required this.utxoRepository,
     required this.bitcoinRepository,
   });
 
   @override
-  Future<List<b.Balance>> getBalancesForAddress(String address,
-      [bool? excludeUtxoAttached]) async {
+  Future<List<b.Balance>> getBalancesForAddress(
+      {required V2Api client,
+      required String address,
+      bool? excludeUtxoAttached}) async {
     final List<b.Balance> balances = [];
     balances.addAll([await _getBtcBalance(address: address)]);
-    final balances_ = await _fetchBalances(address);
+    final balances_ = await _fetchBalances(api: client, address: address);
     if (excludeUtxoAttached == null || excludeUtxoAttached == false) {
       balances.addAll(balances_);
     } else {
@@ -39,25 +39,30 @@ class BalanceRepositoryImpl implements BalanceRepository {
 
   @override
   Future<List<mba.MultiAddressBalance>> getBalancesForAddresses(
-      List<String> addresses) async {
+      {required V2Api client, required List<String> addresses}) async {
     final List<mba.MultiAddressBalance> balances = [];
     balances.addAll([await _getBtcBalancesForAddresses(addresses: addresses)]);
-    balances.addAll(await _fetchBalancesByAllAddresses(addresses));
+    balances.addAll(
+        await _fetchBalancesByAllAddresses(api: client, addresses: addresses));
     return balances;
   }
 
   @override
   Future<mba.MultiAddressBalance> getBalancesForAddressesAndAsset(
-      List<String> addresses, String assetName,
-      [BalanceType? type]) async {
+      {required V2Api client,
+      required List<String> addresses,
+      required String assetName,
+      BalanceType? type}) async {
     final List<mba.MultiAddressBalance> balances =
-        await _fetchBalancesByAllAddresses(addresses, assetName, type);
+        await _fetchBalancesByAllAddresses(
+            api: client, addresses: addresses, asset: assetName, type: type);
 
     // This multi-address balance is for a single asset, so though the response returns a list, there will only be one item
     return balances.first;
   }
 
-  Future<List<b.Balance>> _fetchBalances(String address) async {
+  Future<List<b.Balance>> _fetchBalances(
+      {required V2Api api, required String address}) async {
     final List<b.Balance> balances = [];
     int limit = 50;
     cursor_entity.Cursor? cursor;
@@ -89,9 +94,10 @@ class BalanceRepositoryImpl implements BalanceRepository {
   }
 
   Future<List<mba.MultiAddressBalance>> _fetchBalancesByAllAddresses(
-      List<String> addresses,
-      [String? asset,
-      BalanceType? type]) async {
+      {required V2Api api,
+      required List<String> addresses,
+      String? asset,
+      BalanceType? type}) async {
     final List<mba.MultiAddressBalance> balances = [];
     int limit = 50;
     cursor_model.CursorModel? cursor;
@@ -187,9 +193,11 @@ class BalanceRepositoryImpl implements BalanceRepository {
 
   @override
   Future<List<b.Balance>> getBalancesForAddressAndAssetVerbose(
-      String address, String assetName) async {
+      {required V2Api client,
+      required String address,
+      required String assetName}) async {
     final response =
-        await api.getBalancesForAddressAndAssetVerbose(address, assetName);
+        await client.getBalancesForAddressAndAssetVerbose(address, assetName);
     final balances = response.result;
     if (balances == null) {
       throw Exception('Failed to get balance for $address and $assetName');
@@ -218,8 +226,9 @@ class BalanceRepositoryImpl implements BalanceRepository {
   }
 
   @override
-  Future<List<b.Balance>> getBalancesForUTXO(String utxo) async {
-    final response = await api.getBalancesByUTXO(utxo);
+  Future<List<b.Balance>> getBalancesForUTXO(
+      {required V2Api client, required String utxo}) async {
+    final response = await client.getBalancesByUTXO(utxo);
     final balances = response.result;
     if (balances == null) {
       throw Exception('Failed to get balances for $utxo');

@@ -15,6 +15,7 @@ import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
 import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transaction_usecase.dart';
 import 'package:horizon/presentation/common/usecase/write_local_transaction_usecase.dart';
 import 'package:horizon/presentation/screens/transactions/send/bloc/send_event.dart';
+import 'package:horizon/domain/entities/http_clients.dart';
 
 class SendData {}
 
@@ -29,6 +30,7 @@ class SendBloc extends Bloc<TransactionEvent,
   final WriteLocalTransactionUseCase writelocalTransactionUseCase;
   final AnalyticsService analyticsService;
   final Logger logger;
+  final HttpClients httpClients;
 
   SendBloc({
     required this.balanceRepository,
@@ -39,6 +41,7 @@ class SendBloc extends Bloc<TransactionEvent,
     required this.writelocalTransactionUseCase,
     required this.analyticsService,
     required this.logger,
+    required this.httpClients,
   }) : super(TransactionState<SendData, ComposeSendResponse>(
           formState: TransactionFormState<SendData>(
             balancesState: const BalancesState.initial(),
@@ -69,7 +72,10 @@ class SendBloc extends Bloc<TransactionEvent,
 
     try {
       final balances = await balanceRepository.getBalancesForAddressesAndAsset(
-          event.addresses, event.assetName, BalanceType.address);
+          client: httpClients.counterparty,
+          addresses: event.addresses,
+          assetName: event.assetName,
+          type: BalanceType.address);
 
       final feeEstimates = await getFeeEstimatesUseCase.call();
 

@@ -2,14 +2,18 @@ import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
+import 'package:horizon/domain/entities/http_clients.dart';
 
 class FetchIssuanceFormDataUseCase {
   final BalanceRepository balanceRepository;
   final GetFeeEstimatesUseCase getFeeEstimatesUseCase;
+  final HttpClients httpClients;
 
   FetchIssuanceFormDataUseCase({
     required this.balanceRepository,
     required this.getFeeEstimatesUseCase,
+    required this.httpClients,
+      
   });
 
   Future<(List<Balance>, FeeEstimates)> call(String currentAddress) async {
@@ -36,7 +40,9 @@ class FetchIssuanceFormDataUseCase {
   Future<List<Balance>> _fetchBalances(String currentAddress) async {
     try {
       final balances_ =
-          await balanceRepository.getBalancesForAddress(currentAddress, true);
+          await balanceRepository.getBalancesForAddress(
+          client: httpClients.counterparty,
+          address: currentAddress, excludeUtxoAttached: true);
       return balances_.where((balance) => balance.asset != 'BTC').toList();
     } catch (e) {
       throw FetchBalancesException(e.toString());

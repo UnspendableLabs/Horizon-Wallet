@@ -5,6 +5,7 @@ import 'package:horizon/domain/entities/utxo.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/repositories/utxo_repository.dart';
 import 'package:horizon/domain/services/error_service.dart';
+import 'package:horizon/domain/entities/http_clients.dart';
 
 class VirtualSize extends Equatable {
   final int virtualSize;
@@ -25,11 +26,13 @@ class ComposeTransactionUseCase {
   final UtxoRepository utxoRepository;
   final BalanceRepository balanceRepository;
   final ErrorService errorService;
+  final HttpClients httpClients;
 
   const ComposeTransactionUseCase({
     required this.utxoRepository,
     required this.balanceRepository,
     required this.errorService,
+    required this.httpClients,
   });
 
   Future<R> call<P extends ComposeParams, R extends ComposeResponse>({
@@ -79,7 +82,8 @@ class ComposeTransactionUseCase {
         break;
       }
       final utxoKey = "${utxo.txid}:${utxo.vout}";
-      final balance = await balanceRepository.getBalancesForUTXO(utxoKey);
+      final balance = await balanceRepository.getBalancesForUTXO(
+          client: httpClients.counterparty, utxo: utxoKey);
       if (balance.isEmpty) {
         inputsForSet.add(utxo);
       }

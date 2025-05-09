@@ -13,6 +13,7 @@ import 'package:horizon/presentation/screens/settings/security_view.dart';
 import 'package:horizon/presentation/screens/settings/seed_phrase/seed_phrase_flow.dart';
 import 'package:horizon/presentation/screens/settings/advanced/settings_advanced.dart';
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
+import 'package:horizon/presentation/session/bloc/session_state.dart';
 import 'package:horizon/presentation/session/theme/bloc/theme_bloc.dart';
 import 'package:horizon/presentation/session/theme/bloc/theme_event.dart';
 import 'package:horizon/presentation/shell/app_shell.dart';
@@ -466,9 +467,9 @@ class _SettingsViewState extends State<SettingsView> {
             width: 120,
             height: 40,
             child: ValueChangeObserver(
-                defaultValue: Network.mainnet,
+                defaultValue: "",
                 cacheKey: SettingsKeys.walletConfigID.toString(),
-                builder: (context, value, _) {
+                builder: (context, value, x) {
                   return HorizonRedesignDropdown<String>(
                     useModal: true,
                     onChanged: (value) {
@@ -494,11 +495,11 @@ class _SettingsViewState extends State<SettingsView> {
                     selectedValue: context
                         .read<SessionStateCubit>()
                         .state
-                        .maybeWhen(
-                            orElse: () => Network.mainnet.name,
-                            success: (session) =>
-                                session.walletConfig.network.name),
-                    hintText: 'Select timeout',
+                        .successOrThrow()
+                        .walletConfig
+                        .network
+                        .name,
+                    hintText: '',
                   );
                 }),
           ),

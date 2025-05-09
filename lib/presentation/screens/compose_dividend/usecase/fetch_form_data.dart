@@ -5,18 +5,21 @@ import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/domain/repositories/estimate_xcp_fee_repository.dart';
 import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
+import 'package:horizon/domain/entities/http_clients.dart';
 
 class FetchDividendFormDataUseCase {
   final BalanceRepository balanceRepository;
   final GetFeeEstimatesUseCase getFeeEstimatesUseCase;
   final AssetRepository assetRepository;
   final EstimateXcpFeeRepository estimateXcpFeeRepository;
+  final HttpClients httpClients;
 
   FetchDividendFormDataUseCase({
     required this.balanceRepository,
     required this.getFeeEstimatesUseCase,
     required this.assetRepository,
     required this.estimateXcpFeeRepository,
+    required this.httpClients,
   });
 
   Future<(List<Balance>, Asset, FeeEstimates, int)> call(
@@ -50,8 +53,9 @@ class FetchDividendFormDataUseCase {
 
   Future<List<Balance>> _fetchBalances(String currentAddress) async {
     try {
-      final balances_ =
-          await balanceRepository.getBalancesForAddress(currentAddress, true);
+      final balances_ = await balanceRepository.getBalancesForAddress(
+          client: httpClients.counterparty,
+          address: currentAddress, excludeUtxoAttached: true);
       return balances_.where((balance) => balance.asset != 'BTC').toList();
     } catch (e) {
       throw FetchBalancesException(e.toString());

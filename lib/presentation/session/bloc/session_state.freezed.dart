@@ -980,6 +980,7 @@ mixin _$SessionStateSuccess {
   List<ImportedAddress>? get importedAddresses =>
       throw _privateConstructorUsedError;
   WalletConfig get walletConfig => throw _privateConstructorUsedError;
+  HttpClients get httpClients => throw _privateConstructorUsedError;
 
   @JsonKey(ignore: true)
   $SessionStateSuccessCopyWith<SessionStateSuccess> get copyWith =>
@@ -999,7 +1000,8 @@ abstract class $SessionStateSuccessCopyWith<$Res> {
       List<AccountV2> accounts,
       List<AddressV2> addresses,
       List<ImportedAddress>? importedAddresses,
-      WalletConfig walletConfig});
+      WalletConfig walletConfig,
+      HttpClients httpClients});
 }
 
 /// @nodoc
@@ -1022,6 +1024,7 @@ class _$SessionStateSuccessCopyWithImpl<$Res, $Val extends SessionStateSuccess>
     Object? addresses = null,
     Object? importedAddresses = freezed,
     Object? walletConfig = null,
+    Object? httpClients = null,
   }) {
     return _then(_value.copyWith(
       currentAccount: freezed == currentAccount
@@ -1052,6 +1055,10 @@ class _$SessionStateSuccessCopyWithImpl<$Res, $Val extends SessionStateSuccess>
           ? _value.walletConfig
           : walletConfig // ignore: cast_nullable_to_non_nullable
               as WalletConfig,
+      httpClients: null == httpClients
+          ? _value.httpClients
+          : httpClients // ignore: cast_nullable_to_non_nullable
+              as HttpClients,
     ) as $Val);
   }
 }
@@ -1071,7 +1078,8 @@ abstract class _$$SessionStateSuccessImplCopyWith<$Res>
       List<AccountV2> accounts,
       List<AddressV2> addresses,
       List<ImportedAddress>? importedAddresses,
-      WalletConfig walletConfig});
+      WalletConfig walletConfig,
+      HttpClients httpClients});
 }
 
 /// @nodoc
@@ -1092,6 +1100,7 @@ class __$$SessionStateSuccessImplCopyWithImpl<$Res>
     Object? addresses = null,
     Object? importedAddresses = freezed,
     Object? walletConfig = null,
+    Object? httpClients = null,
   }) {
     return _then(_$SessionStateSuccessImpl(
       currentAccount: freezed == currentAccount
@@ -1122,6 +1131,10 @@ class __$$SessionStateSuccessImplCopyWithImpl<$Res>
           ? _value.walletConfig
           : walletConfig // ignore: cast_nullable_to_non_nullable
               as WalletConfig,
+      httpClients: null == httpClients
+          ? _value.httpClients
+          : httpClients // ignore: cast_nullable_to_non_nullable
+              as HttpClients,
     ));
   }
 }
@@ -1136,7 +1149,8 @@ class _$SessionStateSuccessImpl implements _SessionStateSuccess {
       required final List<AccountV2> accounts,
       required final List<AddressV2> addresses,
       final List<ImportedAddress>? importedAddresses,
-      required this.walletConfig})
+      required this.walletConfig,
+      required this.httpClients})
       : _accounts = accounts,
         _addresses = addresses,
         _importedAddresses = importedAddresses;
@@ -1177,6 +1191,8 @@ class _$SessionStateSuccessImpl implements _SessionStateSuccess {
 
   @override
   final WalletConfig walletConfig;
+  @override
+  final HttpClients httpClients;
 
   @override
   bool operator ==(Object other) {
@@ -1195,7 +1211,9 @@ class _$SessionStateSuccessImpl implements _SessionStateSuccess {
             const DeepCollectionEquality()
                 .equals(other._importedAddresses, _importedAddresses) &&
             (identical(other.walletConfig, walletConfig) ||
-                other.walletConfig == walletConfig));
+                other.walletConfig == walletConfig) &&
+            (identical(other.httpClients, httpClients) ||
+                other.httpClients == httpClients));
   }
 
   @override
@@ -1207,7 +1225,8 @@ class _$SessionStateSuccessImpl implements _SessionStateSuccess {
       const DeepCollectionEquality().hash(_accounts),
       const DeepCollectionEquality().hash(_addresses),
       const DeepCollectionEquality().hash(_importedAddresses),
-      walletConfig);
+      walletConfig,
+      httpClients);
 
   @JsonKey(ignore: true)
   @override
@@ -1225,7 +1244,8 @@ abstract class _SessionStateSuccess implements SessionStateSuccess {
       required final List<AccountV2> accounts,
       required final List<AddressV2> addresses,
       final List<ImportedAddress>? importedAddresses,
-      required final WalletConfig walletConfig}) = _$SessionStateSuccessImpl;
+      required final WalletConfig walletConfig,
+      required final HttpClients httpClients}) = _$SessionStateSuccessImpl;
 
   @override
   AccountV2? get currentAccount;
@@ -1241,6 +1261,8 @@ abstract class _SessionStateSuccess implements SessionStateSuccess {
   List<ImportedAddress>? get importedAddresses;
   @override
   WalletConfig get walletConfig;
+  @override
+  HttpClients get httpClients;
   @override
   @JsonKey(ignore: true)
   _$$SessionStateSuccessImplCopyWith<_$SessionStateSuccessImpl> get copyWith =>

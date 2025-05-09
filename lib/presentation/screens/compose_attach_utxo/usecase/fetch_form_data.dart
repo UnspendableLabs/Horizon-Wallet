@@ -3,16 +3,19 @@ import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/repositories/estimate_xcp_fee_repository.dart';
 import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
+import 'package:horizon/domain/entities/http_clients.dart';
 
 class FetchComposeAttachUtxoFormDataUseCase {
   final GetFeeEstimatesUseCase getFeeEstimatesUseCase;
   final BalanceRepository balanceRepository;
   final EstimateXcpFeeRepository estimateXcpFeeRepository;
+  final HttpClients httpClients;
 
   FetchComposeAttachUtxoFormDataUseCase({
     required this.getFeeEstimatesUseCase,
     required this.balanceRepository,
     required this.estimateXcpFeeRepository,
+    required this.httpClients,
   });
 
   Future<(FeeEstimates, List<Balance>, int)> call(String address) async {
@@ -50,8 +53,10 @@ class FetchComposeAttachUtxoFormDataUseCase {
 
   Future<List<Balance>> _fetchBalances(String address) async {
     try {
-      final balances =
-          await balanceRepository.getBalancesForAddress(address, true);
+      final balances = await balanceRepository.getBalancesForAddress(
+          client: httpClients.counterparty,
+          address: address,
+          excludeUtxoAttached: true);
       final nonBtcBalances =
           balances.where((balance) => balance.asset != 'BTC').toList();
       return nonBtcBalances;

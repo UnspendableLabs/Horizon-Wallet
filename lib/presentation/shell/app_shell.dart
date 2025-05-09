@@ -73,9 +73,12 @@ class SignPsbtModal extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final session = context.watch<SessionStateCubit>().state.successOrThrow();
+    final session = context.select<SessionStateCubit, SessionStateSuccess>(
+      (cubit) => cubit.state.successOrThrow(),
+    );
     return BlocProvider(
       create: (_) => SignPsbtBloc(
+        httpClients: session.httpClients,
         session: session,
         passwordRequired:
             GetIt.I<SettingsRepository>().requirePasswordForCryptoOperations,
@@ -167,6 +170,7 @@ class GetAddressesModal extends StatelessWidget {
     );
   }
 }
+
 class BottomTabNavigation extends StatelessWidget {
   final TabController controller;
   const BottomTabNavigation({super.key, required this.controller});
@@ -183,11 +187,9 @@ class BottomTabNavigation extends StatelessWidget {
         color: Theme.of(context).dialogTheme.backgroundColor,
         border: Border(
           top: BorderSide(
-            color: Theme.of(context)
-                    .inputDecorationTheme
-                    .outlineBorder
-                    ?.color ??
-                Colors.black.withOpacity(0.1),
+            color:
+                Theme.of(context).inputDecorationTheme.outlineBorder?.color ??
+                    Colors.black.withOpacity(0.1),
             width: 1,
           ),
         ),
@@ -207,14 +209,21 @@ class BottomTabNavigation extends StatelessWidget {
                 ?.resolve({}) ??
             Colors.grey,
         tabs: [
-          _buildTab(context, controller.index == 0, AppIcons.pieChartIcon(context: context), 'Portfolio', isDarkTheme),
-          _buildTab(context, controller.index == 1, AppIcons.settingsIcon(context: context), 'Settings', isDarkTheme),
+          _buildTab(
+              context,
+              controller.index == 0,
+              AppIcons.pieChartIcon(context: context),
+              'Portfolio',
+              isDarkTheme),
+          _buildTab(context, controller.index == 1,
+              AppIcons.settingsIcon(context: context), 'Settings', isDarkTheme),
         ],
       ),
     );
   }
 
-  Widget _buildTab(BuildContext context, bool selected, Widget icon, String label, bool isDarkTheme) {
+  Widget _buildTab(BuildContext context, bool selected, Widget icon,
+      String label, bool isDarkTheme) {
     return Container(
       width: 75,
       height: 74,
@@ -259,7 +268,6 @@ class BottomTabNavigation extends StatelessWidget {
     );
   }
 }
-
 
 class AppShell extends StatefulWidget {
   final Widget child;

@@ -1,6 +1,7 @@
 import 'package:horizon/common/constants.dart';
 import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/entities/seed.dart';
+import 'package:horizon/domain/entities/network.dart';
 
 enum AddressType { bech32, legacy }
 
@@ -11,6 +12,7 @@ abstract class AddressService {
   Future<String> deriveAddressWIP({
     required String path,
     required Seed seed,
+    required Network network,
   });
   
 

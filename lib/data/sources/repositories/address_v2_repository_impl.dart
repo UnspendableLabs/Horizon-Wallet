@@ -58,10 +58,15 @@ class AddressV2RepositoryImpl implements AddressV2Repository {
 
     print(paths);
 
+    print(walletConfig);
+
     List<AddressV2> addresses = [];
     for (final path in paths) {
       String address_ = await _addressService.deriveAddressWIP(
-          path: path.$2, seed: seed.getRight().getOrThrow());
+        path: path.$2,
+        seed: seed.getRight().getOrThrow(),
+        network: walletConfig.network,
+      );
 
       AddressV2 address = AddressV2(
         address: address_,

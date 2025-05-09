@@ -27,6 +27,7 @@ import 'package:horizon/domain/entities/decryption_strategy.dart';
 import 'package:horizon/domain/entities/bitcoin_decoded_tx.dart' as dbtc;
 import 'package:horizon/domain/entities/bitcoin_tx.dart';
 import 'package:horizon/presentation/session/bloc/session_state.dart';
+import 'package:horizon/domain/entities/http_clients.dart';
 
 import "./sign_psbt_state.dart";
 import "./sign_psbt_event.dart";
@@ -160,8 +161,10 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
   final List<int>? sighashTypes;
   final InMemoryKeyRepository inMemoryKeyRepository;
   final SessionStateSuccess session;
+  final HttpClients httpClients;
 
   SignPsbtBloc({
+    required this.httpClients,
     required this.session,
     required this.passwordRequired,
     required this.unsignedPsbt,
@@ -203,8 +206,9 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
               TaskEither(() => bitcoinRepository.getTransaction(vin.txid));
 
           final getBalancesTask = TaskEither<Failure, List<Balance>>.tryCatch(
-              () => balanceRepository
-                  .getBalancesForUTXO("${vin.txid}:${vin.vout}"),
+              () => balanceRepository.getBalancesForUTXO(
+                  client: httpClients.counterparty,
+                  utxo: "${vin.txid}:${vin.vout}"),
               (_, stacktrace) => const UnexpectedFailure(
                     message: "Failed to get balances for UTXO",
                   ));

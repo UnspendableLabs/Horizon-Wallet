@@ -163,6 +163,12 @@ import 'package:horizon/data/sources/repositories/wallet_config_repository_impl.
 import "package:horizon/domain/repositories/address_v2_repository.dart";
 import 'package:horizon/data/sources/repositories/address_v2_repository_impl.dart';
 
+
+
+
+
+
+
 void setup() {
   GetIt injector = GetIt.I;
 
@@ -260,6 +266,7 @@ void setup() {
     )
   ]);
 
+
   injector.registerLazySingleton<V2Api>(() => V2Api(dio));
 
   final esploraDio = Dio(BaseOptions(
@@ -275,7 +282,7 @@ void setup() {
     BadCertificateInterceptor(),
     // SimpleLogInterceptor(),
     RetryInterceptor(
-      dio: dio,
+      dio: esploraDio,
       retries: 4,
       retryDelays: const [
         Duration(seconds: 1), // wait 1 sec before first retry
@@ -340,9 +347,9 @@ void setup() {
   GetIt.I.get<ErrorService>().initialize();
 
   injector.registerSingleton<BitcoinRepository>(BitcoinRepositoryImpl(
-    esploraApi: EsploraApi(
-      dio: esploraDio,
-    ),
+    // esploraApi: EsploraApi(
+    //   dio: esploraDio,
+    // ),
     // blockCypherApi: BlockCypherApi(dio: blockCypherDio)
   ));
   injector.registerSingleton<CacheProvider>(HiveCache());
@@ -364,7 +371,6 @@ void setup() {
       ),
       cacheProvider: GetIt.I.get<CacheProvider>()));
   injector.registerSingleton<BalanceRepository>(BalanceRepositoryImpl(
-      api: GetIt.I.get<V2Api>(),
       utxoRepository: GetIt.I.get<UtxoRepository>(),
       bitcoinRepository: GetIt.I.get<BitcoinRepository>()));
 
@@ -482,11 +488,11 @@ void setup() {
       bitcoinRepository: GetIt.I.get<BitcoinRepository>(),
       cacheProvider: GetIt.I.get<CacheProvider>()));
 
-  injector.registerSingleton<FetchDispenserFormDataUseCase>(
-      FetchDispenserFormDataUseCase(
-          getFeeEstimatesUseCase: GetIt.I.get<GetFeeEstimatesUseCase>(),
-          balanceRepository: injector.get<BalanceRepository>(),
-          dispenserRepository: injector.get<DispenserRepository>()));
+  // injector.registerSingleton<FetchDispenserFormDataUseCase>(
+  //     FetchDispenserFormDataUseCase(
+  //         getFeeEstimatesUseCase: GetIt.I.get<GetFeeEstimatesUseCase>(),
+  //         balanceRepository: injector.get<BalanceRepository>(),
+  //         dispenserRepository: injector.get<DispenserRepository>()));
 
   injector.registerSingleton<FetchDispenseFormDataUseCase>(
       FetchDispenseFormDataUseCase(
@@ -502,19 +508,20 @@ void setup() {
       FetchComposeFairmintFormDataUseCase(
           getFeeEstimatesUseCase: GetIt.I.get<GetFeeEstimatesUseCase>(),
           fairminterRepository: injector.get<FairminterRepository>()));
-  injector.registerSingleton<FetchDividendFormDataUseCase>(
-      FetchDividendFormDataUseCase(
-          getFeeEstimatesUseCase: GetIt.I.get<GetFeeEstimatesUseCase>(),
-          balanceRepository: injector.get<BalanceRepository>(),
-          assetRepository: injector.get<AssetRepository>(),
-          estimateXcpFeeRepository: GetIt.I.get<EstimateXcpFeeRepository>()));
 
-  injector
-      .registerSingleton<ComposeTransactionUseCase>(ComposeTransactionUseCase(
-    utxoRepository: GetIt.I.get<UtxoRepository>(),
-    balanceRepository: injector.get<BalanceRepository>(),
-    errorService: injector.get<ErrorService>(),
-  ));
+  // injector.registerSingleton<FetchDividendFormDataUseCase>(
+  //     FetchDividendFormDataUseCase(
+  //         getFeeEstimatesUseCase: GetIt.I.get<GetFeeEstimatesUseCase>(),
+  //         balanceRepository: injector.get<BalanceRepository>(),
+  //         assetRepository: injector.get<AssetRepository>(),
+  //         estimateXcpFeeRepository: GetIt.I.get<EstimateXcpFeeRepository>()));
+
+  // injector
+  //     .registerSingleton<ComposeTransactionUseCase>(ComposeTransactionUseCase(
+  //   utxoRepository: GetIt.I.get<UtxoRepository>(),
+  //   balanceRepository: injector.get<BalanceRepository>(),
+  //   errorService: injector.get<ErrorService>(),
+  // ));
 
   injector.registerSingleton<FetchFairminterFormDataUseCase>(
       FetchFairminterFormDataUseCase(
@@ -522,16 +529,16 @@ void setup() {
           getFeeEstimatesUseCase: GetIt.I.get<GetFeeEstimatesUseCase>(),
           fairminterRepository: injector.get<FairminterRepository>()));
 
-  injector.registerSingleton<FetchIssuanceFormDataUseCase>(
-      FetchIssuanceFormDataUseCase(
-          balanceRepository: injector.get<BalanceRepository>(),
-          getFeeEstimatesUseCase: GetIt.I.get<GetFeeEstimatesUseCase>()));
-
-  injector.registerSingleton<FetchComposeAttachUtxoFormDataUseCase>(
-      FetchComposeAttachUtxoFormDataUseCase(
-          getFeeEstimatesUseCase: GetIt.I.get<GetFeeEstimatesUseCase>(),
-          estimateXcpFeeRepository: GetIt.I.get<EstimateXcpFeeRepository>(),
-          balanceRepository: injector.get<BalanceRepository>()));
+  // injector.registerSingleton<FetchIssuanceFormDataUseCase>(
+  //     FetchIssuanceFormDataUseCase(
+  //         balanceRepository: injector.get<BalanceRepository>(),
+  //         getFeeEstimatesUseCase: GetIt.I.get<GetFeeEstimatesUseCase>()));
+  //
+  // injector.registerSingleton<FetchComposeAttachUtxoFormDataUseCase>(
+  //     FetchComposeAttachUtxoFormDataUseCase(
+  //         getFeeEstimatesUseCase: GetIt.I.get<GetFeeEstimatesUseCase>(),
+  //         estimateXcpFeeRepository: GetIt.I.get<EstimateXcpFeeRepository>(),
+  //         balanceRepository: injector.get<BalanceRepository>()));
 
   injector.registerSingleton<SignAndBroadcastTransactionUseCase>(
       SignAndBroadcastTransactionUseCase(

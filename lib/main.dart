@@ -417,6 +417,7 @@ class AppRouter {
 
                 return BlocProvider(
                   create: (context) => AssetViewBloc(
+                    httpClients: session.successOrThrow().httpClients,
                     balanceRepository: GetIt.I<BalanceRepository>(),
                     fairminterRepository: GetIt.I<FairminterRepository>(),
                     addresses: session.allAddresses,
