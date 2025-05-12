@@ -2,7 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:horizon/domain/repositories/config_repository.dart';
+import 'package:horizon/domain/entities/http_config.dart';
 import 'package:get_it/get_it.dart';
+import 'package:horizon/presentation/session/bloc/session_cubit.dart';
+import 'package:horizon/presentation/session/bloc/session_state.dart';
+
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 enum URIType { btcexplorer, hoex }
 
@@ -32,12 +37,12 @@ class TxHashDisplayState extends State<TxHashDisplay> {
     return '${widget.hash.substring(0, widget.displayLength)}...${widget.hash.substring(widget.hash.length - widget.displayLength)}';
   }
 
-  Future<void> _launchUrl() async {
+  Future<void> _launchUrl(HttpConfig httpConfig) async {
     final uri = switch (widget.uriType) {
       URIType.btcexplorer =>
-        Uri.parse("${widget.config.btcExplorerBase}/tx/${widget.hash}"),
+        Uri.parse("${httpConfig.btcExplorer}/tx/${widget.hash}"),
       URIType.hoex =>
-        Uri.parse("${widget.config.horizonExplorerBase}/tx/${widget.hash}")
+        Uri.parse("${httpConfig.horizonExplorer}/tx/${widget.hash}")
     };
 
     // final uri =
@@ -63,9 +68,11 @@ class TxHashDisplayState extends State<TxHashDisplay> {
 
   @override
   Widget build(BuildContext context) {
+    final session =
+        context.watch<SessionStateCubit>().state.successOrThrow();
     return GestureDetector(
         onLongPress: _copyToClipboard,
-        onTap: _launchUrl,
+        onTap: () => _launchUrl(session.httpConfig),
         child: RichText(
           text: TextSpan(
             style: DefaultTextStyle.of(context).style,

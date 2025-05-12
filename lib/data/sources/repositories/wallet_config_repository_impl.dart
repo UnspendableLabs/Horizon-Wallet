@@ -6,7 +6,6 @@ import "package:horizon/domain/entities/base_path.dart";
 import "package:horizon/domain/repositories/wallet_config_repository.dart";
 import "package:horizon/common/uuid.dart";
 import "package:fpdart/fpdart.dart";
-import "package:horizon/domain/entities/network.dart";
 import 'package:get_it/get_it.dart';
 
 import 'package:horizon/domain/repositories/settings_repository.dart';

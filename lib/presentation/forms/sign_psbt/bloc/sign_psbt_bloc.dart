@@ -454,8 +454,9 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
       throw Exception('Incorrect password.');
     }
 
-    final addressPrivKey = await importedAddressService
-        .getAddressPrivateKeyFromWIF(wif: decryptedAddressWif);
+    final addressPrivKey =
+        await importedAddressService.getAddressPrivateKeyFromWIF(
+            wif: decryptedAddressWif, network: httpConfig.network);
 
     return addressPrivKey;
   }

@@ -1,4 +1,3 @@
-import "package:horizon/data/models/wallet.dart";
 import "package:horizon/data/sources/local/dao/wallets_dao.dart";
 import "package:horizon/data/sources/local/db.dart" as local;
 import "package:horizon/domain/entities/wallet.dart" as entity;

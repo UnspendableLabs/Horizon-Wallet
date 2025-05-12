@@ -64,8 +64,6 @@ class OnboardingView extends StatelessWidget {
   }
 
   Widget _buildThemeToggle(BuildContext context, bool isDarkMode) {
-    final Config config = GetIt.I<Config>();
-    if (config.network != Network.testnet4) return const SizedBox.shrink();
 
     return Padding(
       padding: const EdgeInsets.only(top: 16.0, right: 16.0),

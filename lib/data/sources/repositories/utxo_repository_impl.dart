@@ -1,23 +1,25 @@
+import 'package:get_it/get_it.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
-import 'package:horizon/data/sources/network/api/v2_api.dart';
-import 'package:horizon/data/sources/network/esplora_client.dart';
+import 'package:horizon/data/sources/network/esplora_client_factory.dart';
 import 'package:horizon/domain/entities/utxo.dart';
+import 'package:horizon/domain/entities/http_config.dart';
 import 'package:horizon/domain/repositories/utxo_repository.dart';
 
 class UtxoRepositoryImpl implements UtxoRepository {
-  final V2Api api;
-  final EsploraApi _esploraApi;
+  final EsploraClientFactory _esploraClientFactory;
   final CacheProvider cacheProvider;
   UtxoRepositoryImpl(
-      {required this.api,
-      required EsploraApi esploraApi,
-      required this.cacheProvider})
-      : _esploraApi = esploraApi;
+      {EsploraClientFactory? esploraClientFactory, required this.cacheProvider})
+      : _esploraClientFactory =
+            esploraClientFactory ?? GetIt.I<EsploraClientFactory>();
 
   @override
-  Future<(List<Utxo>, List<String>)> getUnspentForAddress(String address,
+  Future<(List<Utxo>, List<String>)> getUnspentForAddress(
+      String address, HttpConfig httpConfig,
       {bool excludeCached = false}) async {
-    final esploraUtxos = await _esploraApi.getUtxosForAddress(address);
+    final esploraUtxos = await _esploraClientFactory
+        .getClient(httpConfig)
+        .getUtxosForAddress(address);
 
     List<Utxo> utxos = esploraUtxos.map((a) {
       return Utxo(

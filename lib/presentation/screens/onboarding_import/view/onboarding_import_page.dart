@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/common/constants.dart';
 import 'package:horizon/domain/services/mnemonic_service.dart';
-import 'package:horizon/domain/services/wallet_service.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/common/usecase/set_mnemonic_usecase.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
@@ -26,7 +25,6 @@ class OnboardingImportPageWrapper extends StatelessWidget {
         accountV2Repository: GetIt.I<AccountV2Repository>(),
         mnemonicService: GetIt.I<MnemonicService>(),
         setMnemonicUseCase: GetIt.I<SetMnemonicUseCase>(),
-        walletService: GetIt.I<WalletService>(),
       ),
       child: const OnboardingImportPage(),
     );

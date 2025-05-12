@@ -47,13 +47,13 @@ class AccountsScreen extends StatelessWidget {
                       ),
                       title: Text(
                         account.name,
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontWeight: FontWeight.w500,
                           fontSize: 14,
                         ),
                       ),
                       subtitle: Text("computed btc balance $isSelected",
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontSize: 10,
                           )),
                       onTap: () {
@@ -76,7 +76,7 @@ class AccountsScreen extends StatelessWidget {
                   padding: const EdgeInsets.all(16.0),
                   child: HorizonButton(
                     buttonText: "need a value here or else type error",
-                    child: Text('New Account'),
+                    child: const Text('New Account'),
                     onPressed: () {
                       context
                           .read<GenerateAccountBloc>()

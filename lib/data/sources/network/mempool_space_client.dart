@@ -1,5 +1,5 @@
 import 'package:dio/dio.dart';
-import 'package:horizon/domain/repositories/config_repository.dart';
+import 'package:horizon/domain/entities/network.dart';
 
 class MempoolSpaceFeesRecommendedResponse {
   final int fastestFee;
@@ -28,15 +28,19 @@ class MempoolSpaceFeesRecommendedResponse {
 
 class MempoolSpaceApi {
   final Dio _dio;
-  final Config _configRepository;
 
-  MempoolSpaceApi({required Dio dio, required Config configRepository})
-      : _dio = dio,
-        _configRepository = configRepository;
+  MempoolSpaceApi({
+    Dio? dio,
+  }) : _dio = dio ??
+            Dio(BaseOptions(
+              connectTimeout: const Duration(seconds: 5),
+              receiveTimeout: const Duration(seconds: 3),
+            ));
 
-  Future<MempoolSpaceFeesRecommendedResponse> getFeeEstimates() async {
-
-    String url = switch (_configRepository.network) {
+//  TODO: this should be moved into http_config
+  Future<MempoolSpaceFeesRecommendedResponse> getFeeEstimates(
+      {required Network network}) async {
+    String url = switch (network) {
       Network.mainnet => 'https://mempool.space/api/v1/fees/recommended',
       // Network.testnet => 'https://mempool.space/api/v1/fees/recommended',
       Network.testnet4 => 'https://mempool.space/api/v1/fees/recommended',

@@ -6,9 +6,7 @@ import 'package:horizon/domain/entities/address_info.dart';
 import 'package:horizon/domain/entities/http_config.dart';
 import 'package:horizon/data/sources/network/esplora_client.dart';
 import 'package:horizon/data/sources/network/esplora_client_factory.dart';
-import 'package:dio/dio.dart' hide Options;
 
-import 'package:dio/dio.dart';
 
 
 class BitcoinRepositoryImpl extends BitcoinRepository {

@@ -1,15 +1,10 @@
 import 'package:get_it/get_it.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:horizon/common/constants.dart';
-import 'package:horizon/common/uuid.dart';
-import "package:horizon/domain/entities/network.dart";
 import "package:horizon/domain/entities/wallet_config.dart";
 import "package:horizon/domain/entities/seed_derivation.dart";
 
-import 'package:horizon/domain/entities/account_v2.dart';
-
 import 'package:horizon/domain/services/mnemonic_service.dart';
-import 'package:horizon/domain/services/wallet_service.dart';
 
 import 'package:horizon/domain/repositories/account_v2_repository.dart';
 import 'package:horizon/domain/repositories/wallet_config_repository.dart';
@@ -23,18 +18,17 @@ class OnboardingImportBloc
     extends Bloc<OnboardingImportEvent, OnboardingImportState> {
   final MnemonicService mnemonicService;
   final SetMnemonicUseCase _setMnemonicUseCase;
-  final WalletService walletService;
   final AccountV2Repository accountV2Repository;
   final WalletConfigRepository _walletConfigRepository;
   final SettingsRepository _settingsRepository;
   OnboardingImportBloc(
       {required this.mnemonicService,
-      required this.walletService,
-      required setMnemonicUseCase,
       required this.accountV2Repository,
+      SetMnemonicUseCase? setMnemonicUseCase,
       WalletConfigRepository? walletConfigRepository,
       SettingsRepository? settingsRepository})
-      : _setMnemonicUseCase = setMnemonicUseCase,
+      : _setMnemonicUseCase =
+            setMnemonicUseCase ?? GetIt.I<SetMnemonicUseCase>(),
         _walletConfigRepository =
             walletConfigRepository ?? GetIt.I<WalletConfigRepository>(),
         _settingsRepository =

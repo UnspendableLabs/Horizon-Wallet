@@ -346,7 +346,7 @@ class RBFBloc
     }
 
     final addressPrivKey = await importedAddressService
-        .getAddressPrivateKeyFromWIF(wif: decryptedAddressWif);
+        .getAddressPrivateKeyFromWIF(wif: decryptedAddressWif, network: httpConfig.network);
 
     return addressPrivKey;
   }

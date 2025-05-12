@@ -1,8 +1,5 @@
 import 'package:horizon/domain/repositories/settings_repository.dart';
-import 'package:horizon/domain/entities/base_path.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
-import "package:fpdart/fpdart.dart";
-import "package:horizon/extensions.dart";
 
 class SettingsRepositoryImpl implements SettingsRepository {
   @override

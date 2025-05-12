@@ -1,17 +1,13 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter/foundation.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/domain/entities/wallet_config.dart';
 import 'package:horizon/domain/entities/base_path.dart';
-import 'package:horizon/domain/entities/network.dart';
 import 'package:horizon/domain/entities/seed_derivation.dart';
-import 'package:horizon/domain/entities/seed.dart';
 import 'package:horizon/domain/repositories/wallet_config_repository.dart';
 import "package:equatable/equatable.dart";
 import 'package:formz/formz.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:horizon/common/constants.dart';
-import 'package:horizon/extensions.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/seed_service.dart';
 import 'package:horizon/domain/repositories/mnemonic_repository.dart';
@@ -88,10 +84,10 @@ class SettingsAdvancedState extends Equatable {
 class SettingsAdvancedBloc
     extends Bloc<SettingsAdvancedEvent, SettingsAdvancedState> {
   final WalletConfigRepository _walletConfigRepository;
-  MnemonicRepository _mnemonicRepository;
-  EncryptionService _encryptionService;
-  InMemoryKeyRepository _inMemoryKeyRepository;
-  SeedService _seedService;
+  final MnemonicRepository _mnemonicRepository;
+  final EncryptionService _encryptionService;
+  final InMemoryKeyRepository _inMemoryKeyRepository;
+  final SeedService _seedService;
 
   SettingsAdvancedBloc({
     required WalletConfig walletConfig,

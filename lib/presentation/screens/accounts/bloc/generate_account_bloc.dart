@@ -3,7 +3,6 @@ import 'package:get_it/get_it.dart';
 import 'package:horizon/domain/repositories/wallet_config_repository.dart';
 import 'package:formz/formz.dart';
 import "package:equatable/equatable.dart";
-import 'package:horizon/domain/entities/wallet_config.dart';
 
 abstract class GenerateAccountEvent {}
 
@@ -31,7 +30,7 @@ class GenerateAccountBloc
             walletConfigRepository ?? GetIt.I<WalletConfigRepository>(),
         super(const GenerateAccountState()) {
     on<GenerateAccountClicked>((event, emit) async {
-      emit(GenerateAccountState(
+      emit(const GenerateAccountState(
         status: FormzSubmissionStatus.inProgress,
       ));
 
@@ -45,16 +44,16 @@ class GenerateAccountBloc
       try {
         await _walletConfigRepository.update(walletConfig.copyWith(
             accountIndexEnd: walletConfig.accountIndexEnd + 1));
-        emit(GenerateAccountState(
+        emit(const GenerateAccountState(
           status: FormzSubmissionStatus.success,
         ));
-        emit(GenerateAccountState(
+        emit(const GenerateAccountState(
           status: FormzSubmissionStatus.initial,
         ));
       } catch (e, _) {
         print(e);
         print(_);
-        emit(GenerateAccountState(
+        emit(const GenerateAccountState(
           status: FormzSubmissionStatus.failure,
         ));
       }

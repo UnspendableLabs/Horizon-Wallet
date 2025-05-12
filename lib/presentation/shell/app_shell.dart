@@ -6,6 +6,7 @@ import 'package:horizon/common/fn.dart';
 import 'package:horizon/domain/entities/account.dart';
 import 'package:horizon/domain/entities/action.dart' as URLAction;
 import 'package:horizon/domain/entities/extension_rpc.dart';
+import 'package:horizon/domain/entities/http_config.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/action_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
@@ -22,7 +23,6 @@ import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/imported_address_service.dart';
 import 'package:horizon/domain/services/public_key_service.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
-import 'package:horizon/presentation/common/footer/view/footer.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/forms/get_addresses/bloc/get_addresses_bloc.dart';
 import 'package:horizon/presentation/forms/get_addresses/view/get_addresses_form.dart';
@@ -125,9 +125,11 @@ class GetAddressesModal extends StatelessWidget {
   final EncryptionService encryptionService;
   final PublicKeyService publicKeyService;
   final AccountRepository accountRepository;
+  final HttpConfig httpConfig;
 
   const GetAddressesModal(
       {super.key,
+      required this.httpConfig,
       required this.accountRepository,
       required this.publicKeyService,
       required this.encryptionService,
@@ -145,6 +147,7 @@ class GetAddressesModal extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (_) => GetAddressesBloc(
+        httpConfig: httpConfig,
         passwordRequired:
             GetIt.I<SettingsRepository>().requirePasswordForCryptoOperations,
         inMemoryKeyRepository: GetIt.I<InMemoryKeyRepository>(),

@@ -16,6 +16,8 @@ import 'package:horizon/presentation/screens/settings/import_address/bloc/import
 import 'package:horizon/presentation/screens/settings/import_address/bloc/import_address_pk_event.dart';
 import 'package:horizon/presentation/screens/settings/import_address/bloc/import_address_pk_state.dart';
 import 'package:horizon/utils/app_icons.dart';
+import 'package:horizon/presentation/session/bloc/session_cubit.dart';
+import 'package:horizon/presentation/session/bloc/session_state.dart';
 
 class ImportAddressFlow extends StatelessWidget {
   final VoidCallback onNavigateBack;
@@ -27,8 +29,11 @@ class ImportAddressFlow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final session = GetIt.I<SessionStateCubit>().state.successOrThrow();
+
     return BlocProvider(
       create: (context) => ImportAddressPkBloc(
+        httpConfig: session.httpConfig,
         walletRepository: GetIt.I.get<WalletRepository>(),
         walletService: GetIt.I.get<WalletService>(),
         encryptionService: GetIt.I.get<EncryptionService>(),

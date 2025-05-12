@@ -17,6 +17,7 @@ import 'package:horizon/domain/services/public_key_service.dart';
 import 'package:horizon/domain/entities/address_rpc.dart';
 import 'package:horizon/domain/entities/decryption_strategy.dart';
 import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
+import 'package:horizon/domain/entities/http_config.dart';
 
 class GetAddressesBloc extends Bloc<GetAddressesEvent, GetAddressesState> {
   final bool passwordRequired;
@@ -30,8 +31,10 @@ class GetAddressesBloc extends Bloc<GetAddressesEvent, GetAddressesState> {
   final ImportedAddressService importedAddressService;
   final PublicKeyService publicKeyService;
   final InMemoryKeyRepository inMemoryKeyRepository;
+  final HttpConfig httpConfig;
 
   GetAddressesBloc({
+    required this.httpConfig,
     required this.inMemoryKeyRepository,
     required this.passwordRequired,
     required this.addressService,
@@ -104,7 +107,8 @@ class GetAddressesBloc extends Bloc<GetAddressesEvent, GetAddressesState> {
                   address, Password(state.password.value))
               : await _getAddressPrivKeyForAddress(address, InMemoryKey());
 
-          final publicKey = await publicKeyService.fromPrivateKeyAsHex(pk);
+          final publicKey = await publicKeyService.fromPrivateKeyAsHex(
+              pk, httpConfig.network);
 
           addresses.add(AddressRpc(
               address: address.address,
@@ -126,7 +130,8 @@ class GetAddressesBloc extends Bloc<GetAddressesEvent, GetAddressesState> {
             : await _getAddressPrivKeyForImportedAddress(
                 importedAddress, InMemoryKey());
 
-        final publicKey = await publicKeyService.fromPrivateKeyAsHex(pk);
+        final publicKey =
+            await publicKeyService.fromPrivateKeyAsHex(pk, httpConfig.network);
 
         addresses.add(AddressRpc(
             address: importedAddress.address,
@@ -236,8 +241,9 @@ class GetAddressesBloc extends Bloc<GetAddressesEvent, GetAddressesState> {
       throw GetAddressesException('Incorrect password.');
     }
 
-    final addressPrivKey = await importedAddressService
-        .getAddressPrivateKeyFromWIF(wif: decryptedAddressWif);
+    final addressPrivKey =
+        await importedAddressService.getAddressPrivateKeyFromWIF(
+            wif: decryptedAddressWif, network: httpConfig.network);
 
     return addressPrivKey;
   }

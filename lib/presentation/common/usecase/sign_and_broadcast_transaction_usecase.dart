@@ -1,6 +1,7 @@
 import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/entities/imported_address.dart';
 import 'package:horizon/domain/entities/utxo.dart';
+import 'package:horizon/domain/entities/network.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/imported_address_repository.dart';
@@ -77,7 +78,7 @@ class SignAndBroadcastTransactionUseCase<R extends ComposeResponse> {
 
       // Fetch UTXOs
       final (utxos, cachedTxHashes) = await utxoRepository
-          .getUnspentForAddress(source, excludeCached: true);
+          .getUnspentForAddress(source, httpConfig, excludeCached: true);
       final Map<String, Utxo> utxoMap = {
         for (var e in utxos) "${e.txid}:${e.vout}": e
       };
@@ -99,7 +100,7 @@ class SignAndBroadcastTransactionUseCase<R extends ComposeResponse> {
             await _getAddressPrivKeyForAddress(address, decryptionStrategy);
       } else {
         addressPrivKey = await _getAddressPrivKeyForImportedAddress(
-            importedAddress!, decryptionStrategy);
+            importedAddress!, decryptionStrategy, httpConfig.network);
       }
 
       // Sign Transaction
@@ -165,7 +166,8 @@ class SignAndBroadcastTransactionUseCase<R extends ComposeResponse> {
 
   Future<String> _getAddressPrivKeyForImportedAddress(
       ImportedAddress importedAddress,
-      DecryptionStrategy decryptionStrategy) async {
+      DecryptionStrategy decryptionStrategy,
+      Network network) async {
     late String decryptedAddressWif;
     try {
       Future<String?> getKey() async {
@@ -185,8 +187,9 @@ class SignAndBroadcastTransactionUseCase<R extends ComposeResponse> {
       throw SignAndBroadcastTransactionException('Incorrect password.');
     }
 
-    final addressPrivKey = await importedAddressService
-        .getAddressPrivateKeyFromWIF(wif: decryptedAddressWif);
+    final addressPrivKey =
+        await importedAddressService.getAddressPrivateKeyFromWIF(
+            wif: decryptedAddressWif, network: network);
 
     return addressPrivKey;
   }

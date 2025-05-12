@@ -7,7 +7,6 @@ import 'package:horizon/domain/repositories/utxo_repository.dart';
 import 'package:horizon/domain/services/error_service.dart';
 import 'package:horizon/domain/entities/http_clients.dart';
 import 'package:horizon/domain/entities/http_config.dart';
-import 'package:horizon/data/sources/network/counterparty_client_factory.dart';
 
 class VirtualSize extends Equatable {
   final int virtualSize;
@@ -45,7 +44,7 @@ class ComposeTransactionUseCase {
     try {
       // Fetch UTXOs
       final (List<Utxo> inputsSet, List<dynamic> cachedTxHashes) =
-          await utxoRepository.getUnspentForAddress(source,
+          await utxoRepository.getUnspentForAddress(source, httpConfig,
               excludeCached: true);
 
       if (inputsSet.isEmpty) {

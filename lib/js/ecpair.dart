@@ -8,8 +8,6 @@ import "package:horizon/js/common.dart" as c;
 import "package:horizon/domain/entities/network.dart" as n;
 import "./signer.dart";
 
-import "package:collection/collection.dart";
-import "package:fpdart/fpdart.dart";
 
 extension NetworkX on n.Network {
   c.Network get toJS => switch (this) {

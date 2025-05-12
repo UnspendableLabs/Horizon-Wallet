@@ -7,7 +7,6 @@ import "package:horizon/domain/entities/address_v2.dart";
 import "package:horizon/domain/entities/account_v2.dart";
 import "package:horizon/domain/repositories/address_v2_repository.dart";
 import "package:horizon/domain/repositories/wallet_config_repository.dart";
-import "package:fpdart/fpdart.dart";
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/seed_service.dart';
 import 'package:horizon/domain/repositories/mnemonic_repository.dart';
@@ -18,11 +17,11 @@ class AddressV2RepositoryImpl implements AddressV2Repository {
   final local.DB _db;
   // final AddresssV2Dao _addressDao;
   final WalletConfigRepository _walletConfigRepository;
-  AddressService _addressService;
-  MnemonicRepository _mnemonicRepository;
-  EncryptionService _encryptionService;
-  InMemoryKeyRepository _inMemoryKeyRepository;
-  SeedService _seedService;
+  final AddressService _addressService;
+  final MnemonicRepository _mnemonicRepository;
+  final EncryptionService _encryptionService;
+  final InMemoryKeyRepository _inMemoryKeyRepository;
+  final SeedService _seedService;
 
   // TODO: shuold be able to inject deps here?
   AddressV2RepositoryImpl(this._db)
@@ -47,7 +46,7 @@ class AddressV2RepositoryImpl implements AddressV2Repository {
         .run();
 
     // # TODO: need to make the number of addresses configurable and stored
-    final numAddresses = 1;
+    const numAddresses = 1;
 
     final paths = List.generate(numAddresses, (i) => i)
         .map((index) => (

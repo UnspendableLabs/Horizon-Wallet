@@ -9,14 +9,13 @@ import 'package:horizon/domain/entities/seed_derivation.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/repositories/mnemonic_repository.dart';
 import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
-import 'package:horizon/extensions.dart';
 import 'package:horizon/js/bip39.dart' as bip39;
 import 'package:horizon/js/mnemonicjs.dart';
 
 class SeedServiceImpl implements SeedService {
-  MnemonicRepository _mnemonicRepository;
-  EncryptionService _encryptionService;
-  InMemoryKeyRepository _inMemoryKeyRepository;
+  final MnemonicRepository _mnemonicRepository;
+  final EncryptionService _encryptionService;
+  final InMemoryKeyRepository _inMemoryKeyRepository;
 
   SeedServiceImpl({
     InMemoryKeyRepository? inMemoryKeyRepository,

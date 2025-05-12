@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:get_it/get_it.dart';
-import 'package:horizon/domain/entities/wallet_type_v2.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/repositories/settings_repository.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
@@ -286,7 +285,7 @@ class ThemeToggle extends StatelessWidget {
 }
 
 class SettingsView extends StatefulWidget {
-  SettingsRepository _settingsRepository;
+  final SettingsRepository _settingsRepository;
 
   SettingsView({
     SettingsRepository? settingsRepository,
@@ -331,12 +330,12 @@ class _SettingsViewState extends State<SettingsView> {
       case SettingsPage.main:
         return _buildMainSettings();
       case SettingsPage.network:
-        return Text("Network");
+        return const Text("Network");
       case SettingsPage.advanced:
         return Column(
           children: [
             SettingsAdvancedProvider(
-              child: SettingsAdvanced(),
+              child: const SettingsAdvanced(),
             )
             // SettingsItem(
             //   title: 'Wallet Type',

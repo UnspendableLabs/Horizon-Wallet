@@ -1,6 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:horizon/domain/entities/imported_address.dart';
 import 'package:horizon/domain/entities/wallet.dart';
+import 'package:horizon/domain/entities/http_config.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/imported_address_repository.dart';
 import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
@@ -22,6 +23,7 @@ class ImportAddressPkBloc
   final ImportedAddressRepository importedAddressRepository;
   final ImportedAddressService importedAddressService;
   final InMemoryKeyRepository inMemoryKeyRepository;
+  final HttpConfig httpConfig;
 
   ImportAddressPkBloc({
     required this.walletRepository,
@@ -32,6 +34,7 @@ class ImportAddressPkBloc
     required this.importedAddressRepository,
     required this.importedAddressService,
     required this.inMemoryKeyRepository,
+    required this.httpConfig,
   }) : super(ImportAddressPkInitial()) {
     on<Submit>((event, emit) async {
       emit(ImportAddressPkLoading());
@@ -56,6 +59,7 @@ class ImportAddressPkBloc
           address = await importedAddressService.getAddressFromWIF(
             wif: event.wif,
             format: event.format,
+            network: httpConfig.network,
           );
         } catch (e) {
           emit(ImportAddressPkError('Invalid address private key'));

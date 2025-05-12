@@ -1,12 +1,10 @@
 import 'package:get_it/get_it.dart';
-import 'package:horizon/common/uuid.dart';
 import 'package:horizon/extensions.dart';
 // import "package:horizon/data/sources/local/dao/accounts_v2_dao.dart";
 import "package:horizon/data/sources/local/db.dart" as local;
 import "package:horizon/domain/entities/account_v2.dart";
 import "package:horizon/domain/repositories/account_v2_repository.dart";
 import "package:horizon/domain/repositories/wallet_config_repository.dart";
-import "package:fpdart/fpdart.dart";
 
 class AccountV2RepositoryImpl implements AccountV2Repository {
   // ignore: unused_field

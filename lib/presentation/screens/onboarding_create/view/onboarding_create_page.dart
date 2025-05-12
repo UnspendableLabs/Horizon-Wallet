@@ -3,7 +3,6 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/domain/repositories/config_repository.dart';
@@ -11,9 +10,7 @@ import 'package:horizon/domain/services/mnemonic_service.dart';
 import 'package:horizon/domain/services/wallet_service.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/common/theme_extension.dart';
-import 'package:horizon/presentation/common/usecase/import_wallet_usecase.dart';
 import 'package:horizon/presentation/common/widgets/numbered_grid.dart';
-import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 import 'package:horizon/presentation/screens/onboarding/view/onboarding_shell.dart';
 import 'package:horizon/presentation/screens/onboarding/view/password_prompt.dart';
 import 'package:horizon/presentation/screens/onboarding/view/seed_input.dart';
@@ -119,7 +116,6 @@ class OnboardingCreatePageWrapper extends StatelessWidget {
             const Mainnet(), // Always defaults to mainnet during onboarding
         mnmonicService: GetIt.I<MnemonicService>(),
         walletService: GetIt.I<WalletService>(),
-        importWalletUseCase: GetIt.I<ImportWalletUseCase>(),
       )..add(MnemonicGenerated()),
       child: const OnboardingCreatePage(),
     );
@@ -319,21 +315,21 @@ class ShowMnemonicStep extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  if (config.network == Network.testnet4)
-                    HorizonButton(
-                      width: 150,
-                      onPressed: () {
-                        Clipboard.setData(ClipboardData(text: mnemonic));
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Seed phrase copied to clipboard'),
-                            duration: Duration(seconds: 2),
-                          ),
-                        );
-                      },  
-                      child: TextButtonContent(value: "Copy"),
-                      icon: const Icon(Icons.copy),
-                    ),
+                  // if (config.network == Network.testnet4)
+                  //   HorizonButton(
+                  //     width: 150,
+                  //     onPressed: () {
+                  //       Clipboard.setData(ClipboardData(text: mnemonic));
+                  //       ScaffoldMessenger.of(context).showSnackBar(
+                  //         const SnackBar(
+                  //           content: Text('Seed phrase copied to clipboard'),
+                  //           duration: Duration(seconds: 2),
+                  //         ),
+                  //       );
+                  //     },  
+                  //     child: TextButtonContent(value: "Copy"),
+                  //     icon: const Icon(Icons.copy),
+                  //   ),
                 ],
               ),
               const SizedBox(height: 16),

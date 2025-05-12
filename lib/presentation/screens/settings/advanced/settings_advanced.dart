@@ -7,16 +7,14 @@ import 'package:horizon/domain/repositories/wallet_config_repository.dart';
 import 'package:horizon/domain/entities/wallet_config.dart';
 import "./bloc/settings_advanced_bloc.dart";
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
-import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 
 import 'package:fpdart/fpdart.dart';
-import 'package:flutter/material.dart';
 import 'package:horizon/common/constants.dart';
 
 import "../settings_view.dart" show SettingsItem;
 
 class SettingsAdvancedProvider extends StatelessWidget {
-  WalletConfigRepository _walletConfigRepository;
+  final WalletConfigRepository _walletConfigRepository;
   Widget child;
 
   SettingsAdvancedProvider({
@@ -32,7 +30,7 @@ class SettingsAdvancedProvider extends StatelessWidget {
         future: _walletConfigRepository.getCurrent(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return CircularProgressIndicator();
+            return const CircularProgressIndicator();
           }
 
           // TODO: not sure
@@ -47,7 +45,7 @@ class SettingsAdvancedProvider extends StatelessWidget {
               child: child,
             );
           }
-          return SizedBox.shrink();
+          return const SizedBox.shrink();
         });
   }
 }
@@ -109,9 +107,9 @@ class SettingsAdvanced extends StatelessWidget {
                       () => Text(state.initialWalletConfig.seedDerivation.name),
                       (configChange) =>
                           Text(configChange.seedDerivation.name))),
-              SizedBox(height: 40),
+              const SizedBox(height: 40),
               state.walletConfigChange.fold(
-                  () => SizedBox.shrink(),
+                  () => const SizedBox.shrink(),
                   (walletConfig) => Padding(
                         padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
                         child: HorizonButton(
@@ -134,12 +132,12 @@ class SettingsAdvanced extends StatelessWidget {
                             }),
                       )),
               state.walletConfigError.fold(
-                () => SizedBox.shrink(),
+                () => const SizedBox.shrink(),
                 (error) => Padding(
                   padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
                   child: Text(
                     error,
-                    style: TextStyle(color: Colors.red),
+                    style: const TextStyle(color: Colors.red),
                   ),
                 ),
               ),

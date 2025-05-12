@@ -347,8 +347,8 @@ class AppRouter {
             GoRoute(
               path: "/dashboard",
               builder: (context, state) {
-                return Scaffold(
-                  body: const PortfolioView(),
+                return const Scaffold(
+                  body: PortfolioView(),
                   bottomNavigationBar: BottomTabNavigation(
                     currentIndex: 0,
                   ),
@@ -361,7 +361,7 @@ class AppRouter {
               path: "/settings",
               builder: (context, state) => Scaffold(
                 body: SettingsView(),
-                bottomNavigationBar: BottomTabNavigation(
+                bottomNavigationBar: const BottomTabNavigation(
                   currentIndex: 1,
                 ),
               ),
@@ -406,7 +406,7 @@ class AppRouter {
                             }),
                       ),
                     ),
-                    body: AccountsScreen());
+                    body: const AccountsScreen());
               },
             ),
             GoRoute(
@@ -959,6 +959,9 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     // if showWarning, just display a one off toast here?
 
+
+    final session = GetIt.I<SessionStateCubit>().state.successOrThrow();
+
     return MultiBlocProvider(
       providers: [
         BlocProvider<VersionCubit>(
@@ -1011,6 +1014,7 @@ class MyApp extends StatelessWidget {
         ),
         BlocProvider<ImportAddressPkBloc>(
           create: (context) => ImportAddressPkBloc(
+            httpConfig: session.httpConfig,
             inMemoryKeyRepository: GetIt.I<InMemoryKeyRepository>(),
             walletRepository: GetIt.I<WalletRepository>(),
             walletService: GetIt.I<WalletService>(),
