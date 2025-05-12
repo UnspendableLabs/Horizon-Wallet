@@ -15,6 +15,7 @@ import 'package:horizon/domain/services/transaction_service.dart';
 import 'package:horizon/domain/entities/compose_response.dart';
 import 'package:horizon/domain/entities/decryption_strategy.dart';
 import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
+import 'package:horizon/domain/entities/http_config.dart';
 
 class AddressNotFoundException implements Exception {
   final String message;
@@ -68,6 +69,7 @@ class SignAndBroadcastTransactionUseCase<R extends ComposeResponse> {
     required Function(String) onError,
     required String source,
     required String rawtransaction,
+    required HttpConfig httpConfig,
   }) async {
     try {
       late Address? address;
@@ -102,7 +104,7 @@ class SignAndBroadcastTransactionUseCase<R extends ComposeResponse> {
 
       // Sign Transaction
       final txHex = await transactionService.signTransaction(
-          rawtransaction, addressPrivKey, source, utxoMap);
+          rawtransaction, addressPrivKey, source, utxoMap, httpConfig);
 
       // Broadcast Transaction
       try {

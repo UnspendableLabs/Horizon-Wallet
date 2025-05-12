@@ -6,6 +6,8 @@ import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/repositories/utxo_repository.dart';
 import 'package:horizon/domain/services/error_service.dart';
 import 'package:horizon/domain/entities/http_clients.dart';
+import 'package:horizon/domain/entities/http_config.dart';
+import 'package:horizon/data/sources/network/counterparty_client_factory.dart';
 
 class VirtualSize extends Equatable {
   final int virtualSize;
@@ -26,13 +28,11 @@ class ComposeTransactionUseCase {
   final UtxoRepository utxoRepository;
   final BalanceRepository balanceRepository;
   final ErrorService errorService;
-  final HttpClients httpClients;
 
   const ComposeTransactionUseCase({
     required this.utxoRepository,
     required this.balanceRepository,
     required this.errorService,
-    required this.httpClients,
   });
 
   Future<R> call<P extends ComposeParams, R extends ComposeResponse>({
@@ -40,6 +40,7 @@ class ComposeTransactionUseCase {
     required String source,
     required P params,
     required ComposeFunction<P, R> composeFn,
+    required HttpConfig httpConfig,
   }) async {
     try {
       // Fetch UTXOs
@@ -61,7 +62,7 @@ class ComposeTransactionUseCase {
       List<Utxo> inputsSetForTx = inputsSet;
 
       if (inputsSet.length > 20) {
-        inputsSetForTx = await _getLargeInputsSet(inputsSet);
+        inputsSetForTx = await _getLargeInputsSet(inputsSet, httpConfig);
       }
 
       final R finalTx = await composeFn(feeRate, inputsSetForTx, params);
@@ -71,7 +72,8 @@ class ComposeTransactionUseCase {
     }
   }
 
-  Future<List<Utxo>> _getLargeInputsSet(List<Utxo> inputsSet) async {
+  Future<List<Utxo>> _getLargeInputsSet(
+      List<Utxo> inputsSet, HttpConfig httpConfig) async {
     // if the inputsSet is larger than 20, we need to take 20 UTXOs with the highest values that have no balance
     // 20 is a random number that we know will not cause the load balancer to deny the request
     inputsSet.sort((a, b) => b.value.compareTo(a.value));
@@ -83,7 +85,7 @@ class ComposeTransactionUseCase {
       }
       final utxoKey = "${utxo.txid}:${utxo.vout}";
       final balance = await balanceRepository.getBalancesForUTXO(
-          client: httpClients.counterparty, utxo: utxoKey);
+          httpConfig: httpConfig, utxo: utxoKey);
       if (balance.isEmpty) {
         inputsForSet.add(utxo);
       }

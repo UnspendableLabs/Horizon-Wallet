@@ -92,7 +92,7 @@ class _PortfolioViewState extends State<PortfolioView>
           // Key based on addresses - if addresses change, a new bloc will be created
           key: ValueKey('balances-bloc-$addressesKey'),
           create: (context) => BalancesBloc(
-            httpClients: session.httpClients,
+            httpConfig: session.httpConfig,
             balanceRepository: GetIt.I.get<BalanceRepository>(),
             addresses: addresses,
             cacheProvider: GetIt.I.get<CacheProvider>(),
@@ -100,6 +100,7 @@ class _PortfolioViewState extends State<PortfolioView>
         ),
         BlocProvider<DashboardActivityFeedBloc>(
           create: (context) => DashboardActivityFeedBloc(
+            httpConfig: session.httpConfig,
             logger: GetIt.I.get<Logger>(),
             addresses: addresses,
             eventsRepository: GetIt.I.get<EventsRepository>(),

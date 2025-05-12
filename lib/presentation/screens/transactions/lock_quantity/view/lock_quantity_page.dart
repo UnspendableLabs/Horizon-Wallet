@@ -96,7 +96,7 @@ class _LockQuantityPageState extends State<LockQuantityPage> {
     );
     return BlocProvider(
       create: (context) => LockQuantityBloc(
-        httpClients: session.httpClients,
+        httpConfig: session.httpConfig,
         balanceRepository: GetIt.I<BalanceRepository>(),
         getFeeEstimatesUseCase: GetIt.I<GetFeeEstimatesUseCase>(),
         composeTransactionUseCase: GetIt.I<ComposeTransactionUseCase>(),

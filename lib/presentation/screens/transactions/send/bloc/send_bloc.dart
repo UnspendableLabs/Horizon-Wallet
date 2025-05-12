@@ -15,7 +15,7 @@ import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
 import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transaction_usecase.dart';
 import 'package:horizon/presentation/common/usecase/write_local_transaction_usecase.dart';
 import 'package:horizon/presentation/screens/transactions/send/bloc/send_event.dart';
-import 'package:horizon/domain/entities/http_clients.dart';
+import 'package:horizon/domain/entities/http_config.dart';
 
 class SendData {}
 
@@ -30,9 +30,10 @@ class SendBloc extends Bloc<TransactionEvent,
   final WriteLocalTransactionUseCase writelocalTransactionUseCase;
   final AnalyticsService analyticsService;
   final Logger logger;
-  final HttpClients httpClients;
+  final HttpConfig httpConfig;
 
   SendBloc({
+    required this.httpConfig,
     required this.balanceRepository,
     required this.getFeeEstimatesUseCase,
     required this.composeTransactionUseCase,
@@ -41,7 +42,6 @@ class SendBloc extends Bloc<TransactionEvent,
     required this.writelocalTransactionUseCase,
     required this.analyticsService,
     required this.logger,
-    required this.httpClients,
   }) : super(TransactionState<SendData, ComposeSendResponse>(
           formState: TransactionFormState<SendData>(
             balancesState: const BalancesState.initial(),
@@ -72,7 +72,7 @@ class SendBloc extends Bloc<TransactionEvent,
 
     try {
       final balances = await balanceRepository.getBalancesForAddressesAndAsset(
-          client: httpClients.counterparty,
+          httpConfig: httpConfig,
           addresses: event.addresses,
           assetName: event.assetName,
           type: BalanceType.address);
@@ -132,6 +132,7 @@ class SendBloc extends Bloc<TransactionEvent,
           quantity: quantity,
         ),
         composeFn: composeRepository.composeSendVerbose,
+        httpConfig: httpConfig,
       );
 
       emit(state.copyWith(
@@ -160,6 +161,7 @@ class SendBloc extends Bloc<TransactionEvent,
       final composeData = state.getComposeDataOrThrow();
 
       await signAndBroadcastTransactionUseCase.call(
+          httpConfig: httpConfig,
           decryptionStrategy: event.decryptionStrategy,
           source: composeData.params.source,
           rawtransaction: composeData.rawtransaction,

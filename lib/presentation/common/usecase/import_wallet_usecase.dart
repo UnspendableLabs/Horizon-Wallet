@@ -4,6 +4,7 @@ import 'package:horizon/domain/entities/account.dart';
 import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/entities/bitcoin_tx.dart';
 import 'package:horizon/domain/entities/wallet.dart';
+import 'package:horizon/domain/entities/http_config.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/bitcoin_repository.dart';
@@ -123,6 +124,7 @@ class ImportWalletUseCase {
     required String mnemonic,
     required Wallet wallet,
     required ImportFormat importFormat,
+    required HttpConfig httpConfig,
   }) async {
     // This method is used for both counterwallet and freewallet
     // The Account and Address derivations are exactly the same for both but derive from different wallet types
@@ -184,10 +186,10 @@ class ImportWalletUseCase {
       ...addressesLegacy,
     ];
 
-    final allAddressesHaveTransactions = await addressesHaveTransactions([
+    final allAddressesHaveTransactions = await _addressesHaveTransactions([
       ...addressesBech32,
       ...addressesLegacy,
-    ]);
+    ], httpConfig);
 
     // if there are any transactions on the first account, check any following accounts for transactions, up to 20 accounts
     if (allAddressesHaveTransactions) {
@@ -226,10 +228,10 @@ class ImportWalletUseCase {
                 end: 9);
 
         final bool allAddressesHaveTransactions =
-            await addressesHaveTransactions([
+            await _addressesHaveTransactions([
           ...nextAddressesBech32,
           ...nextAddressesLegacy,
-        ]);
+        ], httpConfig);
         if (!allAddressesHaveTransactions) {
           // break at the first account with no transactions
           break;
@@ -249,6 +251,7 @@ class ImportWalletUseCase {
     required String mnemonic,
     required Function(String) onError,
     required Function() onSuccess,
+    required HttpConfig httpConfig,
   }) async {
     try {
       Wallet wallet;
@@ -268,10 +271,12 @@ class ImportWalletUseCase {
             wallet =
                 await walletService.deriveRootCounterwallet(mnemonic, password);
             (accountsWithBalances, _) = await createBip32Wallet(
+                httpConfig: httpConfig,
                 password: password,
                 mnemonic: mnemonic,
                 wallet: wallet,
                 importFormat: ImportFormat.counterwallet);
+
             break;
           }
 
@@ -282,6 +287,7 @@ class ImportWalletUseCase {
             wallet =
                 await walletService.deriveRootFreewallet(mnemonic, password);
             (accountsWithBalances, _) = await createBip32Wallet(
+                httpConfig: httpConfig,
                 password: password,
                 mnemonic: mnemonic,
                 wallet: wallet,
@@ -298,6 +304,7 @@ class ImportWalletUseCase {
             counterwalletAccountsWithBalances,
             counterwalletHasTransactions
           ) = await createBip32Wallet(
+              httpConfig: httpConfig,
               password: password,
               mnemonic: mnemonic,
               wallet: counterwallet,
@@ -313,6 +320,7 @@ class ImportWalletUseCase {
                 await walletService.deriveRootFreewallet(mnemonic, password);
             final (freewalletAccountsWithBalances, freewalletHasTransactions) =
                 await createBip32Wallet(
+                    httpConfig: httpConfig,
                     password: password,
                     mnemonic: mnemonic,
                     wallet: freewallet,
@@ -428,9 +436,12 @@ class ImportWalletUseCase {
   //   await inMemoryKeyRepository.set(key: decryptionKey);
   // }
 
-  Future<bool> addressesHaveTransactions(List<Address> addresses) async {
+  Future<bool> _addressesHaveTransactions(
+      List<Address> addresses, HttpConfig httpConfig) async {
     final List<BitcoinTx> btcTransactions = await bitcoinRepository
-        .getTransactions(addresses.map((e) => e.address).toList())
+        .getTransactions(
+            addresses: addresses.map((e) => e.address).toList(),
+            httpConfig: httpConfig)
         .then((either) async {
       return either.fold(
         (error) => throw Exception("GetTransactionInfo failure"),

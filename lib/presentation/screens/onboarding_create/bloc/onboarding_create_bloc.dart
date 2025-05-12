@@ -6,6 +6,7 @@ import 'package:horizon/presentation/screens/onboarding_create/bloc/onboarding_c
 import 'package:horizon/presentation/screens/onboarding_create/bloc/onboarding_create_state.dart';
 import 'package:logger/logger.dart';
 import 'package:horizon/common/constants.dart';
+import 'package:horizon/domain/entities/http_config.dart';
 
 class OnboardingCreateBloc
     extends Bloc<OnboardingCreateEvent, OnboardingCreateState> {
@@ -14,11 +15,13 @@ class OnboardingCreateBloc
   final MnemonicService mnmonicService;
   final WalletService walletService;
   final ImportWalletUseCase importWalletUseCase;
+  final HttpConfig httpConfig;
 
   OnboardingCreateBloc({
     required this.mnmonicService,
     required this.walletService,
     required this.importWalletUseCase,
+    required this.httpConfig,
   }) : super(const OnboardingCreateState()) {
     on<WalletCreated>((event, emit) async {
       logger.d('Processing WalletCreated event');
@@ -30,6 +33,7 @@ class OnboardingCreateBloc
           orElse: () => '',
         );
         await importWalletUseCase.call(
+          httpConfig: httpConfig,
           mnemonic: mnemonic,
           password: password,
           walletType: WalletType.horizon,

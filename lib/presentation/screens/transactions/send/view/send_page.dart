@@ -94,7 +94,7 @@ class _SendPageState extends State<SendPage> {
     return Builder(builder: (context) {
       return BlocProvider(
         create: (context) => SendBloc(
-          httpClients: session.httpClients,
+          httpConfig: session.httpConfig,
           balanceRepository: GetIt.I<BalanceRepository>(),
           getFeeEstimatesUseCase: GetIt.I<GetFeeEstimatesUseCase>(),
           composeTransactionUseCase: GetIt.I<ComposeTransactionUseCase>(),

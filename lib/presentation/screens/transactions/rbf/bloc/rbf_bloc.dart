@@ -14,6 +14,7 @@ import 'package:horizon/domain/entities/multi_address_balance.dart';
 import 'package:horizon/domain/entities/unified_address.dart';
 import 'package:horizon/domain/entities/utxo.dart';
 import 'package:horizon/domain/entities/wallet.dart';
+import 'package:horizon/domain/entities/http_config.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
@@ -57,6 +58,7 @@ class RBFComposeData {
 
 class RBFBloc
     extends Bloc<TransactionEvent, TransactionState<RBFData, RBFComposeData>> {
+  final HttpConfig httpConfig;
   final GetFeeEstimatesUseCase getFeeEstimatesUseCase;
   final BitcoinRepository bitcoinRepository;
   final AnalyticsService analyticsService;
@@ -75,6 +77,7 @@ class RBFBloc
   final AccountRepository accountRepository;
 
   RBFBloc({
+    required this.httpConfig,
     required this.getFeeEstimatesUseCase,
     required this.bitcoinRepository,
     required this.analyticsService,
@@ -122,11 +125,11 @@ class RBFBloc
     try {
       final feeEstimates = await getFeeEstimatesUseCase.call();
 
-      BitcoinTx bitcoinTransaction =
-          unwrapOrThrow(await bitcoinRepository.getTransaction(event.txHash));
+      BitcoinTx bitcoinTransaction = unwrapOrThrow(await bitcoinRepository
+          .getTransaction(txid: event.txHash, httpConfig: httpConfig));
 
-      String bitcoinTransactionHex = unwrapOrThrow(
-          await bitcoinRepository.getTransactionHex(event.txHash));
+      String bitcoinTransactionHex = unwrapOrThrow(await bitcoinRepository
+          .getTransactionHex(txid: event.txHash, httpConfig: httpConfig));
 
       final virtualSize =
           transactionService.getVirtualSize(bitcoinTransactionHex);
@@ -164,6 +167,7 @@ class RBFBloc
       num newFee = newFeeRate * event.params.adjustedVirtualSize;
 
       MakeRBFResponse rbfResponse = await transactionService.makeRBF(
+        httpConfig: httpConfig,
         source: source,
         txHex: event.params.hex,
         oldFee: event.params.tx.fee,
@@ -232,7 +236,8 @@ class RBFBloc
         final inputIndices = entry.value;
 
         final transaction = unwrapOrThrow<Failure, BitcoinTx>(
-            await bitcoinRepository.getTransaction(txHash));
+            await bitcoinRepository.getTransaction(
+                txid: txHash, httpConfig: httpConfig));
         for (final index in inputIndices) {
           final input = transaction.vout[index];
           final utxo = Utxo(
@@ -249,7 +254,8 @@ class RBFBloc
           composeData.makeRBFResponse.txHex,
           addressPrivateKey,
           address,
-          utxoMap);
+          utxoMap,
+          httpConfig);
 
       final txHash = await bitcoindService.sendrawtransaction(txHex);
 

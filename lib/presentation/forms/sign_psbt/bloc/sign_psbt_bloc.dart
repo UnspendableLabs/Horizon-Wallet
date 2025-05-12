@@ -27,7 +27,7 @@ import 'package:horizon/domain/entities/decryption_strategy.dart';
 import 'package:horizon/domain/entities/bitcoin_decoded_tx.dart' as dbtc;
 import 'package:horizon/domain/entities/bitcoin_tx.dart';
 import 'package:horizon/presentation/session/bloc/session_state.dart';
-import 'package:horizon/domain/entities/http_clients.dart';
+import 'package:horizon/domain/entities/http_config.dart';
 
 import "./sign_psbt_state.dart";
 import "./sign_psbt_event.dart";
@@ -161,10 +161,10 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
   final List<int>? sighashTypes;
   final InMemoryKeyRepository inMemoryKeyRepository;
   final SessionStateSuccess session;
-  final HttpClients httpClients;
+  final HttpConfig httpConfig;
 
   SignPsbtBloc({
-    required this.httpClients,
+    required this.httpConfig,
     required this.session,
     required this.passwordRequired,
     required this.unsignedPsbt,
@@ -202,13 +202,12 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
       Either<Failure, List<AugmentedInput>> inputs =
           await TaskEither.traverseListWithIndex(decoded.vin, (vin, index) {
         return TaskEither<Failure, AugmentedInput>.Do(($) async {
-          final getTransactionTask =
-              TaskEither(() => bitcoinRepository.getTransaction(vin.txid));
+          final getTransactionTask = TaskEither(() => bitcoinRepository
+              .getTransaction(txid: vin.txid, httpConfig: httpConfig));
 
           final getBalancesTask = TaskEither<Failure, List<Balance>>.tryCatch(
               () => balanceRepository.getBalancesForUTXO(
-                  client: httpClients.counterparty,
-                  utxo: "${vin.txid}:${vin.vout}"),
+                  httpConfig: httpConfig, utxo: "${vin.txid}:${vin.vout}"),
               (_, stacktrace) => const UnexpectedFailure(
                     message: "Failed to get balances for UTXO",
                   ));
@@ -373,7 +372,7 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
       }
 
       String signedHex = transactionService.signPsbt(
-          unsignedPsbt, inputPrivateKeyMap, sighashTypes);
+          unsignedPsbt, inputPrivateKeyMap, httpConfig, sighashTypes);
 
       emit(state.copyWith(
         signedPsbt: signedHex,

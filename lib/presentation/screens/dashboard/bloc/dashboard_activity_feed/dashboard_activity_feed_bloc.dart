@@ -13,6 +13,7 @@ import 'package:horizon/domain/entities/event.dart';
 import 'package:horizon/domain/entities/bitcoin_tx.dart';
 import 'package:horizon/domain/entities/activity_feed_item.dart';
 import 'package:horizon/core/logging/logger.dart';
+import 'package:horizon/domain/entities/http_config.dart';
 
 // ignore: non_constant_identifier_names
 final DEFAULT_WHITELIST = [
@@ -44,6 +45,7 @@ final DEFAULT_WHITELIST = [
 
 class DashboardActivityFeedBloc
     extends Bloc<DashboardActivityFeedEvent, DashboardActivityFeedState> {
+  final HttpConfig httpConfig;
   Logger logger;
   Timer? timer;
   List<String> addresses;
@@ -56,7 +58,8 @@ class DashboardActivityFeedBloc
   bool _isCancelled = false;
 
   DashboardActivityFeedBloc(
-      {required this.logger,
+      {required this.httpConfig,
+      required this.logger,
       required this.addresses,
       required this.eventsRepository,
       required this.pageSize,
@@ -148,7 +151,10 @@ class DashboardActivityFeedBloc
       List<BitcoinTx> newBitcoinTransactions = [];
       if (mostRecentBitcoinTxHash == null) {
         // 2a) if null list of new btc transactions equal to all of them
-        final bitcoinTxsE = await bitcoinRepository.getTransactions(addresses);
+        final bitcoinTxsE = await bitcoinRepository.getTransactions(
+          addresses: addresses,
+          httpConfig: httpConfig,
+        );
 
         // TODO: we should at least log that there was an error here.
         //       but correct behavior is to just ignore.
@@ -160,7 +166,10 @@ class DashboardActivityFeedBloc
             .toList();
       } else {
         // 2b otherwise, bitcoin transactions are all above last seen
-        final bitcoinTxsE = await bitcoinRepository.getTransactions(addresses);
+        final bitcoinTxsE = await bitcoinRepository.getTransactions(
+          addresses: addresses,
+          httpConfig: httpConfig,
+        );
 
         // TODO: log possible excetion here
         final bitcoinTxs = bitcoinTxsE
@@ -178,7 +187,8 @@ class DashboardActivityFeedBloc
         }
       }
 
-      final blockHeightE = await bitcoinRepository.getBlockHeight();
+      final blockHeightE =
+          await bitcoinRepository.getBlockHeight(httpConfig: httpConfig);
       final blockHeight = blockHeightE.getOrElse((left) => throw left);
 
       // 3) dedupe by tx hash
@@ -444,8 +454,8 @@ class DashboardActivityFeedBloc
       };
 
       // get all btc mempool transactions
-      final btcMempoolE =
-          await bitcoinRepository.getMempoolTransactions(addresses);
+      final btcMempoolE = await bitcoinRepository.getMempoolTransactions(
+          addresses: addresses, httpConfig: httpConfig);
 
       final btcMempoolList = btcMempoolE
           .getOrElse((left) => throw left)
@@ -460,7 +470,8 @@ class DashboardActivityFeedBloc
       bool hasMore = true;
       List allBTCConfirmed = [];
 
-      final blockHeightE = await bitcoinRepository.getBlockHeight();
+      final blockHeightE =
+          await bitcoinRepository.getBlockHeight(httpConfig: httpConfig);
       final blockHeight = blockHeightE.getOrElse((left) => throw left);
 
       while (hasMore) {
@@ -468,8 +479,11 @@ class DashboardActivityFeedBloc
           _isCancelled = false;
           break;
         }
-        final transactionsE = await bitcoinRepository
-            .getConfirmedTransactionsPaginated(addresses[0], lastSeenTxId);
+        final transactionsE =
+            await bitcoinRepository.getConfirmedTransactionsPaginated(
+                address: addresses[0],
+                lastSeenTxid: lastSeenTxId,
+                httpConfig: httpConfig);
 
         final btcConfirmedList = transactionsE.getOrElse((left) => throw left);
 

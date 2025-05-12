@@ -3,47 +3,32 @@ import 'package:horizon/domain/entities/bitcoin_tx.dart';
 import 'package:horizon/domain/entities/failure.dart';
 import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 import 'package:horizon/domain/entities/address_info.dart';
+import 'package:horizon/domain/entities/http_config.dart';
 import 'package:horizon/data/sources/network/esplora_client.dart';
+import 'package:horizon/data/sources/network/esplora_client_factory.dart';
 import 'package:dio/dio.dart' hide Options;
-import 'package:dio_smart_retry/dio_smart_retry.dart';
-import 'package:horizon/data/sources/network/esplora_client.dart';
+
+import 'package:dio/dio.dart';
+
 
 class BitcoinRepositoryImpl extends BitcoinRepository {
-  static final mainnet = EsploraApi(
-      dio: Dio(BaseOptions(
-    // TODO: read from config
-    baseUrl: "https://api.unspendablelabs.com:3000",
-    connectTimeout: const Duration(seconds: 5),
-    receiveTimeout: const Duration(seconds: 3),
-  )));
+  // chat, i wondre if it won't be perofmant to create a new client on every call?
+  // maybe it needs to be singleton, or memoized?
+  final EsploraClientFactory esploraClientFactory;
 
-  static final testnet = EsploraApi(
-      dio: Dio(BaseOptions(
-    // TODO: read from config
-    baseUrl: 'https://testnet4.counterparty.io:43000',
-    connectTimeout: const Duration(seconds: 5),
-    receiveTimeout: const Duration(seconds: 3),
-  )));
+  BitcoinRepositoryImpl({required this.esploraClientFactory});
 
-  EsploraApi _esploraApi(Options options) {
-    return switch (options) {
-      Mainnet() => mainnet,
-      Testnet4() => testnet,
-      Custom(esplora: var esplora) => EsploraApi(
-            dio: Dio(BaseOptions(
-          baseUrl: esplora,
-          connectTimeout: const Duration(seconds: 5),
-          receiveTimeout: const Duration(seconds: 3),
-        ))),
-    };
+
+  EsploraApi _esploraApi(HttpConfig httpConfig) {
+    return esploraClientFactory.getClient(httpConfig);
   }
 
   @override
   Future<Either<Failure, Map<String, double>>> getFeeEstimates({
-    required Options options,
+    required HttpConfig httpConfig,
   }) async {
     try {
-      final feeEstimates = await _esploraApi(options).getFeeEstimates();
+      final feeEstimates = await _esploraApi(httpConfig).getFeeEstimates();
       return Right(feeEstimates);
     } on Failure catch (e) {
       return Left(e);
@@ -55,10 +40,10 @@ class BitcoinRepositoryImpl extends BitcoinRepository {
   @override
   Future<Either<Failure, AddressInfo>> getAddressInfo({
     required String address,
-    required Options options,
+    required HttpConfig httpConfig,
   }) async {
     try {
-      final addressInfo = await _esploraApi(options).getAddressInfo(address);
+      final addressInfo = await _esploraApi(httpConfig).getAddressInfo(address);
       return Right(addressInfo.toEntity());
     } on Failure catch (e) {
       return Left(e);
@@ -70,10 +55,10 @@ class BitcoinRepositoryImpl extends BitcoinRepository {
   @override
   Future<Either<Failure, BitcoinTx>> getTransaction({
     required String txid,
-    required Options options,
+    required HttpConfig httpConfig,
   }) async {
     try {
-      final tx = await _esploraApi(options).getTransaction(txid);
+      final tx = await _esploraApi(httpConfig).getTransaction(txid);
       return Right(tx);
     } on Failure catch (e) {
       return Left(e);
@@ -85,10 +70,10 @@ class BitcoinRepositoryImpl extends BitcoinRepository {
   @override
   Future<Either<Failure, String>> getTransactionHex({
     required String txid,
-    required Options options,
+    required HttpConfig httpConfig,
   }) async {
     try {
-      final tx = await _esploraApi(options).getTransactionHex(txid);
+      final tx = await _esploraApi(httpConfig).getTransactionHex(txid);
       return Right(tx);
     } on Failure catch (e) {
       return Left(e);
@@ -100,11 +85,11 @@ class BitcoinRepositoryImpl extends BitcoinRepository {
   @override
   Future<Either<Failure, List<BitcoinTx>>> getTransactions({
     required List<String> addresses,
-    required Options options,
+    required HttpConfig httpConfig,
   }) async {
     try {
       final allTransactions = await Future.wait(addresses.map((address) =>
-          _esploraApi(options).getTransactionsForAddress(address)));
+          _esploraApi(httpConfig).getTransactionsForAddress(address)));
 
       final flattenedTransactions = allTransactions.expand((i) => i).toList();
 
@@ -137,11 +122,11 @@ class BitcoinRepositoryImpl extends BitcoinRepository {
   @override
   Future<Either<Failure, List<BitcoinTx>>> getMempoolTransactions({
     required List<String> addresses,
-    required Options options,
+    required HttpConfig httpConfig,
   }) async {
     try {
       final allTransactions = await Future.wait(addresses.map((address) =>
-          _esploraApi(options).getMempoolTransactionsForAddress(address)));
+          _esploraApi(httpConfig).getMempoolTransactionsForAddress(address)));
 
       final flattenedTransactions = allTransactions.expand((i) => i).toList();
 
@@ -176,10 +161,10 @@ class BitcoinRepositoryImpl extends BitcoinRepository {
   Future<Either<Failure, List<BitcoinTx>>> getConfirmedTransactionsPaginated({
     required String address,
     String? lastSeenTxid,
-    required Options options,
+    required HttpConfig httpConfig,
   }) async {
     try {
-      final transactions = await _esploraApi(options)
+      final transactions = await _esploraApi(httpConfig)
           .getConfirmedTransactionsForAddress(address,
               lastSeenTxid: lastSeenTxid);
 
@@ -196,11 +181,11 @@ class BitcoinRepositoryImpl extends BitcoinRepository {
   @override
   Future<Either<Failure, List<BitcoinTx>>> getConfirmedTransactions({
     required List<String> addresses,
-    required Options options,
+    required HttpConfig httpConfig,
   }) async {
     try {
-      final allTransactions = await Future.wait(addresses
-          .map((address) => _fetchAllTransactionsForAddress(address, options)));
+      final allTransactions = await Future.wait(addresses.map(
+          (address) => _fetchAllTransactionsForAddress(address, httpConfig)));
 
       final uniqueTransactions = allTransactions
           .expand((txList) => txList)
@@ -231,10 +216,10 @@ class BitcoinRepositoryImpl extends BitcoinRepository {
 
   @override
   Future<Either<Failure, int>> getBlockHeight({
-    required Options options,
+    required HttpConfig httpConfig,
   }) async {
     try {
-      final blockHeight = await _esploraApi(options).getBlockHeight();
+      final blockHeight = await _esploraApi(httpConfig).getBlockHeight();
       return Right(blockHeight);
     } on Failure catch (e) {
       return Left(e);
@@ -245,13 +230,13 @@ class BitcoinRepositoryImpl extends BitcoinRepository {
 
   Future<List<BitcoinTx>> _fetchAllTransactionsForAddress(
     String address,
-    Options options,
+    HttpConfig httpConfig,
   ) async {
     final allTransactions = <BitcoinTx>[];
     String? lastSeenTxid;
     bool hasMore = true;
     while (hasMore) {
-      final transactions = await _esploraApi(options)
+      final transactions = await _esploraApi(httpConfig)
           .getConfirmedTransactionsForAddress(address,
               lastSeenTxid: lastSeenTxid);
       if (transactions.isEmpty) {

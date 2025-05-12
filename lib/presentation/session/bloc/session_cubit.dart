@@ -2,6 +2,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:horizon/domain/entities/http_clients.dart';
+import 'package:horizon/domain/entities/http_config.dart';
 // import 'package:horizon/domain/entities/account.dart';
 import 'package:horizon/domain/entities/account_v2.dart';
 import 'package:horizon/domain/entities/network.dart';
@@ -28,13 +29,25 @@ import 'package:horizon/domain/services/secure_kv_service.dart';
 import 'package:horizon/common/constants.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/extensions.dart';
-import 'package:horizon/presentation/session/bloc/session_cubit.dart';
-import "package:fpdart/fpdart.dart";
 import 'package:horizon/data/sources/network/api/v2_api.dart';
 import 'package:dio/dio.dart';
 
-import 'package:horizon/domain/repositories/config_repository.dart';
 import './session_state.dart';
+
+// class Testnet4 extends Options {}
+//
+// class Custom extends Options `
+//   final String esplora;
+//   Custom({required this.esplora});
+// }
+
+HttpConfig httpConfigForNetwork(Network network) {
+  return switch (network) {
+    Network.mainnet => const Mainnet(),
+    Network.testnet4 => const Testnet4(),
+    // Network.custom => const Custom(esplora: 'http://localhost:3000'),
+  };
+}
 
 V2Api counterpartyClientForNetwork(Network network) {
   return V2Api(Dio(BaseOptions(
@@ -191,6 +204,7 @@ class SessionStateCubit extends Cubit<SessionState> {
 
           emit(SessionState.success(SessionStateSuccess(
             redirect: true,
+            httpConfig: httpConfigForNetwork(walletConfig.network),
             httpClients: HttpClients(
               counterparty: counterpartyClientForNetwork(walletConfig.network),
             ),
@@ -257,6 +271,7 @@ class SessionStateCubit extends Cubit<SessionState> {
     emit(SessionState.success(success.copyWith(
       redirect: false, // not sure about this....
       walletConfig: walletConfig,
+      httpConfig: httpConfigForNetwork(walletConfig.network),
       httpClients: HttpClients(
         counterparty: counterpartyClientForNetwork(walletConfig.network),
       ),

@@ -7,6 +7,7 @@ import 'package:horizon/domain/entities/bitcoin_tx.dart';
 import 'package:horizon/domain/entities/cursor.dart' as cursor_entity;
 import 'package:horizon/domain/entities/cursor.dart';
 import 'package:horizon/domain/entities/event.dart';
+import 'package:horizon/domain/entities/http_config.dart';
 import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 import 'package:horizon/domain/repositories/events_repository.dart';
 
@@ -135,20 +136,23 @@ class VerboseEventMapper {
   }
 
   Future<VerboseEvent> parseSwapFromMoveToUtxo(
-      api.VerboseMoveToUtxoEvent apiEvent, String currentAddress) async {
+      api.VerboseMoveToUtxoEvent apiEvent,
+      String currentAddress,
+      HttpConfig httpConfig) async {
     // Both moves and swaps are captured by the UTXO_MOVE event
     // they can be distinguished by the input/output details of the transaction
     if (apiEvent.txHash == null) {
       return VerboseMoveToUtxoEventMapper.toDomain(apiEvent);
     }
 
-    final BitcoinTx transactionInfo =
-        await bitcoinRepository.getTransaction(apiEvent.txHash!).then(
-              (either) => either.fold(
-                (error) => throw Exception("GetTransactionInfo failure"),
-                (transactionInfo) => transactionInfo,
-              ),
-            );
+    final BitcoinTx transactionInfo = await bitcoinRepository
+        .getTransaction(txid: apiEvent.txHash!, httpConfig: httpConfig)
+        .then(
+          (either) => either.fold(
+            (error) => throw Exception("GetTransactionInfo failure"),
+            (transactionInfo) => transactionInfo,
+          ),
+        );
 
     // atomic swaps will have at least 2 different input sources
     final isAtomicSwap = _isAtomicSwap(transactionInfo);

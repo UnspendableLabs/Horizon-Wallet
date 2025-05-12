@@ -4,6 +4,7 @@ import 'package:horizon/data/models/cursor.dart' as cursor_model;
 import 'package:horizon/data/sources/network/api/v2_api.dart';
 import 'package:horizon/domain/entities/asset_info.dart' as ai;
 import 'package:horizon/domain/entities/balance.dart' as b;
+import 'package:horizon/domain/entities/http_config.dart';
 import 'package:horizon/domain/entities/cursor.dart' as cursor_entity;
 import 'package:horizon/domain/entities/multi_address_balance.dart' as mba;
 import 'package:horizon/domain/entities/multi_address_balance_entry.dart'
@@ -11,24 +12,29 @@ import 'package:horizon/domain/entities/multi_address_balance_entry.dart'
 import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 import 'package:horizon/domain/repositories/utxo_repository.dart';
+import 'package:horizon/data/sources/network/counterparty_client_factory.dart';
 
 class BalanceRepositoryImpl implements BalanceRepository {
   final UtxoRepository utxoRepository;
   final BitcoinRepository bitcoinRepository;
+  final CounterpartyClientFactory counterpartyClientFactory;
 
   BalanceRepositoryImpl({
     required this.utxoRepository,
     required this.bitcoinRepository,
+    required this.counterpartyClientFactory,
   });
 
   @override
   Future<List<b.Balance>> getBalancesForAddress(
-      {required V2Api client,
-      required String address,
+      {required String address,
+      required HttpConfig httpConfig,
       bool? excludeUtxoAttached}) async {
     final List<b.Balance> balances = [];
-    balances.addAll([await _getBtcBalance(address: address)]);
-    final balances_ = await _fetchBalances(api: client, address: address);
+    balances.addAll(
+        [await _getBtcBalance(address: address, httpConfig: httpConfig)]);
+    final balances_ = await _fetchBalances(
+        api: counterpartyClientFactory.getClient(httpConfig), address: address);
     if (excludeUtxoAttached == null || excludeUtxoAttached == false) {
       balances.addAll(balances_);
     } else {
@@ -38,24 +44,34 @@ class BalanceRepositoryImpl implements BalanceRepository {
   }
 
   @override
-  Future<List<mba.MultiAddressBalance>> getBalancesForAddresses(
-      {required V2Api client, required List<String> addresses}) async {
+  Future<List<mba.MultiAddressBalance>> getBalancesForAddresses({
+    required List<String> addresses,
+    required HttpConfig httpConfig,
+  }) async {
     final List<mba.MultiAddressBalance> balances = [];
-    balances.addAll([await _getBtcBalancesForAddresses(addresses: addresses)]);
-    balances.addAll(
-        await _fetchBalancesByAllAddresses(api: client, addresses: addresses));
+    balances.addAll([
+      await _getBtcBalancesForAddresses(
+          addresses: addresses, httpConfig: httpConfig)
+    ]);
+    balances.addAll(await _fetchBalancesByAllAddresses(
+        api: counterpartyClientFactory.getClient(httpConfig),
+        addresses: addresses));
     return balances;
   }
 
   @override
-  Future<mba.MultiAddressBalance> getBalancesForAddressesAndAsset(
-      {required V2Api client,
-      required List<String> addresses,
-      required String assetName,
-      BalanceType? type}) async {
+  Future<mba.MultiAddressBalance> getBalancesForAddressesAndAsset({
+    required List<String> addresses,
+    required String assetName,
+    BalanceType? type,
+    required HttpConfig httpConfig,
+  }) async {
     final List<mba.MultiAddressBalance> balances =
         await _fetchBalancesByAllAddresses(
-            api: client, addresses: addresses, asset: assetName, type: type);
+            api: counterpartyClientFactory.getClient(httpConfig),
+            addresses: addresses,
+            asset: assetName,
+            type: type);
 
     // This multi-address balance is for a single asset, so though the response returns a list, there will only be one item
     return balances.first;
@@ -134,8 +150,10 @@ class BalanceRepositoryImpl implements BalanceRepository {
     return balances;
   }
 
-  Future<b.Balance> _getBtcBalance({required String address}) async {
-    final info = await bitcoinRepository.getAddressInfo(address);
+  Future<b.Balance> _getBtcBalance(
+      {required String address, required HttpConfig httpConfig}) async {
+    final info = await bitcoinRepository.getAddressInfo(
+        address: address, httpConfig: httpConfig);
     return info.fold((failure) {
       throw Exception('Failed to get address info for $address: $failure');
     }, (success) {
@@ -160,11 +178,12 @@ class BalanceRepositoryImpl implements BalanceRepository {
   }
 
   Future<mba.MultiAddressBalance> _getBtcBalancesForAddresses(
-      {required List<String> addresses}) async {
+      {required List<String> addresses, required HttpConfig httpConfig}) async {
     // final List<mba.MultiAddressBalance> balances = [];
     final List<b.Balance> balances_ = [];
     for (var address in addresses) {
-      final balance = await _getBtcBalance(address: address);
+      final balance =
+          await _getBtcBalance(address: address, httpConfig: httpConfig);
       balances_.add(balance);
     }
     final total = balances_.fold(0, (sum, balance) => sum + balance.quantity);
@@ -192,12 +211,14 @@ class BalanceRepositoryImpl implements BalanceRepository {
   }
 
   @override
-  Future<List<b.Balance>> getBalancesForAddressAndAssetVerbose(
-      {required V2Api client,
-      required String address,
-      required String assetName}) async {
-    final response =
-        await client.getBalancesForAddressAndAssetVerbose(address, assetName);
+  Future<List<b.Balance>> getBalancesForAddressAndAssetVerbose({
+    required String address,
+    required String assetName,
+    required HttpConfig httpConfig,
+  }) async {
+    final response = await counterpartyClientFactory
+        .getClient(httpConfig)
+        .getBalancesForAddressAndAssetVerbose(address, assetName);
     final balances = response.result;
     if (balances == null) {
       throw Exception('Failed to get balance for $address and $assetName');
@@ -227,8 +248,10 @@ class BalanceRepositoryImpl implements BalanceRepository {
 
   @override
   Future<List<b.Balance>> getBalancesForUTXO(
-      {required V2Api client, required String utxo}) async {
-    final response = await client.getBalancesByUTXO(utxo);
+      {required HttpConfig httpConfig, required String utxo}) async {
+    final response = await counterpartyClientFactory
+        .getClient(httpConfig)
+        .getBalancesByUTXO(utxo);
     final balances = response.result;
     if (balances == null) {
       throw Exception('Failed to get balances for $utxo');

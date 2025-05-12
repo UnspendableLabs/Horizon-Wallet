@@ -971,6 +971,7 @@ abstract class _LoggedOut implements SessionState {
 
 /// @nodoc
 mixin _$SessionStateSuccess {
+  HttpConfig get httpConfig => throw _privateConstructorUsedError;
   AccountV2? get currentAccount => throw _privateConstructorUsedError;
   bool get redirect =>
       throw _privateConstructorUsedError; // required Wallet wallet,
@@ -994,7 +995,8 @@ abstract class $SessionStateSuccessCopyWith<$Res> {
       _$SessionStateSuccessCopyWithImpl<$Res, SessionStateSuccess>;
   @useResult
   $Res call(
-      {AccountV2? currentAccount,
+      {HttpConfig httpConfig,
+      AccountV2? currentAccount,
       bool redirect,
       String decryptionKey,
       List<AccountV2> accounts,
@@ -1017,6 +1019,7 @@ class _$SessionStateSuccessCopyWithImpl<$Res, $Val extends SessionStateSuccess>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
+    Object? httpConfig = null,
     Object? currentAccount = freezed,
     Object? redirect = null,
     Object? decryptionKey = null,
@@ -1027,6 +1030,10 @@ class _$SessionStateSuccessCopyWithImpl<$Res, $Val extends SessionStateSuccess>
     Object? httpClients = null,
   }) {
     return _then(_value.copyWith(
+      httpConfig: null == httpConfig
+          ? _value.httpConfig
+          : httpConfig // ignore: cast_nullable_to_non_nullable
+              as HttpConfig,
       currentAccount: freezed == currentAccount
           ? _value.currentAccount
           : currentAccount // ignore: cast_nullable_to_non_nullable
@@ -1072,7 +1079,8 @@ abstract class _$$SessionStateSuccessImplCopyWith<$Res>
   @override
   @useResult
   $Res call(
-      {AccountV2? currentAccount,
+      {HttpConfig httpConfig,
+      AccountV2? currentAccount,
       bool redirect,
       String decryptionKey,
       List<AccountV2> accounts,
@@ -1093,6 +1101,7 @@ class __$$SessionStateSuccessImplCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
+    Object? httpConfig = null,
     Object? currentAccount = freezed,
     Object? redirect = null,
     Object? decryptionKey = null,
@@ -1103,6 +1112,10 @@ class __$$SessionStateSuccessImplCopyWithImpl<$Res>
     Object? httpClients = null,
   }) {
     return _then(_$SessionStateSuccessImpl(
+      httpConfig: null == httpConfig
+          ? _value.httpConfig
+          : httpConfig // ignore: cast_nullable_to_non_nullable
+              as HttpConfig,
       currentAccount: freezed == currentAccount
           ? _value.currentAccount
           : currentAccount // ignore: cast_nullable_to_non_nullable
@@ -1143,7 +1156,8 @@ class __$$SessionStateSuccessImplCopyWithImpl<$Res>
 
 class _$SessionStateSuccessImpl implements _SessionStateSuccess {
   const _$SessionStateSuccessImpl(
-      {required this.currentAccount,
+      {required this.httpConfig,
+      required this.currentAccount,
       required this.redirect,
       required this.decryptionKey,
       required final List<AccountV2> accounts,
@@ -1155,6 +1169,8 @@ class _$SessionStateSuccessImpl implements _SessionStateSuccess {
         _addresses = addresses,
         _importedAddresses = importedAddresses;
 
+  @override
+  final HttpConfig httpConfig;
   @override
   final AccountV2? currentAccount;
   @override
@@ -1199,6 +1215,8 @@ class _$SessionStateSuccessImpl implements _SessionStateSuccess {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$SessionStateSuccessImpl &&
+            (identical(other.httpConfig, httpConfig) ||
+                other.httpConfig == httpConfig) &&
             (identical(other.currentAccount, currentAccount) ||
                 other.currentAccount == currentAccount) &&
             (identical(other.redirect, redirect) ||
@@ -1219,6 +1237,7 @@ class _$SessionStateSuccessImpl implements _SessionStateSuccess {
   @override
   int get hashCode => Object.hash(
       runtimeType,
+      httpConfig,
       currentAccount,
       redirect,
       decryptionKey,
@@ -1238,7 +1257,8 @@ class _$SessionStateSuccessImpl implements _SessionStateSuccess {
 
 abstract class _SessionStateSuccess implements SessionStateSuccess {
   const factory _SessionStateSuccess(
-      {required final AccountV2? currentAccount,
+      {required final HttpConfig httpConfig,
+      required final AccountV2? currentAccount,
       required final bool redirect,
       required final String decryptionKey,
       required final List<AccountV2> accounts,
@@ -1247,6 +1267,8 @@ abstract class _SessionStateSuccess implements SessionStateSuccess {
       required final WalletConfig walletConfig,
       required final HttpClients httpClients}) = _$SessionStateSuccessImpl;
 
+  @override
+  HttpConfig get httpConfig;
   @override
   AccountV2? get currentAccount;
   @override

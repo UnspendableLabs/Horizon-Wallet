@@ -163,11 +163,8 @@ import 'package:horizon/data/sources/repositories/wallet_config_repository_impl.
 import "package:horizon/domain/repositories/address_v2_repository.dart";
 import 'package:horizon/data/sources/repositories/address_v2_repository_impl.dart';
 
-
-
-
-
-
+import 'package:horizon/data/sources/network/counterparty_client_factory.dart';
+import 'package:horizon/data/sources/network/esplora_client_factory.dart';
 
 void setup() {
   GetIt injector = GetIt.I;
@@ -266,7 +263,6 @@ void setup() {
     )
   ]);
 
-
   injector.registerLazySingleton<V2Api>(() => V2Api(dio));
 
   final esploraDio = Dio(BaseOptions(
@@ -327,6 +323,11 @@ void setup() {
 //   },
 // ));
 
+  injector.registerSingleton<CounterpartyClientFactory>(
+      CounterpartyClientFactory());
+
+  injector.registerSingleton<EsploraClientFactory>(EsploraClientFactory());
+
   injector.registerSingleton<AnalyticsService>(PostHogWebAnalyticsService(
     config,
     const String.fromEnvironment('HORIZON_POSTHOG_API_KEY').isNotEmpty
@@ -347,6 +348,7 @@ void setup() {
   GetIt.I.get<ErrorService>().initialize();
 
   injector.registerSingleton<BitcoinRepository>(BitcoinRepositoryImpl(
+    esploraClientFactory: GetIt.I.get<EsploraClientFactory>(),
     // esploraApi: EsploraApi(
     //   dio: esploraDio,
     // ),
@@ -371,6 +373,7 @@ void setup() {
       ),
       cacheProvider: GetIt.I.get<CacheProvider>()));
   injector.registerSingleton<BalanceRepository>(BalanceRepositoryImpl(
+      counterpartyClientFactory: GetIt.I.get<CounterpartyClientFactory>(),
       utxoRepository: GetIt.I.get<UtxoRepository>(),
       bitcoinRepository: GetIt.I.get<BitcoinRepository>()));
 
@@ -382,7 +385,7 @@ void setup() {
 
   injector.registerSingleton<Bip39Service>(Bip39ServiceImpl());
   injector.registerSingleton<TransactionService>(
-      TransactionServiceImpl(config: config));
+      TransactionServiceImpl(      ));
   injector
       .registerSingleton<EncryptionService>(EncryptionServiceWebWorkerImpl());
   injector
@@ -693,7 +696,6 @@ void setup() {
       // addressRepository: GetIt.I<AddressRepository>(),
       importedAddressRepository: GetIt.I<ImportedAddressRepository>(),
       analyticsService: GetIt.I<AnalyticsService>()));
-
 }
 
 class CustomDioException extends DioException {

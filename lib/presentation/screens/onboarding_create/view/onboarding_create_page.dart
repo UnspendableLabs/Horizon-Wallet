@@ -22,6 +22,8 @@ import 'package:horizon/presentation/screens/onboarding_create/bloc/onboarding_c
 import 'package:horizon/presentation/screens/onboarding_create/bloc/onboarding_create_state.dart';
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 
+import 'package:horizon/domain/entities/http_config.dart';
+
 class NumberedWordGrid extends StatelessWidget {
   final String text;
   final int wordsPerRow;
@@ -113,6 +115,8 @@ class OnboardingCreatePageWrapper extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) => OnboardingCreateBloc(
+        httpConfig:
+            const Mainnet(), // Always defaults to mainnet during onboarding
         mnmonicService: GetIt.I<MnemonicService>(),
         walletService: GetIt.I<WalletService>(),
         importWalletUseCase: GetIt.I<ImportWalletUseCase>(),
@@ -315,7 +319,7 @@ class ShowMnemonicStep extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  if (config.network == Network.testnet4 )
+                  if (config.network == Network.testnet4)
                     HorizonButton(
                       width: 150,
                       onPressed: () {
@@ -330,7 +334,6 @@ class ShowMnemonicStep extends StatelessWidget {
                       child: TextButtonContent(value: "Copy"),
                       icon: const Icon(Icons.copy),
                     ),
-                      
                 ],
               ),
               const SizedBox(height: 16),

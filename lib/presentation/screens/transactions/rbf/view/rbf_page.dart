@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 // import 'package:horizon/common/format.dart' as form;
+import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/domain/entities/fee_option.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
@@ -27,6 +28,7 @@ import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 import 'package:horizon/presentation/screens/transactions/rbf/bloc/rbf_bloc.dart';
 import 'package:horizon/presentation/screens/transactions/rbf/bloc/rbf_event.dart';
 import 'package:horizon/presentation/common/transaction_stepper/view/steps/transaction_compose_page.dart';
+import 'package:horizon/presentation/session/bloc/session_state.dart';
 
 class RBFPage extends StatefulWidget {
   final String txHash;
@@ -79,8 +81,12 @@ class _RBFPageState extends State<RBFPage> {
 
   @override
   Widget build(BuildContext context) {
+
+    final session = context.watch<SessionStateCubit>().state.successOrThrow();
+
     return BlocProvider(
       create: (context) => RBFBloc(
+        httpConfig: session.httpConfig,
         getFeeEstimatesUseCase: GetIt.I<GetFeeEstimatesUseCase>(),
         bitcoinRepository: GetIt.I<BitcoinRepository>(),
         writelocalTransactionUseCase: GetIt.I<WriteLocalTransactionUseCase>(),
