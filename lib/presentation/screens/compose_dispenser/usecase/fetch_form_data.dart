@@ -11,20 +11,19 @@ class FetchDispenserFormDataUseCase {
   final DispenserRepository dispenserRepository;
 
   final GetFeeEstimatesUseCase getFeeEstimatesUseCase;
-  final HttpConfig httpConfig;
 
-  FetchDispenserFormDataUseCase(
-      {required this.balanceRepository,
-      required this.getFeeEstimatesUseCase,
-      required this.dispenserRepository,
-      required this.httpConfig});
+  FetchDispenserFormDataUseCase({
+    required this.balanceRepository,
+    required this.getFeeEstimatesUseCase,
+    required this.dispenserRepository,
+  });
 
   Future<(List<Balance>, FeeEstimates, List<Dispenser>)> call(
-      String currentAddress) async {
+      String currentAddress, HttpConfig httpConfig) async {
     try {
       // Initiate both asynchronous calls
       final futures = await Future.wait([
-        _fetchBalances(currentAddress),
+        _fetchBalances(currentAddress, httpConfig),
         _fetchFeeEstimates(),
         _fetchDispensers(currentAddress),
       ]);
@@ -45,7 +44,8 @@ class FetchDispenserFormDataUseCase {
     }
   }
 
-  Future<List<Balance>> _fetchBalances(String currentAddress) async {
+  Future<List<Balance>> _fetchBalances(
+      String currentAddress, HttpConfig httpConfig) async {
     try {
       final balances_ = await balanceRepository.getBalancesForAddress(
           httpConfig: httpConfig,

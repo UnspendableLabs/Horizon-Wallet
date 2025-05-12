@@ -2,27 +2,23 @@ import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
-import 'package:horizon/domain/entities/http_clients.dart';
 import 'package:horizon/domain/entities/http_config.dart';
 
 class FetchIssuanceFormDataUseCase {
   final BalanceRepository balanceRepository;
   final GetFeeEstimatesUseCase getFeeEstimatesUseCase;
-  final HttpClients httpClients;
-  final HttpConfig httpConfig;
 
   FetchIssuanceFormDataUseCase({
     required this.balanceRepository,
     required this.getFeeEstimatesUseCase,
-    required this.httpClients,
-    required this.httpConfig,
   });
 
-  Future<(List<Balance>, FeeEstimates)> call(String currentAddress) async {
+  Future<(List<Balance>, FeeEstimates)> call(
+      String currentAddress, HttpConfig httpConfig) async {
     try {
       // Initiate both asynchronous calls
       final futures = await Future.wait([
-        _fetchBalances(currentAddress),
+        _fetchBalances(currentAddress, httpConfig),
         _fetchFeeEstimates(),
       ]);
 
@@ -39,7 +35,8 @@ class FetchIssuanceFormDataUseCase {
     }
   }
 
-  Future<List<Balance>> _fetchBalances(String currentAddress) async {
+  Future<List<Balance>> _fetchBalances(
+      String currentAddress, HttpConfig httpConfig) async {
     try {
       final balances_ = await balanceRepository.getBalancesForAddress(
           httpConfig: httpConfig,

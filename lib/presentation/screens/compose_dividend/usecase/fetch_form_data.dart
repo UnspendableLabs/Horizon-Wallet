@@ -5,7 +5,6 @@ import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/domain/repositories/estimate_xcp_fee_repository.dart';
 import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
-import 'package:horizon/domain/entities/http_clients.dart';
 import 'package:horizon/domain/entities/http_config.dart';
 
 class FetchDividendFormDataUseCase {
@@ -13,23 +12,19 @@ class FetchDividendFormDataUseCase {
   final GetFeeEstimatesUseCase getFeeEstimatesUseCase;
   final AssetRepository assetRepository;
   final EstimateXcpFeeRepository estimateXcpFeeRepository;
-  final HttpClients httpClients;
-  final HttpConfig httpConfig;
 
   FetchDividendFormDataUseCase({
-    required this.httpConfig,
     required this.balanceRepository,
     required this.getFeeEstimatesUseCase,
     required this.assetRepository,
     required this.estimateXcpFeeRepository,
-    required this.httpClients,
   });
 
   Future<(List<Balance>, Asset, FeeEstimates, int)> call(
-      String currentAddress, String assetName) async {
+      String currentAddress, String assetName, HttpConfig httpConfig) async {
     try {
       final futures = await Future.wait([
-        _fetchBalances(currentAddress),
+        _fetchBalances(currentAddress, httpConfig),
         _fetchAsset(assetName),
         _fetchFeeEstimates(),
         _fetchDividendXcpFee(currentAddress, assetName),
@@ -54,7 +49,8 @@ class FetchDividendFormDataUseCase {
     }
   }
 
-  Future<List<Balance>> _fetchBalances(String currentAddress) async {
+  Future<List<Balance>> _fetchBalances(
+      String currentAddress, HttpConfig httpConfig) async {
     try {
       final balances_ = await balanceRepository.getBalancesForAddress(
           httpConfig: httpConfig,

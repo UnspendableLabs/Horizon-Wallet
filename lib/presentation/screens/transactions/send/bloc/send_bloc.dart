@@ -144,7 +144,7 @@ class SendBloc extends Bloc<TransactionEvent,
       ));
     } catch (e) {
       emit(state.copyWith(
-        composeState: ComposeStateError(e is ComposeTransactionException
+       composeState: ComposeStateError(e is ComposeTransactionException
             ? e.message
             : 'An unexpected error occurred: ${e.toString()}'),
       ));
