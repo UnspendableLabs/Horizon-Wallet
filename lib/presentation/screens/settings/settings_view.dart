@@ -67,8 +67,9 @@ class SettingsItem extends StatelessWidget {
                   child: Text(
                     title,
                     style: TextStyle(
-                      fontSize: 16,
+                      fontSize: 14,
                       fontWeight: FontWeight.w500,
+                      letterSpacing: -0.2,
                       color: Theme.of(context).textTheme.bodyMedium?.color,
                     ),
                   ),
@@ -328,7 +329,7 @@ class _SettingsViewState extends State<SettingsView> {
   Widget _buildMainSettings() {
     return ListView(
       children: [
-        const SizedBox(height: 10),
+        const SizedBox(height: 14),
         SettingsItem(
           title: 'Security',
           icon: AppIcons.shieldIcon(context: context),
@@ -340,7 +341,7 @@ class _SettingsViewState extends State<SettingsView> {
         ),
         SettingsItem(
           title: 'Seed phrase',
-          icon: AppIcons.copyIcon(context: context),
+          icon: AppIcons.keyIcon(context: context),
           onTap: () {
             setState(() {
               _currentPage = SettingsPage.seedPhrase;
@@ -431,6 +432,51 @@ class _SettingsViewState extends State<SettingsView> {
     );
   }
 
+  Widget _buildAppBar() {
+    return Column(
+      children: [
+        Container(
+          height: 46,
+          width: double.infinity,
+          padding: const EdgeInsets.only(left: 12, top: 16, bottom: 0, right: 12),
+          child: Row(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            AppIcons.iconButton(
+              context: context,
+              icon: AppIcons.backArrowIcon(
+                context: context,
+                width: 24,
+                height: 24,
+                fit: BoxFit.fitHeight,
+              ),
+              onPressed: () {
+                _currentPage != SettingsPage.main
+                    ? _navigateBack()
+                    : AppShell.navigateToTab(context, 0);
+              },
+            ),
+          ],
+        ),
+        ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Text(
+              _getPageTitle(),
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+                color: Theme.of(context).textTheme.bodyMedium?.color,
+              ),
+            ),
+          ],
+        )
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return context.watch<SessionStateCubit>().state.maybeWhen(
@@ -442,45 +488,14 @@ class _SettingsViewState extends State<SettingsView> {
                   constraints: const BoxConstraints(maxWidth: 500),
                   child: Scaffold(
                     backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-                    appBar: AppBar(
-                      backgroundColor:
-                          Theme.of(context).scaffoldBackgroundColor,
-                      elevation: 0,
-                      centerTitle: false,
-                      leadingWidth: 40,
-                      toolbarHeight: 74,
-                      title: Padding(
-                        padding: const EdgeInsets.only(top: 18.0),
-                        child: Text(
-                          _getPageTitle(),
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w700,
-                            color:
-                                Theme.of(context).textTheme.bodyMedium?.color,
-                          ),
-                        ),
-                      ),
-                      leading: Padding(
-                        padding: const EdgeInsets.only(left: 9.0, top: 18.0),
-                        child: AppIcons.iconButton(
-                          context: context,
-                          width: 32,
-                          height: 32,
-                          icon: AppIcons.backArrowIcon(
-                              context: context,
-                              width: 24,
-                              height: 24,
-                              fit: BoxFit.fitHeight),
-                          onPressed: _currentPage != SettingsPage.main
-                              ? _navigateBack
-                              : () {
-                                  AppShell.navigateToTab(context, 0);
-                                },
-                        ),
-                      ),
+                    appBar: PreferredSize(
+                      preferredSize: const Size.fromHeight(72),
+                      child: _buildAppBar(),
                     ),
-                    body: _buildCurrentPage(),
+                    body: Container(
+                      padding: const EdgeInsets.only(top: 14),
+                      child: _buildCurrentPage(),
+                    ),
                   ),
                 ),
               ),
