@@ -1,4 +1,5 @@
 import 'package:collection/collection.dart';
+import 'package:get_it/get_it.dart';
 import 'package:horizon/common/format.dart';
 import 'package:horizon/data/sources/network/api/v2_api.dart';
 import 'package:horizon/domain/entities/asset_info.dart' as asset_info;
@@ -31,14 +32,19 @@ import 'package:horizon/domain/entities/compose_dividend.dart'
 import 'package:horizon/domain/entities/compose_sweep.dart' as compose_sweep;
 import 'package:horizon/domain/entities/compose_burn.dart' as compose_burn;
 import 'package:horizon/domain/entities/utxo.dart';
+import 'package:horizon/domain/entities/utxo.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
 
+import 'package:horizon/data/sources/network/counterparty_client_factory.dart';
 import 'package:fpdart/fpdart.dart';
+import 'package:horizon/domain/entities/http_config.dart';
 
 class ComposeRepositoryImpl extends ComposeRepository {
-  final V2Api api;
+  final CounterpartyClientFactory _counterpartyClientFactory;
 
-  ComposeRepositoryImpl({required this.api});
+  ComposeRepositoryImpl({CounterpartyClientFactory? counterpartyClientFactory})
+      : _counterpartyClientFactory =
+            counterpartyClientFactory ?? GetIt.I<CounterpartyClientFactory>();
 
   Future<T> retryOnInvalidUtxo<T>(
       Future<T> Function(List<Utxo> inputsSet) apiCall,
@@ -79,8 +85,11 @@ class ComposeRepositoryImpl extends ComposeRepository {
   }
 
   @override
-  Future<compose_send.ComposeSendResponse> composeSendVerbose(num satPerVbyte,
-      List<Utxo> inputsSet, compose_send.ComposeSendParams params) async {
+  Future<compose_send.ComposeSendResponse> composeSendVerbose(
+      num satPerVbyte,
+      List<Utxo> inputsSet,
+      compose_send.ComposeSendParams params,
+      HttpConfig httpConfig) async {
     return await _retryOnInvalidUtxo<compose_send.ComposeSendResponse>(
       (currentInputSet) async {
         final source = params.source;
@@ -93,16 +102,18 @@ class ComposeRepositoryImpl extends ComposeRepository {
         final inputsSetString =
             currentInputSet.map((e) => "${e.txid}:${e.vout}").join(',');
 
-        final response = await api.composeSendVerbose(
-            source,
-            destination,
-            asset,
-            quantity,
-            allowUnconfirmedInputs,
-            satPerVbyte,
-            inputsSetString,
-            excludeUtxosWithBalances,
-            disableUtxoLocks);
+        final response = await _counterpartyClientFactory
+            .getClient(httpConfig)
+            .composeSendVerbose(
+                source,
+                destination,
+                asset,
+                quantity,
+                allowUnconfirmedInputs,
+                satPerVbyte,
+                inputsSetString,
+                excludeUtxosWithBalances,
+                disableUtxoLocks);
 
         if (response.result == null) {
           throw Exception('Failed to compose send');
@@ -136,7 +147,8 @@ class ComposeRepositoryImpl extends ComposeRepository {
   Future<compose_mpma_send.ComposeMpmaSendResponse> composeMpmaSend(
       num satPerVbyte,
       List<Utxo> inputsSet,
-      compose_mpma_send.ComposeMpmaSendParams params) async {
+      compose_mpma_send.ComposeMpmaSendParams params,
+      HttpConfig httpConfig) async {
     return await _retryOnInvalidUtxo<compose_mpma_send.ComposeMpmaSendResponse>(
       (currentInputSet) async {
         final source = params.source;
@@ -149,16 +161,18 @@ class ComposeRepositoryImpl extends ComposeRepository {
         final inputsSetString =
             currentInputSet.map((e) => "${e.txid}:${e.vout}").join(',');
 
-        final response = await api.composeMpmaSend(
-            source,
-            destinations,
-            assets,
-            quantities,
-            allowUnconfirmedInputs,
-            satPerVbyte,
-            inputsSetString,
-            excludeUtxosWithBalances,
-            disableUtxoLocks);
+        final response = await _counterpartyClientFactory
+            .getClient(httpConfig)
+            .composeMpmaSend(
+                source,
+                destinations,
+                assets,
+                quantities,
+                allowUnconfirmedInputs,
+                satPerVbyte,
+                inputsSetString,
+                excludeUtxosWithBalances,
+                disableUtxoLocks);
 
         if (response.result == null) {
           throw Exception('Failed to compose mpma send');
@@ -184,8 +198,11 @@ class ComposeRepositoryImpl extends ComposeRepository {
 
   @override
   Future<compose_issuance.ComposeIssuanceResponseVerbose>
-      composeIssuanceVerbose(num satPerVbyte, List<Utxo> inputsSet,
-          compose_issuance.ComposeIssuanceParams params) async {
+      composeIssuanceVerbose(
+          num satPerVbyte,
+          List<Utxo> inputsSet,
+          compose_issuance.ComposeIssuanceParams params,
+          HttpConfig httpConfig) async {
     return await _retryOnInvalidUtxo<
         compose_issuance.ComposeIssuanceResponseVerbose>(
       (currentInputSet) async {
@@ -203,20 +220,22 @@ class ComposeRepositoryImpl extends ComposeRepository {
         final inputsSetString =
             currentInputSet.map((e) => "${e.txid}:${e.vout}").join(',');
 
-        final response = await api.composeIssuanceVerbose(
-            source,
-            name,
-            quantity,
-            transferDestination,
-            divisible,
-            lock,
-            reset,
-            description,
-            unconfirmed,
-            satPerVbyte,
-            inputsSetString,
-            excludeUtxosWithBalances,
-            disableUtxoLocks);
+        final response = await _counterpartyClientFactory
+            .getClient(httpConfig)
+            .composeIssuanceVerbose(
+                source,
+                name,
+                quantity,
+                transferDestination,
+                divisible,
+                lock,
+                reset,
+                description,
+                unconfirmed,
+                satPerVbyte,
+                inputsSetString,
+                excludeUtxosWithBalances,
+                disableUtxoLocks);
         if (response.result == null) {
           throw Exception('Failed to compose issuance');
         }
@@ -245,8 +264,11 @@ class ComposeRepositoryImpl extends ComposeRepository {
 
   @override
   Future<compose_dispenser.ComposeDispenserResponseVerbose>
-      composeDispenserVerbose(num satPerVbyte, List<Utxo> inputsSet,
-          compose_dispenser.ComposeDispenserParams params) async {
+      composeDispenserVerbose(
+          num satPerVbyte,
+          List<Utxo> inputsSet,
+          compose_dispenser.ComposeDispenserParams params,
+          HttpConfig httpConfig) async {
     return await _retryOnInvalidUtxo<
         compose_dispenser.ComposeDispenserResponseVerbose>(
       (currentInputSet) async {
@@ -266,21 +288,23 @@ class ComposeRepositoryImpl extends ComposeRepository {
         final inputsSetString =
             currentInputSet.map((e) => "${e.txid}:${e.vout}").join(',');
 
-        final response = await api.composeDispenserVerbose(
-            sourceAddress,
-            asset,
-            giveQuantity,
-            escrowQuantity,
-            mainchainrate,
-            status,
-            openAddress,
-            oracleAddress,
-            allowUnconfirmedInputs,
-            exactFee,
-            satPerVbyte,
-            inputsSetString,
-            excludeUtxosWithBalances,
-            disableUtxoLocks);
+        final response = await _counterpartyClientFactory
+            .getClient(httpConfig)
+            .composeDispenserVerbose(
+                sourceAddress,
+                asset,
+                giveQuantity,
+                escrowQuantity,
+                mainchainrate,
+                status,
+                openAddress,
+                oracleAddress,
+                allowUnconfirmedInputs,
+                exactFee,
+                satPerVbyte,
+                inputsSetString,
+                excludeUtxosWithBalances,
+                disableUtxoLocks);
 
         if (response.result == null) {
           throw Exception('Failed to compose dispenser');
@@ -318,7 +342,8 @@ class ComposeRepositoryImpl extends ComposeRepository {
   Future<compose_dispense.ComposeDispenseResponse> composeDispense(
       num satPerVbyte,
       List<Utxo> inputsSet,
-      compose_dispense.ComposeDispenseParams params) async {
+      compose_dispense.ComposeDispenseParams params,
+      HttpConfig httpConfig) async {
     return await _retryOnInvalidUtxo<compose_dispense.ComposeDispenseResponse>(
       (currentInputSet) async {
         final sourceAddress = params.address;
@@ -331,15 +356,17 @@ class ComposeRepositoryImpl extends ComposeRepository {
         final inputsSetString =
             currentInputSet.map((e) => "${e.txid}:${e.vout}").join(',');
 
-        final response = await api.composeDispense(
-            sourceAddress,
-            dispenser,
-            quantity,
-            allowUnconfirmedInputs,
-            satPerVbyte,
-            inputsSetString,
-            excludeUtxosWithBalances,
-            disableUtxoLocks);
+        final response = await _counterpartyClientFactory
+            .getClient(httpConfig)
+            .composeDispense(
+                sourceAddress,
+                dispenser,
+                quantity,
+                allowUnconfirmedInputs,
+                satPerVbyte,
+                inputsSetString,
+                excludeUtxosWithBalances,
+                disableUtxoLocks);
 
         if (response.result == null) {
           throw Exception('Failed to compose dispense');
@@ -355,7 +382,8 @@ class ComposeRepositoryImpl extends ComposeRepository {
   Future<compose_fairmint.ComposeFairmintResponse> composeFairmintVerbose(
       num satPerVbyte,
       List<Utxo> inputsSet,
-      compose_fairmint.ComposeFairmintParams params) async {
+      compose_fairmint.ComposeFairmintParams params,
+      HttpConfig httpConfig) async {
     return await _retryOnInvalidUtxo<compose_fairmint.ComposeFairmintResponse>(
       (currentInputSet) async {
         final sourceAddress = params.source;
@@ -367,14 +395,10 @@ class ComposeRepositoryImpl extends ComposeRepository {
         final inputsSetString =
             currentInputSet.map((e) => "${e.txid}:${e.vout}").join(',');
 
-        final response = await api.composeFairmintVerbose(
-            sourceAddress,
-            asset,
-            quantity,
-            satPerVbyte,
-            inputsSetString,
-            excludeUtxosWithBalances,
-            disableUtxoLocks);
+        final response = await _counterpartyClientFactory
+            .getClient(httpConfig)
+            .composeFairmintVerbose(sourceAddress, asset, quantity, satPerVbyte,
+                inputsSetString, excludeUtxosWithBalances, disableUtxoLocks);
 
         if (response.result == null) {
           throw Exception('Failed to compose fairmint');
@@ -389,7 +413,8 @@ class ComposeRepositoryImpl extends ComposeRepository {
   Future<compose_fairminter.ComposeFairminterResponse> composeFairminterVerbose(
       num satPerVbyte,
       List<Utxo> inputsSet,
-      compose_fairminter.ComposeFairminterParams params) async {
+      compose_fairminter.ComposeFairminterParams params,
+      HttpConfig httpConfig) async {
     return await _retryOnInvalidUtxo<
         compose_fairminter.ComposeFairminterResponse>(
       (currentInputSet) async {
@@ -408,20 +433,22 @@ class ComposeRepositoryImpl extends ComposeRepository {
         final inputsSetString =
             currentInputSet.map((e) => "${e.txid}:${e.vout}").join(',');
 
-        final response = await api.composeFairminterVerbose(
-            sourceAddress,
-            asset,
-            assetParent,
-            divisible,
-            maxMintPerTx,
-            hardCap,
-            startBlock,
-            endBlock,
-            satPerVbyte,
-            lockQuantity,
-            inputsSetString,
-            excludeUtxosWithBalances,
-            disableUtxoLocks);
+        final response = await _counterpartyClientFactory
+            .getClient(httpConfig)
+            .composeFairminterVerbose(
+                sourceAddress,
+                asset,
+                assetParent,
+                divisible,
+                maxMintPerTx,
+                hardCap,
+                startBlock,
+                endBlock,
+                satPerVbyte,
+                lockQuantity,
+                inputsSetString,
+                excludeUtxosWithBalances,
+                disableUtxoLocks);
 
         if (response.result == null) {
           throw Exception('Failed to compose fairminter');
@@ -435,8 +462,11 @@ class ComposeRepositoryImpl extends ComposeRepository {
 
   @override
   Future<compose_dispenser.ComposeDispenserResponseVerbose>
-      composeDispenserChain(int exactFee, DecodedTx prevDecodedTransaction,
-          compose_dispenser.ComposeDispenserParams params) async {
+      composeDispenserChain(
+          int exactFee,
+          DecodedTx prevDecodedTransaction,
+          compose_dispenser.ComposeDispenserParams params,
+          HttpConfig httpConfig) async {
     final source = params.source;
     final asset = params.asset;
     final giveQuantity = params.giveQuantity;
@@ -466,23 +496,25 @@ class ComposeRepositoryImpl extends ComposeRepository {
     // since this utxo hasn't been confirmed yet, we need to add all the necessary info for value and scriptPubKey
     final newInputSet = '$txid:$vout:$value:${scriptPubKey.hex}';
 
-    final response = await api.composeDispenserVerbose(
-      source,
-      asset,
-      giveQuantity,
-      escrowQuantity,
-      mainchainrate,
-      status,
-      openAddress,
-      oracleAddress,
-      allowUnconfirmedInputs,
-      exactFee,
-      null, // null satPerVbyte since we need to specify the exact fee for the dispenser chain
-      newInputSet,
-      excludeUtxosWithBalances,
-      validateCompose,
-      disableUtxoLocks,
-    );
+    final response = await _counterpartyClientFactory
+        .getClient(httpConfig)
+        .composeDispenserVerbose(
+          source,
+          asset,
+          giveQuantity,
+          escrowQuantity,
+          mainchainrate,
+          status,
+          openAddress,
+          oracleAddress,
+          allowUnconfirmedInputs,
+          exactFee,
+          null, // null satPerVbyte since we need to specify the exact fee for the dispenser chain
+          newInputSet,
+          excludeUtxosWithBalances,
+          validateCompose,
+          disableUtxoLocks,
+        );
 
     if (response.result == null) {
       throw Exception('Failed to compose send');
@@ -512,9 +544,13 @@ class ComposeRepositoryImpl extends ComposeRepository {
         signedTxEstimatedSize: txVerbose.signedTxEstimatedSize.toDomain());
   }
 
+  // CHAT make same HttpConfig change to all below endpoints
   @override
-  Future<compose_order.ComposeOrderResponse> composeOrder(num satPerVbyte,
-      List<Utxo> inputsSet, compose_order.ComposeOrderParams params) async {
+  Future<compose_order.ComposeOrderResponse> composeOrder(
+      num satPerVbyte,
+      List<Utxo> inputsSet,
+      compose_order.ComposeOrderParams params,
+      HttpConfig httpConfig) async {
     return await _retryOnInvalidUtxo<compose_order.ComposeOrderResponse>(
       (currentInputSet) async {
         final source = params.source;
@@ -529,19 +565,20 @@ class ComposeRepositoryImpl extends ComposeRepository {
         final inputsSetString =
             currentInputSet.map((e) => "${e.txid}:${e.vout}").join(',');
 
-        final response = await api.composeOrder(
-            source,
-            giveAsset,
-            giveQuantity,
-            getAsset,
-            getQuantity,
-            4 * 2016, // Expiration, two months
-            0, // fee required
-            allowUnconfirmedInputs,
-            satPerVbyte,
-            inputsSetString,
-            excludeUtxosWithBalances,
-            disableUtxoLocks);
+        final response =
+            await _counterpartyClientFactory.getClient(httpConfig).composeOrder(
+                source,
+                giveAsset,
+                giveQuantity,
+                getAsset,
+                getQuantity,
+                4 * 2016, // Expiration, two months
+                0, // fee required
+                allowUnconfirmedInputs,
+                satPerVbyte,
+                inputsSetString,
+                excludeUtxosWithBalances,
+                disableUtxoLocks);
 
         if (response.result == null) {
           throw Exception('Failed to compose order');
@@ -554,8 +591,11 @@ class ComposeRepositoryImpl extends ComposeRepository {
   }
 
   @override
-  Future<compose_cancel.ComposeCancelResponse> composeCancel(num satPerVbyte,
-      List<Utxo> inputsSet, compose_cancel.ComposeCancelParams params) async {
+  Future<compose_cancel.ComposeCancelResponse> composeCancel(
+      num satPerVbyte,
+      List<Utxo> inputsSet,
+      compose_cancel.ComposeCancelParams params,
+      HttpConfig httpConfig) async {
     return await _retryOnInvalidUtxo<compose_cancel.ComposeCancelResponse>(
       (currentInputSet) async {
         final source = params.source;
@@ -566,14 +606,16 @@ class ComposeRepositoryImpl extends ComposeRepository {
         final inputsSetString =
             currentInputSet.map((e) => "${e.txid}:${e.vout}").join(',');
 
-        final response = await api.composeCancel(
-            source,
-            offerHash,
-            allowUnconfirmedInputs,
-            satPerVbyte,
-            inputsSetString,
-            excludeUtxosWithBalances,
-            disableUtxoLocks);
+        final response = await _counterpartyClientFactory
+            .getClient(httpConfig)
+            .composeCancel(
+                source,
+                offerHash,
+                allowUnconfirmedInputs,
+                satPerVbyte,
+                inputsSetString,
+                excludeUtxosWithBalances,
+                disableUtxoLocks);
 
         if (response.result == null) {
           throw Exception('Failed to compose cancel');
@@ -589,7 +631,8 @@ class ComposeRepositoryImpl extends ComposeRepository {
   Future<compose_attach_utxo.ComposeAttachUtxoResponse> composeAttachUtxo(
       num satPerVbyte,
       List<Utxo> inputsSet,
-      compose_attach_utxo.ComposeAttachUtxoParams params) async {
+      compose_attach_utxo.ComposeAttachUtxoParams params,
+      HttpConfig httpConfig) async {
     return await _retryOnInvalidUtxo<
         compose_attach_utxo.ComposeAttachUtxoResponse>(
       (currentInputSet) async {
@@ -604,17 +647,19 @@ class ComposeRepositoryImpl extends ComposeRepository {
         final inputsSetString =
             currentInputSet.map((e) => "${e.txid}:${e.vout}").join(',');
 
-        final response = await api.composeAttachUtxo(
-            address,
-            asset,
-            quantity,
-            destinationVout,
-            skipValidation,
-            allowUnconfirmedInputs,
-            satPerVbyte,
-            inputsSetString,
-            excludeUtxosWithBalances,
-            disableUtxoLocks);
+        final response = await _counterpartyClientFactory
+            .getClient(httpConfig)
+            .composeAttachUtxo(
+                address,
+                asset,
+                quantity,
+                destinationVout,
+                skipValidation,
+                allowUnconfirmedInputs,
+                satPerVbyte,
+                inputsSetString,
+                excludeUtxosWithBalances,
+                disableUtxoLocks);
 
         if (response.result == null) {
           throw Exception('Failed to compose attach utxo');
@@ -630,7 +675,8 @@ class ComposeRepositoryImpl extends ComposeRepository {
   Future<compose_detach_utxo.ComposeDetachUtxoResponse> composeDetachUtxo(
       num satPerVbyte,
       List<Utxo> inputsSet,
-      compose_detach_utxo.ComposeDetachUtxoParams params) async {
+      compose_detach_utxo.ComposeDetachUtxoParams params,
+      HttpConfig httpConfig) async {
     return await _retryOnInvalidUtxo<
         compose_detach_utxo.ComposeDetachUtxoResponse>(
       (currentInputSet) async {
@@ -644,16 +690,18 @@ class ComposeRepositoryImpl extends ComposeRepository {
         final inputsSetString =
             currentInputSet.map((e) => "${e.txid}:${e.vout}").join(',');
 
-        final response = await api.composeDetachUtxo(
-          utxo,
-          destination,
-          skipValidation,
-          allowUnconfirmedInputs,
-          satPerVbyte,
-          inputsSetString,
-          excludeUtxosWithBalances,
-          disableUtxoLocks,
-        );
+        final response = await _counterpartyClientFactory
+            .getClient(httpConfig)
+            .composeDetachUtxo(
+              utxo,
+              destination,
+              skipValidation,
+              allowUnconfirmedInputs,
+              satPerVbyte,
+              inputsSetString,
+              excludeUtxosWithBalances,
+              disableUtxoLocks,
+            );
 
         if (response.result == null) {
           throw Exception('Failed to compose detach utxo');
@@ -669,7 +717,8 @@ class ComposeRepositoryImpl extends ComposeRepository {
   Future<compose_movetoutxo.ComposeMoveToUtxoResponse> composeMoveToUtxo(
       num satPerVbyte,
       List<Utxo> inputsSet,
-      compose_movetoutxo.ComposeMoveToUtxoParams params) async {
+      compose_movetoutxo.ComposeMoveToUtxoParams params,
+      HttpConfig httpConfig) async {
     return await _retryOnInvalidUtxo<
         compose_movetoutxo.ComposeMoveToUtxoResponse>(
       (currentInputSet) async {
@@ -682,16 +731,18 @@ class ComposeRepositoryImpl extends ComposeRepository {
         final inputsSetString =
             currentInputSet.map((e) => "${e.txid}:${e.vout}").join(',');
 
-        final response = await api.composeMoveToUtxo(
-          utxo,
-          destination,
-          skipValidation,
-          allowUnconfirmedInputs,
-          satPerVbyte,
-          inputsSetString,
-          excludeUtxosWithBalances,
-          disableUtxoLocks,
-        );
+        final response = await _counterpartyClientFactory
+            .getClient(httpConfig)
+            .composeMoveToUtxo(
+              utxo,
+              destination,
+              skipValidation,
+              allowUnconfirmedInputs,
+              satPerVbyte,
+              inputsSetString,
+              excludeUtxosWithBalances,
+              disableUtxoLocks,
+            );
 
         if (response.result == null) {
           throw Exception('Failed to compose move to utxo');
@@ -704,8 +755,11 @@ class ComposeRepositoryImpl extends ComposeRepository {
   }
 
   @override
-  Future<compose_destroy.ComposeDestroyResponse> composeDestroy(num satPerVbyte,
-      List<Utxo> inputsSet, compose_destroy.ComposeDestroyParams params) async {
+  Future<compose_destroy.ComposeDestroyResponse> composeDestroy(
+      num satPerVbyte,
+      List<Utxo> inputsSet,
+      compose_destroy.ComposeDestroyParams params,
+      HttpConfig httpConfig) async {
     return await _retryOnInvalidUtxo<compose_destroy.ComposeDestroyResponse>(
       (currentInputSet) async {
         final source = params.source;
@@ -717,16 +771,18 @@ class ComposeRepositoryImpl extends ComposeRepository {
         final inputsSetString =
             currentInputSet.map((e) => "${e.txid}:${e.vout}").join(',');
 
-        final response = await api.composeDestroy(
-          source,
-          asset,
-          quantity,
-          tag,
-          satPerVbyte,
-          inputsSetString,
-          excludeUtxosWithBalances,
-          disableUtxoLocks,
-        );
+        final response = await _counterpartyClientFactory
+            .getClient(httpConfig)
+            .composeDestroy(
+              source,
+              asset,
+              quantity,
+              tag,
+              satPerVbyte,
+              inputsSetString,
+              excludeUtxosWithBalances,
+              disableUtxoLocks,
+            );
 
         if (response.result == null) {
           throw Exception('Failed to compose destroy');
@@ -742,7 +798,8 @@ class ComposeRepositoryImpl extends ComposeRepository {
   Future<compose_dividend.ComposeDividendResponse> composeDividend(
       num satPerVbyte,
       List<Utxo> inputsSet,
-      compose_dividend.ComposeDividendParams params) async {
+      compose_dividend.ComposeDividendParams params,
+      HttpConfig httpConfig) async {
     return await _retryOnInvalidUtxo<compose_dividend.ComposeDividendResponse>(
       (currentInputSet) async {
         final source = params.source;
@@ -754,16 +811,18 @@ class ComposeRepositoryImpl extends ComposeRepository {
         final inputsSetString =
             currentInputSet.map((e) => "${e.txid}:${e.vout}").join(',');
 
-        final response = await api.composeDividend(
-          source,
-          asset,
-          quantityPerUnit,
-          dividendAsset,
-          satPerVbyte,
-          inputsSetString,
-          excludeUtxosWithBalances,
-          disableUtxoLocks,
-        );
+        final response = await _counterpartyClientFactory
+            .getClient(httpConfig)
+            .composeDividend(
+              source,
+              asset,
+              quantityPerUnit,
+              dividendAsset,
+              satPerVbyte,
+              inputsSetString,
+              excludeUtxosWithBalances,
+              disableUtxoLocks,
+            );
 
         if (response.result == null) {
           throw Exception('Failed to compose dividend');
@@ -776,8 +835,11 @@ class ComposeRepositoryImpl extends ComposeRepository {
   }
 
   @override
-  Future<compose_sweep.ComposeSweepResponse> composeSweep(num satPerVbyte,
-      List<Utxo> inputsSet, compose_sweep.ComposeSweepParams params) async {
+  Future<compose_sweep.ComposeSweepResponse> composeSweep(
+      num satPerVbyte,
+      List<Utxo> inputsSet,
+      compose_sweep.ComposeSweepParams params,
+      HttpConfig httpConfig) async {
     return await _retryOnInvalidUtxo<compose_sweep.ComposeSweepResponse>(
       (currentInputSet) async {
         final source = params.source;
@@ -789,16 +851,17 @@ class ComposeRepositoryImpl extends ComposeRepository {
         final inputsSetString =
             currentInputSet.map((e) => "${e.txid}:${e.vout}").join(',');
 
-        final response = await api.composeSweep(
-          source,
-          destination,
-          flags,
-          memo,
-          satPerVbyte,
-          inputsSetString,
-          skipValidation,
-          disableUtxoLocks,
-        );
+        final response =
+            await _counterpartyClientFactory.getClient(httpConfig).composeSweep(
+                  source,
+                  destination,
+                  flags,
+                  memo,
+                  satPerVbyte,
+                  inputsSetString,
+                  skipValidation,
+                  disableUtxoLocks,
+                );
 
         if (response.result == null) {
           throw Exception('Failed to compose sweep');
@@ -811,8 +874,11 @@ class ComposeRepositoryImpl extends ComposeRepository {
   }
 
   @override
-  Future<compose_burn.ComposeBurnResponse> composeBurn(num satPerVbyte,
-      List<Utxo> inputsSet, compose_burn.ComposeBurnParams params) async {
+  Future<compose_burn.ComposeBurnResponse> composeBurn(
+      num satPerVbyte,
+      List<Utxo> inputsSet,
+      compose_burn.ComposeBurnParams params,
+      HttpConfig httpConfig) async {
     return await _retryOnInvalidUtxo<compose_burn.ComposeBurnResponse>(
       (currentInputSet) async {
         final source = params.source;
@@ -822,14 +888,15 @@ class ComposeRepositoryImpl extends ComposeRepository {
         final inputsSetString =
             currentInputSet.map((e) => "${e.txid}:${e.vout}").join(',');
 
-        final response = await api.composeBurn(
-          source,
-          quantity,
-          satPerVbyte,
-          inputsSetString,
-          excludeUtxosWithBalances,
-          disableUtxoLocks,
-        );
+        final response =
+            await _counterpartyClientFactory.getClient(httpConfig).composeBurn(
+                  source,
+                  quantity,
+                  satPerVbyte,
+                  inputsSetString,
+                  excludeUtxosWithBalances,
+                  disableUtxoLocks,
+                );
 
         if (response.result == null) {
           throw Exception('Failed to compose burn');

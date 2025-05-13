@@ -7,7 +7,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/domain/repositories/config_repository.dart';
 import 'package:horizon/domain/services/mnemonic_service.dart';
-import 'package:horizon/domain/services/wallet_service.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/common/theme_extension.dart';
 import 'package:horizon/presentation/common/widgets/numbered_grid.dart';
@@ -115,7 +114,6 @@ class OnboardingCreatePageWrapper extends StatelessWidget {
         httpConfig:
             const Mainnet(), // Always defaults to mainnet during onboarding
         mnmonicService: GetIt.I<MnemonicService>(),
-        walletService: GetIt.I<WalletService>(),
       )..add(MnemonicGenerated()),
       child: const OnboardingCreatePage(),
     );

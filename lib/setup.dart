@@ -26,7 +26,6 @@ import 'package:horizon/data/sources/local/db_manager.dart';
 
 import 'package:horizon/data/services/mnemonic_service_impl.dart';
 import 'package:horizon/data/services/transaction_service_impl.dart';
-import 'package:horizon/data/sources/network/api/v2_api.dart';
 import 'package:horizon/data/sources/repositories/account_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/account_settings_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/address_tx_repository_impl.dart';
@@ -354,10 +353,9 @@ void setup() {
   injector.registerSingleton<AddressTxRepository>(AddressTxRepositoryImpl(
     counterpartyClientFactory: GetIt.I.get<CounterpartyClientFactory>(),
   ));
-  injector.registerSingleton<ComposeRepository>(
-      ComposeRepositoryImpl(api: GetIt.I.get<V2Api>()));
+  injector.registerSingleton<ComposeRepository>(ComposeRepositoryImpl());
   injector.registerSingleton<EstimateXcpFeeRepository>(
-      EstimateXcpFeeRepositoryImpl(api: GetIt.I.get<V2Api>()));
+      EstimateXcpFeeRepositoryImpl());
   injector.registerSingleton<UtxoRepository>(
       UtxoRepositoryImpl(cacheProvider: GetIt.I.get<CacheProvider>()));
   injector.registerSingleton<BalanceRepository>(BalanceRepositoryImpl(
@@ -365,11 +363,9 @@ void setup() {
       utxoRepository: GetIt.I.get<UtxoRepository>(),
       bitcoinRepository: GetIt.I.get<BitcoinRepository>()));
 
-  injector.registerSingleton<BlockRepository>(
-      BlockRepositoryImpl(GetIt.I.get<V2Api>()));
+  injector.registerSingleton<BlockRepository>(BlockRepositoryImpl());
 
-  injector.registerSingleton<AssetRepository>(
-      AssetRepositoryImpl(api: GetIt.I.get<V2Api>()));
+  injector.registerSingleton<AssetRepository>(AssetRepositoryImpl());
 
   injector.registerSingleton<Bip39Service>(Bip39ServiceImpl());
   injector.registerSingleton<TransactionService>(TransactionServiceImpl());
@@ -383,7 +379,7 @@ void setup() {
   injector.registerSingleton<MnemonicService>(
       MnemonicServiceImpl(GetIt.I.get<Bip39Service>()));
   injector.registerSingleton<BitcoindService>(
-      BitcoindServiceCounterpartyProxyImpl(GetIt.I.get<V2Api>()));
+      BitcoindServiceCounterpartyProxyImpl());
 
   injector.registerSingleton<AccountRepository>(
       AccountRepositoryImpl(injector.get<DatabaseManager>().database));
@@ -420,18 +416,15 @@ void setup() {
     ),
   );
 
-  injector.registerSingleton<OrderRepository>(
-      OrderRepositoryImpl(api: GetIt.I.get<V2Api>()));
+  injector.registerSingleton<OrderRepository>(OrderRepositoryImpl());
 
   injector.registerSingleton<TransactionRepository>(TransactionRepositoryImpl(
     addressRepository: GetIt.I.get<AddressRepository>(),
-    api_: GetIt.I.get<V2Api>(),
   ));
 
   injector.registerSingleton<TransactionLocalRepository>(
       TransactionLocalRepositoryImpl(
           addressRepository: GetIt.I.get<AddressRepository>(),
-          api_: GetIt.I.get<V2Api>(),
           transactionDao:
               TransactionsDao(injector.get<DatabaseManager>().database)));
 
@@ -442,14 +435,12 @@ void setup() {
 
   injector.registerSingleton<DispenserRepository>(
     DispenserRepositoryImpl(
-      api: GetIt.I.get<V2Api>(),
       logger: GetIt.I.get<Logger>(),
     ),
   );
 
   injector.registerSingleton<FairminterRepository>(
     FairminterRepositoryImpl(
-      api: GetIt.I.get<V2Api>(),
       logger: GetIt.I.get<Logger>(),
     ),
   );
@@ -458,8 +449,7 @@ void setup() {
       FeeEstimatesRespositoryMempoolSpaceImpl(
           mempoolSpaceApi: MempoolSpaceApi()));
 
-  injector.registerSingleton<NodeInfoRepository>(
-      NodeInfoRepositoryImpl(GetIt.I.get<V2Api>()));
+  injector.registerSingleton<NodeInfoRepository>(NodeInfoRepositoryImpl());
 
   injector.registerSingleton<GetFeeEstimatesUseCase>(GetFeeEstimatesUseCase(
       feeEstimatesRepository: GetIt.I.get<FeeEstimatesRespository>()));
@@ -469,7 +459,6 @@ void setup() {
   ));
 
   injector.registerSingleton<EventsRepository>(EventsRepositoryImpl(
-      api_: GetIt.I.get<V2Api>(),
       bitcoinRepository: GetIt.I.get<BitcoinRepository>(),
       cacheProvider: GetIt.I.get<CacheProvider>()));
 

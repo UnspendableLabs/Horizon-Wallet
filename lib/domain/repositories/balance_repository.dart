@@ -1,6 +1,5 @@
 import 'package:horizon/common/constants.dart';
 import 'package:horizon/domain/entities/balance.dart';
-import 'package:horizon/domain/entities/http_clients.dart';
 import 'package:horizon/domain/entities/http_config.dart';
 import 'package:horizon/domain/entities/multi_address_balance.dart';
 

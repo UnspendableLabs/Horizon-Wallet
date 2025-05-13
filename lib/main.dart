@@ -27,15 +27,12 @@ import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/error_service.dart';
 import 'package:horizon/domain/services/imported_address_service.dart';
 import 'package:horizon/domain/services/secure_kv_service.dart';
-import 'package:horizon/domain/services/wallet_service.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/common/theme_extension.dart';
 import 'package:horizon/presentation/inactivity_monitor/inactivity_monitor_bloc.dart';
 import 'package:horizon/presentation/inactivity_monitor/inactivity_monitor_view.dart';
 import 'package:horizon/presentation/screens/asset/asset_view.dart';
 import 'package:horizon/presentation/screens/asset/bloc/asset_view_bloc.dart';
-import 'package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_bloc.dart';
-import 'package:horizon/presentation/screens/dashboard/address_form/bloc/address_form_bloc.dart';
 import 'package:horizon/presentation/screens/dashboard/view/portfolio_view.dart';
 import 'package:horizon/presentation/screens/login/login_view.dart';
 import 'package:horizon/presentation/screens/accounts/accounts_screen.dart';
@@ -983,47 +980,6 @@ class MyApp extends StatelessWidget {
               importedAddressRepository: GetIt.I<ImportedAddressRepository>(),
               analyticsService: GetIt.I<AnalyticsService>())
             ..initialize(),
-        ),
-        BlocProvider<AccountFormBloc>(
-          create: (context) => AccountFormBloc(
-            passwordRequired: GetIt.I<SettingsRepository>()
-                .requirePasswordForCryptoOperations,
-            accountRepository: GetIt.I<AccountRepository>(),
-            walletRepository: GetIt.I<WalletRepository>(),
-            inMemoryKeyRepository: GetIt.I<InMemoryKeyRepository>(),
-            walletService: GetIt.I<WalletService>(),
-            encryptionService: GetIt.I<EncryptionService>(),
-            addressService: GetIt.I<AddressService>(),
-            addressRepository: GetIt.I<AddressRepository>(),
-            errorService: GetIt.I<ErrorService>(),
-          ),
-        ),
-        BlocProvider<AddressFormBloc>(
-          create: (context) => AddressFormBloc(
-            passwordRequired: GetIt.I<SettingsRepository>()
-                .requirePasswordForCryptoOperations,
-            inMemoryKeyRepository: GetIt.I<InMemoryKeyRepository>(),
-            walletRepository: GetIt.I<WalletRepository>(),
-            walletService: GetIt.I<WalletService>(),
-            encryptionService: GetIt.I<EncryptionService>(),
-            addressRepository: GetIt.I<AddressRepository>(),
-            accountRepository: GetIt.I<AccountRepository>(),
-            addressService: GetIt.I<AddressService>(),
-            errorService: GetIt.I<ErrorService>(),
-          ),
-        ),
-        BlocProvider<ImportAddressPkBloc>(
-          create: (context) => ImportAddressPkBloc(
-            httpConfig: session.httpConfig,
-            inMemoryKeyRepository: GetIt.I<InMemoryKeyRepository>(),
-            walletRepository: GetIt.I<WalletRepository>(),
-            walletService: GetIt.I<WalletService>(),
-            encryptionService: GetIt.I<EncryptionService>(),
-            addressService: GetIt.I<AddressService>(),
-            addressRepository: GetIt.I<AddressRepository>(),
-            importedAddressRepository: GetIt.I<ImportedAddressRepository>(),
-            importedAddressService: GetIt.I<ImportedAddressService>(),
-          ),
         ),
         BlocProvider<ThemeBloc>(
           create: (context) => ThemeBloc(GetIt.I<CacheProvider>()),

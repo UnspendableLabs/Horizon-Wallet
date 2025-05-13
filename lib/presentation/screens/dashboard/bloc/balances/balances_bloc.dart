@@ -6,7 +6,6 @@ import 'package:horizon/domain/entities/multi_address_balance.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_event.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_state.dart';
-import 'package:horizon/domain/entities/http_clients.dart';
 import 'package:horizon/domain/entities/http_config.dart';
 
 /// BalancesBloc manages the loading and caching of cryptocurrency balances

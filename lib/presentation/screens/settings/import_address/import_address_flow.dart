@@ -9,7 +9,6 @@ import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/imported_address_service.dart';
-import 'package:horizon/domain/services/wallet_service.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 import 'package:horizon/presentation/screens/settings/import_address/bloc/import_address_pk_bloc.dart';
@@ -35,7 +34,6 @@ class ImportAddressFlow extends StatelessWidget {
       create: (context) => ImportAddressPkBloc(
         httpConfig: session.httpConfig,
         walletRepository: GetIt.I.get<WalletRepository>(),
-        walletService: GetIt.I.get<WalletService>(),
         encryptionService: GetIt.I.get<EncryptionService>(),
         addressService: GetIt.I.get<AddressService>(),
         addressRepository: GetIt.I.get<AddressRepository>(),

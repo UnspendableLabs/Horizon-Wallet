@@ -5,7 +5,6 @@ import 'package:horizon/domain/entities/utxo.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/repositories/utxo_repository.dart';
 import 'package:horizon/domain/services/error_service.dart';
-import 'package:horizon/domain/entities/http_clients.dart';
 import 'package:horizon/domain/entities/http_config.dart';
 
 class VirtualSize extends Equatable {

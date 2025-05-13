@@ -1,7 +1,6 @@
 import 'package:get_it/get_it.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:horizon/domain/services/mnemonic_service.dart';
-import 'package:horizon/domain/services/wallet_service.dart';
 import 'package:horizon/presentation/screens/onboarding_create/bloc/onboarding_create_event.dart';
 import 'package:horizon/presentation/screens/onboarding_create/bloc/onboarding_create_state.dart';
 import 'package:logger/logger.dart';
@@ -23,7 +22,6 @@ class OnboardingCreateBloc
   final Logger logger = Logger();
 
   final SetMnemonicUseCase _setMnemonicUseCase;
-  final WalletService walletService;
   final MnemonicService mnmonicService;
   final AccountV2Repository _accountV2Repository;
   final WalletConfigRepository _walletConfigRepository;
@@ -32,7 +30,6 @@ class OnboardingCreateBloc
 
   OnboardingCreateBloc({
     required this.mnmonicService,
-    required this.walletService,
     required this.httpConfig,
     AccountV2Repository? accountV2Repository,
     SettingsRepository? settingsRepository,

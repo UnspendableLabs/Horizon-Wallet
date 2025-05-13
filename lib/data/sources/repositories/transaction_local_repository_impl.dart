@@ -10,14 +10,13 @@ import "package:horizon/data/models/transaction.dart";
 import 'package:horizon/data/models/transaction_unpacked.dart';
 
 class TransactionLocalRepositoryImpl implements TransactionLocalRepository {
-  final api.V2Api api_;
   final TransactionsDao transactionDao;
   final AddressRepository addressRepository;
 
-  TransactionLocalRepositoryImpl(
-      {required this.api_,
-      required this.transactionDao,
-      required this.addressRepository});
+  TransactionLocalRepositoryImpl({
+    required this.transactionDao,
+    required this.addressRepository,
+  });
 
   @override
   Future<void> delete(String txHash) async {
@@ -424,7 +423,9 @@ class TransactionLocalRepositoryImpl implements TransactionLocalRepository {
 
   @override
   Future<List<TransactionInfo>> getAllByAccount(String accountUuid) async {
+    // TODO: this will fail, we should be using addressv2
     final addresses = await addressRepository.getAllByAccountUuid(accountUuid);
+
     final transactions = await transactionDao
         .getAllBySources(addresses.map((e) => e.address).toList());
 

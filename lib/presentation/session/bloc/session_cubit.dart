@@ -1,7 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
-import 'package:horizon/domain/entities/http_clients.dart';
 import 'package:horizon/domain/entities/http_config.dart';
 // import 'package:horizon/domain/entities/account.dart';
 import 'package:horizon/domain/entities/account_v2.dart';
@@ -201,9 +200,6 @@ class SessionStateCubit extends Cubit<SessionState> {
           emit(SessionState.success(SessionStateSuccess(
             redirect: true,
             httpConfig: httpConfigForNetwork(walletConfig.network),
-            httpClients: HttpClients(
-              counterparty: counterpartyClientForNetwork(walletConfig.network),
-            ),
             walletConfig: walletConfig,
             decryptionKey: decryptionKey,
             accounts: accounts,
@@ -268,9 +264,6 @@ class SessionStateCubit extends Cubit<SessionState> {
       redirect: false, // not sure about this....
       walletConfig: walletConfig,
       httpConfig: httpConfigForNetwork(walletConfig.network),
-      httpClients: HttpClients(
-        counterparty: counterpartyClientForNetwork(walletConfig.network),
-      ),
       // wallet: wallet,
       accounts: accounts,
       addresses: addresses,
