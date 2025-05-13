@@ -7,7 +7,6 @@ import 'package:horizon/domain/entities/wallet_config.dart';
 // import 'package:horizon/domain/entities/account.dart';
 import 'package:horizon/domain/entities/account_v2.dart';
 import 'package:horizon/domain/entities/address_v2.dart';
-import 'package:horizon/domain/entities/http_clients.dart';
 import 'package:horizon/domain/entities/http_config.dart';
 
 part 'session_state.freezed.dart';
@@ -59,7 +58,6 @@ class SessionStateSuccess with _$SessionStateSuccess {
     required List<AddressV2> addresses,
     List<ImportedAddress>? importedAddresses,
     required WalletConfig walletConfig,
-    required HttpClients httpClients,
   }) = _SessionStateSuccess;
 }
 
