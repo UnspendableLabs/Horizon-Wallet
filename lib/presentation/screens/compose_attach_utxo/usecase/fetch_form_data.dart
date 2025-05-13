@@ -22,8 +22,8 @@ class FetchComposeAttachUtxoFormDataUseCase {
       // Initiate both asynchronous calls
       final futures = await Future.wait([
         _fetchBalances(address, httpConfig),
-        _fetchFeeEstimates(),
-        _fetchAttachXcpFees(address),
+        _fetchFeeEstimates(httpConfig),
+        _fetchAttachXcpFees(address, httpConfig),
       ]);
 
       final balances = futures[0] as List<Balance>;
@@ -42,9 +42,9 @@ class FetchComposeAttachUtxoFormDataUseCase {
     }
   }
 
-  Future<FeeEstimates> _fetchFeeEstimates() async {
+  Future<FeeEstimates> _fetchFeeEstimates(HttpConfig httpConfig) async {
     try {
-      return await getFeeEstimatesUseCase.call();
+      return await getFeeEstimatesUseCase.call(httpConfig: httpConfig);
     } catch (e) {
       throw FetchFeeEstimatesException(e.toString());
     }
@@ -63,9 +63,10 @@ class FetchComposeAttachUtxoFormDataUseCase {
     }
   }
 
-  Future<int> _fetchAttachXcpFees(String address) async {
+  Future<int> _fetchAttachXcpFees(String address, HttpConfig httpConfig) async {
     try {
-      return await estimateXcpFeeRepository.estimateAttachXcpFees(address);
+      return await estimateXcpFeeRepository.estimateAttachXcpFees(
+          address: address, httpConfig: httpConfig);
     } catch (e) {
       throw FetchAttachXcpFeesException(e.toString());
     }

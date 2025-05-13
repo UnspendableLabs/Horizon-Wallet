@@ -11,6 +11,9 @@ import 'package:horizon/domain/entities/http_config.dart';
 import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 import 'package:horizon/domain/repositories/events_repository.dart';
 
+import 'package:get_it/get_it.dart';
+import 'package:horizon/data/sources/network/counterparty_client_factory.dart';
+
 class StateMapper {
   static EventState getVerbose(api.VerboseEvent apiEvent) {
     return apiEvent.blockIndex != null
@@ -1114,15 +1117,16 @@ class BurnParamsMapper {
 }
 
 class EventsRepositoryImpl implements EventsRepository {
-  final api.V2Api api_;
   final BitcoinRepository bitcoinRepository;
   final CacheProvider cacheProvider;
+  final CounterpartyClientFactory _counterpartyClientFactory;
 
   EventsRepositoryImpl({
-    required this.api_,
     required this.bitcoinRepository,
     required this.cacheProvider,
-  });
+    CounterpartyClientFactory? counterpartyClientFactory,
+  }) : _counterpartyClientFactory =
+            counterpartyClientFactory ?? GetIt.I<CounterpartyClientFactory>();
 
   @override
   Future<
@@ -1131,6 +1135,7 @@ class EventsRepositoryImpl implements EventsRepository {
         cursor_entity.Cursor? nextCursor,
         int? resultCount
       )> getByAddressesVerbose({
+    required HttpConfig httpConfig,
     required List<String> addresses,
     cursor_entity.Cursor? cursor,
     int? limit,
@@ -1143,8 +1148,10 @@ class EventsRepositoryImpl implements EventsRepository {
 
     final whitelist_ = whitelist?.join(",");
 
-    final response = await api_.getEventsByAddressesVerbose(addressesParam,
-        cursor_model.CursorMapper.toData(cursor), limit, whitelist_);
+    final response = await _counterpartyClientFactory
+        .getClient(httpConfig)
+        .getEventsByAddressesVerbose(addressesParam,
+            cursor_model.CursorMapper.toData(cursor), limit, whitelist_);
 
     if (response.error != null) {
       throw Exception("Error getting events by addresses: ${response.error}");
@@ -1167,6 +1174,7 @@ class EventsRepositoryImpl implements EventsRepository {
 
   @override
   Future<List<VerboseEvent>> getAllByAddressesVerbose({
+    required HttpConfig httpConfig,
     required List<String> addresses,
     bool? unconfirmed = false,
     List<String>? whitelist,
@@ -1174,13 +1182,13 @@ class EventsRepositoryImpl implements EventsRepository {
     final List<VerboseEvent> events = [];
 
     if (unconfirmed == true) {
-      final mempoolEvents =
-          await getAllMempoolVerboseEventsForAddresses(addresses, whitelist);
+      final mempoolEvents = await getAllMempoolVerboseEventsForAddresses(
+          httpConfig, addresses, whitelist);
       events.addAll(mempoolEvents);
     }
 
     final eventResults = await _getAllVerboseEventsForAddresses(
-        addresses, unconfirmed, whitelist);
+        httpConfig, addresses, unconfirmed, whitelist);
 
     // final eventResults = await Future.wait(futures);
     // final allEvents = eventResults.expand((events) => events).toList();
@@ -1190,6 +1198,7 @@ class EventsRepositoryImpl implements EventsRepository {
   }
 
   Future<List<VerboseEvent>> _getAllVerboseEventsForAddresses(
+      HttpConfig httpConfig,
       List<String> addresses,
       bool? unconfirmed,
       List<String>? whitelist) async {
@@ -1199,6 +1208,7 @@ class EventsRepositoryImpl implements EventsRepository {
 
     while (hasMore) {
       final (events, nextCursor, _) = await getByAddressesVerbose(
+        httpConfig: httpConfig,
         addresses: addresses,
         limit: 1000,
         cursor: cursor,
@@ -1228,18 +1238,19 @@ class EventsRepositoryImpl implements EventsRepository {
         cursor_entity.Cursor? nextCursor,
         int? resultCount
       )> getMempoolEventsByAddressesVerbose({
+    required HttpConfig httpConfig,
     required List<String> addresses,
     cursor_entity.Cursor? cursor,
     int? limit,
     List<String>? whitelist,
+
   }) async {
     final whitelist_ = whitelist?.join(",");
 
-    final response = await api_.getMempoolEventsByAddressesVerbose(
-        addresses.join(","),
-        cursor_model.CursorMapper.toData(cursor),
-        limit,
-        whitelist_);
+    final response = await _counterpartyClientFactory
+        .getClient(httpConfig)
+        .getMempoolEventsByAddressesVerbose(addresses.join(","),
+            cursor_model.CursorMapper.toData(cursor), limit, whitelist_);
 
     if (response.error != null) {
       throw Exception(
@@ -1258,7 +1269,9 @@ class EventsRepositoryImpl implements EventsRepository {
 
   @override
   Future<List<VerboseEvent>> getAllMempoolVerboseEventsForAddresses(
-      List<String> addresses, List<String>? whitelist) async {
+      HttpConfig httpConfig,
+      List<String> addresses,
+      List<String>? whitelist) async {
     final allEvents = <VerboseEvent>[];
     Cursor? cursor;
     bool hasMore = true;
@@ -1268,6 +1281,7 @@ class EventsRepositoryImpl implements EventsRepository {
         addresses: addresses,
         limit: 1000,
         cursor: cursor,
+        httpConfig: httpConfig,
       );
       final whitelistedEvents = events
           .where((event) => whitelist?.contains(event.event) ?? true)
@@ -1324,10 +1338,13 @@ class EventsRepositoryImpl implements EventsRepository {
   @override
   Future<int> numEventsForAddresses({
     required List<String> addresses,
+    required HttpConfig httpConfig,
   }) async {
     final addressesParam = addresses.join(",");
 
-    final response = await api_.getEventsByAddressesVerbose(addressesParam);
+    final response = await _counterpartyClientFactory
+        .getClient(httpConfig)
+        .getEventsByAddressesVerbose(addressesParam);
 
     if (response.error != null) {
       throw Exception("Error getting events by addresses: ${response.error}");

@@ -957,7 +957,6 @@ class MyApp extends StatelessWidget {
     // if showWarning, just display a one off toast here?
 
 
-    final session = GetIt.I<SessionStateCubit>().state.successOrThrow();
 
     return MultiBlocProvider(
       providers: [

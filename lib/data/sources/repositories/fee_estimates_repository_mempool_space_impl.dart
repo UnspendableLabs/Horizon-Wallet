@@ -1,6 +1,7 @@
 import "package:horizon/domain/repositories/fee_estimates_repository.dart";
 import "package:horizon/domain/entities/fee_estimates.dart";
 import "package:horizon/domain/entities/network.dart";
+import "package:horizon/domain/entities/http_config.dart";
 import "package:fpdart/fpdart.dart";
 import 'package:horizon/data/sources/network/mempool_space_client.dart';
 
@@ -13,9 +14,10 @@ class FeeEstimatesRespositoryMempoolSpaceImpl
       : _mempoolSpaceApi = mempoolSpaceApi;
 
   @override
-  TaskEither<String, FeeEstimates> getFeeEstimates({required Network network}) {
+  TaskEither<String, FeeEstimates> getFeeEstimates(
+      {required HttpConfig httpConfig}) {
     return TaskEither.tryCatch(
-      () => _getFeeEstimates(network: network),
+      () => _getFeeEstimates(network: httpConfig.network),
       (error, stacktrace) => "GetFeeEstimates failure",
     );
   }

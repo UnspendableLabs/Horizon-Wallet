@@ -109,7 +109,7 @@ class SignAndBroadcastTransactionUseCase<R extends ComposeResponse> {
 
       // Broadcast Transaction
       try {
-        final txHash = await bitcoindService.sendrawtransaction(txHex);
+        final txHash = await bitcoindService.sendrawtransaction(txHex, httpConfig);
         await onSuccess(txHex, txHash);
       } catch (e) {
         final String errorMessage = 'Failed to broadcast the transaction: $e';

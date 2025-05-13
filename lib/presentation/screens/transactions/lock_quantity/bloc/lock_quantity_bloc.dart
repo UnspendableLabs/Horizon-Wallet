@@ -84,7 +84,8 @@ class LockQuantityBloc extends Bloc<TransactionEvent,
           assetName: event.assetName,
           type: BalanceType.address);
 
-      final feeEstimates = await getFeeEstimatesUseCase.call();
+      final feeEstimates =
+          await getFeeEstimatesUseCase.call(httpConfig: httpConfig);
 
       final ownerAddress = balances.assetInfo.owner;
       if (!event.addresses.contains(ownerAddress)) {
@@ -202,7 +203,8 @@ class LockQuantityBloc extends Bloc<TransactionEvent,
           source: composeData.params.source,
           rawtransaction: composeData.rawtransaction,
           onSuccess: (txHex, txHash) async {
-            await writelocalTransactionUseCase.call(txHex, txHash);
+            await writelocalTransactionUseCase.call(
+                hex: txHex, hash: txHash, httpConfig: httpConfig);
 
             logger.info('lock quantity broadcasted txHash: $txHash');
             analyticsService.trackAnonymousEvent(

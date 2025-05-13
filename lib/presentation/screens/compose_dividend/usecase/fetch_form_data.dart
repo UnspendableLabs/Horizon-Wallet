@@ -25,9 +25,9 @@ class FetchDividendFormDataUseCase {
     try {
       final futures = await Future.wait([
         _fetchBalances(currentAddress, httpConfig),
-        _fetchAsset(assetName),
-        _fetchFeeEstimates(),
-        _fetchDividendXcpFee(currentAddress, assetName),
+        _fetchAsset(assetName, httpConfig),
+        _fetchFeeEstimates(httpConfig),
+        _fetchDividendXcpFee(currentAddress, assetName, httpConfig),
       ]);
 
       final balances = futures[0] as List<Balance>;
@@ -62,27 +62,28 @@ class FetchDividendFormDataUseCase {
     }
   }
 
-  Future<FeeEstimates> _fetchFeeEstimates() async {
+  Future<FeeEstimates> _fetchFeeEstimates(HttpConfig httpConfig) async {
     try {
-      return await getFeeEstimatesUseCase.call();
+      return await getFeeEstimatesUseCase.call(httpConfig: httpConfig);
     } catch (e) {
       throw FetchFeeEstimatesException(e.toString());
     }
   }
 
-  Future<Asset> _fetchAsset(String assetName) async {
+  Future<Asset> _fetchAsset(String assetName, HttpConfig httpConfig) async {
     try {
-      return await assetRepository.getAssetVerbose(assetName);
+      return await assetRepository.getAssetVerbose(
+          assetName: assetName, httpConfig: httpConfig);
     } catch (e) {
       throw FetchAssetException(e.toString());
     }
   }
 
   Future<int> _fetchDividendXcpFee(
-      String currentAddress, String assetName) async {
+      String currentAddress, String assetName, HttpConfig httpConfig) async {
     try {
       return await estimateXcpFeeRepository.estimateDividendXcpFees(
-          currentAddress, assetName);
+          address: currentAddress, asset: assetName, httpConfig: httpConfig);
     } catch (e) {
       throw FetchDividendXcpFeeException(e.toString());
     }

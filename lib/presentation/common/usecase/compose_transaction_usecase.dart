@@ -63,7 +63,7 @@ class ComposeTransactionUseCase {
         inputsSetForTx = await _getLargeInputsSet(inputsSet, httpConfig);
       }
 
-      final R finalTx = await composeFn(feeRate, inputsSetForTx, params);
+      final R finalTx = await composeFn(feeRate, inputsSetForTx, params, httpConfig);
       return finalTx;
     } catch (e, stackTrace) {
       throw ComposeTransactionException(e.toString(), stackTrace);

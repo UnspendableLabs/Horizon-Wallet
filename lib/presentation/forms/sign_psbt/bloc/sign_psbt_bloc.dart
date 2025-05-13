@@ -196,8 +196,8 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
       final transactionHex =
           transactionService.psbtToUnsignedTransactionHex(unsignedPsbt);
 
-      final decoded =
-          await bitcoindService.decoderawtransaction(transactionHex);
+      final decoded = await bitcoindService.decoderawtransaction(
+          transactionHex, httpConfig);
 
       Either<Failure, List<AugmentedInput>> inputs =
           await TaskEither.traverseListWithIndex(decoded.vin, (vin, index) {

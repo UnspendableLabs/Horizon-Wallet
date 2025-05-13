@@ -9,17 +9,24 @@ import 'package:horizon/presentation/common/footer/bloc/footer_bloc.dart';
 import 'package:horizon/presentation/common/footer/bloc/footer_event.dart';
 import 'package:horizon/presentation/common/footer/bloc/footer_state.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:horizon/presentation/session/bloc/session_cubit.dart';
+import 'package:horizon/presentation/session/bloc/session_state.dart';
 
 class Footer extends StatelessWidget {
   const Footer({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) =>
-          FooterBloc(nodeInfoRepository: GetIt.I.get<NodeInfoRepository>()),
-      child: const _Footer(),
-    );
+    return context.read<SessionStateCubit>().state.maybeWhen(
+          success: (session) => BlocProvider(
+            create: (context) => FooterBloc(
+                httpConfig: session.httpConfig,
+                nodeInfoRepository: GetIt.I.get<NodeInfoRepository>()),
+            child: const _Footer(),
+          ),
+          orElse: () => const SizedBox
+              .shrink(), // Return an empty widget if the state is not success
+        );
   }
 }
 

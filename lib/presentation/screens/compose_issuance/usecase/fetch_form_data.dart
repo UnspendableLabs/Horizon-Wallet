@@ -19,7 +19,7 @@ class FetchIssuanceFormDataUseCase {
       // Initiate both asynchronous calls
       final futures = await Future.wait([
         _fetchBalances(currentAddress, httpConfig),
-        _fetchFeeEstimates(),
+        _fetchFeeEstimates(httpConfig),
       ]);
 
       final balances = futures[0] as List<Balance>;
@@ -48,9 +48,9 @@ class FetchIssuanceFormDataUseCase {
     }
   }
 
-  Future<FeeEstimates> _fetchFeeEstimates() async {
+  Future<FeeEstimates> _fetchFeeEstimates(HttpConfig httpConfig) async {
     try {
-      return await getFeeEstimatesUseCase.call();
+      return await getFeeEstimatesUseCase.call(httpConfig: httpConfig);
     } catch (e) {
       throw FetchFeeEstimatesException(e.toString());
     }

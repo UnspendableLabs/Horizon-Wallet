@@ -108,6 +108,7 @@ class DashboardActivityFeedBloc
         //     by txhash
 
         newCounterpartyEvents = await eventsRepository.getAllByAddressesVerbose(
+            httpConfig: httpConfig,
             addresses: addresses,
             unconfirmed: true,
             whitelist: DEFAULT_WHITELIST);
@@ -119,6 +120,7 @@ class DashboardActivityFeedBloc
         while (!found) {
           final (remoteEvents, nextCursor_, _) =
               await eventsRepository.getByAddressesVerbose(
+                  httpConfig: httpConfig,
                   addresses: addresses,
                   limit: pageSize,
                   unconfirmed: true,
@@ -141,7 +143,7 @@ class DashboardActivityFeedBloc
         }
         final mempoolEvents =
             await eventsRepository.getAllMempoolVerboseEventsForAddresses(
-                addresses, DEFAULT_WHITELIST);
+                httpConfig, addresses, DEFAULT_WHITELIST);
 
         newCounterpartyEvents
             .addAll(_filterCounterpartyMempoolEvents(mempoolEvents));
@@ -430,6 +432,7 @@ class DashboardActivityFeedBloc
 
       final counterpartyEvents =
           await eventsRepository.getAllByAddressesVerbose(
+            httpConfig: httpConfig,
               addresses: addresses,
               unconfirmed: true,
               whitelist: DEFAULT_WHITELIST);

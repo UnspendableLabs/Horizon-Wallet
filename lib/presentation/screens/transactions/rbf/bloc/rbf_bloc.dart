@@ -123,7 +123,8 @@ class RBFBloc
     ));
 
     try {
-      final feeEstimates = await getFeeEstimatesUseCase.call();
+      final feeEstimates =
+          await getFeeEstimatesUseCase.call(httpConfig: httpConfig);
 
       BitcoinTx bitcoinTransaction = unwrapOrThrow(await bitcoinRepository
           .getTransaction(txid: event.txHash, httpConfig: httpConfig));
@@ -257,10 +258,12 @@ class RBFBloc
           utxoMap,
           httpConfig);
 
-      final txHash = await bitcoindService.sendrawtransaction(txHex);
+      final txHash =
+          await bitcoindService.sendrawtransaction(txHex, httpConfig);
 
       // not technically necessary since event shows up very quickly in practice
-      await writelocalTransactionUseCase.call(txHex, txHash);
+      await writelocalTransactionUseCase.call(
+          hex: txHex, hash: txHash, httpConfig: httpConfig);
       transactionLocalRepository.delete(composeData.txid);
 
       analyticsService.trackAnonymousEvent('broadcast_rbf',
@@ -345,8 +348,9 @@ class RBFBloc
       throw Exception('Incorrect password.');
     }
 
-    final addressPrivKey = await importedAddressService
-        .getAddressPrivateKeyFromWIF(wif: decryptedAddressWif, network: httpConfig.network);
+    final addressPrivKey =
+        await importedAddressService.getAddressPrivateKeyFromWIF(
+            wif: decryptedAddressWif, network: httpConfig.network);
 
     return addressPrivKey;
   }

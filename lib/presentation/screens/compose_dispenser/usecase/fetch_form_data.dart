@@ -24,8 +24,8 @@ class FetchDispenserFormDataUseCase {
       // Initiate both asynchronous calls
       final futures = await Future.wait([
         _fetchBalances(currentAddress, httpConfig),
-        _fetchFeeEstimates(),
-        _fetchDispensers(currentAddress),
+        _fetchFeeEstimates(httpConfig),
+        _fetchDispensers(currentAddress, httpConfig),
       ]);
 
       final balances = futures[0] as List<Balance>;
@@ -57,18 +57,19 @@ class FetchDispenserFormDataUseCase {
     }
   }
 
-  Future<FeeEstimates> _fetchFeeEstimates() async {
+  Future<FeeEstimates> _fetchFeeEstimates(HttpConfig httpConfig) async {
     try {
-      return await getFeeEstimatesUseCase.call();
+      return await getFeeEstimatesUseCase.call(httpConfig: httpConfig);
     } catch (e) {
       throw FetchFeeEstimatesException(e.toString());
     }
   }
 
-  Future<List<Dispenser>> _fetchDispensers(String currentAddress) async {
+  Future<List<Dispenser>> _fetchDispensers(
+      String currentAddress, HttpConfig httpConfig) async {
     try {
       return await dispenserRepository
-          .getDispensersByAddress(currentAddress)
+          .getDispensersByAddress(currentAddress, httpConfig)
           .run()
           .then((either) => either.fold(
                 (error) => throw FetchDispenserException(

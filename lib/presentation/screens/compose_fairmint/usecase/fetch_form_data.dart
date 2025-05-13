@@ -2,6 +2,7 @@ import 'package:horizon/domain/entities/fairminter.dart';
 import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/domain/repositories/fairminter_repository.dart';
 import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
+import 'package:horizon/domain/entities/http_config.dart';
 
 class FetchComposeFairmintFormDataUseCase {
   final GetFeeEstimatesUseCase getFeeEstimatesUseCase;
@@ -12,12 +13,12 @@ class FetchComposeFairmintFormDataUseCase {
     required this.fairminterRepository,
   });
 
-  Future<(FeeEstimates, List<Fairminter>)> call() async {
+  Future<(FeeEstimates, List<Fairminter>)> call(HttpConfig httpConfig) async {
     try {
       // Initiate both asynchronous calls
       final futures = await Future.wait([
-        _fetchFairminters(),
-        _fetchFeeEstimates(),
+        _fetchFairminters(httpConfig),
+        _fetchFeeEstimates(httpConfig),
       ]);
 
       final fairminters = futures[0] as List<Fairminter>;
@@ -33,18 +34,18 @@ class FetchComposeFairmintFormDataUseCase {
     }
   }
 
-  Future<FeeEstimates> _fetchFeeEstimates() async {
+  Future<FeeEstimates> _fetchFeeEstimates(HttpConfig httpConfig) async {
     try {
-      return await getFeeEstimatesUseCase.call();
+      return await getFeeEstimatesUseCase.call(httpConfig: httpConfig);
     } catch (e) {
       throw FetchFeeEstimatesException(e.toString());
     }
   }
 
-  Future<List<Fairminter>> _fetchFairminters() async {
+  Future<List<Fairminter>> _fetchFairminters(HttpConfig httpConfig) async {
     try {
       return await fairminterRepository
-          .getAllFairminters()
+          .getAllFairminters(httpConfig)
           .run()
           .then((either) => either.fold(
                 (error) => throw FetchFairmintersException(

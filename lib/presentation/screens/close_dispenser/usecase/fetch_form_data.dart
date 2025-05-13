@@ -2,6 +2,7 @@ import 'package:horizon/domain/entities/dispenser.dart';
 import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/domain/repositories/dispenser_repository.dart';
 import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
+import 'package:horizon/domain/entities/http_config.dart';
 
 class FetchCloseDispenserFormDataUseCase {
   final GetFeeEstimatesUseCase getFeeEstimatesUseCase;
@@ -12,12 +13,12 @@ class FetchCloseDispenserFormDataUseCase {
     required this.dispenserRepository,
   });
 
-  Future<(FeeEstimates, List<Dispenser>)> call(String currentAddress) async {
+  Future<(FeeEstimates, List<Dispenser>)> call(String currentAddress, HttpConfig httpConfig) async {
     try {
       // Initiate both asynchronous calls
       final futures = await Future.wait([
-        _fetchDispenser(currentAddress),
-        _fetchFeeEstimates(),
+        _fetchDispenser(currentAddress, httpConfig),
+        _fetchFeeEstimates(httpConfig),
       ]);
 
       final dispensers = futures[0] as List<Dispenser>;
@@ -33,18 +34,18 @@ class FetchCloseDispenserFormDataUseCase {
     }
   }
 
-  Future<FeeEstimates> _fetchFeeEstimates() async {
+  Future<FeeEstimates> _fetchFeeEstimates(HttpConfig httpConfig) async {
     try {
-      return await getFeeEstimatesUseCase.call();
+      return await getFeeEstimatesUseCase.call(httpConfig: httpConfig);
     } catch (e) {
       throw FetchFeeEstimatesException(e.toString());
     }
   }
 
-  Future<List<Dispenser>> _fetchDispenser(String currentAddress) async {
+  Future<List<Dispenser>> _fetchDispenser(String currentAddress, HttpConfig httpConfig) async {
     try {
       return await dispenserRepository
-          .getDispensersByAddress(currentAddress)
+          .getDispensersByAddress(currentAddress, httpConfig)
           .run()
           .then((either) => either.fold(
                 (error) => throw FetchDispenserException(

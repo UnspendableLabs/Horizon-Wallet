@@ -44,7 +44,7 @@ class AssetViewBloc
         assetName: asset,
       ),
       fairminterRepository
-          .getFairmintersByAsset(asset, 'open')
+          .getFairmintersByAsset(httpConfig, asset, 'open')
           .run()
           .then((either) => either.fold(
                 (error) => throw FetchFairmintersException(error.toString()),

@@ -77,7 +77,8 @@ class SendBloc extends Bloc<TransactionEvent,
           assetName: event.assetName,
           type: BalanceType.address);
 
-      final feeEstimates = await getFeeEstimatesUseCase.call();
+      final feeEstimates =
+          await getFeeEstimatesUseCase.call(httpConfig: httpConfig);
 
       emit(
         state.copyWith(
@@ -144,7 +145,7 @@ class SendBloc extends Bloc<TransactionEvent,
       ));
     } catch (e) {
       emit(state.copyWith(
-       composeState: ComposeStateError(e is ComposeTransactionException
+        composeState: ComposeStateError(e is ComposeTransactionException
             ? e.message
             : 'An unexpected error occurred: ${e.toString()}'),
       ));
@@ -166,7 +167,8 @@ class SendBloc extends Bloc<TransactionEvent,
           source: composeData.params.source,
           rawtransaction: composeData.rawtransaction,
           onSuccess: (txHex, txHash) async {
-            await writelocalTransactionUseCase.call(txHex, txHash);
+            await writelocalTransactionUseCase.call(
+                hex: txHex, hash: txHash, httpConfig: httpConfig);
 
             logger.info('send broadcasted txHash: $txHash');
             analyticsService.trackAnonymousEvent(
