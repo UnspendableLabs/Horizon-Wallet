@@ -2,8 +2,6 @@ import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/entities/imported_address.dart';
 import 'package:horizon/domain/entities/utxo.dart';
 import 'package:horizon/domain/entities/network.dart';
-import 'package:horizon/domain/repositories/account_repository.dart';
-import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/imported_address_repository.dart';
 import 'package:horizon/domain/repositories/utxo_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
@@ -36,9 +34,7 @@ class SignAndBroadcastTransactionException implements Exception {
 //       might also want to split out sign / broadcast
 
 class SignAndBroadcastTransactionUseCase<R extends ComposeResponse> {
-  final AddressRepository addressRepository;
   final ImportedAddressRepository importedAddressRepository;
-  final AccountRepository accountRepository;
   final WalletRepository walletRepository;
   final UtxoRepository utxoRepository;
   final EncryptionService encryptionService;
@@ -51,9 +47,7 @@ class SignAndBroadcastTransactionUseCase<R extends ComposeResponse> {
 
   SignAndBroadcastTransactionUseCase({
     required this.inMemoryKeyRepository,
-    required this.addressRepository,
     required this.importedAddressRepository,
-    required this.accountRepository,
     required this.walletRepository,
     required this.utxoRepository,
     required this.encryptionService,

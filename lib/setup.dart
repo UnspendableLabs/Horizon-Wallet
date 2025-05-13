@@ -381,8 +381,6 @@ void setup() {
   injector.registerSingleton<BitcoindService>(
       BitcoindServiceCounterpartyProxyImpl());
 
-  injector.registerSingleton<AccountRepository>(
-      AccountRepositoryImpl(injector.get<DatabaseManager>().database));
 
   injector.registerSingleton<WalletConfigRepository>(
       WalletConfigRepositoryImpl(injector.get<DatabaseManager>().database));
@@ -518,7 +516,6 @@ void setup() {
     inMemoryKeyRepository: GetIt.I.get<InMemoryKeyRepository>(),
     addressRepository: GetIt.I.get<AddressRepository>(),
     importedAddressRepository: GetIt.I.get<ImportedAddressRepository>(),
-    accountRepository: GetIt.I.get<AccountRepository>(),
     walletRepository: GetIt.I.get<WalletRepository>(),
     utxoRepository: GetIt.I.get<UtxoRepository>(),
     encryptionService: GetIt.I.get<EncryptionService>(),
