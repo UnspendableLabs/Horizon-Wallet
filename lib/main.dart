@@ -458,7 +458,7 @@ class AppRouter {
               });
 
               if (data.redirect) {
-                return "/settings";
+                return "/dashboard";
               }
             },
             // if the session state is not yet loaded, show a loading screen
