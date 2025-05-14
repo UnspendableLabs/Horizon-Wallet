@@ -1,6 +1,7 @@
 import "package:horizon/domain/entities/fee_estimates.dart";
 import "package:horizon/domain/repositories/fee_estimates_repository.dart";
 import 'package:horizon/domain/entities/http_config.dart';
+import 'package:fpdart/fpdart.dart';
 
 class GetFeeEstimatesUseCase {
   final FeeEstimatesRespository feeEstimatesRepository;
@@ -21,5 +22,17 @@ class GetFeeEstimatesUseCase {
             (feeEstimates) => feeEstimates,
           ),
         );
+  }
+}
+
+extension GetFeeEstimatesUseCaseX on GetFeeEstimatesUseCase {
+  TaskEither<String, FeeEstimates> callT({
+    required HttpConfig httpConfig,
+    required String Function(Object error) onError,
+  }) {
+    return TaskEither.tryCatch(
+      () => call(httpConfig: httpConfig),
+      (e, _) => onError(e),
+    );
   }
 }

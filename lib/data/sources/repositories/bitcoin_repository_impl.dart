@@ -19,208 +19,149 @@ class BitcoinRepositoryImpl extends BitcoinRepository {
   }
 
   @override
-  Future<Either<Failure, Map<String, double>>> getFeeEstimates({
+  Future<Map<String, double>> getFeeEstimates({
     required HttpConfig httpConfig,
   }) async {
-    try {
-      final feeEstimates = await _esploraApi(httpConfig).getFeeEstimates();
-      return Right(feeEstimates);
-    } on Failure catch (e) {
-      return Left(e);
-    } catch (e) {
-      return Left(UnexpectedFailure(message: e.toString()));
-    }
+    return await _esploraApi(httpConfig).getFeeEstimates();
   }
 
   @override
-  Future<Either<Failure, AddressInfo>> getAddressInfo({
+  Future<AddressInfo> getAddressInfo({
     required String address,
     required HttpConfig httpConfig,
   }) async {
-    try {
-      final addressInfo = await _esploraApi(httpConfig).getAddressInfo(address);
-      return Right(addressInfo.toEntity());
-    } on Failure catch (e) {
-      return Left(e);
-    } catch (e) {
-      return Left(UnexpectedFailure(message: e.toString()));
-    }
+    final addressInfo = await _esploraApi(httpConfig).getAddressInfo(address);
+    return addressInfo.toEntity();
   }
 
   @override
-  Future<Either<Failure, BitcoinTx>> getTransaction({
+  Future<BitcoinTx> getTransaction({
     required String txid,
     required HttpConfig httpConfig,
   }) async {
-    try {
-      final tx = await _esploraApi(httpConfig).getTransaction(txid);
-      return Right(tx);
-    } on Failure catch (e) {
-      return Left(e);
-    } catch (e) {
-      return Left(UnexpectedFailure(message: e.toString()));
-    }
+    return await _esploraApi(httpConfig).getTransaction(txid);
   }
 
   @override
-  Future<Either<Failure, String>> getTransactionHex({
+  Future<String> getTransactionHex({
     required String txid,
     required HttpConfig httpConfig,
   }) async {
-    try {
-      final tx = await _esploraApi(httpConfig).getTransactionHex(txid);
-      return Right(tx);
-    } on Failure catch (e) {
-      return Left(e);
-    } catch (e) {
-      return Left(UnexpectedFailure(message: e.toString()));
-    }
+    return await _esploraApi(httpConfig).getTransactionHex(txid);
   }
 
   @override
-  Future<Either<Failure, List<BitcoinTx>>> getTransactions({
+  Future<List<BitcoinTx>> getTransactions({
     required List<String> addresses,
     required HttpConfig httpConfig,
   }) async {
-    try {
-      final allTransactions = await Future.wait(addresses.map((address) =>
-          _esploraApi(httpConfig).getTransactionsForAddress(address)));
+    final allTransactions = await Future.wait(addresses.map((address) =>
+        _esploraApi(httpConfig).getTransactionsForAddress(address)));
 
-      final flattenedTransactions = allTransactions.expand((i) => i).toList();
+    final flattenedTransactions = allTransactions.expand((i) => i).toList();
 
-      final uniqueTransactions = flattenedTransactions
-          .fold<Map<String, BitcoinTx>>({}, (map, tx) {
-            map.putIfAbsent(tx.txid,
-                () => tx.toDomain()); // possible there could be collisions?
-            return map;
-          })
-          .values
-          .toList();
-      // Sort transactions by block height in descending order
-      uniqueTransactions.sort((a, b) {
-        // Assuming BitcoinTx has a blockHeight property
-        // Put unconfirmed transactions (null block height) at the beginning
-        // ( but they should all be confirmed )
-        if (a.status.blockHeight == null) return -1;
-        if (b.status.blockHeight == null) return 1;
-        return b.status.blockHeight!.compareTo(a.status.blockHeight!);
-      });
+    final uniqueTransactions = flattenedTransactions
+        .fold<Map<String, BitcoinTx>>({}, (map, tx) {
+          map.putIfAbsent(tx.txid,
+              () => tx.toDomain()); // possible there could be collisions?
+          return map;
+        })
+        .values
+        .toList();
+    // Sort transactions by block height in descending order
+    uniqueTransactions.sort((a, b) {
+      // Assuming BitcoinTx has a blockHeight property
+      // Put unconfirmed transactions (null block height) at the beginning
+      // ( but they should all be confirmed )
+      if (a.status.blockHeight == null) return -1;
+      if (b.status.blockHeight == null) return 1;
+      return b.status.blockHeight!.compareTo(a.status.blockHeight!);
+    });
 
-      return Right(uniqueTransactions);
-    } on Failure catch (e) {
-      return Left(e);
-    } catch (e) {
-      return Left(UnexpectedFailure(message: e.toString()));
-    }
+    return uniqueTransactions;
   }
 
   @override
-  Future<Either<Failure, List<BitcoinTx>>> getMempoolTransactions({
+  Future<List<BitcoinTx>> getMempoolTransactions({
     required List<String> addresses,
     required HttpConfig httpConfig,
   }) async {
-    try {
-      final allTransactions = await Future.wait(addresses.map((address) =>
-          _esploraApi(httpConfig).getMempoolTransactionsForAddress(address)));
+    final allTransactions = await Future.wait(addresses.map((address) =>
+        _esploraApi(httpConfig).getMempoolTransactionsForAddress(address)));
 
-      final flattenedTransactions = allTransactions.expand((i) => i).toList();
+    final flattenedTransactions = allTransactions.expand((i) => i).toList();
 
-      final uniqueTransactions = flattenedTransactions
-          .fold<Map<String, BitcoinTx>>({}, (map, tx) {
-            map.putIfAbsent(tx.txid,
-                () => tx.toDomain()); // possible there could be collisions?
-            return map;
-          })
-          .values
-          .toList();
+    final uniqueTransactions = flattenedTransactions
+        .fold<Map<String, BitcoinTx>>({}, (map, tx) {
+          map.putIfAbsent(tx.txid,
+              () => tx.toDomain()); // possible there could be collisions?
+          return map;
+        })
+        .values
+        .toList();
 
-      // Sort transactions by block height in descending order
-      uniqueTransactions.sort((a, b) {
-        // Assuming BitcoinTx has a blockHeight property
-        // Put unconfirmed transactions (null block height) at the beginning
-        // ( but they should all be confirmed )
-        if (a.status.blockHeight == null) return -1;
-        if (b.status.blockHeight == null) return 1;
-        return b.status.blockHeight!.compareTo(a.status.blockHeight!);
-      });
-
-      return Right(uniqueTransactions);
-    } on Failure catch (e) {
-      return Left(e);
-    } catch (e) {
-      return Left(UnexpectedFailure(message: e.toString()));
-    }
+    // Sort transactions by block height in descending order
+    uniqueTransactions.sort((a, b) {
+      // Assuming BitcoinTx has a blockHeight property
+      // Put unconfirmed transactions (null block height) at the beginning
+      // ( but they should all be confirmed )
+      if (a.status.blockHeight == null) return -1;
+      if (b.status.blockHeight == null) return 1;
+      return b.status.blockHeight!.compareTo(a.status.blockHeight!);
+    });
+    return uniqueTransactions;
   }
 
   @override
-  Future<Either<Failure, List<BitcoinTx>>> getConfirmedTransactionsPaginated({
+  Future<List<BitcoinTx>> getConfirmedTransactionsPaginated({
     required String address,
     String? lastSeenTxid,
     required HttpConfig httpConfig,
   }) async {
-    try {
-      final transactions = await _esploraApi(httpConfig)
-          .getConfirmedTransactionsForAddress(address,
-              lastSeenTxid: lastSeenTxid);
+    final transactions = await _esploraApi(httpConfig)
+        .getConfirmedTransactionsForAddress(address,
+            lastSeenTxid: lastSeenTxid);
 
-      final txs = transactions.map((tx) => tx.toDomain()).toList();
+    final txs = transactions.map((tx) => tx.toDomain()).toList();
 
-      return Right(txs);
-    } on Failure catch (e) {
-      return Left(e);
-    } catch (e) {
-      return Left(UnexpectedFailure(message: e.toString()));
-    }
+    return txs;
   }
 
   @override
-  Future<Either<Failure, List<BitcoinTx>>> getConfirmedTransactions({
+  Future<List<BitcoinTx>> getConfirmedTransactions({
     required List<String> addresses,
     required HttpConfig httpConfig,
   }) async {
-    try {
-      final allTransactions = await Future.wait(addresses.map(
-          (address) => _fetchAllTransactionsForAddress(address, httpConfig)));
+    final allTransactions = await Future.wait(addresses.map(
+        (address) => _fetchAllTransactionsForAddress(address, httpConfig)));
 
-      final uniqueTransactions = allTransactions
-          .expand((txList) => txList)
-          .fold<Map<String, BitcoinTx>>({}, (map, tx) {
-            map.putIfAbsent(tx.txid, () => tx);
-            return map;
-          })
-          .values
-          .toList();
+    final uniqueTransactions = allTransactions
+        .expand((txList) => txList)
+        .fold<Map<String, BitcoinTx>>({}, (map, tx) {
+          map.putIfAbsent(tx.txid, () => tx);
+          return map;
+        })
+        .values
+        .toList();
 
-      // Sort transactions by block height in descending order
-      uniqueTransactions.sort((a, b) {
-        // Assuming BitcoinTx has a blockHeight property
-        // Put unconfirmed transactions (null block height) at the beginning
-        // ( but they should all be confirmed )
-        if (a.status.blockHeight == null) return -1;
-        if (b.status.blockHeight == null) return 1;
-        return b.status.blockHeight!.compareTo(a.status.blockHeight!);
-      });
+    // Sort transactions by block height in descending order
+    uniqueTransactions.sort((a, b) {
+      // Assuming BitcoinTx has a blockHeight property
+      // Put unconfirmed transactions (null block height) at the beginning
+      // ( but they should all be confirmed )
+      if (a.status.blockHeight == null) return -1;
+      if (b.status.blockHeight == null) return 1;
+      return b.status.blockHeight!.compareTo(a.status.blockHeight!);
+    });
 
-      return Right(uniqueTransactions);
-    } on Failure catch (e) {
-      return Left(e);
-    } catch (e) {
-      return Left(UnexpectedFailure(message: e.toString()));
-    }
+    return uniqueTransactions;
   }
 
   @override
-  Future<Either<Failure, int>> getBlockHeight({
+  Future<int> getBlockHeight({
     required HttpConfig httpConfig,
   }) async {
-    try {
-      final blockHeight = await _esploraApi(httpConfig).getBlockHeight();
-      return Right(blockHeight);
-    } on Failure catch (e) {
-      return Left(e);
-    } catch (e) {
-      return Left(UnexpectedFailure(message: e.toString()));
-    }
+    return await _esploraApi(httpConfig).getBlockHeight();
   }
 
   Future<List<BitcoinTx>> _fetchAllTransactionsForAddress(

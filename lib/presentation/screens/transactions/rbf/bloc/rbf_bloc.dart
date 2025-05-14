@@ -1,4 +1,6 @@
 import 'dart:math';
+import "package:get_it/get_it.dart";
+import 'package:horizon/domain/entities/address_v2.dart';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fpdart/fpdart.dart';
@@ -8,6 +10,7 @@ import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/entities/bitcoin_tx.dart';
 import 'package:horizon/domain/entities/failure.dart';
+import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/domain/entities/fee_option.dart' as fee_option;
 import 'package:horizon/domain/entities/imported_address.dart';
 import 'package:horizon/domain/entities/multi_address_balance.dart';
@@ -20,7 +23,6 @@ import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 import 'package:horizon/domain/repositories/settings_repository.dart';
 import 'package:horizon/domain/repositories/transaction_local_repository.dart';
 import 'package:horizon/domain/repositories/unified_address_repository.dart';
-import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/domain/services/bitcoind_service.dart';
@@ -34,6 +36,9 @@ import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
 import 'package:horizon/presentation/common/usecase/write_local_transaction_usecase.dart';
 import 'package:horizon/presentation/screens/transactions/rbf/bloc/rbf_event.dart';
 import 'package:horizon/domain/entities/decryption_strategy.dart';
+
+import 'package:horizon/domain/repositories/wallet_config_repository.dart';
+import 'package:horizon/domain/services/seed_service.dart';
 
 class RBFData {
   final BitcoinTx tx;
@@ -57,6 +62,7 @@ class RBFComposeData {
 
 class RBFBloc
     extends Bloc<TransactionEvent, TransactionState<RBFData, RBFComposeData>> {
+  final AddressV2 address;
   final HttpConfig httpConfig;
   final GetFeeEstimatesUseCase getFeeEstimatesUseCase;
   final BitcoinRepository bitcoinRepository;
@@ -64,7 +70,6 @@ class RBFBloc
   final TransactionService transactionService;
   final Logger logger;
   final SettingsRepository settingsRepository;
-  final WalletRepository walletRepository;
   final UnifiedAddressRepository addressRepository;
   final InMemoryKeyRepository inMemoryKeyRepository;
   final EncryptionService encryptionService;
@@ -73,8 +78,11 @@ class RBFBloc
   final BitcoindService bitcoindService;
   final TransactionLocalRepository transactionLocalRepository;
   final WriteLocalTransactionUseCase writelocalTransactionUseCase;
+  final SeedService _seedService;
+  final WalletConfigRepository _walletConfigRepository;
 
   RBFBloc({
+    required this.address,
     required this.httpConfig,
     required this.getFeeEstimatesUseCase,
     required this.bitcoinRepository,
@@ -82,7 +90,6 @@ class RBFBloc
     required this.logger,
     required this.settingsRepository,
     required this.transactionService,
-    required this.walletRepository,
     required this.addressRepository,
     required this.inMemoryKeyRepository,
     required this.encryptionService,
@@ -91,7 +98,12 @@ class RBFBloc
     required this.bitcoindService,
     required this.transactionLocalRepository,
     required this.writelocalTransactionUseCase,
-  }) : super(TransactionState<RBFData, RBFComposeData>(
+    SeedService? seedService,
+    WalletConfigRepository? walletConfigRepository,
+  })  : _seedService = seedService ?? GetIt.I<SeedService>(),
+        _walletConfigRepository =
+            walletConfigRepository ?? GetIt.I<WalletConfigRepository>(),
+        super(TransactionState<RBFData, RBFComposeData>(
           formState: TransactionFormState<RBFData>(
             balancesState: const BalancesState.initial(),
             feeState: const FeeState.initial(),
@@ -119,42 +131,63 @@ class RBFBloc
       ),
     ));
 
-    try {
-      final feeEstimates =
-          await getFeeEstimatesUseCase.call(httpConfig: httpConfig);
+    final task = TaskEither<String, FormDependenciesResult>.Do(($) async {
+      final feeEstimates = await $(getFeeEstimatesUseCase.callT(
+          httpConfig: httpConfig,
+          onError: (e) => "error: could not get fee estimates"));
 
-      BitcoinTx bitcoinTransaction = unwrapOrThrow(await bitcoinRepository
-          .getTransaction(txid: event.txHash, httpConfig: httpConfig));
+      final originalTransaction = await $(bitcoinRepository.getTransactionT(
+          txid: event.txHash,
+          httpConfig: httpConfig,
+          onError: (e) => "error: could not get transaction"));
 
-      String bitcoinTransactionHex = unwrapOrThrow(await bitcoinRepository
-          .getTransactionHex(txid: event.txHash, httpConfig: httpConfig));
+      final originalTransactionHex = await $(
+          bitcoinRepository.getTransactionHexT(
+              txid: event.txHash,
+              httpConfig: httpConfig,
+              onError: (e) => "error: could not get transaction"));
 
-      final virtualSize =
-          transactionService.getVirtualSize(bitcoinTransactionHex);
+      final virtualSize = await $(TaskEither.fromEither(
+          transactionService.getVirtualSizeT(
+              rawTransaction: originalTransactionHex,
+              onError: (err_) => "error: error computing virtual size")));
 
-      final sigOps = transactionService.countSigOps(
-        rawtransaction: bitcoinTransactionHex,
-      );
+      final sigOps = await $(TaskEither.fromEither(
+          transactionService.countSigOpsT(
+              rawTransaction: originalTransactionHex,
+              onError: (err_) => "error: counting sig ops")));
 
       final adjustedVirtualSize = max(virtualSize, sigOps * 5);
 
-      emit(state.copyWith(
-          formState: state.formState.copyWith(
-              balancesState: BalancesState.success(MultiAddressBalance.empty),
-              feeState: FeeState.success(feeEstimates),
-              dataState: TransactionDataState.success(RBFData(
-                  tx: bitcoinTransaction,
-                  hex: bitcoinTransactionHex,
-                  adjustedSize: adjustedVirtualSize)))));
-    } catch (e) {
-      emit(state.copyWith(
-        formState: state.formState.copyWith(
-          dataState: TransactionDataState.error(e.toString()),
-        ),
-      ));
-    }
+      return FormDependenciesResult(
+        feeEstimates: feeEstimates,
+        originalTransaction: originalTransaction,
+        originalTransactionHex: originalTransactionHex,
+        virtualSize: virtualSize,
+        sigOps: sigOps,
+        adjustedVirtualSize: adjustedVirtualSize,
+      );
+    });
+
+    final result = await task.run();
+
+    result.fold(
+        (msg) => emit(state.copyWith(
+              formState: state.formState.copyWith(
+                dataState: TransactionDataState.error(e.toString()),
+              ),
+            )),
+        (deps) => emit(state.copyWith(
+            formState: state.formState.copyWith(
+                balancesState: BalancesState.success(MultiAddressBalance.empty),
+                feeState: FeeState.success(deps.feeEstimates),
+                dataState: TransactionDataState.success(RBFData(
+                    tx: deps.originalTransaction,
+                    hex: deps.originalTransactionHex,
+                    adjustedSize: deps.adjustedVirtualSize))))));
   }
 
+  // TODO: clean this up
   void _onTransactionComposed(
     RBFTransactionComposed event,
     Emitter<TransactionState<RBFData, RBFComposeData>> emit,
@@ -196,69 +229,53 @@ class RBFBloc
     Emitter<TransactionState<RBFData, RBFComposeData>> emit,
   ) async {
     final composeData = state.getComposeDataOrThrow();
-    final address = composeData.sourceAddress;
 
     emit(state.copyWith(broadcastState: const BroadcastState.loading()));
 
-    try {
-      Wallet? wallet = await walletRepository.getCurrentWallet();
+    final task = TaskEither<String, (String hex, String hash)>.Do(($) async {
+      final walletConfig = await $(_walletConfigRepository
+          .getCurrentT((err_) => "invariant: no wallet config"));
 
-      if (wallet == null) {
-        throw Exception("invariant: wallet not found");
-      }
+      final seed = await $(_seedService.getForWalletConfigT(
+          walletConfig: walletConfig,
+          decryptionStrategy: event.decryptionStrategy,
+          onError: ((err_) => "invariant: no seed for wallet config")));
 
-      final passwordRequired =
-          settingsRepository.requirePasswordForCryptoOperations;
+      final pk = await $(addressService.deriveAddressPrivateKeyWIPT(
+          address: address, seed: seed, network: httpConfig.network));
 
-      String rootPrivateKey = passwordRequired
-          ? await encryptionService.decrypt(wallet.encryptedPrivKey,
-              (event.decryptionStrategy as Password).password)
-          : await encryptionService.decryptWithKey(
-              wallet.encryptedPrivKey, (await inMemoryKeyRepository.get())!);
+      // fetched all UTXOs in parallel
+      final utxoMap = await $(buildUtxoMapT(
+          inputsByTxHash: composeData.makeRBFResponse.inputsByTxHash,
+          httpConfig: httpConfig,
+          address: address.address,
+          bitcoinRepository: bitcoinRepository));
 
-      String addressPrivateKey =
-          unwrapOrThrow<String, String>(await addressRepository
-              .get(address)
-              .flatMap((UnifiedAddress unifiedAddress) => getUAddressPrivateKey(
-                    event.decryptionStrategy,
-                    rootPrivateKey,
-                    wallet.chainCodeHex,
-                    unifiedAddress,
-                  ))
-              .run());
+      final signedHex = await $(transactionService.signTransactionT(
+          unsignedTransaction: composeData.makeRBFResponse.txHex,
+          privateKey: pk,
+          sourceAddress: address.address,
+          utxoMap: utxoMap,
+          httpConfig: httpConfig,
+          onError: (_) => "Error while signing transaction "));
 
-      Map<String, Utxo> utxoMap = {};
+      final hash = await $(bitcoindService.sendrawtransactionT(
+          signedHex: signedHex,
+          httpConfig: httpConfig,
+          onError: (msg, _) => msg.toString()));
 
-      for (final entry in composeData.makeRBFResponse.inputsByTxHash.entries) {
-        final txHash = entry.key;
-        final inputIndices = entry.value;
+      return (signedHex, hash);
+    });
 
-        final transaction = unwrapOrThrow<Failure, BitcoinTx>(
-            await bitcoinRepository.getTransaction(
-                txid: txHash, httpConfig: httpConfig));
-        for (final index in inputIndices) {
-          final input = transaction.vout[index];
-          final utxo = Utxo(
-              txid: txHash,
-              vout: index,
-              value: input.value,
-              address: address // TODO: temp hack
-              );
-          utxoMap["$txHash:$index"] = utxo;
-        }
-      }
+    final result = await task.run();
 
-      final txHex = await transactionService.signTransaction(
-          composeData.makeRBFResponse.txHex,
-          addressPrivateKey,
-          address,
-          utxoMap,
-          httpConfig);
+    result.fold(
+        (msg) => emit(state.copyWith(
+              broadcastState: BroadcastState.error(msg),
+            )), (success) async {
+      final txHex = success.$1;
+      final txHash = success.$2;
 
-      final txHash =
-          await bitcoindService.sendrawtransaction(txHex, httpConfig);
-
-      // not technically necessary since event shows up very quickly in practice
       await writelocalTransactionUseCase.call(
           hex: txHex, hash: txHash, httpConfig: httpConfig);
       transactionLocalRepository.delete(composeData.txid);
@@ -269,11 +286,7 @@ class RBFBloc
       emit(state.copyWith(
           broadcastState: BroadcastState.success(
               BroadcastStateSuccess(txHex: txHex, txHash: txHash))));
-    } catch (e) {
-      emit(state.copyWith(
-        broadcastState: BroadcastState.error(e.toString()),
-      ));
-    }
+    });
   }
 
   TaskEither<String, String> getUAddressPrivateKey(
@@ -364,4 +377,58 @@ class RBFBloc
       ),
     ));
   }
+}
+
+class FormDependenciesResult {
+  final FeeEstimates feeEstimates;
+  final BitcoinTx originalTransaction;
+  final String originalTransactionHex;
+  final int virtualSize;
+  final int sigOps;
+  final int adjustedVirtualSize;
+
+  const FormDependenciesResult({
+    required this.feeEstimates,
+    required this.originalTransaction,
+    required this.originalTransactionHex,
+    required this.virtualSize,
+    required this.sigOps,
+    required this.adjustedVirtualSize,
+  });
+}
+
+TaskEither<String, Map<String, Utxo>> buildUtxoMapT({
+  required Map<String, List<int>> inputsByTxHash,
+  required HttpConfig httpConfig,
+  required String address,
+  required BitcoinRepository bitcoinRepository,
+}) {
+  final tasks = inputsByTxHash.entries.map((entry) {
+    final txHash = entry.key;
+    final indices = entry.value;
+
+    return bitcoinRepository
+        .getTransactionT(
+            txid: txHash,
+            httpConfig: httpConfig,
+            onError: (_) => 'Failed to fetch transaction $txHash: $_')
+        .map(
+          (tx) => {
+            for (final index in indices)
+              '$txHash:$index': Utxo(
+                txid: txHash,
+                vout: index,
+                value: tx.vout[index].value,
+                address: address,
+              )
+          },
+        );
+  }).toList();
+
+  // these will be executed in parallel
+  return TaskEither.sequenceList(tasks).map((listOfMaps) {
+    return {
+      for (final map in listOfMaps) ...map,
+    };
+  });
 }

@@ -1,5 +1,6 @@
 import "package:horizon/domain/entities/utxo.dart";
 import "package:horizon/domain/entities/http_config.dart";
+import 'package:fpdart/fpdart.dart';
 
 class MakeRBFResponse {
   final String txHex;
@@ -71,4 +72,167 @@ abstract class TransactionService {
 class TransactionServiceException implements Exception {
   final String message;
   TransactionServiceException(this.message);
+}
+
+extension TransactionServiceX on TransactionService {
+  // --- Async methods wrapped in TaskEither ---
+
+  TaskEither<String, String> signTransactionT({
+    required String unsignedTransaction,
+    required String privateKey,
+    required String sourceAddress,
+    required Map<String, Utxo> utxoMap,
+    required HttpConfig httpConfig,
+    required String Function(Object error) onError,
+  }) {
+    return TaskEither.tryCatch(
+      () => signTransaction(
+        unsignedTransaction,
+        privateKey,
+        sourceAddress,
+        utxoMap,
+        httpConfig,
+      ),
+      (e, _) => onError(e),
+    );
+  }
+
+  TaskEither<String, String> constructChainAndSignTransactionT({
+    required String unsignedTransaction,
+    required String sourceAddress,
+    required List<Utxo> utxos,
+    required int btcQuantity,
+    required String sourcePrivKey,
+    required String destinationAddress,
+    required String destinationPrivKey,
+    required num fee,
+    required HttpConfig httpConfig,
+    required String Function(Object error) onError,
+  }) {
+    return TaskEither.tryCatch(
+      () => constructChainAndSignTransaction(
+        unsignedTransaction: unsignedTransaction,
+        sourceAddress: sourceAddress,
+        utxos: utxos,
+        btcQuantity: btcQuantity,
+        sourcePrivKey: sourcePrivKey,
+        destinationAddress: destinationAddress,
+        destinationPrivKey: destinationPrivKey,
+        fee: fee,
+        httpConfig: httpConfig,
+      ),
+      (e, _) => onError(e),
+    );
+  }
+
+  TaskEither<String, MakeRBFResponse> makeRBFT({
+    required String source,
+    required String txHex,
+    required num oldFee,
+    required num newFee,
+    required HttpConfig httpConfig,
+    required String Function(Object error) onError,
+  }) {
+    return TaskEither.tryCatch(
+      () => makeRBF(
+        source: source,
+        txHex: txHex,
+        oldFee: oldFee,
+        newFee: newFee,
+        httpConfig: httpConfig,
+      ),
+      (e, _) => onError(e),
+    );
+  }
+
+  // --- Sync methods wrapped in Either ---
+
+  Either<String, String> signPsbtT({
+    required String psbtHex,
+    required Map<int, String> inputPrivateKeyMap,
+    required HttpConfig httpConfig,
+    List<int>? sighashTypes,
+    required String Function(Object error) onError,
+  }) {
+    return Either.tryCatch(
+      () => signPsbt(psbtHex, inputPrivateKeyMap, httpConfig, sighashTypes),
+      (e, _) => onError(e),
+    );
+  }
+
+  Either<String, String> psbtToUnsignedTransactionHexT({
+    required String psbtHex,
+    required String Function(Object error) onError,
+  }) {
+    return Either.tryCatch(
+      () => psbtToUnsignedTransactionHex(psbtHex),
+      (e, _) => onError(e),
+    );
+  }
+
+  Either<String, String> signMessageT({
+    required String message,
+    required String privateKey,
+    required HttpConfig httpConfig,
+    required String Function(Object error) onError,
+  }) {
+    return Either.tryCatch(
+      () => signMessage(message, privateKey, httpConfig),
+      (e, _) => onError(e),
+    );
+  }
+
+  Either<String, int> getVirtualSizeT({
+    required String rawTransaction,
+    required String Function(Object error) onError,
+  }) {
+    return Either.tryCatch(
+      () => getVirtualSize(rawTransaction),
+      (e, _) => onError(e),
+    );
+  }
+
+  Either<String, bool> validateBTCAmountT({
+    required String rawTransaction,
+    required String source,
+    required int expectedBTC,
+    required HttpConfig httpConfig,
+    required String Function(Object error) onError,
+  }) {
+    return Either.tryCatch(
+      () => validateBTCAmount(
+        rawtransaction: rawTransaction,
+        source: source,
+        expectedBTC: expectedBTC,
+        httpConfig: httpConfig,
+      ),
+      (e, _) => onError(e),
+    );
+  }
+
+  Either<String, bool> validateFeeT({
+    required String rawTransaction,
+    required int expectedFee,
+    required Map<String, Utxo> utxoMap,
+    required String Function(Object error) onError,
+  }) {
+    return Either.tryCatch(
+      () => validateFee(
+        rawtransaction: rawTransaction,
+        expectedFee: expectedFee,
+        utxoMap: utxoMap,
+      ),
+      (e, _) => onError(e),
+    );
+  }
+
+  Either<String, int> countSigOpsT({
+    required String rawTransaction,
+    required String Function(Object error) onError,
+  }) {
+    return Either.tryCatch(
+      () => countSigOps(rawtransaction: rawTransaction),
+      (e, _) => onError(e),
+    );
+  }
 }

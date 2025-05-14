@@ -1,3 +1,5 @@
+
+import 'package:fpdart/fpdart.dart';
 import 'package:horizon/common/constants.dart';
 import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/entities/address_v2.dart';
@@ -76,3 +78,32 @@ abstract class AddressService {
     required ImportFormat importFormat,
   });
 }
+
+extension AddressServiceX on AddressService {
+
+
+  TaskEither<String, String> deriveAddressWIPT({
+    required String path,
+    required Seed seed,
+    required Network network,
+  }) {
+    return TaskEither.tryCatch(
+      () => deriveAddressWIP(path: path, seed: seed, network: network),
+      (e, _) => e.toString(),
+    );
+  }
+
+
+  TaskEither<String, String> deriveAddressPrivateKeyWIPT({
+    required AddressV2 address,
+    required Seed seed,
+    required Network network,
+  }) {
+    return TaskEither.tryCatch(
+      () => deriveAddressPrivateKeyWIP(address: address, seed: seed, network: network),
+      (e, _) => e.toString(),
+    );
+  }
+
+}
+
