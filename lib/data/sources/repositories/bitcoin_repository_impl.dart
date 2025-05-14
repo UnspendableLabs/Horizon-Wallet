@@ -7,15 +7,12 @@ import 'package:horizon/domain/entities/http_config.dart';
 import 'package:horizon/data/sources/network/esplora_client.dart';
 import 'package:horizon/data/sources/network/esplora_client_factory.dart';
 
-
-
 class BitcoinRepositoryImpl extends BitcoinRepository {
   // chat, i wondre if it won't be perofmant to create a new client on every call?
   // maybe it needs to be singleton, or memoized?
   final EsploraClientFactory esploraClientFactory;
 
   BitcoinRepositoryImpl({required this.esploraClientFactory});
-
 
   EsploraApi _esploraApi(HttpConfig httpConfig) {
     return esploraClientFactory.getClient(httpConfig);

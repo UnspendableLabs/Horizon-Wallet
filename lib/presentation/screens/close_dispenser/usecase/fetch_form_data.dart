@@ -13,7 +13,8 @@ class FetchCloseDispenserFormDataUseCase {
     required this.dispenserRepository,
   });
 
-  Future<(FeeEstimates, List<Dispenser>)> call(String currentAddress, HttpConfig httpConfig) async {
+  Future<(FeeEstimates, List<Dispenser>)> call(
+      String currentAddress, HttpConfig httpConfig) async {
     try {
       // Initiate both asynchronous calls
       final futures = await Future.wait([
@@ -42,7 +43,8 @@ class FetchCloseDispenserFormDataUseCase {
     }
   }
 
-  Future<List<Dispenser>> _fetchDispenser(String currentAddress, HttpConfig httpConfig) async {
+  Future<List<Dispenser>> _fetchDispenser(
+      String currentAddress, HttpConfig httpConfig) async {
     try {
       return await dispenserRepository
           .getDispensersByAddress(currentAddress, httpConfig)

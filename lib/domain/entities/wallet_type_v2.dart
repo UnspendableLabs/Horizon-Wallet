@@ -1,5 +1,5 @@
 // enum WalletTypeV2 {
-//   horizon, 
+//   horizon,
 //   freewallet,
 //   counterwallet,
 //   // custom

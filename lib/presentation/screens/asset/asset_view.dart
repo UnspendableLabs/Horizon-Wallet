@@ -79,7 +79,7 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
         ),
       TransactionType.lockQuantity => LockQuantityPage(
           assetName: widget.assetName,
-          // TODO: don't use all addresses anymore 
+          // TODO: don't use all addresses anymore
           addresses: session.allAddresses,
         ),
     };

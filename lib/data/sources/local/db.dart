@@ -12,14 +12,20 @@ import 'schema_versions.dart';
 
 part "db.g.dart";
 
-
 // TODO: accounts migration
 
 // TODO: read from env
 const ENV = "dev";
 
-@DriftDatabase(
-    tables: [Wallets, Accounts, Addresses, Transactions, ImportedAddresses, AccountsV2, WalletConfigs])
+@DriftDatabase(tables: [
+  Wallets,
+  Accounts,
+  Addresses,
+  Transactions,
+  ImportedAddresses,
+  AccountsV2,
+  WalletConfigs
+])
 class DB extends _$DB {
   DB(super.e);
 

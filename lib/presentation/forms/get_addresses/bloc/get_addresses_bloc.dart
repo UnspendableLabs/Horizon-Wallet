@@ -2,7 +2,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:formz/formz.dart';
 import './get_addresses_event.dart';
 import './get_addresses_state.dart';
-import 'package:horizon/domain/entities/account.dart';
 import 'package:horizon/domain/entities/account_v2.dart';
 import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/entities/imported_address.dart';
@@ -10,7 +9,6 @@ import 'package:horizon/domain/entities/wallet.dart';
 import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/imported_address_service.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
-import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/imported_address_repository.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
@@ -188,9 +186,8 @@ class GetAddressesBloc extends Bloc<GetAddressesEvent, GetAddressesState> {
 
   Future<String> _getAddressPrivKeyForAddress(
       Address address, DecryptionStrategy decryptionStrategy) async {
-
     throw UnimplementedError(
-      'This function is not implemented yet. Please implement it.');
+        'This function is not implemented yet. Please implement it.');
     // final account =
     //     await accountRepository.getAccountByUuid(address.accountUuid);
     // if (account == null) {

@@ -30,18 +30,17 @@ class LoginView extends StatelessWidget {
           child: Scaffold(
             backgroundColor: Theme.of(context).scaffoldBackgroundColor,
             body: Container(
-              padding: const EdgeInsets.all(16),
-              height: MediaQuery.of(context).size.height,
-              child: const Stack(
-                children: [
-                  Align(
-                    alignment: Alignment.topCenter,
-                    child: HorizonThemeToggle(),
-                  ),
-                  Align(alignment: Alignment.center, child: LoginForm()),
-                ],
-              )
-            ),
+                padding: const EdgeInsets.all(16),
+                height: MediaQuery.of(context).size.height,
+                child: const Stack(
+                  children: [
+                    Align(
+                      alignment: Alignment.topCenter,
+                      child: HorizonThemeToggle(),
+                    ),
+                    Align(alignment: Alignment.center, child: LoginForm()),
+                  ],
+                )),
           ),
         ),
       ),

@@ -107,9 +107,9 @@ class _SendPageState extends State<SendPage> {
           analyticsService: GetIt.I<AnalyticsService>(),
           logger: GetIt.I<Logger>(),
         )..add(SendDependenciesRequested(
-            assetName: widget.assetName, 
+            assetName: widget.assetName,
             // addresses: widget.addresses
-            )),
+          )),
         child: BlocConsumer<SendBloc,
             TransactionState<SendData, ComposeSendResponse>>(
           listener: (context, state) {},

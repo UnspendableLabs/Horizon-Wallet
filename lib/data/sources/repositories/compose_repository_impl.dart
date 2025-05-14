@@ -1,7 +1,6 @@
 import 'package:collection/collection.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/common/format.dart';
-import 'package:horizon/data/sources/network/api/v2_api.dart';
 import 'package:horizon/domain/entities/asset_info.dart' as asset_info;
 import 'package:horizon/domain/entities/bitcoin_decoded_tx.dart';
 import 'package:horizon/domain/entities/compose_issuance.dart'
@@ -31,7 +30,6 @@ import 'package:horizon/domain/entities/compose_dividend.dart'
     as compose_dividend;
 import 'package:horizon/domain/entities/compose_sweep.dart' as compose_sweep;
 import 'package:horizon/domain/entities/compose_burn.dart' as compose_burn;
-import 'package:horizon/domain/entities/utxo.dart';
 import 'package:horizon/domain/entities/utxo.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
 

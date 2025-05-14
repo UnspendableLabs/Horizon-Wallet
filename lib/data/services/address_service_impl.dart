@@ -13,7 +13,6 @@ import 'package:horizon/js/bip32.dart' as bip32;
 import 'package:horizon/js/buffer.dart';
 import 'package:horizon/js/ecpair.dart' as ecpair;
 import 'package:horizon/js/tiny_secp256k1.dart' as tinysecp256k1js;
-import 'package:horizon/domain/entities/seed.dart';
 
 class AddressServiceImpl implements AddressService {
   final bip32.BIP32Factory _bip32 = bip32.BIP32Factory(tinysecp256k1js.ecc);

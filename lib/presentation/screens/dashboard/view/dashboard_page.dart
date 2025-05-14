@@ -228,7 +228,6 @@ class GetAddressesModal extends StatelessWidget {
   Widget build(BuildContext context) {
     final session = context.read<SessionStateCubit>().state.successOrThrow();
     return BlocProvider(
-
       create: (_) => GetAddressesBloc(
         httpConfig: session.httpConfig,
         passwordRequired:

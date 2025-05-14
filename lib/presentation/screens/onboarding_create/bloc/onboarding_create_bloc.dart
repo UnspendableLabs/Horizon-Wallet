@@ -4,7 +4,6 @@ import 'package:horizon/domain/services/mnemonic_service.dart';
 import 'package:horizon/presentation/screens/onboarding_create/bloc/onboarding_create_event.dart';
 import 'package:horizon/presentation/screens/onboarding_create/bloc/onboarding_create_state.dart';
 import 'package:logger/logger.dart';
-import 'package:horizon/common/constants.dart';
 import 'package:horizon/domain/entities/http_config.dart';
 
 // TODO: set_mnemonic_usecase is a dumb name
@@ -13,7 +12,6 @@ import 'package:horizon/domain/repositories/account_v2_repository.dart';
 import 'package:horizon/domain/repositories/wallet_config_repository.dart';
 import "package:horizon/domain/entities/base_path.dart";
 import "package:horizon/domain/entities/wallet_config.dart";
-import "package:horizon/domain/entities/network.dart";
 import "package:horizon/domain/entities/seed_derivation.dart";
 import 'package:horizon/domain/repositories/settings_repository.dart';
 

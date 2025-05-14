@@ -68,8 +68,7 @@ class TxHashDisplayState extends State<TxHashDisplay> {
 
   @override
   Widget build(BuildContext context) {
-    final session =
-        context.watch<SessionStateCubit>().state.successOrThrow();
+    final session = context.watch<SessionStateCubit>().state.successOrThrow();
     return GestureDetector(
         onLongPress: _copyToClipboard,
         onTap: () => _launchUrl(session.httpConfig),

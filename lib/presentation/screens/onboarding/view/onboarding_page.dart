@@ -62,7 +62,6 @@ class OnboardingView extends StatelessWidget {
   }
 
   Widget _buildThemeToggle(BuildContext context, bool isDarkMode) {
-
     return Padding(
       padding: const EdgeInsets.only(top: 16.0, right: 16.0),
       child: Align(
@@ -213,8 +212,8 @@ class OnboardingView extends StatelessWidget {
                                     variant: ButtonVariant.black,
                                     disabled: isDisabled,
                                     onPressed: () {
-                                      final session = context
-                                          .read<SessionStateCubit>();
+                                      final session =
+                                          context.read<SessionStateCubit>();
                                       session.onOnboardingImport();
                                     },
                                     child: TextButtonContent(

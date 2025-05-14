@@ -26,7 +26,6 @@ import 'package:horizon/data/sources/local/db_manager.dart';
 
 import 'package:horizon/data/services/mnemonic_service_impl.dart';
 import 'package:horizon/data/services/transaction_service_impl.dart';
-import 'package:horizon/data/sources/repositories/account_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/account_settings_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/address_tx_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/balance_repository_impl.dart';
@@ -37,7 +36,6 @@ import 'package:horizon/data/sources/repositories/imported_address_repository_im
 import 'package:horizon/data/sources/repositories/node_info_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/utxo_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/wallet_repository_dummy.dart';
-import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/account_settings_repository.dart';
 import 'package:horizon/domain/repositories/address_tx_repository.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
@@ -380,7 +378,6 @@ void setup() {
       MnemonicServiceImpl(GetIt.I.get<Bip39Service>()));
   injector.registerSingleton<BitcoindService>(
       BitcoindServiceCounterpartyProxyImpl());
-
 
   injector.registerSingleton<WalletConfigRepository>(
       WalletConfigRepositoryImpl(injector.get<DatabaseManager>().database));

@@ -1,4 +1,3 @@
-import 'package:horizon/data/sources/network/api/v2_api.dart';
 import 'package:horizon/domain/repositories/estimate_xcp_fee_repository.dart';
 import 'package:horizon/data/sources/network/counterparty_client_factory.dart';
 import 'package:get_it/get_it.dart';

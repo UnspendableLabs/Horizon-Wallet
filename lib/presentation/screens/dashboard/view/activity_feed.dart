@@ -927,8 +927,6 @@ class ActivityFeedListItem extends StatelessWidget {
   }
 
   Widget _buildEventSubtitle(Event event) {
-
-
     return switch (event) {
       VerboseAssetIssuanceEvent(txHash: var hash, params: var params) => Row(
           children: [

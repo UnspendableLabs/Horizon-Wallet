@@ -573,26 +573,27 @@ class _SettingsViewState extends State<SettingsView> {
         Container(
           height: 46,
           width: double.infinity,
-          padding: const EdgeInsets.only(left: 12, top: 16, bottom: 0, right: 12),
+          padding:
+              const EdgeInsets.only(left: 12, top: 16, bottom: 0, right: 12),
           child: Row(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            AppIcons.iconButton(
-              context: context,
-              icon: AppIcons.backArrowIcon(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              AppIcons.iconButton(
                 context: context,
-                width: 24,
-                height: 24,
-                fit: BoxFit.fitHeight,
+                icon: AppIcons.backArrowIcon(
+                  context: context,
+                  width: 24,
+                  height: 24,
+                  fit: BoxFit.fitHeight,
+                ),
+                onPressed: () {
+                  _currentPage != SettingsPage.main
+                      ? _navigateBack()
+                      : AppShell.navigateToTab(context, 0);
+                },
               ),
-              onPressed: () {
-                _currentPage != SettingsPage.main
-                    ? _navigateBack()
-                    : AppShell.navigateToTab(context, 0);
-              },
-            ),
-          ],
-        ),
+            ],
+          ),
         ),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,

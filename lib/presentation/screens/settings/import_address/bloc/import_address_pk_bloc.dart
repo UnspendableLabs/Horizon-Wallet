@@ -1,6 +1,4 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:horizon/domain/entities/imported_address.dart';
-import 'package:horizon/domain/entities/wallet.dart';
 import 'package:horizon/domain/entities/http_config.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/imported_address_repository.dart';
@@ -39,7 +37,7 @@ class ImportAddressPkBloc
 
       // emit(ImportAddressPkLoading());
       // try {
-        // TODO: what to do with this???
+      // TODO: what to do with this???
 
       //   Wallet? wallet = await walletRepository.getCurrentWallet();
       //

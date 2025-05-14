@@ -10,9 +10,7 @@ import 'package:go_router/go_router.dart';
 import 'package:horizon/common/fn.dart';
 import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/data/sources/local/db_manager.dart';
-import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/action_repository.dart';
-import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/repositories/config_repository.dart';
 import 'package:horizon/domain/repositories/fairminter_repository.dart';
@@ -20,12 +18,9 @@ import 'package:horizon/domain/repositories/imported_address_repository.dart';
 import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 import 'package:horizon/domain/repositories/settings_repository.dart';
 import 'package:horizon/domain/repositories/version_repository.dart';
-import 'package:horizon/domain/repositories/wallet_repository.dart';
-import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/error_service.dart';
-import 'package:horizon/domain/services/imported_address_service.dart';
 import 'package:horizon/domain/services/secure_kv_service.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/common/theme_extension.dart';
@@ -40,7 +35,6 @@ import 'package:horizon/presentation/screens/onboarding/view/onboarding_page.dar
 import 'package:horizon/presentation/screens/onboarding_create/view/onboarding_create_page.dart';
 import 'package:horizon/presentation/screens/onboarding_import/view/onboarding_import_page.dart';
 import 'package:horizon/presentation/screens/privacy_policy.dart';
-import 'package:horizon/presentation/screens/settings/import_address/bloc/import_address_pk_bloc.dart';
 import 'package:horizon/presentation/screens/settings/settings_view.dart';
 import 'package:horizon/presentation/screens/tos.dart';
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
@@ -955,8 +949,6 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // if showWarning, just display a one off toast here?
-
-
 
     return MultiBlocProvider(
       providers: [

@@ -305,8 +305,8 @@ class RBFBloc
 
   Future<String> _getAddressPrivKeyForAddress(
       String rootPrivKey, String chainCodeHex, Address address) async {
-        throw UnimplementedError(
-          'getAddressPrivateKeyForAddress is not implemented yet.');
+    throw UnimplementedError(
+        'getAddressPrivateKeyForAddress is not implemented yet.');
     // final account =
     //     await accountRepository.getAccountByUuid(address.accountUuid);
     //

@@ -9,11 +9,6 @@ extension NetworkX on Network {
       (e) => e.name == value,
     ));
   }
-
-
 }
 
-
 // CHAT I WANT TO ADD A STATIC fromString and toString method
-
-

@@ -324,7 +324,7 @@ class ShowMnemonicStep extends StatelessWidget {
                   //           duration: Duration(seconds: 2),
                   //         ),
                   //       );
-                  //     },  
+                  //     },
                   //     child: TextButtonContent(value: "Copy"),
                   //     icon: const Icon(Icons.copy),
                   //   ),

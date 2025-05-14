@@ -1243,7 +1243,6 @@ class EventsRepositoryImpl implements EventsRepository {
     cursor_entity.Cursor? cursor,
     int? limit,
     List<String>? whitelist,
-
   }) async {
     final whitelist_ = whitelist?.join(",");
 

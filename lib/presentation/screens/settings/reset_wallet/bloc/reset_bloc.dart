@@ -1,7 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:horizon/common/constants.dart';
-import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/imported_address_repository.dart';
 import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
@@ -39,7 +38,6 @@ class ResetBloc extends Bloc<ResetEvent, ResetState> {
   }
 
   void _onReset(ResetEvent event, Emitter emit) async {
-
     logger.d('Reset event received');
 
     throw UnimplementedError("Reset event handling not implemented");

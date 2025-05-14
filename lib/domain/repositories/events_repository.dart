@@ -26,7 +26,6 @@ abstract class EventsRepository {
   //   List<String>? whitelist,
   // });
 
-
   Future<List<VerboseEvent>> getAllMempoolVerboseEventsForAddresses(
     HttpConfig httpConfig,
     List<String> addresses,

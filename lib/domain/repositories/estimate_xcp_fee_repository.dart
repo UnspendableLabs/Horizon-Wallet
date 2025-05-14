@@ -1,4 +1,3 @@
-
 import 'package:horizon/domain/entities/http_config.dart';
 
 abstract class EstimateXcpFeeRepository {
@@ -18,4 +17,3 @@ abstract class EstimateXcpFeeRepository {
     required HttpConfig httpConfig,
   });
 }
-

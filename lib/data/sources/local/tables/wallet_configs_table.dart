@@ -17,7 +17,7 @@ class WalletConfigs extends Table {
 
   @JsonKey('accountIndexEnd')
   IntColumn get accountIndexEnd => integer()();
-  
+
   @JsonKey('seedDerivation')
   TextColumn get seedDerivation => text()();
 

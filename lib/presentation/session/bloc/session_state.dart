@@ -1,8 +1,6 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:horizon/domain/entities/imported_address.dart';
 
-import 'package:horizon/domain/entities/wallet.dart';
-import 'package:horizon/domain/entities/network.dart';
 import 'package:horizon/domain/entities/wallet_config.dart';
 // import 'package:horizon/domain/entities/account.dart';
 import 'package:horizon/domain/entities/account_v2.dart';
@@ -49,7 +47,7 @@ class SessionStateSuccess with _$SessionStateSuccess {
   }
 
   const factory SessionStateSuccess({
-    required  HttpConfig httpConfig,
+    required HttpConfig httpConfig,
     required AccountV2? currentAccount,
     required bool redirect,
     // required Wallet wallet,

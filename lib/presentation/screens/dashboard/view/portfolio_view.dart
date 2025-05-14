@@ -162,11 +162,18 @@ class _PortfolioViewState extends State<PortfolioView>
                   children: [
                     Expanded(
                       child: HorizonButton(
-                        child: TextButtonContent(value: 'Send', style: const TextStyle(fontSize: 12,)),
+                        child: TextButtonContent(
+                            value: 'Send',
+                            style: const TextStyle(
+                              fontSize: 12,
+                            )),
                         height: 44,
                         borderRadius: 18,
                         variant: ButtonVariant.green,
-                        icon: AppIcons.sendIcon(context: context, color: black,),
+                        icon: AppIcons.sendIcon(
+                          context: context,
+                          color: black,
+                        ),
                         onPressed: () {
                           context.go("/accounts");
                           // TODO: Implement send functionality
@@ -176,7 +183,11 @@ class _PortfolioViewState extends State<PortfolioView>
                     const SizedBox(width: spacing),
                     Expanded(
                       child: HorizonButton(
-                        child: TextButtonContent(value: 'Receive', style: const TextStyle(fontSize: 12,)),
+                        child: TextButtonContent(
+                            value: 'Receive',
+                            style: const TextStyle(
+                              fontSize: 12,
+                            )),
                         height: 44,
                         borderRadius: 18,
                         variant: ButtonVariant.black,
@@ -191,7 +202,11 @@ class _PortfolioViewState extends State<PortfolioView>
                     const SizedBox(width: spacing),
                     Expanded(
                       child: HorizonButton(
-                        child: TextButtonContent(value: 'Swap', style: const TextStyle(fontSize: 12,)),
+                        child: TextButtonContent(
+                            value: 'Swap',
+                            style: const TextStyle(
+                              fontSize: 12,
+                            )),
                         height: 44,
                         borderRadius: 18,
                         variant: ButtonVariant.black,
@@ -206,7 +221,11 @@ class _PortfolioViewState extends State<PortfolioView>
                     const SizedBox(width: spacing),
                     Expanded(
                       child: HorizonButton(
-                        child: TextButtonContent(value: 'Mint', style: const TextStyle(fontSize: 12,)),
+                        child: TextButtonContent(
+                            value: 'Mint',
+                            style: const TextStyle(
+                              fontSize: 12,
+                            )),
                         height: 44,
                         borderRadius: 18,
                         variant: ButtonVariant.black,

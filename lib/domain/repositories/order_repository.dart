@@ -4,5 +4,7 @@ import 'package:horizon/domain/entities/http_config.dart';
 
 abstract class OrderRepository {
   fp.TaskEither<String, List<Order>> getByAddress(
-      {required String address, String? status, required HttpConfig httpConfig});
+      {required String address,
+      String? status,
+      required HttpConfig httpConfig});
 }

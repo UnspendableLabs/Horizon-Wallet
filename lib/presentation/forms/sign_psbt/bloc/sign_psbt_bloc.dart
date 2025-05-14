@@ -411,10 +411,8 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
 
   Future<String> _getAddressPrivKeyForAddress(
       String rootPrivKey, String chainCodeHex, Address address) async {
-
-
     throw UnimplementedError(
-      'getAddressPrivateKeyForAddress is not implemented yet.');
+        'getAddressPrivateKeyForAddress is not implemented yet.');
     // final account =
     //     await accountRepository.getAccountByUuid(address.accountUuid);
     //

@@ -10,7 +10,6 @@ import 'package:horizon/presentation/common/footer/bloc/footer_event.dart';
 import 'package:horizon/presentation/common/footer/bloc/footer_state.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
-import 'package:horizon/presentation/session/bloc/session_state.dart';
 
 class Footer extends StatelessWidget {
   const Footer({super.key});

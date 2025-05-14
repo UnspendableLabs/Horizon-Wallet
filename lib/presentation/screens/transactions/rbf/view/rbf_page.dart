@@ -5,7 +5,6 @@ import 'package:get_it/get_it.dart';
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/domain/entities/fee_option.dart';
-import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 import 'package:horizon/domain/repositories/settings_repository.dart';
@@ -81,7 +80,6 @@ class _RBFPageState extends State<RBFPage> {
 
   @override
   Widget build(BuildContext context) {
-
     final session = context.watch<SessionStateCubit>().state.successOrThrow();
 
     return BlocProvider(
