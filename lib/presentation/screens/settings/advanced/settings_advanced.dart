@@ -114,7 +114,7 @@ class SettingsAdvanced extends StatelessWidget {
                         padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
                         child: HorizonButton(
                             disabled: state.walletConfigError.isSome(),
-                            buttonText: "Save Changes",
+                            child: TextButtonContent(value: "Save Changes"),
                             onPressed: () {
                               context.read<SettingsAdvancedBloc>().add(
                                   SaveChangesClicked(onSuccess:

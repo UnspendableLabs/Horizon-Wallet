@@ -75,8 +75,7 @@ class AccountsScreen extends StatelessWidget {
                 return Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: HorizonButton(
-                    buttonText: "need a value here or else type error",
-                    child: const Text('New Account'),
+                    child: TextButtonContent(value: 'New Account'),
                     onPressed: () {
                       context
                           .read<GenerateAccountBloc>()
