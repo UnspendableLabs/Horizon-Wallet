@@ -1,8 +1,8 @@
 class AddressV2 {
   final String address;
-  final int index;
+  final String path;
   const AddressV2({
     required this.address,
-    required this.index,
+    required this.path,
   });
 }

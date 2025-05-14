@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
+import 'package:horizon/domain/entities/decryption_strategy.dart';
 import 'package:horizon/domain/entities/wallet_config.dart';
 import 'package:horizon/domain/entities/base_path.dart';
 import 'package:horizon/domain/entities/seed_derivation.dart';
@@ -105,7 +106,6 @@ class SettingsAdvancedBloc
   }
 
   _handleImportFormatChanged(ImportFormatChanged event, emit) async {
-
     print("inferred");
     print(state.inferredImportFormat);
 
@@ -114,7 +114,6 @@ class SettingsAdvancedBloc
             inferredImportFormat == event.importFormat
                 ? const Option.none()
                 : Option.of(event.importFormat));
-
 
     Option<WalletConfig> walletConfigChange =
         importFormatChange.map<WalletConfig>((importFormatChange) {
@@ -141,7 +140,8 @@ class SettingsAdvancedBloc
     });
 
     final walletConfigError = await walletConfigChange
-        .map((cfg) => _seedService.getForWalletConfig(walletConfig: cfg))
+        .map((cfg) => _seedService.getForWalletConfig(
+            walletConfig: cfg, decryptionStrategy: InMemoryKey()))
         .map((taskEither) => taskEither.swap().run().then(Option.fromEither))
         .getOrElse(() => Future.value(const Option.none()));
 

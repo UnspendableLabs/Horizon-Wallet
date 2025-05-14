@@ -75,10 +75,11 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
     final page = switch (type) {
       TransactionType.send => SendPage(
           assetName: widget.assetName,
-          addresses: session.allAddresses,
+          addresses: session.successOrThrow().addresses,
         ),
       TransactionType.lockQuantity => LockQuantityPage(
           assetName: widget.assetName,
+          // TODO: don't use all addresses anymore 
           addresses: session.allAddresses,
         ),
     };

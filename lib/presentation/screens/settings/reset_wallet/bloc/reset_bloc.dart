@@ -17,7 +17,6 @@ class ResetBloc extends Bloc<ResetEvent, ResetState> {
   final logger = Logger();
 
   final WalletRepository walletRepository;
-  final AccountRepository accountRepository;
   final AddressRepository addressRepository;
   final ImportedAddressRepository importedAddressRepository;
   final CacheProvider cacheProvider;
@@ -29,7 +28,6 @@ class ResetBloc extends Bloc<ResetEvent, ResetState> {
   ResetBloc({
     required this.inMemoryKeyRepository,
     required this.walletRepository,
-    required this.accountRepository,
     required this.addressRepository,
     required this.importedAddressRepository,
     required this.transactionLocalRepository,
@@ -41,9 +39,12 @@ class ResetBloc extends Bloc<ResetEvent, ResetState> {
   }
 
   void _onReset(ResetEvent event, Emitter emit) async {
+
     logger.d('Reset event received');
+
+    throw UnimplementedError("Reset event handling not implemented");
+
     await walletRepository.deleteAllWallets();
-    await accountRepository.deleteAllAccounts();
     await addressRepository.deleteAllAddresses();
     await importedAddressRepository.deleteAllImportedAddresses();
     await transactionLocalRepository.deleteAllTransactions();

@@ -3,6 +3,7 @@ import 'package:horizon/extensions.dart';
 // import "package:horizon/data/sources/local/dao/addresss_v2_dao.dart";
 import "package:horizon/data/sources/local/db.dart" as local;
 import 'package:horizon/domain/services/address_service.dart';
+import "package:horizon/domain/entities/decryption_strategy.dart";
 import "package:horizon/domain/entities/address_v2.dart";
 import "package:horizon/domain/entities/account_v2.dart";
 import "package:horizon/domain/repositories/address_v2_repository.dart";
@@ -42,7 +43,9 @@ class AddressV2RepositoryImpl implements AddressV2Repository {
     final walletConfig = walletConfig_.getOrThrow();
 
     final seed = await _seedService
-        .getForWalletConfig(walletConfig: walletConfig_.getOrThrow())
+        .getForWalletConfig(
+            walletConfig: walletConfig_.getOrThrow(),
+            decryptionStrategy: InMemoryKey())
         .run();
 
     // # TODO: need to make the number of addresses configurable and stored
@@ -69,7 +72,7 @@ class AddressV2RepositoryImpl implements AddressV2Repository {
 
       AddressV2 address = AddressV2(
         address: address_,
-        index: path.$1,
+        path: path.$2,
       );
 
       addresses.add(address);

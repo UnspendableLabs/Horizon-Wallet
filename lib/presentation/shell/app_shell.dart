@@ -7,7 +7,6 @@ import 'package:horizon/domain/entities/account.dart';
 import 'package:horizon/domain/entities/action.dart' as URLAction;
 import 'package:horizon/domain/entities/extension_rpc.dart';
 import 'package:horizon/domain/entities/http_config.dart';
-import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/action_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
@@ -49,7 +48,6 @@ class SignPsbtModal extends StatelessWidget {
   final List<int>? sighashTypes;
   final ImportedAddressService importedAddressService;
   final UnifiedAddressRepository addressRepository;
-  final AccountRepository accountRepository;
   final BitcoinRepository bitcoinRepository;
 
   const SignPsbtModal(
@@ -68,7 +66,6 @@ class SignPsbtModal extends StatelessWidget {
       required this.sighashTypes,
       required this.importedAddressService,
       required this.addressRepository,
-      required this.accountRepository,
       required this.bitcoinRepository});
 
   @override
@@ -95,7 +92,6 @@ class SignPsbtModal extends StatelessWidget {
         walletRepository: walletRepository,
         encryptionService: encryptionService,
         addressService: addressService,
-        accountRepository: accountRepository,
       ),
       child: SignPsbtForm(
         bitcoinRepository: bitcoinRepository,
@@ -124,13 +120,11 @@ class GetAddressesModal extends StatelessWidget {
   final WalletRepository walletRepository;
   final EncryptionService encryptionService;
   final PublicKeyService publicKeyService;
-  final AccountRepository accountRepository;
   final HttpConfig httpConfig;
 
   const GetAddressesModal(
       {super.key,
       required this.httpConfig,
-      required this.accountRepository,
       required this.publicKeyService,
       required this.encryptionService,
       required this.addressService,
@@ -145,19 +139,21 @@ class GetAddressesModal extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final session = context.select<SessionStateCubit, SessionStateSuccess>(
+      (cubit) => cubit.state.successOrThrow(),
+    );
     return BlocProvider(
       create: (_) => GetAddressesBloc(
         httpConfig: httpConfig,
         passwordRequired:
             GetIt.I<SettingsRepository>().requirePasswordForCryptoOperations,
         inMemoryKeyRepository: GetIt.I<InMemoryKeyRepository>(),
-        accountRepository: accountRepository,
         publicKeyService: publicKeyService,
         encryptionService: encryptionService,
         walletRepository: walletRepository,
         importedAddressService: importedAddressService,
         addressService: addressService,
-        accounts: accounts,
+        accounts: session.accounts,
         addressRepository: addressRepository,
         importedAddressRepository: importedAddressRepository,
       ),
@@ -390,7 +386,6 @@ class _AppShellState extends State<AppShell> with TickerProviderStateMixin {
               unsignedPsbt: psbt,
               signInputs: signInputs,
               sighashTypes: sighashTypes,
-              accountRepository: GetIt.I<AccountRepository>(),
               addressRepository: GetIt.I<UnifiedAddressRepository>(),
               importedAddressService: GetIt.I.get<ImportedAddressService>(),
               transactionService: GetIt.I.get<TransactionService>(),

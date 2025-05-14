@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:get_it/get_it.dart';
-import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/imported_address_repository.dart';
 import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
@@ -203,7 +202,6 @@ class _ResetWalletFlowState extends State<ResetWalletFlow> {
     return BlocProvider(
       create: (context) => ResetBloc(
         walletRepository: GetIt.I.get<WalletRepository>(),
-        accountRepository: GetIt.I.get<AccountRepository>(),
         addressRepository: GetIt.I.get<AddressRepository>(),
         importedAddressRepository: GetIt.I.get<ImportedAddressRepository>(),
         transactionLocalRepository: GetIt.I.get<TransactionLocalRepository>(),

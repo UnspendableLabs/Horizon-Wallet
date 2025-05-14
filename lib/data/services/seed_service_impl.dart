@@ -6,6 +6,7 @@ import 'package:horizon/domain/services/seed_service.dart';
 import 'package:horizon/domain/entities/wallet_config.dart';
 import 'package:horizon/domain/entities/seed.dart';
 import 'package:horizon/domain/entities/seed_derivation.dart';
+import 'package:horizon/domain/entities/decryption_strategy.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/repositories/mnemonic_repository.dart';
 import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
@@ -27,7 +28,8 @@ class SeedServiceImpl implements SeedService {
 
   @override
   TaskEither<String, Seed> getForWalletConfig(
-      {required WalletConfig walletConfig}) {
+      {required WalletConfig walletConfig,
+      required DecryptionStrategy decryptionStrategy}) {
     return TaskEither.Do(($) async {
       final encryptedMnemonic_ =
           await $(_mnemonicRepository.get().toTaskEither());
@@ -35,14 +37,24 @@ class SeedServiceImpl implements SeedService {
       final encryptedMnemonic = await $(
           TaskEither.fromOption(encryptedMnemonic_, () => "Missing mnemonic"));
 
-      final inMemoryKey =
-          await $(TaskEither.fromTask(_inMemoryKeyRepository.getMnemonicKey()));
+      // end
 
-      final key = await $(TaskEither<String, String>.fromOption(
-          inMemoryKey, () => "Missing in-memory key"));
+      late final String mnemonic;
 
-      final mnemonic =
-          await $(_encryptionService.decryptWithKeyT(encryptedMnemonic, key));
+      switch (decryptionStrategy) {
+        case Password(password: final password):
+          mnemonic =
+              await $(_encryptionService.decryptT(encryptedMnemonic, password));
+          break;
+        case InMemoryKey():
+          final inMemoryKey = await $(
+              TaskEither.fromTask(_inMemoryKeyRepository.getMnemonicKey()));
+          final key = await $(TaskEither.fromOption(
+              inMemoryKey, () => "Missing in-memory key"));
+          mnemonic = await $(
+              _encryptionService.decryptWithKeyT(encryptedMnemonic, key));
+          break;
+      }
 
       final seed = await $(_getSeed(
           derivation: walletConfig.seedDerivation, mnemonic: mnemonic));

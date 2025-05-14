@@ -27,13 +27,14 @@ import 'package:horizon/presentation/screens/transactions/send/bloc/send_bloc.da
 import 'package:horizon/presentation/screens/transactions/send/bloc/send_event.dart';
 import 'package:horizon/presentation/common/transactions/quantity_display.dart';
 import 'package:horizon/domain/entities/compose_send.dart';
+import 'package:horizon/domain/entities/address_v2.dart';
 import 'package:horizon/presentation/common/transaction_stepper/view/steps/transaction_compose_page.dart';
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:horizon/presentation/session/bloc/session_state.dart';
 
 class SendPage extends StatefulWidget {
   final String assetName;
-  final List<String> addresses;
+  final List<AddressV2> addresses;
 
   const SendPage({
     super.key,
@@ -81,7 +82,7 @@ class _SendPageState extends State<SendPage> {
   void _handleDependenciesRequested(BuildContext context) {
     context.read<SendBloc>().add(SendDependenciesRequested(
           assetName: widget.assetName,
-          addresses: widget.addresses,
+          // addresses: widget.addresses,
         ));
   }
 
@@ -94,6 +95,7 @@ class _SendPageState extends State<SendPage> {
     return Builder(builder: (context) {
       return BlocProvider(
         create: (context) => SendBloc(
+          addresses: session.addresses,
           httpConfig: session.httpConfig,
           balanceRepository: GetIt.I<BalanceRepository>(),
           getFeeEstimatesUseCase: GetIt.I<GetFeeEstimatesUseCase>(),
@@ -105,7 +107,9 @@ class _SendPageState extends State<SendPage> {
           analyticsService: GetIt.I<AnalyticsService>(),
           logger: GetIt.I<Logger>(),
         )..add(SendDependenciesRequested(
-            assetName: widget.assetName, addresses: widget.addresses)),
+            assetName: widget.assetName, 
+            // addresses: widget.addresses
+            )),
         child: BlocConsumer<SendBloc,
             TransactionState<SendData, ComposeSendResponse>>(
           listener: (context, state) {},

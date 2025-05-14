@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:convert/convert.dart';
 import 'package:horizon/common/constants.dart';
 import 'package:horizon/domain/entities/address.dart';
+import 'package:horizon/domain/entities/address_v2.dart';
 import 'package:horizon/domain/entities/seed.dart';
 import 'package:horizon/domain/repositories/config_repository.dart';
 import 'package:horizon/domain/services/address_service.dart';
@@ -12,6 +13,7 @@ import 'package:horizon/js/bip32.dart' as bip32;
 import 'package:horizon/js/buffer.dart';
 import 'package:horizon/js/ecpair.dart' as ecpair;
 import 'package:horizon/js/tiny_secp256k1.dart' as tinysecp256k1js;
+import 'package:horizon/domain/entities/seed.dart';
 
 class AddressServiceImpl implements AddressService {
   final bip32.BIP32Factory _bip32 = bip32.BIP32Factory(tinysecp256k1js.ecc);
@@ -37,6 +39,25 @@ class AddressServiceImpl implements AddressService {
     String address = _bech32FromBip32(child, network.toBech32Prefix);
 
     return address;
+  }
+
+  @override
+  Future<String> deriveAddressPrivateKeyWIP({
+    required AddressV2 address,
+    required Seed seed,
+    required Network network,
+  }) async {
+    bip32.BIP32Interface root =
+        _bip32.fromSeed(Buffer.from(seed.bytes.toJS), network.toJS);
+
+    bip32.BIP32Interface child = _deriveChildKey(
+      path: address.path,
+      privKey: hex.encode(root.privateKey!.toDart),
+      chainCodeHex: hex.encode(root.chainCode.toDart),
+      network: network,
+    );
+
+    return hex.encode(child.privateKey!.toDart);
   }
 
   @override

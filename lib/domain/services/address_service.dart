@@ -1,20 +1,24 @@
 import 'package:horizon/common/constants.dart';
 import 'package:horizon/domain/entities/address.dart';
+import 'package:horizon/domain/entities/address_v2.dart';
 import 'package:horizon/domain/entities/seed.dart';
 import 'package:horizon/domain/entities/network.dart';
 
 enum AddressType { bech32, legacy }
 
 abstract class AddressService {
-
-
-  
+  // TODO: this should return address V2
   Future<String> deriveAddressWIP({
     required String path,
     required Seed seed,
     required Network network,
   });
-  
+
+  Future<String> deriveAddressPrivateKeyWIP({
+    required AddressV2 address,
+    required Seed seed,
+    required Network network,
+  });
 
   Future<Address> deriveAddressSegwit(
       {required String privKey,

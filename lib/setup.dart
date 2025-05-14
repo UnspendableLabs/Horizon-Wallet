@@ -488,6 +488,8 @@ void setup() {
           assetRepository: injector.get<AssetRepository>(),
           estimateXcpFeeRepository: GetIt.I.get<EstimateXcpFeeRepository>()));
 
+  injector.registerSingleton<SeedService>(SeedServiceImpl());
+
   injector
       .registerSingleton<ComposeTransactionUseCase>(ComposeTransactionUseCase(
     utxoRepository: GetIt.I.get<UtxoRepository>(),
@@ -514,9 +516,7 @@ void setup() {
   injector.registerSingleton<SignAndBroadcastTransactionUseCase>(
       SignAndBroadcastTransactionUseCase(
     inMemoryKeyRepository: GetIt.I.get<InMemoryKeyRepository>(),
-    addressRepository: GetIt.I.get<AddressRepository>(),
     importedAddressRepository: GetIt.I.get<ImportedAddressRepository>(),
-    walletRepository: GetIt.I.get<WalletRepository>(),
     utxoRepository: GetIt.I.get<UtxoRepository>(),
     encryptionService: GetIt.I.get<EncryptionService>(),
     addressService: GetIt.I.get<AddressService>(),
@@ -635,7 +635,6 @@ void setup() {
       inMemoryKeyRepository: GetIt.I<InMemoryKeyRepository>(),
       mnemonicRepository: GetIt.I<MnemonicRepository>()));
 
-  injector.registerSingleton<SeedService>(SeedServiceImpl());
   injector.registerSingleton<AddressV2Repository>(
       AddressV2RepositoryImpl(injector.get<DatabaseManager>().database));
 

@@ -5,7 +5,7 @@ import "package:horizon/data/sources/local/db.dart" as local;
 import "package:horizon/domain/entities/account.dart" as entity;
 import "package:horizon/domain/repositories/account_repository.dart";
 
-class AccountRepositoryImpl implements AccountRepository {
+class AccountRepositoryImpl implements AccountRepositoryDeprecated {
   // ignore: unused_field
   final local.DB _db;
   final AccountsDao _accountDao;

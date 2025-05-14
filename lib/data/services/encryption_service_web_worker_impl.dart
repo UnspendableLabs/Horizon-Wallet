@@ -93,6 +93,12 @@ class EncryptionServiceWebWorkerImpl implements EncryptionService {
   }
 
   @override
+  TaskEither<String, String> decryptT(String data, String password) {
+    return TaskEither.tryCatch(
+        () => decrypt(data, password), (error, _) => error.toString());
+  }
+
+  @override
   Future<String> decrypt(String data_, String password) async {
     final data = data_.substring(_argon2Prefix.length);
 

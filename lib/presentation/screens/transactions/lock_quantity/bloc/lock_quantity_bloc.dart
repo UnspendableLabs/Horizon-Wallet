@@ -192,35 +192,36 @@ class LockQuantityBloc extends Bloc<TransactionEvent,
     Emitter<TransactionState<LockQuantityData, ComposeIssuanceResponseVerbose>>
         emit,
   ) async {
-    try {
-      emit(state.copyWith(broadcastState: const BroadcastState.loading()));
-
-      final composeData = state.getComposeDataOrThrow();
-
-      await signAndBroadcastTransactionUseCase.call(
-          httpConfig: httpConfig,
-          decryptionStrategy: event.decryptionStrategy,
-          source: composeData.params.source,
-          rawtransaction: composeData.rawtransaction,
-          onSuccess: (txHex, txHash) async {
-            await writelocalTransactionUseCase.call(
-                hex: txHex, hash: txHash, httpConfig: httpConfig);
-
-            logger.info('lock quantity broadcasted txHash: $txHash');
-            analyticsService.trackAnonymousEvent(
-                'broadcast_tx_${transactionType.name}',
-                properties: {'distinct_id': uuid.v4()});
-
-            emit(state.copyWith(
-                broadcastState: BroadcastState.success(
-                    BroadcastStateSuccess(txHex: txHex, txHash: txHash))));
-          },
-          onError: (msg) {
-            emit(state.copyWith(broadcastState: BroadcastState.error(msg)));
-          });
-    } catch (e) {
-      emit(state.copyWith(broadcastState: BroadcastState.error(e.toString())));
-    }
+    throw UnimplementedError('lock quantiy not implemented yet');
+    // try {
+    //   emit(state.copyWith(broadcastState: const BroadcastState.loading()));
+    //
+    //   final composeData = state.getComposeDataOrThrow();
+    //
+    //   await signAndBroadcastTransactionUseCase.call(
+    //       httpConfig: httpConfig,
+    //       decryptionStrategy: event.decryptionStrategy,
+    //       source: composeData.params.source,
+    //       rawtransaction: composeData.rawtransaction,
+    //       onSuccess: (txHex, txHash) async {
+    //         await writelocalTransactionUseCase.call(
+    //             hex: txHex, hash: txHash, httpConfig: httpConfig);
+    //
+    //         logger.info('lock quantity broadcasted txHash: $txHash');
+    //         analyticsService.trackAnonymousEvent(
+    //             'broadcast_tx_${transactionType.name}',
+    //             properties: {'distinct_id': uuid.v4()});
+    //
+    //         emit(state.copyWith(
+    //             broadcastState: BroadcastState.success(
+    //                 BroadcastStateSuccess(txHex: txHex, txHash: txHash))));
+    //       },
+    //       onError: (msg) {
+    //         emit(state.copyWith(broadcastState: BroadcastState.error(msg)));
+    //       });
+    // } catch (e) {
+    //   emit(state.copyWith(broadcastState: BroadcastState.error(e.toString())));
+    // }
   }
 
   void _onFeeOptionSelected(

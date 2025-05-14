@@ -12,14 +12,12 @@ import 'package:get_it/get_it.dart';
 class OnboardingBloc extends Bloc<OnboardingEvent, RemoteDataState<bool>> {
   final Logger logger;
   final WalletRepository walletRepository;
-  final AccountRepository accountRepository;
   final AddressRepository addressRepository;
   final MnemonicRepository _mnemonicRepository;
 
   OnboardingBloc(
       {required this.logger,
       required this.walletRepository,
-      required this.accountRepository,
       required this.addressRepository,
       mnemonicRepository})
       : _mnemonicRepository =
@@ -40,18 +38,6 @@ class OnboardingBloc extends Bloc<OnboardingEvent, RemoteDataState<bool>> {
         emit(const RemoteDataState.error(onboardingErrorMessage));
         return;
       }
-
-      final accounts = await accountRepository.getAll();
-      if (accounts.isNotEmpty) {
-        emit(const RemoteDataState.error("no accounts biotch"));
-        return;
-      }
-      //
-      // final addresses = await addressRepository.getAll();
-      // if (addresses.isNotEmpty) {
-      //   emit(const RemoteDataState.error(onboardingErrorMessage));
-      //   return;
-      // }
 
       emit(const RemoteDataState.success(true));
     } catch (e) {

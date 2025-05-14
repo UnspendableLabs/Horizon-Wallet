@@ -34,12 +34,7 @@ class GenerateAccountBloc
         status: FormzSubmissionStatus.inProgress,
       ));
 
-      final walletConfig =
-          await _walletConfigRepository.getCurrent();
-
-      print("walletConfig.basePath: ${walletConfig.network}");
-      print("walletConfig.basePath: ${walletConfig.basePath}");
-      // TODO: current config needs to be dynamic.
+      final walletConfig = await _walletConfigRepository.getCurrent();
 
       try {
         await _walletConfigRepository.update(walletConfig.copyWith(
@@ -51,8 +46,6 @@ class GenerateAccountBloc
           status: FormzSubmissionStatus.initial,
         ));
       } catch (e, _) {
-        print(e);
-        print(_);
         emit(const GenerateAccountState(
           status: FormzSubmissionStatus.failure,
         ));

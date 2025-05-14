@@ -96,7 +96,6 @@ class _RBFPageState extends State<RBFPage> {
         transactionService: GetIt.I<TransactionService>(),
         bitcoindService: GetIt.I<BitcoindService>(),
         transactionLocalRepository: GetIt.I<TransactionLocalRepository>(),
-        accountRepository: GetIt.I<AccountRepository>(),
         addressRepository: GetIt.I<UnifiedAddressRepository>(),
         inMemoryKeyRepository: GetIt.I<InMemoryKeyRepository>(),
         encryptionService: GetIt.I<EncryptionService>(),

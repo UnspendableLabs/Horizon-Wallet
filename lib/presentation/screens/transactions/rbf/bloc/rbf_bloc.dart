@@ -15,7 +15,6 @@ import 'package:horizon/domain/entities/unified_address.dart';
 import 'package:horizon/domain/entities/utxo.dart';
 import 'package:horizon/domain/entities/wallet.dart';
 import 'package:horizon/domain/entities/http_config.dart';
-import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 import 'package:horizon/domain/repositories/settings_repository.dart';
@@ -74,7 +73,6 @@ class RBFBloc
   final BitcoindService bitcoindService;
   final TransactionLocalRepository transactionLocalRepository;
   final WriteLocalTransactionUseCase writelocalTransactionUseCase;
-  final AccountRepository accountRepository;
 
   RBFBloc({
     required this.httpConfig,
@@ -93,7 +91,6 @@ class RBFBloc
     required this.bitcoindService,
     required this.transactionLocalRepository,
     required this.writelocalTransactionUseCase,
-    required this.accountRepository,
   }) : super(TransactionState<RBFData, RBFComposeData>(
           formState: TransactionFormState<RBFData>(
             balancesState: const BalancesState.initial(),
@@ -308,26 +305,28 @@ class RBFBloc
 
   Future<String> _getAddressPrivKeyForAddress(
       String rootPrivKey, String chainCodeHex, Address address) async {
-    final account =
-        await accountRepository.getAccountByUuid(address.accountUuid);
-
-    if (account == null) {
-      throw Exception('Account not found.');
-    }
-
-    // Derive Address Private Key
-    final addressPrivKey = await addressService.deriveAddressPrivateKey(
-      rootPrivKey: rootPrivKey,
-      chainCodeHex: chainCodeHex,
-      purpose: account.purpose,
-      coin: account.coinType,
-      account: account.accountIndex,
-      change: '0',
-      index: address.index,
-      importFormat: account.importFormat,
-    );
-
-    return addressPrivKey;
+        throw UnimplementedError(
+          'getAddressPrivateKeyForAddress is not implemented yet.');
+    // final account =
+    //     await accountRepository.getAccountByUuid(address.accountUuid);
+    //
+    // if (account == null) {
+    //   throw Exception('Account not found.');
+    // }
+    //
+    // // Derive Address Private Key
+    // final addressPrivKey = await addressService.deriveAddressPrivateKey(
+    //   rootPrivKey: rootPrivKey,
+    //   chainCodeHex: chainCodeHex,
+    //   purpose: account.purpose,
+    //   coin: account.coinType,
+    //   account: account.accountIndex,
+    //   change: '0',
+    //   index: address.index,
+    //   importFormat: account.importFormat,
+    // );
+    //
+    // return addressPrivKey;
   }
 
   Future<String> _getAddressPrivKeyForImportedAddress(

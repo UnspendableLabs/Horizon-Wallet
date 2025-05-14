@@ -3,6 +3,7 @@ import 'package:formz/formz.dart';
 import './get_addresses_event.dart';
 import './get_addresses_state.dart';
 import 'package:horizon/domain/entities/account.dart';
+import 'package:horizon/domain/entities/account_v2.dart';
 import 'package:horizon/domain/entities/address.dart';
 import 'package:horizon/domain/entities/imported_address.dart';
 import 'package:horizon/domain/entities/wallet.dart';
@@ -21,12 +22,12 @@ import 'package:horizon/domain/entities/http_config.dart';
 
 class GetAddressesBloc extends Bloc<GetAddressesEvent, GetAddressesState> {
   final bool passwordRequired;
-  final List<Account> accounts;
+  final List<AccountV2> accounts;
   final AddressRepository addressRepository;
   final ImportedAddressRepository importedAddressRepository;
   final WalletRepository walletRepository;
   final EncryptionService encryptionService;
-  final AccountRepository accountRepository;
+  // final AccountRepository accountRepository;
   final AddressService addressService;
   final ImportedAddressService importedAddressService;
   final PublicKeyService publicKeyService;
@@ -44,7 +45,7 @@ class GetAddressesBloc extends Bloc<GetAddressesEvent, GetAddressesState> {
     required this.importedAddressRepository,
     required this.walletRepository,
     required this.encryptionService,
-    required this.accountRepository,
+    // required this.accountRepository,
     required this.publicKeyService,
   }) : super(GetAddressesState()) {
     on<AccountChanged>(_handleAccountChanged);
@@ -187,40 +188,43 @@ class GetAddressesBloc extends Bloc<GetAddressesEvent, GetAddressesState> {
 
   Future<String> _getAddressPrivKeyForAddress(
       Address address, DecryptionStrategy decryptionStrategy) async {
-    final account =
-        await accountRepository.getAccountByUuid(address.accountUuid);
-    if (account == null) {
-      throw GetAddressesException('Account not found.');
-    }
 
-    final wallet = await walletRepository.getWallet(account.walletUuid);
-
-    // Decrypt Root Private Key
-    String decryptedRootPrivKey;
-    try {
-      decryptedRootPrivKey = switch (decryptionStrategy) {
-        Password(password: var password) =>
-          await encryptionService.decrypt(wallet!.encryptedPrivKey, password),
-        InMemoryKey() => await encryptionService.decryptWithKey(
-            wallet!.encryptedPrivKey, (await inMemoryKeyRepository.get())!)
-      };
-    } catch (e) {
-      throw GetAddressesException('Incorrect password.');
-    }
-
-    // Derive Address Private Key
-    final addressPrivKey = await addressService.deriveAddressPrivateKey(
-      rootPrivKey: decryptedRootPrivKey,
-      chainCodeHex: wallet.chainCodeHex,
-      purpose: account.purpose,
-      coin: account.coinType,
-      account: account.accountIndex,
-      change: '0',
-      index: address.index,
-      importFormat: account.importFormat,
-    );
-
-    return addressPrivKey;
+    throw UnimplementedError(
+      'This function is not implemented yet. Please implement it.');
+    // final account =
+    //     await accountRepository.getAccountByUuid(address.accountUuid);
+    // if (account == null) {
+    //   throw GetAddressesException('Account not found.');
+    // }
+    //
+    // final wallet = await walletRepository.getWallet(account.walletUuid);
+    //
+    // // Decrypt Root Private Key
+    // String decryptedRootPrivKey;
+    // try {
+    //   decryptedRootPrivKey = switch (decryptionStrategy) {
+    //     Password(password: var password) =>
+    //       await encryptionService.decrypt(wallet!.encryptedPrivKey, password),
+    //     InMemoryKey() => await encryptionService.decryptWithKey(
+    //         wallet!.encryptedPrivKey, (await inMemoryKeyRepository.get())!)
+    //   };
+    // } catch (e) {
+    //   throw GetAddressesException('Incorrect password.');
+    // }
+    //
+    // // Derive Address Private Key
+    // final addressPrivKey = await addressService.deriveAddressPrivateKey(
+    //   rootPrivKey: decryptedRootPrivKey,
+    //   chainCodeHex: wallet.chainCodeHex,
+    //   purpose: account.purpose,
+    //   coin: account.coinType,
+    //   account: account.accountIndex,
+    //   change: '0',
+    //   index: address.index,
+    //   importFormat: account.importFormat,
+    // );
+    //
+    // return addressPrivKey;
   }
 
   Future<String> _getAddressPrivKeyForImportedAddress(
