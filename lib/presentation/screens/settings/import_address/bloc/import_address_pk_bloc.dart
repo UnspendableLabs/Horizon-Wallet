@@ -1,6 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:horizon/domain/entities/http_config.dart';
-import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/imported_address_repository.dart';
 import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 import 'package:horizon/domain/services/address_service.dart';
@@ -13,7 +12,6 @@ class ImportAddressPkBloc
     extends Bloc<ImportAddressPkEvent, ImportAddressPkState> {
   final EncryptionService encryptionService;
   final AddressService addressService;
-  final AddressRepository addressRepository;
   final ImportedAddressRepository importedAddressRepository;
   final ImportedAddressService importedAddressService;
   final InMemoryKeyRepository inMemoryKeyRepository;
@@ -22,7 +20,6 @@ class ImportAddressPkBloc
   ImportAddressPkBloc({
     required this.encryptionService,
     required this.addressService,
-    required this.addressRepository,
     required this.importedAddressRepository,
     required this.importedAddressService,
     required this.inMemoryKeyRepository,

@@ -107,7 +107,6 @@ class SignPsbtModal extends StatelessWidget {
 class GetAddressesModal extends StatelessWidget {
   final int tabId;
   final String requestId;
-  final AddressRepository addressRepository;
   final ImportedAddressRepository importedAddressRepository;
   final RPCGetAddressesSuccessCallback onSuccess;
   final AddressService addressService;
@@ -125,7 +124,6 @@ class GetAddressesModal extends StatelessWidget {
       required this.importedAddressService,
       required this.tabId,
       required this.requestId,
-      required this.addressRepository,
       required this.importedAddressRepository,
       required this.onSuccess});
 
@@ -145,7 +143,6 @@ class GetAddressesModal extends StatelessWidget {
         importedAddressService: importedAddressService,
         addressService: addressService,
         accounts: session.accounts,
-        addressRepository: addressRepository,
         importedAddressRepository: importedAddressRepository,
       ),
       child: GetAddressesForm(

@@ -5,7 +5,7 @@ import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/imported_address_repository.dart';
 
 class UnifiedAddressRepositoryImpl implements UnifiedAddressRepository {
-  final AddressRepository addressRepository;
+  final AddressRepositoryDeprecated addressRepository;
   final ImportedAddressRepository importedAddressRepository;
 
   const UnifiedAddressRepositoryImpl({

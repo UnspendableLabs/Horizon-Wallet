@@ -200,7 +200,7 @@ class _ResetWalletFlowState extends State<ResetWalletFlow> {
   Widget _buildFinalStep() {
     return BlocProvider(
       create: (context) => ResetBloc(
-        addressRepository: GetIt.I.get<AddressRepository>(),
+        addressRepository: GetIt.I.get<AddressRepositoryDeprecated>(),
         importedAddressRepository: GetIt.I.get<ImportedAddressRepository>(),
         transactionLocalRepository: GetIt.I.get<TransactionLocalRepository>(),
         analyticsService: GetIt.I.get<AnalyticsService>(),

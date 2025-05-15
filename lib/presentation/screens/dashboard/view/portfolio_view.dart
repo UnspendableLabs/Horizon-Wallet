@@ -4,7 +4,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/core/logging/logger.dart';
-import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 import 'package:horizon/domain/repositories/events_repository.dart';
@@ -104,7 +103,6 @@ class _PortfolioViewState extends State<PortfolioView>
             logger: GetIt.I.get<Logger>(),
             addresses: addresses,
             eventsRepository: GetIt.I.get<EventsRepository>(),
-            addressRepository: GetIt.I.get<AddressRepository>(),
             bitcoinRepository: GetIt.I.get<BitcoinRepository>(),
             transactionLocalRepository:
                 GetIt.I.get<TransactionLocalRepository>(),

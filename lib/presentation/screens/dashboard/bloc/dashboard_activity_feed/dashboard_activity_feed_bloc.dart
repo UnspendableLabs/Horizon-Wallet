@@ -6,7 +6,6 @@ import "dashboard_activity_feed_event.dart";
 import "dashboard_activity_feed_state.dart";
 
 import 'package:horizon/domain/repositories/bitcoin_repository.dart';
-import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/transaction_local_repository.dart';
 import 'package:horizon/domain/repositories/events_repository.dart';
 import 'package:horizon/domain/entities/event.dart';
@@ -52,7 +51,6 @@ class DashboardActivityFeedBloc
   int pageSize;
   TransactionLocalRepository transactionLocalRepository;
   EventsRepository eventsRepository;
-  AddressRepository addressRepository;
   BitcoinRepository bitcoinRepository;
   bool _isLoading = false; // New flag to track loading state
   bool _isCancelled = false;
@@ -64,7 +62,6 @@ class DashboardActivityFeedBloc
       required this.eventsRepository,
       required this.pageSize,
       required this.transactionLocalRepository,
-      required this.addressRepository,
       required this.bitcoinRepository})
       : super(DashboardActivityFeedStateInitial()) {
     on<StartPolling>(_onStartPolling);

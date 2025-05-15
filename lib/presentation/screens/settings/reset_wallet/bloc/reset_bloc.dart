@@ -13,7 +13,7 @@ import 'package:logger/logger.dart';
 class ResetBloc extends Bloc<ResetEvent, ResetState> {
   final logger = Logger();
 
-  final AddressRepository addressRepository;
+  final AddressRepositoryDeprecated addressRepository;
   final ImportedAddressRepository importedAddressRepository;
   final CacheProvider cacheProvider;
   final TransactionLocalRepository transactionLocalRepository;

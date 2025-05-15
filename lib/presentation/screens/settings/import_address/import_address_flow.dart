@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/common/constants.dart';
-import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/imported_address_repository.dart';
 import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 import 'package:horizon/domain/services/address_service.dart';
@@ -34,7 +33,6 @@ class ImportAddressFlow extends StatelessWidget {
         httpConfig: session.httpConfig,
         encryptionService: GetIt.I.get<EncryptionService>(),
         addressService: GetIt.I.get<AddressService>(),
-        addressRepository: GetIt.I.get<AddressRepository>(),
         importedAddressRepository: GetIt.I.get<ImportedAddressRepository>(),
         importedAddressService: GetIt.I.get<ImportedAddressService>(),
         inMemoryKeyRepository: GetIt.I.get<InMemoryKeyRepository>(),

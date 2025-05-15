@@ -393,7 +393,7 @@ void setup() {
     secureKVService: GetIt.I.get<SecureKVService>(),
   ));
 
-  injector.registerSingleton<AddressRepository>(AddressRepositoryImpl(
+  injector.registerSingleton<AddressRepositoryDeprecated>(AddressRepositoryImpl(
     injector.get<DatabaseManager>().database,
   ));
   injector.registerSingleton<ImportedAddressRepository>(
@@ -401,20 +401,18 @@ void setup() {
 
   injector.registerSingleton<UnifiedAddressRepository>(
     UnifiedAddressRepositoryImpl(
-      addressRepository: GetIt.I.get<AddressRepository>(),
+      addressRepository: GetIt.I.get<AddressRepositoryDeprecated>(),
       importedAddressRepository: GetIt.I.get<ImportedAddressRepository>(),
     ),
   );
 
   injector.registerSingleton<OrderRepository>(OrderRepositoryImpl());
 
-  injector.registerSingleton<TransactionRepository>(TransactionRepositoryImpl(
-    addressRepository: GetIt.I.get<AddressRepository>(),
-  ));
+  injector
+      .registerSingleton<TransactionRepository>(TransactionRepositoryImpl());
 
   injector.registerSingleton<TransactionLocalRepository>(
       TransactionLocalRepositoryImpl(
-          addressRepository: GetIt.I.get<AddressRepository>(),
           transactionDao:
               TransactionsDao(injector.get<DatabaseManager>().database)));
 

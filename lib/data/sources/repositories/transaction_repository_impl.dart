@@ -4,7 +4,6 @@ import 'package:horizon/data/sources/network/api/v2_api.dart' as api;
 import 'package:horizon/domain/entities/transaction_info.dart';
 import 'package:horizon/domain/entities/transaction_unpacked.dart'
     as unpacked_entity;
-import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/transaction_repository.dart';
 import 'package:horizon/domain/entities/http_config.dart';
 import 'package:horizon/data/sources/network/counterparty_client_factory.dart';
@@ -14,10 +13,8 @@ import 'package:get_it/get_it.dart';
 
 class TransactionRepositoryImpl implements TransactionRepository {
   final CounterpartyClientFactory _counterpartyClientFactory;
-  final AddressRepository addressRepository;
 
   TransactionRepositoryImpl({
-    required this.addressRepository,
     CounterpartyClientFactory? counterpartyClientFactory,
   }) : _counterpartyClientFactory =
             counterpartyClientFactory ?? GetIt.I<CounterpartyClientFactory>();
