@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:get_it/get_it.dart';
-import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/repositories/settings_repository.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
@@ -155,21 +154,25 @@ class _PasswordProtectedSwitchState extends State<PasswordProtectedSwitch> {
                 ),
                 TextButton(
                   onPressed: () async {
-                    try {
-                      final enteredPassword = controller.text;
-                      final wallet =
-                          await GetIt.I<WalletRepository>().getCurrentWallet();
-                      await GetIt.I<EncryptionService>()
-                          .decrypt(wallet!.encryptedPrivKey, enteredPassword);
+                    // TODO: this really should not all be mediated in this callback...
+                    throw UnimplementedError(
+                        "TODO: implement password prompt logic");
 
-                      if (dialogContext.mounted) {
-                        Navigator.of(dialogContext).pop(true);
-                      }
-                    } catch (e) {
-                      setState(() {
-                        error = "Invalid password";
-                      });
-                    }
+                    // try {
+                    //   final enteredPassword = controller.text;
+                    //   final wallet =
+                    //       await GetIt.I<WalletRepository>().getCurrentWallet();
+                    //   await GetIt.I<EncryptionService>()
+                    //       .decrypt(wallet!.encryptedPrivKey, enteredPassword);
+                    //
+                    //   if (dialogContext.mounted) {
+                    //     Navigator.of(dialogContext).pop(true);
+                    //   }
+                    // } catch (e) {
+                    //   setState(() {
+                    //     error = "Invalid password";
+                    //   });
+                    // }
                   },
                   child: const Text('OK'),
                 ),

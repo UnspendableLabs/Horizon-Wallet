@@ -154,27 +154,23 @@ class BalanceRepositoryImpl implements BalanceRepository {
       {required String address, required HttpConfig httpConfig}) async {
     final info = await bitcoinRepository.getAddressInfo(
         address: address, httpConfig: httpConfig);
-    return info.fold((failure) {
-      throw Exception('Failed to get address info for $address: $failure');
-    }, (success) {
-      final funded = success.chainStats.fundedTxoSum;
-      final spent = success.chainStats.spentTxoSum;
-      final quantity = funded - spent;
-      final quantityNormalized = satoshisToBtc(quantity).toStringAsFixed(8);
+    final funded = info.chainStats.fundedTxoSum;
+    final spent = info.chainStats.spentTxoSum;
+    final quantity = funded - spent;
+    final quantityNormalized = satoshisToBtc(quantity).toStringAsFixed(8);
 
-      return b.Balance(
-          address: address,
-          quantity: quantity,
-          quantityNormalized: quantityNormalized,
-          asset: 'BTC',
-          // TODO: this is a bit of a hack
-          assetInfo: const ai.AssetInfo(
-            assetLongname: 'BTC',
-            description: 'Bitcoin',
-            divisible: true,
-            locked: false,
-          ));
-    });
+    return b.Balance(
+        address: address,
+        quantity: quantity,
+        quantityNormalized: quantityNormalized,
+        asset: 'BTC',
+        // TODO: this is a bit of a hack
+        assetInfo: const ai.AssetInfo(
+          assetLongname: 'BTC',
+          description: 'Bitcoin',
+          divisible: true,
+          locked: false,
+        ));
   }
 
   Future<mba.MultiAddressBalance> _getBtcBalancesForAddresses(

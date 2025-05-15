@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
-import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/common/widgets/numbered_grid.dart';
@@ -102,7 +101,6 @@ class _SeedPhraseFlowState extends State<SeedPhraseFlow> {
                   builder: (BuildContext dialogContext) {
                     return BlocProvider(
                       create: (context) => ViewSeedPhraseBloc(
-                        walletRepository: GetIt.I.get<WalletRepository>(),
                         encryptionService: GetIt.I.get<EncryptionService>(),
                       ),
                       child:

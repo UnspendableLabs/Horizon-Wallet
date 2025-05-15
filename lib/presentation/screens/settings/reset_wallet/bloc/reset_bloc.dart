@@ -15,7 +15,7 @@ import 'package:logger/logger.dart';
 class ResetBloc extends Bloc<ResetEvent, ResetState> {
   final logger = Logger();
 
-  final WalletRepository walletRepository;
+
   final AddressRepository addressRepository;
   final ImportedAddressRepository importedAddressRepository;
   final CacheProvider cacheProvider;
@@ -26,7 +26,6 @@ class ResetBloc extends Bloc<ResetEvent, ResetState> {
 
   ResetBloc({
     required this.inMemoryKeyRepository,
-    required this.walletRepository,
     required this.addressRepository,
     required this.importedAddressRepository,
     required this.transactionLocalRepository,
@@ -42,23 +41,23 @@ class ResetBloc extends Bloc<ResetEvent, ResetState> {
 
     throw UnimplementedError("Reset event handling not implemented");
 
-    await walletRepository.deleteAllWallets();
-    await addressRepository.deleteAllAddresses();
-    await importedAddressRepository.deleteAllImportedAddresses();
-    await transactionLocalRepository.deleteAllTransactions();
-    // logout effects
-    await inMemoryKeyRepository.delete();
-    await kvService.delete(key: kInactivityDeadlineKey);
-
-    final isDarkMode = cacheProvider.getBool("isDarkMode");
-
-    await cacheProvider.removeAll();
-
-    analyticsService.reset();
-
-    await cacheProvider.setBool("isDarkMode", isDarkMode ?? true);
-
-    logger.d('emit reset state');
-    emit(const ResetState(status: ResetStatus.completed));
+    // await walletRepository.deleteAllWallets();
+    // await addressRepository.deleteAllAddresses();
+    // await importedAddressRepository.deleteAllImportedAddresses();
+    // await transactionLocalRepository.deleteAllTransactions();
+    // // logout effects
+    // await inMemoryKeyRepository.delete();
+    // await kvService.delete(key: kInactivityDeadlineKey);
+    //
+    // final isDarkMode = cacheProvider.getBool("isDarkMode");
+    //
+    // await cacheProvider.removeAll();
+    //
+    // analyticsService.reset();
+    //
+    // await cacheProvider.setBool("isDarkMode", isDarkMode ?? true);
+    //
+    // logger.d('emit reset state');
+    // emit(const ResetState(status: ResetStatus.completed));
   }
 }

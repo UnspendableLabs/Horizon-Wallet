@@ -4,7 +4,7 @@ import "package:horizon/data/sources/local/db.dart" as local;
 import "package:horizon/domain/entities/wallet.dart" as entity;
 import "package:horizon/domain/repositories/wallet_repository.dart";
 
-class WalletRepositoryImpl implements WalletRepository {
+class WalletRepositoryImpl implements WalletRepositoryDeprecated {
   // ignore: unused_field
   final local.DB _db;
   final WalletsDao _walletDao;

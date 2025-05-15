@@ -148,14 +148,8 @@ class VerboseEventMapper {
       return VerboseMoveToUtxoEventMapper.toDomain(apiEvent);
     }
 
-    final BitcoinTx transactionInfo = await bitcoinRepository
-        .getTransaction(txid: apiEvent.txHash!, httpConfig: httpConfig)
-        .then(
-          (either) => either.fold(
-            (error) => throw Exception("GetTransactionInfo failure"),
-            (transactionInfo) => transactionInfo,
-          ),
-        );
+    final BitcoinTx transactionInfo = await bitcoinRepository.getTransaction(
+        txid: apiEvent.txHash!, httpConfig: httpConfig);
 
     // atomic swaps will have at least 2 different input sources
     final isAtomicSwap = _isAtomicSwap(transactionInfo);

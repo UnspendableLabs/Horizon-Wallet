@@ -113,13 +113,13 @@ class SessionStateCubit extends Cubit<SessionState> {
         super(const SessionState.initial());
 
   Future<GetSessionStateResponse> _getSessionState() async {
-    final mnemonic = await _mnemonicRepository.get().run();
+    final mnemonic = await _mnemonicRepository.get();
 
     if (mnemonic.isNone()) {
       return NoWallet();
     }
 
-    final mnemonicKey = await inMemoryKeyRepository.getMnemonicKey().run();
+    final mnemonicKey = await inMemoryKeyRepository.getMnemonicKey();
 
     if (mnemonicKey.isNone()) {
       return LoggedOut();
@@ -341,7 +341,7 @@ class SessionStateCubit extends Cubit<SessionState> {
   void refresh() async {
     // this seems to be called when you create a new account
     try {
-      final mnemonic = await _mnemonicRepository.get().run();
+      final mnemonic = await _mnemonicRepository.get();
 
       if (mnemonic.isNone()) {
         emit(const SessionState.onboarding(Onboarding.initial()));

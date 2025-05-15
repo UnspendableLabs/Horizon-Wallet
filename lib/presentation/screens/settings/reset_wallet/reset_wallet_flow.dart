@@ -6,7 +6,6 @@ import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/imported_address_repository.dart';
 import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 import 'package:horizon/domain/repositories/transaction_local_repository.dart';
-import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/domain/services/secure_kv_service.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
@@ -201,7 +200,6 @@ class _ResetWalletFlowState extends State<ResetWalletFlow> {
   Widget _buildFinalStep() {
     return BlocProvider(
       create: (context) => ResetBloc(
-        walletRepository: GetIt.I.get<WalletRepository>(),
         addressRepository: GetIt.I.get<AddressRepository>(),
         importedAddressRepository: GetIt.I.get<ImportedAddressRepository>(),
         transactionLocalRepository: GetIt.I.get<TransactionLocalRepository>(),

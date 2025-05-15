@@ -3,9 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/core/logging/logger.dart';
-import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/config_repository.dart';
-import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/presentation/common/footer/view/footer.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 import 'package:horizon/presentation/screens/onboarding/bloc/onboarding_bloc.dart';
@@ -30,8 +28,6 @@ class OnboardingScreenState extends State<OnboardingScreen> {
     return BlocProvider(
       create: (context) => OnboardingBloc(
         logger: GetIt.I.get<Logger>(),
-        walletRepository: GetIt.I.get<WalletRepository>(),
-        addressRepository: GetIt.I.get<AddressRepository>(),
       )..add(FetchOnboardingState()),
       child: const OnboardingView(),
     );

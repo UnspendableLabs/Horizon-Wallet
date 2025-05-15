@@ -140,8 +140,10 @@ class SettingsAdvancedBloc
     });
 
     final walletConfigError = await walletConfigChange
-        .map((cfg) => _seedService.getForWalletConfig(
-            walletConfig: cfg, decryptionStrategy: InMemoryKey()))
+        .map((cfg) => _seedService.getForWalletConfigT(
+            onError: (err) => "invariant: no seed for wallet config",
+            walletConfig: cfg,
+            decryptionStrategy: InMemoryKey()))
         .map((taskEither) => taskEither.swap().run().then(Option.fromEither))
         .getOrElse(() => Future.value(const Option.none()));
 

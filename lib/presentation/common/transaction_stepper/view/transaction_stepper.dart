@@ -3,7 +3,6 @@ import 'package:get_it/get_it.dart';
 import 'package:horizon/domain/entities/decryption_strategy.dart';
 import 'package:horizon/domain/entities/fee_option.dart';
 import 'package:horizon/domain/repositories/settings_repository.dart';
-import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/common/transaction_stepper/bloc/transaction_state.dart';
@@ -113,30 +112,32 @@ class TransactionStepperState<T, R> extends State<TransactionStepper<T, R>> {
                 builder: (context, setState) {
                   return HorizonPasswordPrompt(
                     onPasswordSubmitted: (password) async {
-                      setState(() {
-                        isLoading = true;
-                        errorText = null;
-                      });
-                      try {
-                        final wallet = await GetIt.I<WalletRepository>()
-                            .getCurrentWallet();
-                        await GetIt.I<EncryptionService>()
-                            .decrypt(wallet!.encryptedPrivKey, password);
-                      } catch (e) {
-                        if (dialogContext.mounted) {
-                          setState(() {
-                            errorText = 'Invalid Password';
-                            isLoading = false;
-                          });
-                        }
-                        return;
-                      }
-
-                      widget.confirmationStepContent
-                          .onNext(decryptionStrategy: Password(password));
-                      if (dialogContext.mounted) {
-                        Navigator.of(dialogContext).pop(true);
-                      }
+                      throw UnimplementedError(
+                          'Password decryption not implemented');
+                      // setState(() {
+                      //   isLoading = true;
+                      //   errorText = null;
+                      // });
+                      // try {
+                      //   // final wallet = await GetIt.I<WalletRepository>()
+                      //   //     .getCurrentWallet();
+                      //   // await GetIt.I<EncryptionService>()
+                      //   //     .decrypt(wallet!.encryptedPrivKey, password);
+                      // } catch (e) {
+                      //   if (dialogContext.mounted) {
+                      //     setState(() {
+                      //       errorText = 'Invalid Password';
+                      //       isLoading = false;
+                      //     });
+                      //   }
+                      //   return;
+                      // }
+                      //
+                      // widget.confirmationStepContent
+                      //     .onNext(decryptionStrategy: Password(password));
+                      // if (dialogContext.mounted) {
+                      //   Navigator.of(dialogContext).pop(true);
+                      // }
                     },
                     onCancel: () {
                       setState(() {

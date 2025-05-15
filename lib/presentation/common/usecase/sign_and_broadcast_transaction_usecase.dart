@@ -84,8 +84,10 @@ class SignAndBroadcastTransactionUseCase<R extends ComposeResponse> {
 
       final walletConfig = await $(_getWalletConfig());
 
-      final seed = await $(_seedService.getForWalletConfig(
-          walletConfig: walletConfig, decryptionStrategy: decryptionStrategy));
+      final seed = await $(_seedService.getForWalletConfigT(
+          onError: (_) => "invariant: could not derive seed",
+          walletConfig: walletConfig,
+          decryptionStrategy: decryptionStrategy));
 
       final pk = await $(_getAddressPrivateKey(
           address: source, seed: seed, network: httpConfig.network));

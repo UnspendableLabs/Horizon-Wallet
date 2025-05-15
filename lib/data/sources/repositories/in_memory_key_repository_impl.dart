@@ -1,5 +1,5 @@
+import 'package:fpdart/fpdart.dart';
 import 'dart:convert';
-import "package:fpdart/fpdart.dart";
 import 'package:horizon/domain/services/secure_kv_service.dart';
 import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 
@@ -14,7 +14,6 @@ class InMemoryKeyRepositoryImpl implements InMemoryKeyRepository {
 
   @override
   Future<String?> get() async {
-    print("why are we calln this");
     return await secureKVService.read(key: _key);
   }
 
@@ -25,14 +24,12 @@ class InMemoryKeyRepositoryImpl implements InMemoryKeyRepository {
 
   @override
   Future<void> setMnemonicKey({required String key}) async {
-    print("setting mnemonic key");
     return await secureKVService.write(key: _mnemonicKey, value: key);
   }
 
   @override
-  Task<Option<String>> getMnemonicKey() {
-    return Task(() => secureKVService.read(key: _mnemonicKey))
-        .map(Option.fromNullable);
+  Future<Option<String>> getMnemonicKey() async {
+    return Option.fromNullable(await secureKVService.read(key: _mnemonicKey));
   }
 
   @override

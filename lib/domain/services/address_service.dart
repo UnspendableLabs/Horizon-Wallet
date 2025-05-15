@@ -1,4 +1,3 @@
-
 import 'package:fpdart/fpdart.dart';
 import 'package:horizon/common/constants.dart';
 import 'package:horizon/domain/entities/address.dart';
@@ -10,7 +9,7 @@ enum AddressType { bech32, legacy }
 
 abstract class AddressService {
   // TODO: this should return address V2
-  Future<String> deriveAddressWIP({
+  Future<AddressV2> deriveAddressWIP({
     required String path,
     required Seed seed,
     required Network network,
@@ -80,19 +79,16 @@ abstract class AddressService {
 }
 
 extension AddressServiceX on AddressService {
-
-
-  TaskEither<String, String> deriveAddressWIPT({
+  TaskEither<String, AddressV2> deriveAddressWIPT({
     required String path,
     required Seed seed,
     required Network network,
   }) {
     return TaskEither.tryCatch(
       () => deriveAddressWIP(path: path, seed: seed, network: network),
-      (e, _) => e.toString(),
+      (e_, _) => "error deriving address",
     );
   }
-
 
   TaskEither<String, String> deriveAddressPrivateKeyWIPT({
     required AddressV2 address,
@@ -100,10 +96,9 @@ extension AddressServiceX on AddressService {
     required Network network,
   }) {
     return TaskEither.tryCatch(
-      () => deriveAddressPrivateKeyWIP(address: address, seed: seed, network: network),
-      (e, _) => e.toString(),
+      () => deriveAddressPrivateKeyWIP(
+          address: address, seed: seed, network: network),
+      (e, _) => "error deriving address private key",
     );
   }
-
 }
-

@@ -201,15 +201,10 @@ class TransactionServiceImpl implements TransactionService {
           input.script = script.output;
           final txHex = await bitcoinRepository.getTransactionHex(
               txid: prev.txid, httpConfig: httpConfig);
-          txHex.fold(
-            (l) => throw TransactionServiceException(
-                'Failed to get transaction: ${l.message}'),
-            (tx) {
-              input.nonWitnessUtxo =
-                  Buffer.from(Uint8List.fromList(hex.decode(tx)).toJS);
-              psbt.addInput(input);
-            },
-          );
+
+          input.nonWitnessUtxo =
+              Buffer.from(Uint8List.fromList(hex.decode(txHex)).toJS);
+          psbt.addInput(input);
         }
       } else {
         throw TransactionServiceException(
@@ -392,14 +387,9 @@ class TransactionServiceImpl implements TransactionService {
           input.script = sourceScript.output;
           final txHex = await bitcoinRepository.getTransactionHex(
               txid: prev.txid, httpConfig: httpConfig);
-          txHex.fold(
-            (l) => throw TransactionServiceException(
-                'Failed to get transaction: ${l.message}'),
-            (tx) {
-              input.nonWitnessUtxo =
-                  Buffer.from(Uint8List.fromList(hex.decode(tx)).toJS);
-            },
-          );
+
+          input.nonWitnessUtxo =
+              Buffer.from(Uint8List.fromList(hex.decode(txHex)).toJS);
         }
         inputSetValue += prev.value;
         psbt.addInput(input);
@@ -444,16 +434,11 @@ class TransactionServiceImpl implements TransactionService {
         // For legacy inputs, fetch the full previous transaction
         // TODO: for chaining transactions, the previous transaction may not exist yet. we will need to find another way to get the full tx
         // for now, we will just throw an error if the previous transaction is not found
-        final txHexResult = await bitcoinRepository.getTransactionHex(
+        final txHex = await bitcoinRepository.getTransactionHex(
             txid: utxo.txid, httpConfig: httpConfig);
-        txHexResult.fold(
-          (error) => throw TransactionServiceException(
-              'Failed to get transaction: ${error.message}'),
-          (txHex) {
-            txInput['nonWitnessUtxo'] =
-                Buffer.from(Uint8List.fromList(hex.decode(txHex)).toJS);
-          },
-        );
+
+        txInput['nonWitnessUtxo'] =
+            Buffer.from(Uint8List.fromList(hex.decode(txHex)).toJS);
       }
 
       psbt.addInput(txInput.jsify() as bitcoinjs.TxInput);

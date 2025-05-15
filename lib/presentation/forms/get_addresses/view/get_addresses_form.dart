@@ -5,12 +5,12 @@ import 'package:horizon/presentation/common/colors.dart';
 import 'package:horizon/presentation/forms/get_addresses/bloc/get_addresses_bloc.dart';
 import 'package:horizon/presentation/forms/get_addresses/bloc/get_addresses_state.dart';
 import 'package:horizon/presentation/forms/get_addresses/bloc/get_addresses_event.dart';
-import 'package:horizon/domain/entities/account.dart';
+import 'package:horizon/domain/entities/account_v2.dart';
 import 'package:horizon/domain/entities/address_rpc.dart';
 
 class GetAddressesForm extends StatelessWidget {
   final bool passwordRequired;
-  final List<Account> accounts;
+  final List<AccountV2> accounts;
   final void Function(List<AddressRpc>) onSuccess;
 
   const GetAddressesForm({
@@ -72,15 +72,19 @@ class GetAddressesForm extends StatelessWidget {
                         ? null
                         : state.account.value,
                     onChanged: (value) {
+                      final account = accounts.firstWhere(
+                        (account) => account.hash == value,
+                      );
+
                       if (value != null) {
                         context
                             .read<GetAddressesBloc>()
-                            .add(AccountChanged(value));
+                            .add(AccountChanged(account));
                       }
                     },
                     items: accounts.map<DropdownMenuItem<String>>((account) {
                       return DropdownMenuItem(
-                        value: account.uuid,
+                        value: account.hash,
                         child: Text(account.name),
                       );
                     }).toList(),

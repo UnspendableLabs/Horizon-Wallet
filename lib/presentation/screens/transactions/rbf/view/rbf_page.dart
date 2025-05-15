@@ -84,6 +84,7 @@ class _RBFPageState extends State<RBFPage> {
 
     return BlocProvider(
       create: (context) => RBFBloc(
+        address: session.addresses.first, // TODO: slight smell
         httpConfig: session.httpConfig,
         getFeeEstimatesUseCase: GetIt.I<GetFeeEstimatesUseCase>(),
         bitcoinRepository: GetIt.I<BitcoinRepository>(),
@@ -99,7 +100,6 @@ class _RBFPageState extends State<RBFPage> {
         encryptionService: GetIt.I<EncryptionService>(),
         addressService: GetIt.I<AddressService>(),
         importedAddressService: GetIt.I<ImportedAddressService>(),
-        walletRepository: GetIt.I<WalletRepository>(),
       )..add(RBFDependenciesRequested(
           txHash: widget.txHash, address: widget.address)),
       child: BlocConsumer<RBFBloc, TransactionState<RBFData, RBFComposeData>>(

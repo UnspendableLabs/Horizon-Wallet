@@ -161,7 +161,6 @@ class DashboardActivityFeedBloc
         // TODO: we should at least log that there was an error here.
         //       but correct behavior is to just ignore.
         newBitcoinTransactions = bitcoinTxsE
-            .getOrElse((left) => throw left)
             .where(
               (tx) => !tx.isCounterpartyTx(logger),
             )
@@ -175,7 +174,6 @@ class DashboardActivityFeedBloc
 
         // TODO: log possible excetion here
         final bitcoinTxs = bitcoinTxsE
-            .getOrElse((left) => throw left)
             .where(
               (tx) => !tx.isCounterpartyTx(logger),
             )
@@ -191,7 +189,7 @@ class DashboardActivityFeedBloc
 
       final blockHeightE =
           await bitcoinRepository.getBlockHeight(httpConfig: httpConfig);
-      final blockHeight = blockHeightE.getOrElse((left) => throw left);
+      final blockHeight = blockHeightE;
 
       // 3) dedupe by tx hash
       final deduplicatedActivityFeedItems = <ActivityFeedItem>[];
@@ -461,7 +459,6 @@ class DashboardActivityFeedBloc
           addresses: addresses, httpConfig: httpConfig);
 
       final btcMempoolList = btcMempoolE
-          .getOrElse((left) => throw left)
           .where(
             (tx) => !tx.isCounterpartyTx(logger),
           )
@@ -473,22 +470,19 @@ class DashboardActivityFeedBloc
       bool hasMore = true;
       List allBTCConfirmed = [];
 
-      final blockHeightE =
+      final blockHeight =
           await bitcoinRepository.getBlockHeight(httpConfig: httpConfig);
-      final blockHeight = blockHeightE.getOrElse((left) => throw left);
 
       while (hasMore) {
         if (_isCancelled) {
           _isCancelled = false;
           break;
         }
-        final transactionsE =
+        final btcConfirmedList =
             await bitcoinRepository.getConfirmedTransactionsPaginated(
                 address: addresses[0],
                 lastSeenTxid: lastSeenTxId,
                 httpConfig: httpConfig);
-
-        final btcConfirmedList = transactionsE.getOrElse((left) => throw left);
 
         if (btcConfirmedList.isEmpty) {
           hasMore = false;

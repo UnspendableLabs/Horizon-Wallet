@@ -3,7 +3,6 @@ import 'package:horizon/domain/entities/http_config.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/imported_address_repository.dart';
 import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
-import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/imported_address_service.dart';
@@ -12,7 +11,6 @@ import 'package:horizon/presentation/screens/settings/import_address/bloc/import
 
 class ImportAddressPkBloc
     extends Bloc<ImportAddressPkEvent, ImportAddressPkState> {
-  final WalletRepository walletRepository;
   final EncryptionService encryptionService;
   final AddressService addressService;
   final AddressRepository addressRepository;
@@ -22,7 +20,6 @@ class ImportAddressPkBloc
   final HttpConfig httpConfig;
 
   ImportAddressPkBloc({
-    required this.walletRepository,
     required this.encryptionService,
     required this.addressService,
     required this.addressRepository,

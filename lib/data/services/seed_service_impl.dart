@@ -27,40 +27,52 @@ class SeedServiceImpl implements SeedService {
         _inMemoryKeyRepository = GetIt.I<InMemoryKeyRepository>();
 
   @override
-  TaskEither<String, Seed> getForWalletConfig(
+  Future<Seed> getForWalletConfig(
       {required WalletConfig walletConfig,
-      required DecryptionStrategy decryptionStrategy}) {
-    return TaskEither.Do(($) async {
-      final encryptedMnemonic_ =
-          await $(_mnemonicRepository.get().toTaskEither());
-
-      final encryptedMnemonic = await $(
-          TaskEither.fromOption(encryptedMnemonic_, () => "Missing mnemonic"));
+      required DecryptionStrategy decryptionStrategy}) async {
+    final task = TaskEither<String, Seed>.Do(($) async {
+      final encryptedMnemonic = await $(_mnemonicRepository
+          .getT(onError: (_, __) => "invariant: error reading mnemonic")
+          .flatMap((mnemonic) => TaskEither.fromOption(
+              mnemonic, () => "invariant: mnemonic is null")));
 
       // end
 
-      late final String mnemonic;
-
-      switch (decryptionStrategy) {
-        case Password(password: final password):
-          mnemonic =
-              await $(_encryptionService.decryptT(encryptedMnemonic, password));
-          break;
-        case InMemoryKey():
-          final inMemoryKey = await $(
-              TaskEither.fromTask(_inMemoryKeyRepository.getMnemonicKey()));
-          final key = await $(TaskEither.fromOption(
-              inMemoryKey, () => "Missing in-memory key"));
-          mnemonic = await $(
-              _encryptionService.decryptWithKeyT(encryptedMnemonic, key));
-          break;
-      }
+      String mnemonic = switch (decryptionStrategy) {
+        Password(password: final password) => await $(
+            _encryptionService.decryptT(
+                data: encryptedMnemonic,
+                password: password,
+                onError: (_, __) => "Invalid password")),
+        InMemoryKey() => await $(_inMemoryKeyRepository
+              .getMnemonicKeyT(
+                onError: (_, __) => "invariant: error getting in-memory key",
+              )
+              .flatMap((maybeKey) => TaskEither.fromOption(
+                    maybeKey,
+                    () =>
+                        "invariant: error getting in-memory key, key not found",
+                  ))
+              .flatMap((key) {
+            return _encryptionService.decryptWithKeyT(
+                data: encryptedMnemonic,
+                key: key,
+                onError: (_, __) =>
+                    "invariant: error decrypting mnemonic with in-memory key");
+          }))
+      };
 
       final seed = await $(_getSeed(
           derivation: walletConfig.seedDerivation, mnemonic: mnemonic));
 
       return seed;
     });
+
+    final result = await task.run();
+
+    return result.getOrElse(
+      (_) => throw Exception("Failed to get seed"),
+    );
   }
 
   TaskEither<String, Seed> _getSeed(

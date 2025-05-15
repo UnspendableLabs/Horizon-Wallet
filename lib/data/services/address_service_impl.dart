@@ -20,7 +20,7 @@ class AddressServiceImpl implements AddressService {
   AddressServiceImpl();
 
   @override
-  Future<String> deriveAddressWIP({
+  Future<AddressV2> deriveAddressWIP({
     required String path,
     required Seed seed,
     required Network network,
@@ -37,7 +37,12 @@ class AddressServiceImpl implements AddressService {
 
     String address = _bech32FromBip32(child, network.toBech32Prefix);
 
-    return address;
+    return AddressV2(
+      type: AddressV2Type.p2wpkh,
+      address: address,
+      path: path,
+      publicKey: hex.encode(child.publicKey.toDart),
+    );
   }
 
   @override

@@ -65,7 +65,6 @@ class Password extends FormzInput<String, PasswordValidationError> {
 }
 
 class LoginFormBloc extends Bloc<FormEvent, FormState> {
-  final WalletRepository walletRepository;
   final EncryptionService encryptionService;
   final InMemoryKeyRepository inMemoryKeyRepository;
   final ImportedAddressRepository importedAddressRepository;
@@ -75,7 +74,6 @@ class LoginFormBloc extends Bloc<FormEvent, FormState> {
   LoginFormBloc(
       {required this.importedAddressService,
       required this.importedAddressRepository,
-      required this.walletRepository,
       required this.encryptionService,
       required this.inMemoryKeyRepository,
       MnemonicRepository? mnemonicRepository})
@@ -105,8 +103,7 @@ class LoginFormBloc extends Bloc<FormEvent, FormState> {
     try {
       final password = state.password.value;
 
-      final encryptedMnemonic =
-          (await _mnemonicRepository.get().run()).getOrThrow();
+      final encryptedMnemonic = (await _mnemonicRepository.get()).getOrThrow();
 
       String decryptionKey =
           await encryptionService.getDecryptionKey(encryptedMnemonic, password);

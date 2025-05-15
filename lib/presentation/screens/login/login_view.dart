@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:get_it/get_it.dart';
-import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 import 'package:horizon/domain/services/imported_address_service.dart';
@@ -20,7 +19,6 @@ class LoginView extends StatelessWidget {
       create: (context) => LoginFormBloc(
         importedAddressRepository: GetIt.I<ImportedAddressRepository>(),
         importedAddressService: GetIt.I<ImportedAddressService>(),
-        walletRepository: GetIt.I<WalletRepository>(),
         encryptionService: GetIt.I<EncryptionService>(),
         inMemoryKeyRepository: GetIt.I<InMemoryKeyRepository>(),
       ),

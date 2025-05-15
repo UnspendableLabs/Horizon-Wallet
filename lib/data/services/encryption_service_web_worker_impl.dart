@@ -92,11 +92,6 @@ class EncryptionServiceWebWorkerImpl implements EncryptionService {
     }
   }
 
-  @override
-  TaskEither<String, String> decryptT(String data, String password) {
-    return TaskEither.tryCatch(
-        () => decrypt(data, password), (error, _) => error.toString());
-  }
 
   @override
   Future<String> decrypt(String data_, String password) async {
@@ -127,15 +122,6 @@ class EncryptionServiceWebWorkerImpl implements EncryptionService {
     }
   }
 
-  @override
-  TaskEither<String, String> decryptWithKeyT(String data_, String keyB64) {
-    return TaskEither.tryCatch(
-      () => decryptWithKey(data_, keyB64),
-
-      // TODO: bubble up actual error
-      (error, _) => error.toString(),
-    );
-  }
 
   @override
   Future<String> decryptWithKey(String data_, String keyB64) async {

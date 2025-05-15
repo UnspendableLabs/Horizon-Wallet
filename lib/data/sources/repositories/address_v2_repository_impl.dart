@@ -8,10 +8,7 @@ import "package:horizon/domain/entities/address_v2.dart";
 import "package:horizon/domain/entities/account_v2.dart";
 import "package:horizon/domain/repositories/address_v2_repository.dart";
 import "package:horizon/domain/repositories/wallet_config_repository.dart";
-import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/seed_service.dart';
-import 'package:horizon/domain/repositories/mnemonic_repository.dart';
-import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 
 class AddressV2RepositoryImpl implements AddressV2Repository {
   // ignore: unused_field
@@ -19,21 +16,15 @@ class AddressV2RepositoryImpl implements AddressV2Repository {
   // final AddresssV2Dao _addressDao;
   final WalletConfigRepository _walletConfigRepository;
   final AddressService _addressService;
-  final MnemonicRepository _mnemonicRepository;
-  final EncryptionService _encryptionService;
-  final InMemoryKeyRepository _inMemoryKeyRepository;
   final SeedService _seedService;
 
   // TODO: shuold be able to inject deps here?
   AddressV2RepositoryImpl(this._db)
       : _addressService = GetIt.I<AddressService>(),
-        _encryptionService = GetIt.I<EncryptionService>(),
-        _mnemonicRepository = GetIt.I<MnemonicRepository>(),
         _walletConfigRepository = GetIt.I<WalletConfigRepository>(),
-        _seedService = GetIt.I<SeedService>(),
-        _inMemoryKeyRepository = GetIt.I<InMemoryKeyRepository>();
+        _seedService = GetIt.I<SeedService>();
 
-// TODO: make option
+// TODO: make optioj
 // TODO: this whole thing is a little busy
   @override
   Future<List<AddressV2>> getByAccount(AccountV2 account) async {
@@ -42,11 +33,9 @@ class AddressV2RepositoryImpl implements AddressV2Repository {
 
     final walletConfig = walletConfig_.getOrThrow();
 
-    final seed = await _seedService
-        .getForWalletConfig(
-            walletConfig: walletConfig_.getOrThrow(),
-            decryptionStrategy: InMemoryKey())
-        .run();
+    final seed = await _seedService.getForWalletConfig(
+        walletConfig: walletConfig_.getOrThrow(),
+        decryptionStrategy: InMemoryKey());
 
     // # TODO: need to make the number of addresses configurable and stored
     const numAddresses = 1;
@@ -58,21 +47,12 @@ class AddressV2RepositoryImpl implements AddressV2Repository {
             ))
         .toList();
 
-    print(paths);
-
-    print(walletConfig);
-
     List<AddressV2> addresses = [];
     for (final path in paths) {
-      String address_ = await _addressService.deriveAddressWIP(
+      AddressV2 address = await _addressService.deriveAddressWIP(
         path: path.$2,
-        seed: seed.getRight().getOrThrow(),
+        seed: seed,
         network: walletConfig.network,
-      );
-
-      AddressV2 address = AddressV2(
-        address: address_,
-        path: path.$2,
       );
 
       addresses.add(address);

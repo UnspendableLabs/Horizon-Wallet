@@ -5,7 +5,6 @@ import 'package:horizon/common/constants.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/imported_address_repository.dart';
 import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
-import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/imported_address_service.dart';
@@ -33,7 +32,6 @@ class ImportAddressFlow extends StatelessWidget {
     return BlocProvider(
       create: (context) => ImportAddressPkBloc(
         httpConfig: session.httpConfig,
-        walletRepository: GetIt.I.get<WalletRepository>(),
         encryptionService: GetIt.I.get<EncryptionService>(),
         addressService: GetIt.I.get<AddressService>(),
         addressRepository: GetIt.I.get<AddressRepository>(),

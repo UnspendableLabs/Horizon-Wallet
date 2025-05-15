@@ -38,7 +38,6 @@ class SignPsbtModal extends StatelessWidget {
   final String requestId;
   final String unsignedPsbt;
   final TransactionService transactionService;
-  final WalletRepository walletRepository;
   final EncryptionService encryptionService;
   final AddressService addressService;
   final BitcoindService bitcoindService;
@@ -54,7 +53,6 @@ class SignPsbtModal extends StatelessWidget {
       {super.key,
       required this.unsignedPsbt,
       required this.transactionService,
-      required this.walletRepository,
       required this.encryptionService,
       required this.addressService,
       required this.bitcoindService,
@@ -75,6 +73,7 @@ class SignPsbtModal extends StatelessWidget {
     );
     return BlocProvider(
       create: (_) => SignPsbtBloc(
+        addresses: session.addresses,
         httpConfig: session.httpConfig,
         session: session,
         passwordRequired:
@@ -89,7 +88,6 @@ class SignPsbtModal extends StatelessWidget {
         bitcoindService: bitcoindService,
         balanceRepository: balanceRepository,
         bitcoinRepository: bitcoinRepository,
-        walletRepository: walletRepository,
         encryptionService: encryptionService,
         addressService: addressService,
       ),
@@ -111,13 +109,11 @@ class SignPsbtModal extends StatelessWidget {
 class GetAddressesModal extends StatelessWidget {
   final int tabId;
   final String requestId;
-  final List<Account> accounts;
   final AddressRepository addressRepository;
   final ImportedAddressRepository importedAddressRepository;
   final RPCGetAddressesSuccessCallback onSuccess;
   final AddressService addressService;
   final ImportedAddressService importedAddressService;
-  final WalletRepository walletRepository;
   final EncryptionService encryptionService;
   final PublicKeyService publicKeyService;
   final HttpConfig httpConfig;
@@ -129,10 +125,8 @@ class GetAddressesModal extends StatelessWidget {
       required this.encryptionService,
       required this.addressService,
       required this.importedAddressService,
-      required this.walletRepository,
       required this.tabId,
       required this.requestId,
-      required this.accounts,
       required this.addressRepository,
       required this.importedAddressRepository,
       required this.onSuccess});
@@ -150,7 +144,6 @@ class GetAddressesModal extends StatelessWidget {
         inMemoryKeyRepository: GetIt.I<InMemoryKeyRepository>(),
         publicKeyService: publicKeyService,
         encryptionService: encryptionService,
-        walletRepository: walletRepository,
         importedAddressService: importedAddressService,
         addressService: addressService,
         accounts: session.accounts,
@@ -160,7 +153,7 @@ class GetAddressesModal extends StatelessWidget {
       child: GetAddressesForm(
         passwordRequired:
             GetIt.I<SettingsRepository>().requirePasswordForCryptoOperations,
-        accounts: accounts,
+        accounts: session.accounts,
         onSuccess: (addresses) {
           onSuccess(RPCGetAddressesSuccessCallbackArgs(
               tabId: tabId, requestId: requestId, addresses: addresses));
@@ -392,7 +385,6 @@ class _AppShellState extends State<AppShell> with TickerProviderStateMixin {
               bitcoindService: GetIt.I.get<BitcoindService>(),
               balanceRepository: GetIt.I.get<BalanceRepository>(),
               bitcoinRepository: GetIt.I.get<BitcoinRepository>(),
-              walletRepository: GetIt.I.get<WalletRepository>(),
               encryptionService: GetIt.I.get<EncryptionService>(),
               addressService: GetIt.I.get<AddressService>(),
               onSuccess: GetIt.I<RPCSignPsbtSuccessCallback>()),
