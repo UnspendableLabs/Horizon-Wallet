@@ -297,8 +297,8 @@ class BalancesSliverState extends State<BalancesSliver> {
                                       description:
                                           balance.assetInfo.description,
                                       context: context,
-                                      width: 36,
-                                      height: 36),
+                                      width: 34,
+                                      height: 34),
                                   const SizedBox(width: 10),
                                   // Asset name and details
                                   Expanded(

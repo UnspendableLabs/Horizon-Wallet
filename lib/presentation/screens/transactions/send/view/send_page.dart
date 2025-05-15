@@ -261,25 +261,6 @@ class _SendPageState extends State<SendPage> {
                                 } catch (e) {
                                   return 'Invalid amount';
                                 }
-
-                                if (selectedBalanceEntry != null) {
-                                  try {
-                                    final enteredQuantity =
-                                        getQuantityForDivisibility(
-                                      divisible: balances.assetInfo.divisible,
-                                      inputQuantity: value,
-                                    );
-
-                                    if (enteredQuantity >
-                                        selectedBalanceEntry!.quantity) {
-                                      return 'Insufficient balance';
-                                    }
-                                  } catch (e) {
-                                    return 'Invalid amount';
-                                  }
-                                }
-
-                                return null;
                               }
                               return null;
                             }),

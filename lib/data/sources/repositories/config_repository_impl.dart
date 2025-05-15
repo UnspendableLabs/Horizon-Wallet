@@ -14,6 +14,80 @@ class ConfigImpl implements Config {
   }
 
   @override
+  Network get network {
+    // default to testnet for now
+    const networkString =
+        String.fromEnvironment('HORIZON_NETWORK', defaultValue: 'mainnet');
+    return switch (networkString.toLowerCase()) {
+      'testnet4' => Network.testnet4,
+      'mainnet' => Network.mainnet,
+      _ => throw Exception('Unknown network: $networkString'),
+    };
+  }
+
+  @override
+  String get counterpartyApiBase {
+    const envValue = String.fromEnvironment('HORIZON_COUNTERPARTY_API_BASE');
+    return envValue.isNotEmpty ? envValue : _defaultCounterpartyApiBase;
+  }
+
+  String get _defaultCounterpartyApiBase => switch (network) {
+        Network.mainnet => 'https://api.unspendablelabs.com:4000/v2',
+        Network.testnet4 => 'https://testnet4.counterparty.io:44000/v2/',
+      };
+
+  @override
+  String get counterpartyApiUsername {
+    const envValue =
+        String.fromEnvironment('HORIZON_COUNTERPARTY_API_USERNAME');
+    return envValue.isNotEmpty ? envValue : _defaultCounterpartyApiUsername;
+  }
+
+  String get _defaultCounterpartyApiUsername => switch (network) {
+        Network.mainnet => '',
+        Network.testnet4 => '',
+      };
+
+  @override
+  String get counterpartyApiPassword {
+    const envValue =
+        String.fromEnvironment('HORIZON_COUNTERPARTY_API_PASSWORD');
+    return envValue.isNotEmpty ? envValue : _defaultCounterpartyApiPassword;
+  }
+
+  String get _defaultCounterpartyApiPassword => switch (network) {
+        Network.mainnet => '',
+        Network.testnet4 => '',
+      };
+
+  @override
+  String get esploraBase {
+    const envValue = String.fromEnvironment('HORIZON_ESPLORA_BASE');
+    return envValue.isNotEmpty ? envValue : _defaultEsploraBase;
+  }
+
+  String get _defaultEsploraBase => switch (network) {
+        Network.mainnet => "https://api.unspendablelabs.com:3000",
+        Network.testnet4 => 'https://testnet4.counterparty.io:43000',
+      };
+
+  @override
+  String get horizonExplorerBase => switch (network) {
+        Network.mainnet => "https://horizon.market/explorer",
+        Network.testnet4 =>
+          "https://mempool.space/testnet4", // TODO: update when testnet4 explorer is ready
+      };
+
+  @override
+  String get horizonExplorerApiBase => "https://horizon.market/api/explorer";
+
+  @override
+  String get btcExplorerBase => switch (network) {
+        Network.mainnet => "https://mempool.space",
+        Network.testnet4 => "https://mempool.space/testnet4",
+      };
+
+  @override
   bool get isDatabaseViewerEnabled {
     return const bool.fromEnvironment('HORIZON_ENABLE_DB_VIEWER',
         defaultValue: false);

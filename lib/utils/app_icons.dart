@@ -91,7 +91,7 @@ class AppIcons {
       key: key,
     );
   }
-
+  
   static Widget receiveIcon({
     required BuildContext context,
     double? width,
@@ -813,7 +813,6 @@ class AppIcons {
       color: null,
     );
   }
-
   static Widget iconButton({
     required BuildContext context,
     required Widget icon,

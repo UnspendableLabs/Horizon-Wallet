@@ -313,6 +313,31 @@ void setup() {
   //   ), // Add the RetryInterceptor here
   // ]);
 
+  final horizonExplorerDio = Dio(BaseOptions(
+    baseUrl: config.horizonExplorerApiBase,
+    connectTimeout: const Duration(seconds: 5),
+    receiveTimeout: const Duration(seconds: 3),
+  ));
+
+  horizonExplorerDio.interceptors.addAll([
+    TimeoutInterceptor(),
+    ConnectionErrorInterceptor(),
+    BadResponseInterceptor(),
+    BadCertificateInterceptor(),
+    RetryInterceptor(
+      dio: horizonExplorerDio,
+      retries: 3,
+      retryDelays: const [
+        Duration(seconds: 1),
+        Duration(seconds: 1),
+        Duration(seconds: 1),
+      ],
+      retryEvaluator: dioRetryEvaluatorFunc,
+    ),
+  ]);
+
+  injector.registerSingleton<HorizonExplorerApi>(HorizonExplorerApi(dio: horizonExplorerDio));
+
 //   final blockCypherDio = Dio(BaseOptions(
 //       baseUrl: config.blockCypherBase,
 //       connectTimeout: const Duration(seconds: 5),

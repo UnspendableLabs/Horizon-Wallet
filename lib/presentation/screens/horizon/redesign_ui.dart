@@ -1133,6 +1133,7 @@ class HorizonToggle extends StatefulWidget {
     this.thumbActiveIcon,
   });
 
+
   @override
   State<HorizonToggle> createState() => _HorizonToggleState();
 }
@@ -1182,7 +1183,6 @@ class _HorizonToggleState extends State<HorizonToggle> {
     super.initState();
     _initializeColors();
   }
-
   @override
   Widget build(BuildContext context) {
     return MouseRegion(
