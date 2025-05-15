@@ -1,8 +1,18 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:horizon/data/sources/network/horizon_explorer_client.dart';
+import 'package:get_it/get_it.dart';
+import 'package:horizon/presentation/common/redesign_colors.dart';
 
 class AppIcons {
+  static final AppIcons _instance = AppIcons._internal();
+  factory AppIcons() => _instance;
+  AppIcons._internal();
+
+  final HorizonExplorerApi _horizonExplorerApi = GetIt.I<HorizonExplorerApi>();
+
   static const String _iconPath = kDebugMode ? '/icons' : 'assets/icons';
   static const String receive = '$_iconPath/receive.svg';
   static const String send = '$_iconPath/send.svg';
@@ -25,6 +35,7 @@ class AppIcons {
   static const String transfer = '$_iconPath/transfer.svg';
   static const String plus = '$_iconPath/plus.svg';
   static const String warning = '$_iconPath/warning.svg';
+  static const String warningHex = '$_iconPath/warning_hex.svg';
   static const String backArrow = '$_iconPath/back_arrow.svg';
   static const String rocket = '$_iconPath/rocket.svg';
   static const String starOutlined = '$_iconPath/star_outlined.svg';
@@ -43,6 +54,9 @@ class AppIcons {
   static const String chevronRight = '$_iconPath/chevron_right.svg';
   static const String key = '$_iconPath/key.svg';
   static const String wallet = '$_iconPath/wallet.svg';
+  static const String xcp = '$_iconPath/xcp.svg';
+  static const String btc = '$_iconPath/btc.svg';
+  static const String paste = '$_iconPath/paste_squares.svg';
 
   static Widget getIcon(
     String iconPath, {
@@ -75,7 +89,7 @@ class AppIcons {
       key: key,
     );
   }
-
+  
   static Widget receiveIcon({
     required BuildContext context,
     double? width,
@@ -239,6 +253,23 @@ class AppIcons {
   }) {
     return getIcon(
       attach,
+      context: context,
+      width: width,
+      height: height,
+      color: color,
+      fit: fit,
+    );
+  }
+
+  static Widget pasteIcon({
+    required BuildContext context,
+    double? width,
+    double? height,
+    Color? color,
+    BoxFit fit = BoxFit.contain,
+  }) {
+    return getIcon(
+      paste,
       context: context,
       width: width,
       height: height,
@@ -442,6 +473,22 @@ class AppIcons {
   }) {
     return getIcon(
       warning,
+      context: null,
+      width: width,
+      height: height,
+      color: color,
+      fit: fit,
+    );
+  }
+
+  static Widget warningHexIcon({
+    double? width,
+    double? height,
+    Color? color,
+    BoxFit fit = BoxFit.contain,
+  }) {
+    return getIcon(
+      warningHex,
       context: null,
       width: width,
       height: height,
@@ -737,6 +784,34 @@ class AppIcons {
     );
   }
 
+  static Widget xcpIcon({
+    double? width,
+    double? height,
+    BoxFit fit = BoxFit.contain,
+  }) {
+    return getIcon(
+      xcp,
+      context: null,
+      width: width,
+      height: height,
+      color: null,
+      fit: fit,
+    );
+  }
+
+  static Widget btcIcon({
+    double? width,
+    double? height,
+    BoxFit fit = BoxFit.contain,
+  }) {
+    return getIcon(
+      btc,
+      context: null,
+      width: width,
+      height: height,
+      color: null,
+    );
+  }
   static Widget iconButton({
     required BuildContext context,
     required Widget icon,
@@ -760,6 +835,75 @@ class AppIcons {
           ),
         ),
       ),
+    );
+  }
+
+  Widget assetIcon({
+    required BuildContext context,
+    required String assetName,
+    String? description,
+    bool showLarge = false,
+    double? width = 40,
+    double? height = 40,
+    BoxFit fit = BoxFit.cover,
+  }) {
+
+    if (assetName == 'XCP') {
+      return xcpIcon(
+        width: width,
+        height: height,
+        fit: fit,
+      );
+    }
+
+    if (assetName == 'BTC') {
+      return btcIcon(
+        width: width,
+        height: height,
+        fit: fit,
+      );
+    }
+
+    return FutureBuilder(
+      future:
+          _horizonExplorerApi.getAssetSrc(assetName, description, showLarge),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Container(
+            width: width,
+            height: height,
+            decoration: BoxDecoration(
+              color:
+                  Theme.of(context).inputDecorationTheme.outlineBorder?.color ??
+                      transparentBlack8,
+              shape: BoxShape.circle,
+            ),
+          );
+        }
+
+        if (snapshot.connectionState == ConnectionState.done &&
+            snapshot.data?.src != null) {
+          return ClipOval(
+            child: CachedNetworkImage(
+              imageUrl: snapshot.data!.src!,
+              width: width,
+              height: height,
+              fit: fit,
+              alignment: Alignment.center,
+              placeholder: (context, url) => Container( 
+                width: width,
+                height: height,
+                decoration: BoxDecoration(
+                  color: Theme.of(context).inputDecorationTheme.outlineBorder?.color ??
+                      transparentBlack8,
+                  shape: BoxShape.circle,
+                ),
+              ),
+            ),
+          );
+        }
+        return const SizedBox.shrink();
+      },
     );
   }
 }

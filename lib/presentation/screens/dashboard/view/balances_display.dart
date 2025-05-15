@@ -275,7 +275,7 @@ class BalancesSliverState extends State<BalancesSliver> {
                         child: InkWell(
                           onTap: () {
                             // Navigate to the asset details page
-                            context.go(
+                            context.push(
                                 '/asset/${Uri.encodeComponent(balance.asset)}');
                           },
                           borderRadius: BorderRadius.circular(10),
@@ -325,6 +325,7 @@ class BalancesSliverState extends State<BalancesSliver> {
                                     ),
                                   ],
                                 ),
+                                const SizedBox(width: 4),
                               ],
                             ),
                           ),

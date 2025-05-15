@@ -9,6 +9,10 @@ import 'package:horizon/presentation/screens/settings/reset_wallet/reset_wallet_
 import 'package:horizon/presentation/screens/settings/security_view.dart';
 import 'package:horizon/presentation/screens/settings/seed_phrase/seed_phrase_flow.dart';
 import 'package:horizon/presentation/screens/settings/advanced/settings_advanced.dart';
+import 'package:go_router/go_router.dart';
+import 'package:horizon/domain/services/encryption_service.dart';
+import 'package:horizon/presentation/common/redesign_colors.dart';
+import 'package:horizon/presentation/common/theme_extension.dart';
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:horizon/presentation/session/bloc/session_state.dart';
 import 'package:horizon/presentation/session/theme/bloc/theme_bloc.dart';
@@ -43,11 +47,14 @@ class SettingsItem extends StatelessWidget {
   });
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final customTheme = theme.extension<CustomThemeExtension>();
     return Container(
       height: 64,
       margin: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 5.0),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(18),
+        color: customTheme?.settingsItemBackground ?? transparentBlack66,
         border: Border.all(
           color: Theme.of(context).inputDecorationTheme.outlineBorder?.color ??
               transparentBlack8,
@@ -58,6 +65,8 @@ class SettingsItem extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           borderRadius: BorderRadius.circular(18),
+          hoverColor: transparentPurple8,
+          highlightColor: transparentPurple8,
           onTap: onTap,
           child: Padding(
             padding: const EdgeInsets.fromLTRB(14, 11, 14, 11),
@@ -71,7 +80,7 @@ class SettingsItem extends StatelessWidget {
                   child: Text(
                     title,
                     style: TextStyle(
-                      fontSize: 14,
+                      fontSize: 12,
                       fontWeight: FontWeight.w500,
                       letterSpacing: -0.2,
                       color: Theme.of(context).textTheme.bodyMedium?.color,
@@ -404,43 +413,36 @@ class _SettingsViewState extends State<SettingsView> {
         const SizedBox(height: 14),
         SettingsItem(
           title: 'Security',
-          icon: AppIcons.shieldIcon(context: context),
+          icon: AppIcons.shieldIcon(context: context, width: 24, height: 24),
           onTap: () {
-            setState(() {
-              _currentPage = SettingsPage.security;
-            });
+            context.push("/settings/security");
           },
         ),
         SettingsItem(
           title: 'Seed phrase',
-          icon: AppIcons.keyIcon(context: context),
+          icon: AppIcons.keyIcon(context: context, width: 24, height: 24),
           onTap: () {
-            setState(() {
-              _currentPage = SettingsPage.seedPhrase;
-            });
+            context.push("/settings/seedPhrase");
           },
         ),
         SettingsItem(
           title: 'Import new address',
-          icon: AppIcons.receiveIcon(context: context),
+          icon: AppIcons.receiveIcon(context: context, width: 24, height: 24),
           onTap: () {
-            setState(() {
-              _currentPage = SettingsPage.importAddress;
-            });
+            context.push("/settings/importAddress");
           },
         ),
         SettingsItem(
           title: 'Reset wallet',
-          icon: AppIcons.refreshIcon(context: context),
+          icon: AppIcons.refreshIcon(context: context, width: 24, height: 24),
           onTap: () {
-            setState(() {
-              _currentPage = SettingsPage.resetWallet;
-            });
+            context.push("/settings/resetWallet");
           },
         ),
         SettingsItem(
           title: 'Appearance',
-          icon: AppIcons.spectaclesIcon(context: context),
+          icon:
+              AppIcons.spectaclesIcon(context: context, width: 24, height: 24),
           trailing: ThemeToggle(
             isDarkTheme: Theme.of(context).brightness == Brightness.dark,
             onChanged: (value) {
@@ -541,14 +543,16 @@ class _SettingsViewState extends State<SettingsView> {
                   padding: const EdgeInsets.fromLTRB(14, 11, 14, 11),
                   child: Row(
                     children: [
-                      AppIcons.lockIcon(context: context),
+                      AppIcons.lockIcon(
+                          context: context, width: 24, height: 24),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Text(
                           'Lock Screen',
                           style: TextStyle(
-                            fontSize: 16,
+                            fontSize: 12,
                             fontWeight: FontWeight.w500,
+                            letterSpacing: -0.2,
                             color:
                                 Theme.of(context).textTheme.bodyMedium?.color,
                           ),
@@ -576,23 +580,21 @@ class _SettingsViewState extends State<SettingsView> {
           height: 46,
           width: double.infinity,
           padding:
-              const EdgeInsets.only(left: 12, top: 16, bottom: 0, right: 12),
+              const EdgeInsets.only(left: 12, top: 0, bottom: 0, right: 12),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              AppIcons.iconButton(
-                context: context,
+              IconButton(
+                
+                onPressed: () {
+                  AppShell.navigateToTab(context, 0);
+                },
                 icon: AppIcons.backArrowIcon(
                   context: context,
                   width: 24,
                   height: 24,
                   fit: BoxFit.fitHeight,
                 ),
-                onPressed: () {
-                  _currentPage != SettingsPage.main
-                      ? _navigateBack()
-                      : AppShell.navigateToTab(context, 0);
-                },
               ),
             ],
           ),
@@ -602,7 +604,7 @@ class _SettingsViewState extends State<SettingsView> {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Text(
-              _getPageTitle(),
+              "Settings",
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w700,
@@ -632,7 +634,7 @@ class _SettingsViewState extends State<SettingsView> {
                     ),
                     body: Container(
                       padding: const EdgeInsets.only(top: 14),
-                      child: _buildCurrentPage(),
+                      child: _buildMainSettings(),
                     ),
                   ),
                 ),

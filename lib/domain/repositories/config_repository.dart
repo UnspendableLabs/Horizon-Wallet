@@ -8,8 +8,6 @@ abstract class Config {
   // String get counterpartyApiBase;
   // String get esploraBase;
   // String get blockCypherBase;
-  // String get horizonExplorerBase;
-  // String get btcExplorerBase;
   bool get isDatabaseViewerEnabled;
   bool get isAnalyticsEnabled;
   bool get isWebExtension;

@@ -34,6 +34,8 @@ const transparentIvory = Color.fromRGBO(202, 206, 250, 0.96);
 const black = Color(0xFF000000);
 const white = Color(0xFFEAEAEA);
 const green2 = Color(0xFF1EE7C5);
+const green3 = Color(0xFF0CAE92);
+
 const green2Hover = Color.fromRGBO(30, 231, 197, 0.5);
 const transparentPurple8 = Color.fromRGBO(137, 146, 246, 0.08);
 const transparentPurple4 = Color.fromRGBO(137, 146, 246, 0.04);

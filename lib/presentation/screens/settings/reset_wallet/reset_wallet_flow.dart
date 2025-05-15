@@ -25,9 +25,9 @@ class ResetWalletFlow extends StatefulWidget {
 
 class _ResetWalletFlowState extends State<ResetWalletFlow> {
   int _currentStep = 0;
+  bool _toggleRecognized = false;
   final _formKey = GlobalKey<FormState>();
   final _confirmationController = TextEditingController();
-  bool _hasConfirmedUnderstanding = false;
 
   @override
   void dispose() {
@@ -35,7 +35,18 @@ class _ResetWalletFlowState extends State<ResetWalletFlow> {
     super.dispose();
   }
 
+  @override
+  void initState() {
+    super.initState();
+    _confirmationController.addListener(() {
+      setState(() {});
+    });
+  }
+
   Widget _buildWarningStep() {
+    final mutedWarningStyle = Theme.of(context).textTheme.bodySmall?.copyWith(
+          color: transparentWhite66,
+        );
     return Padding(
       padding: const EdgeInsets.fromLTRB(20.0, 0, 20.0, 20.0),
       child: Column(
@@ -43,7 +54,7 @@ class _ResetWalletFlowState extends State<ResetWalletFlow> {
         children: [
           // Warning icon and text group
           Container(
-            margin: const EdgeInsets.all(18),
+            margin: const EdgeInsets.all(0.0),
             child: Column(
               children: [
                 AppIcons.warningIcon(color: red1, height: 48, width: 48),
@@ -58,82 +69,57 @@ class _ResetWalletFlowState extends State<ResetWalletFlow> {
                         ),
                   ),
                 ),
+                const SizedBox(height: 10),
+                Text(
+                  "All wallet data will be permanently deleted. You can only recover your wallet using your seed phrase.",
+                  style: mutedWarningStyle,
+                ),
+                const SizedBox(height: 10),
+                Row(children: [
+                  Text("\u2022", style: mutedWarningStyle),
+                  const SizedBox(width: 4),
+                  Expanded(
+                    child: Text(
+                        "If you have multiple accounts, note the total number—you'll need to recreate them manually.",
+                        style: mutedWarningStyle),
+                  ),
+                ]),
+                Row(children: [
+                  Text("\u2022", style: mutedWarningStyle),
+                  const SizedBox(width: 4),
+                  Expanded(
+                    child: Text(
+                        "Imported private keys won't be restored—be sure to back them up separately.",
+                        style: mutedWarningStyle),
+                  ),
+                ])
               ],
             ),
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 32),
           // Warning box container
           Container(
-            padding: const EdgeInsets.fromLTRB(10, 14, 10, 14),
+            padding: const EdgeInsets.all(0),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(12),
               border: Border.all(color: red1),
             ),
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 _buildWarningPoint(
-                  'All wallet data will be irreversibly deleted. You can recover your wallet only with your seed phrase.',
+                  'Double check seed phrase backup',
                   AppIcons.eyeOpenIcon(context: context),
                 ),
                 _buildWarningPoint(
-                  'Imported private keys won\'t reload when you recover your wallet. Make sure you have them written down.',
+                  'Save imported private keys',
                   AppIcons.lockIcon(context: context),
-                ),
-              ],
-            ),
-          ),
-          const Spacer(),
-          SizedBox(
-            width: double.infinity,
-            height: 56,
-            child: HorizonOutlinedButton(
-              onPressed: () {
-                setState(() {
-                  _currentStep = 1;
-                });
-              },
-              buttonText: 'Continue',
-              isTransparent: true,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildConfirmationStep() {
-    return Padding(
-      padding: const EdgeInsets.all(20.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Container(
-            width: 335,
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(18),
-              border: Border.all(
-                color: yellow1,
-                width: 1,
-              ),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                AppIcons.warningIcon(color: yellow1, height: 24, width: 24),
-                const SizedBox(height: 8),
-                SelectableText(
-                  textAlign: TextAlign.center,
-                  'Please confirm that you understand the consequences of resetting your wallet and that you have written down your seed phrase and imported private keys.',
-                  style: Theme.of(context).textTheme.titleSmall,
                 ),
                 Container(
                   height: 64,
-                  margin: const EdgeInsets.symmetric(
-                      horizontal: 0.0, vertical: 5.0),
+                  margin: const EdgeInsets.fromLTRB(10, 0, 10, 10),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(18),
+                    color: transparentBlack66,
                     border: Border.all(
                       color: Theme.of(context)
                               .inputDecorationTheme
@@ -153,19 +139,18 @@ class _ResetWalletFlowState extends State<ResetWalletFlow> {
                           children: [
                             Expanded(
                               child: Text(
-                                'I understand and confirm',
+                                'I understand the risk',
                                 style: Theme.of(context).textTheme.bodySmall,
                               ),
                             ),
                             HorizonToggle(
-                              value: _hasConfirmedUnderstanding,
+                              value: _toggleRecognized,
                               onChanged: (_) {
                                 setState(() {
-                                  _hasConfirmedUnderstanding =
-                                      !_hasConfirmedUnderstanding;
+                                  _toggleRecognized = !_toggleRecognized;
                                 });
                               },
-                              backgroundColor: yellow1,
+                              type: HorizonToggleType.error,
                             ),
                           ],
                         ),
@@ -179,23 +164,22 @@ class _ResetWalletFlowState extends State<ResetWalletFlow> {
           const Spacer(),
           SizedBox(
             width: double.infinity,
-            height: 56,
-            child: HorizonOutlinedButton(
-              onPressed: _hasConfirmedUnderstanding
-                  ? () {
-                      setState(() {
-                        _currentStep = 2;
-                      });
-                    }
-                  : null,
-              buttonText: 'Continue',
-              isTransparent: true,
+            child: HorizonButton(
+              variant: ButtonVariant.red,
+              disabled: !_toggleRecognized,
+              onPressed: () {
+                setState(() {
+                  _currentStep = 1;
+                });
+              },
+              child: TextButtonContent(value: "Continue"),
             ),
           ),
         ],
       ),
     );
   }
+
 
   Widget _buildFinalStep() {
     return BlocProvider(
@@ -233,7 +217,7 @@ class _ResetWalletFlowState extends State<ResetWalletFlow> {
                         SizedBox(
                           width: 220,
                           child: Text(
-                            'Final Confirmation',
+                            'Final\nConfirmation',
                             textAlign: TextAlign.center,
                             style: Theme.of(context)
                                 .textTheme
@@ -249,7 +233,6 @@ class _ResetWalletFlowState extends State<ResetWalletFlow> {
                   ),
                   Text(
                       'This action is irreversible, and your wallet data will be permanently deleted.',
-                      textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.titleSmall),
                   const SizedBox(height: 24),
                   HorizonTextField(
@@ -263,18 +246,18 @@ class _ResetWalletFlowState extends State<ResetWalletFlow> {
                       return null;
                     },
                   ),
-                  const Spacer(),
+                  const SizedBox(height: 10),
                   SizedBox(
                     width: double.infinity,
-                    height: 56,
-                    child: HorizonOutlinedButton(
+                    child: HorizonButton(
+                      variant: ButtonVariant.red,
+                      disabled: _confirmationController.text != 'RESET WALLET',
                       onPressed: () {
                         if (_formKey.currentState!.validate()) {
                           context.read<ResetBloc>().add(ResetEvent());
                         }
                       },
-                      buttonText: 'Reset Wallet',
-                      isTransparent: false,
+                      child: TextButtonContent(value: "Reset Wallet"),
                     ),
                   ),
                 ],
@@ -287,10 +270,11 @@ class _ResetWalletFlowState extends State<ResetWalletFlow> {
   }
 
   Widget _buildWarningPoint(String title, Widget icon) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 11),
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14),
+      height: 64,
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           icon,
           const SizedBox(width: 8),
@@ -314,7 +298,6 @@ class _ResetWalletFlowState extends State<ResetWalletFlow> {
             index: _currentStep,
             children: [
               _buildWarningStep(),
-              _buildConfirmationStep(),
               _buildFinalStep(),
             ],
           ),

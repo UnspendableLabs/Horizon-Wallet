@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 // import 'package:horizon/common/format.dart' as form;
@@ -9,6 +10,7 @@ import 'package:horizon/domain/entities/multi_address_balance_entry.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
+import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/common/shared_util.dart';
 import 'package:horizon/presentation/common/transaction_stepper/bloc/transaction_event.dart';
 import 'package:horizon/presentation/common/transaction_stepper/bloc/transaction_state.dart';
@@ -31,6 +33,7 @@ import 'package:horizon/domain/entities/address_v2.dart';
 import 'package:horizon/presentation/common/transaction_stepper/view/steps/transaction_compose_page.dart';
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:horizon/presentation/session/bloc/session_state.dart';
+import 'package:horizon/utils/app_icons.dart';
 
 class SendPage extends StatefulWidget {
   final String assetName;
@@ -92,86 +95,144 @@ class _SendPageState extends State<SendPage> {
       (cubit) => cubit.state.successOrThrow(),
     );
 
-    return Builder(builder: (context) {
-      return BlocProvider(
-        create: (context) => SendBloc(
-          addresses: session.addresses,
-          httpConfig: session.httpConfig,
-          balanceRepository: GetIt.I<BalanceRepository>(),
-          getFeeEstimatesUseCase: GetIt.I<GetFeeEstimatesUseCase>(),
-          composeTransactionUseCase: GetIt.I<ComposeTransactionUseCase>(),
-          composeRepository: GetIt.I<ComposeRepository>(),
-          signAndBroadcastTransactionUseCase:
-              GetIt.I<SignAndBroadcastTransactionUseCase>(),
-          writelocalTransactionUseCase: GetIt.I<WriteLocalTransactionUseCase>(),
-          analyticsService: GetIt.I<AnalyticsService>(),
-          logger: GetIt.I<Logger>(),
-        )..add(SendDependenciesRequested(
-            assetName: widget.assetName,
-            // addresses: widget.addresses
-          )),
-        child: BlocConsumer<SendBloc,
-            TransactionState<SendData, ComposeSendResponse>>(
-          listener: (context, state) {},
-          builder: (context, state) {
-            return Scaffold(
-              body: TransactionStepper<SendData, ComposeSendResponse>(
-                formStepContent: FormStepContent<SendData>(
-                  title: 'Enter Send Details',
-                  formKey: _formKey,
-                  onNext: () => _handleOnFormStepNext(context, state),
+    return BlocProvider(
+      create: (context) => SendBloc(
+        httpConfig: session.httpConfig,
+        addresses: session.addresses,
+        balanceRepository: GetIt.I<BalanceRepository>(),
+        getFeeEstimatesUseCase: GetIt.I<GetFeeEstimatesUseCase>(),
+        composeTransactionUseCase: GetIt.I<ComposeTransactionUseCase>(),
+        composeRepository: GetIt.I<ComposeRepository>(),
+        signAndBroadcastTransactionUseCase:
+            GetIt.I<SignAndBroadcastTransactionUseCase>(),
+        writelocalTransactionUseCase: GetIt.I<WriteLocalTransactionUseCase>(),
+        analyticsService: GetIt.I<AnalyticsService>(),
+        logger: GetIt.I<Logger>(),
+      )..add(SendDependenciesRequested(
+          assetName: widget.assetName,
+        )),
+      child: BlocConsumer<SendBloc,
+          TransactionState<SendData, ComposeSendResponse>>(
+        listener: (context, state) {},
+        builder: (context, state) {
+          final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+          return Scaffold(
+            body: TransactionStepper<SendData, ComposeSendResponse>(
+              formStepContent: FormStepContent<SendData>(
+                title: 'Recipient & Quantity',
+                formKey: _formKey,
+                onNext: () => _handleOnFormStepNext(context, state),
+                onFeeOptionSelected: (feeOption) =>
+                    _handleFeeOptionSelected(context, feeOption),
+                buildForm: (formState) => TransactionFormPage<SendData>(
+                  errorButtonText: 'Reload',
+                  formState: formState,
+                  onErrorButtonAction: () =>
+                      _handleDependenciesRequested(context),
                   onFeeOptionSelected: (feeOption) =>
                       _handleFeeOptionSelected(context, feeOption),
-                  buildForm: (formState) => TransactionFormPage<SendData>(
-                    errorButtonText: 'Reload',
-                    formState: formState,
-                    onErrorButtonAction: () =>
-                        _handleDependenciesRequested(context),
-                    onFeeOptionSelected: (feeOption) =>
-                        _handleFeeOptionSelected(context, feeOption),
-                    form: (
-                            {balances,
-                            feeEstimates,
-                            data,
-                            feeOption,
-                            required loading}) =>
-                        Form(
-                      key: _formKey,
-                      child: Column(
-                        children: [
-                          MultiAddressBalanceDropdown(
-                            loading: loading,
-                            balances: balances,
-                            onChanged: (value) {
-                              setState(() {
-                                selectedBalanceEntry = value;
-                                quantityController.clear();
-                              });
+                  form: (
+                          {balances,
+                          feeEstimates,
+                          data,
+                          feeOption,
+                          required loading}) =>
+                      Form(
+                    key: _formKey,
+                    child: Column(
+                      children: [
+                        MultiAddressBalanceDropdown(
+                          loading: loading,
+                          balances: balances,
+                          onChanged: (value) {
+                            setState(() {
+                              selectedBalanceEntry = value;
+                              quantityController.clear();
+                            });
+                          },
+                          selectedValue: selectedBalanceEntry,
+                        ),
+                        commonHeightSizedBox,
+                        HorizonTextField(
+                          enabled: !loading,
+                          controller: destinationAddressController,
+                          label: 'Destination Address',
+                          suffixIcon: SizedBox(
+                            height: 32,
+                            width: 86,
+                            child: HorizonButton(
+                              borderRadius: 12,
+                              variant: ButtonVariant.purple,
+                              onPressed: () {
+                                Clipboard.getData(Clipboard.kTextPlain)
+                                    .then((value) {
+                                  if (value?.text != null &&
+                                      value!.text!.trim().isNotEmpty) {
+                                    destinationAddressController.text =
+                                        value.text!;
+                                  }
+                                });
+                              },
+                              icon: AppIcons.pasteIcon(
+                                context: context,
+                                width: 24,
+                                height: 24,
+                              ),
+                              child: TextButtonContent(
+                                  value: "Paste",
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .labelMedium!
+                                      .copyWith(
+                                        fontWeight: FontWeight.w500,
+                                      )),
+                            ),
+                          ),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please enter a destination address';
+                            }
+                            return null;
+                          },
+                        ),
+                        commonHeightSizedBox,
+                        TokenNameField(
+                          loading: loading,
+                          balance: balances,
+                          selectedBalanceEntry: selectedBalanceEntry,
+                          suffixIcon: GestureDetector(
+                            onTap: () {
+                              quantityController.text =
+                                  quantityRemoveTrailingZeros(
+                                      selectedBalanceEntry!.quantityNormalized);
                             },
-                            selectedValue: selectedBalanceEntry,
+                            child: Container(
+                              height: 24,
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 8),
+                              decoration: BoxDecoration(
+                                color: isDarkMode
+                                    ? transparentYellow8
+                                    : transparentPurple33,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Center(
+                                child: Text(
+                                  'Max',
+                                  style: TextStyle(
+                                    fontSize: 9,
+                                    fontWeight: FontWeight.w400,
+                                    color: isDarkMode ? yellow1 : duskGradient2,
+                                  ),
+                                ),
+                              ),
+                            ),
                           ),
-                          commonHeightSizedBox,
-                          HorizonTextField(
+                        ),
+                        commonHeightSizedBox,
+                        GradientQuantityInput(
                             enabled: !loading,
-                            controller: destinationAddressController,
-                            label: 'Destination Address',
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Please enter a destination address';
-                              }
-                              return null;
-                            },
-                          ),
-                          commonHeightSizedBox,
-                          TokenNameField(
-                            loading: loading,
-                            balance: balances,
-                            selectedBalanceEntry: selectedBalanceEntry,
-                          ),
-                          commonHeightSizedBox,
-                          GradientQuantityInput(
-                            enabled: !loading,
-                            showMaxButton: true,
+                            showMaxButton: false,
                             balance: balances,
                             selectedBalanceEntry: selectedBalanceEntry,
                             controller: quantityController,
@@ -198,73 +259,87 @@ class _SendPageState extends State<SendPage> {
                                 } catch (e) {
                                   return 'Invalid amount';
                                 }
-                              }
 
-                              return null;
-                            },
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-                confirmationStepContent:
-                    ConfirmationStepContent<ComposeSendResponse>(
-                  title: 'Confirm Transaction',
-                  buildConfirmationContent:
-                      (composeState, onErrorButtonAction) =>
-                          TransactionComposePage<ComposeSendResponse>(
-                    composeState: composeState,
-                    errorButtonText: 'Go back to transaction',
-                    onErrorButtonAction: onErrorButtonAction,
-                    buildComposeContent: (
-                            {ComposeStateSuccess<ComposeSendResponse>?
-                                composeState,
-                            required bool loading}) =>
-                        Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        QuantityDisplay(
-                          loading: loading,
-                          quantity: composeState
-                              ?.composeData.params.quantityNormalized,
-                        ),
-                        commonHeightSizedBox,
-                        ConfirmationFieldWithLabel(
-                          loading: loading,
-                          label: 'Token Name',
-                          value: composeState?.composeData.params.asset != null
-                              ? displayAssetName(
-                                  composeState!.composeData.params.asset,
-                                  composeState.composeData.params.assetInfo
-                                      .assetLongname)
-                              : null,
-                        ),
-                        commonHeightSizedBox,
-                        ConfirmationFieldWithLabel(
-                          loading: loading,
-                          label: 'Source Address',
-                          value: composeState?.composeData.params.source,
-                        ),
-                        commonHeightSizedBox,
-                        ConfirmationFieldWithLabel(
-                          loading: loading,
-                          label: 'Recipient Address',
-                          value: composeState?.composeData.params.destination,
-                        ),
+                                if (selectedBalanceEntry != null) {
+                                  try {
+                                    final enteredQuantity =
+                                        getQuantityForDivisibility(
+                                      divisible: balances.assetInfo.divisible,
+                                      inputQuantity: value,
+                                    );
+
+                                    if (enteredQuantity >
+                                        selectedBalanceEntry!.quantity) {
+                                      return 'Insufficient balance';
+                                    }
+                                  } catch (e) {
+                                    return 'Invalid amount';
+                                  }
+                                }
+
+                                return null;
+                              }
+                            }),
                       ],
                     ),
                   ),
-                  onNext: ({dynamic decryptionStrategy}) =>
-                      _handleConfirmationStepNext(context,
-                          decryptionStrategy: decryptionStrategy),
                 ),
-                state: state,
               ),
-            );
-          },
-        ),
-      );
-    });
+              confirmationStepContent:
+                  ConfirmationStepContent<ComposeSendResponse>(
+                title: 'Confirm Transaction',
+                buildConfirmationContent: (composeState, onErrorButtonAction) =>
+                    TransactionComposePage<ComposeSendResponse>(
+                  composeState: composeState,
+                  errorButtonText: 'Go back to transaction',
+                  onErrorButtonAction: onErrorButtonAction,
+                  buildComposeContent: (
+                          {ComposeStateSuccess<ComposeSendResponse>?
+                              composeState,
+                          required bool loading}) =>
+                      Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      QuantityDisplay(
+                        loading: loading,
+                        quantity:
+                            composeState?.composeData.params.quantityNormalized,
+                      ),
+                      commonHeightSizedBox,
+                      ConfirmationFieldWithLabel(
+                        loading: loading,
+                        label: 'Token Name',
+                        value: composeState?.composeData.params.asset != null
+                            ? displayAssetName(
+                                composeState!.composeData.params.asset,
+                                composeState
+                                    .composeData.params.assetInfo.assetLongname)
+                            : null,
+                      ),
+                      commonHeightSizedBox,
+                      ConfirmationFieldWithLabel(
+                        loading: loading,
+                        label: 'Source Address',
+                        value: composeState?.composeData.params.source,
+                      ),
+                      commonHeightSizedBox,
+                      ConfirmationFieldWithLabel(
+                        loading: loading,
+                        label: 'Recipient Address',
+                        value: composeState?.composeData.params.destination,
+                      ),
+                    ],
+                  ),
+                ),
+                onNext: ({dynamic decryptionStrategy}) =>
+                    _handleConfirmationStepNext(context,
+                        decryptionStrategy: decryptionStrategy),
+              ),
+              state: state,
+            ),
+          );
+        },
+      ),
+    );
   }
 }

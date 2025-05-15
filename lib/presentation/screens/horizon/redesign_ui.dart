@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:horizon/presentation/common/colors.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/common/theme_extension.dart';
 import 'package:horizon/utils/app_icons.dart';
@@ -9,7 +10,7 @@ import 'package:horizon/utils/app_icons.dart';
 Widget commonHeightSizedBox = const SizedBox(height: 10);
 const double defaultButtonHeight = 54;
 
-enum ButtonVariant { black, green, gradient }
+enum ButtonVariant { black, green, gradient, red, purple }
 
 class GradientContainer extends StatelessWidget {
   final bool isHovered;
@@ -132,6 +133,14 @@ class _HorizonButtonState extends State<HorizonButton> {
     );
 
     switch (widget.variant) {
+      case ButtonVariant.red:
+        style = style.copyWith(
+          backgroundColor: WidgetStateProperty.all(red1),
+          foregroundColor: WidgetStateProperty.all(offBlack),
+        );
+        textStyle = textStyle.copyWith(
+          color: offBlack,
+        );
       case ButtonVariant.black:
         style = style.copyWith(
           backgroundColor: WidgetStateProperty.all(black),
@@ -161,6 +170,19 @@ class _HorizonButtonState extends State<HorizonButton> {
               return null;
             },
           ),
+        );
+      case ButtonVariant.purple:
+        style = style.copyWith(
+          backgroundColor: WidgetStateProperty.all(transparentPurple8),
+          foregroundColor: WidgetStateProperty.all(offWhite),
+        );
+        textStyle = textStyle.copyWith(
+          color: offWhite,
+        );
+        boxShadow = const BoxShadow(
+          color: Color.fromRGBO(255, 255, 255, 0.1),
+          blurRadius: 10,
+          offset: Offset(0, 0),
         );
       case ButtonVariant.gradient:
         style = style.copyWith(
@@ -538,6 +560,10 @@ class HorizonRedesignDropdown<T> extends StatefulWidget {
   final String hintText;
   final Widget Function(T)? selectedItemBuilder;
   final bool useModal;
+  final bool gradBorder;
+  final BorderRadius? cornerRadius;
+  final Color? buttonBg;
+  final TextStyle? buttonTextStyle;
 
   const HorizonRedesignDropdown({
     super.key,
@@ -547,6 +573,10 @@ class HorizonRedesignDropdown<T> extends StatefulWidget {
     required this.hintText,
     this.selectedItemBuilder,
     this.useModal = true,
+    this.gradBorder = true,
+    this.cornerRadius = const BorderRadius.all(Radius.circular(18)),
+    this.buttonBg,
+    this.buttonTextStyle,
   });
 
   @override
@@ -616,16 +646,22 @@ class _HorizonRedesignDropdownState<T>
                         maxWidth: 480, // Maximum width for larger screens
                         minWidth: 200, // Minimum width for smaller screens
                       ),
-                      child: Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 20),
+                      child: BackdropFilter(
+                        filter: ImageFilter.blur(sigmaX: 4.5, sigmaY: 4.5),
                         child: Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 20),
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(18),
-                            border: GradientBoxBorder(
-                              context: context,
-                              width: 1,
-                            ),
-                            color: isDarkMode ? grey5 : grey1,
+                            border: widget.gradBorder
+                                ? GradientBoxBorder(
+                                    context: context,
+                                    width: 1,
+                                  )
+                                : Border.all(
+                                    color: isDarkMode ? transparentWhite8 : transparentBlack8,
+                                    width: 1,
+                                  ),
+                            color: (isDarkMode ? transparentWhite8 : transparentBlack8),
                           ),
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
@@ -757,7 +793,7 @@ class _HorizonRedesignDropdownState<T>
                 padding:
                     const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(18),
+                  borderRadius: widget.cornerRadius,
                   border: focusNode.hasFocus
                       ? GradientBoxBorder(
                           context: context,
@@ -767,9 +803,10 @@ class _HorizonRedesignDropdownState<T>
                               .inputDecorationTheme
                               .outlineBorder ??
                           const BorderSide()),
-                  color: hasValue
-                      ? (isDarkMode ? grey5 : grey1)
-                      : (isDarkMode ? offBlack : offWhite),
+                  color: widget.buttonBg ??
+                      (hasValue
+                          ? (isDarkMode ? grey5 : grey1)
+                          : (isDarkMode ? offBlack : offWhite)),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -787,11 +824,11 @@ class _HorizonRedesignDropdownState<T>
                                               widget.selectedValue)
                                           .child as Text)
                                       .data!,
-                                  style: Theme.of(context).textTheme.bodySmall,
+                                  style: widget.buttonTextStyle ?? Theme.of(context).textTheme.bodySmall,
                                 )
                           : Text(
                               widget.hintText,
-                              style: Theme.of(context).textTheme.bodySmall,
+                              style: widget.buttonTextStyle ?? Theme.of(context).textTheme.bodySmall,
                             ),
                     ),
                     _isOpen
@@ -1061,23 +1098,88 @@ class _BlurredBackgroundDropdownState<T>
   }
 }
 
+enum HorizonToggleType {
+  success,
+  warning,
+  error
+}
 class HorizonToggle extends StatefulWidget {
   final bool value;
   final ValueChanged<bool> onChanged;
-  final Color? backgroundColor;
+  final HorizonToggleType? type;
+  final Color? gutterInactiveColor;
+  final Color? gutterActiveColor;
+  final Color? thumbInactiveColor;
+  final Color? thumbActiveColor;
+  final Widget? thumbInactiveIcon;
+  final Widget? thumbActiveIcon;
+
 
   const HorizonToggle({
     super.key,
     required this.value,
     required this.onChanged,
-    this.backgroundColor,
+    this.type = HorizonToggleType.success,
+    this.gutterInactiveColor,
+    this.gutterActiveColor,
+    this.thumbInactiveColor,
+    this.thumbActiveColor,
+    this.thumbInactiveIcon,
+    this.thumbActiveIcon,
   });
+
 
   @override
   State<HorizonToggle> createState() => _HorizonToggleState();
 }
 
 class _HorizonToggleState extends State<HorizonToggle> {
+
+  late Color _gutterActiveColor = green2;
+  late Color _gutterInactiveColor = transparentWhite8;
+  late Color _thumbActiveColor = offWhite;
+  late Color _thumbInactiveColor = offWhite;
+  late Widget _thumbActiveIcon;
+  
+
+  void _initializeColors() {
+    switch (widget.type) {
+      case HorizonToggleType.success:
+        _gutterActiveColor = green2;
+        _gutterInactiveColor = transparentWhite8;
+        _thumbActiveColor = offWhite;
+        _thumbInactiveColor = offWhite;
+        _thumbActiveIcon = const Icon(Icons.check, color: green3, size: 14);
+        break;
+      case HorizonToggleType.warning:
+        _gutterActiveColor = yellow1;
+        _gutterInactiveColor = transparentWhite8;
+        _thumbActiveColor = gray5;
+        _thumbInactiveColor = offWhite;
+        _thumbActiveIcon = const Icon(Icons.check, color: yellow1, size: 14);
+        break;
+      case HorizonToggleType.error:
+        _gutterActiveColor = red1;
+        _gutterInactiveColor = transparentWhite8;
+        _thumbActiveColor = offWhite;
+        _thumbInactiveColor = offWhite;
+        _thumbActiveIcon = const Icon(Icons.check, color: red1, size: 14);
+        break;
+      default:
+        _gutterActiveColor = widget.gutterActiveColor ?? green2;
+        _gutterInactiveColor = widget.gutterInactiveColor ?? transparentWhite8;
+        _thumbActiveColor = widget.thumbActiveColor ?? offWhite;
+        _thumbInactiveColor = widget.thumbInactiveColor ?? offWhite;
+        _thumbActiveIcon = widget.thumbActiveIcon ?? const Icon(Icons.check, color: green3, size: 14);
+    }
+  }
+  
+  @override
+  void initState() {
+    super.initState();
+    _initializeColors();
+  }
+   
   @override
   Widget build(BuildContext context) {
     return MouseRegion(
@@ -1094,29 +1196,23 @@ class _HorizonToggleState extends State<HorizonToggle> {
                   Theme.of(context).inputDecorationTheme.outlineBorder ??
                       const BorderSide()),
               color: widget.value
-                  ? (widget.backgroundColor ?? green2)
-                  : Theme.of(context)
-                      .inputDecorationTheme
-                      .outlineBorder
-                      ?.color),
+                  ? _gutterActiveColor
+                  : _gutterInactiveColor,
+          ),
           child: AnimatedAlign(
             duration: const Duration(milliseconds: 200),
             alignment:
                 widget.value ? Alignment.centerRight : Alignment.centerLeft,
             child: Container(
-              width: 24,
-              height: 24,
-              decoration: const BoxDecoration(
+              width: 22,
+              height: 22,
+              decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: offWhite,
+                color: widget.value ? _thumbActiveColor : _thumbInactiveColor,
               ),
               child: widget.value
-                  ? Icon(
-                      Icons.check,
-                      color: widget.backgroundColor ?? green2,
-                      size: 16,
-                    )
-                  : null,
+                  ? widget.thumbActiveIcon ?? _thumbActiveIcon
+                  : widget.thumbInactiveIcon,
             ),
           ),
         ),
@@ -1295,10 +1391,10 @@ class _HorizonTextFieldState extends State<HorizonTextField> {
                 ),
               ),
             ),
-            if (hasError || widget.errorText != null) ...[
+            if (hasError) ...[
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.only(left: 16, top: 4),
+                padding: const EdgeInsets.only(left: 16, top: 4, bottom: 0),
                 child: Text(
                   textAlign: TextAlign.center,
                   field.errorText ?? widget.errorText ?? '',
@@ -1414,13 +1510,13 @@ class _HorizonPasswordPromptState extends State<HorizonPasswordPrompt> {
                       icon: _obscurePassword
                           ? AppIcons.eyeClosedIcon(
                               context: context,
-                              width: 10,
-                              height: 10,
+                              width: 24,
+                              height: 24,
                             )
                           : AppIcons.eyeOpenIcon(
                               context: context,
-                              width: 12,
-                              height: 12,
+                              width: 24,
+                              height: 24,
                             ),
                       onPressed: _togglePasswordVisibility,
                       padding: EdgeInsets.zero,
