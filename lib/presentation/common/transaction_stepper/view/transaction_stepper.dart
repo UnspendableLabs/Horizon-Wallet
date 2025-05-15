@@ -227,7 +227,9 @@ class TransactionStepperState<T, R> extends State<TransactionStepper<T, R>> {
                       borderRadius: BorderRadius.circular(4),
                       color: transparentWhite33,
                     ),
-                    child: FractionallySizedBox(
+                    child: AnimatedFractionallySizedBox(
+                      duration: const Duration(milliseconds: 300),
+                      curve: Curves.easeInOut,
                       alignment: Alignment.centerLeft,
                       widthFactor: (_currentStep + 1) / 3,
                       child: Container(
@@ -245,7 +247,7 @@ class TransactionStepperState<T, R> extends State<TransactionStepper<T, R>> {
                   ),
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 32),
 
               // Step title
               Padding(

@@ -9,6 +9,7 @@ class FilterBar extends StatelessWidget {
   final double? paddingHorizontal;
   final bool allowDeselect;
   final List<Object>? disabledOptions;
+  final double? itemGap;
 
   const FilterBar({
     super.key,
@@ -19,6 +20,7 @@ class FilterBar extends StatelessWidget {
     this.paddingHorizontal,
     this.allowDeselect = false,
     this.disabledOptions,
+    this.itemGap = 10.0,
   });
 
   @override
@@ -28,7 +30,7 @@ class FilterBar extends StatelessWidget {
       child: Container(
         width: double.infinity,
         height: 44,
-        padding: const EdgeInsets.symmetric(vertical: 6),
+        padding: const EdgeInsets.all(6),
         decoration: BoxDecoration(
           color: Theme.of(context).dialogTheme.backgroundColor,
           borderRadius: BorderRadius.circular(18),
@@ -41,22 +43,30 @@ class FilterBar extends StatelessWidget {
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: filterOptions.map((option) {
+          children: filterOptions.asMap().entries.map((entry) {
+            final option = entry.value;
             final isSelected = currentFilter == option.value;
             final isDisabled = disabledOptions?.contains(option.value) ?? false;
-            return FilterButton(
-              label: option.label,
-              isSelected: isSelected,
-              isDisabled: isDisabled,
-              onTap: isDisabled
-                  ? null
-                  : () {
-                      if (isSelected && allowDeselect) {
-                        onClearFilter();
-                      } else {
-                        onFilterSelected(option.value);
-                      }
-                    },
+            return Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                FilterButton(
+                  label: option.label,
+                  isSelected: isSelected,
+                  isDisabled: isDisabled,
+                  onTap: isDisabled
+                      ? null
+                      : () {
+                          if (isSelected && allowDeselect) {
+                            onClearFilter();
+                          } else {
+                            onFilterSelected(option.value);
+                          }
+                        },
+                ),
+                if (entry.key != filterOptions.length - 1)
+                  SizedBox(width: itemGap),
+              ],
             );
           }).toList(),
         ),

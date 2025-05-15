@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
+import 'package:go_router/go_router.dart';
 import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
@@ -59,7 +60,9 @@ class _SeedPhraseFlowState extends State<SeedPhraseFlow> {
                 Text(
                   'Please write down your seed phrase and store it in a secure location. It is the only way to recover your wallet.',
                   textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.titleSmall,
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        fontWeight: FontWeight.w400,
+                      ),
                 ),
               ],
             ),
@@ -90,7 +93,7 @@ class _SeedPhraseFlowState extends State<SeedPhraseFlow> {
               ],
             ),
           ),
-          const Spacer(),
+          const SizedBox(height: 28),
           SizedBox(
             width: double.infinity,
             height: 56,
@@ -167,10 +170,18 @@ class _SeedPhraseFlowState extends State<SeedPhraseFlow> {
     if (_seedPhrase == null) return const SizedBox.shrink();
 
     return Padding(
-      padding: const EdgeInsets.all(20.0),
+      padding: const EdgeInsets.fromLTRB(20.0, 0, 20.0, 20.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Text(
+            "Anyone who knows your seed phrase can access your wallet and funds.",
+            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                  fontWeight: FontWeight.w400,
+                ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 18),
           NumberedGrid(
             text: _showSeedPhrase
                 ? _seedPhrase!
@@ -178,44 +189,49 @@ class _SeedPhraseFlowState extends State<SeedPhraseFlow> {
             itemMargin: const EdgeInsets.all(5.0),
           ),
           const SizedBox(height: 16),
-          Center(
-            child: Padding(
-              padding: const EdgeInsets.all(10.0),
-              child: TextButton(
-                style: Theme.of(context).textButtonTheme.style?.copyWith(
-                      backgroundColor: WidgetStateProperty.all(
-                        transparentPurple8,
-                      ),
-                      padding: WidgetStateProperty.all(
-                        const EdgeInsets.symmetric(
-                            horizontal: 10, vertical: 12),
-                      ),
-                    ),
-                onPressed: () {
-                  setState(() {
-                    _showSeedPhrase = !_showSeedPhrase;
-                  });
-                },
-                child: Container(
-                  width: 132,
-                  alignment: Alignment.center,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      _showSeedPhrase
-                          ? AppIcons.eyeOpenIcon(context: context)
-                          : AppIcons.eyeClosedIcon(context: context),
-                      const SizedBox(width: 8),
-                      Text(
-                        _showSeedPhrase ? 'Hide Phrase' : 'Show Phrase',
-                        style: Theme.of(context).textTheme.bodySmall,
-                      ),
-                    ],
-                  ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              GestureDetector(
+              onTap: () {
+                setState(() {
+                  _showSeedPhrase = !_showSeedPhrase;
+                });
+              },
+              child: Container(
+                height: 32,
+                padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                decoration: BoxDecoration(
+                  color: transparentPurple8,
+                  borderRadius: BorderRadius.circular(8),
                 ),
-              ),
-            ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    _showSeedPhrase
+                        ? AppIcons.eyeOpenIcon(
+                            context: context, width: 24, height: 24)
+                        : AppIcons.eyeClosedIcon(
+                            context: context, width: 24, height: 24),
+                    const SizedBox(width: 4),
+                    Text(
+                      _showSeedPhrase ? 'Hide Phrase' : 'Show Phrase',
+                      style: Theme.of(context).textTheme.labelMedium,
+                    ),
+                  ],
+                ),
+              )),
+            ],
           ),
+          const SizedBox(height: 16),
+          HorizonButton(
+            variant: ButtonVariant.black,
+            onPressed: () {
+              context.pop();
+            },
+            child: TextButtonContent(value: "Close"),
+          )
         ],
       ),
     );
@@ -223,7 +239,7 @@ class _SeedPhraseFlowState extends State<SeedPhraseFlow> {
 
   Widget _buildWarningPoint(String title, Widget icon) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 11),
+      padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 14),
       child: Row(
         children: [
           icon,

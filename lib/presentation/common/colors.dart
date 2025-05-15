@@ -57,4 +57,6 @@ const onboardingQuoteLightThemeColor = Color.fromRGBO(220, 220, 220, 1);
 const onboardingQuoteDarkThemeColor = Color.fromRGBO(100, 100, 100, 1);
 
 const gray1 = Color.fromRGBO(206, 211, 215, 1);
+const gray5 = Color(0xFF191919);
+
 

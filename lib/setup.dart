@@ -3,6 +3,7 @@ import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:get_it/get_it.dart';
 
 import 'package:horizon/data/services/secure_kv_service_impl.dart';
+import 'package:horizon/data/sources/network/horizon_explorer_client.dart';
 import 'package:horizon/domain/services/secure_kv_service.dart';
 
 import 'package:horizon/data/sources/repositories/in_memory_key_repository_impl.dart';
@@ -282,6 +283,31 @@ void setup() {
       retryEvaluator: dioRetryEvaluatorFunc,
     ), // Add the RetryInterceptor here
   ]);
+
+  final horizonExplorerDio = Dio(BaseOptions(
+    baseUrl: config.horizonExplorerApiBase,
+    connectTimeout: const Duration(seconds: 5),
+    receiveTimeout: const Duration(seconds: 3),
+  ));
+
+  horizonExplorerDio.interceptors.addAll([
+    TimeoutInterceptor(),
+    ConnectionErrorInterceptor(),
+    BadResponseInterceptor(),
+    BadCertificateInterceptor(),
+    RetryInterceptor(
+      dio: horizonExplorerDio,
+      retries: 3,
+      retryDelays: const [
+        Duration(seconds: 1),
+        Duration(seconds: 1),
+        Duration(seconds: 1),
+      ],
+      retryEvaluator: dioRetryEvaluatorFunc,
+    ),
+  ]);
+
+  injector.registerSingleton<HorizonExplorerApi>(HorizonExplorerApi(dio: horizonExplorerDio));
 
 //   final blockCypherDio = Dio(BaseOptions(
 //       baseUrl: config.blockCypherBase,

@@ -91,6 +91,9 @@ class ConfigImpl implements Config {
       };
 
   @override
+  String get horizonExplorerApiBase => "https://horizon.market/api/explorer";
+
+  @override
   String get btcExplorerBase => switch (network) {
         Network.mainnet => "https://mempool.space",
         Network.testnet => "https://mempool.space/testnet",

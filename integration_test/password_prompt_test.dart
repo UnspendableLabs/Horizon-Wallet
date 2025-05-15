@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/screens/onboarding/view/password_prompt.dart';
 import 'package:horizon/presentation/screens/onboarding_create/bloc/onboarding_create_bloc.dart';
 import 'package:horizon/presentation/screens/onboarding_create/bloc/onboarding_create_event.dart';
@@ -54,6 +55,14 @@ void main() {
             inputTextColor: Colors.black,
             errorColor: Colors.red,
             errorBackgroundColor: Colors.red[50]!,
+            settingsItemBackground: transparentBlack66,
+            bgBlackOrWhite: Colors.white,
+            mutedDescriptionTextColor: Colors.grey[600]!,
+            number50Regular: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+              color: Colors.grey[50]!,
+            ),
           ),
         ],
       ),
