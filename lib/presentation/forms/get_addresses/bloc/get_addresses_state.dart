@@ -1,6 +1,5 @@
 import 'package:formz/formz.dart';
 import 'package:horizon/domain/entities/address_rpc.dart';
-import 'package:horizon/domain/entities/account_v2.dart';
 import 'package:horizon/domain/entities/imported_address.dart';
 
 enum AddressSelectionMode { byAccount, importedAddresses }

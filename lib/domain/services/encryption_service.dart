@@ -7,7 +7,6 @@ abstract class EncryptionService {
   Future<String> decryptWithKey(String data, String key);
 }
 
-
 extension EncryptionServiceX on EncryptionService {
   TaskEither<String, String> encryptT({
     required String data,
@@ -53,4 +52,3 @@ extension EncryptionServiceX on EncryptionService {
     );
   }
 }
-

@@ -1,4 +1,3 @@
-
 import 'package:horizon/domain/entities/fee_estimates.dart';
 
 sealed class FeeOption {
@@ -52,7 +51,6 @@ class Custom extends FeeOption {
   String get label => 'Custom';
 }
 
-
 extension FeeOptionX on FeeOption {
   num resolveFeeRate(FeeEstimates estimates) {
     return switch (this) {
@@ -63,4 +61,3 @@ extension FeeOptionX on FeeOption {
     };
   }
 }
-

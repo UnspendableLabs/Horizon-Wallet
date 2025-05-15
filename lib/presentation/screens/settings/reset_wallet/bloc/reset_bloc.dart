@@ -1,11 +1,9 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
-import 'package:horizon/common/constants.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/imported_address_repository.dart';
 import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 import 'package:horizon/domain/repositories/transaction_local_repository.dart';
-import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/domain/services/secure_kv_service.dart';
 import 'package:horizon/presentation/screens/settings/reset_wallet/bloc/reset_event.dart';
@@ -14,7 +12,6 @@ import 'package:logger/logger.dart';
 
 class ResetBloc extends Bloc<ResetEvent, ResetState> {
   final logger = Logger();
-
 
   final AddressRepository addressRepository;
   final ImportedAddressRepository importedAddressRepository;

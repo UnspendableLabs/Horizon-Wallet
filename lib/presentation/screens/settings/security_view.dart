@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
-import 'package:get_it/get_it.dart';
 import 'package:horizon/domain/repositories/settings_repository.dart';
-import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 import 'package:horizon/presentation/screens/settings/settings_view.dart';
 

@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/domain/repositories/settings_repository.dart';
-import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/screens/settings/import_address/import_address_flow.dart';
 import 'package:horizon/presentation/screens/settings/reset_wallet/reset_wallet_flow.dart';

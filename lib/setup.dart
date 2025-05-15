@@ -45,7 +45,6 @@ import 'package:horizon/domain/repositories/fairminter_repository.dart';
 import 'package:horizon/domain/repositories/imported_address_repository.dart';
 import 'package:horizon/domain/repositories/node_info_repository.dart';
 import 'package:horizon/domain/repositories/utxo_repository.dart';
-import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/bip39.dart';
 import 'package:horizon/domain/services/bitcoind_service.dart';
@@ -383,7 +382,6 @@ void setup() {
 
   injector.registerSingleton<AccountV2Repository>(
       AccountV2RepositoryImpl(injector.get<DatabaseManager>().database));
-
 
   injector.registerSingleton<SecureKVService>(
       SecureKVServiceImpl(const FlutterSecureStorage()));

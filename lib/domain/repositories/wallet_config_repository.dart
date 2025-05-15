@@ -18,14 +18,16 @@ abstract class WalletConfigRepository {
 }
 
 extension WalletConfigRepositoryX on WalletConfigRepository {
-  TaskEither<String, List<WalletConfig>> getAllT(String Function(Object error) onError) {
+  TaskEither<String, List<WalletConfig>> getAllT(
+      String Function(Object error) onError) {
     return TaskEither.tryCatch(
       () => getAll(),
       (e, _) => onError(e),
     );
   }
 
-  TaskEither<String, WalletConfig> getCurrentT(String Function(Object error) onError) {
+  TaskEither<String, WalletConfig> getCurrentT(
+      String Function(Object error) onError) {
     return TaskEither.tryCatch(
       () => getCurrent(),
       (e, _) => onError(e),
@@ -42,21 +44,24 @@ extension WalletConfigRepositoryX on WalletConfigRepository {
     );
   }
 
-  TaskEither<String, int> createT(WalletConfig config, String Function(Object error) onError) {
+  TaskEither<String, int> createT(
+      WalletConfig config, String Function(Object error) onError) {
     return TaskEither.tryCatch(
       () => create(config),
       (e, _) => onError(e),
     );
   }
 
-  TaskEither<String, bool> updateT(WalletConfig config, String Function(Object error) onError) {
+  TaskEither<String, bool> updateT(
+      WalletConfig config, String Function(Object error) onError) {
     return TaskEither.tryCatch(
       () => update(config),
       (e, _) => onError(e),
     );
   }
 
-  TaskEither<String, WalletConfig> createOrUpdateT(WalletConfig config, String Function(Object error) onError) {
+  TaskEither<String, WalletConfig> createOrUpdateT(
+      WalletConfig config, String Function(Object error) onError) {
     return TaskEither.tryCatch(
       () => createOrUpdate(config),
       (e, _) => onError(e),
@@ -79,4 +84,3 @@ extension WalletConfigRepositoryX on WalletConfigRepository {
     );
   }
 }
-

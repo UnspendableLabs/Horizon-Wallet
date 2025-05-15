@@ -1,6 +1,4 @@
-import 'package:fpdart/fpdart.dart';
 import 'package:horizon/domain/entities/bitcoin_tx.dart';
-import 'package:horizon/domain/entities/failure.dart';
 import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 import 'package:horizon/domain/entities/address_info.dart';
 import 'package:horizon/domain/entities/http_config.dart';

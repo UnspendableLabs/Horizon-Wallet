@@ -6,7 +6,6 @@ import 'package:horizon/domain/services/encryption_service.dart';
 import 'dart:convert';
 import 'package:encrypt/encrypt.dart';
 import 'package:horizon/common/normalize_b64.dart';
-import "package:fpdart/fpdart.dart";
 
 class Salt {
   /// Internal List of salt bytes
@@ -92,7 +91,6 @@ class EncryptionServiceWebWorkerImpl implements EncryptionService {
     }
   }
 
-
   @override
   Future<String> decrypt(String data_, String password) async {
     final data = data_.substring(_argon2Prefix.length);
@@ -121,7 +119,6 @@ class EncryptionServiceWebWorkerImpl implements EncryptionService {
       throw Exception('Web Worker not supported');
     }
   }
-
 
   @override
   Future<String> decryptWithKey(String data_, String keyB64) async {
