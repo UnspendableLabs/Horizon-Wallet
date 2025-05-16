@@ -94,11 +94,9 @@ class _RBFPageState extends State<RBFPage> {
         transactionService: GetIt.I<TransactionService>(),
         bitcoindService: GetIt.I<BitcoindService>(),
         transactionLocalRepository: GetIt.I<TransactionLocalRepository>(),
-        addressRepository: GetIt.I<UnifiedAddressRepository>(),
         inMemoryKeyRepository: GetIt.I<InMemoryKeyRepository>(),
         encryptionService: GetIt.I<EncryptionService>(),
         addressService: GetIt.I<AddressService>(),
-        importedAddressService: GetIt.I<ImportedAddressService>(),
       )..add(RBFDependenciesRequested(
           txHash: widget.txHash, address: widget.address)),
       child: BlocConsumer<RBFBloc, TransactionState<RBFData, RBFComposeData>>(

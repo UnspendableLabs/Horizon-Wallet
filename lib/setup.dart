@@ -504,17 +504,7 @@ void setup() {
           balanceRepository: injector.get<BalanceRepository>()));
 
   injector.registerSingleton<SignAndBroadcastTransactionUseCase>(
-      SignAndBroadcastTransactionUseCase(
-    inMemoryKeyRepository: GetIt.I.get<InMemoryKeyRepository>(),
-    importedAddressRepository: GetIt.I.get<ImportedAddressRepository>(),
-    utxoRepository: GetIt.I.get<UtxoRepository>(),
-    encryptionService: GetIt.I.get<EncryptionService>(),
-    addressService: GetIt.I.get<AddressService>(),
-    transactionService: GetIt.I.get<TransactionService>(),
-    bitcoindService: GetIt.I.get<BitcoindService>(),
-    transactionLocalRepository: GetIt.I.get<TransactionLocalRepository>(),
-    importedAddressService: GetIt.I.get<ImportedAddressService>(),
-  ));
+      SignAndBroadcastTransactionUseCase());
 
   injector.registerSingleton<WriteLocalTransactionUseCase>(
       WriteLocalTransactionUseCase(

@@ -43,8 +43,6 @@ class SignPsbtModal extends StatelessWidget {
   final RPCSignPsbtSuccessCallback onSuccess;
   final Map<String, List<int>> signInputs;
   final List<int>? sighashTypes;
-  final ImportedAddressService importedAddressService;
-  final UnifiedAddressRepository addressRepository;
   final BitcoinRepository bitcoinRepository;
 
   const SignPsbtModal(
@@ -60,8 +58,6 @@ class SignPsbtModal extends StatelessWidget {
       required this.onSuccess,
       required this.signInputs,
       required this.sighashTypes,
-      required this.importedAddressService,
-      required this.addressRepository,
       required this.bitcoinRepository});
 
   @override
@@ -77,8 +73,6 @@ class SignPsbtModal extends StatelessWidget {
         passwordRequired:
             GetIt.I<SettingsRepository>().requirePasswordForCryptoOperations,
         inMemoryKeyRepository: GetIt.I<InMemoryKeyRepository>(),
-        addressRepository: addressRepository,
-        importedAddressService: importedAddressService,
         signInputs: signInputs,
         sighashTypes: sighashTypes,
         unsignedPsbt: unsignedPsbt,
@@ -374,8 +368,6 @@ class _AppShellState extends State<AppShell> with TickerProviderStateMixin {
               unsignedPsbt: psbt,
               signInputs: signInputs,
               sighashTypes: sighashTypes,
-              addressRepository: GetIt.I<UnifiedAddressRepository>(),
-              importedAddressService: GetIt.I.get<ImportedAddressService>(),
               transactionService: GetIt.I.get<TransactionService>(),
               bitcoindService: GetIt.I.get<BitcoindService>(),
               balanceRepository: GetIt.I.get<BalanceRepository>(),
