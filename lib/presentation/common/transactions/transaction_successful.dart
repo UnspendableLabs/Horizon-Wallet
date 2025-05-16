@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
+import 'package:horizon/presentation/common/transactions/success_animation.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 import 'package:horizon/utils/app_icons.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -36,6 +37,10 @@ class TransactionSuccessful extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
+        const TxnSuccessAnimation(),
+        const SizedBox(
+          height: 32,
+        ),
         Container(
           padding: const EdgeInsets.symmetric(vertical: 14.0),
           height: 56,
@@ -59,6 +64,7 @@ class TransactionSuccessful extends StatelessWidget {
                           text: 'Transaction id: ',
                           style:
                               Theme.of(context).textTheme.labelSmall?.copyWith(
+                                    fontWeight: FontWeight.w500,
                                     color: Theme.of(context)
                                         .textTheme
                                         .labelSmall
@@ -129,24 +135,21 @@ class TransactionSuccessful extends StatelessWidget {
             ],
           ),
         ),
-        const SizedBox(height: 14),
-        SizedBox(
-          height: 64,
-          child: HorizonOutlinedButton(
-            onPressed:
-                loading ? null : () => _launchExplorer(session.httpConfig),
-            buttonText: 'View transaction',
-            isTransparent: true,
-          ),
+        const SizedBox(height: 28),
+        HorizonButton(
+          onPressed: loading ? null : () => _launchExplorer(session.httpConfig),
+          disabled: loading,
+          child: TextButtonContent(value: "View Transaction"),
+          variant: ButtonVariant.black,
         ),
         commonHeightSizedBox,
-        SizedBox(
-          height: 64,
-          child: HorizonOutlinedButton(
-            onPressed: loading ? null : () => Navigator.pop(context),
-            buttonText: 'Close',
-            isTransparent: true,
-          ),
+        HorizonButton(
+          onPressed: () {
+            Navigator.pop(context);
+          },
+          child: TextButtonContent(value: "Close"),
+          disabled: loading,
+          variant: ButtonVariant.black,
         ),
         const SizedBox(height: 14),
       ],

@@ -181,6 +181,7 @@ class TransactionStepperState<T, R> extends State<TransactionStepper<T, R>> {
     final stepperContent = Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.transparent,
+        scrolledUnderElevation: 0,
         elevation: 0,
         // on the last step, show a close button rather than a back button
         leading: showBackButton
