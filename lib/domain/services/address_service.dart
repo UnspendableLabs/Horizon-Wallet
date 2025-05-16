@@ -16,7 +16,7 @@ abstract class AddressService {
   });
 
   Future<String> deriveAddressPrivateKeyWIP({
-    required AddressV2 address,
+    required Bip32Path path,
     required Seed seed,
     required Network network,
   });
@@ -91,13 +91,13 @@ extension AddressServiceX on AddressService {
   }
 
   TaskEither<String, String> deriveAddressPrivateKeyWIPT({
-    required AddressV2 address,
+    required Bip32Path path,
     required Seed seed,
     required Network network,
   }) {
     return TaskEither.tryCatch(
-      () => deriveAddressPrivateKeyWIP(
-          address: address, seed: seed, network: network),
+      () =>
+          deriveAddressPrivateKeyWIP(path: path, seed: seed, network: network),
       (e, _) => "error deriving address private key",
     );
   }

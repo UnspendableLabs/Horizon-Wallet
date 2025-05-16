@@ -40,28 +40,22 @@ class AddressServiceImpl implements AddressService {
     return AddressV2(
       type: AddressV2Type.p2wpkh,
       address: address,
-      derivation: Bip32Path(path: path),
+      derivation: Bip32Path(value: path),
       publicKey: hex.encode(child.publicKey.toDart),
     );
   }
 
   @override
   Future<String> deriveAddressPrivateKeyWIP({
-    required AddressV2 address,
+    required Bip32Path path,
     required Seed seed,
     required Network network,
   }) async {
-    if (address.derivation is! Bip32Path) {
-      throw ArgumentError('Invalid derivation type');
-    }
-
-    final path = (address.derivation as Bip32Path).path;
-
     bip32.BIP32Interface root =
         _bip32.fromSeed(Buffer.from(seed.bytes.toJS), network.toJS);
 
     bip32.BIP32Interface child = _deriveChildKey(
-      path: path,
+      path: path.value,
       privKey: hex.encode(root.privateKey!.toDart),
       chainCodeHex: hex.encode(root.chainCode.toDart),
       network: network,

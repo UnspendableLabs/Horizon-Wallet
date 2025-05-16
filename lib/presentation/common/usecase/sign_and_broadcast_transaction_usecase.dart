@@ -77,30 +77,55 @@ class SignAndBroadcastTransactionUseCase<R extends ComposeResponse> {
     required HttpConfig httpConfig,
   }) async {
     final task = TaskEither<String, (String hex, String hash)>.Do(($) async {
-      final utxoMap = await $(_getUTXOMap(
-        source: source,
-        httpConfig: httpConfig,
-      ));
+      String pk = switch (source.derivation) {
+        Bip32Path(value: var value) => await $(_walletConfigRepository
+            .getCurrentT((_) => "invariant: could not read wallet config")
+            .flatMap((walletConfig) => _seedService
+                .getForWalletConfigT(
+                    walletConfig: walletConfig,
+                    decryptionStrategy: decryptionStrategy,
+                    onError: (_) => "invairant: could not derive seed")
+                .flatMap((seed) => addressService.deriveAddressPrivateKeyWIPT(
+                      path: Bip32Path(value: value),
+                      seed: seed,
+                      network: httpConfig.network,
+                    )))),
+        WIF(value: var value) => await $(switch (decryptionStrategy) {
+            Password(password: var password) => encryptionService.decryptT(
+                data: value,
+                password: password,
+                onError: (_, __) => "Invalid password"),
+            InMemoryKey() => inMemoryKeyRepository
+                .getMapT(
+                    onError: (_, __) =>
+                        "invariant: failed to read in memory key map")
+                .flatMap((map) => TaskEither.fromOption(
+                    Option.fromNullable(map[source.address]),
+                    () =>
+                        "invariant: decryption key not found for address: ${source.address}"))
+                .flatMap((decryptionKey) => encryptionService.decryptWithKeyT(
+                    data: value,
+                    key: decryptionKey,
+                    onError: (_, __) =>
+                        "failed to decrypt wif for address: ${source.address}")),
+          })
+      };
 
-      final walletConfig = await $(_getWalletConfig());
+      final utxoMap = await $(utxoRepository.getUTXOMapForAddressT(
+          address: source, httpConfig: httpConfig));
 
-      final seed = await $(_seedService.getForWalletConfigT(
-          onError: (_) => "invariant: could not derive seed",
-          walletConfig: walletConfig,
-          decryptionStrategy: decryptionStrategy));
-
-      final pk = await $(_getAddressPrivateKey(
-          address: source, seed: seed, network: httpConfig.network));
-
-      final signedHex = await $(_signTransaction(
-          pk: pk,
-          unsigned: rawtransaction,
-          source: source,
+      final signedHex = await $(transactionService.signTransactionT(
+          unsignedTransaction: rawtransaction,
+          privateKey: pk,
+          sourceAddress: source.address,
           utxoMap: utxoMap,
-          httpConfig: httpConfig));
+          httpConfig: httpConfig,
+          onError: (_) => "Failed to sign transaction"));
 
-      final hash = await $(_broadcastTransaction(
-          rawtransaction: signedHex, httpConfig: httpConfig));
+      final hash = await $(bitcoindService.sendrawtransactionT(
+          signedHex: signedHex,
+          httpConfig: httpConfig,
+          onError: (err, _) => err.toString()));
 
       return (signedHex, hash);
     });
@@ -110,135 +135,4 @@ class SignAndBroadcastTransactionUseCase<R extends ComposeResponse> {
     result.fold((msg) => onError(msg),
         (success) => {onSuccess(success.$1, success.$2)});
   }
-
-  // this refers to address that is part of actual wallet
-  Future<String> _getAddressPrivKeyForAddress(
-      Address address, DecryptionStrategy decryptionStrategy) async {
-    throw UnimplementedError(
-        'SignAndBroadcastTransactionUseCase is not implemented');
-    // final account =
-    //     await accountRepository.getAccountByUuid(address.accountUuid);
-    // if (account == null) {
-    //   throw SignAndBroadcastTransactionException('Account not found.');
-    // }
-    //
-    // final wallet = await walletRepository.getWallet(account.walletUuid);
-    //
-    // // Decrypt Root Private Key
-    // String decryptedRootPrivKey;
-    //
-    // try {
-    //   decryptedRootPrivKey = switch (decryptionStrategy) {
-    //     Password(password: var password) =>
-    //       await encryptionService.decrypt(wallet!.encryptedPrivKey, password),
-    //     InMemoryKey() => await encryptionService.decryptWithKey(
-    //         wallet!.encryptedPrivKey, (await inMemoryKeyRepository.get())!)
-    //   };
-    // } catch (e) {
-    //   throw SignAndBroadcastTransactionException('Incorrect password.');
-    // }
-    //
-    // // Derive Address Private Key
-    // final addressPrivKey = await addressService.deriveAddressPrivateKey(
-    //   rootPrivKey: decryptedRootPrivKey,
-    //   chainCodeHex: wallet.chainCodeHex,
-    //   purpose: account.purpose,
-    //   coin: account.coinType,
-    //   account: account.accountIndex,
-    //   change: '0',
-    //   index: address.index,
-    //   importFormat: account.importFormat,
-    // );
-    //
-    // return addressPrivKey;
-  }
-
-  Future<String> _getAddressPrivKeyForImportedAddress(
-      ImportedAddress importedAddress,
-      DecryptionStrategy decryptionStrategy,
-      Network network) async {
-    throw UnimplementedError(
-        'SignAndBroadcastTransactionUseCase is not implemented');
-    //   late String decryptedAddressWif;
-    //   try {
-    //     Future<String?> getKey() async {
-    //       final maybeKey =
-    //           (await inMemoryKeyRepository.getMap())[importedAddress.address];
-    //
-    //       return maybeKey;
-    //     }
-    //
-    //     decryptedAddressWif = switch (decryptionStrategy) {
-    //       Password(password: var password) => await encryptionService.decrypt(
-    //           importedAddress.encryptedWif, password),
-    //       InMemoryKey() => await encryptionService.decryptWithKey(
-    //           importedAddress.encryptedWif, (await getKey())!)
-    //     };
-    //   } catch (e) {
-    //     throw SignAndBroadcastTransactionException('Incorrect password.');
-    //   }
-    //
-    //   final addressPrivKey =
-    //       await importedAddressService.getAddressPrivateKeyFromWIF(
-    //           wif: decryptedAddressWif, network: network);
-    //
-    //   return addressPrivKey;
-    // }
-  }
-
-  TaskEither<String, WalletConfig> _getWalletConfig() {
-    return TaskEither.tryCatch(
-      () => _walletConfigRepository.getCurrent(),
-      (_, __) => "Failed to get wallet config",
-    );
-  }
-
-  TaskEither<String, Map<String, Utxo>> _getUTXOMap(
-      {required AddressV2 source, required HttpConfig httpConfig}) {
-    return TaskEither.tryCatch(() async {
-      final (utxos, cachedTxHashes) = await utxoRepository.getUnspentForAddress(
-          source.address, httpConfig,
-          excludeCached: true);
-      final Map<String, Utxo> utxoMap = {
-        for (var e in utxos) "${e.txid}:${e.vout}": e
-      };
-
-      return utxoMap;
-    }, (_, __) => "Failed to get UTXO map for address ${source.address}");
-  }
-
-  TaskEither<String, String> _signTransaction({
-    required String unsigned,
-    required String pk,
-    required AddressV2 source,
-    required Map<String, Utxo> utxoMap,
-    required HttpConfig httpConfig,
-  }) {
-    return TaskEither.tryCatch(
-        () => transactionService.signTransaction(
-            unsigned, pk, source.address, utxoMap, httpConfig),
-        (_, __) => "Failed to sign transaction");
-  }
-
-  TaskEither<String, String> _getAddressPrivateKey(
-      {required AddressV2 address,
-      required Seed seed,
-      required Network network}) {
-    return TaskEither.tryCatch(
-      () => addressService.deriveAddressPrivateKeyWIP(
-          address: address, seed: seed, network: network),
-      (_, __) => "Failed to get address private key",
-    );
-  }
-
-  TaskEither<String, String> _broadcastTransaction(
-      {required String rawtransaction, required HttpConfig httpConfig}) {
-    return TaskEither.tryCatch(
-      () => bitcoindService.sendrawtransaction(rawtransaction, httpConfig),
-      (_, __) => "Failed to broadcast transaction",
-    );
-  }
-
-  //   final txHex = awit transactionService.signTransaction(
-  //       rawtransaction, addressPrivKey, source, utxoMap, httpConfig);
 }

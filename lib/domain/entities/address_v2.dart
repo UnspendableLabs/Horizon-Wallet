@@ -5,16 +5,20 @@ enum AddressV2Type {
   p2wpkh,
 }
 
-sealed class DerivationType {}
+
+
+
+sealed class DerivationType {
+}
 
 class Bip32Path extends DerivationType {
-  final String path;
-  Bip32Path({required this.path});
+  final String value;
+  Bip32Path({required this.value});
 }
 
 class WIF extends DerivationType {
-  final String wif;
-  WIF({required this.wif});
+  final String value;
+  WIF({required this.value});
 }
 
 class AddressV2 {
