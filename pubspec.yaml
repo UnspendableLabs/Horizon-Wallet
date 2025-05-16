@@ -86,7 +86,7 @@ dependencies:
   pub_semver: ^2.1.4
   flutter_native_splash: ^2.4.3
   sentry_flutter: ^8.11.0
-  lottie: ^3.2.0
+  lottie: ^3.3.1
   flutter_form_builder: ^9.5.0
   password_strength_checker: ^1.2.4
   cached_network_image: ^3.4.0
@@ -136,6 +136,7 @@ flutter:
     - assets/xcp-img.png
     - assets/btc-img.png
     - assets/icons/
+    - assets/lottie/
     - fonts/
 
   #   - .env

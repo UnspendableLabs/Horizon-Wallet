@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/utils/app_icons.dart';
 
 class FeeConfirmation extends StatefulWidget {
@@ -30,21 +31,22 @@ class _FeeConfirmationState extends State<FeeConfirmation> {
 
   Widget _buildLabelValueRow(String label, String? value) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8.0),
+      padding: const EdgeInsets.symmetric(vertical: 10),
       child: Row(
-        // mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           SelectableText(
             label,
-            style: Theme.of(context).textTheme.labelSmall,
+            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+              color: transparentWhite33,
+            ),
           ),
           const SizedBox(width: 12),
           SelectableText(
             widget.loading ? '' : (value ?? ''),
             style: Theme.of(context)
                 .textTheme
-                .bodySmall
-                ?.copyWith(fontWeight: FontWeight.w700),
+                .bodySmall,
           ),
         ],
       ),
@@ -67,8 +69,7 @@ class _FeeConfirmationState extends State<FeeConfirmation> {
                   'Fee Details',
                   style: Theme.of(context)
                       .textTheme
-                      .labelSmall
-                      ?.copyWith(fontSize: 14),
+                      .labelSmall,
                 ),
                 _isExpanded
                     ? AppIcons.caretUpIcon(

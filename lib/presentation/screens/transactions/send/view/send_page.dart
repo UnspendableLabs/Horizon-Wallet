@@ -12,6 +12,7 @@ import 'package:horizon/domain/repositories/compose_repository.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/common/shared_util.dart';
+import 'package:horizon/presentation/common/theme_extension.dart';
 import 'package:horizon/presentation/common/transaction_stepper/bloc/transaction_event.dart';
 import 'package:horizon/presentation/common/transaction_stepper/bloc/transaction_state.dart';
 import 'package:horizon/presentation/common/transaction_stepper/view/steps/transaction_form_page.dart';
@@ -88,6 +89,7 @@ class _SendPageState extends State<SendPage> {
 
   @override
   Widget build(BuildContext context) {
+    final customTheme = Theme.of(context).extension<CustomThemeExtension>();
     return BlocProvider(
       create: (context) => SendBloc(
         balanceRepository: GetIt.I<BalanceRepository>(),
@@ -271,7 +273,17 @@ class _SendPageState extends State<SendPage> {
                           {ComposeStateSuccess<ComposeSendResponse>?
                               composeState,
                           required bool loading}) =>
-                      Column(
+                      Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(18),
+                          border: Border.all(
+                            color: transparentWhite8,
+                            width: 1
+                          ),
+                          color: customTheme?.bgBlackOrWhite ?? black
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 20),
+                        child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       QuantityDisplay(
@@ -303,7 +315,8 @@ class _SendPageState extends State<SendPage> {
                         value: composeState?.composeData.params.destination,
                       ),
                     ],
-                  ),
+                  )
+                      ),
                 ),
                 onNext: ({dynamic decryptionStrategy}) =>
                     _handleConfirmationStepNext(context,

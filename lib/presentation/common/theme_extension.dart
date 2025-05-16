@@ -12,6 +12,7 @@ class CustomThemeExtension extends ThemeExtension<CustomThemeExtension> {
   final Color bgBlackOrWhite;
   final Color mutedDescriptionTextColor;
   final TextStyle number50Regular;
+  final TextStyle number35Regular;
 
   const CustomThemeExtension({
     required this.inputBackground,
@@ -24,6 +25,7 @@ class CustomThemeExtension extends ThemeExtension<CustomThemeExtension> {
     required this.bgBlackOrWhite,
     required this.mutedDescriptionTextColor,
     required this.number50Regular,
+    required this.number35Regular,
   });
 
   static const light = CustomThemeExtension(
@@ -42,6 +44,12 @@ class CustomThemeExtension extends ThemeExtension<CustomThemeExtension> {
       color: Colors.black,
       fontFamily: 'Lato',
     ),
+    number35Regular: TextStyle(
+      fontFamily: 'Lato',
+      fontSize: 35,
+      fontWeight: FontWeight.w400,
+      color: Colors.black
+    )
   );
 
   static const dark = CustomThemeExtension(
@@ -60,6 +68,12 @@ class CustomThemeExtension extends ThemeExtension<CustomThemeExtension> {
       color: Colors.white,
       fontFamily: 'Lato',
     ),
+    number35Regular: TextStyle(
+      fontFamily: 'Lato',
+      fontSize: 35,
+      color: Colors.white,
+      fontWeight: FontWeight.w400,
+    )
   );
 
   @override
@@ -86,6 +100,7 @@ class CustomThemeExtension extends ThemeExtension<CustomThemeExtension> {
       mutedDescriptionTextColor:
           mutedDescriptionTextColor,
       number50Regular: number50Regular,
+      number35Regular: number35Regular,
     );
   }
 
@@ -114,6 +129,7 @@ class CustomThemeExtension extends ThemeExtension<CustomThemeExtension> {
       mutedDescriptionTextColor:
           Color.lerp(mutedDescriptionTextColor, other.mutedDescriptionTextColor, t)!,
       number50Regular: number50Regular,
+      number35Regular: number35Regular,
     );
   }
 }

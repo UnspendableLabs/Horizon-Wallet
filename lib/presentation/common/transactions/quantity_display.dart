@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:horizon/common/format.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
+import 'package:horizon/presentation/common/theme_extension.dart';
 
 class QuantityDisplay extends StatelessWidget {
   final String? quantity;
@@ -15,6 +16,7 @@ class QuantityDisplay extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final customTheme = theme.extension<CustomThemeExtension>();
     final isDarkMode = theme.brightness == Brightness.dark;
 
     final Gradient textGradient = LinearGradient(
@@ -42,10 +44,10 @@ class QuantityDisplay extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            // padding: const EdgeInsets.symmetric(vertical: 10),
+            padding: const EdgeInsets.symmetric(vertical: 10),
             child: SelectableText(
               "You're sending",
-              style: theme.textTheme.labelSmall?.copyWith(fontSize: 14),
+              style: theme.textTheme.labelSmall?.copyWith(fontWeight: FontWeight.w500),
             ),
           ),
           if (!loading && quantity != null)
@@ -55,12 +57,7 @@ class QuantityDisplay extends StatelessWidget {
               },
               child: SelectableText(
                 quantityRemoveTrailingZeros(quantity!),
-                style: const TextStyle(
-                  fontSize: 50,
-                  fontWeight: FontWeight.w400,
-                  color:
-                      Colors.white, // This color will be replaced by gradient
-                ),
+                style: customTheme?.number35Regular,
               ),
             ),
         ],
