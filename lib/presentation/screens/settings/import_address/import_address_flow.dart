@@ -26,8 +26,7 @@ class ImportAddressFlow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final session = GetIt.I<SessionStateCubit>().state.successOrThrow();
-
+    final session = context.watch<SessionStateCubit>().state.successOrThrow();
     return BlocProvider(
       create: (context) => ImportAddressPkBloc(
         httpConfig: session.httpConfig,
