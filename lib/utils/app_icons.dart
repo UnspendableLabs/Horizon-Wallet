@@ -124,7 +124,7 @@ class AppIcons {
       color: color,
     );
   }
-
+  
   static Widget sendIcon({
     required BuildContext context,
     double? width,

@@ -58,10 +58,15 @@ void main() {
             settingsItemBackground: transparentBlack66,
             bgBlackOrWhite: Colors.white,
             mutedDescriptionTextColor: Colors.grey[600]!,
-            number50Regular: TextStyle(
-              fontSize: 16,
+            number50Regular: const TextStyle(
+              fontSize: 50,
               fontWeight: FontWeight.w500,
-              color: Colors.grey[50]!,
+              color: Colors.white,
+            ),
+            number35Regular: const TextStyle(
+              fontSize: 35,
+              fontWeight: FontWeight.w500,
+              color: Colors.white,
             ),
           ),
         ],
