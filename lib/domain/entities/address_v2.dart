@@ -5,11 +5,7 @@ enum AddressV2Type {
   p2wpkh,
 }
 
-
-
-
-sealed class DerivationType {
-}
+sealed class DerivationType {}
 
 class Bip32Path extends DerivationType {
   final String value;

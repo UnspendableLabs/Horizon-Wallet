@@ -16,7 +16,6 @@ import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 import 'package:horizon/domain/repositories/settings_repository.dart';
 import 'package:horizon/domain/repositories/transaction_local_repository.dart';
-import 'package:horizon/domain/repositories/unified_address_repository.dart';
 import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/domain/services/bitcoind_service.dart';

@@ -4,7 +4,6 @@ import 'package:get_it/get_it.dart';
 import 'package:horizon/common/format.dart';
 import 'package:horizon/domain/entities/compose_dispenser.dart';
 import 'package:horizon/domain/entities/compose_send.dart';
-import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
 import 'package:horizon/domain/repositories/dispenser_repository.dart';
