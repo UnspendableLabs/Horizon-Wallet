@@ -5,15 +5,27 @@ enum AddressV2Type {
   p2wpkh,
 }
 
+sealed class DerivationType {}
+
+class Bip32Path extends DerivationType {
+  final String path;
+  Bip32Path({required this.path});
+}
+
+class WIF extends DerivationType {
+  final String wif;
+  WIF({required this.wif});
+}
+
 class AddressV2 {
   final AddressV2Type type;
   final String address;
-  final String path;
+  final DerivationType derivation;
   final String publicKey;
   const AddressV2({
     required this.type,
     required this.address,
-    required this.path,
+    required this.derivation,
     required this.publicKey,
   });
 }
