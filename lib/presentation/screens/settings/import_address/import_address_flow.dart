@@ -30,11 +30,6 @@ class ImportAddressFlow extends StatelessWidget {
     return BlocProvider(
       create: (context) => ImportAddressPkBloc(
         httpConfig: session.httpConfig,
-        encryptionService: GetIt.I.get<EncryptionService>(),
-        addressService: GetIt.I.get<AddressService>(),
-        importedAddressRepository: GetIt.I.get<ImportedAddressRepository>(),
-        importedAddressService: GetIt.I.get<ImportedAddressService>(),
-        inMemoryKeyRepository: GetIt.I.get<InMemoryKeyRepository>(),
       ),
       child: _ImportAddressForm(onNavigateBack: onNavigateBack),
     );
