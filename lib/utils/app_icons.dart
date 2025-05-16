@@ -56,6 +56,7 @@ class AppIcons {
   static const String xcp = '$_iconPath/xcp.svg';
   static const String btc = '$_iconPath/btc.svg';
   static const String paste = '$_iconPath/paste_squares.svg';
+  static const String arrowDown = '$_iconPath/arrow_down.svg';
 
   static Widget getIcon(
     String iconPath, {
@@ -106,6 +107,21 @@ class AppIcons {
     );
   }
 
+  static Widget arrowDownIcon({
+    required BuildContext context,
+    double? width,
+    double? height,
+    Color? color,
+    BoxFit fit = BoxFit.contain,
+  }) {
+    return getIcon(
+      arrowDown,
+      context: context,
+      width: width,
+      height: height,
+      color: color,
+    );
+  }
   static Widget sendIcon({
     required BuildContext context,
     double? width,

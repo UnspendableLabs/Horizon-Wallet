@@ -567,6 +567,7 @@ class HorizonRedesignDropdown<T> extends StatefulWidget {
   final BorderRadius? cornerRadius;
   final Color? buttonBg;
   final TextStyle? buttonTextStyle;
+  final EdgeInsetsGeometry? itemPadding;
 
   const HorizonRedesignDropdown({
     super.key,
@@ -580,6 +581,7 @@ class HorizonRedesignDropdown<T> extends StatefulWidget {
     this.cornerRadius = const BorderRadius.all(Radius.circular(18)),
     this.buttonBg,
     this.buttonTextStyle,
+    this.itemPadding,
   });
 
   @override
@@ -677,7 +679,7 @@ class _HorizonRedesignDropdownState<T>
                                     _toggleDropdown();
                                   },
                                   child: Container(
-                                    padding: const EdgeInsets.symmetric(
+                                    padding: widget.itemPadding ?? const EdgeInsets.symmetric(
                                       horizontal: 12,
                                       vertical: 21,
                                     ),

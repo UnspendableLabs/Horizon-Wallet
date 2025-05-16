@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:get_it/get_it.dart';
+import 'package:go_router/go_router.dart';
 import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
@@ -153,7 +154,7 @@ class _PortfolioViewState extends State<PortfolioView>
                           context: context,
                         ),
                         onPressed: () {
-                          // TODO: Implement swap functionality
+                          context.push('/atomic-swap');
                         },
                       ),
                     ),
