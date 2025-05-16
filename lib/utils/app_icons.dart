@@ -53,10 +53,10 @@ class AppIcons {
   static const String spectacles = '$_iconPath/spectacles.svg';
   static const String chevronRight = '$_iconPath/chevron_right.svg';
   static const String key = '$_iconPath/key.svg';
-  static const String wallet = '$_iconPath/wallet.svg';
   static const String xcp = '$_iconPath/xcp.svg';
   static const String btc = '$_iconPath/btc.svg';
   static const String paste = '$_iconPath/paste_squares.svg';
+  static const String arrowDown = '$_iconPath/arrow_down.svg';
 
   static Widget getIcon(
     String iconPath, {
@@ -107,7 +107,7 @@ class AppIcons {
     );
   }
 
-  static Widget walletIcon({
+  static Widget arrowDownIcon({
     required BuildContext context,
     double? width,
     double? height,
@@ -115,15 +115,13 @@ class AppIcons {
     BoxFit fit = BoxFit.contain,
   }) {
     return getIcon(
-      wallet,
+      arrowDown,
       context: context,
       width: width,
       height: height,
       color: color,
-      fit: fit,
     );
   }
-
   static Widget sendIcon({
     required BuildContext context,
     double? width,

@@ -28,6 +28,8 @@ import 'package:horizon/presentation/inactivity_monitor/inactivity_monitor_bloc.
 import 'package:horizon/presentation/inactivity_monitor/inactivity_monitor_view.dart';
 import 'package:horizon/presentation/screens/asset/asset_view.dart';
 import 'package:horizon/presentation/screens/asset/bloc/asset_view_bloc.dart';
+
+import 'package:horizon/presentation/screens/atomic_swap/view/atomic_swap_view.dart';
 import 'package:horizon/presentation/screens/dashboard/view/portfolio_view.dart';
 import 'package:horizon/presentation/screens/login/login_view.dart';
 import 'package:horizon/presentation/screens/accounts/accounts_screen.dart';
@@ -463,6 +465,18 @@ class AppRouter {
                 );
               },
             ),
+            GoRoute(path: "/atomic-swap", pageBuilder: (context, state) => CustomTransitionPage<void>(
+              key: state.pageKey,
+              child: const AtomicSwapView(),
+              transitionDuration: const Duration(milliseconds: 300),
+              transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                return FadeTransition(
+                  opacity: animation,
+                  child: child,
+                );
+              },
+            ),
+            )
           ],
         ),
       ],
