@@ -1,6 +1,7 @@
 import 'package:horizon/common/format.dart';
 import 'package:horizon/domain/entities/bitcoin_decoded_tx.dart';
 import 'package:horizon/domain/entities/utxo.dart';
+import 'package:horizon/domain/entities/http_config.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
 
 class SignTransactionException implements Exception {
@@ -22,6 +23,7 @@ class SignChainedTransactionUseCase {
     required String rawtransaction,
     required DecodedTx prevDecodedTransaction,
     required String addressPrivKey,
+    required HttpConfig httpConfig,
   }) async {
     try {
       // TODO: construct and pass utxoMap outside of this usecase and pass it in as a parameter
@@ -42,11 +44,7 @@ class SignChainedTransactionUseCase {
 
       // Sign Transaction
       final signedTransaction = await transactionService.signTransaction(
-        rawtransaction,
-        addressPrivKey,
-        source,
-        utxoMap,
-      );
+          rawtransaction, addressPrivKey, source, utxoMap, httpConfig);
 
       return signedTransaction;
     } catch (e) {

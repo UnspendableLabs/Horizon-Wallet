@@ -70,10 +70,6 @@ class SignMessageBloc extends Bloc<SignMessageEvent, SignMessageState> {
     try {
       Wallet? wallet = await walletRepository.getCurrentWallet();
 
-      if (wallet == null) {
-        throw Exception("invariant: wallet not found");
-      }
-
       String privateKey = '';
 
       if (passwordRequired) {

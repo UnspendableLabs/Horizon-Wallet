@@ -3,6 +3,7 @@ import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/repositories/estimate_xcp_fee_repository.dart';
 import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
+import 'package:horizon/domain/entities/http_config.dart';
 
 class FetchComposeAttachUtxoFormDataUseCase {
   final GetFeeEstimatesUseCase getFeeEstimatesUseCase;
@@ -15,13 +16,14 @@ class FetchComposeAttachUtxoFormDataUseCase {
     required this.estimateXcpFeeRepository,
   });
 
-  Future<(FeeEstimates, List<Balance>, int)> call(String address) async {
+  Future<(FeeEstimates, List<Balance>, int)> call(
+      String address, HttpConfig httpConfig) async {
     try {
       // Initiate both asynchronous calls
       final futures = await Future.wait([
-        _fetchBalances(address),
-        _fetchFeeEstimates(),
-        _fetchAttachXcpFees(address),
+        _fetchBalances(address, httpConfig),
+        _fetchFeeEstimates(httpConfig),
+        _fetchAttachXcpFees(address, httpConfig),
       ]);
 
       final balances = futures[0] as List<Balance>;
@@ -40,18 +42,19 @@ class FetchComposeAttachUtxoFormDataUseCase {
     }
   }
 
-  Future<FeeEstimates> _fetchFeeEstimates() async {
+  Future<FeeEstimates> _fetchFeeEstimates(HttpConfig httpConfig) async {
     try {
-      return await getFeeEstimatesUseCase.call();
+      return await getFeeEstimatesUseCase.call(httpConfig: httpConfig);
     } catch (e) {
       throw FetchFeeEstimatesException(e.toString());
     }
   }
 
-  Future<List<Balance>> _fetchBalances(String address) async {
+  Future<List<Balance>> _fetchBalances(
+      String address, HttpConfig httpConfig) async {
     try {
-      final balances =
-          await balanceRepository.getBalancesForAddress(address, true);
+      final balances = await balanceRepository.getBalancesForAddress(
+          httpConfig: httpConfig, address: address, excludeUtxoAttached: true);
       final nonBtcBalances =
           balances.where((balance) => balance.asset != 'BTC').toList();
       return nonBtcBalances;
@@ -60,9 +63,10 @@ class FetchComposeAttachUtxoFormDataUseCase {
     }
   }
 
-  Future<int> _fetchAttachXcpFees(String address) async {
+  Future<int> _fetchAttachXcpFees(String address, HttpConfig httpConfig) async {
     try {
-      return await estimateXcpFeeRepository.estimateAttachXcpFees(address);
+      return await estimateXcpFeeRepository.estimateAttachXcpFees(
+          address: address, httpConfig: httpConfig);
     } catch (e) {
       throw FetchAttachXcpFeesException(e.toString());
     }

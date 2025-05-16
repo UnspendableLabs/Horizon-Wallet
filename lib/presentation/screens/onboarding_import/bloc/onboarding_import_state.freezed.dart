@@ -147,7 +147,7 @@ class _$OnboardingImportStateImpl implements _OnboardingImportState {
       {this.mnemonic = "",
       this.mnemonicError,
       this.walletType,
-      this.currentStep = OnboardingImportStep.chooseFormat,
+      this.currentStep = OnboardingImportStep.inputSeed,
       this.importState = const ImportState.initial()});
 
   @override

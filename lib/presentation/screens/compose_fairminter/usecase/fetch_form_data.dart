@@ -4,6 +4,7 @@ import 'package:horizon/domain/repositories/asset_repository.dart';
 import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/domain/repositories/fairminter_repository.dart';
 import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
+import 'package:horizon/domain/entities/http_config.dart';
 
 class FetchFairminterFormDataUseCase {
   final AssetRepository assetRepository;
@@ -17,13 +18,15 @@ class FetchFairminterFormDataUseCase {
   });
 
   Future<(List<Asset>, FeeEstimates, List<Fairminter>)> call(
-      String currentAddress) async {
+    String currentAddress,
+    HttpConfig httpConfig,
+  ) async {
     try {
       // Initiate both asynchronous calls
       final futures = await Future.wait([
-        _fetchAssets(currentAddress),
-        _fetchFeeEstimates(),
-        _fetchFairminters(currentAddress),
+        _fetchAssets(currentAddress, httpConfig),
+        _fetchFeeEstimates(httpConfig),
+        _fetchFairminters(currentAddress, httpConfig),
       ]);
 
       final assets = futures[0] as List<Asset>;
@@ -41,28 +44,30 @@ class FetchFairminterFormDataUseCase {
     }
   }
 
-  Future<List<Asset>> _fetchAssets(String currentAddress) async {
+  Future<List<Asset>> _fetchAssets(
+      String currentAddress, HttpConfig httpConfig) async {
     try {
-      final assets =
-          await assetRepository.getAllValidAssetsByOwnerVerbose(currentAddress);
+      final assets = await assetRepository.getAllValidAssetsByOwnerVerbose(
+          address: currentAddress, httpConfig: httpConfig);
       return assets;
     } catch (e) {
       throw FetchAssetsException(e.toString());
     }
   }
 
-  Future<FeeEstimates> _fetchFeeEstimates() async {
+  Future<FeeEstimates> _fetchFeeEstimates(HttpConfig httpConfig) async {
     try {
-      return await getFeeEstimatesUseCase.call();
+      return await getFeeEstimatesUseCase.call(httpConfig: httpConfig);
     } catch (e) {
       throw FetchFeeEstimatesException(e.toString());
     }
   }
 
-  Future<List<Fairminter>> _fetchFairminters(String currentAddress) async {
+  Future<List<Fairminter>> _fetchFairminters(
+      String currentAddress, HttpConfig httpConfig) async {
     try {
       return await fairminterRepository
-          .getFairmintersByAddress(currentAddress)
+          .getFairmintersByAddress(httpConfig, currentAddress)
           .run()
           .then((either) => either.fold(
                 (error) => throw FetchFairmintersException(

@@ -1,6 +1,6 @@
 import "package:horizon/domain/entities/address.dart";
 
-abstract class AddressRepository {
+abstract class AddressRepositoryDeprecated {
   Future<Address?> getAddress(String uuid);
   Future<List<Address>> getAllByAccountUuid(String accountUuid);
   Future<void> insert(Address address);

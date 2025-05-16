@@ -1,3 +1,5 @@
+import 'package:horizon/domain/entities/fee_estimates.dart';
+
 sealed class FeeOption {
   String get label;
 
@@ -47,4 +49,15 @@ class Custom extends FeeOption {
 
   @override
   String get label => 'Custom';
+}
+
+extension FeeOptionX on FeeOption {
+  num resolveFeeRate(FeeEstimates estimates) {
+    return switch (this) {
+      Fast() => estimates.fast,
+      Medium() => estimates.medium,
+      Slow() => estimates.slow,
+      Custom(fee: final fee) => fee,
+    };
+  }
 }

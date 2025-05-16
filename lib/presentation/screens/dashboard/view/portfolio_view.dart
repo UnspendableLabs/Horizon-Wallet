@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/core/logging/logger.dart';
-import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 import 'package:horizon/domain/repositories/events_repository.dart';
@@ -19,6 +19,7 @@ import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:horizon/presentation/session/bloc/session_state.dart';
 import 'package:horizon/utils/app_icons.dart';
+import 'package:horizon/presentation/common/gradient_avatar.dart';
 
 class PortfolioView extends StatefulWidget {
   const PortfolioView({super.key});
@@ -77,8 +78,11 @@ class _PortfolioViewState extends State<PortfolioView>
   @override
   Widget build(BuildContext context) {
     final isSmallScreen = MediaQuery.of(context).size.width < 500;
-    final session = context.read<SessionStateCubit>().state;
-    final List<String> addresses = session.allAddresses;
+    final session = context.select<SessionStateCubit, SessionStateSuccess>(
+      (cubit) => cubit.state.successOrThrow(),
+    );
+    final List<String> addresses =
+        context.read<SessionStateCubit>().state.allAddresses;
     final addressesKey = addresses.join(",");
 
     return MultiBlocProvider(
@@ -87,6 +91,7 @@ class _PortfolioViewState extends State<PortfolioView>
           // Key based on addresses - if addresses change, a new bloc will be created
           key: ValueKey('balances-bloc-$addressesKey'),
           create: (context) => BalancesBloc(
+            httpConfig: session.httpConfig,
             balanceRepository: GetIt.I.get<BalanceRepository>(),
             addresses: addresses,
             cacheProvider: GetIt.I.get<CacheProvider>(),
@@ -94,10 +99,10 @@ class _PortfolioViewState extends State<PortfolioView>
         ),
         BlocProvider<DashboardActivityFeedBloc>(
           create: (context) => DashboardActivityFeedBloc(
+            httpConfig: session.httpConfig,
             logger: GetIt.I.get<Logger>(),
             addresses: addresses,
             eventsRepository: GetIt.I.get<EventsRepository>(),
-            addressRepository: GetIt.I.get<AddressRepository>(),
             bitcoinRepository: GetIt.I.get<BitcoinRepository>(),
             transactionLocalRepository:
                 GetIt.I.get<TransactionLocalRepository>(),
@@ -107,6 +112,44 @@ class _PortfolioViewState extends State<PortfolioView>
       ],
       child: Column(
         children: [
+          Row(
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(8.0, 20.0, 8.0, 16.0),
+                child: TextButton(
+                    style: TextButton.styleFrom(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      padding: const EdgeInsets.fromLTRB(12, 18, 8, 18),
+                    ),
+                    onPressed: () {
+                      context.go("/accounts");
+                    },
+                    child: Row(
+                      children: [
+                        GradientAvatar(
+                          input: session.currentAccount!.hash,
+                          radius: 12,
+                        ),
+                        const SizedBox(width: 12),
+                        Text(session.currentAccount!.name,
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                              color:
+                                  Theme.of(context).textTheme.bodyMedium?.color,
+                            )),
+                        const SizedBox(width: 6),
+                        Icon(
+                          Icons.arrow_drop_down,
+                          color: Theme.of(context).textTheme.bodyMedium?.color,
+                        ),
+                      ],
+                    )),
+              ),
+            ],
+          ),
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 10),
             child: LayoutBuilder(
@@ -117,12 +160,20 @@ class _PortfolioViewState extends State<PortfolioView>
                   children: [
                     Expanded(
                       child: HorizonButton(
-                        child: TextButtonContent(value: 'Send', style: const TextStyle(fontSize: 12,)),
+                        child: TextButtonContent(
+                            value: 'Send',
+                            style: const TextStyle(
+                              fontSize: 12,
+                            )),
                         height: 44,
                         borderRadius: 18,
                         variant: ButtonVariant.green,
-                        icon: AppIcons.sendIcon(context: context, color: black,),
+                        icon: AppIcons.sendIcon(
+                          context: context,
+                          color: black,
+                        ),
                         onPressed: () {
+                          context.go("/accounts");
                           // TODO: Implement send functionality
                         },
                       ),
@@ -130,7 +181,11 @@ class _PortfolioViewState extends State<PortfolioView>
                     const SizedBox(width: spacing),
                     Expanded(
                       child: HorizonButton(
-                        child: TextButtonContent(value: 'Receive', style: const TextStyle(fontSize: 12,)),
+                        child: TextButtonContent(
+                            value: 'Receive',
+                            style: const TextStyle(
+                              fontSize: 12,
+                            )),
                         height: 44,
                         borderRadius: 18,
                         variant: ButtonVariant.black,
@@ -145,7 +200,11 @@ class _PortfolioViewState extends State<PortfolioView>
                     const SizedBox(width: spacing),
                     Expanded(
                       child: HorizonButton(
-                        child: TextButtonContent(value: 'Swap', style: const TextStyle(fontSize: 12,)),
+                        child: TextButtonContent(
+                            value: 'Swap',
+                            style: const TextStyle(
+                              fontSize: 12,
+                            )),
                         height: 44,
                         borderRadius: 18,
                         variant: ButtonVariant.black,
@@ -160,7 +219,11 @@ class _PortfolioViewState extends State<PortfolioView>
                     const SizedBox(width: spacing),
                     Expanded(
                       child: HorizonButton(
-                        child: TextButtonContent(value: 'Mint', style: const TextStyle(fontSize: 12,)),
+                        child: TextButtonContent(
+                            value: 'Mint',
+                            style: const TextStyle(
+                              fontSize: 12,
+                            )),
                         height: 44,
                         borderRadius: 18,
                         variant: ButtonVariant.black,

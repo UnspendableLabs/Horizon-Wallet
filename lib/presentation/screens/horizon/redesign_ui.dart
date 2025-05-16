@@ -79,7 +79,6 @@ class WidgetButtonContent extends ButtonContent {
   WidgetButtonContent({required this.value});
 }
 
-
 class HorizonButton extends StatefulWidget {
   final VoidCallback? onPressed;
   final ButtonVariant variant;
@@ -116,18 +115,13 @@ class _HorizonButtonState extends State<HorizonButton> {
       padding: EdgeInsets.zero,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(widget.borderRadius ?? 50),
-         
       ),
     );
-
 
     TextStyle textStyle = TextStyle(
         color: style.foregroundColor?.resolve({}),
         fontSize: 16,
-        fontWeight: FontWeight.w500
-
-        );
-
+        fontWeight: FontWeight.w500);
 
     BoxBorder? border;
 
@@ -186,8 +180,9 @@ class _HorizonButtonState extends State<HorizonButton> {
         color: const Color.fromRGBO(254, 251, 249, 0.16),
       );
     }
-    
-    if (widget.child is TextButtonContent && (widget.child as TextButtonContent).style != null) {
+
+    if (widget.child is TextButtonContent &&
+        (widget.child as TextButtonContent).style != null) {
       textStyle = textStyle.copyWith(
         color: (widget.child as TextButtonContent).style?.color,
         fontSize: (widget.child as TextButtonContent).style?.fontSize,
@@ -229,8 +224,9 @@ class _HorizonButtonState extends State<HorizonButton> {
                   const SizedBox(width: 4),
                 ],
                 // widget.child ?? Text(widget.buttonText, style: textStyle)
-                if(widget.child is TextButtonContent)
-                  Text((widget.child as TextButtonContent).value, style: textStyle)
+                if (widget.child is TextButtonContent)
+                  Text((widget.child as TextButtonContent).value,
+                      style: textStyle)
                 else if (widget.child is WidgetButtonContent)
                   (widget.child as WidgetButtonContent).value
               ],
@@ -263,7 +259,8 @@ class _HorizonButtonState extends State<HorizonButton> {
                 const SizedBox(width: 4),
               ],
               if (widget.child is TextButtonContent)
-                Text((widget.child as TextButtonContent).value, style: textStyle)
+                Text((widget.child as TextButtonContent).value,
+                    style: textStyle)
               else if (widget.child is WidgetButtonContent)
                 (widget.child as WidgetButtonContent).value
             ],
@@ -648,7 +645,8 @@ class _HorizonRedesignDropdownState<T>
                                     child: SizedBox(
                                       width: double.infinity,
                                       child: DefaultTextStyle(
-                                        style: theme.dropdownMenuTheme.textStyle!,
+                                        style:
+                                            theme.dropdownMenuTheme.textStyle!,
                                         child: item.child,
                                       ),
                                     ),

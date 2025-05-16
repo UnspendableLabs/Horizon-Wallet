@@ -3,10 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/core/logging/logger.dart';
-import 'package:horizon/domain/repositories/account_repository.dart';
-import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/config_repository.dart';
-import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/presentation/common/footer/view/footer.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 import 'package:horizon/presentation/screens/onboarding/bloc/onboarding_bloc.dart';
@@ -31,9 +28,6 @@ class OnboardingScreenState extends State<OnboardingScreen> {
     return BlocProvider(
       create: (context) => OnboardingBloc(
         logger: GetIt.I.get<Logger>(),
-        walletRepository: GetIt.I.get<WalletRepository>(),
-        accountRepository: GetIt.I.get<AccountRepository>(),
-        addressRepository: GetIt.I.get<AddressRepository>(),
       )..add(FetchOnboardingState()),
       child: const OnboardingView(),
     );
@@ -64,9 +58,6 @@ class OnboardingView extends StatelessWidget {
   }
 
   Widget _buildThemeToggle(BuildContext context, bool isDarkMode) {
-    final Config config = GetIt.I<Config>();
-    if (config.network != Network.testnet4) return const SizedBox.shrink();
-
     return Padding(
       padding: const EdgeInsets.only(top: 16.0, right: 16.0),
       child: Align(
@@ -217,8 +208,8 @@ class OnboardingView extends StatelessWidget {
                                     variant: ButtonVariant.black,
                                     disabled: isDisabled,
                                     onPressed: () {
-                                      final session = context
-                                          .read<SessionStateCubit>();
+                                      final session =
+                                          context.read<SessionStateCubit>();
                                       session.onOnboardingImport();
                                     },
                                     child: TextButtonContent(

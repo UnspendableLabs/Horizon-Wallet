@@ -2,20 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/common/constants.dart';
-import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/imported_address_repository.dart';
 import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
-import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/imported_address_service.dart';
-import 'package:horizon/domain/services/wallet_service.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 import 'package:horizon/presentation/screens/settings/import_address/bloc/import_address_pk_bloc.dart';
 import 'package:horizon/presentation/screens/settings/import_address/bloc/import_address_pk_event.dart';
 import 'package:horizon/presentation/screens/settings/import_address/bloc/import_address_pk_state.dart';
 import 'package:horizon/utils/app_icons.dart';
+import 'package:horizon/presentation/session/bloc/session_cubit.dart';
+import 'package:horizon/presentation/session/bloc/session_state.dart';
 
 class ImportAddressFlow extends StatelessWidget {
   final VoidCallback onNavigateBack;
@@ -27,16 +26,10 @@ class ImportAddressFlow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final session = context.watch<SessionStateCubit>().state.successOrThrow();
     return BlocProvider(
       create: (context) => ImportAddressPkBloc(
-        walletRepository: GetIt.I.get<WalletRepository>(),
-        walletService: GetIt.I.get<WalletService>(),
-        encryptionService: GetIt.I.get<EncryptionService>(),
-        addressService: GetIt.I.get<AddressService>(),
-        addressRepository: GetIt.I.get<AddressRepository>(),
-        importedAddressRepository: GetIt.I.get<ImportedAddressRepository>(),
-        importedAddressService: GetIt.I.get<ImportedAddressService>(),
-        inMemoryKeyRepository: GetIt.I.get<InMemoryKeyRepository>(),
+        httpConfig: session.httpConfig,
       ),
       child: _ImportAddressForm(onNavigateBack: onNavigateBack),
     );

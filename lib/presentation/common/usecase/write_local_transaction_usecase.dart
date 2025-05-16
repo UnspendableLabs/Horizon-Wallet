@@ -1,5 +1,6 @@
 import 'package:horizon/domain/repositories/transaction_repository.dart';
 import 'package:horizon/domain/repositories/transaction_local_repository.dart';
+import 'package:horizon/domain/entities/http_config.dart';
 
 class WriteLocalTransactionUseCase {
   final TransactionRepository transactionRepository;
@@ -8,9 +9,13 @@ class WriteLocalTransactionUseCase {
     required this.transactionRepository,
     required this.transactionLocalRepository,
   });
-  Future<void> call(String hex, String hash) async {
+  Future<void> call(
+      {required String hex,
+      required String hash,
+      required HttpConfig httpConfig}) async {
     try {
-      final txInfo = await transactionRepository.getInfo(hex);
+      final txInfo =
+          await transactionRepository.getInfo(raw: hex, httpConfig: httpConfig);
 
       await transactionLocalRepository.insert(txInfo.copyWith(
         hash: hash,

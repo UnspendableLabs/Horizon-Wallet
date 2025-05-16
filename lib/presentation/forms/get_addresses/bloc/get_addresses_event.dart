@@ -1,10 +1,11 @@
 import "./get_addresses_state.dart";
+import 'package:horizon/domain/entities/account_v2.dart';
 
 abstract class GetAddressesEvent {}
 
 class AccountChanged extends GetAddressesEvent {
-  final String accountUuid;
-  AccountChanged(this.accountUuid);
+  final AccountV2 account;
+  AccountChanged(this.account);
 }
 
 class GetAddressesSubmitted extends GetAddressesEvent {}

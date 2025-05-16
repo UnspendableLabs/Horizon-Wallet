@@ -1,19 +1,28 @@
+import 'package:get_it/get_it.dart';
 import "package:fpdart/fpdart.dart";
 import 'package:horizon/data/models/fairminter.dart';
 import "package:horizon/domain/entities/fairminter.dart" as e;
-import 'package:horizon/data/sources/network/api/v2_api.dart';
 import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/domain/repositories/fairminter_repository.dart';
 
 import 'package:horizon/data/models/cursor.dart' as cursor_model;
+import 'package:horizon/domain/entities/http_config.dart';
+import 'package:horizon/data/sources/network/counterparty_client_factory.dart';
 
 class FairminterRepositoryImpl implements FairminterRepository {
-  final V2Api api;
+  final CounterpartyClientFactory _counterpartyClientFactory;
   final Logger? logger;
-  FairminterRepositoryImpl({required this.api, this.logger});
+  FairminterRepositoryImpl({
+    this.logger,
+    CounterpartyClientFactory? counterpartyClientFactory,
+  }) : _counterpartyClientFactory =
+            counterpartyClientFactory ?? GetIt.I<CounterpartyClientFactory>();
+
   @override
-  TaskEither<String, List<e.Fairminter>> getAllFairminters() {
-    return TaskEither.tryCatch(() => _getAllFairminters(), (error, stacktrace) {
+  TaskEither<String, List<e.Fairminter>> getAllFairminters(
+      HttpConfig httpConfig) {
+    return TaskEither.tryCatch(() => _getAllFairminters(httpConfig),
+        (error, stacktrace) {
       logger?.error(
           "FairmintRepositoryImpl.getAllFairminters", null, stacktrace);
 
@@ -21,7 +30,7 @@ class FairminterRepositoryImpl implements FairminterRepository {
     });
   }
 
-  Future<List<e.Fairminter>> _getAllFairminters() async {
+  Future<List<e.Fairminter>> _getAllFairminters(HttpConfig httpConfig) async {
     // int limit = 50;
     // cursor_model.CursorModel? cursor;
 
@@ -41,7 +50,9 @@ class FairminterRepositoryImpl implements FairminterRepository {
     cursor_model.CursorModel? cursor;
 
     do {
-      final response = await api.getAllFairminters(cursor, limit);
+      final response = await _counterpartyClientFactory
+          .getClient(httpConfig)
+          .getAllFairminters(cursor, limit);
       for (FairminterModel a in response.result ?? []) {
         fairminters.add(a.toDomain());
       }
@@ -52,9 +63,11 @@ class FairminterRepositoryImpl implements FairminterRepository {
   }
 
   @override
-  TaskEither<String, List<e.Fairminter>> getFairmintersByAddress(String address,
+  TaskEither<String, List<e.Fairminter>> getFairmintersByAddress(
+      HttpConfig httpConfig, String address,
       [String? status]) {
-    return TaskEither.tryCatch(() => _getFairmintersByAddress(address, status),
+    return TaskEither.tryCatch(
+        () => _getFairmintersByAddress(address, status, httpConfig),
         (error, stacktrace) {
       logger?.error(
           "FairmintRepositoryImpl.getFairmintersByAddress", null, stacktrace);
@@ -63,13 +76,14 @@ class FairminterRepositoryImpl implements FairminterRepository {
   }
 
   Future<List<e.Fairminter>> _getFairmintersByAddress(
-      String address, String? status) async {
+      String address, String? status, HttpConfig httpConfig) async {
     int limit = 50;
     cursor_model.CursorModel? cursor;
     final List<e.Fairminter> fairminters = [];
     do {
-      final response =
-          await api.getFairmintersByAddress(address, status, cursor, limit);
+      final response = await _counterpartyClientFactory
+          .getClient(httpConfig)
+          .getFairmintersByAddress(address, status, cursor, limit);
       for (FairminterModel a in response.result ?? []) {
         fairminters.add(a.toDomain());
       }
@@ -79,9 +93,11 @@ class FairminterRepositoryImpl implements FairminterRepository {
   }
 
   @override
-  TaskEither<String, List<e.Fairminter>> getFairmintersByAsset(String asset,
+  TaskEither<String, List<e.Fairminter>> getFairmintersByAsset(
+      HttpConfig httpConfig, String asset,
       [String? status]) {
-    return TaskEither.tryCatch(() => _getFairmintersByAsset(asset, status),
+    return TaskEither.tryCatch(
+        () => _getFairmintersByAsset(asset, status, httpConfig),
         (error, stacktrace) {
       logger?.error(
           "FairmintRepositoryImpl.getFairmintersByAsset", null, stacktrace);
@@ -90,13 +106,14 @@ class FairminterRepositoryImpl implements FairminterRepository {
   }
 
   Future<List<e.Fairminter>> _getFairmintersByAsset(
-      String asset, String? status) async {
+      String asset, String? status, HttpConfig httpConfig) async {
     int limit = 50;
     cursor_model.CursorModel? cursor;
     final List<e.Fairminter> fairminters = [];
     do {
-      final response =
-          await api.getFairmintersByAsset(asset, status, cursor, limit);
+      final response = await _counterpartyClientFactory
+          .getClient(httpConfig)
+          .getFairmintersByAsset(asset, status, cursor, limit);
       for (FairminterModel a in response.result ?? []) {
         fairminters.add(a.toDomain());
       }

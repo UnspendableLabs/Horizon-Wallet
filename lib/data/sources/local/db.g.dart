@@ -1704,6 +1704,542 @@ class ImportedAddressesCompanion extends UpdateCompanion<ImportedAddress> {
   }
 }
 
+class $AccountsV2Table extends AccountsV2
+    with TableInfo<$AccountsV2Table, AccountsV2Data> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $AccountsV2Table(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _uuidMeta = const VerificationMeta('uuid');
+  @override
+  late final GeneratedColumn<String> uuid = GeneratedColumn<String>(
+      'uuid', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: true,
+      $customConstraints: 'UNIQUE NOT NULL');
+  static const VerificationMeta _indexMeta = const VerificationMeta('index');
+  @override
+  late final GeneratedColumn<int> index = GeneratedColumn<int>(
+      'index', aliasedName, false,
+      type: DriftSqlType.int, requiredDuringInsert: true);
+  @override
+  List<GeneratedColumn> get $columns => [uuid, index];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'accounts_v2';
+  @override
+  VerificationContext validateIntegrity(Insertable<AccountsV2Data> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('uuid')) {
+      context.handle(
+          _uuidMeta, uuid.isAcceptableOrUnknown(data['uuid']!, _uuidMeta));
+    } else if (isInserting) {
+      context.missing(_uuidMeta);
+    }
+    if (data.containsKey('index')) {
+      context.handle(
+          _indexMeta, index.isAcceptableOrUnknown(data['index']!, _indexMeta));
+    } else if (isInserting) {
+      context.missing(_indexMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {uuid};
+  @override
+  AccountsV2Data map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return AccountsV2Data(
+      uuid: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}uuid'])!,
+      index: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}index'])!,
+    );
+  }
+
+  @override
+  $AccountsV2Table createAlias(String alias) {
+    return $AccountsV2Table(attachedDatabase, alias);
+  }
+}
+
+class AccountsV2Data extends DataClass implements Insertable<AccountsV2Data> {
+  final String uuid;
+  final int index;
+  const AccountsV2Data({required this.uuid, required this.index});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['uuid'] = Variable<String>(uuid);
+    map['index'] = Variable<int>(index);
+    return map;
+  }
+
+  AccountsV2Companion toCompanion(bool nullToAbsent) {
+    return AccountsV2Companion(
+      uuid: Value(uuid),
+      index: Value(index),
+    );
+  }
+
+  factory AccountsV2Data.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return AccountsV2Data(
+      uuid: serializer.fromJson<String>(json['uuid']),
+      index: serializer.fromJson<int>(json['index']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'uuid': serializer.toJson<String>(uuid),
+      'index': serializer.toJson<int>(index),
+    };
+  }
+
+  AccountsV2Data copyWith({String? uuid, int? index}) => AccountsV2Data(
+        uuid: uuid ?? this.uuid,
+        index: index ?? this.index,
+      );
+  @override
+  String toString() {
+    return (StringBuffer('AccountsV2Data(')
+          ..write('uuid: $uuid, ')
+          ..write('index: $index')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(uuid, index);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is AccountsV2Data &&
+          other.uuid == this.uuid &&
+          other.index == this.index);
+}
+
+class AccountsV2Companion extends UpdateCompanion<AccountsV2Data> {
+  final Value<String> uuid;
+  final Value<int> index;
+  final Value<int> rowid;
+  const AccountsV2Companion({
+    this.uuid = const Value.absent(),
+    this.index = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  AccountsV2Companion.insert({
+    required String uuid,
+    required int index,
+    this.rowid = const Value.absent(),
+  })  : uuid = Value(uuid),
+        index = Value(index);
+  static Insertable<AccountsV2Data> custom({
+    Expression<String>? uuid,
+    Expression<int>? index,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (uuid != null) 'uuid': uuid,
+      if (index != null) 'index': index,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  AccountsV2Companion copyWith(
+      {Value<String>? uuid, Value<int>? index, Value<int>? rowid}) {
+    return AccountsV2Companion(
+      uuid: uuid ?? this.uuid,
+      index: index ?? this.index,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (uuid.present) {
+      map['uuid'] = Variable<String>(uuid.value);
+    }
+    if (index.present) {
+      map['index'] = Variable<int>(index.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('AccountsV2Companion(')
+          ..write('uuid: $uuid, ')
+          ..write('index: $index, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $WalletConfigsTable extends WalletConfigs
+    with TableInfo<$WalletConfigsTable, WalletConfig> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $WalletConfigsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _uuidMeta = const VerificationMeta('uuid');
+  @override
+  late final GeneratedColumn<String> uuid = GeneratedColumn<String>(
+      'uuid', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: true,
+      $customConstraints: 'UNIQUE NOT NULL');
+  static const VerificationMeta _networkMeta =
+      const VerificationMeta('network');
+  @override
+  late final GeneratedColumn<String> network = GeneratedColumn<String>(
+      'network', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _basePathMeta =
+      const VerificationMeta('basePath');
+  @override
+  late final GeneratedColumn<String> basePath = GeneratedColumn<String>(
+      'base_path', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _accountIndexStartMeta =
+      const VerificationMeta('accountIndexStart');
+  @override
+  late final GeneratedColumn<int> accountIndexStart = GeneratedColumn<int>(
+      'account_index_start', aliasedName, false,
+      type: DriftSqlType.int, requiredDuringInsert: true);
+  static const VerificationMeta _accountIndexEndMeta =
+      const VerificationMeta('accountIndexEnd');
+  @override
+  late final GeneratedColumn<int> accountIndexEnd = GeneratedColumn<int>(
+      'account_index_end', aliasedName, false,
+      type: DriftSqlType.int, requiredDuringInsert: true);
+  static const VerificationMeta _seedDerivationMeta =
+      const VerificationMeta('seedDerivation');
+  @override
+  late final GeneratedColumn<String> seedDerivation = GeneratedColumn<String>(
+      'seed_derivation', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  @override
+  List<GeneratedColumn> get $columns => [
+        uuid,
+        network,
+        basePath,
+        accountIndexStart,
+        accountIndexEnd,
+        seedDerivation
+      ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'wallet_configs';
+  @override
+  VerificationContext validateIntegrity(Insertable<WalletConfig> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('uuid')) {
+      context.handle(
+          _uuidMeta, uuid.isAcceptableOrUnknown(data['uuid']!, _uuidMeta));
+    } else if (isInserting) {
+      context.missing(_uuidMeta);
+    }
+    if (data.containsKey('network')) {
+      context.handle(_networkMeta,
+          network.isAcceptableOrUnknown(data['network']!, _networkMeta));
+    } else if (isInserting) {
+      context.missing(_networkMeta);
+    }
+    if (data.containsKey('base_path')) {
+      context.handle(_basePathMeta,
+          basePath.isAcceptableOrUnknown(data['base_path']!, _basePathMeta));
+    } else if (isInserting) {
+      context.missing(_basePathMeta);
+    }
+    if (data.containsKey('account_index_start')) {
+      context.handle(
+          _accountIndexStartMeta,
+          accountIndexStart.isAcceptableOrUnknown(
+              data['account_index_start']!, _accountIndexStartMeta));
+    } else if (isInserting) {
+      context.missing(_accountIndexStartMeta);
+    }
+    if (data.containsKey('account_index_end')) {
+      context.handle(
+          _accountIndexEndMeta,
+          accountIndexEnd.isAcceptableOrUnknown(
+              data['account_index_end']!, _accountIndexEndMeta));
+    } else if (isInserting) {
+      context.missing(_accountIndexEndMeta);
+    }
+    if (data.containsKey('seed_derivation')) {
+      context.handle(
+          _seedDerivationMeta,
+          seedDerivation.isAcceptableOrUnknown(
+              data['seed_derivation']!, _seedDerivationMeta));
+    } else if (isInserting) {
+      context.missing(_seedDerivationMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {network, basePath, seedDerivation};
+  @override
+  WalletConfig map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return WalletConfig(
+      uuid: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}uuid'])!,
+      network: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}network'])!,
+      basePath: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}base_path'])!,
+      accountIndexStart: attachedDatabase.typeMapping.read(
+          DriftSqlType.int, data['${effectivePrefix}account_index_start'])!,
+      accountIndexEnd: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}account_index_end'])!,
+      seedDerivation: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}seed_derivation'])!,
+    );
+  }
+
+  @override
+  $WalletConfigsTable createAlias(String alias) {
+    return $WalletConfigsTable(attachedDatabase, alias);
+  }
+}
+
+class WalletConfig extends DataClass implements Insertable<WalletConfig> {
+  final String uuid;
+  final String network;
+  final String basePath;
+  final int accountIndexStart;
+  final int accountIndexEnd;
+  final String seedDerivation;
+  const WalletConfig(
+      {required this.uuid,
+      required this.network,
+      required this.basePath,
+      required this.accountIndexStart,
+      required this.accountIndexEnd,
+      required this.seedDerivation});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['uuid'] = Variable<String>(uuid);
+    map['network'] = Variable<String>(network);
+    map['base_path'] = Variable<String>(basePath);
+    map['account_index_start'] = Variable<int>(accountIndexStart);
+    map['account_index_end'] = Variable<int>(accountIndexEnd);
+    map['seed_derivation'] = Variable<String>(seedDerivation);
+    return map;
+  }
+
+  WalletConfigsCompanion toCompanion(bool nullToAbsent) {
+    return WalletConfigsCompanion(
+      uuid: Value(uuid),
+      network: Value(network),
+      basePath: Value(basePath),
+      accountIndexStart: Value(accountIndexStart),
+      accountIndexEnd: Value(accountIndexEnd),
+      seedDerivation: Value(seedDerivation),
+    );
+  }
+
+  factory WalletConfig.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return WalletConfig(
+      uuid: serializer.fromJson<String>(json['uuid']),
+      network: serializer.fromJson<String>(json['network']),
+      basePath: serializer.fromJson<String>(json['basePath']),
+      accountIndexStart: serializer.fromJson<int>(json['accountIndexStart']),
+      accountIndexEnd: serializer.fromJson<int>(json['accountIndexEnd']),
+      seedDerivation: serializer.fromJson<String>(json['seedDerivation']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'uuid': serializer.toJson<String>(uuid),
+      'network': serializer.toJson<String>(network),
+      'basePath': serializer.toJson<String>(basePath),
+      'accountIndexStart': serializer.toJson<int>(accountIndexStart),
+      'accountIndexEnd': serializer.toJson<int>(accountIndexEnd),
+      'seedDerivation': serializer.toJson<String>(seedDerivation),
+    };
+  }
+
+  WalletConfig copyWith(
+          {String? uuid,
+          String? network,
+          String? basePath,
+          int? accountIndexStart,
+          int? accountIndexEnd,
+          String? seedDerivation}) =>
+      WalletConfig(
+        uuid: uuid ?? this.uuid,
+        network: network ?? this.network,
+        basePath: basePath ?? this.basePath,
+        accountIndexStart: accountIndexStart ?? this.accountIndexStart,
+        accountIndexEnd: accountIndexEnd ?? this.accountIndexEnd,
+        seedDerivation: seedDerivation ?? this.seedDerivation,
+      );
+  @override
+  String toString() {
+    return (StringBuffer('WalletConfig(')
+          ..write('uuid: $uuid, ')
+          ..write('network: $network, ')
+          ..write('basePath: $basePath, ')
+          ..write('accountIndexStart: $accountIndexStart, ')
+          ..write('accountIndexEnd: $accountIndexEnd, ')
+          ..write('seedDerivation: $seedDerivation')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(uuid, network, basePath, accountIndexStart,
+      accountIndexEnd, seedDerivation);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is WalletConfig &&
+          other.uuid == this.uuid &&
+          other.network == this.network &&
+          other.basePath == this.basePath &&
+          other.accountIndexStart == this.accountIndexStart &&
+          other.accountIndexEnd == this.accountIndexEnd &&
+          other.seedDerivation == this.seedDerivation);
+}
+
+class WalletConfigsCompanion extends UpdateCompanion<WalletConfig> {
+  final Value<String> uuid;
+  final Value<String> network;
+  final Value<String> basePath;
+  final Value<int> accountIndexStart;
+  final Value<int> accountIndexEnd;
+  final Value<String> seedDerivation;
+  final Value<int> rowid;
+  const WalletConfigsCompanion({
+    this.uuid = const Value.absent(),
+    this.network = const Value.absent(),
+    this.basePath = const Value.absent(),
+    this.accountIndexStart = const Value.absent(),
+    this.accountIndexEnd = const Value.absent(),
+    this.seedDerivation = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  WalletConfigsCompanion.insert({
+    required String uuid,
+    required String network,
+    required String basePath,
+    required int accountIndexStart,
+    required int accountIndexEnd,
+    required String seedDerivation,
+    this.rowid = const Value.absent(),
+  })  : uuid = Value(uuid),
+        network = Value(network),
+        basePath = Value(basePath),
+        accountIndexStart = Value(accountIndexStart),
+        accountIndexEnd = Value(accountIndexEnd),
+        seedDerivation = Value(seedDerivation);
+  static Insertable<WalletConfig> custom({
+    Expression<String>? uuid,
+    Expression<String>? network,
+    Expression<String>? basePath,
+    Expression<int>? accountIndexStart,
+    Expression<int>? accountIndexEnd,
+    Expression<String>? seedDerivation,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (uuid != null) 'uuid': uuid,
+      if (network != null) 'network': network,
+      if (basePath != null) 'base_path': basePath,
+      if (accountIndexStart != null) 'account_index_start': accountIndexStart,
+      if (accountIndexEnd != null) 'account_index_end': accountIndexEnd,
+      if (seedDerivation != null) 'seed_derivation': seedDerivation,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  WalletConfigsCompanion copyWith(
+      {Value<String>? uuid,
+      Value<String>? network,
+      Value<String>? basePath,
+      Value<int>? accountIndexStart,
+      Value<int>? accountIndexEnd,
+      Value<String>? seedDerivation,
+      Value<int>? rowid}) {
+    return WalletConfigsCompanion(
+      uuid: uuid ?? this.uuid,
+      network: network ?? this.network,
+      basePath: basePath ?? this.basePath,
+      accountIndexStart: accountIndexStart ?? this.accountIndexStart,
+      accountIndexEnd: accountIndexEnd ?? this.accountIndexEnd,
+      seedDerivation: seedDerivation ?? this.seedDerivation,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (uuid.present) {
+      map['uuid'] = Variable<String>(uuid.value);
+    }
+    if (network.present) {
+      map['network'] = Variable<String>(network.value);
+    }
+    if (basePath.present) {
+      map['base_path'] = Variable<String>(basePath.value);
+    }
+    if (accountIndexStart.present) {
+      map['account_index_start'] = Variable<int>(accountIndexStart.value);
+    }
+    if (accountIndexEnd.present) {
+      map['account_index_end'] = Variable<int>(accountIndexEnd.value);
+    }
+    if (seedDerivation.present) {
+      map['seed_derivation'] = Variable<String>(seedDerivation.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('WalletConfigsCompanion(')
+          ..write('uuid: $uuid, ')
+          ..write('network: $network, ')
+          ..write('basePath: $basePath, ')
+          ..write('accountIndexStart: $accountIndexStart, ')
+          ..write('accountIndexEnd: $accountIndexEnd, ')
+          ..write('seedDerivation: $seedDerivation, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$DB extends GeneratedDatabase {
   _$DB(QueryExecutor e) : super(e);
   late final $WalletsTable wallets = $WalletsTable(this);
@@ -1712,10 +2248,19 @@ abstract class _$DB extends GeneratedDatabase {
   late final $TransactionsTable transactions = $TransactionsTable(this);
   late final $ImportedAddressesTable importedAddresses =
       $ImportedAddressesTable(this);
+  late final $AccountsV2Table accountsV2 = $AccountsV2Table(this);
+  late final $WalletConfigsTable walletConfigs = $WalletConfigsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
-  List<DatabaseSchemaEntity> get allSchemaEntities =>
-      [wallets, accounts, addresses, transactions, importedAddresses];
+  List<DatabaseSchemaEntity> get allSchemaEntities => [
+        wallets,
+        accounts,
+        addresses,
+        transactions,
+        importedAddresses,
+        accountsV2,
+        walletConfigs
+      ];
 }

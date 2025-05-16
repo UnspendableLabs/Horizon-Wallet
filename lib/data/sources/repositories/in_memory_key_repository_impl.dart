@@ -1,9 +1,11 @@
+import 'package:fpdart/fpdart.dart';
 import 'dart:convert';
 import 'package:horizon/domain/services/secure_kv_service.dart';
 import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 
 class InMemoryKeyRepositoryImpl implements InMemoryKeyRepository {
   final _key = 'DEFAULT_KEY';
+  final _mnemonicKey = 'MNEMONIC_DECRYPTION_KEY';
   final _mapKey = 'IMPORTED_KEY_MAP';
 
   final SecureKVService secureKVService;
@@ -18,6 +20,16 @@ class InMemoryKeyRepositoryImpl implements InMemoryKeyRepository {
   @override
   Future<void> set({required String key}) async {
     return await secureKVService.write(key: _key, value: key);
+  }
+
+  @override
+  Future<void> setMnemonicKey({required String key}) async {
+    return await secureKVService.write(key: _mnemonicKey, value: key);
+  }
+
+  @override
+  Future<Option<String>> getMnemonicKey() async {
+    return Option.fromNullable(await secureKVService.read(key: _mnemonicKey));
   }
 
   @override
@@ -43,6 +55,7 @@ class InMemoryKeyRepositoryImpl implements InMemoryKeyRepository {
   @override
   Future<void> delete() async {
     await secureKVService.delete(key: _key);
+    await secureKVService.delete(key: _mnemonicKey);
     await secureKVService.delete(key: _mapKey);
   }
 }

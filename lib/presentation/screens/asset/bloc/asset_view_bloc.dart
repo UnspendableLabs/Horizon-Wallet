@@ -8,6 +8,7 @@ import 'package:horizon/domain/repositories/fairminter_repository.dart';
 import 'package:horizon/presentation/screens/asset/bloc/asset_view_event.dart';
 import 'package:horizon/presentation/screens/compose_fairmint/usecase/fetch_form_data.dart';
 import 'package:horizon/remote_data_bloc/remote_data_state.dart';
+import 'package:horizon/domain/entities/http_config.dart';
 
 class AssetViewData {
   final MultiAddressBalance balances;
@@ -22,8 +23,10 @@ class AssetViewBloc
   final FairminterRepository fairminterRepository;
   final List<String> addresses;
   final String asset;
+  final HttpConfig httpConfig;
 
   AssetViewBloc({
+    required this.httpConfig,
     required this.balanceRepository,
     required this.fairminterRepository,
     required this.addresses,
@@ -35,9 +38,13 @@ class AssetViewBloc
   Future<void> _onPageLoaded(PageLoaded event, emit) async {
     emit(const RemoteDataState<AssetViewData>.loading());
     final results = await Future.wait([
-      balanceRepository.getBalancesForAddressesAndAsset(addresses, asset),
+      balanceRepository.getBalancesForAddressesAndAsset(
+        httpConfig: httpConfig,
+        addresses: addresses,
+        assetName: asset,
+      ),
       fairminterRepository
-          .getFairmintersByAsset(asset, 'open')
+          .getFairmintersByAsset(httpConfig, asset, 'open')
           .run()
           .then((either) => either.fold(
                 (error) => throw FetchFairmintersException(error.toString()),

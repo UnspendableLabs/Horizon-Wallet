@@ -1,5 +1,6 @@
 import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
+import 'package:horizon/domain/entities/http_config.dart';
 
 class FetchDispenseFormDataUseCase {
   final GetFeeEstimatesUseCase getFeeEstimatesUseCase;
@@ -8,10 +9,11 @@ class FetchDispenseFormDataUseCase {
     required this.getFeeEstimatesUseCase,
   });
 
-  Future<FeeEstimates> call(String currentAddress) async {
+  Future<FeeEstimates> call(
+      String currentAddress, HttpConfig httpConfig) async {
     try {
       // Initiate both asynchronous calls
-      return await _fetchFeeEstimates();
+      return await _fetchFeeEstimates(httpConfig);
     } on FetchFeeEstimatesException catch (e) {
       throw FetchFeeEstimatesException(e.message);
     } catch (e) {
@@ -19,9 +21,9 @@ class FetchDispenseFormDataUseCase {
     }
   }
 
-  Future<FeeEstimates> _fetchFeeEstimates() async {
+  Future<FeeEstimates> _fetchFeeEstimates(HttpConfig httpConfig) async {
     try {
-      return await getFeeEstimatesUseCase.call();
+      return await getFeeEstimatesUseCase.call(httpConfig: httpConfig);
     } catch (e) {
       throw FetchFeeEstimatesException(e.toString());
     }

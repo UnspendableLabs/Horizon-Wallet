@@ -2,10 +2,8 @@ import 'package:horizon/presentation/common/transaction_stepper/bloc/transaction
 
 class SendDependenciesRequested extends DependenciesRequested {
   final String assetName;
-  final List<String> addresses;
   SendDependenciesRequested({
     required this.assetName,
-    required this.addresses,
   });
 }
 

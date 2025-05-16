@@ -4,20 +4,16 @@ import 'package:horizon/data/sources/network/api/v2_api.dart' as api;
 import 'package:horizon/domain/entities/transaction_info.dart';
 import 'package:horizon/domain/entities/transaction_unpacked.dart';
 import 'package:horizon/domain/repositories/transaction_local_repository.dart';
-import 'package:horizon/domain/repositories/address_repository.dart';
 import "package:horizon/data/sources/local/dao/transactions_dao.dart";
 import "package:horizon/data/models/transaction.dart";
 import 'package:horizon/data/models/transaction_unpacked.dart';
 
 class TransactionLocalRepositoryImpl implements TransactionLocalRepository {
-  final api.V2Api api_;
   final TransactionsDao transactionDao;
-  final AddressRepository addressRepository;
 
-  TransactionLocalRepositoryImpl(
-      {required this.api_,
-      required this.transactionDao,
-      required this.addressRepository});
+  TransactionLocalRepositoryImpl({
+    required this.transactionDao,
+  });
 
   @override
   Future<void> delete(String txHash) async {
@@ -422,188 +418,190 @@ class TransactionLocalRepositoryImpl implements TransactionLocalRepository {
     }).toList();
   }
 
-  @override
-  Future<List<TransactionInfo>> getAllByAccount(String accountUuid) async {
-    final addresses = await addressRepository.getAllByAccountUuid(accountUuid);
-    final transactions = await transactionDao
-        .getAllBySources(addresses.map((e) => e.address).toList());
-
-    return transactions.map((tx) {
-      api.TransactionUnpackedVerbose? unpacked_ = tx.unpackedData != null
-          ? api.TransactionUnpackedVerbose.fromJson(
-              jsonDecode(tx.unpackedData!))
-          : null;
-
-      TransactionUnpacked? unpacked =
-          unpacked_ != null ? UnpackedVerboseMapper.toDomain(unpacked_) : null;
-
-      return switch (unpacked) {
-        EnhancedSendUnpackedVerbose() => TransactionInfoEnhancedSend(
-            btcAmountNormalized: "", // TODO: fix this
-            hash: tx.hash,
-            source: tx.source,
-            destination: tx.destination,
-            btcAmount: tx.btcAmount,
-            fee: tx.fee,
-            data: tx.data,
-            domain: TransactionInfoDomainLocal(
-                raw: tx.raw, submittedAt: tx.submittedAt),
-            unpackedData: unpacked),
-        IssuanceUnpackedVerbose() => TransactionInfoIssuance(
-            btcAmountNormalized: "", // TODO: fix this
-            hash: tx.hash,
-            source: tx.source,
-            destination: tx.destination,
-            btcAmount: tx.btcAmount,
-            fee: tx.fee,
-            data: tx.data,
-            domain: TransactionInfoDomainLocal(
-                raw: tx.raw, submittedAt: tx.submittedAt),
-            unpackedData: unpacked),
-        DispenserUnpackedVerbose() => TransactionInfoDispenser(
-            btcAmountNormalized: "", // TODO: fix this
-            hash: tx.hash,
-            source: tx.source,
-            destination: tx.destination,
-            btcAmount: tx.btcAmount,
-            fee: tx.fee,
-            data: tx.data,
-            domain: TransactionInfoDomainLocal(
-                raw: tx.raw, submittedAt: tx.submittedAt),
-            unpackedData: unpacked),
-        DispenseUnpackedVerbose() => TransactionInfoDispense(
-            btcAmountNormalized: "", // TODO: fix this
-            hash: tx.hash,
-            source: tx.source,
-            destination: tx.destination,
-            btcAmount: tx.btcAmount,
-            fee: tx.fee,
-            data: tx.data,
-            domain: TransactionInfoDomainLocal(
-                raw: tx.raw, submittedAt: tx.submittedAt),
-            unpackedData: unpacked),
-        FairmintUnpackedVerbose() => TransactionInfoFairmint(
-            btcAmountNormalized: "", // TODO: fix this
-            hash: tx.hash,
-            source: tx.source,
-            destination: tx.destination,
-            btcAmount: tx.btcAmount,
-            fee: tx.fee,
-            data: tx.data,
-            domain: TransactionInfoDomainLocal(
-                raw: tx.raw, submittedAt: tx.submittedAt),
-            unpackedData: unpacked),
-        OrderUnpacked() => TransactionInfoOrder(
-            btcAmountNormalized: "", // TODO: fix this
-            hash: tx.hash,
-            source: tx.source,
-            destination: tx.destination,
-            btcAmount: tx.btcAmount,
-            fee: tx.fee,
-            data: tx.data,
-            domain: TransactionInfoDomainLocal(
-                raw: tx.raw, submittedAt: tx.submittedAt),
-            unpackedData: unpacked),
-        CancelUnpacked() => TransactionInfoCancel(
-            btcAmountNormalized: "", // TODO: fix this
-            hash: tx.hash,
-            source: tx.source,
-            destination: tx.destination,
-            btcAmount: tx.btcAmount,
-            fee: tx.fee,
-            data: tx.data,
-            domain: TransactionInfoDomainLocal(
-                raw: tx.raw, submittedAt: tx.submittedAt),
-            unpackedData: unpacked),
-        AttachUnpackedVerbose() => TransactionInfoAttach(
-            btcAmountNormalized: "", // TODO: fix this
-            hash: tx.hash,
-            source: tx.source,
-            destination: tx.destination,
-            btcAmount: tx.btcAmount,
-            fee: tx.fee,
-            data: tx.data,
-            domain: TransactionInfoDomainLocal(
-                raw: tx.raw, submittedAt: tx.submittedAt),
-            unpackedData: unpacked),
-        DetachUnpackedVerbose() => TransactionInfoDetach(
-            btcAmountNormalized: "", // TODO: fix this
-            hash: tx.hash,
-            source: tx.source,
-            destination: tx.destination,
-            btcAmount: tx.btcAmount,
-            fee: tx.fee,
-            data: tx.data,
-            domain: TransactionInfoDomainLocal(
-                raw: tx.raw, submittedAt: tx.submittedAt),
-            unpackedData: unpacked),
-        MoveToUtxoUnpackedVerbose() => TransactionInfoMoveToUtxo(
-            btcAmountNormalized: "", // TODO: fix this
-            hash: tx.hash,
-            source: tx.source,
-            destination: tx.destination,
-            btcAmount: tx.btcAmount,
-            fee: tx.fee,
-            data: tx.data,
-            domain: TransactionInfoDomainLocal(
-                raw: tx.raw, submittedAt: tx.submittedAt),
-          ),
-        MpmaSendUnpackedVerbose() => TransactionInfoMpmaSend(
-            btcAmountNormalized: "", // TODO: fix this
-            hash: tx.hash,
-            source: tx.source,
-            destination: tx.destination,
-            btcAmount: tx.btcAmount,
-            fee: tx.fee,
-            data: tx.data,
-            domain: TransactionInfoDomainLocal(
-                raw: tx.raw, submittedAt: tx.submittedAt),
-            unpackedData: unpacked),
-        AssetDestructionUnpackedVerbose() => TransactionInfoAssetDestruction(
-            btcAmountNormalized: "", // TODO: fix this
-            hash: tx.hash,
-            source: tx.source,
-            destination: tx.destination,
-            btcAmount: tx.btcAmount,
-            fee: tx.fee,
-            data: tx.data,
-            domain: TransactionInfoDomainLocal(
-                raw: tx.raw, submittedAt: tx.submittedAt),
-            unpackedData: unpacked),
-        AssetDividendUnpackedVerbose() => TransactionInfoAssetDividend(
-            btcAmountNormalized: "", // TODO: fix this
-            hash: tx.hash,
-            source: tx.source,
-            destination: tx.destination,
-            btcAmount: tx.btcAmount,
-            fee: tx.fee,
-            data: tx.data,
-            domain: TransactionInfoDomainLocal(
-                raw: tx.raw, submittedAt: tx.submittedAt),
-            unpackedData: unpacked),
-        SweepUnpackedVerbose() => TransactionInfoSweep(
-            btcAmountNormalized: "", // TODO: fix this
-            hash: tx.hash,
-            source: tx.source,
-            destination: tx.destination,
-            btcAmount: tx.btcAmount,
-            fee: tx.fee,
-            data: tx.data,
-            domain: TransactionInfoDomainLocal(
-                raw: tx.raw, submittedAt: tx.submittedAt),
-            unpackedData: unpacked),
-        _ => TransactionInfo(
-            btcAmountNormalized: "", // TODO: fix this
-            hash: tx.hash,
-            source: tx.source,
-            destination: tx.destination,
-            btcAmount: tx.btcAmount,
-            fee: tx.fee,
-            data: tx.data,
-            domain: TransactionInfoDomainLocal(
-                raw: tx.raw, submittedAt: tx.submittedAt),
-          )
-      };
-    }).toList();
-  }
+  // @override
+  // Future<List<TransactionInfo>> getAllByAccount(String accountUuid) async {
+  //   // TODO: this will fail, we should be using addressv2
+  //   final addresses = await addressRepository.getAllByAccountUuid(accountUuid);
+  //
+  //   final transactions = await transactionDao
+  //       .getAllBySources(addresses.map((e) => e.address).toList());
+  //
+  //   return transactions.map((tx) {
+  //     api.TransactionUnpackedVerbose? unpacked_ = tx.unpackedData != null
+  //         ? api.TransactionUnpackedVerbose.fromJson(
+  //             jsonDecode(tx.unpackedData!))
+  //         : null;
+  //
+  //     TransactionUnpacked? unpacked =
+  //         unpacked_ != null ? UnpackedVerboseMapper.toDomain(unpacked_) : null;
+  //
+  //     return switch (unpacked) {
+  //       EnhancedSendUnpackedVerbose() => TransactionInfoEnhancedSend(
+  //           btcAmountNormalized: "", // TODO: fix this
+  //           hash: tx.hash,
+  //           source: tx.source,
+  //           destination: tx.destination,
+  //           btcAmount: tx.btcAmount,
+  //           fee: tx.fee,
+  //           data: tx.data,
+  //           domain: TransactionInfoDomainLocal(
+  //               raw: tx.raw, submittedAt: tx.submittedAt),
+  //           unpackedData: unpacked),
+  //       IssuanceUnpackedVerbose() => TransactionInfoIssuance(
+  //           btcAmountNormalized: "", // TODO: fix this
+  //           hash: tx.hash,
+  //           source: tx.source,
+  //           destination: tx.destination,
+  //           btcAmount: tx.btcAmount,
+  //           fee: tx.fee,
+  //           data: tx.data,
+  //           domain: TransactionInfoDomainLocal(
+  //               raw: tx.raw, submittedAt: tx.submittedAt),
+  //           unpackedData: unpacked),
+  //       DispenserUnpackedVerbose() => TransactionInfoDispenser(
+  //           btcAmountNormalized: "", // TODO: fix this
+  //           hash: tx.hash,
+  //           source: tx.source,
+  //           destination: tx.destination,
+  //           btcAmount: tx.btcAmount,
+  //           fee: tx.fee,
+  //           data: tx.data,
+  //           domain: TransactionInfoDomainLocal(
+  //               raw: tx.raw, submittedAt: tx.submittedAt),
+  //           unpackedData: unpacked),
+  //       DispenseUnpackedVerbose() => TransactionInfoDispense(
+  //           btcAmountNormalized: "", // TODO: fix this
+  //           hash: tx.hash,
+  //           source: tx.source,
+  //           destination: tx.destination,
+  //           btcAmount: tx.btcAmount,
+  //           fee: tx.fee,
+  //           data: tx.data,
+  //           domain: TransactionInfoDomainLocal(
+  //               raw: tx.raw, submittedAt: tx.submittedAt),
+  //           unpackedData: unpacked),
+  //       FairmintUnpackedVerbose() => TransactionInfoFairmint(
+  //           btcAmountNormalized: "", // TODO: fix this
+  //           hash: tx.hash,
+  //           source: tx.source,
+  //           destination: tx.destination,
+  //           btcAmount: tx.btcAmount,
+  //           fee: tx.fee,
+  //           data: tx.data,
+  //           domain: TransactionInfoDomainLocal(
+  //               raw: tx.raw, submittedAt: tx.submittedAt),
+  //           unpackedData: unpacked),
+  //       OrderUnpacked() => TransactionInfoOrder(
+  //           btcAmountNormalized: "", // TODO: fix this
+  //           hash: tx.hash,
+  //           source: tx.source,
+  //           destination: tx.destination,
+  //           btcAmount: tx.btcAmount,
+  //           fee: tx.fee,
+  //           data: tx.data,
+  //           domain: TransactionInfoDomainLocal(
+  //               raw: tx.raw, submittedAt: tx.submittedAt),
+  //           unpackedData: unpacked),
+  //       CancelUnpacked() => TransactionInfoCancel(
+  //           btcAmountNormalized: "", // TODO: fix this
+  //           hash: tx.hash,
+  //           source: tx.source,
+  //           destination: tx.destination,
+  //           btcAmount: tx.btcAmount,
+  //           fee: tx.fee,
+  //           data: tx.data,
+  //           domain: TransactionInfoDomainLocal(
+  //               raw: tx.raw, submittedAt: tx.submittedAt),
+  //           unpackedData: unpacked),
+  //       AttachUnpackedVerbose() => TransactionInfoAttach(
+  //           btcAmountNormalized: "", // TODO: fix this
+  //           hash: tx.hash,
+  //           source: tx.source,
+  //           destination: tx.destination,
+  //           btcAmount: tx.btcAmount,
+  //           fee: tx.fee,
+  //           data: tx.data,
+  //           domain: TransactionInfoDomainLocal(
+  //               raw: tx.raw, submittedAt: tx.submittedAt),
+  //           unpackedData: unpacked),
+  //       DetachUnpackedVerbose() => TransactionInfoDetach(
+  //           btcAmountNormalized: "", // TODO: fix this
+  //           hash: tx.hash,
+  //           source: tx.source,
+  //           destination: tx.destination,
+  //           btcAmount: tx.btcAmount,
+  //           fee: tx.fee,
+  //           data: tx.data,
+  //           domain: TransactionInfoDomainLocal(
+  //               raw: tx.raw, submittedAt: tx.submittedAt),
+  //           unpackedData: unpacked),
+  //       MoveToUtxoUnpackedVerbose() => TransactionInfoMoveToUtxo(
+  //           btcAmountNormalized: "", // TODO: fix this
+  //           hash: tx.hash,
+  //           source: tx.source,
+  //           destination: tx.destination,
+  //           btcAmount: tx.btcAmount,
+  //           fee: tx.fee,
+  //           data: tx.data,
+  //           domain: TransactionInfoDomainLocal(
+  //               raw: tx.raw, submittedAt: tx.submittedAt),
+  //         ),
+  //       MpmaSendUnpackedVerbose() => TransactionInfoMpmaSend(
+  //           btcAmountNormalized: "", // TODO: fix this
+  //           hash: tx.hash,
+  //           source: tx.source,
+  //           destination: tx.destination,
+  //           btcAmount: tx.btcAmount,
+  //           fee: tx.fee,
+  //           data: tx.data,
+  //           domain: TransactionInfoDomainLocal(
+  //               raw: tx.raw, submittedAt: tx.submittedAt),
+  //           unpackedData: unpacked),
+  //       AssetDestructionUnpackedVerbose() => TransactionInfoAssetDestruction(
+  //           btcAmountNormalized: "", // TODO: fix this
+  //           hash: tx.hash,
+  //           source: tx.source,
+  //           destination: tx.destination,
+  //           btcAmount: tx.btcAmount,
+  //           fee: tx.fee,
+  //           data: tx.data,
+  //           domain: TransactionInfoDomainLocal(
+  //               raw: tx.raw, submittedAt: tx.submittedAt),
+  //           unpackedData: unpacked),
+  //       AssetDividendUnpackedVerbose() => TransactionInfoAssetDividend(
+  //           btcAmountNormalized: "", // TODO: fix this
+  //           hash: tx.hash,
+  //           source: tx.source,
+  //           destination: tx.destination,
+  //           btcAmount: tx.btcAmount,
+  //           fee: tx.fee,
+  //           data: tx.data,
+  //           domain: TransactionInfoDomainLocal(
+  //               raw: tx.raw, submittedAt: tx.submittedAt),
+  //           unpackedData: unpacked),
+  //       SweepUnpackedVerbose() => TransactionInfoSweep(
+  //           btcAmountNormalized: "", // TODO: fix this
+  //           hash: tx.hash,
+  //           source: tx.source,
+  //           destination: tx.destination,
+  //           btcAmount: tx.btcAmount,
+  //           fee: tx.fee,
+  //           data: tx.data,
+  //           domain: TransactionInfoDomainLocal(
+  //               raw: tx.raw, submittedAt: tx.submittedAt),
+  //           unpackedData: unpacked),
+  //       _ => TransactionInfo(
+  //           btcAmountNormalized: "", // TODO: fix this
+  //           hash: tx.hash,
+  //           source: tx.source,
+  //           destination: tx.destination,
+  //           btcAmount: tx.btcAmount,
+  //           fee: tx.fee,
+  //           data: tx.data,
+  //           domain: TransactionInfoDomainLocal(
+  //               raw: tx.raw, submittedAt: tx.submittedAt),
+  //         )
+  //     };
+  //   }).toList();
+  // }
 }

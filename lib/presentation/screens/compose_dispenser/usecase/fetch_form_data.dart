@@ -4,6 +4,7 @@ import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/domain/repositories/dispenser_repository.dart';
 import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
+import 'package:horizon/domain/entities/http_config.dart';
 
 class FetchDispenserFormDataUseCase {
   final BalanceRepository balanceRepository;
@@ -18,13 +19,13 @@ class FetchDispenserFormDataUseCase {
   });
 
   Future<(List<Balance>, FeeEstimates, List<Dispenser>)> call(
-      String currentAddress) async {
+      String currentAddress, HttpConfig httpConfig) async {
     try {
       // Initiate both asynchronous calls
       final futures = await Future.wait([
-        _fetchBalances(currentAddress),
-        _fetchFeeEstimates(),
-        _fetchDispensers(currentAddress),
+        _fetchBalances(currentAddress, httpConfig),
+        _fetchFeeEstimates(httpConfig),
+        _fetchDispensers(currentAddress, httpConfig),
       ]);
 
       final balances = futures[0] as List<Balance>;
@@ -43,28 +44,32 @@ class FetchDispenserFormDataUseCase {
     }
   }
 
-  Future<List<Balance>> _fetchBalances(String currentAddress) async {
+  Future<List<Balance>> _fetchBalances(
+      String currentAddress, HttpConfig httpConfig) async {
     try {
-      final balances_ =
-          await balanceRepository.getBalancesForAddress(currentAddress, true);
+      final balances_ = await balanceRepository.getBalancesForAddress(
+          httpConfig: httpConfig,
+          address: currentAddress,
+          excludeUtxoAttached: true);
       return balances_.where((balance) => balance.asset != 'BTC').toList();
     } catch (e) {
       throw FetchBalancesException(e.toString());
     }
   }
 
-  Future<FeeEstimates> _fetchFeeEstimates() async {
+  Future<FeeEstimates> _fetchFeeEstimates(HttpConfig httpConfig) async {
     try {
-      return await getFeeEstimatesUseCase.call();
+      return await getFeeEstimatesUseCase.call(httpConfig: httpConfig);
     } catch (e) {
       throw FetchFeeEstimatesException(e.toString());
     }
   }
 
-  Future<List<Dispenser>> _fetchDispensers(String currentAddress) async {
+  Future<List<Dispenser>> _fetchDispensers(
+      String currentAddress, HttpConfig httpConfig) async {
     try {
       return await dispenserRepository
-          .getDispensersByAddress(currentAddress)
+          .getDispensersByAddress(currentAddress, httpConfig)
           .run()
           .then((either) => either.fold(
                 (error) => throw FetchDispenserException(

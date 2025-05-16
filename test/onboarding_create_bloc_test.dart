@@ -63,7 +63,9 @@ void main() {
             mnemonic: any(named: 'mnemonic'),
             password: any(named: 'password'),
             deriveWallet: any(named: 'deriveWallet'),
-          )).thenAnswer((_) async {});
+          )).thenAnswer((_) async {
+            return null;
+          });
     }
 
     blocTest<OnboardingCreateBloc, OnboardingCreateState>(

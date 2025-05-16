@@ -6,13 +6,13 @@ import "dashboard_activity_feed_event.dart";
 import "dashboard_activity_feed_state.dart";
 
 import 'package:horizon/domain/repositories/bitcoin_repository.dart';
-import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/transaction_local_repository.dart';
 import 'package:horizon/domain/repositories/events_repository.dart';
 import 'package:horizon/domain/entities/event.dart';
 import 'package:horizon/domain/entities/bitcoin_tx.dart';
 import 'package:horizon/domain/entities/activity_feed_item.dart';
 import 'package:horizon/core/logging/logger.dart';
+import 'package:horizon/domain/entities/http_config.dart';
 
 // ignore: non_constant_identifier_names
 final DEFAULT_WHITELIST = [
@@ -44,24 +44,24 @@ final DEFAULT_WHITELIST = [
 
 class DashboardActivityFeedBloc
     extends Bloc<DashboardActivityFeedEvent, DashboardActivityFeedState> {
+  final HttpConfig httpConfig;
   Logger logger;
   Timer? timer;
   List<String> addresses;
   int pageSize;
   TransactionLocalRepository transactionLocalRepository;
   EventsRepository eventsRepository;
-  AddressRepository addressRepository;
   BitcoinRepository bitcoinRepository;
   bool _isLoading = false; // New flag to track loading state
   bool _isCancelled = false;
 
   DashboardActivityFeedBloc(
-      {required this.logger,
+      {required this.httpConfig,
+      required this.logger,
       required this.addresses,
       required this.eventsRepository,
       required this.pageSize,
       required this.transactionLocalRepository,
-      required this.addressRepository,
       required this.bitcoinRepository})
       : super(DashboardActivityFeedStateInitial()) {
     on<StartPolling>(_onStartPolling);
@@ -105,6 +105,7 @@ class DashboardActivityFeedBloc
         //     by txhash
 
         newCounterpartyEvents = await eventsRepository.getAllByAddressesVerbose(
+            httpConfig: httpConfig,
             addresses: addresses,
             unconfirmed: true,
             whitelist: DEFAULT_WHITELIST);
@@ -116,6 +117,7 @@ class DashboardActivityFeedBloc
         while (!found) {
           final (remoteEvents, nextCursor_, _) =
               await eventsRepository.getByAddressesVerbose(
+                  httpConfig: httpConfig,
                   addresses: addresses,
                   limit: pageSize,
                   unconfirmed: true,
@@ -138,7 +140,7 @@ class DashboardActivityFeedBloc
         }
         final mempoolEvents =
             await eventsRepository.getAllMempoolVerboseEventsForAddresses(
-                addresses, DEFAULT_WHITELIST);
+                httpConfig, addresses, DEFAULT_WHITELIST);
 
         newCounterpartyEvents
             .addAll(_filterCounterpartyMempoolEvents(mempoolEvents));
@@ -148,23 +150,27 @@ class DashboardActivityFeedBloc
       List<BitcoinTx> newBitcoinTransactions = [];
       if (mostRecentBitcoinTxHash == null) {
         // 2a) if null list of new btc transactions equal to all of them
-        final bitcoinTxsE = await bitcoinRepository.getTransactions(addresses);
+        final bitcoinTxsE = await bitcoinRepository.getTransactions(
+          addresses: addresses,
+          httpConfig: httpConfig,
+        );
 
         // TODO: we should at least log that there was an error here.
         //       but correct behavior is to just ignore.
         newBitcoinTransactions = bitcoinTxsE
-            .getOrElse((left) => throw left)
             .where(
               (tx) => !tx.isCounterpartyTx(logger),
             )
             .toList();
       } else {
         // 2b otherwise, bitcoin transactions are all above last seen
-        final bitcoinTxsE = await bitcoinRepository.getTransactions(addresses);
+        final bitcoinTxsE = await bitcoinRepository.getTransactions(
+          addresses: addresses,
+          httpConfig: httpConfig,
+        );
 
         // TODO: log possible excetion here
         final bitcoinTxs = bitcoinTxsE
-            .getOrElse((left) => throw left)
             .where(
               (tx) => !tx.isCounterpartyTx(logger),
             )
@@ -178,8 +184,9 @@ class DashboardActivityFeedBloc
         }
       }
 
-      final blockHeightE = await bitcoinRepository.getBlockHeight();
-      final blockHeight = blockHeightE.getOrElse((left) => throw left);
+      final blockHeightE =
+          await bitcoinRepository.getBlockHeight(httpConfig: httpConfig);
+      final blockHeight = blockHeightE;
 
       // 3) dedupe by tx hash
       final deduplicatedActivityFeedItems = <ActivityFeedItem>[];
@@ -420,6 +427,7 @@ class DashboardActivityFeedBloc
 
       final counterpartyEvents =
           await eventsRepository.getAllByAddressesVerbose(
+              httpConfig: httpConfig,
               addresses: addresses,
               unconfirmed: true,
               whitelist: DEFAULT_WHITELIST);
@@ -444,11 +452,10 @@ class DashboardActivityFeedBloc
       };
 
       // get all btc mempool transactions
-      final btcMempoolE =
-          await bitcoinRepository.getMempoolTransactions(addresses);
+      final btcMempoolE = await bitcoinRepository.getMempoolTransactions(
+          addresses: addresses, httpConfig: httpConfig);
 
       final btcMempoolList = btcMempoolE
-          .getOrElse((left) => throw left)
           .where(
             (tx) => !tx.isCounterpartyTx(logger),
           )
@@ -460,18 +467,19 @@ class DashboardActivityFeedBloc
       bool hasMore = true;
       List allBTCConfirmed = [];
 
-      final blockHeightE = await bitcoinRepository.getBlockHeight();
-      final blockHeight = blockHeightE.getOrElse((left) => throw left);
+      final blockHeight =
+          await bitcoinRepository.getBlockHeight(httpConfig: httpConfig);
 
       while (hasMore) {
         if (_isCancelled) {
           _isCancelled = false;
           break;
         }
-        final transactionsE = await bitcoinRepository
-            .getConfirmedTransactionsPaginated(addresses[0], lastSeenTxId);
-
-        final btcConfirmedList = transactionsE.getOrElse((left) => throw left);
+        final btcConfirmedList =
+            await bitcoinRepository.getConfirmedTransactionsPaginated(
+                address: addresses[0],
+                lastSeenTxid: lastSeenTxId,
+                httpConfig: httpConfig);
 
         if (btcConfirmedList.isEmpty) {
           hasMore = false;
