@@ -88,7 +88,7 @@ class AppIcons {
       key: key,
     );
   }
-  
+
   static Widget receiveIcon({
     required BuildContext context,
     double? width,
@@ -794,6 +794,7 @@ class AppIcons {
       color: null,
     );
   }
+
   static Widget iconButton({
     required BuildContext context,
     required Widget icon,
@@ -829,7 +830,6 @@ class AppIcons {
     double? height = 40,
     BoxFit fit = BoxFit.cover,
   }) {
-
     if (assetName == 'XCP') {
       return xcpIcon(
         width: width,
@@ -872,11 +872,14 @@ class AppIcons {
               height: height,
               fit: fit,
               alignment: Alignment.center,
-              placeholder: (context, url) => Container( 
+              placeholder: (context, url) => Container(
                 width: width,
                 height: height,
                 decoration: BoxDecoration(
-                  color: Theme.of(context).inputDecorationTheme.outlineBorder?.color ??
+                  color: Theme.of(context)
+                          .inputDecorationTheme
+                          .outlineBorder
+                          ?.color ??
                       transparentBlack8,
                   shape: BoxShape.circle,
                 ),
@@ -884,7 +887,12 @@ class AppIcons {
             ),
           );
         }
-        return const SizedBox.shrink();
+
+        return xcpIcon(
+          width: width,
+          height: height,
+          fit: fit,
+        );
       },
     );
   }

@@ -238,6 +238,7 @@ class BalancesSliverState extends State<BalancesSliver> {
             children: sortedBalances.map((balance) {
               final isBitcoinOrXcp =
                   balance.asset == 'BTC' || balance.asset == 'XCP';
+              final appIcons = AppIcons();
               return Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -285,7 +286,7 @@ class BalancesSliverState extends State<BalancesSliver> {
                             child: Row(
                               children: [
                                 const SizedBox(width: 10),
-                                AssetIcon(asset: balance.asset),
+                                appIcons.assetIcon(assetName: balance.asset, description: balance.assetInfo.description, context: context),
                                 const SizedBox(width: 10),
                                 // Asset name and details
                                 Expanded(
