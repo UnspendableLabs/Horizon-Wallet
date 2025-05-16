@@ -100,6 +100,7 @@ import 'package:horizon/data/sources/network/mempool_space_client.dart';
 import 'package:horizon/domain/repositories/unified_address_repository.dart';
 import 'package:horizon/data/sources/repositories/unified_address_repository_impl.dart';
 
+
 import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/data/services/analytics_service_impl.dart';
 import 'package:horizon/presentation/common/usecase/set_mnemonic_usecase.dart';
@@ -380,6 +381,9 @@ void setup() {
   injector.registerSingleton<WalletConfigRepository>(
       WalletConfigRepositoryImpl(injector.get<DatabaseManager>().database));
 
+  injector.registerSingleton<ImportedAddressRepository>(
+      ImportedAddressRepositoryImpl(injector.get<DatabaseManager>().database));
+
   injector.registerSingleton<AccountV2Repository>(
       AccountV2RepositoryImpl(injector.get<DatabaseManager>().database));
 
@@ -396,8 +400,6 @@ void setup() {
   injector.registerSingleton<AddressRepositoryDeprecated>(AddressRepositoryImpl(
     injector.get<DatabaseManager>().database,
   ));
-  injector.registerSingleton<ImportedAddressRepository>(
-      ImportedAddressRepositoryImpl(injector.get<DatabaseManager>().database));
 
   injector.registerSingleton<UnifiedAddressRepository>(
     UnifiedAddressRepositoryImpl(

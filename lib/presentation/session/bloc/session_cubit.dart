@@ -190,13 +190,6 @@ class SessionStateCubit extends Cubit<SessionState> {
           List<AddressV2> addresses =
               await _addressV2Repository.getByAccount(currentAccount);
 
-          // if (addresses.isEmpty) {
-          //   throw Exception("invariant: no addresses for this account");
-          // }
-
-          List<ImportedAddress> importedAddresses =
-              await importedAddressRepository.getAll();
-
           emit(SessionState.success(SessionStateSuccess(
             redirect: true,
             httpConfig: httpConfigForNetwork(walletConfig.network),
@@ -204,7 +197,6 @@ class SessionStateCubit extends Cubit<SessionState> {
             decryptionKey: decryptionKey,
             accounts: accounts,
             addresses: addresses,
-            importedAddresses: importedAddresses,
             currentAccount: currentAccount,
           )));
           return;
@@ -255,9 +247,10 @@ class SessionStateCubit extends Cubit<SessionState> {
     List<AddressV2> addresses =
         await _addressV2Repository.getByAccount(currentAccount);
 
+    print("asdfas");
+    print(addresses);
+
     // TODO: need to think through imported addresses
-    List<ImportedAddress> importedAddresses =
-        await importedAddressRepository.getAll();
     SessionStateSuccess success = state.successOrThrow();
 
     emit(SessionState.success(success.copyWith(
@@ -267,7 +260,6 @@ class SessionStateCubit extends Cubit<SessionState> {
       // wallet: wallet,
       accounts: accounts,
       addresses: addresses,
-      importedAddresses: importedAddresses, // TODO: imported addresses
       currentAccount: currentAccount,
     )));
 
@@ -375,9 +367,6 @@ class SessionStateCubit extends Cubit<SessionState> {
       //   throw Exception("invariant: no addresses for this account");
       // }
 
-      List<ImportedAddress> importedAddresses =
-          await importedAddressRepository.getAll();
-
       SessionStateSuccess success = state.successOrThrow();
 
       emit(SessionState.success(success.copyWith(
@@ -385,7 +374,6 @@ class SessionStateCubit extends Cubit<SessionState> {
         // wallet: wallet,
         accounts: accounts,
         addresses: addresses,
-        importedAddresses: importedAddresses,
         walletConfig: walletConfig,
       )));
 

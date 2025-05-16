@@ -1,22 +1,49 @@
 import 'dart:convert';
 import 'package:crypto/crypto.dart';
+import "package:horizon/domain/entities/network.dart";
 
-class AccountV2 {
-  // final String uuid;
+sealed class AccountV2 {
+  String get name;
+  String get hash;
+}
+
+class Bip32 extends AccountV2 {
   final String walletConfigID;
   final int index;
-  AccountV2({
-    required this.walletConfigID,
-    required this.index,
-  });
+  Bip32({required this.walletConfigID, required this.index});
 
+  @override
   String get name => "account ${index + 1}";
 
-  // TODO: this is a little awkward here
+  @override
   String get hash {
     final input = jsonEncode({
       'walletConfigID': walletConfigID,
       'index': index,
+    });
+    return sha256.convert(utf8.encode(input)).toString();
+  }
+}
+
+class ImportedWIF extends AccountV2 {
+  final Network network;
+  final String address;
+  final String encryptedWIF;
+  ImportedWIF({
+    required this.network,
+    required this.address,
+    required this.encryptedWIF,
+  });
+
+  @override
+  String get name => address;
+
+  @override
+  String get hash {
+    // never: add encrypted wif here
+    final input = jsonEncode({
+      'address': address,
+      'network': network.name,
     });
     return sha256.convert(utf8.encode(input)).toString();
   }

@@ -100,7 +100,7 @@ class GetAddressesBloc extends Bloc<GetAddressesEvent, GetAddressesState> {
           .getByAccountT(
               account: account,
               onError: (_, __) =>
-                  "Failed to find addresses for account at index ${account.index}")
+                  "Failed to find addresses for account ${account.name}")
           .mapLeft((msg) => GetAddressesException(msg)));
 
       return addresses.map((a) => a.toRpc()).toList();
@@ -144,79 +144,6 @@ class GetAddressesBloc extends Bloc<GetAddressesEvent, GetAddressesState> {
           : FormzSubmissionStatus.failure,
     ));
   }
-
-  // Future<String> _getAddressPrivKeyForAddress(
-  //     Address address, DecryptionStrategy decryptionStrategy) async {
-  //   throw UnimplementedError(
-  //       'This function is not implemented yet. Please implement it.');
-  // final account =
-  //     await accountRepository.getAccountByUuid(address.accountUuid);
-  // if (account == null) {
-  //   throw GetAddressesException('Account not found.');
-  // }
-  //
-  // final wallet = await walletRepository.getWallet(account.walletUuid);
-  //
-  // // Decrypt Root Private Key
-  // String decryptedRootPrivKey;
-  // try {
-  //   decryptedRootPrivKey = switch (decryptionStrategy) {
-  //     Password(password: var password) =>
-  //       await encryptionService.decrypt(wallet!.encryptedPrivKey, password),
-  //     InMemoryKey() => await encryptionService.decryptWithKey(
-  //         wallet!.encryptedPrivKey, (await inMemoryKeyRepository.get())!)
-  //   };
-  // } catch (e) {
-  //   throw GetAddressesException('Incorrect password.');
-  // }
-  //
-  // // Derive Address Private Key
-  // final addressPrivKey = await addressService.deriveAddressPrivateKey(
-  //   rootPrivKey: decryptedRootPrivKey,
-  //   chainCodeHex: wallet.chainCodeHex,
-  //   purpose: account.purpose,
-  //   coin: account.coinType,
-  //   account: account.accountIndex,
-  //   change: '0',
-  //   index: address.index,
-  //   importFormat: account.importFormat,
-  // );
-  //
-  // return addressPrivKey;
-  // }
-  //
-  // Future<String> _getAddressPrivKeyForImportedAddress(
-  //     ImportedAddress importedAddress,
-  //     DecryptionStrategy decryptionStrategy) async {
-  //   late String decryptedAddressWif;
-  //   try {
-  //     final maybeKey =
-  //         (await inMemoryKeyRepository.getMap())[importedAddress.address];
-  //
-  //     decryptedAddressWif = switch (decryptionStrategy) {
-  //       Password(password: var password) => await encryptionService.decrypt(
-  //           importedAddress.encryptedWif, password),
-  //       InMemoryKey() => await encryptionService.decryptWithKey(
-  //           importedAddress.encryptedWif, maybeKey!)
-  //     };
-  //   } catch (e) {
-  //     throw GetAddressesException('Incorrect password.');
-  //   }
-  //
-  //   final addressPrivKey =
-  //       await importedAddressService.getAddressPrivateKeyFromWIF(
-  //           wif: decryptedAddressWif, network: httpConfig.network);
-  //
-  //   return addressPrivKey;
-  // }
-
-  // _getAddressRpcType(String address) {
-  //   if (address.startsWith("bc") || address.startsWith("tb")) {
-  //     return AddressRpcType.p2wpkh;
-  //   } else {
-  //     return AddressRpcType.p2pkh;
-  //   }
-  // }
 
   void _handleWarningAcceptedChanged(
       WarningAcceptedChanged event, Emitter<GetAddressesState> emit) {

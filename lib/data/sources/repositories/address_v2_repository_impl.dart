@@ -1,3 +1,4 @@
+import "package:fpdart/fpdart.dart";
 import 'package:get_it/get_it.dart';
 import 'package:horizon/extensions.dart';
 // import "package:horizon/data/sources/local/dao/addresss_v2_dao.dart";
@@ -9,6 +10,7 @@ import "package:horizon/domain/entities/account_v2.dart";
 import "package:horizon/domain/repositories/address_v2_repository.dart";
 import "package:horizon/domain/repositories/wallet_config_repository.dart";
 import 'package:horizon/domain/services/seed_service.dart';
+import "package:horizon/js/bitcoin.dart";
 
 class AddressV2RepositoryImpl implements AddressV2Repository {
   // ignore: unused_field
@@ -28,36 +30,47 @@ class AddressV2RepositoryImpl implements AddressV2Repository {
 // TODO: this whole thing is a little busy
   @override
   Future<List<AddressV2>> getByAccount(AccountV2 account) async {
-    final walletConfig_ =
-        await _walletConfigRepository.getByID(id: account.walletConfigID);
-
-    final walletConfig = walletConfig_.getOrThrow();
-
-    final seed = await _seedService.getForWalletConfig(
-        walletConfig: walletConfig_.getOrThrow(),
-        decryptionStrategy: InMemoryKey());
-
-    // # TODO: need to make the number of addresses configurable and stored
     const numAddresses = 1;
 
-    final paths = List.generate(numAddresses, (i) => i)
-        .map((index) => (
-              index,
-              "${walletConfig.basePath.get(walletConfig.network)}${account.index}'/0/$index"
-            ))
-        .toList();
+    print(account);
 
-    List<AddressV2> addresses = [];
-    for (final path in paths) {
-      AddressV2 address = await _addressService.deriveAddressWIP(
-        path: path.$2,
-        seed: seed,
-        network: walletConfig.network,
-      );
+    TaskEither<String, List<AddressV2>> task = switch (account) {
+      Bip32(walletConfigID: var walletConfigID, index: var index) => _walletConfigRepository
+          .getByIDT(
+              id: walletConfigID,
+              onError: (_) => "invariant: could not read wallet config")
+          .flatMap((walletConfig) => TaskEither.fromOption(
+              walletConfig, () => "invariant: wallet config is null"))
+          .flatMap((walletConfig) => _seedService
+              .getForWalletConfigT(
+                  walletConfig: walletConfig,
+                  decryptionStrategy: InMemoryKey(),
+                  onError: (_) => "invariant: could not read seed")
+              .flatMap((seed) => TaskEither.sequenceList(
+                  List.generate(numAddresses, (i) => i)
+                      .map((index) => "${walletConfig.basePath.get(walletConfig.network)}${account.index}'/0/$index")
+                      .map((path) => _addressService.deriveAddressWIPT(path: path, seed: seed, network: walletConfig.network))
+                      .toList()))),
+      ImportedWIF(address: var address, encryptedWIF: var encryptedWIF) =>
+        TaskEither.right([
+          AddressV2(
+            type: AddressV2Type.p2wpkh, // TODO: this should not be hard coded
+            address: address,
+            derivation: WIF(value: encryptedWIF),
+            publicKey: "", // TODO: need to add public key
+          )
+        ])
+    };
 
-      addresses.add(address);
-    }
+    final result = await task.run();
 
-    return addresses;
+    return result.fold(
+      (_) => throw Exception(
+          "Error deriving addresses for account: ${account.name}"),
+      (addresses) {
+        print(addresses);
+        return addresses;
+      }
+    );
   }
 }
