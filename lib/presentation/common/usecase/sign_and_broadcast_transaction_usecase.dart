@@ -1,17 +1,11 @@
-import 'package:horizon/domain/entities/address.dart';
-import 'package:horizon/domain/entities/imported_address.dart';
-import 'package:horizon/domain/entities/utxo.dart';
-import 'package:horizon/domain/entities/network.dart';
-import 'package:horizon/domain/entities/wallet_config.dart';
-import 'package:horizon/domain/entities/seed.dart';
-import 'package:horizon/domain/repositories/imported_address_repository.dart';
+import "package:get_it/get_it.dart";
+import "package:fpdart/fpdart.dart";
+
 import 'package:horizon/domain/repositories/utxo_repository.dart';
 import 'package:horizon/domain/repositories/wallet_config_repository.dart';
-import 'package:horizon/domain/repositories/transaction_local_repository.dart';
 import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/bitcoind_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
-import 'package:horizon/domain/services/imported_address_service.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
 import 'package:horizon/domain/entities/compose_response.dart';
 import 'package:horizon/domain/entities/decryption_strategy.dart';
@@ -19,8 +13,6 @@ import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 import 'package:horizon/domain/entities/http_config.dart';
 import 'package:horizon/domain/entities/address_v2.dart';
 import 'package:horizon/domain/services/seed_service.dart';
-import "package:get_it/get_it.dart";
-import "package:fpdart/fpdart.dart";
 
 class AddressNotFoundException implements Exception {
   final String message;
@@ -35,36 +27,34 @@ class SignAndBroadcastTransactionException implements Exception {
           'An error occurred during the sign and broadcast process.']);
 }
 
-// TODO: there are a few too many deps here.
-//       could add separate use case for deriving key
-//       might also want to split out sign / broadcast
-
 class SignAndBroadcastTransactionUseCase<R extends ComposeResponse> {
-  final ImportedAddressRepository importedAddressRepository;
-  final UtxoRepository utxoRepository;
-  final EncryptionService encryptionService;
-  final AddressService addressService;
-  final TransactionService transactionService;
-  final BitcoindService bitcoindService;
-  final TransactionLocalRepository transactionLocalRepository;
-  final ImportedAddressService importedAddressService;
-  final InMemoryKeyRepository inMemoryKeyRepository;
+  final UtxoRepository _utxoRepository;
+  final EncryptionService _encryptionService;
+  final AddressService _addressService;
+  final TransactionService _transactionService;
+  final BitcoindService _bitcoindService;
+  final InMemoryKeyRepository _inMemoryKeyRepository;
   final SeedService _seedService;
   final WalletConfigRepository _walletConfigRepository;
 
   SignAndBroadcastTransactionUseCase({
-    required this.inMemoryKeyRepository,
-    required this.importedAddressRepository,
-    required this.utxoRepository,
-    required this.encryptionService,
-    required this.addressService,
-    required this.transactionService,
-    required this.bitcoindService,
-    required this.transactionLocalRepository,
-    required this.importedAddressService,
+    InMemoryKeyRepository? inMemoryKeyRepository,
+    UtxoRepository? utxoRepository,
+    EncryptionService? encryptionService,
+    AddressService? addressService,
+    TransactionService? transactionService,
+    BitcoindService? bitcoindService,
     SeedService? seedService,
     WalletConfigRepository? walletConfigRepository,
-  })  : _seedService = seedService ?? GetIt.I<SeedService>(),
+  })  : _utxoRepository = utxoRepository ?? GetIt.I<UtxoRepository>(),
+        _encryptionService = encryptionService ?? GetIt.I<EncryptionService>(),
+        _addressService = addressService ?? GetIt.I<AddressService>(),
+        _transactionService =
+            transactionService ?? GetIt.I<TransactionService>(),
+        _bitcoindService = bitcoindService ?? GetIt.I<BitcoindService>(),
+        _inMemoryKeyRepository =
+            inMemoryKeyRepository ?? GetIt.I<InMemoryKeyRepository>(),
+        _seedService = seedService ?? GetIt.I<SeedService>(),
         _walletConfigRepository =
             walletConfigRepository ?? GetIt.I<WalletConfigRepository>();
 
@@ -85,17 +75,17 @@ class SignAndBroadcastTransactionUseCase<R extends ComposeResponse> {
                     walletConfig: walletConfig,
                     decryptionStrategy: decryptionStrategy,
                     onError: (_) => "invairant: could not derive seed")
-                .flatMap((seed) => addressService.deriveAddressPrivateKeyWIPT(
+                .flatMap((seed) => _addressService.deriveAddressPrivateKeyWIPT(
                       path: Bip32Path(value: value),
                       seed: seed,
                       network: httpConfig.network,
                     )))),
         WIF(value: var value) => await $(switch (decryptionStrategy) {
-            Password(password: var password) => encryptionService.decryptT(
+            Password(password: var password) => _encryptionService.decryptT(
                 data: value,
                 password: password,
                 onError: (_, __) => "Invalid password"),
-            InMemoryKey() => inMemoryKeyRepository
+            InMemoryKey() => _inMemoryKeyRepository
                 .getMapT(
                     onError: (_, __) =>
                         "invariant: failed to read in memory key map")
@@ -103,7 +93,7 @@ class SignAndBroadcastTransactionUseCase<R extends ComposeResponse> {
                     Option.fromNullable(map[source.address]),
                     () =>
                         "invariant: decryption key not found for address: ${source.address}"))
-                .flatMap((decryptionKey) => encryptionService.decryptWithKeyT(
+                .flatMap((decryptionKey) => _encryptionService.decryptWithKeyT(
                     data: value,
                     key: decryptionKey,
                     onError: (_, __) =>
@@ -111,10 +101,10 @@ class SignAndBroadcastTransactionUseCase<R extends ComposeResponse> {
           })
       };
 
-      final utxoMap = await $(utxoRepository.getUTXOMapForAddressT(
+      final utxoMap = await $(_utxoRepository.getUTXOMapForAddressT(
           address: source, httpConfig: httpConfig));
 
-      final signedHex = await $(transactionService.signTransactionT(
+      final signedHex = await $(_transactionService.signTransactionT(
           unsignedTransaction: rawtransaction,
           privateKey: pk,
           sourceAddress: source.address,
@@ -122,7 +112,7 @@ class SignAndBroadcastTransactionUseCase<R extends ComposeResponse> {
           httpConfig: httpConfig,
           onError: (_) => "Failed to sign transaction"));
 
-      final hash = await $(bitcoindService.sendrawtransactionT(
+      final hash = await $(_bitcoindService.sendrawtransactionT(
           signedHex: signedHex,
           httpConfig: httpConfig,
           onError: (err, _) => err.toString()));
