@@ -286,7 +286,7 @@ class BalancesSliverState extends State<BalancesSliver> {
                             child: Row(
                               children: [
                                 const SizedBox(width: 10),
-                                appIcons.assetIcon(assetName: balance.asset, description: balance.assetInfo.description, context: context, width: 34, height: 34),
+                                appIcons.assetIcon(assetName: balance.asset, description: balance.assetInfo.description, context: context, width: 36, height: 36),
                                 const SizedBox(width: 10),
                                 // Asset name and details
                                 Expanded(
