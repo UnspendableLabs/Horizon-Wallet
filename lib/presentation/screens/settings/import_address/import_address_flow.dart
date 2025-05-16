@@ -167,7 +167,7 @@ class _ImportAddressFormState extends State<_ImportAddressForm> {
         final isLoading = state is ImportAddressPkLoading || _isSubmitting;
 
         return SingleChildScrollView(
-          padding: const EdgeInsets.all(20.0),
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
           child: Form(
             key: _formKey,
             child: Column(
@@ -188,13 +188,13 @@ class _ImportAddressFormState extends State<_ImportAddressForm> {
                     icon: !_showPrivateKey
                         ? AppIcons.eyeClosedIcon(
                             context: context,
-                            width: 10,
-                            height: 10,
+                            width: 24,
+                            height: 24,
                           )
                         : AppIcons.eyeOpenIcon(
                             context: context,
-                            width: 12,
-                            height: 12,
+                            width: 24,
+                            height: 24,
                           ),
                     onPressed: () {
                       setState(() {
@@ -226,7 +226,7 @@ class _ImportAddressFormState extends State<_ImportAddressForm> {
                 Center(
                   child: Container(
                     alignment: Alignment.center,
-                    width: 335,
+                    width: double.infinity,
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(18),
@@ -238,18 +238,30 @@ class _ImportAddressFormState extends State<_ImportAddressForm> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        AppIcons.warningIcon(
-                            color: yellow1, height: 24, width: 24),
+                        AppIcons.warningHexIcon(height: 48, width: 48),
+                        const SizedBox(height: 8),
+                        SizedBox(
+                          width: 170,
+                          child: Text(
+                            'Before you continue',
+                            textAlign: TextAlign.center,
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleMedium
+                                ?.copyWith(
+                                  color: yellow1,
+                                ),
+                          ),
+                        ),
                         const SizedBox(height: 8),
                         SelectableText(
                           textAlign: TextAlign.center,
                           'If you use this address in a non-Counterparty wallet, you risk losing your UTXO-attached asset. Please confirm you understand the risk.',
                           style: Theme.of(context).textTheme.titleSmall,
                         ),
+                        const SizedBox(height: 10),
                         Container(
                           height: 64,
-                          margin: const EdgeInsets.symmetric(
-                              horizontal: 0.0, vertical: 5.0),
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(18),
                             border: Border.all(
@@ -286,7 +298,7 @@ class _ImportAddressFormState extends State<_ImportAddressForm> {
                                               !_toggleRecognized;
                                         });
                                       },
-                                      backgroundColor: yellow1,
+                                      type: HorizonToggleType.warning,
                                     ),
                                   ],
                                 ),
@@ -311,14 +323,13 @@ class _ImportAddressFormState extends State<_ImportAddressForm> {
                 ],
                 const SizedBox(height: 16),
                 SizedBox(
-                  height: 64,
                   child: isLoading
                       ? const Center(child: CircularProgressIndicator())
-                      : HorizonOutlinedButton(
-                          onPressed:
-                              (!_isFormValid) ? null : _showPasswordPrompt,
-                          buttonText: 'Continue',
-                          isTransparent: false,
+                      : HorizonButton(
+                          variant: ButtonVariant.green,
+                          disabled: !_isFormValid,
+                          onPressed: _showPasswordPrompt,
+                          child: TextButtonContent(value: "Continue"),
                         ),
                 ),
               ],

@@ -40,6 +40,7 @@ import 'package:horizon/presentation/inactivity_monitor/inactivity_monitor_bloc.
 import 'package:horizon/presentation/inactivity_monitor/inactivity_monitor_view.dart';
 import 'package:horizon/presentation/screens/asset/asset_view.dart';
 import 'package:horizon/presentation/screens/asset/bloc/asset_view_bloc.dart';
+import 'package:horizon/presentation/screens/atomic_swap/view/atomic_swap_view.dart';
 import 'package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_bloc.dart';
 import 'package:horizon/presentation/screens/dashboard/address_form/bloc/address_form_bloc.dart';
 import 'package:horizon/presentation/screens/dashboard/view/portfolio_view.dart';
@@ -50,6 +51,7 @@ import 'package:horizon/presentation/screens/onboarding_import/view/onboarding_i
 import 'package:horizon/presentation/screens/privacy_policy.dart';
 import 'package:horizon/presentation/screens/settings/import_address/bloc/import_address_pk_bloc.dart';
 import 'package:horizon/presentation/screens/settings/settings_view.dart';
+import 'package:horizon/presentation/screens/settings/sub_settings_view.dart';
 import 'package:horizon/presentation/screens/tos.dart';
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:horizon/presentation/session/bloc/session_state.dart';
@@ -244,24 +246,77 @@ class AppRouter {
               builder: (context, state) => const SettingsView(),
             ),
             GoRoute(
-              path: "/asset/:assetName",
-              builder: (context, state) {
-                final assetName = state.pathParameters['assetName'] ?? '';
-                final session = context.read<SessionStateCubit>().state;
-
-                return BlocProvider(
-                  create: (context) => AssetViewBloc(
-                    balanceRepository: GetIt.I<BalanceRepository>(),
-                    fairminterRepository: GetIt.I<FairminterRepository>(),
-                    addresses: session.allAddresses,
-                    asset: assetName,
-                  ),
-                  child: AssetView(
-                    assetName: assetName,
-                  ),
+              path: "/settings/:category",
+              pageBuilder: (context, state) {
+                final category = state.pathParameters['category'] ?? 'security';
+                return CustomTransitionPage<void>(
+                  key: state.pageKey,
+                  child: SubSettingsView(category: category),
+                  transitionDuration: const Duration(milliseconds: 250),
+                  transitionsBuilder:
+                      (context, animation, secondaryAnimation, child){
+                      return SlideTransition(
+                        position: Tween<Offset>(
+                          begin: const Offset(0, 0.03), // 40px = 0.1 of screen height
+                          end: Offset.zero,
+                        ).animate(animation),
+                        child: FadeTransition(
+                          opacity: animation,
+                          child: child,
+                        ),
+                      );
+                      },
                 );
               },
             ),
+            GoRoute(
+              path: "/asset/:assetName",
+              pageBuilder: (context, state) {
+                final assetName = state.pathParameters['assetName'] ?? '';
+                final session = context.read<SessionStateCubit>().state;
+
+                return CustomTransitionPage<void>(
+                  key: state.pageKey,
+                  child: BlocProvider(
+                    create: (context) => AssetViewBloc(
+                      balanceRepository: GetIt.I<BalanceRepository>(),
+                      fairminterRepository: GetIt.I<FairminterRepository>(),
+                      addresses: session.allAddresses,
+                      asset: assetName,
+                    ),
+                    child: AssetView(
+                      assetName: assetName,
+                    ),
+                  ),
+                  transitionDuration: const Duration(milliseconds: 250),
+                  transitionsBuilder:
+                      (context, animation, secondaryAnimation, child) {
+                    return SlideTransition(
+                      position: Tween<Offset>(
+                        begin: const Offset(0, 0.03),
+                        end: Offset.zero,
+                      ).animate(animation),
+                      child: FadeTransition(
+                        opacity: animation,
+                        child: child,
+                      ),
+                    );
+                  },
+                );
+              },
+            ),
+            GoRoute(path: "/atomic-swap", pageBuilder: (context, state) => CustomTransitionPage<void>(
+              key: state.pageKey,
+              child: const AtomicSwapView(),
+              transitionDuration: const Duration(milliseconds: 300),
+              transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                return FadeTransition(
+                  opacity: animation,
+                  child: child,
+                );
+              },
+            ),
+            )
           ],
         ),
       ],
@@ -633,7 +688,7 @@ class MyApp extends StatelessWidget {
       titleMedium: TextStyle(
         fontSize: 18,
         fontWeight: FontWeight.w700,
-        color: Colors.white,
+        color: offWhite,
         fontFamily: 'Montserrat',
       ),
       titleSmall: TextStyle(

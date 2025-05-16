@@ -19,14 +19,24 @@ class ConfirmationFieldWithLabel extends StatelessWidget {
       children: [
         DefaultTextStyle(
           style:
-              Theme.of(context).textTheme.labelSmall?.copyWith(fontSize: 14) ??
+              Theme.of(context).textTheme.labelSmall?.copyWith(
+                fontWeight: FontWeight.w500,
+              ) ??
                   const TextStyle(),
           child: SelectableText(label),
         ),
+        const SizedBox(
+          height: 4,
+        ),
         DefaultTextStyle(
-          style: Theme.of(context).textTheme.bodyLarge ?? const TextStyle(),
+          style: Theme.of(context).textTheme.labelMedium?.copyWith(
+            fontWeight: FontWeight.w700
+          ) ?? const TextStyle(),
           child: SelectableText(loading || value == null ? '' : value!),
         ),
+        const SizedBox(
+          height: 12,
+        )
       ],
     );
   }

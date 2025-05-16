@@ -162,17 +162,13 @@ class _GradientQuantityInputState extends State<GradientQuantityInput> {
                               focusNode: _focusNode,
                               textAlign: TextAlign.center,
                               textAlignVertical: TextAlignVertical.center,
-                              style: const TextStyle(
-                                fontSize: 50,
-                                fontWeight: FontWeight.w400,
+                              style: customTheme.number50Regular.copyWith(
                                 color: Colors.transparent,
                               ),
                               decoration: InputDecoration(
                                 border: InputBorder.none,
                                 hintText: isDivisible ? "0.00" : "0",
-                                hintStyle: TextStyle(
-                                  fontSize: 50,
-                                  fontWeight: FontWeight.w400,
+                                hintStyle: customTheme.number50Regular.copyWith(
                                   color: theme.hintColor,
                                 ),
                                 isCollapsed: true,
@@ -212,12 +208,7 @@ class _GradientQuantityInputState extends State<GradientQuantityInput> {
                                   widget.controller.text.isEmpty
                                       ? ''
                                       : widget.controller.text,
-                                  style: const TextStyle(
-                                    fontSize: 50,
-                                    fontWeight: FontWeight.w400,
-                                    color: Colors
-                                        .white, // This color will be replaced by gradient
-                                  ),
+                                  style: customTheme.number50Regular,
                                   textAlign: TextAlign.center,
                                 ),
                               ),
@@ -263,10 +254,12 @@ class _GradientQuantityInputState extends State<GradientQuantityInput> {
               ),
             ),
             if (hasError) ...[
-              Padding(
+              Container(
+                width: double.infinity,
                 padding: const EdgeInsets.only(left: 16, top: 4),
                 child: Text(
                   field.errorText ?? '',
+                  textAlign: TextAlign.center,
                   style: TextStyle(
                     color: customTheme.errorColor,
                     fontSize: 12,

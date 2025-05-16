@@ -238,6 +238,7 @@ class BalancesSliverState extends State<BalancesSliver> {
             children: sortedBalances.map((balance) {
               final isBitcoinOrXcp =
                   balance.asset == 'BTC' || balance.asset == 'XCP';
+              final appIcons = AppIcons();
               return Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -275,7 +276,7 @@ class BalancesSliverState extends State<BalancesSliver> {
                         child: InkWell(
                           onTap: () {
                             // Navigate to the asset details page
-                            context.go(
+                            context.push(
                                 '/asset/${Uri.encodeComponent(balance.asset)}');
                           },
                           borderRadius: BorderRadius.circular(10),
@@ -285,7 +286,7 @@ class BalancesSliverState extends State<BalancesSliver> {
                             child: Row(
                               children: [
                                 const SizedBox(width: 10),
-                                AssetIcon(asset: balance.asset),
+                                appIcons.assetIcon(assetName: balance.asset, description: balance.assetInfo.description, context: context, width: 36, height: 36),
                                 const SizedBox(width: 10),
                                 // Asset name and details
                                 Expanded(
@@ -325,6 +326,7 @@ class BalancesSliverState extends State<BalancesSliver> {
                                     ),
                                   ],
                                 ),
+                                const SizedBox(width: 4),
                               ],
                             ),
                           ),

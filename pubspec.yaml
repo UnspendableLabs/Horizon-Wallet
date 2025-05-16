@@ -86,9 +86,10 @@ dependencies:
   pub_semver: ^2.1.4
   flutter_native_splash: ^2.4.3
   sentry_flutter: ^8.11.0
-  lottie: ^3.2.0
+  lottie: ^3.3.1
   flutter_form_builder: ^9.5.0
   password_strength_checker: ^1.2.4
+  cached_network_image: ^3.4.0
 
 dev_dependencies:
   floor_generator: ^1.4.2
@@ -135,6 +136,7 @@ flutter:
     - assets/xcp-img.png
     - assets/btc-img.png
     - assets/icons/
+    - assets/lottie/
     - fonts/
 
   #   - .env
@@ -174,6 +176,10 @@ flutter:
         - asset: fonts/Montserrat-Thin.ttf
         - asset: fonts/Montserrat-ThinItalic.ttf
         - asset: fonts/Montserrat-VariableFont_wght.ttf
+
+    - family: Lato
+      fonts:
+        - asset: fonts/Lato-Regular.ttf
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/custom-fonts/#from-packages

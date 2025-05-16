@@ -108,13 +108,13 @@ class _LoginFormState extends State<LoginForm> {
                       icon: _obscurePassword
                           ? AppIcons.eyeClosedIcon(
                               context: context,
-                              width: 10,
-                              height: 10,
+                              width: 24,
+                              height: 24,
                             )
                           : AppIcons.eyeOpenIcon(
                               context: context,
-                              width: 12,
-                              height: 12,
+                              width: 24,
+                              height: 24,
                             ),
                       onPressed: (){
                         setState(() {

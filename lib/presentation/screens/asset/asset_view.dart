@@ -7,9 +7,9 @@ import 'package:horizon/domain/entities/multi_address_balance.dart';
 import 'package:horizon/presentation/common/filter_bar.dart';
 import 'package:horizon/presentation/common/icon_item_button.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
+import 'package:horizon/presentation/common/theme_extension.dart';
 import 'package:horizon/presentation/screens/asset/bloc/asset_view_bloc.dart';
 import 'package:horizon/presentation/screens/asset/bloc/asset_view_event.dart';
-import 'package:horizon/presentation/screens/dashboard/view/asset_icon.dart';
 import 'package:horizon/presentation/screens/dashboard/view/balances_display.dart';
 import 'package:horizon/presentation/screens/transactions/lock_quantity/view/lock_quantity_page.dart';
 import 'package:horizon/presentation/screens/transactions/send/view/send_page.dart';
@@ -99,32 +99,25 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
     bool isLoading = false,
     MultiAddressBalance? balance,
   }) {
+    final appIcons = AppIcons();
     return Container(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
-      decoration: BoxDecoration(
-        border: Border(
-          bottom: BorderSide(
-            color:
-                Theme.of(context).inputDecorationTheme.outlineBorder?.color ??
-                    transparentBlack8,
-            width: 1,
-          ),
-        ),
-      ),
+      margin: const EdgeInsets.only(top: 18),
+      padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          AppIcons.iconButton(
-            context: context,
+          IconButton(
+            padding: const EdgeInsets.all(0),
+            onPressed: () {
+              context.pop();
+            },
             icon: AppIcons.backArrowIcon(
               context: context,
               width: 24,
               height: 24,
             ),
-            onPressed: () {
-              context.go('/dashboard');
-            },
           ),
-          const SizedBox(width: 4),
+          const SizedBox(width: 18),
           isLoading
               ? Container(
                   width: 40,
@@ -138,8 +131,14 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
                     shape: BoxShape.circle,
                   ),
                 )
-              : AssetIcon(asset: balance!.asset, size: 40),
-          const SizedBox(width: 8),
+              : appIcons.assetIcon(
+                  context: context,
+                  assetName: balance!.asset,
+                  description: balance.assetInfo.description,
+                  width: 40,
+                  height: 40,
+                ),
+          const SizedBox(width: 10),
           isLoading
               ? _buildLoadingTextPlaceholders(context)
               : _buildAssetInfo(context, balance!),
@@ -153,14 +152,8 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const SizedBox(width: 8),
-        SelectableText(
-          balance.asset,
-          style: Theme.of(context)
-              .textTheme
-              .bodyMedium!
-              .copyWith(fontWeight: FontWeight.w700),
-        ),
+        SelectableText(balance.asset,
+            style: Theme.of(context).textTheme.titleMedium!),
         balance.assetLongname != null
             ? SelectableText(
                 textAlign: TextAlign.left,
@@ -176,14 +169,10 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
             : const SizedBox.shrink(),
         SelectableText(
           balance.totalNormalized,
-          style: Theme.of(context).textTheme.bodyLarge!.copyWith(
-              color: Theme.of(context)
-                      .textButtonTheme
-                      .style
-                      ?.foregroundColor
-                      ?.resolve({}) ??
-                  Colors.grey,
-              fontSize: 12),
+          style: Theme.of(context)
+              .textTheme
+              .titleSmall!
+              .copyWith(color: transparentWhite33, fontSize: 12, fontWeight: FontWeight.w500),
         ),
       ],
     );
@@ -194,15 +183,6 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const SizedBox(width: 8),
-        SelectableText(
-          widget.assetName,
-          style: Theme.of(context)
-              .textTheme
-              .bodyMedium!
-              .copyWith(fontWeight: FontWeight.w700),
-        ),
-        const SizedBox(height: 4),
         Container(
           width: 150,
           height: 12,
@@ -213,10 +193,10 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
             borderRadius: BorderRadius.circular(4),
           ),
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: 8),
         Container(
           width: 80,
-          height: 12,
+          height: 8,
           decoration: BoxDecoration(
             color:
                 Theme.of(context).inputDecorationTheme.outlineBorder?.color ??
@@ -247,34 +227,35 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
                 ),
               ),
             ),
-            child: Center(
-              child: SizedBox(
-                child: TabBar(
-                  controller: _tabController,
-                  indicatorWeight: 2,
-                  indicatorColor: transparentPurple33,
-                  labelColor: Theme.of(context).textTheme.bodyMedium?.color,
-                  unselectedLabelColor: Theme.of(context)
-                          .textButtonTheme
-                          .style
-                          ?.foregroundColor
-                          ?.resolve({}) ??
-                      Colors.grey,
-                  indicatorSize: TabBarIndicatorSize.label,
-                  tabAlignment: TabAlignment.center,
-                  isScrollable: false,
-                  tabs: const [
-                    Tab(
-                      child: Text(
-                        'Balance Actions',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                        ),
+            child: SizedBox(
+              height: 64,
+              width: double.infinity,
+              child: TabBar(
+                controller: _tabController,
+                indicatorWeight: 2,
+                dividerHeight: 0,
+                indicatorColor: transparentPurple33,
+                labelColor: Theme.of(context).textTheme.bodyMedium?.color,
+                unselectedLabelColor: Theme.of(context)
+                        .textButtonTheme
+                        .style
+                        ?.foregroundColor
+                        ?.resolve({}) ??
+                    Colors.grey,
+                indicatorSize: TabBarIndicatorSize.tab,
+                tabAlignment: TabAlignment.start,
+                isScrollable: true,
+                tabs: const [
+                  Tab(
+                    child: Text(
+                      'Balance Actions',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -292,44 +273,47 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
                 ),
               ),
             ),
-            child: Center(
-              child: SizedBox(
-                child: TabBar(
-                  controller: _tabController,
-                  indicatorWeight: 2,
-                  indicatorColor: transparentPurple33,
-                  labelColor: Theme.of(context).textTheme.bodyMedium?.color,
-                  unselectedLabelColor: Theme.of(context)
-                          .textButtonTheme
-                          .style
-                          ?.foregroundColor
-                          ?.resolve({}) ??
-                      Colors.grey,
-                  indicatorSize: TabBarIndicatorSize.label,
-                  tabAlignment: TabAlignment.center,
-                  isScrollable: false,
-                  tabs: [
+            child: SizedBox(
+              width: double.infinity,
+              height: 64,
+              child: TabBar(
+                controller: _tabController,
+                indicatorWeight: 2,
+                dividerHeight: 0,
+                indicatorColor: transparentPurple33,
+                labelColor: Theme.of(context).textTheme.bodyMedium?.color,
+                unselectedLabelColor: Theme.of(context)
+                        .textButtonTheme
+                        .style
+                        ?.foregroundColor
+                        ?.resolve({}) ??
+                    Colors.grey,
+                indicatorSize: TabBarIndicatorSize.tab,
+                tabAlignment: TabAlignment.start,
+                isScrollable: true,
+                tabs: [
+                  const Tab(
+                    height: 64,
+                    child: Text(
+                      'Balance Actions',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                  if (!_isBitcoin && _isAssetOwner(assetViewData.balances))
                     const Tab(
+                      height: 64,
                       child: Text(
-                        'Balance Actions',
+                        'Issuance Actions',
                         style: TextStyle(
-                          fontSize: 14,
+                          fontSize: 16,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
                     ),
-                    if (!_isBitcoin && _isAssetOwner(assetViewData.balances))
-                      const Tab(
-                        child: Text(
-                          'Issuance Actions',
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
+                ],
               ),
             ),
           ),
@@ -398,7 +382,8 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
                           children: [
                             if (!_isBitcoin)
                               Padding(
-                                padding: const EdgeInsets.all(16.0),
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 10.0),
                                 child: FilterBar(
                                   currentFilter: _currentFilter,
                                   onFilterSelected: _setFilter,
@@ -408,7 +393,7 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
                                         label: 'Address Balances',
                                         value: BalanceViewFilter.address),
                                     FilterOption(
-                                        label: 'Utxo Balances',
+                                        label: 'UTXO Balances',
                                         value: BalanceViewFilter.utxo),
                                   ],
                                   disabledOptions: _isBitcoin
@@ -549,6 +534,7 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
                     return SingleChildScrollView(
                       child: Column(
                         children: [
+                          const SizedBox(height: 10,),
                           IconItemButton(
                             title: 'Pay Dividend',
                             icon: AppIcons.dividendIcon(
@@ -661,51 +647,85 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
   // Helper method to build the balance breakdown section
   Widget _buildBalanceBreakdown(
       BuildContext context, MultiAddressBalance balance) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 50.0, left: 16.0, right: 16.0),
+    return Container(
+      padding: const EdgeInsets.only(top: 50.0, left: 0.0, right: 0.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Title styled like a tab
-          TabBar(
-            controller: TabController(length: 1, vsync: this),
-            indicatorWeight: 2,
-            indicatorColor: transparentPurple33,
-            labelColor: Theme.of(context).textTheme.bodyMedium?.color,
-            indicatorSize: TabBarIndicatorSize.label,
-            tabAlignment: TabAlignment.start,
-            isScrollable: true,
-            tabs: const [
-              Tab(
-                child: Text(
-                  'Balance Breakdown',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
+          SizedBox(
+            height: 64,
+            child: TabBar(
+              controller: TabController(length: 1, vsync: this),
+              indicatorWeight: 2,
+              indicatorColor: transparentPurple33,
+              dividerHeight: 1,
+              dividerColor: transparentPurple8,
+              labelColor: Theme.of(context).textTheme.bodyMedium?.color,
+              indicatorSize: TabBarIndicatorSize.tab,
+              tabAlignment: TabAlignment.start,
+              isScrollable: true,
+              tabs: const [
+                Tab(
+                  height: 64,
+                  child: Text(
+                    'Balance Breakdown',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
           const SizedBox(height: 16),
           // Balance entries
+          Container(
+            height: 34,
+            padding: const EdgeInsets.symmetric(horizontal: 14.0),
+            child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Text(
+                "Address",
+                style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              Text(
+                "UTXOs",
+                style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                  fontWeight: FontWeight.w500,
+                ),
+              )
+            ],
+          ),
+          ),
           ...balance.entries.map((entry) {
             final displayId = entry.utxo ?? entry.address ?? '';
             return Padding(
-              padding: const EdgeInsets.only(bottom: 8.0),
+              padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 14.0),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Expanded(
                     child: MiddleTruncatedText(
                       text: displayId,
                       width: 150,
                       charsToShow: 10,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontSize: 12,
+                      ),
                     ),
                   ),
                   SelectableText(
                     quantityRemoveTrailingZeros(entry.quantityNormalized),
-                    style: Theme.of(context).textTheme.bodyMedium,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                 ],
               ),
@@ -716,6 +736,23 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
     );
   }
 
+  Widget _subPageBoxShell(Widget child) {
+    final customTheme = Theme.of(context).extension<CustomThemeExtension>();
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        border: Border.all(color: transparentWhite8),
+        color: customTheme?.bgBlackOrWhite ?? black,
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(10),
+          topRight: Radius.circular(10),
+        ),
+      ),
+      margin: const EdgeInsets.only(top: 10, left: 10, right: 10),
+      child: child,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<AssetViewBloc, RemoteDataState<AssetViewData>>(
@@ -723,7 +760,7 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
         // TODO: implement listener
       },
       builder: (context, state) {
-        return state.when(
+        return _subPageBoxShell(state.when(
           initial: () => const SizedBox.shrink(),
           loading: () => Column(
             children: [
@@ -757,7 +794,7 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
               ],
             );
           },
-        );
+        ));
       },
     );
   }

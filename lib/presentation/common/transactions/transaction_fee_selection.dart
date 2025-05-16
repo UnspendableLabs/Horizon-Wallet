@@ -91,39 +91,24 @@ class _TransactionFeeSelectionState extends State<TransactionFeeSelection> {
               ],
             ),
             const SizedBox(height: 12),
-            MouseRegion(
-              cursor: widget.loading
-                  ? SystemMouseCursors.basic
-                  : SystemMouseCursors.click,
-              child: GestureDetector(
-                onTap: widget.loading
-                    ? null
-                    : () {
-                        setState(() {
-                          _showCustomFeeInput = true;
-                          if (widget.selectedFeeOption is! Custom) {
-                            widget.onFeeOptionSelected(Custom(0));
-                          }
-                        });
-                      },
-                child: Container(
-                  height: 32,
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12),
-                    color: transparentPurple8,
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Text(
-                        'Custom Fee',
-                        style: textTheme.bodySmall?.copyWith(
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
+            Center(
+              child: HorizonButton(
+                width: 92,
+                height: 32,
+                borderRadius: 12,
+                variant: ButtonVariant.purple,
+                onPressed: () {
+                  setState(() {
+                    _showCustomFeeInput = true;
+                    if (widget.selectedFeeOption is! Custom) {
+                      widget.onFeeOptionSelected(Custom(0));
+                    }
+                  });
+                },
+                child: TextButtonContent(
+                  value: 'Custom Fee',
+                  style: textTheme.bodySmall?.copyWith(
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ),

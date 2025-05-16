@@ -12,6 +12,7 @@ abstract class Config {
   String get esploraBase;
   // String get blockCypherBase;
   String get horizonExplorerBase;
+  String get horizonExplorerApiBase;
   String get btcExplorerBase;
   bool get isDatabaseViewerEnabled;
   bool get isAnalyticsEnabled;

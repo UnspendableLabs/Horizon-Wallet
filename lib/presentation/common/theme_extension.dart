@@ -8,6 +8,11 @@ class CustomThemeExtension extends ThemeExtension<CustomThemeExtension> {
   final Color inputTextColor;
   final Color errorColor;
   final Color errorBackgroundColor;
+  final Color settingsItemBackground;
+  final Color bgBlackOrWhite;
+  final Color mutedDescriptionTextColor;
+  final TextStyle number50Regular;
+  final TextStyle number35Regular;
 
   const CustomThemeExtension({
     required this.inputBackground,
@@ -16,6 +21,11 @@ class CustomThemeExtension extends ThemeExtension<CustomThemeExtension> {
     required this.inputTextColor,
     required this.errorColor,
     required this.errorBackgroundColor,
+    required this.settingsItemBackground,
+    required this.bgBlackOrWhite,
+    required this.mutedDescriptionTextColor,
+    required this.number50Regular,
+    required this.number35Regular,
   });
 
   static const light = CustomThemeExtension(
@@ -25,6 +35,21 @@ class CustomThemeExtension extends ThemeExtension<CustomThemeExtension> {
     inputTextColor: Colors.black,
     errorColor: red1,
     errorBackgroundColor: transparentRed16,
+    settingsItemBackground: transparentWhite66,
+    bgBlackOrWhite: white,
+    mutedDescriptionTextColor: transparentBlack33,
+    number50Regular: TextStyle(
+      fontSize: 50,
+      fontWeight: FontWeight.w400,
+      color: Colors.black,
+      fontFamily: 'Lato',
+    ),
+    number35Regular: TextStyle(
+      fontFamily: 'Lato',
+      fontSize: 35,
+      fontWeight: FontWeight.w400,
+      color: Colors.black
+    )
   );
 
   static const dark = CustomThemeExtension(
@@ -34,6 +59,21 @@ class CustomThemeExtension extends ThemeExtension<CustomThemeExtension> {
     inputTextColor: Colors.white,
     errorColor: red1,
     errorBackgroundColor: transparentRed2,
+    settingsItemBackground: transparentBlack66,
+    bgBlackOrWhite: black,
+    mutedDescriptionTextColor: transparentWhite33,
+    number50Regular: TextStyle(
+      fontSize: 50,
+      fontWeight: FontWeight.w400,
+      color: Colors.white,
+      fontFamily: 'Lato',
+    ),
+    number35Regular: TextStyle(
+      fontFamily: 'Lato',
+      fontSize: 35,
+      color: Colors.white,
+      fontWeight: FontWeight.w400,
+    )
   );
 
   @override
@@ -44,6 +84,8 @@ class CustomThemeExtension extends ThemeExtension<CustomThemeExtension> {
     Color? inputTextColor,
     Color? errorColor,
     Color? errorBackgroundColor,
+    Color? settingsItemBackground,
+    Color? bgBlackOrWhite,
   }) {
     return CustomThemeExtension(
       inputBackground: inputBackground ?? this.inputBackground,
@@ -52,6 +94,13 @@ class CustomThemeExtension extends ThemeExtension<CustomThemeExtension> {
       inputTextColor: inputTextColor ?? this.inputTextColor,
       errorColor: errorColor ?? this.errorColor,
       errorBackgroundColor: errorBackgroundColor ?? this.errorBackgroundColor,
+      settingsItemBackground:
+          settingsItemBackground ?? this.settingsItemBackground,
+      bgBlackOrWhite: bgBlackOrWhite ?? this.bgBlackOrWhite,
+      mutedDescriptionTextColor:
+          mutedDescriptionTextColor,
+      number50Regular: number50Regular,
+      number35Regular: number35Regular,
     );
   }
 
@@ -73,6 +122,14 @@ class CustomThemeExtension extends ThemeExtension<CustomThemeExtension> {
       errorColor: Color.lerp(errorColor, other.errorColor, t)!,
       errorBackgroundColor:
           Color.lerp(errorBackgroundColor, other.errorBackgroundColor, t)!,
+      settingsItemBackground:
+          Color.lerp(settingsItemBackground, other.settingsItemBackground, t)!,
+      bgBlackOrWhite:
+          Color.lerp(bgBlackOrWhite, other.bgBlackOrWhite, t)!,
+      mutedDescriptionTextColor:
+          Color.lerp(mutedDescriptionTextColor, other.mutedDescriptionTextColor, t)!,
+      number50Regular: number50Regular,
+      number35Regular: number35Regular,
     );
   }
 }

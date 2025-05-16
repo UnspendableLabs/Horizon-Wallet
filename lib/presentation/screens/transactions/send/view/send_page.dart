@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 // import 'package:horizon/common/format.dart' as form;
@@ -9,7 +10,9 @@ import 'package:horizon/domain/entities/multi_address_balance_entry.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
+import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/common/shared_util.dart';
+import 'package:horizon/presentation/common/theme_extension.dart';
 import 'package:horizon/presentation/common/transaction_stepper/bloc/transaction_event.dart';
 import 'package:horizon/presentation/common/transaction_stepper/bloc/transaction_state.dart';
 import 'package:horizon/presentation/common/transaction_stepper/view/steps/transaction_form_page.dart';
@@ -28,6 +31,7 @@ import 'package:horizon/presentation/screens/transactions/send/bloc/send_event.d
 import 'package:horizon/presentation/common/transactions/quantity_display.dart';
 import 'package:horizon/domain/entities/compose_send.dart';
 import 'package:horizon/presentation/common/transaction_stepper/view/steps/transaction_compose_page.dart';
+import 'package:horizon/utils/app_icons.dart';
 
 class SendPage extends StatefulWidget {
   final String assetName;
@@ -85,6 +89,7 @@ class _SendPageState extends State<SendPage> {
 
   @override
   Widget build(BuildContext context) {
+    final customTheme = Theme.of(context).extension<CustomThemeExtension>();
     return BlocProvider(
       create: (context) => SendBloc(
         balanceRepository: GetIt.I<BalanceRepository>(),
@@ -102,10 +107,11 @@ class _SendPageState extends State<SendPage> {
           TransactionState<SendData, ComposeSendResponse>>(
         listener: (context, state) {},
         builder: (context, state) {
+          final isDarkMode = Theme.of(context).brightness == Brightness.dark;
           return Scaffold(
             body: TransactionStepper<SendData, ComposeSendResponse>(
               formStepContent: FormStepContent<SendData>(
-                title: 'Enter Send Details',
+                title: 'Recipient & Quantity',
                 formKey: _formKey,
                 onNext: () => _handleOnFormStepNext(context, state),
                 onFeeOptionSelected: (feeOption) =>
@@ -143,6 +149,37 @@ class _SendPageState extends State<SendPage> {
                           enabled: !loading,
                           controller: destinationAddressController,
                           label: 'Destination Address',
+                          suffixIcon: SizedBox(
+                            height: 32,
+                            width: 86,
+                            child: HorizonButton(
+                              borderRadius: 12,
+                              variant: ButtonVariant.purple,
+                              onPressed: () {
+                                Clipboard.getData(Clipboard.kTextPlain)
+                                    .then((value) {
+                                  if (value?.text != null &&
+                                      value!.text!.trim().isNotEmpty) {
+                                    destinationAddressController.text =
+                                        value.text!;
+                                  }
+                                });
+                              },
+                              icon: AppIcons.pasteIcon(
+                                context: context,
+                                width: 24,
+                                height: 24,
+                              ),
+                              child: TextButtonContent(
+                                  value: "Paste",
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .labelMedium!
+                                      .copyWith(
+                                        fontWeight: FontWeight.w500,
+                                      )),
+                            ),
+                          ),
                           validator: (value) {
                             if (value == null || value.isEmpty) {
                               return 'Please enter a destination address';
@@ -155,11 +192,39 @@ class _SendPageState extends State<SendPage> {
                           loading: loading,
                           balance: balances,
                           selectedBalanceEntry: selectedBalanceEntry,
+                          suffixIcon: GestureDetector(
+                            onTap: () {
+                              quantityController.text =
+                                  quantityRemoveTrailingZeros(
+                                      selectedBalanceEntry!.quantityNormalized);
+                            },
+                            child: Container(
+                              height: 24,
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 8),
+                              decoration: BoxDecoration(
+                                color: isDarkMode
+                                    ? transparentYellow8
+                                    : transparentPurple33,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Center(
+                                child: Text(
+                                  'Max',
+                                  style: TextStyle(
+                                    fontSize: 9,
+                                    fontWeight: FontWeight.w400,
+                                    color: isDarkMode ? yellow1 : duskGradient2,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
                         ),
                         commonHeightSizedBox,
                         GradientQuantityInput(
                           enabled: !loading,
-                          showMaxButton: true,
+                          showMaxButton: false,
                           balance: balances,
                           selectedBalanceEntry: selectedBalanceEntry,
                           controller: quantityController,
@@ -208,7 +273,17 @@ class _SendPageState extends State<SendPage> {
                           {ComposeStateSuccess<ComposeSendResponse>?
                               composeState,
                           required bool loading}) =>
-                      Column(
+                      Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(18),
+                          border: Border.all(
+                            color: transparentWhite8,
+                            width: 1
+                          ),
+                          color: customTheme?.bgBlackOrWhite ?? black
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 20),
+                        child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       QuantityDisplay(
@@ -240,7 +315,8 @@ class _SendPageState extends State<SendPage> {
                         value: composeState?.composeData.params.destination,
                       ),
                     ],
-                  ),
+                  )
+                      ),
                 ),
                 onNext: ({dynamic decryptionStrategy}) =>
                     _handleConfirmationStepNext(context,
