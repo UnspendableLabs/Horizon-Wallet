@@ -82,7 +82,7 @@ class _PortfolioViewState extends State<PortfolioView>
       (cubit) => cubit.state.successOrThrow(),
     );
     final List<String> addresses =
-        context.read<SessionStateCubit>().state.allAddresses;
+        context.watch<SessionStateCubit>().state.allAddresses;
     final addressesKey = addresses.join(",");
 
     return MultiBlocProvider(
