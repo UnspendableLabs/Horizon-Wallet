@@ -12,6 +12,7 @@ class MultiAddressBalanceDropdown extends StatelessWidget {
   final MultiAddressBalanceEntry? selectedValue;
   final bool loading;
   final bool useModal;
+  final Widget Function(MultiAddressBalanceEntry)? selectedItemBuilder;
 
   const MultiAddressBalanceDropdown({
     super.key,
@@ -20,6 +21,7 @@ class MultiAddressBalanceDropdown extends StatelessWidget {
     required this.selectedValue,
     required this.loading,
     this.useModal = true,
+    this.selectedItemBuilder,
   });
 
   @override
@@ -83,10 +85,11 @@ class MultiAddressBalanceDropdown extends StatelessWidget {
       onChanged: onChanged,
       selectedValue: selectedValue,
       hintText: 'Select source address',
-      selectedItemBuilder: (addressEntry) => Text(
-        addressEntry.address!,
-        style: Theme.of(context).textTheme.bodySmall,
-      ),
+      selectedItemBuilder: selectedItemBuilder ??
+          (addressEntry) => Text(
+                addressEntry.address!,
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
     );
   }
 }

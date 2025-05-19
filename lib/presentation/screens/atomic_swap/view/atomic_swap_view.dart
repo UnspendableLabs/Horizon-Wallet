@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:horizon/presentation/common/steps_indicator.dart';
+import 'package:horizon/presentation/screens/atomic_swap/forms/choose_address.dart';
+import 'package:horizon/presentation/screens/atomic_swap/forms/swap_compose.dart';
 import 'package:horizon/presentation/screens/atomic_swap/forms/token_selection.dart';
 import 'package:horizon/utils/app_icons.dart';
 
 class AtomicSwapView extends StatefulWidget {
-  final int _currentStep = 0;
   const AtomicSwapView({super.key});
 
   @override
@@ -13,6 +14,7 @@ class AtomicSwapView extends StatefulWidget {
 }
 
 class _AtomicSwapViewState extends State<AtomicSwapView> {
+  int _currentStep = 1;
   Widget _buildAppBar() {
     return Column(
       children: [
@@ -24,14 +26,23 @@ class _AtomicSwapViewState extends State<AtomicSwapView> {
             children: [
               IconButton(
                 onPressed: () {
-                  context.pop();
+                  _currentStep == 1 ? context.pop() : setState(() {
+                    _currentStep--;
+                  });
                 },
-                icon: AppIcons.closeIcon(
-                  context: context,
-                  width: 24,
-                  height: 24,
-                  fit: BoxFit.fitHeight,
-                ),
+                icon: _currentStep == 1
+                    ? AppIcons.closeIcon(
+                        context: context,
+                        width: 24,
+                        height: 24,
+                        fit: BoxFit.fitHeight,
+                      )
+                    : AppIcons.backArrowIcon(
+                        context: context,
+                        width: 24,
+                        height: 24,
+                        fit: BoxFit.fitHeight,
+                      ),
               ),
             ],
           ),
@@ -39,16 +50,49 @@ class _AtomicSwapViewState extends State<AtomicSwapView> {
         Container(
           padding: const EdgeInsets.fromLTRB(0, 16, 0, 32),
           // TODO: control steps progress here 0.0 to 1.0
-          child: const StepsIndicator(progress: 0.5),
+          child: StepsIndicator(progress: (_currentStep) / 4),
         )
       ],
     );
   }
 
   Widget _buildBody() {
-    switch (widget._currentStep) {
-      case 0:
-        return const TokenSelectionForm();
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 300),
+      transitionBuilder: (Widget child, Animation<double> animation) {
+        return FadeTransition(
+          opacity: animation,
+          child: child,
+        );
+      },
+      child: _buildCurrentStep(),
+    );
+  }
+
+  Widget _buildCurrentStep() {
+    switch (_currentStep) {
+      case 1:
+        return SwapFormTokenSelection(
+          key: const ValueKey(1),
+          onNextStep: (fromToken, toToken) {
+            setState(() {
+              _currentStep++;
+            });
+          },
+        );
+      case 2:
+        return SwapFormChooseAddress(
+          key: const ValueKey(2),
+          onNextStep: (address) {
+            setState(() {
+              _currentStep++;
+            });
+          },
+        );
+      case 3:
+        return const SwapFormCompose(
+          key: ValueKey(3),
+        );
       default:
         return const SizedBox.shrink();
     }
@@ -61,7 +105,7 @@ class _AtomicSwapViewState extends State<AtomicSwapView> {
       body: Column(
         children: [
           _buildAppBar(),
-          _buildBody(),
+          Expanded(child: _buildBody()),
         ],
       ),
     );

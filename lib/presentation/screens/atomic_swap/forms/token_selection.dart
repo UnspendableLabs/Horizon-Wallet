@@ -7,14 +7,15 @@ import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 import 'package:horizon/utils/app_icons.dart';
 
-class TokenSelectionForm extends StatefulWidget {
-  const TokenSelectionForm({super.key});
+class SwapFormTokenSelection extends StatefulWidget {
+  final Function(MultiAddressBalance, MultiAddressBalance) onNextStep;
+  const SwapFormTokenSelection({super.key, required this.onNextStep});
 
   @override
-  State<TokenSelectionForm> createState() => _TokenSelectionFormState();
+  State<SwapFormTokenSelection> createState() => _SwapFormTokenSelectionState();
 }
 
-class _TokenSelectionFormState extends State<TokenSelectionForm> {
+class _SwapFormTokenSelectionState extends State<SwapFormTokenSelection> {
   MultiAddressBalance? _fromToken;
   MultiAddressBalance? _toToken;
   final List<MultiAddressBalance> fakeTokens = [
@@ -163,8 +164,11 @@ class _TokenSelectionFormState extends State<TokenSelectionForm> {
             height: 24,
           ),
           HorizonButton(
-              onPressed: () {},
-              child: TextButtonContent(value: "Create Listing"),
+              onPressed: () {
+                widget.onNextStep(_fromToken!, _toToken!);
+              },
+              disabled: _fromToken == null || _toToken == null,
+              child: TextButtonContent(value: "Swap"),
               variant: ButtonVariant.green)
         ],
       ),

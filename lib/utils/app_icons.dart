@@ -59,6 +59,9 @@ class AppIcons {
   static const String btc = '$_iconPath/btc.svg';
   static const String paste = '$_iconPath/paste_squares.svg';
   static const String arrowDown = '$_iconPath/arrow_down.svg';
+  static const String plusCircle = '$_iconPath/plus_circle.svg';
+  static const String successCheck = '$_iconPath/txn_success_check.svg';
+
 
   static Widget getIcon(
     String iconPath, {
@@ -609,6 +612,40 @@ class AppIcons {
   }) {
     return getIcon(
       check,
+      context: context,
+      width: width,
+      height: height,
+      color: color,
+      fit: fit,
+    );
+  }
+
+  static Widget checkCircleIcon({
+    required BuildContext context,
+    double? width,
+    double? height,
+    Color? color,
+    BoxFit fit = BoxFit.contain,
+  }) {
+    return getIcon(
+      successCheck,
+      context: context,
+      width: width,
+      height: height,
+      color: color,
+      fit: fit,
+    );
+  }
+
+  static Widget plusCircleIcon({
+    required BuildContext context,
+    double? width,
+    double? height,
+    Color? color,
+    BoxFit fit = BoxFit.contain,
+  }) {
+    return getIcon(
+      plusCircle,
       context: context,
       width: width,
       height: height,

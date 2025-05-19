@@ -33,6 +33,7 @@ const transparentIvory = Color.fromRGBO(202, 206, 250, 0.96);
 // Import button colors
 const black = Color(0xFF000000);
 const white = Color(0xFFEAEAEA);
+const green1 = Color(0xFF9DE7CF);
 const green2 = Color(0xFF1EE7C5);
 const green3 = Color(0xFF0CAE92);
 
