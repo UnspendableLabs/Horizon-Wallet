@@ -6,13 +6,11 @@ import 'package:horizon/domain/entities/http_config.dart';
 import 'package:horizon/domain/entities/account_v2.dart';
 import 'package:horizon/domain/entities/address_v2.dart';
 import 'package:horizon/domain/entities/wallet_config.dart';
-import 'package:horizon/domain/entities/imported_address.dart';
 // import 'package:horizon/domain/entities/wallet.dart';
 // import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/account_v2_repository.dart';
 import 'package:horizon/domain/repositories/address_v2_repository.dart';
 import 'package:horizon/domain/repositories/mnemonic_repository.dart';
-import 'package:horizon/domain/repositories/imported_address_repository.dart';
 // import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/repositories/settings_repository.dart';
 import 'package:horizon/domain/repositories/wallet_config_repository.dart';
@@ -78,7 +76,6 @@ class SessionStateCubit extends Cubit<SessionState> {
   final WalletConfigRepository _walletConfigRepository;
   final AccountV2Repository _accountV2Repository;
   final AddressV2Repository _addressV2Repository;
-  ImportedAddressRepository importedAddressRepository;
   AnalyticsService analyticsService;
   InMemoryKeyRepository inMemoryKeyRepository;
   final EncryptionService encryptionService;
@@ -95,7 +92,6 @@ class SessionStateCubit extends Cubit<SessionState> {
     WalletConfigRepository? walletConfigRepository,
     AccountV2Repository? accountV2Repository,
     AddressV2Repository? addressV2Repository,
-    required this.importedAddressRepository,
     required this.analyticsService,
     required this.inMemoryKeyRepository,
     required this.encryptionService,

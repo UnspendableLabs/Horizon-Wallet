@@ -40,7 +40,6 @@ class ImportedWIF extends AccountV2 {
 
   @override
   String get hash {
-    // never: add encrypted wif here
     final input = jsonEncode({
       'address': address,
       'network': network.name,

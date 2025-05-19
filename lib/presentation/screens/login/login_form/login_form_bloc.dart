@@ -116,7 +116,9 @@ class LoginFormBloc extends Bloc<FormEvent, FormState> {
       for (var importedAddress in importedAddresses) {
         String decryptionKey = await encryptionService.getDecryptionKey(
             importedAddress.encryptedWif, password);
-        importedAddressMap[importedAddress.address] = decryptionKey;
+        // TODO: 100% need to valitate that this works
+        // importedAddressMap[importedAddress.address] = decryptionKey;
+        importedAddressMap[importedAddress.encryptedWif] = decryptionKey;
       }
 
       await inMemoryKeyRepository.setMap(map: importedAddressMap);

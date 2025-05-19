@@ -2,7 +2,9 @@ import "package:horizon/data/models/imported_address.dart";
 import "package:horizon/data/sources/local/dao/imported_addresses_dao.dart";
 import "package:horizon/data/sources/local/db.dart" as local;
 import "package:horizon/domain/entities/imported_address.dart" as entity;
+import "package:horizon/domain/entities/network.dart";
 import "package:horizon/domain/repositories/imported_address_repository.dart";
+import 'package:horizon/extensions.dart';
 
 class ImportedAddressRepositoryImpl implements ImportedAddressRepository {
   // ignore: unused_field
@@ -15,32 +17,27 @@ class ImportedAddressRepositoryImpl implements ImportedAddressRepository {
   @override
   Future<void> insert(entity.ImportedAddress address) async {
     await _importedAddressDao.insertImportedAddress(ImportedAddressModel(
-        address: address.address,
-        name: address.name,
-        encryptedWif: address.encryptedWif));
+        encryptedWif: address.encryptedWif, network: address.network.name));
   }
 
   @override
   Future<void> insertMany(List<entity.ImportedAddress> addresses) async {
     List<ImportedAddressModel> addresses_ = addresses
         .map((a) => ImportedAddressModel(
-            address: a.address, name: a.name, encryptedWif: a.encryptedWif))
+            encryptedWif: a.encryptedWif, network: a.network.name))
         .toList();
 
     _importedAddressDao.insertMultipleImportedAddresses(addresses_);
   }
 
-  @override
-  Future<entity.ImportedAddress?> getImportedAddress(String address) async {
-    ImportedAddressModel? addressModel =
-        await _importedAddressDao.getImportedAddress(address);
-    return addressModel != null
-        ? entity.ImportedAddress(
-            address: addressModel.address,
-            name: addressModel.name,
-            encryptedWif: addressModel.encryptedWif)
-        : null;
-  }
+  // @override
+  // Future<entity.ImportedAddress?> getImportedAddress(String address) async {
+  //   ImportedAddressModel? addressModel =
+  //       await _importedAddressDao.getImportedAddress(address);
+  //   return addressModel != null
+  //       ? entity.ImportedAddress(encryptedWif: addressModel.encryptedWif)
+  //       : null;
+  // }
 
   @override
   Future<void> deleteAllImportedAddresses() async {
@@ -53,7 +50,8 @@ class ImportedAddressRepositoryImpl implements ImportedAddressRepository {
         await _importedAddressDao.getAllImportedAddresses();
     return importedAddresses
         .map((a) => entity.ImportedAddress(
-            address: a.address, name: a.name, encryptedWif: a.encryptedWif))
+            encryptedWif: a.encryptedWif,
+            network: NetworkX.fromString(a.network).getOrThrow()))
         .toList();
   }
 }

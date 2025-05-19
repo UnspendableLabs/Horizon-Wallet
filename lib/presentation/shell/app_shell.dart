@@ -135,7 +135,6 @@ class GetAddressesModal extends StatelessWidget {
         importedAddressService: importedAddressService,
         addressService: addressService,
         accounts: session.accounts,
-        importedAddressRepository: importedAddressRepository,
       ),
       child: GetAddressesForm(
         passwordRequired:

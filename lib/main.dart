@@ -968,7 +968,7 @@ class MyApp extends StatelessWidget {
               // walletRepository: GetIt.I<WalletRepository>(),
               // accountRepository: GetIt.I<AccountRepository>(),
               // addressRepository: GetIt.I<AddressRepository>(),
-              importedAddressRepository: GetIt.I<ImportedAddressRepository>(),
+              // importedAddressRepository: GetIt.I<ImportedAddressRepository>(),
               analyticsService: GetIt.I<AnalyticsService>())
             ..initialize(),
         ),

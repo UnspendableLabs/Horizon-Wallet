@@ -56,11 +56,13 @@ class ImportAddressPkBloc
                   onError: (_, __) => "Invalid password",
                 )));
 
-        final address = await $(_importedAddressService.getAddressFromWIFT(
+        // this is a good check to make sure that network and
+        // wif are compatible
+        await $(_importedAddressService.getAddressFromWIFT(
             wif: event.wif,
             format: event.format,
             network: httpConfig.network,
-            onError: (_, __) => "Error importing WIF"));
+            onError: (err, __) => "Error importing WIF: $err"));
 
         final encryptedWIF = await $(_encryptionService.encryptT(
             data: event.wif,
@@ -77,25 +79,25 @@ class ImportAddressPkBloc
               onError: (_, __) => "Error getting in-memory key map",
             )
             .flatMap((map) => _inMemoryKeyRepository.setMapT(
-                  map: {...map, address: decryptionKey},
+                  // TODO: make sure this lookup is consistent everywhere
+                  map: {...map, encryptedWIF: decryptionKey},
                   onError: (_, __) => "Error setting in-memory key map",
                 )));
 
+        // TODO: we want to actualy store the format here
         await $(
           _importedAddressRepository.insertT(
             address: ImportedAddress(
-              address: address,
               encryptedWif: encryptedWIF,
-              name: event.name,
+              network: httpConfig.network,
             ),
             onError: (_, __) => "Error saving imported address",
           ),
         );
 
         return ImportedAddress(
-          address: address,
           encryptedWif: encryptedWIF,
-          name: event.name,
+          network: httpConfig.network,
         );
       });
 

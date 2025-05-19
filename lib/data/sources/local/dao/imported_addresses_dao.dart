@@ -13,9 +13,9 @@ class ImportedAddressesDao extends DatabaseAccessor<DB>
   Future<List<ImportedAddress>> getAllImportedAddresses() =>
       select(importedAddresses).get();
 
-  Future<ImportedAddress?> getImportedAddress(String address) =>
-      (select(importedAddresses)..where((tbl) => tbl.address.equals(address)))
-          .getSingleOrNull();
+  // Future<ImportedAddress?> getImportedAddress(String address) =>
+  //     (select(importedAddresses)..where((tbl) => tbl.address.equals(address)))
+  //         .getSingleOrNull();
 
   Future<int> insertImportedAddress(ImportedAddressModel address) {
     return into(importedAddresses).insert(address);

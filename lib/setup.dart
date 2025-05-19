@@ -97,10 +97,6 @@ import 'package:horizon/data/sources/repositories/fee_estimates_repository_mempo
 
 import 'package:horizon/data/sources/network/mempool_space_client.dart';
 
-import 'package:horizon/domain/repositories/unified_address_repository.dart';
-import 'package:horizon/data/sources/repositories/unified_address_repository_impl.dart';
-
-
 import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/data/services/analytics_service_impl.dart';
 import 'package:horizon/presentation/common/usecase/set_mnemonic_usecase.dart';
@@ -384,29 +380,22 @@ void setup() {
   injector.registerSingleton<ImportedAddressRepository>(
       ImportedAddressRepositoryImpl(injector.get<DatabaseManager>().database));
 
-  injector.registerSingleton<AccountV2Repository>(
-      AccountV2RepositoryImpl(injector.get<DatabaseManager>().database));
-
   injector.registerSingleton<SecureKVService>(
       SecureKVServiceImpl(const FlutterSecureStorage()));
-
-  injector.registerSingleton<MnemonicRepository>(
-      MnemonicRepositoryImpl(secureKVService: GetIt.I<SecureKVService>()));
 
   injector.registerSingleton<InMemoryKeyRepository>(InMemoryKeyRepositoryImpl(
     secureKVService: GetIt.I.get<SecureKVService>(),
   ));
 
+  injector.registerSingleton<AccountV2Repository>(
+      AccountV2RepositoryImpl(injector.get<DatabaseManager>().database));
+
+  injector.registerSingleton<MnemonicRepository>(
+      MnemonicRepositoryImpl(secureKVService: GetIt.I<SecureKVService>()));
+
   injector.registerSingleton<AddressRepositoryDeprecated>(AddressRepositoryImpl(
     injector.get<DatabaseManager>().database,
   ));
-
-  injector.registerSingleton<UnifiedAddressRepository>(
-    UnifiedAddressRepositoryImpl(
-      addressRepository: GetIt.I.get<AddressRepositoryDeprecated>(),
-      importedAddressRepository: GetIt.I.get<ImportedAddressRepository>(),
-    ),
-  );
 
   injector.registerSingleton<OrderRepository>(OrderRepositoryImpl());
 
@@ -617,8 +606,7 @@ void setup() {
       inMemoryKeyRepository: GetIt.I<InMemoryKeyRepository>(),
       mnemonicRepository: GetIt.I<MnemonicRepository>()));
 
-  injector.registerSingleton<AddressV2Repository>(
-      AddressV2RepositoryImpl(injector.get<DatabaseManager>().database));
+  injector.registerSingleton<AddressV2Repository>(AddressV2RepositoryImpl());
 
   injector.registerSingleton<SessionStateCubit>(SessionStateCubit(
       kvService: GetIt.I<SecureKVService>(),
@@ -628,7 +616,7 @@ void setup() {
       // walletRepository: GetIt.I<WalletRepository>(),
       // accountRepository: GetIt.I<AccountRepository>(),
       // addressRepository: GetIt.I<AddressRepository>(),
-      importedAddressRepository: GetIt.I<ImportedAddressRepository>(),
+      // importedAddressRepository: GetIt.I<ImportedAddressRepository>(),
       analyticsService: GetIt.I<AnalyticsService>()));
 }
 
