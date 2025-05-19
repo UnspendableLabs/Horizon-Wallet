@@ -53,8 +53,8 @@ class IconItemButton extends StatelessWidget {
                     child: Text(
                       title,
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        fontWeight: FontWeight.w500,
-                      ),
+                            fontWeight: FontWeight.w500,
+                          ),
                     ),
                   ),
                 ],

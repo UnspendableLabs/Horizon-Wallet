@@ -22,20 +22,19 @@ class _AtomicSwapViewState extends State<AtomicSwapView> {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-            IconButton(
-              
-              onPressed: () {
-                context.pop();
-              },
-              icon: AppIcons.closeIcon(
-                context: context,
-                width: 24,
-                height: 24,
-                fit: BoxFit.fitHeight,
+              IconButton(
+                onPressed: () {
+                  context.pop();
+                },
+                icon: AppIcons.closeIcon(
+                  context: context,
+                  width: 24,
+                  height: 24,
+                  fit: BoxFit.fitHeight,
+                ),
               ),
-            ),
-          ],
-        ),
+            ],
+          ),
         ),
         Container(
           padding: const EdgeInsets.fromLTRB(0, 16, 0, 32),
@@ -49,7 +48,7 @@ class _AtomicSwapViewState extends State<AtomicSwapView> {
   Widget _buildBody() {
     switch (widget._currentStep) {
       case 0:
-        return TokenSelectionForm();
+        return const TokenSelectionForm();
       default:
         return const SizedBox.shrink();
     }

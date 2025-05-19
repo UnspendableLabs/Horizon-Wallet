@@ -29,52 +29,49 @@ class CustomThemeExtension extends ThemeExtension<CustomThemeExtension> {
   });
 
   static const light = CustomThemeExtension(
-    inputBackground: grey1,
-    inputBackgroundEmpty: offWhite,
-    inputBorderColor: transparentBlack8,
-    inputTextColor: Colors.black,
-    errorColor: red1,
-    errorBackgroundColor: transparentRed16,
-    settingsItemBackground: transparentWhite66,
-    bgBlackOrWhite: white,
-    mutedDescriptionTextColor: transparentBlack33,
-    number50Regular: TextStyle(
-      fontSize: 50,
-      fontWeight: FontWeight.w400,
-      color: Colors.black,
-      fontFamily: 'Lato',
-    ),
-    number35Regular: TextStyle(
-      fontFamily: 'Lato',
-      fontSize: 35,
-      fontWeight: FontWeight.w400,
-      color: Colors.black
-    )
-  );
+      inputBackground: grey1,
+      inputBackgroundEmpty: offWhite,
+      inputBorderColor: transparentBlack8,
+      inputTextColor: Colors.black,
+      errorColor: red1,
+      errorBackgroundColor: transparentRed16,
+      settingsItemBackground: transparentWhite66,
+      bgBlackOrWhite: white,
+      mutedDescriptionTextColor: transparentBlack33,
+      number50Regular: TextStyle(
+        fontSize: 50,
+        fontWeight: FontWeight.w400,
+        color: Colors.black,
+        fontFamily: 'Lato',
+      ),
+      number35Regular: TextStyle(
+          fontFamily: 'Lato',
+          fontSize: 35,
+          fontWeight: FontWeight.w400,
+          color: Colors.black));
 
   static const dark = CustomThemeExtension(
-    inputBackground: grey5,
-    inputBackgroundEmpty: offBlack,
-    inputBorderColor: transparentWhite8,
-    inputTextColor: Colors.white,
-    errorColor: red1,
-    errorBackgroundColor: transparentRed2,
-    settingsItemBackground: transparentBlack66,
-    bgBlackOrWhite: black,
-    mutedDescriptionTextColor: transparentWhite33,
-    number50Regular: TextStyle(
-      fontSize: 50,
-      fontWeight: FontWeight.w400,
-      color: Colors.white,
-      fontFamily: 'Lato',
-    ),
-    number35Regular: TextStyle(
-      fontFamily: 'Lato',
-      fontSize: 35,
-      color: Colors.white,
-      fontWeight: FontWeight.w400,
-    )
-  );
+      inputBackground: grey5,
+      inputBackgroundEmpty: offBlack,
+      inputBorderColor: transparentWhite8,
+      inputTextColor: Colors.white,
+      errorColor: red1,
+      errorBackgroundColor: transparentRed2,
+      settingsItemBackground: transparentBlack66,
+      bgBlackOrWhite: black,
+      mutedDescriptionTextColor: transparentWhite33,
+      number50Regular: TextStyle(
+        fontSize: 50,
+        fontWeight: FontWeight.w400,
+        color: Colors.white,
+        fontFamily: 'Lato',
+      ),
+      number35Regular: TextStyle(
+        fontFamily: 'Lato',
+        fontSize: 35,
+        color: Colors.white,
+        fontWeight: FontWeight.w400,
+      ));
 
   @override
   ThemeExtension<CustomThemeExtension> copyWith({
@@ -97,8 +94,7 @@ class CustomThemeExtension extends ThemeExtension<CustomThemeExtension> {
       settingsItemBackground:
           settingsItemBackground ?? this.settingsItemBackground,
       bgBlackOrWhite: bgBlackOrWhite ?? this.bgBlackOrWhite,
-      mutedDescriptionTextColor:
-          mutedDescriptionTextColor,
+      mutedDescriptionTextColor: mutedDescriptionTextColor,
       number50Regular: number50Regular,
       number35Regular: number35Regular,
     );
@@ -124,10 +120,9 @@ class CustomThemeExtension extends ThemeExtension<CustomThemeExtension> {
           Color.lerp(errorBackgroundColor, other.errorBackgroundColor, t)!,
       settingsItemBackground:
           Color.lerp(settingsItemBackground, other.settingsItemBackground, t)!,
-      bgBlackOrWhite:
-          Color.lerp(bgBlackOrWhite, other.bgBlackOrWhite, t)!,
-      mutedDescriptionTextColor:
-          Color.lerp(mutedDescriptionTextColor, other.mutedDescriptionTextColor, t)!,
+      bgBlackOrWhite: Color.lerp(bgBlackOrWhite, other.bgBlackOrWhite, t)!,
+      mutedDescriptionTextColor: Color.lerp(
+          mutedDescriptionTextColor, other.mutedDescriptionTextColor, t)!,
       number50Regular: number50Regular,
       number35Regular: number35Regular,
     );

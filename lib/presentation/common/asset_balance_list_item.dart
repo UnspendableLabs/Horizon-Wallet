@@ -12,8 +12,7 @@ class AssetBalanceListItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final appIcons = AppIcons();
-            final session =
-                context.watch<SessionStateCubit>().state.successOrThrow();
+    final session = context.watch<SessionStateCubit>().state.successOrThrow();
     return Row(
       children: [
         appIcons.assetIcon(

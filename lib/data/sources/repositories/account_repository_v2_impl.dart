@@ -83,34 +83,33 @@ class AccountV2RepositoryImpl implements AccountV2Repository {
 
       List<TaskEither<String, ImportedWIF>> tasks = importedAddresses
           .map((address) => _inMemoryKeyRepository
-              .getMapT(
-                  onError: (_, __) =>
-                      "invariant: failed to read in memory key map")
-              .flatMap((map) => TaskEither.fromOption(
-                  Option.fromNullable(map[address.encryptedWif]),
-                  () => "invariant: key not found"))
-              .flatMap((key) => _encryptionService.decryptWithKeyT(
-                  data: address.encryptedWif,
-                  key: key,
-                  onError: (_, __) => "invariant: failed to decrypt WIF"))
-              .flatMap(
-                  (wif) { 
+                  .getMapT(
+                      onError: (_, __) =>
+                          "invariant: failed to read in memory key map")
+                  .flatMap((map) => TaskEither.fromOption(
+                      Option.fromNullable(map[address.encryptedWif]),
+                      () => "invariant: key not found"))
+                  .flatMap((key) => _encryptionService.decryptWithKeyT(
+                      data: address.encryptedWif,
+                      key: key,
+                      onError: (_, __) => "invariant: failed to decrypt WIF"))
+                  .flatMap((wif) {
+                print("wif: $wif");
+                print("network: $network");
 
-                    print("wif: $wif");
-                    print("network: $network");
-
-                    return _importedAddressService.getAddressFromWIFT<String>(
-                      wif: wif,
-                      // TODO: obviously format needs to be dynamic
-                      format: ImportAddressPkFormat.segwit,
-                      network: network,
-                      onError: (err, __) => "error deriving imported address: $err");})
-              .map((String address_) => ImportedWIF(
-                    encryptedWIF: address.encryptedWif,
+                return _importedAddressService.getAddressFromWIFT<String>(
+                    wif: wif,
+                    // TODO: obviously format needs to be dynamic
+                    format: ImportAddressPkFormat.segwit,
                     network: network,
-                    // uuid: uuid.v4(),
-                    address: address_,
-                  )))
+                    onError: (err, __) =>
+                        "error deriving imported address: $err");
+              }).map((String address_) => ImportedWIF(
+                        encryptedWIF: address.encryptedWif,
+                        network: network,
+                        // uuid: uuid.v4(),
+                        address: address_,
+                      )))
           .toList();
 
       return await $(TaskEither.sequenceList(tasks));

@@ -281,6 +281,7 @@ class _SendPageState extends State<SendPage> {
 
                                 return null;
                               }
+                              return null;
                             }),
                       ],
                     ),
@@ -300,49 +301,48 @@ class _SendPageState extends State<SendPage> {
                               composeState,
                           required bool loading}) =>
                       Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(18),
-                          border: Border.all(
-                            color: transparentWhite8,
-                            width: 1
-                          ),
-                          color: customTheme?.bgBlackOrWhite ?? black
-                        ),
-                        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 20),
-                        child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      QuantityDisplay(
-                        loading: loading,
-                        quantity:
-                            composeState?.composeData.params.quantityNormalized,
-                      ),
-                      commonHeightSizedBox,
-                      ConfirmationFieldWithLabel(
-                        loading: loading,
-                        label: 'Token Name',
-                        value: composeState?.composeData.params.asset != null
-                            ? displayAssetName(
-                                composeState!.composeData.params.asset,
-                                composeState
-                                    .composeData.params.assetInfo.assetLongname)
-                            : null,
-                      ),
-                      commonHeightSizedBox,
-                      ConfirmationFieldWithLabel(
-                        loading: loading,
-                        label: 'Source Address',
-                        value: composeState?.composeData.params.source,
-                      ),
-                      commonHeightSizedBox,
-                      ConfirmationFieldWithLabel(
-                        loading: loading,
-                        label: 'Recipient Address',
-                        value: composeState?.composeData.params.destination,
-                      ),
-                    ],
-                  )
-                      ),
+                          decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(18),
+                              border: Border.all(
+                                  color: transparentWhite8, width: 1),
+                              color: customTheme?.bgBlackOrWhite ?? black),
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 14, horizontal: 20),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              QuantityDisplay(
+                                loading: loading,
+                                quantity: composeState
+                                    ?.composeData.params.quantityNormalized,
+                              ),
+                              commonHeightSizedBox,
+                              ConfirmationFieldWithLabel(
+                                loading: loading,
+                                label: 'Token Name',
+                                value: composeState?.composeData.params.asset !=
+                                        null
+                                    ? displayAssetName(
+                                        composeState!.composeData.params.asset,
+                                        composeState.composeData.params
+                                            .assetInfo.assetLongname)
+                                    : null,
+                              ),
+                              commonHeightSizedBox,
+                              ConfirmationFieldWithLabel(
+                                loading: loading,
+                                label: 'Source Address',
+                                value: composeState?.composeData.params.source,
+                              ),
+                              commonHeightSizedBox,
+                              ConfirmationFieldWithLabel(
+                                loading: loading,
+                                label: 'Recipient Address',
+                                value: composeState
+                                    ?.composeData.params.destination,
+                              ),
+                            ],
+                          )),
                 ),
                 onNext: ({dynamic decryptionStrategy}) =>
                     _handleConfirmationStepNext(context,

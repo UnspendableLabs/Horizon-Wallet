@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:horizon/domain/repositories/settings_repository.dart';
-import 'package:horizon/domain/repositories/wallet_repository.dart';
-import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/common/theme_extension.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
@@ -141,65 +139,67 @@ class _SecurityViewState extends State<SecurityView> {
     final descriptionStyle = Theme.of(context).textTheme.titleSmall?.copyWith(
           color: customTheme.mutedDescriptionTextColor,
         );
-    return  Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SettingsItem(
-            title: 'Require password',
-            trailing: HorizonToggle(
-              value: _requirePassword,
-              onChanged: _onPasswordRequirementChanged,
-            ),
-            onTap: null,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SettingsItem(
+          title: 'Require password',
+          trailing: HorizonToggle(
+            value: _requirePassword,
+            onChanged: _onPasswordRequirementChanged,
           ),
-          const SizedBox(height: 8),
-          Center(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20.0),
-              child: Text(
-                "Require password when signing transactions or granting access to wallet data.",
-                textAlign: TextAlign.center,
-                style: descriptionStyle,
-              ),
-            ),
-          ),
-          const SizedBox(height: 16),
-          SettingsItem(
-            title: 'Inactivity Timeout',
-            trailing: SizedBox(
-              width: 130,
-              height: 32,
-              child: HorizonRedesignDropdown<int>(
-                useModal: true,
-                gradBorder: false,
-                cornerRadius: const BorderRadius.all(Radius.circular(12)),
-                buttonBg: transparentPurple16,
-                items: _timeoutOptions.entries
-                    .map((entry) => DropdownMenuItem<int>(
-                          value: entry.key,
-                          child: Text(entry.value, textAlign: TextAlign.center,),
-                        ))
-                    .toList(),
-
-                buttonTextStyle: Theme.of(context).textTheme.labelMedium,
-                onChanged: _onTimeoutChanged,
-                selectedValue: _selectedTimeout,
-                hintText: 'Select timeout',
-              ),
-            ),
-            onTap: null,
-          ),
-          const SizedBox(height: 8),
-          Center(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20.0),
-              child: Text(
-                "Period of inactivity before screen locks",
-                textAlign: TextAlign.center,
-                style: descriptionStyle,
-              ),
+          onTap: null,
+        ),
+        const SizedBox(height: 8),
+        Center(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20.0),
+            child: Text(
+              "Require password when signing transactions or granting access to wallet data.",
+              textAlign: TextAlign.center,
+              style: descriptionStyle,
             ),
           ),
+        ),
+        const SizedBox(height: 16),
+        SettingsItem(
+          title: 'Inactivity Timeout',
+          trailing: SizedBox(
+            width: 130,
+            height: 32,
+            child: HorizonRedesignDropdown<int>(
+              useModal: true,
+              gradBorder: false,
+              cornerRadius: const BorderRadius.all(Radius.circular(12)),
+              buttonBg: transparentPurple16,
+              items: _timeoutOptions.entries
+                  .map((entry) => DropdownMenuItem<int>(
+                        value: entry.key,
+                        child: Text(
+                          entry.value,
+                          textAlign: TextAlign.center,
+                        ),
+                      ))
+                  .toList(),
+              buttonTextStyle: Theme.of(context).textTheme.labelMedium,
+              onChanged: _onTimeoutChanged,
+              selectedValue: _selectedTimeout,
+              hintText: 'Select timeout',
+            ),
+          ),
+          onTap: null,
+        ),
+        const SizedBox(height: 8),
+        Center(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20.0),
+            child: Text(
+              "Period of inactivity before screen locks",
+              textAlign: TextAlign.center,
+              style: descriptionStyle,
+            ),
+          ),
+        ),
       ],
     );
   }

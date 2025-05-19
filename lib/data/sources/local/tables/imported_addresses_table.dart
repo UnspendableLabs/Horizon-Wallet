@@ -4,7 +4,7 @@ import 'package:drift/drift.dart';
 class ImportedAddresses extends Table {
   @JsonKey('encryptedWif')
   TextColumn get encryptedWif => text().customConstraint('NOT NULL UNIQUE')();
-  
+
   @JsonKey('network')
   TextColumn get network => text()();
 

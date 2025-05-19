@@ -1,8 +1,6 @@
 import "package:fpdart/fpdart.dart";
 import 'package:get_it/get_it.dart';
-import 'package:horizon/extensions.dart';
 // import "package:horizon/data/sources/local/dao/addresss_v2_dao.dart";
-import "package:horizon/data/sources/local/db.dart" as local;
 import 'package:horizon/domain/services/address_service.dart';
 import "package:horizon/domain/entities/decryption_strategy.dart";
 import "package:horizon/domain/entities/address_v2.dart";
@@ -11,7 +9,6 @@ import "package:horizon/domain/repositories/address_v2_repository.dart";
 import "package:horizon/domain/repositories/wallet_config_repository.dart";
 import "package:horizon/domain/repositories/imported_address_repository.dart";
 import 'package:horizon/domain/services/seed_service.dart';
-import "package:horizon/js/bitcoin.dart";
 import 'package:horizon/domain/services/imported_address_service.dart';
 
 class AddressV2RepositoryImpl implements AddressV2Repository {
@@ -58,7 +55,6 @@ class AddressV2RepositoryImpl implements AddressV2Repository {
                       .map((path) => _addressService.deriveAddressWIPT(path: path, seed: seed, network: walletConfig.network))
                       .toList()))),
       ImportedWIF(address: var address, encryptedWIF: var encryptedWIF) =>
-
         TaskEither.right([
           AddressV2(
             type: AddressV2Type.p2wpkh, // TODO: this should not be hard coded

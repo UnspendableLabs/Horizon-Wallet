@@ -65,102 +65,108 @@ class _TokenSelectionFormState extends State<TokenSelectionForm> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(padding: const EdgeInsets.symmetric(horizontal: 20), child: Column(
-      children: [
-        Text(
-          "Swap",
-          style: Theme.of(context).textTheme.titleMedium,
-          textAlign: TextAlign.center,
-        ),
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: 14,),
-          child: Stack(
-            children: [
-              Column(
-                children: [
-                  HorizonRedesignDropdown<MultiAddressBalance>(
-                      itemPadding: const EdgeInsets.all(12),
-                      items: fakeTokens
-                          .map((e) => DropdownMenuItem(
-                              value: e,
-                              child: AssetBalanceListItem(balance: e)))
-                          .toList(),
-                      onChanged: (value) {
-                        setState(() {
-                          if (value == _toToken) return;
-                          _fromToken = value;
-                        });
-                      },
-                      selectedValue: _fromToken,
-                      selectedItemBuilder: (MultiAddressBalance item) =>
-                          AssetBalanceListItem(balance: item),
-                      hintText: "Select Token"),
-                  commonHeightSizedBox,
-                  HorizonRedesignDropdown<MultiAddressBalance>(
-                      itemPadding: const EdgeInsets.all(12),
-                      items: fakeTokens
-                          .map((e) => DropdownMenuItem(
-                              value: e,
-                              child: AssetBalanceListItem(balance: e)))
-                          .toList(),
-                      onChanged: (value) {
-                        setState(() {
-                          if (value == _fromToken) return;
-                          _toToken = value;
-                        });
-                      },
-                      selectedValue: _toToken,
-                      selectedItemBuilder: (MultiAddressBalance item) =>
-                          AssetBalanceListItem(balance: item),
-                      hintText: "Select Token")
-                ],
-              ),
-              Positioned(
-                  top: 0,
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
-                  child: Center(
-                    child: Material(
-                      color: Theme.of(context).scaffoldBackgroundColor,
-                      borderRadius: BorderRadius.circular(8),
-                      child: InkWell(
-                        hoverColor: transparentPurple8,
-                        borderRadius: BorderRadius.circular(8),
-                        onTap: () {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Column(
+        children: [
+          Text(
+            "Swap",
+            style: Theme.of(context).textTheme.titleMedium,
+            textAlign: TextAlign.center,
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(
+              vertical: 14,
+            ),
+            child: Stack(
+              children: [
+                Column(
+                  children: [
+                    HorizonRedesignDropdown<MultiAddressBalance>(
+                        itemPadding: const EdgeInsets.all(12),
+                        items: fakeTokens
+                            .map((e) => DropdownMenuItem(
+                                value: e,
+                                child: AssetBalanceListItem(balance: e)))
+                            .toList(),
+                        onChanged: (value) {
                           setState(() {
-                            if (_fromToken == null || _toToken == null) return;
-                            final temp = _fromToken;
-                            _fromToken = _toToken;
-                            _toToken = temp;
+                            if (value == _toToken) return;
+                            _fromToken = value;
                           });
                         },
-                        child: Container(
-                          width: 44,
-                          height: 44,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(8),
-                            border:
-                                Border.all(color: transparentWhite8, width: 1),
+                        selectedValue: _fromToken,
+                        selectedItemBuilder: (MultiAddressBalance item) =>
+                            AssetBalanceListItem(balance: item),
+                        hintText: "Select Token"),
+                    commonHeightSizedBox,
+                    HorizonRedesignDropdown<MultiAddressBalance>(
+                        itemPadding: const EdgeInsets.all(12),
+                        items: fakeTokens
+                            .map((e) => DropdownMenuItem(
+                                value: e,
+                                child: AssetBalanceListItem(balance: e)))
+                            .toList(),
+                        onChanged: (value) {
+                          setState(() {
+                            if (value == _fromToken) return;
+                            _toToken = value;
+                          });
+                        },
+                        selectedValue: _toToken,
+                        selectedItemBuilder: (MultiAddressBalance item) =>
+                            AssetBalanceListItem(balance: item),
+                        hintText: "Select Token")
+                  ],
+                ),
+                Positioned(
+                    top: 0,
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    child: Center(
+                      child: Material(
+                        color: Theme.of(context).scaffoldBackgroundColor,
+                        borderRadius: BorderRadius.circular(8),
+                        child: InkWell(
+                          hoverColor: transparentPurple8,
+                          borderRadius: BorderRadius.circular(8),
+                          onTap: () {
+                            setState(() {
+                              if (_fromToken == null || _toToken == null)
+                                return;
+                              final temp = _fromToken;
+                              _fromToken = _toToken;
+                              _toToken = temp;
+                            });
+                          },
+                          child: Container(
+                            width: 44,
+                            height: 44,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
+                                  color: transparentWhite8, width: 1),
+                            ),
+                            padding: const EdgeInsets.all(10),
+                            child: AppIcons.arrowDownIcon(
+                                context: context, width: 24, height: 24),
                           ),
-                          padding: const EdgeInsets.all(10),
-                          child: AppIcons.arrowDownIcon(
-                              context: context, width: 24, height: 24),
                         ),
                       ),
-                    ),
-                  ))
-            ],
+                    ))
+              ],
+            ),
           ),
-        ),
-        const SizedBox(
-          height: 24,
-        ),
-        HorizonButton(
-            onPressed: () {},
-            child: TextButtonContent(value: "Create Listing"),
-            variant: ButtonVariant.green)
-      ],
-    ),);
+          const SizedBox(
+            height: 24,
+          ),
+          HorizonButton(
+              onPressed: () {},
+              child: TextButtonContent(value: "Create Listing"),
+              variant: ButtonVariant.green)
+        ],
+      ),
+    );
   }
 }

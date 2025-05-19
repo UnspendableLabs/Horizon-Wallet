@@ -38,15 +38,13 @@ class _FeeConfirmationState extends State<FeeConfirmation> {
           SelectableText(
             label,
             style: Theme.of(context).textTheme.labelSmall?.copyWith(
-              color: transparentWhite33,
-            ),
+                  color: transparentWhite33,
+                ),
           ),
           const SizedBox(width: 12),
           SelectableText(
             widget.loading ? '' : (value ?? ''),
-            style: Theme.of(context)
-                .textTheme
-                .bodySmall,
+            style: Theme.of(context).textTheme.bodySmall,
           ),
         ],
       ),
@@ -67,9 +65,7 @@ class _FeeConfirmationState extends State<FeeConfirmation> {
               children: [
                 Text(
                   'Fee Details',
-                  style: Theme.of(context)
-                      .textTheme
-                      .labelSmall,
+                  style: Theme.of(context).textTheme.labelSmall,
                 ),
                 _isExpanded
                     ? AppIcons.caretUpIcon(

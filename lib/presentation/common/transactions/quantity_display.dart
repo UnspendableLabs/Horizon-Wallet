@@ -47,7 +47,8 @@ class QuantityDisplay extends StatelessWidget {
             padding: const EdgeInsets.symmetric(vertical: 10),
             child: SelectableText(
               "You're sending",
-              style: theme.textTheme.labelSmall?.copyWith(fontWeight: FontWeight.w500),
+              style: theme.textTheme.labelSmall
+                  ?.copyWith(fontWeight: FontWeight.w500),
             ),
           ),
           if (!loading && quantity != null)

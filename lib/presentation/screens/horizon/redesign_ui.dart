@@ -660,10 +660,14 @@ class _HorizonRedesignDropdownState<T>
                                     width: 1,
                                   )
                                 : Border.all(
-                                    color: isDarkMode ? transparentWhite8 : transparentBlack8,
+                                    color: isDarkMode
+                                        ? transparentWhite8
+                                        : transparentBlack8,
                                     width: 1,
                                   ),
-                            color: (isDarkMode ? transparentWhite8 : transparentBlack8),
+                            color: (isDarkMode
+                                ? transparentWhite8
+                                : transparentBlack8),
                           ),
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
@@ -676,10 +680,11 @@ class _HorizonRedesignDropdownState<T>
                                     _toggleDropdown();
                                   },
                                   child: Container(
-                                    padding: widget.itemPadding ?? const EdgeInsets.symmetric(
-                                      horizontal: 12,
-                                      vertical: 21,
-                                    ),
+                                    padding: widget.itemPadding ??
+                                        const EdgeInsets.symmetric(
+                                          horizontal: 12,
+                                          vertical: 21,
+                                        ),
                                     child: SizedBox(
                                       width: double.infinity,
                                       child: DefaultTextStyle(
@@ -826,11 +831,13 @@ class _HorizonRedesignDropdownState<T>
                                               widget.selectedValue)
                                           .child as Text)
                                       .data!,
-                                  style: widget.buttonTextStyle ?? Theme.of(context).textTheme.bodySmall,
+                                  style: widget.buttonTextStyle ??
+                                      Theme.of(context).textTheme.bodySmall,
                                 )
                           : Text(
                               widget.hintText,
-                              style: widget.buttonTextStyle ?? Theme.of(context).textTheme.bodySmall,
+                              style: widget.buttonTextStyle ??
+                                  Theme.of(context).textTheme.bodySmall,
                             ),
                     ),
                     _isOpen
@@ -1100,11 +1107,8 @@ class _BlurredBackgroundDropdownState<T>
   }
 }
 
-enum HorizonToggleType {
-  success,
-  warning,
-  error
-}
+enum HorizonToggleType { success, warning, error }
+
 class HorizonToggle extends StatefulWidget {
   final bool value;
   final ValueChanged<bool> onChanged;
@@ -1115,7 +1119,6 @@ class HorizonToggle extends StatefulWidget {
   final Color? thumbActiveColor;
   final Widget? thumbInactiveIcon;
   final Widget? thumbActiveIcon;
-
 
   const HorizonToggle({
     super.key,
@@ -1130,19 +1133,16 @@ class HorizonToggle extends StatefulWidget {
     this.thumbActiveIcon,
   });
 
-
   @override
   State<HorizonToggle> createState() => _HorizonToggleState();
 }
 
 class _HorizonToggleState extends State<HorizonToggle> {
-
   late Color _gutterActiveColor = green2;
   late Color _gutterInactiveColor = transparentWhite8;
   late Color _thumbActiveColor = offWhite;
   late Color _thumbInactiveColor = offWhite;
   late Widget _thumbActiveIcon;
-  
 
   void _initializeColors() {
     switch (widget.type) {
@@ -1172,16 +1172,17 @@ class _HorizonToggleState extends State<HorizonToggle> {
         _gutterInactiveColor = widget.gutterInactiveColor ?? transparentWhite8;
         _thumbActiveColor = widget.thumbActiveColor ?? offWhite;
         _thumbInactiveColor = widget.thumbInactiveColor ?? offWhite;
-        _thumbActiveIcon = widget.thumbActiveIcon ?? const Icon(Icons.check, color: green3, size: 14);
+        _thumbActiveIcon = widget.thumbActiveIcon ??
+            const Icon(Icons.check, color: green3, size: 14);
     }
   }
-  
+
   @override
   void initState() {
     super.initState();
     _initializeColors();
   }
-   
+
   @override
   Widget build(BuildContext context) {
     return MouseRegion(
@@ -1193,13 +1194,11 @@ class _HorizonToggleState extends State<HorizonToggle> {
           height: 32,
           padding: const EdgeInsets.all(4),
           decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(70),
-              border: Border.fromBorderSide(
-                  Theme.of(context).inputDecorationTheme.outlineBorder ??
-                      const BorderSide()),
-              color: widget.value
-                  ? _gutterActiveColor
-                  : _gutterInactiveColor,
+            borderRadius: BorderRadius.circular(70),
+            border: Border.fromBorderSide(
+                Theme.of(context).inputDecorationTheme.outlineBorder ??
+                    const BorderSide()),
+            color: widget.value ? _gutterActiveColor : _gutterInactiveColor,
           ),
           child: AnimatedAlign(
             duration: const Duration(milliseconds: 200),

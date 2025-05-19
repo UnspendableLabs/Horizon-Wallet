@@ -5,7 +5,6 @@ import 'package:horizon/domain/entities/multi_address_balance.dart';
 import 'package:horizon/domain/entities/multi_address_balance_entry.dart';
 import 'package:horizon/presentation/common/shared_util.dart';
 import 'package:horizon/presentation/common/theme_extension.dart';
-import 'package:horizon/presentation/screens/dashboard/view/asset_icon.dart';
 import 'package:horizon/utils/app_icons.dart';
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:horizon/presentation/session/bloc/session_state.dart';
@@ -57,7 +56,7 @@ class TokenNameField extends StatelessWidget {
                       context: context,
                       width: 34,
                       height: 34,
-                      description: balance!.assetInfo?.description),
+                      description: balance!.assetInfo.description),
               const SizedBox(width: 8),
               Expanded(
                 child: Column(

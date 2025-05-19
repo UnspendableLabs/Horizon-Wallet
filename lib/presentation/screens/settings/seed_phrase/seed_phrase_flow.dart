@@ -191,35 +191,35 @@ class _SeedPhraseFlowState extends State<SeedPhraseFlow> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               GestureDetector(
-              onTap: () {
-                setState(() {
-                  _showSeedPhrase = !_showSeedPhrase;
-                });
-              },
-              child: Container(
-                height: 32,
-                padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                decoration: BoxDecoration(
-                  color: transparentPurple8,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    _showSeedPhrase
-                        ? AppIcons.eyeOpenIcon(
-                            context: context, width: 24, height: 24)
-                        : AppIcons.eyeClosedIcon(
-                            context: context, width: 24, height: 24),
-                    const SizedBox(width: 4),
-                    Text(
-                      _showSeedPhrase ? 'Hide Phrase' : 'Show Phrase',
-                      style: Theme.of(context).textTheme.labelMedium,
+                  onTap: () {
+                    setState(() {
+                      _showSeedPhrase = !_showSeedPhrase;
+                    });
+                  },
+                  child: Container(
+                    height: 32,
+                    padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                    decoration: BoxDecoration(
+                      color: transparentPurple8,
+                      borderRadius: BorderRadius.circular(8),
                     ),
-                  ],
-                ),
-              )),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        _showSeedPhrase
+                            ? AppIcons.eyeOpenIcon(
+                                context: context, width: 24, height: 24)
+                            : AppIcons.eyeClosedIcon(
+                                context: context, width: 24, height: 24),
+                        const SizedBox(width: 4),
+                        Text(
+                          _showSeedPhrase ? 'Hide Phrase' : 'Show Phrase',
+                          style: Theme.of(context).textTheme.labelMedium,
+                        ),
+                      ],
+                    ),
+                  )),
             ],
           ),
           const SizedBox(height: 16),

@@ -389,7 +389,7 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
                   .getMapT(
                       onError: (_, __) =>
                           "invariant: failed to read in memory key map")
-                   // TODO: this lookup needs to be consistent, either by encyptedWIF or address
+                  // TODO: this lookup needs to be consistent, either by encyptedWIF or address
                   .flatMap((map) => TaskEither.fromOption(
                       Option.fromNullable(map[address.address]),
                       () =>

@@ -50,20 +50,19 @@ class TransactionComposePage<R> extends StatelessWidget {
                 composeState: ComposeStateSuccess<R>(composeSuccess),
                 loading: false),
             commonHeightSizedBox,
-            if (composeResponse is ComposeResponse)
-              ...[
-                const Divider(
-                  thickness: 1,
-                  height: 20,
-                  color:  transparentWhite8,
-                ),
-                FeeConfirmation(
+            if (composeResponse is ComposeResponse) ...[
+              const Divider(
+                thickness: 1,
+                height: 20,
+                color: transparentWhite8,
+              ),
+              FeeConfirmation(
                 fee: "${composeResponse.btcFee.toString()} sats",
                 virtualSize: composeResponse.signedTxEstimatedSize.virtualSize,
                 adjustedVirtualSize:
                     composeResponse.signedTxEstimatedSize.adjustedVirtualSize,
               ),
-              ]
+            ]
           ],
         );
       },
