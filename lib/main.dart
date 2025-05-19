@@ -432,7 +432,7 @@ class AppRouter {
               path: "/asset/:assetName",
               pageBuilder: (context, state) {
                 final assetName = state.pathParameters['assetName'] ?? '';
-                final session = context.read<SessionStateCubit>().state;
+                final session = context.watch<SessionStateCubit>().state;
 
                 return CustomTransitionPage<void>(
                   key: state.pageKey,
@@ -465,17 +465,20 @@ class AppRouter {
                 );
               },
             ),
-            GoRoute(path: "/atomic-swap", pageBuilder: (context, state) => CustomTransitionPage<void>(
-              key: state.pageKey,
-              child: const AtomicSwapView(),
-              transitionDuration: const Duration(milliseconds: 300),
-              transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                return FadeTransition(
-                  opacity: animation,
-                  child: child,
-                );
-              },
-            ),
+            GoRoute(
+              path: "/atomic-swap",
+              pageBuilder: (context, state) => CustomTransitionPage<void>(
+                key: state.pageKey,
+                child: const AtomicSwapView(),
+                transitionDuration: const Duration(milliseconds: 300),
+                transitionsBuilder:
+                    (context, animation, secondaryAnimation, child) {
+                  return FadeTransition(
+                    opacity: animation,
+                    child: child,
+                  );
+                },
+              ),
             )
           ],
         ),
