@@ -10,6 +10,8 @@ import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_ev
 import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_state.dart';
 import 'package:horizon/presentation/screens/dashboard/view/asset_icon.dart';
 import 'package:horizon/utils/app_icons.dart';
+import 'package:horizon/presentation/session/bloc/session_cubit.dart';
+import 'package:horizon/presentation/session/bloc/session_state.dart';
 
 class BalancesDisplay extends StatefulWidget {
   final String searchQuery;
@@ -234,109 +236,122 @@ class BalancesSliverState extends State<BalancesSliver> {
           });
 
         return [
-          Column(
-            children: sortedBalances.map((balance) {
-              final isBitcoinOrXcp =
-                  balance.asset == 'BTC' || balance.asset == 'XCP';
-              final appIcons = AppIcons();
-              return Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  MouseRegion(
-                    cursor: isBitcoinOrXcp
-                        ? SystemMouseCursors.basic
-                        : SystemMouseCursors.click,
-                    child: GestureDetector(
-                      onTap: () => isBitcoinOrXcp
-                          ? null
-                          :
-                          // Toggle the starred status
-                          context
-                              .read<BalancesBloc>()
-                              .add(ToggleStarred(asset: balance.asset)),
-                      child: starredAssets.contains(balance.asset)
-                          ? AppIcons.starFilledIcon(
-                              context: context,
-                              width: 20,
-                              height: 20,
-                            )
-                          : AppIcons.starOutlinedIcon(
-                              context: context,
-                              width: 20,
-                              height: 20,
-                            ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: MouseRegion(
-                      cursor: SystemMouseCursors.click,
-                      child: Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          onTap: () {
-                            // Navigate to the asset details page
-                            context.push(
-                                '/asset/${Uri.encodeComponent(balance.asset)}');
-                          },
-                          borderRadius: BorderRadius.circular(10),
-                          child: Container(
-                            height: 54,
-                            margin: const EdgeInsets.symmetric(vertical: 2),
-                            child: Row(
-                              children: [
-                                const SizedBox(width: 10),
-                                appIcons.assetIcon(assetName: balance.asset, description: balance.assetInfo.description, context: context, width: 36, height: 36),
-                                const SizedBox(width: 10),
-                                // Asset name and details
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      SizedBox(
-                                        width: double.infinity,
-                                        child: MiddleTruncatedText(
-                                          text: balance.assetLongname ??
-                                              balance.asset,
-                                          width: 150,
-                                          charsToShow: isMobile ? 16 : 30,
-                                          style: const TextStyle(
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
+          Builder(
+           
+            builder: (context) {
+              final session = context.watch<SessionStateCubit>().state.successOrThrow();
+
+              return Column(
+                children: sortedBalances.map((balance) {
+                  final isBitcoinOrXcp =
+                      balance.asset == 'BTC' || balance.asset == 'XCP';
+                  final appIcons = AppIcons();
+                  return Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      MouseRegion(
+                        cursor: isBitcoinOrXcp
+                            ? SystemMouseCursors.basic
+                            : SystemMouseCursors.click,
+                        child: GestureDetector(
+                          onTap: () => isBitcoinOrXcp
+                              ? null
+                              :
+                              // Toggle the starred status
+                              context
+                                  .read<BalancesBloc>()
+                                  .add(ToggleStarred(asset: balance.asset)),
+                          child: starredAssets.contains(balance.asset)
+                              ? AppIcons.starFilledIcon(
+                                  context: context,
+                                  width: 20,
+                                  height: 20,
+                                )
+                              : AppIcons.starOutlinedIcon(
+                                  context: context,
+                                  width: 20,
+                                  height: 20,
                                 ),
-                                // Amount and percentage
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.end,
-                                  mainAxisAlignment: MainAxisAlignment.center,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: MouseRegion(
+                          cursor: SystemMouseCursors.click,
+                          child: Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              onTap: () {
+                                // Navigate to the asset details page
+                                context.push(
+                                    '/asset/${Uri.encodeComponent(balance.asset)}');
+                              },
+                              borderRadius: BorderRadius.circular(10),
+                              child: Container(
+                                height: 54,
+                                margin: const EdgeInsets.symmetric(vertical: 2),
+                                child: Row(
                                   children: [
-                                    SelectableText(
-                                      quantityRemoveTrailingZeros(
-                                          balance.totalNormalized),
-                                      style: const TextStyle(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w500,
+                                    const SizedBox(width: 10),
+                                    appIcons.assetIcon(
+                                        httpConfig: session.httpConfig,
+                                        assetName: balance.asset,
+                                        description: balance.assetInfo.description,
+                                        context: context,
+                                        width: 36,
+                                        height: 36),
+                                    const SizedBox(width: 10),
+                                    // Asset name and details
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          SizedBox(
+                                            width: double.infinity,
+                                            child: MiddleTruncatedText(
+                                              text: balance.assetLongname ??
+                                                  balance.asset,
+                                              width: 150,
+                                              charsToShow: isMobile ? 16 : 30,
+                                              style: const TextStyle(
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ),
+                                    // Amount and percentage
+                                    Column(
+                                      crossAxisAlignment: CrossAxisAlignment.end,
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        SelectableText(
+                                          quantityRemoveTrailingZeros(
+                                              balance.totalNormalized),
+                                          style: const TextStyle(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(width: 4),
                                   ],
                                 ),
-                                const SizedBox(width: 4),
-                              ],
+                              ),
                             ),
                           ),
                         ),
                       ),
-                    ),
-                  ),
-                ],
+                    ],
+                  );
+                }).toList(),
               );
-            }).toList(),
+            }
           ),
         ];
       },

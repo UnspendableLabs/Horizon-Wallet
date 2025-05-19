@@ -317,96 +317,6 @@ class _SettingsViewState extends State<SettingsView> {
     });
   }
 
-  String _getPageTitle() {
-    switch (_currentPage) {
-      case SettingsPage.advanced:
-        return "Advanced";
-      case SettingsPage.main:
-        return "Settings";
-      case SettingsPage.network:
-        return "Network";
-      case SettingsPage.security:
-        return "Security";
-      case SettingsPage.seedPhrase:
-        return "Seed Phrase";
-      case SettingsPage.importAddress:
-        return "Import Address";
-      case SettingsPage.resetWallet:
-        return "Reset Wallet";
-    }
-  }
-
-  Widget _buildCurrentPage() {
-    switch (_currentPage) {
-      case SettingsPage.main:
-        return _buildMainSettings();
-      case SettingsPage.network:
-        return const Text("Network");
-      case SettingsPage.advanced:
-        return Column(
-          children: [
-            SettingsAdvancedProvider(
-              child: const SettingsAdvanced(),
-            )
-            // SettingsItem(
-            //   title: 'Wallet Type',
-            //   onTap: () {
-            //     // no op
-            //   },
-            //   trailing: SizedBox(
-            //     width: 120,
-            //     height: 40,
-            //     child: ValueChangeObserver(
-            //         defaultValue: Network.mainnet,
-            //         cacheKey: SettingsKeys.network.toString(),
-            //         builder: (context, value, _) {
-            //           return HorizonRedesignDropdown<String>(
-            //             useModal: true,
-            //             onChanged: (value) {
-            //               Option.fromNullable(value)
-            //                   .flatMap(NetworkX.fromString)
-            //                   .fold(() {
-            //                 print("TODO: invariant logging");
-            //               }, (Network network) {
-            //                 context.read<SessionStateCubit>().onNetworkChanged(
-            //                     network,
-            //                     () => widget._settingsRepository
-            //                         .setNetwork(network));
-            //               });
-            //             },
-            //             items: Network.values
-            //                 .map((network) => DropdownMenuItem<String>(
-            //                       value: network.name,
-            //                       child: Text(
-            //                         network
-            //                             .name, // or a prettier label if desired
-            //                         textAlign: TextAlign.center,
-            //                       ),
-            //                     ))
-            //                 .toList(),
-            //             selectedValue: widget._settingsRepository.network.name,
-            //             hintText: 'Select timeout',
-            //           );
-            //         }),
-            //   ),
-            // ),
-            // SettingsItem(
-            //   title: 'Base Path',
-            //   trailing: Text("base path"),
-            // ),
-          ],
-        );
-      case SettingsPage.security:
-        return const SecurityView();
-      case SettingsPage.seedPhrase:
-        return const SeedPhraseFlow();
-      case SettingsPage.importAddress:
-        return ImportAddressFlow(onNavigateBack: _navigateBack);
-      case SettingsPage.resetWallet:
-        return const ResetWalletFlow();
-    }
-  }
-
   Widget _buildMainSettings() {
     return ListView(
       children: [
@@ -453,7 +363,7 @@ class _SettingsViewState extends State<SettingsView> {
         const SizedBox(height: 10),
         SettingsItem(
           title: 'Network',
-          icon: AppIcons.walletIcon(context: context),
+          // icon: AppIcons.walletIcon(context: context),
           // trailing: Row(children: [
           //   Text(widget._settingsRepository.network.name),
           //   AppIcons.chevronRightIcon(
@@ -510,9 +420,7 @@ class _SettingsViewState extends State<SettingsView> {
         SettingsItem(
           title: 'Advanced',
           onTap: () {
-            setState(() {
-              _currentPage = SettingsPage.advanced;
-            });
+            context.push("/settings/advanced");
           },
         ),
         const SizedBox(height: 40),
@@ -585,7 +493,6 @@ class _SettingsViewState extends State<SettingsView> {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               IconButton(
-                
                 onPressed: () {
                   AppShell.navigateToTab(context, 0);
                 },

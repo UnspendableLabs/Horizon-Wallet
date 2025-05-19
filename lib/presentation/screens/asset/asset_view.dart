@@ -100,6 +100,8 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
     bool isLoading = false,
     MultiAddressBalance? balance,
   }) {
+    final session = context.watch<SessionStateCubit>().state.successOrThrow();
+
     final appIcons = AppIcons();
     return Container(
       margin: const EdgeInsets.only(top: 18),
@@ -133,6 +135,7 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
                   ),
                 )
               : appIcons.assetIcon(
+                  httpConfig: session.httpConfig,
                   context: context,
                   assetName: balance!.asset,
                   description: balance.assetInfo.description,
@@ -170,10 +173,10 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
             : const SizedBox.shrink(),
         SelectableText(
           balance.totalNormalized,
-          style: Theme.of(context)
-              .textTheme
-              .titleSmall!
-              .copyWith(color: transparentWhite33, fontSize: 12, fontWeight: FontWeight.w500),
+          style: Theme.of(context).textTheme.titleSmall!.copyWith(
+              color: transparentWhite33,
+              fontSize: 12,
+              fontWeight: FontWeight.w500),
         ),
       ],
     );
@@ -535,7 +538,9 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
                     return SingleChildScrollView(
                       child: Column(
                         children: [
-                          const SizedBox(height: 10,),
+                          const SizedBox(
+                            height: 10,
+                          ),
                           IconItemButton(
                             title: 'Pay Dividend',
                             icon: AppIcons.dividendIcon(
@@ -686,28 +691,29 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
             height: 34,
             padding: const EdgeInsets.symmetric(horizontal: 14.0),
             child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Text(
-                "Address",
-                style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                  fontWeight: FontWeight.w500,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text(
+                  "Address",
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        fontWeight: FontWeight.w500,
+                      ),
                 ),
-              ),
-              Text(
-                "UTXOs",
-                style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                  fontWeight: FontWeight.w500,
-                ),
-              )
-            ],
-          ),
+                Text(
+                  "UTXOs",
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        fontWeight: FontWeight.w500,
+                      ),
+                )
+              ],
+            ),
           ),
           ...balance.entries.map((entry) {
             final displayId = entry.utxo ?? entry.address ?? '';
             return Padding(
-              padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 14.0),
+              padding:
+                  const EdgeInsets.symmetric(vertical: 10.0, horizontal: 14.0),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 crossAxisAlignment: CrossAxisAlignment.center,
@@ -718,15 +724,15 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
                       width: 150,
                       charsToShow: 10,
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontSize: 12,
-                      ),
+                            fontSize: 12,
+                          ),
                     ),
                   ),
                   SelectableText(
                     quantityRemoveTrailingZeros(entry.quantityNormalized),
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      fontWeight: FontWeight.w500,
-                    ),
+                          fontWeight: FontWeight.w500,
+                        ),
                   ),
                 ],
               ),

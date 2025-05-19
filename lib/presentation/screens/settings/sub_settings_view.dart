@@ -7,6 +7,7 @@ import 'package:horizon/presentation/screens/settings/reset_wallet/reset_wallet_
 import 'package:horizon/presentation/screens/settings/security_view.dart';
 import 'package:horizon/presentation/screens/settings/seed_phrase/seed_phrase_flow.dart';
 import 'package:horizon/utils/app_icons.dart';
+import 'package:horizon/presentation/screens/settings/advanced/settings_advanced.dart';
 
 class SubSettingsView extends StatefulWidget {
   final String category;
@@ -17,6 +18,7 @@ class SubSettingsView extends StatefulWidget {
 }
 
 class _SubSettingsViewState extends State<SubSettingsView> {
+  // TODO: should not use enum here
   String _getPageTitle() {
     switch (widget.category) {
       case "seedPhrase":
@@ -25,6 +27,8 @@ class _SubSettingsViewState extends State<SubSettingsView> {
         return "Import Address";
       case "resetWallet":
         return "Reset Wallet";
+      case "advanced":
+        return "Advanced";
       default:
         return "Security";
     }
@@ -52,6 +56,10 @@ class _SubSettingsViewState extends State<SubSettingsView> {
     switch (widget.category) {
       case "seedPhrase":
         return const SeedPhraseFlow();
+      case "advanced":
+        return SettingsAdvancedProvider(
+          child: const SettingsAdvanced(),
+        );
       case "security":
         return const SecurityView();
       case "importAddress":

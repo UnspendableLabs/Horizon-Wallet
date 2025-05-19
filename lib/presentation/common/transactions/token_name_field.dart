@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:horizon/common/format.dart';
 import 'package:horizon/domain/entities/multi_address_balance.dart';
 import 'package:horizon/domain/entities/multi_address_balance_entry.dart';
@@ -6,6 +7,8 @@ import 'package:horizon/presentation/common/shared_util.dart';
 import 'package:horizon/presentation/common/theme_extension.dart';
 import 'package:horizon/presentation/screens/dashboard/view/asset_icon.dart';
 import 'package:horizon/utils/app_icons.dart';
+import 'package:horizon/presentation/session/bloc/session_cubit.dart';
+import 'package:horizon/presentation/session/bloc/session_state.dart';
 
 class TokenNameField extends StatelessWidget {
   final MultiAddressBalance? balance;
@@ -30,6 +33,8 @@ class TokenNameField extends StatelessWidget {
     final theme = Theme.of(context);
     final customTheme = theme.extension<CustomThemeExtension>()!;
 
+    final session = context.watch<SessionStateCubit>().state.successOrThrow();
+
     return Container(
       height: 56,
       decoration: BoxDecoration(
@@ -42,11 +47,12 @@ class TokenNameField extends StatelessWidget {
         children: [
           Expanded(
               child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               balance == null
                   ? const SizedBox.shrink()
                   : appIcons.assetIcon(
+                      httpConfig: session.httpConfig,
                       assetName: balance!.asset,
                       context: context,
                       width: 34,

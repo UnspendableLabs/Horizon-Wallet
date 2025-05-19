@@ -2,16 +2,18 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:horizon/data/sources/network/horizon_explorer_client.dart';
+import 'package:horizon/data/sources/network/horizon_explorer_client_factory.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
+import 'package:horizon/domain/entities/http_config.dart';
 
 class AppIcons {
   static final AppIcons _instance = AppIcons._internal();
   factory AppIcons() => _instance;
   AppIcons._internal();
 
-  final HorizonExplorerApi _horizonExplorerApi = GetIt.I<HorizonExplorerApi>();
+  final HorizonExplorerClientFactory _horizonExplorerClientFactory =
+      GetIt.I<HorizonExplorerClientFactory>();
 
   static const String _iconPath = kDebugMode ? '/icons' : 'assets/icons';
   static const String receive = '$_iconPath/receive.svg';
@@ -122,6 +124,7 @@ class AppIcons {
       color: color,
     );
   }
+
   static Widget sendIcon({
     required BuildContext context,
     double? width,
@@ -838,6 +841,7 @@ class AppIcons {
   }
 
   Widget assetIcon({
+    required HttpConfig httpConfig,
     required BuildContext context,
     required String assetName,
     String? description,
@@ -863,8 +867,9 @@ class AppIcons {
     }
 
     return FutureBuilder(
-      future:
-          _horizonExplorerApi.getAssetSrc(assetName, description, showLarge),
+      future: _horizonExplorerClientFactory
+          .getClient(httpConfig)
+          .getAssetSrc(assetName, description, showLarge),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Container(
