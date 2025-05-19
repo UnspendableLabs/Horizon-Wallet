@@ -6,6 +6,7 @@ import 'package:horizon/domain/entities/multi_address_balance.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_event.dart';
 import 'package:horizon/presentation/screens/dashboard/bloc/balances/balances_state.dart';
+import 'package:horizon/domain/entities/http_config.dart';
 
 /// BalancesBloc manages the loading and caching of cryptocurrency balances
 class BalancesBloc extends Bloc<BalancesEvent, BalancesState> {
@@ -14,6 +15,7 @@ class BalancesBloc extends Bloc<BalancesEvent, BalancesState> {
   final CacheProvider cacheProvider;
   Timer? _pollingTimer;
   List<MultiAddressBalance>? _cachedBalances;
+  final HttpConfig httpConfig;
 
   String starredAssetsKey = 'starredAssets';
 
@@ -22,6 +24,7 @@ class BalancesBloc extends Bloc<BalancesEvent, BalancesState> {
     required this.balanceRepository,
     required this.addresses,
     required this.cacheProvider,
+    required this.httpConfig,
   }) : super(const BalancesState.initial()) {
     on<Fetch>(_onFetch);
     on<Start>(_onStart);
@@ -58,8 +61,8 @@ class BalancesBloc extends Bloc<BalancesEvent, BalancesState> {
     }
 
     try {
-      final balances =
-          await balanceRepository.getBalancesForAddresses(addresses);
+      final balances = await balanceRepository.getBalancesForAddresses(
+          httpConfig: httpConfig, addresses: addresses);
 
       // Only update state if the new data is different
       if (_cachedBalances == null ||

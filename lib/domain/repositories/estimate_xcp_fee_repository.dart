@@ -1,5 +1,19 @@
+import 'package:horizon/domain/entities/http_config.dart';
+
 abstract class EstimateXcpFeeRepository {
-  Future<int> estimateDividendXcpFees(String address, String asset);
-  Future<int> estimateSweepXcpFees(String address);
-  Future<int> estimateAttachXcpFees(String address);
+  Future<int> estimateDividendXcpFees({
+    required String address,
+    required String asset,
+    required HttpConfig httpConfig,
+  });
+
+  Future<int> estimateSweepXcpFees({
+    required String address,
+    required HttpConfig httpConfig,
+  });
+
+  Future<int> estimateAttachXcpFees({
+    required String address,
+    required HttpConfig httpConfig,
+  });
 }

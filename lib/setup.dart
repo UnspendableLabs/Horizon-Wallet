@@ -4,6 +4,7 @@ import 'package:get_it/get_it.dart';
 
 import 'package:horizon/data/services/secure_kv_service_impl.dart';
 import 'package:horizon/domain/services/secure_kv_service.dart';
+import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 
 import 'package:horizon/data/sources/repositories/in_memory_key_repository_impl.dart';
 import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
@@ -13,21 +14,18 @@ import 'package:horizon/data/services/bip39_service_impl.dart';
 import 'package:horizon/data/services/bitcoind_service_impl.dart';
 import 'package:horizon/data/services/cache_provider_impl.dart';
 import 'package:horizon/data/services/encryption_service_web_worker_impl.dart';
-import 'package:dio_smart_retry/dio_smart_retry.dart';
 import 'package:horizon/data/services/imported_address_service_impl.dart';
 import 'package:chrome_extension/tabs.dart';
 import 'package:horizon/data/services/platform_service_extension_impl.dart';
 import 'package:horizon/data/services/platform_service_web_impl.dart';
 import "package:horizon/data/sources/repositories/address_repository_impl.dart";
+
 import 'package:horizon/data/sources/repositories/estimate_xcp_fee_repository_impl.dart';
 import "package:horizon/domain/repositories/address_repository.dart";
 import 'package:horizon/data/sources/local/db_manager.dart';
 
 import 'package:horizon/data/services/mnemonic_service_impl.dart';
 import 'package:horizon/data/services/transaction_service_impl.dart';
-import 'package:horizon/data/services/wallet_service_impl.dart';
-import 'package:horizon/data/sources/network/api/v2_api.dart';
-import 'package:horizon/data/sources/repositories/account_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/account_settings_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/address_tx_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/balance_repository_impl.dart';
@@ -37,8 +35,6 @@ import 'package:horizon/data/sources/repositories/fairminter_repository_impl.dar
 import 'package:horizon/data/sources/repositories/imported_address_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/node_info_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/utxo_repository_impl.dart';
-import 'package:horizon/data/sources/repositories/wallet_repository_impl.dart';
-import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/account_settings_repository.dart';
 import 'package:horizon/domain/repositories/address_tx_repository.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
@@ -49,7 +45,6 @@ import 'package:horizon/domain/repositories/fairminter_repository.dart';
 import 'package:horizon/domain/repositories/imported_address_repository.dart';
 import 'package:horizon/domain/repositories/node_info_repository.dart';
 import 'package:horizon/domain/repositories/utxo_repository.dart';
-import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/bip39.dart';
 import 'package:horizon/domain/services/bitcoind_service.dart';
@@ -58,10 +53,12 @@ import 'package:horizon/domain/services/imported_address_service.dart';
 import 'package:horizon/domain/services/mnemonic_service.dart';
 import 'package:horizon/domain/services/platform_service.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
-import 'package:horizon/domain/services/wallet_service.dart';
 
 import 'package:horizon/domain/services/public_key_service.dart';
 import 'package:horizon/data/services/public_key_service_impl.dart';
+
+import 'package:horizon/domain/services/seed_service.dart';
+import 'package:horizon/data/services/seed_service_impl.dart';
 
 import 'package:horizon/domain/repositories/version_repository.dart';
 import 'package:horizon/data/sources/repositories/version_repository_impl.dart';
@@ -98,15 +95,11 @@ import 'package:horizon/data/sources/repositories/dispenser_repository_impl.dart
 import "package:horizon/domain/repositories/fee_estimates_repository.dart";
 import 'package:horizon/data/sources/repositories/fee_estimates_repository_mempool_space_impl.dart';
 
-import 'package:horizon/data/sources/network/esplora_client.dart';
 import 'package:horizon/data/sources/network/mempool_space_client.dart';
-
-import 'package:horizon/domain/repositories/unified_address_repository.dart';
-import 'package:horizon/data/sources/repositories/unified_address_repository_impl.dart';
 
 import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/data/services/analytics_service_impl.dart';
-import 'package:horizon/presentation/common/usecase/import_wallet_usecase.dart';
+import 'package:horizon/presentation/common/usecase/set_mnemonic_usecase.dart';
 import 'package:horizon/presentation/common/usecase/sign_chained_transaction_usecase.dart';
 import 'package:horizon/presentation/screens/close_dispenser/usecase/fetch_form_data.dart';
 
@@ -124,13 +117,13 @@ import 'package:horizon/presentation/screens/compose_dividend/usecase/fetch_form
 import 'package:horizon/presentation/screens/compose_fairmint/usecase/fetch_form_data.dart';
 import 'package:horizon/presentation/screens/compose_fairminter/usecase/fetch_form_data.dart';
 import 'package:horizon/presentation/screens/compose_issuance/usecase/fetch_form_data.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import 'package:logger/logger.dart' as logger;
 import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/data/logging/logger_impl.dart';
 import 'package:horizon/domain/entities/extension_rpc.dart';
 import 'package:horizon/domain/entities/address_rpc.dart';
-import 'dart:convert';
 
 // will need to move this import elsewhere for compile to native
 import 'dart:html' as html;
@@ -140,6 +133,21 @@ import 'package:horizon/data/services/error_service_impl.dart';
 
 import 'package:horizon/domain/repositories/settings_repository.dart';
 import 'package:horizon/data/sources/repositories/settings_repository_impl.dart';
+
+import 'package:horizon/domain/repositories/mnemonic_repository.dart';
+import 'package:horizon/data/sources/repositories/mnemonic_repository_impl.dart';
+
+import 'package:horizon/domain/repositories/account_v2_repository.dart';
+import 'package:horizon/data/sources/repositories/account_repository_v2_impl.dart';
+
+import 'package:horizon/domain/repositories/wallet_config_repository.dart';
+import 'package:horizon/data/sources/repositories/wallet_config_repository_impl.dart';
+
+import "package:horizon/domain/repositories/address_v2_repository.dart";
+import 'package:horizon/data/sources/repositories/address_v2_repository_impl.dart';
+
+import 'package:horizon/data/sources/network/counterparty_client_factory.dart';
+import 'package:horizon/data/sources/network/esplora_client_factory.dart';
 
 void setup() {
   GetIt injector = GetIt.I;
@@ -197,91 +205,92 @@ void setup() {
     return shouldRetry;
   }
 
-  final dio = Dio(BaseOptions(
-    baseUrl: config.counterpartyApiBase,
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    connectTimeout: const Duration(seconds: 5),
-    receiveTimeout: const Duration(seconds: 3),
-  ));
+  // final dio = Dio(BaseOptions(
+  //   baseUrl: config.counterpartyApiBase,
+  //   headers: {
+  //     'Content-Type': 'application/json',
+  //   },
+  //   connectTimeout: const Duration(seconds: 5),
+  //   receiveTimeout: const Duration(seconds: 3),
+  // ));
 
+  // this is no longer required
   // Add basic auth interceptor
-  dio.interceptors.add(InterceptorsWrapper(
-    onRequest: (options, handler) {
-      String username = config.counterpartyApiUsername;
-      String password = config.counterpartyApiPassword;
-      String basicAuth =
-          'Basic ${base64Encode(utf8.encode('$username:$password'))}';
-      options.headers['Authorization'] = basicAuth;
-      return handler.next(options);
-    },
-  ));
+  // dio.interceptors.add(InterceptorsWrapper(
+  //   onRequest: (options, handler) {
+  //     String username = config.counterpartyApiUsername;
+  //     String password = config.counterpartyApiPassword;
+  //     String basicAuth =
+  //         'Basic ${base64Encode(utf8.encode('$username:$password'))}';
+  //     options.headers['Authorization'] = basicAuth;
+  //     return handler.next(options);
+  //   },
+  // ));
 
-  dio.interceptors.addAll([
-    TimeoutInterceptor(),
-    ConnectionErrorInterceptor(),
-    BadResponseInterceptor(),
-    BadCertificateInterceptor(),
-    // SimpleLogInterceptor(),
-    RetryInterceptor(
-      dio: dio,
-      retries: 3,
-      retryDelays: const [
-        // set delays between retries (optional)
-        Duration(seconds: 1), // wait 1 sec before first retry
-        Duration(seconds: 1), // wait 2 sec before second retry
-        Duration(seconds: 1), // wait 3 sec before third retry
-      ],
-      retryEvaluator: dioRetryEvaluatorFunc,
-    )
-  ]);
+  // dio.interceptors.addAll([
+  //   TimeoutInterceptor(),
+  //   ConnectionErrorInterceptor(),
+  //   BadResponseInterceptor(),
+  //   BadCertificateInterceptor(),
+  //   // SimpleLogInterceptor(),
+  //   RetryInterceptor(
+  //     dio: dio,
+  //     retries: 3,
+  //     retryDelays: const [
+  //       // set delays between retries (optional)
+  //       Duration(seconds: 1), // wait 1 sec before first retry
+  //       Duration(seconds: 1), // wait 2 sec before second retry
+  //       Duration(seconds: 1), // wait 3 sec before third retry
+  //     ],
+  //     retryEvaluator: dioRetryEvaluatorFunc,
+  //   )
+  // ]);
 
-  injector.registerLazySingleton<V2Api>(() => V2Api(dio));
+  // injector.registerLazySingleton<V2Api>(() => V2Api(dio));
 
-  final esploraDio = Dio(BaseOptions(
-    baseUrl: config.esploraBase,
-    connectTimeout: const Duration(seconds: 5),
-    receiveTimeout: const Duration(seconds: 3),
-  ));
+  // final esploraDio = Dio(BaseOptions(
+  //   baseUrl: config.esploraBase,
+  //   connectTimeout: const Duration(seconds: 5),
+  //   receiveTimeout: const Duration(seconds: 3),
+  // ));
+  //
+  // esploraDio.interceptors.addAll([
+  //   TimeoutInterceptor(),
+  //   ConnectionErrorInterceptor(),
+  //   BadResponseInterceptor(),
+  //   BadCertificateInterceptor(),
+  //   // SimpleLogInterceptor(),
+  //   RetryInterceptor(
+  //     dio: esploraDio,
+  //     retries: 4,
+  //     retryDelays: const [
+  //       Duration(seconds: 1), // wait 1 sec before first retry
+  //       Duration(seconds: 2), // wait 2 sec before second retry
+  //       Duration(seconds: 3), // wait 3 sec before third retry
+  //       Duration(seconds: 4), // wait 4 sec before fourth retry
+  //     ],
+  //     retryEvaluator: dioRetryEvaluatorFunc,
+  //   ),
+  // ]);
+  //
+  // final mempoolspaceDio = Dio(BaseOptions(
+  //   baseUrl: config.esploraBase,
+  //   connectTimeout: const Duration(seconds: 5),
+  //   receiveTimeout: const Duration(seconds: 3),
+  // ));
 
-  esploraDio.interceptors.addAll([
-    TimeoutInterceptor(),
-    ConnectionErrorInterceptor(),
-    BadResponseInterceptor(),
-    BadCertificateInterceptor(),
-    // SimpleLogInterceptor(),
-    RetryInterceptor(
-      dio: dio,
-      retries: 4,
-      retryDelays: const [
-        Duration(seconds: 1), // wait 1 sec before first retry
-        Duration(seconds: 2), // wait 2 sec before second retry
-        Duration(seconds: 3), // wait 3 sec before third retry
-        Duration(seconds: 4), // wait 4 sec before fourth retry
-      ],
-      retryEvaluator: dioRetryEvaluatorFunc,
-    ),
-  ]);
-
-  final mempoolspaceDio = Dio(BaseOptions(
-    baseUrl: config.esploraBase,
-    connectTimeout: const Duration(seconds: 5),
-    receiveTimeout: const Duration(seconds: 3),
-  ));
-
-  mempoolspaceDio.interceptors.addAll([
-    RetryInterceptor(
-      dio: mempoolspaceDio,
-      retries: 3,
-      retryDelays: const [
-        Duration(seconds: 1), // wait 1 sec before first retry
-        Duration(seconds: 1), // wait 2 sec before second retry
-        Duration(seconds: 1), // wait 3 sec before third retry
-      ],
-      retryEvaluator: dioRetryEvaluatorFunc,
-    ), // Add the RetryInterceptor here
-  ]);
+  // mempoolspaceDio.interceptors.addAll([
+  //   RetryInterceptor(
+  //     dio: mempoolspaceDio,
+  //     retries: 3,
+  //     retryDelays: const [
+  //       Duration(seconds: 1), // wait 1 sec before first retry
+  //       Duration(seconds: 1), // wait 2 sec before second retry
+  //       Duration(seconds: 1), // wait 3 sec before third retry
+  //     ],
+  //     retryEvaluator: dioRetryEvaluatorFunc,
+  //   ), // Add the RetryInterceptor here
+  // ]);
 
 //   final blockCypherDio = Dio(BaseOptions(
 //       baseUrl: config.blockCypherBase,
@@ -296,6 +305,11 @@ void setup() {
 //     return handler.next(options);
 //   },
 // ));
+
+  injector.registerSingleton<CounterpartyClientFactory>(
+      CounterpartyClientFactory());
+
+  injector.registerSingleton<EsploraClientFactory>(EsploraClientFactory());
 
   injector.registerSingleton<AnalyticsService>(PostHogWebAnalyticsService(
     config,
@@ -317,83 +331,79 @@ void setup() {
   GetIt.I.get<ErrorService>().initialize();
 
   injector.registerSingleton<BitcoinRepository>(BitcoinRepositoryImpl(
-    esploraApi: EsploraApi(
-      dio: esploraDio,
-    ),
+    esploraClientFactory: GetIt.I.get<EsploraClientFactory>(),
+    // esploraApi: EsploraApi(
+    //   dio: esploraDio,
+    // ),
     // blockCypherApi: BlockCypherApi(dio: blockCypherDio)
   ));
   injector.registerSingleton<CacheProvider>(HiveCache());
 
+  injector.registerSingleton<SettingsRepository>(SettingsRepositoryImpl());
+
   injector.registerSingleton<DatabaseManager>(DatabaseManager());
 
-  injector.registerSingleton<AddressTxRepository>(
-      AddressTxRepositoryImpl(api: GetIt.I.get<V2Api>()));
-  injector.registerSingleton<ComposeRepository>(
-      ComposeRepositoryImpl(api: GetIt.I.get<V2Api>()));
+  injector.registerSingleton<AddressTxRepository>(AddressTxRepositoryImpl(
+    counterpartyClientFactory: GetIt.I.get<CounterpartyClientFactory>(),
+  ));
+  injector.registerSingleton<ComposeRepository>(ComposeRepositoryImpl());
   injector.registerSingleton<EstimateXcpFeeRepository>(
-      EstimateXcpFeeRepositoryImpl(api: GetIt.I.get<V2Api>()));
-  injector.registerSingleton<UtxoRepository>(UtxoRepositoryImpl(
-      api: GetIt.I.get<V2Api>(),
-      esploraApi: EsploraApi(
-        dio: esploraDio,
-      ),
-      cacheProvider: GetIt.I.get<CacheProvider>()));
+      EstimateXcpFeeRepositoryImpl());
+  injector.registerSingleton<UtxoRepository>(
+      UtxoRepositoryImpl(cacheProvider: GetIt.I.get<CacheProvider>()));
   injector.registerSingleton<BalanceRepository>(BalanceRepositoryImpl(
-      api: GetIt.I.get<V2Api>(),
+      counterpartyClientFactory: GetIt.I.get<CounterpartyClientFactory>(),
       utxoRepository: GetIt.I.get<UtxoRepository>(),
       bitcoinRepository: GetIt.I.get<BitcoinRepository>()));
 
-  injector.registerSingleton<BlockRepository>(
-      BlockRepositoryImpl(GetIt.I.get<V2Api>()));
+  injector.registerSingleton<BlockRepository>(BlockRepositoryImpl());
 
-  injector.registerSingleton<AssetRepository>(
-      AssetRepositoryImpl(api: GetIt.I.get<V2Api>()));
+  injector.registerSingleton<AssetRepository>(AssetRepositoryImpl());
 
   injector.registerSingleton<Bip39Service>(Bip39ServiceImpl());
-  injector.registerSingleton<TransactionService>(
-      TransactionServiceImpl(config: config));
+  injector.registerSingleton<TransactionService>(TransactionServiceImpl());
   injector
       .registerSingleton<EncryptionService>(EncryptionServiceWebWorkerImpl());
-  injector
-      .registerSingleton<WalletService>(WalletServiceImpl(injector(), config));
-  injector
-      .registerSingleton<AddressService>(AddressServiceImpl(config: config));
 
-  injector.registerSingleton<ImportedAddressService>(
-      ImportedAddressServiceImpl(config: config));
+  injector.registerSingleton<AddressService>(AddressServiceImpl());
+
+  injector
+      .registerSingleton<ImportedAddressService>(ImportedAddressServiceImpl());
   injector.registerSingleton<MnemonicService>(
       MnemonicServiceImpl(GetIt.I.get<Bip39Service>()));
   injector.registerSingleton<BitcoindService>(
-      BitcoindServiceCounterpartyProxyImpl(GetIt.I.get<V2Api>()));
+      BitcoindServiceCounterpartyProxyImpl());
 
-  injector.registerSingleton<AccountRepository>(
-      AccountRepositoryImpl(injector.get<DatabaseManager>().database));
-  injector.registerSingleton<WalletRepository>(
-      WalletRepositoryImpl(injector.get<DatabaseManager>().database));
-  injector.registerSingleton<AddressRepository>(
-      AddressRepositoryImpl(injector.get<DatabaseManager>().database));
+  injector.registerSingleton<WalletConfigRepository>(
+      WalletConfigRepositoryImpl(injector.get<DatabaseManager>().database));
+
   injector.registerSingleton<ImportedAddressRepository>(
       ImportedAddressRepositoryImpl(injector.get<DatabaseManager>().database));
 
-  injector.registerSingleton<UnifiedAddressRepository>(
-    UnifiedAddressRepositoryImpl(
-      addressRepository: GetIt.I.get<AddressRepository>(),
-      importedAddressRepository: GetIt.I.get<ImportedAddressRepository>(),
-    ),
-  );
+  injector.registerSingleton<SecureKVService>(
+      SecureKVServiceImpl(const FlutterSecureStorage()));
 
-  injector.registerSingleton<OrderRepository>(
-      OrderRepositoryImpl(api: GetIt.I.get<V2Api>()));
-
-  injector.registerSingleton<TransactionRepository>(TransactionRepositoryImpl(
-    addressRepository: GetIt.I.get<AddressRepository>(),
-    api_: GetIt.I.get<V2Api>(),
+  injector.registerSingleton<InMemoryKeyRepository>(InMemoryKeyRepositoryImpl(
+    secureKVService: GetIt.I.get<SecureKVService>(),
   ));
+
+  injector.registerSingleton<AccountV2Repository>(
+      AccountV2RepositoryImpl(injector.get<DatabaseManager>().database));
+
+  injector.registerSingleton<MnemonicRepository>(
+      MnemonicRepositoryImpl(secureKVService: GetIt.I<SecureKVService>()));
+
+  injector.registerSingleton<AddressRepositoryDeprecated>(AddressRepositoryImpl(
+    injector.get<DatabaseManager>().database,
+  ));
+
+  injector.registerSingleton<OrderRepository>(OrderRepositoryImpl());
+
+  injector
+      .registerSingleton<TransactionRepository>(TransactionRepositoryImpl());
 
   injector.registerSingleton<TransactionLocalRepository>(
       TransactionLocalRepositoryImpl(
-          addressRepository: GetIt.I.get<AddressRepository>(),
-          api_: GetIt.I.get<V2Api>(),
           transactionDao:
               TransactionsDao(injector.get<DatabaseManager>().database)));
 
@@ -404,27 +414,21 @@ void setup() {
 
   injector.registerSingleton<DispenserRepository>(
     DispenserRepositoryImpl(
-      api: GetIt.I.get<V2Api>(),
       logger: GetIt.I.get<Logger>(),
     ),
   );
 
   injector.registerSingleton<FairminterRepository>(
     FairminterRepositoryImpl(
-      api: GetIt.I.get<V2Api>(),
       logger: GetIt.I.get<Logger>(),
     ),
   );
 
   injector.registerSingleton<FeeEstimatesRespository>(
       FeeEstimatesRespositoryMempoolSpaceImpl(
-          mempoolSpaceApi: MempoolSpaceApi(
-    dio: mempoolspaceDio,
-    configRepository: config,
-  )));
+          mempoolSpaceApi: MempoolSpaceApi()));
 
-  injector.registerSingleton<NodeInfoRepository>(
-      NodeInfoRepositoryImpl(GetIt.I.get<V2Api>()));
+  injector.registerSingleton<NodeInfoRepository>(NodeInfoRepositoryImpl());
 
   injector.registerSingleton<GetFeeEstimatesUseCase>(GetFeeEstimatesUseCase(
       feeEstimatesRepository: GetIt.I.get<FeeEstimatesRespository>()));
@@ -434,7 +438,6 @@ void setup() {
   ));
 
   injector.registerSingleton<EventsRepository>(EventsRepositoryImpl(
-      api_: GetIt.I.get<V2Api>(),
       bitcoinRepository: GetIt.I.get<BitcoinRepository>(),
       cacheProvider: GetIt.I.get<CacheProvider>()));
 
@@ -458,12 +461,15 @@ void setup() {
       FetchComposeFairmintFormDataUseCase(
           getFeeEstimatesUseCase: GetIt.I.get<GetFeeEstimatesUseCase>(),
           fairminterRepository: injector.get<FairminterRepository>()));
+
   injector.registerSingleton<FetchDividendFormDataUseCase>(
       FetchDividendFormDataUseCase(
           getFeeEstimatesUseCase: GetIt.I.get<GetFeeEstimatesUseCase>(),
           balanceRepository: injector.get<BalanceRepository>(),
           assetRepository: injector.get<AssetRepository>(),
           estimateXcpFeeRepository: GetIt.I.get<EstimateXcpFeeRepository>()));
+
+  injector.registerSingleton<SeedService>(SeedServiceImpl());
 
   injector
       .registerSingleton<ComposeTransactionUseCase>(ComposeTransactionUseCase(
@@ -482,34 +488,14 @@ void setup() {
       FetchIssuanceFormDataUseCase(
           balanceRepository: injector.get<BalanceRepository>(),
           getFeeEstimatesUseCase: GetIt.I.get<GetFeeEstimatesUseCase>()));
-
   injector.registerSingleton<FetchComposeAttachUtxoFormDataUseCase>(
       FetchComposeAttachUtxoFormDataUseCase(
           getFeeEstimatesUseCase: GetIt.I.get<GetFeeEstimatesUseCase>(),
           estimateXcpFeeRepository: GetIt.I.get<EstimateXcpFeeRepository>(),
           balanceRepository: injector.get<BalanceRepository>()));
 
-  injector.registerSingleton<SecureKVService>(SecureKVServiceImpl());
-
-  injector.registerSingleton<InMemoryKeyRepository>(InMemoryKeyRepositoryImpl(
-    secureKVService: GetIt.I.get<SecureKVService>(),
-  ));
-
   injector.registerSingleton<SignAndBroadcastTransactionUseCase>(
-      SignAndBroadcastTransactionUseCase(
-    inMemoryKeyRepository: GetIt.I.get<InMemoryKeyRepository>(),
-    addressRepository: GetIt.I.get<AddressRepository>(),
-    importedAddressRepository: GetIt.I.get<ImportedAddressRepository>(),
-    accountRepository: GetIt.I.get<AccountRepository>(),
-    walletRepository: GetIt.I.get<WalletRepository>(),
-    utxoRepository: GetIt.I.get<UtxoRepository>(),
-    encryptionService: GetIt.I.get<EncryptionService>(),
-    addressService: GetIt.I.get<AddressService>(),
-    transactionService: GetIt.I.get<TransactionService>(),
-    bitcoindService: GetIt.I.get<BitcoindService>(),
-    transactionLocalRepository: GetIt.I.get<TransactionLocalRepository>(),
-    importedAddressService: GetIt.I.get<ImportedAddressService>(),
-  ));
+      SignAndBroadcastTransactionUseCase());
 
   injector.registerSingleton<WriteLocalTransactionUseCase>(
       WriteLocalTransactionUseCase(
@@ -526,20 +512,6 @@ void setup() {
 
   injector
       .registerSingleton<EstimateDispensesUseCase>(EstimateDispensesUseCase());
-
-  injector.registerSingleton<ImportWalletUseCase>(ImportWalletUseCase(
-    inMemoryKeyRepository: GetIt.I.get<InMemoryKeyRepository>(),
-    addressService: GetIt.I.get<AddressService>(),
-    config: GetIt.I.get<Config>(),
-    addressRepository: GetIt.I.get<AddressRepository>(),
-    accountRepository: GetIt.I.get<AccountRepository>(),
-    walletRepository: GetIt.I.get<WalletRepository>(),
-    encryptionService: GetIt.I.get<EncryptionService>(),
-    walletService: GetIt.I.get<WalletService>(),
-    bitcoinRepository: GetIt.I.get<BitcoinRepository>(),
-    mnemonicService: GetIt.I.get<MnemonicService>(),
-    eventsRepository: GetIt.I.get<EventsRepository>(),
-  ));
 
   injector.registerLazySingleton<RPCGetAddressesSuccessCallback>(
       () => config.isWebExtension
@@ -629,7 +601,23 @@ void setup() {
     GetIt.I.registerSingleton<PlatformService>(PlatformServiceWebImpl());
   }
 
-  injector.registerSingleton<SettingsRepository>(SettingsRepositoryImpl());
+  injector.registerSingleton<SetMnemonicUseCase>(SetMnemonicUseCase(
+      encryptionService: GetIt.I<EncryptionService>(),
+      inMemoryKeyRepository: GetIt.I<InMemoryKeyRepository>(),
+      mnemonicRepository: GetIt.I<MnemonicRepository>()));
+
+  injector.registerSingleton<AddressV2Repository>(AddressV2RepositoryImpl());
+
+  injector.registerSingleton<SessionStateCubit>(SessionStateCubit(
+      kvService: GetIt.I<SecureKVService>(),
+      encryptionService: GetIt.I<EncryptionService>(),
+      inMemoryKeyRepository: GetIt.I<InMemoryKeyRepository>(),
+      cacheProvider: GetIt.I<CacheProvider>(),
+      // walletRepository: GetIt.I<WalletRepository>(),
+      // accountRepository: GetIt.I<AccountRepository>(),
+      // addressRepository: GetIt.I<AddressRepository>(),
+      // importedAddressRepository: GetIt.I<ImportedAddressRepository>(),
+      analyticsService: GetIt.I<AnalyticsService>()));
 }
 
 class CustomDioException extends DioException {

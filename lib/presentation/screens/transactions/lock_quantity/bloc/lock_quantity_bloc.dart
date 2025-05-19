@@ -1,6 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:horizon/common/constants.dart';
-import 'package:horizon/common/uuid.dart';
 import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/domain/entities/compose_issuance.dart';
 import 'package:horizon/domain/entities/fee_option.dart' as fee_option;
@@ -16,6 +15,7 @@ import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
 import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transaction_usecase.dart';
 import 'package:horizon/presentation/common/usecase/write_local_transaction_usecase.dart';
 import 'package:horizon/presentation/screens/transactions/lock_quantity/bloc/lock_quantity_event.dart';
+import 'package:horizon/domain/entities/http_config.dart';
 
 class LockQuantityData {
   final MultiAddressBalanceEntry ownerBalanceEntry;
@@ -35,8 +35,10 @@ class LockQuantityBloc extends Bloc<TransactionEvent,
   final WriteLocalTransactionUseCase writelocalTransactionUseCase;
   final AnalyticsService analyticsService;
   final Logger logger;
+  final HttpConfig httpConfig;
 
   LockQuantityBloc({
+    required this.httpConfig,
     required this.balanceRepository,
     required this.getFeeEstimatesUseCase,
     required this.composeTransactionUseCase,
@@ -76,9 +78,13 @@ class LockQuantityBloc extends Bloc<TransactionEvent,
 
     try {
       final balances = await balanceRepository.getBalancesForAddressesAndAsset(
-          event.addresses, event.assetName, BalanceType.address);
+          httpConfig: httpConfig,
+          addresses: event.addresses,
+          assetName: event.assetName,
+          type: BalanceType.address);
 
-      final feeEstimates = await getFeeEstimatesUseCase.call();
+      final feeEstimates =
+          await getFeeEstimatesUseCase.call(httpConfig: httpConfig);
 
       final ownerAddress = balances.assetInfo.owner;
       if (!event.addresses.contains(ownerAddress)) {
@@ -161,6 +167,7 @@ class LockQuantityBloc extends Bloc<TransactionEvent,
           description: event.params.description,
         ),
         composeFn: composeRepository.composeIssuanceVerbose,
+        httpConfig: httpConfig,
       );
 
       emit(state.copyWith(
@@ -184,33 +191,36 @@ class LockQuantityBloc extends Bloc<TransactionEvent,
     Emitter<TransactionState<LockQuantityData, ComposeIssuanceResponseVerbose>>
         emit,
   ) async {
-    try {
-      emit(state.copyWith(broadcastState: const BroadcastState.loading()));
-
-      final composeData = state.getComposeDataOrThrow();
-
-      await signAndBroadcastTransactionUseCase.call(
-          decryptionStrategy: event.decryptionStrategy,
-          source: composeData.params.source,
-          rawtransaction: composeData.rawtransaction,
-          onSuccess: (txHex, txHash) async {
-            await writelocalTransactionUseCase.call(txHex, txHash);
-
-            logger.info('lock quantity broadcasted txHash: $txHash');
-            analyticsService.trackAnonymousEvent(
-                'broadcast_tx_${transactionType.name}',
-                properties: {'distinct_id': uuid.v4()});
-
-            emit(state.copyWith(
-                broadcastState: BroadcastState.success(
-                    BroadcastStateSuccess(txHex: txHex, txHash: txHash))));
-          },
-          onError: (msg) {
-            emit(state.copyWith(broadcastState: BroadcastState.error(msg)));
-          });
-    } catch (e) {
-      emit(state.copyWith(broadcastState: BroadcastState.error(e.toString())));
-    }
+    throw UnimplementedError('lock quantiy not implemented yet');
+    // try {
+    //   emit(state.copyWith(broadcastState: const BroadcastState.loading()));
+    //
+    //   final composeData = state.getComposeDataOrThrow();
+    //
+    //   await signAndBroadcastTransactionUseCase.call(
+    //       httpConfig: httpConfig,
+    //       decryptionStrategy: event.decryptionStrategy,
+    //       source: composeData.params.source,
+    //       rawtransaction: composeData.rawtransaction,
+    //       onSuccess: (txHex, txHash) async {
+    //         await writelocalTransactionUseCase.call(
+    //             hex: txHex, hash: txHash, httpConfig: httpConfig);
+    //
+    //         logger.info('lock quantity broadcasted txHash: $txHash');
+    //         analyticsService.trackAnonymousEvent(
+    //             'broadcast_tx_${transactionType.name}',
+    //             properties: {'distinct_id': uuid.v4()});
+    //
+    //         emit(state.copyWith(
+    //             broadcastState: BroadcastState.success(
+    //                 BroadcastStateSuccess(txHex: txHex, txHash: txHash))));
+    //       },
+    //       onError: (msg) {
+    //         emit(state.copyWith(broadcastState: BroadcastState.error(msg)));
+    //       });
+    // } catch (e) {
+    //   emit(state.copyWith(broadcastState: BroadcastState.error(e.toString())));
+    // }
   }
 
   void _onFeeOptionSelected(

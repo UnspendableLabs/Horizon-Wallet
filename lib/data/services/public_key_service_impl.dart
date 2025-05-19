@@ -19,24 +19,15 @@ class PublicKeyServiceImpl implements PublicKeyService {
   PublicKeyServiceImpl({required this.config});
 
   @override
-  Future<String> fromPrivateKeyAsHex(String privateKey) async {
+  Future<String> fromPrivateKeyAsHex(String privateKey, Network network) async {
     Buffer privKeyJS =
         Buffer.from(Uint8List.fromList(hex.decode(privateKey)).toJS);
 
-    final network = _getNetwork();
-
     ecpair.ECPairInterface signer =
-        ecpairFactory.fromPrivateKey(privKeyJS, network);
+        ecpairFactory.fromPrivateKey(privKeyJS, network.toJS);
 
     return signer.publicKey.toDart
         .map(((byte) => byte.toRadixString(16).padLeft(2, "0")))
         .join();
   }
-
-  _getNetwork() => switch (config.network) {
-        Network.mainnet => ecpair.bitcoin,
-        Network.testnet => ecpair.testnet,
-        Network.testnet4 => ecpair.testnet,
-        Network.regtest => ecpair.regtest,
-      };
 }

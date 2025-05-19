@@ -1,6 +1,7 @@
 import 'package:horizon/domain/entities/dispenser.dart';
 import 'package:horizon/domain/repositories/dispenser_repository.dart';
 import 'package:horizon/core/logging/logger.dart';
+import 'package:horizon/domain/entities/http_config.dart';
 
 class FetchOpenDispensersOnAddressUseCase {
   final DispenserRepository dispenserRepository;
@@ -10,9 +11,10 @@ class FetchOpenDispensersOnAddressUseCase {
       {required this.dispenserRepository, this.logger});
 
   // for now we just abstract away task either here
-  Future<List<Dispenser>> call(String address) async {
-    final result =
-        await dispenserRepository.getDispensersByAddress(address).run();
+  Future<List<Dispenser>> call(String address, HttpConfig httpConfig) async {
+    final result = await dispenserRepository
+        .getDispensersByAddress(address, httpConfig)
+        .run();
     return result.fold(
       (error) {
         throw FetchOpenDispensersOnAddressException(error);

@@ -1,29 +1,67 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:collection/collection.dart';
-import 'package:horizon/domain/entities/account.dart';
-import 'package:horizon/domain/entities/imported_address.dart';
-import 'package:horizon/domain/entities/wallet.dart';
-import 'package:horizon/domain/entities/address.dart';
-import 'package:horizon/domain/repositories/account_repository.dart';
-import 'package:horizon/domain/repositories/imported_address_repository.dart';
-import 'package:horizon/domain/repositories/wallet_repository.dart';
-import 'package:horizon/domain/repositories/address_repository.dart';
+import 'package:flutter/foundation.dart';
+import 'package:horizon/domain/entities/http_config.dart';
+// import 'package:horizon/domain/entities/account.dart';
+import 'package:horizon/domain/entities/account_v2.dart';
+import 'package:horizon/domain/entities/address_v2.dart';
+import 'package:horizon/domain/entities/wallet_config.dart';
+// import 'package:horizon/domain/entities/wallet.dart';
+// import 'package:horizon/domain/repositories/account_repository.dart';
+import 'package:horizon/domain/repositories/account_v2_repository.dart';
+import 'package:horizon/domain/repositories/address_v2_repository.dart';
+import 'package:horizon/domain/repositories/mnemonic_repository.dart';
+// import 'package:horizon/domain/repositories/wallet_repository.dart';
+import 'package:horizon/domain/repositories/settings_repository.dart';
+import 'package:horizon/domain/repositories/wallet_config_repository.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 import 'package:horizon/domain/services/secure_kv_service.dart';
 import 'package:horizon/common/constants.dart';
+import 'package:get_it/get_it.dart';
+import 'package:horizon/extensions.dart';
+import 'package:horizon/data/sources/network/api/v2_api.dart';
+import 'package:dio/dio.dart';
 
 import './session_state.dart';
+
+// class Testnet4 extends Options {}
+//
+// class Custom extends Options `
+//   final String esplora;
+//   Custom({required this.esplora});
+// }
+
+HttpConfig httpConfigForNetwork(Network network) {
+  return switch (network) {
+    Network.mainnet => const Mainnet(),
+    Network.testnet4 => const Testnet4(),
+    // Network.custom => const Custom(esplora: 'http://localhost:3000'),
+  };
+}
+
+V2Api counterpartyClientForNetwork(Network network) {
+  return V2Api(Dio(BaseOptions(
+    baseUrl: switch (network) {
+      Network.mainnet => 'https://api.unspendablelabs.com:4000/v2',
+      Network.testnet4 => 'https://testnet4.counterparty.io:44000/v2/',
+    },
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    connectTimeout: const Duration(seconds: 5),
+    receiveTimeout: const Duration(seconds: 3),
+  )));
+}
 
 sealed class GetSessionStateResponse {}
 
 class LoggedIn extends GetSessionStateResponse {
-  Wallet wallet;
   String decryptionKey;
 
-  LoggedIn({required this.wallet, required this.decryptionKey});
+  LoggedIn({required this.decryptionKey});
 }
 
 class LoggedOut extends GetSessionStateResponse {}
@@ -32,37 +70,54 @@ class NoWallet extends GetSessionStateResponse {}
 
 class SessionStateCubit extends Cubit<SessionState> {
   CacheProvider cacheProvider;
-  WalletRepository walletRepository;
-  AccountRepository accountRepository;
-  AddressRepository addressRepository;
-  ImportedAddressRepository importedAddressRepository;
+  // WalletRepository walletRepository;
+  // AccountRepository accountRepository;
+  final SettingsRepository _settingsRepository;
+  final WalletConfigRepository _walletConfigRepository;
+  final AccountV2Repository _accountV2Repository;
+  final AddressV2Repository _addressV2Repository;
   AnalyticsService analyticsService;
   InMemoryKeyRepository inMemoryKeyRepository;
   final EncryptionService encryptionService;
   final SecureKVService kvService;
+  final MnemonicRepository _mnemonicRepository;
 
-  SessionStateCubit(
-      {required this.kvService,
-      required this.cacheProvider,
-      required this.walletRepository,
-      required this.accountRepository,
-      required this.addressRepository,
-      required this.importedAddressRepository,
-      required this.analyticsService,
-      required this.inMemoryKeyRepository,
-      required this.encryptionService})
-      : super(const SessionState.initial());
+  SessionStateCubit({
+    required this.kvService,
+    required this.cacheProvider,
+    // required this.walletRepository,
+    // required this.accountRepository,
+
+    SettingsRepository? settingsRepository,
+    WalletConfigRepository? walletConfigRepository,
+    AccountV2Repository? accountV2Repository,
+    AddressV2Repository? addressV2Repository,
+    required this.analyticsService,
+    required this.inMemoryKeyRepository,
+    required this.encryptionService,
+    mnemonicRepository,
+  })  : _settingsRepository =
+            settingsRepository ?? GetIt.I<SettingsRepository>(),
+        _accountV2Repository =
+            accountV2Repository ?? GetIt.I<AccountV2Repository>(),
+        _mnemonicRepository =
+            mnemonicRepository ?? GetIt.I<MnemonicRepository>(),
+        _walletConfigRepository =
+            walletConfigRepository ?? GetIt.I<WalletConfigRepository>(),
+        _addressV2Repository =
+            addressV2Repository ?? GetIt.I<AddressV2Repository>(),
+        super(const SessionState.initial());
 
   Future<GetSessionStateResponse> _getSessionState() async {
-    Wallet? wallet = await walletRepository.getCurrentWallet();
+    final mnemonic = await _mnemonicRepository.get();
 
-    if (wallet == null) {
+    if (mnemonic.isNone()) {
       return NoWallet();
     }
 
-    final decryptionKey = await inMemoryKeyRepository.get();
+    final mnemonicKey = await inMemoryKeyRepository.getMnemonicKey();
 
-    if (decryptionKey == null) {
+    if (mnemonicKey.isNone()) {
       return LoggedOut();
     }
 
@@ -84,9 +139,10 @@ class SessionStateCubit extends Cubit<SessionState> {
     }
 
     try {
-      encryptionService.decryptWithKey(wallet.encryptedPrivKey, decryptionKey);
+      encryptionService.decryptWithKey(
+          mnemonic.getOrThrow(), mnemonicKey.getOrThrow());
 
-      return LoggedIn(wallet: wallet, decryptionKey: decryptionKey);
+      return LoggedIn(decryptionKey: mnemonicKey.getOrThrow());
     } catch (e) {
       return LoggedOut();
     }
@@ -105,37 +161,44 @@ class SessionStateCubit extends Cubit<SessionState> {
         case LoggedOut():
           emit(const SessionState.loggedOut());
           return;
-        case LoggedIn(wallet: var wallet, decryptionKey: var decryptionKey):
-          analyticsService.trackAnonymousEvent('wallet_opened',
-              properties: {'distinct_id': wallet.uuid});
+        case LoggedIn(decryptionKey: var decryptionKey):
+          WalletConfig walletConfig =
+              await _walletConfigRepository.getCurrent();
+          // TODO: we may need to handle to restore something here
+          // analyticsService.trackAnonymousEvent('wallet_opened',
+          //     properties: {'distinct_id': wallet.uuid});
 
-          List<Account> accounts =
-              await accountRepository.getAccountsByWalletUuid(wallet.uuid);
+          List<AccountV2> accounts =
+              await _accountV2Repository.getByWalletConfig(
+            walletConfigID: walletConfig.uuid,
+          );
 
-          if (accounts.isEmpty) {
-            throw Exception("invariant: no accounts for this wallet");
-          }
+          String? currentAccountHash =
+              cacheProvider.getString("current-account-hash");
 
-          List<Address> addresses = await addressRepository.getAll();
+          // TODO: save selected account index
+          AccountV2 currentAccount = accounts.firstWhereOrNull(
+                (account) => account.hash == currentAccountHash,
+              ) ??
+              accounts.first;
 
-          if (addresses.isEmpty) {
-            throw Exception("invariant: no addresses for this account");
-          }
-
-          List<ImportedAddress> importedAddresses =
-              await importedAddressRepository.getAll();
+          // TODO: the arg here doesn't matter
+          List<AddressV2> addresses =
+              await _addressV2Repository.getByAccount(currentAccount);
 
           emit(SessionState.success(SessionStateSuccess(
             redirect: true,
-            wallet: wallet,
+            httpConfig: httpConfigForNetwork(walletConfig.network),
+            walletConfig: walletConfig,
             decryptionKey: decryptionKey,
             accounts: accounts,
             addresses: addresses,
-            importedAddresses: importedAddresses,
+            currentAccount: currentAccount,
           )));
           return;
       }
     } catch (error) {
+      print(error);
       emit(SessionState.error(error.toString()));
     }
   }
@@ -151,6 +214,92 @@ class SessionStateCubit extends Cubit<SessionState> {
             SessionState.success(stateInner.copyWith(redirect: false)));
 
     emit(state_);
+  }
+
+  void onNetworkChanged(Network network, [VoidCallback? cb]) async {
+    WalletConfig current = await _walletConfigRepository.getCurrent();
+
+    WalletConfig walletConfig = await _walletConfigRepository.findOrCreate(
+      basePath: current.basePath,
+      network: network,
+      seedDerivation: current.seedDerivation,
+    );
+
+    await _settingsRepository.setWalletConfigID(walletConfig.uuid);
+
+    List<AccountV2> accounts = await _accountV2Repository.getByWalletConfig(
+      walletConfigID: walletConfig.uuid,
+    );
+
+    String? currentAccountHash =
+        cacheProvider.getString("current-account-hash");
+
+    // TODO: save selected account index
+    AccountV2 currentAccount = accounts.firstWhereOrNull(
+          (account) => account.hash == currentAccountHash,
+        ) ??
+        accounts.first;
+
+    List<AddressV2> addresses =
+        await _addressV2Repository.getByAccount(currentAccount);
+
+    print("asdfas");
+    print(addresses);
+
+    // TODO: need to think through imported addresses
+    SessionStateSuccess success = state.successOrThrow();
+
+    emit(SessionState.success(success.copyWith(
+      redirect: false, // not sure about this....
+      walletConfig: walletConfig,
+      httpConfig: httpConfigForNetwork(walletConfig.network),
+      // wallet: wallet,
+      accounts: accounts,
+      addresses: addresses,
+      currentAccount: currentAccount,
+    )));
+
+    if (cb != null) {
+      cb();
+    }
+  }
+
+  void onWalletConfigChanged(WalletConfig config, [VoidCallback? cb]) async {
+    print("onWalletConfigChanged ${config.uuid}");
+
+    await _settingsRepository.setWalletConfigID(config.uuid);
+
+    print("after onWalletConfigChanged ${config.uuid}");
+
+    refresh();
+
+    if (cb != null) {
+      cb();
+    }
+  }
+
+  void onAccountChanged(AccountV2 account, [VoidCallback? cb]) async {
+    List<AddressV2> addresses =
+        await _addressV2Repository.getByAccount(account);
+
+    final current = state.successOrThrow();
+
+    final next = current.copyWith(
+      addresses: addresses,
+      currentAccount: account,
+    );
+
+    // // TODO: it would be nice to not to have to do this effectful thing here
+    cacheProvider.setString(
+      "current-account-hash",
+      account.hash,
+    );
+
+    emit(SessionState.success(next));
+
+    if (cb != null) {
+      cb();
+    }
   }
 
   void onOnboarding() {
@@ -180,45 +329,73 @@ class SessionStateCubit extends Cubit<SessionState> {
   void refresh() async {
     // this seems to be called when you create a new account
     try {
-      Wallet? wallet = await walletRepository.getCurrentWallet();
+      final mnemonic = await _mnemonicRepository.get();
 
-      if (wallet == null) {
+      if (mnemonic.isNone()) {
         emit(const SessionState.onboarding(Onboarding.initial()));
         return;
       }
 
-      List<Account> accounts =
-          await accountRepository.getAccountsByWalletUuid(wallet.uuid);
+      WalletConfig walletConfig = await _walletConfigRepository.getCurrent();
 
-      if (accounts.isEmpty) {
-        throw Exception("invariant: no accounts for this wallet");
-      }
+      List<AccountV2> accounts = await _accountV2Repository.getByWalletConfig(
+        walletConfigID: walletConfig.uuid,
+      );
 
-      List<Address> addresses = await addressRepository.getAll();
+      String? currentAccountHash =
+          cacheProvider.getString("current-account-hash");
 
-      if (addresses.isEmpty) {
-        throw Exception("invariant: no addresses for this account");
-      }
+      // TODO: save selected account index
+      AccountV2 currentAccount = accounts.firstWhereOrNull(
+            (account) => account.hash == currentAccountHash,
+          ) ??
+          accounts.first;
+      // List<AccountV2> accounts = await _accountV2Repository.getAll();
 
-      List<ImportedAddress> importedAddresses =
-          await importedAddressRepository.getAll();
+      // if (accounts.isEmpty) {
+      //   throw Exception("invariant: no accounts for this wallet");
+      // }
+
+      List<AddressV2> addresses =
+          await _addressV2Repository.getByAccount(currentAccount);
+
+      // if (addresses.isEmpty) {
+      //   throw Exception("invariant: no addresses for this account");
+      // }
 
       SessionStateSuccess success = state.successOrThrow();
 
       emit(SessionState.success(success.copyWith(
-        redirect: true,
-        wallet: wallet,
+        redirect: false, // not sure about this....
+        // wallet: wallet,
         accounts: accounts,
         addresses: addresses,
-        importedAddresses: importedAddresses,
+        walletConfig: walletConfig,
       )));
 
-      cacheProvider.setString(
-        "current-account-uuid",
-        accounts.last.uuid,
-      );
+      // cacheProvider.setString(
+      //   "current-account-uuid",
+      //   accounts.last.uuid,
+      // );
     } catch (error) {
       emit(SessionState.error(error.toString()));
     }
   }
+}
+
+class SessionRepository {
+  final SessionStateCubit sessionCubit;
+  SessionState state;
+
+  SessionRepository({required this.sessionCubit})
+      : state = sessionCubit.state,
+        super() {
+    sessionCubit.stream.listen(_onSessionStateChanged);
+  }
+
+  void _onSessionStateChanged(SessionState newState) {
+    state = newState;
+  }
+
+  SessionStateSuccess get success => sessionCubit.state.successOrThrow();
 }

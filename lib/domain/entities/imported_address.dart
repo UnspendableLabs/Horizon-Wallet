@@ -1,11 +1,11 @@
+import 'package:horizon/domain/entities/network.dart';
+
 class ImportedAddress {
-  final String address;
-  final String name;
+  final Network network;
   final String encryptedWif;
 
   const ImportedAddress({
-    required this.address,
+    required this.network,
     required this.encryptedWif,
-    required this.name,
   });
 }

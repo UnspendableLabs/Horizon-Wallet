@@ -7,18 +7,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
-import 'package:horizon/common/constants.dart';
 import 'package:horizon/common/fn.dart';
-import 'package:horizon/common/uuid.dart';
 import 'package:horizon/core/logging/logger.dart';
-import 'package:horizon/data/services/regtest_utils.dart';
 import 'package:horizon/data/sources/local/db_manager.dart';
-import 'package:horizon/domain/entities/account.dart';
-import 'package:horizon/domain/entities/address.dart';
-import 'package:horizon/domain/entities/wallet.dart';
-import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/action_repository.dart';
-import 'package:horizon/domain/repositories/address_repository.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/repositories/config_repository.dart';
 import 'package:horizon/domain/repositories/fairminter_repository.dart';
@@ -26,29 +18,23 @@ import 'package:horizon/domain/repositories/imported_address_repository.dart';
 import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 import 'package:horizon/domain/repositories/settings_repository.dart';
 import 'package:horizon/domain/repositories/version_repository.dart';
-import 'package:horizon/domain/repositories/wallet_repository.dart';
-import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/error_service.dart';
-import 'package:horizon/domain/services/imported_address_service.dart';
 import 'package:horizon/domain/services/secure_kv_service.dart';
-import 'package:horizon/domain/services/wallet_service.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/common/theme_extension.dart';
 import 'package:horizon/presentation/inactivity_monitor/inactivity_monitor_bloc.dart';
 import 'package:horizon/presentation/inactivity_monitor/inactivity_monitor_view.dart';
 import 'package:horizon/presentation/screens/asset/asset_view.dart';
 import 'package:horizon/presentation/screens/asset/bloc/asset_view_bloc.dart';
-import 'package:horizon/presentation/screens/dashboard/account_form/bloc/account_form_bloc.dart';
-import 'package:horizon/presentation/screens/dashboard/address_form/bloc/address_form_bloc.dart';
 import 'package:horizon/presentation/screens/dashboard/view/portfolio_view.dart';
 import 'package:horizon/presentation/screens/login/login_view.dart';
+import 'package:horizon/presentation/screens/accounts/accounts_screen.dart';
 import 'package:horizon/presentation/screens/onboarding/view/onboarding_page.dart';
 import 'package:horizon/presentation/screens/onboarding_create/view/onboarding_create_page.dart';
 import 'package:horizon/presentation/screens/onboarding_import/view/onboarding_import_page.dart';
 import 'package:horizon/presentation/screens/privacy_policy.dart';
-import 'package:horizon/presentation/screens/settings/import_address/bloc/import_address_pk_bloc.dart';
 import 'package:horizon/presentation/screens/settings/settings_view.dart';
 import 'package:horizon/presentation/screens/tos.dart';
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
@@ -62,61 +48,6 @@ import 'package:pub_semver/pub_semver.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 
-Future<void> setupRegtestWallet() async {
-  // read env for regtest private key
-  const regtestPrivateKey = String.fromEnvironment('REG_TEST_PK');
-  const regtestPassword = String.fromEnvironment('REG_TEST_PASSWORD');
-  const network = String.fromEnvironment('NETWORK');
-
-  if (regtestPrivateKey != "" &&
-      regtestPassword != "" &&
-      network == "regtest") {
-    RegTestUtils regTestUtils = RegTestUtils();
-    EncryptionService encryptionService = GetIt.I<EncryptionService>();
-    AddressService addressService = GetIt.I<AddressService>();
-    final accountRepository = GetIt.I<AccountRepository>();
-    final addressRepository = GetIt.I<AddressRepository>();
-    final walletRepository = GetIt.I<WalletRepository>();
-
-    final maybeCurrentWallet = await walletRepository.getCurrentWallet();
-    if (maybeCurrentWallet != null) {
-      return;
-    }
-
-    Wallet wallet =
-        await regTestUtils.fromBase58(regtestPrivateKey, regtestPassword);
-
-    String decryptedPrivKey = await encryptionService.decrypt(
-        wallet.encryptedPrivKey, regtestPassword);
-
-    //m/84'/1'/0'/0
-    Account account = Account(
-      name: 'Regtest #0',
-      walletUuid: wallet.uuid,
-      purpose: '84\'',
-      coinType: '1\'',
-      accountIndex: '0\'',
-      uuid: uuid.v4(),
-      importFormat: ImportFormat.horizon,
-    );
-
-    List<Address> addresses = await addressService.deriveAddressSegwitRange(
-        privKey: decryptedPrivKey,
-        chainCodeHex: wallet.chainCodeHex,
-        accountUuid: account.uuid,
-        purpose: account.purpose,
-        coin: account.coinType,
-        account: account.accountIndex,
-        change: '0',
-        start: 0,
-        end: 9);
-
-    await walletRepository.insert(wallet);
-    await accountRepository.insert(account);
-    await addressRepository.insertMany(addresses);
-  }
-}
-
 class LoadingScreen extends StatelessWidget {
   const LoadingScreen({this.from, super.key});
   final String? from;
@@ -126,6 +57,178 @@ class LoadingScreen extends StatelessWidget {
         backgroundColor: Color(0x001e1e38),
       );
 }
+
+class BottomTabNavigation extends StatelessWidget {
+  final int currentIndex;
+
+  const BottomTabNavigation({super.key, required this.currentIndex});
+
+  static const tabRoutes = ['/dashboard', '/settings'];
+
+  @override
+  Widget build(BuildContext context) {
+    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
+
+    return Container(
+      width: double.infinity,
+      height: 90,
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      decoration: BoxDecoration(
+        color: Theme.of(context).dialogTheme.backgroundColor,
+        border: Border(
+          top: BorderSide(
+            color:
+                Theme.of(context).inputDecorationTheme.outlineBorder?.color ??
+                    Colors.black.withOpacity(0.1),
+            width: 1,
+          ),
+        ),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          _buildTab(
+            context,
+            index: 0,
+            selected: currentIndex == 0,
+            icon: AppIcons.pieChartIcon(context: context),
+            label: 'Portfolio',
+            isDarkTheme: isDarkTheme,
+          ),
+          _buildTab(
+            context,
+            index: 1,
+            selected: currentIndex == 1,
+            icon: AppIcons.settingsIcon(context: context),
+            label: 'Settings',
+            isDarkTheme: isDarkTheme,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTab(
+    BuildContext context, {
+    required int index,
+    required bool selected,
+    required Widget icon,
+    required String label,
+    required bool isDarkTheme,
+  }) {
+    return GestureDetector(
+      onTap: () => context.go(tabRoutes[index]),
+      child: BottomNavItem(
+        selected: selected,
+        icon: icon,
+        label: label,
+        isDarkTheme: isDarkTheme,
+      ),
+    );
+  }
+}
+
+class BottomNavItem extends StatelessWidget {
+  final bool selected;
+  final Widget icon;
+  final String label;
+  final bool isDarkTheme;
+
+  const BottomNavItem({
+    super.key,
+    required this.selected,
+    required this.icon,
+    required this.label,
+    required this.isDarkTheme,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 75,
+      height: 74,
+      decoration: BoxDecoration(
+        color: selected && !isDarkTheme ? offWhite : Colors.transparent,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: selected
+              ? Theme.of(context).inputDecorationTheme.outlineBorder?.color ??
+                  Colors.black.withOpacity(0.1)
+              : Colors.transparent,
+          width: 1,
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            icon,
+            const SizedBox(height: 6),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 12,
+                color: selected
+                    ? Theme.of(context).textTheme.bodyMedium?.color
+                    : Theme.of(context)
+                            .textButtonTheme
+                            .style
+                            ?.foregroundColor
+                            ?.resolve({}) ??
+                        Colors.grey,
+              ),
+              softWrap: false,
+              overflow: TextOverflow.visible,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// class ScaffoldWithBottomNavigation extends StatelessWidget {
+//   final Widget child;
+//   final int currentIndex;
+//
+//   const ScaffoldWithBottomNavigation({
+//     super.key,
+//     required this.child,
+//     required this.currentIndex,
+//   });
+//
+//   static const tabs = [
+//     '/dashboard',
+//     '/settings',
+//   ];
+//
+//   void _onTabTapped(BuildContext context, int index) {
+//     context.go(tabs[index]);
+//   }
+//
+//   @override
+//   Widget build(BuildContext context) {
+//     return Scaffold(
+//       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+//       body: child,
+//       bottomNavigationBar: BottomNavigationBar(
+//         currentIndex: currentIndex,
+//         onTap: (index) => _onTabTapped(context, index),
+//         items: const [
+//           BottomNavigationBarItem(
+//             icon: Icon(Icons.home),
+//             label: 'Dashboard',
+//           ),
+//           BottomNavigationBarItem(
+//             icon: Icon(Icons.settings),
+//             label: 'Settings',
+//           ),
+//         ],
+//       ),
+//     );
+//   }
+// }
 
 class AppRouter {
   static GoRouter router = GoRouter(
@@ -137,16 +240,15 @@ class AppRouter {
             builder: (context, state) {
               return const LoadingScreen();
             }),
-        if (GetIt.instance<Config>().isDatabaseViewerEnabled)
-          GoRoute(
-            path: "/db",
-            pageBuilder: (context, state) => CustomTransitionPage<void>(
-                key: state.pageKey,
-                child:
-                    DriftDbViewer(GetIt.instance<DatabaseManager>().database),
-                transitionsBuilder:
-                    (context, animation, secondaryAnimation, child) => child),
-          ),
+        // if (GetIt.instance<Config>().isDatabaseViewerEnabled)
+        GoRoute(
+          path: "/db",
+          pageBuilder: (context, state) => CustomTransitionPage<void>(
+              key: state.pageKey,
+              child: DriftDbViewer(GetIt.instance<DatabaseManager>().database),
+              transitionsBuilder:
+                  (context, animation, secondaryAnimation, child) => child),
+        ),
         GoRoute(
           path: "/privacy-policy",
           pageBuilder: (context, state) => CustomTransitionPage<void>(
@@ -201,7 +303,7 @@ class AppRouter {
             return ValueChangeObserver(
               cacheKey: SettingsKeys.inactivityTimeout.toString(),
               defaultValue: 5,
-              builder: (context, inactivityTimeout, onChanged) {
+              builder: (context, inactivityTimeout, _) {
                 return BlocProvider(
                   key: Key("inactivity-timeout:$inactivityTimeout"),
                   create: (_) {
@@ -236,12 +338,67 @@ class AppRouter {
             GoRoute(
               path: "/dashboard",
               builder: (context, state) {
-                return const PortfolioView();
+                return const Scaffold(
+                  body: PortfolioView(),
+                  bottomNavigationBar: BottomTabNavigation(
+                    currentIndex: 0,
+                  ),
+
+                  // CHAT GPT I NEED HELP WITH A SANE WAY / FLEXIBLE WAY OF ADDING BOTTOM TABS
+                );
               },
             ),
             GoRoute(
               path: "/settings",
-              builder: (context, state) => const SettingsView(),
+              builder: (context, state) => Scaffold(
+                body: SettingsView(),
+                bottomNavigationBar: const BottomTabNavigation(
+                  currentIndex: 1,
+                ),
+              ),
+            ),
+            GoRoute(
+              path: "/accounts",
+              name: "accounts",
+              builder: (context, state) {
+                return Scaffold(
+                    appBar: AppBar(
+                      backgroundColor:
+                          Theme.of(context).scaffoldBackgroundColor,
+                      elevation: 0,
+                      centerTitle: false,
+                      leadingWidth: 40,
+                      toolbarHeight: 74,
+                      title: Padding(
+                        padding: const EdgeInsets.only(top: 18.0),
+                        child: Text(
+                          "Accounts",
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                            color:
+                                Theme.of(context).textTheme.bodyMedium?.color,
+                          ),
+                        ),
+                      ),
+                      leading: Padding(
+                        padding: const EdgeInsets.only(left: 9.0, top: 18.0),
+                        child: AppIcons.iconButton(
+                            context: context,
+                            width: 32,
+                            height: 32,
+                            icon: AppIcons.backArrowIcon(
+                                context: context,
+                                width: 24,
+                                height: 24,
+                                fit: BoxFit.fitHeight),
+                            onPressed: () {
+                              context.go("/dashboard");
+                            }),
+                      ),
+                    ),
+                    body: const AccountsScreen());
+              },
             ),
             GoRoute(
               path: "/asset/:assetName",
@@ -251,6 +408,7 @@ class AppRouter {
 
                 return BlocProvider(
                   create: (context) => AssetViewBloc(
+                    httpConfig: session.successOrThrow().httpConfig,
                     balanceRepository: GetIt.I<BalanceRepository>(),
                     fairminterRepository: GetIt.I<FairminterRepository>(),
                     addresses: session.allAddresses,
@@ -362,7 +520,6 @@ void main() {
   runZonedGuarded<Future<void>>(() async {
     WidgetsFlutterBinding.ensureInitialized();
 
-    await setupRegtestWallet();
     await initSettings();
 
     final version = GetIt.I<Config>().version;
@@ -808,52 +965,12 @@ class MyApp extends StatelessWidget {
               encryptionService: GetIt.I<EncryptionService>(),
               inMemoryKeyRepository: GetIt.I<InMemoryKeyRepository>(),
               cacheProvider: GetIt.I<CacheProvider>(),
-              walletRepository: GetIt.I<WalletRepository>(),
-              accountRepository: GetIt.I<AccountRepository>(),
-              addressRepository: GetIt.I<AddressRepository>(),
-              importedAddressRepository: GetIt.I<ImportedAddressRepository>(),
+              // walletRepository: GetIt.I<WalletRepository>(),
+              // accountRepository: GetIt.I<AccountRepository>(),
+              // addressRepository: GetIt.I<AddressRepository>(),
+              // importedAddressRepository: GetIt.I<ImportedAddressRepository>(),
               analyticsService: GetIt.I<AnalyticsService>())
             ..initialize(),
-        ),
-        BlocProvider<AccountFormBloc>(
-          create: (context) => AccountFormBloc(
-            passwordRequired: GetIt.I<SettingsRepository>()
-                .requirePasswordForCryptoOperations,
-            accountRepository: GetIt.I<AccountRepository>(),
-            walletRepository: GetIt.I<WalletRepository>(),
-            inMemoryKeyRepository: GetIt.I<InMemoryKeyRepository>(),
-            walletService: GetIt.I<WalletService>(),
-            encryptionService: GetIt.I<EncryptionService>(),
-            addressService: GetIt.I<AddressService>(),
-            addressRepository: GetIt.I<AddressRepository>(),
-            errorService: GetIt.I<ErrorService>(),
-          ),
-        ),
-        BlocProvider<AddressFormBloc>(
-          create: (context) => AddressFormBloc(
-            passwordRequired: GetIt.I<SettingsRepository>()
-                .requirePasswordForCryptoOperations,
-            inMemoryKeyRepository: GetIt.I<InMemoryKeyRepository>(),
-            walletRepository: GetIt.I<WalletRepository>(),
-            walletService: GetIt.I<WalletService>(),
-            encryptionService: GetIt.I<EncryptionService>(),
-            addressRepository: GetIt.I<AddressRepository>(),
-            accountRepository: GetIt.I<AccountRepository>(),
-            addressService: GetIt.I<AddressService>(),
-            errorService: GetIt.I<ErrorService>(),
-          ),
-        ),
-        BlocProvider<ImportAddressPkBloc>(
-          create: (context) => ImportAddressPkBloc(
-            inMemoryKeyRepository: GetIt.I<InMemoryKeyRepository>(),
-            walletRepository: GetIt.I<WalletRepository>(),
-            walletService: GetIt.I<WalletService>(),
-            encryptionService: GetIt.I<EncryptionService>(),
-            addressService: GetIt.I<AddressService>(),
-            addressRepository: GetIt.I<AddressRepository>(),
-            importedAddressRepository: GetIt.I<ImportedAddressRepository>(),
-            importedAddressService: GetIt.I<ImportedAddressService>(),
-          ),
         ),
         BlocProvider<ThemeBloc>(
           create: (context) => ThemeBloc(GetIt.I<CacheProvider>()),

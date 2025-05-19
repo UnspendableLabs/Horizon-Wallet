@@ -4,7 +4,7 @@ import "package:horizon/data/sources/local/db.dart" as local;
 import "package:horizon/domain/entities/address.dart" as entity;
 import "package:horizon/domain/repositories/address_repository.dart";
 
-class AddressRepositoryImpl implements AddressRepository {
+class AddressRepositoryImpl implements AddressRepositoryDeprecated {
   // ignore: unused_field
   final local.DB _db;
   final AddressesDao _addressDao;

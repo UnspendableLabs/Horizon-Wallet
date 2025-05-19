@@ -13,7 +13,7 @@ import "./login_form_bloc.dart" as b;
 
 class LoginForm extends StatefulWidget {
   const LoginForm({super.key});
-  
+
   @override
   _LoginFormState createState() => _LoginFormState();
 }
@@ -104,25 +104,25 @@ class _LoginFormState extends State<LoginForm> {
                     context.read<b.LoginFormBloc>().add(b.FormSubmitted());
                   },
                   suffixIcon: AppIcons.iconButton(
-                      context: context,
-                      icon: _obscurePassword
-                          ? AppIcons.eyeClosedIcon(
-                              context: context,
-                              width: 10,
-                              height: 10,
-                            )
-                          : AppIcons.eyeOpenIcon(
-                              context: context,
-                              width: 12,
-                              height: 12,
-                            ),
-                      onPressed: (){
-                        setState(() {
-                          _obscurePassword = !_obscurePassword;
-                        });
-                      },
-                      padding: EdgeInsets.zero,
-                    ),
+                    context: context,
+                    icon: _obscurePassword
+                        ? AppIcons.eyeClosedIcon(
+                            context: context,
+                            width: 10,
+                            height: 10,
+                          )
+                        : AppIcons.eyeOpenIcon(
+                            context: context,
+                            width: 12,
+                            height: 12,
+                          ),
+                    onPressed: () {
+                      setState(() {
+                        _obscurePassword = !_obscurePassword;
+                      });
+                    },
+                    padding: EdgeInsets.zero,
+                  ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Password is required';
@@ -135,12 +135,10 @@ class _LoginFormState extends State<LoginForm> {
                 ),
                 const SizedBox(height: 28),
                 HorizonButton(
-                  onPressed: () => context
-                      .read<b.LoginFormBloc>()
-                      .add(b.FormSubmitted()),
+                  onPressed: () =>
+                      context.read<b.LoginFormBloc>().add(b.FormSubmitted()),
                   child: TextButtonContent(
                     value: "Unlock",
-
                   ),
                 ),
               ]));

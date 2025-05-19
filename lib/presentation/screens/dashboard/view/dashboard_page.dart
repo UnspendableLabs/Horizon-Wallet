@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/common/fn.dart';
 import 'package:horizon/domain/entities/account.dart';
+import 'package:horizon/domain/entities/account_v2.dart';
 import 'package:horizon/domain/entities/action.dart' as URLAction;
 import 'package:horizon/domain/entities/extension_rpc.dart';
 import 'package:horizon/domain/repositories/account_repository.dart';
@@ -50,7 +51,6 @@ import 'package:horizon/presentation/screens/dashboard/view/balances_display.dar
 import 'package:horizon/presentation/screens/horizon/ui.dart' as HorizonUI;
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:horizon/presentation/session/bloc/session_state.dart';
-import 'package:qr_flutter/qr_flutter.dart';
 import 'package:sliver_tools/sliver_tools.dart';
 import 'package:horizon/domain/repositories/settings_repository.dart';
 
@@ -68,7 +68,6 @@ class SignMessageModal extends StatelessWidget {
   final RPCSignMessageSuccessCallback onSuccess;
   final ImportedAddressService importedAddressService;
   final UnifiedAddressRepository addressRepository;
-  final AccountRepository accountRepository;
   final BitcoinRepository bitcoinRepository;
 
   const SignMessageModal(
@@ -86,7 +85,6 @@ class SignMessageModal extends StatelessWidget {
       required this.onSuccess,
       required this.importedAddressService,
       required this.addressRepository,
-      required this.accountRepository,
       required this.bitcoinRepository});
 
   @override
@@ -138,7 +136,6 @@ class SignPsbtModal extends StatelessWidget {
   final Map<String, List<int>> signInputs;
   final ImportedAddressService importedAddressService;
   final UnifiedAddressRepository addressRepository;
-  final AccountRepository accountRepository;
   final BitcoinRepository bitcoinRepository;
   final List<int>? sighashTypes;
   final SessionStateSuccess session;
@@ -160,13 +157,14 @@ class SignPsbtModal extends StatelessWidget {
       required this.sighashTypes,
       required this.importedAddressService,
       required this.addressRepository,
-      required this.accountRepository,
       required this.bitcoinRepository});
 
   @override
   Widget build(BuildContext context) {
+    final session = context.read<SessionStateCubit>().state.successOrThrow();
     return BlocProvider(
       create: (_) => SignPsbtBloc(
+        httpConfig: session.httpConfig,
         session: session,
         passwordRequired:
             GetIt.I<SettingsRepository>().requirePasswordForCryptoOperations,
@@ -183,7 +181,6 @@ class SignPsbtModal extends StatelessWidget {
         walletRepository: walletRepository,
         encryptionService: encryptionService,
         addressService: addressService,
-        accountRepository: accountRepository,
       ),
       child: SignPsbtForm(
         key: Key(unsignedPsbt),
@@ -203,7 +200,7 @@ class SignPsbtModal extends StatelessWidget {
 class GetAddressesModal extends StatelessWidget {
   final int tabId;
   final String requestId;
-  final List<Account> accounts;
+  final List<AccountV2> accounts;
   final AddressRepository addressRepository;
   final ImportedAddressRepository importedAddressRepository;
   final RPCGetAddressesSuccessCallback onSuccess;
@@ -212,11 +209,9 @@ class GetAddressesModal extends StatelessWidget {
   final WalletRepository walletRepository;
   final EncryptionService encryptionService;
   final PublicKeyService publicKeyService;
-  final AccountRepository accountRepository;
 
   const GetAddressesModal(
       {super.key,
-      required this.accountRepository,
       required this.publicKeyService,
       required this.encryptionService,
       required this.addressService,
@@ -231,12 +226,13 @@ class GetAddressesModal extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final session = context.read<SessionStateCubit>().state.successOrThrow();
     return BlocProvider(
       create: (_) => GetAddressesBloc(
+        httpConfig: session.httpConfig,
         passwordRequired:
             GetIt.I<SettingsRepository>().requirePasswordForCryptoOperations,
         inMemoryKeyRepository: GetIt.I<InMemoryKeyRepository>(),
-        accountRepository: accountRepository,
         publicKeyService: publicKeyService,
         encryptionService: encryptionService,
         walletRepository: walletRepository,
@@ -1652,7 +1648,7 @@ class DashboardPageState extends State<DashboardPage> {
                       requestId: requestId,
                       accounts: state.accounts,
                       addressRepository: GetIt.I<AddressRepository>(),
-                      accountRepository: GetIt.I<AccountRepository>(),
+                      // accountRepository: GetIt.I<AccountRepository>(),
                       publicKeyService: GetIt.I<PublicKeyService>(),
                       encryptionService: GetIt.I<EncryptionService>(),
                       addressService: GetIt.I<AddressService>(),
@@ -1685,7 +1681,7 @@ class DashboardPageState extends State<DashboardPage> {
                 unsignedPsbt: psbt,
                 signInputs: signInputs,
                 sighashTypes: sighashTypes,
-                accountRepository: GetIt.I<AccountRepository>(),
+                // accountRepository: GetIt.I<AccountRepository>(),
                 addressRepository: GetIt.I<UnifiedAddressRepository>(),
                 importedAddressService: GetIt.I.get<ImportedAddressService>(),
                 transactionService: GetIt.I.get<TransactionService>(),
@@ -1717,7 +1713,6 @@ class DashboardPageState extends State<DashboardPage> {
               requestId: requestId,
               message: message,
               address: address,
-              accountRepository: GetIt.I<AccountRepository>(),
               addressRepository: GetIt.I<UnifiedAddressRepository>(),
               importedAddressService: GetIt.I.get<ImportedAddressService>(),
               transactionService: GetIt.I.get<TransactionService>(),

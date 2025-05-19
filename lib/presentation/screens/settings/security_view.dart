@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
-import 'package:get_it/get_it.dart';
 import 'package:horizon/domain/repositories/settings_repository.dart';
-import 'package:horizon/domain/repositories/wallet_repository.dart';
-import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 import 'package:horizon/presentation/screens/settings/settings_view.dart';
 
@@ -71,24 +68,25 @@ class _SecurityViewState extends State<SecurityView> {
                   isLoading = true;
                   errorText = null;
                 });
+                // TODO: this password check needs to moved out of callback in the UI
 
-                try {
-                  final wallet =
-                      await GetIt.I<WalletRepository>().getCurrentWallet();
-                  await GetIt.I<EncryptionService>()
-                      .decrypt(wallet!.encryptedPrivKey, password);
-
-                  if (dialogContext.mounted) {
-                    Navigator.of(dialogContext).pop(true);
-                  }
-                } catch (e) {
-                  if (dialogContext.mounted) {
-                    setState(() {
-                      errorText = 'Invalid Password';
-                      isLoading = false;
-                    });
-                  }
-                }
+                // try {
+                //   final wallet =
+                //       await GetIt.I<WalletRepository>().getCurrentWallet();
+                //   await GetIt.I<EncryptionService>()
+                //       .decrypt(wallet!.encryptedPrivKey, password);
+                //
+                //   if (dialogContext.mounted) {
+                //     Navigator.of(dialogContext).pop(true);
+                //   }
+                // } catch (e) {
+                //   if (dialogContext.mounted) {
+                //     setState(() {
+                //       errorText = 'Invalid Password';
+                //       isLoading = false;
+                //     });
+                //   }
+                // }
               },
               onCancel: () {
                 setState(() {

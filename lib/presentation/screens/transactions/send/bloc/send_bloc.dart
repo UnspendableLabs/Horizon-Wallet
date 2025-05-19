@@ -15,11 +15,15 @@ import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
 import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transaction_usecase.dart';
 import 'package:horizon/presentation/common/usecase/write_local_transaction_usecase.dart';
 import 'package:horizon/presentation/screens/transactions/send/bloc/send_event.dart';
+import 'package:horizon/domain/entities/http_config.dart';
+import 'package:horizon/domain/entities/address_v2.dart';
 
 class SendData {}
 
 class SendBloc extends Bloc<TransactionEvent,
     TransactionState<SendData, ComposeSendResponse>> {
+  final List<AddressV2> addresses;
+
   final TransactionType transactionType = TransactionType.send;
   final BalanceRepository balanceRepository;
   final GetFeeEstimatesUseCase getFeeEstimatesUseCase;
@@ -29,8 +33,11 @@ class SendBloc extends Bloc<TransactionEvent,
   final WriteLocalTransactionUseCase writelocalTransactionUseCase;
   final AnalyticsService analyticsService;
   final Logger logger;
+  final HttpConfig httpConfig;
 
   SendBloc({
+    required this.addresses,
+    required this.httpConfig,
     required this.balanceRepository,
     required this.getFeeEstimatesUseCase,
     required this.composeTransactionUseCase,
@@ -69,9 +76,16 @@ class SendBloc extends Bloc<TransactionEvent,
 
     try {
       final balances = await balanceRepository.getBalancesForAddressesAndAsset(
-          event.addresses, event.assetName, BalanceType.address);
+          httpConfig: httpConfig,
+          // TODO: this pattern is a little awkward given that there is never more than 1 address,
+          // although maybe we would do something like support both legacy / segwit  / taproot
+          // and force user to select specific addy somewhere in the flow
+          addresses: addresses.map((address) => address.address).toList(),
+          assetName: event.assetName,
+          type: BalanceType.address);
 
-      final feeEstimates = await getFeeEstimatesUseCase.call();
+      final feeEstimates =
+          await getFeeEstimatesUseCase.call(httpConfig: httpConfig);
 
       emit(
         state.copyWith(
@@ -126,6 +140,7 @@ class SendBloc extends Bloc<TransactionEvent,
           quantity: quantity,
         ),
         composeFn: composeRepository.composeSendVerbose,
+        httpConfig: httpConfig,
       );
 
       emit(state.copyWith(
@@ -154,11 +169,13 @@ class SendBloc extends Bloc<TransactionEvent,
       final composeData = state.getComposeDataOrThrow();
 
       await signAndBroadcastTransactionUseCase.call(
+          httpConfig: httpConfig,
           decryptionStrategy: event.decryptionStrategy,
-          source: composeData.params.source,
+          source: addresses.first,
           rawtransaction: composeData.rawtransaction,
           onSuccess: (txHex, txHash) async {
-            await writelocalTransactionUseCase.call(txHex, txHash);
+            await writelocalTransactionUseCase.call(
+                hex: txHex, hash: txHash, httpConfig: httpConfig);
 
             logger.info('send broadcasted txHash: $txHash');
             analyticsService.trackAnonymousEvent(

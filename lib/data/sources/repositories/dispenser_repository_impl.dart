@@ -1,16 +1,25 @@
 import "package:fpdart/fpdart.dart";
+import 'package:get_it/get_it.dart';
 import "package:horizon/domain/repositories/dispenser_repository.dart";
 import "package:horizon/domain/entities/dispenser.dart" as e;
-import 'package:horizon/data/sources/network/api/v2_api.dart';
 import 'package:horizon/core/logging/logger.dart';
+import 'package:horizon/data/sources/network/counterparty_client_factory.dart';
+import 'package:horizon/domain/entities/http_config.dart';
 
 class DispenserRepositoryImpl implements DispenserRepository {
-  final V2Api api;
   final Logger? logger;
-  DispenserRepositoryImpl({required this.api, this.logger});
+  final CounterpartyClientFactory _counterpartyClientFactory;
+  DispenserRepositoryImpl({
+    this.logger,
+    CounterpartyClientFactory? counterpartyClientFactory,
+  }) : _counterpartyClientFactory =
+            counterpartyClientFactory ?? GetIt.I<CounterpartyClientFactory>();
+
   @override
-  TaskEither<String, List<e.Dispenser>> getDispensersByAddress(String address) {
-    return TaskEither.tryCatch(() => _getDispensersByAddress(address),
+  TaskEither<String, List<e.Dispenser>> getDispensersByAddress(
+      String address, HttpConfig httpConfig) {
+    return TaskEither.tryCatch(
+        () => _getDispensersByAddress(address, httpConfig),
         (error, stacktrace) {
       logger?.error(
           "DispenserRepositoryImpl.getDispensersByAddress", null, stacktrace);
@@ -19,12 +28,15 @@ class DispenserRepositoryImpl implements DispenserRepository {
     });
   }
 
-  Future<List<e.Dispenser>> _getDispensersByAddress(String address) async {
-    final response = await api.getDispensersByAddress(
-        address,
-        true, // verbose
-        "open" // status
-        );
+  Future<List<e.Dispenser>> _getDispensersByAddress(
+      String address, HttpConfig httpConfig) async {
+    final response = await _counterpartyClientFactory
+        .getClient(httpConfig)
+        .getDispensersByAddress(
+            address,
+            true, // verbose
+            "open" // status
+            );
 
     if (response.result == null) {
       throw Exception();

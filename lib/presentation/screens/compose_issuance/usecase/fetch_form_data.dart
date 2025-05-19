@@ -2,6 +2,7 @@ import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
+import 'package:horizon/domain/entities/http_config.dart';
 
 class FetchIssuanceFormDataUseCase {
   final BalanceRepository balanceRepository;
@@ -12,12 +13,13 @@ class FetchIssuanceFormDataUseCase {
     required this.getFeeEstimatesUseCase,
   });
 
-  Future<(List<Balance>, FeeEstimates)> call(String currentAddress) async {
+  Future<(List<Balance>, FeeEstimates)> call(
+      String currentAddress, HttpConfig httpConfig) async {
     try {
       // Initiate both asynchronous calls
       final futures = await Future.wait([
-        _fetchBalances(currentAddress),
-        _fetchFeeEstimates(),
+        _fetchBalances(currentAddress, httpConfig),
+        _fetchFeeEstimates(httpConfig),
       ]);
 
       final balances = futures[0] as List<Balance>;
@@ -33,19 +35,22 @@ class FetchIssuanceFormDataUseCase {
     }
   }
 
-  Future<List<Balance>> _fetchBalances(String currentAddress) async {
+  Future<List<Balance>> _fetchBalances(
+      String currentAddress, HttpConfig httpConfig) async {
     try {
-      final balances_ =
-          await balanceRepository.getBalancesForAddress(currentAddress, true);
+      final balances_ = await balanceRepository.getBalancesForAddress(
+          httpConfig: httpConfig,
+          address: currentAddress,
+          excludeUtxoAttached: true);
       return balances_.where((balance) => balance.asset != 'BTC').toList();
     } catch (e) {
       throw FetchBalancesException(e.toString());
     }
   }
 
-  Future<FeeEstimates> _fetchFeeEstimates() async {
+  Future<FeeEstimates> _fetchFeeEstimates(HttpConfig httpConfig) async {
     try {
-      return await getFeeEstimatesUseCase.call();
+      return await getFeeEstimatesUseCase.call(httpConfig: httpConfig);
     } catch (e) {
       throw FetchFeeEstimatesException(e.toString());
     }

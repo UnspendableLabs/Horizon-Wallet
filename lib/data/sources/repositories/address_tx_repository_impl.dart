@@ -3,16 +3,27 @@ import 'package:horizon/domain/entities/asset_info.dart' as asset_entity;
 import 'package:horizon/domain/entities/issuance.dart' as issuance_entity;
 import 'package:horizon/domain/entities/send.dart' as send_entity;
 import 'package:horizon/domain/entities/transaction.dart' as transaction_entity;
+import 'package:horizon/domain/entities/http_config.dart';
+
 import 'package:horizon/domain/repositories/address_tx_repository.dart';
+import 'package:horizon/data/sources/network/counterparty_client_factory.dart';
 
 class AddressTxRepositoryImpl extends AddressTxRepository {
-  final V2Api api;
-  AddressTxRepositoryImpl({required this.api});
+  // final V2Api api;
+  // AddressTxRepositoryImpl({required this.api});
+
+  final CounterpartyClientFactory counterpartyClientFactory;
+
+  AddressTxRepositoryImpl({
+    required this.counterpartyClientFactory,
+  });
 
   @override
-  Future<List<send_entity.Send>> getSendsByAddress(String address) async {
-    Response<List<Send>> response =
-        await api.getSendsByAddress(address, true, 10);
+  Future<List<send_entity.Send>> getSendsByAddress(
+      String address, HttpConfig httpConfig) async {
+    Response<List<Send>> response = await counterpartyClientFactory
+        .getClient(httpConfig)
+        .getSendsByAddress(address, true, 10);
     final List<send_entity.Send> sends = [];
 
     for (var send in response.result ?? []) {
@@ -43,9 +54,10 @@ class AddressTxRepositoryImpl extends AddressTxRepository {
 
   @override
   Future<List<issuance_entity.Issuance>> getIssuancesByAddress(
-      String address) async {
-    Response<List<Issuance>> response =
-        await api.getIssuancesByAddress(address, true, 10);
+      String address, HttpConfig httpConfig) async {
+    Response<List<Issuance>> response = await counterpartyClientFactory
+        .getClient(httpConfig)
+        .getIssuancesByAddress(address, true, 10);
     final List<issuance_entity.Issuance> issuances = [];
 
     for (var issuance in response.result ?? []) {
@@ -75,9 +87,10 @@ class AddressTxRepositoryImpl extends AddressTxRepository {
 
   @override
   Future<List<transaction_entity.Transaction>> getTransactionsByAddress(
-      String address) async {
-    Response<List<Transaction>> response =
-        await api.getTransactionsByAddress(address, true, 10);
+      String address, HttpConfig httpConfig) async {
+    Response<List<Transaction>> response = await counterpartyClientFactory
+        .getClient(httpConfig)
+        .getTransactionsByAddress(address, true, 10);
 
     List<transaction_entity.Transaction> transactions = [];
 

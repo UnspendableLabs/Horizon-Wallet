@@ -5,7 +5,22 @@ import 'dart:js_interop';
 
 import 'package:horizon/js/buffer.dart';
 import "package:horizon/js/common.dart" as c;
+import "package:horizon/domain/entities/network.dart" as n;
 import "./signer.dart";
+
+extension NetworkX on n.Network {
+  c.Network get toJS => switch (this) {
+        n.Network.mainnet => bitcoin,
+        n.Network.testnet4 => testnet,
+      };
+
+  String get toBech32Prefix => switch (this) {
+        n.Network.mainnet => bitcoin.bech32,
+        n.Network.testnet4 => testnet.bech32,
+      };
+}
+
+// CHAT I WANT TO ADD A STATIC fromString and toString method
 
 extension type ECPairInterface._(JSObject _) implements Signer {
   external bool compressed;

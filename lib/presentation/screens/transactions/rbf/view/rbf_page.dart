@@ -2,20 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 // import 'package:horizon/common/format.dart' as form;
+import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/domain/entities/fee_option.dart';
-import 'package:horizon/domain/repositories/account_repository.dart';
 import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 import 'package:horizon/domain/repositories/settings_repository.dart';
 import 'package:horizon/domain/repositories/transaction_local_repository.dart';
-import 'package:horizon/domain/repositories/unified_address_repository.dart';
-import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/domain/services/bitcoind_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
-import 'package:horizon/domain/services/imported_address_service.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
 import 'package:horizon/presentation/common/transaction_stepper/bloc/transaction_event.dart';
 import 'package:horizon/presentation/common/transaction_stepper/bloc/transaction_state.dart';
@@ -27,6 +24,7 @@ import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 import 'package:horizon/presentation/screens/transactions/rbf/bloc/rbf_bloc.dart';
 import 'package:horizon/presentation/screens/transactions/rbf/bloc/rbf_event.dart';
 import 'package:horizon/presentation/common/transaction_stepper/view/steps/transaction_compose_page.dart';
+import 'package:horizon/presentation/session/bloc/session_state.dart';
 
 class RBFPage extends StatefulWidget {
   final String txHash;
@@ -79,8 +77,12 @@ class _RBFPageState extends State<RBFPage> {
 
   @override
   Widget build(BuildContext context) {
+    final session = context.watch<SessionStateCubit>().state.successOrThrow();
+
     return BlocProvider(
       create: (context) => RBFBloc(
+        address: session.addresses.first, // TODO: slight smell
+        httpConfig: session.httpConfig,
         getFeeEstimatesUseCase: GetIt.I<GetFeeEstimatesUseCase>(),
         bitcoinRepository: GetIt.I<BitcoinRepository>(),
         writelocalTransactionUseCase: GetIt.I<WriteLocalTransactionUseCase>(),
@@ -90,13 +92,9 @@ class _RBFPageState extends State<RBFPage> {
         transactionService: GetIt.I<TransactionService>(),
         bitcoindService: GetIt.I<BitcoindService>(),
         transactionLocalRepository: GetIt.I<TransactionLocalRepository>(),
-        accountRepository: GetIt.I<AccountRepository>(),
-        addressRepository: GetIt.I<UnifiedAddressRepository>(),
         inMemoryKeyRepository: GetIt.I<InMemoryKeyRepository>(),
         encryptionService: GetIt.I<EncryptionService>(),
         addressService: GetIt.I<AddressService>(),
-        importedAddressService: GetIt.I<ImportedAddressService>(),
-        walletRepository: GetIt.I<WalletRepository>(),
       )..add(RBFDependenciesRequested(
           txHash: widget.txHash, address: widget.address)),
       child: BlocConsumer<RBFBloc, TransactionState<RBFData, RBFComposeData>>(

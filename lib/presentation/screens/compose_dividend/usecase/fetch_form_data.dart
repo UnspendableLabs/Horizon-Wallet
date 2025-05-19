@@ -5,6 +5,7 @@ import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/domain/repositories/estimate_xcp_fee_repository.dart';
 import 'package:horizon/presentation/common/usecase/get_fee_estimates.dart';
+import 'package:horizon/domain/entities/http_config.dart';
 
 class FetchDividendFormDataUseCase {
   final BalanceRepository balanceRepository;
@@ -20,13 +21,13 @@ class FetchDividendFormDataUseCase {
   });
 
   Future<(List<Balance>, Asset, FeeEstimates, int)> call(
-      String currentAddress, String assetName) async {
+      String currentAddress, String assetName, HttpConfig httpConfig) async {
     try {
       final futures = await Future.wait([
-        _fetchBalances(currentAddress),
-        _fetchAsset(assetName),
-        _fetchFeeEstimates(),
-        _fetchDividendXcpFee(currentAddress, assetName),
+        _fetchBalances(currentAddress, httpConfig),
+        _fetchAsset(assetName, httpConfig),
+        _fetchFeeEstimates(httpConfig),
+        _fetchDividendXcpFee(currentAddress, assetName, httpConfig),
       ]);
 
       final balances = futures[0] as List<Balance>;
@@ -48,37 +49,41 @@ class FetchDividendFormDataUseCase {
     }
   }
 
-  Future<List<Balance>> _fetchBalances(String currentAddress) async {
+  Future<List<Balance>> _fetchBalances(
+      String currentAddress, HttpConfig httpConfig) async {
     try {
-      final balances_ =
-          await balanceRepository.getBalancesForAddress(currentAddress, true);
+      final balances_ = await balanceRepository.getBalancesForAddress(
+          httpConfig: httpConfig,
+          address: currentAddress,
+          excludeUtxoAttached: true);
       return balances_.where((balance) => balance.asset != 'BTC').toList();
     } catch (e) {
       throw FetchBalancesException(e.toString());
     }
   }
 
-  Future<FeeEstimates> _fetchFeeEstimates() async {
+  Future<FeeEstimates> _fetchFeeEstimates(HttpConfig httpConfig) async {
     try {
-      return await getFeeEstimatesUseCase.call();
+      return await getFeeEstimatesUseCase.call(httpConfig: httpConfig);
     } catch (e) {
       throw FetchFeeEstimatesException(e.toString());
     }
   }
 
-  Future<Asset> _fetchAsset(String assetName) async {
+  Future<Asset> _fetchAsset(String assetName, HttpConfig httpConfig) async {
     try {
-      return await assetRepository.getAssetVerbose(assetName);
+      return await assetRepository.getAssetVerbose(
+          assetName: assetName, httpConfig: httpConfig);
     } catch (e) {
       throw FetchAssetException(e.toString());
     }
   }
 
   Future<int> _fetchDividendXcpFee(
-      String currentAddress, String assetName) async {
+      String currentAddress, String assetName, HttpConfig httpConfig) async {
     try {
       return await estimateXcpFeeRepository.estimateDividendXcpFees(
-          currentAddress, assetName);
+          address: currentAddress, asset: assetName, httpConfig: httpConfig);
     } catch (e) {
       throw FetchDividendXcpFeeException(e.toString());
     }

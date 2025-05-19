@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:get_it/get_it.dart';
-import 'package:horizon/domain/repositories/config_repository.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 import 'package:horizon/utils/app_icons.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:horizon/presentation/session/bloc/session_cubit.dart';
+import 'package:horizon/presentation/session/bloc/session_state.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:horizon/domain/entities/http_config.dart';
 
 class TransactionSuccessful extends StatelessWidget {
   final String? txHex;
@@ -19,11 +21,10 @@ class TransactionSuccessful extends StatelessWidget {
     this.loading = false,
   });
 
-  Future<void> _launchExplorer() async {
+  Future<void> _launchExplorer(HttpConfig httpConfig) async {
     if (loading || txHash == null) return;
 
-    final config = GetIt.I<Config>();
-    final uri = Uri.parse("${config.btcExplorerBase}/tx/$txHash");
+    final uri = Uri.parse("${httpConfig.btcExplorer}/tx/$txHash");
     if (!await launchUrl(uri)) {
       throw Exception('Could not launch $uri');
     }
@@ -31,6 +32,7 @@ class TransactionSuccessful extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final session = context.watch<SessionStateCubit>().state.successOrThrow();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
@@ -131,7 +133,8 @@ class TransactionSuccessful extends StatelessWidget {
         SizedBox(
           height: 64,
           child: HorizonOutlinedButton(
-            onPressed: loading ? null : _launchExplorer,
+            onPressed:
+                loading ? null : () => _launchExplorer(session.httpConfig),
             buttonText: 'View transaction',
             isTransparent: true,
           ),

@@ -1,11 +1,13 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:formz/formz.dart';
-import 'package:horizon/domain/repositories/wallet_repository.dart';
+import 'package:get_it/get_it.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 import 'package:horizon/domain/repositories/imported_address_repository.dart';
+import 'package:horizon/domain/repositories/mnemonic_repository.dart';
 import 'package:horizon/domain/services/imported_address_service.dart';
+import 'package:horizon/extensions.dart';
 
 abstract class FormEvent extends Equatable {
   const FormEvent();
@@ -62,19 +64,21 @@ class Password extends FormzInput<String, PasswordValidationError> {
 }
 
 class LoginFormBloc extends Bloc<FormEvent, FormState> {
-  final WalletRepository walletRepository;
   final EncryptionService encryptionService;
   final InMemoryKeyRepository inMemoryKeyRepository;
   final ImportedAddressRepository importedAddressRepository;
   final ImportedAddressService importedAddressService;
+  final MnemonicRepository _mnemonicRepository;
 
   LoginFormBloc(
       {required this.importedAddressService,
       required this.importedAddressRepository,
-      required this.walletRepository,
       required this.encryptionService,
-      required this.inMemoryKeyRepository})
-      : super(FormState()) {
+      required this.inMemoryKeyRepository,
+      MnemonicRepository? mnemonicRepository})
+      : _mnemonicRepository =
+            mnemonicRepository ?? GetIt.I<MnemonicRepository>(),
+        super(FormState()) {
     on<PasswordChanged>(_onPasswordChanged);
     on<FormSubmitted>(_onFormSubmitted);
   }
@@ -98,24 +102,23 @@ class LoginFormBloc extends Bloc<FormEvent, FormState> {
     try {
       final password = state.password.value;
 
-      final wallet = await walletRepository.getCurrentWallet();
+      final encryptedMnemonic = (await _mnemonicRepository.get()).getOrThrow();
 
-      String decryptionKey = await encryptionService.getDecryptionKey(
-          wallet!.encryptedPrivKey, password);
+      String decryptionKey =
+          await encryptionService.getDecryptionKey(encryptedMnemonic, password);
 
-      // test decrypt to validate password
-      await encryptionService.decryptWithKey(
-          wallet.encryptedPrivKey, decryptionKey);
+      await inMemoryKeyRepository.setMnemonicKey(key: decryptionKey);
 
-      await inMemoryKeyRepository.set(key: decryptionKey);
-
+      // TODO: audit this
       final importedAddresses = await importedAddressRepository.getAll();
       Map<String, String> importedAddressMap = {};
 
       for (var importedAddress in importedAddresses) {
         String decryptionKey = await encryptionService.getDecryptionKey(
             importedAddress.encryptedWif, password);
-        importedAddressMap[importedAddress.address] = decryptionKey;
+        // TODO: 100% need to valitate that this works
+        // importedAddressMap[importedAddress.address] = decryptionKey;
+        importedAddressMap[importedAddress.encryptedWif] = decryptionKey;
       }
 
       await inMemoryKeyRepository.setMap(map: importedAddressMap);

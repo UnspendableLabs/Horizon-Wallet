@@ -1,3 +1,5 @@
+import 'package:horizon/domain/entities/base_path.dart';
+
 enum WalletType {
   horizon("Horizon", "Horizon Native"),
   bip32("BIP32", "Freewallet / Counterwallet / Rare Pepe Wallet");
@@ -5,6 +7,13 @@ enum WalletType {
   const WalletType(this.name, this.description);
   final String name;
   final String description;
+}
+
+extension WalletTypeX on WalletType {
+  BasePath get basePath => switch (this) {
+        WalletType.horizon => BasePath.horizon,
+        WalletType.bip32 => BasePath.legacy
+      };
 }
 
 enum ImportFormat {

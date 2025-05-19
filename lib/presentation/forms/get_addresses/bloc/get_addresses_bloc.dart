@@ -1,49 +1,47 @@
+import 'package:get_it/get_it.dart';
+import 'package:fpdart/fpdart.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:formz/formz.dart';
 import './get_addresses_event.dart';
 import './get_addresses_state.dart';
-import 'package:horizon/domain/entities/account.dart';
-import 'package:horizon/domain/entities/address.dart';
-import 'package:horizon/domain/entities/imported_address.dart';
-import 'package:horizon/domain/entities/wallet.dart';
+import 'package:horizon/domain/entities/account_v2.dart';
+import 'package:horizon/domain/entities/address_v2.dart';
 import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/imported_address_service.dart';
-import 'package:horizon/domain/repositories/address_repository.dart';
-import 'package:horizon/domain/repositories/account_repository.dart';
-import 'package:horizon/domain/repositories/imported_address_repository.dart';
-import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/public_key_service.dart';
 import 'package:horizon/domain/entities/address_rpc.dart';
-import 'package:horizon/domain/entities/decryption_strategy.dart';
 import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
+import 'package:horizon/domain/repositories/address_v2_repository.dart';
+import 'package:horizon/domain/entities/http_config.dart';
 
 class GetAddressesBloc extends Bloc<GetAddressesEvent, GetAddressesState> {
   final bool passwordRequired;
-  final List<Account> accounts;
-  final AddressRepository addressRepository;
-  final ImportedAddressRepository importedAddressRepository;
-  final WalletRepository walletRepository;
+  final List<AccountV2> accounts;
   final EncryptionService encryptionService;
-  final AccountRepository accountRepository;
+  // final AccountRepository accountRepository;
   final AddressService addressService;
   final ImportedAddressService importedAddressService;
   final PublicKeyService publicKeyService;
   final InMemoryKeyRepository inMemoryKeyRepository;
+  final HttpConfig httpConfig;
+  final AddressV2Repository _addressV2Repository;
 
   GetAddressesBloc({
+    required this.httpConfig,
     required this.inMemoryKeyRepository,
     required this.passwordRequired,
     required this.addressService,
     required this.importedAddressService,
     required this.accounts,
-    required this.addressRepository,
-    required this.importedAddressRepository,
-    required this.walletRepository,
     required this.encryptionService,
-    required this.accountRepository,
+
+    // required this.accountRepository,
     required this.publicKeyService,
-  }) : super(GetAddressesState()) {
+    AddressV2Repository? addressV2Repository,
+  })  : _addressV2Repository =
+            addressV2Repository ?? GetIt.I<AddressV2Repository>(),
+        super(GetAddressesState()) {
     on<AccountChanged>(_handleAccountChanged);
     on<GetAddressesSubmitted>(_handleGetAddressesSubmitted);
     on<AddressSelectionModeChanged>(_handleAddressSelectionModeChanged);
@@ -63,7 +61,7 @@ class GetAddressesBloc extends Bloc<GetAddressesEvent, GetAddressesState> {
 
   void _handleAccountChanged(
       AccountChanged event, Emitter<GetAddressesState> emit) {
-    final account = AccountInput.dirty(event.accountUuid);
+    final account = AccountInput.dirty(event.account.hash.toString());
 
     emit(state.copyWith(
       account: account,
@@ -75,6 +73,11 @@ class GetAddressesBloc extends Bloc<GetAddressesEvent, GetAddressesState> {
 
   Future<void> _handleGetAddressesSubmitted(
       GetAddressesSubmitted event, Emitter<GetAddressesState> emit) async {
+    // TODO: must handle this
+    if (state.addressSelectionMode != AddressSelectionMode.byAccount) {
+      throw GetAddressesException('Address selection mode not supported.');
+    }
+
     if (!state.warningAccepted) {
       emit(state.copyWith(
         submissionStatus: FormzSubmissionStatus.failure,
@@ -83,84 +86,43 @@ class GetAddressesBloc extends Bloc<GetAddressesEvent, GetAddressesState> {
       return;
     }
     emit(state.copyWith(submissionStatus: FormzSubmissionStatus.inProgress));
-    try {
-      Wallet? wallet = await walletRepository.getCurrentWallet();
 
-      if (wallet == null) {
-        throw GetAddressesException("invariant:No wallet found");
-      }
+    AccountV2 account = accounts.firstWhere(
+      (account) => account.hash == state.account.value,
+    );
 
-      final selectedAccountUuid = state.account.value;
+    final task =
+        TaskEither<GetAddressesException, List<AddressRpc>>.Do(($) async {
+      List<AddressV2> addresses = await $(_addressV2Repository
+          .getByAccountT(
+              account: account,
+              onError: (_, __) =>
+                  "Failed to find addresses for account ${account.name}")
+          .mapLeft((msg) => GetAddressesException(msg)));
 
-      List<AddressRpc> addresses = [];
+      return addresses.map((a) => a.toRpc()).toList();
+    });
 
-      if (state.addressSelectionMode == AddressSelectionMode.byAccount) {
-        List<Address> addresses_ =
-            await addressRepository.getAllByAccountUuid(selectedAccountUuid);
+    final result = await task.run();
 
-        for (var address in addresses_) {
-          final pk = passwordRequired
-              ? await _getAddressPrivKeyForAddress(
-                  address, Password(state.password.value))
-              : await _getAddressPrivKeyForAddress(address, InMemoryKey());
-
-          final publicKey = await publicKeyService.fromPrivateKeyAsHex(pk);
-
-          addresses.add(AddressRpc(
-              address: address.address,
-              type: _getAddressRpcType(address.address),
-              publicKey: publicKey));
-        }
-      } else {
-        // address is imported
-        final importedAddress = await importedAddressRepository
-            .getImportedAddress(state.importedAddress.value);
-
-        if (importedAddress == null) {
-          throw GetAddressesException('Imported address not found.');
-        }
-
-        final pk = passwordRequired
-            ? await _getAddressPrivKeyForImportedAddress(
-                importedAddress, Password(state.password.value))
-            : await _getAddressPrivKeyForImportedAddress(
-                importedAddress, InMemoryKey());
-
-        final publicKey = await publicKeyService.fromPrivateKeyAsHex(pk);
-
-        addresses.add(AddressRpc(
-            address: importedAddress.address,
-            type: _getAddressRpcType(importedAddress.address),
-            publicKey: publicKey));
-      }
-
-      if (addresses.isEmpty &&
-          state.addressSelectionMode == AddressSelectionMode.byAccount) {
-        throw GetAddressesException("No account selected");
-      }
-
+    result.fold((error) {
+      emit(state.copyWith(
+        submissionStatus: FormzSubmissionStatus.failure,
+        error: error.toString(),
+      ));
+    }, (addresses) async {
       emit(state.copyWith(
         submissionStatus: FormzSubmissionStatus.success,
         addresses: addresses,
         error: null, // Clear any previous errors
       ));
-    } catch (e) {
-      // Handle different types of errors
-      final errorMessage = e is GetAddressesException
-          ? e.message
-          : 'An unexpected error occurred. Please try again.';
-
-      emit(state.copyWith(
-        submissionStatus: FormzSubmissionStatus.failure,
-        error: errorMessage,
-      ));
-    }
+    });
   }
 
   void _handleAddressSelectionModeChanged(AddressSelectionModeChanged event,
       Emitter<GetAddressesState> emit) async {
     if (event.mode == AddressSelectionMode.importedAddresses) {
-      final importedAddresses = await importedAddressRepository.getAll();
+      final importedAddresses = await _addressV2Repository.getAllImported();
       emit(state.copyWith(
           addressSelectionMode: event.mode,
           importedAddresses: importedAddresses));
@@ -178,76 +140,6 @@ class GetAddressesBloc extends Bloc<GetAddressesEvent, GetAddressesState> {
           ? FormzSubmissionStatus.initial
           : FormzSubmissionStatus.failure,
     ));
-  }
-
-  Future<String> _getAddressPrivKeyForAddress(
-      Address address, DecryptionStrategy decryptionStrategy) async {
-    final account =
-        await accountRepository.getAccountByUuid(address.accountUuid);
-    if (account == null) {
-      throw GetAddressesException('Account not found.');
-    }
-
-    final wallet = await walletRepository.getWallet(account.walletUuid);
-
-    // Decrypt Root Private Key
-    String decryptedRootPrivKey;
-    try {
-      decryptedRootPrivKey = switch (decryptionStrategy) {
-        Password(password: var password) =>
-          await encryptionService.decrypt(wallet!.encryptedPrivKey, password),
-        InMemoryKey() => await encryptionService.decryptWithKey(
-            wallet!.encryptedPrivKey, (await inMemoryKeyRepository.get())!)
-      };
-    } catch (e) {
-      throw GetAddressesException('Incorrect password.');
-    }
-
-    // Derive Address Private Key
-    final addressPrivKey = await addressService.deriveAddressPrivateKey(
-      rootPrivKey: decryptedRootPrivKey,
-      chainCodeHex: wallet.chainCodeHex,
-      purpose: account.purpose,
-      coin: account.coinType,
-      account: account.accountIndex,
-      change: '0',
-      index: address.index,
-      importFormat: account.importFormat,
-    );
-
-    return addressPrivKey;
-  }
-
-  Future<String> _getAddressPrivKeyForImportedAddress(
-      ImportedAddress importedAddress,
-      DecryptionStrategy decryptionStrategy) async {
-    late String decryptedAddressWif;
-    try {
-      final maybeKey =
-          (await inMemoryKeyRepository.getMap())[importedAddress.address];
-
-      decryptedAddressWif = switch (decryptionStrategy) {
-        Password(password: var password) => await encryptionService.decrypt(
-            importedAddress.encryptedWif, password),
-        InMemoryKey() => await encryptionService.decryptWithKey(
-            importedAddress.encryptedWif, maybeKey!)
-      };
-    } catch (e) {
-      throw GetAddressesException('Incorrect password.');
-    }
-
-    final addressPrivKey = await importedAddressService
-        .getAddressPrivateKeyFromWIF(wif: decryptedAddressWif);
-
-    return addressPrivKey;
-  }
-
-  _getAddressRpcType(String address) {
-    if (address.startsWith("bc") || address.startsWith("tb")) {
-      return AddressRpcType.p2wpkh;
-    } else {
-      return AddressRpcType.p2pkh;
-    }
   }
 
   void _handleWarningAcceptedChanged(

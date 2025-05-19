@@ -1,32 +1,29 @@
 import "package:fpdart/fpdart.dart";
 import 'package:formz/formz.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import "package:get_it/get_it.dart";
 import 'package:horizon/common/format.dart';
 import 'package:horizon/presentation/common/shared_util.dart';
 import 'package:collection/collection.dart';
 import 'package:decimal/decimal.dart';
 
+import 'package:horizon/domain/entities/address_v2.dart';
 import 'package:horizon/domain/entities/failure.dart';
-import 'package:horizon/domain/entities/wallet.dart';
 import 'package:horizon/domain/entities/balance.dart';
-import 'package:horizon/domain/entities/unified_address.dart';
-import 'package:horizon/domain/entities/address.dart';
-import 'package:horizon/domain/entities/imported_address.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 import 'package:horizon/domain/services/bitcoind_service.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
-import 'package:horizon/domain/repositories/wallet_repository.dart';
-import 'package:horizon/domain/repositories/account_repository.dart';
-import 'package:horizon/domain/repositories/unified_address_repository.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/address_service.dart';
-import 'package:horizon/domain/services/imported_address_service.dart';
 import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 import 'package:horizon/domain/entities/decryption_strategy.dart';
 import 'package:horizon/domain/entities/bitcoin_decoded_tx.dart' as dbtc;
 import 'package:horizon/domain/entities/bitcoin_tx.dart';
 import 'package:horizon/presentation/session/bloc/session_state.dart';
+import 'package:horizon/domain/entities/http_config.dart';
+import 'package:horizon/domain/repositories/wallet_config_repository.dart';
+import 'package:horizon/domain/services/seed_service.dart';
 
 import "./sign_psbt_state.dart";
 import "./sign_psbt_event.dart";
@@ -144,41 +141,47 @@ class AugmentedOutput {
 }
 
 class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
+  final List<AddressV2> addresses;
   final bool passwordRequired;
   final String unsignedPsbt;
   final TransactionService transactionService;
-  final WalletRepository walletRepository;
-  final EncryptionService encryptionService;
-  final AddressService addressService;
-  final ImportedAddressService importedAddressService;
+  final EncryptionService _encryptionService;
+  final AddressService _addressService;
   final BitcoindService bitcoindService;
   final BitcoinRepository bitcoinRepository;
   final BalanceRepository balanceRepository;
-  final UnifiedAddressRepository addressRepository;
-  final AccountRepository accountRepository;
   final Map<String, List<int>> signInputs;
   final List<int>? sighashTypes;
-  final InMemoryKeyRepository inMemoryKeyRepository;
+  final InMemoryKeyRepository _inMemoryKeyRepository;
   final SessionStateSuccess session;
+  final HttpConfig httpConfig;
+  final WalletConfigRepository _walletConfigRepository;
+  final SeedService _seedService;
 
   SignPsbtBloc({
+    required this.addresses,
+    required this.httpConfig,
     required this.session,
     required this.passwordRequired,
     required this.unsignedPsbt,
     required this.transactionService,
-    required this.walletRepository,
-    required this.encryptionService,
-    required this.addressService,
-    required this.importedAddressService,
+    required EncryptionService encryptionService,
+    required AddressService addressService,
     required this.bitcoindService,
     required this.balanceRepository,
     required this.bitcoinRepository,
-    required this.addressRepository,
-    required this.accountRepository,
     required this.signInputs,
     required this.sighashTypes,
-    required this.inMemoryKeyRepository,
-  }) : super(SignPsbtState()) {
+    required InMemoryKeyRepository inMemoryKeyRepository,
+    WalletConfigRepository? walletConfigRepository,
+    SeedService? seedService,
+  })  : _inMemoryKeyRepository = inMemoryKeyRepository,
+        _encryptionService = encryptionService,
+        _addressService = addressService,
+        _walletConfigRepository =
+            walletConfigRepository ?? GetIt.I<WalletConfigRepository>(),
+        _seedService = seedService ?? GetIt.I<SeedService>(),
+        super(SignPsbtState()) {
     on<FetchFormEvent>(_handleFetchForm);
     on<PasswordChanged>(_handlePasswordChanged);
     on<SignPsbtSubmitted>(_handleSignPsbtSubmitted);
@@ -193,18 +196,27 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
       final transactionHex =
           transactionService.psbtToUnsignedTransactionHex(unsignedPsbt);
 
-      final decoded =
-          await bitcoindService.decoderawtransaction(transactionHex);
+      final decoded = await bitcoindService.decoderawtransaction(
+          transactionHex, httpConfig);
 
       Either<Failure, List<AugmentedInput>> inputs =
           await TaskEither.traverseListWithIndex(decoded.vin, (vin, index) {
         return TaskEither<Failure, AugmentedInput>.Do(($) async {
-          final getTransactionTask =
-              TaskEither(() => bitcoinRepository.getTransaction(vin.txid));
+          final getTransactionTask = bitcoinRepository
+              .getTransactionT(
+                  txid: vin.txid,
+                  httpConfig: httpConfig,
+                  onError: (_) =>
+                      "Failed to get transaction with txid: ${vin.txid}")
+              .mapLeft(
+                (_) => UnexpectedFailure(
+                  message: "Failed to get transaction with txid: ${vin.txid}",
+                ),
+              );
 
           final getBalancesTask = TaskEither<Failure, List<Balance>>.tryCatch(
-              () => balanceRepository
-                  .getBalancesForUTXO("${vin.txid}:${vin.vout}"),
+              () => balanceRepository.getBalancesForUTXO(
+                  httpConfig: httpConfig, utxo: "${vin.txid}:${vin.vout}"),
               (_, stacktrace) => const UnexpectedFailure(
                     message: "Failed to get balances for UTXO",
                   ));
@@ -308,157 +320,97 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
 
   _handleSignPsbtSubmitted(
       SignPsbtSubmitted event, Emitter<SignPsbtState> emit) async {
-    try {
-      Wallet? wallet = await walletRepository.getCurrentWallet();
-
-      if (wallet == null) {
-        throw Exception("invariant: wallet not found");
-      }
-
-      String privateKey = '';
-
-      if (passwordRequired) {
-        try {
-          privateKey = await encryptionService.decrypt(
-              wallet.encryptedPrivKey, state.password.value);
-        } catch (e) {
-          emit(state.copyWith(
-            submissionStatus: FormzSubmissionStatus.failure,
-            error: "Incorrect password.",
-          ));
-          return;
-        }
-      } else {
-        try {
-          privateKey = await encryptionService.decryptWithKey(
-              wallet.encryptedPrivKey, (await inMemoryKeyRepository.get())!);
-        } catch (e) {
-          emit(state.copyWith(
-            submissionStatus: FormzSubmissionStatus.failure,
-            error: "Invariant: could not decrypt wallet",
-          ));
-          return;
-        }
-      }
-
-      Map<int, String> inputPrivateKeyMap = {};
-
-      for (final entry in signInputs.entries) {
-        final address = entry.key;
-        final inputIndices = entry.value;
-
-        final result = await addressRepository
-            .get(address)
-            .flatMap((UnifiedAddress unifiedAddress) => getUAddressPrivateKey(
-                  passwordRequired
-                      ? Password(state.password.value)
-                      : InMemoryKey(),
-                  privateKey,
-                  wallet.chainCodeHex,
-                  unifiedAddress,
-                ))
-            .run();
-
-        result.fold(
-            (error) => throw Exception("Could not find address: $address"),
-            (addressPrivateKey) {
-          for (final index in inputIndices) {
-            inputPrivateKeyMap[index] = addressPrivateKey;
-          }
-        });
-      }
-
-      String signedHex = transactionService.signPsbt(
-          unsignedPsbt, inputPrivateKeyMap, sighashTypes);
-
-      emit(state.copyWith(
-        signedPsbt: signedHex,
-        submissionStatus: FormzSubmissionStatus.success,
+    final task = TaskEither<String, String>.Do(($) async {
+      final inputPrivateKeyMap = await $(buildInputPrivateKeyMap(
+        addresses,
+        signInputs,
+        passwordRequired ? Password(state.password.value) : InMemoryKey(),
+        httpConfig,
       ));
-    } catch (e) {
+
+      String signedHex = await $(TaskEither.fromEither(
+          transactionService.signPsbtT(
+              psbtHex: unsignedPsbt,
+              inputPrivateKeyMap: inputPrivateKeyMap,
+              httpConfig: httpConfig,
+              sighashTypes: sighashTypes,
+              onError: (e) => e.toString())));
+
+      return signedHex;
+    });
+
+    final result = await task.run();
+
+    result.fold((msg) {
       emit(state.copyWith(
           submissionStatus: FormzSubmissionStatus.failure,
-          error: e.toString()));
-    }
+          error: msg.toString()));
+    }, (success) {
+      emit(state.copyWith(
+        submissionStatus: FormzSubmissionStatus.success,
+        signedPsbt: success,
+      ));
+    });
   }
 
-  TaskEither<String, String> getUAddressPrivateKey(
-          DecryptionStrategy decryptionStrategy,
-          String rootPrivKey,
-          String chainCodeHex,
-          UnifiedAddress address) =>
-      switch (address) {
-        UAddress(address: var address) =>
-          getAddressPrivateKey(rootPrivKey, chainCodeHex, address),
-        UImportedAddress(importedAddress: var importedAddress) =>
-          getImportedAddressPrivateKey(importedAddress, decryptionStrategy)
+  TaskEither<String, Map<int, String>> buildInputPrivateKeyMap(
+    List<AddressV2> addresses,
+    Map<String, List<int>> signInputs,
+    DecryptionStrategy decryptionStrategy,
+    HttpConfig httpConfig,
+  ) {
+    final tasks = signInputs.entries.map((entry) {
+      return TaskEither<String, Map<int, String>>.Do(($) async {
+        final address = await $(TaskEither.fromOption(
+            Option.fromNullable(
+                addresses.firstWhereOrNull((a) => a.address == entry.key)),
+            () => "Address not found"));
+
+        String pk = switch (address.derivation) {
+          Bip32Path(value: var value) => await $(_walletConfigRepository
+              .getCurrentT((_) => "invariant: could not read wallet config")
+              .flatMap((walletConfig) => _seedService
+                  .getForWalletConfigT(
+                      walletConfig: walletConfig,
+                      decryptionStrategy: decryptionStrategy,
+                      onError: (_) => "invairant: could not derive seed")
+                  .flatMap(
+                      (seed) => _addressService.deriveAddressPrivateKeyWIPT(
+                            path: Bip32Path(value: value),
+                            seed: seed,
+                            network: httpConfig.network,
+                          )))),
+          WIF(value: var value) => await $(switch (decryptionStrategy) {
+              Password(password: var password) => _encryptionService.decryptT(
+                  data: value,
+                  password: password,
+                  onError: (_, __) => "Invalid password"),
+              InMemoryKey() => _inMemoryKeyRepository
+                  .getMapT(
+                      onError: (_, __) =>
+                          "invariant: failed to read in memory key map")
+                   // TODO: this lookup needs to be consistent, either by encyptedWIF or address
+                  .flatMap((map) => TaskEither.fromOption(
+                      Option.fromNullable(map[address.address]),
+                      () =>
+                          "invariant: decryption key not found for address: ${address.address}"))
+                  .flatMap((decryptionKey) => _encryptionService.decryptWithKeyT(
+                      data: value,
+                      key: decryptionKey,
+                      onError: (_, __) =>
+                          "failed to decrypt wif for address: ${address.address}")),
+            })
+        };
+        return {
+          for (final index in entry.value) index: pk,
+        };
+      });
+    }).toList();
+
+    return TaskEither.sequenceList(tasks).map((listOfMaps) {
+      return {
+        for (final map in listOfMaps) ...map,
       };
-
-  TaskEither<String, String> getAddressPrivateKey(
-          String rootPrivKey, String chainCodeHex, Address address) =>
-      TaskEither.tryCatch(
-          () =>
-              _getAddressPrivKeyForAddress(rootPrivKey, chainCodeHex, address),
-          (e, s) => "Failed to derive address private key.");
-
-  TaskEither<String, String> getImportedAddressPrivateKey(
-          ImportedAddress importedAddress,
-          DecryptionStrategy decryptionStrategy) =>
-      TaskEither.tryCatch(
-          () => _getAddressPrivKeyForImportedAddress(
-              importedAddress, decryptionStrategy),
-          (e, s) => "Failed to derive address private key.");
-
-  Future<String> _getAddressPrivKeyForAddress(
-      String rootPrivKey, String chainCodeHex, Address address) async {
-    final account =
-        await accountRepository.getAccountByUuid(address.accountUuid);
-
-    if (account == null) {
-      throw Exception('Account not found.');
-    }
-
-    // Derive Address Private Key
-    final addressPrivKey = await addressService.deriveAddressPrivateKey(
-      rootPrivKey: rootPrivKey,
-      chainCodeHex: chainCodeHex,
-      purpose: account.purpose,
-      coin: account.coinType,
-      account: account.accountIndex,
-      change: '0',
-      index: address.index,
-      importFormat: account.importFormat,
-    );
-
-    return addressPrivKey;
+    });
   }
-
-  Future<String> _getAddressPrivKeyForImportedAddress(
-      ImportedAddress importedAddress,
-      DecryptionStrategy decryptionStrategy) async {
-    late String decryptedAddressWif;
-    try {
-      final maybeKey =
-          (await inMemoryKeyRepository.getMap())[importedAddress.address];
-
-      decryptedAddressWif = switch (decryptionStrategy) {
-        Password(password: var password) => await encryptionService.decrypt(
-            importedAddress.encryptedWif, password),
-        InMemoryKey() => await encryptionService.decryptWithKey(
-            importedAddress.encryptedWif, maybeKey!)
-      };
-    } catch (e) {
-      throw Exception('Incorrect password.');
-    }
-
-    final addressPrivKey = await importedAddressService
-        .getAddressPrivateKeyFromWIF(wif: decryptedAddressWif);
-
-    return addressPrivKey;
-  }
-}
-
-class FailedToDeriveAddressPrivateKey extends Error {
-  final String address;
-  FailedToDeriveAddressPrivateKey(this.address);
 }

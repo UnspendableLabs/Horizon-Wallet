@@ -1,6 +1,6 @@
 import 'package:formz/formz.dart';
 import 'package:horizon/domain/entities/address_rpc.dart';
-import 'package:horizon/domain/entities/imported_address.dart';
+import 'package:horizon/domain/entities/address_v2.dart';
 
 enum AddressSelectionMode { byAccount, importedAddresses }
 
@@ -49,7 +49,7 @@ class GetAddressesState with FormzMixin {
   final List<AddressRpc>? addresses;
   final String? error;
   final AddressSelectionMode addressSelectionMode;
-  final List<ImportedAddress>? importedAddresses;
+  final List<AddressV2>? importedAddresses;
   final bool warningAccepted;
 
   GetAddressesState({
@@ -75,7 +75,7 @@ class GetAddressesState with FormzMixin {
     List<AddressRpc>? addresses,
     String? error,
     AddressSelectionMode? addressSelectionMode,
-    List<ImportedAddress>? importedAddresses,
+    List<AddressV2>? importedAddresses,
     bool? warningAccepted,
   }) {
     return GetAddressesState(

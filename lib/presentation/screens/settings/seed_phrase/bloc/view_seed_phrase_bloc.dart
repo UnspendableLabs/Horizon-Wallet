@@ -1,44 +1,54 @@
+import 'package:get_it/get_it.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:horizon/domain/repositories/wallet_repository.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/presentation/screens/settings/seed_phrase/bloc/view_seed_phrase_event.dart';
 import 'package:horizon/presentation/screens/settings/seed_phrase/bloc/view_seed_phrase_state.dart';
+import 'package:horizon/domain/repositories/mnemonic_repository.dart';
+import "package:fpdart/fpdart.dart";
 
 class ViewSeedPhraseBloc
     extends Bloc<ViewSeedPhraseEvent, ViewSeedPhraseState> {
-  final WalletRepository walletRepository;
-  final EncryptionService encryptionService;
+  final EncryptionService _encryptionService;
+
+  final MnemonicRepository _mnemonicRepository;
 
   ViewSeedPhraseBloc({
-    required this.walletRepository,
-    required this.encryptionService,
-  }) : super(ViewSeedPhraseInitial()) {
+    MnemonicRepository? mnemonicRepository,
+    EncryptionService? encryptionService,
+  })  : _mnemonicRepository =
+            mnemonicRepository ?? GetIt.I<MnemonicRepository>(),
+        _encryptionService = encryptionService ?? GetIt.I<EncryptionService>(),
+        super(ViewSeedPhraseInitial()) {
     on<Submit>((event, emit) async {
       emit(ViewSeedPhraseLoading());
-      try {
-        final wallet = await walletRepository.getCurrentWallet();
-        if (wallet == null) {
-          emit(ViewSeedPhraseError('Wallet not found'));
-          return;
-        }
 
-        if (wallet.encryptedMnemonic == null) {
-          emit(ViewSeedPhraseError('Wallet mnemonic not found'));
-          return;
-        }
+      final task = TaskEither<String, String>.Do(($) async {
+        final encryptedMnemonic = await $(_mnemonicRepository
+            .getT(
+              onError: (error_, stacktrace_) =>
+                  'invariant: error reading mnemonic',
+            )
+            .flatMap((mnemonic) => TaskEither.fromOption(
+                mnemonic, () => "invariant: mnemonic is null")));
 
-        try {
-          final seedPhrase = await encryptionService.decrypt(
-            wallet.encryptedMnemonic!,
-            event.password,
-          );
-          emit(ViewSeedPhraseSuccess(seedPhrase: seedPhrase));
-        } catch (e) {
-          emit(ViewSeedPhraseError('Invalid password'));
-        }
-      } catch (e) {
-        emit(ViewSeedPhraseError('Error decrypting seed phrase'));
-      }
+        final mnemonic = await $(_encryptionService.decryptT(
+            data: encryptedMnemonic,
+            password: event.password,
+            onError: (error_, stacktrace_) => 'invalid password'));
+
+        return mnemonic;
+      });
+
+      final result = await task.run();
+
+      result.fold(
+        (error) {
+          emit(ViewSeedPhraseError(error));
+        },
+        (mnemonic) {
+          emit(ViewSeedPhraseSuccess(seedPhrase: mnemonic));
+        },
+      );
     });
   }
 }
