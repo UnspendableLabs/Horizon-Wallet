@@ -47,4 +47,8 @@ chromedriver/
 build_release
 build_release_testnet
 
+<<<<<<< HEAD
 android/app/.cxx/
+=======
+# android
+>>>>>>> asset-send-form-bloc-pattern-with-mobile-support

@@ -84,6 +84,9 @@ class _$BalancesStateCopyWithImpl<$Res, $Val extends BalancesState>
   final $Val _value;
   // ignore: unused_field
   final $Res Function($Val) _then;
+
+  /// Create a copy of BalancesState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -100,6 +103,9 @@ class __$$InitialImplCopyWithImpl<$Res>
   __$$InitialImplCopyWithImpl(
       _$InitialImpl _value, $Res Function(_$InitialImpl) _then)
       : super(_value, _then);
+
+  /// Create a copy of BalancesState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -214,6 +220,9 @@ class __$$LoadingImplCopyWithImpl<$Res>
   __$$LoadingImplCopyWithImpl(
       _$LoadingImpl _value, $Res Function(_$LoadingImpl) _then)
       : super(_value, _then);
+
+  /// Create a copy of BalancesState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -333,6 +342,8 @@ class __$$CompleteImplCopyWithImpl<$Res>
       _$CompleteImpl _value, $Res Function(_$CompleteImpl) _then)
       : super(_value, _then);
 
+  /// Create a copy of BalancesState
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -346,6 +357,8 @@ class __$$CompleteImplCopyWithImpl<$Res>
     ));
   }
 
+  /// Create a copy of BalancesState
+  /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
   $ResultCopyWith<$Res> get result {
@@ -379,7 +392,9 @@ class _$CompleteImpl implements _Complete {
   @override
   int get hashCode => Object.hash(runtimeType, result);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of BalancesState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$CompleteImplCopyWith<_$CompleteImpl> get copyWith =>
@@ -464,7 +479,10 @@ abstract class _Complete implements BalancesState {
   const factory _Complete(final Result result) = _$CompleteImpl;
 
   Result get result;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of BalancesState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$CompleteImplCopyWith<_$CompleteImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -488,6 +506,8 @@ class __$$ReloadingImplCopyWithImpl<$Res>
       _$ReloadingImpl _value, $Res Function(_$ReloadingImpl) _then)
       : super(_value, _then);
 
+  /// Create a copy of BalancesState
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -501,6 +521,8 @@ class __$$ReloadingImplCopyWithImpl<$Res>
     ));
   }
 
+  /// Create a copy of BalancesState
+  /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
   $ResultCopyWith<$Res> get result {
@@ -534,7 +556,9 @@ class _$ReloadingImpl implements _Reloading {
   @override
   int get hashCode => Object.hash(runtimeType, result);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of BalancesState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$ReloadingImplCopyWith<_$ReloadingImpl> get copyWith =>
@@ -619,7 +643,10 @@ abstract class _Reloading implements BalancesState {
   const factory _Reloading(final Result result) = _$ReloadingImpl;
 
   Result get result;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of BalancesState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$ReloadingImplCopyWith<_$ReloadingImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -687,6 +714,9 @@ class _$ResultCopyWithImpl<$Res, $Val extends Result>
   final $Val _value;
   // ignore: unused_field
   final $Res Function($Val) _then;
+
+  /// Create a copy of Result
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -703,6 +733,8 @@ class __$$OkImplCopyWithImpl<$Res> extends _$ResultCopyWithImpl<$Res, _$OkImpl>
   __$$OkImplCopyWithImpl(_$OkImpl _value, $Res Function(_$OkImpl) _then)
       : super(_value, _then);
 
+  /// Create a copy of Result
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -767,7 +799,9 @@ class _$OkImpl implements _Ok {
       const DeepCollectionEquality().hash(_balances),
       const DeepCollectionEquality().hash(_starredAssets));
 
-  @JsonKey(ignore: true)
+  /// Create a copy of Result
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$OkImplCopyWith<_$OkImpl> get copyWith =>
@@ -848,7 +882,10 @@ abstract class _Ok implements Result {
 
   List<MultiAddressBalance> get balances;
   List<String> get starredAssets;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of Result
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$OkImplCopyWith<_$OkImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -870,6 +907,8 @@ class __$$ErrorImplCopyWithImpl<$Res>
       _$ErrorImpl _value, $Res Function(_$ErrorImpl) _then)
       : super(_value, _then);
 
+  /// Create a copy of Result
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -908,7 +947,9 @@ class _$ErrorImpl implements _Error {
   @override
   int get hashCode => Object.hash(runtimeType, error);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of Result
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$ErrorImplCopyWith<_$ErrorImpl> get copyWith =>
@@ -987,7 +1028,10 @@ abstract class _Error implements Result {
   const factory _Error(final String error) = _$ErrorImpl;
 
   String get error;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of Result
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$ErrorImplCopyWith<_$ErrorImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

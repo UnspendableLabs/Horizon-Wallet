@@ -22,7 +22,9 @@ mixin _$OnboardingImportState {
   dynamic get currentStep => throw _privateConstructorUsedError;
   dynamic get importState => throw _privateConstructorUsedError;
 
-  @JsonKey(ignore: true)
+  /// Create a copy of OnboardingImportState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   $OnboardingImportStateCopyWith<OnboardingImportState> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -52,6 +54,8 @@ class _$OnboardingImportStateCopyWithImpl<$Res,
   // ignore: unused_field
   final $Res Function($Val) _then;
 
+  /// Create a copy of OnboardingImportState
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -112,6 +116,8 @@ class __$$OnboardingImportStateImplCopyWithImpl<$Res>
       $Res Function(_$OnboardingImportStateImpl) _then)
       : super(_value, _then);
 
+  /// Create a copy of OnboardingImportState
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -195,7 +201,9 @@ class _$OnboardingImportStateImpl implements _OnboardingImportState {
       const DeepCollectionEquality().hash(currentStep),
       const DeepCollectionEquality().hash(importState));
 
-  @JsonKey(ignore: true)
+  /// Create a copy of OnboardingImportState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$OnboardingImportStateImplCopyWith<_$OnboardingImportStateImpl>
@@ -221,8 +229,11 @@ abstract class _OnboardingImportState implements OnboardingImportState {
   dynamic get currentStep;
   @override
   dynamic get importState;
+
+  /// Create a copy of OnboardingImportState
+  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$OnboardingImportStateImplCopyWith<_$OnboardingImportStateImpl>
       get copyWith => throw _privateConstructorUsedError;
 }
@@ -297,6 +308,9 @@ class _$ImportStateCopyWithImpl<$Res, $Val extends ImportState>
   final $Val _value;
   // ignore: unused_field
   final $Res Function($Val) _then;
+
+  /// Create a copy of ImportState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -313,6 +327,9 @@ class __$$ImportStateNotAskedImplCopyWithImpl<$Res>
   __$$ImportStateNotAskedImplCopyWithImpl(_$ImportStateNotAskedImpl _value,
       $Res Function(_$ImportStateNotAskedImpl) _then)
       : super(_value, _then);
+
+  /// Create a copy of ImportState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -428,6 +445,9 @@ class __$$ImportStateLoadingImplCopyWithImpl<$Res>
   __$$ImportStateLoadingImplCopyWithImpl(_$ImportStateLoadingImpl _value,
       $Res Function(_$ImportStateLoadingImpl) _then)
       : super(_value, _then);
+
+  /// Create a copy of ImportState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -542,6 +562,9 @@ class __$$ImportStateSuccessImplCopyWithImpl<$Res>
   __$$ImportStateSuccessImplCopyWithImpl(_$ImportStateSuccessImpl _value,
       $Res Function(_$ImportStateSuccessImpl) _then)
       : super(_value, _then);
+
+  /// Create a copy of ImportState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -659,6 +682,8 @@ class __$$ImportStateErrorImplCopyWithImpl<$Res>
       $Res Function(_$ImportStateErrorImpl) _then)
       : super(_value, _then);
 
+  /// Create a copy of ImportState
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -697,7 +722,9 @@ class _$ImportStateErrorImpl implements ImportStateError {
   @override
   int get hashCode => Object.hash(runtimeType, message);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of ImportState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$ImportStateErrorImplCopyWith<_$ImportStateErrorImpl> get copyWith =>
@@ -784,7 +811,10 @@ abstract class ImportStateError implements ImportState {
       _$ImportStateErrorImpl;
 
   String get message;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of ImportState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$ImportStateErrorImplCopyWith<_$ImportStateErrorImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

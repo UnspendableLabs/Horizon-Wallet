@@ -27,7 +27,9 @@ mixin _$ComposeFairmintState {
       throw _privateConstructorUsedError; // Fairmint specific properties
   FairmintersState get fairmintersState => throw _privateConstructorUsedError;
 
-  @JsonKey(ignore: true)
+  /// Create a copy of ComposeFairmintState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   $ComposeFairmintStateCopyWith<ComposeFairmintState> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -64,6 +66,8 @@ class _$ComposeFairmintStateCopyWithImpl<$Res,
   // ignore: unused_field
   final $Res Function($Val) _then;
 
+  /// Create a copy of ComposeFairmintState
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -112,6 +116,8 @@ class _$ComposeFairmintStateCopyWithImpl<$Res,
     ) as $Val);
   }
 
+  /// Create a copy of ComposeFairmintState
+  /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
   $FeeStateCopyWith<$Res> get feeState {
@@ -120,6 +126,8 @@ class _$ComposeFairmintStateCopyWithImpl<$Res,
     });
   }
 
+  /// Create a copy of ComposeFairmintState
+  /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
   $BalancesStateCopyWith<$Res> get balancesState {
@@ -128,6 +136,8 @@ class _$ComposeFairmintStateCopyWithImpl<$Res,
     });
   }
 
+  /// Create a copy of ComposeFairmintState
+  /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
   $FairmintersStateCopyWith<$Res> get fairmintersState {
@@ -171,6 +181,8 @@ class __$$ComposeFairmintStateImplCopyWithImpl<$Res>
       $Res Function(_$ComposeFairmintStateImpl) _then)
       : super(_value, _then);
 
+  /// Create a copy of ComposeFairmintState
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -294,7 +306,9 @@ class _$ComposeFairmintStateImpl extends _ComposeFairmintState {
       selectedFairminter,
       fairmintersState);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of ComposeFairmintState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$ComposeFairmintStateImplCopyWith<_$ComposeFairmintStateImpl>
@@ -316,7 +330,8 @@ abstract class _ComposeFairmintState extends ComposeFairmintState {
       _$ComposeFairmintStateImpl;
   const _ComposeFairmintState._() : super._();
 
-  @override // Inherited properties
+// Inherited properties
+  @override
   FeeState get feeState;
   @override
   BalancesState get balancesState;
@@ -329,11 +344,14 @@ abstract class _ComposeFairmintState extends ComposeFairmintState {
   @override
   int? get initialNumLots;
   @override
-  Fairminter? get selectedFairminter;
-  @override // Fairmint specific properties
-  FairmintersState get fairmintersState;
+  Fairminter? get selectedFairminter; // Fairmint specific properties
   @override
-  @JsonKey(ignore: true)
+  FairmintersState get fairmintersState;
+
+  /// Create a copy of ComposeFairmintState
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$ComposeFairmintStateImplCopyWith<_$ComposeFairmintStateImpl>
       get copyWith => throw _privateConstructorUsedError;
 }
@@ -408,6 +426,9 @@ class _$FairmintersStateCopyWithImpl<$Res, $Val extends FairmintersState>
   final $Val _value;
   // ignore: unused_field
   final $Res Function($Val) _then;
+
+  /// Create a copy of FairmintersState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -424,6 +445,9 @@ class __$$FairmintersInitialImplCopyWithImpl<$Res>
   __$$FairmintersInitialImplCopyWithImpl(_$FairmintersInitialImpl _value,
       $Res Function(_$FairmintersInitialImpl) _then)
       : super(_value, _then);
+
+  /// Create a copy of FairmintersState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -538,6 +562,9 @@ class __$$FairmintersLoadingImplCopyWithImpl<$Res>
   __$$FairmintersLoadingImplCopyWithImpl(_$FairmintersLoadingImpl _value,
       $Res Function(_$FairmintersLoadingImpl) _then)
       : super(_value, _then);
+
+  /// Create a copy of FairmintersState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -655,6 +682,8 @@ class __$$FairmintersSuccessImplCopyWithImpl<$Res>
       $Res Function(_$FairmintersSuccessImpl) _then)
       : super(_value, _then);
 
+  /// Create a copy of FairmintersState
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -701,7 +730,9 @@ class _$FairmintersSuccessImpl implements _FairmintersSuccess {
   int get hashCode => Object.hash(
       runtimeType, const DeepCollectionEquality().hash(_fairminters));
 
-  @JsonKey(ignore: true)
+  /// Create a copy of FairmintersState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$FairmintersSuccessImplCopyWith<_$FairmintersSuccessImpl> get copyWith =>
@@ -788,7 +819,10 @@ abstract class _FairmintersSuccess implements FairmintersState {
       _$FairmintersSuccessImpl;
 
   List<Fairminter> get fairminters;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of FairmintersState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$FairmintersSuccessImplCopyWith<_$FairmintersSuccessImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -810,6 +844,8 @@ class __$$FairmintersErrorImplCopyWithImpl<$Res>
       $Res Function(_$FairmintersErrorImpl) _then)
       : super(_value, _then);
 
+  /// Create a copy of FairmintersState
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -848,7 +884,9 @@ class _$FairmintersErrorImpl implements _FairmintersError {
   @override
   int get hashCode => Object.hash(runtimeType, error);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of FairmintersState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$FairmintersErrorImplCopyWith<_$FairmintersErrorImpl> get copyWith =>
@@ -934,7 +972,10 @@ abstract class _FairmintersError implements FairmintersState {
   const factory _FairmintersError(final String error) = _$FairmintersErrorImpl;
 
   String get error;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of FairmintersState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$FairmintersErrorImplCopyWith<_$FairmintersErrorImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

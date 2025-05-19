@@ -30,7 +30,9 @@ mixin _$ComposeDispenserState {
   String get mainchainrate => throw _privateConstructorUsedError;
   int get status => throw _privateConstructorUsedError;
 
-  @JsonKey(ignore: true)
+  /// Create a copy of ComposeDispenserState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   $ComposeDispenserStateCopyWith<ComposeDispenserState> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -70,6 +72,8 @@ class _$ComposeDispenserStateCopyWithImpl<$Res,
   // ignore: unused_field
   final $Res Function($Val) _then;
 
+  /// Create a copy of ComposeDispenserState
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -133,6 +137,8 @@ class _$ComposeDispenserStateCopyWithImpl<$Res,
     ) as $Val);
   }
 
+  /// Create a copy of ComposeDispenserState
+  /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
   $FeeStateCopyWith<$Res> get feeState {
@@ -141,6 +147,8 @@ class _$ComposeDispenserStateCopyWithImpl<$Res,
     });
   }
 
+  /// Create a copy of ComposeDispenserState
+  /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
   $BalancesStateCopyWith<$Res> get balancesState {
@@ -149,6 +157,8 @@ class _$ComposeDispenserStateCopyWithImpl<$Res,
     });
   }
 
+  /// Create a copy of ComposeDispenserState
+  /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
   $DialogStateCopyWith<$Res> get dialogState {
@@ -197,6 +207,8 @@ class __$$ComposeDispenserStateImplCopyWithImpl<$Res>
       $Res Function(_$ComposeDispenserStateImpl) _then)
       : super(_value, _then);
 
+  /// Create a copy of ComposeDispenserState
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -351,7 +363,9 @@ class _$ComposeDispenserStateImpl extends _ComposeDispenserState {
       mainchainrate,
       status);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of ComposeDispenserState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$ComposeDispenserStateImplCopyWith<_$ComposeDispenserStateImpl>
@@ -374,15 +388,16 @@ abstract class _ComposeDispenserState extends ComposeDispenserState {
       required final int status}) = _$ComposeDispenserStateImpl;
   const _ComposeDispenserState._() : super._();
 
-  @override // Inherited properties
+// Inherited properties
+  @override
   FeeState get feeState;
   @override
   BalancesState get balancesState;
   @override
   FeeOption get feeOption;
   @override
-  SubmitState get submitState;
-  @override // Dispenser-specific properties
+  SubmitState get submitState; // Dispenser-specific properties
+  @override
   DialogState get dialogState;
   @override
   String? get assetName;
@@ -396,8 +411,11 @@ abstract class _ComposeDispenserState extends ComposeDispenserState {
   String get mainchainrate;
   @override
   int get status;
+
+  /// Create a copy of ComposeDispenserState
+  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$ComposeDispenserStateImplCopyWith<_$ComposeDispenserStateImpl>
       get copyWith => throw _privateConstructorUsedError;
 }
@@ -521,6 +539,9 @@ class _$DialogStateCopyWithImpl<$Res, $Val extends DialogState>
   final $Val _value;
   // ignore: unused_field
   final $Res Function($Val) _then;
+
+  /// Create a copy of DialogState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -537,6 +558,9 @@ class __$$DispenserInitialImplCopyWithImpl<$Res>
   __$$DispenserInitialImplCopyWithImpl(_$DispenserInitialImpl _value,
       $Res Function(_$DispenserInitialImpl) _then)
       : super(_value, _then);
+
+  /// Create a copy of DialogState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -700,6 +724,9 @@ class __$$DispenserLoadingImplCopyWithImpl<$Res>
   __$$DispenserLoadingImplCopyWithImpl(_$DispenserLoadingImpl _value,
       $Res Function(_$DispenserLoadingImpl) _then)
       : super(_value, _then);
+
+  /// Create a copy of DialogState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -865,6 +892,9 @@ class __$$DispenserSuccessNormalFlowImplCopyWithImpl<$Res>
       _$DispenserSuccessNormalFlowImpl _value,
       $Res Function(_$DispenserSuccessNormalFlowImpl) _then)
       : super(_value, _then);
+
+  /// Create a copy of DialogState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -1033,6 +1063,9 @@ class __$$DispenserSuccessCreateNewAddressFlowImplCopyWithImpl<$Res>
       _$DispenserSuccessCreateNewAddressFlowImpl _value,
       $Res Function(_$DispenserSuccessCreateNewAddressFlowImpl) _then)
       : super(_value, _then);
+
+  /// Create a copy of DialogState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -1212,6 +1245,8 @@ class __$$DispenserCloseDialogAndOpenNewAddressImplCopyWithImpl<$Res>
       $Res Function(_$DispenserCloseDialogAndOpenNewAddressImpl) _then)
       : super(_value, _then);
 
+  /// Create a copy of DialogState
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -1312,7 +1347,9 @@ class _$DispenserCloseDialogAndOpenNewAddressImpl
   int get hashCode => Object.hash(runtimeType, originalAddress, divisible,
       asset, giveQuantity, escrowQuantity, mainchainrate, feeRate);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of DialogState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$DispenserCloseDialogAndOpenNewAddressImplCopyWith<
@@ -1465,7 +1502,10 @@ abstract class _DispenserCloseDialogAndOpenNewAddress implements DialogState {
   int get escrowQuantity;
   int get mainchainrate;
   num get feeRate;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of DialogState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$DispenserCloseDialogAndOpenNewAddressImplCopyWith<
           _$DispenserCloseDialogAndOpenNewAddressImpl>
       get copyWith => throw _privateConstructorUsedError;
@@ -1488,6 +1528,8 @@ class __$$DispenserWarningImplCopyWithImpl<$Res>
       $Res Function(_$DispenserWarningImpl) _then)
       : super(_value, _then);
 
+  /// Create a copy of DialogState
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -1527,7 +1569,9 @@ class _$DispenserWarningImpl implements _DispenserWarning {
   @override
   int get hashCode => Object.hash(runtimeType, hasOpenDispensers);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of DialogState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$DispenserWarningImplCopyWith<_$DispenserWarningImpl> get copyWith =>
@@ -1663,7 +1707,10 @@ abstract class _DispenserWarning implements DialogState {
       _$DispenserWarningImpl;
 
   bool? get hasOpenDispensers;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of DialogState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$DispenserWarningImplCopyWith<_$DispenserWarningImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -1685,6 +1732,8 @@ class __$$DispenserErrorImplCopyWithImpl<$Res>
       _$DispenserErrorImpl _value, $Res Function(_$DispenserErrorImpl) _then)
       : super(_value, _then);
 
+  /// Create a copy of DialogState
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -1723,7 +1772,9 @@ class _$DispenserErrorImpl implements _DispenserError {
   @override
   int get hashCode => Object.hash(runtimeType, error);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of DialogState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$DispenserErrorImplCopyWith<_$DispenserErrorImpl> get copyWith =>
@@ -1858,7 +1909,10 @@ abstract class _DispenserError implements DialogState {
   const factory _DispenserError(final String error) = _$DispenserErrorImpl;
 
   String get error;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of DialogState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$DispenserErrorImplCopyWith<_$DispenserErrorImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

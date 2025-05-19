@@ -26,7 +26,9 @@ mixin _$ComposeDividendState {
   DividendXcpFeeState get dividendXcpFeeState =>
       throw _privateConstructorUsedError;
 
-  @JsonKey(ignore: true)
+  /// Create a copy of ComposeDividendState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   $ComposeDividendStateCopyWith<ComposeDividendState> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -62,6 +64,8 @@ class _$ComposeDividendStateCopyWithImpl<$Res,
   // ignore: unused_field
   final $Res Function($Val) _then;
 
+  /// Create a copy of ComposeDividendState
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -100,6 +104,8 @@ class _$ComposeDividendStateCopyWithImpl<$Res,
     ) as $Val);
   }
 
+  /// Create a copy of ComposeDividendState
+  /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
   $FeeStateCopyWith<$Res> get feeState {
@@ -108,6 +114,8 @@ class _$ComposeDividendStateCopyWithImpl<$Res,
     });
   }
 
+  /// Create a copy of ComposeDividendState
+  /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
   $BalancesStateCopyWith<$Res> get balancesState {
@@ -116,6 +124,8 @@ class _$ComposeDividendStateCopyWithImpl<$Res,
     });
   }
 
+  /// Create a copy of ComposeDividendState
+  /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
   $AssetStateCopyWith<$Res> get assetState {
@@ -124,6 +134,8 @@ class _$ComposeDividendStateCopyWithImpl<$Res,
     });
   }
 
+  /// Create a copy of ComposeDividendState
+  /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
   $DividendXcpFeeStateCopyWith<$Res> get dividendXcpFeeState {
@@ -168,6 +180,8 @@ class __$$ComposeDividendStateImplCopyWithImpl<$Res>
       $Res Function(_$ComposeDividendStateImpl) _then)
       : super(_value, _then);
 
+  /// Create a copy of ComposeDividendState
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -262,7 +276,9 @@ class _$ComposeDividendStateImpl extends _ComposeDividendState {
   int get hashCode => Object.hash(runtimeType, feeState, balancesState,
       feeOption, submitState, assetState, dividendXcpFeeState);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of ComposeDividendState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$ComposeDividendStateImplCopyWith<_$ComposeDividendStateImpl>
@@ -282,20 +298,24 @@ abstract class _ComposeDividendState extends ComposeDividendState {
       _$ComposeDividendStateImpl;
   const _ComposeDividendState._() : super._();
 
-  @override // Inherited properties
+// Inherited properties
+  @override
   FeeState get feeState;
   @override
   BalancesState get balancesState;
   @override
   FeeOption get feeOption;
   @override
-  SubmitState get submitState;
-  @override // dividend specific properties
+  SubmitState get submitState; // dividend specific properties
+  @override
   AssetState get assetState;
   @override
   DividendXcpFeeState get dividendXcpFeeState;
+
+  /// Create a copy of ComposeDividendState
+  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$ComposeDividendStateImplCopyWith<_$ComposeDividendStateImpl>
       get copyWith => throw _privateConstructorUsedError;
 }
@@ -370,6 +390,9 @@ class _$AssetStateCopyWithImpl<$Res, $Val extends AssetState>
   final $Val _value;
   // ignore: unused_field
   final $Res Function($Val) _then;
+
+  /// Create a copy of AssetState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -386,6 +409,9 @@ class __$$AssetInitialImplCopyWithImpl<$Res>
   __$$AssetInitialImplCopyWithImpl(
       _$AssetInitialImpl _value, $Res Function(_$AssetInitialImpl) _then)
       : super(_value, _then);
+
+  /// Create a copy of AssetState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -500,6 +526,9 @@ class __$$AssetLoadingImplCopyWithImpl<$Res>
   __$$AssetLoadingImplCopyWithImpl(
       _$AssetLoadingImpl _value, $Res Function(_$AssetLoadingImpl) _then)
       : super(_value, _then);
+
+  /// Create a copy of AssetState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -617,6 +646,8 @@ class __$$AssetSuccessImplCopyWithImpl<$Res>
       _$AssetSuccessImpl _value, $Res Function(_$AssetSuccessImpl) _then)
       : super(_value, _then);
 
+  /// Create a copy of AssetState
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -655,7 +686,9 @@ class _$AssetSuccessImpl implements _AssetSuccess {
   @override
   int get hashCode => Object.hash(runtimeType, asset);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of AssetState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$AssetSuccessImplCopyWith<_$AssetSuccessImpl> get copyWith =>
@@ -740,7 +773,10 @@ abstract class _AssetSuccess implements AssetState {
   const factory _AssetSuccess(final Asset asset) = _$AssetSuccessImpl;
 
   Asset get asset;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of AssetState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$AssetSuccessImplCopyWith<_$AssetSuccessImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -762,6 +798,8 @@ class __$$AssetErrorImplCopyWithImpl<$Res>
       _$AssetErrorImpl _value, $Res Function(_$AssetErrorImpl) _then)
       : super(_value, _then);
 
+  /// Create a copy of AssetState
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -800,7 +838,9 @@ class _$AssetErrorImpl implements _AssetError {
   @override
   int get hashCode => Object.hash(runtimeType, error);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of AssetState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$AssetErrorImplCopyWith<_$AssetErrorImpl> get copyWith =>
@@ -885,7 +925,10 @@ abstract class _AssetError implements AssetState {
   const factory _AssetError(final String error) = _$AssetErrorImpl;
 
   String get error;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of AssetState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$AssetErrorImplCopyWith<_$AssetErrorImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -960,6 +1003,9 @@ class _$DividendXcpFeeStateCopyWithImpl<$Res, $Val extends DividendXcpFeeState>
   final $Val _value;
   // ignore: unused_field
   final $Res Function($Val) _then;
+
+  /// Create a copy of DividendXcpFeeState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -977,6 +1023,9 @@ class __$$DividendXcpFeeInitialImplCopyWithImpl<$Res>
   __$$DividendXcpFeeInitialImplCopyWithImpl(_$DividendXcpFeeInitialImpl _value,
       $Res Function(_$DividendXcpFeeInitialImpl) _then)
       : super(_value, _then);
+
+  /// Create a copy of DividendXcpFeeState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -1093,6 +1142,9 @@ class __$$DividendXcpFeeLoadingImplCopyWithImpl<$Res>
   __$$DividendXcpFeeLoadingImplCopyWithImpl(_$DividendXcpFeeLoadingImpl _value,
       $Res Function(_$DividendXcpFeeLoadingImpl) _then)
       : super(_value, _then);
+
+  /// Create a copy of DividendXcpFeeState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -1212,6 +1264,8 @@ class __$$DividendXcpFeeSuccessImplCopyWithImpl<$Res>
       $Res Function(_$DividendXcpFeeSuccessImpl) _then)
       : super(_value, _then);
 
+  /// Create a copy of DividendXcpFeeState
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -1251,7 +1305,9 @@ class _$DividendXcpFeeSuccessImpl implements _DividendXcpFeeSuccess {
   @override
   int get hashCode => Object.hash(runtimeType, dividendXcpFee);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of DividendXcpFeeState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$DividendXcpFeeSuccessImplCopyWith<_$DividendXcpFeeSuccessImpl>
@@ -1338,7 +1394,10 @@ abstract class _DividendXcpFeeSuccess implements DividendXcpFeeState {
       _$DividendXcpFeeSuccessImpl;
 
   int get dividendXcpFee;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of DividendXcpFeeState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$DividendXcpFeeSuccessImplCopyWith<_$DividendXcpFeeSuccessImpl>
       get copyWith => throw _privateConstructorUsedError;
 }
@@ -1360,6 +1419,8 @@ class __$$DividendXcpFeeErrorImplCopyWithImpl<$Res>
       $Res Function(_$DividendXcpFeeErrorImpl) _then)
       : super(_value, _then);
 
+  /// Create a copy of DividendXcpFeeState
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -1398,7 +1459,9 @@ class _$DividendXcpFeeErrorImpl implements _DividendXcpFeeError {
   @override
   int get hashCode => Object.hash(runtimeType, error);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of DividendXcpFeeState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$DividendXcpFeeErrorImplCopyWith<_$DividendXcpFeeErrorImpl> get copyWith =>
@@ -1485,7 +1548,10 @@ abstract class _DividendXcpFeeError implements DividendXcpFeeState {
       _$DividendXcpFeeErrorImpl;
 
   String get error;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of DividendXcpFeeState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$DividendXcpFeeErrorImplCopyWith<_$DividendXcpFeeErrorImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

@@ -24,7 +24,9 @@ mixin _$UpdateIssuanceState {
       throw _privateConstructorUsedError; // specific properties
   AssetState get assetState => throw _privateConstructorUsedError;
 
-  @JsonKey(ignore: true)
+  /// Create a copy of UpdateIssuanceState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   $UpdateIssuanceStateCopyWith<UpdateIssuanceState> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -57,6 +59,8 @@ class _$UpdateIssuanceStateCopyWithImpl<$Res, $Val extends UpdateIssuanceState>
   // ignore: unused_field
   final $Res Function($Val) _then;
 
+  /// Create a copy of UpdateIssuanceState
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -90,6 +94,8 @@ class _$UpdateIssuanceStateCopyWithImpl<$Res, $Val extends UpdateIssuanceState>
     ) as $Val);
   }
 
+  /// Create a copy of UpdateIssuanceState
+  /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
   $FeeStateCopyWith<$Res> get feeState {
@@ -98,6 +104,8 @@ class _$UpdateIssuanceStateCopyWithImpl<$Res, $Val extends UpdateIssuanceState>
     });
   }
 
+  /// Create a copy of UpdateIssuanceState
+  /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
   $BalancesStateCopyWith<$Res> get balancesState {
@@ -106,6 +114,8 @@ class _$UpdateIssuanceStateCopyWithImpl<$Res, $Val extends UpdateIssuanceState>
     });
   }
 
+  /// Create a copy of UpdateIssuanceState
+  /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
   $AssetStateCopyWith<$Res> get assetState {
@@ -146,6 +156,8 @@ class __$$UpdateIssuanceStateImplCopyWithImpl<$Res>
       $Res Function(_$UpdateIssuanceStateImpl) _then)
       : super(_value, _then);
 
+  /// Create a copy of UpdateIssuanceState
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -230,7 +242,9 @@ class _$UpdateIssuanceStateImpl extends _UpdateIssuanceState {
   int get hashCode => Object.hash(
       runtimeType, feeState, balancesState, feeOption, submitState, assetState);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of UpdateIssuanceState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$UpdateIssuanceStateImplCopyWith<_$UpdateIssuanceStateImpl> get copyWith =>
@@ -247,18 +261,22 @@ abstract class _UpdateIssuanceState extends UpdateIssuanceState {
       required final AssetState assetState}) = _$UpdateIssuanceStateImpl;
   const _UpdateIssuanceState._() : super._();
 
-  @override // Inherited properties
+// Inherited properties
+  @override
   FeeState get feeState;
   @override
   BalancesState get balancesState;
   @override
   FeeOption get feeOption;
   @override
-  SubmitState get submitState;
-  @override // specific properties
-  AssetState get assetState;
+  SubmitState get submitState; // specific properties
   @override
-  @JsonKey(ignore: true)
+  AssetState get assetState;
+
+  /// Create a copy of UpdateIssuanceState
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$UpdateIssuanceStateImplCopyWith<_$UpdateIssuanceStateImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -333,6 +351,9 @@ class _$AssetStateCopyWithImpl<$Res, $Val extends AssetState>
   final $Val _value;
   // ignore: unused_field
   final $Res Function($Val) _then;
+
+  /// Create a copy of AssetState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -349,6 +370,9 @@ class __$$AssetStateInitialImplCopyWithImpl<$Res>
   __$$AssetStateInitialImplCopyWithImpl(_$AssetStateInitialImpl _value,
       $Res Function(_$AssetStateInitialImpl) _then)
       : super(_value, _then);
+
+  /// Create a copy of AssetState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -463,6 +487,9 @@ class __$$AssetStateLoadingImplCopyWithImpl<$Res>
   __$$AssetStateLoadingImplCopyWithImpl(_$AssetStateLoadingImpl _value,
       $Res Function(_$AssetStateLoadingImpl) _then)
       : super(_value, _then);
+
+  /// Create a copy of AssetState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -580,6 +607,8 @@ class __$$AssetStateSuccessImplCopyWithImpl<$Res>
       $Res Function(_$AssetStateSuccessImpl) _then)
       : super(_value, _then);
 
+  /// Create a copy of AssetState
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -618,7 +647,9 @@ class _$AssetStateSuccessImpl implements _AssetStateSuccess {
   @override
   int get hashCode => Object.hash(runtimeType, asset);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of AssetState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$AssetStateSuccessImplCopyWith<_$AssetStateSuccessImpl> get copyWith =>
@@ -704,7 +735,10 @@ abstract class _AssetStateSuccess implements AssetState {
   const factory _AssetStateSuccess(final Asset asset) = _$AssetStateSuccessImpl;
 
   Asset get asset;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of AssetState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$AssetStateSuccessImplCopyWith<_$AssetStateSuccessImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -726,6 +760,8 @@ class __$$AssetStateErrorImplCopyWithImpl<$Res>
       _$AssetStateErrorImpl _value, $Res Function(_$AssetStateErrorImpl) _then)
       : super(_value, _then);
 
+  /// Create a copy of AssetState
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -764,7 +800,9 @@ class _$AssetStateErrorImpl implements _AssetStateError {
   @override
   int get hashCode => Object.hash(runtimeType, error);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of AssetState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$AssetStateErrorImplCopyWith<_$AssetStateErrorImpl> get copyWith =>
@@ -850,7 +888,10 @@ abstract class _AssetStateError implements AssetState {
   const factory _AssetStateError(final String error) = _$AssetStateErrorImpl;
 
   String get error;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of AssetState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$AssetStateErrorImplCopyWith<_$AssetStateErrorImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

@@ -84,6 +84,9 @@ class _$BalancesStateCopyWithImpl<$Res, $Val extends BalancesState>
   final $Val _value;
   // ignore: unused_field
   final $Res Function($Val) _then;
+
+  /// Create a copy of BalancesState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -100,6 +103,9 @@ class __$$InitialBalancesStateImplCopyWithImpl<$Res>
   __$$InitialBalancesStateImplCopyWithImpl(_$InitialBalancesStateImpl _value,
       $Res Function(_$InitialBalancesStateImpl) _then)
       : super(_value, _then);
+
+  /// Create a copy of BalancesState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -215,6 +221,9 @@ class __$$LoadingBalancesStateImplCopyWithImpl<$Res>
   __$$LoadingBalancesStateImplCopyWithImpl(_$LoadingBalancesStateImpl _value,
       $Res Function(_$LoadingBalancesStateImpl) _then)
       : super(_value, _then);
+
+  /// Create a copy of BalancesState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -333,6 +342,8 @@ class __$$ErrorBalancesStateImplCopyWithImpl<$Res>
       $Res Function(_$ErrorBalancesStateImpl) _then)
       : super(_value, _then);
 
+  /// Create a copy of BalancesState
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -371,7 +382,9 @@ class _$ErrorBalancesStateImpl implements _ErrorBalancesState {
   @override
   int get hashCode => Object.hash(runtimeType, message);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of BalancesState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$ErrorBalancesStateImplCopyWith<_$ErrorBalancesStateImpl> get copyWith =>
@@ -458,7 +471,10 @@ abstract class _ErrorBalancesState implements BalancesState {
       _$ErrorBalancesStateImpl;
 
   String get message;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of BalancesState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$ErrorBalancesStateImplCopyWith<_$ErrorBalancesStateImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -480,6 +496,8 @@ class __$$SuccessBalancesStateImplCopyWithImpl<$Res>
       $Res Function(_$SuccessBalancesStateImpl) _then)
       : super(_value, _then);
 
+  /// Create a copy of BalancesState
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -519,7 +537,9 @@ class _$SuccessBalancesStateImpl implements _SuccessBalancesState {
   @override
   int get hashCode => Object.hash(runtimeType, balances);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of BalancesState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$SuccessBalancesStateImplCopyWith<_$SuccessBalancesStateImpl>
@@ -607,7 +627,10 @@ abstract class _SuccessBalancesState implements BalancesState {
       _$SuccessBalancesStateImpl;
 
   MultiAddressBalance get balances;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of BalancesState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$SuccessBalancesStateImplCopyWith<_$SuccessBalancesStateImpl>
       get copyWith => throw _privateConstructorUsedError;
 }
@@ -681,6 +704,9 @@ class _$FeeStateCopyWithImpl<$Res, $Val extends FeeState>
   final $Val _value;
   // ignore: unused_field
   final $Res Function($Val) _then;
+
+  /// Create a copy of FeeState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -697,6 +723,9 @@ class __$$FeeInitialImplCopyWithImpl<$Res>
   __$$FeeInitialImplCopyWithImpl(
       _$FeeInitialImpl _value, $Res Function(_$FeeInitialImpl) _then)
       : super(_value, _then);
+
+  /// Create a copy of FeeState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -811,6 +840,9 @@ class __$$FeeLoadingImplCopyWithImpl<$Res>
   __$$FeeLoadingImplCopyWithImpl(
       _$FeeLoadingImpl _value, $Res Function(_$FeeLoadingImpl) _then)
       : super(_value, _then);
+
+  /// Create a copy of FeeState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -928,6 +960,8 @@ class __$$FeeSuccessImplCopyWithImpl<$Res>
       _$FeeSuccessImpl _value, $Res Function(_$FeeSuccessImpl) _then)
       : super(_value, _then);
 
+  /// Create a copy of FeeState
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -967,7 +1001,9 @@ class _$FeeSuccessImpl implements _FeeSuccess {
   @override
   int get hashCode => Object.hash(runtimeType, feeEstimates);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of FeeState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$FeeSuccessImplCopyWith<_$FeeSuccessImpl> get copyWith =>
@@ -1052,7 +1088,10 @@ abstract class _FeeSuccess implements FeeState {
   const factory _FeeSuccess(final FeeEstimates feeEstimates) = _$FeeSuccessImpl;
 
   FeeEstimates get feeEstimates;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of FeeState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$FeeSuccessImplCopyWith<_$FeeSuccessImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -1074,6 +1113,8 @@ class __$$FeeErrorImplCopyWithImpl<$Res>
       _$FeeErrorImpl _value, $Res Function(_$FeeErrorImpl) _then)
       : super(_value, _then);
 
+  /// Create a copy of FeeState
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -1112,7 +1153,9 @@ class _$FeeErrorImpl implements _FeeError {
   @override
   int get hashCode => Object.hash(runtimeType, error);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of FeeState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$FeeErrorImplCopyWith<_$FeeErrorImpl> get copyWith =>
@@ -1197,7 +1240,10 @@ abstract class _FeeError implements FeeState {
   const factory _FeeError(final String error) = _$FeeErrorImpl;
 
   String get error;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of FeeState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$FeeErrorImplCopyWith<_$FeeErrorImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -1273,6 +1319,9 @@ class _$TransactionDataStateCopyWithImpl<T, $Res,
   final $Val _value;
   // ignore: unused_field
   final $Res Function($Val) _then;
+
+  /// Create a copy of TransactionDataState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -1292,6 +1341,9 @@ class __$$InitialTransactionDataStateImplCopyWithImpl<T, $Res>
       _$InitialTransactionDataStateImpl<T> _value,
       $Res Function(_$InitialTransactionDataStateImpl<T>) _then)
       : super(_value, _then);
+
+  /// Create a copy of TransactionDataState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -1413,6 +1465,9 @@ class __$$LoadingTransactionDataStateImplCopyWithImpl<T, $Res>
       _$LoadingTransactionDataStateImpl<T> _value,
       $Res Function(_$LoadingTransactionDataStateImpl<T>) _then)
       : super(_value, _then);
+
+  /// Create a copy of TransactionDataState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -1537,6 +1592,8 @@ class __$$SuccessTransactionDataStateImplCopyWithImpl<T, $Res>
       $Res Function(_$SuccessTransactionDataStateImpl<T>) _then)
       : super(_value, _then);
 
+  /// Create a copy of TransactionDataState
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -1577,7 +1634,9 @@ class _$SuccessTransactionDataStateImpl<T>
   int get hashCode =>
       Object.hash(runtimeType, const DeepCollectionEquality().hash(data));
 
-  @JsonKey(ignore: true)
+  /// Create a copy of TransactionDataState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$SuccessTransactionDataStateImplCopyWith<T,
@@ -1666,7 +1725,10 @@ abstract class _SuccessTransactionDataState<T>
       _$SuccessTransactionDataStateImpl<T>;
 
   T get data;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of TransactionDataState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$SuccessTransactionDataStateImplCopyWith<T,
           _$SuccessTransactionDataStateImpl<T>>
       get copyWith => throw _privateConstructorUsedError;
@@ -1692,6 +1754,8 @@ class __$$ErrorTransactionDataStateImplCopyWithImpl<T, $Res>
       $Res Function(_$ErrorTransactionDataStateImpl<T>) _then)
       : super(_value, _then);
 
+  /// Create a copy of TransactionDataState
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -1731,7 +1795,9 @@ class _$ErrorTransactionDataStateImpl<T>
   @override
   int get hashCode => Object.hash(runtimeType, error);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of TransactionDataState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$ErrorTransactionDataStateImplCopyWith<T,
@@ -1820,7 +1886,10 @@ abstract class _ErrorTransactionDataState<T>
       _$ErrorTransactionDataStateImpl<T>;
 
   String get error;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of TransactionDataState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$ErrorTransactionDataStateImplCopyWith<T,
           _$ErrorTransactionDataStateImpl<T>>
       get copyWith => throw _privateConstructorUsedError;
@@ -1896,6 +1965,9 @@ class _$ComposeStateCopyWithImpl<T, $Res, $Val extends ComposeState<T>>
   final $Val _value;
   // ignore: unused_field
   final $Res Function($Val) _then;
+
+  /// Create a copy of ComposeState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -1912,6 +1984,9 @@ class __$$ComposeStateInitialImplCopyWithImpl<T, $Res>
   __$$ComposeStateInitialImplCopyWithImpl(_$ComposeStateInitialImpl<T> _value,
       $Res Function(_$ComposeStateInitialImpl<T>) _then)
       : super(_value, _then);
+
+  /// Create a copy of ComposeState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -2027,6 +2102,9 @@ class __$$ComposeStateLoadingImplCopyWithImpl<T, $Res>
   __$$ComposeStateLoadingImplCopyWithImpl(_$ComposeStateLoadingImpl<T> _value,
       $Res Function(_$ComposeStateLoadingImpl<T>) _then)
       : super(_value, _then);
+
+  /// Create a copy of ComposeState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -2145,6 +2223,8 @@ class __$$ComposeStateErrorImplCopyWithImpl<T, $Res>
       $Res Function(_$ComposeStateErrorImpl<T>) _then)
       : super(_value, _then);
 
+  /// Create a copy of ComposeState
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -2183,7 +2263,9 @@ class _$ComposeStateErrorImpl<T> implements ComposeStateError<T> {
   @override
   int get hashCode => Object.hash(runtimeType, error);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of ComposeState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$ComposeStateErrorImplCopyWith<T, _$ComposeStateErrorImpl<T>>
@@ -2271,7 +2353,10 @@ abstract class ComposeStateError<T> implements ComposeState<T> {
       _$ComposeStateErrorImpl<T>;
 
   String get error;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of ComposeState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$ComposeStateErrorImplCopyWith<T, _$ComposeStateErrorImpl<T>>
       get copyWith => throw _privateConstructorUsedError;
 }
@@ -2293,6 +2378,8 @@ class __$$ComposeStateSuccessImplCopyWithImpl<T, $Res>
       $Res Function(_$ComposeStateSuccessImpl<T>) _then)
       : super(_value, _then);
 
+  /// Create a copy of ComposeState
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -2333,7 +2420,9 @@ class _$ComposeStateSuccessImpl<T> implements ComposeStateSuccess<T> {
   int get hashCode => Object.hash(
       runtimeType, const DeepCollectionEquality().hash(composeData));
 
-  @JsonKey(ignore: true)
+  /// Create a copy of ComposeState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$ComposeStateSuccessImplCopyWith<T, _$ComposeStateSuccessImpl<T>>
@@ -2420,7 +2509,10 @@ abstract class ComposeStateSuccess<T> implements ComposeState<T> {
       _$ComposeStateSuccessImpl<T>;
 
   T get composeData;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of ComposeState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$ComposeStateSuccessImplCopyWith<T, _$ComposeStateSuccessImpl<T>>
       get copyWith => throw _privateConstructorUsedError;
 }
@@ -2495,6 +2587,9 @@ class _$BroadcastStateCopyWithImpl<$Res, $Val extends BroadcastState>
   final $Val _value;
   // ignore: unused_field
   final $Res Function($Val) _then;
+
+  /// Create a copy of BroadcastState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -2511,6 +2606,9 @@ class __$$BroadcastInitialImplCopyWithImpl<$Res>
   __$$BroadcastInitialImplCopyWithImpl(_$BroadcastInitialImpl _value,
       $Res Function(_$BroadcastInitialImpl) _then)
       : super(_value, _then);
+
+  /// Create a copy of BroadcastState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -2625,6 +2723,9 @@ class __$$BroadcastLoadingImplCopyWithImpl<$Res>
   __$$BroadcastLoadingImplCopyWithImpl(_$BroadcastLoadingImpl _value,
       $Res Function(_$BroadcastLoadingImpl) _then)
       : super(_value, _then);
+
+  /// Create a copy of BroadcastState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -2742,6 +2843,8 @@ class __$$BroadcastSuccessImplCopyWithImpl<$Res>
       $Res Function(_$BroadcastSuccessImpl) _then)
       : super(_value, _then);
 
+  /// Create a copy of BroadcastState
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -2780,7 +2883,9 @@ class _$BroadcastSuccessImpl implements _BroadcastSuccess {
   @override
   int get hashCode => Object.hash(runtimeType, data);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of BroadcastState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$BroadcastSuccessImplCopyWith<_$BroadcastSuccessImpl> get copyWith =>
@@ -2867,7 +2972,10 @@ abstract class _BroadcastSuccess implements BroadcastState {
       _$BroadcastSuccessImpl;
 
   BroadcastStateSuccess get data;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of BroadcastState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$BroadcastSuccessImplCopyWith<_$BroadcastSuccessImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -2889,6 +2997,8 @@ class __$$BroadcastErrorImplCopyWithImpl<$Res>
       _$BroadcastErrorImpl _value, $Res Function(_$BroadcastErrorImpl) _then)
       : super(_value, _then);
 
+  /// Create a copy of BroadcastState
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -2927,7 +3037,9 @@ class _$BroadcastErrorImpl implements _BroadcastError {
   @override
   int get hashCode => Object.hash(runtimeType, error);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of BroadcastState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$BroadcastErrorImplCopyWith<_$BroadcastErrorImpl> get copyWith =>
@@ -3013,7 +3125,10 @@ abstract class _BroadcastError implements BroadcastState {
   const factory _BroadcastError(final String error) = _$BroadcastErrorImpl;
 
   String get error;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of BroadcastState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$BroadcastErrorImplCopyWith<_$BroadcastErrorImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

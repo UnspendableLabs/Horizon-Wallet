@@ -83,6 +83,9 @@ class _$FeeStateCopyWithImpl<$Res, $Val extends FeeState>
   final $Val _value;
   // ignore: unused_field
   final $Res Function($Val) _then;
+
+  /// Create a copy of FeeState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -99,6 +102,9 @@ class __$$FeeInitialImplCopyWithImpl<$Res>
   __$$FeeInitialImplCopyWithImpl(
       _$FeeInitialImpl _value, $Res Function(_$FeeInitialImpl) _then)
       : super(_value, _then);
+
+  /// Create a copy of FeeState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -213,6 +219,9 @@ class __$$FeeLoadingImplCopyWithImpl<$Res>
   __$$FeeLoadingImplCopyWithImpl(
       _$FeeLoadingImpl _value, $Res Function(_$FeeLoadingImpl) _then)
       : super(_value, _then);
+
+  /// Create a copy of FeeState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -330,6 +339,8 @@ class __$$FeeSuccessImplCopyWithImpl<$Res>
       _$FeeSuccessImpl _value, $Res Function(_$FeeSuccessImpl) _then)
       : super(_value, _then);
 
+  /// Create a copy of FeeState
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -369,7 +380,9 @@ class _$FeeSuccessImpl implements _FeeSuccess {
   @override
   int get hashCode => Object.hash(runtimeType, feeEstimates);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of FeeState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$FeeSuccessImplCopyWith<_$FeeSuccessImpl> get copyWith =>
@@ -454,7 +467,10 @@ abstract class _FeeSuccess implements FeeState {
   const factory _FeeSuccess(final FeeEstimates feeEstimates) = _$FeeSuccessImpl;
 
   FeeEstimates get feeEstimates;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of FeeState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$FeeSuccessImplCopyWith<_$FeeSuccessImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -476,6 +492,8 @@ class __$$FeeErrorImplCopyWithImpl<$Res>
       _$FeeErrorImpl _value, $Res Function(_$FeeErrorImpl) _then)
       : super(_value, _then);
 
+  /// Create a copy of FeeState
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -514,7 +532,9 @@ class _$FeeErrorImpl implements _FeeError {
   @override
   int get hashCode => Object.hash(runtimeType, error);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of FeeState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$FeeErrorImplCopyWith<_$FeeErrorImpl> get copyWith =>
@@ -599,7 +619,10 @@ abstract class _FeeError implements FeeState {
   const factory _FeeError(final String error) = _$FeeErrorImpl;
 
   String get error;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of FeeState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$FeeErrorImplCopyWith<_$FeeErrorImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -674,6 +697,9 @@ class _$BalancesStateCopyWithImpl<$Res, $Val extends BalancesState>
   final $Val _value;
   // ignore: unused_field
   final $Res Function($Val) _then;
+
+  /// Create a copy of BalancesState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -690,6 +716,9 @@ class __$$BalancesInitialImplCopyWithImpl<$Res>
   __$$BalancesInitialImplCopyWithImpl(
       _$BalancesInitialImpl _value, $Res Function(_$BalancesInitialImpl) _then)
       : super(_value, _then);
+
+  /// Create a copy of BalancesState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -804,6 +833,9 @@ class __$$BalancesLoadingImplCopyWithImpl<$Res>
   __$$BalancesLoadingImplCopyWithImpl(
       _$BalancesLoadingImpl _value, $Res Function(_$BalancesLoadingImpl) _then)
       : super(_value, _then);
+
+  /// Create a copy of BalancesState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -921,6 +953,8 @@ class __$$BalancesSuccessImplCopyWithImpl<$Res>
       _$BalancesSuccessImpl _value, $Res Function(_$BalancesSuccessImpl) _then)
       : super(_value, _then);
 
+  /// Create a copy of BalancesState
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -966,7 +1000,9 @@ class _$BalancesSuccessImpl implements _BalancesSuccess {
   int get hashCode =>
       Object.hash(runtimeType, const DeepCollectionEquality().hash(_balances));
 
-  @JsonKey(ignore: true)
+  /// Create a copy of BalancesState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$BalancesSuccessImplCopyWith<_$BalancesSuccessImpl> get copyWith =>
@@ -1053,7 +1089,10 @@ abstract class _BalancesSuccess implements BalancesState {
       _$BalancesSuccessImpl;
 
   List<Balance> get balances;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of BalancesState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$BalancesSuccessImplCopyWith<_$BalancesSuccessImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -1075,6 +1114,8 @@ class __$$BalancesErrorImplCopyWithImpl<$Res>
       _$BalancesErrorImpl _value, $Res Function(_$BalancesErrorImpl) _then)
       : super(_value, _then);
 
+  /// Create a copy of BalancesState
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -1113,7 +1154,9 @@ class _$BalancesErrorImpl implements _BalancesError {
   @override
   int get hashCode => Object.hash(runtimeType, error);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of BalancesState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$BalancesErrorImplCopyWith<_$BalancesErrorImpl> get copyWith =>
@@ -1198,7 +1241,10 @@ abstract class _BalancesError implements BalancesState {
   const factory _BalancesError(final String error) = _$BalancesErrorImpl;
 
   String get error;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of BalancesState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$BalancesErrorImplCopyWith<_$BalancesErrorImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

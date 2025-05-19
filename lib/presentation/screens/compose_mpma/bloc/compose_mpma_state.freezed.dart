@@ -22,7 +22,9 @@ mixin _$MpmaEntry {
   String? get asset => throw _privateConstructorUsedError;
   String get quantity => throw _privateConstructorUsedError;
 
-  @JsonKey(ignore: true)
+  /// Create a copy of MpmaEntry
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   $MpmaEntryCopyWith<MpmaEntry> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -50,6 +52,8 @@ class _$MpmaEntryCopyWithImpl<$Res, $Val extends MpmaEntry>
   // ignore: unused_field
   final $Res Function($Val) _then;
 
+  /// Create a copy of MpmaEntry
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -108,6 +112,8 @@ class __$$MpmaEntryImplCopyWithImpl<$Res>
       _$MpmaEntryImpl _value, $Res Function(_$MpmaEntryImpl) _then)
       : super(_value, _then);
 
+  /// Create a copy of MpmaEntry
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -186,7 +192,9 @@ class _$MpmaEntryImpl implements _MpmaEntry {
   int get hashCode =>
       Object.hash(runtimeType, sendMax, source, destination, asset, quantity);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of MpmaEntry
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$MpmaEntryImplCopyWith<_$MpmaEntryImpl> get copyWith =>
@@ -211,8 +219,11 @@ abstract class _MpmaEntry implements MpmaEntry {
   String? get asset;
   @override
   String get quantity;
+
+  /// Create a copy of MpmaEntry
+  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$MpmaEntryImplCopyWith<_$MpmaEntryImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -228,7 +239,9 @@ mixin _$ComposeMpmaState {
   List<MpmaEntry> get entries => throw _privateConstructorUsedError;
   String? get composeSendError => throw _privateConstructorUsedError;
 
-  @JsonKey(ignore: true)
+  /// Create a copy of ComposeMpmaState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   $ComposeMpmaStateCopyWith<ComposeMpmaState> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -261,6 +274,8 @@ class _$ComposeMpmaStateCopyWithImpl<$Res, $Val extends ComposeMpmaState>
   // ignore: unused_field
   final $Res Function($Val) _then;
 
+  /// Create a copy of ComposeMpmaState
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -299,6 +314,8 @@ class _$ComposeMpmaStateCopyWithImpl<$Res, $Val extends ComposeMpmaState>
     ) as $Val);
   }
 
+  /// Create a copy of ComposeMpmaState
+  /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
   $FeeStateCopyWith<$Res> get feeState {
@@ -307,6 +324,8 @@ class _$ComposeMpmaStateCopyWithImpl<$Res, $Val extends ComposeMpmaState>
     });
   }
 
+  /// Create a copy of ComposeMpmaState
+  /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
   $BalancesStateCopyWith<$Res> get balancesState {
@@ -346,6 +365,8 @@ class __$$ComposeMpmaStateImplCopyWithImpl<$Res>
       $Res Function(_$ComposeMpmaStateImpl) _then)
       : super(_value, _then);
 
+  /// Create a copy of ComposeMpmaState
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -453,7 +474,9 @@ class _$ComposeMpmaStateImpl extends _ComposeMpmaState {
       const DeepCollectionEquality().hash(_entries),
       composeSendError);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of ComposeMpmaState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$ComposeMpmaStateImplCopyWith<_$ComposeMpmaStateImpl> get copyWith =>
@@ -471,20 +494,24 @@ abstract class _ComposeMpmaState extends ComposeMpmaState {
       final String? composeSendError}) = _$ComposeMpmaStateImpl;
   const _ComposeMpmaState._() : super._();
 
-  @override // Inherited properties
+// Inherited properties
+  @override
   FeeState get feeState;
   @override
   BalancesState get balancesState;
   @override
   FeeOption get feeOption;
   @override
-  SubmitState get submitState;
-  @override // Specific properties
+  SubmitState get submitState; // Specific properties
+  @override
   List<MpmaEntry> get entries;
   @override
   String? get composeSendError;
+
+  /// Create a copy of ComposeMpmaState
+  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$ComposeMpmaStateImplCopyWith<_$ComposeMpmaStateImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

@@ -206,6 +206,7 @@ class BalanceRepositoryImpl implements BalanceRepository {
     );
   }
 
+
   @override
   Future<List<b.Balance>> getBalancesForAddressAndAssetVerbose({
     required String address,

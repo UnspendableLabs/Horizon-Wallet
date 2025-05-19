@@ -22,7 +22,9 @@ mixin _$ComposeDestroyState {
   FeeOption get feeOption => throw _privateConstructorUsedError;
   SubmitState get submitState => throw _privateConstructorUsedError;
 
-  @JsonKey(ignore: true)
+  /// Create a copy of ComposeDestroyState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   $ComposeDestroyStateCopyWith<ComposeDestroyState> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -53,6 +55,8 @@ class _$ComposeDestroyStateCopyWithImpl<$Res, $Val extends ComposeDestroyState>
   // ignore: unused_field
   final $Res Function($Val) _then;
 
+  /// Create a copy of ComposeDestroyState
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -81,6 +85,8 @@ class _$ComposeDestroyStateCopyWithImpl<$Res, $Val extends ComposeDestroyState>
     ) as $Val);
   }
 
+  /// Create a copy of ComposeDestroyState
+  /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
   $FeeStateCopyWith<$Res> get feeState {
@@ -89,6 +95,8 @@ class _$ComposeDestroyStateCopyWithImpl<$Res, $Val extends ComposeDestroyState>
     });
   }
 
+  /// Create a copy of ComposeDestroyState
+  /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
   $BalancesStateCopyWith<$Res> get balancesState {
@@ -126,6 +134,8 @@ class __$$ComposeDestroyStateImplCopyWithImpl<$Res>
       $Res Function(_$ComposeDestroyStateImpl) _then)
       : super(_value, _then);
 
+  /// Create a copy of ComposeDestroyState
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -199,7 +209,9 @@ class _$ComposeDestroyStateImpl extends _ComposeDestroyState {
   int get hashCode =>
       Object.hash(runtimeType, feeState, balancesState, feeOption, submitState);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of ComposeDestroyState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$ComposeDestroyStateImplCopyWith<_$ComposeDestroyStateImpl> get copyWith =>
@@ -215,7 +227,8 @@ abstract class _ComposeDestroyState extends ComposeDestroyState {
       required final SubmitState submitState}) = _$ComposeDestroyStateImpl;
   const _ComposeDestroyState._() : super._();
 
-  @override // Inherited properties
+// Inherited properties
+  @override
   FeeState get feeState;
   @override
   BalancesState get balancesState;
@@ -223,8 +236,11 @@ abstract class _ComposeDestroyState extends ComposeDestroyState {
   FeeOption get feeOption;
   @override
   SubmitState get submitState;
+
+  /// Create a copy of ComposeDestroyState
+  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$ComposeDestroyStateImplCopyWith<_$ComposeDestroyStateImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

@@ -121,4 +121,31 @@ class FairminterRepositoryImpl implements FairminterRepository {
     } while (cursor != null);
     return fairminters;
   }
+
+  @override
+  TaskEither<String, List<e.Fairminter>> getFairmintersByAsset(String asset,
+      [String? status]) {
+    return TaskEither.tryCatch(() => _getFairmintersByAsset(asset, status),
+        (error, stacktrace) {
+      logger?.error(
+          "FairmintRepositoryImpl.getFairmintersByAsset", null, stacktrace);
+      return "GetFairmintersByAsset failure";
+    });
+  }
+
+  Future<List<e.Fairminter>> _getFairmintersByAsset(
+      String asset, String? status) async {
+    int limit = 50;
+    cursor_model.CursorModel? cursor;
+    final List<e.Fairminter> fairminters = [];
+    do {
+      final response =
+          await api.getFairmintersByAsset(asset, status, cursor, limit);
+      for (FairminterModel a in response.result ?? []) {
+        fairminters.add(a.toDomain());
+      }
+      cursor = response.nextCursor;
+    } while (cursor != null);
+    return fairminters;
+  }
 }

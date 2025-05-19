@@ -22,7 +22,9 @@ mixin _$ComposeCancelState {
   FeeOption get feeOption => throw _privateConstructorUsedError;
   SubmitState get submitState => throw _privateConstructorUsedError;
 
-  @JsonKey(ignore: true)
+  /// Create a copy of ComposeCancelState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   $ComposeCancelStateCopyWith<ComposeCancelState> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -53,6 +55,8 @@ class _$ComposeCancelStateCopyWithImpl<$Res, $Val extends ComposeCancelState>
   // ignore: unused_field
   final $Res Function($Val) _then;
 
+  /// Create a copy of ComposeCancelState
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -81,6 +85,8 @@ class _$ComposeCancelStateCopyWithImpl<$Res, $Val extends ComposeCancelState>
     ) as $Val);
   }
 
+  /// Create a copy of ComposeCancelState
+  /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
   $FeeStateCopyWith<$Res> get feeState {
@@ -89,6 +95,8 @@ class _$ComposeCancelStateCopyWithImpl<$Res, $Val extends ComposeCancelState>
     });
   }
 
+  /// Create a copy of ComposeCancelState
+  /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
   $BalancesStateCopyWith<$Res> get balancesState {
@@ -126,6 +134,8 @@ class __$$ComposeCancelStateImplCopyWithImpl<$Res>
       $Res Function(_$ComposeCancelStateImpl) _then)
       : super(_value, _then);
 
+  /// Create a copy of ComposeCancelState
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -199,7 +209,9 @@ class _$ComposeCancelStateImpl extends _ComposeCancelState {
   int get hashCode =>
       Object.hash(runtimeType, feeState, balancesState, feeOption, submitState);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of ComposeCancelState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$ComposeCancelStateImplCopyWith<_$ComposeCancelStateImpl> get copyWith =>
@@ -215,7 +227,8 @@ abstract class _ComposeCancelState extends ComposeCancelState {
       required final SubmitState submitState}) = _$ComposeCancelStateImpl;
   const _ComposeCancelState._() : super._();
 
-  @override // Inherited properties
+// Inherited properties
+  @override
   FeeState get feeState;
   @override
   BalancesState get balancesState;
@@ -223,8 +236,11 @@ abstract class _ComposeCancelState extends ComposeCancelState {
   FeeOption get feeOption;
   @override
   SubmitState get submitState;
+
+  /// Create a copy of ComposeCancelState
+  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$ComposeCancelStateImplCopyWith<_$ComposeCancelStateImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

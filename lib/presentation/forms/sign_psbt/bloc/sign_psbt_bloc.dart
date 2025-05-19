@@ -193,6 +193,7 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
   ) async {
     try {
       // decode the psbt transaction
+
       final transactionHex =
           transactionService.psbtToUnsignedTransactionHex(unsignedPsbt);
 
@@ -300,7 +301,12 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
         augmentedOutputs: augmentedOutputs,
         isFormDataLoaded: true,
       ));
-    } catch (e) {
+    } catch (e, callstack) {
+
+      print(e);
+      print(callstack);
+
+
       // if any failures were thrown, then psbt does not fit the criteria of a swap, and we just load the form without transaction data
       emit(state.copyWith(
         isFormDataLoaded: true,
