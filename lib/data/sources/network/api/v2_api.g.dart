@@ -4363,11 +4363,14 @@ class _V2Api implements V2Api {
   _V2Api(
     this._dio, {
     this.baseUrl,
+    this.errorLogger,
   });
 
   final Dio _dio;
 
   String? baseUrl;
+
+  final ParseErrorLogger? errorLogger;
 
   @override
   Future<Response<int>> estimateSmartFee(int confirmationTarget) async {
@@ -4377,27 +4380,33 @@ class _V2Api implements V2Api {
     };
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
-    final _result = await _dio
-        .fetch<Map<String, dynamic>>(_setStreamType<Response<int>>(Options(
+    final _options = _setStreamType<Response<int>>(Options(
       method: 'GET',
       headers: _headers,
       extra: _extra,
     )
-            .compose(
-              _dio.options,
-              '/bitcoin/estimatesmartfee',
-              queryParameters: queryParameters,
-              data: _data,
-            )
-            .copyWith(
-                baseUrl: _combineBaseUrls(
-              _dio.options.baseUrl,
-              baseUrl,
-            ))));
-    final _value = Response<int>.fromJson(
-      _result.data!,
-      (json) => json as int,
-    );
+        .compose(
+          _dio.options,
+          '/bitcoin/estimatesmartfee',
+          queryParameters: queryParameters,
+          data: _data,
+        )
+        .copyWith(
+            baseUrl: _combineBaseUrls(
+          _dio.options.baseUrl,
+          baseUrl,
+        )));
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late Response<int> _value;
+    try {
+      _value = Response<int>.fromJson(
+        _result.data!,
+        (json) => json as int,
+      );
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options);
+      rethrow;
+    }
     return _value;
   }
 
@@ -4407,27 +4416,33 @@ class _V2Api implements V2Api {
     final queryParameters = <String, dynamic>{r'signedhex': signedhex};
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
-    final _result = await _dio
-        .fetch<Map<String, dynamic>>(_setStreamType<Response<String>>(Options(
+    final _options = _setStreamType<Response<String>>(Options(
       method: 'POST',
       headers: _headers,
       extra: _extra,
     )
-            .compose(
-              _dio.options,
-              '/bitcoin/transactions',
-              queryParameters: queryParameters,
-              data: _data,
-            )
-            .copyWith(
-                baseUrl: _combineBaseUrls(
-              _dio.options.baseUrl,
-              baseUrl,
-            ))));
-    final _value = Response<String>.fromJson(
-      _result.data!,
-      (json) => json as String,
-    );
+        .compose(
+          _dio.options,
+          '/bitcoin/transactions',
+          queryParameters: queryParameters,
+          data: _data,
+        )
+        .copyWith(
+            baseUrl: _combineBaseUrls(
+          _dio.options.baseUrl,
+          baseUrl,
+        )));
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late Response<String> _value;
+    try {
+      _value = Response<String>.fromJson(
+        _result.data!,
+        (json) => json as String,
+      );
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options);
+      rethrow;
+    }
     return _value;
   }
 
@@ -4437,27 +4452,33 @@ class _V2Api implements V2Api {
     final queryParameters = <String, dynamic>{r'rawtx': rawtx};
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
-    final _result = await _dio.fetch<Map<String, dynamic>>(
-        _setStreamType<Response<DecodedTxModel>>(Options(
+    final _options = _setStreamType<Response<DecodedTxModel>>(Options(
       method: 'GET',
       headers: _headers,
       extra: _extra,
     )
-            .compose(
-              _dio.options,
-              '/bitcoin/transactions/decode',
-              queryParameters: queryParameters,
-              data: _data,
-            )
-            .copyWith(
-                baseUrl: _combineBaseUrls(
-              _dio.options.baseUrl,
-              baseUrl,
-            ))));
-    final _value = Response<DecodedTxModel>.fromJson(
-      _result.data!,
-      (json) => DecodedTxModel.fromJson(json as Map<String, dynamic>),
-    );
+        .compose(
+          _dio.options,
+          '/bitcoin/transactions/decode',
+          queryParameters: queryParameters,
+          data: _data,
+        )
+        .copyWith(
+            baseUrl: _combineBaseUrls(
+          _dio.options.baseUrl,
+          baseUrl,
+        )));
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late Response<DecodedTxModel> _value;
+    try {
+      _value = Response<DecodedTxModel>.fromJson(
+        _result.data!,
+        (json) => DecodedTxModel.fromJson(json as Map<String, dynamic>),
+      );
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options);
+      rethrow;
+    }
     return _value;
   }
 
@@ -4477,31 +4498,38 @@ class _V2Api implements V2Api {
     queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
-    final _result = await _dio.fetch<Map<String, dynamic>>(
-        _setStreamType<Response<List<Balance>>>(Options(
+    final _options = _setStreamType<Response<List<Balance>>>(Options(
       method: 'GET',
       headers: _headers,
       extra: _extra,
     )
-            .compose(
-              _dio.options,
-              '/addresses/${address}/balances',
-              queryParameters: queryParameters,
-              data: _data,
-            )
-            .copyWith(
-                baseUrl: _combineBaseUrls(
-              _dio.options.baseUrl,
-              baseUrl,
-            ))));
-    final _value = Response<List<Balance>>.fromJson(
-      _result.data!,
-      (json) => json is List<dynamic>
-          ? json
-              .map<Balance>((i) => Balance.fromJson(i as Map<String, dynamic>))
-              .toList()
-          : List.empty(),
-    );
+        .compose(
+          _dio.options,
+          '/addresses/${address}/balances',
+          queryParameters: queryParameters,
+          data: _data,
+        )
+        .copyWith(
+            baseUrl: _combineBaseUrls(
+          _dio.options.baseUrl,
+          baseUrl,
+        )));
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late Response<List<Balance>> _value;
+    try {
+      _value = Response<List<Balance>>.fromJson(
+        _result.data!,
+        (json) => json is List<dynamic>
+            ? json
+                .map<Balance>(
+                    (i) => Balance.fromJson(i as Map<String, dynamic>))
+                .toList()
+            : List.empty(),
+      );
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options);
+      rethrow;
+    }
     return _value;
   }
 
@@ -4519,32 +4547,38 @@ class _V2Api implements V2Api {
     queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
-    final _result = await _dio.fetch<Map<String, dynamic>>(
-        _setStreamType<Response<List<BalanceVerbose>>>(Options(
+    final _options = _setStreamType<Response<List<BalanceVerbose>>>(Options(
       method: 'GET',
       headers: _headers,
       extra: _extra,
     )
-            .compose(
-              _dio.options,
-              '/addresses/${address}/balances?verbose=true',
-              queryParameters: queryParameters,
-              data: _data,
-            )
-            .copyWith(
-                baseUrl: _combineBaseUrls(
-              _dio.options.baseUrl,
-              baseUrl,
-            ))));
-    final _value = Response<List<BalanceVerbose>>.fromJson(
-      _result.data!,
-      (json) => json is List<dynamic>
-          ? json
-              .map<BalanceVerbose>(
-                  (i) => BalanceVerbose.fromJson(i as Map<String, dynamic>))
-              .toList()
-          : List.empty(),
-    );
+        .compose(
+          _dio.options,
+          '/addresses/${address}/balances?verbose=true',
+          queryParameters: queryParameters,
+          data: _data,
+        )
+        .copyWith(
+            baseUrl: _combineBaseUrls(
+          _dio.options.baseUrl,
+          baseUrl,
+        )));
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late Response<List<BalanceVerbose>> _value;
+    try {
+      _value = Response<List<BalanceVerbose>>.fromJson(
+        _result.data!,
+        (json) => json is List<dynamic>
+            ? json
+                .map<BalanceVerbose>(
+                    (i) => BalanceVerbose.fromJson(i as Map<String, dynamic>))
+                .toList()
+            : List.empty(),
+      );
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options);
+      rethrow;
+    }
     return _value;
   }
 
@@ -4563,7 +4597,7 @@ class _V2Api implements V2Api {
     queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
-    final _result = await _dio.fetch<Map<String, dynamic>>(
+    final _options =
         _setStreamType<Response<List<MultiAddressBalance>>>(Options(
       method: 'GET',
       headers: _headers,
@@ -4579,16 +4613,23 @@ class _V2Api implements V2Api {
                 baseUrl: _combineBaseUrls(
               _dio.options.baseUrl,
               baseUrl,
-            ))));
-    final _value = Response<List<MultiAddressBalance>>.fromJson(
-      _result.data!,
-      (json) => json is List<dynamic>
-          ? json
-              .map<MultiAddressBalance>((i) =>
-                  MultiAddressBalance.fromJson(i as Map<String, dynamic>))
-              .toList()
-          : List.empty(),
-    );
+            )));
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late Response<List<MultiAddressBalance>> _value;
+    try {
+      _value = Response<List<MultiAddressBalance>>.fromJson(
+        _result.data!,
+        (json) => json is List<dynamic>
+            ? json
+                .map<MultiAddressBalance>((i) =>
+                    MultiAddressBalance.fromJson(i as Map<String, dynamic>))
+                .toList()
+            : List.empty(),
+      );
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options);
+      rethrow;
+    }
     return _value;
   }
 
@@ -4612,7 +4653,7 @@ class _V2Api implements V2Api {
     queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
-    final _result = await _dio.fetch<Map<String, dynamic>>(
+    final _options =
         _setStreamType<Response<List<MultiAddressBalanceVerbose>>>(Options(
       method: 'GET',
       headers: _headers,
@@ -4628,17 +4669,24 @@ class _V2Api implements V2Api {
                 baseUrl: _combineBaseUrls(
               _dio.options.baseUrl,
               baseUrl,
-            ))));
-    final _value = Response<List<MultiAddressBalanceVerbose>>.fromJson(
-      _result.data!,
-      (json) => json is List<dynamic>
-          ? json
-              .map<MultiAddressBalanceVerbose>((i) =>
-                  MultiAddressBalanceVerbose.fromJson(
-                      i as Map<String, dynamic>))
-              .toList()
-          : List.empty(),
-    );
+            )));
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late Response<List<MultiAddressBalanceVerbose>> _value;
+    try {
+      _value = Response<List<MultiAddressBalanceVerbose>>.fromJson(
+        _result.data!,
+        (json) => json is List<dynamic>
+            ? json
+                .map<MultiAddressBalanceVerbose>((i) =>
+                    MultiAddressBalanceVerbose.fromJson(
+                        i as Map<String, dynamic>))
+                .toList()
+            : List.empty(),
+      );
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options);
+      rethrow;
+    }
     return _value;
   }
 
@@ -4656,32 +4704,38 @@ class _V2Api implements V2Api {
     queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
-    final _result = await _dio.fetch<Map<String, dynamic>>(
-        _setStreamType<Response<List<BalanceVerbose>>>(Options(
+    final _options = _setStreamType<Response<List<BalanceVerbose>>>(Options(
       method: 'GET',
       headers: _headers,
       extra: _extra,
     )
-            .compose(
-              _dio.options,
-              '/utxos/${utxo}/balances?verbose=true',
-              queryParameters: queryParameters,
-              data: _data,
-            )
-            .copyWith(
-                baseUrl: _combineBaseUrls(
-              _dio.options.baseUrl,
-              baseUrl,
-            ))));
-    final _value = Response<List<BalanceVerbose>>.fromJson(
-      _result.data!,
-      (json) => json is List<dynamic>
-          ? json
-              .map<BalanceVerbose>(
-                  (i) => BalanceVerbose.fromJson(i as Map<String, dynamic>))
-              .toList()
-          : List.empty(),
-    );
+        .compose(
+          _dio.options,
+          '/utxos/${utxo}/balances?verbose=true',
+          queryParameters: queryParameters,
+          data: _data,
+        )
+        .copyWith(
+            baseUrl: _combineBaseUrls(
+          _dio.options.baseUrl,
+          baseUrl,
+        )));
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late Response<List<BalanceVerbose>> _value;
+    try {
+      _value = Response<List<BalanceVerbose>>.fromJson(
+        _result.data!,
+        (json) => json is List<dynamic>
+            ? json
+                .map<BalanceVerbose>(
+                    (i) => BalanceVerbose.fromJson(i as Map<String, dynamic>))
+                .toList()
+            : List.empty(),
+      );
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options);
+      rethrow;
+    }
     return _value;
   }
 
@@ -4699,31 +4753,37 @@ class _V2Api implements V2Api {
     };
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
-    final _result = await _dio.fetch<Map<String, dynamic>>(
-        _setStreamType<Response<List<Block>>>(Options(
+    final _options = _setStreamType<Response<List<Block>>>(Options(
       method: 'GET',
       headers: _headers,
       extra: _extra,
     )
-            .compose(
-              _dio.options,
-              '/blocks',
-              queryParameters: queryParameters,
-              data: _data,
-            )
-            .copyWith(
-                baseUrl: _combineBaseUrls(
-              _dio.options.baseUrl,
-              baseUrl,
-            ))));
-    final _value = Response<List<Block>>.fromJson(
-      _result.data!,
-      (json) => json is List<dynamic>
-          ? json
-              .map<Block>((i) => Block.fromJson(i as Map<String, dynamic>))
-              .toList()
-          : List.empty(),
-    );
+        .compose(
+          _dio.options,
+          '/blocks',
+          queryParameters: queryParameters,
+          data: _data,
+        )
+        .copyWith(
+            baseUrl: _combineBaseUrls(
+          _dio.options.baseUrl,
+          baseUrl,
+        )));
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late Response<List<Block>> _value;
+    try {
+      _value = Response<List<Block>>.fromJson(
+        _result.data!,
+        (json) => json is List<dynamic>
+            ? json
+                .map<Block>((i) => Block.fromJson(i as Map<String, dynamic>))
+                .toList()
+            : List.empty(),
+      );
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options);
+      rethrow;
+    }
     return _value;
   }
 
@@ -4733,27 +4793,33 @@ class _V2Api implements V2Api {
     final queryParameters = <String, dynamic>{};
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
-    final _result = await _dio
-        .fetch<Map<String, dynamic>>(_setStreamType<Response<Block>>(Options(
+    final _options = _setStreamType<Response<Block>>(Options(
       method: 'GET',
       headers: _headers,
       extra: _extra,
     )
-            .compose(
-              _dio.options,
-              '/blocks/last',
-              queryParameters: queryParameters,
-              data: _data,
-            )
-            .copyWith(
-                baseUrl: _combineBaseUrls(
-              _dio.options.baseUrl,
-              baseUrl,
-            ))));
-    final _value = Response<Block>.fromJson(
-      _result.data!,
-      (json) => Block.fromJson(json as Map<String, dynamic>),
-    );
+        .compose(
+          _dio.options,
+          '/blocks/last',
+          queryParameters: queryParameters,
+          data: _data,
+        )
+        .copyWith(
+            baseUrl: _combineBaseUrls(
+          _dio.options.baseUrl,
+          baseUrl,
+        )));
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late Response<Block> _value;
+    try {
+      _value = Response<Block>.fromJson(
+        _result.data!,
+        (json) => Block.fromJson(json as Map<String, dynamic>),
+      );
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options);
+      rethrow;
+    }
     return _value;
   }
 
@@ -4766,27 +4832,33 @@ class _V2Api implements V2Api {
     final queryParameters = <String, dynamic>{r'verbose': verbose};
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
-    final _result = await _dio
-        .fetch<Map<String, dynamic>>(_setStreamType<Response<Block>>(Options(
+    final _options = _setStreamType<Response<Block>>(Options(
       method: 'GET',
       headers: _headers,
       extra: _extra,
     )
-            .compose(
-              _dio.options,
-              '/blocks/${blockIndex}',
-              queryParameters: queryParameters,
-              data: _data,
-            )
-            .copyWith(
-                baseUrl: _combineBaseUrls(
-              _dio.options.baseUrl,
-              baseUrl,
-            ))));
-    final _value = Response<Block>.fromJson(
-      _result.data!,
-      (json) => Block.fromJson(json as Map<String, dynamic>),
-    );
+        .compose(
+          _dio.options,
+          '/blocks/${blockIndex}',
+          queryParameters: queryParameters,
+          data: _data,
+        )
+        .copyWith(
+            baseUrl: _combineBaseUrls(
+          _dio.options.baseUrl,
+          baseUrl,
+        )));
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late Response<Block> _value;
+    try {
+      _value = Response<Block>.fromJson(
+        _result.data!,
+        (json) => Block.fromJson(json as Map<String, dynamic>),
+      );
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options);
+      rethrow;
+    }
     return _value;
   }
 
@@ -4799,32 +4871,38 @@ class _V2Api implements V2Api {
     final queryParameters = <String, dynamic>{r'verbose': verbose};
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
-    final _result = await _dio.fetch<Map<String, dynamic>>(
-        _setStreamType<Response<List<Transaction>>>(Options(
+    final _options = _setStreamType<Response<List<Transaction>>>(Options(
       method: 'GET',
       headers: _headers,
       extra: _extra,
     )
-            .compose(
-              _dio.options,
-              '/blocks/${blockIndex}/transactions',
-              queryParameters: queryParameters,
-              data: _data,
-            )
-            .copyWith(
-                baseUrl: _combineBaseUrls(
-              _dio.options.baseUrl,
-              baseUrl,
-            ))));
-    final _value = Response<List<Transaction>>.fromJson(
-      _result.data!,
-      (json) => json is List<dynamic>
-          ? json
-              .map<Transaction>(
-                  (i) => Transaction.fromJson(i as Map<String, dynamic>))
-              .toList()
-          : List.empty(),
-    );
+        .compose(
+          _dio.options,
+          '/blocks/${blockIndex}/transactions',
+          queryParameters: queryParameters,
+          data: _data,
+        )
+        .copyWith(
+            baseUrl: _combineBaseUrls(
+          _dio.options.baseUrl,
+          baseUrl,
+        )));
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late Response<List<Transaction>> _value;
+    try {
+      _value = Response<List<Transaction>>.fromJson(
+        _result.data!,
+        (json) => json is List<dynamic>
+            ? json
+                .map<Transaction>(
+                    (i) => Transaction.fromJson(i as Map<String, dynamic>))
+                .toList()
+            : List.empty(),
+      );
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options);
+      rethrow;
+    }
     return _value;
   }
 
@@ -4837,31 +4915,37 @@ class _V2Api implements V2Api {
     final queryParameters = <String, dynamic>{r'verbose': verbose};
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
-    final _result = await _dio.fetch<Map<String, dynamic>>(
-        _setStreamType<Response<List<Event>>>(Options(
+    final _options = _setStreamType<Response<List<Event>>>(Options(
       method: 'GET',
       headers: _headers,
       extra: _extra,
     )
-            .compose(
-              _dio.options,
-              '/blocks/${blockIndex}/events',
-              queryParameters: queryParameters,
-              data: _data,
-            )
-            .copyWith(
-                baseUrl: _combineBaseUrls(
-              _dio.options.baseUrl,
-              baseUrl,
-            ))));
-    final _value = Response<List<Event>>.fromJson(
-      _result.data!,
-      (json) => json is List<dynamic>
-          ? json
-              .map<Event>((i) => Event.fromJson(i as Map<String, dynamic>))
-              .toList()
-          : List.empty(),
-    );
+        .compose(
+          _dio.options,
+          '/blocks/${blockIndex}/events',
+          queryParameters: queryParameters,
+          data: _data,
+        )
+        .copyWith(
+            baseUrl: _combineBaseUrls(
+          _dio.options.baseUrl,
+          baseUrl,
+        )));
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late Response<List<Event>> _value;
+    try {
+      _value = Response<List<Event>>.fromJson(
+        _result.data!,
+        (json) => json is List<dynamic>
+            ? json
+                .map<Event>((i) => Event.fromJson(i as Map<String, dynamic>))
+                .toList()
+            : List.empty(),
+      );
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options);
+      rethrow;
+    }
     return _value;
   }
 
@@ -4874,32 +4958,38 @@ class _V2Api implements V2Api {
     final queryParameters = <String, dynamic>{r'verbose': verbose};
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
-    final _result = await _dio.fetch<Map<String, dynamic>>(
-        _setStreamType<Response<List<EventCount>>>(Options(
+    final _options = _setStreamType<Response<List<EventCount>>>(Options(
       method: 'GET',
       headers: _headers,
       extra: _extra,
     )
-            .compose(
-              _dio.options,
-              '/blocks/${blockIndex}/events/counts',
-              queryParameters: queryParameters,
-              data: _data,
-            )
-            .copyWith(
-                baseUrl: _combineBaseUrls(
-              _dio.options.baseUrl,
-              baseUrl,
-            ))));
-    final _value = Response<List<EventCount>>.fromJson(
-      _result.data!,
-      (json) => json is List<dynamic>
-          ? json
-              .map<EventCount>(
-                  (i) => EventCount.fromJson(i as Map<String, dynamic>))
-              .toList()
-          : List.empty(),
-    );
+        .compose(
+          _dio.options,
+          '/blocks/${blockIndex}/events/counts',
+          queryParameters: queryParameters,
+          data: _data,
+        )
+        .copyWith(
+            baseUrl: _combineBaseUrls(
+          _dio.options.baseUrl,
+          baseUrl,
+        )));
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late Response<List<EventCount>> _value;
+    try {
+      _value = Response<List<EventCount>>.fromJson(
+        _result.data!,
+        (json) => json is List<dynamic>
+            ? json
+                .map<EventCount>(
+                    (i) => EventCount.fromJson(i as Map<String, dynamic>))
+                .toList()
+            : List.empty(),
+      );
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options);
+      rethrow;
+    }
     return _value;
   }
 
@@ -4913,31 +5003,37 @@ class _V2Api implements V2Api {
     final queryParameters = <String, dynamic>{r'verbose': verbose};
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
-    final _result = await _dio.fetch<Map<String, dynamic>>(
-        _setStreamType<Response<List<Event>>>(Options(
+    final _options = _setStreamType<Response<List<Event>>>(Options(
       method: 'GET',
       headers: _headers,
       extra: _extra,
     )
-            .compose(
-              _dio.options,
-              '/blocks/${blockIndex}/events/${event}',
-              queryParameters: queryParameters,
-              data: _data,
-            )
-            .copyWith(
-                baseUrl: _combineBaseUrls(
-              _dio.options.baseUrl,
-              baseUrl,
-            ))));
-    final _value = Response<List<Event>>.fromJson(
-      _result.data!,
-      (json) => json is List<dynamic>
-          ? json
-              .map<Event>((i) => Event.fromJson(i as Map<String, dynamic>))
-              .toList()
-          : List.empty(),
-    );
+        .compose(
+          _dio.options,
+          '/blocks/${blockIndex}/events/${event}',
+          queryParameters: queryParameters,
+          data: _data,
+        )
+        .copyWith(
+            baseUrl: _combineBaseUrls(
+          _dio.options.baseUrl,
+          baseUrl,
+        )));
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late Response<List<Event>> _value;
+    try {
+      _value = Response<List<Event>>.fromJson(
+        _result.data!,
+        (json) => json is List<dynamic>
+            ? json
+                .map<Event>((i) => Event.fromJson(i as Map<String, dynamic>))
+                .toList()
+            : List.empty(),
+      );
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options);
+      rethrow;
+    }
     return _value;
   }
 
@@ -4950,31 +5046,37 @@ class _V2Api implements V2Api {
     final queryParameters = <String, dynamic>{r'verbose': verbose};
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
-    final _result = await _dio.fetch<Map<String, dynamic>>(
-        _setStreamType<Response<List<Credit>>>(Options(
+    final _options = _setStreamType<Response<List<Credit>>>(Options(
       method: 'GET',
       headers: _headers,
       extra: _extra,
     )
-            .compose(
-              _dio.options,
-              '/blocks/${blockIndex}/credits',
-              queryParameters: queryParameters,
-              data: _data,
-            )
-            .copyWith(
-                baseUrl: _combineBaseUrls(
-              _dio.options.baseUrl,
-              baseUrl,
-            ))));
-    final _value = Response<List<Credit>>.fromJson(
-      _result.data!,
-      (json) => json is List<dynamic>
-          ? json
-              .map<Credit>((i) => Credit.fromJson(i as Map<String, dynamic>))
-              .toList()
-          : List.empty(),
-    );
+        .compose(
+          _dio.options,
+          '/blocks/${blockIndex}/credits',
+          queryParameters: queryParameters,
+          data: _data,
+        )
+        .copyWith(
+            baseUrl: _combineBaseUrls(
+          _dio.options.baseUrl,
+          baseUrl,
+        )));
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late Response<List<Credit>> _value;
+    try {
+      _value = Response<List<Credit>>.fromJson(
+        _result.data!,
+        (json) => json is List<dynamic>
+            ? json
+                .map<Credit>((i) => Credit.fromJson(i as Map<String, dynamic>))
+                .toList()
+            : List.empty(),
+      );
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options);
+      rethrow;
+    }
     return _value;
   }
 
@@ -4987,31 +5089,37 @@ class _V2Api implements V2Api {
     final queryParameters = <String, dynamic>{r'verbose': verbose};
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
-    final _result = await _dio.fetch<Map<String, dynamic>>(
-        _setStreamType<Response<List<Debit>>>(Options(
+    final _options = _setStreamType<Response<List<Debit>>>(Options(
       method: 'GET',
       headers: _headers,
       extra: _extra,
     )
-            .compose(
-              _dio.options,
-              '/blocks/${blockIndex}/debits',
-              queryParameters: queryParameters,
-              data: _data,
-            )
-            .copyWith(
-                baseUrl: _combineBaseUrls(
-              _dio.options.baseUrl,
-              baseUrl,
-            ))));
-    final _value = Response<List<Debit>>.fromJson(
-      _result.data!,
-      (json) => json is List<dynamic>
-          ? json
-              .map<Debit>((i) => Debit.fromJson(i as Map<String, dynamic>))
-              .toList()
-          : List.empty(),
-    );
+        .compose(
+          _dio.options,
+          '/blocks/${blockIndex}/debits',
+          queryParameters: queryParameters,
+          data: _data,
+        )
+        .copyWith(
+            baseUrl: _combineBaseUrls(
+          _dio.options.baseUrl,
+          baseUrl,
+        )));
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late Response<List<Debit>> _value;
+    try {
+      _value = Response<List<Debit>>.fromJson(
+        _result.data!,
+        (json) => json is List<dynamic>
+            ? json
+                .map<Debit>((i) => Debit.fromJson(i as Map<String, dynamic>))
+                .toList()
+            : List.empty(),
+      );
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options);
+      rethrow;
+    }
     return _value;
   }
 
@@ -5024,32 +5132,38 @@ class _V2Api implements V2Api {
     final queryParameters = <String, dynamic>{r'verbose': verbose};
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
-    final _result = await _dio.fetch<Map<String, dynamic>>(
-        _setStreamType<Response<List<Expiration>>>(Options(
+    final _options = _setStreamType<Response<List<Expiration>>>(Options(
       method: 'GET',
       headers: _headers,
       extra: _extra,
     )
-            .compose(
-              _dio.options,
-              '/blocks/${blockIndex}/expirations',
-              queryParameters: queryParameters,
-              data: _data,
-            )
-            .copyWith(
-                baseUrl: _combineBaseUrls(
-              _dio.options.baseUrl,
-              baseUrl,
-            ))));
-    final _value = Response<List<Expiration>>.fromJson(
-      _result.data!,
-      (json) => json is List<dynamic>
-          ? json
-              .map<Expiration>(
-                  (i) => Expiration.fromJson(i as Map<String, dynamic>))
-              .toList()
-          : List.empty(),
-    );
+        .compose(
+          _dio.options,
+          '/blocks/${blockIndex}/expirations',
+          queryParameters: queryParameters,
+          data: _data,
+        )
+        .copyWith(
+            baseUrl: _combineBaseUrls(
+          _dio.options.baseUrl,
+          baseUrl,
+        )));
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late Response<List<Expiration>> _value;
+    try {
+      _value = Response<List<Expiration>>.fromJson(
+        _result.data!,
+        (json) => json is List<dynamic>
+            ? json
+                .map<Expiration>(
+                    (i) => Expiration.fromJson(i as Map<String, dynamic>))
+                .toList()
+            : List.empty(),
+      );
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options);
+      rethrow;
+    }
     return _value;
   }
 
@@ -5062,31 +5176,37 @@ class _V2Api implements V2Api {
     final queryParameters = <String, dynamic>{r'verbose': verbose};
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
-    final _result = await _dio.fetch<Map<String, dynamic>>(
-        _setStreamType<Response<List<Cancel>>>(Options(
+    final _options = _setStreamType<Response<List<Cancel>>>(Options(
       method: 'GET',
       headers: _headers,
       extra: _extra,
     )
-            .compose(
-              _dio.options,
-              '/blocks/${blockIndex}/cancels',
-              queryParameters: queryParameters,
-              data: _data,
-            )
-            .copyWith(
-                baseUrl: _combineBaseUrls(
-              _dio.options.baseUrl,
-              baseUrl,
-            ))));
-    final _value = Response<List<Cancel>>.fromJson(
-      _result.data!,
-      (json) => json is List<dynamic>
-          ? json
-              .map<Cancel>((i) => Cancel.fromJson(i as Map<String, dynamic>))
-              .toList()
-          : List.empty(),
-    );
+        .compose(
+          _dio.options,
+          '/blocks/${blockIndex}/cancels',
+          queryParameters: queryParameters,
+          data: _data,
+        )
+        .copyWith(
+            baseUrl: _combineBaseUrls(
+          _dio.options.baseUrl,
+          baseUrl,
+        )));
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late Response<List<Cancel>> _value;
+    try {
+      _value = Response<List<Cancel>>.fromJson(
+        _result.data!,
+        (json) => json is List<dynamic>
+            ? json
+                .map<Cancel>((i) => Cancel.fromJson(i as Map<String, dynamic>))
+                .toList()
+            : List.empty(),
+      );
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options);
+      rethrow;
+    }
     return _value;
   }
 
@@ -5099,32 +5219,38 @@ class _V2Api implements V2Api {
     final queryParameters = <String, dynamic>{r'verbose': verbose};
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
-    final _result = await _dio.fetch<Map<String, dynamic>>(
-        _setStreamType<Response<List<Destruction>>>(Options(
+    final _options = _setStreamType<Response<List<Destruction>>>(Options(
       method: 'GET',
       headers: _headers,
       extra: _extra,
     )
-            .compose(
-              _dio.options,
-              '/blocks/${blockIndex}/destructions',
-              queryParameters: queryParameters,
-              data: _data,
-            )
-            .copyWith(
-                baseUrl: _combineBaseUrls(
-              _dio.options.baseUrl,
-              baseUrl,
-            ))));
-    final _value = Response<List<Destruction>>.fromJson(
-      _result.data!,
-      (json) => json is List<dynamic>
-          ? json
-              .map<Destruction>(
-                  (i) => Destruction.fromJson(i as Map<String, dynamic>))
-              .toList()
-          : List.empty(),
-    );
+        .compose(
+          _dio.options,
+          '/blocks/${blockIndex}/destructions',
+          queryParameters: queryParameters,
+          data: _data,
+        )
+        .copyWith(
+            baseUrl: _combineBaseUrls(
+          _dio.options.baseUrl,
+          baseUrl,
+        )));
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late Response<List<Destruction>> _value;
+    try {
+      _value = Response<List<Destruction>>.fromJson(
+        _result.data!,
+        (json) => json is List<dynamic>
+            ? json
+                .map<Destruction>(
+                    (i) => Destruction.fromJson(i as Map<String, dynamic>))
+                .toList()
+            : List.empty(),
+      );
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options);
+      rethrow;
+    }
     return _value;
   }
 
@@ -5143,27 +5269,33 @@ class _V2Api implements V2Api {
     queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
-    final _result = await _dio
-        .fetch<Map<String, dynamic>>(_setStreamType<Response<Info>>(Options(
+    final _options = _setStreamType<Response<Info>>(Options(
       method: 'GET',
       headers: _headers,
       extra: _extra,
     )
-            .compose(
-              _dio.options,
-              '/transactions/info',
-              queryParameters: queryParameters,
-              data: _data,
-            )
-            .copyWith(
-                baseUrl: _combineBaseUrls(
-              _dio.options.baseUrl,
-              baseUrl,
-            ))));
-    final _value = Response<Info>.fromJson(
-      _result.data!,
-      (json) => Info.fromJson(json as Map<String, dynamic>),
-    );
+        .compose(
+          _dio.options,
+          '/transactions/info',
+          queryParameters: queryParameters,
+          data: _data,
+        )
+        .copyWith(
+            baseUrl: _combineBaseUrls(
+          _dio.options.baseUrl,
+          baseUrl,
+        )));
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late Response<Info> _value;
+    try {
+      _value = Response<Info>.fromJson(
+        _result.data!,
+        (json) => Info.fromJson(json as Map<String, dynamic>),
+      );
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options);
+      rethrow;
+    }
     return _value;
   }
 
@@ -5182,27 +5314,33 @@ class _V2Api implements V2Api {
     queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
-    final _result = await _dio.fetch<Map<String, dynamic>>(
-        _setStreamType<Response<InfoVerbose>>(Options(
+    final _options = _setStreamType<Response<InfoVerbose>>(Options(
       method: 'GET',
       headers: _headers,
       extra: _extra,
     )
-            .compose(
-              _dio.options,
-              '/transactions/info?verbose=true',
-              queryParameters: queryParameters,
-              data: _data,
-            )
-            .copyWith(
-                baseUrl: _combineBaseUrls(
-              _dio.options.baseUrl,
-              baseUrl,
-            ))));
-    final _value = Response<InfoVerbose>.fromJson(
-      _result.data!,
-      (json) => InfoVerbose.fromJson(json as Map<String, dynamic>),
-    );
+        .compose(
+          _dio.options,
+          '/transactions/info?verbose=true',
+          queryParameters: queryParameters,
+          data: _data,
+        )
+        .copyWith(
+            baseUrl: _combineBaseUrls(
+          _dio.options.baseUrl,
+          baseUrl,
+        )));
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late Response<InfoVerbose> _value;
+    try {
+      _value = Response<InfoVerbose>.fromJson(
+        _result.data!,
+        (json) => InfoVerbose.fromJson(json as Map<String, dynamic>),
+      );
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options);
+      rethrow;
+    }
     return _value;
   }
 
@@ -5221,27 +5359,33 @@ class _V2Api implements V2Api {
     queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
-    final _result = await _dio.fetch<Map<String, dynamic>>(
-        _setStreamType<Response<TransactionUnpacked>>(Options(
+    final _options = _setStreamType<Response<TransactionUnpacked>>(Options(
       method: 'GET',
       headers: _headers,
       extra: _extra,
     )
-            .compose(
-              _dio.options,
-              '/transactions/unpack',
-              queryParameters: queryParameters,
-              data: _data,
-            )
-            .copyWith(
-                baseUrl: _combineBaseUrls(
-              _dio.options.baseUrl,
-              baseUrl,
-            ))));
-    final _value = Response<TransactionUnpacked>.fromJson(
-      _result.data!,
-      (json) => TransactionUnpacked.fromJson(json as Map<String, dynamic>),
-    );
+        .compose(
+          _dio.options,
+          '/transactions/unpack',
+          queryParameters: queryParameters,
+          data: _data,
+        )
+        .copyWith(
+            baseUrl: _combineBaseUrls(
+          _dio.options.baseUrl,
+          baseUrl,
+        )));
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late Response<TransactionUnpacked> _value;
+    try {
+      _value = Response<TransactionUnpacked>.fromJson(
+        _result.data!,
+        (json) => TransactionUnpacked.fromJson(json as Map<String, dynamic>),
+      );
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options);
+      rethrow;
+    }
     return _value;
   }
 
@@ -5260,7 +5404,7 @@ class _V2Api implements V2Api {
     queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
-    final _result = await _dio.fetch<Map<String, dynamic>>(
+    final _options =
         _setStreamType<Response<TransactionUnpackedVerbose>>(Options(
       method: 'GET',
       headers: _headers,
@@ -5276,12 +5420,19 @@ class _V2Api implements V2Api {
                 baseUrl: _combineBaseUrls(
               _dio.options.baseUrl,
               baseUrl,
-            ))));
-    final _value = Response<TransactionUnpackedVerbose>.fromJson(
-      _result.data!,
-      (json) =>
-          TransactionUnpackedVerbose.fromJson(json as Map<String, dynamic>),
-    );
+            )));
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late Response<TransactionUnpackedVerbose> _value;
+    try {
+      _value = Response<TransactionUnpackedVerbose>.fromJson(
+        _result.data!,
+        (json) =>
+            TransactionUnpackedVerbose.fromJson(json as Map<String, dynamic>),
+      );
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options);
+      rethrow;
+    }
     return _value;
   }
 
@@ -5305,32 +5456,38 @@ class _V2Api implements V2Api {
     queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
-    final _result = await _dio.fetch<Map<String, dynamic>>(
-        _setStreamType<Response<List<DispenserModel>>>(Options(
+    final _options = _setStreamType<Response<List<DispenserModel>>>(Options(
       method: 'GET',
       headers: _headers,
       extra: _extra,
     )
-            .compose(
-              _dio.options,
-              '/addresses/${address}/dispensers',
-              queryParameters: queryParameters,
-              data: _data,
-            )
-            .copyWith(
-                baseUrl: _combineBaseUrls(
-              _dio.options.baseUrl,
-              baseUrl,
-            ))));
-    final _value = Response<List<DispenserModel>>.fromJson(
-      _result.data!,
-      (json) => json is List<dynamic>
-          ? json
-              .map<DispenserModel>(
-                  (i) => DispenserModel.fromJson(i as Map<String, dynamic>))
-              .toList()
-          : List.empty(),
-    );
+        .compose(
+          _dio.options,
+          '/addresses/${address}/dispensers',
+          queryParameters: queryParameters,
+          data: _data,
+        )
+        .copyWith(
+            baseUrl: _combineBaseUrls(
+          _dio.options.baseUrl,
+          baseUrl,
+        )));
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late Response<List<DispenserModel>> _value;
+    try {
+      _value = Response<List<DispenserModel>>.fromJson(
+        _result.data!,
+        (json) => json is List<dynamic>
+            ? json
+                .map<DispenserModel>(
+                    (i) => DispenserModel.fromJson(i as Map<String, dynamic>))
+                .toList()
+            : List.empty(),
+      );
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options);
+      rethrow;
+    }
     return _value;
   }
 
@@ -5356,27 +5513,33 @@ class _V2Api implements V2Api {
     queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
-    final _result = await _dio
-        .fetch<Map<String, dynamic>>(_setStreamType<Response<SendTx>>(Options(
+    final _options = _setStreamType<Response<SendTx>>(Options(
       method: 'GET',
       headers: _headers,
       extra: _extra,
     )
-            .compose(
-              _dio.options,
-              '/addresses/${address}/compose/send',
-              queryParameters: queryParameters,
-              data: _data,
-            )
-            .copyWith(
-                baseUrl: _combineBaseUrls(
-              _dio.options.baseUrl,
-              baseUrl,
-            ))));
-    final _value = Response<SendTx>.fromJson(
-      _result.data!,
-      (json) => SendTx.fromJson(json as Map<String, dynamic>),
-    );
+        .compose(
+          _dio.options,
+          '/addresses/${address}/compose/send',
+          queryParameters: queryParameters,
+          data: _data,
+        )
+        .copyWith(
+            baseUrl: _combineBaseUrls(
+          _dio.options.baseUrl,
+          baseUrl,
+        )));
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late Response<SendTx> _value;
+    try {
+      _value = Response<SendTx>.fromJson(
+        _result.data!,
+        (json) => SendTx.fromJson(json as Map<String, dynamic>),
+      );
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options);
+      rethrow;
+    }
     return _value;
   }
 
@@ -5408,27 +5571,33 @@ class _V2Api implements V2Api {
     queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
-    final _result = await _dio.fetch<Map<String, dynamic>>(
-        _setStreamType<Response<SendTxVerbose>>(Options(
+    final _options = _setStreamType<Response<SendTxVerbose>>(Options(
       method: 'GET',
       headers: _headers,
       extra: _extra,
     )
-            .compose(
-              _dio.options,
-              '/addresses/${address}/compose/send?verbose=true',
-              queryParameters: queryParameters,
-              data: _data,
-            )
-            .copyWith(
-                baseUrl: _combineBaseUrls(
-              _dio.options.baseUrl,
-              baseUrl,
-            ))));
-    final _value = Response<SendTxVerbose>.fromJson(
-      _result.data!,
-      (json) => SendTxVerbose.fromJson(json as Map<String, dynamic>),
-    );
+        .compose(
+          _dio.options,
+          '/addresses/${address}/compose/send?verbose=true',
+          queryParameters: queryParameters,
+          data: _data,
+        )
+        .copyWith(
+            baseUrl: _combineBaseUrls(
+          _dio.options.baseUrl,
+          baseUrl,
+        )));
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late Response<SendTxVerbose> _value;
+    try {
+      _value = Response<SendTxVerbose>.fromJson(
+        _result.data!,
+        (json) => SendTxVerbose.fromJson(json as Map<String, dynamic>),
+      );
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options);
+      rethrow;
+    }
     return _value;
   }
 
@@ -5458,27 +5627,33 @@ class _V2Api implements V2Api {
     queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
-    final _result = await _dio.fetch<Map<String, dynamic>>(
-        _setStreamType<Response<ComposeMpmaSend>>(Options(
+    final _options = _setStreamType<Response<ComposeMpmaSend>>(Options(
       method: 'GET',
       headers: _headers,
       extra: _extra,
     )
-            .compose(
-              _dio.options,
-              '/addresses/${address}/compose/mpma?verbose=true',
-              queryParameters: queryParameters,
-              data: _data,
-            )
-            .copyWith(
-                baseUrl: _combineBaseUrls(
-              _dio.options.baseUrl,
-              baseUrl,
-            ))));
-    final _value = Response<ComposeMpmaSend>.fromJson(
-      _result.data!,
-      (json) => ComposeMpmaSend.fromJson(json as Map<String, dynamic>),
-    );
+        .compose(
+          _dio.options,
+          '/addresses/${address}/compose/mpma?verbose=true',
+          queryParameters: queryParameters,
+          data: _data,
+        )
+        .copyWith(
+            baseUrl: _combineBaseUrls(
+          _dio.options.baseUrl,
+          baseUrl,
+        )));
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late Response<ComposeMpmaSend> _value;
+    try {
+      _value = Response<ComposeMpmaSend>.fromJson(
+        _result.data!,
+        (json) => ComposeMpmaSend.fromJson(json as Map<String, dynamic>),
+      );
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options);
+      rethrow;
+    }
     return _value;
   }
 
@@ -5496,31 +5671,37 @@ class _V2Api implements V2Api {
     queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
-    final _result = await _dio.fetch<Map<String, dynamic>>(
-        _setStreamType<Response<List<Send>>>(Options(
+    final _options = _setStreamType<Response<List<Send>>>(Options(
       method: 'GET',
       headers: _headers,
       extra: _extra,
     )
-            .compose(
-              _dio.options,
-              '/addresses/${address}/sends',
-              queryParameters: queryParameters,
-              data: _data,
-            )
-            .copyWith(
-                baseUrl: _combineBaseUrls(
-              _dio.options.baseUrl,
-              baseUrl,
-            ))));
-    final _value = Response<List<Send>>.fromJson(
-      _result.data!,
-      (json) => json is List<dynamic>
-          ? json
-              .map<Send>((i) => Send.fromJson(i as Map<String, dynamic>))
-              .toList()
-          : List.empty(),
-    );
+        .compose(
+          _dio.options,
+          '/addresses/${address}/sends',
+          queryParameters: queryParameters,
+          data: _data,
+        )
+        .copyWith(
+            baseUrl: _combineBaseUrls(
+          _dio.options.baseUrl,
+          baseUrl,
+        )));
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late Response<List<Send>> _value;
+    try {
+      _value = Response<List<Send>>.fromJson(
+        _result.data!,
+        (json) => json is List<dynamic>
+            ? json
+                .map<Send>((i) => Send.fromJson(i as Map<String, dynamic>))
+                .toList()
+            : List.empty(),
+      );
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options);
+      rethrow;
+    }
     return _value;
   }
 
@@ -5538,32 +5719,38 @@ class _V2Api implements V2Api {
     queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
-    final _result = await _dio.fetch<Map<String, dynamic>>(
-        _setStreamType<Response<List<Issuance>>>(Options(
+    final _options = _setStreamType<Response<List<Issuance>>>(Options(
       method: 'GET',
       headers: _headers,
       extra: _extra,
     )
-            .compose(
-              _dio.options,
-              '/addresses/${address}/issuances',
-              queryParameters: queryParameters,
-              data: _data,
-            )
-            .copyWith(
-                baseUrl: _combineBaseUrls(
-              _dio.options.baseUrl,
-              baseUrl,
-            ))));
-    final _value = Response<List<Issuance>>.fromJson(
-      _result.data!,
-      (json) => json is List<dynamic>
-          ? json
-              .map<Issuance>(
-                  (i) => Issuance.fromJson(i as Map<String, dynamic>))
-              .toList()
-          : List.empty(),
-    );
+        .compose(
+          _dio.options,
+          '/addresses/${address}/issuances',
+          queryParameters: queryParameters,
+          data: _data,
+        )
+        .copyWith(
+            baseUrl: _combineBaseUrls(
+          _dio.options.baseUrl,
+          baseUrl,
+        )));
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late Response<List<Issuance>> _value;
+    try {
+      _value = Response<List<Issuance>>.fromJson(
+        _result.data!,
+        (json) => json is List<dynamic>
+            ? json
+                .map<Issuance>(
+                    (i) => Issuance.fromJson(i as Map<String, dynamic>))
+                .toList()
+            : List.empty(),
+      );
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options);
+      rethrow;
+    }
     return _value;
   }
 
@@ -5595,27 +5782,33 @@ class _V2Api implements V2Api {
     queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
-    final _result = await _dio.fetch<Map<String, dynamic>>(
-        _setStreamType<Response<ComposeIssuance>>(Options(
+    final _options = _setStreamType<Response<ComposeIssuance>>(Options(
       method: 'GET',
       headers: _headers,
       extra: _extra,
     )
-            .compose(
-              _dio.options,
-              '/addresses/${address}/compose/issuance',
-              queryParameters: queryParameters,
-              data: _data,
-            )
-            .copyWith(
-                baseUrl: _combineBaseUrls(
-              _dio.options.baseUrl,
-              baseUrl,
-            ))));
-    final _value = Response<ComposeIssuance>.fromJson(
-      _result.data!,
-      (json) => ComposeIssuance.fromJson(json as Map<String, dynamic>),
-    );
+        .compose(
+          _dio.options,
+          '/addresses/${address}/compose/issuance',
+          queryParameters: queryParameters,
+          data: _data,
+        )
+        .copyWith(
+            baseUrl: _combineBaseUrls(
+          _dio.options.baseUrl,
+          baseUrl,
+        )));
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late Response<ComposeIssuance> _value;
+    try {
+      _value = Response<ComposeIssuance>.fromJson(
+        _result.data!,
+        (json) => ComposeIssuance.fromJson(json as Map<String, dynamic>),
+      );
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options);
+      rethrow;
+    }
     return _value;
   }
 
@@ -5653,27 +5846,33 @@ class _V2Api implements V2Api {
     queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
-    final _result = await _dio.fetch<Map<String, dynamic>>(
-        _setStreamType<Response<ComposeIssuanceVerbose>>(Options(
+    final _options = _setStreamType<Response<ComposeIssuanceVerbose>>(Options(
       method: 'GET',
       headers: _headers,
       extra: _extra,
     )
-            .compose(
-              _dio.options,
-              '/addresses/${address}/compose/issuance?verbose=true',
-              queryParameters: queryParameters,
-              data: _data,
-            )
-            .copyWith(
-                baseUrl: _combineBaseUrls(
-              _dio.options.baseUrl,
-              baseUrl,
-            ))));
-    final _value = Response<ComposeIssuanceVerbose>.fromJson(
-      _result.data!,
-      (json) => ComposeIssuanceVerbose.fromJson(json as Map<String, dynamic>),
-    );
+        .compose(
+          _dio.options,
+          '/addresses/${address}/compose/issuance?verbose=true',
+          queryParameters: queryParameters,
+          data: _data,
+        )
+        .copyWith(
+            baseUrl: _combineBaseUrls(
+          _dio.options.baseUrl,
+          baseUrl,
+        )));
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late Response<ComposeIssuanceVerbose> _value;
+    try {
+      _value = Response<ComposeIssuanceVerbose>.fromJson(
+        _result.data!,
+        (json) => ComposeIssuanceVerbose.fromJson(json as Map<String, dynamic>),
+      );
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options);
+      rethrow;
+    }
     return _value;
   }
 
@@ -5695,32 +5894,38 @@ class _V2Api implements V2Api {
     queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
-    final _result = await _dio.fetch<Map<String, dynamic>>(
-        _setStreamType<Response<List<OrderVerbose>>>(Options(
+    final _options = _setStreamType<Response<List<OrderVerbose>>>(Options(
       method: 'GET',
       headers: _headers,
       extra: _extra,
     )
-            .compose(
-              _dio.options,
-              '/addresses/${address}/orders?verbose=true',
-              queryParameters: queryParameters,
-              data: _data,
-            )
-            .copyWith(
-                baseUrl: _combineBaseUrls(
-              _dio.options.baseUrl,
-              baseUrl,
-            ))));
-    final _value = Response<List<OrderVerbose>>.fromJson(
-      _result.data!,
-      (json) => json is List<dynamic>
-          ? json
-              .map<OrderVerbose>(
-                  (i) => OrderVerbose.fromJson(i as Map<String, dynamic>))
-              .toList()
-          : List.empty(),
-    );
+        .compose(
+          _dio.options,
+          '/addresses/${address}/orders?verbose=true',
+          queryParameters: queryParameters,
+          data: _data,
+        )
+        .copyWith(
+            baseUrl: _combineBaseUrls(
+          _dio.options.baseUrl,
+          baseUrl,
+        )));
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late Response<List<OrderVerbose>> _value;
+    try {
+      _value = Response<List<OrderVerbose>>.fromJson(
+        _result.data!,
+        (json) => json is List<dynamic>
+            ? json
+                .map<OrderVerbose>(
+                    (i) => OrderVerbose.fromJson(i as Map<String, dynamic>))
+                .toList()
+            : List.empty(),
+      );
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options);
+      rethrow;
+    }
     return _value;
   }
 
@@ -5739,32 +5944,38 @@ class _V2Api implements V2Api {
     queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
-    final _result = await _dio.fetch<Map<String, dynamic>>(
-        _setStreamType<Response<List<FairminterModel>>>(Options(
+    final _options = _setStreamType<Response<List<FairminterModel>>>(Options(
       method: 'GET',
       headers: _headers,
       extra: _extra,
     )
-            .compose(
-              _dio.options,
-              '/fairminters?verbose=true',
-              queryParameters: queryParameters,
-              data: _data,
-            )
-            .copyWith(
-                baseUrl: _combineBaseUrls(
-              _dio.options.baseUrl,
-              baseUrl,
-            ))));
-    final _value = Response<List<FairminterModel>>.fromJson(
-      _result.data!,
-      (json) => json is List<dynamic>
-          ? json
-              .map<FairminterModel>(
-                  (i) => FairminterModel.fromJson(i as Map<String, dynamic>))
-              .toList()
-          : List.empty(),
-    );
+        .compose(
+          _dio.options,
+          '/fairminters?verbose=true',
+          queryParameters: queryParameters,
+          data: _data,
+        )
+        .copyWith(
+            baseUrl: _combineBaseUrls(
+          _dio.options.baseUrl,
+          baseUrl,
+        )));
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late Response<List<FairminterModel>> _value;
+    try {
+      _value = Response<List<FairminterModel>>.fromJson(
+        _result.data!,
+        (json) => json is List<dynamic>
+            ? json
+                .map<FairminterModel>(
+                    (i) => FairminterModel.fromJson(i as Map<String, dynamic>))
+                .toList()
+            : List.empty(),
+      );
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options);
+      rethrow;
+    }
     return _value;
   }
 
@@ -5786,32 +5997,38 @@ class _V2Api implements V2Api {
     queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
-    final _result = await _dio.fetch<Map<String, dynamic>>(
-        _setStreamType<Response<List<FairminterModel>>>(Options(
+    final _options = _setStreamType<Response<List<FairminterModel>>>(Options(
       method: 'GET',
       headers: _headers,
       extra: _extra,
     )
-            .compose(
-              _dio.options,
-              '/addresses/${address}/fairminters?verbose=true',
-              queryParameters: queryParameters,
-              data: _data,
-            )
-            .copyWith(
-                baseUrl: _combineBaseUrls(
-              _dio.options.baseUrl,
-              baseUrl,
-            ))));
-    final _value = Response<List<FairminterModel>>.fromJson(
-      _result.data!,
-      (json) => json is List<dynamic>
-          ? json
-              .map<FairminterModel>(
-                  (i) => FairminterModel.fromJson(i as Map<String, dynamic>))
-              .toList()
-          : List.empty(),
-    );
+        .compose(
+          _dio.options,
+          '/addresses/${address}/fairminters?verbose=true',
+          queryParameters: queryParameters,
+          data: _data,
+        )
+        .copyWith(
+            baseUrl: _combineBaseUrls(
+          _dio.options.baseUrl,
+          baseUrl,
+        )));
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late Response<List<FairminterModel>> _value;
+    try {
+      _value = Response<List<FairminterModel>>.fromJson(
+        _result.data!,
+        (json) => json is List<dynamic>
+            ? json
+                .map<FairminterModel>(
+                    (i) => FairminterModel.fromJson(i as Map<String, dynamic>))
+                .toList()
+            : List.empty(),
+      );
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options);
+      rethrow;
+    }
     return _value;
   }
 
@@ -5833,32 +6050,38 @@ class _V2Api implements V2Api {
     queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
-    final _result = await _dio.fetch<Map<String, dynamic>>(
-        _setStreamType<Response<List<FairminterModel>>>(Options(
+    final _options = _setStreamType<Response<List<FairminterModel>>>(Options(
       method: 'GET',
       headers: _headers,
       extra: _extra,
     )
-            .compose(
-              _dio.options,
-              '/assets/${asset}/fairminters?verbose=true',
-              queryParameters: queryParameters,
-              data: _data,
-            )
-            .copyWith(
-                baseUrl: _combineBaseUrls(
-              _dio.options.baseUrl,
-              baseUrl,
-            ))));
-    final _value = Response<List<FairminterModel>>.fromJson(
-      _result.data!,
-      (json) => json is List<dynamic>
-          ? json
-              .map<FairminterModel>(
-                  (i) => FairminterModel.fromJson(i as Map<String, dynamic>))
-              .toList()
-          : List.empty(),
-    );
+        .compose(
+          _dio.options,
+          '/assets/${asset}/fairminters?verbose=true',
+          queryParameters: queryParameters,
+          data: _data,
+        )
+        .copyWith(
+            baseUrl: _combineBaseUrls(
+          _dio.options.baseUrl,
+          baseUrl,
+        )));
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late Response<List<FairminterModel>> _value;
+    try {
+      _value = Response<List<FairminterModel>>.fromJson(
+        _result.data!,
+        (json) => json is List<dynamic>
+            ? json
+                .map<FairminterModel>(
+                    (i) => FairminterModel.fromJson(i as Map<String, dynamic>))
+                .toList()
+            : List.empty(),
+      );
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options);
+      rethrow;
+    }
     return _value;
   }
 
@@ -5884,7 +6107,7 @@ class _V2Api implements V2Api {
     queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
-    final _result = await _dio.fetch<Map<String, dynamic>>(
+    final _options =
         _setStreamType<Response<ComposeFairmintVerboseModel>>(Options(
       method: 'GET',
       headers: _headers,
@@ -5900,12 +6123,19 @@ class _V2Api implements V2Api {
                 baseUrl: _combineBaseUrls(
               _dio.options.baseUrl,
               baseUrl,
-            ))));
-    final _value = Response<ComposeFairmintVerboseModel>.fromJson(
-      _result.data!,
-      (json) =>
-          ComposeFairmintVerboseModel.fromJson(json as Map<String, dynamic>),
-    );
+            )));
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late Response<ComposeFairmintVerboseModel> _value;
+    try {
+      _value = Response<ComposeFairmintVerboseModel>.fromJson(
+        _result.data!,
+        (json) =>
+            ComposeFairmintVerboseModel.fromJson(json as Map<String, dynamic>),
+      );
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options);
+      rethrow;
+    }
     return _value;
   }
 
@@ -5943,7 +6173,7 @@ class _V2Api implements V2Api {
     queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
-    final _result = await _dio.fetch<Map<String, dynamic>>(
+    final _options =
         _setStreamType<Response<ComposeFairminterVerboseModel>>(Options(
       method: 'GET',
       headers: _headers,
@@ -5959,12 +6189,19 @@ class _V2Api implements V2Api {
                 baseUrl: _combineBaseUrls(
               _dio.options.baseUrl,
               baseUrl,
-            ))));
-    final _value = Response<ComposeFairminterVerboseModel>.fromJson(
-      _result.data!,
-      (json) =>
-          ComposeFairminterVerboseModel.fromJson(json as Map<String, dynamic>),
-    );
+            )));
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late Response<ComposeFairminterVerboseModel> _value;
+    try {
+      _value = Response<ComposeFairminterVerboseModel>.fromJson(
+        _result.data!,
+        (json) => ComposeFairminterVerboseModel.fromJson(
+            json as Map<String, dynamic>),
+      );
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options);
+      rethrow;
+    }
     return _value;
   }
 
@@ -6008,27 +6245,34 @@ class _V2Api implements V2Api {
     queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
-    final _result = await _dio.fetch<Map<String, dynamic>>(
-        _setStreamType<Response<ComposeDispenserVerbose>>(Options(
+    final _options = _setStreamType<Response<ComposeDispenserVerbose>>(Options(
       method: 'GET',
       headers: _headers,
       extra: _extra,
     )
-            .compose(
-              _dio.options,
-              '/addresses/${address}/compose/dispenser?verbose=true',
-              queryParameters: queryParameters,
-              data: _data,
-            )
-            .copyWith(
-                baseUrl: _combineBaseUrls(
-              _dio.options.baseUrl,
-              baseUrl,
-            ))));
-    final _value = Response<ComposeDispenserVerbose>.fromJson(
-      _result.data!,
-      (json) => ComposeDispenserVerbose.fromJson(json as Map<String, dynamic>),
-    );
+        .compose(
+          _dio.options,
+          '/addresses/${address}/compose/dispenser?verbose=true',
+          queryParameters: queryParameters,
+          data: _data,
+        )
+        .copyWith(
+            baseUrl: _combineBaseUrls(
+          _dio.options.baseUrl,
+          baseUrl,
+        )));
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late Response<ComposeDispenserVerbose> _value;
+    try {
+      _value = Response<ComposeDispenserVerbose>.fromJson(
+        _result.data!,
+        (json) =>
+            ComposeDispenserVerbose.fromJson(json as Map<String, dynamic>),
+      );
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options);
+      rethrow;
+    }
     return _value;
   }
 
@@ -6066,7 +6310,7 @@ class _V2Api implements V2Api {
     queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
-    final _result = await _dio.fetch<Map<String, dynamic>>(
+    final _options =
         _setStreamType<Response<ComposeOrderResponseModel>>(Options(
       method: 'GET',
       headers: _headers,
@@ -6082,12 +6326,19 @@ class _V2Api implements V2Api {
                 baseUrl: _combineBaseUrls(
               _dio.options.baseUrl,
               baseUrl,
-            ))));
-    final _value = Response<ComposeOrderResponseModel>.fromJson(
-      _result.data!,
-      (json) =>
-          ComposeOrderResponseModel.fromJson(json as Map<String, dynamic>),
-    );
+            )));
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late Response<ComposeOrderResponseModel> _value;
+    try {
+      _value = Response<ComposeOrderResponseModel>.fromJson(
+        _result.data!,
+        (json) =>
+            ComposeOrderResponseModel.fromJson(json as Map<String, dynamic>),
+      );
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options);
+      rethrow;
+    }
     return _value;
   }
 
@@ -6115,7 +6366,7 @@ class _V2Api implements V2Api {
     queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
-    final _result = await _dio.fetch<Map<String, dynamic>>(
+    final _options =
         _setStreamType<Response<ComposeCancelResponseModel>>(Options(
       method: 'GET',
       headers: _headers,
@@ -6131,12 +6382,19 @@ class _V2Api implements V2Api {
                 baseUrl: _combineBaseUrls(
               _dio.options.baseUrl,
               baseUrl,
-            ))));
-    final _value = Response<ComposeCancelResponseModel>.fromJson(
-      _result.data!,
-      (json) =>
-          ComposeCancelResponseModel.fromJson(json as Map<String, dynamic>),
-    );
+            )));
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late Response<ComposeCancelResponseModel> _value;
+    try {
+      _value = Response<ComposeCancelResponseModel>.fromJson(
+        _result.data!,
+        (json) =>
+            ComposeCancelResponseModel.fromJson(json as Map<String, dynamic>),
+      );
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options);
+      rethrow;
+    }
     return _value;
   }
 
@@ -6156,32 +6414,38 @@ class _V2Api implements V2Api {
     queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
-    final _result = await _dio.fetch<Map<String, dynamic>>(
-        _setStreamType<Response<List<Dispenser>>>(Options(
+    final _options = _setStreamType<Response<List<Dispenser>>>(Options(
       method: 'GET',
       headers: _headers,
       extra: _extra,
     )
-            .compose(
-              _dio.options,
-              '/addresses/${address}/dispensers',
-              queryParameters: queryParameters,
-              data: _data,
-            )
-            .copyWith(
-                baseUrl: _combineBaseUrls(
-              _dio.options.baseUrl,
-              baseUrl,
-            ))));
-    final _value = Response<List<Dispenser>>.fromJson(
-      _result.data!,
-      (json) => json is List<dynamic>
-          ? json
-              .map<Dispenser>(
-                  (i) => Dispenser.fromJson(i as Map<String, dynamic>))
-              .toList()
-          : List.empty(),
-    );
+        .compose(
+          _dio.options,
+          '/addresses/${address}/dispensers',
+          queryParameters: queryParameters,
+          data: _data,
+        )
+        .copyWith(
+            baseUrl: _combineBaseUrls(
+          _dio.options.baseUrl,
+          baseUrl,
+        )));
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late Response<List<Dispenser>> _value;
+    try {
+      _value = Response<List<Dispenser>>.fromJson(
+        _result.data!,
+        (json) => json is List<dynamic>
+            ? json
+                .map<Dispenser>(
+                    (i) => Dispenser.fromJson(i as Map<String, dynamic>))
+                .toList()
+            : List.empty(),
+      );
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options);
+      rethrow;
+    }
     return _value;
   }
 
@@ -6211,7 +6475,7 @@ class _V2Api implements V2Api {
     queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
-    final _result = await _dio.fetch<Map<String, dynamic>>(
+    final _options =
         _setStreamType<Response<ComposeDispenseResponseModel>>(Options(
       method: 'GET',
       headers: _headers,
@@ -6227,12 +6491,19 @@ class _V2Api implements V2Api {
                 baseUrl: _combineBaseUrls(
               _dio.options.baseUrl,
               baseUrl,
-            ))));
-    final _value = Response<ComposeDispenseResponseModel>.fromJson(
-      _result.data!,
-      (json) =>
-          ComposeDispenseResponseModel.fromJson(json as Map<String, dynamic>),
-    );
+            )));
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late Response<ComposeDispenseResponseModel> _value;
+    try {
+      _value = Response<ComposeDispenseResponseModel>.fromJson(
+        _result.data!,
+        (json) =>
+            ComposeDispenseResponseModel.fromJson(json as Map<String, dynamic>),
+      );
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options);
+      rethrow;
+    }
     return _value;
   }
 
@@ -6250,32 +6521,38 @@ class _V2Api implements V2Api {
     queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
-    final _result = await _dio.fetch<Map<String, dynamic>>(
-        _setStreamType<Response<List<Transaction>>>(Options(
+    final _options = _setStreamType<Response<List<Transaction>>>(Options(
       method: 'GET',
       headers: _headers,
       extra: _extra,
     )
-            .compose(
-              _dio.options,
-              '/addresses/${address}/transactions',
-              queryParameters: queryParameters,
-              data: _data,
-            )
-            .copyWith(
-                baseUrl: _combineBaseUrls(
-              _dio.options.baseUrl,
-              baseUrl,
-            ))));
-    final _value = Response<List<Transaction>>.fromJson(
-      _result.data!,
-      (json) => json is List<dynamic>
-          ? json
-              .map<Transaction>(
-                  (i) => Transaction.fromJson(i as Map<String, dynamic>))
-              .toList()
-          : List.empty(),
-    );
+        .compose(
+          _dio.options,
+          '/addresses/${address}/transactions',
+          queryParameters: queryParameters,
+          data: _data,
+        )
+        .copyWith(
+            baseUrl: _combineBaseUrls(
+          _dio.options.baseUrl,
+          baseUrl,
+        )));
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late Response<List<Transaction>> _value;
+    try {
+      _value = Response<List<Transaction>>.fromJson(
+        _result.data!,
+        (json) => json is List<dynamic>
+            ? json
+                .map<Transaction>(
+                    (i) => Transaction.fromJson(i as Map<String, dynamic>))
+                .toList()
+            : List.empty(),
+      );
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options);
+      rethrow;
+    }
     return _value;
   }
 
@@ -6297,31 +6574,37 @@ class _V2Api implements V2Api {
     queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
-    final _result = await _dio.fetch<Map<String, dynamic>>(
-        _setStreamType<Response<List<Asset>>>(Options(
+    final _options = _setStreamType<Response<List<Asset>>>(Options(
       method: 'GET',
       headers: _headers,
       extra: _extra,
     )
-            .compose(
-              _dio.options,
-              '/addresses/${address}/assets/owned',
-              queryParameters: queryParameters,
-              data: _data,
-            )
-            .copyWith(
-                baseUrl: _combineBaseUrls(
-              _dio.options.baseUrl,
-              baseUrl,
-            ))));
-    final _value = Response<List<Asset>>.fromJson(
-      _result.data!,
-      (json) => json is List<dynamic>
-          ? json
-              .map<Asset>((i) => Asset.fromJson(i as Map<String, dynamic>))
-              .toList()
-          : List.empty(),
-    );
+        .compose(
+          _dio.options,
+          '/addresses/${address}/assets/owned',
+          queryParameters: queryParameters,
+          data: _data,
+        )
+        .copyWith(
+            baseUrl: _combineBaseUrls(
+          _dio.options.baseUrl,
+          baseUrl,
+        )));
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late Response<List<Asset>> _value;
+    try {
+      _value = Response<List<Asset>>.fromJson(
+        _result.data!,
+        (json) => json is List<dynamic>
+            ? json
+                .map<Asset>((i) => Asset.fromJson(i as Map<String, dynamic>))
+                .toList()
+            : List.empty(),
+      );
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options);
+      rethrow;
+    }
     return _value;
   }
 
@@ -6341,32 +6624,38 @@ class _V2Api implements V2Api {
     queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
-    final _result = await _dio.fetch<Map<String, dynamic>>(
-        _setStreamType<Response<List<AssetVerbose>>>(Options(
+    final _options = _setStreamType<Response<List<AssetVerbose>>>(Options(
       method: 'GET',
       headers: _headers,
       extra: _extra,
     )
-            .compose(
-              _dio.options,
-              '/addresses/${address}/assets/owned?verbose=true',
-              queryParameters: queryParameters,
-              data: _data,
-            )
-            .copyWith(
-                baseUrl: _combineBaseUrls(
-              _dio.options.baseUrl,
-              baseUrl,
-            ))));
-    final _value = Response<List<AssetVerbose>>.fromJson(
-      _result.data!,
-      (json) => json is List<dynamic>
-          ? json
-              .map<AssetVerbose>(
-                  (i) => AssetVerbose.fromJson(i as Map<String, dynamic>))
-              .toList()
-          : List.empty(),
-    );
+        .compose(
+          _dio.options,
+          '/addresses/${address}/assets/owned?verbose=true',
+          queryParameters: queryParameters,
+          data: _data,
+        )
+        .copyWith(
+            baseUrl: _combineBaseUrls(
+          _dio.options.baseUrl,
+          baseUrl,
+        )));
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late Response<List<AssetVerbose>> _value;
+    try {
+      _value = Response<List<AssetVerbose>>.fromJson(
+        _result.data!,
+        (json) => json is List<dynamic>
+            ? json
+                .map<AssetVerbose>(
+                    (i) => AssetVerbose.fromJson(i as Map<String, dynamic>))
+                .toList()
+            : List.empty(),
+      );
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options);
+      rethrow;
+    }
     return _value;
   }
 
@@ -6385,32 +6674,38 @@ class _V2Api implements V2Api {
     queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
-    final _result = await _dio.fetch<Map<String, dynamic>>(
-        _setStreamType<Response<List<TransactionVerbose>>>(Options(
+    final _options = _setStreamType<Response<List<TransactionVerbose>>>(Options(
       method: 'GET',
       headers: _headers,
       extra: _extra,
     )
-            .compose(
-              _dio.options,
-              '/addresses/transactions?verbose=true',
-              queryParameters: queryParameters,
-              data: _data,
-            )
-            .copyWith(
-                baseUrl: _combineBaseUrls(
-              _dio.options.baseUrl,
-              baseUrl,
-            ))));
-    final _value = Response<List<TransactionVerbose>>.fromJson(
-      _result.data!,
-      (json) => json is List<dynamic>
-          ? json
-              .map<TransactionVerbose>(
-                  (i) => TransactionVerbose.fromJson(i as Map<String, dynamic>))
-              .toList()
-          : List.empty(),
-    );
+        .compose(
+          _dio.options,
+          '/addresses/transactions?verbose=true',
+          queryParameters: queryParameters,
+          data: _data,
+        )
+        .copyWith(
+            baseUrl: _combineBaseUrls(
+          _dio.options.baseUrl,
+          baseUrl,
+        )));
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late Response<List<TransactionVerbose>> _value;
+    try {
+      _value = Response<List<TransactionVerbose>>.fromJson(
+        _result.data!,
+        (json) => json is List<dynamic>
+            ? json
+                .map<TransactionVerbose>((i) =>
+                    TransactionVerbose.fromJson(i as Map<String, dynamic>))
+                .toList()
+            : List.empty(),
+      );
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options);
+      rethrow;
+    }
     return _value;
   }
 
@@ -6431,31 +6726,37 @@ class _V2Api implements V2Api {
     queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
-    final _result = await _dio.fetch<Map<String, dynamic>>(
-        _setStreamType<Response<List<Event>>>(Options(
+    final _options = _setStreamType<Response<List<Event>>>(Options(
       method: 'GET',
       headers: _headers,
       extra: _extra,
     )
-            .compose(
-              _dio.options,
-              '/addresses/events',
-              queryParameters: queryParameters,
-              data: _data,
-            )
-            .copyWith(
-                baseUrl: _combineBaseUrls(
-              _dio.options.baseUrl,
-              baseUrl,
-            ))));
-    final _value = Response<List<Event>>.fromJson(
-      _result.data!,
-      (json) => json is List<dynamic>
-          ? json
-              .map<Event>((i) => Event.fromJson(i as Map<String, dynamic>))
-              .toList()
-          : List.empty(),
-    );
+        .compose(
+          _dio.options,
+          '/addresses/events',
+          queryParameters: queryParameters,
+          data: _data,
+        )
+        .copyWith(
+            baseUrl: _combineBaseUrls(
+          _dio.options.baseUrl,
+          baseUrl,
+        )));
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late Response<List<Event>> _value;
+    try {
+      _value = Response<List<Event>>.fromJson(
+        _result.data!,
+        (json) => json is List<dynamic>
+            ? json
+                .map<Event>((i) => Event.fromJson(i as Map<String, dynamic>))
+                .toList()
+            : List.empty(),
+      );
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options);
+      rethrow;
+    }
     return _value;
   }
 
@@ -6476,32 +6777,38 @@ class _V2Api implements V2Api {
     queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
-    final _result = await _dio.fetch<Map<String, dynamic>>(
-        _setStreamType<Response<List<VerboseEvent>>>(Options(
+    final _options = _setStreamType<Response<List<VerboseEvent>>>(Options(
       method: 'GET',
       headers: _headers,
       extra: _extra,
     )
-            .compose(
-              _dio.options,
-              '/addresses/events?verbose=true',
-              queryParameters: queryParameters,
-              data: _data,
-            )
-            .copyWith(
-                baseUrl: _combineBaseUrls(
-              _dio.options.baseUrl,
-              baseUrl,
-            ))));
-    final _value = Response<List<VerboseEvent>>.fromJson(
-      _result.data!,
-      (json) => json is List<dynamic>
-          ? json
-              .map<VerboseEvent>(
-                  (i) => VerboseEvent.fromJson(i as Map<String, dynamic>))
-              .toList()
-          : List.empty(),
-    );
+        .compose(
+          _dio.options,
+          '/addresses/events?verbose=true',
+          queryParameters: queryParameters,
+          data: _data,
+        )
+        .copyWith(
+            baseUrl: _combineBaseUrls(
+          _dio.options.baseUrl,
+          baseUrl,
+        )));
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late Response<List<VerboseEvent>> _value;
+    try {
+      _value = Response<List<VerboseEvent>>.fromJson(
+        _result.data!,
+        (json) => json is List<dynamic>
+            ? json
+                .map<VerboseEvent>(
+                    (i) => VerboseEvent.fromJson(i as Map<String, dynamic>))
+                .toList()
+            : List.empty(),
+      );
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options);
+      rethrow;
+    }
     return _value;
   }
 
@@ -6522,32 +6829,38 @@ class _V2Api implements V2Api {
     queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
-    final _result = await _dio.fetch<Map<String, dynamic>>(
-        _setStreamType<Response<List<VerboseEvent>>>(Options(
+    final _options = _setStreamType<Response<List<VerboseEvent>>>(Options(
       method: 'GET',
       headers: _headers,
       extra: _extra,
     )
-            .compose(
-              _dio.options,
-              '/addresses/mempool?verbose=true',
-              queryParameters: queryParameters,
-              data: _data,
-            )
-            .copyWith(
-                baseUrl: _combineBaseUrls(
-              _dio.options.baseUrl,
-              baseUrl,
-            ))));
-    final _value = Response<List<VerboseEvent>>.fromJson(
-      _result.data!,
-      (json) => json is List<dynamic>
-          ? json
-              .map<VerboseEvent>(
-                  (i) => VerboseEvent.fromJson(i as Map<String, dynamic>))
-              .toList()
-          : List.empty(),
-    );
+        .compose(
+          _dio.options,
+          '/addresses/mempool?verbose=true',
+          queryParameters: queryParameters,
+          data: _data,
+        )
+        .copyWith(
+            baseUrl: _combineBaseUrls(
+          _dio.options.baseUrl,
+          baseUrl,
+        )));
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late Response<List<VerboseEvent>> _value;
+    try {
+      _value = Response<List<VerboseEvent>>.fromJson(
+        _result.data!,
+        (json) => json is List<dynamic>
+            ? json
+                .map<VerboseEvent>(
+                    (i) => VerboseEvent.fromJson(i as Map<String, dynamic>))
+                .toList()
+            : List.empty(),
+      );
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options);
+      rethrow;
+    }
     return _value;
   }
 
@@ -6560,27 +6873,33 @@ class _V2Api implements V2Api {
     final queryParameters = <String, dynamic>{r'asset': asset};
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
-    final _result = await _dio
-        .fetch<Map<String, dynamic>>(_setStreamType<Response<int>>(Options(
+    final _options = _setStreamType<Response<int>>(Options(
       method: 'GET',
       headers: _headers,
       extra: _extra,
     )
-            .compose(
-              _dio.options,
-              '/addresses/${address}/compose/dividend/estimatexcpfees',
-              queryParameters: queryParameters,
-              data: _data,
-            )
-            .copyWith(
-                baseUrl: _combineBaseUrls(
-              _dio.options.baseUrl,
-              baseUrl,
-            ))));
-    final _value = Response<int>.fromJson(
-      _result.data!,
-      (json) => json as int,
-    );
+        .compose(
+          _dio.options,
+          '/addresses/${address}/compose/dividend/estimatexcpfees',
+          queryParameters: queryParameters,
+          data: _data,
+        )
+        .copyWith(
+            baseUrl: _combineBaseUrls(
+          _dio.options.baseUrl,
+          baseUrl,
+        )));
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late Response<int> _value;
+    try {
+      _value = Response<int>.fromJson(
+        _result.data!,
+        (json) => json as int,
+      );
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options);
+      rethrow;
+    }
     return _value;
   }
 
@@ -6590,27 +6909,33 @@ class _V2Api implements V2Api {
     final queryParameters = <String, dynamic>{};
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
-    final _result = await _dio
-        .fetch<Map<String, dynamic>>(_setStreamType<Response<int>>(Options(
+    final _options = _setStreamType<Response<int>>(Options(
       method: 'GET',
       headers: _headers,
       extra: _extra,
     )
-            .compose(
-              _dio.options,
-              '/addresses/${address}/compose/sweep/estimatexcpfees',
-              queryParameters: queryParameters,
-              data: _data,
-            )
-            .copyWith(
-                baseUrl: _combineBaseUrls(
-              _dio.options.baseUrl,
-              baseUrl,
-            ))));
-    final _value = Response<int>.fromJson(
-      _result.data!,
-      (json) => json as int,
-    );
+        .compose(
+          _dio.options,
+          '/addresses/${address}/compose/sweep/estimatexcpfees',
+          queryParameters: queryParameters,
+          data: _data,
+        )
+        .copyWith(
+            baseUrl: _combineBaseUrls(
+          _dio.options.baseUrl,
+          baseUrl,
+        )));
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late Response<int> _value;
+    try {
+      _value = Response<int>.fromJson(
+        _result.data!,
+        (json) => json as int,
+      );
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options);
+      rethrow;
+    }
     return _value;
   }
 
@@ -6620,27 +6945,33 @@ class _V2Api implements V2Api {
     final queryParameters = <String, dynamic>{};
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
-    final _result = await _dio
-        .fetch<Map<String, dynamic>>(_setStreamType<Response<int>>(Options(
+    final _options = _setStreamType<Response<int>>(Options(
       method: 'GET',
       headers: _headers,
       extra: _extra,
     )
-            .compose(
-              _dio.options,
-              '/addresses/${address}/compose/attach/estimatexcpfees',
-              queryParameters: queryParameters,
-              data: _data,
-            )
-            .copyWith(
-                baseUrl: _combineBaseUrls(
-              _dio.options.baseUrl,
-              baseUrl,
-            ))));
-    final _value = Response<int>.fromJson(
-      _result.data!,
-      (json) => json as int,
-    );
+        .compose(
+          _dio.options,
+          '/addresses/${address}/compose/attach/estimatexcpfees',
+          queryParameters: queryParameters,
+          data: _data,
+        )
+        .copyWith(
+            baseUrl: _combineBaseUrls(
+          _dio.options.baseUrl,
+          baseUrl,
+        )));
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late Response<int> _value;
+    try {
+      _value = Response<int>.fromJson(
+        _result.data!,
+        (json) => json as int,
+      );
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options);
+      rethrow;
+    }
     return _value;
   }
 
@@ -6674,7 +7005,7 @@ class _V2Api implements V2Api {
     queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
-    final _result = await _dio.fetch<Map<String, dynamic>>(
+    final _options =
         _setStreamType<Response<ComposeAttachUtxoResponseModel>>(Options(
       method: 'GET',
       headers: _headers,
@@ -6690,12 +7021,19 @@ class _V2Api implements V2Api {
                 baseUrl: _combineBaseUrls(
               _dio.options.baseUrl,
               baseUrl,
-            ))));
-    final _value = Response<ComposeAttachUtxoResponseModel>.fromJson(
-      _result.data!,
-      (json) =>
-          ComposeAttachUtxoResponseModel.fromJson(json as Map<String, dynamic>),
-    );
+            )));
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late Response<ComposeAttachUtxoResponseModel> _value;
+    try {
+      _value = Response<ComposeAttachUtxoResponseModel>.fromJson(
+        _result.data!,
+        (json) => ComposeAttachUtxoResponseModel.fromJson(
+            json as Map<String, dynamic>),
+      );
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options);
+      rethrow;
+    }
     return _value;
   }
 
@@ -6725,7 +7063,7 @@ class _V2Api implements V2Api {
     queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
-    final _result = await _dio.fetch<Map<String, dynamic>>(
+    final _options =
         _setStreamType<Response<ComposeDetachUtxoResponseModel>>(Options(
       method: 'GET',
       headers: _headers,
@@ -6741,12 +7079,19 @@ class _V2Api implements V2Api {
                 baseUrl: _combineBaseUrls(
               _dio.options.baseUrl,
               baseUrl,
-            ))));
-    final _value = Response<ComposeDetachUtxoResponseModel>.fromJson(
-      _result.data!,
-      (json) =>
-          ComposeDetachUtxoResponseModel.fromJson(json as Map<String, dynamic>),
-    );
+            )));
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late Response<ComposeDetachUtxoResponseModel> _value;
+    try {
+      _value = Response<ComposeDetachUtxoResponseModel>.fromJson(
+        _result.data!,
+        (json) => ComposeDetachUtxoResponseModel.fromJson(
+            json as Map<String, dynamic>),
+      );
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options);
+      rethrow;
+    }
     return _value;
   }
 
@@ -6776,7 +7121,7 @@ class _V2Api implements V2Api {
     queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
-    final _result = await _dio.fetch<Map<String, dynamic>>(
+    final _options =
         _setStreamType<Response<ComposeMoveToUtxoResponseModel>>(Options(
       method: 'GET',
       headers: _headers,
@@ -6792,12 +7137,19 @@ class _V2Api implements V2Api {
                 baseUrl: _combineBaseUrls(
               _dio.options.baseUrl,
               baseUrl,
-            ))));
-    final _value = Response<ComposeMoveToUtxoResponseModel>.fromJson(
-      _result.data!,
-      (json) =>
-          ComposeMoveToUtxoResponseModel.fromJson(json as Map<String, dynamic>),
-    );
+            )));
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late Response<ComposeMoveToUtxoResponseModel> _value;
+    try {
+      _value = Response<ComposeMoveToUtxoResponseModel>.fromJson(
+        _result.data!,
+        (json) => ComposeMoveToUtxoResponseModel.fromJson(
+            json as Map<String, dynamic>),
+      );
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options);
+      rethrow;
+    }
     return _value;
   }
 
@@ -6817,31 +7169,37 @@ class _V2Api implements V2Api {
     queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
-    final _result = await _dio.fetch<Map<String, dynamic>>(
-        _setStreamType<Response<List<UTXO>>>(Options(
+    final _options = _setStreamType<Response<List<UTXO>>>(Options(
       method: 'GET',
       headers: _headers,
       extra: _extra,
     )
-            .compose(
-              _dio.options,
-              '/bitcoin/addresses/${address}/utxos',
-              queryParameters: queryParameters,
-              data: _data,
-            )
-            .copyWith(
-                baseUrl: _combineBaseUrls(
-              _dio.options.baseUrl,
-              baseUrl,
-            ))));
-    final _value = Response<List<UTXO>>.fromJson(
-      _result.data!,
-      (json) => json is List<dynamic>
-          ? json
-              .map<UTXO>((i) => UTXO.fromJson(i as Map<String, dynamic>))
-              .toList()
-          : List.empty(),
-    );
+        .compose(
+          _dio.options,
+          '/bitcoin/addresses/${address}/utxos',
+          queryParameters: queryParameters,
+          data: _data,
+        )
+        .copyWith(
+            baseUrl: _combineBaseUrls(
+          _dio.options.baseUrl,
+          baseUrl,
+        )));
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late Response<List<UTXO>> _value;
+    try {
+      _value = Response<List<UTXO>>.fromJson(
+        _result.data!,
+        (json) => json is List<dynamic>
+            ? json
+                .map<UTXO>((i) => UTXO.fromJson(i as Map<String, dynamic>))
+                .toList()
+            : List.empty(),
+      );
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options);
+      rethrow;
+    }
     return _value;
   }
 
@@ -6864,31 +7222,37 @@ class _V2Api implements V2Api {
     queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
-    final _result = await _dio.fetch<Map<String, dynamic>>(
-        _setStreamType<Response<List<UTXO>>>(Options(
+    final _options = _setStreamType<Response<List<UTXO>>>(Options(
       method: 'GET',
       headers: _headers,
       extra: _extra,
     )
-            .compose(
-              _dio.options,
-              '/bitcoin/addresses/utxos',
-              queryParameters: queryParameters,
-              data: _data,
-            )
-            .copyWith(
-                baseUrl: _combineBaseUrls(
-              _dio.options.baseUrl,
-              baseUrl,
-            ))));
-    final _value = Response<List<UTXO>>.fromJson(
-      _result.data!,
-      (json) => json is List<dynamic>
-          ? json
-              .map<UTXO>((i) => UTXO.fromJson(i as Map<String, dynamic>))
-              .toList()
-          : List.empty(),
-    );
+        .compose(
+          _dio.options,
+          '/bitcoin/addresses/utxos',
+          queryParameters: queryParameters,
+          data: _data,
+        )
+        .copyWith(
+            baseUrl: _combineBaseUrls(
+          _dio.options.baseUrl,
+          baseUrl,
+        )));
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late Response<List<UTXO>> _value;
+    try {
+      _value = Response<List<UTXO>>.fromJson(
+        _result.data!,
+        (json) => json is List<dynamic>
+            ? json
+                .map<UTXO>((i) => UTXO.fromJson(i as Map<String, dynamic>))
+                .toList()
+            : List.empty(),
+      );
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options);
+      rethrow;
+    }
     return _value;
   }
 
@@ -6898,27 +7262,33 @@ class _V2Api implements V2Api {
     final queryParameters = <String, dynamic>{};
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
-    final _result = await _dio
-        .fetch<Map<String, dynamic>>(_setStreamType<Response<Asset>>(Options(
+    final _options = _setStreamType<Response<Asset>>(Options(
       method: 'GET',
       headers: _headers,
       extra: _extra,
     )
-            .compose(
-              _dio.options,
-              '/assets/${asset}',
-              queryParameters: queryParameters,
-              data: _data,
-            )
-            .copyWith(
-                baseUrl: _combineBaseUrls(
-              _dio.options.baseUrl,
-              baseUrl,
-            ))));
-    final _value = Response<Asset>.fromJson(
-      _result.data!,
-      (json) => Asset.fromJson(json as Map<String, dynamic>),
-    );
+        .compose(
+          _dio.options,
+          '/assets/${asset}',
+          queryParameters: queryParameters,
+          data: _data,
+        )
+        .copyWith(
+            baseUrl: _combineBaseUrls(
+          _dio.options.baseUrl,
+          baseUrl,
+        )));
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late Response<Asset> _value;
+    try {
+      _value = Response<Asset>.fromJson(
+        _result.data!,
+        (json) => Asset.fromJson(json as Map<String, dynamic>),
+      );
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options);
+      rethrow;
+    }
     return _value;
   }
 
@@ -6936,16 +7306,23 @@ class _V2Api implements V2Api {
     newOptions.extra.addAll(_extra);
     newOptions.headers.addAll(_dio.options.headers);
     newOptions.headers.addAll(_headers);
-    final _result = await _dio.fetch<Map<String, dynamic>>(newOptions.copyWith(
+    final _options = newOptions.copyWith(
       method: 'GET',
       baseUrl: baseUrl ?? _dio.options.baseUrl,
       queryParameters: queryParameters,
       path: '/assets/${asset}?verbose=true',
-    )..data = _data);
-    final _value = Response<AssetVerbose>.fromJson(
-      _result.data!,
-      (json) => AssetVerbose.fromJson(json as Map<String, dynamic>),
-    );
+    )..data = _data;
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late Response<AssetVerbose> _value;
+    try {
+      _value = Response<AssetVerbose>.fromJson(
+        _result.data!,
+        (json) => AssetVerbose.fromJson(json as Map<String, dynamic>),
+      );
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options);
+      rethrow;
+    }
     return _value;
   }
 
@@ -6958,32 +7335,38 @@ class _V2Api implements V2Api {
     final queryParameters = <String, dynamic>{};
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
-    final _result = await _dio.fetch<Map<String, dynamic>>(
-        _setStreamType<Response<List<BalanceVerbose>>>(Options(
+    final _options = _setStreamType<Response<List<BalanceVerbose>>>(Options(
       method: 'GET',
       headers: _headers,
       extra: _extra,
     )
-            .compose(
-              _dio.options,
-              '/addresses/${address}/balances/${asset}?verbose=true',
-              queryParameters: queryParameters,
-              data: _data,
-            )
-            .copyWith(
-                baseUrl: _combineBaseUrls(
-              _dio.options.baseUrl,
-              baseUrl,
-            ))));
-    final _value = Response<List<BalanceVerbose>>.fromJson(
-      _result.data!,
-      (json) => json is List<dynamic>
-          ? json
-              .map<BalanceVerbose>(
-                  (i) => BalanceVerbose.fromJson(i as Map<String, dynamic>))
-              .toList()
-          : List.empty(),
-    );
+        .compose(
+          _dio.options,
+          '/addresses/${address}/balances/${asset}?verbose=true',
+          queryParameters: queryParameters,
+          data: _data,
+        )
+        .copyWith(
+            baseUrl: _combineBaseUrls(
+          _dio.options.baseUrl,
+          baseUrl,
+        )));
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late Response<List<BalanceVerbose>> _value;
+    try {
+      _value = Response<List<BalanceVerbose>>.fromJson(
+        _result.data!,
+        (json) => json is List<dynamic>
+            ? json
+                .map<BalanceVerbose>(
+                    (i) => BalanceVerbose.fromJson(i as Map<String, dynamic>))
+                .toList()
+            : List.empty(),
+      );
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options);
+      rethrow;
+    }
     return _value;
   }
 
@@ -6993,27 +7376,33 @@ class _V2Api implements V2Api {
     final queryParameters = <String, dynamic>{};
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
-    final _result = await _dio.fetch<Map<String, dynamic>>(
-        _setStreamType<Response<NodeInfoModel>>(Options(
+    final _options = _setStreamType<Response<NodeInfoModel>>(Options(
       method: 'GET',
       headers: _headers,
       extra: _extra,
     )
-            .compose(
-              _dio.options,
-              '/',
-              queryParameters: queryParameters,
-              data: _data,
-            )
-            .copyWith(
-                baseUrl: _combineBaseUrls(
-              _dio.options.baseUrl,
-              baseUrl,
-            ))));
-    final _value = Response<NodeInfoModel>.fromJson(
-      _result.data!,
-      (json) => NodeInfoModel.fromJson(json as Map<String, dynamic>),
-    );
+        .compose(
+          _dio.options,
+          '/',
+          queryParameters: queryParameters,
+          data: _data,
+        )
+        .copyWith(
+            baseUrl: _combineBaseUrls(
+          _dio.options.baseUrl,
+          baseUrl,
+        )));
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late Response<NodeInfoModel> _value;
+    try {
+      _value = Response<NodeInfoModel>.fromJson(
+        _result.data!,
+        (json) => NodeInfoModel.fromJson(json as Map<String, dynamic>),
+      );
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options);
+      rethrow;
+    }
     return _value;
   }
 
@@ -7041,7 +7430,7 @@ class _V2Api implements V2Api {
     queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
-    final _result = await _dio.fetch<Map<String, dynamic>>(
+    final _options =
         _setStreamType<Response<ComposeDestroyResponseModel>>(Options(
       method: 'GET',
       headers: _headers,
@@ -7057,12 +7446,19 @@ class _V2Api implements V2Api {
                 baseUrl: _combineBaseUrls(
               _dio.options.baseUrl,
               baseUrl,
-            ))));
-    final _value = Response<ComposeDestroyResponseModel>.fromJson(
-      _result.data!,
-      (json) =>
-          ComposeDestroyResponseModel.fromJson(json as Map<String, dynamic>),
-    );
+            )));
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late Response<ComposeDestroyResponseModel> _value;
+    try {
+      _value = Response<ComposeDestroyResponseModel>.fromJson(
+        _result.data!,
+        (json) =>
+            ComposeDestroyResponseModel.fromJson(json as Map<String, dynamic>),
+      );
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options);
+      rethrow;
+    }
     return _value;
   }
 
@@ -7090,7 +7486,7 @@ class _V2Api implements V2Api {
     queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
-    final _result = await _dio.fetch<Map<String, dynamic>>(
+    final _options =
         _setStreamType<Response<ComposeDividendResponseModel>>(Options(
       method: 'GET',
       headers: _headers,
@@ -7106,12 +7502,19 @@ class _V2Api implements V2Api {
                 baseUrl: _combineBaseUrls(
               _dio.options.baseUrl,
               baseUrl,
-            ))));
-    final _value = Response<ComposeDividendResponseModel>.fromJson(
-      _result.data!,
-      (json) =>
-          ComposeDividendResponseModel.fromJson(json as Map<String, dynamic>),
-    );
+            )));
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late Response<ComposeDividendResponseModel> _value;
+    try {
+      _value = Response<ComposeDividendResponseModel>.fromJson(
+        _result.data!,
+        (json) =>
+            ComposeDividendResponseModel.fromJson(json as Map<String, dynamic>),
+      );
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options);
+      rethrow;
+    }
     return _value;
   }
 
@@ -7139,7 +7542,7 @@ class _V2Api implements V2Api {
     queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
-    final _result = await _dio.fetch<Map<String, dynamic>>(
+    final _options =
         _setStreamType<Response<ComposeSweepResponseModel>>(Options(
       method: 'GET',
       headers: _headers,
@@ -7155,12 +7558,19 @@ class _V2Api implements V2Api {
                 baseUrl: _combineBaseUrls(
               _dio.options.baseUrl,
               baseUrl,
-            ))));
-    final _value = Response<ComposeSweepResponseModel>.fromJson(
-      _result.data!,
-      (json) =>
-          ComposeSweepResponseModel.fromJson(json as Map<String, dynamic>),
-    );
+            )));
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late Response<ComposeSweepResponseModel> _value;
+    try {
+      _value = Response<ComposeSweepResponseModel>.fromJson(
+        _result.data!,
+        (json) =>
+            ComposeSweepResponseModel.fromJson(json as Map<String, dynamic>),
+      );
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options);
+      rethrow;
+    }
     return _value;
   }
 
@@ -7186,27 +7596,34 @@ class _V2Api implements V2Api {
     queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
-    final _result = await _dio.fetch<Map<String, dynamic>>(
-        _setStreamType<Response<ComposeBurnResponseModel>>(Options(
+    final _options = _setStreamType<Response<ComposeBurnResponseModel>>(Options(
       method: 'GET',
       headers: _headers,
       extra: _extra,
     )
-            .compose(
-              _dio.options,
-              '/addresses/${address}/compose/burn?verbose=true',
-              queryParameters: queryParameters,
-              data: _data,
-            )
-            .copyWith(
-                baseUrl: _combineBaseUrls(
-              _dio.options.baseUrl,
-              baseUrl,
-            ))));
-    final _value = Response<ComposeBurnResponseModel>.fromJson(
-      _result.data!,
-      (json) => ComposeBurnResponseModel.fromJson(json as Map<String, dynamic>),
-    );
+        .compose(
+          _dio.options,
+          '/addresses/${address}/compose/burn?verbose=true',
+          queryParameters: queryParameters,
+          data: _data,
+        )
+        .copyWith(
+            baseUrl: _combineBaseUrls(
+          _dio.options.baseUrl,
+          baseUrl,
+        )));
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late Response<ComposeBurnResponseModel> _value;
+    try {
+      _value = Response<ComposeBurnResponseModel>.fromJson(
+        _result.data!,
+        (json) =>
+            ComposeBurnResponseModel.fromJson(json as Map<String, dynamic>),
+      );
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options);
+      rethrow;
+    }
     return _value;
   }
 

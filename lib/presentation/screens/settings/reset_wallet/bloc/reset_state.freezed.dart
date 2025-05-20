@@ -18,7 +18,9 @@ final _privateConstructorUsedError = UnsupportedError(
 mixin _$ResetState {
   ResetStatus get status => throw _privateConstructorUsedError;
 
-  @JsonKey(ignore: true)
+  /// Create a copy of ResetState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   $ResetStateCopyWith<ResetState> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -42,6 +44,8 @@ class _$ResetStateCopyWithImpl<$Res, $Val extends ResetState>
   // ignore: unused_field
   final $Res Function($Val) _then;
 
+  /// Create a copy of ResetState
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -75,6 +79,8 @@ class __$$ResetStateImplCopyWithImpl<$Res>
       _$ResetStateImpl _value, $Res Function(_$ResetStateImpl) _then)
       : super(_value, _then);
 
+  /// Create a copy of ResetState
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -114,7 +120,9 @@ class _$ResetStateImpl implements _ResetState {
   @override
   int get hashCode => Object.hash(runtimeType, status);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of ResetState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$ResetStateImplCopyWith<_$ResetStateImpl> get copyWith =>
@@ -126,8 +134,11 @@ abstract class _ResetState implements ResetState {
 
   @override
   ResetStatus get status;
+
+  /// Create a copy of ResetState
+  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$ResetStateImplCopyWith<_$ResetStateImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

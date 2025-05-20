@@ -40,3 +40,27 @@ class LoggerImpl implements Logger {
     ); // Fatal level
   }
 }
+
+class LoggerSilent implements Logger {
+  final logger.Logger _logger;
+
+  LoggerSilent(this._logger);
+
+  @override
+  void trace(String message) {}
+
+  @override
+  void debug(String message) {}
+
+  @override
+  void info(String message) {}
+
+  @override
+  void warn(String message) {}
+
+  @override
+  void error(String message, [Error? error, StackTrace? stackTrace]) {}
+
+  @override
+  void fatal(String message, [Error? error, StackTrace? stackTrace]) {}
+}

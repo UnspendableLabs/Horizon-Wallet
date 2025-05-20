@@ -25,7 +25,9 @@ mixin _$ComposeDispenserOnNewAddressStateBase {
   dynamic get composeDispenserOnNewAddressState =>
       throw _privateConstructorUsedError;
 
-  @JsonKey(ignore: true)
+  /// Create a copy of ComposeDispenserOnNewAddressStateBase
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   $ComposeDispenserOnNewAddressStateBaseCopyWith<
           ComposeDispenserOnNewAddressStateBase>
       get copyWith => throw _privateConstructorUsedError;
@@ -60,6 +62,8 @@ class _$ComposeDispenserOnNewAddressStateBaseCopyWithImpl<$Res,
   // ignore: unused_field
   final $Res Function($Val) _then;
 
+  /// Create a copy of ComposeDispenserOnNewAddressStateBase
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -134,6 +138,8 @@ class __$$ComposeDispenserOnNewAddressStateBaseImplCopyWithImpl<$Res>
       $Res Function(_$ComposeDispenserOnNewAddressStateBaseImpl) _then)
       : super(_value, _then);
 
+  /// Create a copy of ComposeDispenserOnNewAddressStateBase
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -248,7 +254,9 @@ class _$ComposeDispenserOnNewAddressStateBaseImpl
       signedDispenser,
       const DeepCollectionEquality().hash(composeDispenserOnNewAddressState));
 
-  @JsonKey(ignore: true)
+  /// Create a copy of ComposeDispenserOnNewAddressStateBase
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$ComposeDispenserOnNewAddressStateBaseImplCopyWith<
@@ -283,8 +291,11 @@ abstract class _ComposeDispenserOnNewAddressStateBase
   String? get signedDispenser;
   @override
   dynamic get composeDispenserOnNewAddressState;
+
+  /// Create a copy of ComposeDispenserOnNewAddressStateBase
+  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$ComposeDispenserOnNewAddressStateBaseImplCopyWith<
           _$ComposeDispenserOnNewAddressStateBaseImpl>
       get copyWith => throw _privateConstructorUsedError;
@@ -419,6 +430,9 @@ class _$ComposeDispenserOnNewAddressStateCopyWithImpl<T, $Res,
   final $Val _value;
   // ignore: unused_field
   final $Res Function($Val) _then;
+
+  /// Create a copy of ComposeDispenserOnNewAddressState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -441,6 +455,9 @@ class __$$ComposeDispenserOnNewAddressStateInitialImplCopyWithImpl<T, $Res>
       _$ComposeDispenserOnNewAddressStateInitialImpl<T> _value,
       $Res Function(_$ComposeDispenserOnNewAddressStateInitialImpl<T>) _then)
       : super(_value, _then);
+
+  /// Create a copy of ComposeDispenserOnNewAddressState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -621,6 +638,9 @@ class __$$ComposeDispenserOnNewAddressStateLoadingImplCopyWithImpl<T, $Res>
       _$ComposeDispenserOnNewAddressStateLoadingImpl<T> _value,
       $Res Function(_$ComposeDispenserOnNewAddressStateLoadingImpl<T>) _then)
       : super(_value, _then);
+
+  /// Create a copy of ComposeDispenserOnNewAddressState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -810,6 +830,8 @@ class __$$ComposeDispenserOnNewAddressStateConfirmImplCopyWithImpl<T, $Res>
       $Res Function(_$ComposeDispenserOnNewAddressStateConfirmImpl<T>) _then)
       : super(_value, _then);
 
+  /// Create a copy of ComposeDispenserOnNewAddressState
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -908,7 +930,9 @@ class _$ComposeDispenserOnNewAddressStateConfirmImpl<T>
       btcQuantity,
       feeRate);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of ComposeDispenserOnNewAddressState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$ComposeDispenserOnNewAddressStateConfirmImplCopyWith<T,
@@ -1069,7 +1093,10 @@ abstract class _ComposeDispenserOnNewAddressStateConfirm<T>
   T get composeDispenserTransaction;
   int get btcQuantity;
   num get feeRate;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of ComposeDispenserOnNewAddressState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$ComposeDispenserOnNewAddressStateConfirmImplCopyWith<T,
           _$ComposeDispenserOnNewAddressStateConfirmImpl<T>>
       get copyWith => throw _privateConstructorUsedError;
@@ -1095,6 +1122,8 @@ class __$$ComposeDispenserOnNewAddressStateErrorImplCopyWithImpl<T, $Res>
       $Res Function(_$ComposeDispenserOnNewAddressStateErrorImpl<T>) _then)
       : super(_value, _then);
 
+  /// Create a copy of ComposeDispenserOnNewAddressState
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -1134,7 +1163,9 @@ class _$ComposeDispenserOnNewAddressStateErrorImpl<T>
   @override
   int get hashCode => Object.hash(runtimeType, error);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of ComposeDispenserOnNewAddressState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$ComposeDispenserOnNewAddressStateErrorImplCopyWith<T,
@@ -1281,7 +1312,10 @@ abstract class _ComposeDispenserOnNewAddressStateError<T>
       _$ComposeDispenserOnNewAddressStateErrorImpl<T>;
 
   String get error;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of ComposeDispenserOnNewAddressState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$ComposeDispenserOnNewAddressStateErrorImplCopyWith<T,
           _$ComposeDispenserOnNewAddressStateErrorImpl<T>>
       get copyWith => throw _privateConstructorUsedError;
@@ -1315,6 +1349,8 @@ class __$$ComposeDispenserOnNewAddressStateCollectPasswordImplCopyWithImpl<T,
           _then)
       : super(_value, _then);
 
+  /// Create a copy of ComposeDispenserOnNewAddressState
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -1364,7 +1400,9 @@ class _$ComposeDispenserOnNewAddressStateCollectPasswordImpl<T>
   @override
   int get hashCode => Object.hash(runtimeType, error, loading);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of ComposeDispenserOnNewAddressState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$ComposeDispenserOnNewAddressStateCollectPasswordImplCopyWith<T,
@@ -1513,7 +1551,10 @@ abstract class _ComposeDispenserOnNewAddressStateCollectPassword<T>
 
   String? get error;
   bool? get loading;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of ComposeDispenserOnNewAddressState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$ComposeDispenserOnNewAddressStateCollectPasswordImplCopyWith<T,
           _$ComposeDispenserOnNewAddressStateCollectPasswordImpl<T>>
       get copyWith => throw _privateConstructorUsedError;
@@ -1539,6 +1580,9 @@ class __$$ComposeDispenserOnNewAddressStateSuccessImplCopyWithImpl<T, $Res>
       _$ComposeDispenserOnNewAddressStateSuccessImpl<T> _value,
       $Res Function(_$ComposeDispenserOnNewAddressStateSuccessImpl<T>) _then)
       : super(_value, _then);
+
+  /// Create a copy of ComposeDispenserOnNewAddressState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -1768,6 +1812,9 @@ class _$FeeStateCopyWithImpl<$Res, $Val extends FeeState>
   final $Val _value;
   // ignore: unused_field
   final $Res Function($Val) _then;
+
+  /// Create a copy of FeeState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -1784,6 +1831,9 @@ class __$$FeeInitialImplCopyWithImpl<$Res>
   __$$FeeInitialImplCopyWithImpl(
       _$FeeInitialImpl _value, $Res Function(_$FeeInitialImpl) _then)
       : super(_value, _then);
+
+  /// Create a copy of FeeState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -1898,6 +1948,9 @@ class __$$FeeLoadingImplCopyWithImpl<$Res>
   __$$FeeLoadingImplCopyWithImpl(
       _$FeeLoadingImpl _value, $Res Function(_$FeeLoadingImpl) _then)
       : super(_value, _then);
+
+  /// Create a copy of FeeState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -2015,6 +2068,8 @@ class __$$FeeSuccessImplCopyWithImpl<$Res>
       _$FeeSuccessImpl _value, $Res Function(_$FeeSuccessImpl) _then)
       : super(_value, _then);
 
+  /// Create a copy of FeeState
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -2054,7 +2109,9 @@ class _$FeeSuccessImpl implements _FeeSuccess {
   @override
   int get hashCode => Object.hash(runtimeType, feeEstimates);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of FeeState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$FeeSuccessImplCopyWith<_$FeeSuccessImpl> get copyWith =>
@@ -2139,7 +2196,10 @@ abstract class _FeeSuccess implements FeeState {
   const factory _FeeSuccess(final FeeEstimates feeEstimates) = _$FeeSuccessImpl;
 
   FeeEstimates get feeEstimates;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of FeeState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$FeeSuccessImplCopyWith<_$FeeSuccessImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -2161,6 +2221,8 @@ class __$$FeeErrorImplCopyWithImpl<$Res>
       _$FeeErrorImpl _value, $Res Function(_$FeeErrorImpl) _then)
       : super(_value, _then);
 
+  /// Create a copy of FeeState
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -2199,7 +2261,9 @@ class _$FeeErrorImpl implements _FeeError {
   @override
   int get hashCode => Object.hash(runtimeType, error);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of FeeState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$FeeErrorImplCopyWith<_$FeeErrorImpl> get copyWith =>
@@ -2284,7 +2348,10 @@ abstract class _FeeError implements FeeState {
   const factory _FeeError(final String error) = _$FeeErrorImpl;
 
   String get error;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of FeeState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$FeeErrorImplCopyWith<_$FeeErrorImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

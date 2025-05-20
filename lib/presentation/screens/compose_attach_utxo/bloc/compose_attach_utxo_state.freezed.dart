@@ -24,7 +24,9 @@ mixin _$ComposeAttachUtxoState {
       throw _privateConstructorUsedError; // Additional properties
   String get xcpFeeEstimate => throw _privateConstructorUsedError;
 
-  @JsonKey(ignore: true)
+  /// Create a copy of ComposeAttachUtxoState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   $ComposeAttachUtxoStateCopyWith<ComposeAttachUtxoState> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -57,6 +59,8 @@ class _$ComposeAttachUtxoStateCopyWithImpl<$Res,
   // ignore: unused_field
   final $Res Function($Val) _then;
 
+  /// Create a copy of ComposeAttachUtxoState
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -90,6 +94,8 @@ class _$ComposeAttachUtxoStateCopyWithImpl<$Res,
     ) as $Val);
   }
 
+  /// Create a copy of ComposeAttachUtxoState
+  /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
   $FeeStateCopyWith<$Res> get feeState {
@@ -98,6 +104,8 @@ class _$ComposeAttachUtxoStateCopyWithImpl<$Res,
     });
   }
 
+  /// Create a copy of ComposeAttachUtxoState
+  /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
   $BalancesStateCopyWith<$Res> get balancesState {
@@ -139,6 +147,8 @@ class __$$ComposeAttachUtxoStateImplCopyWithImpl<$Res>
       $Res Function(_$ComposeAttachUtxoStateImpl) _then)
       : super(_value, _then);
 
+  /// Create a copy of ComposeAttachUtxoState
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -223,7 +233,9 @@ class _$ComposeAttachUtxoStateImpl extends _ComposeAttachUtxoState {
   int get hashCode => Object.hash(runtimeType, feeState, balancesState,
       feeOption, submitState, xcpFeeEstimate);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of ComposeAttachUtxoState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$ComposeAttachUtxoStateImplCopyWith<_$ComposeAttachUtxoStateImpl>
@@ -240,18 +252,22 @@ abstract class _ComposeAttachUtxoState extends ComposeAttachUtxoState {
       required final String xcpFeeEstimate}) = _$ComposeAttachUtxoStateImpl;
   const _ComposeAttachUtxoState._() : super._();
 
-  @override // Inherited properties
+// Inherited properties
+  @override
   FeeState get feeState;
   @override
   BalancesState get balancesState;
   @override
   FeeOption get feeOption;
   @override
-  SubmitState get submitState;
-  @override // Additional properties
-  String get xcpFeeEstimate;
+  SubmitState get submitState; // Additional properties
   @override
-  @JsonKey(ignore: true)
+  String get xcpFeeEstimate;
+
+  /// Create a copy of ComposeAttachUtxoState
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$ComposeAttachUtxoStateImplCopyWith<_$ComposeAttachUtxoStateImpl>
       get copyWith => throw _privateConstructorUsedError;
 }

@@ -16,7 +16,6 @@ import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/bitcoind_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/imported_address_service.dart';
-import 'package:horizon/domain/services/public_key_service.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/forms/get_addresses/bloc/get_addresses_bloc.dart';
@@ -104,13 +103,11 @@ class GetAddressesModal extends StatelessWidget {
   final AddressService addressService;
   final ImportedAddressService importedAddressService;
   final EncryptionService encryptionService;
-  final PublicKeyService publicKeyService;
   final HttpConfig httpConfig;
 
   const GetAddressesModal(
       {super.key,
       required this.httpConfig,
-      required this.publicKeyService,
       required this.encryptionService,
       required this.addressService,
       required this.importedAddressService,
@@ -130,7 +127,6 @@ class GetAddressesModal extends StatelessWidget {
         passwordRequired:
             GetIt.I<SettingsRepository>().requirePasswordForCryptoOperations,
         inMemoryKeyRepository: GetIt.I<InMemoryKeyRepository>(),
-        publicKeyService: publicKeyService,
         encryptionService: encryptionService,
         importedAddressService: importedAddressService,
         addressService: addressService,

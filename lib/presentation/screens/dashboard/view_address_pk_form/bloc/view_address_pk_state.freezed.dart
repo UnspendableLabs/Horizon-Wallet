@@ -84,6 +84,9 @@ class _$ViewAddressPkStateCopyWithImpl<$Res, $Val extends ViewAddressPkState>
   final $Val _value;
   // ignore: unused_field
   final $Res Function($Val) _then;
+
+  /// Create a copy of ViewAddressPkState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -105,6 +108,8 @@ class __$$InitialImplCopyWithImpl<$Res>
       _$InitialImpl _value, $Res Function(_$InitialImpl) _then)
       : super(_value, _then);
 
+  /// Create a copy of ViewAddressPkState
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -118,6 +123,8 @@ class __$$InitialImplCopyWithImpl<$Res>
     ));
   }
 
+  /// Create a copy of ViewAddressPkState
+  /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
   $ViewAddressPkStateInitialCopyWith<$Res> get initial {
@@ -151,7 +158,9 @@ class _$InitialImpl implements _Initial {
   @override
   int get hashCode => Object.hash(runtimeType, initial);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of ViewAddressPkState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$InitialImplCopyWith<_$InitialImpl> get copyWith =>
@@ -237,7 +246,10 @@ abstract class _Initial implements ViewAddressPkState {
       _$InitialImpl;
 
   ViewAddressPkStateInitial get initial;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of ViewAddressPkState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$InitialImplCopyWith<_$InitialImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -256,6 +268,9 @@ class __$$LoadingImplCopyWithImpl<$Res>
   __$$LoadingImplCopyWithImpl(
       _$LoadingImpl _value, $Res Function(_$LoadingImpl) _then)
       : super(_value, _then);
+
+  /// Create a copy of ViewAddressPkState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -373,6 +388,8 @@ class __$$ErrorImplCopyWithImpl<$Res>
       _$ErrorImpl _value, $Res Function(_$ErrorImpl) _then)
       : super(_value, _then);
 
+  /// Create a copy of ViewAddressPkState
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -411,7 +428,9 @@ class _$ErrorImpl implements _Error {
   @override
   int get hashCode => Object.hash(runtimeType, error);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of ViewAddressPkState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$ErrorImplCopyWith<_$ErrorImpl> get copyWith =>
@@ -496,7 +515,10 @@ abstract class _Error implements ViewAddressPkState {
   const factory _Error(final String error) = _$ErrorImpl;
 
   String get error;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of ViewAddressPkState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$ErrorImplCopyWith<_$ErrorImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -520,6 +542,8 @@ class __$$SuccessImplCopyWithImpl<$Res>
       _$SuccessImpl _value, $Res Function(_$SuccessImpl) _then)
       : super(_value, _then);
 
+  /// Create a copy of ViewAddressPkState
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -533,6 +557,8 @@ class __$$SuccessImplCopyWithImpl<$Res>
     ));
   }
 
+  /// Create a copy of ViewAddressPkState
+  /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
   $ViewAddressPkStateSuccessCopyWith<$Res> get succcess {
@@ -567,7 +593,9 @@ class _$SuccessImpl implements _Success {
   @override
   int get hashCode => Object.hash(runtimeType, succcess);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of ViewAddressPkState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$SuccessImplCopyWith<_$SuccessImpl> get copyWith =>
@@ -653,7 +681,10 @@ abstract class _Success implements ViewAddressPkState {
       _$SuccessImpl;
 
   ViewAddressPkStateSuccess get succcess;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of ViewAddressPkState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$SuccessImplCopyWith<_$SuccessImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -662,7 +693,9 @@ abstract class _Success implements ViewAddressPkState {
 mixin _$ViewAddressPkStateInitial {
   String? get error => throw _privateConstructorUsedError;
 
-  @JsonKey(ignore: true)
+  /// Create a copy of ViewAddressPkStateInitial
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   $ViewAddressPkStateInitialCopyWith<ViewAddressPkStateInitial> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -687,6 +720,8 @@ class _$ViewAddressPkStateInitialCopyWithImpl<$Res,
   // ignore: unused_field
   final $Res Function($Val) _then;
 
+  /// Create a copy of ViewAddressPkStateInitial
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -723,6 +758,8 @@ class __$$ViewAddressPkStateInitialImplCopyWithImpl<$Res>
       $Res Function(_$ViewAddressPkStateInitialImpl) _then)
       : super(_value, _then);
 
+  /// Create a copy of ViewAddressPkStateInitial
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -761,7 +798,9 @@ class _$ViewAddressPkStateInitialImpl implements _ViewAddressPkStateInitial {
   @override
   int get hashCode => Object.hash(runtimeType, error);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of ViewAddressPkStateInitial
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$ViewAddressPkStateInitialImplCopyWith<_$ViewAddressPkStateInitialImpl>
@@ -775,8 +814,11 @@ abstract class _ViewAddressPkStateInitial implements ViewAddressPkStateInitial {
 
   @override
   String? get error;
+
+  /// Create a copy of ViewAddressPkStateInitial
+  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$ViewAddressPkStateInitialImplCopyWith<_$ViewAddressPkStateInitialImpl>
       get copyWith => throw _privateConstructorUsedError;
 }
@@ -787,7 +829,9 @@ mixin _$ViewAddressPkStateSuccess {
   String get address => throw _privateConstructorUsedError;
   String get privateKeyWif => throw _privateConstructorUsedError;
 
-  @JsonKey(ignore: true)
+  /// Create a copy of ViewAddressPkStateSuccess
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   $ViewAddressPkStateSuccessCopyWith<ViewAddressPkStateSuccess> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -812,6 +856,8 @@ class _$ViewAddressPkStateSuccessCopyWithImpl<$Res,
   // ignore: unused_field
   final $Res Function($Val) _then;
 
+  /// Create a copy of ViewAddressPkStateSuccess
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -858,6 +904,8 @@ class __$$ViewAddressPkStateSuccessImplCopyWithImpl<$Res>
       $Res Function(_$ViewAddressPkStateSuccessImpl) _then)
       : super(_value, _then);
 
+  /// Create a copy of ViewAddressPkStateSuccess
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -914,7 +962,9 @@ class _$ViewAddressPkStateSuccessImpl implements _ViewAddressPkStateSuccess {
   @override
   int get hashCode => Object.hash(runtimeType, name, address, privateKeyWif);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of ViewAddressPkStateSuccess
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$ViewAddressPkStateSuccessImplCopyWith<_$ViewAddressPkStateSuccessImpl>
@@ -934,8 +984,11 @@ abstract class _ViewAddressPkStateSuccess implements ViewAddressPkStateSuccess {
   String get address;
   @override
   String get privateKeyWif;
+
+  /// Create a copy of ViewAddressPkStateSuccess
+  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$ViewAddressPkStateSuccessImplCopyWith<_$ViewAddressPkStateSuccessImpl>
       get copyWith => throw _privateConstructorUsedError;
 }

@@ -1,0 +1,180 @@
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter/material.dart';
+import 'package:horizon/domain/entities/fee_estimates.dart';
+import 'package:horizon/presentation/common/transactions/multi_address_balance_dropdown.dart';
+import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
+// TODO: not sure if this should live here
+import 'package:horizon/presentation/common/transactions/token_name_field.dart';
+import 'package:horizon/presentation/common/transactions/gradient_quantity_input.dart';
+import 'package:horizon/domain/entities/multi_address_balance.dart';
+
+import 'package:formz/formz.dart';
+import "./bloc/form_bloc.dart";
+import "./bloc/form_state.dart";
+import "./bloc/form_event.dart";
+
+// TODO: do something with transaction error;
+import 'package:horizon/presentation/common/transactions/transaction_fee_selection.dart';
+
+class SendAssetFormBody extends StatefulWidget {
+  final Function(FormModel) onSubmitSuccess;
+  final MultiAddressBalance multiAddressBalance;
+  final FeeEstimates feeEstimates;
+
+  const SendAssetFormBody({
+    required this.multiAddressBalance,
+    required this.feeEstimates,
+    required this.onSubmitSuccess,
+    super.key,
+  });
+
+  @override
+  State<SendAssetFormBody> createState() => _SendAssetFormBodyState();
+}
+
+class _SendAssetFormBodyState extends State<SendAssetFormBody> {
+  late TextEditingController _destinationController;
+  late TextEditingController _quantityController;
+
+  @override
+  void initState() {
+    super.initState();
+    _destinationController = TextEditingController();
+    _quantityController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _destinationController.dispose();
+    _quantityController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocConsumer<SendAssetFormBloc, FormModel>(
+      listener: (context, state) {
+        if (state.status.isSuccess) {
+          widget.onSubmitSuccess(state);
+        }
+
+        _destinationController.value = _destinationController.value.copyWith(
+          text: state.destinationInput.value,
+          selection: TextSelection.collapsed(
+            offset: state.destinationInput.value.length,
+          ),
+        );
+
+        _quantityController.value = _quantityController.value.copyWith(
+          text: state.quantityInput.value,
+          selection: TextSelection.collapsed(
+            offset: state.quantityInput.value.length,
+          ),
+        );
+      },
+      builder: (context, state) {
+        bool isSmallScreen = MediaQuery.of(context).size.width < 500;
+
+        return Form(
+          child: Column(
+            children: [
+              MultiAddressBalanceDropdown(
+                loading: false,
+                balances: widget.multiAddressBalance,
+                onChanged: (value) {
+                  context
+                      .read<SendAssetFormBloc>()
+                      .add(AddressBalanceInputChanged(value!));
+                },
+                selectedValue: state.addressBalanceInput.value,
+              ),
+              const SizedBox(height: 10),
+              HorizonTextField(
+                controller: _destinationController,
+                label: 'Destination Address',
+                onChanged: (value) {
+                  context
+                      .read<SendAssetFormBloc>()
+                      .add(DestinationInputChanged(value));
+                },
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter a destination address';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 10),
+              TokenNameField(
+                loading: false,
+                balance: widget.multiAddressBalance,
+                selectedBalanceEntry: state.addressBalanceInput.value,
+              ),
+              const SizedBox(height: 10),
+              GradientQuantityInput(
+                enabled: true,
+                showMaxButton: true,
+                balance: widget.multiAddressBalance,
+                selectedBalanceEntry: state.addressBalanceInput.value,
+                controller: _quantityController,
+                onChanged: (value) {
+                  context
+                      .read<SendAssetFormBloc>()
+                      .add(QuantityInputChanged(value));
+                },
+                validator: (value) {
+                  if (state.quantityInput.isPure) {
+                    return null;
+                  }
+                  return switch (state.quantityInput.error) {
+                    QuantityInputError.required => 'Value is required',
+                    QuantityInputError.exceedsMax => 'Value exceeds max',
+                    QuantityInputError.invalid => 'Invalid',
+                    _ => null
+                  };
+                },
+              ),
+              const SizedBox(height: 10),
+              TransactionFeeSelection(
+                feeEstimates: widget.feeEstimates,
+                selectedFeeOption: state.feeOptionInput.value,
+                onFeeOptionSelected: (value) {
+                  context
+                      .read<SendAssetFormBloc>()
+                      .add(FeeOptionChanged(value));
+                },
+              ),
+              const SizedBox(height: 10),
+              Padding(
+                padding: EdgeInsets.symmetric(
+                  vertical: 30,
+                  horizontal: isSmallScreen ? 20 : 40,
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: SizedBox(
+                        height: 64,
+                        child: HorizonOutlinedButton(
+                          isTransparent: false,
+                          onPressed: () {
+                            if (state.isValid) {
+                              context
+                                  .read<SendAssetFormBloc>()
+                                  .add(const FormSubmitted());
+                            }
+                          },
+                          buttonText: "Review Transaction",
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}

@@ -34,7 +34,6 @@ dependencies:
   convert: ^3.1.1
   bech32: ^0.2.2
   pointycastle: ^3.7.4
-  flutter_js: ^0.8.0
 
   floor: ^1.4.2
   flutter_bloc: ^8.1.5
@@ -43,7 +42,7 @@ dependencies:
   flutter_secure_storage: ^9.2.4
   logger: ^2.2.0
   dartsv: ^2.0.2
-  bitcoin_base: ^4.2.1
+  bitcoin_base: 6.0.0
   retrofit: ">=4.0.0 <5.0.0"
   dio: ^5.4.3+1
   uuid: ^4.4.0
@@ -90,6 +89,8 @@ dependencies:
   flutter_form_builder: ^9.5.0
   password_strength_checker: ^1.2.4
   cached_network_image: ^3.4.0
+  flow_builder: ^0.1.0
+  flutter_inappwebview: ^6.0.0
 
 dev_dependencies:
   floor_generator: ^1.4.2

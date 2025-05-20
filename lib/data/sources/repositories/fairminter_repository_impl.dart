@@ -35,7 +35,7 @@ class FairminterRepositoryImpl implements FairminterRepository {
     // cursor_model.CursorModel? cursor;
 
     // final response = await api.getAllFairminters(
-    //     null, // cursor
+    //     null, // curso fffr
     //     null, // limit
     //     );
 

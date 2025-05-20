@@ -96,6 +96,9 @@ class _$SessionStateCopyWithImpl<$Res, $Val extends SessionState>
   final $Val _value;
   // ignore: unused_field
   final $Res Function($Val) _then;
+
+  /// Create a copy of SessionState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -112,6 +115,9 @@ class __$$InitialImplCopyWithImpl<$Res>
   __$$InitialImplCopyWithImpl(
       _$InitialImpl _value, $Res Function(_$InitialImpl) _then)
       : super(_value, _then);
+
+  /// Create a copy of SessionState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -238,6 +244,9 @@ class __$$LoadingImplCopyWithImpl<$Res>
   __$$LoadingImplCopyWithImpl(
       _$LoadingImpl _value, $Res Function(_$LoadingImpl) _then)
       : super(_value, _then);
+
+  /// Create a copy of SessionState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -367,6 +376,8 @@ class __$$ErrorImplCopyWithImpl<$Res>
       _$ErrorImpl _value, $Res Function(_$ErrorImpl) _then)
       : super(_value, _then);
 
+  /// Create a copy of SessionState
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -405,7 +416,9 @@ class _$ErrorImpl implements _Error {
   @override
   int get hashCode => Object.hash(runtimeType, error);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of SessionState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$ErrorImplCopyWith<_$ErrorImpl> get copyWith =>
@@ -502,7 +515,10 @@ abstract class _Error implements SessionState {
   const factory _Error(final String error) = _$ErrorImpl;
 
   String get error;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of SessionState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$ErrorImplCopyWith<_$ErrorImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -526,6 +542,8 @@ class __$$OnboardingImplCopyWithImpl<$Res>
       _$OnboardingImpl _value, $Res Function(_$OnboardingImpl) _then)
       : super(_value, _then);
 
+  /// Create a copy of SessionState
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -539,6 +557,8 @@ class __$$OnboardingImplCopyWithImpl<$Res>
     ));
   }
 
+  /// Create a copy of SessionState
+  /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
   $OnboardingCopyWith<$Res> get onboarding {
@@ -573,7 +593,9 @@ class _$OnboardingImpl implements _Onboarding {
   @override
   int get hashCode => Object.hash(runtimeType, onboarding);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of SessionState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$OnboardingImplCopyWith<_$OnboardingImpl> get copyWith =>
@@ -670,7 +692,10 @@ abstract class _Onboarding implements SessionState {
   const factory _Onboarding(final Onboarding onboarding) = _$OnboardingImpl;
 
   Onboarding get onboarding;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of SessionState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$OnboardingImplCopyWith<_$OnboardingImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -694,6 +719,8 @@ class __$$SuccessImplCopyWithImpl<$Res>
       _$SuccessImpl _value, $Res Function(_$SuccessImpl) _then)
       : super(_value, _then);
 
+  /// Create a copy of SessionState
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -707,6 +734,8 @@ class __$$SuccessImplCopyWithImpl<$Res>
     ));
   }
 
+  /// Create a copy of SessionState
+  /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
   $SessionStateSuccessCopyWith<$Res> get succcess {
@@ -741,7 +770,9 @@ class _$SuccessImpl implements _Success {
   @override
   int get hashCode => Object.hash(runtimeType, succcess);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of SessionState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$SuccessImplCopyWith<_$SuccessImpl> get copyWith =>
@@ -838,7 +869,10 @@ abstract class _Success implements SessionState {
   const factory _Success(final SessionStateSuccess succcess) = _$SuccessImpl;
 
   SessionStateSuccess get succcess;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of SessionState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$SuccessImplCopyWith<_$SuccessImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -857,6 +891,9 @@ class __$$LoggedOutImplCopyWithImpl<$Res>
   __$$LoggedOutImplCopyWithImpl(
       _$LoggedOutImpl _value, $Res Function(_$LoggedOutImpl) _then)
       : super(_value, _then);
+
+  /// Create a copy of SessionState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -980,7 +1017,9 @@ mixin _$SessionStateSuccess {
   List<AddressV2> get addresses => throw _privateConstructorUsedError;
   WalletConfig get walletConfig => throw _privateConstructorUsedError;
 
-  @JsonKey(ignore: true)
+  /// Create a copy of SessionStateSuccess
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   $SessionStateSuccessCopyWith<SessionStateSuccess> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -1011,6 +1050,8 @@ class _$SessionStateSuccessCopyWithImpl<$Res, $Val extends SessionStateSuccess>
   // ignore: unused_field
   final $Res Function($Val) _then;
 
+  /// Create a copy of SessionStateSuccess
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -1081,6 +1122,8 @@ class __$$SessionStateSuccessImplCopyWithImpl<$Res>
       $Res Function(_$SessionStateSuccessImpl) _then)
       : super(_value, _then);
 
+  /// Create a copy of SessionStateSuccess
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -1198,7 +1241,9 @@ class _$SessionStateSuccessImpl implements _SessionStateSuccess {
       const DeepCollectionEquality().hash(_addresses),
       walletConfig);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of SessionStateSuccess
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$SessionStateSuccessImplCopyWith<_$SessionStateSuccessImpl> get copyWith =>
@@ -1221,8 +1266,8 @@ abstract class _SessionStateSuccess implements SessionStateSuccess {
   @override
   AccountV2? get currentAccount;
   @override
-  bool get redirect;
-  @override // required Wallet wallet,
+  bool get redirect; // required Wallet wallet,
+  @override
   String get decryptionKey;
   @override
   List<AccountV2> get accounts;
@@ -1230,8 +1275,11 @@ abstract class _SessionStateSuccess implements SessionStateSuccess {
   List<AddressV2> get addresses;
   @override
   WalletConfig get walletConfig;
+
+  /// Create a copy of SessionStateSuccess
+  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$SessionStateSuccessImplCopyWith<_$SessionStateSuccessImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -1306,6 +1354,9 @@ class _$OnboardingCopyWithImpl<$Res, $Val extends Onboarding>
   final $Val _value;
   // ignore: unused_field
   final $Res Function($Val) _then;
+
+  /// Create a copy of Onboarding
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -1322,6 +1373,9 @@ class __$$OnboardingInitialImplCopyWithImpl<$Res>
   __$$OnboardingInitialImplCopyWithImpl(_$OnboardingInitialImpl _value,
       $Res Function(_$OnboardingInitialImpl) _then)
       : super(_value, _then);
+
+  /// Create a copy of Onboarding
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -1436,6 +1490,9 @@ class __$$CreateImplCopyWithImpl<$Res>
   __$$CreateImplCopyWithImpl(
       _$CreateImpl _value, $Res Function(_$CreateImpl) _then)
       : super(_value, _then);
+
+  /// Create a copy of Onboarding
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -1550,6 +1607,9 @@ class __$$ImportImplCopyWithImpl<$Res>
   __$$ImportImplCopyWithImpl(
       _$ImportImpl _value, $Res Function(_$ImportImpl) _then)
       : super(_value, _then);
+
+  /// Create a copy of Onboarding
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -1664,6 +1724,9 @@ class __$$ImportPKImplCopyWithImpl<$Res>
   __$$ImportPKImplCopyWithImpl(
       _$ImportPKImpl _value, $Res Function(_$ImportPKImpl) _then)
       : super(_value, _then);
+
+  /// Create a copy of Onboarding
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc

@@ -26,7 +26,9 @@ mixin _$ComposeIssuanceState {
   String? get assetDescription => throw _privateConstructorUsedError;
   String get quantity => throw _privateConstructorUsedError;
 
-  @JsonKey(ignore: true)
+  /// Create a copy of ComposeIssuanceState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   $ComposeIssuanceStateCopyWith<ComposeIssuanceState> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -61,6 +63,8 @@ class _$ComposeIssuanceStateCopyWithImpl<$Res,
   // ignore: unused_field
   final $Res Function($Val) _then;
 
+  /// Create a copy of ComposeIssuanceState
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -104,6 +108,8 @@ class _$ComposeIssuanceStateCopyWithImpl<$Res,
     ) as $Val);
   }
 
+  /// Create a copy of ComposeIssuanceState
+  /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
   $FeeStateCopyWith<$Res> get feeState {
@@ -112,6 +118,8 @@ class _$ComposeIssuanceStateCopyWithImpl<$Res,
     });
   }
 
+  /// Create a copy of ComposeIssuanceState
+  /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
   $BalancesStateCopyWith<$Res> get balancesState {
@@ -152,6 +160,8 @@ class __$$ComposeIssuanceStateImplCopyWithImpl<$Res>
       $Res Function(_$ComposeIssuanceStateImpl) _then)
       : super(_value, _then);
 
+  /// Create a copy of ComposeIssuanceState
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -256,7 +266,9 @@ class _$ComposeIssuanceStateImpl extends _ComposeIssuanceState {
   int get hashCode => Object.hash(runtimeType, feeState, balancesState,
       feeOption, submitState, assetName, assetDescription, quantity);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of ComposeIssuanceState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$ComposeIssuanceStateImplCopyWith<_$ComposeIssuanceStateImpl>
@@ -276,22 +288,26 @@ abstract class _ComposeIssuanceState extends ComposeIssuanceState {
       required final String quantity}) = _$ComposeIssuanceStateImpl;
   const _ComposeIssuanceState._() : super._();
 
-  @override // Inherited properties
+// Inherited properties
+  @override
   FeeState get feeState;
   @override
   BalancesState get balancesState;
   @override
   FeeOption get feeOption;
   @override
-  SubmitState get submitState;
-  @override // Specific properties
+  SubmitState get submitState; // Specific properties
+  @override
   String? get assetName;
   @override
   String? get assetDescription;
   @override
   String get quantity;
+
+  /// Create a copy of ComposeIssuanceState
+  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$ComposeIssuanceStateImplCopyWith<_$ComposeIssuanceStateImpl>
       get copyWith => throw _privateConstructorUsedError;
 }

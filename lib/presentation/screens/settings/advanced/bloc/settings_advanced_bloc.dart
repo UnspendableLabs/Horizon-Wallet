@@ -65,8 +65,6 @@ class SettingsAdvancedState extends Equatable {
       [status, importFormatChange, walletConfigChange, walletConfigError];
 
   Option<ImportFormat> get inferredImportFormat {
-    print(initialWalletConfig.basePath.serialize());
-    print(initialWalletConfig.seedDerivation);
     return switch ((
       initialWalletConfig.basePath.serialize(),
       initialWalletConfig.seedDerivation

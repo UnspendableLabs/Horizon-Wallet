@@ -24,7 +24,9 @@ mixin _$ComposeSweepState {
       throw _privateConstructorUsedError; // Sweep properties
   SweepXcpFeeState get sweepXcpFeeState => throw _privateConstructorUsedError;
 
-  @JsonKey(ignore: true)
+  /// Create a copy of ComposeSweepState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   $ComposeSweepStateCopyWith<ComposeSweepState> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -57,6 +59,8 @@ class _$ComposeSweepStateCopyWithImpl<$Res, $Val extends ComposeSweepState>
   // ignore: unused_field
   final $Res Function($Val) _then;
 
+  /// Create a copy of ComposeSweepState
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -90,6 +94,8 @@ class _$ComposeSweepStateCopyWithImpl<$Res, $Val extends ComposeSweepState>
     ) as $Val);
   }
 
+  /// Create a copy of ComposeSweepState
+  /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
   $FeeStateCopyWith<$Res> get feeState {
@@ -98,6 +104,8 @@ class _$ComposeSweepStateCopyWithImpl<$Res, $Val extends ComposeSweepState>
     });
   }
 
+  /// Create a copy of ComposeSweepState
+  /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
   $BalancesStateCopyWith<$Res> get balancesState {
@@ -106,6 +114,8 @@ class _$ComposeSweepStateCopyWithImpl<$Res, $Val extends ComposeSweepState>
     });
   }
 
+  /// Create a copy of ComposeSweepState
+  /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
   $SweepXcpFeeStateCopyWith<$Res> get sweepXcpFeeState {
@@ -146,6 +156,8 @@ class __$$ComposeSweepStateImplCopyWithImpl<$Res>
       $Res Function(_$ComposeSweepStateImpl) _then)
       : super(_value, _then);
 
+  /// Create a copy of ComposeSweepState
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -230,7 +242,9 @@ class _$ComposeSweepStateImpl extends _ComposeSweepState {
   int get hashCode => Object.hash(runtimeType, feeState, balancesState,
       feeOption, submitState, sweepXcpFeeState);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of ComposeSweepState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$ComposeSweepStateImplCopyWith<_$ComposeSweepStateImpl> get copyWith =>
@@ -248,18 +262,22 @@ abstract class _ComposeSweepState extends ComposeSweepState {
       _$ComposeSweepStateImpl;
   const _ComposeSweepState._() : super._();
 
-  @override // Inherited properties
+// Inherited properties
+  @override
   FeeState get feeState;
   @override
   BalancesState get balancesState;
   @override
   FeeOption get feeOption;
   @override
-  SubmitState get submitState;
-  @override // Sweep properties
-  SweepXcpFeeState get sweepXcpFeeState;
+  SubmitState get submitState; // Sweep properties
   @override
-  @JsonKey(ignore: true)
+  SweepXcpFeeState get sweepXcpFeeState;
+
+  /// Create a copy of ComposeSweepState
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$ComposeSweepStateImplCopyWith<_$ComposeSweepStateImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -334,6 +352,9 @@ class _$SweepXcpFeeStateCopyWithImpl<$Res, $Val extends SweepXcpFeeState>
   final $Val _value;
   // ignore: unused_field
   final $Res Function($Val) _then;
+
+  /// Create a copy of SweepXcpFeeState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -350,6 +371,9 @@ class __$$SweepXcpFeeInitialImplCopyWithImpl<$Res>
   __$$SweepXcpFeeInitialImplCopyWithImpl(_$SweepXcpFeeInitialImpl _value,
       $Res Function(_$SweepXcpFeeInitialImpl) _then)
       : super(_value, _then);
+
+  /// Create a copy of SweepXcpFeeState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -464,6 +488,9 @@ class __$$SweepXcpFeeLoadingImplCopyWithImpl<$Res>
   __$$SweepXcpFeeLoadingImplCopyWithImpl(_$SweepXcpFeeLoadingImpl _value,
       $Res Function(_$SweepXcpFeeLoadingImpl) _then)
       : super(_value, _then);
+
+  /// Create a copy of SweepXcpFeeState
+  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
@@ -581,6 +608,8 @@ class __$$SweepXcpFeeSuccessImplCopyWithImpl<$Res>
       $Res Function(_$SweepXcpFeeSuccessImpl) _then)
       : super(_value, _then);
 
+  /// Create a copy of SweepXcpFeeState
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -620,7 +649,9 @@ class _$SweepXcpFeeSuccessImpl implements _SweepXcpFeeSuccess {
   @override
   int get hashCode => Object.hash(runtimeType, dividendXcpFee);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of SweepXcpFeeState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$SweepXcpFeeSuccessImplCopyWith<_$SweepXcpFeeSuccessImpl> get copyWith =>
@@ -707,7 +738,10 @@ abstract class _SweepXcpFeeSuccess implements SweepXcpFeeState {
       _$SweepXcpFeeSuccessImpl;
 
   int get dividendXcpFee;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of SweepXcpFeeState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$SweepXcpFeeSuccessImplCopyWith<_$SweepXcpFeeSuccessImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -729,6 +763,8 @@ class __$$SweepXcpFeeErrorImplCopyWithImpl<$Res>
       $Res Function(_$SweepXcpFeeErrorImpl) _then)
       : super(_value, _then);
 
+  /// Create a copy of SweepXcpFeeState
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -767,7 +803,9 @@ class _$SweepXcpFeeErrorImpl implements _SweepXcpFeeError {
   @override
   int get hashCode => Object.hash(runtimeType, error);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of SweepXcpFeeState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$SweepXcpFeeErrorImplCopyWith<_$SweepXcpFeeErrorImpl> get copyWith =>
@@ -853,7 +891,10 @@ abstract class _SweepXcpFeeError implements SweepXcpFeeState {
   const factory _SweepXcpFeeError(final String error) = _$SweepXcpFeeErrorImpl;
 
   String get error;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of SweepXcpFeeState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$SweepXcpFeeErrorImplCopyWith<_$SweepXcpFeeErrorImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

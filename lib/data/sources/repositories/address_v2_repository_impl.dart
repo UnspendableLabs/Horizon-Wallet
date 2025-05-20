@@ -68,8 +68,8 @@ class AddressV2RepositoryImpl implements AddressV2Repository {
     final result = await task.run();
 
     return result.fold(
-        (_) => throw Exception(
-            "Error deriving addresses for account: ${account.name}"),
+        (err) => throw Exception(
+            "$err: Error deriving addresses for account: ${account.name}"),
         (addresses) {
       return addresses;
     });

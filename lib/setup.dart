@@ -3,29 +3,40 @@ import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:get_it/get_it.dart';
 
 import 'package:horizon/data/services/secure_kv_service_impl.dart';
+import 'package:horizon/data/sources/network/horizon_explorer_client.dart';
 import 'package:horizon/domain/services/secure_kv_service.dart';
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 
 import 'package:horizon/data/sources/repositories/in_memory_key_repository_impl.dart';
+import 'package:horizon/domain/services/database_manager_service.dart';
 import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 
-import 'package:horizon/data/services/address_service_impl.dart';
-import 'package:horizon/data/services/bip39_service_impl.dart';
+import 'package:horizon/data/services/address_service/address_service_factory.dart';
+import 'package:horizon/data/services/bip39_service/bip39_service_factory.dart';
+import 'package:horizon/data/services/encryption_service/encryption_service_factory.dart';
 import 'package:horizon/data/services/bitcoind_service_impl.dart';
 import 'package:horizon/data/services/cache_provider_impl.dart';
-import 'package:horizon/data/services/encryption_service_web_worker_impl.dart';
-import 'package:horizon/data/services/imported_address_service_impl.dart';
-import 'package:chrome_extension/tabs.dart';
-import 'package:horizon/data/services/platform_service_extension_impl.dart';
-import 'package:horizon/data/services/platform_service_web_impl.dart';
+// import 'package:horizon/data/services/encryption_service_web_worker_impl.dart';
+import 'package:dio_smart_retry/dio_smart_retry.dart';
+// import 'package:horizon/data/services/imported_address_service_impl.dart';
+import 'package:horizon/data/services/imported_address_service/imported_address_service_factory.dart';
+// import 'package:chrome_extension/tabs.dart';
+// import 'package:horizon/data/services/platform_service_extension_impl.dart';
+import 'package:horizon/data/services/platform_service/platform_service_factory.dart';
 import "package:horizon/data/sources/repositories/address_repository_impl.dart";
 
 import 'package:horizon/data/sources/repositories/estimate_xcp_fee_repository_impl.dart';
 import "package:horizon/domain/repositories/address_repository.dart";
-import 'package:horizon/data/sources/local/db_manager.dart';
+import 'package:horizon/data/sources/local/database_manager/database_manager_factory.dart';
+// import 'package:horizon/data/sources/local/database_manager_native.dart';
 
-import 'package:horizon/data/services/mnemonic_service_impl.dart';
-import 'package:horizon/data/services/transaction_service_impl.dart';
+// import 'package:horizon/data/services/mnemonic_service_impl.dart';
+import 'package:horizon/data/services/mnemonic_service/mnemonic_service_factory.dart';
+// import 'package:horizon/data/services/transaction_service_impl.dart';
+import 'package:horizon/data/services/transaction_service/transaction_service_factory.dart';
+// import 'package:horizon/data/services/wallet_service_impl.dart';
+import 'package:horizon/data/sources/network/api/v2_api.dart';
+import 'package:horizon/data/sources/repositories/account_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/account_settings_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/address_tx_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/balance_repository_impl.dart';
@@ -55,7 +66,8 @@ import 'package:horizon/domain/services/platform_service.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
 
 import 'package:horizon/domain/services/public_key_service.dart';
-import 'package:horizon/data/services/public_key_service_impl.dart';
+import 'package:horizon/data/services/public_key_service/public_key_service_factory.dart';
+// import 'package:horizon/data/services/public_key_service_impl.dart';
 
 import 'package:horizon/domain/services/seed_service.dart';
 import 'package:horizon/data/services/seed_service_impl.dart';
@@ -126,7 +138,7 @@ import 'package:horizon/domain/entities/extension_rpc.dart';
 import 'package:horizon/domain/entities/address_rpc.dart';
 
 // will need to move this import elsewhere for compile to native
-import 'dart:html' as html;
+// import 'dart:html' as html;
 
 import 'package:horizon/domain/services/error_service.dart';
 import 'package:horizon/data/services/error_service_impl.dart';
@@ -150,10 +162,20 @@ import 'package:horizon/data/sources/network/counterparty_client_factory.dart';
 import 'package:horizon/data/sources/network/esplora_client_factory.dart';
 import 'package:horizon/data/sources/network/horizon_explorer_client_factory.dart';
 
+class AnalyticsServiceStub implements AnalyticsService {
+  @override
+  void trackEvent(String eventName, {Map<String, Object>? properties}) {}
+  @override
+  void reset() {}
+  @override
+  void trackAnonymousEvent(String eventName,
+      {Map<String, Object>? properties}) {}
+}
+
 void setup() {
   GetIt injector = GetIt.I;
 
-  injector.registerSingleton<Logger>(LoggerImpl(
+  injector.registerSingleton<Logger>(LoggerSilent(
     logger.Logger(
       filter: logger.ProductionFilter(),
       printer: logger.PrettyPrinter(
@@ -307,24 +329,7 @@ void setup() {
 //   },
 // ));
 
-  injector.registerSingleton<CounterpartyClientFactory>(
-      CounterpartyClientFactory());
-
-  injector.registerSingleton<EsploraClientFactory>(EsploraClientFactory());
-
-  injector.registerSingleton<HorizonExplorerClientFactory>(
-      HorizonExplorerClientFactory());
-
-  injector.registerSingleton<AnalyticsService>(PostHogWebAnalyticsService(
-    config,
-    const String.fromEnvironment('HORIZON_POSTHOG_API_KEY').isNotEmpty
-        ? const String.fromEnvironment('HORIZON_POSTHOG_API_KEY')
-        : null,
-    const String.fromEnvironment('HORIZON_POSTHOG_API_HOST').isNotEmpty
-        ? const String.fromEnvironment('HORIZON_POSTHOG_API_HOST')
-        : null,
-    GetIt.I.get<Logger>(),
-  ));
+  injector.registerSingleton<AnalyticsService>(AnalyticsServiceStub());
 
   injector.registerSingleton<ErrorService>(
     ErrorServiceImpl(
@@ -333,6 +338,12 @@ void setup() {
     ),
   );
   GetIt.I.get<ErrorService>().initialize();
+
+  injector.registerSingleton<HorizonExplorerClientFactory>(
+      HorizonExplorerClientFactory());
+  injector.registerSingleton<EsploraClientFactory>(EsploraClientFactory());
+  injector.registerSingleton<CounterpartyClientFactory>(
+      CounterpartyClientFactory());
 
   injector.registerSingleton<BitcoinRepository>(BitcoinRepositoryImpl(
     esploraClientFactory: GetIt.I.get<EsploraClientFactory>(),
@@ -345,7 +356,7 @@ void setup() {
 
   injector.registerSingleton<SettingsRepository>(SettingsRepositoryImpl());
 
-  injector.registerSingleton<DatabaseManager>(DatabaseManager());
+  injector.registerSingleton<DatabaseManager>(createDatabaseManager());
 
   injector.registerSingleton<AddressTxRepository>(AddressTxRepositoryImpl(
     counterpartyClientFactory: GetIt.I.get<CounterpartyClientFactory>(),
@@ -364,17 +375,17 @@ void setup() {
 
   injector.registerSingleton<AssetRepository>(AssetRepositoryImpl());
 
-  injector.registerSingleton<Bip39Service>(Bip39ServiceImpl());
-  injector.registerSingleton<TransactionService>(TransactionServiceImpl());
-  injector
-      .registerSingleton<EncryptionService>(EncryptionServiceWebWorkerImpl());
+  injector.registerSingleton<Bip39Service>(createBip39Service());
+  injector.registerSingleton<TransactionService>(createTransactionService());
+  injector.registerSingleton<EncryptionService>(createEncryptionService());
+  // injector.registerSingleton<WalletService>(
+  //     createWalletService(encryptionService: injector(), config: config));
+  injector.registerSingleton<AddressService>(createAddressService());
 
-  injector.registerSingleton<AddressService>(AddressServiceImpl());
-
-  injector
-      .registerSingleton<ImportedAddressService>(ImportedAddressServiceImpl());
+  injector.registerSingleton<ImportedAddressService>(
+      createImportedAddressService());
   injector.registerSingleton<MnemonicService>(
-      MnemonicServiceImpl(GetIt.I.get<Bip39Service>()));
+      createMnemonicService(bip39Service: GetIt.I.get<Bip39Service>()));
   injector.registerSingleton<BitcoindService>(
       BitcoindServiceCounterpartyProxyImpl());
 
@@ -518,77 +529,97 @@ void setup() {
       .registerSingleton<EstimateDispensesUseCase>(EstimateDispensesUseCase());
 
   injector.registerLazySingleton<RPCGetAddressesSuccessCallback>(
-      () => config.isWebExtension
-          ? (args) {
-              chrome.tabs.sendMessage(
-                args.tabId,
-                {
-                  "id": args.requestId,
-                  "addresses": args.addresses.map((address) {
-                    return {
-                      "address": address.address,
-                      "type": switch (address.type) {
-                        AddressRpcType.p2wpkh => "p2wpkh",
-                        AddressRpcType.p2pkh => "p2pkh"
-                      },
-                      "publicKey": address.publicKey,
-                    };
-                  }).toList(),
-                },
-                null,
-              );
-
-              Future.delayed(const Duration(seconds: 0), html.window.close);
-            }
-          : (args) => GetIt.I<Logger>().debug("""
+      () => (args) => GetIt.I<Logger>().debug("""
                RPCGetAddressesSuccessCallback called with:
                   tabId: ${args.tabId}
                   requestId: ${args.requestId}
                   addresses: ${args.addresses}
           """));
+  // () => config.isWebExtension
+  //     ? (args) {
+  //         chrome.tabs.sendMessage(
+  //           args.tabId,
+  //           {
+  //             "id": args.requestId,
+  //             "addresses": args.addresses.map((address) {
+  //               return {
+  //                 "address": address.address,
+  //                 "type": switch (address.type) {
+  //                   AddressRpcType.p2wpkh => "p2wpkh",
+  //                   AddressRpcType.p2pkh => "p2pkh"
+  //                 },
+  //                 "publicKey": address.publicKey,
+  //               };
+  //             }).toList(),
+  //           },
+  //           null,
+  //         );
+  //
+  //         Future.delayed(const Duration(seconds: 0), html.window.close);
+  //       }
+  //     : (args) => GetIt.I<Logger>().debug("""
+  //      RPCGetAddressesSuccessCallback called with:
+  //         tabId: ${args.tabId}
+  //         requestId: ${args.requestId}
+  //         addresses: ${args.addresses}
+  // """));
 
   injector.registerLazySingleton<RPCSignPsbtSuccessCallback>(
-      () => config.isWebExtension
-          ? (args) {
-              chrome.tabs.sendMessage(
-                args.tabId,
-                {"id": args.requestId, "hex": args.signedPsbt},
-                null,
-              );
-
-              Future.delayed(const Duration(seconds: 0), html.window.close);
-            }
-          : (args) => GetIt.I<Logger>().debug("""
+      () => (args) => GetIt.I<Logger>().debug("""
                RPCGetSignPsbtSuccessCallback called with:
                   tabId: ${args.tabId}
                   requestId: ${args.requestId}
                   signedPsbt: ${args.signedPsbt}
           """));
-
-  injector.registerLazySingleton<RPCSignMessageSuccessCallback>(
-      () => config.isWebExtension
-          ? (args) {
-              chrome.tabs.sendMessage(
-                args.tabId,
-                {
-                  "id": args.requestId,
-                  "signature": args.signature,
-                  "messageHash": args.messageHash,
-                  "address": args.address
-                },
-                null,
-              );
-
-              Future.delayed(const Duration(seconds: 0), html.window.close);
-            }
-          : (args) => GetIt.I<Logger>().debug("""
-               RPCSignMessageSuccessCallback called with:
-                  tabId: ${args.tabId}
-                  requestId: ${args.requestId}
-                  signature: ${args.signature}
-                  messageHash: ${args.messageHash}
-                  address: ${args.address}
-          """));
+  //     () => config.isWebExtension
+  //         ? (args) {
+  //             chrome.tabs.sendMessage(
+  //               args.tabId,
+  //               {"id": args.requestId, "hex": args.signedPsbt},
+  //               null,
+  //             );
+  //
+  //             Future.delayed(const Duration(seconds: 0), html.window.close);
+  //           }
+  //         : (args) => GetIt.I<Logger>().debug("""
+  //          RPCGetSignPsbtSuccessCallback called with:
+  //             tabId: ${args.tabId}
+  //             requestId: ${args.requestId}
+  //             signedPsbt: ${args.signedPsbt}
+  //     """));
+  //
+  // injector.registerLazySingleton<RPCSignMessageSuccessCallback>(
+  //     () => (args) => GetIt.I<Logger>().debug("""
+  //              RPCSignMessageSuccessCallback called with:
+  //                 tabId: ${args.tabId}
+  //                 requestId: ${args.requestId}
+  //                 signature: ${args.signature}
+  //                 messageHash: ${args.messageHash}
+  //                 address: ${args.address}
+  //         """));
+  // () => config.isWebExtension
+  //     ? (args) {
+  //         chrome.tabs.sendMessage(
+  //           args.tabId,
+  //           {
+  //             "id": args.requestId,
+  //             "signature": args.signature,
+  //             "messageHash": args.messageHash,
+  //             "address": args.address
+  //           },
+  //           null,
+  //         );
+  //
+  //         Future.delayed(const Duration(seconds: 0), html.window.close);
+  //       }
+  //     : (args) => GetIt.I<Logger>().debug("""
+  //          RPCSignMessageSuccessCallback called with:
+  //             tabId: ${args.tabId}
+  //             requestId: ${args.requestId}
+  //             signature: ${args.signature}
+  //             messageHash: ${args.messageHash}
+  //             address: ${args.address}
+  //     """));
 
   injector.registerLazySingleton<VersionRepository>(() => config.isWebExtension
       ? VersionRepositoryExtensionImpl(
@@ -596,14 +627,15 @@ void setup() {
       : VersionRepositoryImpl(config: config));
 
   injector.registerSingleton<PublicKeyService>(
-      PublicKeyServiceImpl(config: config));
+      createPublicKeyService(config: config));
 
   // Register the appropriate platform service
-  if (GetIt.I.get<Config>().isWebExtension) {
-    GetIt.I.registerSingleton<PlatformService>(PlatformServiceExtensionImpl());
-  } else {
-    GetIt.I.registerSingleton<PlatformService>(PlatformServiceWebImpl());
-  }
+  // if (GetIt.I.get<Config>().isWebExtension) {
+  //   GetIt.I.registerSingleton<PlatformService>(PlatformServiceExtensionImpl());
+  // } else {
+  GetIt.I.registerSingleton<PlatformService>(
+      createPlatformService(config: GetIt.I<Config>()));
+  // }
 
   injector.registerSingleton<SetMnemonicUseCase>(SetMnemonicUseCase(
       encryptionService: GetIt.I<EncryptionService>(),
