@@ -17,7 +17,7 @@ class SwapFormLoaderArgs {
 }
 
 class SwapFormLoaderData {
-  final MultiAddressBalance multiAddressBalance;
+  final List<MultiAddressBalance> multiAddressBalance;
 
   SwapFormLoaderData({required this.multiAddressBalance});
 }
@@ -32,7 +32,7 @@ class SwapFormLoader
   @override
   Future<SwapFormLoaderData> load(SwapFormLoaderArgs args) async {
     final [
-      multiAddressBalance as MultiAddressBalance,
+      multiAddressBalance as List<MultiAddressBalance>,
     ] = await Future.wait([
       _balanceRepository.getBalancesForAddresses(
           httpConfig: args.httpConfig,
