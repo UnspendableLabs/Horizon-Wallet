@@ -65,8 +65,6 @@ import 'package:horizon/domain/services/mnemonic_service.dart';
 import 'package:horizon/domain/services/platform_service.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
 
-import 'package:horizon/domain/services/public_key_service.dart';
-import 'package:horizon/data/services/public_key_service/public_key_service_factory.dart';
 // import 'package:horizon/data/services/public_key_service_impl.dart';
 
 import 'package:horizon/domain/services/seed_service.dart';
@@ -626,8 +624,6 @@ void setup() {
           config: config, logger: GetIt.I<Logger>())
       : VersionRepositoryImpl(config: config));
 
-  injector.registerSingleton<PublicKeyService>(
-      createPublicKeyService(config: config));
 
   // Register the appropriate platform service
   // if (GetIt.I.get<Config>().isWebExtension) {
