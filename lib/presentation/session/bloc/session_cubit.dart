@@ -198,7 +198,6 @@ class SessionStateCubit extends Cubit<SessionState> {
           return;
       }
     } catch (error) {
-      print(error);
       emit(SessionState.error(error.toString()));
     }
   }
@@ -243,8 +242,6 @@ class SessionStateCubit extends Cubit<SessionState> {
     List<AddressV2> addresses =
         await _addressV2Repository.getByAccount(currentAccount);
 
-    print("asdfas");
-    print(addresses);
 
     // TODO: need to think through imported addresses
     SessionStateSuccess success = state.successOrThrow();
@@ -265,11 +262,9 @@ class SessionStateCubit extends Cubit<SessionState> {
   }
 
   void onWalletConfigChanged(WalletConfig config, [VoidCallback? cb]) async {
-    print("onWalletConfigChanged ${config.uuid}");
 
     await _settingsRepository.setWalletConfigID(config.uuid);
 
-    print("after onWalletConfigChanged ${config.uuid}");
 
     refresh();
 

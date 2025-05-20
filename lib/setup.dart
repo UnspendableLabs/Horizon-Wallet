@@ -3,6 +3,7 @@ import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:get_it/get_it.dart';
 
 import 'package:horizon/data/services/secure_kv_service_impl.dart';
+import 'package:horizon/data/sources/network/horizon_explorer_client.dart';
 import 'package:horizon/domain/services/secure_kv_service.dart';
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 
@@ -34,7 +35,6 @@ import 'package:horizon/data/services/mnemonic_service/mnemonic_service_factory.
 // import 'package:horizon/data/services/transaction_service_impl.dart';
 import 'package:horizon/data/services/transaction_service/transaction_service_factory.dart';
 // import 'package:horizon/data/services/wallet_service_impl.dart';
-import 'package:horizon/data/services/wallet_service/wallet_service_factory.dart';
 import 'package:horizon/data/sources/network/api/v2_api.dart';
 import 'package:horizon/data/sources/repositories/account_repository_impl.dart';
 import 'package:horizon/data/sources/repositories/account_settings_repository_impl.dart';
@@ -339,6 +339,10 @@ void setup() {
   );
   GetIt.I.get<ErrorService>().initialize();
 
+  injector.registerSingleton<HorizonExplorerClientFactory>(HorizonExplorerClientFactory());
+  injector.registerSingleton<EsploraClientFactory>(EsploraClientFactory());
+  injector.registerSingleton<CounterpartyClientFactory>(CounterpartyClientFactory());
+
   injector.registerSingleton<BitcoinRepository>(BitcoinRepositoryImpl(
     esploraClientFactory: GetIt.I.get<EsploraClientFactory>(),
     // esploraApi: EsploraApi(
@@ -370,16 +374,14 @@ void setup() {
   injector.registerSingleton<AssetRepository>(AssetRepositoryImpl());
 
   injector.registerSingleton<Bip39Service>(createBip39Service());
-  injector.registerSingleton<TransactionService>(
-      createTransactionService(config: config));
+  injector.registerSingleton<TransactionService>(createTransactionService());
   injector.registerSingleton<EncryptionService>(createEncryptionService());
   // injector.registerSingleton<WalletService>(
   //     createWalletService(encryptionService: injector(), config: config));
-  injector
-      .registerSingleton<AddressService>(createAddressService(config: config));
+  injector.registerSingleton<AddressService>(createAddressService());
 
   injector.registerSingleton<ImportedAddressService>(
-      createImportedAddressService(config: config));
+      createImportedAddressService());
   injector.registerSingleton<MnemonicService>(
       createMnemonicService(bip39Service: GetIt.I.get<Bip39Service>()));
   injector.registerSingleton<BitcoindService>(
@@ -531,34 +533,34 @@ void setup() {
                   requestId: ${args.requestId}
                   addresses: ${args.addresses}
           """));
-      // () => config.isWebExtension
-      //     ? (args) {
-      //         chrome.tabs.sendMessage(
-      //           args.tabId,
-      //           {
-      //             "id": args.requestId,
-      //             "addresses": args.addresses.map((address) {
-      //               return {
-      //                 "address": address.address,
-      //                 "type": switch (address.type) {
-      //                   AddressRpcType.p2wpkh => "p2wpkh",
-      //                   AddressRpcType.p2pkh => "p2pkh"
-      //                 },
-      //                 "publicKey": address.publicKey,
-      //               };
-      //             }).toList(),
-      //           },
-      //           null,
-      //         );
-      //
-      //         Future.delayed(const Duration(seconds: 0), html.window.close);
-      //       }
-      //     : (args) => GetIt.I<Logger>().debug("""
-      //      RPCGetAddressesSuccessCallback called with:
-      //         tabId: ${args.tabId}
-      //         requestId: ${args.requestId}
-      //         addresses: ${args.addresses}
-      // """));
+  // () => config.isWebExtension
+  //     ? (args) {
+  //         chrome.tabs.sendMessage(
+  //           args.tabId,
+  //           {
+  //             "id": args.requestId,
+  //             "addresses": args.addresses.map((address) {
+  //               return {
+  //                 "address": address.address,
+  //                 "type": switch (address.type) {
+  //                   AddressRpcType.p2wpkh => "p2wpkh",
+  //                   AddressRpcType.p2pkh => "p2pkh"
+  //                 },
+  //                 "publicKey": address.publicKey,
+  //               };
+  //             }).toList(),
+  //           },
+  //           null,
+  //         );
+  //
+  //         Future.delayed(const Duration(seconds: 0), html.window.close);
+  //       }
+  //     : (args) => GetIt.I<Logger>().debug("""
+  //      RPCGetAddressesSuccessCallback called with:
+  //         tabId: ${args.tabId}
+  //         requestId: ${args.requestId}
+  //         addresses: ${args.addresses}
+  // """));
 
   injector.registerLazySingleton<RPCSignPsbtSuccessCallback>(
       () => (args) => GetIt.I<Logger>().debug("""

@@ -315,6 +315,4 @@ class AddressServiceWeb implements AddressService {
   }
 }
 
-
-AddressService createAddressServiceImpl() =>
-    AddressServiceWeb();
+AddressService createAddressServiceImpl() => AddressServiceWeb();

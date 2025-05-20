@@ -2,7 +2,6 @@
 
 import 'package:drift/drift.dart';
 import 'package:horizon/data/sources/local/tables/accounts_table.dart';
-import 'package:horizon/data/sources/local/tables/accounts_v2_table.dart';
 import 'package:horizon/data/sources/local/tables/addresses_table.dart';
 import 'package:horizon/data/sources/local/tables/imported_addresses_table.dart';
 import "package:horizon/data/sources/local/tables/wallets_table.dart";
@@ -23,7 +22,6 @@ const ENV = "dev";
   Addresses,
   Transactions,
   ImportedAddresses,
-  AccountsV2,
   WalletConfigs
 ])
 class DB extends _$DB {

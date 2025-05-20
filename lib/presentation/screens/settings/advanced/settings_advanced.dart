@@ -119,15 +119,11 @@ class SettingsAdvanced extends StatelessWidget {
                               context.read<SettingsAdvancedBloc>().add(
                                   SaveChangesClicked(onSuccess:
                                       (WalletConfig newWalletConfig) {
-                                print("we are in the dirty stinking callback");
-
                                 context
                                     .read<SessionStateCubit>()
                                     .onWalletConfigChanged(
                                       newWalletConfig,
                                     );
-
-                                print("we are in the AFTER stinking callback");
                               }));
                             }),
                       )),

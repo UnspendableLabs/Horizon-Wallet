@@ -2,10 +2,26 @@ import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/repositories/config_repository.dart';
 import 'package:horizon/common/constants.dart';
 import 'package:horizon/domain/entities/address.dart';
+import 'package:horizon/domain/entities/address_v2.dart';
+import 'package:horizon/domain/entities/seed.dart';
 
 class AddressServiceStub implements AddressService {
   Never _unsupported(String fn) =>
       throw UnimplementedError('$fn is not supported on this platform.');
+
+  Future<AddressV2> deriveAddressWIP({
+    required String path,
+    required Seed seed,
+    required Network network,
+  }) =>
+      Future.error(_unsupported('deriveAddressWIP'));
+
+  Future<String> deriveAddressPrivateKeyWIP({
+    required Bip32Path path,
+    required Seed seed,
+    required Network network,
+  }) =>
+      Future.error(_unsupported("deriveAddressPrivateKeyWIP"));
 
   @override
   Future<Address> deriveAddressSegwit({
@@ -85,6 +101,5 @@ class AddressServiceStub implements AddressService {
       Future.error(_unsupported('getAddressWIFFromPrivateKey'));
 }
 
-AddressService createAddressServiceImpl({required Config config}) => 
+AddressService createAddressServiceImpl() =>
     AddressServiceStub();
-

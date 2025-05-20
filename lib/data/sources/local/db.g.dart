@@ -1665,191 +1665,6 @@ class ImportedAddressesCompanion extends UpdateCompanion<ImportedAddress> {
   }
 }
 
-class $AccountsV2Table extends AccountsV2
-    with TableInfo<$AccountsV2Table, AccountsV2Data> {
-  @override
-  final GeneratedDatabase attachedDatabase;
-  final String? _alias;
-  $AccountsV2Table(this.attachedDatabase, [this._alias]);
-  static const VerificationMeta _uuidMeta = const VerificationMeta('uuid');
-  @override
-  late final GeneratedColumn<String> uuid = GeneratedColumn<String>(
-      'uuid', aliasedName, false,
-      type: DriftSqlType.string,
-      requiredDuringInsert: true,
-      $customConstraints: 'UNIQUE NOT NULL');
-  static const VerificationMeta _indexMeta = const VerificationMeta('index');
-  @override
-  late final GeneratedColumn<int> index = GeneratedColumn<int>(
-      'index', aliasedName, false,
-      type: DriftSqlType.int, requiredDuringInsert: true);
-  @override
-  List<GeneratedColumn> get $columns => [uuid, index];
-  @override
-  String get aliasedName => _alias ?? actualTableName;
-  @override
-  String get actualTableName => $name;
-  static const String $name = 'accounts_v2';
-  @override
-  VerificationContext validateIntegrity(Insertable<AccountsV2Data> instance,
-      {bool isInserting = false}) {
-    final context = VerificationContext();
-    final data = instance.toColumns(true);
-    if (data.containsKey('uuid')) {
-      context.handle(
-          _uuidMeta, uuid.isAcceptableOrUnknown(data['uuid']!, _uuidMeta));
-    } else if (isInserting) {
-      context.missing(_uuidMeta);
-    }
-    if (data.containsKey('index')) {
-      context.handle(
-          _indexMeta, index.isAcceptableOrUnknown(data['index']!, _indexMeta));
-    } else if (isInserting) {
-      context.missing(_indexMeta);
-    }
-    return context;
-  }
-
-  @override
-  Set<GeneratedColumn> get $primaryKey => {uuid};
-  @override
-  AccountsV2Data map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return AccountsV2Data(
-      uuid: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}uuid'])!,
-      index: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}index'])!,
-    );
-  }
-
-  @override
-  $AccountsV2Table createAlias(String alias) {
-    return $AccountsV2Table(attachedDatabase, alias);
-  }
-}
-
-class AccountsV2Data extends DataClass implements Insertable<AccountsV2Data> {
-  final String uuid;
-  final int index;
-  const AccountsV2Data({required this.uuid, required this.index});
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    map['uuid'] = Variable<String>(uuid);
-    map['index'] = Variable<int>(index);
-    return map;
-  }
-
-  AccountsV2Companion toCompanion(bool nullToAbsent) {
-    return AccountsV2Companion(
-      uuid: Value(uuid),
-      index: Value(index),
-    );
-  }
-
-  factory AccountsV2Data.fromJson(Map<String, dynamic> json,
-      {ValueSerializer? serializer}) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return AccountsV2Data(
-      uuid: serializer.fromJson<String>(json['uuid']),
-      index: serializer.fromJson<int>(json['index']),
-    );
-  }
-  @override
-  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return <String, dynamic>{
-      'uuid': serializer.toJson<String>(uuid),
-      'index': serializer.toJson<int>(index),
-    };
-  }
-
-  AccountsV2Data copyWith({String? uuid, int? index}) => AccountsV2Data(
-        uuid: uuid ?? this.uuid,
-        index: index ?? this.index,
-      );
-  @override
-  String toString() {
-    return (StringBuffer('AccountsV2Data(')
-          ..write('uuid: $uuid, ')
-          ..write('index: $index')
-          ..write(')'))
-        .toString();
-  }
-
-  @override
-  int get hashCode => Object.hash(uuid, index);
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      (other is AccountsV2Data &&
-          other.uuid == this.uuid &&
-          other.index == this.index);
-}
-
-class AccountsV2Companion extends UpdateCompanion<AccountsV2Data> {
-  final Value<String> uuid;
-  final Value<int> index;
-  final Value<int> rowid;
-  const AccountsV2Companion({
-    this.uuid = const Value.absent(),
-    this.index = const Value.absent(),
-    this.rowid = const Value.absent(),
-  });
-  AccountsV2Companion.insert({
-    required String uuid,
-    required int index,
-    this.rowid = const Value.absent(),
-  })  : uuid = Value(uuid),
-        index = Value(index);
-  static Insertable<AccountsV2Data> custom({
-    Expression<String>? uuid,
-    Expression<int>? index,
-    Expression<int>? rowid,
-  }) {
-    return RawValuesInsertable({
-      if (uuid != null) 'uuid': uuid,
-      if (index != null) 'index': index,
-      if (rowid != null) 'rowid': rowid,
-    });
-  }
-
-  AccountsV2Companion copyWith(
-      {Value<String>? uuid, Value<int>? index, Value<int>? rowid}) {
-    return AccountsV2Companion(
-      uuid: uuid ?? this.uuid,
-      index: index ?? this.index,
-      rowid: rowid ?? this.rowid,
-    );
-  }
-
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    if (uuid.present) {
-      map['uuid'] = Variable<String>(uuid.value);
-    }
-    if (index.present) {
-      map['index'] = Variable<int>(index.value);
-    }
-    if (rowid.present) {
-      map['rowid'] = Variable<int>(rowid.value);
-    }
-    return map;
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('AccountsV2Companion(')
-          ..write('uuid: $uuid, ')
-          ..write('index: $index, ')
-          ..write('rowid: $rowid')
-          ..write(')'))
-        .toString();
-  }
-}
-
 class $WalletConfigsTable extends WalletConfigs
     with TableInfo<$WalletConfigsTable, WalletConfig> {
   @override
@@ -2209,7 +2024,6 @@ abstract class _$DB extends GeneratedDatabase {
   late final $TransactionsTable transactions = $TransactionsTable(this);
   late final $ImportedAddressesTable importedAddresses =
       $ImportedAddressesTable(this);
-  late final $AccountsV2Table accountsV2 = $AccountsV2Table(this);
   late final $WalletConfigsTable walletConfigs = $WalletConfigsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
@@ -2221,7 +2035,6 @@ abstract class _$DB extends GeneratedDatabase {
         addresses,
         transactions,
         importedAddresses,
-        accountsV2,
         walletConfigs
       ];
 }
