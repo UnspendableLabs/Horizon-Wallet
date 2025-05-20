@@ -301,13 +301,7 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
         augmentedOutputs: augmentedOutputs,
         isFormDataLoaded: true,
       ));
-    } catch (e, callstack) {
-
-      print(e);
-      print(callstack);
-
-
-      // if any failures were thrown, then psbt does not fit the criteria of a swap, and we just load the form without transaction data
+    } catch (e) {
       emit(state.copyWith(
         isFormDataLoaded: true,
       ));

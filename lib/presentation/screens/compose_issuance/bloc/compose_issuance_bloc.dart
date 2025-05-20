@@ -1,5 +1,4 @@
 import 'package:horizon/common/uuid.dart';
-import 'package:flutter/foundation.dart';
 import 'package:horizon/domain/entities/compose_issuance.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
@@ -106,8 +105,6 @@ class ComposeIssuanceBloc extends ComposeBaseBloc<ComposeIssuanceState> {
         feeState: FeeState.error(e.message),
       ));
     } catch (e) {
-      rethrow;
-
       emit(state.copyWith(
         balancesState: BalancesState.error(
             'An unexpected error occurred: ${e.toString()}'),
@@ -155,21 +152,15 @@ class ComposeIssuanceBloc extends ComposeBaseBloc<ComposeIssuanceState> {
       emit(state.copyWith(
           submitState: FormStep(loading: false, error: e.message)));
     } catch (e) {
-      if (kDebugMode) {
-        rethrow;
-      }
-
       emit(state.copyWith(
           submitState: FormStep(
               loading: false,
-              error: 'Anadsf unexpected error occurred: ${e.toString()}')));
+              error: 'An unexpected error occurred: ${e.toString()}')));
     }
   }
 
   @override
   void onReviewSubmitted(ReviewSubmitted event, emit) async {
-    print(event);
-
     if (passwordRequired) {
       emit(state.copyWith(
           submitState: PasswordStep<ComposeIssuanceResponseVerbose>(
@@ -181,7 +172,6 @@ class ComposeIssuanceBloc extends ComposeBaseBloc<ComposeIssuanceState> {
       return;
     }
 
-    print("1");
 
     final s = (state.submitState as ReviewStep<ComposeIssuanceResponseVerbose,
         ComposeIssuanceEventParams>);
@@ -211,9 +201,6 @@ class ComposeIssuanceBloc extends ComposeBaseBloc<ComposeIssuanceState> {
                     s.copyWith(loading: false, error: msg.toString())));
           });
     } catch (e) {
-      if (kDebugMode) {
-        rethrow;
-      }
       emit(state.copyWith(
           submitState: s.copyWith(loading: false, error: e.toString())));
     }

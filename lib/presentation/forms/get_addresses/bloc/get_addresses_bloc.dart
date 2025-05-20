@@ -9,7 +9,6 @@ import 'package:horizon/domain/entities/address_v2.dart';
 import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/imported_address_service.dart';
 import 'package:horizon/domain/services/encryption_service.dart';
-import 'package:horizon/domain/services/public_key_service.dart';
 import 'package:horizon/domain/entities/address_rpc.dart';
 import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 import 'package:horizon/domain/repositories/address_v2_repository.dart';
@@ -22,7 +21,6 @@ class GetAddressesBloc extends Bloc<GetAddressesEvent, GetAddressesState> {
   // final AccountRepository accountRepository;
   final AddressService addressService;
   final ImportedAddressService importedAddressService;
-  final PublicKeyService publicKeyService;
   final InMemoryKeyRepository inMemoryKeyRepository;
   final HttpConfig httpConfig;
   final AddressV2Repository _addressV2Repository;
@@ -37,7 +35,6 @@ class GetAddressesBloc extends Bloc<GetAddressesEvent, GetAddressesState> {
     required this.encryptionService,
 
     // required this.accountRepository,
-    required this.publicKeyService,
     AddressV2Repository? addressV2Repository,
   })  : _addressV2Repository =
             addressV2Repository ?? GetIt.I<AddressV2Repository>(),
