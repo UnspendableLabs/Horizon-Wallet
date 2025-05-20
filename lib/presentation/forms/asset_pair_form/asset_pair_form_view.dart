@@ -56,12 +56,14 @@ class AssetPairFormActions {
 }
 
 class AssetPairFormProvider extends StatelessWidget {
-  final MultiAddressBalance initialMultiAddressBalanceEntry;
+  final List<MultiAddressBalance> balances;
+  final MultiAddressBalance? initialMultiAddressBalanceEntry;
   final Widget Function(AssetPairFormActions actions, AssetPairFormModel state)
       child;
 
   const AssetPairFormProvider(
       {required this.child,
+      required this.balances,
       required this.initialMultiAddressBalanceEntry,
       super.key});
 
@@ -69,6 +71,7 @@ class AssetPairFormProvider extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
         create: (context) => AssetPairFormBloc(
+            initialGiveAssets: balances,
             initialMultiAddressBalanceEntry: initialMultiAddressBalanceEntry),
         child: BlocBuilder<AssetPairFormBloc, AssetPairFormModel>(
             builder: (context, state) {
@@ -84,15 +87,13 @@ class AssetPairFormProvider extends StatelessWidget {
 }
 
 class AssetPairForm extends StatelessWidget {
+  final List<MultiAddressBalance> giveAssets;
   final GiveAssetInput giveAssetInput;
-
   final Function(MultiAddressBalance multiAddressBalance)? onGiveAssetChanged;
 
-  final SwapFormLoaderData data;
-
   const AssetPairForm(
-      {required this.giveAssetInput,
-      required this.data,
+      {required this.giveAssets,
+      required this.giveAssetInput,
       this.onGiveAssetChanged,
       super.key});
 
@@ -112,7 +113,7 @@ class AssetPairForm extends StatelessWidget {
                   children: [
                     HorizonRedesignDropdown<MultiAddressBalance>(
                         itemPadding: const EdgeInsets.all(12),
-                        items: data.multiAddressBalance
+                        items: giveAssets
                             .map((e) => DropdownMenuItem(
                                 value: e,
                                 child: AssetBalanceListItem(balance: e)))

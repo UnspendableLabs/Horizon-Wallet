@@ -16,9 +16,12 @@ class GiveAssetChanged extends AssetPairFormEvent {
 }
 
 class AssetPairFormModel with FormzMixin {
+  final List<MultiAddressBalance> giveAssets;
+
   final GiveAssetInput giveAssetInput;
 
   AssetPairFormModel({
+    required this.giveAssets,
     required this.giveAssetInput,
   });
 
@@ -26,27 +29,35 @@ class AssetPairFormModel with FormzMixin {
   List<FormzInput> get inputs => [giveAssetInput];
 
   AssetPairFormModel copyWith({
+    List<MultiAddressBalance>? giveAssets,
     GiveAssetInput? giveAssetInput,
   }) {
     return AssetPairFormModel(
+      giveAssets: giveAssets ?? this.giveAssets,
       giveAssetInput: giveAssetInput ?? this.giveAssetInput,
     );
   }
 }
 
-class GiveAssetInput extends FormzInput<MultiAddressBalance, void> {
-  const GiveAssetInput.dirty({required MultiAddressBalance value})
+class GiveAssetInput extends FormzInput<MultiAddressBalance?, void> {
+  const GiveAssetInput.dirty({required MultiAddressBalance? value})
       : super.dirty(value);
 
   @override
-  void validator(MultiAddressBalance value) {}
+  void validator(MultiAddressBalance? value) {
+    if (value == null) {
+      throw Exception("give asset input is null");
+    }
+  }
 }
 
 class AssetPairFormBloc extends Bloc<AssetPairFormEvent, AssetPairFormModel> {
   AssetPairFormBloc(
-      {required MultiAddressBalance initialMultiAddressBalanceEntry})
+      {required List<MultiAddressBalance> initialGiveAssets,
+      required MultiAddressBalance? initialMultiAddressBalanceEntry})
       : super(
           AssetPairFormModel(
+              giveAssets: initialGiveAssets,
               giveAssetInput:
                   GiveAssetInput.dirty(value: initialMultiAddressBalanceEntry)),
         ) {

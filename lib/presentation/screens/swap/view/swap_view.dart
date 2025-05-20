@@ -68,12 +68,13 @@ class _SwapFlowViewState extends State<SwapFlowView> {
                       Loading() =>
                         const Center(child: CircularProgressIndicator()),
                       Success(value: var data) => AssetPairFormProvider(
-                          initialMultiAddressBalanceEntry:
-                              data.multiAddressBalance.first,
+                          balances: data.balances,
+                          initialMultiAddressBalanceEntry: null,
                           child: (actions, state) => AssetPairForm(
-                              giveAssetInput: state.giveAssetInput, 
-                              onGiveAssetChanged: actions.onGiveAssetChanged,
-                              data: data),
+                            giveAssets: state.giveAssets,
+                            giveAssetInput: state.giveAssetInput,
+                            onGiveAssetChanged: actions.onGiveAssetChanged,
+                          ),
                         ),
                       Failure(error: var error) => Text(error.toString()),
                       Refreshing() => throw UnimplementedError(),
