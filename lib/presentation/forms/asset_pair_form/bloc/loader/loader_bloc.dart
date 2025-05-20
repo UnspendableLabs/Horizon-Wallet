@@ -22,10 +22,9 @@ class SwapFormLoaderData {
   SwapFormLoaderData({required this.multiAddressBalance});
 }
 
-class SwapFormLoader
-    extends Loader<SwapFormLoaderArgs, SwapFormLoaderData> {
+class SwapFormLoaderFn extends Loader<SwapFormLoaderArgs, SwapFormLoaderData> {
   final BalanceRepository _balanceRepository;
-  SwapFormLoader({
+  SwapFormLoaderFn({
     BalanceRepository? balanceRepository,
   }) : _balanceRepository = balanceRepository ?? GetIt.I<BalanceRepository>();
 
@@ -50,6 +49,6 @@ typedef SwapFormState = BaseFormState<SwapFormLoaderData>;
 class SwapFormLoaderBloc
     extends BaseFormBloc<SwapFormLoaderArgs, SwapFormLoaderData> {
   SwapFormLoaderBloc({
-    required SwapFormLoader loader,
+    required SwapFormLoaderFn loader,
   }) : super(loader: loader);
 }

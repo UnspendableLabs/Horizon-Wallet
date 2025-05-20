@@ -7,7 +7,7 @@ import 'package:flow_builder/flow_builder.dart';
 import "package:fpdart/fpdart.dart" hide State;
 import 'package:go_router/go_router.dart';
 import 'package:horizon/utils/app_icons.dart';
-import 'package:horizon/presentation/forms/swap_form/swap_form_view.dart';
+import 'package:horizon/presentation/forms/asset_pair_form/asset_pair_form_view.dart';
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:horizon/presentation/session/bloc/session_state.dart';
 
@@ -59,7 +59,7 @@ class _SwapFlowViewState extends State<SwapFlowView> {
               title: "Swap",
               widthFactor: .25,
               // TODO: rename to AssetPairForm
-              body: SwapFormLoaderProvider(
+              body: AssetPairLoader(
                   addresses: session.addresses,
                   httpConfig: session.httpConfig,
                   child: (state) {
@@ -67,11 +67,16 @@ class _SwapFlowViewState extends State<SwapFlowView> {
                       Initial() => const SizedBox.shrink(),
                       Loading() =>
                         const Center(child: CircularProgressIndicator()),
-                      Success(value: var data) => SwapFormSuccess(data: data),
-                      // TODO: handle refreshing specifically
-                      Refreshing(value: var data) =>
-                        SwapFormSuccess(data: data),
-                      Failure(error: var error) => Text(error.toString())
+                      Success(value: var data) => AssetPairFormProvider(
+                          initialMultiAddressBalanceEntry:
+                              data.multiAddressBalance.first,
+                          child: (actions, state) => AssetPairForm(
+                              giveAssetInput: state.giveAssetInput, 
+                              onGiveAssetChanged: actions.onGiveAssetChanged,
+                              data: data),
+                        ),
+                      Failure(error: var error) => Text(error.toString()),
+                      Refreshing() => throw UnimplementedError(),
                     };
                   }),
               leading: IconButton(
