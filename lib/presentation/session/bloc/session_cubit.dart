@@ -242,7 +242,6 @@ class SessionStateCubit extends Cubit<SessionState> {
     List<AddressV2> addresses =
         await _addressV2Repository.getByAccount(currentAccount);
 
-
     // TODO: need to think through imported addresses
     SessionStateSuccess success = state.successOrThrow();
 
@@ -262,9 +261,7 @@ class SessionStateCubit extends Cubit<SessionState> {
   }
 
   void onWalletConfigChanged(WalletConfig config, [VoidCallback? cb]) async {
-
     await _settingsRepository.setWalletConfigID(config.uuid);
-
 
     refresh();
 

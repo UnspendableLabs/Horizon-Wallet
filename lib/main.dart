@@ -48,9 +48,6 @@ import 'package:horizon/presentation/version_cubit.dart';
 import 'package:horizon/setup.dart';
 import 'package:horizon/utils/app_icons.dart';
 import 'package:pub_semver/pub_semver.dart';
-import 'package:horizon/presentation/screens/transactions/send/view/send_page.dart';
-
-import 'package:horizon/presentation/browser/browser_view.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 

@@ -5,12 +5,11 @@ import 'package:horizon/domain/entities/address.dart';
 
 import 'package:horizon/domain/entities/address_v2.dart';
 import 'package:horizon/domain/entities/seed.dart';
-import 'package:blockchain_utils/blockchain_utils.dart' hide Bip32Path;
-import 'package:bitcoin_base/bitcoin_base.dart';
 
 class AddressServiceNative implements AddressService {
   AddressServiceNative();
 
+  @override
   Future<AddressV2> deriveAddressWIP({
     required String path,
     required Seed seed,
@@ -21,6 +20,7 @@ class AddressServiceNative implements AddressService {
     );
   }
 
+  @override
   Future<String> deriveAddressPrivateKeyWIP({
     required Bip32Path path,
     required Seed seed,
@@ -172,7 +172,6 @@ class AddressServiceNative implements AddressService {
     required int index,
     required ImportFormat importFormat,
   }) {
-
     throw UnimplementedError(
       '[AddressServiceNative] getAddressWIFFromPrivateKey() is not implemented for native platform.',
     );

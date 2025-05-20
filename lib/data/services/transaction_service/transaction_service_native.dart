@@ -48,7 +48,6 @@ class TransactionServiceNative implements TransactionService {
     required num oldFee,
     required num newFee,
   }) async {
-
     _unimplemented('makeRBF');
     // if (newFee <= oldFee) {
     //   throw Exception('New fee must be greater than old fee');
@@ -336,6 +335,4 @@ class TransactionServiceNative implements TransactionService {
   }
 }
 
-TransactionService createTransactionServiceImpl() =>
-    TransactionServiceNative();
-
+TransactionService createTransactionServiceImpl() => TransactionServiceNative();

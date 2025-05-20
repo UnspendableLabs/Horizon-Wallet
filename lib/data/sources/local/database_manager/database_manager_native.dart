@@ -35,5 +35,4 @@ class DatabaseManagerNative implements DatabaseManager {
   }
 }
 
-
 DatabaseManager createDatabaseManagerImpl() => DatabaseManagerNative();

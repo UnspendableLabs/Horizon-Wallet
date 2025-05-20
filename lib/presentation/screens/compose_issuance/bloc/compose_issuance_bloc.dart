@@ -172,7 +172,6 @@ class ComposeIssuanceBloc extends ComposeBaseBloc<ComposeIssuanceState> {
       return;
     }
 
-
     final s = (state.submitState as ReviewStep<ComposeIssuanceResponseVerbose,
         ComposeIssuanceEventParams>);
 

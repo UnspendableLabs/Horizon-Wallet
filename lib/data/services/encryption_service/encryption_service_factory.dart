@@ -7,4 +7,3 @@ import './encryption_service_stub.dart'
     if (dart.library.html) './encryption_service_web.dart';
 
 EncryptionService createEncryptionService() => createEncryptionServiceImpl();
-

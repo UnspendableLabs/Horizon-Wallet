@@ -9,6 +9,7 @@ class AddressServiceStub implements AddressService {
   Never _unsupported(String fn) =>
       throw UnimplementedError('$fn is not supported on this platform.');
 
+  @override
   Future<AddressV2> deriveAddressWIP({
     required String path,
     required Seed seed,
@@ -16,6 +17,7 @@ class AddressServiceStub implements AddressService {
   }) =>
       Future.error(_unsupported('deriveAddressWIP'));
 
+  @override
   Future<String> deriveAddressPrivateKeyWIP({
     required Bip32Path path,
     required Seed seed,
@@ -101,5 +103,4 @@ class AddressServiceStub implements AddressService {
       Future.error(_unsupported('getAddressWIFFromPrivateKey'));
 }
 
-AddressService createAddressServiceImpl() =>
-    AddressServiceStub();
+AddressService createAddressServiceImpl() => AddressServiceStub();

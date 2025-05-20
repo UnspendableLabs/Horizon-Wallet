@@ -133,8 +133,9 @@ class _TokenSelectionFormState extends State<TokenSelectionForm> {
                           borderRadius: BorderRadius.circular(8),
                           onTap: () {
                             setState(() {
-                              if (_fromToken == null || _toToken == null)
+                              if (_fromToken == null || _toToken == null) {
                                 return;
+                              }
                               final temp = _fromToken;
                               _fromToken = _toToken;
                               _toToken = temp;

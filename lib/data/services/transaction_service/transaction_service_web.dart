@@ -501,7 +501,4 @@ class TransactionServiceWeb implements TransactionService {
   }
 }
 
-
-
 TransactionService createTransactionServiceImpl() => TransactionServiceWeb();
-

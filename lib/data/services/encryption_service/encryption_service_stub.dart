@@ -24,4 +24,3 @@ class EncryptionServiceStub implements EncryptionService {
 }
 
 EncryptionService createEncryptionServiceImpl() => EncryptionServiceStub();
-

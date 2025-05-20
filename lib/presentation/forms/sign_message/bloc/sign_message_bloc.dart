@@ -1,4 +1,3 @@
-import "package:fpdart/fpdart.dart";
 import 'package:formz/formz.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -8,7 +7,6 @@ import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/address_service.dart';
 import 'package:horizon/domain/services/imported_address_service.dart';
 import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
-import 'package:horizon/domain/entities/decryption_strategy.dart';
 
 import "./sign_message_state.dart";
 import "./sign_message_event.dart";
@@ -54,7 +52,7 @@ class SignMessageBloc extends Bloc<SignMessageEvent, SignMessageState> {
 
   _handleSignMessageSubmitted(
       SignMessageSubmitted event, Emitter<SignMessageState> emit) async {
-        throw UnimplementedError("");
+    throw UnimplementedError("");
     // try {
     //   Wallet? wallet = await walletRepository.getCurrentWallet();
     //
@@ -110,5 +108,4 @@ class SignMessageBloc extends Bloc<SignMessageEvent, SignMessageState> {
     //       error: e.toString()));
     // }
   }
-
 }

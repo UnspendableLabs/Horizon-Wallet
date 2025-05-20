@@ -1,7 +1,6 @@
 import 'package:horizon/common/constants.dart';
 import 'package:horizon/domain/repositories/config_repository.dart';
 import 'package:horizon/domain/services/imported_address_service.dart';
-import 'package:horizon/domain/entities/network.dart';
 
 class ImportedAddressServiceNative implements ImportedAddressService {
   final Config config;

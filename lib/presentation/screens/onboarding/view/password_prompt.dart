@@ -174,8 +174,6 @@ class PasswordPromptState extends State<PasswordPrompt> {
     );
   }
 
-  
-
   Widget buildPasswordField(
     BuildContext context, {
     required TextEditingController controller,

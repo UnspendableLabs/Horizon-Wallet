@@ -210,5 +210,4 @@ class EncryptionServiceWeb implements EncryptionService {
   }
 }
 
-
 EncryptionService createEncryptionServiceImpl() => EncryptionServiceWeb();

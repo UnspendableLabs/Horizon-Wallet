@@ -339,9 +339,11 @@ void setup() {
   );
   GetIt.I.get<ErrorService>().initialize();
 
-  injector.registerSingleton<HorizonExplorerClientFactory>(HorizonExplorerClientFactory());
+  injector.registerSingleton<HorizonExplorerClientFactory>(
+      HorizonExplorerClientFactory());
   injector.registerSingleton<EsploraClientFactory>(EsploraClientFactory());
-  injector.registerSingleton<CounterpartyClientFactory>(CounterpartyClientFactory());
+  injector.registerSingleton<CounterpartyClientFactory>(
+      CounterpartyClientFactory());
 
   injector.registerSingleton<BitcoinRepository>(BitcoinRepositoryImpl(
     esploraClientFactory: GetIt.I.get<EsploraClientFactory>(),

@@ -27,6 +27,7 @@ DatabaseConnection connect() {
 
 class DatabaseManagerWeb implements DatabaseManager {
   static final DatabaseManagerWeb _instance = DatabaseManagerWeb._internal();
+  @override
   late final DB database;
 
   factory DatabaseManagerWeb() {

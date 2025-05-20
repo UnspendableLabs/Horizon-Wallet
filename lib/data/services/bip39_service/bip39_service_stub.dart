@@ -1,4 +1,3 @@
-
 import 'package:horizon/domain/services/bip39.dart';
 import 'package:horizon/data/models/seed.dart';
 

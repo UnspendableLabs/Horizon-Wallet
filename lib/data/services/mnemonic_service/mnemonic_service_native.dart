@@ -37,4 +37,3 @@ MnemonicService createMnemonicServiceImpl({
   required Bip39Service bip39Service,
 }) =>
     MnemonicServiceNative(bip39Service);
-
