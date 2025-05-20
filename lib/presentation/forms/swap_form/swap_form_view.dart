@@ -1,11 +1,21 @@
 import "./bloc/loader/loader_bloc.dart";
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter/material.dart';
+
 import 'package:horizon/domain/entities/address_v2.dart';
 import 'package:horizon/domain/entities/http_config.dart';
+import 'package:horizon/domain/entities/multi_address_balance.dart';
+import 'package:horizon/domain/entities/multi_address_balance_entry.dart';
+
+import 'package:horizon/presentation/common/redesign_colors.dart';
 import "package:horizon/presentation/forms/base/base_form_state.dart";
+export "package:horizon/presentation/forms/base/base_form_state.dart";
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:horizon/presentation/session/bloc/session_state.dart';
+import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
+import 'package:horizon/presentation/common/asset_balance_list_item.dart';
+import 'package:horizon/utils/app_icons.dart';
+
 
 class SwapFormLoaderProvider extends StatelessWidget {
   final HttpConfig httpConfig;
@@ -37,16 +47,100 @@ class SwapFormLoaderProvider extends StatelessWidget {
   }
 }
 
-class SwapFormView extends StatelessWidget {
-  const SwapFormView({super.key});
+class SwapFormSuccess extends StatelessWidget {
+  final SwapFormLoaderData data;
+
+  const SwapFormSuccess({required this.data, super.key});
 
   @override
   Widget build(BuildContext context) {
-    final session = context.watch<SessionStateCubit>().state.successOrThrow();
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(
+              vertical: 14,
+            ),
+            child: Stack(
+              children: [
+                Column(
+                  children: [
+                    HorizonRedesignDropdown<MultiAddressBalance>(
+                        itemPadding: const EdgeInsets.all(12),
+                        items: data.multiAddressBalance
+                            .map((e) => DropdownMenuItem(
+                                value: e,
+                                child: AssetBalanceListItem(balance: e)))
+                            .toList(),
+                        onChanged: (value) {
 
-    return SwapFormLoaderProvider(
-        addresses: session.addresses,
-        httpConfig: session.httpConfig,
-        child: (state) => switch (state) { _ => Text(state.toString()) });
+                        },
+                        selectedValue: data.multiAddressBalance.first,
+                        selectedItemBuilder: (MultiAddressBalance item) =>
+                            AssetBalanceListItem(balance: item),
+                        hintText: "Select Token"),
+                    commonHeightSizedBox,
+                    HorizonRedesignDropdown<MultiAddressBalance>(
+                        itemPadding: const EdgeInsets.all(12),
+                        items: [],
+                        onChanged: (value) {
+                        },
+                        selectedValue: null,
+                        selectedItemBuilder: (MultiAddressBalance item) =>
+                            AssetBalanceListItem(balance: item),
+                        hintText: "Select Token")
+                  ],
+                ),
+                Positioned(
+                    top: 0,
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    child: Center(
+                      child: Material(
+                        color: Theme.of(context).scaffoldBackgroundColor,
+                        borderRadius: BorderRadius.circular(8),
+                        child: InkWell(
+                          hoverColor: transparentPurple8,
+                          borderRadius: BorderRadius.circular(8),
+                          onTap: () {
+                            // setState(() {
+                            //   if (_fromToken == null || _toToken == null) {
+                            //     return;
+                            //   }
+                            //   final temp = _fromToken;
+                            //   _fromToken = _toToken;
+                            //   _toToken = temp;
+                            // });
+                          },
+                          child: Container(
+                            width: 44,
+                            height: 44,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
+                                  color: transparentWhite8, width: 1),
+                            ),
+                            padding: const EdgeInsets.all(10),
+                            child: AppIcons.arrowDownIcon(
+                                context: context, width: 24, height: 24),
+                          ),
+                        ),
+                      ),
+                    ))
+              ],
+            ),
+          ),
+          const SizedBox(
+            height: 24,
+          ),
+          HorizonButton(
+              onPressed: () {},
+              child: TextButtonContent(value: "Create Listing"),
+              variant: ButtonVariant.green)
+        ],
+      ),
+    );
   }
 }

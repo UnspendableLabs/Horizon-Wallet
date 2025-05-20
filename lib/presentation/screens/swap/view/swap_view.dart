@@ -58,11 +58,21 @@ class _SwapFlowViewState extends State<SwapFlowView> {
             return FlowStep(
               title: "Swap",
               widthFactor: .25,
+              // TODO: rename to AssetPairForm
               body: SwapFormLoaderProvider(
                   addresses: session.addresses,
                   httpConfig: session.httpConfig,
                   child: (state) {
-                    return Text(state.toString());
+                    return switch (state) {
+                      Initial() => const SizedBox.shrink(),
+                      Loading() =>
+                        const Center(child: CircularProgressIndicator()),
+                      Success(value: var data) => SwapFormSuccess(data: data),
+                      // TODO: handle refreshing specifically
+                      Refreshing(value: var data) =>
+                        SwapFormSuccess(data: data),
+                      Failure(error: var error) => Text(error.toString())
+                    };
                   }),
               leading: IconButton(
                 onPressed: () {
