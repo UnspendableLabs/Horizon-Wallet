@@ -1,42 +1,58 @@
 import 'package:equatable/equatable.dart';
 
 sealed class RemoteData<T> extends Equatable {
+  const RemoteData();
+
   @override
   List<Object?> get props => [];
 }
 
-class NotAsked<T> extends RemoteData<T> {
-  NotAsked();
+final class Initial<T> extends RemoteData<T> {
+  const Initial();
+
   @override
-  String toString() => "NotAsked";
+  String toString() => 'Initial';
 }
 
-class Loading<T> extends RemoteData<T> {
-  Loading();
+final class Loading<T> extends RemoteData<T> {
+  const Loading();
+
   @override
-  String toString() => "Loading";
+  String toString() => 'Loading';
 }
 
-class Success<T> extends RemoteData<T> {
-  final T data;
-  Success(this.data);
+final class Refreshing<T> extends RemoteData<T> {
+  final T value;
+
+  const Refreshing(this.value);
+
   @override
-  String toString() => "Success";
+  List<Object?> get props => [value];
+
+  @override
+  String toString() => 'Refreshing: $value';
 }
 
-class Failure<T> extends RemoteData<T> {
-  final String errorMessage;
-  Failure(this.errorMessage);
+final class Success<T> extends RemoteData<T> {
+  final T value;
+
+  const Success(this.value) : assert(value != null);
+
   @override
-  String toString() => "Failure";
+  List<Object?> get props => [value];
+
+  @override
+  String toString() => 'Success: $value';
 }
 
-T successOrThrow<T>(RemoteData<T> remoteData) {
-  if (remoteData is Success<T>) {
-    return remoteData.data;
-  }
-  if (remoteData is Failure<T>) {
-    throw Exception(remoteData.errorMessage);
-  }
-  throw Exception('RemoteData is neither Success nor Failure');
+final class Failure<T> extends RemoteData<T> {
+  final Object error;
+
+  const Failure(this.error);
+
+  @override
+  List<Object?> get props => [error];
+
+  @override
+  String toString() => 'Failure: $error';
 }

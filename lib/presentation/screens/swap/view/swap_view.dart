@@ -10,6 +10,7 @@ import 'package:horizon/utils/app_icons.dart';
 import 'package:horizon/presentation/forms/asset_pair_form/asset_pair_form_view.dart';
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:horizon/presentation/session/bloc/session_state.dart';
+import 'package:horizon/domain/entities/remote_data.dart';
 
 class SwapFlowModel extends Equatable {
   final Option<SwapType> swapType;
@@ -71,9 +72,17 @@ class _SwapFlowViewState extends State<SwapFlowView> {
                           balances: data.balances,
                           initialMultiAddressBalanceEntry: null,
                           child: (actions, state) => AssetPairForm(
+                            receiveAssets: state.receiveAssets,
                             giveAssets: state.giveAssets,
                             giveAssetInput: state.giveAssetInput,
                             onGiveAssetChanged: actions.onGiveAssetChanged,
+                            receiveAssetModalVisible:
+                                state.receiveAssetModalVisible,
+                            receiveAssetInput: state.receiveAssetInput,
+                            onReceiveAssetInputClicked:
+                                actions.onReceiveAssetInputClicked,
+                            onReceiveAssetInputChanged:
+                                actions.onReceiveAssetInputChanged,
                           ),
                         ),
                       Failure(error: var error) => Text(error.toString()),

@@ -1,13 +1,13 @@
-import 'package:bloc/bloc.dart';
-import './base_form_state.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import './base_form_event.dart';
+import 'package:horizon/domain/entities/remote_data.dart';
 
 abstract class Loader<Args, Data> {
   Future<Data> load(Args args);
 }
 
 class BaseFormBloc<LoadArgs, LoadData>
-    extends Bloc<BaseFormEvent, BaseFormState<LoadData>> {
+    extends Bloc<BaseFormEvent, RemoteData<LoadData>> {
   final Loader<LoadArgs, LoadData> _loader;
 
   BaseFormBloc({required Loader<LoadArgs, LoadData> loader})
@@ -24,7 +24,7 @@ class BaseFormBloc<LoadArgs, LoadData>
 
   Future<void> _loadWithArgs(
     LoadDependencies<LoadArgs> event,
-    Emitter<BaseFormState> emit,
+    Emitter<RemoteData> emit,
   ) async {
     emit(Loading<LoadData>());
 

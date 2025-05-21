@@ -1,7 +1,7 @@
 import "package:horizon/presentation/forms/base/base_form_bloc.dart";
-import "package:horizon/presentation/forms/base/base_form_state.dart";
 import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/domain/entities/multi_address_balance.dart';
+import 'package:horizon/domain/entities/remote_data.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
 import "package:horizon/domain/repositories/fee_estimates_repository.dart";
 import 'package:horizon/common/constants.dart';
@@ -56,7 +56,7 @@ class SendAssetFormLoader
   }
 }
 
-typedef SendAssetFormState = BaseFormState<SendAssetFormLoaderData>;
+typedef SendAssetFormState = RemoteData<SendAssetFormLoaderData>;
 
 class SendAssetFormLoaderBloc
     extends BaseFormBloc<SendAssetFormLoaderArgs, SendAssetFormLoaderData> {
