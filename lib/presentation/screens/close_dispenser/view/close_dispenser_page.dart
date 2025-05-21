@@ -4,6 +4,7 @@ import 'package:get_it/get_it.dart';
 import 'package:horizon/common/format.dart';
 import 'package:horizon/domain/entities/compose_dispenser.dart';
 import 'package:horizon/domain/entities/dispenser.dart';
+import 'package:horizon/domain/entities/http_config.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_event.dart';
@@ -38,6 +39,7 @@ class CloseDispenserPageWrapper extends StatelessWidget {
       success: (state) => BlocProvider(
         key: Key(currentAddress),
         create: (context) => CloseDispenserBloc(
+          httpConfig: GetIt.I<HttpConfig>(),
           logger: GetIt.I.get<Logger>(),
           passwordRequired:
               GetIt.I<SettingsRepository>().requirePasswordForCryptoOperations,

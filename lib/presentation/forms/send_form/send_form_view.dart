@@ -5,6 +5,7 @@ import 'package:get_it/get_it.dart';
 import 'package:horizon/common/format.dart';
 import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/domain/entities/fee_option.dart';
+import 'package:horizon/domain/entities/http_config.dart';
 import 'package:horizon/domain/entities/multi_address_balance_entry.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
@@ -87,6 +88,7 @@ class _SendFormViewState extends State<SendFormView> {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) => SendFormBloc(
+        httpConfig: GetIt.I<HttpConfig>(),
         balanceRepository: GetIt.I<BalanceRepository>(),
         getFeeEstimatesUseCase: GetIt.I<GetFeeEstimatesUseCase>(),
         composeTransactionUseCase: GetIt.I<ComposeTransactionUseCase>(),

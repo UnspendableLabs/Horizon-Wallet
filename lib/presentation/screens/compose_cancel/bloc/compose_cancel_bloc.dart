@@ -1,4 +1,5 @@
 import 'package:horizon/common/uuid.dart';
+import 'package:horizon/domain/entities/http_config.dart';
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_bloc.dart';
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_event.dart';
 import 'package:horizon/presentation/common/compose_base/bloc/compose_base_state.dart';
@@ -46,8 +47,10 @@ class ComposeCancelBloc extends ComposeBaseBloc<ComposeCancelState> {
   final SignAndBroadcastTransactionUseCase signAndBroadcastTransactionUseCase;
   final WriteLocalTransactionUseCase writelocalTransactionUseCase;
   final AnalyticsService analyticsService;
+  final HttpConfig httpConfig;
 
   ComposeCancelBloc({
+    required this.httpConfig,
     required this.passwordRequired,
     required this.inMemoryKeyRepository,
     required this.logger,
@@ -122,11 +125,16 @@ class ComposeCancelBloc extends ComposeBaseBloc<ComposeCancelState> {
       emit(state.copyWith(submitState: s.copyWith(loading: true)));
 
       await signAndBroadcastTransactionUseCase.call(
+          httpConfig: httpConfig,
           decryptionStrategy: InMemoryKey(),
           source: s.composeTransaction.params.source,
           rawtransaction: s.composeTransaction.rawtransaction,
           onSuccess: (txHex, txHash) async {
-            await writelocalTransactionUseCase.call(txHex, txHash);
+            await writelocalTransactionUseCase.call(
+              hex: txHex,
+              hash: txHash,
+              httpConfig: httpConfig,
+            );
 
             logger.info('$txName broadcasted txHash: $txHash');
             analyticsService.trackAnonymousEvent('broadcast_tx_$txName',
@@ -168,6 +176,7 @@ class ComposeCancelBloc extends ComposeBaseBloc<ComposeCancelState> {
     )));
 
     await signAndBroadcastTransactionUseCase.call(
+        httpConfig: httpConfig,
         decryptionStrategy: Password(event.password),
         source: compose.params.source,
         rawtransaction: compose.rawtransaction,

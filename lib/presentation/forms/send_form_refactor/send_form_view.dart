@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import "package:fpdart/fpdart.dart" as fp;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter/material.dart';
+import 'package:horizon/domain/entities/http_config.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
 import "package:horizon/domain/repositories/fee_estimates_repository.dart";
 import "package:horizon/presentation/forms/base/base_form_state.dart";
@@ -74,6 +75,7 @@ class SendAssetFlow extends StatelessWidget {
             Loading() => const Center(child: CircularProgressIndicator()),
             Success(value: var data) => BlocProvider(
                 create: (context) => SendAssetFormBloc(
+                    httpConfig: GetIt.I<HttpConfig>(),
                     feeEstimates: data.feeEstimates,
                     asset: Asset(
                         asset: data.multiAddressBalance.asset,

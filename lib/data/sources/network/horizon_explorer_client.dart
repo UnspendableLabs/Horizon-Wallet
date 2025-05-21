@@ -21,7 +21,7 @@ class HorizonExplorerApi {
   Future<AssetSrcResponse> getAssetSrc(
       String assetName, String? description, bool? showLarge) async {
     final response = await _dio.get(
-        '/asset-src?asset=$assetName&description=$description&show_large=$showLarge');
+        '/explorer/asset-src?asset=$assetName&description=$description&show_large=$showLarge');
     return AssetSrcResponse.fromJson(response.data);
   }
 }

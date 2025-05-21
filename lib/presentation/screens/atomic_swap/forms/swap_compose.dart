@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:horizon/domain/entities/asset_info.dart';
 import 'package:horizon/domain/entities/multi_address_balance.dart';
 import 'package:horizon/domain/entities/multi_address_balance_entry.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/common/theme_extension.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
+import 'package:horizon/presentation/session/bloc/session_cubit.dart';
+import 'package:horizon/presentation/session/bloc/session_state.dart';
 import 'package:horizon/utils/app_icons.dart';
 
 class SwapFormCompose extends StatefulWidget {
@@ -116,6 +119,7 @@ class _SwapFormComposeState extends State<SwapFormCompose> {
 
   @override
   Widget build(BuildContext context) {
+    final session = context.watch<SessionStateCubit>().state.successOrThrow();
     final theme = Theme.of(context);
     final appIcons = AppIcons();
     return SizedBox(
@@ -150,6 +154,7 @@ class _SwapFormComposeState extends State<SwapFormCompose> {
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             appIcons.assetIcon(
+                                httpConfig: session.httpConfig,
                                 assetName: toAsset.asset,
                                 context: context,
                                 width: 24,

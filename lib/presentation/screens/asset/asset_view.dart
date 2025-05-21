@@ -234,32 +234,34 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
             child: SizedBox(
               height: 64,
               width: double.infinity,
-              child: TabBar(
-                controller: _tabController,
-                indicatorWeight: 2,
-                dividerHeight: 0,
-                indicatorColor: transparentPurple33,
-                labelColor: Theme.of(context).textTheme.bodyMedium?.color,
-                unselectedLabelColor: Theme.of(context)
-                        .textButtonTheme
-                        .style
-                        ?.foregroundColor
-                        ?.resolve({}) ??
-                    Colors.grey,
-                indicatorSize: TabBarIndicatorSize.tab,
-                tabAlignment: TabAlignment.start,
-                isScrollable: true,
-                tabs: const [
-                  Tab(
-                    child: Text(
-                      'Balance Actions',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
+              child: Material(
+                child: TabBar(
+                  controller: _tabController,
+                  indicatorWeight: 2,
+                  dividerHeight: 0,
+                  indicatorColor: transparentPurple33,
+                  labelColor: Theme.of(context).textTheme.bodyMedium?.color,
+                  unselectedLabelColor: Theme.of(context)
+                          .textButtonTheme
+                          .style
+                          ?.foregroundColor
+                          ?.resolve({}) ??
+                      Colors.grey,
+                  indicatorSize: TabBarIndicatorSize.tab,
+                  tabAlignment: TabAlignment.start,
+                  isScrollable: true,
+                  tabs: const [
+                    Tab(
+                      child: Text(
+                        'Balance Actions',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
@@ -769,12 +771,15 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
       builder: (context, state) {
         return _subPageBoxShell(state.when(
           initial: () => const SizedBox.shrink(),
-          loading: () => Column(
-            children: [
-              _buildHeader(context: context, isLoading: true),
-              _buildTabs(context),
-              _buildTabContent(context: context, isLoading: true),
-            ],
+          loading: () => Material(
+            color: Theme.of(context).scaffoldBackgroundColor,
+            child: Column(
+              children: [
+                _buildHeader(context: context, isLoading: true),
+                _buildTabs(context),
+                _buildTabContent(context: context, isLoading: true),
+              ],
+            ),
           ),
           error: (error) => SelectableText(error),
           success: (assetViewData) {
@@ -790,15 +795,19 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
                 vsync: this,
               );
             }
-            return Column(
-              children: [
-                _buildHeader(
-                    context: context,
-                    isLoading: false,
-                    balance: assetViewData.balances),
-                _buildTabs(context),
-                _buildTabContent(context: context, isLoading: false),
-              ],
+            return Material(
+            color: Theme.of(context).scaffoldBackgroundColor,
+
+              child: Column(
+                children: [
+                  _buildHeader(
+                      context: context,
+                      isLoading: false,
+                      balance: assetViewData.balances),
+                  _buildTabs(context),
+                  _buildTabContent(context: context, isLoading: false),
+                ],
+              ),
             );
           },
         ));

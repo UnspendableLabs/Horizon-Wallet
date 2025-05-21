@@ -3,6 +3,7 @@ import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/domain/entities/compose_burn.dart';
 import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/domain/entities/fee_option.dart' as FeeOption;
+import 'package:horizon/domain/entities/http_config.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/repositories/block_repository.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
@@ -40,8 +41,10 @@ class ComposeBurnBloc extends ComposeBaseBloc<ComposeBurnState> {
   final WriteLocalTransactionUseCase writelocalTransactionUseCase;
   final BlockRepository blockRepository;
   final BalanceRepository balanceRepository;
-
+  final HttpConfig httpConfig;
+  
   ComposeBurnBloc({
+    required this.httpConfig,
     required this.passwordRequired,
     required this.inMemoryKeyRepository,
     required this.logger,
@@ -72,10 +75,10 @@ class ComposeBurnBloc extends ComposeBaseBloc<ComposeBurnState> {
         submitState: const FormStep()));
 
     try {
-      final feeEstimates = await getFeeEstimatesUseCase.call();
+      final feeEstimates = await getFeeEstimatesUseCase.call(httpConfig: httpConfig);
 
       final balances =
-          await balanceRepository.getBalancesForAddress(event.currentAddress!);
+          await balanceRepository.getBalancesForAddress(address:  event.currentAddress!, httpConfig: httpConfig);
 
       emit(state.copyWith(
         balancesState: BalancesState.success(
@@ -119,6 +122,7 @@ class ComposeBurnBloc extends ComposeBaseBloc<ComposeBurnState> {
 
       final composeResponse = await composeTransactionUseCase
           .call<ComposeBurnParams, ComposeBurnResponse>(
+              httpConfig: httpConfig,
               feeRate: feeRate,
               source: source,
               params: ComposeBurnParams(source: source, quantity: quantity),
@@ -163,6 +167,7 @@ class ComposeBurnBloc extends ComposeBaseBloc<ComposeBurnState> {
       emit(state.copyWith(submitState: s.copyWith(loading: true)));
 
       await signAndBroadcastTransactionUseCase.call(
+          httpConfig: httpConfig,
           decryptionStrategy: InMemoryKey(),
           source: s.composeTransaction.params.source,
           rawtransaction: s.composeTransaction.rawtransaction,
@@ -209,6 +214,7 @@ class ComposeBurnBloc extends ComposeBaseBloc<ComposeBurnState> {
     )));
 
     await signAndBroadcastTransactionUseCase.call(
+        httpConfig: httpConfig,
         decryptionStrategy: Password(event.password),
         source: compose.params.source,
         rawtransaction: compose.rawtransaction,

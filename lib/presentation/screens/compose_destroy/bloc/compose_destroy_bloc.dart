@@ -4,6 +4,7 @@ import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/domain/entities/compose_destroy.dart';
 import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/domain/entities/fee_option.dart' as FeeOption;
+import 'package:horizon/domain/entities/http_config.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
@@ -42,8 +43,10 @@ class ComposeDestroyBloc extends ComposeBaseBloc<ComposeDestroyState> {
   final SignAndBroadcastTransactionUseCase signAndBroadcastTransactionUseCase;
   final WriteLocalTransactionUseCase writelocalTransactionUseCase;
   final Logger logger;
+  final HttpConfig httpConfig;
 
   ComposeDestroyBloc({
+    required this.httpConfig,
     required this.inMemoryKeyRepository,
     required this.passwordRequired,
     required this.balanceRepository,
@@ -78,13 +81,17 @@ class ComposeDestroyBloc extends ComposeBaseBloc<ComposeDestroyState> {
 
     try {
       balances = await balanceRepository.getBalancesForAddress(
-          event.currentAddress!, true);
+          httpConfig: httpConfig,
+          address: event.currentAddress!,
+          excludeUtxoAttached: true);
     } catch (e) {
       emit(state.copyWith(balancesState: BalancesState.error(e.toString())));
       return;
     }
     try {
-      feeEstimates = await getFeeEstimatesUseCase.call();
+      feeEstimates = await getFeeEstimatesUseCase.call(
+        httpConfig: httpConfig,
+      );
     } catch (e) {
       emit(state.copyWith(feeState: FeeState.error(e.toString())));
       return;
@@ -117,6 +124,7 @@ class ComposeDestroyBloc extends ComposeBaseBloc<ComposeDestroyState> {
 
       final composeResponse = await composeTransactionUseCase
           .call<ComposeDestroyParams, ComposeDestroyResponse>(
+              httpConfig: httpConfig,
               feeRate: feeRate,
               source: source,
               params: ComposeDestroyParams(
@@ -171,11 +179,13 @@ class ComposeDestroyBloc extends ComposeBaseBloc<ComposeDestroyState> {
       emit(state.copyWith(submitState: s.copyWith(loading: true)));
 
       await signAndBroadcastTransactionUseCase.call(
+          httpConfig: httpConfig,
           decryptionStrategy: InMemoryKey(),
           source: s.composeTransaction.params.source,
           rawtransaction: s.composeTransaction.rawtransaction,
           onSuccess: (txHex, txHash) async {
-            await writelocalTransactionUseCase.call(txHex, txHash);
+            await writelocalTransactionUseCase.call(
+                hex: txHex, hash: txHash, httpConfig: httpConfig);
 
             logger.info('$txName broadcasted txHash: $txHash');
             analyticsService.trackAnonymousEvent('broadcast_tx_$txName',
@@ -217,11 +227,13 @@ class ComposeDestroyBloc extends ComposeBaseBloc<ComposeDestroyState> {
     )));
 
     await signAndBroadcastTransactionUseCase.call(
+        httpConfig: httpConfig,
         decryptionStrategy: Password(event.password),
         source: compose.params.source,
         rawtransaction: compose.rawtransaction,
         onSuccess: (txHex, txHash) async {
-          await writelocalTransactionUseCase.call(txHex, txHash);
+          await writelocalTransactionUseCase.call(
+              hex: txHex, hash: txHash, httpConfig: httpConfig);
 
           logger.debug('$txName broadcasted txHash: $txHash');
           analyticsService.trackAnonymousEvent('broadcast_tx_$txName',

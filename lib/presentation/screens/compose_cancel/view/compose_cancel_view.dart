@@ -1,3 +1,4 @@
+import 'package:horizon/domain/entities/http_config.dart';
 import 'package:horizon/presentation/forms/cancel_order_form/cancel_order_form_view.dart';
 import 'package:flutter/services.dart';
 import 'package:get_it/get_it.dart';
@@ -65,6 +66,7 @@ class ComposeCancelPageWrapper extends StatelessWidget {
         success: (state) => BlocProvider(
               key: Key(currentAddress),
               create: (context) => ComposeCancelBloc(
+                httpConfig: GetIt.I<HttpConfig>(),
                 passwordRequired: GetIt.I<SettingsRepository>()
                     .requirePasswordForCryptoOperations,
                 inMemoryKeyRepository: GetIt.I.get<InMemoryKeyRepository>(),
@@ -82,6 +84,7 @@ class ComposeCancelPageWrapper extends StatelessWidget {
                   currentAddress: currentAddress)),
               child: BlocProvider(
                 create: (context) => CancelOrderFormBloc(
+                    httpConfig: GetIt.I<HttpConfig>(),
                     orderRepository: GetIt.I.get<OrderRepository>(),
                     composeRepository: GetIt.I.get<ComposeRepository>(),
                     onSubmitSuccess: (success) {

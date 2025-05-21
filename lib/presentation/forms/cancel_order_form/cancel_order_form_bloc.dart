@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:horizon/domain/entities/http_config.dart';
 import 'package:horizon/domain/entities/order.dart';
 import 'package:horizon/domain/entities/remote_data.dart';
 import 'package:formz/formz.dart';
@@ -163,8 +164,10 @@ class CancelOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
   final ComposeTransactionUseCase composeTransactionUseCase;
   final ComposeRepository composeRepository;
   final OrderRepository orderRepository;
+  final HttpConfig httpConfig;
 
   CancelOrderFormBloc({
+    required this.httpConfig,
     required this.onSubmitSuccess,
     required this.assetRepository,
     required this.balanceRepository,
@@ -250,6 +253,7 @@ class CancelOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
       // Making the compose transaction call
       final composeResponse = await composeTransactionUseCase
           .call<ComposeCancelParams, ComposeCancelResponse>(
+        httpConfig: httpConfig,
         source: currentAddress,
         feeRate: feeRate,
         params: ComposeCancelParams(
@@ -299,7 +303,7 @@ class CancelOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
 
   Future<FeeEstimates> _fetchFeeEstimates() async {
     try {
-      return await getFeeEstimatesUseCase.call();
+      return await getFeeEstimatesUseCase.call(httpConfig: httpConfig);
     } catch (e) {
       throw FetchFeeEstimatesException(e.toString());
     }
@@ -307,8 +311,9 @@ class CancelOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
 
   Future<List<Order>> _fetchOrders() async {
     try {
-      final e =
-          await orderRepository.getByAddress(currentAddress, "open").run();
+      final e = await orderRepository
+          .getByAddress(address: currentAddress, status: "open", httpConfig: httpConfig)
+          .run();
       return e.match(
           (error) => throw FetchOrdersException(error), (success) => success);
     } catch (e) {
