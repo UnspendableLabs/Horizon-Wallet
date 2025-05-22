@@ -3,6 +3,7 @@ import 'package:collection/collection.dart';
 import 'package:horizon/common/format.dart';
 import 'package:horizon/domain/entities/asset.dart';
 import 'package:horizon/domain/entities/balance.dart';
+import 'package:horizon/domain/entities/http_config.dart';
 import 'package:horizon/domain/entities/remote_data.dart';
 import 'package:formz/formz.dart';
 import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
@@ -374,8 +375,11 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
 
   final ComposeTransactionUseCase composeTransactionUseCase;
   final ComposeRepository composeRepository;
+  final HttpConfig httpConfig;
 
+  
   OpenOrderFormBloc({
+    required this.httpConfig,
     required this.onSubmitSuccess,
     required this.assetRepository,
     required this.balanceRepository,
@@ -456,7 +460,7 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
 
     final [balances_ as List<Balance>, feeEstimates_ as FeeEstimates] =
         await Future.wait([
-      balanceRepository.getBalancesForAddress(currentAddress, true),
+      balanceRepository.getBalancesForAddress(address: currentAddress, excludeUtxoAttached: true, httpConfig: httpConfig),
       _fetchFeeEstimates(),
     ]);
 
@@ -503,7 +507,7 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
     late RemoteData<Asset> nextGetAssetValidationStatus;
 
     final getBalancesTaskEither = TaskEither.tryCatch(
-      () => balanceRepository.getBalancesForAddress(currentAddress, true),
+      () => balanceRepository.getBalancesForAddress(address: currentAddress, excludeUtxoAttached: true, httpConfig: httpConfig),
       (error, stacktrace) => 'Error fetching balances',
     );
 
@@ -513,12 +517,12 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
     );
 
     final getGiveAssetTaskEither = TaskEither.tryCatch(
-      () => assetRepository.getAssetVerbose(params.initialGiveAsset),
+      () => assetRepository.getAssetVerbose(assetName: params.initialGiveAsset, httpConfig: httpConfig),
       (error, stacktrace) => 'Error fetching give asset',
     );
 
     final getGetAssetTaskEither = TaskEither.tryCatch(
-      () => assetRepository.getAssetVerbose(params.initialGetAsset),
+      () => assetRepository.getAssetVerbose(assetName: params.initialGetAsset, httpConfig: httpConfig),
       (error, stacktrace) => 'Error fetching get asset',
     );
 
@@ -550,7 +554,7 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
       };
 
       final initialGiveAsset =
-          await assetRepository.getAssetVerbose(params.initialGiveAsset);
+          await assetRepository.getAssetVerbose(assetName: params.initialGiveAsset, httpConfig: httpConfig);
       nextGiveAsset = GiveAssetInput.dirty(params.initialGiveAsset);
       nextGiveAssetValidationStatus = Success(initialGiveAsset);
       String nextGiveQuantityNormalized = (initialGiveAsset.divisible ?? false
@@ -575,7 +579,7 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
 
     try {
       final initialGetAsset =
-          await assetRepository.getAssetVerbose(params.initialGetAsset);
+          await assetRepository.getAssetVerbose(assetName: params.initialGetAsset, httpConfig: httpConfig);
       nextGetAsset = GetAssetInput.dirty(params.initialGetAsset);
       nextGetAssetValidationStatus = Success(initialGetAsset);
       String nextGetQuantityNormalized = (initialGetAsset.divisible ?? false
@@ -640,7 +644,7 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
     ));
 
     try {
-      final asset = await assetRepository.getAssetVerbose(state.getAsset.value);
+      final asset = await assetRepository.getAssetVerbose(assetName: state.getAsset.value, httpConfig: httpConfig);
 
       final getQuantityInput = GetQuantityInput.dirty(
         state.getQuantity.value,
@@ -666,7 +670,7 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
 
     try {
       final asset =
-          await assetRepository.getAssetVerbose(state.giveAsset.value);
+          await assetRepository.getAssetVerbose(assetName: state.giveAsset.value, httpConfig: httpConfig);
 
       final balance = _getBalanceForAsset(state.giveAsset.value);
 
@@ -786,7 +790,7 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
 
     try {
       final asset =
-          await assetRepository.getAssetVerbose(state.giveAsset.value);
+          await assetRepository.getAssetVerbose(assetName: state.giveAsset.value, httpConfig: httpConfig);
       isDivisible = asset.divisible ?? true;
     } catch (e) {
       isDivisible = true;
@@ -863,6 +867,7 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
       // Making the compose transaction call
       final composeResponse = await composeTransactionUseCase
           .call<ComposeOrderParams, ComposeOrderResponse>(
+        httpConfig: httpConfig,
         source: currentAddress,
         feeRate: feeRate,
         params: ComposeOrderParams(
@@ -915,7 +920,7 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
 
   Future<FeeEstimates> _fetchFeeEstimates() async {
     try {
-      return await getFeeEstimatesUseCase.call();
+      return await getFeeEstimatesUseCase.call(httpConfig: httpConfig);
     } catch (e) {
       throw FetchFeeEstimatesException(e.toString());
     }

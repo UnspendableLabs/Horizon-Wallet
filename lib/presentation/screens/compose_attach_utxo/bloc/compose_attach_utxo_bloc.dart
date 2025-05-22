@@ -6,6 +6,7 @@ import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/domain/entities/compose_attach_utxo.dart';
 import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/domain/entities/fee_option.dart' as FeeOption;
+import 'package:horizon/domain/entities/http_config.dart';
 import 'package:horizon/domain/repositories/block_repository.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
@@ -46,8 +47,10 @@ class ComposeAttachUtxoBloc extends ComposeBaseBloc<ComposeAttachUtxoState> {
   final BlockRepository blockRepository;
   final CacheProvider cacheProvider;
   final String? initialFairminterTxHash;
+  final HttpConfig httpConfig;
 
   ComposeAttachUtxoBloc({
+    required this.httpConfig,
     required this.passwordRequired,
     required this.inMemoryKeyRepository,
     required this.logger,
@@ -83,7 +86,7 @@ class ComposeAttachUtxoBloc extends ComposeBaseBloc<ComposeAttachUtxoState> {
     try {
       final (feeEstimates, balances, xcpFeeEstimate) =
           await fetchComposeAttachUtxoFormDataUseCase
-              .call(event.currentAddress!);
+              .call(event.currentAddress!, httpConfig);
 
       // there is an xcp fee associated with attaching utxos
       // we need to check that the user has enough xcp to pay for the fee
@@ -173,6 +176,7 @@ class ComposeAttachUtxoBloc extends ComposeBaseBloc<ComposeAttachUtxoState> {
 
       final composeResponse = await composeTransactionUseCase
           .call<ComposeAttachUtxoParams, ComposeAttachUtxoResponse>(
+              httpConfig: httpConfig,
               feeRate: feeRate,
               source: source,
               params: ComposeAttachUtxoParams(
@@ -219,6 +223,7 @@ class ComposeAttachUtxoBloc extends ComposeBaseBloc<ComposeAttachUtxoState> {
       emit(state.copyWith(submitState: s.copyWith(loading: true)));
 
       await signAndBroadcastTransactionUseCase.call(
+          httpConfig: httpConfig,
           decryptionStrategy: InMemoryKey(),
           source: s.composeTransaction.params.source,
           rawtransaction: s.composeTransaction.rawtransaction,
@@ -277,6 +282,7 @@ class ComposeAttachUtxoBloc extends ComposeBaseBloc<ComposeAttachUtxoState> {
     )));
 
     await signAndBroadcastTransactionUseCase.call(
+      httpConfig: httpConfig,
         decryptionStrategy: Password(event.password),
         source: compose.params.source,
         rawtransaction: compose.rawtransaction,

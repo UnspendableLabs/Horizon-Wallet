@@ -1182,7 +1182,7 @@ class _HorizonToggleState extends State<HorizonToggle> {
     super.initState();
     _initializeColors();
   }
-
+  
   @override
   Widget build(BuildContext context) {
     return MouseRegion(
@@ -1618,6 +1618,224 @@ class _HorizonActionButtonState extends State<HorizonActionButton> {
           ),
         ),
       ),
+    );
+  }
+}
+
+class HorizonCard extends StatelessWidget {
+  final Widget child;
+  final EdgeInsets? padding;
+  final double borderRadius;
+  final Color borderColor;
+  final Color? backgroundColor;
+
+  const HorizonCard({
+    super.key,
+    required this.child,
+    this.padding = const EdgeInsets.all(20),
+    this.borderRadius = 18,
+    this.borderColor = transparentPurple8,
+    this.backgroundColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
+
+    final defaultBgColor = isDarkMode ? grey5 : gray1;
+
+    return Container(
+      padding: padding,
+      decoration: BoxDecoration(
+        color: backgroundColor ?? defaultBgColor,
+        borderRadius: BorderRadius.circular(borderRadius),
+        border: Border.all(color: borderColor),
+      ),
+      child: child,
+    );
+  }
+}
+
+class QuantityText extends StatelessWidget {
+  final String quantity;
+  final TextStyle? style;
+
+  const QuantityText({super.key, required this.quantity, this.style});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    theme.extension<CustomThemeExtension>();
+    final isDarkMode = theme.brightness == Brightness.dark;
+
+    final Gradient textGradient = LinearGradient(
+      begin: Alignment.centerLeft,
+      end: Alignment.centerRight,
+      colors: isDarkMode
+          ? const [
+              goldenGradient1,
+              yellow1,
+              goldenGradient2,
+              goldenGradient3,
+            ]
+          : const [
+              duskGradient2,
+              duskGradient1,
+            ],
+      stops: isDarkMode ? const [0.0, 0.325, 0.65, 1.0] : const [0.0, 1.0],
+    );
+
+    TextStyle txtStyle = TextStyle(
+      fontFamily: 'Lato',
+      fontSize: style?.fontSize ?? 14,
+      fontWeight: style?.fontWeight ?? FontWeight.w400,
+      color: style?.color ?? white,
+    );
+    return ShaderMask(
+        shaderCallback: (bounds) {
+          return textGradient.createShader(bounds);
+        },
+        child: Text(quantity, style: txtStyle));
+  }
+}
+
+class HorizonSlider extends StatelessWidget {
+  final double value;
+  final double min;
+  final double max;
+  final double height;
+  final double thumbSize;
+  final double trackRadius;
+  final int? steps;
+  final ValueChanged<double>? onChanged;
+
+  const HorizonSlider({
+    super.key,
+    required this.value,
+    required this.min,
+    required this.max,
+    this.height = 8,
+    this.thumbSize = 16,
+    this.trackRadius = 50,
+    this.steps,
+    this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    const gradient = LinearGradient(
+      begin: Alignment.centerRight,
+      end: Alignment.centerLeft,
+      colors: [
+        Color(0xFFF6A7A8),
+        Color(0xFFA3A7D3),
+      ],
+      stops: [0.0, 1.0],
+    );
+    const gutterColor = Color(0x54FFFFFF); // transparentWhite33
+
+    Color getGradientColorAt(double t, List<Color> colors, List<double>? stops) {
+      if (colors.length == 1) return colors.first;
+      if (stops == null || stops.length != colors.length) {
+        stops = List.generate(colors.length, (i) => i / (colors.length - 1));
+      }
+      for (int i = 0; i < stops.length - 1; i++) {
+        if (t >= stops[i] && t <= stops[i + 1]) {
+          final localT = (t - stops[i]) / (stops[i + 1] - stops[i]);
+          return Color.lerp(colors[i], colors[i + 1], localT)!;
+        }
+      }
+      return colors.last;
+    }
+
+    double _getSteppedValue(double rawValue) {
+      if (steps == null) return rawValue;
+      final stepSize = (max - min) / steps!;
+      final stepsCount = ((rawValue - min) / stepSize).round();
+      return min + (stepsCount * stepSize);
+    }
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final trackWidth = constraints.maxWidth;
+        final thumbTravel = trackWidth - thumbSize;
+        final thumbPosition = ((value - min) / (max - min)) * thumbTravel;
+        final filledWidth = thumbPosition + thumbSize / 2;
+        final progress = (value - min) / (max - min);
+        final thumbColor = getGradientColorAt(
+          1 - progress, // Because gradient is right-to-left
+          gradient.colors,
+          gradient.stops,
+        );
+
+        return SizedBox(
+          height: thumbSize,
+          child: Stack(
+            children: [
+              // Gutter (unfilled track)
+              Positioned(
+                left: 0,
+                top: (thumbSize - height) / 2,
+                child: Container(
+                  width: trackWidth,
+                  height: height,
+                  decoration: BoxDecoration(
+                    color: gutterColor,
+                    borderRadius: BorderRadius.circular(trackRadius),
+                  ),
+                ),
+              ),
+              // Filled (gradient) track
+              Positioned(
+                left: 0,
+                top: (thumbSize - height) / 2,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(trackRadius),
+                  child: Container(
+                    width: filledWidth.clamp(0, trackWidth),
+                    height: height,
+                    decoration: const BoxDecoration(
+                      gradient: gradient,
+                    ),
+                  ),
+                ),
+              ),
+              // Thumb
+              Positioned(
+                left: thumbPosition,
+                child: GestureDetector(
+                  onHorizontalDragUpdate: (details) {
+                    if (onChanged == null) return;
+                    final RenderBox renderBox = context.findRenderObject() as RenderBox;
+                    final position = renderBox.globalToLocal(details.globalPosition);
+                    final dragPosition = (position.dx - thumbSize / 2).clamp(0, thumbTravel);
+                    final double rawValue = min + (max - min) * (dragPosition / thumbTravel);
+                    final clampedValue = rawValue.clamp(min, max);
+                    final steppedValue = _getSteppedValue(clampedValue);
+                    onChanged!(steppedValue);
+                  },
+                  child: Container(
+                    width: thumbSize,
+                    height: thumbSize,
+                    decoration: BoxDecoration(
+                      color: thumbColor,
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 4,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

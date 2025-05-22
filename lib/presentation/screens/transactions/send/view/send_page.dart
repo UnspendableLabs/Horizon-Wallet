@@ -118,8 +118,7 @@ class _SendPageState extends State<SendPage> {
         listener: (context, state) {},
         builder: (context, state) {
           final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-          return Scaffold(
-            body: TransactionStepper<SendData, ComposeSendResponse>(
+          return TransactionStepper<SendData, ComposeSendResponse>(
               formStepContent: FormStepContent<SendData>(
                 title: 'Recipient & Quantity',
                 formKey: _formKey,
@@ -261,25 +260,6 @@ class _SendPageState extends State<SendPage> {
                                 } catch (e) {
                                   return 'Invalid amount';
                                 }
-
-                                if (selectedBalanceEntry != null) {
-                                  try {
-                                    final enteredQuantity =
-                                        getQuantityForDivisibility(
-                                      divisible: balances.assetInfo.divisible,
-                                      inputQuantity: value,
-                                    );
-
-                                    if (enteredQuantity >
-                                        selectedBalanceEntry!.quantity) {
-                                      return 'Insufficient balance';
-                                    }
-                                  } catch (e) {
-                                    return 'Invalid amount';
-                                  }
-                                }
-
-                                return null;
                               }
                               return null;
                             }),
@@ -349,7 +329,6 @@ class _SendPageState extends State<SendPage> {
                         decryptionStrategy: decryptionStrategy),
               ),
               state: state,
-            ),
           );
         },
       ),

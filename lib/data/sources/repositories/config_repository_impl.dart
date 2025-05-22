@@ -1,6 +1,7 @@
+
+
 import 'package:horizon/domain/repositories/config_repository.dart';
 import 'package:pub_semver/pub_semver.dart';
-
 class ConfigImpl implements Config {
   @override
   Version get version => Version.parse('1.7.7');

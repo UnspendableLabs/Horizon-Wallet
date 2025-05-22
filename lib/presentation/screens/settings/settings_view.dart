@@ -302,13 +302,6 @@ class SettingsView extends StatefulWidget {
 }
 
 class _SettingsViewState extends State<SettingsView> {
-  SettingsPage _currentPage = SettingsPage.main;
-
-  void _navigateBack() {
-    setState(() {
-      _currentPage = SettingsPage.main;
-    });
-  }
 
   Widget _buildMainSettings() {
     return ListView(

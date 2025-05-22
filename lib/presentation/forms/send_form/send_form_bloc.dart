@@ -2,8 +2,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:horizon/common/constants.dart';
 import 'package:horizon/common/uuid.dart';
 import 'package:horizon/core/logging/logger.dart';
+import 'package:horizon/domain/entities/address_v2.dart';
 import 'package:horizon/domain/entities/compose_send.dart';
 import 'package:horizon/domain/entities/fee_option.dart' as fee_option;
+import 'package:horizon/domain/entities/http_config.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
@@ -29,8 +31,10 @@ class SendFormBloc extends Bloc<TransactionEvent,
   final WriteLocalTransactionUseCase writelocalTransactionUseCase;
   final AnalyticsService analyticsService;
   final Logger logger;
+  final HttpConfig httpConfig;
 
   SendFormBloc({
+    required this.httpConfig,
     required this.balanceRepository,
     required this.getFeeEstimatesUseCase,
     required this.composeTransactionUseCase,
@@ -69,9 +73,13 @@ class SendFormBloc extends Bloc<TransactionEvent,
 
     try {
       final balances = await balanceRepository.getBalancesForAddressesAndAsset(
-          event.addresses, event.assetName, BalanceType.address);
+          addresses: event.addresses,
+          assetName: event.assetName,
+          type: BalanceType.address,
+          httpConfig: httpConfig);
 
-      final feeEstimates = await getFeeEstimatesUseCase.call();
+      final feeEstimates =
+          await getFeeEstimatesUseCase.call(httpConfig: httpConfig);
 
       emit(
         state.copyWith(
@@ -117,6 +125,7 @@ class SendFormBloc extends Bloc<TransactionEvent,
 
       final composeResponse = await composeTransactionUseCase
           .call<ComposeSendParams, ComposeSendResponse>(
+        httpConfig: httpConfig,
         feeRate: feeRate,
         source: source,
         params: ComposeSendParams(
@@ -154,11 +163,16 @@ class SendFormBloc extends Bloc<TransactionEvent,
       final composeData = state.getComposeDataOrThrow();
 
       await signAndBroadcastTransactionUseCase.call(
+          httpConfig: httpConfig,
           decryptionStrategy: event.decryptionStrategy,
           source: composeData.params.source,
           rawtransaction: composeData.rawtransaction,
           onSuccess: (txHex, txHash) async {
-            await writelocalTransactionUseCase.call(txHex, txHash);
+            await writelocalTransactionUseCase.call(
+              hex: txHex,
+              hash: txHash,
+              httpConfig: httpConfig,
+            );
 
             logger.info('send broadcasted txHash: $txHash');
             analyticsService.trackAnonymousEvent(

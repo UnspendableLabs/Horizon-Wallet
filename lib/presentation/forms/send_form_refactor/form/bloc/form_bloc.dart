@@ -1,8 +1,9 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:horizon/domain/entities/fee_option.dart' as fee_option;
+import 'package:horizon/domain/entities/http_config.dart';
 import 'package:horizon/domain/entities/multi_address_balance_entry.dart';
 import "package:decimal/decimal.dart";
 import 'package:horizon/domain/entities/fee_estimates.dart';
-import 'package:horizon/domain/entities/fee_option.dart';
 import 'package:formz/formz.dart';
 import 'package:get_it/get_it.dart';
 
@@ -18,9 +19,11 @@ class SendAssetFormBloc extends Bloc<FormEvent, FormModel> {
   final ComposeTransactionUseCase composeTransactionUseCase;
   final ComposeRepository composeRepository;
   final Asset asset;
+  final HttpConfig httpConfig;
 
   SendAssetFormBloc(
       {required this.asset,
+      required this.httpConfig,
       ComposeTransactionUseCase? composeTransactionUseCase,
       ComposeRepository? composeRepository,
       required FeeEstimates feeEstimates,
@@ -108,10 +111,10 @@ class SendAssetFormBloc extends Bloc<FormEvent, FormModel> {
 
     try {
       final feeRate = switch (state.feeOptionInput.value) {
-        Slow() => state.feeEstimates.slow,
-        Medium() => state.feeEstimates.medium,
-        Fast() => state.feeEstimates.fast,
-        Custom(fee: var value) => value
+        fee_option.Slow() => state.feeEstimates.slow,
+        fee_option.Medium() => state.feeEstimates.medium,
+        fee_option.Fast() => state.feeEstimates.fast,
+        fee_option.Custom(fee: var value) => value
       };
 
       final quantityNormalized = Decimal.parse(state.quantityInput.value);
@@ -123,6 +126,7 @@ class SendAssetFormBloc extends Bloc<FormEvent, FormModel> {
       // TODO: validate that address is never empty
       final composeResponse = await composeTransactionUseCase
           .call<ComposeSendParams, ComposeSendResponse>(
+        httpConfig: httpConfig,
         feeRate: feeRate,
         source: state.addressBalanceInput.value.address!,
         params: ComposeSendParams(

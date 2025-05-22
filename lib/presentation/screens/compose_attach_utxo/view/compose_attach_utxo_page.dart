@@ -8,6 +8,7 @@ import 'package:horizon/common/format.dart';
 import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/domain/entities/compose_attach_utxo.dart';
+import 'package:horizon/domain/entities/http_config.dart';
 import 'package:horizon/domain/repositories/block_repository.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
@@ -46,6 +47,7 @@ class ComposeAttachUtxoPageWrapper extends StatelessWidget {
       success: (state) => BlocProvider(
         key: Key(currentAddress),
         create: (context) => ComposeAttachUtxoBloc(
+          httpConfig: GetIt.I<HttpConfig>(),
           passwordRequired:
               GetIt.I<SettingsRepository>().requirePasswordForCryptoOperations,
           inMemoryKeyRepository: GetIt.I.get<InMemoryKeyRepository>(),

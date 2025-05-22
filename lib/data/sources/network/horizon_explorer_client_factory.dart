@@ -15,7 +15,7 @@ class HorizonExplorerClientFactory {
       () => HorizonExplorerApi(
         dio: Dio(
           BaseOptions(
-            baseUrl: config.horizonExplorer,
+            baseUrl: config.horizonExplorerApi,
             connectTimeout: const Duration(seconds: 5),
             receiveTimeout: const Duration(seconds: 3),
           ),

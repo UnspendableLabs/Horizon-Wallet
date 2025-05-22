@@ -6,13 +6,14 @@ sealed class HttpConfig {
   final String esplora;
   final String btcExplorer;
   final String horizonExplorer;
-
+  final String horizonExplorerApi;
   const HttpConfig(
       {required this.network,
       required this.counterparty,
       required this.esplora,
       required this.btcExplorer,
-      required this.horizonExplorer});
+      required this.horizonExplorer,
+      required this.horizonExplorerApi});
 }
 
 class Mainnet extends HttpConfig {
@@ -23,6 +24,7 @@ class Mainnet extends HttpConfig {
           esplora: "https://api.unspendablelabs.com:3000",
           btcExplorer: "https://mempool.space",
           horizonExplorer: "https://horizon.market/explorer",
+          horizonExplorerApi: "https://horizon.market/api",
         );
 }
 
@@ -35,6 +37,7 @@ class Testnet4 extends HttpConfig {
           btcExplorer: "https://mempool.space/testnet4",
           horizonExplorer:
               "https://horizon-market-testnet.vercel.app/explorer", // TODO: link to testnet
+          horizonExplorerApi: "https://horizon.market/api",
         );
 }
 
@@ -44,5 +47,6 @@ class Custom extends HttpConfig {
       required super.esplora,
       required super.counterparty,
       required super.btcExplorer,
-      required super.horizonExplorer});
+      required super.horizonExplorer,
+      required super.horizonExplorerApi});
 }

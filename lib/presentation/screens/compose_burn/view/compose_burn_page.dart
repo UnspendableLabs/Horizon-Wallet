@@ -4,6 +4,7 @@ import 'package:get_it/get_it.dart';
 import 'package:horizon/common/format.dart';
 import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/domain/entities/compose_burn.dart';
+import 'package:horizon/domain/entities/http_config.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/repositories/block_repository.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
@@ -39,6 +40,7 @@ class ComposeBurnPageWrapper extends StatelessWidget {
       success: (state) => BlocProvider(
         key: Key(currentAddress),
         create: (context) => ComposeBurnBloc(
+          httpConfig: GetIt.I<HttpConfig>(),
           logger: GetIt.I.get<Logger>(),
           passwordRequired:
               GetIt.I<SettingsRepository>().requirePasswordForCryptoOperations,

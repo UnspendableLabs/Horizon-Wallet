@@ -7,6 +7,7 @@ import 'package:horizon/common/format.dart';
 import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/domain/entities/balance.dart';
 import 'package:horizon/domain/entities/compose_destroy.dart';
+import 'package:horizon/domain/entities/http_config.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
 import 'package:horizon/domain/services/analytics_service.dart';
@@ -42,6 +43,7 @@ class ComposeDestroyPageWrapper extends StatelessWidget {
       success: (state) => BlocProvider(
         key: Key(currentAddress),
         create: (context) => ComposeDestroyBloc(
+          httpConfig: GetIt.I<HttpConfig>(),
           passwordRequired:
               GetIt.I<SettingsRepository>().requirePasswordForCryptoOperations,
           inMemoryKeyRepository: GetIt.I.get<InMemoryKeyRepository>(),

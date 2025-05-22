@@ -13,6 +13,7 @@ class CustomThemeExtension extends ThemeExtension<CustomThemeExtension> {
   final Color mutedDescriptionTextColor;
   final TextStyle number50Regular;
   final TextStyle number35Regular;
+  final Color offColorText;
 
   const CustomThemeExtension({
     required this.inputBackground,
@@ -26,52 +27,58 @@ class CustomThemeExtension extends ThemeExtension<CustomThemeExtension> {
     required this.mutedDescriptionTextColor,
     required this.number50Regular,
     required this.number35Regular,
+    required this.offColorText,
   });
 
   static const light = CustomThemeExtension(
-      inputBackground: grey1,
-      inputBackgroundEmpty: offWhite,
-      inputBorderColor: transparentBlack8,
-      inputTextColor: Colors.black,
-      errorColor: red1,
-      errorBackgroundColor: transparentRed16,
-      settingsItemBackground: transparentWhite66,
-      bgBlackOrWhite: white,
-      mutedDescriptionTextColor: transparentBlack33,
-      number50Regular: TextStyle(
-        fontSize: 50,
-        fontWeight: FontWeight.w400,
-        color: Colors.black,
-        fontFamily: 'Lato',
-      ),
-      number35Regular: TextStyle(
-          fontFamily: 'Lato',
-          fontSize: 35,
-          fontWeight: FontWeight.w400,
-          color: Colors.black));
+    inputBackground: grey1,
+    inputBackgroundEmpty: offWhite,
+    inputBorderColor: transparentBlack8,
+    inputTextColor: Colors.black,
+    errorColor: red1,
+    errorBackgroundColor: transparentRed16,
+    settingsItemBackground: transparentWhite66,
+    bgBlackOrWhite: white,
+    mutedDescriptionTextColor: transparentBlack33,
+    number50Regular: TextStyle(
+      fontSize: 50,
+      fontWeight: FontWeight.w400,
+      color: Colors.black,
+      fontFamily: 'Lato',
+    ),
+    number35Regular: TextStyle(
+      fontFamily: 'Lato',
+      fontSize: 35,
+      fontWeight: FontWeight.w400,
+      color: Colors.black
+    ),
+    offColorText: offBlack,
+  );
 
   static const dark = CustomThemeExtension(
-      inputBackground: grey5,
-      inputBackgroundEmpty: offBlack,
-      inputBorderColor: transparentWhite8,
-      inputTextColor: Colors.white,
-      errorColor: red1,
-      errorBackgroundColor: transparentRed2,
-      settingsItemBackground: transparentBlack66,
-      bgBlackOrWhite: black,
-      mutedDescriptionTextColor: transparentWhite33,
-      number50Regular: TextStyle(
-        fontSize: 50,
-        fontWeight: FontWeight.w400,
-        color: Colors.white,
-        fontFamily: 'Lato',
-      ),
-      number35Regular: TextStyle(
-        fontFamily: 'Lato',
-        fontSize: 35,
-        color: Colors.white,
-        fontWeight: FontWeight.w400,
-      ));
+    inputBackground: grey5,
+    inputBackgroundEmpty: offBlack,
+    inputBorderColor: transparentWhite8,
+    inputTextColor: Colors.white,
+    errorColor: red1,
+    errorBackgroundColor: transparentRed2,
+    settingsItemBackground: transparentBlack66,
+    bgBlackOrWhite: black,
+    mutedDescriptionTextColor: transparentWhite33,
+    number50Regular: TextStyle(
+      fontSize: 50,
+      fontWeight: FontWeight.w400,
+      color: Colors.white,
+      fontFamily: 'Lato',
+    ),
+    number35Regular: TextStyle(
+      fontFamily: 'Lato',
+      fontSize: 35,
+      color: Colors.white,
+      fontWeight: FontWeight.w400,
+    ),
+    offColorText: offWhite,
+  );
 
   @override
   ThemeExtension<CustomThemeExtension> copyWith({
@@ -97,6 +104,7 @@ class CustomThemeExtension extends ThemeExtension<CustomThemeExtension> {
       mutedDescriptionTextColor: mutedDescriptionTextColor,
       number50Regular: number50Regular,
       number35Regular: number35Regular,
+      offColorText: offColorText,
     );
   }
 
@@ -125,6 +133,7 @@ class CustomThemeExtension extends ThemeExtension<CustomThemeExtension> {
           mutedDescriptionTextColor, other.mutedDescriptionTextColor, t)!,
       number50Regular: number50Regular,
       number35Regular: number35Regular,
+      offColorText: offColorText,
     );
   }
 }
