@@ -60,6 +60,7 @@ class AssetSearchResultModel {
   AssetSearchResult toEntity() {
     return AssetSearchResult(
       name: hit.asset,
+      description: hit.description,
     );
   }
 }

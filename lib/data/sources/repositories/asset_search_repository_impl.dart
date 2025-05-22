@@ -50,13 +50,16 @@ class MeilisearchResult {
   AssetSearchResult toEntity() {
     return AssetSearchResult(
       name: object.asset,
+      description: object.description,
     );
   }
 }
 
 class AssetSearchRepositoryImpl implements AssetSearchRepository {
   final HorizonExplorerClientFactory _horizonExplorerClientFactory;
-  final MeiliSearchClient client = MeiliSearchClient("<HOST>", "SECRET");
+  final MeiliSearchClient client = MeiliSearchClient(
+      const String.fromEnvironment("M_HOST"),
+      const String.fromEnvironment("M_KEY"));
 
   AssetSearchRepositoryImpl({
     HorizonExplorerClientFactory? horizonExplorerClientFactory,

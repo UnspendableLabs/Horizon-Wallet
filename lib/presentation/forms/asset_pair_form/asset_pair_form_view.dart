@@ -132,8 +132,6 @@ class _AssetPairFormState extends State<AssetPairForm> {
   void didUpdateWidget(covariant AssetPairForm oldWidget) {
     super.didUpdateWidget(oldWidget);
 
-    print(widget.receiveAssets);
-
     if (widget.receiveAssetModalVisible &&
         !_hasShownModal &&
         !oldWidget.receiveAssetModalVisible) {
@@ -143,7 +141,6 @@ class _AssetPairFormState extends State<AssetPairForm> {
         if (!mounted) return;
         // when receive assets updates, the modal does not...
         showReceiveAssetModal(
-          assetSearchResults: widget.receiveAssets,
           context: context,
           query: widget.receiveAssetInput.value,
           onQueryChanged: (value) {

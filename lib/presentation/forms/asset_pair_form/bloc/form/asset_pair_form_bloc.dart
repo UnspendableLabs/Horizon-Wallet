@@ -59,10 +59,22 @@ class ReceiveAssetInput
 }
 
 class AssetPairFormModel with FormzMixin {
+  static Map<String, AssetSearchResult> _privilegedSearchResults = {
+    "btc": const AssetSearchResult(
+      name: "BTC",
+      description: "BTC",
+    ),
+    "xcp": const AssetSearchResult(
+      name: "XCP",
+      description: "XCP",
+    ),
+  };
+
   final List<MultiAddressBalance> giveAssets;
   final GiveAssetInput giveAssetInput;
 
-  final RemoteData<List<AssetSearchResult>> receiveAssets;
+  final RemoteData<List<AssetSearchResult>> privilegedSearchResults;
+  final RemoteData<List<AssetSearchResult>> searchResults;
 
   final bool receiveAssetModalVisible;
 
@@ -71,7 +83,8 @@ class AssetPairFormModel with FormzMixin {
   AssetPairFormModel(
       {required this.giveAssets,
       required this.giveAssetInput,
-      required this.receiveAssets,
+      required this.privilegedSearchResults,
+      required this.searchResults,
       required this.receiveAssetModalVisible,
       required this.receiveAssetInput});
 
@@ -81,13 +94,16 @@ class AssetPairFormModel with FormzMixin {
   AssetPairFormModel copyWith(
       {List<MultiAddressBalance>? giveAssets,
       GiveAssetInput? giveAssetInput,
-      RemoteData<List<AssetSearchResult>>? receiveAssets,
+      RemoteData<List<AssetSearchResult>>? privilegedSearchResults,
+      RemoteData<List<AssetSearchResult>>? searchResults,
       Option<bool> receiveAssetModalVisible = const Option.none(),
       ReceiveAssetInput? receiveAssetInput}) {
     return AssetPairFormModel(
+        privilegedSearchResults:
+            privilegedSearchResults ?? this.privilegedSearchResults,
         giveAssets: giveAssets ?? this.giveAssets,
         giveAssetInput: giveAssetInput ?? this.giveAssetInput,
-        receiveAssets: receiveAssets ?? this.receiveAssets,
+        searchResults: searchResults ?? this.searchResults,
         receiveAssetInput: receiveAssetInput ?? this.receiveAssetInput,
         receiveAssetModalVisible: receiveAssetModalVisible
             .getOrElse(() => this.receiveAssetModalVisible));
@@ -113,7 +129,10 @@ class AssetPairFormBloc extends Bloc<AssetPairFormEvent, AssetPairFormModel> {
               ),
               receiveAssetInput: ReceiveAssetInput.pure(),
               receiveAssetModalVisible: false,
-              receiveAssets: const Initial()),
+              privilegedSearchResults: Success(
+                AssetPairFormModel._privilegedSearchResults.values.toList(),
+              ),
+              searchResults: const Initial()),
         ) {
     on<GiveAssetChanged>(_handleGiveAssetChanged);
     on<ReceiveAssetInputClicked>(_handleReceiveAssetInputClicked);
@@ -136,13 +155,13 @@ class AssetPairFormBloc extends Bloc<AssetPairFormEvent, AssetPairFormModel> {
   _handleReceiveAssetInputChanged(
       ReceiveAssetInputChanged event, Emitter<AssetPairFormModel> emit) async {
     RemoteData<List<AssetSearchResult>> receiveAssetsNext = switch (
-        state.receiveAssets) {
+        state.searchResults) {
       Success(value: var value) => Refreshing(value),
       _ => const Loading()
     };
 
     emit(state.copyWith(
-        receiveAssets: receiveAssetsNext,
+        searchResults: receiveAssetsNext,
         receiveAssetInput: ReceiveAssetInput.dirty(event.value)));
 
     final task = _assetSearchRepository.searchT(
@@ -156,11 +175,11 @@ class AssetPairFormBloc extends Bloc<AssetPairFormEvent, AssetPairFormModel> {
       (err) {
         print(err);
         emit(state.copyWith(
-          receiveAssets: Failure(err),
+          searchResults: Failure(err),
         ));
       },
       (value) => emit(state.copyWith(
-        receiveAssets: Success(value),
+        searchResults: Success(value),
       )),
     );
   }

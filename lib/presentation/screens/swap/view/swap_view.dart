@@ -72,7 +72,7 @@ class _SwapFlowViewState extends State<SwapFlowView> {
                           balances: data.balances,
                           initialMultiAddressBalanceEntry: null,
                           child: (actions, state) => AssetPairForm(
-                            receiveAssets: state.receiveAssets,
+                            receiveAssets: state.searchResults,
                             giveAssets: state.giveAssets,
                             giveAssetInput: state.giveAssetInput,
                             onGiveAssetChanged: actions.onGiveAssetChanged,
