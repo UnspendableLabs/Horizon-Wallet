@@ -4,6 +4,7 @@ import 'package:horizon/domain/entities/multi_address_balance.dart';
 import 'package:horizon/domain/entities/multi_address_balance_entry.dart';
 import 'package:horizon/presentation/common/asset_balance_list_item.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
+import 'package:horizon/presentation/common/searchable_dropdown.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 import 'package:horizon/utils/app_icons.dart';
 
@@ -101,22 +102,22 @@ class _SwapFormTokenSelectionState extends State<SwapFormTokenSelection> {
                             AssetBalanceListItem(balance: item),
                         hintText: "Select Token"),
                     commonHeightSizedBox,
-                    HorizonRedesignDropdown<MultiAddressBalance>(
+
+                    // Searchable Dropdown
+                    SearchableDropdown<MultiAddressBalance>(
+                        searchController: TextEditingController(),
                         itemPadding: const EdgeInsets.all(12),
-                        items: fakeTokens
-                            .map((e) => DropdownMenuItem(
-                                value: e,
-                                child: AssetBalanceListItem(balance: e)))
-                            .toList(),
+                        items: fakeTokens,
+                        itemBuilder: (MultiAddressBalance item) =>
+                            AssetBalanceListItem(balance: item),
                         onChanged: (value) {
                           setState(() {
                             if (value == _fromToken) return;
                             _toToken = value;
                           });
                         },
-                        selectedValue: _toToken,
-                        selectedItemBuilder: (MultiAddressBalance item) =>
-                            AssetBalanceListItem(balance: item),
+                        selectedItem: _toToken,
+
                         hintText: "Select Token")
                   ],
                 ),
