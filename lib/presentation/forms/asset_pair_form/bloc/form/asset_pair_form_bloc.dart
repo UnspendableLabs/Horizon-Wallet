@@ -154,6 +154,11 @@ class AssetPairFormBloc extends Bloc<AssetPairFormEvent, AssetPairFormModel> {
 
   _handleReceiveAssetInputChanged(
       ReceiveAssetInputChanged event, Emitter<AssetPairFormModel> emit) async {
+    if (event.value.isEmpty) {
+      emit(state.copyWith(searchResults: const Initial()));
+      return;
+    }
+
     RemoteData<List<AssetSearchResult>> receiveAssetsNext = switch (
         state.searchResults) {
       Success(value: var value) => Refreshing(value),
