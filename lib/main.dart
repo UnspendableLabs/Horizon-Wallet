@@ -29,6 +29,7 @@ import 'package:horizon/presentation/inactivity_monitor/inactivity_monitor_view.
 import 'package:horizon/presentation/screens/asset/asset_view.dart';
 import 'package:horizon/presentation/screens/asset/bloc/asset_view_bloc.dart';
 
+import 'package:horizon/presentation/screens/swap/view/swap_view.dart';
 import 'package:horizon/presentation/screens/atomic_swap/view/atomic_swap_view.dart';
 import 'package:horizon/presentation/screens/dashboard/view/portfolio_view.dart';
 import 'package:horizon/presentation/screens/login/login_view.dart';
@@ -524,7 +525,7 @@ class AppRouter {
               path: "/atomic-swap",
               pageBuilder: (context, state) => CustomTransitionPage<void>(
                 key: state.pageKey,
-                child: const AtomicSwapView(),
+                child: const SwapFlowView(),
                 transitionDuration: const Duration(milliseconds: 300),
                 transitionsBuilder:
                     (context, animation, secondaryAnimation, child) {

@@ -4,6 +4,7 @@ import 'package:get_it/get_it.dart';
 
 import 'package:horizon/data/services/secure_kv_service_impl.dart';
 import 'package:horizon/data/sources/network/horizon_explorer_client.dart';
+import 'package:horizon/domain/entities/asset_search_result.dart';
 import 'package:horizon/domain/services/secure_kv_service.dart';
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 
@@ -92,6 +93,9 @@ import 'package:horizon/data/sources/repositories/events_repository_impl.dart';
 
 import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 import 'package:horizon/data/sources/repositories/bitcoin_repository_impl.dart';
+
+import 'package:horizon/domain/repositories/asset_search_repository.dart';
+import 'package:horizon/data/sources/repositories/asset_search_repository_impl.dart';
 
 import 'package:horizon/domain/repositories/config_repository.dart';
 import 'package:horizon/data/sources/repositories/config_repository_impl.dart';
@@ -342,6 +346,10 @@ void setup() {
   injector.registerSingleton<EsploraClientFactory>(EsploraClientFactory());
   injector.registerSingleton<CounterpartyClientFactory>(
       CounterpartyClientFactory());
+
+  injector.registerSingleton<AssetSearchRepository>(
+      AssetSearchRepositoryImpl());
+
 
   injector.registerSingleton<BitcoinRepository>(BitcoinRepositoryImpl(
     esploraClientFactory: GetIt.I.get<EsploraClientFactory>(),

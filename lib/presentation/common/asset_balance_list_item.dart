@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fpdart/fpdart.dart';
 import 'package:horizon/domain/entities/multi_address_balance.dart';
 import 'package:horizon/utils/app_icons.dart';
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
@@ -41,6 +42,58 @@ class AssetBalanceListItem extends StatelessWidget {
             ),
           ],
         )
+      ],
+    );
+  }
+}
+
+class AssetBalanceListItemWithOptionalBalance extends StatelessWidget {
+  final String asset;
+  final String? description;
+  final Option<MultiAddressBalance> balance;
+  const AssetBalanceListItemWithOptionalBalance(
+      {super.key,
+      required this.asset,
+      required this.description,
+      required this.balance});
+
+  @override
+  Widget build(BuildContext context) {
+    final appIcons = AppIcons();
+    final session = context.watch<SessionStateCubit>().state.successOrThrow();
+    return Row(
+      children: [
+        appIcons.assetIcon(
+          httpConfig: session.httpConfig,
+          context: context,
+          assetName: asset,
+          description: description,
+          width: 34,
+          height: 34,
+        ),
+        const SizedBox(width: 8),
+        balance.fold(
+            () => Text(
+                  asset,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontSize: 14,
+                      ),
+                ),
+            (balance) => Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      asset,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            fontSize: 14,
+                          ),
+                    ),
+                    Text("${balance.totalNormalized}",
+                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                              fontWeight: FontWeight.w500,
+                            ))
+                  ],
+                ))
       ],
     );
   }
