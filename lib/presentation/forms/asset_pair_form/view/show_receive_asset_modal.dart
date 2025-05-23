@@ -49,7 +49,6 @@ class _InlineTypeAheadState<T> extends State<InlineTypeAhead<T>> {
 
   @override
   Widget build(BuildContext context) {
-    print("is this being build");
     return SuggestionsSearch<T>(
       controller: widget.suggestionsController,
       textEditingController: widget.controller,
@@ -131,6 +130,20 @@ class _AssetSearchDialogState extends State<AssetSearchDialog> {
   void initState() {
     super.initState();
     _suggestionsController = SuggestionsController<AssetSearchResult>();
+
+    final initialSuggestons =
+        context.read<AssetPairFormBloc>().state.displaySearchResults;
+
+    initialSuggestons.fold(
+      onInitial: () => null,
+      onLoading: () => null,
+      onSuccess: (suggestions) =>
+          _suggestionsController.suggestions = suggestions,
+      onFailure: (error) => _suggestionsController.error = error,
+      onRefreshing: (suggestions) =>
+          _suggestionsController.suggestions = suggestions,
+    );
+
     _searchInputController = TextEditingController();
   }
 
@@ -147,8 +160,14 @@ class _AssetSearchDialogState extends State<AssetSearchDialog> {
     final isDarkMode = theme.brightness == Brightness.dark;
 
     return BlocConsumer<AssetPairFormBloc, AssetPairFormModel>(
+      // i sort of need to modify the controller based on bloc state for the initial render
       listener: (context, state) {
-        switch (state.searchResults) {
+
+        print("display search restults: ${state.displaySearchResults}\n");
+        print("privileged search results: ${state.privilegedSearchResults}\n");
+        print("search results: ${state.searchResults}\n");
+        print("\n\n\n\n\n\n");
+        switch (state.displaySearchResults) {
           case Initial():
             _suggestionsController.suggestions = null;
             _suggestionsController.isLoading = false;
@@ -168,12 +187,12 @@ class _AssetSearchDialogState extends State<AssetSearchDialog> {
             _suggestionsController.open(gainFocus: false);
             _suggestionsController.isLoading = false;
             _suggestionsController.suggestions =
-                (state.searchResults as Success).value.toList();
+                (state.displaySearchResults as Success).value;
             break;
           case Refreshing():
             _suggestionsController.isLoading = false;
             _suggestionsController.suggestions =
-                (state.searchResults as Refreshing).value.toList();
+                (state.displaySearchResults as Refreshing).value;
             break;
         }
       },
@@ -229,8 +248,11 @@ class _AssetSearchDialogState extends State<AssetSearchDialog> {
                               print("selection: ${selection.name}");
                             },
                             itemBuilder: (context, suggestion) {
-                              return AssetSearchResultListItem(
-                                result: suggestion,
+                              return Padding(
+                                padding: const EdgeInsets.all(12),
+                                child: AssetSearchResultListItem(
+                                  result: suggestion,
+                                ),
                               );
                             },
                           ),

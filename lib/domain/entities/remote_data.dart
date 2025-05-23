@@ -5,6 +5,8 @@ sealed class RemoteData<T> extends Equatable {
 
   @override
   List<Object?> get props => [];
+
+  // CHAT: implement useful methos like map and or flat map
 }
 
 final class Initial<T> extends RemoteData<T> {
@@ -55,4 +57,78 @@ final class Failure<T> extends RemoteData<T> {
 
   @override
   String toString() => 'Failure: $error';
+}
+
+extension RemoteDataX<T> on RemoteData<T> {
+  RemoteData<R> map<R>(R Function(T value) f) => switch (this) {
+        Success(value: final v) => Success<R>(f(v)),
+        Refreshing(value: final v) => Refreshing<R>(f(v)),
+        Initial() => Initial<R>(),
+        Loading() => Loading<R>(),
+        Failure(error: final e) => Failure<R>(e),
+      };
+
+  RemoteData<R> flatMap<R>(
+    RemoteData<R> Function(T value) f,
+  ) =>
+      switch (this) {
+        Success(value: final v) => f(v),
+        Refreshing(value: final v) => f(v),
+        Initial() => Initial<R>(),
+        Loading() => Loading<R>(),
+        Failure(error: final e) => Failure<R>(e),
+      };
+
+  bool get isSuccess => this is Success<T>;
+  bool get isFailure => this is Failure<T>;
+  bool get isLoading => this is Loading<T>;
+  bool get isRefreshing => this is Refreshing<T>;
+  bool get isInitial => this is Initial<T>;
+
+  T? getOrNull() => switch (this) {
+        Success(value: final v) => v,
+        Refreshing(value: final v) => v,
+        _ => null,
+      };
+
+  R fold<R>({
+    required R Function() onInitial,
+    required R Function() onLoading,
+    required R Function(T value) onRefreshing,
+    required R Function(T value) onSuccess,
+    required R Function(Object error) onFailure,
+  }) =>
+      switch (this) {
+        Initial() => onInitial(),
+        Loading() => onLoading(),
+        Refreshing(value: final v) => onRefreshing(v),
+        Success(value: final v) => onSuccess(v),
+        Failure(error: final e) => onFailure(e),
+      };
+}
+
+extension RemoteDataCombineX<A> on RemoteData<A> {
+  RemoteData<R> combine<B, R>(
+    RemoteData<B> other,
+    R Function(A a, B b) combine,
+  ) {
+    if (this is Failure) return Failure<R>((this as Failure).error);
+    if (other is Failure) return Failure<R>((other as Failure).error);
+
+
+    if (this is Loading || other is Loading) return Loading<R>();
+    if (this is Initial || other is Initial) return Initial<R>();
+
+    final a = (this is Success<A>
+        ? (this as Success<A>).value
+        : (this as Refreshing<A>).value);
+
+    final b =
+        (other is Success<B> ? (other).value : (other as Refreshing<B>).value);
+    final merged = combine(a, b);
+
+    return (this is Refreshing || other is Refreshing)
+        ? Refreshing<R>(merged)
+        : Success<R>(merged);
+  }
 }

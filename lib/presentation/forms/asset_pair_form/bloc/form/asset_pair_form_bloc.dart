@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:formz/formz.dart';
@@ -71,9 +72,11 @@ class AssetPairFormModel with FormzMixin {
   };
 
   final List<MultiAddressBalance> giveAssets;
+
   final GiveAssetInput giveAssetInput;
 
-  final RemoteData<List<AssetSearchResult>> privilegedSearchResults;
+  final RemoteData<Map<String, AssetSearchResult>> privilegedSearchResults;
+
   final RemoteData<List<AssetSearchResult>> searchResults;
 
   final bool receiveAssetModalVisible;
@@ -89,12 +92,12 @@ class AssetPairFormModel with FormzMixin {
       required this.receiveAssetInput});
 
   @override
-  List<FormzInput> get inputs => [giveAssetInput];
+  List<FormzInput> get inputs => [giveAssetInput, receiveAssetInput];
 
   AssetPairFormModel copyWith(
       {List<MultiAddressBalance>? giveAssets,
       GiveAssetInput? giveAssetInput,
-      RemoteData<List<AssetSearchResult>>? privilegedSearchResults,
+      RemoteData<Map<String, AssetSearchResult>>? privilegedSearchResults,
       RemoteData<List<AssetSearchResult>>? searchResults,
       Option<bool> receiveAssetModalVisible = const Option.none(),
       ReceiveAssetInput? receiveAssetInput}) {
@@ -107,6 +110,41 @@ class AssetPairFormModel with FormzMixin {
         receiveAssetInput: receiveAssetInput ?? this.receiveAssetInput,
         receiveAssetModalVisible: receiveAssetModalVisible
             .getOrElse(() => this.receiveAssetModalVisible));
+  }
+
+  RemoteData<List<AssetSearchResult>> get filteredPrivilegedSearchResults {
+
+    print("revievedAssetInput.value: ${receiveAssetInput.value}");
+
+    return privilegedSearchResults.map((value) {
+      return value.values
+          .toList()
+          .filter((a) => a.name
+              .toLowerCase()
+              .contains(receiveAssetInput.value.toLowerCase()))
+          .toList();
+    });
+  }
+
+  RemoteData<List<AssetSearchResult>> get filteredSearchResults {
+    return searchResults.combine(
+      privilegedSearchResults,
+      (results, privMap) {
+        final lcPrivKeys = privMap.keys.map((k) => k.toLowerCase()).toSet();
+
+        return results
+            .where((r) => !lcPrivKeys.contains(r.name.toLowerCase()))
+            .toList();
+      },
+    );
+  }
+
+  RemoteData<List<AssetSearchResult>> get displaySearchResults {
+      // Build a lower-cased lookup set just once
+    print("filteredPrivilegedSearchResults: $filteredPrivilegedSearchResults");
+
+    return filteredPrivilegedSearchResults.combine(
+        filteredSearchResults, (a, b) => [...a, ...b]);
   }
 }
 
@@ -127,12 +165,12 @@ class AssetPairFormBloc extends Bloc<AssetPairFormEvent, AssetPairFormModel> {
               giveAssetInput: GiveAssetInput.dirty(
                 value: initialMultiAddressBalanceEntry,
               ),
-              receiveAssetInput: ReceiveAssetInput.pure(),
+              receiveAssetInput: const ReceiveAssetInput.pure(),
               receiveAssetModalVisible: false,
               privilegedSearchResults: Success(
-                AssetPairFormModel._privilegedSearchResults.values.toList(),
+                AssetPairFormModel._privilegedSearchResults,
               ),
-              searchResults: const Initial()),
+              searchResults: const Success([])),
         ) {
     on<GiveAssetChanged>(_handleGiveAssetChanged);
     on<ReceiveAssetInputClicked>(_handleReceiveAssetInputClicked);
@@ -155,7 +193,9 @@ class AssetPairFormBloc extends Bloc<AssetPairFormEvent, AssetPairFormModel> {
   _handleReceiveAssetInputChanged(
       ReceiveAssetInputChanged event, Emitter<AssetPairFormModel> emit) async {
     if (event.value.isEmpty) {
-      emit(state.copyWith(searchResults: const Initial()));
+      emit(state.copyWith(
+      receiveAssetInput: ReceiveAssetInput.pure(),
+      searchResults: const Success([])));
       return;
     }
 
@@ -184,7 +224,7 @@ class AssetPairFormBloc extends Bloc<AssetPairFormEvent, AssetPairFormModel> {
         ));
       },
       (value) => emit(state.copyWith(
-        searchResults: Success(value),
+        searchResults: Success([...value]),
       )),
     );
   }
