@@ -70,22 +70,8 @@ class _SwapFlowViewState extends State<SwapFlowView> {
                         const Center(child: CircularProgressIndicator()),
                       Success(value: var data) => AssetPairFormProvider(
                           balances: data.balances,
-                          child: (actions, state) => AssetPairForm(
-                              receiveAssets: state.searchResults,
-                              receiveAssetInput: state.receiveAssetInput,
-                              giveAssets: state.displayGiveAssets,
-                              giveAssetInput: state.giveAssetInput,
-                              onGiveAssetSelected: actions.onGiveAssetSelected,
-                              receiveAssetModalVisible:
-                                  state.receiveAssetModalVisible,
-                              onReceiveAssetInputClicked:
-                                  actions.onReceiveAssetInputClicked,
-                              searchAssetInput: state.searchAssetInput,
-                              onSearchAssetInputChanged:
-                                  actions.onSearchAssetInputChanged,
-                              onReceiveAssetSelected:
-                                  actions.onReceiveAssetSelected),
-                        ),
+                          child: (actions, state) =>
+                              AssetPairForm(actions: actions, state: state)),
                       Failure(error: var error) => Text(error.toString()),
                       Refreshing() => throw UnimplementedError(),
                     };

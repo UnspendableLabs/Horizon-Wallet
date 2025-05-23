@@ -7,7 +7,6 @@ import 'package:flutter/material.dart';
 import 'package:horizon/domain/entities/address_v2.dart';
 import 'package:horizon/domain/entities/http_config.dart';
 import 'package:horizon/domain/entities/multi_address_balance.dart';
-import 'package:horizon/domain/entities/remote_data.dart';
 
 import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
@@ -50,13 +49,15 @@ class AssetPairLoader extends StatelessWidget {
 }
 
 class AssetPairFormActions {
+  final VoidCallback onInvertClicked;
   final Function(AssetPairFormOption value) onGiveAssetSelected;
   final Function(AssetPairFormOption value) onReceiveAssetSelected;
   final VoidCallback onReceiveAssetInputClicked;
   final Function(String value) onSearchAssetInputChanged;
 
   const AssetPairFormActions(
-      {required this.onReceiveAssetSelected,
+      {required this.onInvertClicked,
+      required this.onReceiveAssetSelected,
       required this.onGiveAssetSelected,
       required this.onReceiveAssetInputClicked,
       required this.onSearchAssetInputChanged});
@@ -83,6 +84,8 @@ class AssetPairFormProvider extends StatelessWidget {
         builder: (context, state) {
       return child(
           AssetPairFormActions(
+              onInvertClicked: () =>
+                  context.read<AssetPairFormBloc>().add(InvertClicked()),
               onGiveAssetSelected: (AssetPairFormOption value) => context
                   .read<AssetPairFormBloc>()
                   .add(GiveAssetSelected(value: value)),
@@ -101,29 +104,36 @@ class AssetPairFormProvider extends StatelessWidget {
 }
 
 class AssetPairForm extends StatefulWidget {
-  final List<AssetPairFormOption> giveAssets;
-  final RemoteData<List<AssetSearchResult>> receiveAssets;
-  final GiveAssetInput giveAssetInput;
-  final ReceiveAssetInput receiveAssetInput;
-  final SearchAssetInput searchAssetInput;
-  final Function(AssetPairFormOption option)? onGiveAssetSelected;
-  final Function(AssetPairFormOption option)? onReceiveAssetSelected;
+  final AssetPairFormActions actions;
+  final AssetPairFormModel state;
 
-  final bool receiveAssetModalVisible;
-  final VoidCallback onReceiveAssetInputClicked;
-  final Function(String value) onSearchAssetInputChanged;
+  // final List<AssetPairFormOption> giveAssets;
+  // final RemoteData<List<AssetSearchResult>> receiveAssets;
+  // final GiveAssetInput giveAssetInput;
+  // final ReceiveAssetInput receiveAssetInput;
+  // final SearchAssetInput searchAssetInput;
+  // final Function(AssetPairFormOption option)? onGiveAssetSelected;
+  // final Function(AssetPairFormOption option)? onReceiveAssetSelected;
+  // final VoidCallback onInvertClicked;
+  //
+  // final bool receiveAssetModalVisible;
+  // final VoidCallback onReceiveAssetInputClicked;
+  // final Function(String value) onSearchAssetInputChanged;
 
   const AssetPairForm(
-      {required this.receiveAssetModalVisible,
-      required this.onReceiveAssetInputClicked,
-      required this.giveAssets,
-      required this.giveAssetInput,
-      required this.receiveAssets,
-      required this.receiveAssetInput,
-      required this.searchAssetInput,
-      required this.onSearchAssetInputChanged,
-      this.onGiveAssetSelected,
-      this.onReceiveAssetSelected,
+      {required this.actions,
+      required this.state,
+      //   required this.receiveAssetModalVisible,
+      // required this.onReceiveAssetInputClicked,
+      // required this.giveAssets,
+      // required this.giveAssetInput,
+      // required this.receiveAssets,
+      // required this.receiveAssetInput,
+      // required this.searchAssetInput,
+      // required this.onSearchAssetInputChanged,
+      // required this.onInvertClicked,
+      // this.onGiveAssetSelected,
+      // this.onReceiveAssetSelected,
       super.key});
 
   @override
@@ -135,23 +145,23 @@ class _AssetPairFormState extends State<AssetPairForm> {
   void didUpdateWidget(covariant AssetPairForm oldWidget) {
     super.didUpdateWidget(oldWidget);
 
-    if (widget.receiveAssetModalVisible &&
-        !oldWidget.receiveAssetModalVisible) {
+    if (widget.state.receiveAssetModalVisible &&
+        !oldWidget.state.receiveAssetModalVisible) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
         // when receive assets updates, the modal does not...
         showReceiveAssetModal(
           outerContext: context,
-          query: widget.searchAssetInput.value,
-          onReceiveAssetSelected: widget.onReceiveAssetSelected,
+          query: widget.state.searchAssetInput.value,
+          onReceiveAssetSelected: widget.actions.onReceiveAssetSelected,
           onQueryChanged: (value) {
-            widget.onSearchAssetInputChanged(value);
+            widget.actions.onSearchAssetInputChanged(value);
           },
         ).then((selection) {
           if (selection != null) {
-            widget.onReceiveAssetSelected!(selection);
+            widget.actions.onReceiveAssetSelected!(selection);
           } else {
-            widget.onReceiveAssetInputClicked();
+            widget.actions.onReceiveAssetInputClicked();
           }
         });
       });
@@ -174,7 +184,7 @@ class _AssetPairFormState extends State<AssetPairForm> {
                   children: [
                     HorizonRedesignDropdown<AssetPairFormOption>(
                         itemPadding: const EdgeInsets.all(12),
-                        items: widget.giveAssets
+                        items: widget.state.giveAssets
                             .map((item) => DropdownMenuItem(
                                 value: item,
                                 child: AssetBalanceListItemWithOptionalBalance(
@@ -183,12 +193,9 @@ class _AssetPairFormState extends State<AssetPairForm> {
                                     balance: item.balance)))
                             .toList(),
                         onChanged: (value) {
-                          if (widget.onGiveAssetSelected != null &&
-                              value != null) {
-                            widget.onGiveAssetSelected!(value);
-                          }
+                          widget.actions.onGiveAssetSelected(value!);
                         },
-                        selectedValue: widget.giveAssetInput.value,
+                        selectedValue: widget.state.giveAssetInput.value,
                         selectedItemBuilder: (AssetPairFormOption item) =>
                             AssetBalanceListItemWithOptionalBalance(
                                 asset: item.name,
@@ -204,7 +211,7 @@ class _AssetPairFormState extends State<AssetPairForm> {
                             itemPadding: const EdgeInsets.all(12),
                             items: [],
                             onChanged: (value) {},
-                            selectedValue: widget.receiveAssetInput.value,
+                            selectedValue: widget.state.receiveAssetInput.value,
                             selectedItemBuilder: (AssetPairFormOption item) =>
                                 AssetBalanceListItemWithOptionalBalance(
                                     asset: item.name,
@@ -215,7 +222,7 @@ class _AssetPairFormState extends State<AssetPairForm> {
                           child: Material(
                             color: Colors.transparent,
                             child: InkWell(
-                              onTap: widget.onReceiveAssetInputClicked,
+                              onTap: widget.actions.onReceiveAssetInputClicked,
                               splashColor: Theme.of(context)
                                   .splashColor
                                   .withOpacity(0.1),
@@ -241,16 +248,7 @@ class _AssetPairFormState extends State<AssetPairForm> {
                         child: InkWell(
                           hoverColor: transparentPurple8,
                           borderRadius: BorderRadius.circular(8),
-                          onTap: () {
-                            // setState(() {
-                            //   if (_fromToken == null || _toToken == null) {
-                            //     return;
-                            //   }
-                            //   final temp = _fromToken;
-                            //   _fromToken = _toToken;
-                            //   _toToken = temp;
-                            // });
-                          },
+                          onTap: widget.actions.onInvertClicked,
                           child: Container(
                             width: 44,
                             height: 44,
@@ -273,8 +271,12 @@ class _AssetPairFormState extends State<AssetPairForm> {
             height: 24,
           ),
           HorizonButton(
+              disabled: widget.state.disabled,
               onPressed: () {},
-              child: TextButtonContent(value: "Create Listing"),
+              child: TextButtonContent(
+                  value: "Swap" +
+                      widget.state.swapType
+                          .fold(() => "", (type) => " ${type.toString()}")),
               variant: ButtonVariant.green)
         ],
       ),

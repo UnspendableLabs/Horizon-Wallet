@@ -8,6 +8,7 @@ import 'package:horizon/domain/entities/multi_address_balance.dart';
 import 'package:horizon/domain/entities/asset_search_result.dart';
 import 'package:horizon/domain/entities/remote_data.dart';
 import 'package:fpdart/fpdart.dart';
+import 'package:horizon/domain/entities/swap_type.dart';
 import 'package:horizon/domain/entities/http_config.dart';
 
 class AssetPairFormOption {
@@ -21,6 +22,18 @@ class AssetPairFormOption {
     required this.description,
     required this.balance,
   });
+
+  AssetPairFormOption copyWith({
+    String? name,
+    String? description,
+    Option<MultiAddressBalance>? balance,
+  }) {
+    return AssetPairFormOption(
+      name: name ?? this.name,
+      description: description ?? this.description,
+      balance: balance ?? this.balance,
+    );
+  }
 }
 
 abstract class AssetPairFormEvent extends Equatable {
@@ -48,6 +61,10 @@ class ReceiveAssetSelected extends AssetPairFormEvent {
   final AssetPairFormOption value;
   const ReceiveAssetSelected({required this.value});
 }
+
+class InvertClicked extends AssetPairFormEvent {}
+
+class SubmitClicked extends AssetPairFormEvent {}
 
 class GiveAssetInput extends FormzInput<AssetPairFormOption?, void> {
   const GiveAssetInput.dirty({required AssetPairFormOption? value})
@@ -188,6 +205,26 @@ class AssetPairFormModel with FormzMixin {
         .toList();
   }
 
+  bool get disabled {
+    return receiveAssetInput.value == null || giveAssetInput.value == null;
+  }
+
+  Option<SwapType> get swapType {
+    if (giveAssetInput.value == null ||
+        receiveAssetInput.value == null) {
+      return Option.none();
+    }
+
+    return switch ((
+      giveAssetInput.value!.name.toLowerCase(),
+      receiveAssetInput.value!.name.toLowerCase()
+    )) {
+      ("btc", _) => Option.of(AtomicSwapBuy()),
+      (_, "btc") => Option.of(AtomicSwapSell()),
+      (_, _) => Option.of(CounterpartyOrder()),
+    };
+  }
+
   @override
   String toString() {
     return "AssetPairFormModel { "
@@ -232,6 +269,7 @@ class AssetPairFormBloc extends Bloc<AssetPairFormEvent, AssetPairFormModel> {
     on<ReceiveAssetInputClicked>(_handleReceiveAssetInputClicked);
     on<SearchInputChanged>(_handleSearchInputChanged);
     on<ReceiveAssetSelected>(_handleReceiveAssetSelected);
+    on<InvertClicked>(_handleInvertClicked);
   }
 
   _handleGiveAssetChanged(
@@ -294,5 +332,28 @@ class AssetPairFormBloc extends Bloc<AssetPairFormEvent, AssetPairFormModel> {
         receiveAssetModalVisible: Option.of(false));
 
     emit(next);
+  }
+
+  _handleInvertClicked(
+    InvertClicked event,
+    Emitter<AssetPairFormModel> emit,
+  ) {
+    if (state.receiveAssetInput.value == null ||
+        state.giveAssetInput.value == null) {
+      return;
+    }
+
+    final nextReceiveAsset =
+        state.giveAssetInput.value!.copyWith(balance: Option.none());
+
+    final nextGiveAsset = state.giveAssets.firstWhere(
+      (a) => a.name == state.receiveAssetInput.value!.name,
+      orElse: () => state.receiveAssetInput.value!,
+    );
+
+    return emit(state.copyWith(
+      giveAssetInput: GiveAssetInput.dirty(value: nextGiveAsset),
+      receiveAssetInput: ReceiveAssetInput.dirty(value: nextReceiveAsset),
+    ));
   }
 }
