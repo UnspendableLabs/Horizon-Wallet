@@ -11,8 +11,8 @@ import 'package:horizon/presentation/session/bloc/session_state.dart';
 import 'package:horizon/utils/app_icons.dart';
 
 class SwapFormCompose extends StatefulWidget {
-  
-  const SwapFormCompose({super.key});
+  final Function() onNextStep;
+  const SwapFormCompose({super.key, required this.onNextStep});
 
   @override
   State<SwapFormCompose> createState() => _SwapFormComposeState();
@@ -61,22 +61,29 @@ class _SwapFormComposeState extends State<SwapFormCompose> {
   // TODO: slider value
   double swapValue = 0;
 
-  Widget _buildRow(String quantity, String price, String priceUsd, String total, String totalUsd, bool isSelected) {
+  Widget _buildRow(String quantity, String price, String priceUsd, String total,
+      String totalUsd, bool isSelected) {
     final theme = Theme.of(context);
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
+    return SizedBox(
+      height: 50,
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Expanded(
             flex: 1,
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 if (isSelected)
-                  AppIcons.checkCircleIcon(context: context, color: green1, width: 24, height: 24)
+                  AppIcons.checkCircleIcon(
+                      context: context, color: green1, width: 24, height: 24)
                 else
                   AppIcons.plusCircleIcon(
-                      context: context, color: transparentPurple33, width: 24, height: 24),
+                      context: context,
+                      color: transparentPurple33,
+                      width: 24,
+                      height: 24),
                 const SizedBox(width: 8),
                 Text(quantity, style: theme.textTheme.bodySmall),
               ],
@@ -86,12 +93,15 @@ class _SwapFormComposeState extends State<SwapFormCompose> {
             flex: 1,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.end,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(price, style: theme.textTheme.bodySmall),
-                Text(priceUsd, 
+                Text(
+                  priceUsd,
                   style: theme.textTheme.bodySmall!.copyWith(
-                    color: theme.extension<CustomThemeExtension>()!.mutedDescriptionTextColor
-                  ),
+                      color: theme
+                          .extension<CustomThemeExtension>()!
+                          .mutedDescriptionTextColor),
                 ),
               ],
             ),
@@ -100,15 +110,19 @@ class _SwapFormComposeState extends State<SwapFormCompose> {
             flex: 1,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.end,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(total, style: theme.textTheme.bodySmall),
-                Text(totalUsd, 
+                Text(
+                  totalUsd,
                   style: theme.textTheme.bodySmall!.copyWith(
-                    color: theme.extension<CustomThemeExtension>()!.mutedDescriptionTextColor
-                  ),
+                      color: theme
+                          .extension<CustomThemeExtension>()!
+                          .mutedDescriptionTextColor),
                 ),
-                const SizedBox(width: 8,)
-
+                const SizedBox(
+                  width: 8,
+                )
               ],
             ),
           ),
@@ -138,97 +152,179 @@ class _SwapFormComposeState extends State<SwapFormCompose> {
               children: [
                 Expanded(
                     child: HorizonCard(
-                        child: Column(
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        QuantityText(
-                          quantity: swapValue.toString(),
-                          style: const TextStyle(
-                            fontSize: 35,
-                          ),
-                        ),
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            appIcons.assetIcon(
-                                httpConfig: session.httpConfig,
-                                assetName: toAsset.asset,
-                                context: context,
-                                width: 24,
-                                height: 24),
-                            const SizedBox(width: 8),
-                            Text(toAsset.asset,
-                                style: theme.textTheme.titleMedium!.copyWith(
-                                  fontSize: 12,
-                                )),
-                          ],
-                        ),
-                      ],
-                    ),
-                    commonHeightSizedBox,
-                    HorizonSlider(
-                      value: swapValue,
-                      min: 0,
-                      max: double.parse(fromAsset.totalNormalized),
-                      onChanged: (value) {
-                        setState(() {
-                          swapValue = double.parse(value.toStringAsFixed(2));
-                        });
-                      },
-                    ),
-                    commonHeightSizedBox,
-                    Expanded(
-                      child: SingleChildScrollView(
-                        scrollDirection: Axis.vertical,
+                        padding: const EdgeInsets.fromLTRB(20, 20, 0, 20),
                         child: Column(
                           children: [
-                            // Header Row
-                            Row(
-                              children: [
-                                Expanded(
-                                  flex: 1,
-                                  child: Text('Quantity', 
-                                    style: theme.textTheme.bodySmall,
-                                    textAlign: TextAlign.center,
+                            Padding(
+                              padding: const EdgeInsets.only(right: 20),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  QuantityText(
+                                    quantity: swapValue.toString(),
+                                    style: const TextStyle(
+                                      fontSize: 35,
+                                    ),
                                   ),
-                                ),
-                                Expanded(
-                                  flex: 1,
-                                  child: Text('Price', 
-                                    style: theme.textTheme.bodySmall,
-                                    textAlign: TextAlign.end,
+                                  Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
+                                    children: [
+                                      appIcons.assetIcon(
+                                          httpConfig: session.httpConfig,
+                                          assetName: toAsset.asset,
+                                          context: context,
+                                          width: 24,
+                                          height: 24),
+                                      const SizedBox(width: 8),
+                                      Text(toAsset.asset,
+                                          style: theme.textTheme.titleMedium!
+                                              .copyWith(
+                                            fontSize: 12,
+                                          )),
+                                    ],
                                   ),
-                                ),
-                                Expanded(
-                                  flex: 1,
-                                  child: Text('Total', 
-                                    style: theme.textTheme.bodySmall,
-                                    textAlign: TextAlign.end,
-                                  ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
-                            const SizedBox(height: 8),
-                            // Data Rows
-                            _buildRow('23.45678912', '0.00123456', '15.78901234', '23.45678912', '15.78901234', true),
-                            _buildRow('67.89012345', '0.00789012', '8.90123456', '67.89012345', '8.90123456', false),
-                            _buildRow('156.78901234', '0.00234567', '12.34567890', '156.78901234', '12.34567890', false),
-                            _buildRow('156.78901234', '0.00234567', '12.34567890', '156.78901234', '12.34567890', false),
-                            _buildRow('156.78901234', '0.00234567', '12.34567890', '156.78901234', '12.34567890', false),
-                            _buildRow('156.78901234', '0.00234567', '12.34567890', '156.78901234', '12.34567890', false),
-                            _buildRow('156.78901234', '0.00234567', '12.34567890', '156.78901234', '12.34567890', false),
-                            _buildRow('156.78901234', '0.00234567', '12.34567890', '156.78901234', '12.34567890', false),
-                            _buildRow('156.78901234', '0.00234567', '12.34567890', '156.78901234', '12.34567890', false),
-                            _buildRow('156.78901234', '0.00234567', '12.34567890', '156.78901234', '12.34567890', false),
+                            commonHeightSizedBox,
+                            commonHeightSizedBox,
+                            Padding(
+                              padding: const EdgeInsets.only(right: 20),
+                              child: HorizonSlider(
+                                value: swapValue,
+                                min: 0,
+                                max: double.parse(fromAsset.totalNormalized),
+                                onChanged: (value) {
+                                  setState(() {
+                                    swapValue =
+                                        double.parse(value.toStringAsFixed(2));
+                                  });
+                                },
+                              ),
+                            ),
+                            commonHeightSizedBox,
+                            Expanded(
+                              child: SingleChildScrollView(
+                                scrollDirection: Axis.vertical,
+                                child: Padding(
+                                    padding: const EdgeInsets.only(right: 20),
+                                    child: Column(
+                                      children: [
+                                        // Header Row
+                                        SizedBox(
+                                          height: 34,
+                                          child: Row(
+                                            children: [
+                                              Expanded(
+                                                flex: 1,
+                                                child: Text(
+                                                  'Quantity',
+                                                  style:
+                                                      theme.textTheme.bodySmall,
+                                                  textAlign: TextAlign.left,
+                                                ),
+                                              ),
+                                              Expanded(
+                                                flex: 1,
+                                                child: Text(
+                                                  'Price (sats/${toAsset.asset})',
+                                                  style:
+                                                      theme.textTheme.bodySmall,
+                                                  textAlign: TextAlign.right,
+                                                ),
+                                              ),
+                                              Expanded(
+                                                flex: 1,
+                                                child: Text(
+                                                  'Total',
+                                                  style:
+                                                      theme.textTheme.bodySmall,
+                                                  textAlign: TextAlign.right,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        // Data Rows
+                                        _buildRow(
+                                            '23.45678912',
+                                            '0.00123456',
+                                            '15.78901234',
+                                            '23.45678912',
+                                            '15.78901234',
+                                            true),
+                                        _buildRow(
+                                            '67.89012345',
+                                            '0.00789012',
+                                            '8.90123456',
+                                            '67.89012345',
+                                            '8.90123456',
+                                            false),
+                                        _buildRow(
+                                            '156.78901234',
+                                            '0.00234567',
+                                            '12.34567890',
+                                            '156.78901234',
+                                            '12.34567890',
+                                            false),
+                                        _buildRow(
+                                            '156.78901234',
+                                            '0.00234567',
+                                            '12.34567890',
+                                            '156.78901234',
+                                            '12.34567890',
+                                            false),
+                                        _buildRow(
+                                            '156.78901234',
+                                            '0.00234567',
+                                            '12.34567890',
+                                            '156.78901234',
+                                            '12.34567890',
+                                            false),
+                                        _buildRow(
+                                            '156.78901234',
+                                            '0.00234567',
+                                            '12.34567890',
+                                            '156.78901234',
+                                            '12.34567890',
+                                            false),
+                                        _buildRow(
+                                            '156.78901234',
+                                            '0.00234567',
+                                            '12.34567890',
+                                            '156.78901234',
+                                            '12.34567890',
+                                            false),
+                                        _buildRow(
+                                            '156.78901234',
+                                            '0.00234567',
+                                            '12.34567890',
+                                            '156.78901234',
+                                            '12.34567890',
+                                            false),
+                                        _buildRow(
+                                            '156.78901234',
+                                            '0.00234567',
+                                            '12.34567890',
+                                            '156.78901234',
+                                            '12.34567890',
+                                            false),
+                                        _buildRow(
+                                            '156.78901234',
+                                            '0.00234567',
+                                            '12.34567890',
+                                            '156.78901234',
+                                            '12.34567890',
+                                            false),
+                                      ],
+                                    )),
+                              ),
+                            )
                           ],
-                        ),
-                      ),
-                    )
-                  ],
-                ))),
+                        ))),
                 const SizedBox(height: 20),
                 HorizonCard(
                     padding: const EdgeInsets.all(0),
@@ -263,7 +359,10 @@ class _SwapFormComposeState extends State<SwapFormCompose> {
                       ),
                       HorizonButton(
                         child: TextButtonContent(value: "Swap"),
-                        onPressed: () {},
+                        onPressed: () {
+                          widget.onNextStep();
+                              
+                        },
                         variant: ButtonVariant.green,
                       ),
                     ])),

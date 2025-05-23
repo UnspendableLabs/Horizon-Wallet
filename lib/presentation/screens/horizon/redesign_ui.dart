@@ -1749,7 +1749,7 @@ class HorizonSlider extends StatelessWidget {
       return colors.last;
     }
 
-    double _getSteppedValue(double rawValue) {
+    double getSteppedValue(double rawValue) {
       if (steps == null) return rawValue;
       final stepSize = (max - min) / steps!;
       final stepsCount = ((rawValue - min) / stepSize).round();
@@ -1773,32 +1773,49 @@ class HorizonSlider extends StatelessWidget {
           height: thumbSize,
           child: Stack(
             children: [
-              // Gutter (unfilled track)
-              Positioned(
-                left: 0,
-                top: (thumbSize - height) / 2,
-                child: Container(
-                  width: trackWidth,
-                  height: height,
-                  decoration: BoxDecoration(
-                    color: gutterColor,
-                    borderRadius: BorderRadius.circular(trackRadius),
-                  ),
-                ),
-              ),
-              // Filled (gradient) track
-              Positioned(
-                left: 0,
-                top: (thumbSize - height) / 2,
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(trackRadius),
-                  child: Container(
-                    width: filledWidth.clamp(0, trackWidth),
-                    height: height,
-                    decoration: const BoxDecoration(
-                      gradient: gradient,
+              GestureDetector(
+                behavior: HitTestBehavior.translucent,
+                onTapDown: (details) {
+                  if (onChanged == null) return;
+                  final RenderBox renderBox = context.findRenderObject() as RenderBox;
+                  final position = renderBox.globalToLocal(details.globalPosition);
+                  final tapPosition = (position.dx - thumbSize / 2).clamp(0, thumbTravel);
+                  final double rawValue = min + (max - min) * (tapPosition / thumbTravel);
+                  final clampedValue = rawValue.clamp(min, max);
+                  final steppedValue = getSteppedValue(clampedValue);
+                  onChanged!(steppedValue);
+                },
+                child: Stack(
+                  children: [
+                    // Gutter (unfilled track)
+                    Positioned(
+                      left: 0,
+                      top: (thumbSize - height) / 2,
+                      child: Container(
+                        width: trackWidth,
+                        height: height,
+                        decoration: BoxDecoration(
+                          color: gutterColor,
+                          borderRadius: BorderRadius.circular(trackRadius),
+                        ),
+                      ),
                     ),
-                  ),
+                    // Filled (gradient) track
+                    Positioned(
+                      left: 0,
+                      top: (thumbSize - height) / 2,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(trackRadius),
+                        child: Container(
+                          width: filledWidth.clamp(0, trackWidth),
+                          height: height,
+                          decoration: const BoxDecoration(
+                            gradient: gradient,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
               // Thumb
@@ -1812,7 +1829,7 @@ class HorizonSlider extends StatelessWidget {
                     final dragPosition = (position.dx - thumbSize / 2).clamp(0, thumbTravel);
                     final double rawValue = min + (max - min) * (dragPosition / thumbTravel);
                     final clampedValue = rawValue.clamp(min, max);
-                    final steppedValue = _getSteppedValue(clampedValue);
+                    final steppedValue = getSteppedValue(clampedValue);
                     onChanged!(steppedValue);
                   },
                   child: Container(

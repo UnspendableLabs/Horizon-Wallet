@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:horizon/presentation/common/steps_indicator.dart';
 import 'package:horizon/presentation/screens/atomic_swap/forms/choose_address.dart';
+import 'package:horizon/presentation/screens/atomic_swap/forms/review_swap.dart';
 import 'package:horizon/presentation/screens/atomic_swap/forms/swap_compose.dart';
 import 'package:horizon/presentation/screens/atomic_swap/forms/token_selection.dart';
 import 'package:horizon/utils/app_icons.dart';
@@ -90,8 +91,17 @@ class _AtomicSwapViewState extends State<AtomicSwapView> {
           },
         );
       case 3:
-        return const SwapFormCompose(
+        return SwapFormCompose(
           key: ValueKey(3),
+          onNextStep: () {
+            setState(() {
+              _currentStep++;
+            });
+          },
+        );
+      case 4:
+        return const SwapFormReviewStep(
+          key: ValueKey(4),
         );
       default:
         return const SizedBox.shrink();
