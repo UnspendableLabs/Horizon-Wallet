@@ -10,6 +10,19 @@ import 'package:horizon/domain/entities/remote_data.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:horizon/domain/entities/http_config.dart';
 
+class AssetPairFormOption {
+  final String name;
+  final String? description;
+
+  final Option<MultiAddressBalance> balance;
+
+  const AssetPairFormOption({
+    required this.name,
+    required this.description,
+    required this.balance,
+  });
+}
+
 abstract class AssetPairFormEvent extends Equatable {
   const AssetPairFormEvent();
 
@@ -17,38 +30,59 @@ abstract class AssetPairFormEvent extends Equatable {
   List<Object?> get props => [];
 }
 
-class GiveAssetChanged extends AssetPairFormEvent {
-  final MultiAddressBalance value;
-  const GiveAssetChanged({required this.value});
+class GiveAssetSelected extends AssetPairFormEvent {
+  final AssetPairFormOption value;
+  const GiveAssetSelected({required this.value});
 }
 
 class ReceiveAssetInputClicked extends AssetPairFormEvent {
   const ReceiveAssetInputClicked();
 }
 
-class ReceiveAssetInputChanged extends AssetPairFormEvent {
+class SearchInputChanged extends AssetPairFormEvent {
   final String value;
-  const ReceiveAssetInputChanged(this.value);
+  const SearchInputChanged(this.value);
 }
 
-class GiveAssetInput extends FormzInput<MultiAddressBalance?, void> {
-  const GiveAssetInput.dirty({required MultiAddressBalance? value})
+class ReceiveAssetSelected extends AssetPairFormEvent {
+  final AssetPairFormOption value;
+  const ReceiveAssetSelected({required this.value});
+}
+
+class GiveAssetInput extends FormzInput<AssetPairFormOption?, void> {
+  const GiveAssetInput.dirty({required AssetPairFormOption? value})
       : super.dirty(value);
 
+  const GiveAssetInput.pure() : super.pure(null);
+
   @override
-  void validator(MultiAddressBalance? value) {
+  void validator(AssetPairFormOption? value) {
     if (value == null) {
       throw Exception("give asset input is null");
     }
   }
 }
 
+class ReceiveAssetInput extends FormzInput<AssetPairFormOption?, void> {
+  const ReceiveAssetInput.dirty({required AssetPairFormOption? value})
+      : super.dirty(value);
+
+  const ReceiveAssetInput.pure() : super.pure(null);
+
+  @override
+  void validator(AssetPairFormOption? value) {
+    if (value == null) {
+      throw Exception("receive asset input is null");
+    }
+  }
+}
+
 enum ReceiveAssetInputValidationError { required }
 
-class ReceiveAssetInput
+class SearchAssetInput
     extends FormzInput<String, ReceiveAssetInputValidationError> {
-  const ReceiveAssetInput.pure() : super.pure('');
-  const ReceiveAssetInput.dirty(super.value) : super.dirty();
+  const SearchAssetInput.pure() : super.pure('');
+  const SearchAssetInput.dirty(super.value) : super.dirty();
 
   @override
   ReceiveAssetInputValidationError? validator(String value) {
@@ -69,59 +103,61 @@ class AssetPairFormModel with FormzMixin {
       name: "XCP",
       description: "XCP",
     ),
+    "pepecash": const AssetSearchResult(
+      name: "PEPECASH",
+      description: "http://rarepepedirectory.com/json/pc.json",
+    ),
   };
 
-  final List<MultiAddressBalance> giveAssets;
-
+  final List<AssetPairFormOption> giveAssets;
   final GiveAssetInput giveAssetInput;
+  final ReceiveAssetInput receiveAssetInput;
 
   final RemoteData<Map<String, AssetSearchResult>> privilegedSearchResults;
-
   final RemoteData<List<AssetSearchResult>> searchResults;
 
   final bool receiveAssetModalVisible;
-
-  final ReceiveAssetInput receiveAssetInput;
+  final SearchAssetInput searchAssetInput;
 
   AssetPairFormModel(
       {required this.giveAssets,
       required this.giveAssetInput,
+      required this.receiveAssetInput,
       required this.privilegedSearchResults,
       required this.searchResults,
       required this.receiveAssetModalVisible,
-      required this.receiveAssetInput});
+      required this.searchAssetInput});
 
   @override
   List<FormzInput> get inputs => [giveAssetInput, receiveAssetInput];
 
   AssetPairFormModel copyWith(
-      {List<MultiAddressBalance>? giveAssets,
+      {List<AssetPairFormOption>? giveAssets,
       GiveAssetInput? giveAssetInput,
+      ReceiveAssetInput? receiveAssetInput,
       RemoteData<Map<String, AssetSearchResult>>? privilegedSearchResults,
       RemoteData<List<AssetSearchResult>>? searchResults,
       Option<bool> receiveAssetModalVisible = const Option.none(),
-      ReceiveAssetInput? receiveAssetInput}) {
+      SearchAssetInput? searchAssetInput}) {
     return AssetPairFormModel(
         privilegedSearchResults:
             privilegedSearchResults ?? this.privilegedSearchResults,
         giveAssets: giveAssets ?? this.giveAssets,
         giveAssetInput: giveAssetInput ?? this.giveAssetInput,
-        searchResults: searchResults ?? this.searchResults,
         receiveAssetInput: receiveAssetInput ?? this.receiveAssetInput,
+        searchResults: searchResults ?? this.searchResults,
+        searchAssetInput: searchAssetInput ?? this.searchAssetInput,
         receiveAssetModalVisible: receiveAssetModalVisible
             .getOrElse(() => this.receiveAssetModalVisible));
   }
 
   RemoteData<List<AssetSearchResult>> get filteredPrivilegedSearchResults {
-
-    print("revievedAssetInput.value: ${receiveAssetInput.value}");
-
     return privilegedSearchResults.map((value) {
       return value.values
           .toList()
           .filter((a) => a.name
               .toLowerCase()
-              .contains(receiveAssetInput.value.toLowerCase()))
+              .contains(searchAssetInput.value.toLowerCase()))
           .toList();
     });
   }
@@ -131,7 +167,6 @@ class AssetPairFormModel with FormzMixin {
       privilegedSearchResults,
       (results, privMap) {
         final lcPrivKeys = privMap.keys.map((k) => k.toLowerCase()).toSet();
-
         return results
             .where((r) => !lcPrivKeys.contains(r.name.toLowerCase()))
             .toList();
@@ -140,11 +175,28 @@ class AssetPairFormModel with FormzMixin {
   }
 
   RemoteData<List<AssetSearchResult>> get displaySearchResults {
-      // Build a lower-cased lookup set just once
-    print("filteredPrivilegedSearchResults: $filteredPrivilegedSearchResults");
-
     return filteredPrivilegedSearchResults.combine(
-        filteredSearchResults, (a, b) => [...a, ...b]);
+        filteredSearchResults,
+        (a, b) => [...a, ...b]
+            .filter((a) => giveAssetInput.value?.name != a.name)
+            .toList());
+  }
+
+  List<AssetPairFormOption> get displayGiveAssets {
+    return giveAssets
+        .where((a) => a.name != receiveAssetInput.value?.name)
+        .toList();
+  }
+
+  @override
+  String toString() {
+    return "AssetPairFormModel { "
+        "giveAssets: $giveAssets, "
+        // "receiveAssetInput: $receiveAssetInput, "
+        "privilegedSearchResults: $privilegedSearchResults, "
+        "searchResults: $searchResults, "
+        "receiveAssetModalVisible: $receiveAssetModalVisible, "
+        "searchAssetInput: $searchAssetInput }";
   }
 }
 
@@ -152,33 +204,38 @@ class AssetPairFormBloc extends Bloc<AssetPairFormEvent, AssetPairFormModel> {
   final HttpConfig httpConfig;
   final AssetSearchRepository _assetSearchRepository;
 
-  AssetPairFormBloc(
-      {AssetSearchRepository? assetSearchRepository,
-      required this.httpConfig,
-      required List<MultiAddressBalance> initialGiveAssets,
-      required MultiAddressBalance? initialMultiAddressBalanceEntry})
-      : _assetSearchRepository =
+  AssetPairFormBloc({
+    AssetSearchRepository? assetSearchRepository,
+    required this.httpConfig,
+    required List<MultiAddressBalance> initialGiveAssets,
+  })  : _assetSearchRepository =
             assetSearchRepository ?? GetIt.I<AssetSearchRepository>(),
         super(
           AssetPairFormModel(
-              giveAssets: initialGiveAssets,
-              giveAssetInput: GiveAssetInput.dirty(
-                value: initialMultiAddressBalanceEntry,
-              ),
-              receiveAssetInput: const ReceiveAssetInput.pure(),
+              giveAssets: initialGiveAssets
+                  .map((balance) => AssetPairFormOption(
+                        name: balance.asset,
+                        description: balance.assetInfo.description,
+                        balance: Option.of(balance),
+                      ))
+                  .toList(),
+              giveAssetInput: GiveAssetInput.pure(),
+              receiveAssetInput: ReceiveAssetInput.pure(),
+              searchAssetInput: const SearchAssetInput.pure(),
               receiveAssetModalVisible: false,
               privilegedSearchResults: Success(
                 AssetPairFormModel._privilegedSearchResults,
               ),
               searchResults: const Success([])),
         ) {
-    on<GiveAssetChanged>(_handleGiveAssetChanged);
+    on<GiveAssetSelected>(_handleGiveAssetChanged);
     on<ReceiveAssetInputClicked>(_handleReceiveAssetInputClicked);
-    on<ReceiveAssetInputChanged>(_handleReceiveAssetInputChanged);
+    on<SearchInputChanged>(_handleSearchInputChanged);
+    on<ReceiveAssetSelected>(_handleReceiveAssetSelected);
   }
 
   _handleGiveAssetChanged(
-      GiveAssetChanged event, Emitter<AssetPairFormModel> emit) {
+      GiveAssetSelected event, Emitter<AssetPairFormModel> emit) {
     emit(state.copyWith(
       giveAssetInput: GiveAssetInput.dirty(value: event.value),
     ));
@@ -190,12 +247,12 @@ class AssetPairFormBloc extends Bloc<AssetPairFormEvent, AssetPairFormModel> {
         receiveAssetModalVisible: Option.of(!state.receiveAssetModalVisible)));
   }
 
-  _handleReceiveAssetInputChanged(
-      ReceiveAssetInputChanged event, Emitter<AssetPairFormModel> emit) async {
+  _handleSearchInputChanged(
+      SearchInputChanged event, Emitter<AssetPairFormModel> emit) async {
     if (event.value.isEmpty) {
       emit(state.copyWith(
-      receiveAssetInput: ReceiveAssetInput.pure(),
-      searchResults: const Success([])));
+          searchAssetInput: SearchAssetInput.pure(),
+          searchResults: const Success([])));
       return;
     }
 
@@ -207,7 +264,7 @@ class AssetPairFormBloc extends Bloc<AssetPairFormEvent, AssetPairFormModel> {
 
     emit(state.copyWith(
         searchResults: receiveAssetsNext,
-        receiveAssetInput: ReceiveAssetInput.dirty(event.value)));
+        searchAssetInput: SearchAssetInput.dirty(event.value)));
 
     final task = _assetSearchRepository.searchT(
         httpConfig: httpConfig,
@@ -218,7 +275,6 @@ class AssetPairFormBloc extends Bloc<AssetPairFormEvent, AssetPairFormModel> {
 
     result.fold(
       (err) {
-        print(err);
         emit(state.copyWith(
           searchResults: Failure(err),
         ));
@@ -227,5 +283,16 @@ class AssetPairFormBloc extends Bloc<AssetPairFormEvent, AssetPairFormModel> {
         searchResults: Success([...value]),
       )),
     );
+  }
+
+  _handleReceiveAssetSelected(
+    ReceiveAssetSelected event,
+    Emitter<AssetPairFormModel> emit,
+  ) {
+    final next = state.copyWith(
+        receiveAssetInput: ReceiveAssetInput.dirty(value: event.value),
+        receiveAssetModalVisible: Option.of(false));
+
+    emit(next);
   }
 }

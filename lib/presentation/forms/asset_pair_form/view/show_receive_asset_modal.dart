@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:fpdart/fpdart.dart' hide State;
 import 'package:flutter/material.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 import 'package:horizon/domain/entities/remote_data.dart';
@@ -58,6 +59,11 @@ class _InlineTypeAheadState<T> extends State<InlineTypeAhead<T>> {
         mainAxisSize: MainAxisSize.min,
         children: [
           HorizonTextField(
+            suffixIcon: AppIcons.searchIcon(
+              context: context,
+              width: 34,
+              height: 34,
+            ),
             controller: widget.controller,
             hintText: 'Search',
             onChanged: (term) {
@@ -67,16 +73,13 @@ class _InlineTypeAheadState<T> extends State<InlineTypeAhead<T>> {
           const SizedBox(height: 12),
           SuggestionsList<T>(
             controller: widget.suggestionsController,
-            // listBuilder: (ctx, items) {
-            //   return ListView.builder(
-            //     itemCount: items.length,
-            //     itemBuilder: (ctx, index) {
-            //       final widget =items[index];
-            //       return widget;
-            //     },
-            //   );
-            //
-            // },
+            listBuilder: (ctx, suggestions) => SizedBox(
+              height: 200,
+              child: ListView.builder(
+                itemCount: suggestions.length,
+                itemBuilder: (ctx, index) => suggestions[index],
+              ),
+            ),
             itemBuilder: (ctx, item) => InkWell(
               onTap: () => widget.onSelected(item),
               child: widget.itemBuilder(ctx, item),
@@ -96,26 +99,15 @@ class _InlineTypeAheadState<T> extends State<InlineTypeAhead<T>> {
   }
 }
 
-class CustomTypeahead<T> extends RawTypeAheadField<T> {
-  const CustomTypeahead({
-    super.key,
-    required super.suggestionsController,
-    required super.controller,
-    required super.builder,
-    required super.loadingBuilder,
-    required super.errorBuilder,
-    required super.emptyBuilder,
-    required super.itemBuilder,
-    required super.suggestionsCallback,
-    required super.onSelected,
-    required super.listBuilder,
-  });
-}
-
 class AssetSearchDialog extends StatefulWidget {
   final Function(String) onQueryChanged;
+  // final Function(AssetPairFormOption)? onAssetSelected;
 
-  const AssetSearchDialog({required this.onQueryChanged, Key? key})
+  const AssetSearchDialog(
+      {
+      // required this.onAssetSelected,
+      required this.onQueryChanged,
+      Key? key})
       : super(key: key);
 
   @override
@@ -162,11 +154,6 @@ class _AssetSearchDialogState extends State<AssetSearchDialog> {
     return BlocConsumer<AssetPairFormBloc, AssetPairFormModel>(
       // i sort of need to modify the controller based on bloc state for the initial render
       listener: (context, state) {
-
-        print("display search restults: ${state.displaySearchResults}\n");
-        print("privileged search results: ${state.privilegedSearchResults}\n");
-        print("search results: ${state.searchResults}\n");
-        print("\n\n\n\n\n\n");
         switch (state.displaySearchResults) {
           case Initial():
             _suggestionsController.suggestions = null;
@@ -199,7 +186,7 @@ class _AssetSearchDialogState extends State<AssetSearchDialog> {
       builder: (context, state) {
         return GestureDetector(
           onTap: () {
-            Navigator.of(context).pop();
+            // Navigator.of(context).pop();
           },
           child: Material(
             type: MaterialType.transparency,
@@ -241,11 +228,20 @@ class _AssetSearchDialogState extends State<AssetSearchDialog> {
                             controller: _searchInputController,
                             suggestionsController: _suggestionsController,
                             suggestionsCallback: (term) {
-                              print("suggestins callback $term");
                               widget.onQueryChanged(term);
                             },
                             onSelected: (selection) {
-                              print("selection: ${selection.name}");
+                              Navigator.of(context).pop(AssetPairFormOption(
+                                  name: selection.name,
+                                  description: selection.description,
+                                  balance: Option.none()));
+
+                              // if (widget.onAssetSelected != null) {
+                              //   widget.onAssetSelected!(AssetPairFormOption(
+                              //       name: selection.name,
+                              //       description: selection.description,
+                              //       balance: Option.none()));
+                              // }
                             },
                             itemBuilder: (context, suggestion) {
                               return Padding(
@@ -305,12 +301,13 @@ class AssetSearchResultListItem extends StatelessWidget {
   }
 }
 
-Future<dynamic> showReceiveAssetModal({
-  required BuildContext context,
+Future<AssetPairFormOption?> showReceiveAssetModal({
+  required BuildContext outerContext,
   required String query,
   required ValueChanged<String> onQueryChanged,
-}) {
-  final theme = Theme.of(context);
+  required ValueChanged<AssetPairFormOption>? onReceiveAssetSelected,
+}) async {
+  final theme = Theme.of(outerContext);
   final isDarkMode = theme.brightness == Brightness.dark;
 
   final controller = TextEditingController(text: query);
@@ -320,23 +317,25 @@ Future<dynamic> showReceiveAssetModal({
   );
   // I need to read a bloc from passed in context here
 
-  return showDialog(
-    context: context,
-    barrierDismissible: true,
+  AssetPairFormOption? response = await showDialog(
+    context: outerContext,
     barrierColor: Colors.black.withOpacity(0.33),
     builder: (dialogContext) {
       return BlocProvider.value(
-          value: BlocProvider.of<AssetPairFormBloc>(context, listen: false),
-          child: GestureDetector(onTap: () {
-            Navigator.of(dialogContext).pop();
-          }, child: BlocBuilder<AssetPairFormBloc, AssetPairFormModel>(
-              builder: (context, state) {
+          value:
+              BlocProvider.of<AssetPairFormBloc>(outerContext, listen: false),
+          child: GestureDetector(
+              child: BlocConsumer<AssetPairFormBloc, AssetPairFormModel>(
+                  listener: (context, state) {
+            // no-op for now
+          }, builder: (context, state) {
             return AssetSearchDialog(
-              onQueryChanged: (term) {
-                onQueryChanged(term);
-              },
+              // onAssetSelected: onReceiveAssetSelected,
+              onQueryChanged: onQueryChanged,
             );
           })));
     },
   );
+
+  return response;
 }

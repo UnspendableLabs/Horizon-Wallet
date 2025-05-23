@@ -70,20 +70,21 @@ class _SwapFlowViewState extends State<SwapFlowView> {
                         const Center(child: CircularProgressIndicator()),
                       Success(value: var data) => AssetPairFormProvider(
                           balances: data.balances,
-                          initialMultiAddressBalanceEntry: null,
                           child: (actions, state) => AssetPairForm(
-                            receiveAssets: state.searchResults,
-                            giveAssets: state.giveAssets,
-                            giveAssetInput: state.giveAssetInput,
-                            onGiveAssetChanged: actions.onGiveAssetChanged,
-                            receiveAssetModalVisible:
-                                state.receiveAssetModalVisible,
-                            receiveAssetInput: state.receiveAssetInput,
-                            onReceiveAssetInputClicked:
-                                actions.onReceiveAssetInputClicked,
-                            onReceiveAssetInputChanged:
-                                actions.onReceiveAssetInputChanged,
-                          ),
+                              receiveAssets: state.searchResults,
+                              receiveAssetInput: state.receiveAssetInput,
+                              giveAssets: state.displayGiveAssets,
+                              giveAssetInput: state.giveAssetInput,
+                              onGiveAssetSelected: actions.onGiveAssetSelected,
+                              receiveAssetModalVisible:
+                                  state.receiveAssetModalVisible,
+                              onReceiveAssetInputClicked:
+                                  actions.onReceiveAssetInputClicked,
+                              searchAssetInput: state.searchAssetInput,
+                              onSearchAssetInputChanged:
+                                  actions.onSearchAssetInputChanged,
+                              onReceiveAssetSelected:
+                                  actions.onReceiveAssetSelected),
                         ),
                       Failure(error: var error) => Text(error.toString()),
                       Refreshing() => throw UnimplementedError(),

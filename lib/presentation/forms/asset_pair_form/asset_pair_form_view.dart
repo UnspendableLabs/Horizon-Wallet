@@ -50,65 +50,68 @@ class AssetPairLoader extends StatelessWidget {
 }
 
 class AssetPairFormActions {
-  final Function(MultiAddressBalance multiAddressBalance) onGiveAssetChanged;
+  final Function(AssetPairFormOption value) onGiveAssetSelected;
+  final Function(AssetPairFormOption value) onReceiveAssetSelected;
   final VoidCallback onReceiveAssetInputClicked;
-  final Function(String value) onReceiveAssetInputChanged;
+  final Function(String value) onSearchAssetInputChanged;
 
   const AssetPairFormActions(
-      {required this.onGiveAssetChanged,
+      {required this.onReceiveAssetSelected,
+      required this.onGiveAssetSelected,
       required this.onReceiveAssetInputClicked,
-      required this.onReceiveAssetInputChanged});
+      required this.onSearchAssetInputChanged});
 }
 
 class AssetPairFormProvider extends StatelessWidget {
   final List<MultiAddressBalance> balances;
-  final MultiAddressBalance? initialMultiAddressBalanceEntry;
   final Widget Function(AssetPairFormActions actions, AssetPairFormModel state)
       child;
 
   const AssetPairFormProvider(
-      {required this.child,
-      required this.balances,
-      required this.initialMultiAddressBalanceEntry,
-      super.key});
+      {required this.child, required this.balances, super.key});
 
   @override
   Widget build(BuildContext context) {
     final session = context.watch<SessionStateCubit>().state.successOrThrow();
 
-    return BlocProvider(
-        create: (context) => AssetPairFormBloc(
-            httpConfig: session.httpConfig,
-            initialGiveAssets: balances,
-            initialMultiAddressBalanceEntry: initialMultiAddressBalanceEntry),
-        child: BlocBuilder<AssetPairFormBloc, AssetPairFormModel>(
-            builder: (context, state) {
-          return child(
-              AssetPairFormActions(
-                  onGiveAssetChanged: (MultiAddressBalance value) => context
-                      .read<AssetPairFormBloc>()
-                      .add(GiveAssetChanged(value: value)),
-                  onReceiveAssetInputClicked: () => context
-                      .read<AssetPairFormBloc>()
-                      .add(const ReceiveAssetInputClicked()),
-                  onReceiveAssetInputChanged: (String value) => context
-                      .read<AssetPairFormBloc>()
-                      .add(ReceiveAssetInputChanged(value))),
-              state);
-        }));
+    return BlocProvider(create: (context) {
+      return AssetPairFormBloc(
+        httpConfig: session.httpConfig,
+        initialGiveAssets: balances,
+      );
+    }, child: BlocBuilder<AssetPairFormBloc, AssetPairFormModel>(
+        builder: (context, state) {
+      return child(
+          AssetPairFormActions(
+              onGiveAssetSelected: (AssetPairFormOption value) => context
+                  .read<AssetPairFormBloc>()
+                  .add(GiveAssetSelected(value: value)),
+              onReceiveAssetSelected: (AssetPairFormOption value) => context
+                  .read<AssetPairFormBloc>()
+                  .add(ReceiveAssetSelected(value: value)),
+              onReceiveAssetInputClicked: () => context
+                  .read<AssetPairFormBloc>()
+                  .add(const ReceiveAssetInputClicked()),
+              onSearchAssetInputChanged: (String value) => context
+                  .read<AssetPairFormBloc>()
+                  .add(SearchInputChanged(value))),
+          state);
+    }));
   }
 }
 
 class AssetPairForm extends StatefulWidget {
-  final List<MultiAddressBalance> giveAssets;
+  final List<AssetPairFormOption> giveAssets;
   final RemoteData<List<AssetSearchResult>> receiveAssets;
   final GiveAssetInput giveAssetInput;
   final ReceiveAssetInput receiveAssetInput;
-  final Function(MultiAddressBalance multiAddressBalance)? onGiveAssetChanged;
+  final SearchAssetInput searchAssetInput;
+  final Function(AssetPairFormOption option)? onGiveAssetSelected;
+  final Function(AssetPairFormOption option)? onReceiveAssetSelected;
 
   final bool receiveAssetModalVisible;
   final VoidCallback onReceiveAssetInputClicked;
-  final Function(String value) onReceiveAssetInputChanged;
+  final Function(String value) onSearchAssetInputChanged;
 
   const AssetPairForm(
       {required this.receiveAssetModalVisible,
@@ -117,8 +120,10 @@ class AssetPairForm extends StatefulWidget {
       required this.giveAssetInput,
       required this.receiveAssets,
       required this.receiveAssetInput,
-      required this.onReceiveAssetInputChanged,
-      this.onGiveAssetChanged,
+      required this.searchAssetInput,
+      required this.onSearchAssetInputChanged,
+      this.onGiveAssetSelected,
+      this.onReceiveAssetSelected,
       super.key});
 
   @override
@@ -126,34 +131,30 @@ class AssetPairForm extends StatefulWidget {
 }
 
 class _AssetPairFormState extends State<AssetPairForm> {
-  bool _hasShownModal = false;
-
   @override
   void didUpdateWidget(covariant AssetPairForm oldWidget) {
     super.didUpdateWidget(oldWidget);
 
     if (widget.receiveAssetModalVisible &&
-        !_hasShownModal &&
         !oldWidget.receiveAssetModalVisible) {
-      _hasShownModal = true;
-
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
         // when receive assets updates, the modal does not...
         showReceiveAssetModal(
-          context: context,
-          query: widget.receiveAssetInput.value,
+          outerContext: context,
+          query: widget.searchAssetInput.value,
+          onReceiveAssetSelected: widget.onReceiveAssetSelected,
           onQueryChanged: (value) {
-            widget.onReceiveAssetInputChanged(value);
+            widget.onSearchAssetInputChanged(value);
           },
-        ).then((_) {
-          widget.onReceiveAssetInputClicked();
+        ).then((selection) {
+          if (selection != null) {
+            widget.onReceiveAssetSelected!(selection);
+          } else {
+            widget.onReceiveAssetInputClicked();
+          }
         });
       });
-    }
-
-    if (!widget.receiveAssetModalVisible) {
-      _hasShownModal = false;
     }
   }
 
@@ -171,35 +172,44 @@ class _AssetPairFormState extends State<AssetPairForm> {
               children: [
                 Column(
                   children: [
-                    HorizonRedesignDropdown<MultiAddressBalance>(
+                    HorizonRedesignDropdown<AssetPairFormOption>(
                         itemPadding: const EdgeInsets.all(12),
                         items: widget.giveAssets
-                            .map((e) => DropdownMenuItem(
-                                value: e,
-                                child: AssetBalanceListItem(balance: e)))
+                            .map((item) => DropdownMenuItem(
+                                value: item,
+                                child: AssetBalanceListItemWithOptionalBalance(
+                                    asset: item.name,
+                                    description: item.description,
+                                    balance: item.balance)))
                             .toList(),
                         onChanged: (value) {
-                          if (widget.onGiveAssetChanged != null &&
+                          if (widget.onGiveAssetSelected != null &&
                               value != null) {
-                            widget.onGiveAssetChanged!(value);
+                            widget.onGiveAssetSelected!(value);
                           }
                         },
                         selectedValue: widget.giveAssetInput.value,
-                        selectedItemBuilder: (MultiAddressBalance item) =>
-                            AssetBalanceListItem(balance: item),
+                        selectedItemBuilder: (AssetPairFormOption item) =>
+                            AssetBalanceListItemWithOptionalBalance(
+                                asset: item.name,
+                                description: item.description,
+                                balance: item.balance),
                         hintText: "Select Token"),
                     commonHeightSizedBox,
                     // overlay a transparent mask on top of the
                     // dropdown to get custom behavior
                     Stack(
                       children: [
-                        HorizonRedesignDropdown<MultiAddressBalance>(
+                        HorizonRedesignDropdown<AssetPairFormOption>(
                             itemPadding: const EdgeInsets.all(12),
                             items: [],
                             onChanged: (value) {},
-                            selectedValue: null,
-                            selectedItemBuilder: (MultiAddressBalance item) =>
-                                AssetBalanceListItem(balance: item),
+                            selectedValue: widget.receiveAssetInput.value,
+                            selectedItemBuilder: (AssetPairFormOption item) =>
+                                AssetBalanceListItemWithOptionalBalance(
+                                    asset: item.name,
+                                    description: item.description,
+                                    balance: item.balance),
                             hintText: "Select Token"),
                         Positioned.fill(
                           child: Material(
