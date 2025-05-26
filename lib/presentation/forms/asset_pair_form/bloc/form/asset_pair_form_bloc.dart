@@ -136,6 +136,8 @@ class AssetPairFormModel with FormzMixin {
   final bool receiveAssetModalVisible;
   final SearchAssetInput searchAssetInput;
 
+  final FormzSubmissionStatus submissionStatus;
+
   AssetPairFormModel(
       {required this.giveAssets,
       required this.giveAssetInput,
@@ -143,20 +145,24 @@ class AssetPairFormModel with FormzMixin {
       required this.privilegedSearchResults,
       required this.searchResults,
       required this.receiveAssetModalVisible,
-      required this.searchAssetInput});
+      required this.searchAssetInput,
+      required this.submissionStatus});
 
   @override
   List<FormzInput> get inputs => [giveAssetInput, receiveAssetInput];
 
-  AssetPairFormModel copyWith(
-      {List<AssetPairFormOption>? giveAssets,
-      GiveAssetInput? giveAssetInput,
-      ReceiveAssetInput? receiveAssetInput,
-      RemoteData<Map<String, AssetSearchResult>>? privilegedSearchResults,
-      RemoteData<List<AssetSearchResult>>? searchResults,
-      Option<bool> receiveAssetModalVisible = const Option.none(),
-      SearchAssetInput? searchAssetInput}) {
+  AssetPairFormModel copyWith({
+    List<AssetPairFormOption>? giveAssets,
+    GiveAssetInput? giveAssetInput,
+    ReceiveAssetInput? receiveAssetInput,
+    RemoteData<Map<String, AssetSearchResult>>? privilegedSearchResults,
+    RemoteData<List<AssetSearchResult>>? searchResults,
+    Option<bool> receiveAssetModalVisible = const Option.none(),
+    SearchAssetInput? searchAssetInput,
+    FormzSubmissionStatus? submissionStatus,
+  }) {
     return AssetPairFormModel(
+        submissionStatus: submissionStatus ?? this.submissionStatus,
         privilegedSearchResults:
             privilegedSearchResults ?? this.privilegedSearchResults,
         giveAssets: giveAssets ?? this.giveAssets,
@@ -209,19 +215,21 @@ class AssetPairFormModel with FormzMixin {
     return receiveAssetInput.value == null || giveAssetInput.value == null;
   }
 
-  Option<SwapType> get swapType {
-    if (giveAssetInput.value == null ||
-        receiveAssetInput.value == null) {
-      return Option.none();
+  Either<String, SwapType> get swapType {
+    if (giveAssetInput.value == null || receiveAssetInput.value == null) {
+      return Either.left("Give or receive asset input is null");
     }
 
     return switch ((
       giveAssetInput.value!.name.toLowerCase(),
       receiveAssetInput.value!.name.toLowerCase()
     )) {
-      ("btc", _) => Option.of(AtomicSwapBuy()),
-      (_, "btc") => Option.of(AtomicSwapSell()),
-      (_, _) => Option.of(CounterpartyOrder()),
+      ("btc", _) => Either.of(AtomicSwapBuy()),
+      (_, "btc") => Either.fromOption(
+            giveAssetInput.value!.balance, () => "Insufficient balance").map(
+          (balance) => AtomicSwapSell(giveBalance: balance),
+        ),
+      (_, _) => Either.of(CounterpartyOrder()),
     };
   }
 
@@ -249,6 +257,7 @@ class AssetPairFormBloc extends Bloc<AssetPairFormEvent, AssetPairFormModel> {
             assetSearchRepository ?? GetIt.I<AssetSearchRepository>(),
         super(
           AssetPairFormModel(
+              submissionStatus: FormzSubmissionStatus.initial,
               giveAssets: initialGiveAssets
                   .map((balance) => AssetPairFormOption(
                         name: balance.asset,
@@ -270,6 +279,7 @@ class AssetPairFormBloc extends Bloc<AssetPairFormEvent, AssetPairFormModel> {
     on<SearchInputChanged>(_handleSearchInputChanged);
     on<ReceiveAssetSelected>(_handleReceiveAssetSelected);
     on<InvertClicked>(_handleInvertClicked);
+    on<SubmitClicked>(_handleSubmitClicked);
   }
 
   _handleGiveAssetChanged(
@@ -355,5 +365,27 @@ class AssetPairFormBloc extends Bloc<AssetPairFormEvent, AssetPairFormModel> {
       giveAssetInput: GiveAssetInput.dirty(value: nextGiveAsset),
       receiveAssetInput: ReceiveAssetInput.dirty(value: nextReceiveAsset),
     ));
+  }
+
+  _handleSubmitClicked(
+    SubmitClicked event,
+    Emitter<AssetPairFormModel> emit,
+  ) {
+    // TODO: more robust validation
+    emit(state.copyWith(submissionStatus: FormzSubmissionStatus.inProgress));
+
+    final swapType = state.swapType;
+
+    swapType.fold(
+        (error) => emit(
+              state.copyWith(
+                submissionStatus: FormzSubmissionStatus.failure,
+              ),
+            ),
+        (swapType) => emit(
+              state.copyWith(
+                submissionStatus: FormzSubmissionStatus.success,
+              ),
+            ));
   }
 }

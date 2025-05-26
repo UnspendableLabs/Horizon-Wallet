@@ -58,7 +58,7 @@ class _SwapFlowViewState extends State<SwapFlowView> {
           MaterialPage(child: Builder(builder: (context) {
             return FlowStep(
               title: "Swap",
-              widthFactor: .25,
+              widthFactor: .2,
               // TODO: rename to AssetPairForm
               body: AssetPairLoader(
                   addresses: session.addresses,
@@ -70,8 +70,16 @@ class _SwapFlowViewState extends State<SwapFlowView> {
                         const Center(child: CircularProgressIndicator()),
                       Success(value: var data) => AssetPairFormProvider(
                           balances: data.balances,
-                          child: (actions, state) =>
-                              AssetPairForm(actions: actions, state: state)),
+                          child: (actions, state) => AssetPairForm(
+                              onSubmit: (swapType) {
+                                context
+                                    .flow<SwapFlowModel>()
+                                    .update((model) => model.copyWith(
+                                          swapType: Option.of(swapType),
+                                        ));
+                              },
+                              actions: actions,
+                              state: state)),
                       Failure(error: var error) => Text(error.toString()),
                       Refreshing() => throw UnimplementedError(),
                     };
@@ -88,7 +96,27 @@ class _SwapFlowViewState extends State<SwapFlowView> {
                 ),
               ),
             );
-          }))
+          })),
+          if (model.swapType.isSome())
+            MaterialPage(
+              child: FlowStep(
+                title: "Swap",
+                widthFactor: .3,
+                body: Text("cool"),
+                leading: IconButton(
+                  onPressed: () {
+                    context.pop();
+                  },
+                  icon: AppIcons.closeIcon(
+                    context: context,
+                    width: 24,
+                    height: 24,
+                    fit: BoxFit.fitHeight,
+                  ),
+                ),
+              ),
+            )
+
         ];
       },
     );
