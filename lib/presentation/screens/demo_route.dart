@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:horizon/presentation/screens/atomic_swap/forms/choose_fund_source.dart';
+import 'package:horizon/presentation/screens/atomic_swap/forms/create_swap_listing.dart';
 import 'package:horizon/presentation/screens/atomic_swap/forms/swap_listing_slider.dart';
 import 'package:horizon/presentation/screens/atomic_swap/forms/token_selection.dart';
 
@@ -34,6 +35,9 @@ class _WidgetsDemoPageState extends State<WidgetsDemoPage> {
         return SwapFundSourceSelector();
       case DemoComponent.swapListingSlider:
         return SwapListingSlider(onNextStep: (){});
+
+      case DemoComponent.swapCreateListing:
+        return CreateSwapListing();
 
       default:
         return const SizedBox.shrink();
