@@ -152,6 +152,7 @@ class _CreateSwapListingState extends State<CreateSwapListing> {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: SingleChildScrollView(
+        scrollDirection: Axis.vertical,
         child: Column(
           children: [
             Text(

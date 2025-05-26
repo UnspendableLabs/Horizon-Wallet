@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:horizon/presentation/screens/atomic_swap/forms/attach_assets_to_swap.dart';
 import 'package:horizon/presentation/screens/atomic_swap/forms/choose_fund_source.dart';
 import 'package:horizon/presentation/screens/atomic_swap/forms/create_swap_listing.dart';
 import 'package:horizon/presentation/screens/atomic_swap/forms/swap_listing_slider.dart';
@@ -12,6 +13,7 @@ enum DemoComponent {
   swapCreateListingReview,
   swapListingSuccess,
   swapListingSlider,
+  attachAssetsToSwap,
 }
 
 class WidgetsDemoPage extends StatefulWidget {
@@ -38,6 +40,8 @@ class _WidgetsDemoPageState extends State<WidgetsDemoPage> {
 
       case DemoComponent.swapCreateListing:
         return CreateSwapListing();
+      case DemoComponent.attachAssetsToSwap:
+        return AttachAssetToSwap();
 
       default:
         return const SizedBox.shrink();
