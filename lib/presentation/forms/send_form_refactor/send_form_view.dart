@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:horizon/domain/entities/http_config.dart';
 import 'package:horizon/domain/repositories/balance_repository.dart';
 import "package:horizon/domain/repositories/fee_estimates_repository.dart";
-import "package:horizon/presentation/forms/base/base_form_state.dart";
+import "package:horizon/domain/entities/remote_data.dart";
 // TODO: not sure if this should live here
 
 import 'package:flow_builder/flow_builder.dart';
@@ -68,7 +68,7 @@ class SendAssetFlow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<SendAssetFormLoaderBloc,
-            BaseFormState<SendAssetFormLoaderData>>(
+            RemoteData<SendAssetFormLoaderData>>(
         listener: (context, state) {},
         builder: (context, state) {
           return switch (state) {

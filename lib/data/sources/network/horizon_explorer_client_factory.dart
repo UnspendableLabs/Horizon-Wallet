@@ -27,5 +27,5 @@ class HorizonExplorerClientFactory {
   void clear() => _cache.clear();
 
   String _cacheKey(HttpConfig config) =>
-      '${config.runtimeType}:${config.horizonExplorer}';
+      '${config.runtimeType}:${config.horizonExplorerApi}';
 }
