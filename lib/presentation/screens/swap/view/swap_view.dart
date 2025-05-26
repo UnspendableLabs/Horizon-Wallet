@@ -8,9 +8,13 @@ import "package:fpdart/fpdart.dart" hide State;
 import 'package:go_router/go_router.dart';
 import 'package:horizon/utils/app_icons.dart';
 import 'package:horizon/presentation/forms/asset_pair_form/asset_pair_form_view.dart';
+import 'package:horizon/presentation/forms/asset_balance_form/asset_balance_form_view.dart';
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:horizon/presentation/session/bloc/session_state.dart';
 import 'package:horizon/domain/entities/remote_data.dart';
+import 'package:horizon/extensions.dart';
+
+import "./flows/atomic_swap_sell/atomic_swap_sell_flow.dart";
 
 class SwapFlowModel extends Equatable {
   final Option<SwapType> swapType;
@@ -55,7 +59,7 @@ class _SwapFlowViewState extends State<SwapFlowView> {
       controller: _controller,
       onGeneratePages: (model, pages) {
         return [
-          MaterialPage(child: Builder(builder: (context) {
+          Option.of(MaterialPage(child: Builder(builder: (context) {
             return FlowStep(
               title: "Swap",
               widthFactor: .2,
@@ -96,30 +100,37 @@ class _SwapFlowViewState extends State<SwapFlowView> {
                 ),
               ),
             );
-          })),
-          if (model.swapType.isSome())
-            MaterialPage(
-              child: FlowStep(
-                title: "Swap",
-                widthFactor: .3,
-                body: Text("cool"),
-                leading: IconButton(
-                  onPressed: () {
-                    context.pop();
-                  },
-                  icon: AppIcons.closeIcon(
-                    context: context,
-                    width: 24,
-                    height: 24,
-                    fit: BoxFit.fitHeight,
-                  ),
-                ),
-              ),
-            )
-
-        ];
+          }))),
+          model.swapType.map((swapType) => switch (swapType) {
+                AtomicSwapSell(giveBalance: var balance) => AtomicSwapSellFlowView(
+                      balances: balance,
+                    ),
+                // AtomicSwapSell(giveBalance: var balance) => MaterialPage(
+                //       child: FlowStep(
+                //     title: "Choose your asset / address",
+                //     widthFactor: .3,
+                //     body: AssetBalanceFormProvider(
+                //       multiAddressBalance: balance,
+                //       child: (actions, state) => Column(
+                //         children: [
+                //           AssetBalanceSuccessHandler(onSubmit: (option) {
+                //             print(option);
+                //           }),
+                //           AssetBalanceForm(
+                //             state: state,
+                //             actions: actions,
+                //           ),
+                //         ],
+                //       ),
+                //     ),
+                //   )),
+                _ => throw UnimplementedError("Swap type not implemented")
+              })
+        ]
+            .filter((page) => page.isSome())
+            .map((page) => page.getOrThrow())
+            .toList();
       },
     );
-    return Text("Swap View");
   }
 }

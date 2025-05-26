@@ -50,4 +50,27 @@ class MultiAddressBalance {
       locked: false,
     ),
   );
+
+  @override
+  String toString() {
+    final buffer = StringBuffer()
+      ..writeln('MultiAddressBalance {')
+      ..writeln('  asset: $asset,')
+      ..writeln('  assetLongname: ${assetLongname ?? "null"},')
+      ..writeln('  total (raw): $total,')
+      ..writeln('  totalNormalized: $totalNormalized,')
+      ..writeln('  entries: [');
+
+    for (final entry in entries) {
+      // Each entry’s own toString() will be used here
+      buffer.writeln('    $entry,');
+    }
+
+    buffer
+      ..writeln('  ],')
+      ..writeln('  assetInfo: $assetInfo')
+      ..write('}');
+
+    return buffer.toString();
+  }
 }

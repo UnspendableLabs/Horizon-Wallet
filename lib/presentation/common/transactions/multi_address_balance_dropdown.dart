@@ -6,6 +6,8 @@ import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 import 'package:horizon/utils/app_icons.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
 
+ 
+
 class MultiAddressBalanceDropdown extends StatelessWidget {
   final MultiAddressBalance? balances;
   final void Function(MultiAddressBalanceEntry?) onChanged;
@@ -60,6 +62,7 @@ class MultiAddressBalanceDropdown extends StatelessWidget {
       );
     }
 
+
     return HorizonRedesignDropdown<MultiAddressBalanceEntry>(
       useModal: useModal,
       items: balances!.entries
@@ -69,7 +72,7 @@ class MultiAddressBalanceDropdown extends StatelessWidget {
                     child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(addressEntry.address!,
+                    Text(addressEntry.address ?? addressEntry.utxo!,
                         style: Theme.of(context).textTheme.bodySmall),
                     Text(
                         quantityRemoveTrailingZeros(

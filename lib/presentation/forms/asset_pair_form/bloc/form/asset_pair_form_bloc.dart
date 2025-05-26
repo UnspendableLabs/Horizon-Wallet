@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:formz/formz.dart';
@@ -285,6 +284,7 @@ class AssetPairFormBloc extends Bloc<AssetPairFormEvent, AssetPairFormModel> {
   _handleGiveAssetChanged(
       GiveAssetSelected event, Emitter<AssetPairFormModel> emit) {
     emit(state.copyWith(
+      submissionStatus: FormzSubmissionStatus.initial,
       giveAssetInput: GiveAssetInput.dirty(value: event.value),
     ));
   }
@@ -292,6 +292,7 @@ class AssetPairFormBloc extends Bloc<AssetPairFormEvent, AssetPairFormModel> {
   _handleReceiveAssetInputClicked(
       ReceiveAssetInputClicked event, Emitter<AssetPairFormModel> emit) {
     emit(state.copyWith(
+        submissionStatus: FormzSubmissionStatus.initial,
         receiveAssetModalVisible: Option.of(!state.receiveAssetModalVisible)));
   }
 
@@ -299,6 +300,7 @@ class AssetPairFormBloc extends Bloc<AssetPairFormEvent, AssetPairFormModel> {
       SearchInputChanged event, Emitter<AssetPairFormModel> emit) async {
     if (event.value.isEmpty) {
       emit(state.copyWith(
+          submissionStatus: FormzSubmissionStatus.initial,
           searchAssetInput: SearchAssetInput.pure(),
           searchResults: const Success([])));
       return;
@@ -311,6 +313,7 @@ class AssetPairFormBloc extends Bloc<AssetPairFormEvent, AssetPairFormModel> {
     };
 
     emit(state.copyWith(
+        submissionStatus: FormzSubmissionStatus.initial,
         searchResults: receiveAssetsNext,
         searchAssetInput: SearchAssetInput.dirty(event.value)));
 
@@ -338,6 +341,7 @@ class AssetPairFormBloc extends Bloc<AssetPairFormEvent, AssetPairFormModel> {
     Emitter<AssetPairFormModel> emit,
   ) {
     final next = state.copyWith(
+        submissionStatus: FormzSubmissionStatus.initial,
         receiveAssetInput: ReceiveAssetInput.dirty(value: event.value),
         receiveAssetModalVisible: Option.of(false));
 
@@ -362,6 +366,7 @@ class AssetPairFormBloc extends Bloc<AssetPairFormEvent, AssetPairFormModel> {
     );
 
     return emit(state.copyWith(
+      submissionStatus: FormzSubmissionStatus.initial,
       giveAssetInput: GiveAssetInput.dirty(value: nextGiveAsset),
       receiveAssetInput: ReceiveAssetInput.dirty(value: nextReceiveAsset),
     ));
