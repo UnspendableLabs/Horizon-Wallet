@@ -5,35 +5,35 @@ import 'package:formz/formz.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import "package:fpdart/fpdart.dart";
 
-abstract class AtomicSwapSellVariant {}
+sealed class AtomicSwapSellVariant {}
 
 class AttachedAtomicSwapSell extends AtomicSwapSellVariant {
-  final String address;
-  final String asset;
-  final String quantityNormalized;
-  final int quantity;
-
-  AttachedAtomicSwapSell({
-    required this.address,
-    required this.asset,
-    required this.quantityNormalized,
-    required this.quantity,
-  });
-}
-
-class UnattachedAtomicSwapSell extends AtomicSwapSellVariant {
   final String asset;
   final String quantityNormalized;
   final int quantity;
   final String utxo;
   final String utxoAddress;
 
-  UnattachedAtomicSwapSell({
+  AttachedAtomicSwapSell({
     required this.asset,
     required this.quantityNormalized,
     required this.quantity,
     required this.utxo,
     required this.utxoAddress,
+  });
+}
+
+class UnattachedAtomicSwapSell extends AtomicSwapSellVariant {
+  final String address;
+  final String asset;
+  final String quantityNormalized;
+  final int quantity;
+
+  UnattachedAtomicSwapSell({
+    required this.address,
+    required this.asset,
+    required this.quantityNormalized,
+    required this.quantity,
   });
 }
 
@@ -113,14 +113,14 @@ class AssetBalanceFormModel with FormzMixin {
     );
   }
 
-  Either<String, AtomicSwapSellVariant> get atomicSwapSellVariant{
+  Either<String, AtomicSwapSellVariant> get atomicSwapSellVariant {
     if (balanceInput.value == null) {
       return left("Balance input is null");
     }
 
     if (balanceInput.value!.entry.address != null) {
       return right(
-        AttachedAtomicSwapSell(
+        UnattachedAtomicSwapSell(
           address: balanceInput.value!.entry.address!,
           asset: multiAddressBalance.asset,
           quantityNormalized: balanceInput.value!.entry.quantityNormalized,
@@ -132,7 +132,7 @@ class AssetBalanceFormModel with FormzMixin {
     if (balanceInput.value!.entry.utxo != null &&
         balanceInput.value!.entry.utxoAddress != null) {
       return right(
-        UnattachedAtomicSwapSell(
+        AttachedAtomicSwapSell(
           asset: multiAddressBalance.asset,
           quantityNormalized: balanceInput.value!.entry.quantityNormalized,
           quantity: balanceInput.value!.entry.quantity,

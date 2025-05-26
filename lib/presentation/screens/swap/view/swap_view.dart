@@ -102,9 +102,12 @@ class _SwapFlowViewState extends State<SwapFlowView> {
             );
           }))),
           model.swapType.map((swapType) => switch (swapType) {
-                AtomicSwapSell(giveBalance: var balance) => AtomicSwapSellFlowView(
+                AtomicSwapSell(giveBalance: var balance) =>
+                  MaterialPage(
+                    child: AtomicSwapSellFlowView(
                       balances: balance,
                     ),
+                  ),
                 // AtomicSwapSell(giveBalance: var balance) => MaterialPage(
                 //       child: FlowStep(
                 //     title: "Choose your asset / address",
