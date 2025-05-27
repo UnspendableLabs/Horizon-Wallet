@@ -111,7 +111,7 @@ class SearchAssetInput
 }
 
 class AssetPairFormModel with FormzMixin {
-  static Map<String, AssetSearchResult> _privilegedSearchResults = {
+  static final Map<String, AssetSearchResult> _privilegedSearchResults = {
     "btc": const AssetSearchResult(
       name: "BTC",
       description: "BTC",
@@ -122,7 +122,7 @@ class AssetPairFormModel with FormzMixin {
     ),
     "pepecash": const AssetSearchResult(
       name: "PEPECASH",
-      description: "http://rarepepedirectory.com/json/pc.json",
+      description: "",
     ),
   };
 

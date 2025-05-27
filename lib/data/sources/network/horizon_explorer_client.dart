@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:dio/dio.dart';
 import 'package:horizon/domain/entities/asset_search_result.dart';
 
@@ -73,6 +75,9 @@ class HorizonExplorerApi {
       String assetName, String? description, bool? showLarge) async {
     final response = await _dio.get(
         '/explorer/asset-src?asset=$assetName&description=$description&show_large=$showLarge');
+    if (response.data is String) {
+      return AssetSrcResponse.fromJson(jsonDecode(response.data));
+    }
     return AssetSrcResponse.fromJson(response.data);
   }
 

@@ -3,7 +3,8 @@ import 'package:go_router/go_router.dart';
 import 'package:horizon/presentation/common/steps_indicator.dart';
 import 'package:horizon/presentation/screens/atomic_swap/forms/choose_address.dart';
 import 'package:horizon/presentation/screens/atomic_swap/forms/review_swap.dart';
-import 'package:horizon/presentation/screens/atomic_swap/forms/swap_compose.dart';
+import 'package:horizon/presentation/screens/atomic_swap/forms/swap_listing_slider.dart';
+import 'package:horizon/presentation/screens/atomic_swap/forms/swap_success.dart';
 import 'package:horizon/presentation/screens/atomic_swap/forms/token_selection.dart';
 import 'package:horizon/utils/app_icons.dart';
 
@@ -27,11 +28,13 @@ class _AtomicSwapViewState extends State<AtomicSwapView> {
             children: [
               IconButton(
                 onPressed: () {
-                  _currentStep == 1 ? context.pop() : setState(() {
-                    _currentStep--;
-                  });
+                  _currentStep == 1 || _currentStep == 5
+                      ? context.pop()
+                      : setState(() {
+                          _currentStep--;
+                        });
                 },
-                icon: _currentStep == 1
+                icon: _currentStep == 1 || _currentStep == 5
                     ? AppIcons.closeIcon(
                         context: context,
                         width: 24,
@@ -48,11 +51,12 @@ class _AtomicSwapViewState extends State<AtomicSwapView> {
             ],
           ),
         ),
-        Container(
-          padding: const EdgeInsets.fromLTRB(0, 16, 0, 32),
-          // TODO: control steps progress here 0.0 to 1.0
-          child: StepsIndicator(progress: (_currentStep) / 4),
-        )
+        if (_currentStep < 5)
+          Container(
+            padding: const EdgeInsets.fromLTRB(0, 16, 0, 32),
+            // TODO: control steps progress here 0.0 to 1.0
+            child: StepsIndicator(progress: (_currentStep) / 4),
+          )
       ],
     );
   }
@@ -91,7 +95,7 @@ class _AtomicSwapViewState extends State<AtomicSwapView> {
           },
         );
       case 3:
-        return SwapFormCompose(
+        return SwapListingSlider(
           key: ValueKey(3),
           onNextStep: () {
             setState(() {
@@ -102,6 +106,10 @@ class _AtomicSwapViewState extends State<AtomicSwapView> {
       case 4:
         return const SwapFormReviewStep(
           key: ValueKey(4),
+        );
+      case 5:
+        return const SwapSuccessStep(
+          key: ValueKey(5),
         );
       default:
         return const SizedBox.shrink();
