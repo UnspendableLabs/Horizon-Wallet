@@ -24,16 +24,20 @@ class AttachedAtomicSwapSell extends AtomicSwapSellVariant {
 }
 
 class UnattachedAtomicSwapSell extends AtomicSwapSellVariant {
+  final String? description;
+  final bool divisible;
   final String address;
   final String asset;
   final String quantityNormalized;
   final int quantity;
 
   UnattachedAtomicSwapSell({
+    required this.divisible,
     required this.address,
     required this.asset,
     required this.quantityNormalized,
     required this.quantity,
+    required this.description,
   });
 }
 
@@ -44,7 +48,7 @@ class AssetBalanceFormOption {
   });
 }
 
-sealed  class AssetBalanceFormEvent extends Equatable {
+sealed class AssetBalanceFormEvent extends Equatable {
   const AssetBalanceFormEvent();
 
   @override
@@ -125,6 +129,9 @@ class AssetBalanceFormModel with FormzMixin {
           asset: multiAddressBalance.asset,
           quantityNormalized: balanceInput.value!.entry.quantityNormalized,
           quantity: balanceInput.value!.entry.quantity,
+          description: multiAddressBalance.assetInfo.description,
+          divisible: multiAddressBalance.assetInfo.divisible,
+                  
         ),
       );
     }

@@ -6,6 +6,7 @@ import "package:fpdart/fpdart.dart" hide State;
 import 'package:horizon/presentation/forms/asset_balance_form/bloc/asset_balance_form_bloc.dart';
 import 'package:horizon/extensions.dart';
 import 'package:horizon/utils/app_icons.dart';
+import 'package:horizon/presentation/forms/asset_attach_form/asset_attach_form_view.dart';
 
 class AtomicSwapSellUnattachedModel extends Equatable {
   final UnattachedAtomicSwapSell params;
@@ -35,10 +36,12 @@ class AtomicSwapSellUnattachedFlowView extends StatefulWidget {
   const AtomicSwapSellUnattachedFlowView({required this.params, super.key});
 
   @override
-  State<AtomicSwapSellUnattachedFlowView> createState() => _AtomicSwapSellUnattachedFlowViewState();
+  State<AtomicSwapSellUnattachedFlowView> createState() =>
+      _AtomicSwapSellUnattachedFlowViewState();
 }
 
-class _AtomicSwapSellUnattachedFlowViewState extends State<AtomicSwapSellUnattachedFlowView> {
+class _AtomicSwapSellUnattachedFlowViewState
+    extends State<AtomicSwapSellUnattachedFlowView> {
   late AtomicSwapSellUnattachedFlowController _controller;
 
   @override
@@ -57,7 +60,6 @@ class _AtomicSwapSellUnattachedFlowViewState extends State<AtomicSwapSellUnattac
         return [
           Option.of(MaterialPage(
               child: FlowStep(
-
             leading: IconButton(
               onPressed: () {
                 Navigator.of(context).pop();
@@ -69,9 +71,16 @@ class _AtomicSwapSellUnattachedFlowViewState extends State<AtomicSwapSellUnattac
                 fit: BoxFit.fitHeight,
               ),
             ),
-            title: "TMP: unattached atomic swap sell flow",
-            widthFactor: .4,
-            body: Text("unattached atomc swap flow placeholder view"),
+            title: "Attach assets to swap",
+            widthFactor: .5,
+            body: AssetAttachFormProvider(
+                asset: model.params.asset,
+                quantity: model.params.quantity,
+                quantityNormalized: model.params.quantityNormalized,
+                description: model.params.description,
+                divisible: model.params.divisible,
+                child: (actions, state) =>
+                    AssetAttachForm(state: state, actions: actions)),
           ))),
         ]
             .filter((page) => page.isSome())

@@ -7,6 +7,21 @@ import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/common/theme_extension.dart';
 import 'package:horizon/utils/app_icons.dart';
 
+String _stripLeadingZeros(String value, bool divisible) {
+  if (value.isEmpty) return value;
+
+  // If user starts with ".", treat as "0."
+  if (divisible && value.startsWith('.')) value = '0$value';
+
+  // Split int / frac parts
+  final parts = value.split('.');
+  var intPart = parts[0].replaceFirst(RegExp(r'^0+(?=\d)'), '');
+  if (intPart.isEmpty) intPart = '0';
+
+  // rebuild
+  return parts.length == 1 ? intPart : '$intPart.${parts[1]}';
+}
+
 Widget commonHeightSizedBox = const SizedBox(height: 10);
 const double defaultButtonHeight = 54;
 
@@ -1649,6 +1664,85 @@ class HorizonCard extends StatelessWidget {
         border: Border.all(color: borderColor),
       ),
       child: child,
+    );
+  }
+}
+// lib/presentation/common/transactions/gradient_quantity_input.dart
+
+class QuantityInputV2 extends StatelessWidget {
+  final TextEditingController controller;
+  final ValueChanged<String> onChanged;
+  final TextStyle? style;
+  final bool divisible; // allows 1.23 vs 123
+
+  const QuantityInputV2({
+    super.key,
+    required this.controller,
+    required this.onChanged,
+    this.style,
+    this.divisible = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    final gradient = LinearGradient(
+      begin: Alignment.centerLeft,
+      end: Alignment.centerRight,
+      colors: isDark
+          ? const [goldenGradient1, yellow1, goldenGradient2, goldenGradient3]
+          : const [duskGradient2, duskGradient1],
+      stops: isDark ? const [0.0, .325, .65, 1.0] : const [0.0, 1.0],
+    );
+
+    final baseStyle = TextStyle(
+      fontFamily: 'Lato',
+      fontSize: style?.fontSize ?? 14,
+      fontWeight: style?.fontWeight ?? FontWeight.w400,
+      color: Colors.white, // <- solid colour for masking
+    );
+
+    // TODO: we need this capability in a generic text input that can also take arbitrary styles.
+    // we keep reinventing the wheel
+    final fmt = divisible
+        ? FilteringTextInputFormatter.allow(
+            RegExp(r'^\d*\.?\d{0,8}$'),
+          )
+        : FilteringTextInputFormatter.digitsOnly;
+
+    return ShaderMask(
+      blendMode: BlendMode.srcIn, // keep only the text’s alpha
+      shaderCallback: (bounds) => gradient.createShader(bounds),
+      child: TextField(
+        controller: controller,
+        inputFormatters: [fmt],
+        onChanged: (raw) {
+          final cleaned = _stripLeadingZeros(raw, divisible);
+          if (cleaned != controller.text) {
+            // preserve caret at end
+            controller.value = controller.value.copyWith(
+              text: cleaned,
+              selection: TextSelection.collapsed(offset: cleaned.length),
+              composing: TextRange.empty,
+            );
+          }
+          onChanged(cleaned); // send to bloc / parent
+        },
+        keyboardType: TextInputType.numberWithOptions(
+          decimal: divisible,
+          signed: false,
+        ),
+        textAlign: TextAlign.left,
+        style: baseStyle,
+        cursorColor: Colors.white,
+        decoration: const InputDecoration(
+          border: InputBorder.none,
+          isCollapsed: true, // shrink to fit the text
+          contentPadding: EdgeInsets.zero,
+        ),
+      ),
     );
   }
 }

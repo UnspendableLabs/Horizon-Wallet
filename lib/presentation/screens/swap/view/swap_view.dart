@@ -1,6 +1,9 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:horizon/domain/entities/swap_type.dart';
+import 'package:horizon/domain/entities/asset_info.dart';
+import 'package:horizon/domain/entities/multi_address_balance.dart';
+import 'package:horizon/domain/entities/multi_address_balance_entry.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:horizon/presentation/forms/base/flow/view/flow_step.dart';
 import 'package:flow_builder/flow_builder.dart';
@@ -15,6 +18,27 @@ import 'package:horizon/domain/entities/remote_data.dart';
 import 'package:horizon/extensions.dart';
 
 import "./flows/atomic_swap_sell/atomic_swap_sell_flow.dart";
+
+final fakeUnattachedSell = AtomicSwapSell(
+    giveBalance: MultiAddressBalance(
+  assetInfo: const AssetInfo(
+    assetLongname: null,
+    description: "",
+    divisible: false,
+    locked: false,
+  ),
+  asset: "A17385292979323683364",
+  assetLongname: null,
+  entries: [
+    MultiAddressBalanceEntry(
+      address: "bc1q4sh3sfkpplg5v80ga907z7gnmhktyqqve7y5n2",
+      quantity: 1,
+      quantityNormalized: "1",
+    ),
+  ],
+  total: 0,
+  totalNormalized: "0",
+));
 
 class SwapFlowModel extends Equatable {
   final Option<SwapType> swapType;
@@ -47,8 +71,8 @@ class _SwapFlowViewState extends State<SwapFlowView> {
   void initState() {
     super.initState();
     _controller = SwapFlowController(
-      initialState: const SwapFlowModel(swapType: Option.none()),
-    );
+        // initialState: const SwapFlowModel(swapType: Option.none()),
+        initialState: SwapFlowModel(swapType: Option.of(fakeUnattachedSell)));
   }
 
   @override
@@ -62,6 +86,7 @@ class _SwapFlowViewState extends State<SwapFlowView> {
           Option.of(MaterialPage(child: Builder(builder: (context) {
             return FlowStep(
               title: "Swap",
+              // TODO: this needs to be dynamic based on current step / estimated number of steps
               widthFactor: .2,
               // TODO: rename to AssetPairForm
               body: AssetPairLoader(
@@ -102,8 +127,7 @@ class _SwapFlowViewState extends State<SwapFlowView> {
             );
           }))),
           model.swapType.map((swapType) => switch (swapType) {
-                AtomicSwapSell(giveBalance: var balance) =>
-                  MaterialPage(
+                AtomicSwapSell(giveBalance: var balance) => MaterialPage(
                     child: AtomicSwapSellFlowView(
                       balances: balance,
                     ),

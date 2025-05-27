@@ -15,17 +15,29 @@ import "./flows/atomic_swap_sell_unattached_flow.dart";
 
 class AtomicSwapSellModel extends Equatable {
   final Option<AtomicSwapSellVariant> atomicSwapSellVariant;
+  final Option<AttachedAtomicSwapSell> attachedAtomicSwapSell;
+  final Option<UnattachedAtomicSwapSell> unattachedAtomicSwapSell;
 
-  const AtomicSwapSellModel({required this.atomicSwapSellVariant});
+  const AtomicSwapSellModel(
+      {required this.atomicSwapSellVariant,
+      required this.attachedAtomicSwapSell,
+      required this.unattachedAtomicSwapSell});
 
   @override
   List<Object?> get props => [];
 
-  AtomicSwapSellModel copyWith(
-          {Option<AtomicSwapSellVariant>? atomicSwapSellVariant}) =>
+  AtomicSwapSellModel copyWith({
+    Option<AtomicSwapSellVariant>? atomicSwapSellVariant,
+    Option<AttachedAtomicSwapSell>? attachedAtomicSwapSell,
+    Option<UnattachedAtomicSwapSell>? unattachedAtomicSwapSell,
+  }) =>
       AtomicSwapSellModel(
+          attachedAtomicSwapSell:
+              attachedAtomicSwapSell ?? this.attachedAtomicSwapSell,
           atomicSwapSellVariant:
-              atomicSwapSellVariant ?? this.atomicSwapSellVariant);
+              atomicSwapSellVariant ?? this.atomicSwapSellVariant,
+          unattachedAtomicSwapSell:
+              unattachedAtomicSwapSell ?? this.unattachedAtomicSwapSell);
 }
 
 class AtomicSwapSellFlowController extends FlowController<AtomicSwapSellModel> {
@@ -49,9 +61,19 @@ class _AtomicSwapSellFlowViewState extends State<AtomicSwapSellFlowView> {
   void initState() {
     super.initState();
     _controller = AtomicSwapSellFlowController(
-      initialState:
-          const AtomicSwapSellModel(atomicSwapSellVariant: Option.none()),
-    );
+        initialState: AtomicSwapSellModel(
+            atomicSwapSellVariant: Option.of(
+              UnattachedAtomicSwapSell(
+                description: null,
+                divisible: false,
+                address: "bc1q4sh3sfkpplg5v80ga907z7gnmhktyqqve7y5n2",
+                asset: "A17385292979323683364",
+                quantityNormalized: "1",
+                quantity: 1,
+              ),
+            ),
+            unattachedAtomicSwapSell: Option.none(),
+            attachedAtomicSwapSell: Option.none()));
   }
 
   @override
