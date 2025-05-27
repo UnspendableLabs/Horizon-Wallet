@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:horizon/presentation/screens/atomic_swap/forms/attach_assets_to_swap.dart';
 import 'package:horizon/presentation/screens/atomic_swap/forms/choose_fund_source.dart';
 import 'package:horizon/presentation/screens/atomic_swap/forms/create_swap_listing.dart';
+import 'package:horizon/presentation/screens/atomic_swap/forms/review_swap_listing.dart';
 import 'package:horizon/presentation/screens/atomic_swap/forms/swap_listing_slider.dart';
 import 'package:horizon/presentation/screens/atomic_swap/forms/token_selection.dart';
 
@@ -10,7 +11,7 @@ enum DemoComponent {
   swapTokenSelector,
   swapSourceOfFundsSelector,
   swapCreateListing,
-  swapCreateListingReview,
+  swapListingReview,
   swapListingSuccess,
   swapListingSlider,
   attachAssetsToSwap,
@@ -42,6 +43,8 @@ class _WidgetsDemoPageState extends State<WidgetsDemoPage> {
         return CreateSwapListing();
       case DemoComponent.attachAssetsToSwap:
         return AttachAssetToSwap();
+      case DemoComponent.swapListingReview:
+        return SwapListingReview();
 
       default:
         return const SizedBox.shrink();
