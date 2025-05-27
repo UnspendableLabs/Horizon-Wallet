@@ -44,7 +44,7 @@ class AssetBalanceFormOption {
   });
 }
 
-abstract class AssetBalanceFormEvent extends Equatable {
+sealed  class AssetBalanceFormEvent extends Equatable {
   const AssetBalanceFormEvent();
 
   @override
