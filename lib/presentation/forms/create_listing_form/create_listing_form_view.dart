@@ -65,47 +65,6 @@ class _CreateListingFormState extends State<CreateListingForm> {
               ),
             ],
           ),
-          const SizedBox(
-            height: 20,
-          ),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              Text("${widget.quantityNormalized} ${widget.asset}",
-                  style: theme.textTheme.labelSmall?.copyWith(height: 1.2)),
-              const SizedBox(
-                width: 10,
-              ),
-              GestureDetector(
-                onTap: () {
-                  // TODO: on tap Max
-                },
-                child: Container(
-                  height: 24,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color:
-                        isDarkMode ? transparentYellow8 : transparentPurple33,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Center(
-                    child: Text(
-                      'Max',
-                      style: TextStyle(
-                        fontSize: 9,
-                        fontWeight: FontWeight.w400,
-                        color: isDarkMode ? yellow1 : duskGradient2,
-                      ),
-                    ),
-                  ),
-                ),
-              )
-            ],
-          )
         ],
       ),
     );
@@ -167,11 +126,6 @@ class _CreateListingFormState extends State<CreateListingForm> {
         scrollDirection: Axis.vertical,
         child: Column(
           children: [
-            Text(
-              "Swap Listing",
-              textAlign: TextAlign.center,
-              style: theme.textTheme.titleMedium,
-            ),
             commonHeightSizedBox,
             Stack(
               children: [
@@ -183,7 +137,7 @@ class _CreateListingFormState extends State<CreateListingForm> {
                   ],
                 ),
                 Positioned(
-                    top: 0,
+                    top: -36,
                     bottom: 0,
                     left: 0,
                     right: 0,

@@ -88,7 +88,7 @@ class _AtomicSwapSellFlowViewState extends State<AtomicSwapSellFlowView> {
               ),
             ),
             title: "Choose your asset / address",
-            widthFactor: .3,
+            widthFactor: .4,
             body: AssetBalanceFormProvider(
               multiAddressBalance: widget.balances,
               child: (actions, state) => Column(
@@ -123,7 +123,7 @@ class _AtomicSwapSellFlowViewState extends State<AtomicSwapSellFlowView> {
                       ),
                     ),
                     title: "Attach assets to swap",
-                    widthFactor: .4,
+                    widthFactor: .5,
                     body: AssetAttachFormProvider(
                         // TODO: this is pretty gross
                         address: variant.address == widget.address.address
@@ -152,7 +152,7 @@ class _AtomicSwapSellFlowViewState extends State<AtomicSwapSellFlowView> {
                 AttachedAtomicSwapSell() => MaterialPage(
                     child: FlowStep(
                         title: "Swap Listing",
-                        widthFactor: .4,
+                        widthFactor: .8,
                         body: CreateListingForm(
                           asset: variant.asset,
                           quantity: variant.quantity,
