@@ -54,9 +54,9 @@ class AssetBalanceFormProvider extends StatelessWidget {
 }
 
 class AssetBalanceSuccessHandler extends StatelessWidget {
-  final Function(AtomicSwapSellVariant option) onSubmit;
+  final Function(AtomicSwapSellVariant option) onSuccess;
 
-  const AssetBalanceSuccessHandler({super.key, required this.onSubmit});
+  const AssetBalanceSuccessHandler({super.key, required this.onSuccess});
 
   @override
   Widget build(context) {
@@ -65,7 +65,7 @@ class AssetBalanceSuccessHandler extends StatelessWidget {
           if (state.submissionStatus.isSuccess) {
             state.atomicSwapSellVariant.fold(
               (_) => throw Exception("invariant"),
-              (value) => onSubmit(value),
+              (value) => onSuccess(value),
             );
           }
         },

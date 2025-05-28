@@ -20,6 +20,8 @@ import 'package:horizon/presentation/forms/asset_balance_form/bloc/asset_balance
 import 'package:horizon/extensions.dart';
 import 'package:horizon/utils/app_icons.dart';
 import 'package:horizon/presentation/forms/asset_attach_form/asset_attach_form_view.dart';
+import 'package:horizon/presentation/screens/atomic_swap/forms/create_swap_listing.dart';
+import 'package:horizon/presentation/forms/create_listing_form/create_listing_form_view.dart';
 
 class AtomicSwapSellModel extends Equatable {
   final Option<AtomicSwapSellVariant> atomicSwapSellVariant;
@@ -91,7 +93,7 @@ class _AtomicSwapSellFlowViewState extends State<AtomicSwapSellFlowView> {
               multiAddressBalance: widget.balances,
               child: (actions, state) => Column(
                 children: [
-                  AssetBalanceSuccessHandler(onSubmit: (option) {
+                  AssetBalanceSuccessHandler(onSuccess: (option) {
                     _controller.update(
                       (model) => model.copyWith(
                         atomicSwapSellVariant: Option.of(option),
@@ -107,8 +109,6 @@ class _AtomicSwapSellFlowViewState extends State<AtomicSwapSellFlowView> {
             ),
           ))),
           model.atomicSwapSellVariant.map((variant) => switch (variant) {
-                AttachedAtomicSwapSell() =>
-                  MaterialPage(child: Text("asset is attached ")),
                 UnattachedAtomicSwapSell() => MaterialPage(
                       child: FlowStep(
                     leading: IconButton(
@@ -123,7 +123,7 @@ class _AtomicSwapSellFlowViewState extends State<AtomicSwapSellFlowView> {
                       ),
                     ),
                     title: "Attach assets to swap",
-                    widthFactor: .5,
+                    widthFactor: .4,
                     body: AssetAttachFormProvider(
                         // TODO: this is pretty gross
                         address: variant.address == widget.address.address
@@ -149,6 +149,17 @@ class _AtomicSwapSellFlowViewState extends State<AtomicSwapSellFlowView> {
                               ],
                             )),
                   )),
+                AttachedAtomicSwapSell() => MaterialPage(
+                    child: FlowStep(
+                        title: "Swap Listing",
+                        widthFactor: .4,
+                        body: CreateListingForm(
+                          asset: variant.asset,
+                          quantity: variant.quantity,
+                          quantityNormalized: variant.quantityNormalized,
+                          utxo: variant.utxo,
+                          utxoAddress: variant.utxoAddress,
+                        ))),
               })
         ]
             .filter((page) => page.isSome())
