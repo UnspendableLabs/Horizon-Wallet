@@ -1,12 +1,22 @@
 import 'package:equatable/equatable.dart';
 import 'package:formz/formz.dart';
+import 'package:get_it/get_it.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:decimal/decimal.dart';
+import 'package:horizon/domain/entities/http_config.dart';
 import 'package:horizon/domain/entities/fee_option.dart';
 import 'package:horizon/domain/entities/fee_estimates.dart';
-import "package:horizon/presentation/forms/base/transaction_form_model_base.dart";
 import 'package:horizon/domain/entities/compose_attach_utxo.dart';
+import 'package:horizon/domain/repositories/compose_repository.dart';
+import 'package:horizon/domain/repositories/bitcoin_repository.dart';
+import "package:horizon/presentation/forms/base/transaction_form_model_base.dart";
+import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
+import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transaction_usecase.dart';
+import 'package:horizon/presentation/forms/asset_balance_form/bloc/asset_balance_form_bloc.dart'
+    show AttachedAtomicSwapSell;
+import 'package:horizon/domain/entities/address_v2.dart';
+export "package:horizon/presentation/forms/base/transaction_form_model_base.dart";
 
 enum AttachQuantityInputError { required, exceedsMax, isZero }
 
@@ -46,26 +56,36 @@ class AttachQuantityInput extends FormzInput<String, AttachQuantityInputError> {
           (decimal) => decimal.toBigInt(),
         );
   }
+
+  Option<int> get quantity {
+    return valueAsBigInt.flatMap(
+        (bigInt) => bigInt.isValidInt ? Option.of(bigInt.toInt()) : none());
+  }
 }
 
 class AssetAttachFormModel
     extends TransactionFormModelBase<ComposeAttachUtxoResponse> {
+  final AddressV2 address;
   final String assetName;
   final String assetBalanceNormalized;
   final int assetBalance;
   final bool assetDivisibility;
-
   final AttachQuantityInput attachQuantityInput;
+
+  final AttachedAtomicSwapSell? attachedAtomicSwapSell;
 
   AssetAttachFormModel({
     required super.feeEstimates,
     required super.feeOptionInput,
-    required super.status,
+    required super.submissionStatus,
+    super.error,
+    required this.address,
     required this.assetName,
     required this.assetBalanceNormalized,
     required this.assetBalance,
     required this.assetDivisibility,
     required this.attachQuantityInput,
+    this.attachedAtomicSwapSell,
   });
 
   @override
@@ -79,22 +99,27 @@ class AssetAttachFormModel
     int? assetBalance,
     bool? assetDivisibility,
     AttachQuantityInput? attachQuantityInput,
-    FormzSubmissionStatus? status,
+    FormzSubmissionStatus? submissionStatus,
+    AttachedAtomicSwapSell? attachedAtomicSwapSell,
+    String? error,
   }) {
     return AssetAttachFormModel(
-      feeEstimates: feeEstimates ?? this.feeEstimates,
-      feeOptionInput: feeOptionInput ?? this.feeOptionInput,
-      assetName: assetName ?? this.assetName,
-      assetBalanceNormalized:
-          assetBalanceNormalized ?? this.assetBalanceNormalized,
-      assetDivisibility: assetDivisibility ?? this.assetDivisibility,
-      assetBalance: assetBalance ?? this.assetBalance,
-      attachQuantityInput: attachQuantityInput ?? this.attachQuantityInput,
-      status: status ?? this.status,
-    );
+        address: address,
+        feeEstimates: feeEstimates ?? this.feeEstimates,
+        feeOptionInput: feeOptionInput ?? this.feeOptionInput,
+        assetName: assetName ?? this.assetName,
+        assetBalanceNormalized:
+            assetBalanceNormalized ?? this.assetBalanceNormalized,
+        assetDivisibility: assetDivisibility ?? this.assetDivisibility,
+        assetBalance: assetBalance ?? this.assetBalance,
+        attachQuantityInput: attachQuantityInput ?? this.attachQuantityInput,
+        submissionStatus: submissionStatus ?? this.submissionStatus,
+        error: error ?? this.error,
+        attachedAtomicSwapSell:
+            attachedAtomicSwapSell ?? this.attachedAtomicSwapSell);
   }
 
-  get submitDisabled => isNotValid || status.isInProgress;
+  get submitDisabled => isNotValid || submissionStatus.isInProgress;
 }
 
 sealed class AssetAttachFormEvent extends Equatable {
@@ -132,13 +157,33 @@ class SubmitClicked extends AssetAttachFormEvent {
 
 class AssetAttachFormBloc
     extends Bloc<AssetAttachFormEvent, AssetAttachFormModel> {
+  final HttpConfig httpConfig;
+  final ComposeTransactionUseCase _composeTransactionUseCase;
+  final ComposeRepository _composeRepository;
+  final SignAndBroadcastTransactionUseCase _signAndBroadcastTransactionUseCase;
+  final BitcoinRepository _bitcoinRepository;
+
   AssetAttachFormBloc({
+    required this.httpConfig,
     required FeeEstimates feeEstimates,
     required String assetName,
     required String assetBalanceNormalized,
     required int assetBalance,
     required bool assetDivisibility,
-  }) : super(AssetAttachFormModel(
+    required AddressV2 address,
+    ComposeTransactionUseCase? composeTransactionUseCase,
+    ComposeRepository? composeRepository,
+    SignAndBroadcastTransactionUseCase? signAndBroadcastTransactionUseCase,
+    BitcoinRepository? bitcoinRepository,
+  })  : _composeTransactionUseCase =
+            composeTransactionUseCase ?? GetIt.I<ComposeTransactionUseCase>(),
+        _composeRepository = composeRepository ?? GetIt.I<ComposeRepository>(),
+        _signAndBroadcastTransactionUseCase =
+            signAndBroadcastTransactionUseCase ??
+                GetIt.I<SignAndBroadcastTransactionUseCase>(),
+        _bitcoinRepository = bitcoinRepository ?? GetIt.I<BitcoinRepository>(),
+        super(AssetAttachFormModel(
+          address: address,
           feeEstimates: feeEstimates,
           feeOptionInput: FeeOptionInput.pure(),
           assetName: assetName,
@@ -149,7 +194,7 @@ class AssetAttachFormBloc
               value: assetBalanceNormalized,
               maxQuantity: BigInt.from(assetBalance),
               divisible: assetDivisibility),
-          status: FormzSubmissionStatus.initial,
+          submissionStatus: FormzSubmissionStatus.initial,
         )) {
     on<AttachQuantityChanged>(_handleAttachQuantityInputChanged);
     on<FeeOptionChanged>(_handleFeeOptionChanged);
@@ -197,5 +242,63 @@ class AssetAttachFormBloc
   _handleSubmitClicked(
     SubmitClicked event,
     Emitter<AssetAttachFormModel> emit,
-  ) {}
+  ) async {
+    emit(state.copyWith(submissionStatus: FormzSubmissionStatus.inProgress));
+
+    print("what the fuck");
+
+    final task = TaskEither<String, AttachedAtomicSwapSell>.Do(($) async {
+      final quantity = await $(TaskEither.fromOption(
+          state.attachQuantityInput.quantity,
+          () => "Invariant: Error parsing quantity"));
+
+      final composeResponse = await $(_composeTransactionUseCase
+          .callT<ComposeAttachUtxoParams, ComposeAttachUtxoResponse>(
+        httpConfig: httpConfig,
+        feeRate: state.getSatsPerVByte,
+        source: state.address.address,
+        params: ComposeAttachUtxoParams(
+          address: state.address.address,
+          asset: state.assetName,
+          quantity: quantity,
+        ),
+        composeFn: _composeRepository.composeAttachUtxo,
+      ));
+
+      print("address = ${state.address.address == composeResponse.params.source}");
+
+      final broadcastResponse =
+          await $(_signAndBroadcastTransactionUseCase.callT(
+        httpConfig: httpConfig,
+        source: state.address,
+        decryptionStrategy: InMemoryKey(),
+        rawtransaction: composeResponse.rawtransaction,
+      ));
+
+      print(broadcastResponse);
+
+      // now the problem reduces to "AttachedAtomicSwapSell" variant
+      return AttachedAtomicSwapSell(
+        asset: composeResponse.params.asset,
+        quantity: composeResponse.params.quantity,
+        quantityNormalized: composeResponse.params.quantityNormalized,
+        utxo: "${broadcastResponse.hash}:0",
+        utxoAddress: composeResponse.params.source,
+      );
+    });
+
+    final result = await task.run();
+
+    result.fold((error) {
+      print("error $error");
+      emit(state.copyWith(
+          submissionStatus: FormzSubmissionStatus.failure,
+          error: error.toString()));
+    }, (attachedAtomicSwapSell) {
+      print("succcess $attachedAtomicSwapSell");
+      emit(state.copyWith(
+          submissionStatus: FormzSubmissionStatus.success,
+          attachedAtomicSwapSell: attachedAtomicSwapSell));
+    });
+  }
 }

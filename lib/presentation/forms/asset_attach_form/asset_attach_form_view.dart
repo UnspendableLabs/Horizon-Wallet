@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:formz/formz.dart';
 import 'package:horizon/domain/entities/remote_data.dart';
+import 'package:horizon/domain/entities/address_v2.dart';
 import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/domain/entities/fee_option.dart';
 import 'package:horizon/domain/repositories/fee_estimates_repository.dart';
@@ -14,6 +15,8 @@ import 'package:horizon/presentation/session/bloc/session_state.dart';
 import 'package:horizon/utils/app_icons.dart';
 import "./bloc/asset_attach_form_bloc.dart";
 import 'package:horizon/presentation/common/remote_data_builder.dart';
+import 'package:horizon/presentation/forms/asset_balance_form/bloc/asset_balance_form_bloc.dart'
+    show AttachedAtomicSwapSell;
 
 class AssetAttachFormActions {
   final Function(String value) onAttachQuantityChanged;
@@ -29,6 +32,7 @@ class AssetAttachFormActions {
 }
 
 class AssetAttachFormProvider extends StatelessWidget {
+  final AddressV2 address;
   final String asset;
   final int quantity;
   final String quantityNormalized;
@@ -41,6 +45,7 @@ class AssetAttachFormProvider extends StatelessWidget {
 
   AssetAttachFormProvider({
     super.key,
+    required this.address,
     required this.child,
     required this.asset,
     required this.quantity,
@@ -65,6 +70,8 @@ class AssetAttachFormProvider extends StatelessWidget {
                 child: CircularProgressIndicator()), // should not happen
             onSuccess: (feeEstimates) => BlocProvider(
                 create: (context) => AssetAttachFormBloc(
+                      address: address,
+                      httpConfig: session.httpConfig,
                       feeEstimates: feeEstimates,
                       assetName: asset,
                       assetBalance: quantity,
@@ -106,6 +113,23 @@ class AssetAttachFormProvider extends StatelessWidget {
   }
 }
 
+class AssetAttachSuccessHandler extends StatelessWidget {
+  final Function(AttachedAtomicSwapSell option) onSuccess;
+
+  const AssetAttachSuccessHandler({super.key, required this.onSuccess});
+
+  @override
+  Widget build(context) {
+    return BlocListener<AssetAttachFormBloc, AssetAttachFormModel>(
+        listener: (context, state) {
+          if (state.submissionStatus.isSuccess) {
+            onSuccess(state.attachedAtomicSwapSell!);
+          }
+        },
+        child: const SizedBox.shrink());
+  }
+}
+
 class AssetAttachForm extends StatefulWidget {
   final AssetAttachFormModel state;
   final AssetAttachFormActions actions;
@@ -128,8 +152,6 @@ class _AssetAttachFormState extends State<AssetAttachForm> {
     super.initState();
     _quantityController =
         TextEditingController(text: widget.state.attachQuantityInput.value);
-
-    print("divisible: ${widget.state.assetDivisibility}");
   }
 
   @override
@@ -250,12 +272,22 @@ class _AssetAttachFormState extends State<AssetAttachForm> {
               child: HorizonButton(
                   disabled: widget.state.submitDisabled,
                   onPressed: () {
+                    print("onpressed");
                     if (widget.state.submitDisabled) {
+                      print("submit disabled");
                       return;
                     }
+                    print("callbck trigged");
                     widget.actions.onSubmitClicked();
                   },
-                  child: TextButtonContent(value: "Sign and Submit")),
+                  child: widget.state.submissionStatus.isInProgress
+                      ? WidgetButtonContent(
+                          value: const Row(children: [
+                          Text("Attaching"),
+                          SizedBox(width: 4),
+                          CircularProgressIndicator(),
+                        ]))
+                      : TextButtonContent(value: "Attach")),
             )
           ],
         ),

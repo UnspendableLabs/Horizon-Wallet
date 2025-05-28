@@ -72,7 +72,7 @@ class _SwapFlowViewState extends State<SwapFlowView> {
     super.initState();
     _controller = SwapFlowController(
         // initialState: const SwapFlowModel(swapType: Option.none()),
-        initialState: SwapFlowModel(swapType: Option.of(fakeUnattachedSell)));
+        initialState: SwapFlowModel(swapType: Option.none()));
   }
 
   @override
@@ -129,6 +129,8 @@ class _SwapFlowViewState extends State<SwapFlowView> {
           model.swapType.map((swapType) => switch (swapType) {
                 AtomicSwapSell(giveBalance: var balance) => MaterialPage(
                     child: AtomicSwapSellFlowView(
+                      // TODO: this is a little messy, for sure
+                      address: session.addresses.first,
                       balances: balance,
                     ),
                   ),

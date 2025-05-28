@@ -6,6 +6,7 @@ import 'package:horizon/domain/repositories/balance_repository.dart';
 import 'package:horizon/domain/repositories/utxo_repository.dart';
 import 'package:horizon/domain/services/error_service.dart';
 import 'package:horizon/domain/entities/http_config.dart';
+import 'package:fpdart/fpdart.dart';
 
 class VirtualSize extends Equatable {
   final int virtualSize;
@@ -95,5 +96,24 @@ class ComposeTransactionUseCase {
     }
 
     return inputsForSet;
+  }
+
+  TaskEither<String, R>
+      callT<P extends ComposeParams, R extends ComposeResponse>({
+    required num feeRate,
+    required String source,
+    required P params,
+    required ComposeFunction<P, R> composeFn,
+    required HttpConfig httpConfig,
+  }) {
+    return TaskEither.tryCatch(
+        () => call(
+              feeRate: feeRate,
+              source: source,
+              params: params,
+              composeFn: composeFn,
+              httpConfig: httpConfig,
+            ),
+        (error, _) => error.toString());
   }
 }

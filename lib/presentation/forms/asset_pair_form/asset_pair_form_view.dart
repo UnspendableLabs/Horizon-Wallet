@@ -294,9 +294,6 @@ class _AssetPairFormState extends State<AssetPairForm> {
                 disabled: widget.state.disabled,
                 onPressed: () {
                   if (widget.state.disabled) return;
-
-                  print("submit blickec");
-
                   widget.actions.onSubmitClicked();
                 },
                 child: TextButtonContent(value: "Swap"),

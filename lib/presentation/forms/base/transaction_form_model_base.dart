@@ -21,18 +21,25 @@ class FeeOptionInput extends FormzInput<FeeOption, FeeOptionError> {
 class TransactionFormModelBase<TComposeResponse> with FormzMixin {
   final FeeEstimates feeEstimates;
   final FeeOptionInput feeOptionInput;
-  final FormzSubmissionStatus status;
+  final FormzSubmissionStatus submissionStatus;
   final TComposeResponse? composeResponse;
   final String? error;
 
   TransactionFormModelBase({
     required this.feeEstimates,
     required this.feeOptionInput,
-    required this.status,
+    required this.submissionStatus,
     this.composeResponse,
     this.error,
   });
 
   @override
   List<FormzInput> get inputs => [feeOptionInput];
+
+  num get getSatsPerVByte => switch (feeOptionInput.value) {
+        Slow() => feeEstimates.slow,
+        Medium() => feeEstimates.medium,
+        Fast() => feeEstimates.fast,
+        Custom(fee: var value) => value
+      };
 }

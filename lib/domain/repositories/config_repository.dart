@@ -14,4 +14,5 @@ abstract class Config {
   String get sentryDsn;
   double get sentrySampleRate;
   bool get isSentryEnabled;
+  int get defaultEnvelopeSize;
 }

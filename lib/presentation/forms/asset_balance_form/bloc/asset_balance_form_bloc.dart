@@ -32,8 +32,8 @@ class UnattachedAtomicSwapSell extends AtomicSwapSellVariant {
   final int quantity;
 
   UnattachedAtomicSwapSell({
-    required this.divisible,
     required this.address,
+    required this.divisible,
     required this.asset,
     required this.quantityNormalized,
     required this.quantity,
@@ -131,7 +131,6 @@ class AssetBalanceFormModel with FormzMixin {
           quantity: balanceInput.value!.entry.quantity,
           description: multiAddressBalance.assetInfo.description,
           divisible: multiAddressBalance.assetInfo.divisible,
-                  
         ),
       );
     }

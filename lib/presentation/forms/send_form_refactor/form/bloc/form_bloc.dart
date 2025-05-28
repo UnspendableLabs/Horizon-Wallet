@@ -117,6 +117,7 @@ class SendAssetFormBloc extends Bloc<FormEvent, FormModel> {
         fee_option.Custom(fee: var value) => value
       };
 
+
       final quantityNormalized = Decimal.parse(state.quantityInput.value);
 
       final quantity = asset.divisible ?? false
