@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:horizon/domain/entities/address_v2.dart';
-import 'package:horizon/domain/entities/fee_estimates.dart';
-import 'package:horizon/domain/entities/fee_option.dart';
 import 'package:horizon/domain/entities/http_config.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
-import 'package:horizon/presentation/common/transactions/transaction_fee_selection.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:horizon/presentation/session/bloc/session_state.dart';
@@ -24,20 +21,27 @@ class CreatePsbtFormActions {
 
 class CreatePsbtFormProvider extends StatelessWidget {
   final AddressV2 address;
+  final String utxoID;
 
   final Widget Function(
       CreatePsbtFormActions actions, CreatePsbtFormModel state) child;
 
   const CreatePsbtFormProvider({
     super.key,
+    required this.utxoID,
     required this.address,
     required this.child,
   });
 
   @override
   Widget build(BuildContext context) {
+    final session = context.watch<SessionStateCubit>().state.successOrThrow();
     return BlocProvider(
-        create: (context) => CreatePsbtFormBloc(),
+        create: (context) => CreatePsbtFormBloc(
+              address: address,
+              httpConfig: session.httpConfig,
+              utxoID: utxoID,
+            ),
         child: BlocBuilder<CreatePsbtFormBloc, CreatePsbtFormModel>(
             builder: (context, state) => child(
                 CreatePsbtFormActions(onBtcValueChanged: (value) {

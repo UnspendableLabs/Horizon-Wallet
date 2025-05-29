@@ -1,9 +1,24 @@
 import 'package:equatable/equatable.dart';
+import 'package:horizon/data/sources/local/db.dart';
+import "package:horizon/domain/entities/bitcoin_tx.dart";
 import 'package:formz/formz.dart';
 import 'package:get_it/get_it.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:decimal/decimal.dart';
+import 'package:horizon/domain/repositories/bitcoin_repository.dart';
+import 'package:horizon/domain/services/transaction_service.dart';
+
+import 'package:horizon/domain/entities/http_config.dart';
+import 'package:horizon/domain/entities/decryption_strategy.dart';
+import 'package:horizon/domain/entities/address_v2.dart';
+import 'package:horizon/js/bitcoin.dart';
+
+import 'package:horizon/domain/repositories/wallet_config_repository.dart';
+import 'package:horizon/domain/services/seed_service.dart';
+import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
+import 'package:horizon/domain/services/encryption_service.dart';
+import 'package:horizon/domain/services/address_service.dart';
 
 enum BtcPriceInputError { required, isNaN, isNegative }
 
@@ -25,6 +40,10 @@ class BtcPriceInput extends FormzInput<String, BtcPriceInputError> {
 
   Option<Decimal> get asDecimal {
     return Option.tryCatch(() => Decimal.parse(value));
+  }
+
+  Option<BigInt> get asSats {
+    return asDecimal.map((d) => d.toBigInt());
   }
 }
 
@@ -66,8 +85,43 @@ class SubmitClicked extends CreatePsbtFormEvent {}
 
 class CreatePsbtFormBloc
     extends Bloc<CreatePsbtFormEvent, CreatePsbtFormModel> {
-  CreatePsbtFormBloc()
-      : super(
+  final AddressV2 address;
+
+  final String utxoID;
+  final HttpConfig httpConfig;
+
+  final BitcoinRepository _bitcoinRepository;
+  final TransactionService _transactionService;
+
+  final WalletConfigRepository _walletConfigRepository;
+  final SeedService _seedService;
+  final InMemoryKeyRepository _inMemoryKeyRepository;
+
+  final EncryptionService _encryptionService;
+  final AddressService _addressService;
+
+  CreatePsbtFormBloc({
+    required this.address,
+    required this.httpConfig,
+    required this.utxoID,
+    BitcoinRepository? bitcoinRepository,
+    TransactionService? transactionService,
+    WalletConfigRepository? walletConfigRepository,
+    SeedService? seedService,
+    InMemoryKeyRepository? inMemoryKeyRepository,
+    EncryptionService? encryptionService,
+    AddressService? addressService,
+  })  : _bitcoinRepository = bitcoinRepository ?? GetIt.I<BitcoinRepository>(),
+        _transactionService =
+            transactionService ?? GetIt.I<TransactionService>(),
+        _walletConfigRepository =
+            walletConfigRepository ?? GetIt.I<WalletConfigRepository>(),
+        _seedService = seedService ?? GetIt.I<SeedService>(),
+        _inMemoryKeyRepository =
+            inMemoryKeyRepository ?? GetIt.I<InMemoryKeyRepository>(),
+        _encryptionService = encryptionService ?? GetIt.I<EncryptionService>(),
+        _addressService = addressService ?? GetIt.I<AddressService>(),
+        super(
           CreatePsbtFormModel(
             btcPriceInput:
                 const BtcPriceInput.dirty(value: "0.00"), // const value
@@ -95,7 +149,92 @@ class CreatePsbtFormBloc
     SubmitClicked event,
     Emitter<CreatePsbtFormModel> emit,
   ) async {
-    print("der event $event");
-    // no op for now
+    final attachTxID = utxoID.split(":")[0];
+    final voutIndex = int.parse(utxoID.split(":")[1]);
+
+    final task = TaskEither<String, String>.Do(($) async {
+      final tx = await $(_bitcoinRepository.getTransactionT(
+          txid: attachTxID,
+          httpConfig: httpConfig,
+          onError: (_) => "Error fetching tx with id: $utxoID"));
+
+      final priceInSats = await $(TaskEither.fromOption(
+          state.btcPriceInput.asSats,
+          () => "Error parsing BTC price input as sats"));
+
+      final newSalePsbtHex = await $(TaskEither.fromEither(
+          _transactionService.makeSalePsbtT(
+              price: priceInSats,
+              source: address.address,
+              utxoTxid: attachTxID,
+              utxoVoutIndex: voutIndex,
+              utxoVout: tx.vout[voutIndex],
+              httpConfig: httpConfig,
+              onError: (err) => err.toString())));
+
+      final pk = await $(_getPK());
+
+      final signedHex =
+          await $(TaskEither.fromEither(_transactionService.signPsbtT(
+              psbtHex: newSalePsbtHex,
+              inputPrivateKeyMap: {0: pk},
+              sighashTypes: [
+                0x01, // all
+                0x80 // anyone can pay
+              ],
+              httpConfig: httpConfig,
+              onError: (_err) => "Error signing PSBT: ${_err.toString()}")));
+
+      return signedHex;
+    });
+
+    final result = await task.run();
+
+    result.fold((err) {
+      print(err);
+    }, (psbtHex) {
+      print("signed tx: psbtHex");
+    });
+  }
+
+  // TODO: this is still reasonably dependency heavy
+  // and should be abstracted out into it's own service basically
+  TaskEither<String, String> _getPK() {
+    // TODO: for now all signing is uses "InMemoryKey" decryption
+    final DecryptionStrategy decryptionStrategy = InMemoryKey();
+    return switch (address.derivation) {
+      Bip32Path(value: var value) => _walletConfigRepository
+          .getCurrentT((_) => "invariant: could not read wallet config")
+          .flatMap((walletConfig) => _seedService
+              .getForWalletConfigT(
+                  walletConfig: walletConfig,
+                  decryptionStrategy: decryptionStrategy,
+                  onError: (_) => "invairant: could not derive seed")
+              .flatMap((seed) => _addressService.deriveAddressPrivateKeyWIPT(
+                    path: Bip32Path(value: value),
+                    seed: seed,
+                    network: httpConfig.network,
+                  ))),
+      WIF(value: var value) => switch (decryptionStrategy) {
+          Password(password: var password) => _encryptionService.decryptT(
+              data: value,
+              password: password,
+              onError: (_, __) => "Invalid password"),
+          InMemoryKey() => _inMemoryKeyRepository
+              .getMapT(
+                  onError: (_, __) =>
+                      "invariant: failed to read in memory key map")
+              // TODO: this lookup needs to be consistent, either by encyptedWIF or address
+              .flatMap((map) => TaskEither.fromOption(
+                  Option.fromNullable(map[address.address]),
+                  () =>
+                      "invariant: decryption key not found for address: ${address.address}"))
+              .flatMap((decryptionKey) => _encryptionService.decryptWithKeyT(
+                  data: value,
+                  key: decryptionKey,
+                  onError: (_, __) =>
+                      "failed to decrypt wif for address: ${address.address}")),
+        }
+    };
   }
 }

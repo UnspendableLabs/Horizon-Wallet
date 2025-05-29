@@ -151,13 +151,13 @@ class _AtomicSwapSellFlowViewState extends State<AtomicSwapSellFlowView> {
                   )),
                 AttachedAtomicSwapSell() => MaterialPage(
                     child: FlowStep(
-                        title: "Swap Listing",
+                        title: "Create PSBT",
                         widthFactor: .8,
                         body: CreatePsbtFormProvider(
-                        address: variant.utxoAddress == widget.address.address
-                            ? widget.address
-                            : throw Exception("invariant: address mismatch"),
-                          
+                          utxoID: variant.utxo,
+                          address: variant.utxoAddress == widget.address.address
+                              ? widget.address
+                              : throw Exception("invariant: address mismatch"),
                           child: (actions, state) => CreatePsbtForm(
                             actions: actions,
                             state: state,

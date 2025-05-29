@@ -1,5 +1,6 @@
 import "package:horizon/domain/entities/utxo.dart";
 import "package:horizon/domain/entities/http_config.dart";
+import "package:horizon/domain/entities/bitcoin_tx.dart";
 import 'package:fpdart/fpdart.dart';
 
 class MakeRBFResponse {
@@ -67,6 +68,15 @@ abstract class TransactionService {
     required num newFee,
     required HttpConfig httpConfig,
   });
+
+  String makeSalePsbt({
+    required BigInt price,
+    required String source,
+    required String utxoTxid,
+    required int utxoVoutIndex,
+    required Vout utxoVout,
+    required HttpConfig httpConfig,
+  });
 }
 
 class TransactionServiceException implements Exception {
@@ -75,7 +85,27 @@ class TransactionServiceException implements Exception {
 }
 
 extension TransactionServiceX on TransactionService {
-  // --- Async methods wrapped in TaskEither ---
+  Either<String, String> makeSalePsbtT({
+    required BigInt price,
+    required String source,
+    required String utxoTxid,
+    required int utxoVoutIndex,
+    required Vout utxoVout,
+    required HttpConfig httpConfig,
+    required String Function(Object error) onError,
+  }) {
+    return Either.tryCatch(
+      () => makeSalePsbt(
+      price: price,
+        source: source,
+        utxoTxid: utxoTxid,
+        utxoVoutIndex: utxoVoutIndex,
+        utxoVout: utxoVout,
+        httpConfig: httpConfig,
+      ),
+      (e, _) => onError(e),
+    );
+  }
 
   TaskEither<String, String> signTransactionT({
     required String unsignedTransaction,
@@ -235,4 +265,5 @@ extension TransactionServiceX on TransactionService {
       (e, _) => onError(e),
     );
   }
+
 }
