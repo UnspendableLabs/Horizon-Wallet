@@ -21,7 +21,7 @@ import 'package:horizon/extensions.dart';
 import 'package:horizon/utils/app_icons.dart';
 import 'package:horizon/presentation/forms/asset_attach_form/asset_attach_form_view.dart';
 import 'package:horizon/presentation/screens/atomic_swap/forms/create_swap_listing.dart';
-import 'package:horizon/presentation/forms/create_listing_form/create_listing_form_view.dart';
+import 'package:horizon/presentation/forms/create_psbt_form/create_psbt_form_view.dart';
 
 class AtomicSwapSellModel extends Equatable {
   final Option<AtomicSwapSellVariant> atomicSwapSellVariant;
@@ -153,12 +153,20 @@ class _AtomicSwapSellFlowViewState extends State<AtomicSwapSellFlowView> {
                     child: FlowStep(
                         title: "Swap Listing",
                         widthFactor: .8,
-                        body: CreateListingForm(
-                          asset: variant.asset,
-                          quantity: variant.quantity,
-                          quantityNormalized: variant.quantityNormalized,
-                          utxo: variant.utxo,
-                          utxoAddress: variant.utxoAddress,
+                        body: CreatePsbtFormProvider(
+                        address: variant.utxoAddress == widget.address.address
+                            ? widget.address
+                            : throw Exception("invariant: address mismatch"),
+                          
+                          child: (actions, state) => CreatePsbtForm(
+                            actions: actions,
+                            state: state,
+                            asset: variant.asset,
+                            quantity: variant.quantity,
+                            quantityNormalized: variant.quantityNormalized,
+                            utxo: variant.utxo,
+                            utxoAddress: variant.utxoAddress,
+                          ),
                         ))),
               })
         ]

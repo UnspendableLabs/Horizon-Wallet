@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:horizon/domain/entities/address_v2.dart';
 import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/domain/entities/fee_option.dart';
 import 'package:horizon/domain/entities/http_config.dart';
@@ -9,16 +10,61 @@ import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:horizon/presentation/session/bloc/session_state.dart';
 import 'package:horizon/utils/app_icons.dart';
+import './bloc/create_psbt_form_bloc.dart';
 
-class CreateListingForm extends StatefulWidget {
+class CreatePsbtFormActions {
+  final Function(String value) onBtcValueChanged;
+  final VoidCallback onSubmitClicked;
+
+  const CreatePsbtFormActions({
+    required this.onBtcValueChanged,
+    required this.onSubmitClicked,
+  });
+}
+
+class CreatePsbtFormProvider extends StatelessWidget {
+  final AddressV2 address;
+
+  final Widget Function(
+      CreatePsbtFormActions actions, CreatePsbtFormModel state) child;
+
+  const CreatePsbtFormProvider({
+    super.key,
+    required this.address,
+    required this.child,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocProvider(
+        create: (context) => CreatePsbtFormBloc(),
+        child: BlocBuilder<CreatePsbtFormBloc, CreatePsbtFormModel>(
+            builder: (context, state) => child(
+                CreatePsbtFormActions(onBtcValueChanged: (value) {
+                  context
+                      .read<CreatePsbtFormBloc>()
+                      .add(BtcPriceInputChanged(value: value));
+                }, onSubmitClicked: () {
+                  context.read<CreatePsbtFormBloc>().add(SubmitClicked());
+                }),
+                state)));
+  }
+}
+
+class CreatePsbtForm extends StatefulWidget {
+  final CreatePsbtFormModel state;
+  final CreatePsbtFormActions actions;
+
   final String asset;
   final String quantityNormalized;
   final int quantity;
   final String utxo;
   final String utxoAddress;
 
-  const CreateListingForm(
-      {required this.asset,
+  const CreatePsbtForm(
+      {required this.state,
+      required this.actions,
+      required this.asset,
       required this.quantityNormalized,
       required this.quantity,
       required this.utxo,
@@ -26,11 +72,28 @@ class CreateListingForm extends StatefulWidget {
       super.key});
 
   @override
-  State<CreateListingForm> createState() => _CreateListingFormState();
+  State<CreatePsbtForm> createState() => _CreatePsbtFormState();
 }
 
-class _CreateListingFormState extends State<CreateListingForm> {
+class _CreatePsbtFormState extends State<CreatePsbtForm> {
+  late final TextEditingController _btcController;
+
   final appIcons = AppIcons();
+
+  @override
+  void initState() {
+    super.initState();
+    // Seed it with whatever value the bloc already holds (or '' if none).
+    _btcController =
+        TextEditingController(text: widget.state.btcPriceInput.value);
+  }
+
+  @override
+  void dispose() {
+    _btcController.dispose(); // ALWAYS dispose controllers
+    super.dispose();
+  }
+
   _buildFromCard(BuildContext context, HttpConfig httpConfig) {
     final theme = Theme.of(context);
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
@@ -81,11 +144,15 @@ class _CreateListingFormState extends State<CreateListingForm> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              const Expanded(
-                  child: QuantityText(
-                quantity: "0.00",
-                style: TextStyle(fontSize: 35),
-              )),
+              Expanded(
+                  child: QuantityInputV2(
+                      style: const TextStyle(fontSize: 35),
+                      divisible: true,
+                      controller:
+                          _btcController, // chat helpo me with a stateful controller hre,
+                      onChanged: (value) {
+                        widget.actions.onBtcValueChanged(value);
+                      })),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 mainAxisAlignment: MainAxisAlignment.end,
@@ -108,7 +175,7 @@ class _CreateListingFormState extends State<CreateListingForm> {
           const SizedBox(
             height: 20,
           ),
-          Text("0.00 USD",
+          Text("TK DYNAMIC USD VALUE",
               style: theme.textTheme.labelSmall?.copyWith(height: 1.2)),
         ],
       ),
@@ -148,9 +215,6 @@ class _CreateListingFormState extends State<CreateListingForm> {
                         child: InkWell(
                           hoverColor: transparentPurple8,
                           borderRadius: BorderRadius.circular(8),
-                          onTap: () {
-                            //  TODO: rotate tokens
-                          },
                           child: Container(
                             width: 44,
                             height: 44,
@@ -169,17 +233,16 @@ class _CreateListingFormState extends State<CreateListingForm> {
               ],
             ),
             commonHeightSizedBox,
-            TransactionFeeSelection(
-              selectedFeeOption: Medium(),
-              onFeeOptionSelected: (value) {},
-              feeEstimates: const FeeEstimates(fast: 4, medium: 3, slow: 2),
-            ),
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 14),
               child: HorizonButton(
-                  disabled: false,
-                  onPressed: () {},
-                  child: TextButtonContent(value: "Create listing")),
+                  disabled: widget.state.submitDisabled,
+                  onPressed: () {
+                    if (!widget.state.submitDisabled) {
+                      widget.actions.onSubmitClicked();
+                    }
+                  },
+                  child: TextButtonContent(value: "Sign PSBT")),
             )
           ],
         ),
