@@ -1,0 +1,250 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:horizon/presentation/common/collapsable_view.dart';
+import 'package:horizon/presentation/common/redesign_colors.dart';
+import 'package:horizon/presentation/common/theme_extension.dart';
+import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
+import 'package:horizon/presentation/session/bloc/session_cubit.dart';
+import 'package:horizon/presentation/session/bloc/session_state.dart';
+import 'package:horizon/utils/app_icons.dart';
+import 'package:horizon/domain/entities/address_v2.dart';
+
+import 'package:get_it/get_it.dart';
+import 'package:horizon/presentation/common/remote_data_builder.dart';
+import 'package:horizon/domain/entities/remote_data.dart';
+import 'package:horizon/domain/entities/fee_estimates.dart';
+import 'package:horizon/domain/entities/fee_option.dart';
+import 'package:horizon/domain/repositories/fee_estimates_repository.dart';
+import "./bloc/swap_create_listing_confirmation_form_bloc.dart";
+import 'package:horizon/presentation/common/transactions/transaction_fee_selection.dart';
+
+class SwapCreateListingFormActions {
+  final Function(FeeOption value) onFeeOptionSelected;
+  final VoidCallback onSubmitClicked;
+
+  const SwapCreateListingFormActions({
+    required this.onFeeOptionSelected,
+    required this.onSubmitClicked,
+  });
+}
+
+class SwapCreateListingFormProvider extends StatelessWidget {
+  final AddressV2 address;
+
+  final String giveAsset;
+  final int giveQuantity;
+  final String giveQuantityNormalized;
+  final BigInt btcPrice;
+
+  final FeeEstimatesRespository _feeEstimatesRepository;
+
+  final Widget Function(SwapCreateListingFormActions actions,
+      SwapCreateListingFormModel state) child;
+
+  SwapCreateListingFormProvider({
+    super.key,
+    required this.address,
+    required this.child,
+    required this.giveAsset,
+    required this.giveQuantity,
+    required this.giveQuantityNormalized,
+    required this.btcPrice,
+    FeeEstimatesRespository? feeEstimatesRepository,
+  }) : _feeEstimatesRepository =
+            feeEstimatesRepository ?? GetIt.I<FeeEstimatesRespository>();
+
+  @override
+  Widget build(BuildContext context) {
+    final session = context.watch<SessionStateCubit>().state.successOrThrow();
+
+    return RemoteDataTaskEitherBuilder<String, FeeEstimates>(
+        task: () => _feeEstimatesRepository.getFeeEstimates(
+            httpConfig: session.httpConfig),
+        builder: (context, state, refresh) => state.fold(
+            onInitial: () => const SizedBox.shrink(),
+            onLoading: () => const Center(child: CircularProgressIndicator()),
+            onRefreshing: (_) => const Center(
+                child: CircularProgressIndicator()), // should not happen
+            onSuccess: (feeEstimates) => BlocProvider(
+                create: (context) => SwapCreateListingFormBloc(
+                      address: address,
+                      httpConfig: session.httpConfig,
+                      feeEstimates: feeEstimates,
+                      giveAsset: giveAsset,
+                      giveQuantity: giveQuantity,
+                      giveQuantityNormalized: giveQuantityNormalized,
+                      btcPrice: btcPrice,
+                    ),
+                child: BlocBuilder<SwapCreateListingFormBloc,
+                        SwapCreateListingFormModel>(
+                    builder: (context, state) => child(
+                          SwapCreateListingFormActions(
+                            onFeeOptionSelected: (value) {
+                              context.read<SwapCreateListingFormBloc>().add(
+                                    FeeOptionChanged(value),
+                                  );
+                            },
+                            onSubmitClicked: () {
+                              context.read<SwapCreateListingFormBloc>().add(
+                                    const SubmitClicked(),
+                                  );
+                            },
+                          ),
+                          state,
+                        ))),
+            onFailure: (error) => Center(
+                  child: Text(
+                    error.toString(),
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                )));
+  }
+}
+
+class SwapCreateListingConfirmationForm extends StatefulWidget {
+  final SwapCreateListingFormActions actions;
+  final SwapCreateListingFormModel state;
+
+  const SwapCreateListingConfirmationForm(
+      {required this.actions, required this.state, super.key});
+
+  @override
+  State<SwapCreateListingConfirmationForm> createState() =>
+      _SwapCreateListingConfirmationFormState();
+}
+
+class _SwapCreateListingConfirmationFormState
+    extends State<SwapCreateListingConfirmationForm> {
+  _renderProperty(label, value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 10),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label,
+              textAlign: TextAlign.left,
+              style: Theme.of(context).inputDecorationTheme.hintStyle),
+          Text(value,
+              textAlign: TextAlign.left,
+              style: Theme.of(context).textTheme.bodySmall),
+        ],
+      ),
+    );
+  }
+
+  _renderPropertyWidget(label, widget) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 10),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label,
+              textAlign: TextAlign.left,
+              style: Theme.of(context).inputDecorationTheme.hintStyle),
+          widget,
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final customTheme = theme.extension<CustomThemeExtension>();
+    final session = context.watch<SessionStateCubit>().state.successOrThrow();
+    final appIcons = AppIcons();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        commonHeightSizedBox,
+        SingleChildScrollView(
+            scrollDirection: Axis.vertical,
+            child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _renderProperty("Transaction Type", "Create listing"),
+                    _renderProperty("Rate", widget.state.rateString),
+                    _renderPropertyWidget(
+                        "You'll transfer",
+                        Row(
+                          children: [
+                            QuantityText(
+                                quantity: widget.state.giveQuantityNormalized,
+                                style: const TextStyle(fontSize: 16)),
+                            const SizedBox(width: 8),
+                            appIcons.assetIcon(
+                                httpConfig: session.httpConfig,
+                                context: context,
+                                assetName: widget.state.giveAsset,
+                                width: 12,
+                                height: 12),
+                            const SizedBox(width: 4),
+                            Text(widget.state.giveAsset,
+                                style: theme.textTheme.titleMedium?.copyWith(
+                                  fontSize: 16,
+                                )),
+                          ],
+                        )),
+                    _renderProperty("And when", "someone buys your listing"),
+                    _renderPropertyWidget(
+                        "You'll receive",
+                        Row(
+                          children: [
+                            QuantityText(
+                                quantity: widget.state.btcPriceNormalized,
+                                style: const TextStyle(fontSize: 16)),
+                            const SizedBox(width: 8),
+                            appIcons.assetIcon(
+                                httpConfig: session.httpConfig,
+                                context: context,
+                                assetName: "BTC",
+                                width: 12,
+                                height: 12),
+                            const SizedBox(width: 4),
+                            Text("BTC",
+                                style: theme.textTheme.titleMedium?.copyWith(
+                                  fontSize: 16,
+                                )),
+                          ],
+                        )),
+                    const SizedBox(
+                      height: 14,
+                    ),
+                    commonHeightSizedBox,
+                    const Divider(
+                      height: 20,
+                      color: transparentWhite8,
+                      thickness: 1,
+                    ),
+                    TransactionFeeSelection(
+                      selectedFeeOption: widget.state.feeOptionInput.value,
+                      onFeeOptionSelected: (value) {
+                        widget.actions.onFeeOptionSelected(value);
+                      },
+                      feeEstimates: widget.state.feeEstimates,
+                    ),
+                    CollapsableWidget(
+                      title: "Fee Details",
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _renderProperty("Service Fee", "0.0001 BTC"),
+                          _renderProperty("Virtual Size", "0.0001 BTC"),
+                          _renderProperty(
+                              "Adjusted Virtual Size", "0.0001 BTC"),
+                        ],
+                      ),
+                    ),
+                    commonHeightSizedBox,
+                    HorizonButton(
+                        onPressed: () {},
+                        child: TextButtonContent(value: "Sign and Submit")),
+                    commonHeightSizedBox,
+                  ],
+                )))
+      ],
+    );
+  }
+}

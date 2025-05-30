@@ -265,7 +265,8 @@ class AssetAttachFormBloc
         composeFn: _composeRepository.composeAttachUtxo,
       ));
 
-      print("address = ${state.address.address == composeResponse.params.source}");
+      print(
+          "address = ${state.address.address == composeResponse.params.source}");
 
       final broadcastResponse =
           await $(_signAndBroadcastTransactionUseCase.callT(

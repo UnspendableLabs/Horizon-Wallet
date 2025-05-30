@@ -8,6 +8,7 @@ import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:horizon/presentation/session/bloc/session_state.dart';
 import 'package:horizon/utils/app_icons.dart';
+import 'package:horizon/extensions.dart';
 import './bloc/create_psbt_form_bloc.dart';
 
 class CreatePsbtFormActions {
@@ -56,8 +57,18 @@ class CreatePsbtFormProvider extends StatelessWidget {
   }
 }
 
+class CreatePsbtSuccess {
+  final String signedPsbtHex;
+  final BigInt btcQuantity;
+
+  const CreatePsbtSuccess({
+    required this.signedPsbtHex,
+    required this.btcQuantity,
+  });
+}
+
 class CreatePsbtSuccessHandler extends StatelessWidget {
-  final Function(String psbtHex) onSuccess;
+  final Function(CreatePsbtSuccess createPsbtSuccess) onSuccess;
 
   const CreatePsbtSuccessHandler({super.key, required this.onSuccess});
 
@@ -66,7 +77,17 @@ class CreatePsbtSuccessHandler extends StatelessWidget {
     return BlocListener<CreatePsbtFormBloc, CreatePsbtFormModel>(
         listener: (context, state) {
           if (state.submissionStatus.isSuccess) {
-            onSuccess(state.signedPsbt!);
+
+        print("success callback ${state.btcPriceInput.value}" );
+        print("success callback dec ${state.btcPriceInput.asDecimal}" );
+        print("success callback bi ${state.btcPriceInput.asSats}" );
+
+            onSuccess(CreatePsbtSuccess(
+                signedPsbtHex: state.signedPsbt!,
+                btcQuantity: state.btcPriceInput.asSats
+                    .getOrThrow() // will never be called if this is undefiend
+
+                ));
           }
         },
         child: const SizedBox.shrink());

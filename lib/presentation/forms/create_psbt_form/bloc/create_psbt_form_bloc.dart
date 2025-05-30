@@ -43,7 +43,10 @@ class BtcPriceInput extends FormzInput<String, BtcPriceInputError> {
   }
 
   Option<BigInt> get asSats {
-    return asDecimal.map((d) => d.toBigInt());
+    // chat, wihtha  value decimal value of 0.02, this returns 0
+    return asDecimal.map((d) => d * Decimal.fromInt(100000000)).map(
+          (d) => d.toBigInt(),
+        );
   }
 }
 

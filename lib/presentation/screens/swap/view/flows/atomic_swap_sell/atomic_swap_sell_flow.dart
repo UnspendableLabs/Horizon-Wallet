@@ -22,25 +22,41 @@ import 'package:horizon/utils/app_icons.dart';
 import 'package:horizon/presentation/forms/asset_attach_form/asset_attach_form_view.dart';
 import 'package:horizon/presentation/screens/atomic_swap/forms/create_swap_listing.dart';
 import 'package:horizon/presentation/forms/create_psbt_form/create_psbt_form_view.dart';
+import 'package:horizon/presentation/forms/swap_create_listing_confirmation_form/swap_create_listing_confirmation_form_view.dart';
+
+class SwapSellConfirmationDetails {
+  final BigInt btcPrice;
+  final String signedPsbt;
+  final AttachedAtomicSwapSell sellDetails;
+
+  const SwapSellConfirmationDetails({
+    required this.btcPrice,
+    required this.signedPsbt,
+    required this.sellDetails,
+  });
+
+
+}
 
 class AtomicSwapSellModel extends Equatable {
   final Option<AtomicSwapSellVariant> atomicSwapSellVariant;
-  final Option<String> signedPsbt;
+  final Option<SwapSellConfirmationDetails> swapSellConfirmationDetails;
 
   const AtomicSwapSellModel(
-      {required this.atomicSwapSellVariant, required this.signedPsbt});
+      {required this.atomicSwapSellVariant,
+      required this.swapSellConfirmationDetails});
 
   @override
   List<Object?> get props => [];
 
-  AtomicSwapSellModel copyWith({
-    Option<AtomicSwapSellVariant>? atomicSwapSellVariant,
-    Option<String>? signedPsbt,
-  }) =>
+  AtomicSwapSellModel copyWith(
+          {Option<AtomicSwapSellVariant>? atomicSwapSellVariant,
+          Option<SwapSellConfirmationDetails>? swapSellConfirmationDetails}) =>
       AtomicSwapSellModel(
         atomicSwapSellVariant:
             atomicSwapSellVariant ?? this.atomicSwapSellVariant,
-        signedPsbt: signedPsbt ?? this.signedPsbt,
+        swapSellConfirmationDetails:
+            swapSellConfirmationDetails ?? this.swapSellConfirmationDetails,
       );
 }
 
@@ -69,7 +85,8 @@ class _AtomicSwapSellFlowViewState extends State<AtomicSwapSellFlowView> {
     super.initState();
     _controller = AtomicSwapSellFlowController(
         initialState: const AtomicSwapSellModel(
-            atomicSwapSellVariant: Option.none(), signedPsbt: Option.none()));
+            atomicSwapSellVariant: Option.none(),
+            swapSellConfirmationDetails: Option.none()));
   }
 
   @override
@@ -165,9 +182,19 @@ class _AtomicSwapSellFlowViewState extends State<AtomicSwapSellFlowView> {
                           child: (actions, state) => Column(
                             children: [
                               CreatePsbtSuccessHandler(
-                                  onSuccess: (signedPsbt) => _controller.update(
+                                  onSuccess: (createPsbtSuccess) =>
+                                      _controller.update(
                                         (model) => model.copyWith(
-                                          signedPsbt: Option.of(signedPsbt),
+                                          swapSellConfirmationDetails:
+                                              Option.of(
+                                                  SwapSellConfirmationDetails(
+                                                      signedPsbt:
+                                                          createPsbtSuccess
+                                                              .signedPsbtHex,
+                                                      btcPrice:
+                                                          createPsbtSuccess
+                                                              .btcQuantity,
+                                                      sellDetails: variant)),
                                         ),
                                       )),
                               CreatePsbtForm(
@@ -183,14 +210,21 @@ class _AtomicSwapSellFlowViewState extends State<AtomicSwapSellFlowView> {
                           ),
                         ))),
               }),
-          model.signedPsbt.map(
-            (signedPsbt) => MaterialPage(
-              child: FlowStep(
-                  title: "Post Listing",
-                  widthFactor: .9,
-                  body: Text(signedPsbt)),
-            ),
-          )
+          model.swapSellConfirmationDetails.map((details) => MaterialPage(
+                child: FlowStep(
+                    title: "Post Listing",
+                    widthFactor: .9,
+                    body: SwapCreateListingFormProvider(
+                        address: widget.address,
+                        giveAsset: details.sellDetails.asset,
+                        giveQuantity: details.sellDetails.quantity,
+                        giveQuantityNormalized:
+                            details.sellDetails.quantityNormalized,
+                        btcPrice: details.btcPrice,
+                        child: (actions, state) =>
+                            SwapCreateListingConfirmationForm(
+                                actions: actions, state: state))),
+              ))
         ]
             .filter((page) => page.isSome())
             .map((page) => page.getOrThrow())
