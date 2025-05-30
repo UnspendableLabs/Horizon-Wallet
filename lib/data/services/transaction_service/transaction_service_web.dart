@@ -51,11 +51,11 @@ class TransactionServiceWeb implements TransactionService {
 
     final input = bitcoinjs.TxInput.make(
         sighashType: SIGHASH_SINGLE | SIGHASH_ANYONECANPAY,
-        hash: Uint8List.fromList(HEX.decode(utxoTxid).reversed.toList())
-            .toJS, // Convert txid to Uint8Array
+        hash: Buffer.from(Uint8List.fromList(HEX.decode(utxoTxid)).toJS),
         index: utxoVoutIndex,
         witnessUtxo: bitcoinjs.WitnessUTXO(
-          script: Uint8List.fromList(HEX.decode(utxoVout.scriptpubkey)).toJS,
+          script: Buffer.from(
+              Uint8List.fromList(HEX.decode(utxoVout.scriptpubkey)).toJS),
           value: utxoVout.value,
         ));
 
@@ -64,9 +64,6 @@ class TransactionServiceWeb implements TransactionService {
       // TODO: be more paranoid about BigInt conversion
       value: price.toInt(),
     );
-
-    print(input);
-    print(output);
 
     psbt.addInput(input);
     psbt.addOutput(output);
@@ -153,10 +150,11 @@ class TransactionServiceWeb implements TransactionService {
   String signPsbt(String psbtHex, Map<int, String> inputPrivateKeyMap,
       HttpConfig httpConfig,
       [List<int>? sighashTypes]) {
-
     print("before");
 
     bitcoinjs.Psbt psbt = bitcoinjs.Psbt.fromHex(psbtHex);
+
+    print(sighashTypes);
 
     print("aftre");
     print(psbt);
@@ -237,8 +235,8 @@ class TransactionServiceWeb implements TransactionService {
       var prev = utxoMap[txHashKey];
       if (prev != null) {
         if (isSourceSegwit) {
-          input.witnessUtxo =
-              bitcoinjs.WitnessUTXO(script: script.output, value: prev.value);
+          input.witnessUtxo = bitcoinjs.WitnessUTXO(
+              script: Buffer.from(script.output), value: prev.value);
           psbt.addInput(input);
         } else {
           input.script = script.output;
@@ -421,11 +419,10 @@ class TransactionServiceWeb implements TransactionService {
       bitcoinjs.TxInput input = transaction.ins.toDart[i];
       var txHash = HEX.encode(input.hash.toDart.reversed.toList());
 
-      var prev = utxos.firstWhereOrNull((utxo) => utxo.txid == txHash);
-      if (prev != null) {
+      var prev = utxos.firstWhereOrNull((utxo) => utxo.txid == txHash); if (prev != null) {
         if (addressIsSegwit(prev.address)) {
           input.witnessUtxo = bitcoinjs.WitnessUTXO(
-              script: sourceScript.output, value: prev.value);
+              script: Buffer.from(sourceScript.output), value: prev.value);
         } else {
           input.script = sourceScript.output;
           final txHex = await bitcoinRepository.getTransactionHex(

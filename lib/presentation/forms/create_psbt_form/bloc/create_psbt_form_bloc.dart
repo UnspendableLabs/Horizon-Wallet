@@ -51,8 +51,14 @@ class CreatePsbtFormModel with FormzMixin {
   final BtcPriceInput btcPriceInput;
   final FormzSubmissionStatus submissionStatus;
 
+  final String? error;
+  final String? signedPsbt;
+
   CreatePsbtFormModel(
-      {required this.btcPriceInput, required this.submissionStatus});
+      {required this.btcPriceInput,
+      required this.submissionStatus,
+      this.error,
+      this.signedPsbt});
 
   @override
   List<FormzInput> get inputs => [btcPriceInput];
@@ -60,10 +66,15 @@ class CreatePsbtFormModel with FormzMixin {
   CreatePsbtFormModel copyWith({
     BtcPriceInput? btcPriceInput,
     FormzSubmissionStatus? submissionStatus,
+    String? error,
+    String? signedPsbt,
   }) =>
       CreatePsbtFormModel(
-          btcPriceInput: btcPriceInput ?? this.btcPriceInput,
-          submissionStatus: submissionStatus ?? this.submissionStatus);
+        btcPriceInput: btcPriceInput ?? this.btcPriceInput,
+        submissionStatus: submissionStatus ?? this.submissionStatus,
+        error: error ?? this.error,
+        signedPsbt: signedPsbt ?? this.signedPsbt,
+      );
 
   get submitDisabled => isNotValid || submissionStatus.isInProgress;
 }
@@ -179,8 +190,7 @@ class CreatePsbtFormBloc
               psbtHex: newSalePsbtHex,
               inputPrivateKeyMap: {0: pk},
               sighashTypes: [
-                0x01, // all
-                0x80 // anyone can pay
+                0x03 | 0x80, // single | anyone_can_pay
               ],
               httpConfig: httpConfig,
               onError: (_err) => "Error signing PSBT: ${_err.toString()}")));
@@ -191,9 +201,13 @@ class CreatePsbtFormBloc
     final result = await task.run();
 
     result.fold((err) {
-      print(err);
+      emit(state.copyWith(
+          error: err.toString(),
+          submissionStatus: FormzSubmissionStatus.failure));
     }, (psbtHex) {
-      print("signed tx: psbtHex");
+      emit(state.copyWith(
+          signedPsbt: psbtHex,
+          submissionStatus: FormzSubmissionStatus.success));
     });
   }
 

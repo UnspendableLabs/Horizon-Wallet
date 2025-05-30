@@ -25,18 +25,22 @@ import 'package:horizon/presentation/forms/create_psbt_form/create_psbt_form_vie
 
 class AtomicSwapSellModel extends Equatable {
   final Option<AtomicSwapSellVariant> atomicSwapSellVariant;
+  final Option<String> signedPsbt;
 
-  const AtomicSwapSellModel({required this.atomicSwapSellVariant});
+  const AtomicSwapSellModel(
+      {required this.atomicSwapSellVariant, required this.signedPsbt});
 
   @override
   List<Object?> get props => [];
 
   AtomicSwapSellModel copyWith({
     Option<AtomicSwapSellVariant>? atomicSwapSellVariant,
+    Option<String>? signedPsbt,
   }) =>
       AtomicSwapSellModel(
         atomicSwapSellVariant:
             atomicSwapSellVariant ?? this.atomicSwapSellVariant,
+        signedPsbt: signedPsbt ?? this.signedPsbt,
       );
 }
 
@@ -64,8 +68,8 @@ class _AtomicSwapSellFlowViewState extends State<AtomicSwapSellFlowView> {
   void initState() {
     super.initState();
     _controller = AtomicSwapSellFlowController(
-        initialState:
-            AtomicSwapSellModel(atomicSwapSellVariant: Option.none()));
+        initialState: const AtomicSwapSellModel(
+            atomicSwapSellVariant: Option.none(), signedPsbt: Option.none()));
   }
 
   @override
@@ -158,17 +162,35 @@ class _AtomicSwapSellFlowViewState extends State<AtomicSwapSellFlowView> {
                           address: variant.utxoAddress == widget.address.address
                               ? widget.address
                               : throw Exception("invariant: address mismatch"),
-                          child: (actions, state) => CreatePsbtForm(
-                            actions: actions,
-                            state: state,
-                            asset: variant.asset,
-                            quantity: variant.quantity,
-                            quantityNormalized: variant.quantityNormalized,
-                            utxo: variant.utxo,
-                            utxoAddress: variant.utxoAddress,
+                          child: (actions, state) => Column(
+                            children: [
+                              CreatePsbtSuccessHandler(
+                                  onSuccess: (signedPsbt) => _controller.update(
+                                        (model) => model.copyWith(
+                                          signedPsbt: Option.of(signedPsbt),
+                                        ),
+                                      )),
+                              CreatePsbtForm(
+                                actions: actions,
+                                state: state,
+                                asset: variant.asset,
+                                quantity: variant.quantity,
+                                quantityNormalized: variant.quantityNormalized,
+                                utxo: variant.utxo,
+                                utxoAddress: variant.utxoAddress,
+                              ),
+                            ],
                           ),
                         ))),
-              })
+              }),
+          model.signedPsbt.map(
+            (signedPsbt) => MaterialPage(
+              child: FlowStep(
+                  title: "Post Listing",
+                  widthFactor: .9,
+                  body: Text(signedPsbt)),
+            ),
+          )
         ]
             .filter((page) => page.isSome())
             .map((page) => page.getOrThrow())

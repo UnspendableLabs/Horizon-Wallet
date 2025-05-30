@@ -6,13 +6,13 @@ import 'package:horizon/js/buffer.dart';
 import "./signer.dart";
 
 extension type WitnessUTXO._(JSObject o) implements JSObject {
-  external WitnessUTXO({JSUint8Array script, int value});
+  external WitnessUTXO({Buffer script, int value});
 }
 
 // extension TxInput {
 extension type TxInput._(JSObject _) implements JSObject {
   external factory TxInput.make({
-    JSUint8Array hash,
+    Buffer hash,
     int index,
     JSUint8Array? script,
     int? sequence,
@@ -22,7 +22,7 @@ extension type TxInput._(JSObject _) implements JSObject {
     int? sighashType,
   });
 
-  external JSUint8Array hash;
+  external Buffer hash;
   external int index;
   external JSUint8Array script;
   external int sequence;

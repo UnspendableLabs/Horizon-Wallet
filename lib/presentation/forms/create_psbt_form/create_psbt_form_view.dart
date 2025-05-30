@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:formz/formz.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:horizon/domain/entities/address_v2.dart';
 import 'package:horizon/domain/entities/http_config.dart';
@@ -52,6 +53,23 @@ class CreatePsbtFormProvider extends StatelessWidget {
                   context.read<CreatePsbtFormBloc>().add(SubmitClicked());
                 }),
                 state)));
+  }
+}
+
+class CreatePsbtSuccessHandler extends StatelessWidget {
+  final Function(String psbtHex) onSuccess;
+
+  const CreatePsbtSuccessHandler({super.key, required this.onSuccess});
+
+  @override
+  Widget build(context) {
+    return BlocListener<CreatePsbtFormBloc, CreatePsbtFormModel>(
+        listener: (context, state) {
+          if (state.submissionStatus.isSuccess) {
+            onSuccess(state.signedPsbt!);
+          }
+        },
+        child: const SizedBox.shrink());
   }
 }
 
