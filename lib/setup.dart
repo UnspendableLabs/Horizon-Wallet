@@ -109,6 +109,9 @@ import 'package:horizon/data/sources/repositories/dispenser_repository_impl.dart
 import "package:horizon/domain/repositories/fee_estimates_repository.dart";
 import 'package:horizon/data/sources/repositories/fee_estimates_repository_mempool_space_impl.dart';
 
+import "package:horizon/domain/repositories/atomic_swap_repository.dart";
+import 'package:horizon/data/sources/repositories/atomic_swap_repository_impl.dart';
+
 import 'package:horizon/data/sources/network/mempool_space_client.dart';
 
 import 'package:horizon/domain/services/analytics_service.dart';
@@ -347,9 +350,8 @@ void setup() {
   injector.registerSingleton<CounterpartyClientFactory>(
       CounterpartyClientFactory());
 
-  injector.registerSingleton<AssetSearchRepository>(
-      AssetSearchRepositoryImpl());
-
+  injector
+      .registerSingleton<AssetSearchRepository>(AssetSearchRepositoryImpl());
 
   injector.registerSingleton<BitcoinRepository>(BitcoinRepositoryImpl(
     esploraClientFactory: GetIt.I.get<EsploraClientFactory>(),
@@ -632,7 +634,6 @@ void setup() {
           config: config, logger: GetIt.I<Logger>())
       : VersionRepositoryImpl(config: config));
 
-
   // Register the appropriate platform service
   // if (GetIt.I.get<Config>().isWebExtension) {
   //   GetIt.I.registerSingleton<PlatformService>(PlatformServiceExtensionImpl());
@@ -647,6 +648,8 @@ void setup() {
       mnemonicRepository: GetIt.I<MnemonicRepository>()));
 
   injector.registerSingleton<AddressV2Repository>(AddressV2RepositoryImpl());
+
+  injector.registerSingleton<AtomicSwapRepository>(AtomicSwapRepositoryImpl());
 
   injector.registerSingleton<SessionStateCubit>(SessionStateCubit(
       kvService: GetIt.I<SecureKVService>(),

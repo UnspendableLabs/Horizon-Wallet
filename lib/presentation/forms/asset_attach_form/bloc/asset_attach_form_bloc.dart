@@ -245,9 +245,7 @@ class AssetAttachFormBloc
   ) async {
     emit(state.copyWith(submissionStatus: FormzSubmissionStatus.inProgress));
 
-    print("what the fuck");
-
-    final task = TaskEither<String, AttachedAtomicSwapSell>.Do(($) async {
+   final task = TaskEither<String, AttachedAtomicSwapSell>.Do(($) async {
       final quantity = await $(TaskEither.fromOption(
           state.attachQuantityInput.quantity,
           () => "Invariant: Error parsing quantity"));
@@ -265,9 +263,6 @@ class AssetAttachFormBloc
         composeFn: _composeRepository.composeAttachUtxo,
       ));
 
-      print(
-          "address = ${state.address.address == composeResponse.params.source}");
-
       final broadcastResponse =
           await $(_signAndBroadcastTransactionUseCase.callT(
         httpConfig: httpConfig,
@@ -275,8 +270,6 @@ class AssetAttachFormBloc
         decryptionStrategy: InMemoryKey(),
         rawtransaction: composeResponse.rawtransaction,
       ));
-
-      print(broadcastResponse);
 
       // now the problem reduces to "AttachedAtomicSwapSell" variant
       return AttachedAtomicSwapSell(
@@ -291,12 +284,10 @@ class AssetAttachFormBloc
     final result = await task.run();
 
     result.fold((error) {
-      print("error $error");
       emit(state.copyWith(
           submissionStatus: FormzSubmissionStatus.failure,
           error: error.toString()));
     }, (attachedAtomicSwapSell) {
-      print("succcess $attachedAtomicSwapSell");
       emit(state.copyWith(
           submissionStatus: FormzSubmissionStatus.success,
           attachedAtomicSwapSell: attachedAtomicSwapSell));

@@ -1,5 +1,8 @@
 import 'package:equatable/equatable.dart';
 
+
+
+
 sealed class RemoteData<T> extends Equatable {
   const RemoteData();
 

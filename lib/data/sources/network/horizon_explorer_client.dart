@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:dio/dio.dart';
 import 'package:horizon/domain/entities/asset_search_result.dart';
+import 'package:horizon/domain/entities/atomic_swap/on_chain_payment.dart';
 
 class AssetSrcResponse {
   final String? src;
@@ -67,6 +68,38 @@ class AssetSearchResultModel {
   }
 }
 
+class OnChainPaymentResponse {
+  final String psbt;
+  final List<int> inputsToSign;
+  final String rawTransaction;
+  final String feePaymentId;
+
+  OnChainPaymentResponse({
+    required this.psbt,
+    required this.inputsToSign,
+    required this.rawTransaction,
+    required this.feePaymentId,
+  });
+
+  factory OnChainPaymentResponse.fromJson(Map<String, dynamic> json) {
+    return OnChainPaymentResponse(
+      psbt: json['psbt'] as String,
+      inputsToSign: List<int>.from(json['inputsToSign'] as List),
+      rawTransaction: json['rawtransaction'] as String,
+      feePaymentId: json['feePaymentId'] as String,
+    );
+  }
+
+  OnChainPayment toEntity() {
+    return OnChainPayment(
+      psbt: psbt,
+      inputsToSign: inputsToSign,
+      rawTransaction: rawTransaction,
+      feePaymentId: feePaymentId,
+    );
+  }
+}
+
 class HorizonExplorerApi {
   final Dio _dio;
   HorizonExplorerApi({required Dio dio}) : _dio = dio;
@@ -90,5 +123,25 @@ class HorizonExplorerApi {
         .map((r) => AssetSearchResultModel.fromJson(r))
         .map((a) => a.toEntity())
         .toList();
+  }
+
+  Future<OnChainPaymentResponse> createOnChainPayment({
+    required String address,
+    required List<String> utxoSetIds,
+    required num satsPerVbyte,
+  }) async {
+    final res = await _dio.post(
+      '/on-chain-payment',
+      data: {
+        "data": {
+          'address': address,
+          'utxoSetIds': utxoSetIds,
+          'satsPerVbyte': satsPerVbyte,
+        }
+      },
+    );
+
+    final data = res.data is String ? jsonDecode(res.data) : res.data;
+    return OnChainPaymentResponse.fromJson(data as Map<String, dynamic>);
   }
 }

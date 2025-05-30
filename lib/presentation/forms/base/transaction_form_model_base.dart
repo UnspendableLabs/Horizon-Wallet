@@ -36,6 +36,7 @@ class TransactionFormModelBase<TComposeResponse> with FormzMixin {
   @override
   List<FormzInput> get inputs => [feeOptionInput];
 
+  // TODO: this should be on the fee input itself
   num get getSatsPerVByte => switch (feeOptionInput.value) {
         Slow() => feeEstimates.slow,
         Medium() => feeEstimates.medium,
