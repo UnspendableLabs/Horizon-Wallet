@@ -142,6 +142,6 @@ class HorizonExplorerApi {
     );
 
     final data = res.data is String ? jsonDecode(res.data) : res.data;
-    return OnChainPaymentResponse.fromJson(data as Map<String, dynamic>);
+    return OnChainPaymentResponse.fromJson((data as Map<String, dynamic>)["data"]);
   }
 }

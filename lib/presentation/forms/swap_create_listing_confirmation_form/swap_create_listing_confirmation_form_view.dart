@@ -230,10 +230,23 @@ class _SwapCreateListingConfirmationFormState
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          _renderProperty("Service Fee", "0.0001 BTC"),
-                          _renderProperty("Virtual Size", "0.0001 BTC"),
-                          _renderProperty(
-                              "Adjusted Virtual Size", "0.0001 BTC"),
+                          _renderPropertyWidget(
+                              "wip: fee psbt",
+                              switch (widget.state.onChainPayment) {
+                                Loading() => const Center(
+                                    child: CircularProgressIndicator()),
+                                Success(value: var onChainPayment) => Text(
+                                    onChainPayment.psbt,
+                                    style: theme.textTheme.bodySmall,
+                                  ),
+                                Failure(error: var error) => Text(
+                                    error.toString(),
+                                    style: theme.textTheme.bodySmall?.copyWith(
+                                      color: customTheme?.errorColor,
+                                    ),
+                                  ),
+                                _ => const SizedBox.shrink(),
+                              }),
                         ],
                       ),
                     ),
