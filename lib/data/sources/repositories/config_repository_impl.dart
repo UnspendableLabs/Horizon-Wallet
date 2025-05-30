@@ -1,7 +1,6 @@
-
-
 import 'package:horizon/domain/repositories/config_repository.dart';
 import 'package:pub_semver/pub_semver.dart';
+
 class ConfigImpl implements Config {
   @override
   Version get version => Version.parse('1.7.7');
@@ -53,6 +52,12 @@ class ConfigImpl implements Config {
   }
 
   @override
+  int get defaultEnvelopeSize {
+    const envValue = String.fromEnvironment('HORIZON_DEFAULT_ENVELOPE_SIZE');
+    return envValue.isNotEmpty ? int.parse(envValue) : 546;
+  }
+
+  @override
   String toString() {
     return '''EnvironmentConfig(
       version: $version,
@@ -66,3 +71,4 @@ class ConfigImpl implements Config {
     )''';
   }
 }
+

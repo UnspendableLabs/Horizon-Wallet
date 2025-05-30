@@ -6,7 +6,6 @@ import 'package:horizon/presentation/screens/atomic_swap/forms/review_swap_listi
 import 'package:horizon/presentation/screens/atomic_swap/forms/swap_listing_slider.dart';
 import 'package:horizon/presentation/screens/atomic_swap/forms/token_selection.dart';
 
-
 enum DemoComponent {
   swapTokenSelector,
   swapSourceOfFundsSelector,
@@ -26,18 +25,16 @@ class WidgetsDemoPage extends StatefulWidget {
 }
 
 class _WidgetsDemoPageState extends State<WidgetsDemoPage> {
-  
-  Widget _renderComponent(){
-    switch(widget.component){
+  Widget _renderComponent() {
+    switch (widget.component) {
       case DemoComponent.swapTokenSelector:
         return SwapFormTokenSelection(
-          onNextStep: (_,__){
-          },
+          onNextStep: (_, __) {},
         );
       case DemoComponent.swapSourceOfFundsSelector:
         return SwapFundSourceSelector();
       case DemoComponent.swapListingSlider:
-        return SwapListingSlider(onNextStep: (){});
+        return SwapListingSlider(onNextStep: () {});
 
       case DemoComponent.swapCreateListing:
         return CreateSwapListing();
@@ -54,8 +51,8 @@ class _WidgetsDemoPageState extends State<WidgetsDemoPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-
       body: _renderComponent(),
     );
   }
 }
+

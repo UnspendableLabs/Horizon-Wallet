@@ -26,6 +26,21 @@ class MempoolSpaceFeesRecommendedResponse {
   }
 }
 
+class MempoolSpacePricesResponse {
+  final int time;
+  final int usd;
+  MempoolSpacePricesResponse({
+    required this.time,
+    required this.usd,
+  });
+  factory MempoolSpacePricesResponse.fromJson(Map<String, dynamic> json) {
+    return MempoolSpacePricesResponse(
+      time: json['time'] as int,
+      usd: json['USD'] as int,
+    );
+  }
+}
+
 class MempoolSpaceApi {
   final Dio _dio;
 
@@ -38,17 +53,28 @@ class MempoolSpaceApi {
             ));
 
 //  TODO: this should be moved into http_config
+// NOTE: we don't really care about handling testnet here
+//       and in fact it ends up making more sense just to use
+//       mainnet values
   Future<MempoolSpaceFeesRecommendedResponse> getFeeEstimates(
       {required Network network}) async {
     String url = switch (network) {
       Network.mainnet => 'https://mempool.space/api/v1/fees/recommended',
-      // Network.testnet => 'https://mempool.space/api/v1/fees/recommended',
       Network.testnet4 => 'https://mempool.space/api/v1/fees/recommended',
-      // Network.regtest => throw UnsupportedError(
-      //     'MempoolSpace.getFeeEstimates not supported on regtest network.')
     };
 
     final response = await _dio.get(url);
     return MempoolSpaceFeesRecommendedResponse.fromJson(response.data);
+  }
+
+  Future<MempoolSpacePricesResponse> getPrices(
+      {required Network network}) async {
+    String url = switch (network) {
+      Network.mainnet => 'https://mempool.space/api/v1/prices',
+      Network.testnet4 => 'https://mempool.space/api/v1/prices',
+    };
+
+    final response = await _dio.get(url);
+    return MempoolSpacePricesResponse.fromJson(response.data);
   }
 }

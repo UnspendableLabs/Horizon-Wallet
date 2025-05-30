@@ -8,6 +8,7 @@ import 'package:get_it/get_it.dart';
 import 'package:hex/hex.dart';
 import 'package:horizon/domain/entities/utxo.dart';
 import 'package:horizon/domain/entities/http_config.dart';
+import "package:horizon/domain/entities/bitcoin_tx.dart";
 import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
 import 'package:horizon/js/bitcoin.dart' as bitcoinjs;
@@ -36,6 +37,39 @@ class TransactionServiceWeb implements TransactionService {
   final bitcoinRepository = GetIt.I.get<BitcoinRepository>();
 
   TransactionServiceWeb();
+
+  @override
+  String makeSalePsbt({
+    required BigInt price,
+    required String source,
+    required String utxoTxid,
+    required int utxoVoutIndex,
+    required Vout utxoVout,
+    required HttpConfig httpConfig,
+  }) {
+    bitcoinjs.Psbt psbt = bitcoinjs.Psbt();
+
+    final input = bitcoinjs.TxInput.make(
+        sighashType: SIGHASH_SINGLE | SIGHASH_ANYONECANPAY,
+        hash: Buffer.from(Uint8List.fromList(HEX.decode(utxoTxid)).toJS),
+        index: utxoVoutIndex,
+        witnessUtxo: bitcoinjs.WitnessUTXO(
+          script: Buffer.from(
+              Uint8List.fromList(HEX.decode(utxoVout.scriptpubkey)).toJS),
+          value: utxoVout.value,
+        ));
+
+    final output = bitcoinjs.TxOutput.make(
+      address: source,
+      // TODO: be more paranoid about BigInt conversion
+      value: price.toInt(),
+    );
+
+    psbt.addInput(input);
+    psbt.addOutput(output);
+
+    return psbt.toHex();
+  }
 
   @override
   Future<MakeRBFResponse> makeRBF({
@@ -116,7 +150,14 @@ class TransactionServiceWeb implements TransactionService {
   String signPsbt(String psbtHex, Map<int, String> inputPrivateKeyMap,
       HttpConfig httpConfig,
       [List<int>? sighashTypes]) {
+    print("before");
+
     bitcoinjs.Psbt psbt = bitcoinjs.Psbt.fromHex(psbtHex);
+
+    print(sighashTypes);
+
+    print("aftre");
+    print(psbt);
 
     for (final entry in inputPrivateKeyMap.entries) {
       final index = entry.key;
@@ -194,8 +235,8 @@ class TransactionServiceWeb implements TransactionService {
       var prev = utxoMap[txHashKey];
       if (prev != null) {
         if (isSourceSegwit) {
-          input.witnessUtxo =
-              bitcoinjs.WitnessUTXO(script: script.output, value: prev.value);
+          input.witnessUtxo = bitcoinjs.WitnessUTXO(
+              script: Buffer.from(script.output), value: prev.value);
           psbt.addInput(input);
         } else {
           input.script = script.output;
@@ -378,11 +419,10 @@ class TransactionServiceWeb implements TransactionService {
       bitcoinjs.TxInput input = transaction.ins.toDart[i];
       var txHash = HEX.encode(input.hash.toDart.reversed.toList());
 
-      var prev = utxos.firstWhereOrNull((utxo) => utxo.txid == txHash);
-      if (prev != null) {
+      var prev = utxos.firstWhereOrNull((utxo) => utxo.txid == txHash); if (prev != null) {
         if (addressIsSegwit(prev.address)) {
           input.witnessUtxo = bitcoinjs.WitnessUTXO(
-              script: sourceScript.output, value: prev.value);
+              script: Buffer.from(sourceScript.output), value: prev.value);
         } else {
           input.script = sourceScript.output;
           final txHex = await bitcoinRepository.getTransactionHex(

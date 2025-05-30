@@ -6979,7 +6979,8 @@ class _V2Api implements V2Api {
   Future<Response<ComposeAttachUtxoResponseModel>> composeAttachUtxo(
     String address,
     String asset,
-    int quantity, [
+    int quantity,
+    int utxoValue, [
     String? destinationVout,
     bool? skipValidation,
     bool? allowUnconfirmedInputs,
@@ -6993,6 +6994,7 @@ class _V2Api implements V2Api {
     final queryParameters = <String, dynamic>{
       r'asset': asset,
       r'quantity': quantity,
+      r'utxo_value': utxoValue,
       r'destination_vout': destinationVout,
       r'skip_validation': skipValidation,
       r'allow_unconfirmed_inputs': allowUnconfirmedInputs,

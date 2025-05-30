@@ -1,0 +1,295 @@
+import 'package:flutter/material.dart';
+import 'package:formz/formz.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:horizon/domain/entities/address_v2.dart';
+import 'package:horizon/domain/entities/http_config.dart';
+import 'package:horizon/presentation/common/redesign_colors.dart';
+import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
+import 'package:horizon/presentation/session/bloc/session_cubit.dart';
+import 'package:horizon/presentation/session/bloc/session_state.dart';
+import 'package:horizon/utils/app_icons.dart';
+import 'package:horizon/extensions.dart';
+import './bloc/create_psbt_form_bloc.dart';
+
+class CreatePsbtFormActions {
+  final Function(String value) onBtcValueChanged;
+  final VoidCallback onSubmitClicked;
+
+  const CreatePsbtFormActions({
+    required this.onBtcValueChanged,
+    required this.onSubmitClicked,
+  });
+}
+
+class CreatePsbtFormProvider extends StatelessWidget {
+  final AddressV2 address;
+  final String utxoID;
+
+  final Widget Function(
+      CreatePsbtFormActions actions, CreatePsbtFormModel state) child;
+
+  const CreatePsbtFormProvider({
+    super.key,
+    required this.utxoID,
+    required this.address,
+    required this.child,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final session = context.watch<SessionStateCubit>().state.successOrThrow();
+    return BlocProvider(
+        create: (context) => CreatePsbtFormBloc(
+              address: address,
+              httpConfig: session.httpConfig,
+              utxoID: utxoID,
+            ),
+        child: BlocBuilder<CreatePsbtFormBloc, CreatePsbtFormModel>(
+            builder: (context, state) => child(
+                CreatePsbtFormActions(onBtcValueChanged: (value) {
+                  context
+                      .read<CreatePsbtFormBloc>()
+                      .add(BtcPriceInputChanged(value: value));
+                }, onSubmitClicked: () {
+                  context.read<CreatePsbtFormBloc>().add(SubmitClicked());
+                }),
+                state)));
+  }
+}
+
+class CreatePsbtSuccess {
+  final String signedPsbtHex;
+  final BigInt btcQuantity;
+
+  const CreatePsbtSuccess({
+    required this.signedPsbtHex,
+    required this.btcQuantity,
+  });
+}
+
+class CreatePsbtSuccessHandler extends StatelessWidget {
+  final Function(CreatePsbtSuccess createPsbtSuccess) onSuccess;
+
+  const CreatePsbtSuccessHandler({super.key, required this.onSuccess});
+
+  @override
+  Widget build(context) {
+    return BlocListener<CreatePsbtFormBloc, CreatePsbtFormModel>(
+        listener: (context, state) {
+          if (state.submissionStatus.isSuccess) {
+
+        print("success callback ${state.btcPriceInput.value}" );
+        print("success callback dec ${state.btcPriceInput.asDecimal}" );
+        print("success callback bi ${state.btcPriceInput.asSats}" );
+
+            onSuccess(CreatePsbtSuccess(
+                signedPsbtHex: state.signedPsbt!,
+                btcQuantity: state.btcPriceInput.asSats
+                    .getOrThrow() // will never be called if this is undefiend
+
+                ));
+          }
+        },
+        child: const SizedBox.shrink());
+  }
+}
+
+class CreatePsbtForm extends StatefulWidget {
+  final CreatePsbtFormModel state;
+  final CreatePsbtFormActions actions;
+
+  final String asset;
+  final String quantityNormalized;
+  final int quantity;
+  final String utxo;
+  final String utxoAddress;
+
+  const CreatePsbtForm(
+      {required this.state,
+      required this.actions,
+      required this.asset,
+      required this.quantityNormalized,
+      required this.quantity,
+      required this.utxo,
+      required this.utxoAddress,
+      super.key});
+
+  @override
+  State<CreatePsbtForm> createState() => _CreatePsbtFormState();
+}
+
+class _CreatePsbtFormState extends State<CreatePsbtForm> {
+  late final TextEditingController _btcController;
+
+  final appIcons = AppIcons();
+
+  @override
+  void initState() {
+    super.initState();
+    // Seed it with whatever value the bloc already holds (or '' if none).
+    _btcController =
+        TextEditingController(text: widget.state.btcPriceInput.value);
+  }
+
+  @override
+  void dispose() {
+    _btcController.dispose(); // ALWAYS dispose controllers
+    super.dispose();
+  }
+
+  _buildFromCard(BuildContext context, HttpConfig httpConfig) {
+    final theme = Theme.of(context);
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    return HorizonCard(
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Expanded(
+                  child: QuantityText(
+                quantity: widget.quantityNormalized,
+                style: TextStyle(fontSize: 35),
+              )),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  appIcons.assetIcon(
+                      httpConfig: httpConfig,
+                      assetName: widget.asset,
+                      context: context,
+                      width: 24,
+                      height: 24),
+                  const SizedBox(width: 8),
+                  Text(widget.asset,
+                      style: theme.textTheme.titleMedium!.copyWith(
+                        fontSize: 12,
+                      )),
+                ],
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  _buildToCard(BuildContext context, HttpConfig httpConfig) {
+    final theme = Theme.of(context);
+    return HorizonCard(
+      backgroundColor: theme.scaffoldBackgroundColor,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Expanded(
+                  child: QuantityInputV2(
+                      style: const TextStyle(fontSize: 35),
+                      divisible: true,
+                      controller:
+                          _btcController, // chat helpo me with a stateful controller hre,
+                      onChanged: (value) {
+                        widget.actions.onBtcValueChanged(value);
+                      })),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  appIcons.assetIcon(
+                      httpConfig: httpConfig,
+                      assetName: "BTC",
+                      context: context,
+                      width: 24,
+                      height: 24),
+                  const SizedBox(width: 8),
+                  Text("BTC",
+                      style: theme.textTheme.titleMedium!.copyWith(
+                        fontSize: 12,
+                      )),
+                ],
+              ),
+            ],
+          ),
+          const SizedBox(
+            height: 20,
+          ),
+          Text("TK DYNAMIC USD VALUE",
+              style: theme.textTheme.labelSmall?.copyWith(height: 1.2)),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final session = context.watch<SessionStateCubit>().state.successOrThrow();
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.vertical,
+        child: Column(
+          children: [
+            commonHeightSizedBox,
+            Stack(
+              children: [
+                Column(
+                  children: [
+                    _buildFromCard(context, session.httpConfig),
+                    commonHeightSizedBox,
+                    _buildToCard(context, session.httpConfig),
+                  ],
+                ),
+                Positioned(
+                    top: -36,
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    child: Center(
+                      child: Material(
+                        color: Theme.of(context).scaffoldBackgroundColor,
+                        borderRadius: BorderRadius.circular(8),
+                        child: InkWell(
+                          hoverColor: transparentPurple8,
+                          borderRadius: BorderRadius.circular(8),
+                          child: Container(
+                            width: 44,
+                            height: 44,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
+                                  color: transparentWhite8, width: 1),
+                            ),
+                            padding: const EdgeInsets.all(10),
+                            child: AppIcons.arrowDownIcon(
+                                context: context, width: 24, height: 24),
+                          ),
+                        ),
+                      ),
+                    ))
+              ],
+            ),
+            commonHeightSizedBox,
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              child: HorizonButton(
+                  disabled: widget.state.submitDisabled,
+                  onPressed: () {
+                    if (!widget.state.submitDisabled) {
+                      widget.actions.onSubmitClicked();
+                    }
+                  },
+                  child: TextButtonContent(value: "Sign PSBT")),
+            )
+          ],
+        ),
+      ),
+    );
+  }
+}
