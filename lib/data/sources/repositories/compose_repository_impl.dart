@@ -101,6 +101,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
         const excludeUtxosWithBalances = true;
         const allowUnconfirmedInputs = true;
         const disableUtxoLocks = false;
+        final memo = params.memo;
         final inputsSetString =
             currentInputSet.map((e) => "${e.txid}:${e.vout}").join(',');
 
@@ -110,6 +111,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
                 source,
                 destination,
                 asset,
+                memo,
                 quantity,
                 allowUnconfirmedInputs,
                 satPerVbyte,
@@ -159,6 +161,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
         final quantities = params.quantities;
         const excludeUtxosWithBalances = true;
         const allowUnconfirmedInputs = true;
+        final memos = params.memos;
         const disableUtxoLocks = false;
         final inputsSetString =
             currentInputSet.map((e) => "${e.txid}:${e.vout}").join(',');
@@ -168,6 +171,7 @@ class ComposeRepositoryImpl extends ComposeRepository {
             .composeMpmaSend(
                 source,
                 destinations,
+                memos,
                 assets,
                 quantities,
                 allowUnconfirmedInputs,

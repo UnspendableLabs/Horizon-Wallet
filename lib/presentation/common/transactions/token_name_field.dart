@@ -14,6 +14,7 @@ class TokenNameField extends StatelessWidget {
   final MultiAddressBalanceEntry? selectedBalanceEntry;
   final bool loading;
   final Widget? suffixIcon;
+  final Decoration? decoration;
 
   const TokenNameField({
     super.key,
@@ -21,6 +22,7 @@ class TokenNameField extends StatelessWidget {
     this.selectedBalanceEntry,
     required this.loading,
     this.suffixIcon,
+    this.decoration,
   });
 
   @override
@@ -36,7 +38,7 @@ class TokenNameField extends StatelessWidget {
 
     return Container(
       height: 56,
-      decoration: BoxDecoration(
+      decoration: decoration ?? BoxDecoration(
         borderRadius: BorderRadius.circular(18),
         color: customTheme.inputBackground,
         border: Border.all(color: customTheme.inputBorderColor),

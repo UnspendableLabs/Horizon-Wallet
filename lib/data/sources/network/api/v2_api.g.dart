@@ -5548,6 +5548,7 @@ class _V2Api implements V2Api {
     String address,
     String destination,
     String asset,
+    String? memo,
     int quantity, [
     bool? allowUnconfirmedInputs,
     num? satPerVbyte,
@@ -5560,6 +5561,7 @@ class _V2Api implements V2Api {
     final queryParameters = <String, dynamic>{
       r'destination': destination,
       r'asset': asset,
+      r'memo': memo,
       r'quantity': quantity,
       r'allow_unconfirmed_inputs': allowUnconfirmedInputs,
       r'sat_per_vbyte': satPerVbyte,
@@ -5605,6 +5607,7 @@ class _V2Api implements V2Api {
   Future<Response<ComposeMpmaSend>> composeMpmaSend(
     String address,
     String? destinations,
+    List<String>? memos,
     String? assets,
     String? quantities, [
     bool? allowUnconfirmedInputs,
@@ -5616,6 +5619,7 @@ class _V2Api implements V2Api {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{
       r'destinations': destinations,
+      r'memos': memos,
       r'assets': assets,
       r'quantities': quantities,
       r'allow_unconfirmed_inputs': allowUnconfirmedInputs,

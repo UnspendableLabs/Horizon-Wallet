@@ -11,7 +11,6 @@ import "package:fpdart/fpdart.dart" hide State;
 import 'package:go_router/go_router.dart';
 import 'package:horizon/utils/app_icons.dart';
 import 'package:horizon/presentation/forms/asset_pair_form/asset_pair_form_view.dart';
-import 'package:horizon/presentation/forms/asset_balance_form/asset_balance_form_view.dart';
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:horizon/presentation/session/bloc/session_state.dart';
 import 'package:horizon/domain/entities/remote_data.dart';

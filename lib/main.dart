@@ -29,6 +29,7 @@ import 'package:horizon/presentation/inactivity_monitor/inactivity_monitor_bloc.
 import 'package:horizon/presentation/inactivity_monitor/inactivity_monitor_view.dart';
 import 'package:horizon/presentation/screens/asset/asset_view.dart';
 import 'package:horizon/presentation/screens/asset/bloc/asset_view_bloc.dart';
+import 'package:horizon/presentation/screens/send/view/send_view.dart';
 
 import 'package:horizon/presentation/screens/swap/view/swap_view.dart';
 import 'package:horizon/presentation/screens/atomic_swap/view/atomic_swap_view.dart';
@@ -537,6 +538,10 @@ class AppRouter {
                   );
                 },
               ),
+            ),
+            GoRoute(
+              path: "/send",
+              builder: (context, state) => const SendView(),
             ),
           ],
         ),

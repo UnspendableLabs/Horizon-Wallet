@@ -13,13 +13,17 @@ import 'package:horizon/domain/entities/http_config.dart';
 class TransactionSuccessful extends StatelessWidget {
   final String? txHex;
   final String? txHash;
+  final String? title;
   final bool loading;
+  final VoidCallback? onClose;
 
   const TransactionSuccessful({
     super.key,
     this.txHex,
     this.txHash,
     this.loading = false,
+    this.title,
+    this.onClose,
   });
 
   Future<void> _launchExplorer(HttpConfig httpConfig) async {
@@ -38,6 +42,8 @@ class TransactionSuccessful extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         const TxnSuccessAnimation(),
+        commonHeightSizedBox,
+        Text(title ?? "Transaction Successful", style: Theme.of(context).textTheme.titleMedium,),
         const SizedBox(
           height: 32,
         ),
@@ -145,7 +151,7 @@ class TransactionSuccessful extends StatelessWidget {
         commonHeightSizedBox,
         HorizonButton(
           onPressed: () {
-            Navigator.pop(context);
+            onClose?.call();
           },
           child: TextButtonContent(value: "Close"),
           disabled: loading,

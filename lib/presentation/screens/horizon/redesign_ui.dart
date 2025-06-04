@@ -104,17 +104,19 @@ class HorizonButton extends StatefulWidget {
   final ButtonContent child;
   final Widget? icon;
   final double? borderRadius;
+  final bool isLoading;
 
   const HorizonButton({
     super.key,
-    required this.onPressed,
     required this.child,
+    required this.onPressed,
     this.width = double.infinity,
     this.height = defaultButtonHeight,
     this.variant = ButtonVariant.green,
     this.disabled = false,
     this.icon,
     this.borderRadius = 50,
+    this.isLoading = false,
   });
 
   @override
@@ -256,16 +258,27 @@ class _HorizonButtonState extends State<HorizonButton> {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                if (widget.icon != null) ...[
-                  widget.icon!,
-                  const SizedBox(width: 4),
+                if (widget.isLoading)
+                  const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      color: transparentBlack66,
+                      strokeWidth: 2,
+                    ),
+                  )
+                else ...[
+                  if (widget.icon != null) ...[
+                    widget.icon!,
+                    const SizedBox(width: 4),
+                  ],
+                  // widget.child ?? Text(widget.buttonText, style: textStyle)
+                  if (widget.child is TextButtonContent)
+                    Text((widget.child as TextButtonContent).value,
+                        style: textStyle)
+                  else if (widget.child is WidgetButtonContent)
+                    (widget.child as WidgetButtonContent).value
                 ],
-                // widget.child ?? Text(widget.buttonText, style: textStyle)
-                if (widget.child is TextButtonContent)
-                  Text((widget.child as TextButtonContent).value,
-                      style: textStyle)
-                else if (widget.child is WidgetButtonContent)
-                  (widget.child as WidgetButtonContent).value
               ],
             ),
           ),
@@ -291,15 +304,26 @@ class _HorizonButtonState extends State<HorizonButton> {
             crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              if (widget.icon != null) ...[
-                widget.icon!,
-                const SizedBox(width: 4),
+              if (widget.isLoading)
+                const SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(
+                    color: transparentBlack66,
+                    strokeWidth: 2,
+                  ),
+                )
+              else ...[
+                if (widget.icon != null) ...[
+                  widget.icon!,
+                  const SizedBox(width: 4),
+                ],
+                if (widget.child is TextButtonContent)
+                  Text((widget.child as TextButtonContent).value,
+                      style: textStyle)
+                else if (widget.child is WidgetButtonContent)
+                  (widget.child as WidgetButtonContent).value
               ],
-              if (widget.child is TextButtonContent)
-                Text((widget.child as TextButtonContent).value,
-                    style: textStyle)
-              else if (widget.child is WidgetButtonContent)
-                (widget.child as WidgetButtonContent).value
             ],
           ),
         ),
@@ -580,6 +604,7 @@ class HorizonRedesignDropdown<T> extends StatefulWidget {
   final Color? buttonBg;
   final TextStyle? buttonTextStyle;
   final EdgeInsetsGeometry? itemPadding;
+  final EdgeInsetsGeometry? selectorPadding;
 
   const HorizonRedesignDropdown({
     super.key,
@@ -594,6 +619,8 @@ class HorizonRedesignDropdown<T> extends StatefulWidget {
     this.buttonBg,
     this.buttonTextStyle,
     this.itemPadding,
+    this.selectorPadding =
+        const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
   });
 
   @override
@@ -654,7 +681,7 @@ class _HorizonRedesignDropdownState<T>
             child: BackdropFilter(
               filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
               child: Container(
-                color: transparentBlack33,
+                color: theme.scaffoldBackgroundColor.withAlpha(240),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -808,8 +835,7 @@ class _HorizonRedesignDropdownState<T>
               onTap: _toggleDropdown,
               child: Container(
                 height: 56,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: widget.selectorPadding,
                 decoration: BoxDecoration(
                   borderRadius: widget.cornerRadius,
                   border: focusNode.hasFocus

@@ -21,7 +21,7 @@ class FlowStep extends StatelessWidget {
 
     return Scaffold(
         appBar: AppBar(
-            backgroundColor: Colors.transparent,
+            backgroundColor: Theme.of(context).dialogTheme.backgroundColor,
             elevation: 0,
             leading: leading),
         backgroundColor: Theme.of(context).dialogTheme.backgroundColor,
