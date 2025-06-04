@@ -5189,6 +5189,7 @@ abstract class V2Api {
     @Path("address") String address,
     @Query("destination") String destination,
     @Query("asset") String asset,
+    @Query("memo") String? memo,
     @Query("quantity") int quantity, [
     @Query("allow_unconfirmed_inputs") bool? allowUnconfirmedInputs,
     @Query("sat_per_vbyte") num? satPerVbyte,
@@ -5202,6 +5203,7 @@ abstract class V2Api {
   Future<Response<ComposeMpmaSend>> composeMpmaSend(
     @Path("address") String address,
     @Query("destinations") String? destinations,
+    @Query("memos") List<String>? memos,
     @Query("assets") String? assets,
     @Query("quantities") String? quantities, [
     @Query("allow_unconfirmed_inputs") bool? allowUnconfirmedInputs,

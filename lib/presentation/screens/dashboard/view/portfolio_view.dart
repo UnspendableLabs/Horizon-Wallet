@@ -174,8 +174,7 @@ class _PortfolioViewState extends State<PortfolioView>
                           color: black,
                         ),
                         onPressed: () {
-                          context.go("/accounts");
-                          // TODO: Implement send functionality
+                          context.push('/send');
                         },
                       ),
                     ),
