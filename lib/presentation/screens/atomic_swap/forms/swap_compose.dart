@@ -10,15 +10,15 @@ import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:horizon/presentation/session/bloc/session_state.dart';
 import 'package:horizon/utils/app_icons.dart';
 
-class SwapListingSlider extends StatefulWidget {
+class SwapFormCompose extends StatefulWidget {
   final Function() onNextStep;
-  const SwapListingSlider({super.key, required this.onNextStep});
+  const SwapFormCompose({super.key, required this.onNextStep});
 
   @override
-  State<SwapListingSlider> createState() => _SwapListingSliderState();
+  State<SwapFormCompose> createState() => _SwapFormComposeState();
 }
 
-class _SwapListingSliderState extends State<SwapListingSlider> {
+class _SwapFormComposeState extends State<SwapFormCompose> {
   // TODO: fake data
   final toAsset = MultiAddressBalance(
     asset: 'XCP',

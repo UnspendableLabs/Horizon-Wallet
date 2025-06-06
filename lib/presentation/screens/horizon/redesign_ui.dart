@@ -648,52 +648,56 @@ class _HorizonRedesignDropdownState<T>
                         maxWidth: 480, // Maximum width for larger screens
                         minWidth: 200, // Minimum width for smaller screens
                       ),
-                      child: Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 20),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(18),
-                          border: widget.gradBorder
-                              ? GradientBoxBorder(
-                                  context: context,
-                                  width: 1,
-                                )
-                              : Border.all(
-                                  color: isDarkMode
-                                      ? transparentWhite8
-                                      : transparentBlack8,
-                                  width: 1,
-                                ),
-                          color: (isDarkMode
-                              ? transparentWhite8
-                              : transparentBlack8),
-                        ),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: widget.items.map((item) {
-                            return Material(
-                              color: Colors.transparent,
-                              child: InkWell(
-                                onTap: () {
-                                  widget.onChanged(item.value);
-                                  _toggleDropdown();
-                                },
-                                child: Container(
-                                  padding: widget.itemPadding ??
-                                      const EdgeInsets.symmetric(
-                                        horizontal: 12,
-                                        vertical: 21,
+                      child: BackdropFilter(
+                        filter: ImageFilter.blur(sigmaX: 4.5, sigmaY: 4.5),
+                        child: Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 20),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(18),
+                            border: widget.gradBorder
+                                ? GradientBoxBorder(
+                                    context: context,
+                                    width: 1,
+                                  )
+                                : Border.all(
+                                    color: isDarkMode
+                                        ? transparentWhite8
+                                        : transparentBlack8,
+                                    width: 1,
+                                  ),
+                            color: (isDarkMode
+                                ? transparentWhite8
+                                : transparentBlack8),
+                          ),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: widget.items.map((item) {
+                              return Material(
+                                color: Colors.transparent,
+                                child: InkWell(
+                                  onTap: () {
+                                    widget.onChanged(item.value);
+                                    _toggleDropdown();
+                                  },
+                                  child: Container(
+                                    padding: widget.itemPadding ??
+                                        const EdgeInsets.symmetric(
+                                          horizontal: 12,
+                                          vertical: 21,
+                                        ),
+                                    child: SizedBox(
+                                      width: double.infinity,
+                                      child: DefaultTextStyle(
+                                        style:
+                                            theme.dropdownMenuTheme.textStyle!,
+                                        child: item.child,
                                       ),
-                                  child: SizedBox(
-                                    width: double.infinity,
-                                    child: DefaultTextStyle(
-                                      style: theme.dropdownMenuTheme.textStyle!,
-                                      child: item.child,
                                     ),
                                   ),
                                 ),
-                              ),
-                            );
-                          }).toList(),
+                              );
+                            }).toList(),
+                          ),
                         ),
                       ),
                     ),
@@ -1178,7 +1182,7 @@ class _HorizonToggleState extends State<HorizonToggle> {
     super.initState();
     _initializeColors();
   }
-
+  
   @override
   Widget build(BuildContext context) {
     return MouseRegion(
@@ -1731,8 +1735,7 @@ class HorizonSlider extends StatelessWidget {
     );
     const gutterColor = Color(0x54FFFFFF); // transparentWhite33
 
-    Color getGradientColorAt(
-        double t, List<Color> colors, List<double>? stops) {
+    Color getGradientColorAt(double t, List<Color> colors, List<double>? stops) {
       if (colors.length == 1) return colors.first;
       if (stops == null || stops.length != colors.length) {
         stops = List.generate(colors.length, (i) => i / (colors.length - 1));
@@ -1774,14 +1777,10 @@ class HorizonSlider extends StatelessWidget {
                 behavior: HitTestBehavior.translucent,
                 onTapDown: (details) {
                   if (onChanged == null) return;
-                  final RenderBox renderBox =
-                      context.findRenderObject() as RenderBox;
-                  final position =
-                      renderBox.globalToLocal(details.globalPosition);
-                  final tapPosition =
-                      (position.dx - thumbSize / 2).clamp(0, thumbTravel);
-                  final double rawValue =
-                      min + (max - min) * (tapPosition / thumbTravel);
+                  final RenderBox renderBox = context.findRenderObject() as RenderBox;
+                  final position = renderBox.globalToLocal(details.globalPosition);
+                  final tapPosition = (position.dx - thumbSize / 2).clamp(0, thumbTravel);
+                  final double rawValue = min + (max - min) * (tapPosition / thumbTravel);
                   final clampedValue = rawValue.clamp(min, max);
                   final steppedValue = getSteppedValue(clampedValue);
                   onChanged!(steppedValue);
@@ -1825,14 +1824,10 @@ class HorizonSlider extends StatelessWidget {
                 child: GestureDetector(
                   onHorizontalDragUpdate: (details) {
                     if (onChanged == null) return;
-                    final RenderBox renderBox =
-                        context.findRenderObject() as RenderBox;
-                    final position =
-                        renderBox.globalToLocal(details.globalPosition);
-                    final dragPosition =
-                        (position.dx - thumbSize / 2).clamp(0, thumbTravel);
-                    final double rawValue =
-                        min + (max - min) * (dragPosition / thumbTravel);
+                    final RenderBox renderBox = context.findRenderObject() as RenderBox;
+                    final position = renderBox.globalToLocal(details.globalPosition);
+                    final dragPosition = (position.dx - thumbSize / 2).clamp(0, thumbTravel);
+                    final double rawValue = min + (max - min) * (dragPosition / thumbTravel);
                     final clampedValue = rawValue.clamp(min, max);
                     final steppedValue = getSteppedValue(clampedValue);
                     onChanged!(steppedValue);

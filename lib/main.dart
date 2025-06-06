@@ -21,7 +21,6 @@ import 'package:horizon/domain/services/encryption_service.dart';
 import 'package:horizon/domain/services/error_service.dart';
 import 'package:horizon/domain/services/secure_kv_service.dart';
 import 'package:horizon/domain/services/database_manager_service.dart';
-import 'package:horizon/presentation/common/dialog_helper.dart';
 
 import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/common/theme_extension.dart';
@@ -33,7 +32,6 @@ import 'package:horizon/presentation/screens/asset/bloc/asset_view_bloc.dart';
 import 'package:horizon/presentation/screens/swap/view/swap_view.dart';
 import 'package:horizon/presentation/screens/atomic_swap/view/atomic_swap_view.dart';
 import 'package:horizon/presentation/screens/dashboard/view/portfolio_view.dart';
-import 'package:horizon/presentation/screens/demo_route.dart';
 import 'package:horizon/presentation/screens/login/login_view.dart';
 import 'package:horizon/presentation/screens/accounts/accounts_screen.dart';
 import 'package:horizon/presentation/screens/onboarding/view/onboarding_page.dart';
@@ -537,16 +535,9 @@ class AppRouter {
                   );
                 },
               ),
-            ),
+            )
           ],
         ),
-        
-        // TODO: remove later
-        GoRoute(path: "/demo/:component", builder: (context, state) {
-          final component = state.pathParameters['component'] ?? 'showList';
-          return WidgetsDemoPage(component: DemoComponent.values.firstWhere((e) => e.name == component));
-        })
-      
       ],
       errorBuilder: (context, state) => ErrorScreen(
             error: state.error,
@@ -581,11 +572,6 @@ class AppRouter {
               Future.delayed(const Duration(milliseconds: 500), () {
                 session.initialized();
               });
-
-              // TODO: remove later
-              if(state.matchedLocation.startsWith("/demo")) {
-                return state.matchedLocation;
-              }
 
               if (data.redirect) {
                 return "/dashboard";
@@ -643,7 +629,6 @@ class ErrorScreen extends StatelessWidget {
 
 void main() {
   setup();
-  DialogHelper.init(_rootNavigatorKey);
 
   // Catch synchronous errors in Flutter framework
   FlutterError.onError = (FlutterErrorDetails details) {
@@ -948,7 +933,7 @@ class MyApp extends StatelessWidget {
       ),
       bodySmall: TextStyle(
         fontSize: 12,
-        color: offWhite,
+        color: Colors.white,
         fontFamily: 'Montserrat',
       ),
       labelMedium: TextStyle(
