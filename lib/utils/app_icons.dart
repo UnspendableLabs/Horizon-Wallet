@@ -942,6 +942,14 @@ class AppIcons {
             child: CachedNetworkImage(
               cacheKey: assetName,
               imageUrl: snapshot.data!.src!,
+              errorWidget: (_,__,___) {
+                return xcpIcon(
+                  width: width,
+                  height: height,
+                  fit: fit,
+                );
+
+              },
               width: width,
               height: height,
               fit: fit,

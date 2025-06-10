@@ -170,7 +170,7 @@ class _AtomicSwapSellFlowViewState extends State<AtomicSwapSellFlowView> {
                   )),
                 AttachedAtomicSwapSell() => MaterialPage(
                     child: FlowStep(
-                        title: "Create PSBT",
+                        title: "Swap Listing",
                         widthFactor: .8,
                         body: CreatePsbtFormProvider(
                           utxoID: variant.utxo,

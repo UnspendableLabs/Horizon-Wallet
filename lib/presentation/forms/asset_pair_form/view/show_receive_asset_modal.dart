@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fpdart/fpdart.dart' hide State;
 import 'package:flutter/material.dart';
+import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 import 'package:horizon/domain/entities/remote_data.dart';
 import 'package:horizon/domain/entities/asset_search_result.dart';
@@ -184,46 +185,37 @@ class _AssetSearchDialogState extends State<AssetSearchDialog> {
         }
       },
       builder: (context, state) {
-        return GestureDetector(
-          onTap: () {
-            // Navigator.of(context).pop();
-          },
-          child: Material(
-            type: MaterialType.transparency,
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
-              child: Center(
+        return Stack(
+          children: [
+            // Blurred background
+            Positioned.fill(
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+                child: Container(
+                  color: Colors.transparent, // or your preferred overlay
+                ),
+              ),
+            ),
+            // Modal content on top
+            Center(
+              child: Material(
+                type: MaterialType.transparency,
+                borderRadius: BorderRadius.circular(18),
                 child: GestureDetector(
                   onTap: () {}, // absorb inside tap
                   child: ConstrainedBox(
-                    constraints:
-                        const BoxConstraints(maxWidth: 480, minWidth: 200),
+                    constraints: const BoxConstraints(maxWidth: 480, minWidth: 200),
                     child: Container(
                       margin: const EdgeInsets.symmetric(horizontal: 20),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(18),
                         border: GradientBoxBorder(context: context, width: 1),
-                        color: isDarkMode
-                            ? Colors.white.withOpacity(0.08)
-                            : Colors.black.withOpacity(0.08),
+                        color: transparentWhite8,
                       ),
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 24),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          // HorizonTextField(
-                          //   suffixIcon: AppIcons.searchIcon(
-                          //     context: context,
-                          //     width: 34,
-                          //     height: 34,
-                          //   ),
-                          //   hintText: "Search",
-                          //   controller: _searchInputController,
-                          //   onChanged: (value) {
-                          //     widget.onQueryChanged(value);
-                          //   },
-                          // ),
                           InlineTypeAhead<AssetSearchResult>(
                             controller: _searchInputController,
                             suggestionsController: _suggestionsController,
@@ -259,7 +251,7 @@ class _AssetSearchDialogState extends State<AssetSearchDialog> {
                 ),
               ),
             ),
-          ),
+          ],
         );
       },
     );

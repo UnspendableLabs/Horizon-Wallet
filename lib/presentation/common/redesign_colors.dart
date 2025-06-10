@@ -47,6 +47,7 @@ const transparentPurple16 = Color.fromRGBO(137, 146, 246, 0.16);
 const grey5 = Color(0xFF191919);
 const transparentWhite33 = Color.fromRGBO(254, 251, 249, 0.33);
 const transparentWhite8 = Color.fromRGBO(254, 251, 249, 0.08);
+const transparentWhite16 = Color.fromRGBO(254, 251, 249, 0.16);
 
 const grey1 = Color(0xFFCED3D7);
 const transparentBlack33 = Color.fromRGBO(0, 0, 0, 0.33);

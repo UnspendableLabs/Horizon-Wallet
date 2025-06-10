@@ -109,6 +109,7 @@ class AssetBalanceForm extends StatelessWidget {
                         // TODO: i don't love this, period
                         entry.address ?? entry.utxo!,
                         style: theme.textTheme.bodySmall?.copyWith(
+                          fontSize: 10,
                           color: theme
                               .extension<CustomThemeExtension>()
                               ?.offColorText,

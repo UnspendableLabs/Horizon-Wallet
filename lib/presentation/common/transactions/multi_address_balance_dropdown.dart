@@ -74,8 +74,7 @@ class MultiAddressBalanceDropdown extends StatelessWidget {
                     Text(addressEntry.address ?? addressEntry.utxo!,
                         style: Theme.of(context).textTheme.bodySmall),
                     Text(
-                        quantityRemoveTrailingZeros(
-                            addressEntry.quantityNormalized),
+                        addressEntry.quantityNormalized,
                         style: Theme.of(context)
                             .textTheme
                             .titleSmall!
