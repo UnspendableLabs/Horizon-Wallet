@@ -23,6 +23,8 @@ String _stripLeadingZeros(String value, bool divisible) {
 }
 
 Widget commonHeightSizedBox = const SizedBox(height: 10);
+Widget commonWidthSizedBox = const SizedBox(width: 10);
+
 const double defaultButtonHeight = 54;
 
 enum ButtonVariant { black, green, gradient, red, purple }
@@ -125,8 +127,12 @@ class HorizonButton extends StatefulWidget {
 
 class _HorizonButtonState extends State<HorizonButton> {
   bool isHovered = false;
+
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    Color progressIndicatorColor = isDarkMode ? transparentBlack66 : offWhite;
+
     ButtonStyle style = ElevatedButton.styleFrom(
       backgroundColor: green2,
       foregroundColor: offBlack,
@@ -215,6 +221,9 @@ class _HorizonButtonState extends State<HorizonButton> {
         ),
       );
 
+      progressIndicatorColor =
+          isDarkMode ? transparentWhite66 : transparentBlack66;
+
       textStyle = textStyle.copyWith(
         color: const Color.fromRGBO(254, 251, 249, 0.16),
       );
@@ -258,7 +267,7 @@ class _HorizonButtonState extends State<HorizonButton> {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                if (widget.isLoading)
+                if (widget.isLoading) ...[
                   const SizedBox(
                     width: 20,
                     height: 20,
@@ -266,11 +275,12 @@ class _HorizonButtonState extends State<HorizonButton> {
                       color: transparentBlack66,
                       strokeWidth: 2,
                     ),
-                  )
-                else ...[
+                  ),
+                  const SizedBox(width: 10),
+                ],
                   if (widget.icon != null) ...[
                     widget.icon!,
-                    const SizedBox(width: 4),
+                    const SizedBox(width: 8),
                   ],
                   // widget.child ?? Text(widget.buttonText, style: textStyle)
                   if (widget.child is TextButtonContent)
@@ -278,7 +288,6 @@ class _HorizonButtonState extends State<HorizonButton> {
                         style: textStyle)
                   else if (widget.child is WidgetButtonContent)
                     (widget.child as WidgetButtonContent).value
-                ],
               ],
             ),
           ),
@@ -304,26 +313,26 @@ class _HorizonButtonState extends State<HorizonButton> {
             crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              if (widget.isLoading)
-                const SizedBox(
-                  width: 20,
-                  height: 20,
+              if (widget.isLoading) ...[
+                SizedBox(
+                  width: 16,
+                  height: 16,
                   child: CircularProgressIndicator(
-                    color: transparentBlack66,
+                    color: progressIndicatorColor,
                     strokeWidth: 2,
                   ),
-                )
-              else ...[
-                if (widget.icon != null) ...[
-                  widget.icon!,
-                  const SizedBox(width: 4),
-                ],
-                if (widget.child is TextButtonContent)
-                  Text((widget.child as TextButtonContent).value,
-                      style: textStyle)
-                else if (widget.child is WidgetButtonContent)
-                  (widget.child as WidgetButtonContent).value
+                ),
+                const SizedBox(width: 10),
               ],
+              if (widget.icon != null) ...[
+                widget.icon!,
+                const SizedBox(width: 8),
+              ],
+              if (widget.child is TextButtonContent)
+                Text((widget.child as TextButtonContent).value,
+                    style: textStyle)
+              else if (widget.child is WidgetButtonContent)
+                (widget.child as WidgetButtonContent).value
             ],
           ),
         ),
@@ -679,65 +688,70 @@ class _HorizonRedesignDropdownState<T>
             height: double.infinity,
             color: Colors.transparent,
             child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+              filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
               child: Container(
-                color: theme.scaffoldBackgroundColor.withAlpha(240),
+                color: transparentBlack66,
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     ConstrainedBox(
-                      constraints: const BoxConstraints(
+                      constraints: BoxConstraints(
                         maxWidth: 480, // Maximum width for larger screens
-                        minWidth: 200, // Minimum width for smaller screens
+                        minWidth: 200,
+                        maxHeight: MediaQuery.of(context).size.height * 0.7,
                       ),
                       child: Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 20),
+                        clipBehavior: Clip.hardEdge,
                         decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(18),
-                          border: widget.gradBorder
-                              ? GradientBoxBorder(
-                                  context: context,
-                                  width: 1,
-                                )
-                              : Border.all(
-                                  color: isDarkMode
-                                      ? transparentWhite8
-                                      : transparentBlack8,
-                                  width: 1,
-                                ),
-                          color: (isDarkMode
-                              ? transparentWhite8
-                              : transparentBlack8),
-                        ),
+                            borderRadius: BorderRadius.circular(18),
+                            border: widget.gradBorder
+                                ? GradientBoxBorder(
+                                    context: context,
+                                    width: 1,
+                                  )
+                                : Border.all(
+                                    color: isDarkMode
+                                        ? transparentWhite8
+                                        : transparentBlack8,
+                                    width: 1,
+                                  ),
+                            color: (isDarkMode
+                                ? transparentWhite8
+                                : transparentBlack8),
+                          ),
+
+                          child: SingleChildScrollView(
                         child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: widget.items.map((item) {
-                            return Material(
-                              color: Colors.transparent,
-                              child: InkWell(
-                                onTap: () {
-                                  widget.onChanged(item.value);
-                                  _toggleDropdown();
-                                },
-                                child: Container(
-                                  padding: widget.itemPadding ??
-                                      const EdgeInsets.symmetric(
-                                        horizontal: 12,
-                                        vertical: 21,
+                            mainAxisSize: MainAxisSize.min,
+                            children: widget.items.map((item) {
+                              return Material(
+                                color: Colors.transparent,
+                                child: InkWell(
+                                  onTap: () {
+                                    widget.onChanged(item.value);
+                                    _toggleDropdown();
+                                  },
+                                  child: Container(
+                                    padding: widget.itemPadding ??
+                                        const EdgeInsets.symmetric(
+                                          horizontal: 12,
+                                          vertical: 21,
+                                        ),
+                                    child: SizedBox(
+                                      width: double.infinity,
+                                      child: DefaultTextStyle(
+                                        style:
+                                            theme.dropdownMenuTheme.textStyle!,
+                                        child: item.child,
                                       ),
-                                  child: SizedBox(
-                                    width: double.infinity,
-                                    child: DefaultTextStyle(
-                                      style: theme.dropdownMenuTheme.textStyle!,
-                                      child: item.child,
                                     ),
                                   ),
                                 ),
-                              ),
-                            );
-                          }).toList(),
+                              );
+                            }).toList(),
+                          ),
                         ),
-                      ),
+                      ), 
                     ),
                   ],
                 ),
@@ -1665,6 +1679,7 @@ class HorizonCard extends StatelessWidget {
   final double borderRadius;
   final Color borderColor;
   final Color? backgroundColor;
+  final double? borderWidth;
 
   const HorizonCard({
     super.key,
@@ -1673,6 +1688,7 @@ class HorizonCard extends StatelessWidget {
     this.borderRadius = 18,
     this.borderColor = transparentPurple8,
     this.backgroundColor,
+    this.borderWidth = 1,
   });
 
   @override
@@ -1687,7 +1703,7 @@ class HorizonCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: backgroundColor ?? defaultBgColor,
         borderRadius: BorderRadius.circular(borderRadius),
-        border: Border.all(color: borderColor),
+        border: Border.all(color: borderColor, width: borderWidth ?? 1),
       ),
       child: child,
     );
@@ -1739,7 +1755,7 @@ class QuantityInputV2 extends StatelessWidget {
         : FilteringTextInputFormatter.digitsOnly;
 
     return ShaderMask(
-      blendMode: BlendMode.srcIn, // keep only the text’s alpha
+      blendMode: BlendMode.srcIn, // keep only the text's alpha
       shaderCallback: (bounds) => gradient.createShader(bounds),
       child: TextField(
         controller: controller,

@@ -15,8 +15,9 @@ import 'package:horizon/utils/app_icons.dart';
 
 class SendReviewForm extends StatefulWidget {
   final SendType sendType;
-  final Function(   ) onSignSuccess;
-  const SendReviewForm({super.key, required this.sendType, required this.onSignSuccess});
+  final Function() onSignSuccess;
+  const SendReviewForm(
+      {super.key, required this.sendType, required this.onSignSuccess});
 
   @override
   State<SendReviewForm> createState() => _SendReviewFormState();
@@ -85,6 +86,7 @@ class _SendReviewFormState extends State<SendReviewForm> {
                         context: context,
                         width: 24,
                         height: 24,
+                        description: send.balanceSelectorInput.value?.assetInfo.description,
                         assetName:
                             send.balanceSelectorInput.value?.asset ?? ""),
                     const SizedBox(width: 10),
@@ -138,42 +140,42 @@ class _SendReviewFormState extends State<SendReviewForm> {
         if (state.submissionStatus == FormzSubmissionStatus.success) {
           widget.onSignSuccess();
         }
-      }, builder: (BuildContext context, SendReviewFormModel state) { 
-
-           return Column(
-      children: [
-        ...widget.sendType.sendEntries!
-            .map((e) => _renderSendEntry(session.httpConfig, e)),
-        commonHeightSizedBox,
-        const Divider(
-          color: transparentWhite33,
-          height: 20,
-          thickness: 1,
-        ),
-        commonHeightSizedBox,
-        CollapsableWidget(
-            title: "Fee Details",
-            child: Column(
-              children: [
-                _buildLabelValueRow(
-                    "Fee", "${widget.sendType.composeResponse?.btcFee ?? 0} sats"),
-                _buildLabelValueRow(
-                    "Virtual Size",
-                    "${widget.sendType.composeResponse?.signedTxEstimatedSize.virtualSize} vbytes"),
-                _buildLabelValueRow(
-                    "Adjusted Virtual Size",
-                    "${widget.sendType.composeResponse?.signedTxEstimatedSize.adjustedVirtualSize} vbytes"),
-              ],
-            )),
-        commonHeightSizedBox,
-        HorizonButton(
-            child: TextButtonContent(value: "Sign and Submit"),
-            onPressed: () {
-                context.read<SendReviewFormBloc>().add(OnSignAndSubmitEvent(sendType: widget.sendType));
-            })
-      ],
-    );
-       },
+      },
+      builder: (BuildContext context, SendReviewFormModel state) {
+        return Column(
+          children: [
+            ...widget.sendType.sendEntries!
+                .map((e) => _renderSendEntry(session.httpConfig, e)),
+            commonHeightSizedBox,
+            const Divider(
+              color: transparentBlack33,
+              height: 20,
+              thickness: 1,
+            ),
+            commonHeightSizedBox,
+            CollapsableWidget(
+                title: "Fee Details",
+                child: Column(
+                  children: [
+                    _buildLabelValueRow("Fee",
+                        "${widget.sendType.composeResponse?.btcFee ?? 0} sats"),
+                    _buildLabelValueRow("Virtual Size",
+                        "${widget.sendType.composeResponse?.signedTxEstimatedSize.virtualSize} vbytes"),
+                    _buildLabelValueRow("Adjusted Virtual Size",
+                        "${widget.sendType.composeResponse?.signedTxEstimatedSize.adjustedVirtualSize} vbytes"),
+                  ],
+                )),
+            commonHeightSizedBox,
+            HorizonButton(
+                child: TextButtonContent(value: "Sign and Submit"),
+                onPressed: () {
+                  context
+                      .read<SendReviewFormBloc>()
+                      .add(OnSignAndSubmitEvent(sendType: widget.sendType));
+                })
+          ],
+        );
+      },
     );
   }
 }

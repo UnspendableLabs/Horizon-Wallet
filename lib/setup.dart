@@ -5,6 +5,7 @@ import 'package:get_it/get_it.dart';
 import 'package:horizon/data/services/secure_kv_service_impl.dart';
 import 'package:horizon/data/sources/network/horizon_explorer_client.dart';
 import 'package:horizon/domain/entities/asset_search_result.dart';
+import 'package:horizon/domain/services/mempool_price_service.dart';
 import 'package:horizon/domain/services/secure_kv_service.dart';
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 
@@ -661,6 +662,8 @@ void setup() {
       // addressRepository: GetIt.I<AddressRepository>(),
       // importedAddressRepository: GetIt.I<ImportedAddressRepository>(),
       analyticsService: GetIt.I<AnalyticsService>()));
+
+  injector.registerSingleton<MempoolPriceService>(MempoolPriceService());
 }
 
 class CustomDioException extends DioException {

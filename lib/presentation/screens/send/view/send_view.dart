@@ -18,7 +18,6 @@ import 'package:horizon/presentation/screens/send/flows/send_compose_form.dart';
 import 'package:horizon/presentation/screens/send/flows/send_form_balance_handler.dart';
 import 'package:horizon/presentation/screens/send/flows/send_form_token_selector.dart';
 import 'package:horizon/presentation/screens/send/flows/send_review_form.dart';
-import 'package:horizon/presentation/screens/send/flows/send_success_view.dart';
 import 'package:horizon/presentation/screens/send/loader/loader_bloc.dart';
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:horizon/presentation/session/bloc/session_state.dart';
@@ -271,7 +270,7 @@ class _SendViewState extends State<SendView> {
                       children: [
                         IconButton(
                           onPressed: () {
-                            context.go("/");
+                            context.go("/dashboard");
                           },
                           icon: AppIcons.closeIcon(
                             context: context,
@@ -288,7 +287,7 @@ class _SendViewState extends State<SendView> {
                 txHash: model.sendType.toNullable()!.signedTxHash!,
                 title: "Send Successful",
                 onClose: () {
-                  context.go("/");
+                  context.go("/dashboard");
                 },
               )),
             )),

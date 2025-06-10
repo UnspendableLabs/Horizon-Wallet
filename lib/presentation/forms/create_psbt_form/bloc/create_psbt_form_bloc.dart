@@ -53,13 +53,14 @@ class BtcPriceInput extends FormzInput<String, BtcPriceInputError> {
 class CreatePsbtFormModel with FormzMixin {
   final BtcPriceInput btcPriceInput;
   final FormzSubmissionStatus submissionStatus;
-
+  final DateTime? expiryDate;
   final String? error;
   final String? signedPsbt;
 
   CreatePsbtFormModel(
       {required this.btcPriceInput,
       required this.submissionStatus,
+      this.expiryDate,
       this.error,
       this.signedPsbt});
 
@@ -68,12 +69,14 @@ class CreatePsbtFormModel with FormzMixin {
 
   CreatePsbtFormModel copyWith({
     BtcPriceInput? btcPriceInput,
+    DateTime? expiryDate,
     FormzSubmissionStatus? submissionStatus,
     String? error,
     String? signedPsbt,
   }) =>
       CreatePsbtFormModel(
         btcPriceInput: btcPriceInput ?? this.btcPriceInput,
+        expiryDate: expiryDate ?? this.expiryDate,
         submissionStatus: submissionStatus ?? this.submissionStatus,
         error: error ?? this.error,
         signedPsbt: signedPsbt ?? this.signedPsbt,
@@ -96,6 +99,12 @@ class BtcPriceInputChanged extends CreatePsbtFormEvent {
 }
 
 class SubmitClicked extends CreatePsbtFormEvent {}
+
+class ExpiryDateSelected extends CreatePsbtFormEvent {
+  final DateTime? date;
+
+  const ExpiryDateSelected({this.date});
+}
 
 class CreatePsbtFormBloc
     extends Bloc<CreatePsbtFormEvent, CreatePsbtFormModel> {
@@ -144,6 +153,11 @@ class CreatePsbtFormBloc
         ) {
     on<BtcPriceInputChanged>(_onBtcPriceInputChanged); // handler wired up once
     on<SubmitClicked>(_onSubmitClicked);
+    on<ExpiryDateSelected>(_onExpiryDateSelected);
+  }
+
+  void _onExpiryDateSelected(ExpiryDateSelected event, Emitter<CreatePsbtFormModel> emit) {
+    emit(state.copyWith(expiryDate: event.date));
   }
 
   // give the handler an explicit return type
@@ -176,8 +190,10 @@ class CreatePsbtFormBloc
           state.btcPriceInput.asSats,
           () => "Error parsing BTC price input as sats"));
 
+
       final newSalePsbtHex = await $(TaskEither.fromEither(
           _transactionService.makeSalePsbtT(
+              // expiryDate: state.expiryDate,  // TODO: add expiry date
               price: priceInSats,
               source: address.address,
               utxoTxid: attachTxID,
@@ -200,6 +216,8 @@ class CreatePsbtFormBloc
 
       return signedHex;
     });
+
+    emit(state.copyWith(submissionStatus: FormzSubmissionStatus.inProgress));
 
     final result = await task.run();
 

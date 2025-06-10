@@ -74,6 +74,7 @@ class AssetAttachFormProvider extends StatelessWidget {
                       httpConfig: session.httpConfig,
                       feeEstimates: feeEstimates,
                       assetName: asset,
+                      assetDescription: description ?? "",
                       assetBalance: quantity,
                       assetBalanceNormalized: quantityNormalized,
                       assetDivisibility: divisible,
@@ -200,6 +201,7 @@ class _AssetAttachFormState extends State<AssetAttachForm> {
                           appIcons.assetIcon(
                               httpConfig: session.httpConfig,
                               assetName: widget.state.assetName,
+                              description: widget.state.assetDescription,
                               context: context,
                               width: 24,
                               height: 24),
@@ -238,7 +240,7 @@ class _AssetAttachFormState extends State<AssetAttachForm> {
                           ),
                           decoration: BoxDecoration(
                             color: isDarkMode
-                                ? transparentYellow8
+                                ? const Color.fromARGB(19, 151, 112, 39)
                                 : transparentPurple33,
                             borderRadius: BorderRadius.circular(8),
                           ),
@@ -269,25 +271,30 @@ class _AssetAttachFormState extends State<AssetAttachForm> {
             ),
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 14),
-              child: HorizonButton(
-                  disabled: widget.state.submitDisabled,
-                  onPressed: () {
-                    print("onpressed");
-                    if (widget.state.submitDisabled) {
-                      print("submit disabled");
-                      return;
-                    }
-                    print("callbck trigged");
-                    widget.actions.onSubmitClicked();
-                  },
-                  child: widget.state.submissionStatus.isInProgress
-                      ? WidgetButtonContent(
-                          value: const Row(children: [
-                          Text("Attaching"),
-                          SizedBox(width: 4),
-                          CircularProgressIndicator(),
-                        ]))
-                      : TextButtonContent(value: "Attach")),
+              child: widget.state.submissionStatus.isSuccess
+                  ? HorizonButton(
+                      disabled: true,
+                      child: TextButtonContent(
+                          value: "Success",
+                          style: const TextStyle(color: green1)),
+                      icon: AppIcons.checkIcon(context: context, color: green1, width: 24, height: 24),
+                      onPressed: () {})
+                  : HorizonButton(
+                      disabled: widget.state.submitDisabled,
+                      onPressed: () {
+                        print("onpressed");
+                        if (widget.state.submitDisabled) {
+                          print("submit disabled");
+                          return;
+                        }
+                        print("callbck trigged");
+                        widget.actions.onSubmitClicked();
+                      },
+                      isLoading: widget.state.submissionStatus.isInProgress,
+                      child: TextButtonContent(
+                          value: widget.state.submissionStatus.isInProgress
+                              ? "Attaching..."
+                              : "Attach")),
             )
           ],
         ),
