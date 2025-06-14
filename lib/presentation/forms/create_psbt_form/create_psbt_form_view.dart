@@ -238,6 +238,7 @@ class _CreatePsbtFormState extends State<CreatePsbtForm> {
 
   _buildFromCard(BuildContext context, HttpConfig httpConfig) {
     final theme = Theme.of(context);
+    print("quantityNormalized ${widget.quantityNormalized}");
     return HorizonCard(
       child: Column(
         children: [

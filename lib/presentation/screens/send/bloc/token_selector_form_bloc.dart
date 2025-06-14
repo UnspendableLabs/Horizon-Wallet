@@ -2,9 +2,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:formz/formz.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:horizon/domain/entities/multi_address_balance.dart';
-import 'package:horizon/presentation/screens/send/view/send_view.dart';
+import 'package:equatable/equatable.dart';
 
-class TokenSelectorOption {
+class TokenSelectorOption extends Equatable {
   final String name;
   final String? description;
 
@@ -24,13 +24,11 @@ class TokenSelectorOption {
       balance: balance ?? this.balance,
     );
   }
+
+  @override
+  List<Object?> get props => [name, description, balance];
 }
 
-class OnTokenSelected {
-  final TokenSelectorOption option;
-
-  const OnTokenSelected(this.option);
-}
 
 enum TokenSelectorInputError {
   required,
@@ -80,20 +78,13 @@ class TokenSelectorFormModel with FormzMixin {
   bool get disabled {
     return tokenSelectorInput.value == null;
   }
-
-  Either<String, SendType> get sendType {
-    if (tokenSelectorInput.value == null) {
-      return Either.left("No token selected");
-    }
-    return Either.fromOption(
-            tokenSelectorInput.value!.balance, () => "No balance found")
-        .map((balance) => SendType(
-            selectedBalance: balance));
-  }
 }
 
-class TokenSelectorFormEvent {
+class TokenSelectorFormEvent extends Equatable {
   const TokenSelectorFormEvent();
+
+  @override
+  List<Object?> get props => [];
 }
 
 class TokenSelected extends TokenSelectorFormEvent {
@@ -117,7 +108,7 @@ class TokenSelectorFormBloc
                       balance: Option.of(balance),
                     ))
                 .toList(),
-            tokenSelectorInput: TokenSelectorInput.pure(),
+            tokenSelectorInput: const TokenSelectorInput.pure(),
             submissionStatus: FormzSubmissionStatus.initial)) {
     on<TokenSelected>(_handleTokenSelected);
     on<SubmitClicked>(_handleSubmitClicked);

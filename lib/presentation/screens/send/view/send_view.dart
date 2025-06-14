@@ -23,14 +23,14 @@ import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:horizon/presentation/session/bloc/session_state.dart';
 import 'package:horizon/utils/app_icons.dart';
 
-class SendType extends Equatable {
+class SendFormState extends Equatable {
   final MultiAddressBalance selectedBalance;
   final MultiAddressBalanceEntry? selectedBalanceEntry;
   final ComposeResponse? composeResponse;
   final List<SendEntryFormModel>? sendEntries;
   final String? signedTxHex;
   final String? signedTxHash;
-  const SendType(
+  const SendFormState(
       {required this.selectedBalance,
       this.selectedBalanceEntry,
       this.composeResponse,
@@ -38,7 +38,7 @@ class SendType extends Equatable {
       this.signedTxHex,
       this.signedTxHash});
 
-  SendType copyWith({String? signedTxHex, String? signedTxHash}) => SendType(
+  SendFormState copyWith({String? signedTxHex, String? signedTxHash}) => SendFormState(
       selectedBalance: selectedBalance,
       selectedBalanceEntry: selectedBalanceEntry,
       composeResponse: composeResponse,
@@ -52,17 +52,17 @@ class SendType extends Equatable {
 }
 
 class SendFlowModel extends Equatable {
-  final fp.Option<SendType> sendType;
+  final fp.Option<SendFormState> sendFormState;
 
-  const SendFlowModel({required this.sendType});
+  const SendFlowModel({required this.sendFormState});
 
   @override
-  List<Object?> get props => [sendType];
+  List<Object?> get props => [sendFormState];
 
-  SendFlowModel copyWith({fp.Option<SendType>? sendType}) =>
-      SendFlowModel(sendType: sendType ?? this.sendType);
+  SendFlowModel copyWith({fp.Option<SendFormState>? sendFormState}) =>
+      SendFlowModel(sendFormState: sendFormState ?? this.sendFormState);
 
-  fp.Either<String, String> get sourceAddress => switch (sendType) {
+  fp.Either<String, String> get sourceAddress => switch (sendFormState) {
         fp.Some(value: var type) => type.selectedBalanceEntry == null
             ? fp.left("No source address")
             : fp.right(type.selectedBalanceEntry!.address!),
@@ -70,10 +70,10 @@ class SendFlowModel extends Equatable {
       };
 
   bool get isBalanceSelected =>
-      sendType.isSome() && sendType.toNullable()?.selectedBalanceEntry != null;
+      sendFormState.isSome() && sendFormState.toNullable()?.selectedBalanceEntry != null;
 
   bool get isComposeSuccess =>
-      sendType.isSome() && sendType.toNullable()?.composeResponse != null;
+      sendFormState.isSome() && sendFormState.toNullable()?.composeResponse != null;
 }
 
 class SendFlowController extends FlowController<SendFlowModel> {
@@ -97,7 +97,7 @@ class _SendViewState extends State<SendView> {
     super.initState();
     _controller = SendFlowController(
         initialState:
-            const SendFlowModel(sendType: fp.Option<SendType>.none()));
+            const SendFlowModel(sendFormState: fp.Option<SendFormState>.none()));
   }
 
   @override
@@ -135,11 +135,12 @@ class _SendViewState extends State<SendView> {
                           child: (actions, state) => SendFormTokenSelector(
                               actions: actions,
                               state: state,
-                              onSubmit: (sendType) {
+                              onSubmit: (option) {
                                 _cachedBalances = data.balances;
                                 context.flow<SendFlowModel>().update((model) =>
-                                    model.copyWith(
-                                        sendType: fp.Option.of(sendType)));
+                                    model.copyWith(sendFormState: fp.Option.of(SendFormState(
+                                      selectedBalance: option.balance.toNullable()!,
+                                    ))));
                               }),
                         ),
                       Failure<SendFormLoaderData>() =>
@@ -148,14 +149,14 @@ class _SendViewState extends State<SendView> {
                   }),
             );
           })),
-          if (model.sendType.isSome())
-            model.sendType
-                .map((sendType) => MaterialPage(
+          if (model.sendFormState.isSome())
+            model.sendFormState
+                .map((sendFormState) => MaterialPage(
                       child: FlowStep(
                         title: "Choose your Address",
                         widthFactor: .4,
                         body: AssetBalanceFormProvider(
-                          multiAddressBalance: sendType.selectedBalance,
+                          multiAddressBalance: sendFormState.selectedBalance,
                           child: (actions, state) => Column(
                             children: [
                               Builder(
@@ -163,13 +164,13 @@ class _SendViewState extends State<SendView> {
                                     SendFormBalanceSuccessHandler(
                                         onSuccess: (_) {
                                   context.flow<SendFlowModel>().update((model) {
-                                    final newSendType = SendType(
+                                    final newSendFormState = SendFormState(
                                         selectedBalance:
-                                            sendType.selectedBalance,
+                                            sendFormState.selectedBalance,
                                         selectedBalanceEntry:
                                             state.balanceInput.value!.entry);
                                     return model.copyWith(
-                                        sendType: fp.Option.of(newSendType));
+                                        sendFormState: fp.Option.of(newSendFormState));
                                   });
                                 }),
                               ),
@@ -195,37 +196,42 @@ class _SendViewState extends State<SendView> {
                         quantityInput: const QuantityInput.pure(),
                         balanceSelectorInput: BalanceSelectorInput.dirty(
                             value:
-                                model.sendType.toNullable()!.selectedBalance),
+                                model.sendFormState.toNullable()!.selectedBalance),
                         memoInput: const MemoInput.pure())
                   ],
                   balances: _cachedBalances!,
                   sourceAddress:
                       model.sourceAddress.getOrElse((l) => throw Exception(l)),
                   child: (actions, state) => Builder(builder: (context) {
-                    return SendComposeForm(
-                      actions: actions,
-                      state: state,
-                      onComposeResponse: (value) {
-                        context.flow<SendFlowModel>().update((model) {
-                          return model.copyWith(
-                              sendType: fp.Option.of(SendType(
-                                  selectedBalance: model.sendType
-                                      .toNullable()!
-                                      .selectedBalance,
-                                  selectedBalanceEntry: model.sendType
-                                      .toNullable()!
-                                      .selectedBalanceEntry,
-                                  composeResponse: value,
-                                  sendEntries: state.sendEntries)));
-                        });
-                      },
+                    return Column(
+                      children: [
+                        SendComposeSuccessHandler(onComposeResponse: (value) {
+                          context.flow<SendFlowModel>().update((model) {
+                            return model.copyWith(
+                                sendFormState: fp.Option.of(SendFormState(
+                                    selectedBalance: model.sendFormState
+                                        .toNullable()!
+                                        .selectedBalance,
+                                    selectedBalanceEntry: model.sendFormState
+                                        .toNullable()!
+                                        .selectedBalanceEntry,
+                                    composeResponse: value,
+                                    sendEntries: state.sendEntries)));
+                          });
+                        }),
+                        SendComposeForm(
+                          actions: actions,
+                          state: state,
+                        )
+                      ],
                     );
+
                   }),
                 ),
               ),
             ),
-          if (model.sendType.isSome() &&
-              model.sendType.toNullable()?.composeResponse != null)
+          if (model.sendFormState.isSome() &&
+              model.sendFormState.toNullable()?.composeResponse != null)
             MaterialPage(
               child: FlowStep(
                   title: "Review Send",
@@ -234,13 +240,13 @@ class _SendViewState extends State<SendView> {
                       create: (context) => SendReviewFormBloc(),
                       child: Builder(builder: (context) {
                         return SendReviewForm(
-                          sendType: model.sendType.toNullable()!,
+                          sendFormState: model.sendFormState.toNullable()!,
                           onSignSuccess: () {
                             context.flow<SendFlowModel>().update((model) {
                               return model.copyWith(
-                                sendType: fp.Option.of(
+                                sendFormState: fp.Option.of(
                                   // TODO: implement signing
-                                  model.sendType.toNullable()!.copyWith(
+                                  model.sendFormState.toNullable()!.copyWith(
                                         signedTxHex:
                                             "02000000xcadxc000000000001976a91462e907b17c1d4b80e28614e46f04f2c4167afee88ac00000000",
                                         signedTxHash:
@@ -253,8 +259,8 @@ class _SendViewState extends State<SendView> {
                         );
                       }))),
             ),
-          if (model.sendType.isSome() &&
-              model.sendType.toNullable()?.signedTxHex != null)
+          if (model.sendFormState.isSome() &&
+              model.sendFormState.toNullable()?.signedTxHex != null)
             MaterialPage(
 
                 child: Scaffold(
@@ -283,8 +289,8 @@ class _SendViewState extends State<SendView> {
                     ),
                   )),
               body: Padding(padding: const EdgeInsets.symmetric(horizontal: 20), child: TransactionSuccessful(
-                txHex: model.sendType.toNullable()!.signedTxHex!,
-                txHash: model.sendType.toNullable()!.signedTxHash!,
+                txHex: model.sendFormState.toNullable()!.signedTxHex!,
+                txHash: model.sendFormState.toNullable()!.signedTxHash!,
                 title: "Send Successful",
                 onClose: () {
                   context.go("/dashboard");

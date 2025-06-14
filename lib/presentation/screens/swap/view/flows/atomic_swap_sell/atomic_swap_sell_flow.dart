@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
+import 'package:horizon/common/format.dart';
 import 'package:horizon/utils/app_icons.dart';
 import 'package:horizon/domain/entities/multi_address_balance.dart';
 import 'package:horizon/presentation/forms/base/flow/view/flow_step.dart';
@@ -150,7 +151,7 @@ class _AtomicSwapSellFlowViewState extends State<AtomicSwapSellFlowView> {
                             : throw Exception("invariant: address mismatch"),
                         asset: variant.asset,
                         quantity: variant.quantity,
-                        quantityNormalized: variant.quantityNormalized,
+                        quantityNormalized: quantityRemoveTrailingZeros(variant.quantityNormalized),
                         description: variant.description,
                         divisible: variant.divisible,
                         child: (actions, state) => Column(
@@ -205,7 +206,7 @@ class _AtomicSwapSellFlowViewState extends State<AtomicSwapSellFlowView> {
                                 state: state,
                                 asset: variant.asset,
                                 quantity: variant.quantity,
-                                quantityNormalized: variant.quantityNormalized,
+                                quantityNormalized: quantityRemoveTrailingZeros(variant.quantityNormalized),
                                 utxo: variant.utxo,
                                 utxoAddress: variant.utxoAddress,
                               ),

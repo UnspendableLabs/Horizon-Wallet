@@ -9,7 +9,6 @@ import 'package:horizon/presentation/common/asset_balance_list_item.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 import 'package:horizon/presentation/screens/send/bloc/token_selector_form_bloc.dart';
 import 'package:horizon/presentation/screens/send/loader/loader_bloc.dart';
-import 'package:horizon/presentation/screens/send/view/send_view.dart';
 
 class SendFormLoader extends StatelessWidget {
   final HttpConfig httpConfig;
@@ -47,24 +46,28 @@ class TokenSelectorFormActions {
 
 class TokenSelectorFormProvider extends StatelessWidget {
   final List<MultiAddressBalance> balances;
-  final Widget Function(TokenSelectorFormActions actions, TokenSelectorFormModel state)
-      child;
+  final Widget Function(
+      TokenSelectorFormActions actions, TokenSelectorFormModel state) child;
   const TokenSelectorFormProvider(
       {required this.child, required this.balances, super.key});
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(create: (context){
-      return TokenSelectorFormBloc(
-        initialBalances: balances,
-      );
-    }, child: BlocBuilder<TokenSelectorFormBloc, TokenSelectorFormModel>(builder: (context, state) {
-      return child(TokenSelectorFormActions(onTokenSelected: (value) {
-        context.read<TokenSelectorFormBloc>().add(TokenSelected(value));
-      }, onSubmitClicked: () {
-          context.read<TokenSelectorFormBloc>().add(SubmitClicked());
-        }),
-        state);
+    return BlocProvider(
+      create: (context) {
+        return TokenSelectorFormBloc(
+          initialBalances: balances,
+        );
+      },
+      child: BlocBuilder<TokenSelectorFormBloc, TokenSelectorFormModel>(
+          builder: (context, state) {
+        return child(
+            TokenSelectorFormActions(onTokenSelected: (value) {
+              context.read<TokenSelectorFormBloc>().add(TokenSelected(value));
+            }, onSubmitClicked: () {
+              context.read<TokenSelectorFormBloc>().add(SubmitClicked());
+            }),
+            state);
       }),
     );
   }
@@ -73,7 +76,7 @@ class TokenSelectorFormProvider extends StatelessWidget {
 class SendFormTokenSelector extends StatefulWidget {
   final TokenSelectorFormActions actions;
   final TokenSelectorFormModel state;
-  final Function(SendType sendType) onSubmit;
+  final Function(TokenSelectorOption option) onSubmit;
   const SendFormTokenSelector(
       {super.key,
       required this.actions,
@@ -87,55 +90,49 @@ class SendFormTokenSelector extends StatefulWidget {
 class _SendFormTokenSelectorState extends State<SendFormTokenSelector> {
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<TokenSelectorFormBloc, TokenSelectorFormModel>(
+    return BlocListener<TokenSelectorFormBloc, TokenSelectorFormModel>(
       listener: (context, state) {
-      if (state.submissionStatus.isSuccess) {
-        widget.state.sendType.fold(
-            (error) => throw Exception(error),
-            (sendType) => widget.onSubmit(sendType));
-      }
-    },
-    builder: (context, state) {
-      return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-      child: Column(
-        children: [
-          HorizonRedesignDropdown<TokenSelectorOption>(
-              itemPadding: const EdgeInsets.all(12),
-              items: state.balances
-                  .map((item) => DropdownMenuItem(
-                        value: item,
-                        child: AssetBalanceListItemWithOptionalBalance(
-                            asset: item.name,
-                            description: item.description,
-                            balance: item.balance),
-                      ))
-                  .toList(),
-              onChanged: (value) {
-                context
-                    .read<TokenSelectorFormBloc>()
-                    .add(TokenSelected(value!));
+        if (state.submissionStatus.isSuccess) {
+          widget.onSubmit(state.tokenSelectorInput.value!);
+        }
+      },
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+        child: Column(
+          children: [
+            HorizonRedesignDropdown<TokenSelectorOption>(
+                itemPadding: const EdgeInsets.all(12),
+                items: widget.state.balances
+                    .map((item) => DropdownMenuItem(
+                          value: item,
+                          child: AssetBalanceListItemWithOptionalBalance(
+                              asset: item.name,
+                              description: item.description,
+                              balance: item.balance),
+                        ))
+                    .toList(),
+                onChanged: (value) {
+                  widget.actions.onTokenSelected(value!);
+                },
+                selectedValue: widget.state.tokenSelectorInput.value,
+                selectedItemBuilder: (TokenSelectorOption item) =>
+                    AssetBalanceListItemWithOptionalBalance(
+                        asset: item.name,
+                        description: item.description,
+                        balance: item.balance),
+                hintText: "Select Token"),
+            const SizedBox(height: 24),
+            HorizonButton(
+              variant: ButtonVariant.green,
+              disabled: widget.state.disabled,
+              onPressed: () {
+                widget.actions.onSubmitClicked();
               },
-              selectedValue: state.tokenSelectorInput.value,
-              selectedItemBuilder: (TokenSelectorOption item) =>
-                  AssetBalanceListItemWithOptionalBalance(
-                      asset: item.name,
-                      description: item.description,
-                      balance: item.balance),
-              hintText: "Select Token"),
-          const SizedBox(height: 24),
-          HorizonButton(
-            variant: ButtonVariant.green,
-            disabled: state.disabled,
-            onPressed: () {
-              widget.actions.onSubmitClicked();
-            },
-            child: TextButtonContent(value: "Continue"),
-          )
-        ],
+              child: TextButtonContent(value: "Continue"),
+            )
+          ],
+        ),
       ),
-    );
-    },
     );
   }
 }

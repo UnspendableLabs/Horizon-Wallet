@@ -96,15 +96,30 @@ class SendComposeFormActions {
   });
 }
 
+class SendComposeSuccessHandler extends StatelessWidget {
+  final Function(ComposeResponse value) onComposeResponse;
+  const SendComposeSuccessHandler({super.key, required this.onComposeResponse});
+
+  @override
+  Widget build(context) {
+    return BlocListener<SendComposeFormBloc, SendComposeFormModel>(
+      listener: (context, state) {
+        if (state.submissionStatus.isSuccess && state.composeResponse != null) {
+          onComposeResponse(state.composeResponse!);
+        }
+      },
+      child: const SizedBox.shrink(),
+    );
+  }
+}
+
 class SendComposeForm extends StatefulWidget {
   final SendComposeFormActions actions;
   final SendComposeFormModel state;
-  final Function(ComposeResponse value) onComposeResponse;
   const SendComposeForm(
       {super.key,
       required this.actions,
-      required this.state,
-      required this.onComposeResponse});
+      required this.state});
 
   @override
   State<SendComposeForm> createState() => _SendComposeFormState();
@@ -118,13 +133,7 @@ class _SendComposeFormState extends State<SendComposeForm> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<SendComposeFormBloc, SendComposeFormModel>(
-      listener: (context, state) {
-        if (state.submissionStatus.isSuccess && state.composeResponse != null) {
-          widget.onComposeResponse(state.composeResponse!);
-        }
-      },
-      builder: (context, state) {
+    
         final theme = Theme.of(context);
 
         return Column(
@@ -217,9 +226,7 @@ class _SendComposeFormState extends State<SendComposeForm> {
                     FormzSubmissionStatus.inProgress,
                 onPressed: widget.actions.onSubmitClicked),
             const SizedBox(height: 24),
-          ],
-        );
-      },
-    );
+        ],
+      );
   }
 }
