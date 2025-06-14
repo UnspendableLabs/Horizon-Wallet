@@ -14,10 +14,10 @@ import 'package:horizon/presentation/session/bloc/session_state.dart';
 import 'package:horizon/utils/app_icons.dart';
 
 class SendReviewForm extends StatefulWidget {
-  final SendType sendType;
+  final SendFormState sendFormState;
   final Function() onSignSuccess;
   const SendReviewForm(
-      {super.key, required this.sendType, required this.onSignSuccess});
+      {super.key, required this.sendFormState, required this.onSignSuccess});
 
   @override
   State<SendReviewForm> createState() => _SendReviewFormState();
@@ -103,7 +103,7 @@ class _SendReviewFormState extends State<SendReviewForm> {
               )),
           commonHeightSizedBox,
           _regularProperty(context, "Source Address",
-              widget.sendType.selectedBalanceEntry?.address ?? ""),
+              widget.sendFormState.selectedBalanceEntry?.address ?? ""),
           commonHeightSizedBox,
           _regularProperty(
               context, "Recipient Address", send.destinationInput.value),
@@ -144,7 +144,7 @@ class _SendReviewFormState extends State<SendReviewForm> {
       builder: (BuildContext context, SendReviewFormModel state) {
         return Column(
           children: [
-            ...widget.sendType.sendEntries!
+            ...widget.sendFormState.sendEntries!
                 .map((e) => _renderSendEntry(session.httpConfig, e)),
             commonHeightSizedBox,
             const Divider(
@@ -158,11 +158,11 @@ class _SendReviewFormState extends State<SendReviewForm> {
                 child: Column(
                   children: [
                     _buildLabelValueRow("Fee",
-                        "${widget.sendType.composeResponse?.btcFee ?? 0} sats"),
+                        "${widget.sendFormState.composeResponse?.btcFee ?? 0} sats"),
                     _buildLabelValueRow("Virtual Size",
-                        "${widget.sendType.composeResponse?.signedTxEstimatedSize.virtualSize} vbytes"),
+                        "${widget.sendFormState.composeResponse?.signedTxEstimatedSize.virtualSize} vbytes"),
                     _buildLabelValueRow("Adjusted Virtual Size",
-                        "${widget.sendType.composeResponse?.signedTxEstimatedSize.adjustedVirtualSize} vbytes"),
+                        "${widget.sendFormState.composeResponse?.signedTxEstimatedSize.adjustedVirtualSize} vbytes"),
                   ],
                 )),
             commonHeightSizedBox,
@@ -171,7 +171,7 @@ class _SendReviewFormState extends State<SendReviewForm> {
                 onPressed: () {
                   context
                       .read<SendReviewFormBloc>()
-                      .add(OnSignAndSubmitEvent(sendType: widget.sendType));
+                      .add(OnSignAndSubmitEvent(sendFormState: widget.sendFormState));
                 })
           ],
         );

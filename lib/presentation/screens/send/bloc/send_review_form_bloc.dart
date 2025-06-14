@@ -22,8 +22,8 @@ class SendReviewFormBloc
 class SendReviewFormEvent {}
 
 class OnSignAndSubmitEvent extends SendReviewFormEvent {
-  final SendType sendType;
-  OnSignAndSubmitEvent({required this.sendType});
+  final SendFormState sendFormState;
+  OnSignAndSubmitEvent({required this.sendFormState});
 }
 
 class SendReviewFormModel with FormzMixin {
