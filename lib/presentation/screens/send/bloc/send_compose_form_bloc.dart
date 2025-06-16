@@ -81,10 +81,10 @@ class SendComposeFormModel extends TransactionFormModelBase {
   final List<SendEntryFormModel> sendEntries;
   final List<MultiAddressBalance> balances;
   final String sourceAddress;
-  
+
   @override
   final ComposeResponse? composeResponse;
-    
+
   SendComposeFormModel({
     required super.feeEstimates,
     required super.feeOptionInput,
@@ -135,7 +135,9 @@ class SendComposeFormModel extends TransactionFormModelBase {
       }
       final isDivisible = entry.balanceSelectorInput.value!.assetInfo.divisible;
       final quantityNormalized = Decimal.parse(entry.quantityInput.value);
-      final quantity = isDivisible ? quantityNormalized * Decimal.fromInt(100000000) : quantityNormalized;
+      final quantity = isDivisible
+          ? quantityNormalized * Decimal.fromInt(100000000)
+          : quantityNormalized;
       return right(ComposeSendParams(
         asset: entry.balanceSelectorInput.value!.asset,
         quantity: quantity.toBigInt().toInt(),
@@ -151,9 +153,12 @@ class SendComposeFormModel extends TransactionFormModelBase {
         if (!entry.isValid) {
           return left("Invalid entry");
         }
-        final isDivisible = entry.balanceSelectorInput.value!.assetInfo.divisible;
+        final isDivisible =
+            entry.balanceSelectorInput.value!.assetInfo.divisible;
         final quantityNormalized = Decimal.parse(entry.quantityInput.value);
-        final quantity = isDivisible ? quantityNormalized * Decimal.fromInt(100000000) : quantityNormalized;
+        final quantity = isDivisible
+            ? quantityNormalized * Decimal.fromInt(100000000)
+            : quantityNormalized;
         assets.add(entry.balanceSelectorInput.value!.asset);
         quantities.add(quantity.toBigInt().toInt());
         destinations.add(entry.destinationInput.value);
@@ -174,13 +179,13 @@ class SendComposeFormBloc
   final ComposeTransactionUseCase composeTransactionUseCase;
   final ComposeRepository composeRepository;
   final HttpConfig httpConfig;
-  SendComposeFormBloc({
-    required List<SendEntryFormModel> initialEntries,
-    required List<MultiAddressBalance> initialBalances,
-    required FeeEstimates feeEstimates,
-    required String sourceAddress,
-    required this.httpConfig
-  }) : composeTransactionUseCase = GetIt.I<ComposeTransactionUseCase>(),
+  SendComposeFormBloc(
+      {required List<SendEntryFormModel> initialEntries,
+      required List<MultiAddressBalance> initialBalances,
+      required FeeEstimates feeEstimates,
+      required String sourceAddress,
+      required this.httpConfig})
+      : composeTransactionUseCase = GetIt.I<ComposeTransactionUseCase>(),
         composeRepository = GetIt.I<ComposeRepository>(),
         super(SendComposeFormModel(
           sendEntries: initialEntries,
@@ -232,58 +237,100 @@ class SendComposeFormBloc
 
   void _onSubmitClicked(
       SubmitClicked event, Emitter<SendComposeFormModel> emit) async {
-    if (!state.hasValidEntries) {
-      emit(state.copyWith(error: "Invalid entries"));
-      return;
-    }
-
-    if (state.composeParams.isLeft()) {
-      emit(state.copyWith(error: "Invalid entries"));
-      return;
-    }
-
-
     emit(state.copyWith(submissionStatus: FormzSubmissionStatus.inProgress));
 
-    final composeParams = state.composeParams.getRight().getOrElse(() => throw Exception("Invalid compose params"));
+    // you don't need to add this here since your `composeParams` getter returns an Either
 
-    try {
-      final feeRate = switch (state.feeOptionInput.value) {
-        fee_option.Slow() => state.feeEstimates.slow,
-        fee_option.Medium() => state.feeEstimates.medium,
-        fee_option.Fast() => state.feeEstimates.fast,
-        fee_option.Custom(fee: var value) => value
+    // if (!state.hasValidEntries) {
+    //   emit(state.copyWith(error: "Invalid entries"));
+    //   return;
+    // }
+    //
+    // if (state.composeParams.isLeft()) {
+    //   emit(state.copyWith(error: "Invalid entries"));
+    //   return;
+    // }
+
+    // we can use Do notation and lift yout either into a taskEither to get monadic error hnadling
+
+    // final composeParams = state.composeParams.getRight().getOrElse(() => throw Exception("Invalid compose params"));
+    // try {
+    //   final feeRate = switch (state.feeOptionInput.value) {
+    //     fee_option.Slow() => state.feeEstimates.slow,
+    //     fee_option.Medium() => state.feeEstimates.medium,
+    //     fee_option.Fast() => state.feeEstimates.fast,
+    //     fee_option.Custom(fee: var value) => value
+    //   };
+    //
+    //   late final ComposeResponse composeResponse;
+    //
+    //   if(composeParams is ComposeSendParams){
+    //     composeResponse = await composeTransactionUseCase.call<ComposeSendParams, ComposeSendResponse>(
+    //       httpConfig: httpConfig,
+    //       feeRate: feeRate,
+    //       source: state.sourceAddress,
+    //       params: composeParams,
+    //       composeFn: composeRepository.composeSendVerbose,
+    //     );
+    //   }else{
+    //     composeResponse = await composeTransactionUseCase.call<ComposeMpmaSendParams, ComposeMpmaSendResponse>(
+    //       httpConfig: httpConfig,
+    //       feeRate: feeRate,
+    //       source: state.sourceAddress,
+    //       params: composeParams as ComposeMpmaSendParams,
+    //       composeFn: composeRepository.composeMpmaSend,
+    //     );
+    //   }
+    //
+    //   emit(state.copyWith(
+    //     submissionStatus: FormzSubmissionStatus.success,
+    //     composeResponse: composeResponse,
+    //   ));
+    //
+    // }catch(e)
+    //   print(e);
+    //   emit(state.copyWith(error: e.toString(), submissionStatus: FormzSubmissionStatus.failure));
+    // }
+
+    final task = TaskEither<String, ComposeResponse>.Do(($) async {
+      // if `composeParams` is left, this whle block resolves to TE.left and nothing
+      // after this line is evalutated
+      final composeParams = await $(TaskEither.fromEither(state.composeParams));
+
+      final composeT = switch (composeParams) {
+        ComposeMpmaSendParams() => composeTransactionUseCase.callT(
+            feeRate: state
+                .getSatsPerVByte, // this is already defined on TransactionFormModelBase
+            source: state.sourceAddress,
+            params: composeParams,
+            composeFn: composeRepository.composeMpmaSend,
+            httpConfig: httpConfig,
+          ),
+        ComposeSendParams() => composeTransactionUseCase.callT(
+            feeRate: state
+                .getSatsPerVByte, // this is already defined on TransactionFormModelBase
+            source: state.sourceAddress,
+            params: composeParams,
+            composeFn: composeRepository.composeSendVerbose,
+            httpConfig: httpConfig,
+          ),
+        _ => throw Exception("invariant"),
       };
-      
-      late final ComposeResponse composeResponse;
 
-      if(composeParams is ComposeSendParams){
-        composeResponse = await composeTransactionUseCase.call<ComposeSendParams, ComposeSendResponse>(
-          httpConfig: httpConfig,
-          feeRate: feeRate,
-          source: state.sourceAddress,
-          params: composeParams,
-          composeFn: composeRepository.composeSendVerbose,
-        );
-      }else{
-        composeResponse = await composeTransactionUseCase.call<ComposeMpmaSendParams, ComposeMpmaSendResponse>(
-          httpConfig: httpConfig,
-          feeRate: feeRate,
-          source: state.sourceAddress,
-          params: composeParams as ComposeMpmaSendParams,
-          composeFn: composeRepository.composeMpmaSend,
-        );
-      }
+      return await $(composeT);
+    });
 
-      emit(state.copyWith(
-        submissionStatus: FormzSubmissionStatus.success,
+    final result = await task.run();
+
+    result.fold(
+      (error) => emit(state.copyWith(
+        error: error,
+        submissionStatus: FormzSubmissionStatus.failure,
+      )),
+      (composeResponse) => emit(state.copyWith(
         composeResponse: composeResponse,
-      ));
-
-    }catch(e){
-      print(e);
-      emit(state.copyWith(error: e.toString(), submissionStatus: FormzSubmissionStatus.failure));
-    }
-
+        submissionStatus: FormzSubmissionStatus.success,
+      )),
+    );
   }
 }
