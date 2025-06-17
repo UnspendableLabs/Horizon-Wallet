@@ -34,8 +34,6 @@ class SwapSellConfirmationDetails {
     required this.signedPsbt,
     required this.sellDetails,
   });
-
-
 }
 
 class AtomicSwapSellModel extends Equatable {
@@ -197,6 +195,11 @@ class _AtomicSwapSellFlowViewState extends State<AtomicSwapSellFlowView> {
                                                       sellDetails: variant)),
                                         ),
                                       )),
+                              CreatePsbtSignHandler(
+                                  onSuccess: () => {},
+                                  onClose: () {
+                                    actions.onCloseSignPsbtModalClicked();
+                                  }),
                               CreatePsbtForm(
                                 actions: actions,
                                 state: state,

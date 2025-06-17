@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:horizon/presentation/forms/sign_psbt/bloc/sign_psbt_bloc.dart';
+import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
 import 'package:formz/formz.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:horizon/domain/entities/address_v2.dart';
@@ -9,16 +11,20 @@ import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:horizon/presentation/session/bloc/session_state.dart';
 import 'package:horizon/utils/app_icons.dart';
 import 'package:horizon/extensions.dart';
+import 'package:horizon/presentation/shell/app_shell.dart';
 import './bloc/create_psbt_form_bloc.dart';
+
+// just putting this here for now
 
 class CreatePsbtFormActions {
   final Function(String value) onBtcValueChanged;
   final VoidCallback onSubmitClicked;
+  final VoidCallback onCloseSignPsbtModalClicked;
 
-  const CreatePsbtFormActions({
-    required this.onBtcValueChanged,
-    required this.onSubmitClicked,
-  });
+  const CreatePsbtFormActions(
+      {required this.onBtcValueChanged,
+      required this.onSubmitClicked,
+      required this.onCloseSignPsbtModalClicked});
 }
 
 class CreatePsbtFormProvider extends StatelessWidget {
@@ -52,6 +58,10 @@ class CreatePsbtFormProvider extends StatelessWidget {
                       .add(BtcPriceInputChanged(value: value));
                 }, onSubmitClicked: () {
                   context.read<CreatePsbtFormBloc>().add(SubmitClicked());
+                }, onCloseSignPsbtModalClicked: () {
+                  context
+                      .read<CreatePsbtFormBloc>()
+                      .add(const CloseSignPsbtModalClicked());
                 }),
                 state)));
   }
@@ -77,10 +87,9 @@ class CreatePsbtSuccessHandler extends StatelessWidget {
     return BlocListener<CreatePsbtFormBloc, CreatePsbtFormModel>(
         listener: (context, state) {
           if (state.submissionStatus.isSuccess) {
-
-        print("success callback ${state.btcPriceInput.value}" );
-        print("success callback dec ${state.btcPriceInput.asDecimal}" );
-        print("success callback bi ${state.btcPriceInput.asSats}" );
+            print("success callback ${state.btcPriceInput.value}");
+            print("success callback dec ${state.btcPriceInput.asDecimal}");
+            print("success callback bi ${state.btcPriceInput.asSats}");
 
             onSuccess(CreatePsbtSuccess(
                 signedPsbtHex: state.signedPsbt!,
@@ -88,6 +97,57 @@ class CreatePsbtSuccessHandler extends StatelessWidget {
                     .getOrThrow() // will never be called if this is undefiend
 
                 ));
+          }
+        },
+        child: const SizedBox.shrink());
+  }
+}
+
+class CreatePsbtSignHandler extends StatelessWidget {
+  final Function() onSuccess;
+  final VoidCallback onClose;
+
+  const CreatePsbtSignHandler(
+      {super.key, required this.onSuccess, required this.onClose});
+
+  @override
+  Widget build(context) {
+    return BlocListener<CreatePsbtFormBloc, CreatePsbtFormModel>(
+        listener: (context, state) async {
+          print("state.showSignPsbtModal: ${state.showSignPsbtModal}");
+
+
+
+          if (state.showSignPsbtModal) {
+            final result = await WoltModalSheet.show(
+                context: context,
+                modalTypeBuilder: (_) => WoltModalType.bottomSheet(),
+                pageContentDecorator: (child) {
+                  return BlocProvider.value(
+                      value: context.read<CreatePsbtFormBloc>(), child: child);
+                },
+                pageListBuilder: (bottomSheetContext) => [
+                      WoltModalSheetPage(
+                        trailingNavBarWidget: TextButton(
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                          },
+                          child: Text("Cancel",
+                              style: Theme.of(context).textTheme.labelLarge),
+                        ),
+                        hasTopBarLayer: false,
+                        pageTitle: Text("Sign PSBT",
+                            style: Theme.of(context).textTheme.headlineLarge),
+                        child: BlocProvider(
+                            create: () => SignPsbtBloc(), child: Text("foo")),
+                      )
+                    ]);
+
+            print("is this running");
+
+            onClose();
+
+            // show wolt modal but only if it's not already displayed
           }
         },
         child: const SizedBox.shrink());

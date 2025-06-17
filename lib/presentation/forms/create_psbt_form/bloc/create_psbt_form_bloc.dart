@@ -54,25 +54,34 @@ class CreatePsbtFormModel with FormzMixin {
   final BtcPriceInput btcPriceInput;
   final FormzSubmissionStatus submissionStatus;
 
+  final bool showSignPsbtModal;
+  final Option<String> unsignedPsbtHex;
+
   final String? error;
   final String? signedPsbt;
 
   CreatePsbtFormModel(
       {required this.btcPriceInput,
       required this.submissionStatus,
+      required this.showSignPsbtModal,
+      required this.unsignedPsbtHex,
       this.error,
       this.signedPsbt});
 
   @override
   List<FormzInput> get inputs => [btcPriceInput];
 
-  CreatePsbtFormModel copyWith({
-    BtcPriceInput? btcPriceInput,
-    FormzSubmissionStatus? submissionStatus,
-    String? error,
-    String? signedPsbt,
-  }) =>
+  CreatePsbtFormModel copyWith(
+          {BtcPriceInput? btcPriceInput,
+          FormzSubmissionStatus? submissionStatus,
+          String? error,
+          String? signedPsbt,
+          Option<String>? unsignedPsbtHex,
+          Option<bool> showSignPsbtModal = const None()}) =>
       CreatePsbtFormModel(
+        unsignedPsbtHex: unsignedPsbtHex ?? this.unsignedPsbtHex,
+        showSignPsbtModal:
+            showSignPsbtModal.getOrElse(() => this.showSignPsbtModal),
         btcPriceInput: btcPriceInput ?? this.btcPriceInput,
         submissionStatus: submissionStatus ?? this.submissionStatus,
         error: error ?? this.error,
@@ -96,6 +105,10 @@ class BtcPriceInputChanged extends CreatePsbtFormEvent {
 }
 
 class SubmitClicked extends CreatePsbtFormEvent {}
+
+class CloseSignPsbtModalClicked extends CreatePsbtFormEvent {
+  const CloseSignPsbtModalClicked();
+}
 
 class CreatePsbtFormBloc
     extends Bloc<CreatePsbtFormEvent, CreatePsbtFormModel> {
@@ -137,6 +150,8 @@ class CreatePsbtFormBloc
         _addressService = addressService ?? GetIt.I<AddressService>(),
         super(
           CreatePsbtFormModel(
+            showSignPsbtModal: false,
+            unsignedPsbtHex: const None(),
             btcPriceInput:
                 const BtcPriceInput.dirty(value: "0.00"), // const value
             submissionStatus: FormzSubmissionStatus.initial,
@@ -144,6 +159,7 @@ class CreatePsbtFormBloc
         ) {
     on<BtcPriceInputChanged>(_onBtcPriceInputChanged); // handler wired up once
     on<SubmitClicked>(_onSubmitClicked);
+    on<CloseSignPsbtModalClicked>(_onCloseSignPsbtModalClicked);
   }
 
   // give the handler an explicit return type
@@ -163,6 +179,11 @@ class CreatePsbtFormBloc
     SubmitClicked event,
     Emitter<CreatePsbtFormModel> emit,
   ) async {
+    emit(state.copyWith(
+      submissionStatus: FormzSubmissionStatus.inProgress,
+      // TODO: just get rid of this
+    ));
+
     final attachTxID = utxoID.split(":")[0];
     final voutIndex = int.parse(utxoID.split(":")[1]);
 
@@ -186,19 +207,7 @@ class CreatePsbtFormBloc
               httpConfig: httpConfig,
               onError: (err) => err.toString())));
 
-      final pk = await $(_getPK());
-
-      final signedHex =
-          await $(TaskEither.fromEither(_transactionService.signPsbtT(
-              psbtHex: newSalePsbtHex,
-              inputPrivateKeyMap: {0: pk},
-              sighashTypes: [
-                0x03 | 0x80, // single | anyone_can_pay
-              ],
-              httpConfig: httpConfig,
-              onError: (_err) => "Error signing PSBT: ${_err.toString()}")));
-
-      return signedHex;
+      return newSalePsbtHex;
     });
 
     final result = await task.run();
@@ -209,9 +218,50 @@ class CreatePsbtFormBloc
           submissionStatus: FormzSubmissionStatus.failure));
     }, (psbtHex) {
       emit(state.copyWith(
-          signedPsbt: psbtHex,
-          submissionStatus: FormzSubmissionStatus.success));
+        unsignedPsbtHex: Option.of(psbtHex),
+        showSignPsbtModal: const Option.of(true),
+      ));
+      // submissionStatus: FormzSubmissionStatus.success));
     });
+
+    //
+    //   final pk = await $(_getPK());
+    //
+    //   final signedHex =
+    //       await $(TaskEither.fromEither(_transactionService.signPsbtT(
+    //           psbtHex: newSalePsbtHex,
+    //           inputPrivateKeyMap: {0: pk},
+    //           sighashTypes: [
+    //             0x03 | 0x80, // single | anyone_can_pay
+    //           ],
+    //           httpConfig: httpConfig,
+    //           onError: (_err) => "Error signing PSBT: ${_err.toString()}")));
+    //
+    //   return signedHex;
+    // });
+    //
+    // final result = await task.run();
+    //
+    // result.fold((err) {
+    //   emit(state.copyWith(
+    //       error: err.toString(),
+    //       submissionStatus: FormzSubmissionStatus.failure));
+    // }, (psbtHex) {
+    //   emit(state.copyWith(
+    //       signedPsbt: psbtHex,
+    //       submissionStatus: FormzSubmissionStatus.success));
+    // });
+  }
+
+  void _onCloseSignPsbtModalClicked(
+    CloseSignPsbtModalClicked event,
+    Emitter<CreatePsbtFormModel> emit,
+  ) {
+    emit(state.copyWith(
+      showSignPsbtModal: const Option.of(false),
+      unsignedPsbtHex: const None(),
+      submissionStatus: FormzSubmissionStatus.initial,
+    ));
   }
 
   // TODO: this is still reasonably dependency heavy

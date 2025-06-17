@@ -1717,19 +1717,8 @@ class QuantityInputV2 extends StatelessWidget {
       shaderCallback: (bounds) => gradient.createShader(bounds),
       child: TextField(
         controller: controller,
-        inputFormatters: [fmt],
-        onChanged: (raw) {
-          final cleaned = _stripLeadingZeros(raw, divisible);
-          if (cleaned != controller.text) {
-            // preserve caret at end
-            controller.value = controller.value.copyWith(
-              text: cleaned,
-              selection: TextSelection.collapsed(offset: cleaned.length),
-              composing: TextRange.empty,
-            );
-          }
-          onChanged(cleaned); // send to bloc / parent
-        },
+        inputFormatters: [ fmt ],
+        onChanged: onChanged,
         keyboardType: TextInputType.numberWithOptions(
           decimal: divisible,
           signed: false,
