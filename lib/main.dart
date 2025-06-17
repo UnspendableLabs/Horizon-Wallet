@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 import 'package:dio/dio.dart';
 import 'package:drift_db_viewer/drift_db_viewer.dart';
@@ -540,13 +541,16 @@ class AppRouter {
             ),
           ],
         ),
-        
+
         // TODO: remove later
-        GoRoute(path: "/demo/:component", builder: (context, state) {
-          final component = state.pathParameters['component'] ?? 'showList';
-          return WidgetsDemoPage(component: DemoComponent.values.firstWhere((e) => e.name == component));
-        })
-      
+        GoRoute(
+            path: "/demo/:component",
+            builder: (context, state) {
+              final component = state.pathParameters['component'] ?? 'showList';
+              return WidgetsDemoPage(
+                  component: DemoComponent.values
+                      .firstWhere((e) => e.name == component));
+            })
       ],
       errorBuilder: (context, state) => ErrorScreen(
             error: state.error,
@@ -583,7 +587,7 @@ class AppRouter {
               });
 
               // TODO: remove later
-              if(state.matchedLocation.startsWith("/demo")) {
+              if (state.matchedLocation.startsWith("/demo")) {
                 return state.matchedLocation;
               }
 
@@ -1119,7 +1123,7 @@ class MyApp extends StatelessWidget {
         },
         child: BlocBuilder<ThemeBloc, ThemeMode>(
           builder: (context, themeMode) {
-            return MaterialApp.router(
+            final app = MaterialApp.router(
               theme: _buildLightTheme(),
               darkTheme: _buildDarkTheme(),
               themeMode: themeMode,
@@ -1128,6 +1132,18 @@ class MyApp extends StatelessWidget {
               routeInformationProvider:
                   AppRouter.router.routeInformationProvider,
             );
+
+            if (kIsWeb && !GetIt.I<Config>().isWebExtension) {
+              return Center(
+                child: SizedBox(
+                  width: 440,
+                  height: 700,
+                  child: app,
+                ),
+              );
+            }
+
+            return app;
           },
         ),
       ),
