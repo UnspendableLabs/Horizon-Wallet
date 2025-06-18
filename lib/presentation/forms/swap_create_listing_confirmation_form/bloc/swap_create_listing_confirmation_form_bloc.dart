@@ -130,6 +130,13 @@ class CloseSignPsbtModalClicked extends SwapCreateListingFormEvent {
   List<Object?> get props => [];
 }
 
+class SignatureCompleted extends SwapCreateListingFormEvent {
+  final String signedPsbtHex;
+  const SignatureCompleted({required this.signedPsbtHex});
+  @override
+  List<Object?> get props => [];
+}
+
 class SwapCreateListingFormBloc
     extends Bloc<SwapCreateListingFormEvent, SwapCreateListingFormModel> {
   final HttpConfig httpConfig;
@@ -183,6 +190,18 @@ class SwapCreateListingFormBloc
         ));
     on<SubmitClicked>(_handleSubmitClicked);
     on<CloseSignPsbtModalClicked>(_handleCloseSignPsbtModalClicked);
+
+    on<SignatureCompleted>((event, emit) {
+      emit(state.copyWith(
+        showSignPsbtModal: const Option.of(false),
+        submissionStatus: FormzSubmissionStatus.success,
+      ));
+
+      emit(state.copyWith(
+        showSignPsbtModal: const Option.of(false),
+        submissionStatus: FormzSubmissionStatus.initial,
+      ));
+    });
     add(const OnChainPaymentRequested());
   }
 

@@ -181,21 +181,19 @@ class _AtomicSwapSellFlowViewState extends State<AtomicSwapSellFlowView> {
                           child: (actions, state) => Column(
                             children: [
                               CreatePsbtSuccessHandler(
-                                  onSuccess: (createPsbtSuccess) =>
-                                      _controller.update(
-                                        (model) => model.copyWith(
-                                          swapSellConfirmationDetails:
-                                              Option.of(
-                                                  SwapSellConfirmationDetails(
-                                                      signedPsbt:
-                                                          createPsbtSuccess
-                                                              .signedPsbtHex,
-                                                      btcPrice:
-                                                          createPsbtSuccess
-                                                              .btcQuantity,
-                                                      sellDetails: variant)),
-                                        ),
-                                      )),
+                                  onSuccess: (createPsbtSuccess) {
+                                _controller.update(
+                                  (model) => model.copyWith(
+                                    swapSellConfirmationDetails: Option.of(
+                                        SwapSellConfirmationDetails(
+                                            signedPsbt:
+                                                createPsbtSuccess.signedPsbtHex,
+                                            btcPrice:
+                                                createPsbtSuccess.btcQuantity,
+                                            sellDetails: variant)),
+                                  ),
+                                );
+                              }),
                               CreatePsbtSignHandler(
                                   address: variant.utxoAddress,
                                   onSuccess: actions.onSignatureCompleted,
@@ -230,7 +228,7 @@ class _AtomicSwapSellFlowViewState extends State<AtomicSwapSellFlowView> {
                               children: [
                                 SwapOnChainFeeSignHandler(
                                     address: details.sellDetails.utxoAddress,
-                                    onSuccess: (a) => print(a),
+                                    onSuccess: actions.onSignatureCompleted,
                                     onClose: () {
                                       actions.onCloseSignPsbtModalClicked();
                                     }),

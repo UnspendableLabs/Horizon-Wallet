@@ -95,6 +95,7 @@ class SwapOnChainFeeSignHandler extends StatelessWidget {
                                       .requirePasswordForCryptoOperations,
                                   onSuccess: (signedPsbtHex) {
                                     onSuccess(signedPsbtHex);
+                                    Navigator.of(context).pop();
                                   },
                                 )),
                           ))
@@ -113,11 +114,13 @@ class SwapCreateListingFormActions {
   final Function(FeeOption value) onFeeOptionSelected;
   final VoidCallback onSubmitClicked;
   final VoidCallback onCloseSignPsbtModalClicked;
+  final Function(String signedPsbtHex) onSignatureCompleted;
 
   const SwapCreateListingFormActions({
     required this.onFeeOptionSelected,
     required this.onSubmitClicked,
     required this.onCloseSignPsbtModalClicked,
+    required this.onSignatureCompleted,
   });
 }
 
@@ -186,6 +189,11 @@ class SwapCreateListingFormProvider extends StatelessWidget {
                               context.read<SwapCreateListingFormBloc>().add(
                                     const SubmitClicked(),
                                   );
+                            },
+                            onSignatureCompleted: (signedPsbtHex) {
+                              context.read<SwapCreateListingFormBloc>().add(
+                                  SignatureCompleted(
+                                      signedPsbtHex: signedPsbtHex));
                             },
                           ),
                           state,

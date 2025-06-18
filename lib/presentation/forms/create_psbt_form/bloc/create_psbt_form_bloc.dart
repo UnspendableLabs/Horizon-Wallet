@@ -167,9 +167,18 @@ class CreatePsbtFormBloc
     on<SubmitClicked>(_onSubmitClicked);
     on<CloseSignPsbtModalClicked>(_onCloseSignPsbtModalClicked);
     on<SignatureCompleted>((event, emit) {
+
       emit(state.copyWith(
+        showSignPsbtModal: const Option.of(false),
         signedPsbt: event.signedPsbtHex,
         submissionStatus: FormzSubmissionStatus.success,
+      ));
+
+
+      emit(state.copyWith(
+        showSignPsbtModal: const Option.of(false),
+        signedPsbt: event.signedPsbtHex,
+        submissionStatus: FormzSubmissionStatus.initial,
       ));
     });
   }

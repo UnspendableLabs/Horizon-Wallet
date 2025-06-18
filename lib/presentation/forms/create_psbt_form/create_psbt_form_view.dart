@@ -135,11 +135,6 @@ class CreatePsbtSignHandler extends StatelessWidget {
             final result = await WoltModalSheet.show(
                 context: context,
                 modalTypeBuilder: (_) => WoltModalType.bottomSheet(),
-                // pageContentDecorator: (child) {
-                //   return BlocProvider.value(
-                //
-                //       value: context.read<CreatePsbtFormBloc>(), child: child);
-                // },
                 pageListBuilder: (bottomSheetContext) => [
                       WoltModalSheetPage(
                           trailingNavBarWidget: TextButton(
@@ -174,6 +169,8 @@ class CreatePsbtSignHandler extends StatelessWidget {
                                       .requirePasswordForCryptoOperations,
                                   onSuccess: (signedPsbtHex) {
                                     onSuccess(signedPsbtHex);
+
+                                    Navigator.of(context).pop();
                                   },
                                 )),
                           ))
