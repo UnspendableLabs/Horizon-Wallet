@@ -174,6 +174,7 @@ class _AtomicSwapSellFlowViewState extends State<AtomicSwapSellFlowView> {
                         widthFactor: .8,
                         body: CreatePsbtFormProvider(
                           utxoID: variant.utxo,
+                          // TODO: smell
                           address: variant.utxoAddress == widget.address.address
                               ? widget.address
                               : throw Exception("invariant: address mismatch"),
@@ -196,6 +197,7 @@ class _AtomicSwapSellFlowViewState extends State<AtomicSwapSellFlowView> {
                                         ),
                                       )),
                               CreatePsbtSignHandler(
+                                  address: variant.utxoAddress,
                                   onSuccess: () => {},
                                   onClose: () {
                                     actions.onCloseSignPsbtModalClicked();

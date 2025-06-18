@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:horizon/presentation/forms/sign_psbt/bloc/sign_psbt_bloc.dart';
+import 'package:horizon/presentation/forms/sign_psbt/view/sign_psbt_form.dart';
 import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
 import 'package:formz/formz.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:horizon/domain/entities/address_v2.dart';
 import 'package:horizon/domain/entities/http_config.dart';
+import 'package:get_it/get_it.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
+import 'package:horizon/domain/repositories/settings_repository.dart';
 import 'package:horizon/presentation/session/bloc/session_state.dart';
 import 'package:horizon/utils/app_icons.dart';
 import 'package:horizon/extensions.dart';
@@ -106,44 +109,79 @@ class CreatePsbtSuccessHandler extends StatelessWidget {
 class CreatePsbtSignHandler extends StatelessWidget {
   final Function() onSuccess;
   final VoidCallback onClose;
+  final String address;
 
   const CreatePsbtSignHandler(
-      {super.key, required this.onSuccess, required this.onClose});
+      {super.key,
+      required this.onSuccess,
+      required this.onClose,
+      required this.address});
 
   @override
   Widget build(context) {
+
+  final session =
+      context.read<SessionStateCubit>().state.successOrThrow();
+
     return BlocListener<CreatePsbtFormBloc, CreatePsbtFormModel>(
         listener: (context, state) async {
-          print("state.showSignPsbtModal: ${state.showSignPsbtModal}");
+          //   print("is no listening occuring?");
+          //
+          //
 
-
+          //   print("session $session");
+          final settings = GetIt.I<SettingsRepository>();
+          //
+          //   print("settings $settings");
 
           if (state.showSignPsbtModal) {
             final result = await WoltModalSheet.show(
                 context: context,
                 modalTypeBuilder: (_) => WoltModalType.bottomSheet(),
-                pageContentDecorator: (child) {
-                  return BlocProvider.value(
-                      value: context.read<CreatePsbtFormBloc>(), child: child);
-                },
+                // pageContentDecorator: (child) {
+                //   return BlocProvider.value(
+                //
+                //       value: context.read<CreatePsbtFormBloc>(), child: child);
+                // },
                 pageListBuilder: (bottomSheetContext) => [
                       WoltModalSheetPage(
-                        trailingNavBarWidget: TextButton(
-                          onPressed: () {
-                            Navigator.of(context).pop();
-                          },
-                          child: Text("Cancel",
-                              style: Theme.of(context).textTheme.labelLarge),
-                        ),
-                        hasTopBarLayer: false,
-                        pageTitle: Text("Sign PSBT",
-                            style: Theme.of(context).textTheme.headlineLarge),
-                        child: BlocProvider(
-                            create: () => SignPsbtBloc(), child: Text("foo")),
-                      )
-                    ]);
+                          trailingNavBarWidget: TextButton(
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                            child: Text("Cancel",
+                                style: Theme.of(context).textTheme.labelLarge),
+                          ),
+                          hasTopBarLayer: false,
+                          pageTitle: Text("Sign PSBT",
+                              style: Theme.of(context).textTheme.headlineLarge),
+                          child: state.unsignedPsbtHex.fold(
+                            () => SizedBox.shrink(),
+                            (unsignedPsbtHex) => BlocProvider(
+                                create: (context) => SignPsbtBloc(
+                                      httpConfig: session.httpConfig,
+                                      addresses: session.addresses,
+                                      passwordRequired: settings
+                                          .requirePasswordForCryptoOperations,
+                                      unsignedPsbt: unsignedPsbtHex,
+                                      signInputs: {
+                                        address: [0]
+                                      },
 
-            print("is this running");
+                                      sighashTypes: [
+                                        0x03 | 0x80, // single | anyone_can_pay
+                                      ],
+                                    ),
+                                child: SignPsbtForm(
+                                  key: Key(unsignedPsbtHex),
+                                  passwordRequired: settings
+                                      .requirePasswordForCryptoOperations,
+                                  onSuccess: (signedPsbtHex) {
+                                    print(signedPsbtHex);
+                                  },
+                                )),
+                          ))
+                    ]);
 
             onClose();
 

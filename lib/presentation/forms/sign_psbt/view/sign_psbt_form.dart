@@ -1,3 +1,4 @@
+import 'package:get_it/get_it.dart';
 import 'package:formz/formz.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -13,17 +14,14 @@ import 'package:horizon/domain/repositories/balance_repository.dart';
 
 class SignPsbtForm extends StatefulWidget {
   final bool passwordRequired;
-  final BalanceRepository balanceRepository;
-  final BitcoinRepository bitcoinRepository;
 
   final void Function(String) onSuccess;
 
-  const SignPsbtForm(
-      {super.key,
-      required this.onSuccess,
-      required this.passwordRequired,
-      required this.bitcoinRepository,
-      required this.balanceRepository});
+  const SignPsbtForm({
+    super.key,
+    required this.onSuccess,
+    required this.passwordRequired,
+  });
 
   @override
   State<SignPsbtForm> createState() => _SignPsbtFormState();

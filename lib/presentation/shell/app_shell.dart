@@ -66,7 +66,6 @@ class SignPsbtModal extends StatelessWidget {
       create: (_) => SignPsbtBloc(
         addresses: session.addresses,
         httpConfig: session.httpConfig,
-        session: session,
         passwordRequired:
             GetIt.I<SettingsRepository>().requirePasswordForCryptoOperations,
         inMemoryKeyRepository: GetIt.I<InMemoryKeyRepository>(),
@@ -81,8 +80,6 @@ class SignPsbtModal extends StatelessWidget {
         addressService: addressService,
       ),
       child: SignPsbtForm(
-        bitcoinRepository: bitcoinRepository,
-        balanceRepository: balanceRepository,
         key: Key(unsignedPsbt),
         passwordRequired:
             GetIt.I<SettingsRepository>().requirePasswordForCryptoOperations,
