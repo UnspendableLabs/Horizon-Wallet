@@ -23,11 +23,13 @@ class CreatePsbtFormActions {
   final Function(String value) onBtcValueChanged;
   final VoidCallback onSubmitClicked;
   final VoidCallback onCloseSignPsbtModalClicked;
+  final Function(String signedPsbtHex) onSignatureCompleted;
 
   const CreatePsbtFormActions(
       {required this.onBtcValueChanged,
       required this.onSubmitClicked,
-      required this.onCloseSignPsbtModalClicked});
+      required this.onCloseSignPsbtModalClicked,
+      required this.onSignatureCompleted});
 }
 
 class CreatePsbtFormProvider extends StatelessWidget {
@@ -61,6 +63,10 @@ class CreatePsbtFormProvider extends StatelessWidget {
                       .add(BtcPriceInputChanged(value: value));
                 }, onSubmitClicked: () {
                   context.read<CreatePsbtFormBloc>().add(SubmitClicked());
+                }, onSignatureCompleted: (String signedPsbtHex) {
+                  context
+                      .read<CreatePsbtFormBloc>()
+                      .add(SignatureCompleted(signedPsbtHex: signedPsbtHex));
                 }, onCloseSignPsbtModalClicked: () {
                   context
                       .read<CreatePsbtFormBloc>()
@@ -107,7 +113,7 @@ class CreatePsbtSuccessHandler extends StatelessWidget {
 }
 
 class CreatePsbtSignHandler extends StatelessWidget {
-  final Function() onSuccess;
+  final Function(String signedPsbtHex) onSuccess;
   final VoidCallback onClose;
   final String address;
 
@@ -119,20 +125,11 @@ class CreatePsbtSignHandler extends StatelessWidget {
 
   @override
   Widget build(context) {
-
-  final session =
-      context.read<SessionStateCubit>().state.successOrThrow();
+    final session = context.read<SessionStateCubit>().state.successOrThrow();
 
     return BlocListener<CreatePsbtFormBloc, CreatePsbtFormModel>(
         listener: (context, state) async {
-          //   print("is no listening occuring?");
-          //
-          //
-
-          //   print("session $session");
           final settings = GetIt.I<SettingsRepository>();
-          //
-          //   print("settings $settings");
 
           if (state.showSignPsbtModal) {
             final result = await WoltModalSheet.show(
@@ -153,8 +150,8 @@ class CreatePsbtSignHandler extends StatelessWidget {
                                 style: Theme.of(context).textTheme.labelLarge),
                           ),
                           hasTopBarLayer: false,
-                          pageTitle: Text("Sign PSBT",
-                              style: Theme.of(context).textTheme.headlineLarge),
+                          // pageTitle: Text("Sign PSBT",
+                          //     style: Theme.of(context).textTheme.headlineSmall),
                           child: state.unsignedPsbtHex.fold(
                             () => SizedBox.shrink(),
                             (unsignedPsbtHex) => BlocProvider(
@@ -167,7 +164,6 @@ class CreatePsbtSignHandler extends StatelessWidget {
                                       signInputs: {
                                         address: [0]
                                       },
-
                                       sighashTypes: [
                                         0x03 | 0x80, // single | anyone_can_pay
                                       ],
@@ -177,7 +173,7 @@ class CreatePsbtSignHandler extends StatelessWidget {
                                   passwordRequired: settings
                                       .requirePasswordForCryptoOperations,
                                   onSuccess: (signedPsbtHex) {
-                                    print(signedPsbtHex);
+                                    onSuccess(signedPsbtHex);
                                   },
                                 )),
                           ))

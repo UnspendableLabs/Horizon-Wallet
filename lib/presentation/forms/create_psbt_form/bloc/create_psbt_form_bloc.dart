@@ -110,6 +110,12 @@ class CloseSignPsbtModalClicked extends CreatePsbtFormEvent {
   const CloseSignPsbtModalClicked();
 }
 
+class SignatureCompleted extends CreatePsbtFormEvent {
+  final String signedPsbtHex;
+
+  const SignatureCompleted({required this.signedPsbtHex});
+}
+
 class CreatePsbtFormBloc
     extends Bloc<CreatePsbtFormEvent, CreatePsbtFormModel> {
   final AddressV2 address;
@@ -160,6 +166,12 @@ class CreatePsbtFormBloc
     on<BtcPriceInputChanged>(_onBtcPriceInputChanged); // handler wired up once
     on<SubmitClicked>(_onSubmitClicked);
     on<CloseSignPsbtModalClicked>(_onCloseSignPsbtModalClicked);
+    on<SignatureCompleted>((event, emit) {
+      emit(state.copyWith(
+        signedPsbt: event.signedPsbtHex,
+        submissionStatus: FormzSubmissionStatus.success,
+      ));
+    });
   }
 
   // give the handler an explicit return type
@@ -169,6 +181,8 @@ class CreatePsbtFormBloc
   ) {
     emit(
       state.copyWith(
+        showSignPsbtModal: const Option.of(false),
+        unsignedPsbtHex: const Option.none(),
         btcPriceInput: BtcPriceInput.dirty(value: event.value), // mark it dirty
         submissionStatus: FormzSubmissionStatus.initial,
       ),
@@ -224,7 +238,6 @@ class CreatePsbtFormBloc
       // submissionStatus: FormzSubmissionStatus.success));
     });
 
-    //
     //   final pk = await $(_getPK());
     //
     //   final signedHex =

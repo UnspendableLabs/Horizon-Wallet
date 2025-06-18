@@ -198,7 +198,7 @@ class _AtomicSwapSellFlowViewState extends State<AtomicSwapSellFlowView> {
                                       )),
                               CreatePsbtSignHandler(
                                   address: variant.utxoAddress,
-                                  onSuccess: () => {},
+                                  onSuccess: actions.onSignatureCompleted,
                                   onClose: () {
                                     actions.onCloseSignPsbtModalClicked();
                                   }),
@@ -226,9 +226,18 @@ class _AtomicSwapSellFlowViewState extends State<AtomicSwapSellFlowView> {
                         giveQuantityNormalized:
                             details.sellDetails.quantityNormalized,
                         btcPrice: details.btcPrice,
-                        child: (actions, state) =>
-                            SwapCreateListingConfirmationForm(
-                                actions: actions, state: state))),
+                        child: (actions, state) => Column(
+                              children: [
+                                SwapOnChainFeeSignHandler(
+                                    address: details.sellDetails.utxoAddress,
+                                    onSuccess: (a) => print(a),
+                                    onClose: () {
+                                      actions.onCloseSignPsbtModalClicked();
+                                    }),
+                                SwapCreateListingConfirmationForm(
+                                    actions: actions, state: state),
+                              ],
+                            ))),
               ))
         ]
             .filter((page) => page.isSome())

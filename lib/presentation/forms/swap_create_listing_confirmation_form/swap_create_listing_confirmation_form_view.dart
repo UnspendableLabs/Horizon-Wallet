@@ -17,14 +17,107 @@ import 'package:horizon/domain/entities/fee_option.dart';
 import 'package:horizon/domain/repositories/fee_estimates_repository.dart';
 import "./bloc/swap_create_listing_confirmation_form_bloc.dart";
 import 'package:horizon/presentation/common/transactions/transaction_fee_selection.dart';
+import 'package:horizon/presentation/forms/sign_psbt/bloc/sign_psbt_bloc.dart';
+import 'package:horizon/presentation/forms/sign_psbt/view/sign_psbt_form.dart';
+import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
+import 'package:horizon/domain/repositories/settings_repository.dart';
+import 'package:horizon/presentation/session/bloc/session_state.dart';
+
+class SwapOnChainFeeSignHandler extends StatelessWidget {
+  final Function(String signedPsbtHex) onSuccess;
+  final VoidCallback onClose;
+  final String address;
+
+  SwapOnChainFeeSignHandler(
+      {super.key,
+      required this.onSuccess,
+      required this.onClose,
+      required this.address});
+
+  @override
+  Widget build(context) {
+    final session = context.read<SessionStateCubit>().state.successOrThrow();
+
+    return BlocListener<SwapCreateListingFormBloc, SwapCreateListingFormModel>(
+        listener: (context, state) async {
+          final settings = GetIt.I<SettingsRepository>();
+
+          if (state.showSignPsbtModal) {
+            final result = await WoltModalSheet.show(
+                context: context,
+                modalTypeBuilder: (_) => WoltModalType.bottomSheet(),
+                // pageContentDecorator: (child) {
+                //   return BlocProvider.value(
+                //
+                //       value: context.read<CreatePsbtFormBloc>(), child: child);
+                // },
+                pageListBuilder: (bottomSheetContext) => [
+                      WoltModalSheetPage(
+                          trailingNavBarWidget: TextButton(
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                            child: Text("Cancel",
+                                style: Theme.of(context).textTheme.labelLarge),
+                          ),
+                          hasTopBarLayer: false,
+                          // pageTitle: Text("Sign PSBT",
+                          //     style: Theme.of(context).textTheme.headlineSmall),
+                          child: state.onChainPayment.fold(
+                            onInitial: () => SizedBox.shrink(),
+                            onLoading: () => const Center(
+                                child: CircularProgressIndicator()),
+                            onRefreshing: (_) => const Center(
+                                child: CircularProgressIndicator()),
+                            onFailure: (error) => Center(
+                              child: Text(
+                                error.toString(),
+                                style: Theme.of(context).textTheme.bodyMedium,
+                              ),
+                            ),
+                            onSuccess: (onChainPayment) => BlocProvider(
+                                create: (context) => SignPsbtBloc(
+                                      httpConfig: session.httpConfig,
+                                      addresses: session.addresses,
+                                      passwordRequired: settings
+                                          .requirePasswordForCryptoOperations,
+                                      unsignedPsbt: onChainPayment.psbt,
+                                      signInputs: {
+                                        address: onChainPayment.inputsToSign
+                                      },
+                                      sighashTypes: [
+                                        0x01 // all
+                                      ],
+                                    ),
+                                child: SignPsbtForm(
+                                  key: Key(onChainPayment.psbt),
+                                  passwordRequired: settings
+                                      .requirePasswordForCryptoOperations,
+                                  onSuccess: (signedPsbtHex) {
+                                    onSuccess(signedPsbtHex);
+                                  },
+                                )),
+                          ))
+                    ]);
+
+            onClose();
+
+            // show wolt modal but only if it's not already displayed
+          }
+        },
+        child: const SizedBox.shrink());
+  }
+}
 
 class SwapCreateListingFormActions {
   final Function(FeeOption value) onFeeOptionSelected;
   final VoidCallback onSubmitClicked;
+  final VoidCallback onCloseSignPsbtModalClicked;
 
   const SwapCreateListingFormActions({
     required this.onFeeOptionSelected,
     required this.onSubmitClicked,
+    required this.onCloseSignPsbtModalClicked,
   });
 }
 
@@ -79,6 +172,11 @@ class SwapCreateListingFormProvider extends StatelessWidget {
                         SwapCreateListingFormModel>(
                     builder: (context, state) => child(
                           SwapCreateListingFormActions(
+                            onCloseSignPsbtModalClicked: () {
+                              context.read<SwapCreateListingFormBloc>().add(
+                                    CloseSignPsbtModalClicked(),
+                                  );
+                            },
                             onFeeOptionSelected: (value) {
                               context.read<SwapCreateListingFormBloc>().add(
                                     FeeOptionChanged(value),
@@ -252,7 +350,9 @@ class _SwapCreateListingConfirmationFormState
                     ),
                     commonHeightSizedBox,
                     HorizonButton(
-                        onPressed: () {},
+                        onPressed: () {
+                          widget.actions.onSubmitClicked();
+                        },
                         child: TextButtonContent(value: "Sign and Submit")),
                     commonHeightSizedBox,
                   ],

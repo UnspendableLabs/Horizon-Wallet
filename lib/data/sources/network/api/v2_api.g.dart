@@ -4353,6 +4353,18 @@ Map<String, dynamic> _$UTXOToJson(UTXO instance) => <String, dynamic>{
       'address': instance.address,
     };
 
+UtxoWithBalancesResponse _$UtxoWithBalancesResponseFromJson(
+        Map<String, dynamic> json) =>
+    UtxoWithBalancesResponse(
+      result: Map<String, bool>.from(json['result'] as Map),
+    );
+
+Map<String, dynamic> _$UtxoWithBalancesResponseToJson(
+        UtxoWithBalancesResponse instance) =>
+    <String, dynamic>{
+      'result': instance.result,
+    };
+
 // **************************************************************************
 // RetrofitGenerator
 // **************************************************************************
@@ -7621,6 +7633,44 @@ class _V2Api implements V2Api {
         _result.data!,
         (json) =>
             ComposeBurnResponseModel.fromJson(json as Map<String, dynamic>),
+      );
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options);
+      rethrow;
+    }
+    return _value;
+  }
+
+  @override
+  Future<Response<UtxoWithBalancesResponse>> utxosWithBalances(
+      String utxos) async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{r'utxos': utxos};
+    final _headers = <String, dynamic>{};
+    const Map<String, dynamic>? _data = null;
+    final _options = _setStreamType<Response<UtxoWithBalancesResponse>>(Options(
+      method: 'GET',
+      headers: _headers,
+      extra: _extra,
+    )
+        .compose(
+          _dio.options,
+          '/utxos/withbalances',
+          queryParameters: queryParameters,
+          data: _data,
+        )
+        .copyWith(
+            baseUrl: _combineBaseUrls(
+          _dio.options.baseUrl,
+          baseUrl,
+        )));
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late Response<UtxoWithBalancesResponse> _value;
+    try {
+      _value = Response<UtxoWithBalancesResponse>.fromJson(
+        _result.data!,
+        (json) =>
+            UtxoWithBalancesResponse.fromJson(json as Map<String, dynamic>),
       );
     } on Object catch (e, s) {
       errorLogger?.logError(e, s, _options);

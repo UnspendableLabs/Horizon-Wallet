@@ -4,6 +4,11 @@ import 'package:fpdart/fpdart.dart';
 import 'package:horizon/domain/entities/address_v2.dart';
 
 abstract class UtxoRepository {
+  Future<List<Utxo>> getUnattachedForAddress(
+    String address,
+    HttpConfig httpConfig,
+  );
+
   Future<(List<Utxo>, List<String>)> getUnspentForAddress(
       String address, HttpConfig httpConfig,
       {bool excludeCached = false});
@@ -26,6 +31,20 @@ extension UtxoRepositoryX on UtxoRepository {
     };
   }
 
+  Future<Map<String, Utxo>> getUnattachedUTXOMapForAddress(
+    AddressV2 address,
+    HttpConfig httpConfig,
+  ) async {
+    final utxos = await getUnattachedForAddress(
+      address.address,
+      httpConfig,
+    );
+
+    return {
+      for (final utxo in utxos) "${utxo.txid}:${utxo.vout}": utxo,
+    };
+  }
+
   /// Same as above but returns a TaskEither
   TaskEither<String, Map<String, Utxo>> getUTXOMapForAddressT({
     required AddressV2 address,
@@ -37,5 +56,13 @@ extension UtxoRepositoryX on UtxoRepository {
     );
   }
 
-
+  TaskEither<String, Map<String, Utxo>> getUnattachedUTXOMapForAddressT({
+    required AddressV2 address,
+    required HttpConfig httpConfig,
+  }) {
+    return TaskEither.tryCatch(
+      () => getUnattachedUTXOMapForAddress(address, httpConfig),
+      (err, _) => "Failed to get UTXO map for address ${address.address}",
+    );
+  }
 }

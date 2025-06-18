@@ -31,11 +31,13 @@ class SwapCreateListingFormModel
   final int giveQuantity;
   final String giveQuantityNormalized;
   final BigInt btcPrice;
+  final bool showSignPsbtModal;
 
   final RemoteData<OnChainPayment> onChainPayment;
 
   SwapCreateListingFormModel(
       {required super.feeEstimates,
+      required this.showSignPsbtModal,
       required super.feeOptionInput,
       required super.submissionStatus,
       super.error,
@@ -49,19 +51,19 @@ class SwapCreateListingFormModel
   @override
   List<FormzInput> get inputs => [feeOptionInput];
 
-  SwapCreateListingFormModel copyWith({
-    FeeEstimates? feeEstimates,
-    FeeOptionInput? feeOptionInput,
-    String? giveAsset,
-    String? giveAssetQuantityNormalized,
-    int? assetBalance,
-    FormzSubmissionStatus? submissionStatus,
-    AttachedAtomicSwapSell? attachedAtomicSwapSell,
-    String? error,
-    BigInt? btcPrice,
-    int? giveQuantity,
-    RemoteData<OnChainPayment>? onChainPayment,
-  }) {
+  SwapCreateListingFormModel copyWith(
+      {FeeEstimates? feeEstimates,
+      FeeOptionInput? feeOptionInput,
+      String? giveAsset,
+      String? giveAssetQuantityNormalized,
+      int? assetBalance,
+      FormzSubmissionStatus? submissionStatus,
+      AttachedAtomicSwapSell? attachedAtomicSwapSell,
+      String? error,
+      BigInt? btcPrice,
+      int? giveQuantity,
+      RemoteData<OnChainPayment>? onChainPayment,
+      Option<bool> showSignPsbtModal = const None()}) {
     return SwapCreateListingFormModel(
       address: address,
       giveQuantity: giveQuantity ?? this.giveQuantity,
@@ -74,6 +76,8 @@ class SwapCreateListingFormModel
       submissionStatus: submissionStatus ?? this.submissionStatus,
       error: error ?? this.error,
       onChainPayment: onChainPayment ?? this.onChainPayment,
+      showSignPsbtModal:
+          showSignPsbtModal.getOrElse(() => this.showSignPsbtModal),
     );
   }
 
@@ -120,6 +124,12 @@ class SubmitClicked extends SwapCreateListingFormEvent {
   List<Object?> get props => [];
 }
 
+class CloseSignPsbtModalClicked extends SwapCreateListingFormEvent {
+  const CloseSignPsbtModalClicked();
+  @override
+  List<Object?> get props => [];
+}
+
 class SwapCreateListingFormBloc
     extends Bloc<SwapCreateListingFormEvent, SwapCreateListingFormModel> {
   final HttpConfig httpConfig;
@@ -157,6 +167,7 @@ class SwapCreateListingFormBloc
         super(SwapCreateListingFormModel(
           feeEstimates: feeEstimates,
           address: address,
+          showSignPsbtModal: false,
           feeOptionInput: FeeOptionInput.pure(),
           giveAsset: giveAsset,
           giveQuantity: giveQuantity,
@@ -171,7 +182,7 @@ class SwapCreateListingFormBloc
           const Duration(milliseconds: 300),
         ));
     on<SubmitClicked>(_handleSubmitClicked);
-
+    on<CloseSignPsbtModalClicked>(_handleCloseSignPsbtModalClicked);
     add(const OnChainPaymentRequested());
   }
 
@@ -195,7 +206,7 @@ class SwapCreateListingFormBloc
     emit(state.copyWith(onChainPayment: const Loading<OnChainPayment>()));
 
     final task = TaskEither<String, OnChainPayment>.Do(($) async {
-      final utxoMap = await $(_utxoRepository.getUTXOMapForAddressT(
+      final utxoMap = await $(_utxoRepository.getUnattachedUTXOMapForAddressT(
         httpConfig: httpConfig,
         address: state.address,
       ));
@@ -224,14 +235,25 @@ class SwapCreateListingFormBloc
         ));
       },
     );
-
   }
 
   _handleSubmitClicked(
     SubmitClicked event,
     Emitter<SwapCreateListingFormModel> emit,
   ) async {
-    emit(state.copyWith(submissionStatus: FormzSubmissionStatus.inProgress));
+    emit(state.copyWith(
+        submissionStatus: FormzSubmissionStatus.inProgress,
+        showSignPsbtModal: Option.of(true)));
+  }
+
+  void _handleCloseSignPsbtModalClicked(
+    CloseSignPsbtModalClicked event,
+    Emitter<SwapCreateListingFormModel> emit,
+  ) {
+    emit(state.copyWith(
+      showSignPsbtModal: const Option.of(false),
+      submissionStatus: FormzSubmissionStatus.initial,
+    ));
   }
 }
 
