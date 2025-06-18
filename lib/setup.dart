@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:get_it/get_it.dart';
+import 'package:horizon/data/services/mempool_price_service_impl.dart';
 
 import 'package:horizon/data/services/secure_kv_service_impl.dart';
 import 'package:horizon/data/sources/network/horizon_explorer_client.dart';
@@ -663,7 +664,7 @@ void setup() {
       // importedAddressRepository: GetIt.I<ImportedAddressRepository>(),
       analyticsService: GetIt.I<AnalyticsService>()));
 
-  injector.registerSingleton<MempoolPriceService>(MempoolPriceService());
+  injector.registerSingleton<MempoolPriceService>(MempoolPriceServiceImpl());
 }
 
 class CustomDioException extends DioException {

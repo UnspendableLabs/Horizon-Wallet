@@ -73,6 +73,19 @@ class SendComposeFormProvider extends StatelessWidget {
                             const SubmitClicked(),
                           );
                     },
+                    onEntryFormChanged: (index, value) {
+                      context.read<SendComposeFormBloc>().add(
+                            UpdateEntry(index, value),
+                          );
+                    },
+                    onRemoveEntry: (index) {
+                      context.read<SendComposeFormBloc>().add(
+                            RemoveEntry(index),
+                          );
+                    },
+                    onAddEntry: () {
+                      context.read<SendComposeFormBloc>().add(AddEntry());
+                    },
                   ),
                   state,
                 );
@@ -89,10 +102,16 @@ class SendComposeFormProvider extends StatelessWidget {
 class SendComposeFormActions {
   final Function(FeeOption value) onFeeOptionSelected;
   final VoidCallback onSubmitClicked;
+  final Function(int index, SendEntryFormModel value) onEntryFormChanged;
+  final Function(int index) onRemoveEntry;
+  final Function() onAddEntry;
 
   const SendComposeFormActions({
     required this.onFeeOptionSelected,
     required this.onSubmitClicked,
+    required this.onEntryFormChanged,
+    required this.onRemoveEntry,
+    required this.onAddEntry,
   });
 }
 
@@ -150,9 +169,7 @@ class _SendComposeFormState extends State<SendComposeForm> {
                       icon: AppIcons.closeIcon(
                           context: context, width: 24, height: 24),
                       onPressed: () {
-                        context
-                            .read<SendComposeFormBloc>()
-                            .add(RemoveEntry(index));
+                        widget.actions.onRemoveEntry(index);
                       },
                       child: TextButtonContent(
                           value: 'Close this entry',
@@ -160,20 +177,16 @@ class _SendComposeFormState extends State<SendComposeForm> {
                     ),
                     commonHeightSizedBox,
                   ],
-                  BlocProvider(
-                    create: (context) => SendEntryFormBloc(
-                      initialBalance: entry.value.balanceSelectorInput.value,
-                      initialQuantity: entry.value.quantityInput.value,
-                      initialDestination: entry.value.destinationInput.value,
-                      initialMemo: entry.value.memoInput.value,
-                    ),
-                    child: SendEntryForm(
+                  SendEntryFormProvider(
+                    balances: widget.state.balances,
+                    initialBalance: entry.value.balanceSelectorInput.value,
+                    onFormChanged: (form) {
+                      widget.actions.onEntryFormChanged(index, form);
+                    },
+                    child: (actions, state) => SendEntryForm(
+                      state: state,
+                      actions: actions,
                       balances: widget.state.balances,
-                      onFormChanged: (form) {
-                        context.read<SendComposeFormBloc>().add(
-                              UpdateEntry(index, form),
-                            );
-                      },
                     ),
                   ),
                   if (index != widget.state.sendEntries.length - 1)
@@ -208,9 +221,7 @@ class _SendComposeFormState extends State<SendComposeForm> {
                         ],
                       ),
                     )),
-                    onPressed: () {
-                      context.read<SendComposeFormBloc>().add(AddEntry());
-                    }),
+                    onPressed: widget.actions.onAddEntry),
               ),
             ),
             const SizedBox(height: 24),

@@ -1,35 +1,37 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 
 class ExpirySelectorOption {
   final String label;
-  final int? expiryPeriod;
+  final Duration duration;
   final bool isCustom;
 
   const ExpirySelectorOption({
     required this.label,
-    required this.expiryPeriod,
+    required this.duration,
     this.isCustom = false,
   });
 }
 
 class ExpirySelector extends StatefulWidget {
   static const List<ExpirySelectorOption> defaultExpirySelectorOptions = [
-    ExpirySelectorOption(label: "Never", expiryPeriod: null, isCustom: false),
+    ExpirySelectorOption(
+        label: "Never", duration: Duration.zero, isCustom: false),
     ExpirySelectorOption(
       label: "1 month",
-      expiryPeriod: 2592000,
+      duration: Duration(days: 30),
       isCustom: false,
     ),
     ExpirySelectorOption(
       label: "1 year",
-      expiryPeriod: 31536000,
+      duration: Duration(days: 365),
       isCustom: false,
     ),
     ExpirySelectorOption(
       label: "Custom",
-      expiryPeriod: null,
+      duration: Duration.zero,
       isCustom: true,
     ),
   ];
@@ -50,7 +52,7 @@ class ExpirySelector extends StatefulWidget {
 class _ExpirySelectorState extends State<ExpirySelector> {
   ExpirySelectorOption? _selectedOption = const ExpirySelectorOption(
     label: "Never",
-    expiryPeriod: null,
+    duration: Duration.zero,
     isCustom: false,
   );
 
@@ -73,17 +75,17 @@ class _ExpirySelectorState extends State<ExpirySelector> {
   }
 
   void _handleOptionPressed(ExpirySelectorOption option) async {
-    late DateTime expiryDate;
+    DateTime? expiryDate;
 
     if (option.isCustom) {
       await _launchDatePicker();
       return;
     }
 
-    if (option.expiryPeriod != null) {
+    if (option.duration != Duration.zero) {
       expiryDate = DateTime(
               DateTime.now().year, DateTime.now().month, DateTime.now().day)
-          .add(Duration(seconds: option.expiryPeriod!));
+          .add(option.duration);
     }
 
     setState(() {
@@ -91,6 +93,14 @@ class _ExpirySelectorState extends State<ExpirySelector> {
     });
 
     widget.onChange(expiryDate);
+  }
+
+  String _getLabelText(ExpirySelectorOption option) {
+    if (option.isCustom && _selectedOption == option) {
+      final date = DateTime.now().add(option.duration);
+      return DateFormat('dd-MM-yyyy').format(date);
+    }
+    return option.label;
   }
 
   @override
@@ -134,7 +144,7 @@ class _ExpirySelectorState extends State<ExpirySelector> {
                     ),
                   ),
                   child: Text(
-                    option.label,
+                    _getLabelText(option),
                     style: theme.textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.w400,
                       fontSize: 9,

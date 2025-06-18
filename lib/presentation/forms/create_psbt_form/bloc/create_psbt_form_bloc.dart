@@ -86,7 +86,7 @@ class CreatePsbtFormModel with FormzMixin {
         showSignPsbtModal:
             showSignPsbtModal.getOrElse(() => this.showSignPsbtModal),
         btcPriceInput: btcPriceInput ?? this.btcPriceInput,
-        expiryDate: expiryDate ?? this.expiryDate,
+        expiryDate: expiryDate,
         submissionStatus: submissionStatus ?? this.submissionStatus,
         error: error ?? this.error,
         signedPsbt: signedPsbt ?? this.signedPsbt,
@@ -195,6 +195,7 @@ class CreatePsbtFormBloc
   }
 
   void _onExpiryDateSelected(ExpiryDateSelected event, Emitter<CreatePsbtFormModel> emit) {
+    print("event.date: ${event.date}");
     emit(state.copyWith(expiryDate: event.date));
   }
 
@@ -238,7 +239,6 @@ class CreatePsbtFormBloc
 
       final newSalePsbtHex = await $(TaskEither.fromEither(
           _transactionService.makeSalePsbtT(
-              // expiryDate: state.expiryDate,  // TODO: add expiry date
               price: priceInSats,
               source: address.address,
               utxoTxid: attachTxID,

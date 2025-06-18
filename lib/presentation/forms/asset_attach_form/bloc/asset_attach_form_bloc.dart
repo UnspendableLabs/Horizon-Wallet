@@ -20,6 +20,8 @@ export "package:horizon/presentation/forms/base/transaction_form_model_base.dart
 
 enum AttachQuantityInputError { required, exceedsMax, isZero }
 
+final SUCCESS_TRANSITION_DELAY = const Duration(milliseconds: 400);
+
 class AttachQuantityInput extends FormzInput<String, AttachQuantityInputError> {
   final BigInt maxQuantity;
   final bool divisible;
@@ -296,7 +298,7 @@ class AssetAttachFormBloc
       emit(state.copyWith(
           submissionStatus: FormzSubmissionStatus.success));
 
-      await Future.delayed(const Duration(milliseconds: 400));
+      await Future.delayed(SUCCESS_TRANSITION_DELAY);
 
       emit(state.copyWith(
           submissionStatus: FormzSubmissionStatus.success,

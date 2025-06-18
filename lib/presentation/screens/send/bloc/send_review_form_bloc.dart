@@ -4,9 +4,11 @@ import 'package:horizon/presentation/screens/send/view/send_view.dart';
 
 class SendReviewFormBloc
     extends Bloc<SendReviewFormEvent, SendReviewFormModel> {
-  SendReviewFormBloc()
+  final SendFormState initialSendFormState;
+  SendReviewFormBloc({required this.initialSendFormState})
       : super(SendReviewFormModel(
-            submissionStatus: FormzSubmissionStatus.initial)) {
+            submissionStatus: FormzSubmissionStatus.initial,
+            sendFormState: initialSendFormState)) {
     on<OnSignAndSubmitEvent>(_handleSignAndSubmit);
   }
 
@@ -22,19 +24,20 @@ class SendReviewFormBloc
 class SendReviewFormEvent {}
 
 class OnSignAndSubmitEvent extends SendReviewFormEvent {
-  final SendFormState sendFormState;
-  OnSignAndSubmitEvent({required this.sendFormState});
+  OnSignAndSubmitEvent();
 }
 
 class SendReviewFormModel with FormzMixin {
+  final SendFormState sendFormState;
   final FormzSubmissionStatus submissionStatus;
-  SendReviewFormModel({required this.submissionStatus});
+  SendReviewFormModel({required this.submissionStatus, required this.sendFormState});
 
   @override
   List<FormzInput> get inputs => [];
 
-  SendReviewFormModel copyWith({FormzSubmissionStatus? submissionStatus}) {
+  SendReviewFormModel copyWith({FormzSubmissionStatus? submissionStatus, SendFormState? sendFormState}) {
     return SendReviewFormModel(
-        submissionStatus: submissionStatus ?? this.submissionStatus);
+        submissionStatus: submissionStatus ?? this.submissionStatus,
+        sendFormState: sendFormState ?? this.sendFormState);
   }
 }

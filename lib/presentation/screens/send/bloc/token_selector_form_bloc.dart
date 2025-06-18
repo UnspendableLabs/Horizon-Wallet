@@ -75,9 +75,6 @@ class TokenSelectorFormModel with FormzMixin {
     );
   }
 
-  bool get disabled {
-    return tokenSelectorInput.value == null;
-  }
 }
 
 class TokenSelectorFormEvent extends Equatable {

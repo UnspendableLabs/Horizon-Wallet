@@ -5560,8 +5560,8 @@ class _V2Api implements V2Api {
     String address,
     String destination,
     String asset,
-    String? memo,
     int quantity, [
+    String? memo,
     bool? allowUnconfirmedInputs,
     num? satPerVbyte,
     String? inputsSet,
@@ -5573,8 +5573,8 @@ class _V2Api implements V2Api {
     final queryParameters = <String, dynamic>{
       r'destination': destination,
       r'asset': asset,
-      r'memo': memo,
       r'quantity': quantity,
+      r'memo': memo,
       r'allow_unconfirmed_inputs': allowUnconfirmedInputs,
       r'sat_per_vbyte': satPerVbyte,
       r'inputs_set': inputsSet,

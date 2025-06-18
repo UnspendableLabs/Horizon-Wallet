@@ -10,7 +10,6 @@ import 'package:horizon/domain/entities/compose_response.dart';
 import 'package:horizon/domain/entities/compose_send.dart';
 import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/domain/entities/fee_option.dart';
-import 'package:horizon/domain/entities/fee_option.dart' as fee_option;
 import 'package:horizon/domain/entities/http_config.dart';
 import 'package:horizon/domain/entities/multi_address_balance.dart';
 import 'package:horizon/domain/repositories/compose_repository.dart';
@@ -81,10 +80,10 @@ class SendComposeFormModel extends TransactionFormModelBase {
   final List<SendEntryFormModel> sendEntries;
   final List<MultiAddressBalance> balances;
   final String sourceAddress;
-  
+
   @override
   final ComposeResponse? composeResponse;
-    
+
   SendComposeFormModel({
     required super.feeEstimates,
     required super.feeOptionInput,
@@ -97,13 +96,14 @@ class SendComposeFormModel extends TransactionFormModelBase {
   });
 
   @override
-  List<FormzInput<dynamic, dynamic>> get inputs =>
+  List<FormzInput> get inputs =>
       [...sendEntries.expand((entry) => entry.inputs), feeOptionInput];
 
-  bool get hasValidEntries => sendEntries.every((e) => e.isValid);
+  bool get allEntriesAreValid => sendEntries.every((e) => e.isValid);
 
   SendComposeFormModel copyWith({
     List<SendEntryFormModel>? sendEntries,
+    List<MultiAddressBalance>? balances,
     FeeEstimates? feeEstimates,
     FeeOptionInput? feeOptionInput,
     FormzSubmissionStatus? submissionStatus,
@@ -113,37 +113,20 @@ class SendComposeFormModel extends TransactionFormModelBase {
   }) {
     return SendComposeFormModel(
       sendEntries: sendEntries ?? this.sendEntries,
-      balances: balances,
+      balances: balances ?? this.balances,
       feeEstimates: feeEstimates ?? this.feeEstimates,
       feeOptionInput: feeOptionInput ?? this.feeOptionInput,
       submissionStatus: submissionStatus ?? this.submissionStatus,
-      error: error,
+      error: error ?? this.error,
       sourceAddress: sourceAddress ?? this.sourceAddress,
       composeResponse: composeResponse ?? this.composeResponse,
     );
   }
 
-  bool get isValid => hasValidEntries && feeOptionInput.isValid;
-
   bool get isMpma => sendEntries.length > 1;
 
   Either<String, ComposeParams> get composeParams {
-    if (sendEntries.length == 1) {
-      final entry = sendEntries.first;
-      if (!entry.isValid) {
-        return left("Invalid entry");
-      }
-      final isDivisible = entry.balanceSelectorInput.value!.assetInfo.divisible;
-      final quantityNormalized = Decimal.parse(entry.quantityInput.value);
-      final quantity = isDivisible ? quantityNormalized * Decimal.fromInt(100000000) : quantityNormalized;
-      return right(ComposeSendParams(
-        asset: entry.balanceSelectorInput.value!.asset,
-        quantity: quantity.toBigInt().toInt(),
-        destination: entry.destinationInput.value,
-        source: sourceAddress,
-        memo: entry.memoInput.value,
-      ));
-    } else {
+    if (isMpma) {
       final assets = [];
       final quantities = [];
       final destinations = [];
@@ -151,9 +134,12 @@ class SendComposeFormModel extends TransactionFormModelBase {
         if (!entry.isValid) {
           return left("Invalid entry");
         }
-        final isDivisible = entry.balanceSelectorInput.value!.assetInfo.divisible;
+        final isDivisible =
+            entry.balanceSelectorInput.value!.assetInfo.divisible;
         final quantityNormalized = Decimal.parse(entry.quantityInput.value);
-        final quantity = isDivisible ? quantityNormalized * Decimal.fromInt(100000000) : quantityNormalized;
+        final quantity = isDivisible
+            ? quantityNormalized * Decimal.fromInt(100000000)
+            : quantityNormalized;
         assets.add(entry.balanceSelectorInput.value!.asset);
         quantities.add(quantity.toBigInt().toInt());
         destinations.add(entry.destinationInput.value);
@@ -165,6 +151,23 @@ class SendComposeFormModel extends TransactionFormModelBase {
         memos: sendEntries.map((e) => e.memoInput.value).toList(),
         source: sourceAddress,
       ));
+    } else {
+      final entry = sendEntries.first;
+      if (!entry.isValid) {
+        return left("Invalid entry");
+      }
+      final isDivisible = entry.balanceSelectorInput.value!.assetInfo.divisible;
+      final quantityNormalized = Decimal.parse(entry.quantityInput.value);
+      final quantity = isDivisible
+          ? quantityNormalized * Decimal.fromInt(100000000)
+          : quantityNormalized;
+      return right(ComposeSendParams(
+        asset: entry.balanceSelectorInput.value!.asset,
+        quantity: quantity.toBigInt().toInt(),
+        destination: entry.destinationInput.value,
+        source: sourceAddress,
+        memo: entry.memoInput.value,
+      ));
     }
   }
 }
@@ -174,13 +177,13 @@ class SendComposeFormBloc
   final ComposeTransactionUseCase composeTransactionUseCase;
   final ComposeRepository composeRepository;
   final HttpConfig httpConfig;
-  SendComposeFormBloc({
-    required List<SendEntryFormModel> initialEntries,
-    required List<MultiAddressBalance> initialBalances,
-    required FeeEstimates feeEstimates,
-    required String sourceAddress,
-    required this.httpConfig
-  }) : composeTransactionUseCase = GetIt.I<ComposeTransactionUseCase>(),
+  SendComposeFormBloc(
+      {required List<SendEntryFormModel> initialEntries,
+      required List<MultiAddressBalance> initialBalances,
+      required FeeEstimates feeEstimates,
+      required String sourceAddress,
+      required this.httpConfig})
+      : composeTransactionUseCase = GetIt.I<ComposeTransactionUseCase>(),
         composeRepository = GetIt.I<ComposeRepository>(),
         super(SendComposeFormModel(
           sendEntries: initialEntries,
@@ -232,58 +235,45 @@ class SendComposeFormBloc
 
   void _onSubmitClicked(
       SubmitClicked event, Emitter<SendComposeFormModel> emit) async {
-    if (!state.hasValidEntries) {
-      emit(state.copyWith(error: "Invalid entries"));
-      return;
-    }
-
-    if (state.composeParams.isLeft()) {
-      emit(state.copyWith(error: "Invalid entries"));
-      return;
-    }
-
-
     emit(state.copyWith(submissionStatus: FormzSubmissionStatus.inProgress));
 
-    final composeParams = state.composeParams.getRight().getOrElse(() => throw Exception("Invalid compose params"));
+    final task = TaskEither<String, ComposeResponse>.Do(($) async {
+      final composeParams = await $(TaskEither.fromEither(state.composeParams));
 
-    try {
-      final feeRate = switch (state.feeOptionInput.value) {
-        fee_option.Slow() => state.feeEstimates.slow,
-        fee_option.Medium() => state.feeEstimates.medium,
-        fee_option.Fast() => state.feeEstimates.fast,
-        fee_option.Custom(fee: var value) => value
+      final composeT = switch (composeParams) {
+        ComposeMpmaSendParams() => composeTransactionUseCase.callT(
+            feeRate: state
+                .getSatsPerVByte, // this is already defined on TransactionFormModelBase
+            source: state.sourceAddress,
+            params: composeParams,
+            composeFn: composeRepository.composeMpmaSend,
+            httpConfig: httpConfig,
+          ),
+        ComposeSendParams() => composeTransactionUseCase.callT(
+            feeRate: state
+                .getSatsPerVByte, // this is already defined on TransactionFormModelBase
+            source: state.sourceAddress,
+            params: composeParams,
+            composeFn: composeRepository.composeSendVerbose,
+            httpConfig: httpConfig,
+          ),
+        _ => throw Exception("invariant"),
       };
-      
-      late final ComposeResponse composeResponse;
 
-      if(composeParams is ComposeSendParams){
-        composeResponse = await composeTransactionUseCase.call<ComposeSendParams, ComposeSendResponse>(
-          httpConfig: httpConfig,
-          feeRate: feeRate,
-          source: state.sourceAddress,
-          params: composeParams,
-          composeFn: composeRepository.composeSendVerbose,
-        );
-      }else{
-        composeResponse = await composeTransactionUseCase.call<ComposeMpmaSendParams, ComposeMpmaSendResponse>(
-          httpConfig: httpConfig,
-          feeRate: feeRate,
-          source: state.sourceAddress,
-          params: composeParams as ComposeMpmaSendParams,
-          composeFn: composeRepository.composeMpmaSend,
-        );
-      }
+      return await $(composeT);
+    });
 
-      emit(state.copyWith(
-        submissionStatus: FormzSubmissionStatus.success,
+    final result = await task.run();
+
+    result.fold(
+      (error) => emit(state.copyWith(
+        error: error,
+        submissionStatus: FormzSubmissionStatus.failure,
+      )),
+      (composeResponse) => emit(state.copyWith(
         composeResponse: composeResponse,
-      ));
-
-    }catch(e){
-      print(e);
-      emit(state.copyWith(error: e.toString(), submissionStatus: FormzSubmissionStatus.failure));
-    }
-
+        submissionStatus: FormzSubmissionStatus.success,
+      )),
+    );
   }
 }

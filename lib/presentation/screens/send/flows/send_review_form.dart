@@ -13,11 +13,57 @@ import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:horizon/presentation/session/bloc/session_state.dart';
 import 'package:horizon/utils/app_icons.dart';
 
+
+  
+  class SendFormReviewActions {
+    final Function onSubmit;
+    const SendFormReviewActions({required this.onSubmit});
+  }
+
+  class SendReviewFormProvider extends StatelessWidget {
+    final SendFormState sendFormState;
+    final Widget Function(SendFormReviewActions actions, SendReviewFormModel state) child;
+    
+    const SendReviewFormProvider({super.key, required this.sendFormState, required this.child});
+
+    @override
+    Widget build(BuildContext context) {
+      return BlocProvider(
+        create: (context) => SendReviewFormBloc(initialSendFormState: sendFormState),
+        child: BlocBuilder<SendReviewFormBloc, SendReviewFormModel>(
+          builder: (context, state) => child(
+            SendFormReviewActions(onSubmit: (){
+              context.read<SendReviewFormBloc>().add(OnSignAndSubmitEvent());
+            },),
+            state
+          ),
+        ),
+      );
+    }
+  }
+  
+  class SendReviewFormSuccessHandler extends StatelessWidget {
+    final Function() onSuccess;
+    const SendReviewFormSuccessHandler({super.key, required this.onSuccess});
+
+    @override
+    Widget build(BuildContext context) {
+      return BlocListener<SendReviewFormBloc, SendReviewFormModel>(
+        listener: (context, state) {
+          if (state.submissionStatus.isSuccess) {
+            onSuccess(); 
+          }
+        },
+        child: const SizedBox.shrink(),
+      );
+    }
+  }
+
 class SendReviewForm extends StatefulWidget {
-  final SendFormState sendFormState;
-  final Function() onSignSuccess;
+  final SendReviewFormModel state;
+  final SendFormReviewActions actions;
   const SendReviewForm(
-      {super.key, required this.sendFormState, required this.onSignSuccess});
+      {super.key, required this.state, required this.actions});
 
   @override
   State<SendReviewForm> createState() => _SendReviewFormState();
@@ -103,7 +149,7 @@ class _SendReviewFormState extends State<SendReviewForm> {
               )),
           commonHeightSizedBox,
           _regularProperty(context, "Source Address",
-              widget.sendFormState.selectedBalanceEntry?.address ?? ""),
+              widget.state.sendFormState.selectedBalanceEntry?.address ?? ""),
           commonHeightSizedBox,
           _regularProperty(
               context, "Recipient Address", send.destinationInput.value),
@@ -135,16 +181,9 @@ class _SendReviewFormState extends State<SendReviewForm> {
   @override
   Widget build(BuildContext context) {
     final session = context.watch<SessionStateCubit>().state.successOrThrow();
-    return BlocConsumer<SendReviewFormBloc, SendReviewFormModel>(
-      listener: (context, state) {
-        if (state.submissionStatus == FormzSubmissionStatus.success) {
-          widget.onSignSuccess();
-        }
-      },
-      builder: (BuildContext context, SendReviewFormModel state) {
-        return Column(
+    return  Column(
           children: [
-            ...widget.sendFormState.sendEntries!
+            ...widget.state.sendFormState.sendEntries!
                 .map((e) => _renderSendEntry(session.httpConfig, e)),
             commonHeightSizedBox,
             const Divider(
@@ -158,24 +197,22 @@ class _SendReviewFormState extends State<SendReviewForm> {
                 child: Column(
                   children: [
                     _buildLabelValueRow("Fee",
-                        "${widget.sendFormState.composeResponse?.btcFee ?? 0} sats"),
+                        "${widget.state.sendFormState.composeResponse?.btcFee ?? 0} sats"),
                     _buildLabelValueRow("Virtual Size",
-                        "${widget.sendFormState.composeResponse?.signedTxEstimatedSize.virtualSize} vbytes"),
+                        "${widget.state.sendFormState.composeResponse?.signedTxEstimatedSize.virtualSize} vbytes"),
                     _buildLabelValueRow("Adjusted Virtual Size",
-                        "${widget.sendFormState.composeResponse?.signedTxEstimatedSize.adjustedVirtualSize} vbytes"),
+                        "${widget.state.sendFormState.composeResponse?.signedTxEstimatedSize.adjustedVirtualSize} vbytes"),
                   ],
                 )),
             commonHeightSizedBox,
             HorizonButton(
                 child: TextButtonContent(value: "Sign and Submit"),
+                isLoading: widget.state.submissionStatus.isInProgress,
                 onPressed: () {
-                  context
-                      .read<SendReviewFormBloc>()
-                      .add(OnSignAndSubmitEvent(sendFormState: widget.sendFormState));
-                })
+                  widget.actions.onSubmit();
+                }),
+            const SizedBox(height: 24),
           ],
-        );
-      },
     );
   }
 }
