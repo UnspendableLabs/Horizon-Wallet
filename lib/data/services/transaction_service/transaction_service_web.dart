@@ -51,7 +51,8 @@ class TransactionServiceWeb implements TransactionService {
 
     final input = bitcoinjs.TxInput.make(
         sighashType: SIGHASH_SINGLE | SIGHASH_ANYONECANPAY,
-        hash: Buffer.from(Uint8List.fromList(HEX.decode(utxoTxid)).toJS),
+        hash: Buffer.from(
+            Uint8List.fromList(HEX.decode(utxoTxid).reversed.toList()).toJS),
         index: utxoVoutIndex,
         witnessUtxo: bitcoinjs.WitnessUTXO(
           script: Buffer.from(
@@ -419,7 +420,8 @@ class TransactionServiceWeb implements TransactionService {
       bitcoinjs.TxInput input = transaction.ins.toDart[i];
       var txHash = HEX.encode(input.hash.toDart.reversed.toList());
 
-      var prev = utxos.firstWhereOrNull((utxo) => utxo.txid == txHash); if (prev != null) {
+      var prev = utxos.firstWhereOrNull((utxo) => utxo.txid == txHash);
+      if (prev != null) {
         if (addressIsSegwit(prev.address)) {
           input.witnessUtxo = bitcoinjs.WitnessUTXO(
               script: Buffer.from(sourceScript.output), value: prev.value);

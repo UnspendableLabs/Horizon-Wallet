@@ -206,6 +206,8 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
 
       Either<Failure, List<AugmentedInput>> inputs =
           await TaskEither.traverseListWithIndex(decoded.vin, (vin, index) {
+        print("vin: ${vin.txid}");
+
         return TaskEither<Failure, AugmentedInput>.Do(($) async {
           final getTransactionTask = _bitcoinRepository
               .getTransactionT(
@@ -270,6 +272,9 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
           .toList();
 
       Map<String, Decimal> map = {};
+
+      print("debigts: $debits");
+      print("credits: $credits");
 
       for (final debit in debits) {
         map.putIfAbsent(debit.asset, () => Decimal.zero);
