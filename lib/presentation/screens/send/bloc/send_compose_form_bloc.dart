@@ -134,14 +134,8 @@ class SendComposeFormModel extends TransactionFormModelBase {
         if (!entry.isValid) {
           return left("Invalid entry");
         }
-        final isDivisible =
-            entry.balanceSelectorInput.value!.assetInfo.divisible;
-        final quantityNormalized = Decimal.parse(entry.quantityInput.value);
-        final quantity = isDivisible
-            ? quantityNormalized * Decimal.fromInt(100000000)
-            : quantityNormalized;
         assets.add(entry.balanceSelectorInput.value!.asset);
-        quantities.add(quantity.toBigInt().toInt());
+        quantities.add(entry.quantityInput.valueAsBigInt.getOrElse(() => throw Exception("Invalid quantity")));
         destinations.add(entry.destinationInput.value);
       }
       return right(ComposeMpmaSendParams(
@@ -220,7 +214,8 @@ class SendComposeFormBloc
     final newEntries = List<SendEntryFormModel>.from(state.sendEntries)
       ..add(SendEntryFormModel(
         destinationInput: const DestinationInput.pure(),
-        quantityInput: const QuantityInput.pure(),
+        quantityInput: QuantityInput.pure(
+            maxQuantity: BigInt.zero, divisible: false),
         balanceSelectorInput: const BalanceSelectorInput.pure(),
         memoInput: const MemoInput.pure(),
       ));

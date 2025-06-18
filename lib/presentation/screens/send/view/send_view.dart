@@ -7,7 +7,6 @@ import 'package:go_router/go_router.dart';
 import 'package:horizon/domain/entities/compose_response.dart';
 import 'package:horizon/domain/entities/multi_address_balance.dart';
 import 'package:horizon/domain/entities/multi_address_balance_entry.dart';
-import 'package:horizon/domain/entities/remote_data.dart';
 import 'package:horizon/extensions.dart';
 import 'package:horizon/presentation/common/transactions/transaction_successful.dart';
 import 'package:horizon/presentation/forms/asset_balance_form/asset_balance_form_view.dart';
@@ -17,7 +16,6 @@ import 'package:horizon/presentation/screens/send/flows/send_compose_form.dart';
 import 'package:horizon/presentation/screens/send/flows/send_form_balance_handler.dart';
 import 'package:horizon/presentation/screens/send/flows/send_form_token_selector.dart';
 import 'package:horizon/presentation/screens/send/flows/send_review_form.dart';
-import 'package:horizon/presentation/screens/send/loader/loader_bloc.dart';
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:horizon/presentation/session/bloc/session_state.dart';
 import 'package:horizon/utils/app_icons.dart';
@@ -126,19 +124,15 @@ class _SendViewState extends State<SendView> {
               body: SendFormLoader(
                   httpConfig: session.httpConfig,
                   addresses: session.addresses,
-                  child: (state) {
-                    return switch (state) {
-                      Initial() => const SizedBox.shrink(),
-                      Refreshing() => const SizedBox.shrink(),
-                      Loading() =>
-                        const Center(child: CircularProgressIndicator()),
-                      Success(value: var data) => TokenSelectorFormProvider(
-                          balances: data.balances,
+                  child: (balances) {
+                    return Builder(builder: (context) {
+                      return TokenSelectorFormProvider(
+                          balances: balances,
                           child: (actions, state) => Column(
                             children: [
                               TokenSelectorFormSuccessHandler(
                                   onTokenSelected: (option) {
-                                _cachedBalances = data.balances;
+                                _cachedBalances = balances;
                                 context.flow<SendFlowModel>().update((model) =>
                                     model.copyWith(
                                         sendFormState:
@@ -153,10 +147,8 @@ class _SendViewState extends State<SendView> {
                               )
                             ],
                           ),
-                        ),
-                      Failure<SendFormLoaderData>() =>
-                        throw UnimplementedError(),
-                    };
+                        );
+                    });
                   }),
             );
           })),
@@ -208,7 +200,13 @@ class _SendViewState extends State<SendView> {
                             destinationInput: const DestinationInput.pure(),
                             balanceSelectorInput: BalanceSelectorInput.dirty(
                                 value: sendFormState.selectedBalance),
-                            quantityInput: const QuantityInput.pure(),
+                            quantityInput: QuantityInput.pure(
+                              maxQuantity: BigInt.from(
+                                  sendFormState.selectedBalance.total),
+                              divisible:
+                                  sendFormState.selectedBalance.assetInfo
+                                      .divisible,
+                            ),
                             memoInput: const MemoInput.pure())
                       ],
                       balances: _cachedBalances!,

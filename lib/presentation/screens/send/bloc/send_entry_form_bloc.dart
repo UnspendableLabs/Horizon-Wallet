@@ -1,5 +1,7 @@
+import 'package:decimal/decimal.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:formz/formz.dart';
+import 'package:fpdart/fpdart.dart';
 import 'package:horizon/domain/entities/multi_address_balance.dart';
 
 abstract class SendEntryFormEvent {
@@ -27,8 +29,7 @@ class MemoInputChanged extends SendEntryFormEvent {
 }
 
 class MaxAmountSelected extends SendEntryFormEvent {
-  final MultiAddressBalance value;
-  const MaxAmountSelected(this.value);
+  const MaxAmountSelected();
 }
 
 class SendEntryFormBloc extends Bloc<SendEntryFormEvent, SendEntryFormModel> {
@@ -38,19 +39,23 @@ class SendEntryFormBloc extends Bloc<SendEntryFormEvent, SendEntryFormModel> {
       required String initialDestination,
       required String initialMemo})
       : super(SendEntryFormModel(
-          balanceSelectorInput:
-              initialBalance != null
-                  ? BalanceSelectorInput.dirty(value: initialBalance)
-                  : const BalanceSelectorInput.pure(),
+          balanceSelectorInput: initialBalance != null
+              ? BalanceSelectorInput.dirty(value: initialBalance)
+              : const BalanceSelectorInput.pure(),
           destinationInput: DestinationInput.dirty(value: initialDestination),
-          quantityInput: QuantityInput.dirty(value: initialQuantity),
+          quantityInput: QuantityInput.dirty(
+              value: initialQuantity,
+              maxQuantity: BigInt.from(initialBalance?.total ?? 0),
+              divisible: initialBalance?.assetInfo.divisible ?? false),
           memoInput: MemoInput.dirty(value: initialMemo),
         )) {
     on<AddressBalanceInputChanged>(_onAddressBalanceInputChanged);
     on<DestinationInputChanged>(_onDestinationInputChanged);
     on<QuantityInputChanged>(_onQuantityInputChanged);
     on<MemoInputChanged>(_onMemoInputChanged);
+    on<MaxAmountSelected>(_onMaxAmountSelected);
   }
+
 
   _onAddressBalanceInputChanged(
       AddressBalanceInputChanged event, Emitter<SendEntryFormModel> emit) {
@@ -66,8 +71,20 @@ class SendEntryFormBloc extends Bloc<SendEntryFormEvent, SendEntryFormModel> {
 
   _onQuantityInputChanged(
       QuantityInputChanged event, Emitter<SendEntryFormModel> emit) {
-    emit(
-        state.copyWith(quantityInput: QuantityInput.dirty(value: event.value)));
+    emit(state.copyWith(
+        quantityInput: QuantityInput.dirty(
+            value: event.value,
+            maxQuantity: BigInt.from(state.assetBalance),
+            divisible: state.assetIsDivisible)));
+  }
+
+  _onMaxAmountSelected(
+      MaxAmountSelected event, Emitter<SendEntryFormModel> emit) {
+    emit(state.copyWith(
+        quantityInput: QuantityInput.dirty(
+            value: state.assetQuantityNormalized,
+            maxQuantity: BigInt.from(state.assetBalance),
+            divisible: state.assetIsDivisible)));
   }
 
   _onMemoInputChanged(
@@ -80,7 +97,8 @@ enum SendEntryFormInputError {
   destinationRequired,
   quantityRequired,
   balanceRequired,
-  invalidQuantity,
+  quantityExceedsMax,
+  quantityIsZero,
 }
 
 class DestinationInput extends FormzInput<String, SendEntryFormInputError> {
@@ -98,20 +116,45 @@ class DestinationInput extends FormzInput<String, SendEntryFormInputError> {
 }
 
 class QuantityInput extends FormzInput<String, SendEntryFormInputError> {
-  const QuantityInput.pure() : super.pure("");
-  const QuantityInput.dirty({required String value}) : super.dirty(value);
+  final BigInt maxQuantity;
+  final bool divisible;
+
+  const QuantityInput.dirty(
+      {required String value,
+      required this.maxQuantity,
+      required this.divisible})
+      : super.dirty(value);
+
+  const QuantityInput.pure(
+      {required this.maxQuantity, required this.divisible})
+      : super.pure("");
 
   @override
-  SendEntryFormInputError? validator(String? value) {
-    if (value == null || value.isEmpty) {
-      return SendEntryFormInputError.quantityRequired;
-    }
+  SendEntryFormInputError? validator(String value) {
+    final val = valueAsBigInt.fold(
+        () => SendEntryFormInputError.quantityRequired,
+        (v) => v > maxQuantity
+            ? SendEntryFormInputError.quantityExceedsMax
+            : v == BigInt.zero
+                ? SendEntryFormInputError.quantityIsZero
+                : null);
 
-    if (double.tryParse(value) == null) {
-      return SendEntryFormInputError.invalidQuantity;
-    }
+    return val;
+  }
 
-    return null;
+  Option<BigInt> get valueAsBigInt {
+    return Option.tryCatch(() => Decimal.parse(value))
+        .map(
+          (raw) => divisible ? raw * Decimal.fromInt(100000000) : raw,
+        )
+        .map(
+          (decimal) => decimal.toBigInt(),
+        );
+  }
+
+  Option<int> get quantity {
+    return valueAsBigInt.flatMap(
+        (bigInt) => bigInt.isValidInt ? Option.of(bigInt.toInt()) : none());
   }
 }
 
@@ -176,6 +219,8 @@ class SendEntryFormModel with FormzMixin {
 
   get assetQuantityNormalized =>
       balanceSelectorInput.value?.totalNormalized ?? "";
+
+  int get assetBalance => balanceSelectorInput.value?.total ?? 0;
 
   @override
   String toString() {

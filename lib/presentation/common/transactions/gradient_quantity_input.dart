@@ -414,7 +414,7 @@ class _GradientQuantityInputV2State extends State<GradientQuantityInputV2> {
                         children: [
                           Positioned.fill(
                             child: TextField(
-                              enabled: true,
+                              enabled: widget.enabled,
                               controller: widget.controller,
                               focusNode: _focusNode,
                               textAlign: TextAlign.center,

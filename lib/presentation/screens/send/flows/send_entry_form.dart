@@ -69,8 +69,7 @@ class SendEntryFormProvider extends StatelessWidget {
                 context.read<SendEntryFormBloc>().add(MemoInputChanged(value));
               },
               onMaxAmountSelected: () {
-                context.read<SendEntryFormBloc>().add(QuantityInputChanged(
-                    state.balanceSelectorInput.value?.totalNormalized ?? "0"));
+                context.read<SendEntryFormBloc>().add(const MaxAmountSelected());
               },
               onBalanceSelected: (value) {
                 context
@@ -233,6 +232,7 @@ class _SendEntryFormState extends State<SendEntryForm> {
           assetQuantityNormalized: widget.state.assetQuantityNormalized,
           controller: _quantityController,
           showMaxButton: false,
+          enabled: widget.state.balanceSelectorInput.isValid,
           onChanged: (value) {
             widget.actions.onQuantityChanged(value);
           },
@@ -242,7 +242,9 @@ class _SendEntryFormState extends State<SendEntryForm> {
             }
             return switch (widget.state.quantityInput.error) {
               SendEntryFormInputError.quantityRequired => 'Value is required',
-              SendEntryFormInputError.invalidQuantity => 'Invalid value',
+              SendEntryFormInputError.quantityExceedsMax =>
+                'Value exceeds max',
+              SendEntryFormInputError.quantityIsZero => 'Value is zero',
               _ => null
             };
           },
