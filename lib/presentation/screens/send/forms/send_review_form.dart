@@ -6,9 +6,9 @@ import 'package:horizon/presentation/common/collapsable_view.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/common/theme_extension.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
+import 'package:horizon/presentation/screens/send/bloc/send_compose_form_bloc.dart';
 import 'package:horizon/presentation/screens/send/bloc/send_entry_form_bloc.dart';
 import 'package:horizon/presentation/screens/send/bloc/send_review_form_bloc.dart';
-import 'package:horizon/presentation/screens/send/view/send_view.dart';
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:horizon/presentation/session/bloc/session_state.dart';
 import 'package:horizon/utils/app_icons.dart';
@@ -21,15 +21,16 @@ import 'package:horizon/utils/app_icons.dart';
   }
 
   class SendReviewFormProvider extends StatelessWidget {
-    final SendFormState sendFormState;
+    final List<SendEntryFormModel> sendEntries;
+    final ComposeSendUnion composeResponse;
     final Widget Function(SendFormReviewActions actions, SendReviewFormModel state) child;
     
-    const SendReviewFormProvider({super.key, required this.sendFormState, required this.child});
+    const SendReviewFormProvider({super.key, required this.sendEntries, required this.composeResponse, required this.child});
 
     @override
     Widget build(BuildContext context) {
       return BlocProvider(
-        create: (context) => SendReviewFormBloc(initialSendFormState: sendFormState),
+        create: (context) => SendReviewFormBloc(sendEntries: sendEntries, composeResponse: composeResponse),
         child: BlocBuilder<SendReviewFormBloc, SendReviewFormModel>(
           builder: (context, state) => child(
             SendFormReviewActions(onSubmit: (){
@@ -71,6 +72,7 @@ class SendReviewForm extends StatefulWidget {
 
 class _SendReviewFormState extends State<SendReviewForm> {
   final appIcons = AppIcons();
+  
 
   _regularProperty(context, label, value, {Widget? widget}) {
     return Padding(
@@ -97,7 +99,7 @@ class _SendReviewFormState extends State<SendReviewForm> {
     );
   }
 
-  _renderSendEntry(HttpConfig httpConfig, SendEntryFormModel send) {
+  _renderSendEntry(HttpConfig httpConfig, SendEntryFormModel send, String sourceAddress) {
     return HorizonCard(
         backgroundColor:
             Theme.of(context).extension<CustomThemeExtension>()?.bgBlackOrWhite,
@@ -149,7 +151,7 @@ class _SendReviewFormState extends State<SendReviewForm> {
               )),
           commonHeightSizedBox,
           _regularProperty(context, "Source Address",
-              widget.state.sendFormState.selectedBalanceEntry?.address ?? ""),
+              sourceAddress),
           commonHeightSizedBox,
           _regularProperty(
               context, "Recipient Address", send.destinationInput.value),
@@ -181,10 +183,17 @@ class _SendReviewFormState extends State<SendReviewForm> {
   @override
   Widget build(BuildContext context) {
     final session = context.watch<SessionStateCubit>().state.successOrThrow();
+    
+    // Extract response and source address once
+    final (response, sourceAddress) = switch(widget.state.composeResponse) {
+      ComposeSendMpma(response: var resp) => (resp, resp.params.source),
+      ComposeSendSingle(response: var resp) => (resp, resp.params.source),
+      _ => throw Exception("Invalid compose response type: ${widget.state.composeResponse.runtimeType}"),
+    };
+    
     return  Column(
           children: [
-            ...widget.state.sendFormState.sendEntries!
-                .map((e) => _renderSendEntry(session.httpConfig, e)),
+          ...widget.state.sendEntries.map((e) => _renderSendEntry(session.httpConfig, e, sourceAddress)),
             commonHeightSizedBox,
             const Divider(
               color: transparentBlack33,
@@ -196,12 +205,9 @@ class _SendReviewFormState extends State<SendReviewForm> {
                 title: "Fee Details",
                 child: Column(
                   children: [
-                    _buildLabelValueRow("Fee",
-                        "${widget.state.sendFormState.composeResponse?.btcFee ?? 0} sats"),
-                    _buildLabelValueRow("Virtual Size",
-                        "${widget.state.sendFormState.composeResponse?.signedTxEstimatedSize.virtualSize} vbytes"),
-                    _buildLabelValueRow("Adjusted Virtual Size",
-                        "${widget.state.sendFormState.composeResponse?.signedTxEstimatedSize.adjustedVirtualSize} vbytes"),
+                    _buildLabelValueRow("Fee", "${response.btcFee} sats"),
+                    _buildLabelValueRow("Virtual Size", "${response.signedTxEstimatedSize.virtualSize} vbytes"),
+                    _buildLabelValueRow("Adjusted Virtual Size", "${response.signedTxEstimatedSize.adjustedVirtualSize} vbytes"),
                   ],
                 )),
             commonHeightSizedBox,

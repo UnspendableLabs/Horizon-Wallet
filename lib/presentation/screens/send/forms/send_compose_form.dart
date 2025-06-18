@@ -14,7 +14,7 @@ import 'package:horizon/presentation/common/transactions/transaction_fee_selecti
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 import 'package:horizon/presentation/screens/send/bloc/send_compose_form_bloc.dart';
 import 'package:horizon/presentation/screens/send/bloc/send_entry_form_bloc.dart';
-import 'package:horizon/presentation/screens/send/flows/send_entry_form.dart';
+import 'package:horizon/presentation/screens/send/forms/send_entry_form.dart';
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:horizon/presentation/session/bloc/session_state.dart';
 import 'package:horizon/utils/app_icons.dart';

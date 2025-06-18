@@ -13,7 +13,7 @@ import 'package:horizon/domain/entities/http_config.dart';
 import 'package:horizon/domain/entities/network.dart';
 import 'package:horizon/domain/entities/seed_derivation.dart';
 import 'package:horizon/domain/entities/base_path.dart';
-import 'package:horizon/presentation/screens/send/flows/send_form_token_selector.dart';
+import 'package:horizon/presentation/screens/send/forms/send_form_token_selector.dart';
 import 'package:horizon/presentation/screens/send/bloc/token_selector_form_bloc.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
@@ -39,10 +39,8 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   setUpAll(() async {
-    // Register fallback values for mocktail
     registerFallbackValue(const Mainnet());
 
-    // Register mock dependencies
     final mockHorizonExplorerClientFactory = MockHorizonExplorerClientFactory();
     final mockHorizonExplorerApi = MockHorizonExplorerApi();
 
@@ -148,13 +146,11 @@ void main() {
     late MockSessionStateCubit mockSessionCubit;
     late TokenSelectorFormActions mockActions;
     late TokenSelectorFormModel mockState;
-    late Function(TokenSelectorOption) mockOnSubmit;
     late List<TokenSelectorOption> mockTokenOptions;
 
     setUp(() {
       mockBloc = MockTokenSelectorFormBloc();
       mockSessionCubit = MockSessionStateCubit();
-      mockOnSubmit = (option) {};
 
       mockTokenOptions = [
         createTokenSelectorOption('PEPECASH', 'PepeCash'),
@@ -199,6 +195,7 @@ void main() {
     Widget createTestWidget({
       TokenSelectorFormActions? actions,
       TokenSelectorFormModel? state,
+      Function(TokenSelectorOption)? onTokenSelected,
     }) {
       return MaterialApp(
         home: Scaffold(
@@ -207,10 +204,17 @@ void main() {
               BlocProvider<TokenSelectorFormBloc>.value(value: mockBloc),
               BlocProvider<SessionStateCubit>.value(value: mockSessionCubit),
             ],
-            child: SendFormTokenSelector(
-              actions: actions ?? mockActions,
-              state: state ?? mockState,
-              onSubmit: mockOnSubmit,
+            child: Column(
+              children: [
+                if (onTokenSelected != null)
+                  TokenSelectorFormSuccessHandler(
+                    onTokenSelected: onTokenSelected,
+                  ),
+                SendFormTokenSelector(
+                  actions: actions ?? mockActions,
+                  state: state ?? mockState,
+                ),
+              ],
             ),
           ),
         ),
@@ -234,7 +238,7 @@ void main() {
 
       final button = tester.widget<HorizonButton>(find.byType(HorizonButton));
       expect(button.disabled,
-          isTrue); // State is disabled when no token is selected
+          isTrue);
     });
 
     testWidgets('should show enabled continue button when token is selected',
@@ -272,7 +276,7 @@ void main() {
       expect(submitCalled, isTrue);
     });
 
-    testWidgets('should call onSubmit when submission status is success',
+    testWidgets('should call onTokenSelected when submission status is success',
         (tester) async {
       TokenSelectorOption? submittedOption;
       final selectedOption = mockTokenOptions.first;
@@ -292,25 +296,12 @@ void main() {
       when(() => mockBloc.state).thenReturn(initialState);
       when(() => mockBloc.stream).thenAnswer((_) => stateController.stream);
 
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: MultiBlocProvider(
-              providers: [
-                BlocProvider<TokenSelectorFormBloc>.value(value: mockBloc),
-                BlocProvider<SessionStateCubit>.value(value: mockSessionCubit),
-              ],
-              child: SendFormTokenSelector(
-                actions: mockActions,
-                state: initialState,
-                onSubmit: (option) {
-                  submittedOption = option;
-                },
-              ),
-            ),
-          ),
-        ),
-      );
+      await tester.pumpWidget(createTestWidget(
+        state: initialState,
+        onTokenSelected: (option) {
+          submittedOption = option;
+        },
+      ));
 
       stateController.add(successState);
       await tester.pump();
@@ -394,7 +385,7 @@ void main() {
       expect(bloc.state.tokenSelectorInput.value, isNull);
       expect(
           bloc.state.submissionStatus, equals(FormzSubmissionStatus.initial));
-      expect(bloc.state.disabled, isTrue);
+      expect(bloc.state.tokenSelectorInput.isValid, isFalse);
     });
 
     blocTest<TokenSelectorFormBloc, TokenSelectorFormModel>(
@@ -408,7 +399,7 @@ void main() {
         isA<TokenSelectorFormModel>()
             .having(
                 (m) => m.tokenSelectorInput.value, 'selected value', isNotNull)
-            .having((m) => m.disabled, 'disabled', isFalse),
+            .having((m) => m.tokenSelectorInput.isValid, 'valid', isTrue),
       ],
     );
 
@@ -430,7 +421,6 @@ void main() {
   });
 }
 
-// Helper function to create mock balance
 MultiAddressBalance createMockBalance(
     String asset, String description, int total) {
   return MultiAddressBalance(
@@ -449,7 +439,6 @@ MultiAddressBalance createMockBalance(
   );
 }
 
-// Helper function to create TokenSelectorOption
 TokenSelectorOption createTokenSelectorOption(String name, String description) {
   final balance = createMockBalance(name, description, 100000000);
   return TokenSelectorOption(

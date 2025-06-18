@@ -3,77 +3,61 @@ import 'package:flow_builder/flow_builder.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fpdart/fpdart.dart' as fp;
+import 'package:fpdart/fpdart.dart' show Option;
 import 'package:go_router/go_router.dart';
 import 'package:horizon/domain/entities/compose_response.dart';
+import 'package:horizon/domain/entities/compose_send.dart';
+import 'package:horizon/domain/entities/compose_mpma_send.dart';
 import 'package:horizon/domain/entities/multi_address_balance.dart';
-import 'package:horizon/domain/entities/multi_address_balance_entry.dart';
 import 'package:horizon/extensions.dart';
 import 'package:horizon/presentation/common/transactions/transaction_successful.dart';
 import 'package:horizon/presentation/forms/asset_balance_form/asset_balance_form_view.dart';
 import 'package:horizon/presentation/forms/base/flow/view/flow_step.dart';
+import 'package:horizon/presentation/screens/send/bloc/send_compose_form_bloc.dart';
 import 'package:horizon/presentation/screens/send/bloc/send_entry_form_bloc.dart';
-import 'package:horizon/presentation/screens/send/flows/send_compose_form.dart';
-import 'package:horizon/presentation/screens/send/flows/send_form_balance_handler.dart';
-import 'package:horizon/presentation/screens/send/flows/send_form_token_selector.dart';
-import 'package:horizon/presentation/screens/send/flows/send_review_form.dart';
+import 'package:horizon/presentation/screens/send/forms/send_compose_form.dart';
+import 'package:horizon/presentation/screens/send/forms/send_form_balance_handler.dart';
+import 'package:horizon/presentation/screens/send/forms/send_form_token_selector.dart';
+import 'package:horizon/presentation/screens/send/forms/send_review_form.dart';
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:horizon/presentation/session/bloc/session_state.dart';
 import 'package:horizon/utils/app_icons.dart';
 
-class SendFormState extends Equatable {
-  final MultiAddressBalance selectedBalance;
-  final MultiAddressBalanceEntry? selectedBalanceEntry;
-  final ComposeResponse? composeResponse;
-  final List<SendEntryFormModel>? sendEntries;
-  final String? signedTxHex;
-  final String? signedTxHash;
-  const SendFormState(
-      {required this.selectedBalance,
-      this.selectedBalanceEntry,
-      this.composeResponse,
-      this.sendEntries,
-      this.signedTxHex,
-      this.signedTxHash});
+class SendFlowModel extends Equatable {
+  final Option<MultiAddressBalance> balance; // step1
+  final Option<String> address; // step2
+  final Option<List<SendEntryFormModel>> sendEntries; // step3
+  final Option<ComposeResponse> composeResponse; // step3
+  final Option<String> signedTxHex; // step4  
+  final Option<String> signedTxHash; // step4
 
-  SendFormState copyWith({String? signedTxHex, String? signedTxHash}) =>
-      SendFormState(
-          selectedBalance: selectedBalance,
-          selectedBalanceEntry: selectedBalanceEntry,
-          composeResponse: composeResponse,
-          sendEntries: sendEntries,
-          signedTxHex: signedTxHex,
-          signedTxHash: signedTxHash);
+  const SendFlowModel({
+    required this.balance,
+    required this.address,
+    required this.sendEntries,
+    required this.composeResponse,
+    required this.signedTxHex,
+    required this.signedTxHash,
+  });
 
   @override
   List<Object?> get props =>
-      [selectedBalance, selectedBalanceEntry, composeResponse];
-}
+      [balance, address, composeResponse, signedTxHex, signedTxHash];
 
-class SendFlowModel extends Equatable {
-  final fp.Option<SendFormState> sendFormState;
-
-  const SendFlowModel({required this.sendFormState});
-
-  @override
-  List<Object?> get props => [sendFormState];
-
-  SendFlowModel copyWith({fp.Option<SendFormState>? sendFormState}) =>
-      SendFlowModel(sendFormState: sendFormState ?? this.sendFormState);
-
-  fp.Either<String, String> get sourceAddress => switch (sendFormState) {
-        fp.Some(value: var type) => type.selectedBalanceEntry == null
-            ? fp.left("No source address")
-            : fp.right(type.selectedBalanceEntry!.address!),
-        fp.None() => fp.left("No source address"),
-      };
-
-  bool get isBalanceSelected =>
-      sendFormState.isSome() &&
-      sendFormState.toNullable()?.selectedBalanceEntry != null;
-
-  bool get isComposeSuccess =>
-      sendFormState.isSome() &&
-      sendFormState.toNullable()?.composeResponse != null;
+  SendFlowModel copyWith(
+          {Option<MultiAddressBalance>? balance,
+          Option<String>? address,
+          Option<ComposeResponse>? composeResponse,
+          Option<String>? signedTxHex,
+          Option<String>? signedTxHash,
+          Option<List<SendEntryFormModel>>? sendEntries}) =>
+      SendFlowModel(
+          balance: balance ?? this.balance,
+          address: address ?? this.address,
+          composeResponse: composeResponse ?? this.composeResponse,
+          signedTxHex: signedTxHex ?? this.signedTxHex,
+          signedTxHash: signedTxHash ?? this.signedTxHash,
+          sendEntries: sendEntries ?? this.sendEntries);
 }
 
 class SendFlowController extends FlowController<SendFlowModel> {
@@ -97,7 +81,12 @@ class _SendViewState extends State<SendView> {
     super.initState();
     _controller = SendFlowController(
         initialState: const SendFlowModel(
-            sendFormState: fp.Option<SendFormState>.none()));
+            balance: Option.none(),
+            address: Option.none(),
+            sendEntries: Option.none(),
+            composeResponse: Option.none(),
+            signedTxHex: Option.none(),
+            signedTxHash: Option.none()));
   }
 
   @override
@@ -107,7 +96,7 @@ class _SendViewState extends State<SendView> {
       controller: _controller,
       onGeneratePages: (model, pages) {
         return [
-          MaterialPage(child: Builder(builder: (context) {
+          Option.of(MaterialPage(child: Builder(builder: (context) {
             return FlowStep(
               title: "Send",
               widthFactor: .2,
@@ -127,198 +116,174 @@ class _SendViewState extends State<SendView> {
                   child: (balances) {
                     return Builder(builder: (context) {
                       return TokenSelectorFormProvider(
-                          balances: balances,
-                          child: (actions, state) => Column(
-                            children: [
-                              TokenSelectorFormSuccessHandler(
-                                  onTokenSelected: (option) {
-                                _cachedBalances = balances;
-                                context.flow<SendFlowModel>().update((model) =>
-                                    model.copyWith(
-                                        sendFormState:
-                                            fp.Option.of(SendFormState(
-                                      selectedBalance:
-                                          option.balance.toNullable()!,
-                                    ))));
-                              }),
-                              SendFormTokenSelector(
-                                actions: actions,
-                                state: state,
-                              )
-                            ],
-                          ),
-                        );
-                    });
-                  }),
-            );
-          })),
-          if (model.sendFormState.isSome())
-            model.sendFormState
-                .map((sendFormState) => MaterialPage(
-                      child: FlowStep(
-                        title: "Choose your Address",
-                        widthFactor: .4,
-                        body: AssetBalanceFormProvider(
-                          multiAddressBalance: sendFormState.selectedBalance,
-                          child: (actions, state) => Column(
-                            children: [
-                              Builder(
-                                builder: (context) =>
-                                    SendFormBalanceSuccessHandler(
-                                        onSuccess: (_) {
-                                  context.flow<SendFlowModel>().update((model) {
-                                    final newSendFormState = SendFormState(
-                                        selectedBalance:
-                                            sendFormState.selectedBalance,
-                                        selectedBalanceEntry:
-                                            state.balanceInput.value!.entry);
-                                    return model.copyWith(
-                                        sendFormState:
-                                            fp.Option.of(newSendFormState));
-                                  });
-                                }),
-                              ),
-                              AssetBalanceForm(
-                                state: state,
-                                actions: actions,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ))
-                .getOrThrow(),
-          if (model.sourceAddress.isRight() && _cachedBalances != null)
-            switch (model.sendFormState) {
-              fp.Some(value: var sendFormState) => MaterialPage(
-                  child: FlowStep(
-                    title: "Receipient & Quantity",
-                    widthFactor: .6,
-                    body: SendComposeFormProvider(
-                      initialEntries: [
-                        SendEntryFormModel(
-                            destinationInput: const DestinationInput.pure(),
-                            balanceSelectorInput: BalanceSelectorInput.dirty(
-                                value: sendFormState.selectedBalance),
-                            quantityInput: QuantityInput.pure(
-                              maxQuantity: BigInt.from(
-                                  sendFormState.selectedBalance.total),
-                              divisible:
-                                  sendFormState.selectedBalance.assetInfo
-                                      .divisible,
-                            ),
-                            memoInput: const MemoInput.pure())
-                      ],
-                      balances: _cachedBalances!,
-                      sourceAddress: model.sourceAddress
-                          .getOrElse((l) => throw Exception(l)),
-                      child: (actions, state) => Builder(builder: (context) {
-                        return Column(
+                        balances: balances,
+                        child: (actions, state) => Column(
                           children: [
-                            SendComposeSuccessHandler(
-                                onComposeResponse: (value) {
-                              context.flow<SendFlowModel>().update((model) {
-                                final currentSendFormState =
-                                    model.sendFormState.toNullable()!;
-                                return model.copyWith(
-                                    sendFormState: fp.Option.of(SendFormState(
-                                        selectedBalance: currentSendFormState
-                                            .selectedBalance,
-                                        selectedBalanceEntry:
-                                            currentSendFormState
-                                                .selectedBalanceEntry,
-                                        composeResponse: value,
-                                        sendEntries: state.sendEntries)));
-                              });
+                            TokenSelectorFormSuccessHandler(
+                                onTokenSelected: (option) {
+                              _cachedBalances = balances;
+                              context.flow<SendFlowModel>().update((model) =>
+                                  model.copyWith(balance: option.balance));
                             }),
-                            SendComposeForm(
+                            SendFormTokenSelector(
                               actions: actions,
                               state: state,
                             )
                           ],
-                        );
-                      }),
-                    ),
-                  ),
-                ),
-              fp.None() => throw StateError(
-                  "SendFormState should not be None at this point"),
-            },
-          if (model.sendFormState.isSome() &&
-              model.sendFormState.toNullable()?.composeResponse != null)
-            MaterialPage(
-              child: FlowStep(
-                  title: "Review Send",
-                  widthFactor: 1.0,
-                  body: SendReviewFormProvider(
-                      sendFormState: model.sendFormState.toNullable()!,
-                      child: (actions, state) => Builder(builder: (context) {
-                        return Column(
-                            children: [
-                                 SendReviewFormSuccessHandler(
-                                onSuccess: () {
-                                  context.flow<SendFlowModel>().update((model) {
-                                    return model.copyWith(
-                                      sendFormState: fp.Option.of(
-                                        model.sendFormState.toNullable()!.copyWith(
-                                          signedTxHex: "02000000xcadxc000000000001976a91462e907b17c1d4b80e28614e46f04f2c4167afee88ac00000000",
-                                          signedTxHash: "6a6890705f4fe6d438983ed65d01452a8a8823f1a187982a1745c6b24e4d3409",
-                                        ),
-                                      ),
-                                    );
-                                  });
-                                },
-                              ),
-                              SendReviewForm(
-                                state: state,
-                                actions: actions,
-                              ),
-                           
-                            ],
-                        );
-                      })),
-       ),
-            ),
-          if (model.sendFormState.isSome() &&
-              model.sendFormState.toNullable()?.signedTxHex != null)
-            MaterialPage(
-                child: Scaffold(
-              appBar: PreferredSize(
-                  preferredSize: const Size.fromHeight(72),
-                  child: Container(
-                    height: 46,
-                    width: double.infinity,
-                    padding: const EdgeInsets.only(
-                        left: 12, top: 0, bottom: 0, right: 12),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.end,
+                        ),
+                      );
+                    });
+                  }),
+            );
+          }))),
+          model.balance.map((balance) => MaterialPage(
+                child: FlowStep(
+                  title: "Choose your Address",
+                  widthFactor: .4,
+                  body: AssetBalanceFormProvider(
+                    multiAddressBalance: balance,
+                    child: (actions, state) => Column(
                       children: [
-                        IconButton(
-                          onPressed: () {
-                            context.go("/dashboard");
-                          },
-                          icon: AppIcons.closeIcon(
-                            context: context,
-                            width: 24,
-                            height: 24,
-                            fit: BoxFit.fitHeight,
-                          ),
+                        Builder(
+                          builder: (context) => SendFormBalanceSuccessHandler(
+                              onSuccess: (address) {
+                            context.flow<SendFlowModel>().update((model) {
+                              return model.copyWith(
+                                  address: Option.of(address));
+                            });
+                          }),
+                        ),
+                        AssetBalanceForm(
+                          state: state,
+                          actions: actions,
                         ),
                       ],
                     ),
-                  )),
-              body: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: TransactionSuccessful(
-                    txHex: model.sendFormState.toNullable()!.signedTxHex!,
-                    txHash: model.sendFormState.toNullable()!.signedTxHash!,
-                    title: "Send Successful",
-                    onClose: () {
-                      context.go("/dashboard");
-                    },
-                  )),
-            )),
-        ];
+                  ),
+                ),
+              )),
+          model.address.map((address) => MaterialPage(
+                child: FlowStep(
+                  title: "Receipient & Quantity",
+                  widthFactor: .6,
+                  body: SendComposeFormProvider(
+                    initialEntries: [
+                      SendEntryFormModel(
+                          destinationInput: const DestinationInput.pure(),
+                          balanceSelectorInput: BalanceSelectorInput.dirty(
+                              value: model.balance.toNullable()!),
+                          quantityInput: QuantityInput.pure(
+                            maxQuantity:
+                                BigInt.from(model.balance.toNullable()!.total),
+                            divisible:
+                                model.balance.toNullable()!.assetInfo.divisible,
+                          ),
+                          memoInput: const MemoInput.pure())
+                    ],
+                    balances: _cachedBalances!,
+                    sourceAddress: model.address
+                        .getOrElse(() => throw Exception("Invalid address")),
+                    child: (actions, state) => Builder(builder: (context) {
+                      return Column(
+                        children: [
+                          SendComposeSuccessHandler(onComposeResponse: (value) {
+                            context.flow<SendFlowModel>().update((model) {
+                              print(state.sendEntries);
+                              return model.copyWith(
+                                sendEntries: fp.Option.of(state.sendEntries),
+                                  composeResponse: fp.Option.of(value));
+                            });
+                          }),
+                          SendComposeForm(
+                            actions: actions,
+                            state: state,
+                          )
+                        ],
+                      );
+                    }),
+                  ),
+                ),
+              )),
+          model.composeResponse.map((composeResponse) => MaterialPage(
+                child: FlowStep(
+                  title: "Review Send",
+                  widthFactor: 1.0,
+                  body: SendReviewFormProvider(
+                      composeResponse: switch(composeResponse) {
+                        ComposeMpmaSendResponse resp => ComposeSendMpma(resp),
+                        ComposeSendResponse resp => ComposeSendSingle(resp),
+                        _ => throw Exception("Invalid compose response type: ${composeResponse.runtimeType}"),
+                      },
+                      sendEntries: model.sendEntries.toNullable()!,
+                      child: (actions, state) => Builder(builder: (context) {
+                            return Column(
+                              children: [
+                                SendReviewFormSuccessHandler(
+                                  onSuccess: () {
+                                    context
+                                        .flow<SendFlowModel>()
+                                        .update((model) {
+                                      return model.copyWith(
+                                        signedTxHex: const fp.Option.of(
+                                          "02000000xcadxc000000000001976a91462e907b17c1d4b80e28614e46f04f2c4167afee88ac00000000",
+                                        ),
+                                        signedTxHash: const fp.Option.of(
+                                          "6a6890705f4fe6d438983ed65d01452a8a8823f1a187982a1745c6b24e4d3409",
+                                        ),
+                                      );
+                                    });
+                                  },
+                                ),
+                                SendReviewForm(
+                                  state: state,
+                                  actions: actions,
+                                ),
+                              ],
+                            );
+                          })),
+                ),
+              )),
+          model.signedTxHash.map((signedTxHash) => MaterialPage(
+                  child: Scaffold(
+                appBar: PreferredSize(
+                    preferredSize: const Size.fromHeight(72),
+                    child: Container(
+                      height: 46,
+                      width: double.infinity,
+                      padding: const EdgeInsets.only(
+                          left: 12, top: 0, bottom: 0, right: 12),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          IconButton(
+                            onPressed: () {
+                              context.go("/dashboard");
+                            },
+                            icon: AppIcons.closeIcon(
+                              context: context,
+                              width: 24,
+                              height: 24,
+                              fit: BoxFit.fitHeight,
+                            ),
+                          ),
+                        ],
+                      ),
+                    )),
+                body: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: TransactionSuccessful(
+                      txHex: model.signedTxHex.toNullable()!,
+                      txHash: model.signedTxHash.toNullable()!,
+                      title: "Send Successful",
+                      onClose: () {
+                        context.go("/dashboard");
+                      },
+                    )),
+              )))
+        ]
+            .filter((page) => page.isSome())
+            .map((page) => page.getOrThrow())
+            .toList();
       },
     );
   }
