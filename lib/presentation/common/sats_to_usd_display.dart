@@ -1,18 +1,21 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/domain/services/mempool_price_service.dart';
+import 'package:horizon/presentation/session/bloc/session_cubit.dart';
+import 'package:horizon/presentation/session/bloc/session_state.dart';
 
 class SatsToUsdDisplay extends StatefulWidget {
   final BigInt sats;
   final Function(double)? child;
   
   const SatsToUsdDisplay({
-    Key? key,
+    super.key,
     required this.sats,
     this.child,
-  }) : super(key: key);
+  });
 
   @override
   State<SatsToUsdDisplay> createState() => _SatsToUsdDisplayState();
@@ -26,7 +29,13 @@ class _SatsToUsdDisplayState extends State<SatsToUsdDisplay> {
   @override
   void initState() {
     super.initState();
-    _priceService.startListening();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final session = context.watch<SessionStateCubit>().state.successOrThrow();
+    _priceService.startListening(httpConfig: session.httpConfig);
     _subscription = _priceService.priceStream.listen((price) {
       setState(() => _currentPrice = price);
     });

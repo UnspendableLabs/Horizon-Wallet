@@ -9,6 +9,7 @@ import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 import 'package:horizon/presentation/screens/send/bloc/send_compose_form_bloc.dart';
 import 'package:horizon/presentation/screens/send/bloc/send_entry_form_bloc.dart';
 import 'package:horizon/presentation/screens/send/bloc/send_review_form_bloc.dart';
+import 'package:horizon/presentation/screens/send/view/send_view.dart';
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:horizon/presentation/session/bloc/session_state.dart';
 import 'package:horizon/utils/app_icons.dart';
@@ -44,7 +45,7 @@ import 'package:horizon/utils/app_icons.dart';
   }
   
   class SendReviewFormSuccessHandler extends StatelessWidget {
-    final Function() onSuccess;
+    final Function(SendFlowConfirmationStep) onSuccess;
     const SendReviewFormSuccessHandler({super.key, required this.onSuccess});
 
     @override
@@ -52,7 +53,10 @@ import 'package:horizon/utils/app_icons.dart';
       return BlocListener<SendReviewFormBloc, SendReviewFormModel>(
         listener: (context, state) {
           if (state.submissionStatus.isSuccess) {
-            onSuccess(); 
+            onSuccess(SendFlowConfirmationStep(
+              signedTxHex: state.signedTxHex,
+              signedTxHash: state.signedTxHash,
+            )); 
           }
         },
         child: const SizedBox.shrink(),

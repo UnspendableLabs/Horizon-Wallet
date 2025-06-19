@@ -1,5 +1,4 @@
 import 'package:dio/dio.dart';
-import 'package:horizon/domain/entities/network.dart';
 
 class MempoolSpaceFeesRecommendedResponse {
   final int fastestFee;
@@ -45,35 +44,17 @@ class MempoolSpaceApi {
   final Dio _dio;
 
   MempoolSpaceApi({
-    Dio? dio,
-  }) : _dio = dio ??
-            Dio(BaseOptions(
-              connectTimeout: const Duration(seconds: 5),
-              receiveTimeout: const Duration(seconds: 3),
-            ));
+    required Dio dio,
+  }) : _dio = dio;
 
-//  TODO: this should be moved into http_config
-// NOTE: we don't really care about handling testnet here
-//       and in fact it ends up making more sense just to use
-//       mainnet values
-  Future<MempoolSpaceFeesRecommendedResponse> getFeeEstimates(
-      {required Network network}) async {
-    String url = switch (network) {
-      Network.mainnet => 'https://mempool.space/api/v1/fees/recommended',
-      Network.testnet4 => 'https://mempool.space/api/v1/fees/recommended',
-    };
-
+  Future<MempoolSpaceFeesRecommendedResponse> getFeeEstimates() async {
+    const url = '/fees/recommended';
     final response = await _dio.get(url);
     return MempoolSpaceFeesRecommendedResponse.fromJson(response.data);
   }
 
-  Future<MempoolSpacePricesResponse> getPrices(
-      {required Network network}) async {
-    String url = switch (network) {
-      Network.mainnet => 'https://mempool.space/api/v1/prices',
-      Network.testnet4 => 'https://mempool.space/api/v1/prices',
-    };
-
+  Future<MempoolSpacePricesResponse> getPrices() async {
+    const url = '/prices';
     final response = await _dio.get(url);
     return MempoolSpacePricesResponse.fromJson(response.data);
   }

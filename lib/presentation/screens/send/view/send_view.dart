@@ -16,48 +16,59 @@ import 'package:horizon/presentation/forms/base/flow/view/flow_step.dart';
 import 'package:horizon/presentation/screens/send/bloc/send_compose_form_bloc.dart';
 import 'package:horizon/presentation/screens/send/bloc/send_entry_form_bloc.dart';
 import 'package:horizon/presentation/screens/send/forms/send_compose_form.dart';
-import 'package:horizon/presentation/screens/send/forms/send_form_balance_handler.dart';
 import 'package:horizon/presentation/screens/send/forms/send_form_token_selector.dart';
 import 'package:horizon/presentation/screens/send/forms/send_review_form.dart';
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:horizon/presentation/session/bloc/session_state.dart';
 import 'package:horizon/utils/app_icons.dart';
 
+class SendFlowComposeStep {
+  final List<SendEntryFormModel> sendEntries;
+  final ComposeResponse composeResponse;
+
+  const SendFlowComposeStep({
+    required this.sendEntries,
+    required this.composeResponse,
+  });
+}
+
+class SendFlowConfirmationStep {
+  final String signedTxHex;
+  final String signedTxHash;
+
+  const SendFlowConfirmationStep({
+    required this.signedTxHex,
+    required this.signedTxHash,
+  });
+}
+  
 class SendFlowModel extends Equatable {
   final Option<MultiAddressBalance> balance; // step1
   final Option<String> address; // step2
-  final Option<List<SendEntryFormModel>> sendEntries; // step3
-  final Option<ComposeResponse> composeResponse; // step3
-  final Option<String> signedTxHex; // step4  
-  final Option<String> signedTxHash; // step4
+  final Option<SendFlowComposeStep> composeStep; // step3
+  final Option<SendFlowConfirmationStep> confirmationStep; // step4
 
   const SendFlowModel({
     required this.balance,
     required this.address,
-    required this.sendEntries,
-    required this.composeResponse,
-    required this.signedTxHex,
-    required this.signedTxHash,
+    required this.composeStep,
+    required this.confirmationStep,
   });
 
   @override
   List<Object?> get props =>
-      [balance, address, composeResponse, signedTxHex, signedTxHash];
+      [balance, address, composeStep, confirmationStep];
 
   SendFlowModel copyWith(
           {Option<MultiAddressBalance>? balance,
           Option<String>? address,
-          Option<ComposeResponse>? composeResponse,
-          Option<String>? signedTxHex,
-          Option<String>? signedTxHash,
-          Option<List<SendEntryFormModel>>? sendEntries}) =>
+          Option<SendFlowComposeStep>? composeStep,
+          Option<SendFlowConfirmationStep>? confirmationStep}) =>
       SendFlowModel(
           balance: balance ?? this.balance,
           address: address ?? this.address,
-          composeResponse: composeResponse ?? this.composeResponse,
-          signedTxHex: signedTxHex ?? this.signedTxHex,
-          signedTxHash: signedTxHash ?? this.signedTxHash,
-          sendEntries: sendEntries ?? this.sendEntries);
+          composeStep: composeStep ?? this.composeStep,
+          confirmationStep: confirmationStep ?? this.confirmationStep);
 }
 
 class SendFlowController extends FlowController<SendFlowModel> {
@@ -83,10 +94,8 @@ class _SendViewState extends State<SendView> {
         initialState: const SendFlowModel(
             balance: Option.none(),
             address: Option.none(),
-            sendEntries: Option.none(),
-            composeResponse: Option.none(),
-            signedTxHex: Option.none(),
-            signedTxHash: Option.none()));
+            composeStep: Option.none(),
+            confirmationStep: Option.none()));
   }
 
   @override
@@ -188,10 +197,12 @@ class _SendViewState extends State<SendView> {
                         children: [
                           SendComposeSuccessHandler(onComposeResponse: (value) {
                             context.flow<SendFlowModel>().update((model) {
-                              print(state.sendEntries);
                               return model.copyWith(
-                                sendEntries: fp.Option.of(state.sendEntries),
-                                  composeResponse: fp.Option.of(value));
+                                composeStep: fp.Option.of(SendFlowComposeStep(
+                                  sendEntries: state.sendEntries,
+                                  composeResponse: value,
+                                )),
+                              );
                             });
                           }),
                           SendComposeForm(
@@ -204,32 +215,28 @@ class _SendViewState extends State<SendView> {
                   ),
                 ),
               )),
-          model.composeResponse.map((composeResponse) => MaterialPage(
+          model.composeStep.map((composeStep) => MaterialPage(
                 child: FlowStep(
                   title: "Review Send",
                   widthFactor: 1.0,
                   body: SendReviewFormProvider(
-                      composeResponse: switch(composeResponse) {
+                      composeResponse: switch(composeStep.composeResponse) {
                         ComposeMpmaSendResponse resp => ComposeSendMpma(resp),
                         ComposeSendResponse resp => ComposeSendSingle(resp),
-                        _ => throw Exception("Invalid compose response type: ${composeResponse.runtimeType}"),
+                        _ => throw Exception("Invalid compose response type: ${composeStep.composeResponse.runtimeType}"),
                       },
-                      sendEntries: model.sendEntries.toNullable()!,
+                      sendEntries: composeStep.sendEntries,
                       child: (actions, state) => Builder(builder: (context) {
                             return Column(
                               children: [
                                 SendReviewFormSuccessHandler(
-                                  onSuccess: () {
+                                  onSuccess: (confirmationStep) {
                                     context
                                         .flow<SendFlowModel>()
                                         .update((model) {
                                       return model.copyWith(
-                                        signedTxHex: const fp.Option.of(
-                                          "02000000xcadxc000000000001976a91462e907b17c1d4b80e28614e46f04f2c4167afee88ac00000000",
-                                        ),
-                                        signedTxHash: const fp.Option.of(
-                                          "6a6890705f4fe6d438983ed65d01452a8a8823f1a187982a1745c6b24e4d3409",
-                                        ),
+                                        confirmationStep: fp.Option.of(
+                                            confirmationStep),
                                       );
                                     });
                                   },
@@ -243,7 +250,7 @@ class _SendViewState extends State<SendView> {
                           })),
                 ),
               )),
-          model.signedTxHash.map((signedTxHash) => MaterialPage(
+          model.confirmationStep.map((confirmationStep) => MaterialPage(
                   child: Scaffold(
                 appBar: PreferredSize(
                     preferredSize: const Size.fromHeight(72),
@@ -272,8 +279,8 @@ class _SendViewState extends State<SendView> {
                 body: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     child: TransactionSuccessful(
-                      txHex: model.signedTxHex.toNullable()!,
-                      txHash: model.signedTxHash.toNullable()!,
+                      txHex: confirmationStep.signedTxHex,
+                      txHash: confirmationStep.signedTxHash,
                       title: "Send Successful",
                       onClose: () {
                         context.go("/dashboard");

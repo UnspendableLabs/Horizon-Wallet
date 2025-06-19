@@ -1,19 +1,26 @@
 import 'dart:async';
 import 'package:horizon/data/sources/network/mempool_space_client.dart';
-import 'package:horizon/domain/entities/network.dart';
+import 'package:horizon/data/sources/network/mempool_space_client_factory.dart';
+import 'package:horizon/domain/entities/http_config.dart';
 import 'package:horizon/domain/services/mempool_price_service.dart';
 
 class MempoolPriceServiceImpl implements MempoolPriceService {
-  final _mempoolSpaceApi = MempoolSpaceApi();
+  final MempoolSpaceClientFactory _mempoolSpaceClientFactory;
+  MempoolSpaceApi? _client;
   final _priceController = StreamController<int>.broadcast();
   Timer? _timer;
   int _subscriberCount = 0;
+
+  MempoolPriceServiceImpl(
+      {required MempoolSpaceClientFactory mempoolSpaceClientFactory})
+      : _mempoolSpaceClientFactory = mempoolSpaceClientFactory;
 
   @override
   Stream<int> get priceStream => _priceController.stream;
 
   @override
-  void startListening() {
+  void startListening({required HttpConfig httpConfig}) {
+    _client = _mempoolSpaceClientFactory.getClient(httpConfig);
     _subscriberCount++;
     if (_subscriberCount == 1) {
       _fetchPrice();
@@ -31,8 +38,11 @@ class MempoolPriceServiceImpl implements MempoolPriceService {
   }
 
   Future<void> _fetchPrice() async {
+    if (_client == null) {
+      return;
+    }
     try {
-      final response = await _mempoolSpaceApi.getPrices(network: Network.mainnet);
+      final response = await _client!.getPrices();
       _priceController.add(response.usd);
     } catch (e) {
       print('Error fetching price: $e');

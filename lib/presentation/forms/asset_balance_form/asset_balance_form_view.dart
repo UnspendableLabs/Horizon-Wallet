@@ -53,6 +53,23 @@ class AssetBalanceFormProvider extends StatelessWidget {
   }
 }
 
+class SendFormBalanceSuccessHandler extends StatelessWidget {
+  final Function(String) onSuccess;
+  const SendFormBalanceSuccessHandler({super.key, required this.onSuccess});
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocListener<AssetBalanceFormBloc, AssetBalanceFormModel>(
+      listener: (context, state) {
+        if (state.submissionStatus.isSuccess && state.balanceInput.value?.entry.address != null) {
+          onSuccess(state.balanceInput.value!.entry.address!);
+        }
+      },
+      child: const SizedBox.shrink(),
+    );
+  }
+}
+
 class AssetBalanceSuccessHandler extends StatelessWidget {
   final Function(AtomicSwapSellVariant option) onSuccess;
 
