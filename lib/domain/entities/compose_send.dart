@@ -7,12 +7,14 @@ class ComposeSendParams extends ComposeParams {
   final String destination;
   final String asset;
   final int quantity;
+  final String? memo;
 
   ComposeSendParams({
     required this.source,
     required this.destination,
     required this.asset,
     required this.quantity,
+    this.memo,
   });
 
   @override
@@ -32,6 +34,7 @@ class ComposeSendResponseParams {
   final bool useEnhancedSend;
   final AssetInfo assetInfo;
   final String quantityNormalized;
+  final String? memo;
 
   ComposeSendResponseParams(
       {required this.source,
@@ -40,7 +43,8 @@ class ComposeSendResponseParams {
       required this.quantity,
       required this.useEnhancedSend,
       required this.assetInfo,
-      required this.quantityNormalized});
+      required this.quantityNormalized,
+      this.memo});
 }
 
 class ComposeSendResponse extends ComposeResponse {

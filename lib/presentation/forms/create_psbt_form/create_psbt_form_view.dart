@@ -4,23 +4,26 @@ import 'package:horizon/presentation/forms/sign_psbt/view/sign_psbt_form.dart';
 import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
 import 'package:formz/formz.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:fpdart/fpdart.dart' as fp;
 import 'package:horizon/domain/entities/address_v2.dart';
 import 'package:horizon/domain/entities/http_config.dart';
 import 'package:get_it/get_it.dart';
+import 'package:horizon/presentation/common/expiry_selector.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
+import 'package:horizon/presentation/common/sats_to_usd_display.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:horizon/domain/repositories/settings_repository.dart';
 import 'package:horizon/presentation/session/bloc/session_state.dart';
 import 'package:horizon/utils/app_icons.dart';
 import 'package:horizon/extensions.dart';
-import 'package:horizon/presentation/shell/app_shell.dart';
 import './bloc/create_psbt_form_bloc.dart';
 
 // just putting this here for now
 
 class CreatePsbtFormActions {
   final Function(String value) onBtcValueChanged;
+  final Function(DateTime? date) onExpiryDateSelected;
   final VoidCallback onSubmitClicked;
   final VoidCallback onCloseSignPsbtModalClicked;
   final Function(String signedPsbtHex) onSignatureCompleted;
@@ -29,7 +32,8 @@ class CreatePsbtFormActions {
       {required this.onBtcValueChanged,
       required this.onSubmitClicked,
       required this.onCloseSignPsbtModalClicked,
-      required this.onSignatureCompleted});
+      required this.onSignatureCompleted,
+      required this.onExpiryDateSelected});
 }
 
 class CreatePsbtFormProvider extends StatelessWidget {
@@ -61,6 +65,10 @@ class CreatePsbtFormProvider extends StatelessWidget {
                   context
                       .read<CreatePsbtFormBloc>()
                       .add(BtcPriceInputChanged(value: value));
+                }, onExpiryDateSelected: (date) {
+                  context
+                      .read<CreatePsbtFormBloc>()
+                      .add(ExpiryDateSelected(date: date));
                 }, onSubmitClicked: () {
                   context.read<CreatePsbtFormBloc>().add(SubmitClicked());
                 }, onSignatureCompleted: (String signedPsbtHex) {
@@ -230,7 +238,7 @@ class _CreatePsbtFormState extends State<CreatePsbtForm> {
 
   _buildFromCard(BuildContext context, HttpConfig httpConfig) {
     final theme = Theme.of(context);
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    print("quantityNormalized ${widget.quantityNormalized}");
     return HorizonCard(
       child: Column(
         children: [
@@ -309,8 +317,14 @@ class _CreatePsbtFormState extends State<CreatePsbtForm> {
           const SizedBox(
             height: 20,
           ),
-          Text("TK DYNAMIC USD VALUE",
-              style: theme.textTheme.labelSmall?.copyWith(height: 1.2)),
+          if (widget.state.btcPriceInput.isValid)
+            SatsToUsdDisplay(
+                sats: widget.state.btcPriceInput.asSats
+                    .getOrElse(() => BigInt.zero),
+                child: (usdValue) => Text(
+                      '${usdValue.toStringAsFixed(2)} USD',
+                      style: theme.textTheme.labelSmall?.copyWith(height: 1.2),
+                    )),
         ],
       ),
     );
@@ -332,13 +346,17 @@ class _CreatePsbtFormState extends State<CreatePsbtForm> {
               children: [
                 Column(
                   children: [
-                    _buildFromCard(context, session.httpConfig),
+                    SizedBox(
+                        height: 132,
+                        child: _buildFromCard(context, session.httpConfig)),
                     commonHeightSizedBox,
-                    _buildToCard(context, session.httpConfig),
+                    SizedBox(
+                        height: 132,
+                        child: _buildToCard(context, session.httpConfig)),
                   ],
                 ),
                 Positioned(
-                    top: -36,
+                    top: 0,
                     bottom: 0,
                     left: 0,
                     right: 0,
@@ -367,16 +385,21 @@ class _CreatePsbtFormState extends State<CreatePsbtForm> {
               ],
             ),
             commonHeightSizedBox,
+            ExpirySelector(onChange: (date) {
+              widget.actions.onExpiryDateSelected(date);
+            }),
+            commonHeightSizedBox,
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 14),
               child: HorizonButton(
                   disabled: widget.state.submitDisabled,
+                  isLoading: widget.state.submissionStatus.isInProgress,
                   onPressed: () {
                     if (!widget.state.submitDisabled) {
                       widget.actions.onSubmitClicked();
                     }
                   },
-                  child: TextButtonContent(value: "Sign PSBT")),
+                  child: TextButtonContent(value: "Create listing")),
             )
           ],
         ),

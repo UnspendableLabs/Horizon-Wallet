@@ -20,6 +20,8 @@ export "package:horizon/presentation/forms/base/transaction_form_model_base.dart
 
 enum AttachQuantityInputError { required, exceedsMax, isZero }
 
+const successTransitionDelay = Duration(milliseconds: 400);
+
 class AttachQuantityInput extends FormzInput<String, AttachQuantityInputError> {
   final BigInt maxQuantity;
   final bool divisible;
@@ -67,6 +69,7 @@ class AssetAttachFormModel
     extends TransactionFormModelBase<ComposeAttachUtxoResponse> {
   final AddressV2 address;
   final String assetName;
+  final String assetDescription;
   final String assetBalanceNormalized;
   final int assetBalance;
   final bool assetDivisibility;
@@ -81,6 +84,7 @@ class AssetAttachFormModel
     super.error,
     required this.address,
     required this.assetName,
+    required this.assetDescription,
     required this.assetBalanceNormalized,
     required this.assetBalance,
     required this.assetDivisibility,
@@ -108,6 +112,7 @@ class AssetAttachFormModel
         feeEstimates: feeEstimates ?? this.feeEstimates,
         feeOptionInput: feeOptionInput ?? this.feeOptionInput,
         assetName: assetName ?? this.assetName,
+        assetDescription: assetDescription ?? this.assetDescription,
         assetBalanceNormalized:
             assetBalanceNormalized ?? this.assetBalanceNormalized,
         assetDivisibility: assetDivisibility ?? this.assetDivisibility,
@@ -171,6 +176,7 @@ class AssetAttachFormBloc
     required int assetBalance,
     required bool assetDivisibility,
     required AddressV2 address,
+    required String assetDescription,
     ComposeTransactionUseCase? composeTransactionUseCase,
     ComposeRepository? composeRepository,
     SignAndBroadcastTransactionUseCase? signAndBroadcastTransactionUseCase,
@@ -187,6 +193,7 @@ class AssetAttachFormBloc
           feeEstimates: feeEstimates,
           feeOptionInput: FeeOptionInput.pure(),
           assetName: assetName,
+          assetDescription: assetDescription,
           assetBalanceNormalized: assetBalanceNormalized,
           assetBalance: assetBalance,
           assetDivisibility: assetDivisibility,
@@ -287,7 +294,12 @@ class AssetAttachFormBloc
       emit(state.copyWith(
           submissionStatus: FormzSubmissionStatus.failure,
           error: error.toString()));
-    }, (attachedAtomicSwapSell) {
+    }, (attachedAtomicSwapSell) async {
+      emit(state.copyWith(
+          submissionStatus: FormzSubmissionStatus.success));
+
+      await Future.delayed(successTransitionDelay);
+
       emit(state.copyWith(
           submissionStatus: FormzSubmissionStatus.success,
           attachedAtomicSwapSell: attachedAtomicSwapSell));

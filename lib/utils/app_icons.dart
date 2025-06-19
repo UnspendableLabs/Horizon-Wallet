@@ -6,6 +6,7 @@ import 'package:horizon/data/sources/network/horizon_explorer_client_factory.dar
 import 'package:get_it/get_it.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/domain/entities/http_config.dart';
+import 'package:horizon/data/sources/network/horizon_explorer_client.dart';
 
 class AppIcons {
   static final AppIcons _instance = AppIcons._internal();
@@ -14,6 +15,23 @@ class AppIcons {
 
   final HorizonExplorerClientFactory _horizonExplorerClientFactory =
       GetIt.I<HorizonExplorerClientFactory>();
+
+  final Map<String, Future<AssetSrcResponse?>> _assetSrcFutureCache = {};
+
+  Future<AssetSrcResponse?> _getAssetSrcCached(
+    HttpConfig httpConfig,
+    String assetName,
+    String? description,
+    bool showLarge,
+  ) {
+    final cacheKey = '$assetName|$description|$showLarge|${httpConfig.hashCode}';
+    if (!_assetSrcFutureCache.containsKey(cacheKey)) {
+      _assetSrcFutureCache[cacheKey] = _horizonExplorerClientFactory
+          .getClient(httpConfig)
+          .getAssetSrc(assetName, description, showLarge);
+    }
+    return _assetSrcFutureCache[cacheKey]!;
+  }
 
   static const String _iconPath = kDebugMode ? '/icons' : 'assets/icons';
   static const String receive = '$_iconPath/receive.svg';
@@ -902,10 +920,8 @@ class AppIcons {
       );
     }
 
-    return FutureBuilder(
-      future: _horizonExplorerClientFactory
-          .getClient(httpConfig)
-          .getAssetSrc(assetName, description, showLarge),
+    return FutureBuilder<AssetSrcResponse?>(
+      future: _getAssetSrcCached(httpConfig, assetName, description, showLarge),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Container(
@@ -924,7 +940,16 @@ class AppIcons {
             snapshot.data?.src != null) {
           return ClipOval(
             child: CachedNetworkImage(
+              cacheKey: assetName,
               imageUrl: snapshot.data!.src!,
+              errorWidget: (_,__,___) {
+                return xcpIcon(
+                  width: width,
+                  height: height,
+                  fit: fit,
+                );
+
+              },
               width: width,
               height: height,
               fit: fit,

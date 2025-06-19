@@ -18,6 +18,7 @@ abstract class BalanceRepository {
   Future<List<MultiAddressBalance>> getBalancesForAddresses({
     required HttpConfig httpConfig,
     required List<String> addresses,
+    BalanceType? type,
   });
 
   Future<MultiAddressBalance> getBalancesForAddressesAndAsset({

@@ -1,10 +1,12 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:get_it/get_it.dart';
+import 'package:horizon/data/services/mempool_price_service_impl.dart';
 
 import 'package:horizon/data/services/secure_kv_service_impl.dart';
 import 'package:horizon/data/sources/network/horizon_explorer_client.dart';
 import 'package:horizon/domain/entities/asset_search_result.dart';
+import 'package:horizon/domain/services/mempool_price_service.dart';
 import 'package:horizon/domain/services/secure_kv_service.dart';
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 
@@ -113,6 +115,7 @@ import "package:horizon/domain/repositories/atomic_swap_repository.dart";
 import 'package:horizon/data/sources/repositories/atomic_swap_repository_impl.dart';
 
 import 'package:horizon/data/sources/network/mempool_space_client.dart';
+import 'package:horizon/data/sources/network/mempool_space_client_factory.dart';
 
 import 'package:horizon/domain/services/analytics_service.dart';
 import 'package:horizon/data/services/analytics_service_impl.dart';
@@ -349,6 +352,8 @@ void setup() {
   injector.registerSingleton<EsploraClientFactory>(EsploraClientFactory());
   injector.registerSingleton<CounterpartyClientFactory>(
       CounterpartyClientFactory());
+  injector.registerSingleton<MempoolSpaceClientFactory>(
+      MempoolSpaceClientFactory());
 
   injector
       .registerSingleton<AssetSearchRepository>(AssetSearchRepositoryImpl());
@@ -449,7 +454,8 @@ void setup() {
 
   injector.registerSingleton<FeeEstimatesRespository>(
       FeeEstimatesRespositoryMempoolSpaceImpl(
-          mempoolSpaceApi: MempoolSpaceApi()));
+          mempoolSpaceClientFactory:
+              GetIt.I.get<MempoolSpaceClientFactory>()));
 
   injector.registerSingleton<NodeInfoRepository>(NodeInfoRepositoryImpl());
 
@@ -661,6 +667,9 @@ void setup() {
       // addressRepository: GetIt.I<AddressRepository>(),
       // importedAddressRepository: GetIt.I<ImportedAddressRepository>(),
       analyticsService: GetIt.I<AnalyticsService>()));
+
+  injector.registerSingleton<MempoolPriceService>(MempoolPriceServiceImpl(
+      mempoolSpaceClientFactory: GetIt.I.get<MempoolSpaceClientFactory>()));
 }
 
 class CustomDioException extends DioException {
