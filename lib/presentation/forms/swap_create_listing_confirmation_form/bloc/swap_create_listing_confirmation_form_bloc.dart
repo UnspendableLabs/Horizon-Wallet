@@ -3,7 +3,6 @@ import 'package:formz/formz.dart';
 import 'package:get_it/get_it.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:decimal/decimal.dart';
 import 'package:horizon/domain/entities/http_config.dart';
 import 'package:horizon/domain/entities/fee_option.dart';
 import 'package:horizon/domain/entities/fee_estimates.dart';
@@ -17,12 +16,12 @@ import 'package:horizon/domain/repositories/utxo_repository.dart';
 import "package:horizon/presentation/forms/base/transaction_form_model_base.dart";
 import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
 import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transaction_usecase.dart';
-import 'package:horizon/presentation/forms/asset_balance_form/bloc/asset_balance_form_bloc.dart'
+
+import 'package:horizon/presentation/screens/swap/view/flows/atomic_swap_sell/atomic_swap_sell_flow.dart'
     show AttachedAtomicSwapSell;
 import 'package:horizon/domain/entities/address_v2.dart';
 export "package:horizon/presentation/forms/base/transaction_form_model_base.dart";
 import 'package:rxdart/rxdart.dart';
-import 'package:bloc_concurrency/bloc_concurrency.dart';
 
 class SwapCreateListingFormModel
     extends TransactionFormModelBase<ComposeAttachUtxoResponse> {
@@ -72,7 +71,7 @@ class SwapCreateListingFormModel
       feeOptionInput: feeOptionInput ?? this.feeOptionInput,
       giveAsset: giveAsset ?? this.giveAsset,
       giveQuantityNormalized:
-          giveAssetQuantityNormalized ?? this.giveQuantityNormalized,
+          giveAssetQuantityNormalized ?? giveQuantityNormalized,
       submissionStatus: submissionStatus ?? this.submissionStatus,
       error: error ?? this.error,
       onChainPayment: onChainPayment ?? this.onChainPayment,
@@ -215,7 +214,7 @@ class SwapCreateListingFormBloc
 
     emit(newState);
 
-    add(OnChainPaymentRequested());
+    add(const OnChainPaymentRequested());
   }
 
   _handleFeeOptionChangedCallback(
@@ -262,7 +261,7 @@ class SwapCreateListingFormBloc
   ) async {
     emit(state.copyWith(
         submissionStatus: FormzSubmissionStatus.inProgress,
-        showSignPsbtModal: Option.of(true)));
+        showSignPsbtModal: const Option.of(true)));
   }
 
   void _handleCloseSignPsbtModalClicked(

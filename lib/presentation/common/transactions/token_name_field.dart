@@ -38,11 +38,12 @@ class TokenNameField extends StatelessWidget {
 
     return Container(
       height: 56,
-      decoration: decoration ?? BoxDecoration(
-        borderRadius: BorderRadius.circular(18),
-        color: customTheme.inputBackground,
-        border: Border.all(color: customTheme.inputBorderColor),
-      ),
+      decoration: decoration ??
+          BoxDecoration(
+            borderRadius: BorderRadius.circular(18),
+            color: customTheme.inputBackground,
+            border: Border.all(color: customTheme.inputBorderColor),
+          ),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       child: Row(
         children: [

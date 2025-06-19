@@ -474,11 +474,12 @@ class _GradientQuantityInputV2State extends State<GradientQuantityInputV2> {
                         ],
                       ),
                     ),
-                      if(widget.showMaxButton == true) Positioned(
+                    if (widget.showMaxButton == true)
+                      Positioned(
                         right: 14,
                         bottom: 12,
                         child: GestureDetector(
-                          onTap:  _handleMaxPressed ,
+                          onTap: _handleMaxPressed,
                           child: Container(
                             height: 32,
                             padding: const EdgeInsets.symmetric(

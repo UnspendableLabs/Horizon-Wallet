@@ -43,7 +43,10 @@ class TransactionSuccessful extends StatelessWidget {
       children: [
         const TxnSuccessAnimation(),
         commonHeightSizedBox,
-        Text(title ?? "Transaction Successful", style: Theme.of(context).textTheme.titleMedium,),
+        Text(
+          title ?? "Transaction Successful",
+          style: Theme.of(context).textTheme.titleMedium,
+        ),
         const SizedBox(
           height: 32,
         ),

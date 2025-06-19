@@ -156,7 +156,7 @@ class CreatePsbtSignHandler extends StatelessWidget {
                           // pageTitle: Text("Sign PSBT",
                           //     style: Theme.of(context).textTheme.headlineSmall),
                           child: state.unsignedPsbtHex.fold(
-                            () => SizedBox.shrink(),
+                            () => const SizedBox.shrink(),
                             (unsignedPsbtHex) => BlocProvider(
                                 create: (context) => SignPsbtBloc(
                                       httpConfig: session.httpConfig,
@@ -249,7 +249,7 @@ class _CreatePsbtFormState extends State<CreatePsbtForm> {
               Expanded(
                   child: QuantityText(
                 quantity: widget.quantityNormalized,
-                style: TextStyle(fontSize: 35),
+                style: const TextStyle(fontSize: 35),
               )),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.center,

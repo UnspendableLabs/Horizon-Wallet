@@ -14,61 +14,63 @@ import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:horizon/presentation/session/bloc/session_state.dart';
 import 'package:horizon/utils/app_icons.dart';
 
+class SendFormReviewActions {
+  final Function onSubmit;
+  const SendFormReviewActions({required this.onSubmit});
+}
 
-  
-  class SendFormReviewActions {
-    final Function onSubmit;
-    const SendFormReviewActions({required this.onSubmit});
+class SendReviewFormProvider extends StatelessWidget {
+  final List<SendEntryFormModel> sendEntries;
+  final ComposeSendUnion composeResponse;
+  final Widget Function(
+      SendFormReviewActions actions, SendReviewFormModel state) child;
+
+  const SendReviewFormProvider(
+      {super.key,
+      required this.sendEntries,
+      required this.composeResponse,
+      required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (context) => SendReviewFormBloc(
+          sendEntries: sendEntries, composeResponse: composeResponse),
+      child: BlocBuilder<SendReviewFormBloc, SendReviewFormModel>(
+        builder: (context, state) => child(SendFormReviewActions(
+          onSubmit: () {
+            context.read<SendReviewFormBloc>().add(OnSignAndSubmitEvent());
+          },
+        ), state),
+      ),
+    );
   }
+}
 
-  class SendReviewFormProvider extends StatelessWidget {
-    final List<SendEntryFormModel> sendEntries;
-    final ComposeSendUnion composeResponse;
-    final Widget Function(SendFormReviewActions actions, SendReviewFormModel state) child;
-    
-    const SendReviewFormProvider({super.key, required this.sendEntries, required this.composeResponse, required this.child});
+class SendReviewFormSuccessHandler extends StatelessWidget {
+  final Function(SendFlowConfirmationStep) onSuccess;
+  const SendReviewFormSuccessHandler({super.key, required this.onSuccess});
 
-    @override
-    Widget build(BuildContext context) {
-      return BlocProvider(
-        create: (context) => SendReviewFormBloc(sendEntries: sendEntries, composeResponse: composeResponse),
-        child: BlocBuilder<SendReviewFormBloc, SendReviewFormModel>(
-          builder: (context, state) => child(
-            SendFormReviewActions(onSubmit: (){
-              context.read<SendReviewFormBloc>().add(OnSignAndSubmitEvent());
-            },),
-            state
-          ),
-        ),
-      );
-    }
+  @override
+  Widget build(BuildContext context) {
+    return BlocListener<SendReviewFormBloc, SendReviewFormModel>(
+      listener: (context, state) {
+        if (state.submissionStatus.isSuccess) {
+          onSuccess(SendFlowConfirmationStep(
+            signedTxHex: state.signedTxHex,
+            signedTxHash: state.signedTxHash,
+          ));
+        }
+      },
+      child: const SizedBox.shrink(),
+    );
   }
-  
-  class SendReviewFormSuccessHandler extends StatelessWidget {
-    final Function(SendFlowConfirmationStep) onSuccess;
-    const SendReviewFormSuccessHandler({super.key, required this.onSuccess});
-
-    @override
-    Widget build(BuildContext context) {
-      return BlocListener<SendReviewFormBloc, SendReviewFormModel>(
-        listener: (context, state) {
-          if (state.submissionStatus.isSuccess) {
-            onSuccess(SendFlowConfirmationStep(
-              signedTxHex: state.signedTxHex,
-              signedTxHash: state.signedTxHash,
-            )); 
-          }
-        },
-        child: const SizedBox.shrink(),
-      );
-    }
-  }
+}
 
 class SendReviewForm extends StatefulWidget {
   final SendReviewFormModel state;
   final SendFormReviewActions actions;
-  const SendReviewForm(
-      {super.key, required this.state, required this.actions});
+  const SendReviewForm({super.key, required this.state, required this.actions});
 
   @override
   State<SendReviewForm> createState() => _SendReviewFormState();
@@ -76,7 +78,6 @@ class SendReviewForm extends StatefulWidget {
 
 class _SendReviewFormState extends State<SendReviewForm> {
   final appIcons = AppIcons();
-  
 
   _regularProperty(context, label, value, {Widget? widget}) {
     return Padding(
@@ -103,7 +104,8 @@ class _SendReviewFormState extends State<SendReviewForm> {
     );
   }
 
-  _renderSendEntry(HttpConfig httpConfig, SendEntryFormModel send, String sourceAddress) {
+  _renderSendEntry(
+      HttpConfig httpConfig, SendEntryFormModel send, String sourceAddress) {
     return HorizonCard(
         backgroundColor:
             Theme.of(context).extension<CustomThemeExtension>()?.bgBlackOrWhite,
@@ -138,7 +140,8 @@ class _SendReviewFormState extends State<SendReviewForm> {
                         context: context,
                         width: 24,
                         height: 24,
-                        description: send.balanceSelectorInput.value?.assetInfo.description,
+                        description: send
+                            .balanceSelectorInput.value?.assetInfo.description,
                         assetName:
                             send.balanceSelectorInput.value?.asset ?? ""),
                     const SizedBox(width: 10),
@@ -154,8 +157,7 @@ class _SendReviewFormState extends State<SendReviewForm> {
                 ),
               )),
           commonHeightSizedBox,
-          _regularProperty(context, "Source Address",
-              sourceAddress),
+          _regularProperty(context, "Source Address", sourceAddress),
           commonHeightSizedBox,
           _regularProperty(
               context, "Recipient Address", send.destinationInput.value),
@@ -187,42 +189,46 @@ class _SendReviewFormState extends State<SendReviewForm> {
   @override
   Widget build(BuildContext context) {
     final session = context.watch<SessionStateCubit>().state.successOrThrow();
-    
+
     // Extract response and source address once
-    final (response, sourceAddress) = switch(widget.state.composeResponse) {
+    final (response, sourceAddress) = switch (widget.state.composeResponse) {
       ComposeSendMpma(response: var resp) => (resp, resp.params.source),
       ComposeSendSingle(response: var resp) => (resp, resp.params.source),
-      _ => throw Exception("Invalid compose response type: ${widget.state.composeResponse.runtimeType}"),
+      _ => throw Exception(
+          "Invalid compose response type: ${widget.state.composeResponse.runtimeType}"),
     };
-    
-    return  Column(
-          children: [
-          ...widget.state.sendEntries.map((e) => _renderSendEntry(session.httpConfig, e, sourceAddress)),
-            commonHeightSizedBox,
-            const Divider(
-              color: transparentBlack33,
-              height: 20,
-              thickness: 1,
-            ),
-            commonHeightSizedBox,
-            CollapsableWidget(
-                title: "Fee Details",
-                child: Column(
-                  children: [
-                    _buildLabelValueRow("Fee", "${response.btcFee} sats"),
-                    _buildLabelValueRow("Virtual Size", "${response.signedTxEstimatedSize.virtualSize} vbytes"),
-                    _buildLabelValueRow("Adjusted Virtual Size", "${response.signedTxEstimatedSize.adjustedVirtualSize} vbytes"),
-                  ],
-                )),
-            commonHeightSizedBox,
-            HorizonButton(
-                child: TextButtonContent(value: "Sign and Submit"),
-                isLoading: widget.state.submissionStatus.isInProgress,
-                onPressed: () {
-                  widget.actions.onSubmit();
-                }),
-            const SizedBox(height: 24),
-          ],
+
+    return Column(
+      children: [
+        ...widget.state.sendEntries
+            .map((e) => _renderSendEntry(session.httpConfig, e, sourceAddress)),
+        commonHeightSizedBox,
+        const Divider(
+          color: transparentBlack33,
+          height: 20,
+          thickness: 1,
+        ),
+        commonHeightSizedBox,
+        CollapsableWidget(
+            title: "Fee Details",
+            child: Column(
+              children: [
+                _buildLabelValueRow("Fee", "${response.btcFee} sats"),
+                _buildLabelValueRow("Virtual Size",
+                    "${response.signedTxEstimatedSize.virtualSize} vbytes"),
+                _buildLabelValueRow("Adjusted Virtual Size",
+                    "${response.signedTxEstimatedSize.adjustedVirtualSize} vbytes"),
+              ],
+            )),
+        commonHeightSizedBox,
+        HorizonButton(
+            child: TextButtonContent(value: "Sign and Submit"),
+            isLoading: widget.state.submissionStatus.isInProgress,
+            onPressed: () {
+              widget.actions.onSubmit();
+            }),
+        const SizedBox(height: 24),
+      ],
     );
   }
 }

@@ -135,7 +135,8 @@ class SendComposeFormModel extends TransactionFormModelBase {
           return left("Invalid entry");
         }
         assets.add(entry.balanceSelectorInput.value!.asset);
-        quantities.add(entry.quantityInput.valueAsBigInt.getOrElse(() => throw Exception("Invalid quantity")));
+        quantities.add(entry.quantityInput.valueAsBigInt
+            .getOrElse(() => throw Exception("Invalid quantity")));
         destinations.add(entry.destinationInput.value);
       }
       return right(ComposeMpmaSendParams(
@@ -214,8 +215,8 @@ class SendComposeFormBloc
     final newEntries = List<SendEntryFormModel>.from(state.sendEntries)
       ..add(SendEntryFormModel(
         destinationInput: const DestinationInput.pure(),
-        quantityInput: QuantityInput.pure(
-            maxQuantity: BigInt.zero, divisible: false),
+        quantityInput:
+            QuantityInput.pure(maxQuantity: BigInt.zero, divisible: false),
         balanceSelectorInput: const BalanceSelectorInput.pure(),
         memoInput: const MemoInput.pure(),
       ));

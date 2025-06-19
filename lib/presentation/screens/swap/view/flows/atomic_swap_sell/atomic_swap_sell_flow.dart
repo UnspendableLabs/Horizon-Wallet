@@ -1,7 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
-import 'package:horizon/common/format.dart';
 import 'package:horizon/utils/app_icons.dart';
 import 'package:horizon/domain/entities/multi_address_balance.dart';
 import 'package:horizon/presentation/forms/base/flow/view/flow_step.dart';
@@ -12,18 +10,84 @@ import 'package:horizon/presentation/forms/asset_balance_form/asset_balance_form
 import 'package:horizon/presentation/forms/asset_balance_form/bloc/asset_balance_form_bloc.dart';
 import 'package:horizon/extensions.dart';
 
-import 'package:equatable/equatable.dart';
-import 'package:flutter/material.dart';
-import 'package:horizon/presentation/forms/base/flow/view/flow_step.dart';
-import 'package:flow_builder/flow_builder.dart';
-import "package:fpdart/fpdart.dart" hide State;
-import 'package:horizon/presentation/forms/asset_balance_form/bloc/asset_balance_form_bloc.dart';
-import 'package:horizon/extensions.dart';
-import 'package:horizon/utils/app_icons.dart';
 import 'package:horizon/presentation/forms/asset_attach_form/asset_attach_form_view.dart';
-import 'package:horizon/presentation/screens/atomic_swap/forms/create_swap_listing.dart';
 import 'package:horizon/presentation/forms/create_psbt_form/create_psbt_form_view.dart';
 import 'package:horizon/presentation/forms/swap_create_listing_confirmation_form/swap_create_listing_confirmation_form_view.dart';
+
+sealed class AtomicSwapSellVariant {}
+
+class AttachedAtomicSwapSell extends AtomicSwapSellVariant {
+  final String asset;
+  final String quantityNormalized;
+  final int quantity;
+  final String utxo;
+  final String utxoAddress;
+
+  AttachedAtomicSwapSell({
+    required this.asset,
+    required this.quantityNormalized,
+    required this.quantity,
+    required this.utxo,
+    required this.utxoAddress,
+  });
+}
+
+class UnattachedAtomicSwapSell extends AtomicSwapSellVariant {
+  final String? description;
+  final bool divisible;
+  final String address;
+  final String asset;
+  final String quantityNormalized;
+  final int quantity;
+
+  UnattachedAtomicSwapSell({
+    required this.address,
+    required this.divisible,
+    required this.asset,
+    required this.quantityNormalized,
+    required this.quantity,
+    required this.description,
+  });
+}
+
+extension AtomicSwapSellVariantX on AssetBalanceFormModel {
+  Either<String, AtomicSwapSellVariant> get atomicSwapSellVariant {
+    final input = balanceInput.value;
+    if (input == null) {
+      return left("Balance input is null");
+    }
+
+    final entry = input.entry;
+    final asset = multiAddressBalance.asset;
+
+    if (entry.address != null) {
+      return right(
+        UnattachedAtomicSwapSell(
+          address: entry.address!,
+          asset: asset,
+          quantityNormalized: entry.quantityNormalized,
+          quantity: entry.quantity,
+          description: multiAddressBalance.assetInfo.description,
+          divisible: multiAddressBalance.assetInfo.divisible,
+        ),
+      );
+    }
+
+    if (entry.utxo != null && entry.utxoAddress != null) {
+      return right(
+        AttachedAtomicSwapSell(
+          asset: asset,
+          quantityNormalized: entry.quantityNormalized,
+          quantity: entry.quantity,
+          utxo: entry.utxo!,
+          utxoAddress: entry.utxoAddress!,
+        ),
+      );
+    }
+
+    return left("Invalid balance input");
+  }
+}
 
 class SwapSellConfirmationDetails {
   final BigInt btcPrice;
@@ -65,12 +129,12 @@ class AtomicSwapSellFlowController extends FlowController<AtomicSwapSellModel> {
 }
 
 class AtomicSwapSellFlowView extends StatefulWidget {
-  final AddressV2 address;
+  final List<AddressV2> addresses;
 
   final MultiAddressBalance balances;
 
   const AtomicSwapSellFlowView(
-      {required this.address, required this.balances, super.key});
+      {required this.addresses, required this.balances, super.key});
 
   @override
   State<AtomicSwapSellFlowView> createState() => _AtomicSwapSellFlowViewState();
@@ -113,7 +177,10 @@ class _AtomicSwapSellFlowViewState extends State<AtomicSwapSellFlowView> {
               multiAddressBalance: widget.balances,
               child: (actions, state) => Column(
                 children: [
-                  AssetBalanceSuccessHandler(onSuccess: (option) {
+                  AssetBalanceSuccessHandler<AtomicSwapSellVariant>(
+                      mapSuccess: (state) {
+                    return state.atomicSwapSellVariant;
+                  }, onSuccess: (option) {
                     _controller.update(
                       (model) => model.copyWith(
                         atomicSwapSellVariant: Option.of(option),
@@ -145,13 +212,11 @@ class _AtomicSwapSellFlowViewState extends State<AtomicSwapSellFlowView> {
                     title: "Attach assets to swap",
                     widthFactor: .5,
                     body: AssetAttachFormProvider(
-                        // TODO: this is pretty gross
-                        address: variant.address == widget.address.address
-                            ? widget.address
-                            : throw Exception("invariant: address mismatch"),
+                        address: widget.addresses.firstWhere(
+                            (address) => address.address == variant.address),
                         asset: variant.asset,
                         quantity: variant.quantity,
-                        quantityNormalized: quantityRemoveTrailingZeros(variant.quantityNormalized),
+                        quantityNormalized: variant.quantityNormalized,
                         description: variant.description,
                         divisible: variant.divisible,
                         child: (actions, state) => Column(
@@ -171,14 +236,12 @@ class _AtomicSwapSellFlowViewState extends State<AtomicSwapSellFlowView> {
                   )),
                 AttachedAtomicSwapSell() => MaterialPage(
                     child: FlowStep(
-                        title: "Swap Listing",
+                        title: "Create PSBT",
                         widthFactor: .8,
                         body: CreatePsbtFormProvider(
                           utxoID: variant.utxo,
-                          // TODO: smell
-                          address: variant.utxoAddress == widget.address.address
-                              ? widget.address
-                              : throw Exception("invariant: address mismatch"),
+                          address: widget.addresses.firstWhere((address) =>
+                              address.address == variant.utxoAddress),
                           child: (actions, state) => Column(
                             children: [
                               CreatePsbtSuccessHandler(
@@ -206,7 +269,7 @@ class _AtomicSwapSellFlowViewState extends State<AtomicSwapSellFlowView> {
                                 state: state,
                                 asset: variant.asset,
                                 quantity: variant.quantity,
-                                quantityNormalized: quantityRemoveTrailingZeros(variant.quantityNormalized),
+                                quantityNormalized: variant.quantityNormalized,
                                 utxo: variant.utxo,
                                 utxoAddress: variant.utxoAddress,
                               ),
@@ -219,7 +282,8 @@ class _AtomicSwapSellFlowViewState extends State<AtomicSwapSellFlowView> {
                     title: "Post Listing",
                     widthFactor: .9,
                     body: SwapCreateListingFormProvider(
-                        address: widget.address,
+                        address: widget.addresses.firstWhere((address) =>
+                            address.address == details.sellDetails.utxoAddress),
                         giveAsset: details.sellDetails.asset,
                         giveQuantity: details.sellDetails.quantity,
                         giveQuantityNormalized:

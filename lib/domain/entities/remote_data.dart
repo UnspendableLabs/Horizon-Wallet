@@ -1,8 +1,5 @@
 import 'package:equatable/equatable.dart';
 
-
-
-
 sealed class RemoteData<T> extends Equatable {
   const RemoteData();
 
@@ -117,7 +114,6 @@ extension RemoteDataCombineX<A> on RemoteData<A> {
   ) {
     if (this is Failure) return Failure<R>((this as Failure).error);
     if (other is Failure) return Failure<R>((other as Failure).error);
-
 
     if (this is Loading || other is Loading) return Loading<R>();
     if (this is Initial || other is Initial) return Initial<R>();

@@ -2,7 +2,6 @@ import 'package:horizon/domain/entities/atomic_swap/on_chain_payment.dart';
 import "package:fpdart/fpdart.dart";
 import 'package:horizon/domain/entities/http_config.dart';
 
-
 abstract class AtomicSwapRepository {
   Future<OnChainPayment> createOnChainPayment({
     required HttpConfig httpConfig,

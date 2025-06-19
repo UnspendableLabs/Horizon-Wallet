@@ -17,7 +17,6 @@ import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
 import 'package:horizon/presentation/screens/compose_issuance/usecase/fetch_form_data.dart';
 import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
-import 'package:horizon/domain/entities/decryption_strategy.dart';
 
 class ComposeIssuanceEventParams {
   final String name;

@@ -108,8 +108,7 @@ class AssetSearchDialog extends StatefulWidget {
       {
       // required this.onAssetSelected,
       required this.onQueryChanged,
-      Key? key})
-      : super(key: key);
+      super.key});
 
   @override
   _AssetSearchDialogState createState() => _AssetSearchDialogState();
@@ -204,7 +203,8 @@ class _AssetSearchDialogState extends State<AssetSearchDialog> {
                 child: GestureDetector(
                   onTap: () {}, // absorb inside tap
                   child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 480, minWidth: 200),
+                    constraints:
+                        const BoxConstraints(maxWidth: 480, minWidth: 200),
                     child: Container(
                       margin: const EdgeInsets.symmetric(horizontal: 20),
                       decoration: BoxDecoration(
@@ -212,7 +212,8 @@ class _AssetSearchDialogState extends State<AssetSearchDialog> {
                         border: GradientBoxBorder(context: context, width: 1),
                         color: transparentWhite8,
                       ),
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 24),
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
@@ -221,12 +222,13 @@ class _AssetSearchDialogState extends State<AssetSearchDialog> {
                             suggestionsController: _suggestionsController,
                             suggestionsCallback: (term) {
                               widget.onQueryChanged(term);
+                              return null;
                             },
                             onSelected: (selection) {
                               Navigator.of(context).pop(AssetPairFormOption(
                                   name: selection.name,
                                   description: selection.description,
-                                  balance: Option.none()));
+                                  balance: const Option.none()));
 
                               // if (widget.onAssetSelected != null) {
                               //   widget.onAssetSelected!(AssetPairFormOption(

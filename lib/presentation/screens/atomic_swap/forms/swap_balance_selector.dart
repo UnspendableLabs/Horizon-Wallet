@@ -7,7 +7,6 @@ import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:horizon/presentation/session/bloc/session_state.dart';
 import 'package:horizon/utils/app_icons.dart';
 
-
 class SwapBalanceSelector extends StatefulWidget {
   const SwapBalanceSelector({super.key});
 
@@ -125,7 +124,8 @@ class _SwapBalanceSelectorState extends State<SwapBalanceSelector> {
         ),
         Expanded(
           child: ConstrainedBox(
-            constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.7),
+            constraints: BoxConstraints(
+                maxHeight: MediaQuery.of(context).size.height * 0.7),
             child: SingleChildScrollView(
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),

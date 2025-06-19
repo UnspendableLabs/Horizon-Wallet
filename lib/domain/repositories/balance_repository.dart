@@ -1,4 +1,3 @@
-
 import 'package:fpdart/fpdart.dart';
 import 'package:horizon/common/constants.dart';
 import 'package:horizon/domain/entities/balance.dart';

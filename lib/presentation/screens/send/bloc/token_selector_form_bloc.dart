@@ -29,7 +29,6 @@ class TokenSelectorOption extends Equatable {
   List<Object?> get props => [name, description, balance];
 }
 
-
 enum TokenSelectorInputError {
   required,
 }
@@ -74,7 +73,6 @@ class TokenSelectorFormModel with FormzMixin {
       submissionStatus: submissionStatus ?? this.submissionStatus,
     );
   }
-
 }
 
 class TokenSelectorFormEvent extends Equatable {

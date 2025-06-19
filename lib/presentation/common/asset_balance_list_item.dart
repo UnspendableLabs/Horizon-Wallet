@@ -88,7 +88,7 @@ class AssetBalanceListItemWithOptionalBalance extends StatelessWidget {
                             fontSize: 14,
                           ),
                     ),
-                    Text("${balance.totalNormalized}",
+                    Text(balance.totalNormalized,
                         style: Theme.of(context).textTheme.labelSmall?.copyWith(
                               fontWeight: FontWeight.w500,
                             ))

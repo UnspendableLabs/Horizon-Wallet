@@ -1,9 +1,12 @@
-import 'dart:convert';
-
 import 'package:dio/dio.dart';
 import 'package:horizon/domain/entities/asset_search_result.dart';
 import 'package:horizon/domain/entities/atomic_swap/on_chain_payment.dart';
+import 'package:retrofit/retrofit.dart';
+import 'package:json_annotation/json_annotation.dart';
 
+part 'horizon_explorer_client.g.dart';
+
+@JsonSerializable(fieldRename: FieldRename.snake)
 class AssetSrcResponse {
   final String? src;
 
@@ -11,13 +14,11 @@ class AssetSrcResponse {
     this.src,
   });
 
-  factory AssetSrcResponse.fromJson(Map<String, dynamic> json) {
-    return AssetSrcResponse(
-      src: json['src'],
-    );
-  }
+  factory AssetSrcResponse.fromJson(Map<String, dynamic> json) =>
+      _$AssetSrcResponseFromJson(json);
 }
 
+@JsonSerializable(fieldRename: FieldRename.snake)
 class AssetSearchResultModelHit {
   final String asset;
   final String assetLongname;
@@ -34,16 +35,11 @@ class AssetSearchResultModelHit {
   });
 
   factory AssetSearchResultModelHit.fromJson(Map<String, dynamic> json) {
-    return AssetSearchResultModelHit(
-      asset: json['asset'],
-      assetLongname: json['asset_longname'],
-      description: json['description'],
-      issuer: json['issuer'],
-      source: json['source'],
-    );
+    return _$AssetSearchResultModelHitFromJson(json);
   }
 }
 
+@JsonSerializable(fieldRename: FieldRename.snake)
 class AssetSearchResultModel {
   final String type;
   final String href;
@@ -53,11 +49,7 @@ class AssetSearchResultModel {
       {required this.type, required this.href, required this.hit});
 
   factory AssetSearchResultModel.fromJson(Map<String, dynamic> json) {
-    return AssetSearchResultModel(
-      type: json['asset'],
-      href: json['href'],
-      hit: AssetSearchResultModelHit.fromJson(json['hit']),
-    );
+    return _$AssetSearchResultModelFromJson(json);
   }
 
   AssetSearchResult toEntity() {
@@ -68,61 +60,162 @@ class AssetSearchResultModel {
   }
 }
 
-class OnChainPaymentResponse {
+@JsonSerializable(fieldRename: FieldRename.snake)
+class AssetSearchResponse {
+  final List<AssetSearchResultModel> results;
+  AssetSearchResponse({required this.results});
+
+  factory AssetSearchResponse.fromJson(Map<String, dynamic> json) =>
+      _$AssetSearchResponseFromJson(json);
+}
+
+@JsonSerializable()
+class OnChainPaymentModel {
   final String psbt;
   final List<int> inputsToSign;
-  final String rawTransaction;
+  final String rawtransaction;
   final String feePaymentId;
 
-  OnChainPaymentResponse({
+  OnChainPaymentModel({
     required this.psbt,
     required this.inputsToSign,
-    required this.rawTransaction,
+    required this.rawtransaction,
     required this.feePaymentId,
   });
 
-  factory OnChainPaymentResponse.fromJson(Map<String, dynamic> json) {
-    return OnChainPaymentResponse(
-      psbt: json['psbt'] as String,
-      inputsToSign: List<int>.from(json['inputsToSign'] as List),
-      rawTransaction: json['rawtransaction'] as String,
-      feePaymentId: json['feePaymentId'] as String,
-    );
+  factory OnChainPaymentModel.fromJson(Map<String, dynamic> json) {
+    return _$OnChainPaymentModelFromJson(json);
   }
 
   OnChainPayment toEntity() {
     return OnChainPayment(
       psbt: psbt,
       inputsToSign: inputsToSign,
-      rawTransaction: rawTransaction,
+      rawTransaction: rawtransaction,
       feePaymentId: feePaymentId,
     );
   }
 }
 
-class HorizonExplorerApi {
-  final Dio _dio;
-  HorizonExplorerApi({required Dio dio}) : _dio = dio;
+@JsonSerializable(fieldRename: FieldRename.snake)
+class OnChainPaymentResponse {
+  final OnChainPaymentModel data;
 
+  OnChainPaymentResponse({
+    required this.data,
+  });
+
+  factory OnChainPaymentResponse.fromJson(Map<String, dynamic> json) {
+    return _$OnChainPaymentResponseFromJson(json);
+  }
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class AtomicSwap {
+  final String id;
+  final bool funded;
+  final bool filled;
+  final bool delisted;
+  final bool expired;
+  final bool pending;
+  final bool anomalous;
+  final bool confirmed;
+  final String? txId;
+  final bool sellerDelisted;
+  final String sellerAddress;
+  final String? buyerAddress;
+  final String assetUtxoId;
+  final int assetUtxoValue;
+  final String? assetName;
+  final int? assetQuantity;
+  final num price;
+  final num? pricePerUnit;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  final DateTime? expiresAt;
+
+  AtomicSwap({
+    required this.id,
+    required this.funded,
+    required this.filled,
+    required this.delisted,
+    required this.expired,
+    required this.pending,
+    required this.anomalous,
+    required this.confirmed,
+    required this.txId,
+    required this.sellerDelisted,
+    required this.sellerAddress,
+    required this.buyerAddress,
+    required this.assetUtxoId,
+    required this.assetUtxoValue,
+    required this.assetName,
+    required this.assetQuantity,
+    required this.price,
+    required this.pricePerUnit,
+    required this.createdAt,
+    required this.updatedAt,
+    required this.expiresAt,
+  });
+
+  factory AtomicSwap.fromJson(Map<String, dynamic> json) {
+    return _$AtomicSwapFromJson(json);
+  }
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class AtomicSwapListResponse {
+  final List<AtomicSwap> swaps;
+  final int count;
+  AtomicSwapListResponse({
+    required this.swaps,
+    required this.count,
+  });
+  factory AtomicSwapListResponse.fromJson(Map<String, dynamic> json) {
+    return _$AtomicSwapListResponseFromJson(json);
+  }
+}
+
+@RestApi()
+abstract class HorizonExplorerApii {
+  factory HorizonExplorerApii(Dio dio, {String baseUrl}) = _HorizonExplorerApii;
+
+  @GET('/explorer/asset-src')
   Future<AssetSrcResponse> getAssetSrc(
-      String assetName, String? description, bool? showLarge) async {
-    final response = await _dio.get(
-        '/explorer/asset-src?asset=$assetName&description=$description&show_large=$showLarge');
-    if (response.data is String) {
-      return AssetSrcResponse.fromJson(jsonDecode(response.data));
-    }
-    return AssetSrcResponse.fromJson(response.data);
+    @Query('asset') String asset,
+    @Query('description') String? description,
+    @Query('show_large') bool? showLarge,
+  );
+
+  @GET('/explorer/search')
+  Future<AssetSearchResponse> _searchAssetsRaw(@Query('s') String query);
+
+  @POST('/on-chain-payment')
+  Future<OnChainPaymentResponse> _createOnChainPayment(
+      @Body() Map<String, dynamic> body);
+
+  @GET('/atomic-swaps')
+  Future<AtomicSwapListResponse> _getAtomicSwapsRaw(
+      @Query('asset_name') String assetName);
+}
+
+class HorizonExplorerApi {
+  final HorizonExplorerApii _api;
+
+  HorizonExplorerApi(Dio dio)
+      : _api = HorizonExplorerApii(dio, baseUrl: dio.options.baseUrl);
+
+  Future<AssetSrcResponse> getAssetSrc({
+    required String asset,
+    String? description,
+    bool? showLarge,
+  }) {
+    return _api.getAssetSrc(asset, description, showLarge);
   }
 
-  Future<List<AssetSearchResult>> searchAssets(String query) async {
-    final json = await _dio.get("/explorer/search?s=$query");
-
-    List<Map<String, dynamic>> results = json.data['results'];
-
-    return results
-        .map((r) => AssetSearchResultModel.fromJson(r))
-        .map((a) => a.toEntity())
-        .toList();
+  Future<List<AssetSearchResult>> searchAssets({required String query}) async {
+    final json = await _api._searchAssetsRaw(query);
+    return json.results.map((a) => a.toEntity()).toList();
   }
 
   Future<OnChainPaymentResponse> createOnChainPayment({
@@ -130,18 +223,18 @@ class HorizonExplorerApi {
     required List<String> utxoSetIds,
     required num satsPerVbyte,
   }) async {
-    final res = await _dio.post(
-      '/on-chain-payment',
-      data: {
-        "data": {
-          'address': address,
-          'utxoSetIds': utxoSetIds,
-          'satsPerVbyte': satsPerVbyte,
-        }
-      },
-    );
+    final body = {
+      'data': {
+        'address': address,
+        'utxoSetIds': utxoSetIds,
+        'satsPerVbyte': satsPerVbyte,
+      }
+    };
+    return await _api._createOnChainPayment(body);
+  }
 
-    final data = res.data is String ? jsonDecode(res.data) : res.data;
-    return OnChainPaymentResponse.fromJson((data as Map<String, dynamic>)["data"]);
+  Future<AtomicSwapListResponse> getAtomicSwaps(
+      {required String assetName}) async {
+    return await _api._getAtomicSwapsRaw(assetName);
   }
 }

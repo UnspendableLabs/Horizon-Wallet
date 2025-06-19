@@ -117,7 +117,6 @@ class _SwapFormTokenSelectionState extends State<SwapFormTokenSelection> {
                           });
                         },
                         selectedItem: _toToken,
-
                         hintText: "Select Token")
                   ],
                 ),

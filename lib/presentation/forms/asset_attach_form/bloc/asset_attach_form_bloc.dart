@@ -13,7 +13,7 @@ import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 import "package:horizon/presentation/forms/base/transaction_form_model_base.dart";
 import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
 import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transaction_usecase.dart';
-import 'package:horizon/presentation/forms/asset_balance_form/bloc/asset_balance_form_bloc.dart'
+import 'package:horizon/presentation/screens/swap/view/flows/atomic_swap_sell/atomic_swap_sell_flow.dart'
     show AttachedAtomicSwapSell;
 import 'package:horizon/domain/entities/address_v2.dart';
 export "package:horizon/presentation/forms/base/transaction_form_model_base.dart";
@@ -112,7 +112,7 @@ class AssetAttachFormModel
         feeEstimates: feeEstimates ?? this.feeEstimates,
         feeOptionInput: feeOptionInput ?? this.feeOptionInput,
         assetName: assetName ?? this.assetName,
-        assetDescription: assetDescription ?? this.assetDescription,
+        assetDescription: assetDescription ?? assetDescription,
         assetBalanceNormalized:
             assetBalanceNormalized ?? this.assetBalanceNormalized,
         assetDivisibility: assetDivisibility ?? this.assetDivisibility,
@@ -252,7 +252,7 @@ class AssetAttachFormBloc
   ) async {
     emit(state.copyWith(submissionStatus: FormzSubmissionStatus.inProgress));
 
-   final task = TaskEither<String, AttachedAtomicSwapSell>.Do(($) async {
+    final task = TaskEither<String, AttachedAtomicSwapSell>.Do(($) async {
       final quantity = await $(TaskEither.fromOption(
           state.attachQuantityInput.quantity,
           () => "Invariant: Error parsing quantity"));
@@ -295,8 +295,7 @@ class AssetAttachFormBloc
           submissionStatus: FormzSubmissionStatus.failure,
           error: error.toString()));
     }, (attachedAtomicSwapSell) async {
-      emit(state.copyWith(
-          submissionStatus: FormzSubmissionStatus.success));
+      emit(state.copyWith(submissionStatus: FormzSubmissionStatus.success));
 
       await Future.delayed(successTransitionDelay);
 

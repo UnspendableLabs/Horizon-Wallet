@@ -69,7 +69,9 @@ class SendEntryFormProvider extends StatelessWidget {
                 context.read<SendEntryFormBloc>().add(MemoInputChanged(value));
               },
               onMaxAmountSelected: () {
-                context.read<SendEntryFormBloc>().add(const MaxAmountSelected());
+                context
+                    .read<SendEntryFormBloc>()
+                    .add(const MaxAmountSelected());
               },
               onBalanceSelected: (value) {
                 context
@@ -195,7 +197,7 @@ class _SendEntryFormState extends State<SendEntryForm> {
                   decoration: const BoxDecoration(),
                   balance: widget.state.balanceSelectorInput.value,
                   selectedBalanceEntry:
-                      widget.state.balanceSelectorInput.value?.entries?.first,
+                      widget.state.balanceSelectorInput.value?.entries.first,
                   suffixIcon: GestureDetector(
                     onTap: () {
                       _quantityController.text = quantityRemoveTrailingZeros(
@@ -242,8 +244,7 @@ class _SendEntryFormState extends State<SendEntryForm> {
             }
             return switch (widget.state.quantityInput.error) {
               SendEntryFormInputError.quantityRequired => 'Value is required',
-              SendEntryFormInputError.quantityExceedsMax =>
-                'Value exceeds max',
+              SendEntryFormInputError.quantityExceedsMax => 'Value exceeds max',
               SendEntryFormInputError.quantityIsZero => 'Value is zero',
               _ => null
             };

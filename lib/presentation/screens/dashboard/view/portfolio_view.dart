@@ -397,8 +397,7 @@ class _PortfolioViewState extends State<PortfolioView>
               children: [
                 // Balances tab
                 Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10),
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
                   child: BalancesDisplay(
                     key: const Key('balances_view'),
                     searchQuery: _searchQuery,

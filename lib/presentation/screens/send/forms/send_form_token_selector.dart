@@ -98,7 +98,7 @@ class TokenSelectorFormProvider extends StatelessWidget {
             TokenSelectorFormActions(onTokenSelected: (value) {
               context.read<TokenSelectorFormBloc>().add(TokenSelected(value));
             }, onSubmitClicked: () {
-              context.read<TokenSelectorFormBloc>().add(SubmitClicked());
+              context.read<TokenSelectorFormBloc>().add(const SubmitClicked());
             }),
             state);
       }),

@@ -16,14 +16,13 @@ class CollapsableWidget extends StatefulWidget {
 }
 
 class _CollapsableWidgetState extends State<CollapsableWidget> {
-   // chat help me initial this variable
+  // chat help me initial this variable
   late bool _isExpanded;
   @override
   void initState() {
     super.initState();
     _isExpanded = widget.initialIsExpanded; // initialize here
   }
-
 
   @override
   Widget build(BuildContext context) {

@@ -1,6 +1,4 @@
 import 'package:equatable/equatable.dart';
-import 'package:horizon/data/sources/local/db.dart';
-import "package:horizon/domain/entities/bitcoin_tx.dart";
 import 'package:formz/formz.dart';
 import 'package:get_it/get_it.dart';
 import 'package:fpdart/fpdart.dart';
@@ -12,7 +10,6 @@ import 'package:horizon/domain/services/transaction_service.dart';
 import 'package:horizon/domain/entities/http_config.dart';
 import 'package:horizon/domain/entities/decryption_strategy.dart';
 import 'package:horizon/domain/entities/address_v2.dart';
-import 'package:horizon/js/bitcoin.dart';
 
 import 'package:horizon/domain/repositories/wallet_config_repository.dart';
 import 'package:horizon/domain/services/seed_service.dart';
@@ -177,13 +174,11 @@ class CreatePsbtFormBloc
     on<SubmitClicked>(_onSubmitClicked);
     on<CloseSignPsbtModalClicked>(_onCloseSignPsbtModalClicked);
     on<SignatureCompleted>((event, emit) {
-
       emit(state.copyWith(
         showSignPsbtModal: const Option.of(false),
         signedPsbt: event.signedPsbtHex,
         submissionStatus: FormzSubmissionStatus.success,
       ));
-
 
       emit(state.copyWith(
         showSignPsbtModal: const Option.of(false),
@@ -194,7 +189,8 @@ class CreatePsbtFormBloc
     on<ExpiryDateSelected>(_onExpiryDateSelected);
   }
 
-  void _onExpiryDateSelected(ExpiryDateSelected event, Emitter<CreatePsbtFormModel> emit) {
+  void _onExpiryDateSelected(
+      ExpiryDateSelected event, Emitter<CreatePsbtFormModel> emit) {
     print("event.date: ${event.date}");
     emit(state.copyWith(expiryDate: event.date));
   }
@@ -235,7 +231,6 @@ class CreatePsbtFormBloc
       final priceInSats = await $(TaskEither.fromOption(
           state.btcPriceInput.asSats,
           () => "Error parsing BTC price input as sats"));
-
 
       final newSalePsbtHex = await $(TaskEither.fromEither(
           _transactionService.makeSalePsbtT(

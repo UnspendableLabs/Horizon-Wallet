@@ -278,16 +278,16 @@ class _HorizonButtonState extends State<HorizonButton> {
                   ),
                   const SizedBox(width: 10),
                 ],
-                  if (widget.icon != null) ...[
-                    widget.icon!,
-                    const SizedBox(width: 8),
-                  ],
-                  // widget.child ?? Text(widget.buttonText, style: textStyle)
-                  if (widget.child is TextButtonContent)
-                    Text((widget.child as TextButtonContent).value,
-                        style: textStyle)
-                  else if (widget.child is WidgetButtonContent)
-                    (widget.child as WidgetButtonContent).value
+                if (widget.icon != null) ...[
+                  widget.icon!,
+                  const SizedBox(width: 8),
+                ],
+                // widget.child ?? Text(widget.buttonText, style: textStyle)
+                if (widget.child is TextButtonContent)
+                  Text((widget.child as TextButtonContent).value,
+                      style: textStyle)
+                else if (widget.child is WidgetButtonContent)
+                  (widget.child as WidgetButtonContent).value
               ],
             ),
           ),
@@ -703,25 +703,24 @@ class _HorizonRedesignDropdownState<T>
                       child: Container(
                         clipBehavior: Clip.hardEdge,
                         decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(18),
-                            border: widget.gradBorder
-                                ? GradientBoxBorder(
-                                    context: context,
-                                    width: 1,
-                                  )
-                                : Border.all(
-                                    color: isDarkMode
-                                        ? transparentWhite8
-                                        : transparentBlack8,
-                                    width: 1,
-                                  ),
-                            color: (isDarkMode
-                                ? transparentWhite8
-                                : transparentBlack8),
-                          ),
-
-                          child: SingleChildScrollView(
-                        child: Column(
+                          borderRadius: BorderRadius.circular(18),
+                          border: widget.gradBorder
+                              ? GradientBoxBorder(
+                                  context: context,
+                                  width: 1,
+                                )
+                              : Border.all(
+                                  color: isDarkMode
+                                      ? transparentWhite8
+                                      : transparentBlack8,
+                                  width: 1,
+                                ),
+                          color: (isDarkMode
+                              ? transparentWhite8
+                              : transparentBlack8),
+                        ),
+                        child: SingleChildScrollView(
+                          child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: widget.items.map((item) {
                               return Material(
@@ -751,7 +750,7 @@ class _HorizonRedesignDropdownState<T>
                             }).toList(),
                           ),
                         ),
-                      ), 
+                      ),
                     ),
                   ],
                 ),
@@ -1759,7 +1758,7 @@ class QuantityInputV2 extends StatelessWidget {
       shaderCallback: (bounds) => gradient.createShader(bounds),
       child: TextField(
         controller: controller,
-        inputFormatters: [ fmt ],
+        inputFormatters: [fmt],
         onChanged: onChanged,
         keyboardType: TextInputType.numberWithOptions(
           decimal: divisible,

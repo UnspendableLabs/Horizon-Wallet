@@ -3,7 +3,6 @@ import 'package:formz/formz.dart';
 import 'package:horizon/domain/entities/remote_data.dart';
 import 'package:horizon/domain/entities/swap_type.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:horizon/domain/entities/asset_search_result.dart';
 import 'package:flutter/material.dart';
 
 import 'package:horizon/domain/entities/address_v2.dart';
@@ -227,7 +226,7 @@ class _AssetPairFormState extends State<AssetPairForm> {
                         children: [
                           HorizonRedesignDropdown<AssetPairFormOption>(
                               itemPadding: const EdgeInsets.all(12),
-                              items: [],
+                              items: const [],
                               onChanged: (value) {},
                               selectedValue:
                                   widget.state.receiveAssetInput.value,

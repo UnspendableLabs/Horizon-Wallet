@@ -96,7 +96,7 @@ extension TransactionServiceX on TransactionService {
   }) {
     return Either.tryCatch(
       () => makeSalePsbt(
-      price: price,
+        price: price,
         source: source,
         utxoTxid: utxoTxid,
         utxoVoutIndex: utxoVoutIndex,
@@ -265,5 +265,4 @@ extension TransactionServiceX on TransactionService {
       (e, _) => onError(e),
     );
   }
-
 }

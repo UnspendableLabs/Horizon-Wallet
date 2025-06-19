@@ -56,7 +56,6 @@ class SendEntryFormBloc extends Bloc<SendEntryFormEvent, SendEntryFormModel> {
     on<MaxAmountSelected>(_onMaxAmountSelected);
   }
 
-
   _onAddressBalanceInputChanged(
       AddressBalanceInputChanged event, Emitter<SendEntryFormModel> emit) {
     emit(state.copyWith(
@@ -125,8 +124,7 @@ class QuantityInput extends FormzInput<String, SendEntryFormInputError> {
       required this.divisible})
       : super.dirty(value);
 
-  const QuantityInput.pure(
-      {required this.maxQuantity, required this.divisible})
+  const QuantityInput.pure({required this.maxQuantity, required this.divisible})
       : super.pure("");
 
   @override

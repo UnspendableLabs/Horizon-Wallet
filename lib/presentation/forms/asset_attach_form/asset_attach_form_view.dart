@@ -15,7 +15,7 @@ import 'package:horizon/presentation/session/bloc/session_state.dart';
 import 'package:horizon/utils/app_icons.dart';
 import "./bloc/asset_attach_form_bloc.dart";
 import 'package:horizon/presentation/common/remote_data_builder.dart';
-import 'package:horizon/presentation/forms/asset_balance_form/bloc/asset_balance_form_bloc.dart'
+import 'package:horizon/presentation/screens/swap/view/flows/atomic_swap_sell/atomic_swap_sell_flow.dart'
     show AttachedAtomicSwapSell;
 
 class AssetAttachFormActions {
@@ -277,7 +277,11 @@ class _AssetAttachFormState extends State<AssetAttachForm> {
                       child: TextButtonContent(
                           value: "Success",
                           style: const TextStyle(color: green1)),
-                      icon: AppIcons.checkIcon(context: context, color: green1, width: 24, height: 24),
+                      icon: AppIcons.checkIcon(
+                          context: context,
+                          color: green1,
+                          width: 24,
+                          height: 24),
                       onPressed: () {})
                   : HorizonButton(
                       disabled: widget.state.submitDisabled,

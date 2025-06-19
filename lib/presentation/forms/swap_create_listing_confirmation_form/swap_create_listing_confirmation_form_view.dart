@@ -21,14 +21,13 @@ import 'package:horizon/presentation/forms/sign_psbt/bloc/sign_psbt_bloc.dart';
 import 'package:horizon/presentation/forms/sign_psbt/view/sign_psbt_form.dart';
 import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
 import 'package:horizon/domain/repositories/settings_repository.dart';
-import 'package:horizon/presentation/session/bloc/session_state.dart';
 
 class SwapOnChainFeeSignHandler extends StatelessWidget {
   final Function(String signedPsbtHex) onSuccess;
   final VoidCallback onClose;
   final String address;
 
-  SwapOnChainFeeSignHandler(
+  const SwapOnChainFeeSignHandler(
       {super.key,
       required this.onSuccess,
       required this.onClose,
@@ -64,7 +63,7 @@ class SwapOnChainFeeSignHandler extends StatelessWidget {
                           // pageTitle: Text("Sign PSBT",
                           //     style: Theme.of(context).textTheme.headlineSmall),
                           child: state.onChainPayment.fold(
-                            onInitial: () => SizedBox.shrink(),
+                            onInitial: () => const SizedBox.shrink(),
                             onLoading: () => const Center(
                                 child: CircularProgressIndicator()),
                             onRefreshing: (_) => const Center(
@@ -177,7 +176,7 @@ class SwapCreateListingFormProvider extends StatelessWidget {
                           SwapCreateListingFormActions(
                             onCloseSignPsbtModalClicked: () {
                               context.read<SwapCreateListingFormBloc>().add(
-                                    CloseSignPsbtModalClicked(),
+                                    const CloseSignPsbtModalClicked(),
                                   );
                             },
                             onFeeOptionSelected: (value) {
