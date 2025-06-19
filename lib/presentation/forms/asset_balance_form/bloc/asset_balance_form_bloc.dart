@@ -3,43 +3,6 @@ import 'package:horizon/domain/entities/multi_address_balance_entry.dart';
 import 'package:horizon/domain/entities/multi_address_balance.dart';
 import 'package:formz/formz.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import "package:fpdart/fpdart.dart";
-
-sealed class AtomicSwapSellVariant {}
-
-class AttachedAtomicSwapSell extends AtomicSwapSellVariant {
-  final String asset;
-  final String quantityNormalized;
-  final int quantity;
-  final String utxo;
-  final String utxoAddress;
-
-  AttachedAtomicSwapSell({
-    required this.asset,
-    required this.quantityNormalized,
-    required this.quantity,
-    required this.utxo,
-    required this.utxoAddress,
-  });
-}
-
-class UnattachedAtomicSwapSell extends AtomicSwapSellVariant {
-  final String? description;
-  final bool divisible;
-  final String address;
-  final String asset;
-  final String quantityNormalized;
-  final int quantity;
-
-  UnattachedAtomicSwapSell({
-    required this.address,
-    required this.divisible,
-    required this.asset,
-    required this.quantityNormalized,
-    required this.quantity,
-    required this.description,
-  });
-}
 
 class AssetBalanceFormOption {
   final MultiAddressBalanceEntry entry;
@@ -117,39 +80,39 @@ class AssetBalanceFormModel with FormzMixin {
     );
   }
 
-  Either<String, AtomicSwapSellVariant> get atomicSwapSellVariant {
-    if (balanceInput.value == null) {
-      return left("Balance input is null");
-    }
-
-    if (balanceInput.value!.entry.address != null) {
-      return right(
-        UnattachedAtomicSwapSell(
-          address: balanceInput.value!.entry.address!,
-          asset: multiAddressBalance.asset,
-          quantityNormalized: balanceInput.value!.entry.quantityNormalized,
-          quantity: balanceInput.value!.entry.quantity,
-          description: multiAddressBalance.assetInfo.description,
-          divisible: multiAddressBalance.assetInfo.divisible,
-        ),
-      );
-    }
-
-    if (balanceInput.value!.entry.utxo != null &&
-        balanceInput.value!.entry.utxoAddress != null) {
-      return right(
-        AttachedAtomicSwapSell(
-          asset: multiAddressBalance.asset,
-          quantityNormalized: balanceInput.value!.entry.quantityNormalized,
-          quantity: balanceInput.value!.entry.quantity,
-          utxo: balanceInput.value!.entry.utxo!,
-          utxoAddress: balanceInput.value!.entry.utxoAddress!,
-        ),
-      );
-    }
-
-    return left("Invalid balance input");
-  }
+  // Either<String, AtomicSwapSellVariant> get atomicSwapSellVariant {
+  //   if (balanceInput.value == null) {
+  //     return left("Balance input is null");
+  //   }
+  //
+  //   if (balanceInput.value!.entry.address != null) {
+  //     return right(
+  //       UnattachedAtomicSwapSell(
+  //         address: balanceInput.value!.entry.address!,
+  //         asset: multiAddressBalance.asset,
+  //         quantityNormalized: balanceInput.value!.entry.quantityNormalized,
+  //         quantity: balanceInput.value!.entry.quantity,
+  //         description: multiAddressBalance.assetInfo.description,
+  //         divisible: multiAddressBalance.assetInfo.divisible,
+  //       ),
+  //     );
+  //   }
+  //
+  //   if (balanceInput.value!.entry.utxo != null &&
+  //       balanceInput.value!.entry.utxoAddress != null) {
+  //     return right(
+  //       AttachedAtomicSwapSell(
+  //         asset: multiAddressBalance.asset,
+  //         quantityNormalized: balanceInput.value!.entry.quantityNormalized,
+  //         quantity: balanceInput.value!.entry.quantity,
+  //         utxo: balanceInput.value!.entry.utxo!,
+  //         utxoAddress: balanceInput.value!.entry.utxoAddress!,
+  //       ),
+  //     );
+  //   }
+  //
+  //   return left("Invalid balance input");
+  // }
 }
 
 class AssetBalanceFormBloc

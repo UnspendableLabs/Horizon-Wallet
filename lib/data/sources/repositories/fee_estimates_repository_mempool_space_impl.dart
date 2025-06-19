@@ -1,9 +1,7 @@
 import "package:horizon/domain/repositories/fee_estimates_repository.dart";
 import "package:horizon/domain/entities/fee_estimates.dart";
-import "package:horizon/domain/entities/network.dart";
 import "package:horizon/domain/entities/http_config.dart";
 import "package:fpdart/fpdart.dart";
-import 'package:horizon/data/sources/network/mempool_space_client.dart';
 import 'package:horizon/data/sources/network/mempool_space_client_factory.dart';
 
 class FeeEstimatesRespositoryMempoolSpaceImpl

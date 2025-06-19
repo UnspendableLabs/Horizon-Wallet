@@ -14,7 +14,7 @@ import 'package:horizon/domain/entities/remote_data.dart';
 import 'package:horizon/extensions.dart';
 
 import "./flows/atomic_swap_sell/atomic_swap_sell_flow.dart";
-
+import "./flows/atomic_swap_buy/atomic_swap_buy_flow.dart";
 
 class SwapFlowModel extends Equatable {
   final Option<SwapType> swapType;
@@ -48,7 +48,7 @@ class _SwapFlowViewState extends State<SwapFlowView> {
     super.initState();
     _controller = SwapFlowController(
         // initialState: const SwapFlowModel(swapType: Option.none()),
-        initialState: SwapFlowModel(swapType: Option.none()));
+        initialState: const SwapFlowModel(swapType: Option.none()));
   }
 
   @override
@@ -105,11 +105,23 @@ class _SwapFlowViewState extends State<SwapFlowView> {
           model.swapType.map((swapType) => switch (swapType) {
                 AtomicSwapSell(giveBalance: var balance) => MaterialPage(
                     child: AtomicSwapSellFlowView(
-                      // TODO: this is a little messy, for sure
-                      address: session.addresses.first,
+                      addresses: session.addresses,
                       balances: balance,
                     ),
                   ),
+                AtomicSwapBuy(
+                  btcBalance: var btcBalance,
+                  receiveAsset: var receiveAsset
+                ) =>
+                  MaterialPage(
+                    child: AtomicSwapBuyFlowView(
+                      // TODO: this is a little messy, for sure
+                      addresses: session.addresses,
+                      receiveAsset: receiveAsset,
+                      balances: btcBalance,
+                    ),
+                  ),
+
                 // AtomicSwapSell(giveBalance: var balance) => MaterialPage(
                 //       child: FlowStep(
                 //     title: "Choose your asset / address",

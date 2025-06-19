@@ -20,7 +20,6 @@ import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
 import 'package:horizon/domain/entities/decryption_strategy.dart';
 import 'package:horizon/domain/entities/bitcoin_decoded_tx.dart' as dbtc;
 import 'package:horizon/domain/entities/bitcoin_tx.dart';
-import 'package:horizon/presentation/session/bloc/session_state.dart';
 import 'package:horizon/domain/entities/http_config.dart';
 import 'package:horizon/domain/repositories/wallet_config_repository.dart';
 import 'package:horizon/domain/services/seed_service.dart';

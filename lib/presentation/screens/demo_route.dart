@@ -32,16 +32,16 @@ class _WidgetsDemoPageState extends State<WidgetsDemoPage> {
           onNextStep: (_, __) {},
         );
       case DemoComponent.swapSourceOfFundsSelector:
-        return SwapFundSourceSelector();
+        return const SwapFundSourceSelector();
       case DemoComponent.swapListingSlider:
-        return SwapListingSlider(onNextStep: () {});
+        return SwapListingSlider_(onNextStep: () {});
 
       case DemoComponent.swapCreateListing:
-        return CreateSwapListing();
+        return const CreateSwapListing();
       case DemoComponent.attachAssetsToSwap:
-        return AttachAssetToSwap();
+        return const AttachAssetToSwap();
       case DemoComponent.swapListingReview:
-        return SwapListingReview();
+        return const SwapListingReview();
 
       default:
         return const SizedBox.shrink();
@@ -55,4 +55,3 @@ class _WidgetsDemoPageState extends State<WidgetsDemoPage> {
     );
   }
 }
-

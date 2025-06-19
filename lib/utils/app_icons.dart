@@ -24,11 +24,13 @@ class AppIcons {
     String? description,
     bool showLarge,
   ) {
-    final cacheKey = '$assetName|$description|$showLarge|${httpConfig.hashCode}';
+    final cacheKey =
+        '$assetName|$description|$showLarge|${httpConfig.hashCode}';
     if (!_assetSrcFutureCache.containsKey(cacheKey)) {
       _assetSrcFutureCache[cacheKey] = _horizonExplorerClientFactory
           .getClient(httpConfig)
-          .getAssetSrc(assetName, description, showLarge);
+          .getAssetSrc(
+              asset: assetName, description: description, showLarge: showLarge);
     }
     return _assetSrcFutureCache[cacheKey]!;
   }
@@ -80,7 +82,6 @@ class AppIcons {
   static const String plusCircle = '$_iconPath/plus_circle.svg';
   static const String successCheck = '$_iconPath/txn_success_check.svg';
 
-
   static Widget getIcon(
     String iconPath, {
     required BuildContext? context,
@@ -112,7 +113,7 @@ class AppIcons {
       key: key,
     );
   }
-  
+
   static Widget receiveIcon({
     required BuildContext context,
     double? width,
@@ -145,7 +146,7 @@ class AppIcons {
       color: color,
     );
   }
-  
+
   static Widget sendIcon({
     required BuildContext context,
     double? width,
@@ -868,6 +869,7 @@ class AppIcons {
       color: null,
     );
   }
+
   static Widget iconButton({
     required BuildContext context,
     required Widget icon,
@@ -942,13 +944,12 @@ class AppIcons {
             child: CachedNetworkImage(
               cacheKey: assetName,
               imageUrl: snapshot.data!.src!,
-              errorWidget: (_,__,___) {
+              errorWidget: (_, __, ___) {
                 return xcpIcon(
                   width: width,
                   height: height,
                   fit: fit,
                 );
-
               },
               width: width,
               height: height,

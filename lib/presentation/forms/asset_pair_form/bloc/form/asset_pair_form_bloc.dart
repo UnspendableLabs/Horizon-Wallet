@@ -223,7 +223,11 @@ class AssetPairFormModel with FormzMixin {
       giveAssetInput.value!.name.toLowerCase(),
       receiveAssetInput.value!.name.toLowerCase()
     )) {
-      ("btc", _) => Either.of(AtomicSwapBuy()),
+      ("btc", _) => Either.of(AtomicSwapBuy(
+          receiveAsset: receiveAssetInput.value!,
+          btcBalance: giveAssetInput.value!.balance.getOrElse(
+            () => throw Exception("BTC balance is not available"),
+          ))),
       (_, "btc") => Either.fromOption(
             giveAssetInput.value!.balance, () => "Insufficient balance").map(
           (balance) => AtomicSwapSell(giveBalance: balance),
@@ -264,8 +268,8 @@ class AssetPairFormBloc extends Bloc<AssetPairFormEvent, AssetPairFormModel> {
                         balance: Option.of(balance),
                       ))
                   .toList(),
-              giveAssetInput: GiveAssetInput.pure(),
-              receiveAssetInput: ReceiveAssetInput.pure(),
+              giveAssetInput: const GiveAssetInput.pure(),
+              receiveAssetInput: const ReceiveAssetInput.pure(),
               searchAssetInput: const SearchAssetInput.pure(),
               receiveAssetModalVisible: false,
               privilegedSearchResults: Success(
@@ -301,7 +305,7 @@ class AssetPairFormBloc extends Bloc<AssetPairFormEvent, AssetPairFormModel> {
     if (event.value.isEmpty) {
       emit(state.copyWith(
           submissionStatus: FormzSubmissionStatus.initial,
-          searchAssetInput: SearchAssetInput.pure(),
+          searchAssetInput: const SearchAssetInput.pure(),
           searchResults: const Success([])));
       return;
     }
@@ -343,7 +347,7 @@ class AssetPairFormBloc extends Bloc<AssetPairFormEvent, AssetPairFormModel> {
     final next = state.copyWith(
         submissionStatus: FormzSubmissionStatus.initial,
         receiveAssetInput: ReceiveAssetInput.dirty(value: event.value),
-        receiveAssetModalVisible: Option.of(false));
+        receiveAssetModalVisible: const Option.of(false));
 
     emit(next);
   }
@@ -358,7 +362,7 @@ class AssetPairFormBloc extends Bloc<AssetPairFormEvent, AssetPairFormModel> {
     }
 
     final nextReceiveAsset =
-        state.giveAssetInput.value!.copyWith(balance: Option.none());
+        state.giveAssetInput.value!.copyWith(balance: const Option.none());
 
     final nextGiveAsset = state.giveAssets.firstWhere(
       (a) => a.name == state.receiveAssetInput.value!.name,

@@ -11,15 +11,63 @@ import 'package:horizon/presentation/session/bloc/session_state.dart';
 import 'package:horizon/utils/app_icons.dart';
 
 class SwapListingSlider extends StatefulWidget {
-  final Function() onNextStep;
-  const SwapListingSlider({super.key, required this.onNextStep});
+  const SwapListingSlider({
+    super.key,
+  });
 
   @override
   State<SwapListingSlider> createState() => _SwapListingSliderState();
 }
 
 class _SwapListingSliderState extends State<SwapListingSlider> {
-  // TODO: fake data
+  @override
+  Widget build(BuildContext context) {
+    final session = context.watch<SessionStateCubit>().state.successOrThrow();
+    final theme = Theme.of(context);
+    final appIcons = AppIcons();
+
+    const cardHeight = 366.0;
+
+    return const Column(
+      children: [
+        SizedBox(
+          height: cardHeight,
+          width: double.infinity,
+          child: HorizonCard(
+            padding: EdgeInsets.all(16),
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text("Line 1"),
+                  SizedBox(height: 12),
+                  Text("Line 2"),
+                  SizedBox(height: 12),
+                  Text("Line 3"),
+                  SizedBox(height: 12),
+                  Text("More content..."),
+                  SizedBox(height: 400), // simulate long content
+                ],
+              ),
+            ),
+          ),
+        ),
+        SizedBox(height: 12),
+        Text("button"),
+      ],
+    );
+  }
+}
+
+class SwapListingSlider_ extends StatefulWidget {
+  final Function() onNextStep;
+  const SwapListingSlider_({super.key, required this.onNextStep});
+
+  @override
+  State<SwapListingSlider_> createState() => _SwapListingSlider_State();
+}
+
+class _SwapListingSlider_State extends State<SwapListingSlider_> {
   final toAsset = MultiAddressBalance(
     asset: 'XCP',
     assetLongname: null,
@@ -58,7 +106,6 @@ class _SwapListingSliderState extends State<SwapListingSlider> {
     ),
   );
 
-  // TODO: slider value
   double swapValue = 0;
 
   Widget _buildRow(String quantity, String price, String priceUsd, String total,
@@ -70,10 +117,7 @@ class _SwapListingSliderState extends State<SwapListingSlider> {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Expanded(
-            flex: 1,
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 if (isSelected)
                   AppIcons.checkCircleIcon(
@@ -90,43 +134,50 @@ class _SwapListingSliderState extends State<SwapListingSlider> {
             ),
           ),
           Expanded(
-            flex: 1,
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
               mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(price, style: theme.textTheme.bodySmall),
-                Text(
-                  priceUsd,
-                  style: theme.textTheme.bodySmall!.copyWith(
+                Text(priceUsd,
+                    style: theme.textTheme.bodySmall!.copyWith(
                       color: theme
                           .extension<CustomThemeExtension>()!
-                          .mutedDescriptionTextColor),
-                ),
+                          .mutedDescriptionTextColor,
+                    )),
               ],
             ),
           ),
           Expanded(
-            flex: 1,
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
               mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(total, style: theme.textTheme.bodySmall),
-                Text(
-                  totalUsd,
-                  style: theme.textTheme.bodySmall!.copyWith(
+                Text(totalUsd,
+                    style: theme.textTheme.bodySmall!.copyWith(
                       color: theme
                           .extension<CustomThemeExtension>()!
-                          .mutedDescriptionTextColor),
-                ),
-                const SizedBox(
-                  width: 8,
-                )
+                          .mutedDescriptionTextColor,
+                    )),
               ],
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  List<Widget> _buildMultipleRows() {
+    return List.generate(
+      10,
+      (index) => _buildRow(
+        '156.78901234',
+        '0.00234567',
+        '12.34567890',
+        '156.78901234',
+        '12.34567890',
+        index == 0,
       ),
     );
   }
@@ -136,264 +187,166 @@ class _SwapListingSliderState extends State<SwapListingSlider> {
     final session = context.watch<SessionStateCubit>().state.successOrThrow();
     final theme = Theme.of(context);
     final appIcons = AppIcons();
-    return SizedBox(
-      height: double.infinity,
-      child: Column(
-        children: [
-          Text(
-            "Swap",
-            style: theme.textTheme.titleMedium,
+
+    return CustomScrollView(
+      slivers: [
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.only(top: 14),
+            child: Text("Swap",
+                style: theme.textTheme.titleMedium,
+                textAlign: TextAlign.center),
           ),
-          const SizedBox(height: 14),
-          Expanded(
-              child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+        ),
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: HorizonCard(
+              padding: const EdgeInsets.fromLTRB(20, 20, 0, 20),
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(right: 20),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        QuantityText(
+                          quantity: swapValue.toString(),
+                          style: const TextStyle(fontSize: 35),
+                        ),
+                        Row(
+                          children: [
+                            appIcons.assetIcon(
+                              httpConfig: session.httpConfig,
+                              assetName: toAsset.asset,
+                              context: context,
+                              width: 24,
+                              height: 24,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              toAsset.asset,
+                              style: theme.textTheme.titleMedium!
+                                  .copyWith(fontSize: 12),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  Padding(
+                    padding: const EdgeInsets.only(right: 20),
+                    child: HorizonSlider(
+                      value: swapValue,
+                      min: 0,
+                      max: double.parse(fromAsset.totalNormalized),
+                      onChanged: (value) {
+                        setState(() {
+                          swapValue = double.parse(value.toStringAsFixed(2));
+                        });
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                ],
+              ),
+            ),
+          ),
+        ),
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Column(
               children: [
-                Expanded(
-                    child: HorizonCard(
-                        padding: const EdgeInsets.fromLTRB(20, 20, 0, 20),
-                        child: Column(
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.only(right: 20),
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  QuantityText(
-                                    quantity: swapValue.toString(),
-                                    style: const TextStyle(
-                                      fontSize: 35,
-                                    ),
-                                  ),
-                                  Row(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
-                                    children: [
-                                      appIcons.assetIcon(
-                                          httpConfig: session.httpConfig,
-                                          assetName: toAsset.asset,
-                                          context: context,
-                                          width: 24,
-                                          height: 24),
-                                      const SizedBox(width: 8),
-                                      Text(toAsset.asset,
-                                          style: theme.textTheme.titleMedium!
-                                              .copyWith(
-                                            fontSize: 12,
-                                          )),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ),
-                            commonHeightSizedBox,
-                            commonHeightSizedBox,
-                            Padding(
-                              padding: const EdgeInsets.only(right: 20),
-                              child: HorizonSlider(
-                                value: swapValue,
-                                min: 0,
-                                max: double.parse(fromAsset.totalNormalized),
-                                onChanged: (value) {
-                                  setState(() {
-                                    swapValue =
-                                        double.parse(value.toStringAsFixed(2));
-                                  });
-                                },
-                              ),
-                            ),
-                            commonHeightSizedBox,
-                            Expanded(
-                              child: SingleChildScrollView(
-                                scrollDirection: Axis.vertical,
-                                child: Padding(
-                                    padding: const EdgeInsets.only(right: 20),
-                                    child: Column(
-                                      children: [
-                                        // Header Row
-                                        SizedBox(
-                                          height: 34,
-                                          child: Row(
-                                            children: [
-                                              Expanded(
-                                                flex: 1,
-                                                child: Text(
-                                                  'Quantity',
-                                                  style:
-                                                      theme.textTheme.bodySmall,
-                                                  textAlign: TextAlign.left,
-                                                ),
-                                              ),
-                                              Expanded(
-                                                flex: 1,
-                                                child: Text(
-                                                  'Price (sats/${toAsset.asset})',
-                                                  style:
-                                                      theme.textTheme.bodySmall,
-                                                  textAlign: TextAlign.right,
-                                                ),
-                                              ),
-                                              Expanded(
-                                                flex: 1,
-                                                child: Text(
-                                                  'Total',
-                                                  style:
-                                                      theme.textTheme.bodySmall,
-                                                  textAlign: TextAlign.right,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                        // Data Rows
-                                        _buildRow(
-                                            '23.45678912',
-                                            '0.00123456',
-                                            '15.78901234',
-                                            '23.45678912',
-                                            '15.78901234',
-                                            true),
-                                        _buildRow(
-                                            '67.89012345',
-                                            '0.00789012',
-                                            '8.90123456',
-                                            '67.89012345',
-                                            '8.90123456',
-                                            false),
-                                        _buildRow(
-                                            '156.78901234',
-                                            '0.00234567',
-                                            '12.34567890',
-                                            '156.78901234',
-                                            '12.34567890',
-                                            false),
-                                        _buildRow(
-                                            '156.78901234',
-                                            '0.00234567',
-                                            '12.34567890',
-                                            '156.78901234',
-                                            '12.34567890',
-                                            false),
-                                        _buildRow(
-                                            '156.78901234',
-                                            '0.00234567',
-                                            '12.34567890',
-                                            '156.78901234',
-                                            '12.34567890',
-                                            false),
-                                        _buildRow(
-                                            '156.78901234',
-                                            '0.00234567',
-                                            '12.34567890',
-                                            '156.78901234',
-                                            '12.34567890',
-                                            false),
-                                        _buildRow(
-                                            '156.78901234',
-                                            '0.00234567',
-                                            '12.34567890',
-                                            '156.78901234',
-                                            '12.34567890',
-                                            false),
-                                        _buildRow(
-                                            '156.78901234',
-                                            '0.00234567',
-                                            '12.34567890',
-                                            '156.78901234',
-                                            '12.34567890',
-                                            false),
-                                        _buildRow(
-                                            '156.78901234',
-                                            '0.00234567',
-                                            '12.34567890',
-                                            '156.78901234',
-                                            '12.34567890',
-                                            false),
-                                        _buildRow(
-                                            '156.78901234',
-                                            '0.00234567',
-                                            '12.34567890',
-                                            '156.78901234',
-                                            '12.34567890',
-                                            false),
-                                      ],
-                                    )),
-                              ),
-                            )
-                          ],
-                        ))),
-                const SizedBox(height: 20),
+                const SizedBox(height: 10),
+                SizedBox(
+                  height: 34,
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child:
+                            Text('Quantity', style: theme.textTheme.bodySmall),
+                      ),
+                      Expanded(
+                        child: Text('Price (sats/${toAsset.asset})',
+                            textAlign: TextAlign.right,
+                            style: theme.textTheme.bodySmall),
+                      ),
+                      Expanded(
+                        child: Text('Total',
+                            textAlign: TextAlign.right,
+                            style: theme.textTheme.bodySmall),
+                      ),
+                    ],
+                  ),
+                ),
+                ..._buildMultipleRows(),
+              ],
+            ),
+          ),
+        ),
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              children: [
                 HorizonCard(
-                    padding: const EdgeInsets.all(0),
-                    backgroundColor: Colors.transparent,
-                    child: Column(children: [
-                      Padding(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 20, vertical: 12),
+                  padding: const EdgeInsets.all(0),
+                  backgroundColor: Colors.transparent,
+                  child: Column(
+                    children: [
+                      const Padding(
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             Row(
-                              crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
-                                Text("You Pay",
-                                    style: theme.textTheme.titleSmall),
-                                const SizedBox(width: 12),
-                                const QuantityText(
-                                  quantity: "0.000BTC",
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                  ),
-                                ),
+                                Text("You Pay", style: TextStyle(fontSize: 14)),
+                                SizedBox(width: 12),
+                                QuantityText(
+                                    quantity: "0.000BTC",
+                                    style: TextStyle(fontSize: 12)),
                               ],
                             ),
-                            Text("\$0.00",
-                                style: theme.textTheme.titleSmall,
-                                textAlign: TextAlign.end),
+                            Text("\$0.00", textAlign: TextAlign.end),
                           ],
                         ),
                       ),
                       HorizonButton(
                         child: TextButtonContent(value: "Swap"),
-                        onPressed: () {
-                          widget.onNextStep();
-                              
-                        },
+                        onPressed: widget.onNextStep,
                         variant: ButtonVariant.green,
                       ),
-                    ])),
-                const SizedBox(height: 14),
-                Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 24, vertical: 0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text("Horizon Fee",
-                          style: theme.textTheme.titleSmall!.copyWith(
-                            color: theme
-                                .extension<CustomThemeExtension>()!
-                                .mutedDescriptionTextColor,
-                          )),
-                      Text("0.00000000 XCP",
-                          textAlign: TextAlign.end,
-                          style: theme.textTheme.titleSmall!.copyWith(
-                            color: theme
-                                .extension<CustomThemeExtension>()!
-                                .mutedDescriptionTextColor,
-                          )),
                     ],
                   ),
                 ),
+                const SizedBox(height: 14),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text("Horizon Fee",
+                        style: theme.textTheme.titleSmall!.copyWith(
+                          color: theme
+                              .extension<CustomThemeExtension>()!
+                              .mutedDescriptionTextColor,
+                        )),
+                    Text("0.00000000 XCP",
+                        style: theme.textTheme.titleSmall!.copyWith(
+                          color: theme
+                              .extension<CustomThemeExtension>()!
+                              .mutedDescriptionTextColor,
+                        )),
+                  ],
+                ),
+                const SizedBox(height: 40),
               ],
             ),
-          ))
-        ],
-      ),
+          ),
+        ),
+      ],
     );
   }
 }

@@ -136,9 +136,7 @@ class SendComposeForm extends StatefulWidget {
   final SendComposeFormActions actions;
   final SendComposeFormModel state;
   const SendComposeForm(
-      {super.key,
-      required this.actions,
-      required this.state});
+      {super.key, required this.actions, required this.state});
 
   @override
   State<SendComposeForm> createState() => _SendComposeFormState();
@@ -152,92 +150,91 @@ class _SendComposeFormState extends State<SendComposeForm> {
 
   @override
   Widget build(BuildContext context) {
-    
-        final theme = Theme.of(context);
+    final theme = Theme.of(context);
 
-        return Column(
-          children: [
-            ...widget.state.sendEntries.asMap().entries.map((entry) {
-              final index = entry.key;
-              return Column(
-                children: [
-                  if (index > 0) ...[
-                    commonHeightSizedBox,
-                    HorizonButton(
-                      variant: ButtonVariant.purple,
-                      height: 32,
-                      icon: AppIcons.closeIcon(
-                          context: context, width: 24, height: 24),
-                      onPressed: () {
-                        widget.actions.onRemoveEntry(index);
-                      },
-                      child: TextButtonContent(
-                          value: 'Close this entry',
-                          style: theme.textTheme.bodySmall),
-                    ),
-                    commonHeightSizedBox,
-                  ],
-                  SendEntryFormProvider(
-                    balances: widget.state.balances,
-                    initialBalance: entry.value.balanceSelectorInput.value,
-                    onFormChanged: (form) {
-                      widget.actions.onEntryFormChanged(index, form);
-                    },
-                    child: (actions, state) => SendEntryForm(
-                      state: state,
-                      actions: actions,
-                      balances: widget.state.balances,
-                    ),
-                  ),
-                  if (index != widget.state.sendEntries.length - 1)
-                    const Divider(
-                      height: 20,
-                      thickness: 1,
-                      color: transparentWhite8,
-                    ),
-                  commonHeightSizedBox
-                ],
-              );
-            }),
-            SizedBox(
-              height: 32,
-              child: IntrinsicWidth(
-                child: HorizonButton(
-                    variant: ButtonVariant.purple,
-                    child: WidgetButtonContent(
-                        value: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 10),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          AppIcons.plusIcon(
-                            context: context,
-                            width: 24,
-                            height: 24,
-                          ),
-                          const SizedBox(width: 4),
-                          Text("Add Another Entry",
-                              style: theme.textTheme.titleSmall),
-                        ],
-                      ),
-                    )),
-                    onPressed: widget.actions.onAddEntry),
+    return Column(
+      children: [
+        ...widget.state.sendEntries.asMap().entries.map((entry) {
+          final index = entry.key;
+          return Column(
+            children: [
+              if (index > 0) ...[
+                commonHeightSizedBox,
+                HorizonButton(
+                  variant: ButtonVariant.purple,
+                  height: 32,
+                  icon: AppIcons.closeIcon(
+                      context: context, width: 24, height: 24),
+                  onPressed: () {
+                    widget.actions.onRemoveEntry(index);
+                  },
+                  child: TextButtonContent(
+                      value: 'Close this entry',
+                      style: theme.textTheme.bodySmall),
+                ),
+                commonHeightSizedBox,
+              ],
+              SendEntryFormProvider(
+                balances: widget.state.balances,
+                initialBalance: entry.value.balanceSelectorInput.value,
+                onFormChanged: (form) {
+                  widget.actions.onEntryFormChanged(index, form);
+                },
+                child: (actions, state) => SendEntryForm(
+                  state: state,
+                  actions: actions,
+                  balances: widget.state.balances,
+                ),
               ),
-            ),
-            const SizedBox(height: 24),
-            TransactionFeeSelection(
-                feeEstimates: widget.state.feeEstimates,
-                selectedFeeOption: widget.state.feeOptionInput.value,
-                onFeeOptionSelected: widget.actions.onFeeOptionSelected),
-            const SizedBox(height: 24),
-            HorizonButton(
-                child: TextButtonContent(value: "Review Send"),
-                disabled: !widget.state.isValid,
-                isLoading: widget.state.submissionStatus ==
-                    FormzSubmissionStatus.inProgress,
-                onPressed: widget.actions.onSubmitClicked),
-            const SizedBox(height: 24),
-        ],
-      );
+              if (index != widget.state.sendEntries.length - 1)
+                const Divider(
+                  height: 20,
+                  thickness: 1,
+                  color: transparentWhite8,
+                ),
+              commonHeightSizedBox
+            ],
+          );
+        }),
+        SizedBox(
+          height: 32,
+          child: IntrinsicWidth(
+            child: HorizonButton(
+                variant: ButtonVariant.purple,
+                child: WidgetButtonContent(
+                    value: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      AppIcons.plusIcon(
+                        context: context,
+                        width: 24,
+                        height: 24,
+                      ),
+                      const SizedBox(width: 4),
+                      Text("Add Another Entry",
+                          style: theme.textTheme.titleSmall),
+                    ],
+                  ),
+                )),
+                onPressed: widget.actions.onAddEntry),
+          ),
+        ),
+        const SizedBox(height: 24),
+        TransactionFeeSelection(
+            feeEstimates: widget.state.feeEstimates,
+            selectedFeeOption: widget.state.feeOptionInput.value,
+            onFeeOptionSelected: widget.actions.onFeeOptionSelected),
+        const SizedBox(height: 24),
+        HorizonButton(
+            child: TextButtonContent(value: "Review Send"),
+            disabled: !widget.state.isValid,
+            isLoading: widget.state.submissionStatus ==
+                FormzSubmissionStatus.inProgress,
+            onPressed: widget.actions.onSubmitClicked),
+        const SizedBox(height: 24),
+      ],
+    );
   }
 }

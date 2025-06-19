@@ -33,7 +33,6 @@ import 'package:horizon/presentation/screens/asset/bloc/asset_view_bloc.dart';
 import 'package:horizon/presentation/screens/send/view/send_view.dart';
 
 import 'package:horizon/presentation/screens/swap/view/swap_view.dart';
-import 'package:horizon/presentation/screens/atomic_swap/view/atomic_swap_view.dart';
 import 'package:horizon/presentation/screens/dashboard/view/portfolio_view.dart';
 import 'package:horizon/presentation/screens/demo_route.dart';
 import 'package:horizon/presentation/screens/login/login_view.dart';

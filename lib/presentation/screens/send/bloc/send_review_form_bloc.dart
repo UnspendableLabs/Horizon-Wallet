@@ -1,6 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:formz/formz.dart';
-import 'package:horizon/domain/entities/compose_response.dart';
 import 'package:horizon/presentation/screens/send/bloc/send_compose_form_bloc.dart';
 import 'package:horizon/presentation/screens/send/bloc/send_entry_form_bloc.dart';
 

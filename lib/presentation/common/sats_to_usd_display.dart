@@ -10,7 +10,7 @@ import 'package:horizon/presentation/session/bloc/session_state.dart';
 class SatsToUsdDisplay extends StatefulWidget {
   final BigInt sats;
   final Function(double)? child;
-  
+
   const SatsToUsdDisplay({
     super.key,
     required this.sats,
@@ -54,10 +54,12 @@ class _SatsToUsdDisplayState extends State<SatsToUsdDisplay> {
       return const SizedBox.shrink();
     }
 
-    final usdValue = (widget.sats * BigInt.from(_currentPrice!)) / BigInt.from(100000000);
-    return widget.child?.call(usdValue) ?? Text(
-      '\$${usdValue.toStringAsFixed(2)}',
-      style: Theme.of(context).textTheme.bodySmall,
-    );
-  } 
+    final usdValue =
+        (widget.sats * BigInt.from(_currentPrice!)) / BigInt.from(100000000);
+    return widget.child?.call(usdValue) ??
+        Text(
+          '\$${usdValue.toStringAsFixed(2)}',
+          style: Theme.of(context).textTheme.bodySmall,
+        );
+  }
 }

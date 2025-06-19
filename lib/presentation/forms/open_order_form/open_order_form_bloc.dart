@@ -1,5 +1,4 @@
 import 'package:equatable/equatable.dart';
-import 'package:collection/collection.dart';
 import 'package:horizon/common/format.dart';
 import 'package:horizon/domain/entities/asset.dart';
 import 'package:horizon/domain/entities/balance.dart';
@@ -377,7 +376,6 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
   final ComposeRepository composeRepository;
   final HttpConfig httpConfig;
 
-  
   OpenOrderFormBloc({
     required this.httpConfig,
     required this.onSubmitSuccess,
@@ -454,13 +452,16 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
 
   _handleInitialize(InitializeForm event, Emitter<FormStateModel> emit) async {
     emit(state.copyWith(
-      giveAssets: Loading(),
-      feeEstimates: Loading<FeeEstimates>(),
+      giveAssets: const Loading(),
+      feeEstimates: const Loading<FeeEstimates>(),
     ));
 
     final [balances_ as List<Balance>, feeEstimates_ as FeeEstimates] =
         await Future.wait([
-      balanceRepository.getBalancesForAddress(address: currentAddress, excludeUtxoAttached: true, httpConfig: httpConfig),
+      balanceRepository.getBalancesForAddress(
+          address: currentAddress,
+          excludeUtxoAttached: true,
+          httpConfig: httpConfig),
       _fetchFeeEstimates(),
     ]);
 
@@ -490,10 +491,10 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
       lockRatio: true,
       giveAsset: giveAsset,
       getAsset: getAsset,
-      giveAssets: Loading(),
-      feeEstimates: Loading<FeeEstimates>(),
-      getAssetValidationStatus: Loading(),
-      giveAssetValidationStatus: Loading(),
+      giveAssets: const Loading(),
+      feeEstimates: const Loading<FeeEstimates>(),
+      getAssetValidationStatus: const Loading(),
+      giveAssetValidationStatus: const Loading(),
     ));
 
     late RemoteData<List<Balance>> nextGiveAssets;
@@ -507,7 +508,10 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
     late RemoteData<Asset> nextGetAssetValidationStatus;
 
     final getBalancesTaskEither = TaskEither.tryCatch(
-      () => balanceRepository.getBalancesForAddress(address: currentAddress, excludeUtxoAttached: true, httpConfig: httpConfig),
+      () => balanceRepository.getBalancesForAddress(
+          address: currentAddress,
+          excludeUtxoAttached: true,
+          httpConfig: httpConfig),
       (error, stacktrace) => 'Error fetching balances',
     );
 
@@ -517,12 +521,14 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
     );
 
     final getGiveAssetTaskEither = TaskEither.tryCatch(
-      () => assetRepository.getAssetVerbose(assetName: params.initialGiveAsset, httpConfig: httpConfig),
+      () => assetRepository.getAssetVerbose(
+          assetName: params.initialGiveAsset, httpConfig: httpConfig),
       (error, stacktrace) => 'Error fetching give asset',
     );
 
     final getGetAssetTaskEither = TaskEither.tryCatch(
-      () => assetRepository.getAssetVerbose(assetName: params.initialGetAsset, httpConfig: httpConfig),
+      () => assetRepository.getAssetVerbose(
+          assetName: params.initialGetAsset, httpConfig: httpConfig),
       (error, stacktrace) => 'Error fetching get asset',
     );
 
@@ -553,8 +559,8 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
         _ => null
       };
 
-      final initialGiveAsset =
-          await assetRepository.getAssetVerbose(assetName: params.initialGiveAsset, httpConfig: httpConfig);
+      final initialGiveAsset = await assetRepository.getAssetVerbose(
+          assetName: params.initialGiveAsset, httpConfig: httpConfig);
       nextGiveAsset = GiveAssetInput.dirty(params.initialGiveAsset);
       nextGiveAssetValidationStatus = Success(initialGiveAsset);
       String nextGiveQuantityNormalized = (initialGiveAsset.divisible ?? false
@@ -571,15 +577,15 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
       // if we can't find a give asset, just treat input as divisible
       nextGiveAsset =
           GiveAssetInput.dirty(params.initialGiveAsset); // Keep the input
-      nextGiveAssetValidationStatus = Failure("Asset not found");
+      nextGiveAssetValidationStatus = const Failure("Asset not found");
       nextGiveQuantity = GiveQuantityInput.dirty(
           params.initialGiveQuantity.toString(),
           isDivisible: true);
     }
 
     try {
-      final initialGetAsset =
-          await assetRepository.getAssetVerbose(assetName: params.initialGetAsset, httpConfig: httpConfig);
+      final initialGetAsset = await assetRepository.getAssetVerbose(
+          assetName: params.initialGetAsset, httpConfig: httpConfig);
       nextGetAsset = GetAssetInput.dirty(params.initialGetAsset);
       nextGetAssetValidationStatus = Success(initialGetAsset);
       String nextGetQuantityNormalized = (initialGetAsset.divisible ?? false
@@ -591,7 +597,7 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
     } catch (e) {
       nextGetAsset =
           GetAssetInput.dirty(params.initialGetAsset); // Keep the input
-      nextGetAssetValidationStatus = Failure("Asset not found");
+      nextGetAssetValidationStatus = const Failure("Asset not found");
       nextGetQuantity =
           GetQuantityInput.dirty(params.initialGetQuantity.toString());
     }
@@ -640,11 +646,12 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
   void _onGetAssetBlurred(
       GetAssetBlurred event, Emitter<FormStateModel> emit) async {
     emit(state.copyWith(
-      getAssetValidationStatus: Loading(),
+      getAssetValidationStatus: const Loading(),
     ));
 
     try {
-      final asset = await assetRepository.getAssetVerbose(assetName: state.getAsset.value, httpConfig: httpConfig);
+      final asset = await assetRepository.getAssetVerbose(
+          assetName: state.getAsset.value, httpConfig: httpConfig);
 
       final getQuantityInput = GetQuantityInput.dirty(
         state.getQuantity.value,
@@ -657,7 +664,7 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
       ));
     } catch (e) {
       emit(state.copyWith(
-        getAssetValidationStatus: Failure('Asset not found'),
+        getAssetValidationStatus: const Failure('Asset not found'),
       ));
     }
   }
@@ -665,12 +672,12 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
   void _onGiveAssetBlurred(
       GiveAssetBlurred event, Emitter<FormStateModel> emit) async {
     emit(state.copyWith(
-      giveAssetValidationStatus: Loading(),
+      giveAssetValidationStatus: const Loading(),
     ));
 
     try {
-      final asset =
-          await assetRepository.getAssetVerbose(assetName: state.giveAsset.value, httpConfig: httpConfig);
+      final asset = await assetRepository.getAssetVerbose(
+          assetName: state.giveAsset.value, httpConfig: httpConfig);
 
       final balance = _getBalanceForAsset(state.giveAsset.value);
 
@@ -685,7 +692,7 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
       ));
     } catch (e) {
       emit(state.copyWith(
-        giveAssetValidationStatus: Failure('Asset not found'),
+        giveAssetValidationStatus: const Failure('Asset not found'),
       ));
     }
   }
@@ -789,8 +796,8 @@ class OpenOrderFormBloc extends Bloc<FormEvent, FormStateModel> {
     late int balance;
 
     try {
-      final asset =
-          await assetRepository.getAssetVerbose(assetName: state.giveAsset.value, httpConfig: httpConfig);
+      final asset = await assetRepository.getAssetVerbose(
+          assetName: state.giveAsset.value, httpConfig: httpConfig);
       isDivisible = asset.divisible ?? true;
     } catch (e) {
       isDivisible = true;

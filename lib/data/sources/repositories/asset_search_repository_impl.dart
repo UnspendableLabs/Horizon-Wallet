@@ -66,11 +66,12 @@ class AssetSearchRepositoryImpl implements AssetSearchRepository {
   }) : _horizonExplorerClientFactory = horizonExplorerClientFactory ??
             GetIt.I<HorizonExplorerClientFactory>();
 
+  @override
   Future<List<AssetSearchResult>> search(
       {required HttpConfig httpConfig, required String term}) async {
     Searcheable<Map<String, dynamic>> searchResult = await client
         .index('search-index')
-        .search(term, SearchQuery(filter: ["kind = 'asset'"]));
+        .search(term, const SearchQuery(filter: ["kind = 'asset'"]));
 
     return searchResult.hits
         .map((e) => MeilisearchResult.fromJson(e).toEntity())

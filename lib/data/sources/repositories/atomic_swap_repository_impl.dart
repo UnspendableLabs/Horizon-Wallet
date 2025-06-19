@@ -24,6 +24,6 @@ class AtomicSwapRepositoryImpl implements AtomicSwapRepository {
     final res = await client.createOnChainPayment(
         address: address, utxoSetIds: utxoSetIds, satsPerVbyte: satsPerVbyte);
 
-    return res.toEntity();
+    return res.data.toEntity();
   }
 }

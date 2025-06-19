@@ -1,5 +1,7 @@
 import 'package:horizon/domain/entities/multi_address_balance.dart';
+
 import 'package:formz/formz.dart';
+import "package:fpdart/fpdart.dart";
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
@@ -61,7 +63,8 @@ class SendFormBalanceSuccessHandler extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocListener<AssetBalanceFormBloc, AssetBalanceFormModel>(
       listener: (context, state) {
-        if (state.submissionStatus.isSuccess && state.balanceInput.value?.entry.address != null) {
+        if (state.submissionStatus.isSuccess &&
+            state.balanceInput.value?.entry.address != null) {
           onSuccess(state.balanceInput.value!.entry.address!);
         }
       },
@@ -70,20 +73,20 @@ class SendFormBalanceSuccessHandler extends StatelessWidget {
   }
 }
 
-class AssetBalanceSuccessHandler extends StatelessWidget {
-  final Function(AtomicSwapSellVariant option) onSuccess;
+class AssetBalanceSuccessHandler<T> extends StatelessWidget {
+  final Either<String, T> Function(AssetBalanceFormModel state) mapSuccess;
+  final Function(T option) onSuccess;
 
-  const AssetBalanceSuccessHandler({super.key, required this.onSuccess});
+  const AssetBalanceSuccessHandler(
+      {super.key, required this.mapSuccess, required this.onSuccess});
 
   @override
   Widget build(context) {
     return BlocListener<AssetBalanceFormBloc, AssetBalanceFormModel>(
         listener: (context, state) {
           if (state.submissionStatus.isSuccess) {
-            state.atomicSwapSellVariant.fold(
-              (_) => throw Exception("invariant"),
-              (value) => onSuccess(value),
-            );
+            mapSuccess(state)
+                .fold((_) => throw ("invariant"), (t) => onSuccess(t));
           }
         },
         child: const SizedBox.shrink());

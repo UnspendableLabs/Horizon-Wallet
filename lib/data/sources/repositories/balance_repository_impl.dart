@@ -52,11 +52,14 @@ class BalanceRepositoryImpl implements BalanceRepository {
     final List<mba.MultiAddressBalance> balances = [];
     balances.addAll([
       await _getBtcBalancesForAddresses(
-          addresses: addresses, httpConfig: httpConfig,)
+        addresses: addresses,
+        httpConfig: httpConfig,
+      )
     ]);
     balances.addAll(await _fetchBalancesByAllAddresses(
         api: counterpartyClientFactory.getClient(httpConfig),
-        addresses: addresses, type: type));
+        addresses: addresses,
+        type: type));
     return balances;
   }
 

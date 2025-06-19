@@ -17,7 +17,6 @@ import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transacti
 import 'package:horizon/presentation/common/usecase/write_local_transaction_usecase.dart';
 import 'package:horizon/presentation/screens/compose_burn/bloc/compose_burn_state.dart';
 import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
-import 'package:horizon/domain/entities/decryption_strategy.dart';
 
 class ComposeBurnEventParams {
   final int quantity;
@@ -42,7 +41,7 @@ class ComposeBurnBloc extends ComposeBaseBloc<ComposeBurnState> {
   final BlockRepository blockRepository;
   final BalanceRepository balanceRepository;
   final HttpConfig httpConfig;
-  
+
   ComposeBurnBloc({
     required this.httpConfig,
     required this.passwordRequired,
@@ -75,10 +74,11 @@ class ComposeBurnBloc extends ComposeBaseBloc<ComposeBurnState> {
         submitState: const FormStep()));
 
     try {
-      final feeEstimates = await getFeeEstimatesUseCase.call(httpConfig: httpConfig);
+      final feeEstimates =
+          await getFeeEstimatesUseCase.call(httpConfig: httpConfig);
 
-      final balances =
-          await balanceRepository.getBalancesForAddress(address:  event.currentAddress!, httpConfig: httpConfig);
+      final balances = await balanceRepository.getBalancesForAddress(
+          address: event.currentAddress!, httpConfig: httpConfig);
 
       emit(state.copyWith(
         balancesState: BalancesState.success(

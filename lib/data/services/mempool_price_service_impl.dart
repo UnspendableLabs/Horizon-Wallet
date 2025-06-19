@@ -54,4 +54,4 @@ class MempoolPriceServiceImpl implements MempoolPriceService {
     _timer?.cancel();
     _priceController.close();
   }
-} 
+}

@@ -62,7 +62,6 @@ class Response<T> {
       _$ResponseFromJson(json, fromJsonT);
 }
 
-
 @JsonSerializable(fieldRename: FieldRename.snake)
 class Block {
   final int blockIndex;
@@ -5582,7 +5581,6 @@ abstract class V2Api {
   @GET("/utxos/withbalances")
   Future<Response<UtxoWithBalancesResponse>> utxosWithBalances(
       @Query("utxos") String utxos);
-
 }
 
 @JsonSerializable()
@@ -5592,7 +5590,8 @@ class UtxoWithBalancesResponse {
   UtxoWithBalancesResponse({required this.result});
 
   factory UtxoWithBalancesResponse.fromJson(Map<String, dynamic> json) =>
-      UtxoWithBalancesResponse(result: json.map((k, v) => MapEntry(k, v as bool)));
+      UtxoWithBalancesResponse(
+          result: json.map((k, v) => MapEntry(k, v as bool)));
 
   Map<String, dynamic> toJson() => result;
 }

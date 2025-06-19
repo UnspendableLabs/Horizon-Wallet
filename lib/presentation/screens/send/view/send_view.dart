@@ -41,7 +41,7 @@ class SendFlowConfirmationStep {
     required this.signedTxHash,
   });
 }
-  
+
 class SendFlowModel extends Equatable {
   final Option<MultiAddressBalance> balance; // step1
   final Option<String> address; // step2
@@ -56,8 +56,7 @@ class SendFlowModel extends Equatable {
   });
 
   @override
-  List<Object?> get props =>
-      [balance, address, composeStep, confirmationStep];
+  List<Object?> get props => [balance, address, composeStep, confirmationStep];
 
   SendFlowModel copyWith(
           {Option<MultiAddressBalance>? balance,
@@ -220,10 +219,11 @@ class _SendViewState extends State<SendView> {
                   title: "Review Send",
                   widthFactor: 1.0,
                   body: SendReviewFormProvider(
-                      composeResponse: switch(composeStep.composeResponse) {
+                      composeResponse: switch (composeStep.composeResponse) {
                         ComposeMpmaSendResponse resp => ComposeSendMpma(resp),
                         ComposeSendResponse resp => ComposeSendSingle(resp),
-                        _ => throw Exception("Invalid compose response type: ${composeStep.composeResponse.runtimeType}"),
+                        _ => throw Exception(
+                            "Invalid compose response type: ${composeStep.composeResponse.runtimeType}"),
                       },
                       sendEntries: composeStep.sendEntries,
                       child: (actions, state) => Builder(builder: (context) {
@@ -235,8 +235,8 @@ class _SendViewState extends State<SendView> {
                                         .flow<SendFlowModel>()
                                         .update((model) {
                                       return model.copyWith(
-                                        confirmationStep: fp.Option.of(
-                                            confirmationStep),
+                                        confirmationStep:
+                                            fp.Option.of(confirmationStep),
                                       );
                                     });
                                   },

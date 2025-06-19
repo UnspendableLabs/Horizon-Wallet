@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:fpdart/fpdart.dart' hide State;
 
 import 'package:horizon/domain/entities/remote_data.dart';
+
 typedef RemoteDataBuilderFn<T> = Widget Function(
   BuildContext context,
   RemoteData<T> state,

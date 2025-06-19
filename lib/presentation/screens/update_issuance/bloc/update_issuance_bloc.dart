@@ -19,7 +19,6 @@ import 'package:horizon/presentation/screens/update_issuance/bloc/update_issuanc
 import 'package:horizon/presentation/common/usecase/compose_transaction_usecase.dart';
 
 import 'package:horizon/domain/repositories/in_memory_key_repository.dart';
-import 'package:horizon/domain/entities/decryption_strategy.dart';
 
 class UpdateIssuanceEventParams extends ComposeIssuanceEventParams {
   final IssuanceActionType issuanceActionType;

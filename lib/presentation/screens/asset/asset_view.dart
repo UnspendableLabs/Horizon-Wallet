@@ -796,8 +796,7 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
               );
             }
             return Material(
-            color: Theme.of(context).scaffoldBackgroundColor,
-
+              color: Theme.of(context).scaffoldBackgroundColor,
               child: Column(
                 children: [
                   _buildHeader(
