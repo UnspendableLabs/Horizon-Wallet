@@ -10,10 +10,23 @@ class AssetQuantity {
   });
 
 // chat can this getter take decimal precision optionallyn?
-  String normalized({ int precision = 8 }) {
+  String normalized({int precision = 8}) {
     if (divisible) {
       return (quantity / TenToTheEigth.bigIntValue).toStringAsFixed(precision);
     }
     return quantity.toString();
+  }
+}
+
+extension AssetQuantityOperators on AssetQuantity {
+  AssetQuantity operator +(AssetQuantity other) {
+    if (divisible != other.divisible) {
+      throw ArgumentError('Cannot add AssetQuantity with different divisibility.');
+    }
+
+    return AssetQuantity(
+      divisible: divisible,
+      quantity: quantity + other.quantity,
+    );
   }
 }
