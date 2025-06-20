@@ -7,13 +7,15 @@ sealed class HttpConfig {
   final String btcExplorer;
   final String horizonExplorer;
   final String horizonExplorerApi;
+  final String mempoolSpaceApi;
   const HttpConfig(
       {required this.network,
       required this.counterparty,
       required this.esplora,
       required this.btcExplorer,
       required this.horizonExplorer,
-      required this.horizonExplorerApi});
+      required this.horizonExplorerApi,
+      required this.mempoolSpaceApi});
 }
 
 class Mainnet extends HttpConfig {
@@ -25,6 +27,7 @@ class Mainnet extends HttpConfig {
           btcExplorer: "https://mempool.space",
           horizonExplorer: "https://horizon.market/explorer",
           horizonExplorerApi: "https://horizon.market/api",
+          mempoolSpaceApi: "https://mempool.space/api/v1",
         );
 }
 
@@ -38,6 +41,7 @@ class Testnet4 extends HttpConfig {
           horizonExplorer:
               "https://horizon-market-testnet.vercel.app/explorer", // TODO: link to testnet
           horizonExplorerApi: "https://horizon.market/api",
+          mempoolSpaceApi: "https://mempool.space/testnet4/api/v1",
         );
 }
 
@@ -48,5 +52,6 @@ class Custom extends HttpConfig {
       required super.counterparty,
       required super.btcExplorer,
       required super.horizonExplorer,
-      required super.horizonExplorerApi});
+      required super.horizonExplorerApi,
+      required super.mempoolSpaceApi});
 }

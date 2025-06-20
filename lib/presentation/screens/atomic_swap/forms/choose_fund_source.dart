@@ -14,7 +14,7 @@ class SwapFundSourceSelector extends StatefulWidget {
 
 class _SwapFundSourceSelectorState extends State<SwapFundSourceSelector> {
   void _toggleDropdown() {
-    DialogHelper.showAppDialog(child: SwapBalanceSelector());
+    DialogHelper.showAppDialog(child: const SwapBalanceSelector());
   }
 
   @override

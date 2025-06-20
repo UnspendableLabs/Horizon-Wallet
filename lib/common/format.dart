@@ -17,6 +17,8 @@ Decimal satoshisToBtc(int satoshis) {
 
 final numberWithCommas = NumberFormat('#,##0.########');
 
+final numberWithNoTrailingZeros = NumberFormat('###0.########');
+
 Decimal quantityToQuantityNormalized({
   required int quantity,
   required bool divisible,
@@ -59,7 +61,7 @@ String quantityToQuantityNormalizedString({
 }
 
 String quantityRemoveTrailingZeros(String quantity) {
-  return quantity
-      .replaceAll(RegExp(r'(?<=\d)0+$'), '')
-      .replaceAll(RegExp(r'\.$'), '');
+  return numberWithNoTrailingZeros.format(
+    double.parse(quantity),
+  );
 }

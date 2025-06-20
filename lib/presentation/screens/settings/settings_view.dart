@@ -302,7 +302,6 @@ class SettingsView extends StatefulWidget {
 }
 
 class _SettingsViewState extends State<SettingsView> {
-
   Widget _buildMainSettings() {
     return ListView(
       children: [
