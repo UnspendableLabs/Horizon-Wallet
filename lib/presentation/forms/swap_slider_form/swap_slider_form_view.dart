@@ -11,7 +11,13 @@ import 'package:horizon/presentation/common/theme_extension.dart';
 
 import "./bloc/swap_slider_form_bloc.dart";
 
-class SwapSliderFormActions {}
+class SwapSliderFormActions {
+  void Function(int value) sliderDragged;
+
+  SwapSliderFormActions({
+    required this.sliderDragged,
+  });
+}
 
 class SwapSliderFormProvider extends StatelessWidget {
   final String assetName;
@@ -35,7 +41,13 @@ class SwapSliderFormProvider extends StatelessWidget {
       ),
       child: BlocBuilder<SwapSliderFormBloc, SwapSliderFormModel>(
           builder: (context, state) {
-        return child(SwapSliderFormActions(), state);
+        return child(
+            SwapSliderFormActions(
+              sliderDragged: (value) => context
+                  .read<SwapSliderFormBloc>()
+                  .add(SliderDragged(value: value)),
+            ),
+            state);
       }),
     );
   }
@@ -73,18 +85,82 @@ class _SwapSliderFormState extends State<SwapSliderForm> {
             padding: const EdgeInsets.all(16),
             child: Column(
               children: [
-                const SizedBox(height: 20),
                 Padding(
-                  padding: const EdgeInsets.only(right: 0),
-                  child: HorizonSlider(
-                    value: 0,
-                    min: 0,
-                    max: 100,
-                    onChanged: (value) {
-                      // setState(() {
-                      //   swapValue = double.parse(value.toStringAsFixed(2));
-                      // });
-                    },
+                  padding: const EdgeInsets.only(right: 20),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      QuantityText(
+                        quantity: widget.state.total.normalized(precision: 2),
+                        style: const TextStyle(fontSize: 35),
+                      ),
+                      Row(
+                        children: [
+                          appIcons.assetIcon(
+                            httpConfig: session.httpConfig,
+                            assetName: widget.state.assetName,
+                            context: context,
+                            width: 24,
+                            height: 24,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            widget.state.assetName,
+                            style: theme.textTheme.titleMedium!
+                                .copyWith(fontSize: 12),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 20),
+                widget.state.atomicSwapListModel.fold(
+                  onFailure: (_) => Center(
+                    child: HorizonSlider(
+                      value: 0,
+                      min: 0,
+                      max: 100,
+                      onChanged: (value) {},
+                    ),
+                  ),
+                  onInitial: () => Center(
+                    child: HorizonSlider(
+                      value: 0,
+                      min: 0,
+                      max: 100,
+                      onChanged: (value) {},
+                    ),
+                  ),
+                  onLoading: () => Center(
+                    child: HorizonSlider(
+                      value: 0,
+                      min: 0,
+                      max: 100,
+                      onChanged: (value) {},
+                    ),
+                  ),
+                  onSuccess: (model) => Center(
+                    child: HorizonSlider(
+                      value: widget.state.sliderInput.value.toDouble(),
+                      min: 0,
+                      max: model.items.length.toDouble(),
+                      steps: model.items.length + 1,
+                      onChanged: (value) {
+                        widget.actions.sliderDragged(value.toInt());
+                      },
+                    ),
+                  ),
+                  onRefreshing: (model) => Center(
+                    child: HorizonSlider(
+                      value: widget.state.sliderInput.value.toDouble(),
+                      min: 0,
+                      max: model.items.length.toDouble(),
+                      steps: model.items.length + 1,
+                      onChanged: (value) {
+                        widget.actions.sliderDragged(value.toInt());
+                      },
+                    ),
                   ),
                 ),
                 const SizedBox(height: 20),
@@ -136,7 +212,7 @@ class _SwapSliderFormState extends State<SwapSliderForm> {
                                 "",
                                 swap.price.toString(),
                                 "",
-                                false,
+                                swap.selected,
                               );
                             },
                           ),
@@ -150,7 +226,7 @@ class _SwapSliderFormState extends State<SwapSliderForm> {
                                 "",
                                 swap.price.toString(),
                                 "",
-                                false,
+                                swap.selected,
                               );
                             },
                           ),
