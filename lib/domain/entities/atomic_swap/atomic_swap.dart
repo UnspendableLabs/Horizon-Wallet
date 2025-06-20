@@ -1,8 +1,8 @@
 class AtomicSwap {
   final String assetName;
-  final int assetQuantity;
-  final num price;
-  final num pricePerUnit;
+  final BigInt assetQuantity;
+  final BigInt price;
+  final BigInt pricePerUnit;
 
   AtomicSwap(
       {required this.assetName,

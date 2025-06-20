@@ -165,9 +165,9 @@ class AtomicSwapModel {
 
   AtomicSwap toEntity() => AtomicSwap(
       assetName: assetName,
-      assetQuantity: assetQuantity,
-      price: price,
-      pricePerUnit: pricePerUnit);
+      assetQuantity: BigInt.from(assetQuantity),
+      price: BigInt.from(price),
+      pricePerUnit: BigInt.from(pricePerUnit));
 }
 
 @JsonSerializable()

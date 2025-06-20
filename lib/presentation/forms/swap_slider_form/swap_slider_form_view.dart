@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:horizon/presentation/session/bloc/session_state.dart';
 import 'package:horizon/utils/app_icons.dart';
 import 'package:horizon/domain/entities/http_config.dart';
+import 'package:horizon/domain/entities/remote_data.dart';
+import 'package:horizon/presentation/common/theme_extension.dart';
 
 import "./bloc/swap_slider_form_bloc.dart";
 
@@ -63,32 +66,167 @@ class _SwapSliderFormState extends State<SwapSliderForm> {
 
     return Column(
       children: [
-        Text("state: ${widget.state.atomicSwaps}"),
         SizedBox(
           height: cardHeight,
           width: double.infinity,
           child: HorizonCard(
             padding: const EdgeInsets.all(16),
-            child: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: const [
-                  Text("Line 1"),
-                  SizedBox(height: 12),
-                  Text("Line 2"),
-                  SizedBox(height: 12),
-                  Text("Line 3"),
-                  SizedBox(height: 12),
-                  Text("Moreasdf content..."),
-                  SizedBox(height: 400), // simulate long content
-                ],
-              ),
+            child: Column(
+              children: [
+                const SizedBox(height: 20),
+                Padding(
+                  padding: const EdgeInsets.only(right: 0),
+                  child: HorizonSlider(
+                    value: 0,
+                    min: 0,
+                    max: 100,
+                    onChanged: (value) {
+                      // setState(() {
+                      //   swapValue = double.parse(value.toStringAsFixed(2));
+                      // });
+                    },
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SizedBox(
+                        height: 34,
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Text('Quantity',
+                                  style: theme.textTheme.bodySmall),
+                            ),
+                            Expanded(
+                              child: Text(
+                                  'Price (sats/${widget.state.assetName})',
+                                  textAlign: TextAlign.right,
+                                  style: theme.textTheme.bodySmall),
+                            ),
+                            Expanded(
+                              child: Text('Total',
+                                  textAlign: TextAlign.right,
+                                  style: theme.textTheme.bodySmall),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Expanded(
+                        child: widget.state.atomicSwapListModel.fold(
+                          onInitial: () => Center(
+                            child: CircularProgressIndicator(
+                              color: theme.colorScheme.primary,
+                            ),
+                          ),
+                          onLoading: () => Center(
+                            child: CircularProgressIndicator(
+                              color: theme.colorScheme.primary,
+                            ),
+                          ),
+                          onSuccess: (model) => ListView.builder(
+                            itemCount: model.items.length,
+                            itemBuilder: (context, index) {
+                              final swap = model.items[index];
+                              return _buildRow(
+                                swap.quantity.normalized(precision: 2),
+                                swap.pricePerUnit.toString(),
+                                "",
+                                swap.price.toString(),
+                                "",
+                                false,
+                              );
+                            },
+                          ),
+                          onRefreshing: (model) => ListView.builder(
+                            itemCount: model.items.length,
+                            itemBuilder: (context, index) {
+                              final swap = model.items[index];
+                              return _buildRow(
+                                swap.quantity.normalized(precision: 2),
+                                swap.pricePerUnit.toString(),
+                                "",
+                                swap.price.toString(),
+                                "",
+                                false,
+                              );
+                            },
+                          ),
+                          onFailure: (error) => Text("Error: $error"),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
           ),
         ),
         const SizedBox(height: 12),
         const Text("button"),
       ],
+    );
+  }
+
+  Widget _buildRow(String quantity, String price, String priceUsd, String total,
+      String totalUsd, bool isSelected) {
+    final theme = Theme.of(context);
+    return SizedBox(
+      height: 50,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Expanded(
+            child: Row(
+              children: [
+                if (isSelected)
+                  AppIcons.checkCircleIcon(
+                      context: context, color: green1, width: 24, height: 24)
+                else
+                  AppIcons.plusCircleIcon(
+                      context: context,
+                      color: transparentPurple33,
+                      width: 24,
+                      height: 24),
+                const SizedBox(width: 8),
+                Text(quantity, style: theme.textTheme.bodySmall),
+              ],
+            ),
+          ),
+          Expanded(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(price, style: theme.textTheme.bodySmall),
+                Text(priceUsd,
+                    style: theme.textTheme.bodySmall!.copyWith(
+                      color: theme
+                          .extension<CustomThemeExtension>()!
+                          .mutedDescriptionTextColor,
+                    )),
+              ],
+            ),
+          ),
+          Expanded(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(total, style: theme.textTheme.bodySmall),
+                Text(totalUsd,
+                    style: theme.textTheme.bodySmall!.copyWith(
+                      color: theme
+                          .extension<CustomThemeExtension>()!
+                          .mutedDescriptionTextColor,
+                    )),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
