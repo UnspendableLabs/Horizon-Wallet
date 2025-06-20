@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:horizon/utils/app_icons.dart';
 import 'package:horizon/domain/entities/multi_address_balance.dart';
 import 'package:horizon/presentation/forms/base/flow/view/flow_step.dart';
@@ -10,7 +11,9 @@ import "package:fpdart/fpdart.dart" hide State;
 import 'package:horizon/presentation/forms/asset_balance_form/asset_balance_form_view.dart';
 import 'package:horizon/extensions.dart';
 import "package:horizon/presentation/forms/asset_pair_form/bloc/form/asset_pair_form_bloc.dart";
-import "package:horizon/presentation/screens/atomic_swap/forms/swap_listing_slider.dart";
+import 'package:horizon/presentation/forms/swap_slider_form/swap_slider_form_view.dart';
+import 'package:horizon/presentation/session/bloc/session_cubit.dart';
+import 'package:horizon/presentation/session/bloc/session_state.dart';
 
 class AtomicSwapBuyModel extends Equatable {
   final Option<MultiAddressBalanceEntry> bitcoinBalance;
@@ -61,6 +64,8 @@ class _AtomicSwapBuyFlowViewState extends State<AtomicSwapBuyFlowView> {
 
   @override
   Widget build(BuildContext context) {
+    final session = context.watch<SessionStateCubit>().state.successOrThrow();
+
     return FlowBuilder<AtomicSwapBuyModel>(
       controller: _controller,
       onGeneratePages: (model, pages) {
@@ -103,22 +108,25 @@ class _AtomicSwapBuyFlowViewState extends State<AtomicSwapBuyFlowView> {
             ),
           ))),
           model.bitcoinBalance.map((bitcoinBalance) => MaterialPage(
-                  child: FlowStep(
-                leading: IconButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                  icon: AppIcons.backArrowIcon(
-                    context: context,
-                    width: 24,
-                    height: 24,
-                    fit: BoxFit.fitHeight,
+              child: FlowStep(
+                  leading: IconButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                    icon: AppIcons.backArrowIcon(
+                      context: context,
+                      width: 24,
+                      height: 24,
+                      fit: BoxFit.fitHeight,
+                    ),
                   ),
-                ),
-                title: "Swap",
-                widthFactor: .6,
-                body: const SwapListingSlider(),
-              )))
+                  title: "Swap",
+                  widthFactor: .6,
+                  body: SwapSliderFormProvider(
+                      httpConfig: session.httpConfig,
+                      assetName: widget.receiveAsset.name,
+                      child: (actions, state) =>
+                          SwapSliderForm(actions: actions, state: state)))))
         ]
             .filter((page) => page.isSome())
             .map((page) => page.getOrThrow())

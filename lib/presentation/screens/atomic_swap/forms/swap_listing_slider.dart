@@ -8,56 +8,10 @@ import 'package:horizon/presentation/common/theme_extension.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:horizon/presentation/session/bloc/session_state.dart';
+import 'package:horizon/presentation/session/bloc/session_state.dart';
 import 'package:horizon/utils/app_icons.dart';
+import 'package:horizon/presentation/forms/swap_slider_form/swap_slider_form_view.dart';
 
-class SwapListingSlider extends StatefulWidget {
-  const SwapListingSlider({
-    super.key,
-  });
-
-  @override
-  State<SwapListingSlider> createState() => _SwapListingSliderState();
-}
-
-class _SwapListingSliderState extends State<SwapListingSlider> {
-  @override
-  Widget build(BuildContext context) {
-    final session = context.watch<SessionStateCubit>().state.successOrThrow();
-    final theme = Theme.of(context);
-    final appIcons = AppIcons();
-
-    const cardHeight = 366.0;
-
-    return const Column(
-      children: [
-        SizedBox(
-          height: cardHeight,
-          width: double.infinity,
-          child: HorizonCard(
-            padding: EdgeInsets.all(16),
-            child: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text("Line 1"),
-                  SizedBox(height: 12),
-                  Text("Line 2"),
-                  SizedBox(height: 12),
-                  Text("Line 3"),
-                  SizedBox(height: 12),
-                  Text("More content..."),
-                  SizedBox(height: 400), // simulate long content
-                ],
-              ),
-            ),
-          ),
-        ),
-        SizedBox(height: 12),
-        Text("button"),
-      ],
-    );
-  }
-}
 
 class SwapListingSlider_ extends StatefulWidget {
   final Function() onNextStep;
@@ -296,14 +250,14 @@ class _SwapListingSlider_State extends State<SwapListingSlider_> {
                   backgroundColor: Colors.transparent,
                   child: Column(
                     children: [
-                      const Padding(
-                        padding:
-                            EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 12),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Row(
-                              children: [
+                              children: const [
                                 Text("You Pay", style: TextStyle(fontSize: 14)),
                                 SizedBox(width: 12),
                                 QuantityText(
@@ -311,7 +265,7 @@ class _SwapListingSlider_State extends State<SwapListingSlider_> {
                                     style: TextStyle(fontSize: 12)),
                               ],
                             ),
-                            Text("\$0.00", textAlign: TextAlign.end),
+                            const Text("\$0.00", textAlign: TextAlign.end),
                           ],
                         ),
                       ),

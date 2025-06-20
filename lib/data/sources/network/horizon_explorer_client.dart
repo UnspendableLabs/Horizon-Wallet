@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:horizon/domain/entities/asset_search_result.dart';
 import 'package:horizon/domain/entities/atomic_swap/on_chain_payment.dart';
+import 'package:horizon/domain/entities/atomic_swap/atomic_swap.dart';
 import 'package:retrofit/retrofit.dart';
 import 'package:json_annotation/json_annotation.dart';
 
@@ -111,7 +112,7 @@ class OnChainPaymentResponse {
 }
 
 @JsonSerializable(fieldRename: FieldRename.snake)
-class AtomicSwap {
+class AtomicSwapModel {
   final String id;
   final bool funded;
   final bool filled;
@@ -126,15 +127,15 @@ class AtomicSwap {
   final String? buyerAddress;
   final String assetUtxoId;
   final int assetUtxoValue;
-  final String? assetName;
-  final int? assetQuantity;
+  final String assetName;
+  final int assetQuantity;
   final num price;
-  final num? pricePerUnit;
+  final num pricePerUnit;
   final DateTime createdAt;
   final DateTime updatedAt;
   final DateTime? expiresAt;
 
-  AtomicSwap({
+  AtomicSwapModel({
     required this.id,
     required this.funded,
     required this.filled,
@@ -158,21 +159,40 @@ class AtomicSwap {
     required this.expiresAt,
   });
 
-  factory AtomicSwap.fromJson(Map<String, dynamic> json) {
-    return _$AtomicSwapFromJson(json);
+  factory AtomicSwapModel.fromJson(Map<String, dynamic> json) {
+    return _$AtomicSwapModelFromJson(json);
+  }
+
+  AtomicSwap toEntity() => AtomicSwap(
+      assetName: assetName,
+      assetQuantity: assetQuantity,
+      price: price,
+      pricePerUnit: pricePerUnit);
+}
+
+@JsonSerializable()
+class AtomicSwapListResponse {
+  final AtomicSwapListResponseData data;
+
+  AtomicSwapListResponse({
+    required this.data,
+  });
+
+  factory AtomicSwapListResponse.fromJson(Map<String, dynamic> json) {
+    return _$AtomicSwapListResponseFromJson(json);
   }
 }
 
 @JsonSerializable(fieldRename: FieldRename.snake)
-class AtomicSwapListResponse {
-  final List<AtomicSwap> swaps;
+class AtomicSwapListResponseData {
+  final List<AtomicSwapModel> atomicSwaps;
   final int count;
-  AtomicSwapListResponse({
-    required this.swaps,
+  AtomicSwapListResponseData({
+    required this.atomicSwaps,
     required this.count,
   });
-  factory AtomicSwapListResponse.fromJson(Map<String, dynamic> json) {
-    return _$AtomicSwapListResponseFromJson(json);
+  factory AtomicSwapListResponseData.fromJson(Map<String, dynamic> json) {
+    return _$AtomicSwapListResponseDataFromJson(json);
   }
 }
 
@@ -196,7 +216,7 @@ abstract class HorizonExplorerApii {
 
   @GET('/atomic-swaps')
   Future<AtomicSwapListResponse> _getAtomicSwapsRaw(
-      @Query('asset_name') String assetName);
+      [@Query('asset_name') String? assetName]);
 }
 
 class HorizonExplorerApi {
@@ -233,8 +253,8 @@ class HorizonExplorerApi {
     return await _api._createOnChainPayment(body);
   }
 
-  Future<AtomicSwapListResponse> getAtomicSwaps(
-      {required String assetName}) async {
+// TODO: this is a misnomer
+  Future<AtomicSwapListResponse> getAtomicSwaps({String? assetName}) async {
     return await _api._getAtomicSwapsRaw(assetName);
   }
 }

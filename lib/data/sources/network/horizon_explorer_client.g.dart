@@ -98,7 +98,8 @@ Map<String, dynamic> _$OnChainPaymentResponseToJson(
       'data': instance.data,
     };
 
-AtomicSwap _$AtomicSwapFromJson(Map<String, dynamic> json) => AtomicSwap(
+AtomicSwapModel _$AtomicSwapModelFromJson(Map<String, dynamic> json) =>
+    AtomicSwapModel(
       id: json['id'] as String,
       funded: json['funded'] as bool,
       filled: json['filled'] as bool,
@@ -113,10 +114,10 @@ AtomicSwap _$AtomicSwapFromJson(Map<String, dynamic> json) => AtomicSwap(
       buyerAddress: json['buyer_address'] as String?,
       assetUtxoId: json['asset_utxo_id'] as String,
       assetUtxoValue: (json['asset_utxo_value'] as num).toInt(),
-      assetName: json['asset_name'] as String?,
-      assetQuantity: (json['asset_quantity'] as num?)?.toInt(),
+      assetName: json['asset_name'] as String,
+      assetQuantity: (json['asset_quantity'] as num).toInt(),
       price: json['price'] as num,
-      pricePerUnit: json['price_per_unit'] as num?,
+      pricePerUnit: json['price_per_unit'] as num,
       createdAt: DateTime.parse(json['created_at'] as String),
       updatedAt: DateTime.parse(json['updated_at'] as String),
       expiresAt: json['expires_at'] == null
@@ -124,7 +125,7 @@ AtomicSwap _$AtomicSwapFromJson(Map<String, dynamic> json) => AtomicSwap(
           : DateTime.parse(json['expires_at'] as String),
     );
 
-Map<String, dynamic> _$AtomicSwapToJson(AtomicSwap instance) =>
+Map<String, dynamic> _$AtomicSwapModelToJson(AtomicSwapModel instance) =>
     <String, dynamic>{
       'id': instance.id,
       'funded': instance.funded,
@@ -152,16 +153,29 @@ Map<String, dynamic> _$AtomicSwapToJson(AtomicSwap instance) =>
 AtomicSwapListResponse _$AtomicSwapListResponseFromJson(
         Map<String, dynamic> json) =>
     AtomicSwapListResponse(
-      swaps: (json['swaps'] as List<dynamic>)
-          .map((e) => AtomicSwap.fromJson(e as Map<String, dynamic>))
-          .toList(),
-      count: (json['count'] as num).toInt(),
+      data: AtomicSwapListResponseData.fromJson(
+          json['data'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$AtomicSwapListResponseToJson(
         AtomicSwapListResponse instance) =>
     <String, dynamic>{
-      'swaps': instance.swaps,
+      'data': instance.data,
+    };
+
+AtomicSwapListResponseData _$AtomicSwapListResponseDataFromJson(
+        Map<String, dynamic> json) =>
+    AtomicSwapListResponseData(
+      atomicSwaps: (json['atomic_swaps'] as List<dynamic>)
+          .map((e) => AtomicSwapModel.fromJson(e as Map<String, dynamic>))
+          .toList(),
+      count: (json['count'] as num).toInt(),
+    );
+
+Map<String, dynamic> _$AtomicSwapListResponseDataToJson(
+        AtomicSwapListResponseData instance) =>
+    <String, dynamic>{
+      'atomic_swaps': instance.atomicSwaps,
       'count': instance.count,
     };
 
@@ -295,9 +309,10 @@ class _HorizonExplorerApii implements HorizonExplorerApii {
   }
 
   @override
-  Future<AtomicSwapListResponse> _getAtomicSwapsRaw(String assetName) async {
+  Future<AtomicSwapListResponse> _getAtomicSwapsRaw([String? assetName]) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{r'asset_name': assetName};
+    queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
     final _options = _setStreamType<AtomicSwapListResponse>(Options(
