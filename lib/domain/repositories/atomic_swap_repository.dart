@@ -1,4 +1,5 @@
 import 'package:horizon/domain/entities/atomic_swap/on_chain_payment.dart';
+import 'package:horizon/domain/entities/atomic_swap/atomic_swap.dart';
 import "package:fpdart/fpdart.dart";
 import 'package:horizon/domain/entities/http_config.dart';
 
@@ -8,6 +9,11 @@ abstract class AtomicSwapRepository {
     required String address,
     required List<String> utxoSetIds,
     required num satsPerVbyte,
+  });
+
+  Future<List<AtomicSwap>> getSwapsByAsset({
+    required HttpConfig httpConfig,
+    required String asset,
   });
 }
 
@@ -29,4 +35,20 @@ extension AtomicSwapRepositoryX on AtomicSwapRepository {
         (error, stacktrace) =>
             onError != null ? onError(error, stacktrace) : error.toString());
   }
+
+  TaskEither<String, List<AtomicSwap>> getSwapsByAssetT({
+    required HttpConfig httpConfig,
+    required String asset,
+    String Function(Object error, StackTrace stacktrace)? onError,
+  }) {
+    return TaskEither.tryCatch(
+      () => getSwapsByAsset(
+        httpConfig: httpConfig,
+        asset: asset,
+      ),
+      (error, stacktrace) =>
+          onError != null ? onError(error, stacktrace) : error.toString(),
+    );
+  }
+
 }

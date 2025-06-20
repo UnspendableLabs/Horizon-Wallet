@@ -1,6 +1,7 @@
 import 'package:get_it/get_it.dart';
 import "package:horizon/domain/repositories/atomic_swap_repository.dart";
 import 'package:horizon/domain/entities/atomic_swap/on_chain_payment.dart';
+import 'package:horizon/domain/entities/atomic_swap/atomic_swap.dart';
 import 'package:horizon/data/sources/network/horizon_explorer_client_factory.dart';
 import 'package:horizon/domain/entities/http_config.dart';
 
@@ -25,5 +26,18 @@ class AtomicSwapRepositoryImpl implements AtomicSwapRepository {
         address: address, utxoSetIds: utxoSetIds, satsPerVbyte: satsPerVbyte);
 
     return res.data.toEntity();
+  }
+
+  Future<List<AtomicSwap>> getSwapsByAsset({
+    required HttpConfig httpConfig,
+    required String asset,
+  }) async {
+    // TODO: handle pagination?
+
+    final client = _horizonExplorerClientFactory.getClient(httpConfig);
+
+    final res = await client.getAtomicSwaps(assetName: asset);
+
+    return res.data.atomicSwaps.map((swap) => swap.toEntity()).toList();
   }
 }
