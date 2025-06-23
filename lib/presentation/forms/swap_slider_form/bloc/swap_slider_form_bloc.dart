@@ -19,11 +19,9 @@ class SliderInput extends FormzInput<int, void> {
 }
 
 class AtomicSwapListModel {
-  final Asset asset; 
+  final Asset asset;
   final List<AtomicSwapListItemModel> items;
-  AtomicSwapListModel({
-    required this.asset,
-    required this.items});
+  AtomicSwapListModel({required this.asset, required this.items});
 }
 
 class AtomicSwapListItemModel {
@@ -73,7 +71,6 @@ class SwapSliderFormModel with FormzMixin {
   }
 
   AssetQuantity get total {
-
     final zero = AssetQuantity(
       divisible: false,
       quantity: BigInt.zero,
@@ -84,13 +81,20 @@ class SwapSliderFormModel with FormzMixin {
       onLoading: () => zero,
       onFailure: (_) => zero,
       onSuccess: (model) => model.items.filter((item) => item.selected).fold(
-        AssetQuantity(quantity: BigInt.zero, divisible: model.asset.divisible ?? false),
-        (previousValue, element) => previousValue + element.quantity,
-      ),
+            AssetQuantity(
+              quantity: BigInt.zero,
+              divisible: true, // quantities from swaps api are always divisible
+              // divisible: model.asset.divisible ?? false
+            ),
+            (previousValue, element) => previousValue + element.quantity,
+          ),
       onRefreshing: (model) => model.items.filter((item) => item.selected).fold(
-        AssetQuantity(quantity: BigInt.zero, divisible: model.asset.divisible ?? false),
-        (previousValue, element) => previousValue + element.quantity,
-      ),
+            AssetQuantity(
+              quantity: BigInt.zero,
+              divisible: true, // quantities from swaps api are always divisible
+            ),
+            (previousValue, element) => previousValue + element.quantity,
+          ),
     );
   }
 
@@ -101,7 +105,7 @@ class SwapSliderFormModel with FormzMixin {
               selected: idx + 1 <= sliderInput.value,
               asset: asset,
               quantity: AssetQuantity(
-                divisible: asset.divisible ?? false,
+                divisible: true,
                 quantity: swap.assetQuantity,
               ),
               price: swap.price,
