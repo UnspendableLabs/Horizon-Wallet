@@ -9,6 +9,7 @@ import 'package:horizon/domain/entities/http_config.dart';
 import 'package:horizon/domain/entities/remote_data.dart';
 import 'package:horizon/presentation/common/theme_extension.dart';
 import 'package:horizon/presentation/common/sats_to_usd_display.dart';
+import 'package:horizon/domain/entities/multi_address_balance_entry.dart';
 
 import "./bloc/swap_slider_form_bloc.dart";
 
@@ -27,17 +28,22 @@ class SwapSliderFormProvider extends StatelessWidget {
     SwapSliderFormActions actions,
     SwapSliderFormModel state,
   ) child;
+
+  final MultiAddressBalanceEntry bitcoinBalance;
+
   const SwapSliderFormProvider({
     super.key,
     required this.child,
     required this.assetName,
     required this.httpConfig,
+    required this.bitcoinBalance,
   });
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) => SwapSliderFormBloc(
         assetName: assetName,
+        bitcoinBalance: bitcoinBalance,
         httpConfig: httpConfig,
       ),
       child: BlocBuilder<SwapSliderFormBloc, SwapSliderFormModel>(
@@ -238,6 +244,30 @@ class _SwapSliderFormState extends State<SwapSliderForm> {
           ),
         ),
         const SizedBox(height: 12),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  const Text("You Pay", style: TextStyle(fontSize: 14)),
+                  const SizedBox(width: 12),
+                  QuantityText(
+                      quantity:
+                          "${widget.state.totalCostInput.value.normalized(precision: 8)} BTC",
+                      style: TextStyle(fontSize: 12)),
+                ],
+              ),
+              SatsToUsdDisplay(
+                  sats: widget.state.totalPrice.quantity,
+                  child: (value) => Text(
+                        "\$${value.toStringAsFixed(2)}",
+                        textAlign: TextAlign.end,
+                      ))
+            ],
+          ),
+        ),
         HorizonButton(
           child: TextButtonContent(value: "Swap"),
           disabled: !widget.state.isValid,
@@ -251,6 +281,7 @@ class _SwapSliderFormState extends State<SwapSliderForm> {
   Widget _buildRow(
       String quantity, String price, String total, bool isSelected) {
     final theme = Theme.of(context);
+
     return SizedBox(
       height: 50,
       child: Row(
@@ -297,8 +328,6 @@ class _SwapSliderFormState extends State<SwapSliderForm> {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(total, style: theme.textTheme.bodySmall),
-
-
                 SatsToUsdDisplay(
                   sats: BigInt.parse(total),
                   child: (value) => Text("\$${value.toStringAsFixed(2)}",

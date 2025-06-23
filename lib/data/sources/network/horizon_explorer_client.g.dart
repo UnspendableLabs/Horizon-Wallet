@@ -309,9 +309,17 @@ class _HorizonExplorerApii implements HorizonExplorerApii {
   }
 
   @override
-  Future<AtomicSwapListResponse> _getAtomicSwapsRaw([String? assetName]) async {
+  Future<AtomicSwapListResponse> _getAtomicSwapsRaw([
+    String? assetName,
+    String? orderBy,
+    String? order,
+  ]) async {
     final _extra = <String, dynamic>{};
-    final queryParameters = <String, dynamic>{r'asset_name': assetName};
+    final queryParameters = <String, dynamic>{
+      r'asset_name': assetName,
+      r'order_by': orderBy,
+      r'order': order,
+    };
     queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
