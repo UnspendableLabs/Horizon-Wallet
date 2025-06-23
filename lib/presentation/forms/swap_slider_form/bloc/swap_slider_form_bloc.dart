@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:formz/formz.dart';
 import 'package:horizon/domain/entities/remote_data.dart';
+import 'package:horizon/domain/entities/multi_address_balance_entry.dart';
 import 'package:horizon/domain/entities/asset.dart';
 import 'package:horizon/domain/entities/atomic_swap/atomic_swap.dart';
 import 'package:equatable/equatable.dart';
@@ -26,6 +27,31 @@ class SliderInput extends FormzInput<int, void> {
       return SliderInputError.required;
     }
     return null;
+  }
+}
+
+enum TotalCostValidationError {
+  insufficientBalance,
+}
+
+class TotalCostInput
+    extends FormzInput<AssetQuantity, TotalCostValidationError> {
+  final AssetQuantity userBalance;
+
+  TotalCostInput.pure({
+    required this.userBalance,
+  }) : super.pure(AssetQuantity(divisible: true, quantity: BigInt.zero));
+
+  const TotalCostInput.dirty({
+    required AssetQuantity value,
+    required this.userBalance,
+  }) : super.dirty(value);
+
+  @override
+  TotalCostValidationError? validator(AssetQuantity value) {
+    return value.quantity > userBalance.quantity
+        ? TotalCostValidationError.insufficientBalance
+        : null;
   }
 }
 
@@ -56,34 +82,69 @@ class SwapSliderFormModel with FormzMixin {
   final RemoteData<List<AtomicSwap>> atomicSwaps;
   final RemoteData<Asset> asset;
   final SliderInput sliderInput;
+  final TotalCostInput totalCostInput;
 
-  SwapSliderFormModel({
-    required this.assetName,
-    required this.atomicSwaps,
-    required this.asset,
-    required this.sliderInput,
-  });
+  SwapSliderFormModel(
+      {required this.assetName,
+      required this.atomicSwaps,
+      required this.asset,
+      required this.sliderInput,
+      required this.totalCostInput});
 
   @override
-  List<FormzInput> get inputs => [sliderInput];
+  List<FormzInput> get inputs => [sliderInput, totalCostInput];
 
   SwapSliderFormModel copyWith({
     String? assetName,
     RemoteData<List<AtomicSwap>>? atomicSwaps,
     RemoteData<Asset>? asset,
     SliderInput? sliderInput,
+    TotalCostInput? totalCostInput,
   }) {
     return SwapSliderFormModel(
       sliderInput: sliderInput ?? this.sliderInput,
+      totalCostInput: totalCostInput ?? this.totalCostInput,
       assetName: assetName ?? this.assetName,
       atomicSwaps: atomicSwaps ?? this.atomicSwaps,
       asset: asset ?? this.asset,
     );
   }
 
+  AssetQuantity get totalPrice {
+    final zero = AssetQuantity(
+      divisible: true,
+      quantity: BigInt.zero,
+    );
+
+    return atomicSwapListModel.fold(
+        onInitial: () => zero,
+        onLoading: () => zero,
+        onFailure: (_) => zero,
+        onSuccess: (model) => model.items.filter((item) => item.selected).fold(
+            AssetQuantity(
+              quantity: BigInt.zero,
+              divisible: true, // quantities from swaps api are always divisible
+              // divisible: model.asset.divisible ?? false
+            ),
+            (previousValue, element) =>
+                previousValue +
+                AssetQuantity(divisible: true, quantity: element.price)),
+        onRefreshing: (model) => model.items
+            .filter((item) => item.selected)
+            .fold(
+                AssetQuantity(
+                  quantity: BigInt.zero,
+                  divisible:
+                      true, // quantities from swaps api are always divisible
+                ),
+                (previousValue, element) =>
+                    previousValue +
+                    AssetQuantity(divisible: true, quantity: element.price)));
+  }
+
   AssetQuantity get total {
     final zero = AssetQuantity(
-      divisible: false,
+      divisible: true,
       quantity: BigInt.zero,
     );
 
@@ -150,6 +211,7 @@ class SwapSliderFormBloc
 
   SwapSliderFormBloc({
     required String assetName,
+    required MultiAddressBalanceEntry bitcoinBalance,
     required this.httpConfig,
     AtomicSwapRepository? atomicSwapRepository,
     AssetRepository? assetRepository,
@@ -158,17 +220,18 @@ class SwapSliderFormBloc
         _assetRepository = assetRepository ?? GetIt.I<AssetRepository>(),
         super(
           SwapSliderFormModel(
+              totalCostInput: TotalCostInput.pure(
+                  userBalance: AssetQuantity(
+                quantity: BigInt.from(bitcoinBalance.quantity),
+                divisible: true,
+              )),
               assetName: assetName,
               atomicSwaps: const Initial<List<AtomicSwap>>(),
               asset: const Initial<Asset>(),
               sliderInput: const SliderInput.pure()),
         ) {
     on<SwapSliderFormInitialized>(_handleInitialized);
-    on<SliderDragged>((event, emit) {
-      emit(state.copyWith(
-        sliderInput: SliderInput.dirty(value: event.value),
-      ));
-    });
+    on<SliderDragged>(_handleSliderDragged);
 
     add(SwapSliderFormInitialized());
   }
@@ -187,6 +250,8 @@ class SwapSliderFormBloc
       _atomicSwapRepository.getSwapsByAssetT(
         httpConfig: httpConfig,
         asset: state.assetName,
+        orderBy: "price",
+        order: "asc",
       )
     ]);
 
@@ -203,6 +268,24 @@ class SwapSliderFormBloc
               atomicSwaps: Success([
                 ...result[1] as List<AtomicSwap>,
               ]))),
+    );
+  }
+
+  _handleSliderDragged(
+    SliderDragged event,
+    Emitter<SwapSliderFormModel> emit,
+  ) {
+    final nextState = state.copyWith(
+      sliderInput: SliderInput.dirty(value: event.value),
+    );
+
+    emit(
+      nextState.copyWith(
+        totalCostInput: TotalCostInput.dirty(
+          value: nextState.totalPrice,
+          userBalance: nextState.totalCostInput.userBalance,
+        ),
+      ),
     );
   }
 }

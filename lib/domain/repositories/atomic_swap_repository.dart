@@ -14,6 +14,8 @@ abstract class AtomicSwapRepository {
   Future<List<AtomicSwap>> getSwapsByAsset({
     required HttpConfig httpConfig,
     required String asset,
+    required String orderBy,
+    required String order,
   });
 }
 
@@ -39,12 +41,16 @@ extension AtomicSwapRepositoryX on AtomicSwapRepository {
   TaskEither<String, List<AtomicSwap>> getSwapsByAssetT({
     required HttpConfig httpConfig,
     required String asset,
+    required String orderBy,
+    required String order,
     String Function(Object error, StackTrace stacktrace)? onError,
   }) {
     return TaskEither.tryCatch(
       () => getSwapsByAsset(
         httpConfig: httpConfig,
         asset: asset,
+        orderBy: orderBy,
+        order: order,
       ),
       (error, stacktrace) =>
           onError != null ? onError(error, stacktrace) : error.toString(),

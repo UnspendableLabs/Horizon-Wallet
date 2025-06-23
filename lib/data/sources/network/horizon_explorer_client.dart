@@ -215,8 +215,11 @@ abstract class HorizonExplorerApii {
       @Body() Map<String, dynamic> body);
 
   @GET('/atomic-swaps')
-  Future<AtomicSwapListResponse> _getAtomicSwapsRaw(
-      [@Query('asset_name') String? assetName]);
+  Future<AtomicSwapListResponse> _getAtomicSwapsRaw([
+    @Query('asset_name') String? assetName,
+    @Query('order_by') String? orderBy,
+    @Query('order') String? order,
+  ]);
 }
 
 class HorizonExplorerApi {
@@ -254,7 +257,8 @@ class HorizonExplorerApi {
   }
 
 // TODO: this is a misnomer
-  Future<AtomicSwapListResponse> getAtomicSwaps({String? assetName}) async {
-    return await _api._getAtomicSwapsRaw(assetName);
+  Future<AtomicSwapListResponse> getAtomicSwaps(
+      {String? assetName, String? orderBy, String? order}) async {
+    return await _api._getAtomicSwapsRaw(assetName, orderBy, order);
   }
 }

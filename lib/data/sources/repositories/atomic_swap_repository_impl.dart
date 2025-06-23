@@ -31,12 +31,15 @@ class AtomicSwapRepositoryImpl implements AtomicSwapRepository {
   Future<List<AtomicSwap>> getSwapsByAsset({
     required HttpConfig httpConfig,
     required String asset,
+    required String orderBy,
+    required String order,
   }) async {
     // TODO: handle pagination?
 
     final client = _horizonExplorerClientFactory.getClient(httpConfig);
 
-    final res = await client.getAtomicSwaps(assetName: asset);
+    final res = await client.getAtomicSwaps(
+        assetName: asset, orderBy: orderBy, order: order);
 
     return res.data.atomicSwaps.map((swap) => swap.toEntity()).toList();
   }
