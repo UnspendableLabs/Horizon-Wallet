@@ -12,10 +12,21 @@ import 'package:horizon/domain/entities/asset_quantity.dart';
 import 'package:horizon/domain/repositories/atomic_swap_repository.dart';
 import 'package:horizon/domain/repositories/asset_repository.dart';
 
+enum SliderInputError {
+  required,
+}
+
 class SliderInput extends FormzInput<int, void> {
   const SliderInput.pure() : super.pure(0);
   const SliderInput.dirty({required int value}) : super.dirty(value);
-  void validator(int value) {}
+
+  @override
+  SliderInputError? validator(int value) {
+    if (value == 0) {
+      return SliderInputError.required;
+    }
+    return null;
+  }
 }
 
 class AtomicSwapListModel {

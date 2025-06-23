@@ -241,7 +241,14 @@ class _SwapSliderFormState extends State<SwapSliderForm> {
           ),
         ),
         const SizedBox(height: 12),
-        const Text("button"),
+        HorizonButton(
+          child: TextButtonContent(value: "Swap"),
+          disabled: !widget.state.isValid,
+          onPressed: () {
+
+          },
+          variant: ButtonVariant.green,
+        ),
       ],
     );
   }
