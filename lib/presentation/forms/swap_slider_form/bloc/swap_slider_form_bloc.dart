@@ -29,11 +29,7 @@ class SelectedAtomicSwapsInput
   AssetQuantity get totalPrice {
     return value.fold(AssetQuantity(divisible: true, quantity: BigInt.zero),
         (prev, item) {
-      return prev +
-          AssetQuantity(
-            divisible: true,
-            quantity: item.price,
-          );
+      return prev + item.price;
     });
   }
 
@@ -42,12 +38,7 @@ class SelectedAtomicSwapsInput
         quantity: BigInt.zero,
         divisible: true, // quantities from swaps api are always divisible
       ),
-      (prev, item) =>
-          prev +
-          AssetQuantity(
-            divisible: true,
-            quantity: item.assetQuantity,
-          ));
+      (prev, item) => prev + item.assetQuantity);
 }
 
 enum SliderInputError {
@@ -102,8 +93,8 @@ class AtomicSwapListItemModel {
   final bool selected;
   final Asset asset;
   final AssetQuantity quantity;
-  final BigInt price;
-  final BigInt pricePerUnit;
+  final AssetQuantity price;
+  final AssetQuantity pricePerUnit;
 
   AtomicSwapListItemModel({
     required this.selected,
@@ -224,10 +215,7 @@ class SwapSliderFormModel with FormzMixin {
           .mapWithIndex((swap, idx) => AtomicSwapListItemModel(
               selected: idx + 1 <= sliderInput.value,
               asset: asset,
-              quantity: AssetQuantity(
-                divisible: true,
-                quantity: swap.assetQuantity,
-              ),
+              quantity: swap.assetQuantity,
               price: swap.price,
               pricePerUnit: swap.pricePerUnit))
           .toList();
@@ -356,6 +344,10 @@ class SwapSliderFormBloc
     if (state.isValid) {
       emit(state.copyWith(
         submissionStatus: FormzSubmissionStatus.success,
+      ));
+
+      emit(state.copyWith(
+        submissionStatus: FormzSubmissionStatus.initial,
       ));
     }
     // shouldn't be possible to click if form is invalid
