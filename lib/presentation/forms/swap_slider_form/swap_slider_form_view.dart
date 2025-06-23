@@ -8,6 +8,7 @@ import 'package:horizon/utils/app_icons.dart';
 import 'package:horizon/domain/entities/http_config.dart';
 import 'package:horizon/domain/entities/remote_data.dart';
 import 'package:horizon/presentation/common/theme_extension.dart';
+import 'package:horizon/presentation/common/sats_to_usd_display.dart';
 
 import "./bloc/swap_slider_form_bloc.dart";
 
@@ -209,9 +210,7 @@ class _SwapSliderFormState extends State<SwapSliderForm> {
                               return _buildRow(
                                 swap.quantity.normalized(precision: 2),
                                 swap.pricePerUnit.toString(),
-                                "",
                                 swap.price.toString(),
-                                "",
                                 swap.selected,
                               );
                             },
@@ -223,9 +222,7 @@ class _SwapSliderFormState extends State<SwapSliderForm> {
                               return _buildRow(
                                 swap.quantity.normalized(precision: 2),
                                 swap.pricePerUnit.toString(),
-                                "",
                                 swap.price.toString(),
-                                "",
                                 swap.selected,
                               );
                             },
@@ -244,17 +241,15 @@ class _SwapSliderFormState extends State<SwapSliderForm> {
         HorizonButton(
           child: TextButtonContent(value: "Swap"),
           disabled: !widget.state.isValid,
-          onPressed: () {
-
-          },
+          onPressed: () {},
           variant: ButtonVariant.green,
         ),
       ],
     );
   }
 
-  Widget _buildRow(String quantity, String price, String priceUsd, String total,
-      String totalUsd, bool isSelected) {
+  Widget _buildRow(
+      String quantity, String price, String total, bool isSelected) {
     final theme = Theme.of(context);
     return SizedBox(
       height: 50,
@@ -284,12 +279,15 @@ class _SwapSliderFormState extends State<SwapSliderForm> {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(price, style: theme.textTheme.bodySmall),
-                Text(priceUsd,
-                    style: theme.textTheme.bodySmall!.copyWith(
-                      color: theme
-                          .extension<CustomThemeExtension>()!
-                          .mutedDescriptionTextColor,
-                    )),
+                SatsToUsdDisplay(
+                  sats: BigInt.parse(price),
+                  child: (value) => Text("\$${value.toStringAsFixed(2)}",
+                      style: theme.textTheme.bodySmall!.copyWith(
+                        color: theme
+                            .extension<CustomThemeExtension>()!
+                            .mutedDescriptionTextColor,
+                      )),
+                )
               ],
             ),
           ),
@@ -299,12 +297,17 @@ class _SwapSliderFormState extends State<SwapSliderForm> {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(total, style: theme.textTheme.bodySmall),
-                Text(totalUsd,
-                    style: theme.textTheme.bodySmall!.copyWith(
-                      color: theme
-                          .extension<CustomThemeExtension>()!
-                          .mutedDescriptionTextColor,
-                    )),
+
+
+                SatsToUsdDisplay(
+                  sats: BigInt.parse(total),
+                  child: (value) => Text("\$${value.toStringAsFixed(2)}",
+                      style: theme.textTheme.bodySmall!.copyWith(
+                        color: theme
+                            .extension<CustomThemeExtension>()!
+                            .mutedDescriptionTextColor,
+                      )),
+                )
               ],
             ),
           ),
