@@ -1,10 +1,12 @@
+import 'package:horizon/domain/entities/asset_quantity.dart';
+
 class AtomicSwap {
   final String id;
 
   final String assetName;
-  final BigInt assetQuantity;
-  final BigInt price;
-  final BigInt pricePerUnit;
+  final AssetQuantity assetQuantity;
+  final AssetQuantity price;
+  final AssetQuantity pricePerUnit;
 
   AtomicSwap(
       {required this.id,

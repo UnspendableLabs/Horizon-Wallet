@@ -16,12 +16,18 @@ class AssetQuantity {
     }
     return quantity.toString();
   }
+
+// chat can this getter take decimal precision optionallyn?
+  String normalizedPretty({int precision = 8}) {
+    return normalized(precision: precision).replaceFirst(RegExp(r'\.?0*$'), '');
+  }
 }
 
 extension AssetQuantityOperators on AssetQuantity {
   AssetQuantity operator +(AssetQuantity other) {
     if (divisible != other.divisible) {
-      throw ArgumentError('Cannot add AssetQuantity with different divisibility.');
+      throw ArgumentError(
+          'Cannot add AssetQuantity with different divisibility.');
     }
 
     return AssetQuantity(

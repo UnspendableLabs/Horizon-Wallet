@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:horizon/domain/entities/asset_quantity.dart';
 import 'package:horizon/domain/entities/asset_search_result.dart';
 import 'package:horizon/domain/entities/atomic_swap/on_chain_payment.dart';
 import 'package:horizon/domain/entities/atomic_swap/atomic_swap.dart';
@@ -166,9 +167,18 @@ class AtomicSwapModel {
   AtomicSwap toEntity() => AtomicSwap(
       id: id,
       assetName: assetName,
-      assetQuantity: BigInt.from(assetQuantity),
-      price: BigInt.from(price),
-      pricePerUnit: BigInt.from(pricePerUnit));
+      assetQuantity: AssetQuantity(
+        quantity: BigInt.from(assetQuantity),
+        divisible:
+            true, // all quantities from atomic swaps are considered divisible ( e.g. expressed in sats)
+      ),
+      price: AssetQuantity(
+        quantity: BigInt.from(price),
+        divisible:
+            true, // all quantities from atomic swaps are considered divisible ( e.g. expressed in sats)
+      ),
+      pricePerUnit:
+          AssetQuantity(quantity: BigInt.from(pricePerUnit), divisible: true));
 }
 
 @JsonSerializable()
