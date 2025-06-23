@@ -13,6 +13,43 @@ import 'package:horizon/domain/entities/asset_quantity.dart';
 import 'package:horizon/domain/repositories/atomic_swap_repository.dart';
 import 'package:horizon/domain/repositories/asset_repository.dart';
 
+enum SelectedAtomicSwapsValidationError { empty }
+
+class SelectedAtomicSwapsInput
+    extends FormzInput<List<AtomicSwap>, SelectedAtomicSwapsValidationError> {
+  const SelectedAtomicSwapsInput.pure() : super.pure(const []);
+  const SelectedAtomicSwapsInput.dirty({required List<AtomicSwap> value})
+      : super.dirty(value);
+
+  @override
+  SelectedAtomicSwapsValidationError? validator(List<AtomicSwap> value) {
+    return value.isEmpty ? SelectedAtomicSwapsValidationError.empty : null;
+  }
+
+  AssetQuantity get totalPrice {
+    return value.fold(AssetQuantity(divisible: true, quantity: BigInt.zero),
+        (prev, item) {
+      return prev +
+          AssetQuantity(
+            divisible: true,
+            quantity: item.price,
+          );
+    });
+  }
+
+  AssetQuantity get totalQuantity => value.fold(
+      AssetQuantity(
+        quantity: BigInt.zero,
+        divisible: true, // quantities from swaps api are always divisible
+      ),
+      (prev, item) =>
+          prev +
+          AssetQuantity(
+            divisible: true,
+            quantity: item.assetQuantity,
+          ));
+}
+
 enum SliderInputError {
   required,
 }
@@ -83,16 +120,23 @@ class SwapSliderFormModel with FormzMixin {
   final RemoteData<Asset> asset;
   final SliderInput sliderInput;
   final TotalCostInput totalCostInput;
+  final SelectedAtomicSwapsInput selectedSwapsInput;
 
-  SwapSliderFormModel(
-      {required this.assetName,
-      required this.atomicSwaps,
-      required this.asset,
-      required this.sliderInput,
-      required this.totalCostInput});
+  final FormzSubmissionStatus submissionStatus;
+
+  SwapSliderFormModel({
+    required this.assetName,
+    required this.atomicSwaps,
+    required this.asset,
+    required this.sliderInput,
+    required this.totalCostInput,
+    required this.selectedSwapsInput,
+    required this.submissionStatus,
+  });
 
   @override
-  List<FormzInput> get inputs => [sliderInput, totalCostInput];
+  List<FormzInput> get inputs =>
+      [sliderInput, totalCostInput, selectedSwapsInput];
 
   SwapSliderFormModel copyWith({
     String? assetName,
@@ -100,75 +144,79 @@ class SwapSliderFormModel with FormzMixin {
     RemoteData<Asset>? asset,
     SliderInput? sliderInput,
     TotalCostInput? totalCostInput,
+    SelectedAtomicSwapsInput? selectedSwapsInput,
+    FormzSubmissionStatus? submissionStatus,
   }) {
     return SwapSliderFormModel(
       sliderInput: sliderInput ?? this.sliderInput,
       totalCostInput: totalCostInput ?? this.totalCostInput,
+      selectedSwapsInput: selectedSwapsInput ?? this.selectedSwapsInput,
       assetName: assetName ?? this.assetName,
       atomicSwaps: atomicSwaps ?? this.atomicSwaps,
       asset: asset ?? this.asset,
+      submissionStatus: submissionStatus ?? this.submissionStatus,
     );
   }
 
-  AssetQuantity get totalPrice {
-    final zero = AssetQuantity(
-      divisible: true,
-      quantity: BigInt.zero,
-    );
-
-    return atomicSwapListModel.fold(
-        onInitial: () => zero,
-        onLoading: () => zero,
-        onFailure: (_) => zero,
-        onSuccess: (model) => model.items.filter((item) => item.selected).fold(
-            AssetQuantity(
-              quantity: BigInt.zero,
-              divisible: true, // quantities from swaps api are always divisible
-              // divisible: model.asset.divisible ?? false
-            ),
-            (previousValue, element) =>
-                previousValue +
-                AssetQuantity(divisible: true, quantity: element.price)),
-        onRefreshing: (model) => model.items
-            .filter((item) => item.selected)
-            .fold(
-                AssetQuantity(
-                  quantity: BigInt.zero,
-                  divisible:
-                      true, // quantities from swaps api are always divisible
-                ),
-                (previousValue, element) =>
-                    previousValue +
-                    AssetQuantity(divisible: true, quantity: element.price)));
-  }
-
-  AssetQuantity get total {
-    final zero = AssetQuantity(
-      divisible: true,
-      quantity: BigInt.zero,
-    );
-
-    return atomicSwapListModel.fold(
-      onInitial: () => zero,
-      onLoading: () => zero,
-      onFailure: (_) => zero,
-      onSuccess: (model) => model.items.filter((item) => item.selected).fold(
-            AssetQuantity(
-              quantity: BigInt.zero,
-              divisible: true, // quantities from swaps api are always divisible
-              // divisible: model.asset.divisible ?? false
-            ),
-            (previousValue, element) => previousValue + element.quantity,
-          ),
-      onRefreshing: (model) => model.items.filter((item) => item.selected).fold(
-            AssetQuantity(
-              quantity: BigInt.zero,
-              divisible: true, // quantities from swaps api are always divisible
-            ),
-            (previousValue, element) => previousValue + element.quantity,
-          ),
-    );
-  }
+  // AssetQuantity get totalPrice {
+  //   final zero = AssetQuantity(
+  //     divisible: true,
+  //     quantity: BigInt.zero,
+  //   );
+  //
+  //   return atomicSwapListModel.fold(
+  //       onInitial: () => zero,
+  //       onLoading: () => zero,
+  //       onFailure: (_) => zero,
+  //       onSuccess: (model) => model.items.filter((item) => item.selected).fold(
+  //           AssetQuantity(
+  //             quantity: BigInt.zero,
+  //             divisible: true, // quantities from swaps api are always divisible
+  //             // divisible: model.asset.divisible ?? false
+  //           ),
+  //           (previousValue, element) =>
+  //               previousValue +
+  //               AssetQuantity(divisible: true, quantity: element.price)),
+  //       onRefreshing: (model) => model.items
+  //           .filter((item) => item.selected)
+  //           .fold(
+  //               AssetQuantity(
+  //                 quantity: BigInt.zero,
+  //                 divisible:
+  //                     true, // quantities from swaps api are always divisible
+  //               ),
+  //               (previousValue, element) =>
+  //                   previousValue +
+  //                   AssetQuantity(divisible: true, quantity: element.price)));
+  // }
+  //
+  // AssetQuantity get total {
+  //   final zero = AssetQuantity(
+  //     divisible: true,
+  //     quantity: BigInt.zero,
+  //   );
+  //
+  //   return atomicSwapListModel.fold(
+  //     onInitial: () => zero,
+  //     onLoading: () => zero,
+  //     onFailure: (_) => zero,
+  //     onSuccess: (model) => model.items.filter((item) => item.selected).fold(
+  //           AssetQuantity(
+  //             quantity: BigInt.zero,
+  //             divisible: true, // quantities from swaps api are always divisible
+  //             // divisible: model.asset.divisible ?? false
+  //           ),
+  //           (previousValue, element) => previousValue + element.quantity,
+  //         ),
+  //     onRefreshing: (model) => model.items.filter((item) => item.selected).fold(
+  //           AssetQuantity(
+  //             quantity: BigInt.zero,
+  //             divisible: true, // quantities from swaps api are always divisible
+  //           ),
+  //           (previousValue, element) => previousValue + element.quantity,
+  //         ),
+  //   );
+  // }
 
   RemoteData<AtomicSwapListModel> get atomicSwapListModel {
     return asset.combine(atomicSwaps, (asset, atomicSwaps) {
@@ -203,6 +251,12 @@ class SliderDragged extends SwapSliderFormEvent {
   const SliderDragged({required this.value});
 }
 
+class SubmitClicked extends SwapSliderFormEvent {
+  const SubmitClicked();
+  @override
+  List<Object?> get props => [];
+}
+
 class SwapSliderFormBloc
     extends Bloc<SwapSliderFormEvent, SwapSliderFormModel> {
   final HttpConfig httpConfig;
@@ -225,14 +279,16 @@ class SwapSliderFormBloc
                 quantity: BigInt.from(bitcoinBalance.quantity),
                 divisible: true,
               )),
+              selectedSwapsInput: SelectedAtomicSwapsInput.pure(),
               assetName: assetName,
               atomicSwaps: const Initial<List<AtomicSwap>>(),
               asset: const Initial<Asset>(),
-              sliderInput: const SliderInput.pure()),
+              sliderInput: const SliderInput.pure(),
+              submissionStatus: FormzSubmissionStatus.initial),
         ) {
     on<SwapSliderFormInitialized>(_handleInitialized);
     on<SliderDragged>(_handleSliderDragged);
-
+    on<SubmitClicked>(_handleSubmitClicked);
     add(SwapSliderFormInitialized());
   }
 
@@ -275,17 +331,33 @@ class SwapSliderFormBloc
     SliderDragged event,
     Emitter<SwapSliderFormModel> emit,
   ) {
-    final nextState = state.copyWith(
-      sliderInput: SliderInput.dirty(value: event.value),
-    );
+    final selectedSwapsInput = SelectedAtomicSwapsInput.dirty(
+        value: state.atomicSwaps.replete(
+            onNone: () => [],
+            onReplete: (swaps) {
+              return swaps
+                  .filterWithIndex((swap, index) => index + 1 <= event.value)
+                  .toList();
+            }));
 
-    emit(
-      nextState.copyWith(
+    emit(state.copyWith(
         totalCostInput: TotalCostInput.dirty(
-          value: nextState.totalPrice,
-          userBalance: nextState.totalCostInput.userBalance,
+          value: selectedSwapsInput.totalPrice,
+          userBalance: state.totalCostInput.userBalance,
         ),
-      ),
-    );
+        sliderInput: SliderInput.dirty(value: event.value),
+        selectedSwapsInput: selectedSwapsInput));
+  }
+
+  _handleSubmitClicked(
+    SubmitClicked event,
+    Emitter<SwapSliderFormModel> emit,
+  ) {
+    if (state.isValid) {
+      emit(state.copyWith(
+        submissionStatus: FormzSubmissionStatus.success,
+      ));
+    }
+    // shouldn't be possible to click if form is invalid
   }
 }

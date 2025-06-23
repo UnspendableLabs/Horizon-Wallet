@@ -7,17 +7,21 @@ import 'package:horizon/presentation/session/bloc/session_state.dart';
 import 'package:horizon/utils/app_icons.dart';
 import 'package:horizon/domain/entities/http_config.dart';
 import 'package:horizon/domain/entities/remote_data.dart';
+import 'package:horizon/domain/entities/atomic_swap/atomic_swap.dart';
 import 'package:horizon/presentation/common/theme_extension.dart';
 import 'package:horizon/presentation/common/sats_to_usd_display.dart';
 import 'package:horizon/domain/entities/multi_address_balance_entry.dart';
+import 'package:formz/formz.dart';
 
 import "./bloc/swap_slider_form_bloc.dart";
 
 class SwapSliderFormActions {
   void Function(int value) sliderDragged;
+  final VoidCallback onSubmitClicked;
 
   SwapSliderFormActions({
     required this.sliderDragged,
+    required this.onSubmitClicked,
   });
 }
 
@@ -50,13 +54,31 @@ class SwapSliderFormProvider extends StatelessWidget {
           builder: (context, state) {
         return child(
             SwapSliderFormActions(
-              sliderDragged: (value) => context
-                  .read<SwapSliderFormBloc>()
-                  .add(SliderDragged(value: value)),
-            ),
+                sliderDragged: (value) => context
+                    .read<SwapSliderFormBloc>()
+                    .add(SliderDragged(value: value)),
+                onSubmitClicked: () =>
+                    context.read<SwapSliderFormBloc>().add(SubmitClicked())),
             state);
       }),
     );
+  }
+}
+
+class SwapFormSuccessHandler extends StatelessWidget {
+  final Function(List<AtomicSwap> swaps) onSuccess;
+
+  const SwapFormSuccessHandler({super.key, required this.onSuccess});
+
+  @override
+  Widget build(context) {
+    return BlocListener<SwapSliderFormBloc, SwapSliderFormModel>(
+        listener: (context, state) {
+          if (state.submissionStatus.isSuccess) {
+            onSuccess(state.selectedSwapsInput.value);
+          }
+        },
+        child: const SizedBox.shrink());
   }
 }
 
@@ -98,7 +120,8 @@ class _SwapSliderFormState extends State<SwapSliderForm> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       QuantityText(
-                        quantity: widget.state.total.normalized(precision: 2),
+                        quantity: widget.state.selectedSwapsInput.totalQuantity
+                            .normalized(precision: 2),
                         style: const TextStyle(fontSize: 35),
                       ),
                       Row(
@@ -260,7 +283,7 @@ class _SwapSliderFormState extends State<SwapSliderForm> {
                 ],
               ),
               SatsToUsdDisplay(
-                  sats: widget.state.totalPrice.quantity,
+                  sats: widget.state.totalCostInput.value.quantity,
                   child: (value) => Text(
                         "\$${value.toStringAsFixed(2)}",
                         textAlign: TextAlign.end,
@@ -271,7 +294,11 @@ class _SwapSliderFormState extends State<SwapSliderForm> {
         HorizonButton(
           child: TextButtonContent(value: "Swap"),
           disabled: !widget.state.isValid,
-          onPressed: () {},
+          onPressed: () {
+            if (widget.state.isValid) {
+              widget.actions.onSubmitClicked();
+            }
+          },
           variant: ButtonVariant.green,
         ),
       ],

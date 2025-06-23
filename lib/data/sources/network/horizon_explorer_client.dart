@@ -164,6 +164,7 @@ class AtomicSwapModel {
   }
 
   AtomicSwap toEntity() => AtomicSwap(
+      id: id,
       assetName: assetName,
       assetQuantity: BigInt.from(assetQuantity),
       price: BigInt.from(price),

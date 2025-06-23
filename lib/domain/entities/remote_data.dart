@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:fpdart/fpdart.dart';
 
 sealed class RemoteData<T> extends Equatable {
   const RemoteData();
@@ -91,6 +92,8 @@ extension RemoteDataX<T> on RemoteData<T> {
         _ => null,
       };
 
+  Option<T> get toOption => Option.fromNullable(getOrNull());
+
   R fold<R>({
     required R Function() onInitial,
     required R Function() onLoading,
@@ -104,6 +107,18 @@ extension RemoteDataX<T> on RemoteData<T> {
         Refreshing(value: final v) => onRefreshing(v),
         Success(value: final v) => onSuccess(v),
         Failure(error: final e) => onFailure(e),
+      };
+
+  R replete<R>({
+    required R Function() onNone,
+    required R Function(T value) onReplete,
+  }) =>
+      switch (this) {
+        Initial() => onNone(),
+        Loading() => onNone(),
+        Refreshing(value: final v) => onReplete(v),
+        Success(value: final v) => onReplete(v),
+        Failure() => onNone(),
       };
 }
 

@@ -126,8 +126,14 @@ class _AtomicSwapBuyFlowViewState extends State<AtomicSwapBuyFlowView> {
                       httpConfig: session.httpConfig,
                       assetName: widget.receiveAsset.name,
                       bitcoinBalance: bitcoinBalance,
-                      child: (actions, state) =>
-                          SwapSliderForm(actions: actions, state: state)))))
+                      child: (actions, state) => Column(
+                            children: [
+                              SwapFormSuccessHandler(onSuccess: (swaps) {
+                                print(swaps);
+                              }),
+                              SwapSliderForm(actions: actions, state: state),
+                            ],
+                          )))))
         ]
             .filter((page) => page.isSome())
             .map((page) => page.getOrThrow())
