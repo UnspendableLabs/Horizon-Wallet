@@ -51,10 +51,10 @@ class SwapPresignFormProvider extends StatelessWidget {
   }
 }
 
-class SwapPresignFormSuccessHandler extends StatelessWidget {
+class SwapPresignSuccessHandler extends StatelessWidget {
   final Function(List<AtomicSwap> swaps) onSuccess;
 
-  const SwapPresignFormSuccessHandler({super.key, required this.onSuccess});
+  const SwapPresignSuccessHandler({super.key, required this.onSuccess});
 
   @override
   Widget build(context) {
@@ -156,7 +156,10 @@ class SwapPresignForm extends StatelessWidget {
             )),
         const SizedBox(height: 28),
         HorizonButton(
-            onPressed: () {}, child: TextButtonContent(value: "Continue")),
+            onPressed: () {
+                actions.onSubmitClicked();
+            },
+            child: TextButtonContent(value: "Continue")),
         const SizedBox(height: 28),
       ],
     );
