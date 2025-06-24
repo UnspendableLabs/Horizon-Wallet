@@ -17,9 +17,10 @@ class SwapPresignFormActions {
 }
 
 class SwapPresignFormProvider extends StatelessWidget {
-
   final HttpConfig httpConfig;
   final List<AtomicSwap> atomicSwaps;
+  final String assetName;
+
   final Widget Function(
     SwapPresignFormActions actions,
     SwapPresignFormModel state,
@@ -30,12 +31,13 @@ class SwapPresignFormProvider extends StatelessWidget {
     required this.child,
     required this.httpConfig,
     required this.atomicSwaps,
-      
+    required this.assetName,
   });
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => SwapPresignFormBloc(atomicSwaps: atomicSwaps),
+      create: (context) =>
+          SwapPresignFormBloc(atomicSwaps: atomicSwaps, assetName: assetName),
       child: BlocBuilder<SwapPresignFormBloc, SwapPresignFormModel>(
           builder: (context, state) {
         return child(
@@ -106,10 +108,14 @@ class SwapPresignForm extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  _gradQtyProperty("Number of Transactions", state.transactionCount.toString(), theme),
-                  _gradQtyProperty("Total you’ll send (BTC)", state.totalBtc.normalizedPretty(precision: 8), theme),
+                  _gradQtyProperty("Number of Transactions",
+                      state.transactionCount.toString(), theme),
+                  _gradQtyProperty("Total you’ll send (BTC)",
+                      state.totalBtc.normalizedPretty(precision: 8), theme),
                   _gradQtyProperty(
-                      "Total you’ll receive (TK ASSET)", state.totalRecieveAsset.normalizedPretty(precision: 8), theme),
+                      "Total you’ll receive (${state.assetName})",
+                      state.totalRecieveAsset.normalizedPretty(precision: 8),
+                      theme),
                   const Divider(
                     height: 20,
                     thickness: 1,
