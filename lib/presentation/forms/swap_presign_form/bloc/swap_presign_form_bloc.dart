@@ -6,9 +6,14 @@ import 'package:formz/formz.dart';
 import 'package:equatable/equatable.dart';
 
 class SwapPresignFormModel with FormzMixin {
+  final String assetName;
+
   final List<AtomicSwap> atomicSwaps;
 
-  const SwapPresignFormModel({required this.atomicSwaps});
+  const SwapPresignFormModel({
+    required this.atomicSwaps,
+    required this.assetName,
+  });
 
   @override
   get inputs => [];
@@ -43,6 +48,7 @@ class SwapPresignFormBloc
     extends Bloc<SwapPresignFormEvent, SwapPresignFormModel> {
   SwapPresignFormBloc({
     required List<AtomicSwap> atomicSwaps,
-  }) : super(SwapPresignFormModel(atomicSwaps: atomicSwaps));
+    required String assetName,
+  }) : super(SwapPresignFormModel(atomicSwaps: atomicSwaps, assetName: assetName));
 }
 

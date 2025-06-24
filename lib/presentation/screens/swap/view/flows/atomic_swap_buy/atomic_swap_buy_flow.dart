@@ -165,6 +165,7 @@ class _AtomicSwapBuyFlowViewState extends State<AtomicSwapBuyFlowView> {
                   title: "Review Swap",
                   widthFactor: .8,
                   body: SwapPresignFormProvider(
+                    assetName: widget.receiveAsset.name,
                     httpConfig: session.httpConfig,
                     atomicSwaps: atomicSwaps,
                     child: (actions, state) => SwapPresignForm(
