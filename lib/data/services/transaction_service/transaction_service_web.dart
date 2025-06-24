@@ -39,6 +39,86 @@ class TransactionServiceWeb implements TransactionService {
   TransactionServiceWeb();
 
   @override
+  MakeBuyPsbtReturn makeBuyPsbt({
+    required String buyerAddress,
+    required String sellerAddress,
+    required List<UtxoWithTransaction> utxos,
+    required HttpConfig httpConfig,
+    required int utxoAssetValue, // TODO: convert to JS BigInt
+    required BitcoinTx sellerTransaction,
+    required int sellerVout,
+    required int price, // TODO: convert to js BigInt
+    required int change,
+  }) {
+    if (utxos.isEmpty) {
+      throw TransactionServiceException('No UTXOs provided');
+    }
+
+    List<int> inputsToSign = [0];
+    bitcoinjs.Psbt psbt = bitcoinjs.Psbt();
+
+    Utxo firstUtxo = utxos.first.utxo; BitcoinTx firstUtxoTransaction = utxos.first.transaction; Vout firstVout = firstUtxoTransaction.vout[firstUtxo.vout]; // add first buyter input psbt.addInput(bitcoinjs.TxInput.make( sighashType: SIGHASH_ALL, hash: Buffer.from( Uint8List.fromList(HEX.decode(firstUtxo.txid).reversed.toList()) .toJS), index: firstUtxo.vout, witnessUtxo: bitcoinjs.WitnessUTXO( script: Buffer.from( Uint8List.fromList(HEX.decode(firstVout.scriptpubkey)).toJS), value: firstUtxo.value,),)); buy output to ensure transfer of asset
+
+    psbt.addOutput(bitcoinjs.TxOutput.make(
+      address: buyerAddress,
+      value: utxoAssetValue.toInt(),
+    ));
+
+    // add unsigned seller input
+    final sellerInput = sellerTransaction.vout[sellerVout];
+    psbt.addInput(bitcoinjs.TxInput.make(
+      hash: Buffer.from(Uint8List.fromList(
+              HEX.decode(sellerTransaction.txid).reversed.toList())
+          .toJS),
+      index: sellerVout,
+      witnessUtxo: bitcoinjs.WitnessUTXO(
+        script: Buffer.from(
+            Uint8List.fromList(HEX.decode(sellerInput.scriptpubkey)).toJS),
+        value: sellerInput.value,
+      ),
+    ));
+
+    // add unsigned seller output ( to cover price )
+
+    psbt.addOutput(bitcoinjs.TxOutput.make(
+      address: sellerAddress,
+      value: price.toInt(),
+    ));
+
+    for (final utxoWithTransaction in utxos.skip(1)) {
+      final utxo = utxoWithTransaction.utxo;
+      final transaction = utxoWithTransaction.transaction;
+      psbt.addInput(bitcoinjs.TxInput.make(
+        hash: Buffer.from(
+            Uint8List.fromList(HEX.decode(transaction.txid).reversed.toList())
+                .toJS),
+        index: utxo.vout,
+        witnessUtxo: bitcoinjs.WitnessUTXO(
+          script: Buffer.from(Uint8List.fromList(
+                  HEX.decode(transaction.vout[utxo.vout].scriptpubkey))
+              .toJS),
+          value: utxo.value,
+        ),
+      ));
+
+      inputsToSign.add(psbt.inputCount);
+    }
+
+    // change output
+
+    if (change >= 546) {
+      psbt.addOutput(
+        bitcoinjs.TxOutput.make(address: buyerAddress, value: change),
+      );
+    }
+
+    return MakeBuyPsbtReturn(
+      psbtHex: psbt.toHex(),
+      inputsToSign: inputsToSign,
+    );
+  }
+
+  @override
   String makeSalePsbt({
     required BigInt price,
     required String source,
