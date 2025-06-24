@@ -3,11 +3,12 @@ import 'package:horizon/data/sources/network/mempool_space_client.dart';
 import 'package:horizon/data/sources/network/mempool_space_client_factory.dart';
 import 'package:horizon/domain/entities/http_config.dart';
 import 'package:horizon/domain/services/mempool_price_service.dart';
+import 'package:rxdart/rxdart.dart';
 
 class MempoolPriceServiceImpl implements MempoolPriceService {
   final MempoolSpaceClientFactory _mempoolSpaceClientFactory;
   MempoolSpaceApi? _client;
-  final _priceController = StreamController<int>.broadcast();
+  final _priceController = BehaviorSubject<int>();
   Timer? _timer;
   int _subscriberCount = 0;
 
@@ -17,6 +18,9 @@ class MempoolPriceServiceImpl implements MempoolPriceService {
 
   @override
   Stream<int> get priceStream => _priceController.stream;
+
+  @override
+  int? get lastPrice => _priceController.valueOrNull;
 
   @override
   void startListening({required HttpConfig httpConfig}) {
