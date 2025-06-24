@@ -29,6 +29,7 @@ class _SatsToUsdDisplayState extends State<SatsToUsdDisplay> {
   @override
   void initState() {
     super.initState();
+    _currentPrice = _priceService.lastPrice;
   }
 
   @override

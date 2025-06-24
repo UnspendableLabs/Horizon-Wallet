@@ -13,6 +13,8 @@ import 'package:horizon/presentation/common/theme_extension.dart';
 import 'package:horizon/presentation/common/sats_to_usd_display.dart';
 import 'package:horizon/domain/entities/multi_address_balance_entry.dart';
 import 'package:formz/formz.dart';
+import 'package:get_it/get_it.dart';
+import 'package:horizon/domain/services/mempool_price_service.dart';
 
 import "./bloc/swap_slider_form_bloc.dart";
 
@@ -26,7 +28,7 @@ class SwapSliderFormActions {
   });
 }
 
-class SwapSliderFormProvider extends StatelessWidget {
+class SwapSliderFormProvider extends StatefulWidget {
   final String assetName;
   final HttpConfig httpConfig;
   final Widget Function(
@@ -43,17 +45,37 @@ class SwapSliderFormProvider extends StatelessWidget {
     required this.httpConfig,
     required this.bitcoinBalance,
   });
+
+  @override
+  State<SwapSliderFormProvider> createState() => _SwapSliderFormProviderState();
+}
+
+class _SwapSliderFormProviderState extends State<SwapSliderFormProvider> {
+  final _priceService = GetIt.I<MempoolPriceService>();
+
+  @override
+  void initState() {
+    super.initState();
+    _priceService.startListening(httpConfig: widget.httpConfig);
+  }
+
+  @override
+  void dispose() {
+    _priceService.stopListening();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) => SwapSliderFormBloc(
-        assetName: assetName,
-        bitcoinBalance: bitcoinBalance,
-        httpConfig: httpConfig,
+        assetName: widget.assetName,
+        bitcoinBalance: widget.bitcoinBalance,
+        httpConfig: widget.httpConfig,
       ),
       child: BlocBuilder<SwapSliderFormBloc, SwapSliderFormModel>(
           builder: (context, state) {
-        return child(
+        return widget.child(
             SwapSliderFormActions(
                 sliderDragged: (value) => context
                     .read<SwapSliderFormBloc>()
