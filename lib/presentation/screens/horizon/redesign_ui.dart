@@ -701,6 +701,7 @@ class _HorizonRedesignDropdownState<T>
                         maxHeight: MediaQuery.of(context).size.height * 0.7,
                       ),
                       child: Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 8),
                         clipBehavior: Clip.hardEdge,
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(18),

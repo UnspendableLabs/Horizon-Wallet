@@ -319,6 +319,7 @@ Future<AssetPairFormOption?> showReceiveAssetModal({
           value:
               BlocProvider.of<AssetPairFormBloc>(outerContext, listen: false),
           child: GestureDetector(
+              onTap: () => Navigator.of(dialogContext).pop(),
               child: BlocConsumer<AssetPairFormBloc, AssetPairFormModel>(
                   listener: (context, state) {
             // no-op for now
