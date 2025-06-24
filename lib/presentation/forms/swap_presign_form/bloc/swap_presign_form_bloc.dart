@@ -35,6 +35,16 @@ class SwapPresignFormModel with FormzMixin {
         AssetQuantity(divisible: true, quantity: BigInt.zero),
         (previousValue, element) => previousValue + element.assetQuantity);
   }
+
+  SwapPresignFormModel copyWith({
+    FormzSubmissionStatus? submissionStatus,
+  }) {
+    return SwapPresignFormModel(
+      atomicSwaps: atomicSwaps,
+      assetName: assetName,
+      submissionStatus: submissionStatus ?? this.submissionStatus,
+    );
+  }
 }
 
 sealed class SwapPresignFormEvent extends Equatable {
@@ -54,6 +64,17 @@ class SwapPresignFormBloc
   }) : super(SwapPresignFormModel(
             atomicSwaps: atomicSwaps,
             assetName: assetName,
-            submissionStatus: FormzSubmissionStatus.initial));
+            submissionStatus: FormzSubmissionStatus.initial)) {
+    on<SubmitClicked>(_handleSubmitClicked);
+  }
+
+  _handleSubmitClicked(
+    SubmitClicked event,
+    Emitter<SwapPresignFormModel> emit,
+  ) {
+    emit(state.copyWith(
+      submissionStatus: FormzSubmissionStatus.success,
+    ));
+  }
 }
 
