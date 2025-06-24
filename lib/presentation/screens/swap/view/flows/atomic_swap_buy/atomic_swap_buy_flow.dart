@@ -16,20 +16,28 @@ import 'package:horizon/presentation/forms/swap_slider_form/swap_slider_form_vie
 import 'package:horizon/presentation/forms/swap_presign_form/swap_presign_form_view.dart';
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:horizon/presentation/session/bloc/session_state.dart';
-import 'package:horizon/presentation/common/collapsable_view.dart';
-import 'package:horizon/presentation/common/redesign_colors.dart';
-import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
-
+import 'package:horizon/presentation/forms/swap_buy_sign_form/bloc/swap_buy_sign_bloc.dart';
+import 'package:horizon/presentation/forms/swap_buy_sign_form/swap_buy_sign_form_view.dart';
 // CHAT this compnent is oveflowing.
+
+class AtomicSwapsToSign {
+  final List<AtomicSwap> atomicSwaps;
+  final String assetName;
+  const AtomicSwapsToSign({required this.atomicSwaps, required this.assetName});
+}
 
 class AtomicSwapBuyModel extends Equatable {
   final Option<MultiAddressBalanceEntry> bitcoinBalance;
   final Option<List<AtomicSwap>> atomicSwaps;
+  final Option<AtomicSwapsToSign> atomicSwapsToSign;
+
   // final Option<AtomicSwapBuyVariant> atomicSwapBuyVariant;
   // final Option<SwapBuyConfirmationDetails> swapBuyConfirmationDetails;
 
   const AtomicSwapBuyModel(
-      {required this.bitcoinBalance, required this.atomicSwaps});
+      {required this.bitcoinBalance,
+      required this.atomicSwaps,
+      required this.atomicSwapsToSign});
 
   @override
   List<Object?> get props => [];
@@ -37,10 +45,12 @@ class AtomicSwapBuyModel extends Equatable {
   AtomicSwapBuyModel copyWith({
     Option<MultiAddressBalanceEntry>? bitcoinBalance,
     Option<List<AtomicSwap>>? atomicSwaps,
+    Option<AtomicSwapsToSign>? atomicSwapsToSign,
   }) =>
       AtomicSwapBuyModel(
           bitcoinBalance: bitcoinBalance ?? this.bitcoinBalance,
-          atomicSwaps: atomicSwaps ?? this.atomicSwaps);
+          atomicSwaps: atomicSwaps ?? this.atomicSwaps,
+          atomicSwapsToSign: atomicSwapsToSign ?? this.atomicSwapsToSign);
 }
 
 class AtomicSwapBuyFlowController extends FlowController<AtomicSwapBuyModel> {
@@ -72,7 +82,9 @@ class _AtomicSwapBuyFlowViewState extends State<AtomicSwapBuyFlowView> {
     super.initState();
     _controller = AtomicSwapBuyFlowController(
         initialState: const AtomicSwapBuyModel(
-            bitcoinBalance: Option.none(), atomicSwaps: Option.none()));
+            bitcoinBalance: Option.none(),
+            atomicSwaps: Option.none(),
+            atomicSwapsToSign: Option.none()));
   }
 
   @override
@@ -171,7 +183,10 @@ class _AtomicSwapBuyFlowViewState extends State<AtomicSwapBuyFlowView> {
                     child: (actions, state) => Column(
                       children: [
                         SwapPresignSuccessHandler(onSuccess: (swaps) {
-                          print(swaps);
+                          _controller.update((model) => model.copyWith(
+                              atomicSwapsToSign: Option.of(AtomicSwapsToSign(
+                                  atomicSwaps: swaps,
+                                  assetName: widget.receiveAsset.name))));
                         }),
                         SwapPresignForm(
                           state: state,
@@ -180,6 +195,41 @@ class _AtomicSwapBuyFlowViewState extends State<AtomicSwapBuyFlowView> {
                       ],
                     ),
                   )))),
+          model.atomicSwapsToSign.map((atomciSwapsToSign) => MaterialPage(
+              child: SwapBuySignFormProvider(
+                  address: widget.addresses.firstWhere(
+                    (address) =>
+                        address.address ==
+                        model.bitcoinBalance.getOrThrow().address,
+                  ),
+                  httpConfig: session.httpConfig,
+                  atomicSwaps: atomciSwapsToSign.atomicSwaps,
+                  assetName: atomciSwapsToSign.assetName,
+                  child: (actions, state) => FlowStep(
+                      leading: IconButton(
+                        onPressed: () {
+                          _controller.update((model) =>
+                              // TODO: fine tune what happens when user clicks back
+                              model.copyWith(atomicSwapsToSign: Option.none()));
+                        },
+                        icon: AppIcons.backArrowIcon(
+                          context: context,
+                          width: 24,
+                          height: 24,
+                          fit: BoxFit.fitHeight,
+                        ),
+                      ),
+                      title:
+                          "Sign Transaction ( ${state.swapIndex + 1} / ${state.atomicSwaps.length} )",
+                      widthFactor: .9,
+                      body: Column(
+                        children: [
+                          SwapBuySignForm(
+                            state: state,
+                            actions: actions,
+                          ),
+                        ],
+                      )))))
         ]
             .filter((page) => page.isSome())
             .map((page) => page.getOrThrow())
