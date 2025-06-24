@@ -5,6 +5,7 @@ import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 import 'package:horizon/domain/entities/http_config.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:horizon/domain/entities/atomic_swap/atomic_swap.dart';
+import 'package:formz/formz.dart';
 
 import "./bloc/swap_presign_form_bloc.dart";
 
@@ -47,6 +48,23 @@ class SwapPresignFormProvider extends StatelessWidget {
             state);
       }),
     );
+  }
+}
+
+class SwapPresignFormSuccessHandler extends StatelessWidget {
+  final Function(List<AtomicSwap> swaps) onSuccess;
+
+  const SwapPresignFormSuccessHandler({super.key, required this.onSuccess});
+
+  @override
+  Widget build(context) {
+    return BlocListener<SwapPresignFormBloc, SwapPresignFormModel>(
+        listener: (context, state) {
+          if (state.submissionStatus.isSuccess) {
+            onSuccess(state.atomicSwaps);
+          }
+        },
+        child: const SizedBox.shrink());
   }
 }
 
