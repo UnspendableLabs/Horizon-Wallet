@@ -191,7 +191,6 @@ class CreatePsbtFormBloc
 
   void _onExpiryDateSelected(
       ExpiryDateSelected event, Emitter<CreatePsbtFormModel> emit) {
-    print("event.date: ${event.date}");
     emit(state.copyWith(expiryDate: event.date));
   }
 

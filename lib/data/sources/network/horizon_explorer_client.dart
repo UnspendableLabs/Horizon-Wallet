@@ -3,6 +3,7 @@ import 'package:horizon/domain/entities/asset_quantity.dart';
 import 'package:horizon/domain/entities/asset_search_result.dart';
 import 'package:horizon/domain/entities/atomic_swap/on_chain_payment.dart';
 import 'package:horizon/domain/entities/atomic_swap/atomic_swap.dart';
+import 'package:horizon/domain/entities/utxo.dart';
 import 'package:retrofit/retrofit.dart';
 import 'package:json_annotation/json_annotation.dart';
 
@@ -166,7 +167,13 @@ class AtomicSwapModel {
 
   AtomicSwap toEntity() => AtomicSwap(
       id: id,
+      sellerAddress: sellerAddress,
       assetName: assetName,
+      assetUtxoValue: assetUtxoValue,
+      assetUtxoId: UtxoID(
+        txid: assetUtxoId.split(':')[0],
+        vout: int.parse(assetUtxoId.split(':')[1]),
+      ),
       assetQuantity: AssetQuantity(
         quantity: BigInt.from(assetQuantity),
         divisible:
