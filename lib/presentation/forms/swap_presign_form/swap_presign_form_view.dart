@@ -68,12 +68,11 @@ class SwapPresignSuccessHandler extends StatelessWidget {
   }
 }
 
-// CHAT this compnent is oveflowing.
 class SwapPresignForm extends StatelessWidget {
   final SwapPresignFormModel state;
   final SwapPresignFormActions actions;
 
-  SwapPresignForm({
+  const SwapPresignForm({
     super.key,
     required this.state,
     required this.actions,
@@ -157,7 +156,7 @@ class SwapPresignForm extends StatelessWidget {
         const SizedBox(height: 28),
         HorizonButton(
             onPressed: () {
-                actions.onSubmitClicked();
+              actions.onSubmitClicked();
             },
             child: TextButtonContent(value: "Continue")),
         const SizedBox(height: 28),

@@ -18,6 +18,24 @@ class MakeRBFResponse {
   });
 }
 
+class UtxoWithTransaction {
+  final Utxo utxo;
+  final BitcoinTx transaction;
+  UtxoWithTransaction({
+    required this.utxo,
+    required this.transaction,
+  });
+}
+
+class MakeBuyPsbtReturn {
+  final String psbtHex;
+  final List<int> inputsToSign;
+  MakeBuyPsbtReturn({
+    required this.psbtHex,
+    required this.inputsToSign,
+  });
+}
+
 abstract class TransactionService {
   String signPsbt(String psbtHex, Map<int, String> inputPrivateKeyMap,
       HttpConfig httpConfig,
@@ -77,6 +95,18 @@ abstract class TransactionService {
     required Vout utxoVout,
     required HttpConfig httpConfig,
   });
+
+  MakeBuyPsbtReturn makeBuyPsbt({
+    required String buyerAddress,
+    required String sellerAddress,
+    required List<UtxoWithTransaction> utxos,
+    required HttpConfig httpConfig,
+    required int utxoAssetValue, // TODO: convert to JS BigInt
+    required BitcoinTx sellerTransaction,
+    required int sellerVout,
+    required int price, // TODO: convert to js BigInt
+    required int change,
+  });
 }
 
 class TransactionServiceException implements Exception {
@@ -85,6 +115,34 @@ class TransactionServiceException implements Exception {
 }
 
 extension TransactionServiceX on TransactionService {
+  Either<String, MakeBuyPsbtReturn> makeBuyPsbtT({
+    required String buyerAddress,
+    required String sellerAddress,
+    required List<UtxoWithTransaction> utxos,
+    required HttpConfig httpConfig,
+    required int utxoAssetValue, // TODO: convert to JS BigInt
+    required BitcoinTx sellerTransaction,
+    required int sellerVout,
+    required int price, // TODO: convert to js BigInt
+    required int change,
+    required String Function(Object error) onError,
+  }) {
+    return Either.tryCatch(
+      () => makeBuyPsbt(
+        buyerAddress: buyerAddress,
+        sellerAddress: sellerAddress,
+        utxos: utxos,
+        httpConfig: httpConfig,
+        utxoAssetValue: utxoAssetValue,
+        sellerTransaction: sellerTransaction,
+        sellerVout: sellerVout,
+        price: price,
+        change: change,
+      ),
+      (e, _) => onError(e),
+    );
+  }
+
   Either<String, String> makeSalePsbtT({
     required BigInt price,
     required String source,

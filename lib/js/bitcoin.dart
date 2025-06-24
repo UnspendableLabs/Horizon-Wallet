@@ -32,6 +32,8 @@ extension type TxInput._(JSObject _) implements JSObject {
   external int? sighashType;
 }
 
+
+
 extension type TxOutput._(JSObject _) implements JSObject {
   external factory TxOutput.make({
     JSUint8Array? script,
@@ -96,6 +98,8 @@ extension type Psbt._(JSObject _) implements JSObject {
   external PsbtData get data;
 
   external int getFee();
+  
+  external int get inputCount;
 
   @JS("__CACHE")
   external PsbtCache get cache;
