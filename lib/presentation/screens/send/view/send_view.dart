@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fpdart/fpdart.dart' as fp;
 import 'package:fpdart/fpdart.dart' show Option;
 import 'package:go_router/go_router.dart';
+import 'package:horizon/domain/entities/address_v2.dart';
 import 'package:horizon/domain/entities/compose_response.dart';
 import 'package:horizon/domain/entities/compose_send.dart';
 import 'package:horizon/domain/entities/compose_mpma_send.dart';
@@ -18,6 +19,7 @@ import 'package:horizon/presentation/screens/send/bloc/send_entry_form_bloc.dart
 import 'package:horizon/presentation/screens/send/forms/send_compose_form.dart';
 import 'package:horizon/presentation/screens/send/forms/send_form_token_selector.dart';
 import 'package:horizon/presentation/screens/send/forms/send_review_form.dart';
+import 'package:horizon/presentation/screens/send/send_form_loader.dart';
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:horizon/presentation/session/bloc/session_state.dart';
 import 'package:horizon/utils/app_icons.dart';
@@ -44,7 +46,7 @@ class SendFlowConfirmationStep {
 
 class SendFlowModel extends Equatable {
   final Option<MultiAddressBalance> balance; // step1
-  final Option<String> address; // step2
+  final Option<AddressV2> address; // step2
   final Option<SendFlowComposeStep> composeStep; // step3
   final Option<SendFlowConfirmationStep> confirmationStep; // step4
 
@@ -60,7 +62,7 @@ class SendFlowModel extends Equatable {
 
   SendFlowModel copyWith(
           {Option<MultiAddressBalance>? balance,
-          Option<String>? address,
+          Option<AddressV2>? address,
           Option<SendFlowComposeStep>? composeStep,
           Option<SendFlowConfirmationStep>? confirmationStep}) =>
       SendFlowModel(
@@ -155,10 +157,12 @@ class _SendViewState extends State<SendView> {
                         Builder(
                           builder: (context) => SendFormBalanceSuccessHandler(
                               onSuccess: (address) {
-                            context.flow<SendFlowModel>().update((model) {
-                              return model.copyWith(
-                                  address: Option.of(address));
-                            });
+                                final addressV2 = session.addresses.firstWhere(
+                                    (element) => element.address == address);
+                                context.flow<SendFlowModel>().update((model) {
+                                  return model.copyWith(
+                                      address: Option.of(addressV2));
+                                });
                           }),
                         ),
                         AssetBalanceForm(
@@ -189,8 +193,7 @@ class _SendViewState extends State<SendView> {
                           memoInput: const MemoInput.pure())
                     ],
                     balances: _cachedBalances!,
-                    sourceAddress: model.address
-                        .getOrElse(() => throw Exception("Invalid address")),
+                    sourceAddress: address.address,
                     child: (actions, state) => Builder(builder: (context) {
                       return Column(
                         children: [
@@ -207,6 +210,7 @@ class _SendViewState extends State<SendView> {
                           SendComposeForm(
                             actions: actions,
                             state: state,
+                            mpmaMode: true,
                           )
                         ],
                       );
@@ -219,6 +223,8 @@ class _SendViewState extends State<SendView> {
                   title: "Review Send",
                   widthFactor: 1.0,
                   body: SendReviewFormProvider(
+                      httpConfig: session.httpConfig,
+                      sourceAddress: model.address.getOrThrow(),
                       composeResponse: switch (composeStep.composeResponse) {
                         ComposeMpmaSendResponse resp => ComposeSendMpma(resp),
                         ComposeSendResponse resp => ComposeSendSingle(resp),

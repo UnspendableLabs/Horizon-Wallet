@@ -1,13 +1,25 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:formz/formz.dart';
+import 'package:horizon/domain/entities/address_v2.dart';
+import 'package:horizon/domain/entities/http_config.dart';
+import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transaction_usecase.dart';
 import 'package:horizon/presentation/screens/send/bloc/send_compose_form_bloc.dart';
 import 'package:horizon/presentation/screens/send/bloc/send_entry_form_bloc.dart';
+import 'package:fpdart/fpdart.dart';
 
 class SendReviewFormBloc
     extends Bloc<SendReviewFormEvent, SendReviewFormModel> {
   final List<SendEntryFormModel> sendEntries;
   final ComposeSendUnion composeResponse;
-  SendReviewFormBloc({required this.sendEntries, required this.composeResponse})
+  final HttpConfig httpConfig;
+  final SignAndBroadcastTransactionUseCase signAndBroadcastTransactionUseCase;
+  final AddressV2 sourceAddress;
+  SendReviewFormBloc(
+      {required this.sendEntries,
+      required this.httpConfig,
+      required this.composeResponse,
+      required this.sourceAddress,
+      required this.signAndBroadcastTransactionUseCase})
       : super(SendReviewFormModel(
           submissionStatus: FormzSubmissionStatus.initial,
           sendEntries: sendEntries,
@@ -22,21 +34,45 @@ class SendReviewFormBloc
       OnSignAndSubmitEvent event, Emitter<SendReviewFormModel> emit) async {
     emit(state.copyWith(submissionStatus: FormzSubmissionStatus.inProgress));
 
-    // TODO: Implement sign and submit
+    final composeData = switch (state.composeResponse) {
+      ComposeSendMpma(:final response) => response,
+      ComposeSendSingle(:final response) => response,
+      _ => throw Exception("invariant"),
+    };
 
-    emit(state.copyWith(
+    final task =
+        TaskEither<String, ({String txHex, String txHash})>.Do(($) async {
+      final broadcastResponse =
+          await $(signAndBroadcastTransactionUseCase.callT(
+        httpConfig: httpConfig,
+        decryptionStrategy: event.decryptionStrategy,
+        source: sourceAddress,
+        rawtransaction: composeData.rawtransaction,
+      ));
+
+      return (txHex: broadcastResponse.hex, txHash: broadcastResponse.hash);
+    });
+
+    final result = await task.run();
+
+    result.fold(
+      (error) => emit(state.copyWith(
+        submissionStatus: FormzSubmissionStatus.failure,
+      )),
+      (success) => emit(state.copyWith(
         submissionStatus: FormzSubmissionStatus.success,
-        signedTxHex:
-            "02000000xcadxc000000000001976a91462e907b17c1d4b80e28614e46f04f2c4167afee88ac00000000",
-        signedTxHash:
-            "6a6890705f4fe6d438983ed65d01452a8a8823f1a187982a1745c6b24e4d3409"));
+        signedTxHex: success.txHex,
+        signedTxHash: success.txHash,
+      )),
+    );
   }
 }
 
 class SendReviewFormEvent {}
 
 class OnSignAndSubmitEvent extends SendReviewFormEvent {
-  OnSignAndSubmitEvent();
+  final DecryptionStrategy decryptionStrategy;
+  OnSignAndSubmitEvent({required this.decryptionStrategy});
 }
 
 class SendReviewFormModel with FormzMixin {

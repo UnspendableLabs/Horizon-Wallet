@@ -614,6 +614,7 @@ class HorizonRedesignDropdown<T> extends StatefulWidget {
   final TextStyle? buttonTextStyle;
   final EdgeInsetsGeometry? itemPadding;
   final EdgeInsetsGeometry? selectorPadding;
+  final bool disabled;
 
   const HorizonRedesignDropdown({
     super.key,
@@ -630,6 +631,7 @@ class HorizonRedesignDropdown<T> extends StatefulWidget {
     this.itemPadding,
     this.selectorPadding =
         const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+    this.disabled = false,
   });
 
   @override
@@ -844,9 +846,9 @@ class _HorizonRedesignDropdownState<T>
     final hasValue = widget.selectedValue != null;
     return widget.useModal
         ? MouseRegion(
-            cursor: SystemMouseCursors.click,
+            cursor: widget.disabled ? SystemMouseCursors.basic : SystemMouseCursors.click,
             child: GestureDetector(
-              onTap: _toggleDropdown,
+              onTap: widget.disabled ? null : _toggleDropdown,
               child: Container(
                 height: 56,
                 padding: widget.selectorPadding,
@@ -910,9 +912,9 @@ class _HorizonRedesignDropdownState<T>
         : CompositedTransformTarget(
             link: _layerLink,
             child: MouseRegion(
-              cursor: SystemMouseCursors.click,
+              cursor: widget.disabled ? SystemMouseCursors.basic : SystemMouseCursors.click,
               child: GestureDetector(
-                onTap: _toggleDropdown,
+                onTap: widget.disabled ? null : _toggleDropdown,
                 child: Container(
                   height: 56,
                   padding:

@@ -11,6 +11,7 @@ import 'package:horizon/presentation/common/theme_extension.dart';
 import 'package:horizon/presentation/screens/asset/bloc/asset_view_bloc.dart';
 import 'package:horizon/presentation/screens/asset/bloc/asset_view_event.dart';
 import 'package:horizon/presentation/screens/dashboard/view/balances_display.dart';
+import 'package:horizon/presentation/screens/send/view/asset_send_view.dart';
 import 'package:horizon/presentation/screens/transactions/lock_quantity/view/lock_quantity_page.dart';
 import 'package:horizon/presentation/screens/transactions/send/view/send_page.dart';
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
@@ -73,9 +74,8 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
     final session = context.read<SessionStateCubit>().state;
 
     final page = switch (type) {
-      TransactionType.send => SendPage(
+      TransactionType.send => AssetSendView(
           assetName: widget.assetName,
-          addresses: session.successOrThrow().addresses,
         ),
       TransactionType.lockQuantity => LockQuantityPage(
           assetName: widget.assetName,

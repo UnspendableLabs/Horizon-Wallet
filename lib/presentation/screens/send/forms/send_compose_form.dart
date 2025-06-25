@@ -135,8 +135,14 @@ class SendComposeSuccessHandler extends StatelessWidget {
 class SendComposeForm extends StatefulWidget {
   final SendComposeFormActions actions;
   final SendComposeFormModel state;
+  final bool mpmaMode;
+  final bool disableBalanceSelector;
   const SendComposeForm(
-      {super.key, required this.actions, required this.state});
+      {super.key,
+      required this.actions,
+      required this.state,
+      this.mpmaMode = true,
+      this.disableBalanceSelector = false});
 
   @override
   State<SendComposeForm> createState() => _SendComposeFormState();
@@ -184,6 +190,7 @@ class _SendComposeFormState extends State<SendComposeForm> {
                   state: state,
                   actions: actions,
                   balances: widget.state.balances,
+                  disableBalanceSelector: widget.disableBalanceSelector,
                 ),
               ),
               if (index != widget.state.sendEntries.length - 1)
@@ -196,6 +203,7 @@ class _SendComposeFormState extends State<SendComposeForm> {
             ],
           );
         }),
+        if (!widget.mpmaMode)
         SizedBox(
           height: 32,
           child: IntrinsicWidth(
