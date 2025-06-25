@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
+import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
 import 'package:horizon/domain/entities/http_config.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:horizon/domain/entities/atomic_swap/atomic_swap.dart';
@@ -16,11 +17,15 @@ import 'package:horizon/presentation/common/remote_data_builder.dart';
 import 'package:horizon/domain/entities/fee_estimates.dart';
 
 import 'package:horizon/domain/repositories/fee_estimates_repository.dart';
+import 'package:horizon/domain/repositories/settings_repository.dart';
 import "./bloc/swap_buy_sign_bloc.dart";
 
 import 'package:get_it/get_it.dart';
 import 'package:horizon/domain/entities/fee_option.dart';
 
+
+import 'package:horizon/presentation/forms/sign_psbt/bloc/sign_psbt_bloc.dart';
+import 'package:horizon/presentation/forms/sign_psbt/view/sign_psbt_form.dart';
 
 class SwapBuySignFormActions {
   final VoidCallback onSubmitClicked;
@@ -89,6 +94,79 @@ class SwapBuySignFormProvider extends StatelessWidget {
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
                 )));
+  }
+}
+
+class CreateBuyPsbtSignHandler extends StatelessWidget {
+  final Function(String signedPsbtHex) onSuccess;
+  final VoidCallback onClose;
+  final String address;
+
+  const CreateBuyPsbtSignHandler(
+      {super.key,
+      required this.onSuccess,
+      required this.onClose,
+      required this.address});
+
+  @override
+  Widget build(context) {
+    final session = context.read<SessionStateCubit>().state.successOrThrow();
+
+    return BlocListener<SwapBuySignFormBloc, SwapBuySignFormModel>(
+        listener: (context, state) async {
+          final settings = GetIt.I<SettingsRepository>();
+
+          if (state.current.showSignPsbtModal) {
+            final result = await WoltModalSheet.show(
+                context: context,
+                modalTypeBuilder: (_) => WoltModalType.bottomSheet(),
+                pageListBuilder: (bottomSheetContext) => [
+                      WoltModalSheetPage(
+                          trailingNavBarWidget: TextButton(
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                            child: Text("Cancel",
+                                style: Theme.of(context).textTheme.labelLarge),
+                          ),
+                          hasTopBarLayer: false,
+                          // pageTitle: Text("Sign PSBT",
+                          //     style: Theme.of(context).textTheme.headlineSmall),
+                          child: state.current.psbtWithArgs.fold(
+                            () => const SizedBox.shrink(),
+                            (psbtWithArgs) => BlocProvider(
+                                create: (context) => SignPsbtBloc(
+                                      httpConfig: session.httpConfig,
+                                      addresses: session.addresses,
+                                      passwordRequired: settings
+                                          .requirePasswordForCryptoOperations,
+                                      unsignedPsbt: psbtWithArgs.psbtHex,
+                                      signInputs: {
+                                        address: psbtWithArgs.inputsToSign
+                                      },
+                                      sighashTypes: [
+                                        0x03 | 0x80, // single | anyone_can_pay
+                                      ],
+                                    ),
+                                child: SignPsbtForm(
+                                  key: Key(psbtWithArgs.psbtHex),
+                                  passwordRequired: settings
+                                      .requirePasswordForCryptoOperations,
+                                  onSuccess: (signedPsbtHex) {
+                                    onSuccess(signedPsbtHex);
+
+                                    Navigator.of(context).pop();
+                                  },
+                                )),
+                          ))
+                    ]);
+
+            onClose();
+
+            // show wolt modal but only if it's not already displayed
+          }
+        },
+        child: const SizedBox.shrink());
   }
 }
 

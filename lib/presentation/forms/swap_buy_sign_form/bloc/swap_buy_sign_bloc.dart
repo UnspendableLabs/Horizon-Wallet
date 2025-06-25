@@ -119,35 +119,42 @@ class AtomicSwapSignModel with FormzMixin {
   final FormzSubmissionStatus submissionStatus;
 
   final Option<String> error;
+  final Option<MakeBuyPsbtReturn> psbtWithArgs;
 
-  const AtomicSwapSignModel({
-    required this.address,
-    required this.atomicSwap,
-    this.submissionStatus = FormzSubmissionStatus.initial,
-    required this.feeEstimates,
-    required this.feeOptionInput,
-    required this.error,
-  });
+  final bool showSignPsbtModal;
+
+  const AtomicSwapSignModel(
+      {required this.address,
+      required this.atomicSwap,
+      this.submissionStatus = FormzSubmissionStatus.initial,
+      required this.feeEstimates,
+      required this.feeOptionInput,
+      required this.error,
+      required this.psbtWithArgs,
+      required this.showSignPsbtModal});
 
   @override
   List<FormzInput> get inputs => [];
 
-  AtomicSwapSignModel copyWith({
-    AtomicSwap? atomicSwap,
-    FeeEstimates? feeEstimates,
-    FeeOptionInput? feeOptionInput,
-    FormzSubmissionStatus? submissionStatus,
-    Option<String>? error,
-    AddressV2? address,
-  }) {
+  AtomicSwapSignModel copyWith(
+      {AddressV2? address,
+      AtomicSwap? atomicSwap,
+      FeeEstimates? feeEstimates,
+      FeeOptionInput? feeOptionInput,
+      FormzSubmissionStatus? submissionStatus,
+      Option<String>? error,
+      Option<MakeBuyPsbtReturn>? psbtWithArgs,
+      Option<bool> showSignPsbtModal = const None()}) {
     return AtomicSwapSignModel(
-      address: address ?? this.address,
-      atomicSwap: atomicSwap ?? this.atomicSwap,
-      feeEstimates: feeEstimates ?? this.feeEstimates,
-      feeOptionInput: feeOptionInput ?? this.feeOptionInput,
-      submissionStatus: submissionStatus ?? this.submissionStatus,
-      error: error ?? this.error,
-    );
+        address: address ?? this.address,
+        atomicSwap: atomicSwap ?? this.atomicSwap,
+        feeEstimates: feeEstimates ?? this.feeEstimates,
+        feeOptionInput: feeOptionInput ?? this.feeOptionInput,
+        submissionStatus: submissionStatus ?? this.submissionStatus,
+        psbtWithArgs: psbtWithArgs ?? this.psbtWithArgs,
+        error: error ?? this.error,
+        showSignPsbtModal:
+            showSignPsbtModal.getOrElse(() => this.showSignPsbtModal));
   }
 
   String get rateString {
@@ -224,7 +231,9 @@ class SwapBuySignFormBloc
                     atomicSwap: swap,
                     feeEstimates: feeEstimates,
                     feeOptionInput: FeeOptionInput.pure(),
-                    error: Option.none()))
+                    psbtWithArgs: const Option.none(),
+                    showSignPsbtModal: false,
+                    error: const Option.none()))
                 .toList())) {
     on<SubmitClicked>(_handleSubmitClicked);
     on<FeeOptionChanged>(_onFeeOptionChanged);
@@ -236,6 +245,12 @@ class SwapBuySignFormBloc
   ) async {
     // need to get somewhat fancy here computing tx size, fee, etc and pass
     // in requisite utxo set...
+
+    updateSwapAtIndex(
+      state.swapIndex,
+      (swap) =>
+          swap.copyWith(submissionStatus: FormzSubmissionStatus.inProgress),
+    );
 
     final task = TaskEither<String, MakeBuyPsbtReturn>.Do(($) async {
       AddressV2 buyerAddress = state.current.address;
@@ -301,19 +316,42 @@ class SwapBuySignFormBloc
 
     final result = await task.run();
 
-    result.fold((error) => print(error), (success) => print(success));
+    result.fold(
+        (error) => emit(updateSwapAtIndex(
+            state.swapIndex,
+            (swap) => swap.copyWith(
+                  submissionStatus: FormzSubmissionStatus.failure,
+                  error: Option.of(error),
+                ))),
+        (unsignedPsbtWithArgs) => emit(updateSwapAtIndex(
+            state.swapIndex,
+            (swap) => swap.copyWith(
+                  submissionStatus: FormzSubmissionStatus.success,
+                  psbtWithArgs: Option.of(unsignedPsbtWithArgs),
+                  showSignPsbtModal: const Option.of(true),
+                ))));
   }
 
   void _onFeeOptionChanged(
     FeeOptionChanged event,
     Emitter<SwapBuySignFormModel> emit,
   ) {
-    final updatedSwap = state.current
-        .copyWith(feeOptionInput: FeeOptionInput.dirty(event.value));
+    emit(
+      updateSwapAtIndex(
+          state.swapIndex,
+          (swap) => swap.copyWith(
+                feeOptionInput: FeeOptionInput.dirty(event.value),
+              )),
+    );
+  }
 
-    final updatedSwaps = List<AtomicSwapSignModel>.from(state.atomicSwaps);
-    updatedSwaps[state.swapIndex] = updatedSwap;
-
-    emit(state.copyWith(atomicSwaps: updatedSwaps));
+  SwapBuySignFormModel updateSwapAtIndex(
+    int index,
+    AtomicSwapSignModel Function(AtomicSwapSignModel) update,
+  ) {
+    final updated = update(state.atomicSwaps[index]);
+    final newSwaps = List<AtomicSwapSignModel>.from(state.atomicSwaps);
+    newSwaps[index] = updated;
+    return state.copyWith(atomicSwaps: newSwaps);
   }
 }
