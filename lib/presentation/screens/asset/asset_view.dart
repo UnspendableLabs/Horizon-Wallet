@@ -386,11 +386,9 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
                         final balances = assetViewData.balances;
                         return Column(
                           children: [
+                            const SizedBox(height: 10),
                             if (!_isBitcoin)
-                              Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 10.0),
-                                child: FilterBar(
+                               FilterBar(
                                   currentFilter: _currentFilter,
                                   onFilterSelected: _setFilter,
                                   onClearFilter: _clearFilter,
@@ -406,7 +404,7 @@ class _AssetViewState extends State<AssetView> with TickerProviderStateMixin {
                                       ? [BalanceViewFilter.utxo]
                                       : [],
                                 ),
-                              ),
+                              
                             Expanded(
                               child: SingleChildScrollView(
                                 child: Column(

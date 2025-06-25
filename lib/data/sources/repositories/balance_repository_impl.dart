@@ -70,6 +70,13 @@ class BalanceRepositoryImpl implements BalanceRepository {
     BalanceType? type,
     required HttpConfig httpConfig,
   }) async {
+    if (assetName == 'BTC') {
+      return await _getBtcBalancesForAddresses(
+        addresses: addresses,
+        httpConfig: httpConfig,
+      );
+    }
+    
     final List<mba.MultiAddressBalance> balances =
         await _fetchBalancesByAllAddresses(
             api: counterpartyClientFactory.getClient(httpConfig),

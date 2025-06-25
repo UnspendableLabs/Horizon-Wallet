@@ -159,7 +159,6 @@ class _AssetSendViewState extends State<AssetSendView> {
                         SendComposeForm(
                           actions: actions,
                           state: state,
-                          mpmaMode: false,
                           disableBalanceSelector: true,
                         )
                       ],

@@ -210,7 +210,6 @@ class _SendViewState extends State<SendView> {
                           SendComposeForm(
                             actions: actions,
                             state: state,
-                            mpmaMode: true,
                           )
                         ],
                       );
