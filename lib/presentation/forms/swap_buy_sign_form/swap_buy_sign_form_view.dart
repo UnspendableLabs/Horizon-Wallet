@@ -23,16 +23,18 @@ import "./bloc/swap_buy_sign_bloc.dart";
 import 'package:get_it/get_it.dart';
 import 'package:horizon/domain/entities/fee_option.dart';
 
-
 import 'package:horizon/presentation/forms/sign_psbt/bloc/sign_psbt_bloc.dart';
 import 'package:horizon/presentation/forms/sign_psbt/view/sign_psbt_form.dart';
 
 class SwapBuySignFormActions {
   final VoidCallback onSubmitClicked;
+  final VoidCallback onCloseSignPsbtModalClicked;
   final Function(FeeOption feeOptin) onFeeOptionChanged;
 
   SwapBuySignFormActions(
-      {required this.onSubmitClicked, required this.onFeeOptionChanged});
+      {required this.onCloseSignPsbtModalClicked,
+      required this.onSubmitClicked,
+      required this.onFeeOptionChanged});
 }
 
 class SwapBuySignFormProvider extends StatelessWidget {
@@ -79,6 +81,9 @@ class SwapBuySignFormProvider extends StatelessWidget {
                       builder: (context, state) {
                     return child(
                         SwapBuySignFormActions(
+                            onCloseSignPsbtModalClicked: () => context
+                                .read<SwapBuySignFormBloc>()
+                                .add(const CloseSignPsbtModalClicked()),
                             onFeeOptionChanged: (option) => context
                                 .read<SwapBuySignFormBloc>()
                                 .add(FeeOptionChanged(option)),
@@ -145,7 +150,7 @@ class CreateBuyPsbtSignHandler extends StatelessWidget {
                                         address: psbtWithArgs.inputsToSign
                                       },
                                       sighashTypes: [
-                                        0x03 | 0x80, // single | anyone_can_pay
+                                        0x01 // SIGHASH_ALL
                                       ],
                                     ),
                                 child: SignPsbtForm(

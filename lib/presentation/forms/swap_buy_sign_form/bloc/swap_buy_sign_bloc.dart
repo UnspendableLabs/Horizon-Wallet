@@ -33,49 +33,72 @@ int calculateTxBytesFeeWithRate({
   return fee;
 }
 
-List<Utxo> selectUtxosForTargetWithFee({
+class SelectUtxosReturn {
+  final List<Utxo> utxos;
+  final BigInt price;
+  final BigInt fee;
+
+  SelectUtxosReturn({
+    required this.utxos,
+    required this.price,
+    required this.fee,
+  });
+
+  BigInt get sum {
+    return utxos.fold(
+        BigInt.zero, (acc, utxo) => acc + BigInt.from(utxo.value));
+  }
+
+  BigInt get change {
+    return sum - (price + fee);
+  }
+}
+
+SelectUtxosReturn selectUtxosForTargetWithFee({
   required List<Utxo> utxoSet,
-  required BigInt targetAmount,
+  required BigInt price,
   required num feeRate,
   int voutsLength = 1,
   int includeChangeOutput = 1,
 }) {
-  utxoSet.sort((a, b) => b.value - a.value); // Descending by value
+  // Sort UTXOs in descending order by value
+  final utxos = [...utxoSet]..sort((a, b) => b.value - a.value);
 
   List<Utxo> selected = [];
   BigInt total = BigInt.zero;
   BigInt fee = BigInt.zero;
-  int numInputs = 0;
 
-  while (true) {
-    if (total >= targetAmount + fee) {
-      break;
-    }
-
-    final utxo = utxoSet.firstOrNull;
-
-    if (utxo == null) {
-      throw Exception('Insufficient funds');
-    }
-
+  for (int i = 0; i < utxos.length; i++) {
+    final utxo = utxos[i];
     selected.add(utxo);
     total += BigInt.from(utxo.value);
-    numInputs++;
 
     final vsize = calculateTxBytesFeeWithRate(
-      vinsLength: numInputs,
+      vinsLength: selected.length,
       voutsLength: voutsLength,
       feeRate: feeRate,
       includeChangeOutput: includeChangeOutput,
     );
 
     fee = BigInt.from((vsize * feeRate).ceil());
-    utxoSet.removeAt(0);
+
+    if (total >= price + fee) {
+      break;
+    }
   }
-  return selected;
+
+  if (total < price + fee) {
+    throw Exception('Insufficient funds');
+  }
+
+  return SelectUtxosReturn(
+    utxos: selected,
+    price: price,
+    fee: fee,
+  );
 }
 
-Either<String, List<Utxo>> selectUtxosForTargetWithFeeT({
+Either<String, SelectUtxosReturn> selectUtxosForTargetWithFeeT({
   required List<Utxo> utxoSet,
   required BigInt targetAmount,
   required num feeRate,
@@ -86,7 +109,7 @@ Either<String, List<Utxo>> selectUtxosForTargetWithFeeT({
   return Either.tryCatch(
       () => selectUtxosForTargetWithFee(
             utxoSet: utxoSet,
-            targetAmount: targetAmount,
+            price: targetAmount,
             feeRate: feeRate,
             voutsLength: voutsLength,
             includeChangeOutput: includeChangeOutput,
@@ -197,6 +220,10 @@ sealed class SwapBuySignFormEvent extends Equatable {
 
 class SubmitClicked extends SwapBuySignFormEvent {}
 
+class CloseSignPsbtModalClicked extends SwapBuySignFormEvent {
+  const CloseSignPsbtModalClicked();
+}
+
 class FeeOptionChanged extends SwapBuySignFormEvent {
   final FeeOption value;
   const FeeOptionChanged(this.value);
@@ -237,6 +264,21 @@ class SwapBuySignFormBloc
                 .toList())) {
     on<SubmitClicked>(_handleSubmitClicked);
     on<FeeOptionChanged>(_onFeeOptionChanged);
+    on<CloseSignPsbtModalClicked>(_handleCloseSignPsbtModalClicked);
+  }
+
+  void _handleCloseSignPsbtModalClicked(
+    CloseSignPsbtModalClicked event,
+    Emitter<SwapBuySignFormModel> emit,
+  ) {
+    emit(
+      updateSwapAtIndex(
+          state.swapIndex,
+          (swap) => swap.copyWith(
+                showSignPsbtModal: Option.of(false),
+                submissionStatus: FormzSubmissionStatus.initial,
+              )),
+    );
   }
 
   _handleSubmitClicked(
@@ -263,10 +305,10 @@ class SwapBuySignFormBloc
         address: buyerAddress,
       ));
 
-      final selectedUtxos =
+      final selected =
           await $(TaskEither.fromEither(selectUtxosForTargetWithFeeT(
         utxoSet: utxoMap.values.toList(),
-        targetAmount: BigInt.from(assetUtxoValue),
+        targetAmount: state.current.atomicSwap.price.quantity,
         feeRate: satsPerVByte.toInt(), // convert to JS BigInt,
         voutsLength: 1,
         includeChangeOutput: 1,
@@ -274,7 +316,7 @@ class SwapBuySignFormBloc
 
       // chat i need to map this to UtxoWithTransaction(utxo: utxo: transation: transaction)
       final utxosWithTransactions = await $(TaskEither.sequenceList(
-        selectedUtxos
+        selected.utxos
             .map((utxo) => _bitcoinRepository
                 .getTransactionT(
                     httpConfig: httpConfig,
@@ -307,7 +349,7 @@ class SwapBuySignFormBloc
           sellerVout: state.current.atomicSwap.assetUtxoId.vout,
           price: state.current.atomicSwap.pricePerUnit.quantity
               .toInt(), // TODO: convert to JS BigInt
-          change: 0, // TODO: compute change
+          change: selected.change.toInt(), // TODO: compute change
           onError: (error) =>
               'Failed to create PSBT for buy transaction: $error',
         )),
