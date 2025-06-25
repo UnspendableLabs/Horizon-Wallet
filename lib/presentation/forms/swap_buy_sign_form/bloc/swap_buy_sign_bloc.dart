@@ -139,7 +139,7 @@ class AtomicSwapSignModel with FormzMixin {
 
   final FeeEstimates feeEstimates;
   final FeeOptionInput feeOptionInput;
-  final FormzSubmissionStatus submissionStatus;
+  final FormzSubmissionStatus signatureStatus;
 
   final Option<String> error;
   final Option<MakeBuyPsbtReturn> psbtWithArgs;
@@ -149,7 +149,7 @@ class AtomicSwapSignModel with FormzMixin {
   const AtomicSwapSignModel(
       {required this.address,
       required this.atomicSwap,
-      this.submissionStatus = FormzSubmissionStatus.initial,
+      this.signatureStatus = FormzSubmissionStatus.initial,
       required this.feeEstimates,
       required this.feeOptionInput,
       required this.error,
@@ -164,7 +164,7 @@ class AtomicSwapSignModel with FormzMixin {
       AtomicSwap? atomicSwap,
       FeeEstimates? feeEstimates,
       FeeOptionInput? feeOptionInput,
-      FormzSubmissionStatus? submissionStatus,
+      FormzSubmissionStatus? signatureStatus,
       Option<String>? error,
       Option<MakeBuyPsbtReturn>? psbtWithArgs,
       Option<bool> showSignPsbtModal = const None()}) {
@@ -173,7 +173,7 @@ class AtomicSwapSignModel with FormzMixin {
         atomicSwap: atomicSwap ?? this.atomicSwap,
         feeEstimates: feeEstimates ?? this.feeEstimates,
         feeOptionInput: feeOptionInput ?? this.feeOptionInput,
-        submissionStatus: submissionStatus ?? this.submissionStatus,
+        signatureStatus: signatureStatus ?? this.signatureStatus,
         psbtWithArgs: psbtWithArgs ?? this.psbtWithArgs,
         error: error ?? this.error,
         showSignPsbtModal:
@@ -216,6 +216,12 @@ sealed class SwapBuySignFormEvent extends Equatable {
 
   @override
   List<Object?> get props => [];
+}
+
+class SignatureCompleted extends SwapBuySignFormEvent {
+  final String signedPsbtHex;
+
+  const SignatureCompleted({required this.signedPsbtHex});
 }
 
 class SubmitClicked extends SwapBuySignFormEvent {}
@@ -265,18 +271,23 @@ class SwapBuySignFormBloc
     on<SubmitClicked>(_handleSubmitClicked);
     on<FeeOptionChanged>(_onFeeOptionChanged);
     on<CloseSignPsbtModalClicked>(_handleCloseSignPsbtModalClicked);
+    on<SignatureCompleted>(_handleSignatureCompleted);
   }
 
   void _handleCloseSignPsbtModalClicked(
     CloseSignPsbtModalClicked event,
     Emitter<SwapBuySignFormModel> emit,
   ) {
+
+    print("handle close called");
+
     emit(
       updateSwapAtIndex(
           state.swapIndex,
           (swap) => swap.copyWith(
                 showSignPsbtModal: Option.of(false),
-                submissionStatus: FormzSubmissionStatus.initial,
+                psbtWithArgs: Option.none(),
+                signatureStatus: FormzSubmissionStatus.initial,
               )),
     );
   }
@@ -291,7 +302,7 @@ class SwapBuySignFormBloc
     updateSwapAtIndex(
       state.swapIndex,
       (swap) =>
-          swap.copyWith(submissionStatus: FormzSubmissionStatus.inProgress),
+          swap.copyWith(signatureStatus: FormzSubmissionStatus.inProgress),
     );
 
     final task = TaskEither<String, MakeBuyPsbtReturn>.Do(($) async {
@@ -362,13 +373,13 @@ class SwapBuySignFormBloc
         (error) => emit(updateSwapAtIndex(
             state.swapIndex,
             (swap) => swap.copyWith(
-                  submissionStatus: FormzSubmissionStatus.failure,
+                  signatureStatus: FormzSubmissionStatus.failure,
                   error: Option.of(error),
                 ))),
         (unsignedPsbtWithArgs) => emit(updateSwapAtIndex(
             state.swapIndex,
             (swap) => swap.copyWith(
-                  submissionStatus: FormzSubmissionStatus.success,
+                  signatureStatus: FormzSubmissionStatus.inProgress,
                   psbtWithArgs: Option.of(unsignedPsbtWithArgs),
                   showSignPsbtModal: const Option.of(true),
                 ))));
@@ -383,6 +394,22 @@ class SwapBuySignFormBloc
           state.swapIndex,
           (swap) => swap.copyWith(
                 feeOptionInput: FeeOptionInput.dirty(event.value),
+              )),
+    );
+  }
+
+  void _handleSignatureCompleted(
+    SignatureCompleted event,
+    Emitter<SwapBuySignFormModel> emit,
+  ) {
+
+    print("handle sig completed");
+    emit(
+      updateSwapAtIndex(
+          state.swapIndex,
+          (swap) => swap.copyWith(
+                showSignPsbtModal: const Option.of(false),
+                signatureStatus: FormzSubmissionStatus.success,
               )),
     );
   }

@@ -40,7 +40,7 @@ class Testnet4 extends HttpConfig {
           btcExplorer: "https://mempool.space/testnet4",
           horizonExplorer:
               "https://horizon-market-testnet.vercel.app/explorer", // TODO: link to testnet
-          horizonExplorerApi: "https://horizon.market/api",
+          horizonExplorerApi: "https://horizon-market-testnet.vercel.app/api",
           mempoolSpaceApi: "https://mempool.space/testnet4/api/v1",
         );
 }
