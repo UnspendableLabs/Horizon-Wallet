@@ -341,7 +341,7 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
               inputPrivateKeyMap: inputPrivateKeyMap,
               httpConfig: httpConfig,
               sighashTypes: sighashTypes,
-              onError: (e) => e.toString())));
+              onError: (e) => "Error signing PSBT")));
 
       return signedHex;
     });
@@ -349,10 +349,13 @@ class SignPsbtBloc extends Bloc<SignPsbtEvent, SignPsbtState> {
     final result = await task.run();
 
     result.fold((msg) {
+      print("error: $msg");
       emit(state.copyWith(
           submissionStatus: FormzSubmissionStatus.failure,
           error: msg.toString()));
+
     }, (success) {
+
       emit(state.copyWith(
         submissionStatus: FormzSubmissionStatus.success,
         signedPsbt: success,

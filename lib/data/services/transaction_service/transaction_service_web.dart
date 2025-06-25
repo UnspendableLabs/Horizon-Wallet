@@ -57,7 +57,26 @@ class TransactionServiceWeb implements TransactionService {
     List<int> inputsToSign = [0];
     bitcoinjs.Psbt psbt = bitcoinjs.Psbt();
 
-    Utxo firstUtxo = utxos.first.utxo; BitcoinTx firstUtxoTransaction = utxos.first.transaction; Vout firstVout = firstUtxoTransaction.vout[firstUtxo.vout]; // add first buyter input psbt.addInput(bitcoinjs.TxInput.make( sighashType: SIGHASH_ALL, hash: Buffer.from( Uint8List.fromList(HEX.decode(firstUtxo.txid).reversed.toList()) .toJS), index: firstUtxo.vout, witnessUtxo: bitcoinjs.WitnessUTXO( script: Buffer.from( Uint8List.fromList(HEX.decode(firstVout.scriptpubkey)).toJS), value: firstUtxo.value,),)); buy output to ensure transfer of asset
+    Utxo firstUtxo = utxos.first.utxo;
+    BitcoinTx firstUtxoTransaction = utxos.first.transaction;
+    Vout firstVout = firstUtxoTransaction.vout[firstUtxo.vout];
+
+    // add first buyter input
+
+    psbt.addInput(bitcoinjs.TxInput.make(
+      sighashType: SIGHASH_ALL,
+      hash: Buffer.from(
+          Uint8List.fromList(HEX.decode(firstUtxo.txid).reversed.toList())
+              .toJS),
+      index: firstUtxo.vout,
+      witnessUtxo: bitcoinjs.WitnessUTXO(
+        script: Buffer.from(
+            Uint8List.fromList(HEX.decode(firstVout.scriptpubkey)).toJS),
+        value: firstUtxo.value,
+      ),
+    ));
+
+    //buy output to ensure transfer of asset
 
     psbt.addOutput(bitcoinjs.TxOutput.make(
       address: buyerAddress,
