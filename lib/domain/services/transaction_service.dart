@@ -34,6 +34,10 @@ class MakeBuyPsbtReturn {
     required this.psbtHex,
     required this.inputsToSign,
   });
+
+  String toString() {
+    return 'MakeBuyPsbtReturn(psbtHex: $psbtHex, inputsToSign: $inputsToSign)';
+  }
 }
 
 abstract class TransactionService {

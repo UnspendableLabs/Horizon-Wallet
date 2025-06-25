@@ -4,12 +4,96 @@ import 'package:horizon/domain/entities/atomic_swap/atomic_swap.dart';
 import 'package:equatable/equatable.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:horizon/domain/repositories/utxo_repository.dart';
+import 'package:horizon/domain/repositories/bitcoin_repository.dart';
 import 'package:horizon/domain/entities/address_v2.dart';
 import 'package:get_it/get_it.dart';
+import 'package:horizon/domain/entities/utxo.dart';
 import 'package:horizon/domain/entities/fee_option.dart';
 import 'package:horizon/domain/entities/fee_estimates.dart';
 import 'package:horizon/domain/services/transaction_service.dart';
 import 'package:horizon/domain/entities/http_config.dart' hide Custom;
+
+// this is ported over directly from horozn market
+int calculateTxBytesFeeWithRate({
+  required int vinsLength,
+  required int voutsLength,
+  required num feeRate,
+  int includeChangeOutput = 1,
+}) {
+  const int baseTxSize = 10;
+  const int inSize = 68; // 180 for legacy
+  const int outSize = 31; // 34 for legacy
+
+  final int txSize = baseTxSize +
+      (vinsLength * inSize) +
+      (voutsLength * outSize) +
+      (includeChangeOutput * outSize);
+
+  final fee = (txSize * feeRate).ceil(); // use ceil to avoid underpaying
+  return fee;
+}
+
+List<Utxo> selectUtxosForTargetWithFee({
+  required List<Utxo> utxoSet,
+  required BigInt targetAmount,
+  required num feeRate,
+  int voutsLength = 1,
+  int includeChangeOutput = 1,
+}) {
+  utxoSet.sort((a, b) => b.value - a.value); // Descending by value
+
+  List<Utxo> selected = [];
+  BigInt total = BigInt.zero;
+  BigInt fee = BigInt.zero;
+  int numInputs = 0;
+
+  while (true) {
+    if (total >= targetAmount + fee) {
+      break;
+    }
+
+    final utxo = utxoSet.firstOrNull;
+
+    if (utxo == null) {
+      throw Exception('Insufficient funds');
+    }
+
+    selected.add(utxo);
+    total += BigInt.from(utxo.value);
+    numInputs++;
+
+    final vsize = calculateTxBytesFeeWithRate(
+      vinsLength: numInputs,
+      voutsLength: voutsLength,
+      feeRate: feeRate,
+      includeChangeOutput: includeChangeOutput,
+    );
+
+    fee = BigInt.from((vsize * feeRate).ceil());
+    utxoSet.removeAt(0);
+  }
+  return selected;
+}
+
+Either<String, List<Utxo>> selectUtxosForTargetWithFeeT({
+  required List<Utxo> utxoSet,
+  required BigInt targetAmount,
+  required num feeRate,
+  int voutsLength = 1,
+  int includeChangeOutput = 1,
+  String Function(Object error, StackTrace stackTrace)? onError,
+}) {
+  return Either.tryCatch(
+      () => selectUtxosForTargetWithFee(
+            utxoSet: utxoSet,
+            targetAmount: targetAmount,
+            feeRate: feeRate,
+            voutsLength: voutsLength,
+            includeChangeOutput: includeChangeOutput,
+          ),
+      (error, stackTrace) =>
+          onError != null ? onError(error, stackTrace) : error.toString());
+}
 
 enum FeeOptionError { invalid }
 
@@ -69,6 +153,13 @@ class AtomicSwapSignModel with FormzMixin {
   String get rateString {
     return '1 ${atomicSwap.assetName} = ${atomicSwap.pricePerUnit.normalizedPretty(precision: 8)} BTC';
   }
+
+  num get getSatsPerVByte => switch (feeOptionInput.value) {
+        Slow() => feeEstimates.slow,
+        Medium() => feeEstimates.medium,
+        Fast() => feeEstimates.fast,
+        Custom(fee: var value) => value
+      };
 }
 
 class SwapBuySignFormModel {
@@ -111,6 +202,7 @@ class SwapBuySignFormBloc
   final HttpConfig httpConfig;
   final TransactionService _transactionService;
   final UtxoRepository _utxoRepository;
+  final BitcoinRepository _bitcoinRepository;
 
   SwapBuySignFormBloc({
     required FeeEstimates feeEstimates,
@@ -119,9 +211,11 @@ class SwapBuySignFormBloc
     required this.httpConfig,
     TransactionService? transactionService,
     UtxoRepository? utxoRepository,
+    BitcoinRepository? bitcoinRepository,
   })  : _transactionService =
             transactionService ?? GetIt.I<TransactionService>(),
         _utxoRepository = utxoRepository ?? GetIt.I<UtxoRepository>(),
+        _bitcoinRepository = bitcoinRepository ?? GetIt.I<BitcoinRepository>(),
         super(SwapBuySignFormModel(
             swapIndex: 0,
             atomicSwaps: atomicSwaps
@@ -139,29 +233,75 @@ class SwapBuySignFormBloc
   _handleSubmitClicked(
     SubmitClicked event,
     Emitter<SwapBuySignFormModel> emit,
-  ) {
-    HttpConfig config = httpConfig;
-    AddressV2 buyerAddress = state.current.address;
-    String sellerAddress = state.current.atomicSwap.sellerAddress;
-    int assetUtxoValue = state.current.atomicSwap.assetUtxoValue;
-
+  ) async {
     // need to get somewhat fancy here computing tx size, fee, etc and pass
     // in requisite utxo set...
 
+    final task = TaskEither<String, MakeBuyPsbtReturn>.Do(($) async {
+      AddressV2 buyerAddress = state.current.address;
+      String sellerAddress = state.current.atomicSwap.sellerAddress;
+      int assetUtxoValue = state.current.atomicSwap.assetUtxoValue;
+      num satsPerVByte = state.current.getSatsPerVByte;
 
-    // final utxoMap = await $(_utxoRepository.getUnattachedUTXOMapForAddressT(
-    //    httpConfig: httpConfig,
-    //   address: state.address,
-    // ));
-    //
-    // compute change
+      final utxoMap = await $(_utxoRepository.getUnattachedUTXOMapForAddressT(
+        httpConfig: httpConfig,
+        address: buyerAddress,
+      ));
 
-    String sellerTransactionID = state.current.atomicSwap.assetUtxoId.txid;
-    int sellerVout = state.current.atomicSwap.assetUtxoId.vout;
-    // get seller transaction
+      final selectedUtxos =
+          await $(TaskEither.fromEither(selectUtxosForTargetWithFeeT(
+        utxoSet: utxoMap.values.toList(),
+        targetAmount: BigInt.from(assetUtxoValue),
+        feeRate: satsPerVByte.toInt(), // convert to JS BigInt,
+        voutsLength: 1,
+        includeChangeOutput: 1,
+      )));
 
-    final currentSwap = state.atomicSwaps[state.swapIndex];
-    if (currentSwap.isValid) {}
+      // chat i need to map this to UtxoWithTransaction(utxo: utxo: transation: transaction)
+      final utxosWithTransactions = await $(TaskEither.sequenceList(
+        selectedUtxos
+            .map((utxo) => _bitcoinRepository
+                .getTransactionT(
+                    httpConfig: httpConfig,
+                    txid: utxo.txid,
+                    onError: (error) =>
+                        'Failed to get transaction for UTXO: ${utxo.txid}:${utxo.vout}')
+                .map((bitcoinTransaction) => UtxoWithTransaction(
+                    utxo: utxo, transaction: bitcoinTransaction)))
+            .toList(),
+      ));
+
+      // TODO: could be run in parallel with above
+      final sellerTransaction = await $(
+        _bitcoinRepository.getTransactionT(
+          httpConfig: httpConfig,
+          txid: state.current.atomicSwap.assetUtxoId.txid,
+          onError: (error) =>
+              'Failed to get transaction for seller UTXO: ${state.current.atomicSwap.assetUtxoId.txid}',
+        ),
+      );
+
+      return await $(
+        TaskEither.fromEither(_transactionService.makeBuyPsbtT(
+          buyerAddress: buyerAddress.address,
+          sellerAddress: sellerAddress,
+          utxos: utxosWithTransactions,
+          httpConfig: httpConfig,
+          utxoAssetValue: assetUtxoValue,
+          sellerTransaction: sellerTransaction,
+          sellerVout: state.current.atomicSwap.assetUtxoId.vout,
+          price: state.current.atomicSwap.pricePerUnit.quantity
+              .toInt(), // TODO: convert to JS BigInt
+          change: 0, // TODO: compute change
+          onError: (error) =>
+              'Failed to create PSBT for buy transaction: $error',
+        )),
+      );
+    });
+
+    final result = await task.run();
+
+    result.fold((error) => print(error), (success) => print(success));
   }
 
   void _onFeeOptionChanged(

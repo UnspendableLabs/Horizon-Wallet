@@ -21,6 +21,7 @@ import "./bloc/swap_buy_sign_bloc.dart";
 import 'package:get_it/get_it.dart';
 import 'package:horizon/domain/entities/fee_option.dart';
 
+
 class SwapBuySignFormActions {
   final VoidCallback onSubmitClicked;
   final Function(FeeOption feeOptin) onFeeOptionChanged;
@@ -65,6 +66,7 @@ class SwapBuySignFormProvider extends StatelessWidget {
                 child: CircularProgressIndicator()), // should not happen
             onSuccess: (feeEstimates) => BlocProvider(
                   create: (context) => SwapBuySignFormBloc(
+                      httpConfig: session.httpConfig,
                       address: address,
                       feeEstimates: feeEstimates,
                       atomicSwaps: atomicSwaps),
