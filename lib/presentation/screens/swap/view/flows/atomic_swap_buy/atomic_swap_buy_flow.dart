@@ -225,7 +225,7 @@ class _AtomicSwapBuyFlowViewState extends State<AtomicSwapBuyFlowView> {
                       body: Column(
                         children: [
                           CreateBuyPsbtSignHandler(
-                              onSuccess: (psbt) => print("signed: $psbt"),
+                              onSuccess: actions.onSignatureCompleted,
                               onClose: () {
                                 actions.onCloseSignPsbtModalClicked();
                               },

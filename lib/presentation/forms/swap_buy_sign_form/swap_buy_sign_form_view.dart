@@ -3,6 +3,7 @@ import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
 import 'package:horizon/domain/entities/http_config.dart';
+import 'package:formz/formz.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:horizon/domain/entities/atomic_swap/atomic_swap.dart';
 import 'package:horizon/presentation/common/theme_extension.dart';
@@ -30,11 +31,14 @@ class SwapBuySignFormActions {
   final VoidCallback onSubmitClicked;
   final VoidCallback onCloseSignPsbtModalClicked;
   final Function(FeeOption feeOptin) onFeeOptionChanged;
+  final Function(String signedPsbtHex) onSignatureCompleted;
 
-  SwapBuySignFormActions(
-      {required this.onCloseSignPsbtModalClicked,
-      required this.onSubmitClicked,
-      required this.onFeeOptionChanged});
+  SwapBuySignFormActions({
+    required this.onCloseSignPsbtModalClicked,
+    required this.onSubmitClicked,
+    required this.onFeeOptionChanged,
+    required this.onSignatureCompleted,
+  });
 }
 
 class SwapBuySignFormProvider extends StatelessWidget {
@@ -89,7 +93,11 @@ class SwapBuySignFormProvider extends StatelessWidget {
                                 .add(FeeOptionChanged(option)),
                             onSubmitClicked: () => context
                                 .read<SwapBuySignFormBloc>()
-                                .add(SubmitClicked())),
+                                .add(SubmitClicked()),
+                            onSignatureCompleted: (signedPsbtHex) => context
+                                .read<SwapBuySignFormBloc>()
+                                .add(SignatureCompleted(
+                                    signedPsbtHex: signedPsbtHex))),
                         state);
                   }),
                 ),
@@ -160,13 +168,17 @@ class CreateBuyPsbtSignHandler extends StatelessWidget {
                                   onSuccess: (signedPsbtHex) {
                                     onSuccess(signedPsbtHex);
 
-                                    Navigator.of(context).pop();
+                                    //  chat if hit this condition, i don't
+                                    // want to call onCLose() below
+                                    Navigator.of(context).pop("signed");
                                   },
                                 )),
                           ))
                     ]);
 
-            onClose();
+            if (result != "signed") {
+              onClose();
+            }
 
             // show wolt modal but only if it's not already displayed
           }
@@ -326,7 +338,10 @@ class _SwapBuySignFormState extends State<SwapBuySignForm> {
                     //   ),
                     // ),
                     commonHeightSizedBox,
+                    Text("${widget.state.current.signatureStatus}"),
                     HorizonButton(
+                        disabled: widget.state.current.signatureStatus
+                            .isInProgressOrSuccess,
                         onPressed: () {
                           widget.actions.onSubmitClicked();
                         },
