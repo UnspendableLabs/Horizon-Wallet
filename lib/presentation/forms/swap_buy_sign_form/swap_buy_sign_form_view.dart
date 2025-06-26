@@ -173,6 +173,43 @@ class CreateBuyPsbtSignHandler extends StatelessWidget {
                                     Navigator.of(context).pop("signed");
                                   },
                                 )),
+                          )),
+                      WoltModalSheetPage(
+                          trailingNavBarWidget: TextButton(
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                            child: Text("Cancel",
+                                style: Theme.of(context).textTheme.labelLarge),
+                          ),
+                          hasTopBarLayer: false,
+                          // pageTitle: Text("Sign PSBT",
+                          //     style: Theme.of(context).textTheme.headlineSmall),
+                          child: state.current.psbtWithArgs.fold(
+                            () => const SizedBox.shrink(),
+                            (psbtWithArgs) => BlocProvider(
+                                create: (context) => SignPsbtBloc(
+                                      httpConfig: session.httpConfig,
+                                      addresses: session.addresses,
+                                      passwordRequired: settings
+                                          .requirePasswordForCryptoOperations,
+                                      unsignedPsbt: psbtWithArgs.psbtHex,
+                                      signInputs: {
+                                        address: psbtWithArgs.inputsToSign
+                                      },
+                                      sighashTypes: [
+                                        0x01 // SIGHASH_ALL
+                                      ],
+                                    ),
+                                child: SignPsbtForm(
+                                  key: Key(psbtWithArgs.psbtHex),
+                                  passwordRequired: settings
+                                      .requirePasswordForCryptoOperations,
+                                  onSuccess: (signedPsbtHex) {
+                                    onSuccess(signedPsbtHex);
+                                    Navigator.of(context).pop("signed");
+                                  },
+                                )),
                           ))
                     ]);
 
