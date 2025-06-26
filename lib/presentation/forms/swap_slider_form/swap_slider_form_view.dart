@@ -142,11 +142,11 @@ class _SwapSliderFormState extends State<SwapSliderForm> {
           height: cardHeight,
           width: double.infinity,
           child: HorizonCard(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.symmetric(vertical: 16),
             child: Column(
               children: [
                 Padding(
-                  padding: const EdgeInsets.only(right: 20),
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -179,41 +179,57 @@ class _SwapSliderFormState extends State<SwapSliderForm> {
                   ),
                 ),
                 const SizedBox(height: 20),
-                widget.state.atomicSwapListModel.fold(
-                  onFailure: (_) => Center(
-                    child: HorizonSlider(
-                      value: 0,
-                      min: 0,
-                      max: 100,
-                      onChanged: (value) {},
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 20),
+                  child: widget.state.atomicSwapListModel.fold(
+                    onFailure: (_) => Center(
+                      child: HorizonSlider(
+                        value: 0,
+                        min: 0,
+                        max: 100,
+                        onChanged: (value) {},
+                      ),
                     ),
-                  ),
-                  onInitial: () => Center(
-                    child: HorizonSlider(
-                      value: 0,
-                      min: 0,
-                      max: 100,
-                      onChanged: (value) {},
+                    onInitial: () => Center(
+                      child: HorizonSlider(
+                        value: 0,
+                        min: 0,
+                        max: 100,
+                        onChanged: (value) {},
+                      ),
                     ),
-                  ),
-                  onLoading: () => Center(
-                    child: HorizonSlider(
-                      value: 0,
-                      min: 0,
-                      max: 100,
-                      onChanged: (value) {},
+                    onLoading: () => Center(
+                      child: HorizonSlider(
+                        value: 0,
+                        min: 0,
+                        max: 100,
+                        onChanged: (value) {},
+                      ),
                     ),
-                  ),
-                  onSuccess: (model) => Center(
-                    child: Opacity(
-                      opacity:
-                          widget.state.selectionMode == SelectionMode.manual
-                              ? 0.5
-                              : 1,
+                    onSuccess: (model) => Center(
+                      child: Opacity(
+                        opacity:
+                            widget.state.selectionMode == SelectionMode.manual
+                                ? 0.5
+                                : 1,
+                        child: HorizonSlider(
+                          value: widget.state.sliderInput.value.toDouble(),
+                          thumbColor:
+                              isInsufficientBalance ? redErrorText : null,
+                          trackColor:
+                              isInsufficientBalance ? redErrorText : null,
+                          min: 0,
+                          max: model.items.length.toDouble(),
+                          steps: model.items.length + 1,
+                          onChanged: (value) {
+                            widget.actions.sliderDragged(value.toInt());
+                          },
+                        ),
+                      ),
+                    ),
+                    onRefreshing: (model) => Center(
                       child: HorizonSlider(
                         value: widget.state.sliderInput.value.toDouble(),
-                        thumbColor: isInsufficientBalance ? redErrorText : null,
-                        trackColor: isInsufficientBalance ? redErrorText : null,
                         min: 0,
                         max: model.items.length.toDouble(),
                         steps: model.items.length + 1,
@@ -223,24 +239,14 @@ class _SwapSliderFormState extends State<SwapSliderForm> {
                       ),
                     ),
                   ),
-                  onRefreshing: (model) => Center(
-                    child: HorizonSlider(
-                      value: widget.state.sliderInput.value.toDouble(),
-                      min: 0,
-                      max: model.items.length.toDouble(),
-                      steps: model.items.length + 1,
-                      onChanged: (value) {
-                        widget.actions.sliderDragged(value.toInt());
-                      },
-                    ),
-                  ),
                 ),
                 const SizedBox(height: 20),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      SizedBox(
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
                         height: 34,
                         child: Row(
                           children: [
@@ -263,44 +269,49 @@ class _SwapSliderFormState extends State<SwapSliderForm> {
                         ),
                       ),
                       Expanded(
-                        child: widget.state.atomicSwapListModel.fold(
-                          onInitial: () => Center(
-                            child: CircularProgressIndicator(
-                              color: theme.colorScheme.primary,
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 10),
+                          child: widget.state.atomicSwapListModel.fold(
+                            onInitial: () => Center(
+                              child: CircularProgressIndicator(
+                                color: theme.colorScheme.primary,
+                              ),
                             ),
-                          ),
-                          onLoading: () => Center(
-                            child: CircularProgressIndicator(
-                              color: theme.colorScheme.primary,
+                            onLoading: () => Center(
+                              child: CircularProgressIndicator(
+                                color: theme.colorScheme.primary,
+                              ),
                             ),
+                            onSuccess: (model) => ListView.builder(
+                              itemCount: model.items.length,
+                              itemBuilder: (context, index) {
+                                final swap = model.items[index];
+                                return _buildRow(
+                                  swap.quantity,
+                                  swap.pricePerUnit,
+                                  swap.price,
+                                  swap.selected,
+                                  index,
+                                  isInsufficientBalance,
+                                );
+                              },
+                            ),
+                            onRefreshing: (model) => ListView.builder(
+                              itemCount: model.items.length,
+                              itemBuilder: (context, index) {
+                                final swap = model.items[index];
+                                return _buildRow(
+                                  swap.quantity,
+                                  swap.pricePerUnit,
+                                  swap.price,
+                                  swap.selected,
+                                  index,
+                                  isInsufficientBalance,
+                                );
+                              },
+                            ),
+                            onFailure: (error) => Text("Error: $error"),
                           ),
-                          onSuccess: (model) => ListView.builder(
-                            itemCount: model.items.length,
-                            itemBuilder: (context, index) {
-                              final swap = model.items[index];
-                              return  _buildRow(
-                                    swap.quantity,
-                                    swap.pricePerUnit,
-                                    swap.price,
-                                    swap.selected,
-                                    index,
-                                  );
-                            },
-                          ),
-                          onRefreshing: (model) => ListView.builder(
-                            itemCount: model.items.length,
-                            itemBuilder: (context, index) {
-                              final swap = model.items[index];
-                              return _buildRow(
-                                swap.quantity,
-                                swap.pricePerUnit,
-                                swap.price,
-                                swap.selected,
-                                index,
-                              );
-                            },
-                          ),
-                          onFailure: (error) => Text("Error: $error"),
                         ),
                       ),
                     ],
@@ -355,83 +366,86 @@ class _SwapSliderFormState extends State<SwapSliderForm> {
   }
 
   Widget _buildRow(AssetQuantity quantity, AssetQuantity price,
-      AssetQuantity total, bool isSelected, int index) {
+      AssetQuantity total, bool isSelected, int index, bool isInsufficientBalance) {
     final theme = Theme.of(context);
 
-    return SizedBox(
-      height: 50,
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-        borderRadius: BorderRadius.circular(12),
-        hoverColor: transparentPurple8,
-        highlightColor: transparentPurple8,
-        onTap: () {
-          widget.actions.rowClicked(index);
-        },
-        child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Expanded(
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+          borderRadius: BorderRadius.circular(12),
+          hoverColor: transparentPurple8,
+          highlightColor: transparentPurple8,
+          onTap: () {
+            widget.actions.rowClicked(index);
+          },
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10),
+            height: 50,
             child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                if (isSelected)
-                  AppIcons.checkCircleIcon(
-                      context: context, color: green1, width: 24, height: 24)
-                else
-                  AppIcons.plusCircleIcon(
-                      context: context,
-                      color: transparentPurple33,
-                      width: 24,
-                      height: 24),
-                const SizedBox(width: 8),
-                Text(quantity.normalized(precision: 2),
-                    style: theme.textTheme.bodySmall),
+                Expanded(
+                  child: Row(
+                    children: [
+                      if (isSelected)
+                        AppIcons.checkCircleIcon(
+                            context: context,
+                            color: isInsufficientBalance ? redErrorText : green1,
+                            width: 24,
+                            height: 24)
+                      else
+                        AppIcons.plusCircleIcon(
+                            context: context,
+                            color: transparentPurple33,
+                            width: 24,
+                            height: 24),
+                      const SizedBox(width: 8),
+                      Text(quantity.normalized(precision: 2),
+                          style: theme.textTheme.bodySmall),
+                    ],
+                  ),
+                ),
+                Expanded(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(price.quantity.toString(),
+                          style: theme.textTheme.bodySmall),
+                      SatsToUsdDisplay(
+                        sats: price.quantity,
+                        child: (value) => Text("\$${value.toStringAsFixed(2)}",
+                            style: theme.textTheme.bodySmall!.copyWith(
+                              color: theme
+                                  .extension<CustomThemeExtension>()!
+                                  .mutedDescriptionTextColor,
+                            )),
+                      )
+                    ],
+                  ),
+                ),
+                Expanded(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(total.quantity.toString(),
+                          style: theme.textTheme.bodySmall),
+                      SatsToUsdDisplay(
+                        sats: total.quantity,
+                        child: (value) => Text("\$${value.toStringAsFixed(2)}",
+                            style: theme.textTheme.bodySmall!.copyWith(
+                              color: theme
+                                  .extension<CustomThemeExtension>()!
+                                  .mutedDescriptionTextColor,
+                            )),
+                      )
+                    ],
+                  ),
+                ),
               ],
             ),
-          ),
-          Expanded(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Text(price.quantity.toString(),
-                    style: theme.textTheme.bodySmall),
-                SatsToUsdDisplay(
-                  sats: price.quantity,
-                  child: (value) => Text("\$${value.toStringAsFixed(2)}",
-                      style: theme.textTheme.bodySmall!.copyWith(
-                        color: theme
-                            .extension<CustomThemeExtension>()!
-                            .mutedDescriptionTextColor,
-                      )),
-                )
-              ],
-            ),
-          ),
-          Expanded(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Text(total.quantity.toString(),
-                    style: theme.textTheme.bodySmall),
-                SatsToUsdDisplay(
-                  sats: total.quantity,
-                  child: (value) => Text("\$${value.toStringAsFixed(2)}",
-                      style: theme.textTheme.bodySmall!.copyWith(
-                        color: theme
-                            .extension<CustomThemeExtension>()!
-                            .mutedDescriptionTextColor,
-                      )),
-                )
-              ],
-            ),
-          ),
-        ],
-      ),
-      ),
-      )
+          )),
     );
   }
 }
