@@ -1700,14 +1700,17 @@ class HorizonCard extends StatelessWidget {
 
     final defaultBgColor = isDarkMode ? grey5 : gray1;
 
-    return Container(
-      padding: padding,
-      decoration: BoxDecoration(
-        color: backgroundColor ?? defaultBgColor,
-        borderRadius: BorderRadius.circular(borderRadius),
-        border: Border.all(color: borderColor, width: borderWidth ?? 1),
+    return Material(
+      color: backgroundColor ?? defaultBgColor,
+      borderRadius: BorderRadius.circular(borderRadius),
+      child: Container(
+        padding: padding,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(borderRadius),
+          border: Border.all(color: borderColor, width: borderWidth ?? 1),
+        ),
+        child: child,
       ),
-      child: child,
     );
   }
 }
@@ -1832,6 +1835,9 @@ class HorizonSlider extends StatelessWidget {
   final double trackRadius;
   final int? steps;
   final ValueChanged<double>? onChanged;
+  final Color? thumbColor;
+  final Color? trackColor;
+  final bool disabled;
 
   const HorizonSlider({
     super.key,
@@ -1843,6 +1849,9 @@ class HorizonSlider extends StatelessWidget {
     this.trackRadius = 50,
     this.steps,
     this.onChanged,
+    this.thumbColor,
+    this.trackColor,
+    this.disabled = false,
   });
 
   @override
@@ -1887,7 +1896,7 @@ class HorizonSlider extends StatelessWidget {
         final thumbPosition = ((value - min) / (max - min)) * thumbTravel;
         final filledWidth = thumbPosition + thumbSize / 2;
         final progress = (value - min) / (max - min);
-        final thumbColor = getGradientColorAt(
+        final thumbColor = this.thumbColor ?? getGradientColorAt(
           1 - progress, // Because gradient is right-to-left
           gradient.colors,
           gradient.stops,
@@ -1900,7 +1909,7 @@ class HorizonSlider extends StatelessWidget {
               GestureDetector(
                 behavior: HitTestBehavior.translucent,
                 onTapDown: (details) {
-                  if (onChanged == null) return;
+                  if (onChanged == null || disabled) return;
                   final RenderBox renderBox =
                       context.findRenderObject() as RenderBox;
                   final position =
@@ -1937,8 +1946,9 @@ class HorizonSlider extends StatelessWidget {
                         child: Container(
                           width: filledWidth.clamp(0, trackWidth),
                           height: height,
-                          decoration: const BoxDecoration(
-                            gradient: gradient,
+                          decoration:  BoxDecoration(
+                            gradient: trackColor == null ? gradient: null,
+                            color: trackColor,
                           ),
                         ),
                       ),
@@ -1951,7 +1961,7 @@ class HorizonSlider extends StatelessWidget {
                 left: thumbPosition,
                 child: GestureDetector(
                   onHorizontalDragUpdate: (details) {
-                    if (onChanged == null) return;
+                    if (onChanged == null || disabled) return;
                     final RenderBox renderBox =
                         context.findRenderObject() as RenderBox;
                     final position =

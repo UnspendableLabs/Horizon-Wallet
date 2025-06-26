@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:horizon/domain/entities/asset_quantity.dart';
+import 'package:horizon/presentation/common/colors.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
@@ -20,11 +21,13 @@ import "./bloc/swap_slider_form_bloc.dart";
 
 class SwapSliderFormActions {
   void Function(int value) sliderDragged;
+  void Function(int index) rowClicked;
   final VoidCallback onSubmitClicked;
 
   SwapSliderFormActions({
     required this.sliderDragged,
     required this.onSubmitClicked,
+    required this.rowClicked,
   });
 }
 
@@ -77,6 +80,9 @@ class _SwapSliderFormProviderState extends State<SwapSliderFormProvider> {
           builder: (context, state) {
         return widget.child(
             SwapSliderFormActions(
+                rowClicked: (index) => context
+                    .read<SwapSliderFormBloc>()
+                    .add(RowClicked(index: index)),
                 sliderDragged: (value) => context
                     .read<SwapSliderFormBloc>()
                     .add(SliderDragged(value: value)),
@@ -125,6 +131,8 @@ class _SwapSliderFormState extends State<SwapSliderForm> {
     final session = context.watch<SessionStateCubit>().state.successOrThrow();
     final theme = Theme.of(context);
     final appIcons = AppIcons();
+    final isInsufficientBalance = widget.state.totalCostInput.error ==
+        TotalCostValidationError.insufficientBalance;
 
     final cardHeight = 366.0;
 
@@ -145,7 +153,10 @@ class _SwapSliderFormState extends State<SwapSliderForm> {
                       QuantityText(
                         quantity: widget.state.selectedSwapsInput.totalQuantity
                             .normalized(precision: 2),
-                        style: const TextStyle(fontSize: 35),
+                        style: TextStyle(
+                          fontSize: 35,
+                          color: isInsufficientBalance ? redErrorText : null,
+                        ),
                       ),
                       Row(
                         children: [
@@ -194,14 +205,22 @@ class _SwapSliderFormState extends State<SwapSliderForm> {
                     ),
                   ),
                   onSuccess: (model) => Center(
-                    child: HorizonSlider(
-                      value: widget.state.sliderInput.value.toDouble(),
-                      min: 0,
-                      max: model.items.length.toDouble(),
-                      steps: model.items.length + 1,
-                      onChanged: (value) {
-                        widget.actions.sliderDragged(value.toInt());
-                      },
+                    child: Opacity(
+                      opacity:
+                          widget.state.selectionMode == SelectionMode.manual
+                              ? 0.5
+                              : 1,
+                      child: HorizonSlider(
+                        value: widget.state.sliderInput.value.toDouble(),
+                        thumbColor: isInsufficientBalance ? redErrorText : null,
+                        trackColor: isInsufficientBalance ? redErrorText : null,
+                        min: 0,
+                        max: model.items.length.toDouble(),
+                        steps: model.items.length + 1,
+                        onChanged: (value) {
+                          widget.actions.sliderDragged(value.toInt());
+                        },
+                      ),
                     ),
                   ),
                   onRefreshing: (model) => Center(
@@ -259,12 +278,13 @@ class _SwapSliderFormState extends State<SwapSliderForm> {
                             itemCount: model.items.length,
                             itemBuilder: (context, index) {
                               final swap = model.items[index];
-                              return _buildRow(
-                                swap.quantity,
-                                swap.pricePerUnit,
-                                swap.price,
-                                swap.selected,
-                              );
+                              return  _buildRow(
+                                    swap.quantity,
+                                    swap.pricePerUnit,
+                                    swap.price,
+                                    swap.selected,
+                                    index,
+                                  );
                             },
                           ),
                           onRefreshing: (model) => ListView.builder(
@@ -276,6 +296,7 @@ class _SwapSliderFormState extends State<SwapSliderForm> {
                                 swap.pricePerUnit,
                                 swap.price,
                                 swap.selected,
+                                index,
                               );
                             },
                           ),
@@ -289,9 +310,13 @@ class _SwapSliderFormState extends State<SwapSliderForm> {
             ),
           ),
         ),
-        const SizedBox(height: 12),
+        commonHeightSizedBox,
+        Text(
+          widget.state.errorMessage ?? "",
+          style: theme.textTheme.bodySmall!.copyWith(color: redErrorText),
+        ),
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 0),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -314,6 +339,7 @@ class _SwapSliderFormState extends State<SwapSliderForm> {
             ],
           ),
         ),
+        commonHeightSizedBox,
         HorizonButton(
           child: TextButtonContent(value: "Swap"),
           disabled: !widget.state.isValid,
@@ -328,13 +354,22 @@ class _SwapSliderFormState extends State<SwapSliderForm> {
     );
   }
 
-  Widget _buildRow(
-      AssetQuantity quantity, AssetQuantity price, AssetQuantity total, bool isSelected) {
+  Widget _buildRow(AssetQuantity quantity, AssetQuantity price,
+      AssetQuantity total, bool isSelected, int index) {
     final theme = Theme.of(context);
 
     return SizedBox(
       height: 50,
-      child: Row(
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        hoverColor: transparentPurple8,
+        highlightColor: transparentPurple8,
+        onTap: () {
+          widget.actions.rowClicked(index);
+        },
+        child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Expanded(
@@ -350,7 +385,8 @@ class _SwapSliderFormState extends State<SwapSliderForm> {
                       width: 24,
                       height: 24),
                 const SizedBox(width: 8),
-                Text(quantity.normalized(precision: 2), style: theme.textTheme.bodySmall),
+                Text(quantity.normalized(precision: 2),
+                    style: theme.textTheme.bodySmall),
               ],
             ),
           ),
@@ -359,7 +395,8 @@ class _SwapSliderFormState extends State<SwapSliderForm> {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                Text(price.quantity.toString(), style: theme.textTheme.bodySmall),
+                Text(price.quantity.toString(),
+                    style: theme.textTheme.bodySmall),
                 SatsToUsdDisplay(
                   sats: price.quantity,
                   child: (value) => Text("\$${value.toStringAsFixed(2)}",
@@ -377,7 +414,8 @@ class _SwapSliderFormState extends State<SwapSliderForm> {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                Text(total.quantity.toString(), style: theme.textTheme.bodySmall),
+                Text(total.quantity.toString(),
+                    style: theme.textTheme.bodySmall),
                 SatsToUsdDisplay(
                   sats: total.quantity,
                   child: (value) => Text("\$${value.toStringAsFixed(2)}",
@@ -392,6 +430,8 @@ class _SwapSliderFormState extends State<SwapSliderForm> {
           ),
         ],
       ),
+      ),
+      )
     );
   }
 }
