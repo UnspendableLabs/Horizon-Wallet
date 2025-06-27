@@ -91,11 +91,13 @@ class SendEntryForm extends StatefulWidget {
   final SendEntryFormModel state;
   final SendEntryFormActions actions;
   final List<MultiAddressBalance> balances;
+  final bool disableBalanceSelector;
   const SendEntryForm(
       {super.key,
       required this.state,
       required this.actions,
-      required this.balances});
+      required this.balances,
+      this.disableBalanceSelector = false});
 
   @override
   State<SendEntryForm> createState() => _SendEntryFormState();
@@ -173,6 +175,7 @@ class _SendEntryFormState extends State<SendEntryForm> {
         ),
         commonHeightSizedBox,
         HorizonRedesignDropdown<MultiAddressBalance>(
+            disabled: widget.disableBalanceSelector,
             itemPadding: const EdgeInsets.all(12),
             selectorPadding: widget.state.balanceSelectorInput.value == null
                 ? const EdgeInsets.symmetric(horizontal: 12, vertical: 6)

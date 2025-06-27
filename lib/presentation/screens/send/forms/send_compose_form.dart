@@ -8,6 +8,7 @@ import 'package:horizon/domain/entities/fee_option.dart';
 import 'package:horizon/domain/entities/multi_address_balance.dart';
 import 'package:horizon/domain/entities/remote_data.dart';
 import 'package:horizon/domain/repositories/fee_estimates_repository.dart';
+import 'package:horizon/presentation/common/colors.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/common/remote_data_builder.dart';
 import 'package:horizon/presentation/common/transactions/transaction_fee_selection.dart';
@@ -135,8 +136,14 @@ class SendComposeSuccessHandler extends StatelessWidget {
 class SendComposeForm extends StatefulWidget {
   final SendComposeFormActions actions;
   final SendComposeFormModel state;
+  final bool mpmaMode;
+  final bool disableBalanceSelector;
   const SendComposeForm(
-      {super.key, required this.actions, required this.state});
+      {super.key,
+      required this.actions,
+      required this.state,
+      this.mpmaMode = false,
+      this.disableBalanceSelector = false});
 
   @override
   State<SendComposeForm> createState() => _SendComposeFormState();
@@ -184,6 +191,7 @@ class _SendComposeFormState extends State<SendComposeForm> {
                   state: state,
                   actions: actions,
                   balances: widget.state.balances,
+                  disableBalanceSelector: widget.disableBalanceSelector,
                 ),
               ),
               if (index != widget.state.sendEntries.length - 1)
@@ -196,6 +204,7 @@ class _SendComposeFormState extends State<SendComposeForm> {
             ],
           );
         }),
+        if (widget.mpmaMode)
         SizedBox(
           height: 32,
           child: IntrinsicWidth(
@@ -226,6 +235,11 @@ class _SendComposeFormState extends State<SendComposeForm> {
             feeEstimates: widget.state.feeEstimates,
             selectedFeeOption: widget.state.feeOptionInput.value,
             onFeeOptionSelected: widget.actions.onFeeOptionSelected),
+        if(widget.state.submissionStatus.isFailure && widget.state.error != null)
+        ...[
+          const SizedBox(height: 10),
+          Text(widget.state.error!, style: theme.textTheme.bodySmall?.copyWith(color: redErrorText),),
+        ],
         const SizedBox(height: 24),
         HorizonButton(
             child: TextButtonContent(value: "Review Send"),

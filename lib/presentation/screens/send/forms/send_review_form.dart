@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:formz/formz.dart';
+import 'package:get_it/get_it.dart';
+import 'package:horizon/domain/entities/address_v2.dart';
 import 'package:horizon/domain/entities/http_config.dart';
 import 'package:horizon/presentation/common/collapsable_view.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/common/theme_extension.dart';
+import 'package:horizon/presentation/common/usecase/sign_and_broadcast_transaction_usecase.dart';
+import 'package:horizon/presentation/common/usecase/write_local_transaction_usecase.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 import 'package:horizon/presentation/screens/send/bloc/send_compose_form_bloc.dart';
 import 'package:horizon/presentation/screens/send/bloc/send_entry_form_bloc.dart';
@@ -22,24 +26,39 @@ class SendFormReviewActions {
 class SendReviewFormProvider extends StatelessWidget {
   final List<SendEntryFormModel> sendEntries;
   final ComposeSendUnion composeResponse;
+  final HttpConfig httpConfig;
+  final SignAndBroadcastTransactionUseCase signAndBroadcastTransactionUseCase;
+  final AddressV2 sourceAddress;
   final Widget Function(
       SendFormReviewActions actions, SendReviewFormModel state) child;
 
-  const SendReviewFormProvider(
+   SendReviewFormProvider(
       {super.key,
       required this.sendEntries,
       required this.composeResponse,
-      required this.child});
+      required this.httpConfig,
+      SignAndBroadcastTransactionUseCase? signAndBroadcastTransactionUseCase,
+      required this.sourceAddress,
+      required this.child})
+      : signAndBroadcastTransactionUseCase =
+            signAndBroadcastTransactionUseCase ?? GetIt.I<SignAndBroadcastTransactionUseCase>();
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) => SendReviewFormBloc(
-          sendEntries: sendEntries, composeResponse: composeResponse),
+        httpConfig: httpConfig,
+        signAndBroadcastTransactionUseCase: signAndBroadcastTransactionUseCase,
+        sourceAddress: sourceAddress,
+        sendEntries: sendEntries,
+        composeResponse: composeResponse,
+      ),
       child: BlocBuilder<SendReviewFormBloc, SendReviewFormModel>(
         builder: (context, state) => child(SendFormReviewActions(
           onSubmit: () {
-            context.read<SendReviewFormBloc>().add(OnSignAndSubmitEvent());
+            context.read<SendReviewFormBloc>().add(OnSignAndSubmitEvent(
+              decryptionStrategy: InMemoryKey(),
+            ));
           },
         ), state),
       ),

@@ -35,17 +35,24 @@ class _SatsToUsdDisplayState extends State<SatsToUsdDisplay> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    if (_subscription != null) {
+      return;
+    }
     final session = context.watch<SessionStateCubit>().state.successOrThrow();
     _priceService.startListening(httpConfig: session.httpConfig);
     _subscription = _priceService.priceStream.listen((price) {
-      setState(() => _currentPrice = price);
+      if (mounted) {
+        setState(() => _currentPrice = price);
+      }
     });
   }
 
   @override
   void dispose() {
     _subscription?.cancel();
-    _priceService.stopListening();
+    if (_subscription != null) {
+      _priceService.stopListening();
+    }
     super.dispose();
   }
 
