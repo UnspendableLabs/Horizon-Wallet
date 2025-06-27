@@ -126,6 +126,48 @@ class SwapSliderForm extends StatefulWidget {
 }
 
 class _SwapSliderFormState extends State<SwapSliderForm> {
+  final ScrollController _scrollController = ScrollController();
+  static const double _itemHeight = 50.0;
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  @override
+  void didUpdateWidget(SwapSliderForm oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (widget.state.selectionMode != SelectionMode.slider) return;
+    if (widget.state.atomicSwapListModel is! Success) return;
+
+    final sliderValueChanged =
+        oldWidget.state.sliderInput.value != widget.state.sliderInput.value;
+
+    if (sliderValueChanged) {
+      final newIndex = widget.state.sliderInput.value - 1;
+      if (newIndex >= 0 && _scrollController.hasClients) {
+        final itemTop = newIndex * _itemHeight;
+        final itemBottom = itemTop + _itemHeight;
+        final viewportTop = _scrollController.position.pixels;
+        final viewportBottom =
+            viewportTop + _scrollController.position.viewportDimension;
+
+        final isVisible =
+            itemTop >= viewportTop && itemBottom <= viewportBottom;
+
+        if (!isVisible) {
+          _scrollController.animateTo(
+            itemTop,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+          );
+        }
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final session = context.watch<SessionStateCubit>().state.successOrThrow();
@@ -283,6 +325,7 @@ class _SwapSliderFormState extends State<SwapSliderForm> {
                               ),
                             ),
                             onSuccess: (model) => ListView.builder(
+                              controller: _scrollController,
                               itemCount: model.items.length,
                               itemBuilder: (context, index) {
                                 final swap = model.items[index];
@@ -297,6 +340,7 @@ class _SwapSliderFormState extends State<SwapSliderForm> {
                               },
                             ),
                             onRefreshing: (model) => ListView.builder(
+                              controller: _scrollController,
                               itemCount: model.items.length,
                               itemBuilder: (context, index) {
                                 final swap = model.items[index];
@@ -380,7 +424,7 @@ class _SwapSliderFormState extends State<SwapSliderForm> {
           },
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 10),
-            height: 50,
+            height: _itemHeight,
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
