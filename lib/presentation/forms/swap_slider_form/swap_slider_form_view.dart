@@ -139,7 +139,7 @@ class _SwapSliderFormState extends State<SwapSliderForm> {
   void didUpdateWidget(SwapSliderForm oldWidget) {
     super.didUpdateWidget(oldWidget);
 
-    if (widget.state.selectionMode != SelectionMode.slider) return;
+    if (widget.state.sliderInput.selectionMode != SelectionMode.slider) return;
     if (widget.state.atomicSwapListModel is! Success) return;
 
     final sliderValueChanged =
@@ -250,10 +250,10 @@ class _SwapSliderFormState extends State<SwapSliderForm> {
                     ),
                     onSuccess: (model) => Center(
                       child: Opacity(
-                        opacity:
-                            widget.state.selectionMode == SelectionMode.manual
-                                ? 0.5
-                                : 1,
+                        opacity: widget.state.sliderInput.selectionMode ==
+                                SelectionMode.manual
+                            ? 0.5
+                            : 1,
                         child: HorizonSlider(
                           value: widget.state.sliderInput.value.toDouble(),
                           thumbColor:
@@ -262,7 +262,7 @@ class _SwapSliderFormState extends State<SwapSliderForm> {
                               isInsufficientBalance ? redErrorText : null,
                           min: 0,
                           max: model.items.length.toDouble(),
-                          steps: model.items.length + 1,
+                          steps: model.items.length,
                           onChanged: (value) {
                             widget.actions.sliderDragged(value.toInt());
                           },

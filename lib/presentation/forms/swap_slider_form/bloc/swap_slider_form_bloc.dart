@@ -48,15 +48,26 @@ enum SliderInputError {
 }
 
 class SliderInput extends FormzInput<int, SliderInputError> {
-  const SliderInput.pure() : super.pure(0);
-  const SliderInput.dirty({required int value}) : super.dirty(value);
+  final SelectionMode selectionMode;
+
+  const SliderInput.pure({this.selectionMode = SelectionMode.slider})
+      : super.pure(0);
+  const SliderInput.dirty(
+      {required int value, this.selectionMode = SelectionMode.slider})
+      : super.dirty(value);
+
 
   @override
   SliderInputError? validator(int value) {
-    if (value == 0) {
+    if (selectionMode == SelectionMode.slider && value == 0) {
       return SliderInputError.required;
     }
     return null;
+  }
+
+  @override
+  bool get isValid {
+    return selectionMode == SelectionMode.slider ? super.isValid : true;
   }
 }
 
@@ -115,7 +126,6 @@ class SwapSliderFormModel with FormzMixin {
   final TotalCostInput totalCostInput;
   final SelectedAtomicSwapsInput selectedSwapsInput;
   final Set<int> manuallySelectedSwapIndices;
-  final SelectionMode selectionMode;
 
   final FormzSubmissionStatus submissionStatus;
 
@@ -128,7 +138,6 @@ class SwapSliderFormModel with FormzMixin {
     required this.selectedSwapsInput,
     required this.submissionStatus,
     required this.manuallySelectedSwapIndices,
-    required this.selectionMode,
   });
 
   @override
@@ -144,7 +153,6 @@ class SwapSliderFormModel with FormzMixin {
     SelectedAtomicSwapsInput? selectedSwapsInput,
     FormzSubmissionStatus? submissionStatus,
     Set<int>? manuallySelectedSwapIndices,
-    SelectionMode? selectionMode,
   }) {
     return SwapSliderFormModel(
       sliderInput: sliderInput ?? this.sliderInput,
@@ -156,7 +164,6 @@ class SwapSliderFormModel with FormzMixin {
       submissionStatus: submissionStatus ?? this.submissionStatus,
       manuallySelectedSwapIndices:
           manuallySelectedSwapIndices ?? this.manuallySelectedSwapIndices,
-      selectionMode: selectionMode ?? this.selectionMode,
     );
   }
 
@@ -181,7 +188,7 @@ class SwapSliderFormModel with FormzMixin {
   RemoteData<AtomicSwapListModel> get atomicSwapListModel {
     return asset.combine(atomicSwaps, (asset, atomicSwaps) {
       final swaps = atomicSwaps.mapWithIndex((swap, idx) {
-        final isSelected = selectionMode == SelectionMode.slider
+        final isSelected = sliderInput.selectionMode == SelectionMode.slider
             ? idx + 1 <= sliderInput.value
             : manuallySelectedSwapIndices.contains(idx);
         return AtomicSwapListItemModel(
@@ -240,13 +247,12 @@ class SwapSliderFormBloc
         super(
           SwapSliderFormModel(
               manuallySelectedSwapIndices: {},
-              selectionMode: SelectionMode.slider,
               totalCostInput: TotalCostInput.pure(
                   userBalance: AssetQuantity(
                 quantity: BigInt.from(bitcoinBalance.quantity),
                 divisible: true,
               )),
-              selectedSwapsInput: SelectedAtomicSwapsInput.pure(),
+              selectedSwapsInput: const SelectedAtomicSwapsInput.pure(),
               assetName: assetName,
               atomicSwaps: const Initial<List<AtomicSwap>>(),
               asset: const Initial<Asset>(),
@@ -284,7 +290,10 @@ class SwapSliderFormBloc
 
     emit(state.copyWith(
         manuallySelectedSwapIndices: nextSelected,
-        selectionMode: SelectionMode.manual,
+        sliderInput: SliderInput.dirty(
+          value: state.sliderInput.value,
+          selectionMode: SelectionMode.manual,
+        ),
         totalCostInput: TotalCostInput.dirty(
           value: selectedSwapsInput.totalPrice,
           userBalance: state.totalCostInput.userBalance,
@@ -342,12 +351,14 @@ class SwapSliderFormBloc
 
     emit(state.copyWith(
         manuallySelectedSwapIndices: {},
-        selectionMode: SelectionMode.slider,
+        sliderInput: SliderInput.dirty(
+          value: event.value,
+          selectionMode: SelectionMode.slider,
+        ),
         totalCostInput: TotalCostInput.dirty(
           value: selectedSwapsInput.totalPrice,
           userBalance: state.totalCostInput.userBalance,
         ),
-        sliderInput: SliderInput.dirty(value: event.value),
         selectedSwapsInput: selectedSwapsInput));
   }
 

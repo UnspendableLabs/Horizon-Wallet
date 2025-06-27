@@ -1826,7 +1826,7 @@ class QuantityText extends StatelessWidget {
   }
 }
 
-class HorizonSlider extends StatelessWidget {
+class HorizonSlider extends StatefulWidget {
   final double value;
   final double min;
   final double max;
@@ -1853,6 +1853,49 @@ class HorizonSlider extends StatelessWidget {
     this.trackColor,
     this.disabled = false,
   });
+
+  @override
+  State<HorizonSlider> createState() => _HorizonSliderState();
+}
+
+class _HorizonSliderState extends State<HorizonSlider> {
+  late double _value;
+
+  @override
+  void initState() {
+    super.initState();
+    _value = widget.value;
+  }
+
+  @override
+  void didUpdateWidget(HorizonSlider oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.value != oldWidget.value && (widget.value - _value).abs() > 1e-9) {
+      setState(() {
+        _value = widget.value;
+      });
+    }
+  }
+
+  double getSteppedValue(double rawValue) {
+    if (widget.steps == null) return rawValue;
+    final stepSize = (widget.max - widget.min) / widget.steps!;
+    final stepsCount = ((rawValue - widget.min) / stepSize).round();
+    return (widget.min + (stepsCount * stepSize)).clamp(widget.min, widget.max);
+  }
+
+  void _handleValueChange(double rawValue) {
+    if (widget.disabled) return;
+
+    final steppedValue = getSteppedValue(rawValue);
+
+    if ((_value - steppedValue).abs() > 1e-9) {
+      setState(() {
+        _value = steppedValue;
+      });
+      widget.onChanged?.call(steppedValue);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -1882,73 +1925,66 @@ class HorizonSlider extends StatelessWidget {
       return colors.last;
     }
 
-    double getSteppedValue(double rawValue) {
-      if (steps == null) return rawValue;
-      final stepSize = (max - min) / steps!;
-      final stepsCount = ((rawValue - min) / stepSize).round();
-      return min + (stepsCount * stepSize);
-    }
-
     return LayoutBuilder(
       builder: (context, constraints) {
         final trackWidth = constraints.maxWidth;
-        final thumbTravel = trackWidth - thumbSize;
-        final thumbPosition = ((value - min) / (max - min)) * thumbTravel;
-        final filledWidth = thumbPosition + thumbSize / 2;
-        final progress = (value - min) / (max - min);
-        final thumbColor = this.thumbColor ?? getGradientColorAt(
-          1 - progress, // Because gradient is right-to-left
-          gradient.colors,
-          gradient.stops,
-        );
+        final thumbTravel = trackWidth - widget.thumbSize;
+        final thumbPosition =
+            ((_value - widget.min) / (widget.max - widget.min)) *
+                thumbTravel;
+        final filledWidth = thumbPosition + widget.thumbSize / 2;
+        final progress = (_value - widget.min) / (widget.max - widget.min);
+        final thumbColor = widget.thumbColor ??
+            getGradientColorAt(
+              1 - progress, // Because gradient is right-to-left
+              gradient.colors,
+              gradient.stops,
+            );
 
         return SizedBox(
-          height: thumbSize,
+          height: widget.thumbSize,
           child: Stack(
             children: [
               GestureDetector(
                 behavior: HitTestBehavior.translucent,
                 onTapDown: (details) {
-                  if (onChanged == null || disabled) return;
                   final RenderBox renderBox =
                       context.findRenderObject() as RenderBox;
                   final position =
                       renderBox.globalToLocal(details.globalPosition);
                   final tapPosition =
-                      (position.dx - thumbSize / 2).clamp(0, thumbTravel);
-                  final double rawValue =
-                      min + (max - min) * (tapPosition / thumbTravel);
-                  final clampedValue = rawValue.clamp(min, max);
-                  final steppedValue = getSteppedValue(clampedValue);
-                  onChanged!(steppedValue);
+                      (position.dx - widget.thumbSize / 2).clamp(0, thumbTravel);
+                  final double rawValue = widget.min +
+                      (widget.max - widget.min) * (tapPosition / thumbTravel);
+                  _handleValueChange(rawValue);
                 },
                 child: Stack(
                   children: [
                     // Gutter (unfilled track)
                     Positioned(
                       left: 0,
-                      top: (thumbSize - height) / 2,
+                      top: (widget.thumbSize - widget.height) / 2,
                       child: Container(
                         width: trackWidth,
-                        height: height,
+                        height: widget.height,
                         decoration: BoxDecoration(
                           color: gutterColor,
-                          borderRadius: BorderRadius.circular(trackRadius),
+                          borderRadius: BorderRadius.circular(widget.trackRadius),
                         ),
                       ),
                     ),
                     // Filled (gradient) track
                     Positioned(
                       left: 0,
-                      top: (thumbSize - height) / 2,
+                      top: (widget.thumbSize - widget.height) / 2,
                       child: ClipRRect(
-                        borderRadius: BorderRadius.circular(trackRadius),
+                        borderRadius: BorderRadius.circular(widget.trackRadius),
                         child: Container(
                           width: filledWidth.clamp(0, trackWidth),
-                          height: height,
-                          decoration:  BoxDecoration(
-                            gradient: trackColor == null ? gradient: null,
-                            color: trackColor,
+                          height: widget.height,
+                          decoration: BoxDecoration(
+                            gradient: widget.trackColor == null ? gradient : null,
+                            color: widget.trackColor,
                           ),
                         ),
                       ),
@@ -1961,22 +1997,20 @@ class HorizonSlider extends StatelessWidget {
                 left: thumbPosition,
                 child: GestureDetector(
                   onHorizontalDragUpdate: (details) {
-                    if (onChanged == null || disabled) return;
                     final RenderBox renderBox =
                         context.findRenderObject() as RenderBox;
                     final position =
                         renderBox.globalToLocal(details.globalPosition);
                     final dragPosition =
-                        (position.dx - thumbSize / 2).clamp(0, thumbTravel);
-                    final double rawValue =
-                        min + (max - min) * (dragPosition / thumbTravel);
-                    final clampedValue = rawValue.clamp(min, max);
-                    final steppedValue = getSteppedValue(clampedValue);
-                    onChanged!(steppedValue);
+                        (position.dx - widget.thumbSize / 2).clamp(0, thumbTravel);
+                    final double rawValue = widget.min +
+                        (widget.max - widget.min) *
+                            (dragPosition / thumbTravel);
+                    _handleValueChange(rawValue);
                   },
                   child: Container(
-                    width: thumbSize,
-                    height: thumbSize,
+                    width: widget.thumbSize,
+                    height: widget.thumbSize,
                     decoration: BoxDecoration(
                       color: thumbColor,
                       shape: BoxShape.circle,
