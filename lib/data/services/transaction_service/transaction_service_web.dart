@@ -55,7 +55,9 @@ class TransactionServiceWeb implements TransactionService {
     }
 
     List<int> inputsToSign = [0];
-    bitcoinjs.Psbt psbt = bitcoinjs.Psbt();
+    bitcoinjs.Psbt psbt = bitcoinjs.Psbt(bitcoinjs.PsbtOptions(
+      network: httpConfig.network.toJS,
+    ));
 
     Utxo firstUtxo = utxos.first.utxo;
     BitcoinTx firstUtxoTransaction = utxos.first.transaction;
@@ -99,6 +101,8 @@ class TransactionServiceWeb implements TransactionService {
 
     // add unsigned seller output ( to cover price )
 
+    print("what the hell is up with price here??");
+    print("price ${price.toInt()}");
     psbt.addOutput(bitcoinjs.TxOutput.make(
       address: sellerAddress,
       value: price.toInt(),
@@ -146,8 +150,9 @@ class TransactionServiceWeb implements TransactionService {
     required Vout utxoVout,
     required HttpConfig httpConfig,
   }) {
-    bitcoinjs.Psbt psbt = bitcoinjs.Psbt();
-
+    bitcoinjs.Psbt psbt = bitcoinjs.Psbt(bitcoinjs.PsbtOptions(
+      network: httpConfig.network.toJS,
+    ));
     final input = bitcoinjs.TxInput.make(
         sighashType: SIGHASH_SINGLE | SIGHASH_ANYONECANPAY,
         hash: Buffer.from(
@@ -185,8 +190,9 @@ class TransactionServiceWeb implements TransactionService {
 
     final feeDelta = newFee - oldFee;
 
-    bitcoinjs.Psbt psbt = bitcoinjs.Psbt();
-
+    bitcoinjs.Psbt psbt = bitcoinjs.Psbt(bitcoinjs.PsbtOptions(
+      network: httpConfig.network.toJS,
+    ));
     bitcoinjs.Transaction transaction = bitcoinjs.Transaction.fromHex(txHex);
 
     Map<String, List<int>> txHashToInputsMap = {};
@@ -307,7 +313,9 @@ class TransactionServiceWeb implements TransactionService {
     bitcoinjs.Transaction transaction =
         bitcoinjs.Transaction.fromHex(unsignedTransaction);
 
-    bitcoinjs.Psbt psbt = bitcoinjs.Psbt();
+    bitcoinjs.Psbt psbt = bitcoinjs.Psbt(bitcoinjs.PsbtOptions(
+      network: httpConfig.network.toJS,
+    ));
 
     Buffer privKeyJS =
         Buffer.from(Uint8List.fromList(hex.decode(privateKey)).toJS);
@@ -465,7 +473,9 @@ class TransactionServiceWeb implements TransactionService {
     bitcoinjs.Transaction transaction =
         bitcoinjs.Transaction.fromHex(unsignedTransaction);
 
-    bitcoinjs.Psbt psbt = bitcoinjs.Psbt();
+    bitcoinjs.Psbt psbt = bitcoinjs.Psbt(bitcoinjs.PsbtOptions(
+      network: httpConfig.network.toJS,
+    ));
 
     // first add the OP_RETURN output
     bitcoinjs.TxOutput output = transaction.outs.toDart[0];

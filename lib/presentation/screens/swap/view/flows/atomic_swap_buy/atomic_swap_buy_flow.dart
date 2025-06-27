@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:formz/formz.dart';
 import 'package:horizon/utils/app_icons.dart';
 import 'package:horizon/domain/entities/multi_address_balance.dart';
 import 'package:horizon/presentation/forms/base/flow/view/flow_step.dart';
@@ -64,10 +65,13 @@ class AtomicSwapBuyFlowView extends StatefulWidget {
   final MultiAddressBalance balances;
   final AssetPairFormOption receiveAsset;
 
+  final VoidCallback onExitFlow;
+
   const AtomicSwapBuyFlowView(
       {required this.receiveAsset,
       required this.addresses,
       required this.balances,
+      required this.onExitFlow,
       super.key});
 
   @override
@@ -208,11 +212,16 @@ class _AtomicSwapBuyFlowViewState extends State<AtomicSwapBuyFlowView> {
                   child: (actions, state) => FlowStep(
                       leading: IconButton(
                         onPressed: () {
-                          _controller.update((model) =>
-                              // TODO: fine tune what happens when user clicks back
-                              model.copyWith(atomicSwapsToSign: Option.none()));
+                          if (state.current.signatureStatus
+                                  .isInProgressOrSuccess ||
+                              state.current.broadcastStatus
+                                  .isInProgressOrSuccess) {
+                            return;
+                          }
+
+                          widget.onExitFlow();
                         },
-                        icon: AppIcons.backArrowIcon(
+                        icon: AppIcons.closeIcon(
                           context: context,
                           width: 24,
                           height: 24,
@@ -231,6 +240,8 @@ class _AtomicSwapBuyFlowViewState extends State<AtomicSwapBuyFlowView> {
                               },
                               address: state.current.address.address),
                           SwapBuySignForm(
+                            key: Key(
+                                "swap_buy_sign_form_${state.current.atomicSwap.id}"),
                             state: state,
                             actions: actions,
                           ),

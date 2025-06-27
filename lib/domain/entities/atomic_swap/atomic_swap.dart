@@ -12,6 +12,7 @@ class AtomicSwap {
   final AssetQuantity pricePerUnit;
   final int assetUtxoValue;
   final UtxoID assetUtxoId;
+  final bool pendingSales;
 
   AtomicSwap(
       {required this.id,
@@ -21,7 +22,8 @@ class AtomicSwap {
       required this.price,
       required this.pricePerUnit,
       required this.assetUtxoValue,
-      required this.assetUtxoId});
+      required this.assetUtxoId, 
+      required this.pendingSales});
 
   @override
   String toString() {
@@ -34,6 +36,7 @@ class AtomicSwap {
         'pricePerUnit: $pricePerUnit'
         'assetUtxoValue: $assetUtxoValue, '
         'assetUtxoId: $assetUtxoId'
+        'pendingSales: $pendingSales'
         ')';
   }
 }

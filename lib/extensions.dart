@@ -9,3 +9,15 @@ extension OptionGetOrThrow<T> on Option<T> {
     );
   }
 }
+
+extension TaskEitherMinimumDuration<L, R> on TaskEither<L, R> {
+  TaskEither<L, R> minimumDuration(Duration duration) {
+    return TaskEither.sequenceList<L, dynamic>([
+      this,
+      TaskEither.fromTask(Task(() async {
+        await Future.delayed(duration);
+        return null;
+      })),
+    ]).map((results) => results[0] as R);
+  }
+}

@@ -6,6 +6,51 @@ part of 'horizon_explorer_client.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
+DataWrapper<T> _$DataWrapperFromJson<T>(
+  Map<String, dynamic> json,
+  T Function(Object? json) fromJsonT,
+) =>
+    DataWrapper<T>(
+      data: fromJsonT(json['data']),
+    );
+
+Map<String, dynamic> _$DataWrapperToJson<T>(
+  DataWrapper<T> instance,
+  Object? Function(T value) toJsonT,
+) =>
+    <String, dynamic>{
+      'data': toJsonT(instance.data),
+    };
+
+AtomicSwapBuyResponse _$AtomicSwapBuyResponseFromJson(
+        Map<String, dynamic> json) =>
+    AtomicSwapBuyResponse(
+      atomicSwap: AtomicSwapBuyResponseSwap.fromJson(
+          json['atomic_swap'] as Map<String, dynamic>),
+      buyerAddress: json['buyer_address'] as String,
+      txId: json['tx_id'] as String,
+    );
+
+Map<String, dynamic> _$AtomicSwapBuyResponseToJson(
+        AtomicSwapBuyResponse instance) =>
+    <String, dynamic>{
+      'atomic_swap': instance.atomicSwap,
+      'buyer_address': instance.buyerAddress,
+      'tx_id': instance.txId,
+    };
+
+AtomicSwapBuyResponseSwap _$AtomicSwapBuyResponseSwapFromJson(
+        Map<String, dynamic> json) =>
+    AtomicSwapBuyResponseSwap(
+      id: json['id'] as String,
+    );
+
+Map<String, dynamic> _$AtomicSwapBuyResponseSwapToJson(
+        AtomicSwapBuyResponseSwap instance) =>
+    <String, dynamic>{
+      'id': instance.id,
+    };
+
 AssetSrcResponse _$AssetSrcResponseFromJson(Map<String, dynamic> json) =>
     AssetSrcResponse(
       src: json['src'] as String?,
@@ -86,18 +131,6 @@ Map<String, dynamic> _$OnChainPaymentModelToJson(
       'feePaymentId': instance.feePaymentId,
     };
 
-OnChainPaymentResponse _$OnChainPaymentResponseFromJson(
-        Map<String, dynamic> json) =>
-    OnChainPaymentResponse(
-      data: OnChainPaymentModel.fromJson(json['data'] as Map<String, dynamic>),
-    );
-
-Map<String, dynamic> _$OnChainPaymentResponseToJson(
-        OnChainPaymentResponse instance) =>
-    <String, dynamic>{
-      'data': instance.data,
-    };
-
 AtomicSwapModel _$AtomicSwapModelFromJson(Map<String, dynamic> json) =>
     AtomicSwapModel(
       id: json['id'] as String,
@@ -148,19 +181,6 @@ Map<String, dynamic> _$AtomicSwapModelToJson(AtomicSwapModel instance) =>
       'created_at': instance.createdAt.toIso8601String(),
       'updated_at': instance.updatedAt.toIso8601String(),
       'expires_at': instance.expiresAt?.toIso8601String(),
-    };
-
-AtomicSwapListResponse _$AtomicSwapListResponseFromJson(
-        Map<String, dynamic> json) =>
-    AtomicSwapListResponse(
-      data: AtomicSwapListResponseData.fromJson(
-          json['data'] as Map<String, dynamic>),
-    );
-
-Map<String, dynamic> _$AtomicSwapListResponseToJson(
-        AtomicSwapListResponse instance) =>
-    <String, dynamic>{
-      'data': instance.data,
     };
 
 AtomicSwapListResponseData _$AtomicSwapListResponseDataFromJson(
@@ -274,14 +294,14 @@ class _HorizonExplorerApii implements HorizonExplorerApii {
   }
 
   @override
-  Future<OnChainPaymentResponse> _createOnChainPayment(
+  Future<DataWrapper<OnChainPaymentModel>> _createOnChainPayment(
       Map<String, dynamic> body) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};
     final _headers = <String, dynamic>{};
     final _data = <String, dynamic>{};
     _data.addAll(body);
-    final _options = _setStreamType<OnChainPaymentResponse>(Options(
+    final _options = _setStreamType<DataWrapper<OnChainPaymentModel>>(Options(
       method: 'POST',
       headers: _headers,
       extra: _extra,
@@ -298,9 +318,12 @@ class _HorizonExplorerApii implements HorizonExplorerApii {
           baseUrl,
         )));
     final _result = await _dio.fetch<Map<String, dynamic>>(_options);
-    late OnChainPaymentResponse _value;
+    late DataWrapper<OnChainPaymentModel> _value;
     try {
-      _value = OnChainPaymentResponse.fromJson(_result.data!);
+      _value = DataWrapper<OnChainPaymentModel>.fromJson(
+        _result.data!,
+        (json) => OnChainPaymentModel.fromJson(json as Map<String, dynamic>),
+      );
     } on Object catch (e, s) {
       errorLogger?.logError(e, s, _options);
       rethrow;
@@ -309,7 +332,7 @@ class _HorizonExplorerApii implements HorizonExplorerApii {
   }
 
   @override
-  Future<AtomicSwapListResponse> _getAtomicSwapsRaw([
+  Future<DataWrapper<AtomicSwapListResponseData>> _getAtomicSwapsRaw([
     String? assetName,
     String? orderBy,
     String? order,
@@ -323,14 +346,56 @@ class _HorizonExplorerApii implements HorizonExplorerApii {
     queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
-    final _options = _setStreamType<AtomicSwapListResponse>(Options(
+    final _options =
+        _setStreamType<DataWrapper<AtomicSwapListResponseData>>(Options(
       method: 'GET',
+      headers: _headers,
+      extra: _extra,
+    )
+            .compose(
+              _dio.options,
+              '/atomic-swaps',
+              queryParameters: queryParameters,
+              data: _data,
+            )
+            .copyWith(
+                baseUrl: _combineBaseUrls(
+              _dio.options.baseUrl,
+              baseUrl,
+            )));
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late DataWrapper<AtomicSwapListResponseData> _value;
+    try {
+      _value = DataWrapper<AtomicSwapListResponseData>.fromJson(
+        _result.data!,
+        (json) =>
+            AtomicSwapListResponseData.fromJson(json as Map<String, dynamic>),
+      );
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options);
+      rethrow;
+    }
+    return _value;
+  }
+
+  @override
+  Future<DataWrapper<AtomicSwapBuyResponse>> _atomicSwapBuy(
+    String id,
+    Map<String, dynamic> body,
+  ) async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{};
+    final _headers = <String, dynamic>{};
+    final _data = <String, dynamic>{};
+    _data.addAll(body);
+    final _options = _setStreamType<DataWrapper<AtomicSwapBuyResponse>>(Options(
+      method: 'PUT',
       headers: _headers,
       extra: _extra,
     )
         .compose(
           _dio.options,
-          '/atomic-swaps',
+          '/atomic-swaps/${id}/buy',
           queryParameters: queryParameters,
           data: _data,
         )
@@ -340,9 +405,12 @@ class _HorizonExplorerApii implements HorizonExplorerApii {
           baseUrl,
         )));
     final _result = await _dio.fetch<Map<String, dynamic>>(_options);
-    late AtomicSwapListResponse _value;
+    late DataWrapper<AtomicSwapBuyResponse> _value;
     try {
-      _value = AtomicSwapListResponse.fromJson(_result.data!);
+      _value = DataWrapper<AtomicSwapBuyResponse>.fromJson(
+        _result.data!,
+        (json) => AtomicSwapBuyResponse.fromJson(json as Map<String, dynamic>),
+      );
     } on Object catch (e, s) {
       errorLogger?.logError(e, s, _options);
       rethrow;

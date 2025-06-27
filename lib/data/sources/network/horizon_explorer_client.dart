@@ -9,6 +9,46 @@ import 'package:json_annotation/json_annotation.dart';
 
 part 'horizon_explorer_client.g.dart';
 
+@JsonSerializable(
+    genericArgumentFactories: true, fieldRename: FieldRename.snake)
+class DataWrapper<T> {
+  final T data;
+
+  DataWrapper({
+    required this.data,
+  });
+
+  factory DataWrapper.fromJson(
+          Map<String, dynamic> json, T Function(Object? json) fromJsonT) =>
+      _$DataWrapperFromJson(json, fromJsonT);
+}
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class AtomicSwapBuyResponse {
+  final AtomicSwapBuyResponseSwap atomicSwap;
+  final String buyerAddress;
+  final String txId;
+
+  AtomicSwapBuyResponse({
+    required this.atomicSwap,
+    required this.buyerAddress,
+    required this.txId,
+  });
+
+  factory AtomicSwapBuyResponse.fromJson(Map<String, dynamic> json) =>
+      _$AtomicSwapBuyResponseFromJson(json);
+}
+
+@JsonSerializable()
+class AtomicSwapBuyResponseSwap {
+  final String id;
+
+  AtomicSwapBuyResponseSwap({required this.id});
+
+  factory AtomicSwapBuyResponseSwap.fromJson(Map<String, dynamic> json) =>
+      _$AtomicSwapBuyResponseSwapFromJson(json);
+}
+
 @JsonSerializable(fieldRename: FieldRename.snake)
 class AssetSrcResponse {
   final String? src;
@@ -100,18 +140,18 @@ class OnChainPaymentModel {
   }
 }
 
-@JsonSerializable(fieldRename: FieldRename.snake)
-class OnChainPaymentResponse {
-  final OnChainPaymentModel data;
-
-  OnChainPaymentResponse({
-    required this.data,
-  });
-
-  factory OnChainPaymentResponse.fromJson(Map<String, dynamic> json) {
-    return _$OnChainPaymentResponseFromJson(json);
-  }
-}
+// @JsonSerializable(fieldRename: FieldRename.snake)
+// class OnChainPaymentResponse {
+//   final OnChainPaymentModel data;
+//
+//   OnChainPaymentResponse({
+//     required this.data,
+//   });
+//
+//   factory OnChainPaymentResponse.fromJson(Map<String, dynamic> json) {
+//     return _$OnChainPaymentResponseFromJson(json);
+//   }
+// }
 
 @JsonSerializable(fieldRename: FieldRename.snake)
 class AtomicSwapModel {
@@ -167,6 +207,7 @@ class AtomicSwapModel {
 
   AtomicSwap toEntity() => AtomicSwap(
       id: id,
+      pendingSales: pending,
       sellerAddress: sellerAddress,
       assetName: assetName,
       assetUtxoValue: assetUtxoValue,
@@ -186,19 +227,6 @@ class AtomicSwapModel {
       ),
       pricePerUnit:
           AssetQuantity(quantity: BigInt.from(pricePerUnit), divisible: true));
-}
-
-@JsonSerializable()
-class AtomicSwapListResponse {
-  final AtomicSwapListResponseData data;
-
-  AtomicSwapListResponse({
-    required this.data,
-  });
-
-  factory AtomicSwapListResponse.fromJson(Map<String, dynamic> json) {
-    return _$AtomicSwapListResponseFromJson(json);
-  }
 }
 
 @JsonSerializable(fieldRename: FieldRename.snake)
@@ -229,15 +257,21 @@ abstract class HorizonExplorerApii {
   Future<AssetSearchResponse> _searchAssetsRaw(@Query('s') String query);
 
   @POST('/on-chain-payment')
-  Future<OnChainPaymentResponse> _createOnChainPayment(
+  Future<DataWrapper<OnChainPaymentModel>> _createOnChainPayment(
       @Body() Map<String, dynamic> body);
 
   @GET('/atomic-swaps')
-  Future<AtomicSwapListResponse> _getAtomicSwapsRaw([
+  Future<DataWrapper<AtomicSwapListResponseData>> _getAtomicSwapsRaw([
     @Query('asset_name') String? assetName,
     @Query('order_by') String? orderBy,
     @Query('order') String? order,
   ]);
+
+  @PUT('/atomic-swaps/{id}/buy')
+  Future<DataWrapper<AtomicSwapBuyResponse>> _atomicSwapBuy(
+    @Path('id') String id,
+    @Body() Map<String, dynamic> body,
+  );
 }
 
 class HorizonExplorerApi {
@@ -259,7 +293,7 @@ class HorizonExplorerApi {
     return json.results.map((a) => a.toEntity()).toList();
   }
 
-  Future<OnChainPaymentResponse> createOnChainPayment({
+  Future<DataWrapper<OnChainPaymentModel>> createOnChainPayment({
     required String address,
     required List<String> utxoSetIds,
     required num satsPerVbyte,
@@ -275,8 +309,23 @@ class HorizonExplorerApi {
   }
 
 // TODO: this is a misnomer
-  Future<AtomicSwapListResponse> getAtomicSwaps(
+  Future<DataWrapper<AtomicSwapListResponseData>> getAtomicSwaps(
       {String? assetName, String? orderBy, String? order}) async {
     return await _api._getAtomicSwapsRaw(assetName, orderBy, order);
+  }
+
+  Future<DataWrapper<AtomicSwapBuyResponse>> atomicSwapBuy({
+    required String id,
+    required String buyerAddress,
+    required String psbtHex,
+  }) async {
+    final body = {
+      'data': {
+        'buyer_address': buyerAddress,
+        'psbt_hex': psbtHex,
+      }
+    };
+
+    return await _api._atomicSwapBuy(id, body);
   }
 }

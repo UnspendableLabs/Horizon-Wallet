@@ -115,11 +115,13 @@ class _SwapFlowViewState extends State<SwapFlowView> {
                 ) =>
                   MaterialPage(
                     child: AtomicSwapBuyFlowView(
-                      // TODO: this is a little messy, for sure
-                      addresses: session.addresses,
-                      receiveAsset: receiveAsset,
-                      balances: btcBalance,
-                    ),
+                        // TODO: this is a little messy, for sure
+                        addresses: session.addresses,
+                        receiveAsset: receiveAsset,
+                        balances: btcBalance,
+                        onExitFlow: () {
+                          Navigator.of(context).pop();
+                        }),
                   ),
 
                 // AtomicSwapSell(giveBalance: var balance) => MaterialPage(
