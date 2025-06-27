@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fpdart/fpdart.dart' hide State;
 import 'package:flutter/material.dart';
+import 'package:horizon/presentation/common/redesign_colors.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 import 'package:horizon/domain/entities/remote_data.dart';
 import 'package:horizon/domain/entities/asset_search_result.dart';
@@ -107,8 +108,7 @@ class AssetSearchDialog extends StatefulWidget {
       {
       // required this.onAssetSelected,
       required this.onQueryChanged,
-      Key? key})
-      : super(key: key);
+      super.key});
 
   @override
   _AssetSearchDialogState createState() => _AssetSearchDialogState();
@@ -184,15 +184,22 @@ class _AssetSearchDialogState extends State<AssetSearchDialog> {
         }
       },
       builder: (context, state) {
-        return GestureDetector(
-          onTap: () {
-            // Navigator.of(context).pop();
-          },
-          child: Material(
-            type: MaterialType.transparency,
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
-              child: Center(
+        return Stack(
+          children: [
+            // Blurred background
+            Positioned.fill(
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+                child: Container(
+                  color: Colors.transparent, // or your preferred overlay
+                ),
+              ),
+            ),
+            // Modal content on top
+            Center(
+              child: Material(
+                type: MaterialType.transparency,
+                borderRadius: BorderRadius.circular(18),
                 child: GestureDetector(
                   onTap: () {}, // absorb inside tap
                   child: ConstrainedBox(
@@ -203,38 +210,25 @@ class _AssetSearchDialogState extends State<AssetSearchDialog> {
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(18),
                         border: GradientBoxBorder(context: context, width: 1),
-                        color: isDarkMode
-                            ? Colors.white.withOpacity(0.08)
-                            : Colors.black.withOpacity(0.08),
+                        color: transparentWhite8,
                       ),
                       padding: const EdgeInsets.symmetric(
                           horizontal: 16, vertical: 24),
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          // HorizonTextField(
-                          //   suffixIcon: AppIcons.searchIcon(
-                          //     context: context,
-                          //     width: 34,
-                          //     height: 34,
-                          //   ),
-                          //   hintText: "Search",
-                          //   controller: _searchInputController,
-                          //   onChanged: (value) {
-                          //     widget.onQueryChanged(value);
-                          //   },
-                          // ),
                           InlineTypeAhead<AssetSearchResult>(
                             controller: _searchInputController,
                             suggestionsController: _suggestionsController,
                             suggestionsCallback: (term) {
                               widget.onQueryChanged(term);
+                              return null;
                             },
                             onSelected: (selection) {
                               Navigator.of(context).pop(AssetPairFormOption(
                                   name: selection.name,
                                   description: selection.description,
-                                  balance: Option.none()));
+                                  balance: const Option.none()));
 
                               // if (widget.onAssetSelected != null) {
                               //   widget.onAssetSelected!(AssetPairFormOption(
@@ -259,7 +253,7 @@ class _AssetSearchDialogState extends State<AssetSearchDialog> {
                 ),
               ),
             ),
-          ),
+          ],
         );
       },
     );
@@ -325,6 +319,7 @@ Future<AssetPairFormOption?> showReceiveAssetModal({
           value:
               BlocProvider.of<AssetPairFormBloc>(outerContext, listen: false),
           child: GestureDetector(
+              onTap: () => Navigator.of(dialogContext).pop(),
               child: BlocConsumer<AssetPairFormBloc, AssetPairFormModel>(
                   listener: (context, state) {
             // no-op for now

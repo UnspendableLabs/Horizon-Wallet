@@ -5189,6 +5189,7 @@ abstract class V2Api {
     @Query("destination") String destination,
     @Query("asset") String asset,
     @Query("quantity") int quantity, [
+    @Query("memo") String? memo,
     @Query("allow_unconfirmed_inputs") bool? allowUnconfirmedInputs,
     @Query("sat_per_vbyte") num? satPerVbyte,
     @Query("inputs_set") String? inputsSet,
@@ -5201,6 +5202,7 @@ abstract class V2Api {
   Future<Response<ComposeMpmaSend>> composeMpmaSend(
     @Path("address") String address,
     @Query("destinations") String? destinations,
+    @Query("memos") List<String>? memos,
     @Query("assets") String? assets,
     @Query("quantities") String? quantities, [
     @Query("allow_unconfirmed_inputs") bool? allowUnconfirmedInputs,
@@ -5458,7 +5460,8 @@ abstract class V2Api {
   Future<Response<ComposeAttachUtxoResponseModel>> composeAttachUtxo(
     @Path("address") String address,
     @Query("asset") String asset,
-    @Query("quantity") int quantity, [
+    @Query("quantity") int quantity,
+    @Query("utxo_value") int utxoValue, [
     @Query("destination_vout") String? destinationVout,
     @Query("skip_validation") bool? skipValidation,
     @Query("allow_unconfirmed_inputs") bool? allowUnconfirmedInputs,
@@ -5574,4 +5577,21 @@ abstract class V2Api {
     @Query("disable_utxo_locks") bool? disableUtxoLocks,
     @Query("unconfirmed") bool? unconfirmed,
   ]);
+
+  @GET("/utxos/withbalances")
+  Future<Response<UtxoWithBalancesResponse>> utxosWithBalances(
+      @Query("utxos") String utxos);
+}
+
+@JsonSerializable()
+class UtxoWithBalancesResponse {
+  final Map<String, bool> result;
+
+  UtxoWithBalancesResponse({required this.result});
+
+  factory UtxoWithBalancesResponse.fromJson(Map<String, dynamic> json) =>
+      UtxoWithBalancesResponse(
+          result: json.map((k, v) => MapEntry(k, v as bool)));
+
+  Map<String, dynamic> toJson() => result;
 }

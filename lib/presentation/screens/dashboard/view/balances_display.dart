@@ -330,8 +330,8 @@ class BalancesSliverState extends State<BalancesSliver> {
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
                                       SelectableText(
-                                        quantityRemoveTrailingZeros(
-                                            balance.totalNormalized),
+                                        numberWithCommas.format(double.parse(
+                                            balance.totalNormalized)),
                                         style: const TextStyle(
                                           fontSize: 12,
                                           fontWeight: FontWeight.w500,

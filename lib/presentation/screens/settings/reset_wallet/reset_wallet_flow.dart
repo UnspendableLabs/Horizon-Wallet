@@ -180,7 +180,6 @@ class _ResetWalletFlowState extends State<ResetWalletFlow> {
     );
   }
 
-
   Widget _buildFinalStep() {
     return BlocProvider(
       create: (context) => ResetBloc(

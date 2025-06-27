@@ -4353,6 +4353,18 @@ Map<String, dynamic> _$UTXOToJson(UTXO instance) => <String, dynamic>{
       'address': instance.address,
     };
 
+UtxoWithBalancesResponse _$UtxoWithBalancesResponseFromJson(
+        Map<String, dynamic> json) =>
+    UtxoWithBalancesResponse(
+      result: Map<String, bool>.from(json['result'] as Map),
+    );
+
+Map<String, dynamic> _$UtxoWithBalancesResponseToJson(
+        UtxoWithBalancesResponse instance) =>
+    <String, dynamic>{
+      'result': instance.result,
+    };
+
 // **************************************************************************
 // RetrofitGenerator
 // **************************************************************************
@@ -5549,6 +5561,7 @@ class _V2Api implements V2Api {
     String destination,
     String asset,
     int quantity, [
+    String? memo,
     bool? allowUnconfirmedInputs,
     num? satPerVbyte,
     String? inputsSet,
@@ -5561,6 +5574,7 @@ class _V2Api implements V2Api {
       r'destination': destination,
       r'asset': asset,
       r'quantity': quantity,
+      r'memo': memo,
       r'allow_unconfirmed_inputs': allowUnconfirmedInputs,
       r'sat_per_vbyte': satPerVbyte,
       r'inputs_set': inputsSet,
@@ -5605,6 +5619,7 @@ class _V2Api implements V2Api {
   Future<Response<ComposeMpmaSend>> composeMpmaSend(
     String address,
     String? destinations,
+    List<String>? memos,
     String? assets,
     String? quantities, [
     bool? allowUnconfirmedInputs,
@@ -5616,6 +5631,7 @@ class _V2Api implements V2Api {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{
       r'destinations': destinations,
+      r'memos': memos,
       r'assets': assets,
       r'quantities': quantities,
       r'allow_unconfirmed_inputs': allowUnconfirmedInputs,
@@ -6979,7 +6995,8 @@ class _V2Api implements V2Api {
   Future<Response<ComposeAttachUtxoResponseModel>> composeAttachUtxo(
     String address,
     String asset,
-    int quantity, [
+    int quantity,
+    int utxoValue, [
     String? destinationVout,
     bool? skipValidation,
     bool? allowUnconfirmedInputs,
@@ -6993,6 +7010,7 @@ class _V2Api implements V2Api {
     final queryParameters = <String, dynamic>{
       r'asset': asset,
       r'quantity': quantity,
+      r'utxo_value': utxoValue,
       r'destination_vout': destinationVout,
       r'skip_validation': skipValidation,
       r'allow_unconfirmed_inputs': allowUnconfirmedInputs,
@@ -7619,6 +7637,44 @@ class _V2Api implements V2Api {
         _result.data!,
         (json) =>
             ComposeBurnResponseModel.fromJson(json as Map<String, dynamic>),
+      );
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options);
+      rethrow;
+    }
+    return _value;
+  }
+
+  @override
+  Future<Response<UtxoWithBalancesResponse>> utxosWithBalances(
+      String utxos) async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{r'utxos': utxos};
+    final _headers = <String, dynamic>{};
+    const Map<String, dynamic>? _data = null;
+    final _options = _setStreamType<Response<UtxoWithBalancesResponse>>(Options(
+      method: 'GET',
+      headers: _headers,
+      extra: _extra,
+    )
+        .compose(
+          _dio.options,
+          '/utxos/withbalances',
+          queryParameters: queryParameters,
+          data: _data,
+        )
+        .copyWith(
+            baseUrl: _combineBaseUrls(
+          _dio.options.baseUrl,
+          baseUrl,
+        )));
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late Response<UtxoWithBalancesResponse> _value;
+    try {
+      _value = Response<UtxoWithBalancesResponse>.fromJson(
+        _result.data!,
+        (json) =>
+            UtxoWithBalancesResponse.fromJson(json as Map<String, dynamic>),
       );
     } on Object catch (e, s) {
       errorLogger?.logError(e, s, _options);
