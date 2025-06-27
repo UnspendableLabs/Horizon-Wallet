@@ -382,7 +382,42 @@ class _SwapBuySignFormState extends State<SwapBuySignForm> {
                         onPressed: () {
                           widget.actions.onSubmitClicked();
                         },
-                        child: TextButtonContent(value: "Sign and Submit")),
+                        child: widget.state.current.broadcastStatus.isInProgress
+                            ? WidgetButtonContent(
+                                value: Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 10),
+                                    child: Row(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
+                                      children: [
+                                        CircularProgressIndicator(),
+                                        const SizedBox(width: 4),
+                                        Text("Broadcasting",
+                                            style: theme.textTheme.titleSmall),
+                                      ],
+                                    )))
+                            : widget.state.current.broadcastStatus.isSuccess
+                                ? WidgetButtonContent(
+                                    value: Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 10),
+                                        child: Row(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.center,
+                                          children: [
+                                            AppIcons.checkCircleIcon(
+                                              context: context,
+                                              width: 24,
+                                              height: 24,
+                                            ),
+                                            const SizedBox(width: 4),
+                                            Text("Success",
+                                                style:
+                                                    theme.textTheme.titleSmall),
+                                          ],
+                                        )))
+                                : TextButtonContent(value: "Sign and Submit")),
                     commonHeightSizedBox,
                   ],
                 )))

@@ -3,8 +3,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:horizon/domain/entities/atomic_swap/atomic_swap.dart';
 import 'package:equatable/equatable.dart';
 import 'package:fpdart/fpdart.dart';
+import 'package:horizon/extensions.dart';
 import 'package:horizon/domain/repositories/utxo_repository.dart';
 import 'package:horizon/domain/repositories/bitcoin_repository.dart';
+import 'package:horizon/domain/repositories/atomic_swap_repository.dart';
 import 'package:horizon/domain/entities/address_v2.dart';
 import 'package:get_it/get_it.dart';
 import 'package:horizon/domain/entities/utxo.dart';
@@ -140,6 +142,7 @@ class AtomicSwapSignModel with FormzMixin {
   final FeeEstimates feeEstimates;
   final FeeOptionInput feeOptionInput;
   final FormzSubmissionStatus signatureStatus;
+  final FormzSubmissionStatus broadcastStatus;
 
   final Option<String> error;
   final Option<MakeBuyPsbtReturn> psbtWithArgs;
@@ -150,6 +153,7 @@ class AtomicSwapSignModel with FormzMixin {
       {required this.address,
       required this.atomicSwap,
       this.signatureStatus = FormzSubmissionStatus.initial,
+      this.broadcastStatus = FormzSubmissionStatus.initial,
       required this.feeEstimates,
       required this.feeOptionInput,
       required this.error,
@@ -165,6 +169,7 @@ class AtomicSwapSignModel with FormzMixin {
       FeeEstimates? feeEstimates,
       FeeOptionInput? feeOptionInput,
       FormzSubmissionStatus? signatureStatus,
+      FormzSubmissionStatus? broadcastStatus,
       Option<String>? error,
       Option<MakeBuyPsbtReturn>? psbtWithArgs,
       Option<bool> showSignPsbtModal = const None()}) {
@@ -174,6 +179,7 @@ class AtomicSwapSignModel with FormzMixin {
         feeEstimates: feeEstimates ?? this.feeEstimates,
         feeOptionInput: feeOptionInput ?? this.feeOptionInput,
         signatureStatus: signatureStatus ?? this.signatureStatus,
+        broadcastStatus: broadcastStatus ?? this.broadcastStatus,
         psbtWithArgs: psbtWithArgs ?? this.psbtWithArgs,
         error: error ?? this.error,
         showSignPsbtModal:
@@ -209,6 +215,13 @@ class SwapBuySignFormModel {
   }
 
   AtomicSwapSignModel get current => atomicSwaps[swapIndex];
+
+  Option<AtomicSwapSignModel> get next {
+    if (swapIndex + 1 < atomicSwaps.length) {
+      return Option.of(atomicSwaps[swapIndex + 1]);
+    }
+    return const Option.none();
+  }
 }
 
 sealed class SwapBuySignFormEvent extends Equatable {
@@ -243,6 +256,7 @@ class SwapBuySignFormBloc
   final TransactionService _transactionService;
   final UtxoRepository _utxoRepository;
   final BitcoinRepository _bitcoinRepository;
+  final AtomicSwapRepository _atomicSwapRepository;
 
   SwapBuySignFormBloc({
     required FeeEstimates feeEstimates,
@@ -252,10 +266,13 @@ class SwapBuySignFormBloc
     TransactionService? transactionService,
     UtxoRepository? utxoRepository,
     BitcoinRepository? bitcoinRepository,
+    AtomicSwapRepository? atomicSwapRepository,
   })  : _transactionService =
             transactionService ?? GetIt.I<TransactionService>(),
         _utxoRepository = utxoRepository ?? GetIt.I<UtxoRepository>(),
         _bitcoinRepository = bitcoinRepository ?? GetIt.I<BitcoinRepository>(),
+        _atomicSwapRepository =
+            atomicSwapRepository ?? GetIt.I<AtomicSwapRepository>(),
         super(SwapBuySignFormModel(
             swapIndex: 0,
             atomicSwaps: atomicSwaps
@@ -278,9 +295,6 @@ class SwapBuySignFormBloc
     CloseSignPsbtModalClicked event,
     Emitter<SwapBuySignFormModel> emit,
   ) {
-
-    print("handle close called");
-
     emit(
       updateSwapAtIndex(
           state.swapIndex,
@@ -296,9 +310,6 @@ class SwapBuySignFormBloc
     SubmitClicked event,
     Emitter<SwapBuySignFormModel> emit,
   ) async {
-    // need to get somewhat fancy here computing tx size, fee, etc and pass
-    // in requisite utxo set...
-
     updateSwapAtIndex(
       state.swapIndex,
       (swap) =>
@@ -349,6 +360,12 @@ class SwapBuySignFormBloc
         ),
       );
 
+      print("seleced sum ${selected.sum}");
+      print("selected price ${selected.price}");
+      print("atomt swap price ${state.current.atomicSwap.price.quantity}");
+      print("selected fee ${selected.fee}");
+      print("selected change ${selected.change}");
+
       return await $(
         TaskEither.fromEither(_transactionService.makeBuyPsbtT(
           buyerAddress: buyerAddress.address,
@@ -358,7 +375,7 @@ class SwapBuySignFormBloc
           utxoAssetValue: assetUtxoValue,
           sellerTransaction: sellerTransaction,
           sellerVout: state.current.atomicSwap.assetUtxoId.vout,
-          price: state.current.atomicSwap.pricePerUnit.quantity
+          price: state.current.atomicSwap.price.quantity
               .toInt(), // TODO: convert to JS BigInt
           change: selected.change.toInt(), // TODO: compute change
           onError: (error) =>
@@ -369,13 +386,15 @@ class SwapBuySignFormBloc
 
     final result = await task.run();
 
-    result.fold(
-        (error) => emit(updateSwapAtIndex(
-            state.swapIndex,
-            (swap) => swap.copyWith(
-                  signatureStatus: FormzSubmissionStatus.failure,
-                  error: Option.of(error),
-                ))),
+    result.fold((error) {
+      print(error);
+      emit(updateSwapAtIndex(
+          state.swapIndex,
+          (swap) => swap.copyWith(
+                signatureStatus: FormzSubmissionStatus.failure,
+                error: Option.of(error),
+              )));
+    },
         (unsignedPsbtWithArgs) => emit(updateSwapAtIndex(
             state.swapIndex,
             (swap) => swap.copyWith(
@@ -401,17 +420,58 @@ class SwapBuySignFormBloc
   void _handleSignatureCompleted(
     SignatureCompleted event,
     Emitter<SwapBuySignFormModel> emit,
-  ) {
-
-    print("handle sig completed");
+  ) async {
     emit(
       updateSwapAtIndex(
           state.swapIndex,
           (swap) => swap.copyWith(
                 showSignPsbtModal: const Option.of(false),
                 signatureStatus: FormzSubmissionStatus.success,
+                broadcastStatus: FormzSubmissionStatus.inProgress,
               )),
     );
+
+    final task = _atomicSwapRepository
+        .atomicSwapBuyT(
+            httpConfig: httpConfig,
+            id: state.current.atomicSwap.id,
+            psbtHex: event.signedPsbtHex,
+            buyerAddress: state.current.address.address)
+        .minimumDuration(Duration(seconds: 1, milliseconds: 500));
+
+    final result = await task.run();
+
+    if (result.isLeft()) {
+      final error = result.getLeft();
+
+      updateSwapAtIndex(
+          state.swapIndex,
+          (swap) => swap.copyWith(
+                broadcastStatus: FormzSubmissionStatus.failure,
+                error: Option.of(error).getOrThrow(),
+              ));
+    } else {
+      final success = result.getRight().getOrThrow();
+
+      emit(updateSwapAtIndex(
+          state.swapIndex,
+          (swap) => swap.copyWith(
+                broadcastStatus: FormzSubmissionStatus.success,
+              )));
+      await Future.delayed(const Duration(seconds: 1));
+
+
+      if (state.next.isNone()) {
+        print("no next swap, done");
+        return;
+      } else {
+        emit(
+          state.copyWith(
+            swapIndex: state.swapIndex + 1,
+          ),
+        );
+      }
+    }
   }
 
   SwapBuySignFormModel updateSwapAtIndex(

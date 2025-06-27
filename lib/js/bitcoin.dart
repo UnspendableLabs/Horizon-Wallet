@@ -32,8 +32,6 @@ extension type TxInput._(JSObject _) implements JSObject {
   external int? sighashType;
 }
 
-
-
 extension type TxOutput._(JSObject _) implements JSObject {
   external factory TxOutput.make({
     JSUint8Array? script,
@@ -74,8 +72,17 @@ extension type PsbtCache._(JSObject _) implements JSObject {
   external int get fee;
 }
 
+
+
+extension type PsbtOptions._(JSObject o) implements JSObject {
+  external PsbtOptions({ JSAny network });
+}
+
 extension type Psbt._(JSObject _) implements JSObject {
-  external Psbt();
+  // chat there is somthing wrong with this binding. o
+  // the js equivalent suold be  new Psbt({ network: networkValue })
+
+  external factory Psbt(PsbtOptions options);
 
   external static Psbt fromHex(String hex);
   external String toHex();
@@ -98,7 +105,7 @@ extension type Psbt._(JSObject _) implements JSObject {
   external PsbtData get data;
 
   external int getFee();
-  
+
   external int get inputCount;
 
   @JS("__CACHE")

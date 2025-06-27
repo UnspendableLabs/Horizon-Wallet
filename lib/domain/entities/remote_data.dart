@@ -6,8 +6,6 @@ sealed class RemoteData<T> extends Equatable {
 
   @override
   List<Object?> get props => [];
-
-  // CHAT: implement useful methos like map and or flat map
 }
 
 final class Initial<T> extends RemoteData<T> {

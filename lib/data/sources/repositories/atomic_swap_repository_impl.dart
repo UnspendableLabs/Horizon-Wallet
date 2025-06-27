@@ -4,6 +4,7 @@ import 'package:horizon/domain/entities/atomic_swap/on_chain_payment.dart';
 import 'package:horizon/domain/entities/atomic_swap/atomic_swap.dart';
 import 'package:horizon/data/sources/network/horizon_explorer_client_factory.dart';
 import 'package:horizon/domain/entities/http_config.dart';
+import 'package:horizon/domain/entities/atomic_swap/atomic_swap_buy.dart';
 
 class AtomicSwapRepositoryImpl implements AtomicSwapRepository {
   final HorizonExplorerClientFactory _horizonExplorerClientFactory;
@@ -28,6 +29,7 @@ class AtomicSwapRepositoryImpl implements AtomicSwapRepository {
     return res.data.toEntity();
   }
 
+  @override
   Future<List<AtomicSwap>> getSwapsByAsset({
     required HttpConfig httpConfig,
     required String asset,
@@ -41,6 +43,31 @@ class AtomicSwapRepositoryImpl implements AtomicSwapRepository {
     final res = await client.getAtomicSwaps(
         assetName: asset, orderBy: orderBy, order: order);
 
-    return res.data.atomicSwaps.map((swap) => swap.toEntity()).toList();
+    return res.data.atomicSwaps
+        .map((swap) => swap.toEntity())
+        .where((swap) => !swap.pendingSales)
+        .toList();
+  }
+
+  @override
+  Future<AtomicSwapBuy> atomicSwapBuy({
+    required HttpConfig httpConfig,
+    required String id,
+    required String psbtHex,
+    required String buyerAddress,
+  }) async {
+    final client = _horizonExplorerClientFactory.getClient(httpConfig);
+
+    final res = await client.atomicSwapBuy(
+      id: id,
+      psbtHex: psbtHex,
+      buyerAddress: buyerAddress,
+    );
+
+    return AtomicSwapBuy(
+      atomicSwapId: res.data.atomicSwap.id,
+      buyerAddress: res.data.buyerAddress,
+      txId: res.data.txId,
+    );
   }
 }
