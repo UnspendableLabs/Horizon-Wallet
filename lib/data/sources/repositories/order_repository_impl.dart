@@ -1,6 +1,6 @@
-import "package:fpdart/fpdart.dart";
+import "package:fpdart/fpdart.dart" hide Order;
 import 'package:get_it/get_it.dart';
-import "package:horizon/domain/entities/order.dart" as e;
+import "package:horizon/domain/entities/order.dart";
 import 'package:horizon/core/logging/logger.dart';
 import 'package:horizon/domain/repositories/order_repository.dart';
 
@@ -17,27 +17,43 @@ class OrderRepositoryImpl implements OrderRepository {
             counterpartyClientFactory ?? GetIt.I<CounterpartyClientFactory>();
 
   @override
-  TaskEither<String, List<e.Order>> getByAddress(
+  Future<List<Order>> getByAddress(
       {required String address,
       String? status,
-      required HttpConfig httpConfig}) {
-    return TaskEither.tryCatch(() => _getByAddress(address, status, httpConfig),
-        (error, stacktrace) {
-      logger?.error("OrderRepository.getByAdress", null, stacktrace);
-      return "GetOrdersByAddress failure";
-    });
-  }
-
-  Future<List<e.Order>> _getByAddress(
-      String address, String? status, HttpConfig httpConfig) async {
+      required HttpConfig httpConfig}) async {
     int limit = 50;
     cursor_model.CursorModel? cursor;
-    final List<e.Order> orders = [];
+    final List<Order> orders = [];
 
     while (true) {
       final response = await _counterpartyClientFactory
           .getClient(httpConfig)
           .getOrdersByAddressVerbose(address, status, cursor, limit);
+      final result = response.result ?? [];
+
+      orders.addAll(result.map((order) => order.toDomain()));
+
+      cursor = response.nextCursor;
+      if (cursor == null) break;
+    }
+    return orders;
+  }
+
+  @override
+  Future<List<Order>> getByPair(
+      {
+      required String giveAsset,
+      required String receiveAsset,
+      String? status,
+      required HttpConfig httpConfig}) async {
+    int limit = 50;
+    cursor_model.CursorModel? cursor;
+    final List<Order> orders = [];
+
+    while (true) {
+      final response = await _counterpartyClientFactory
+          .getClient(httpConfig)
+          .getOrders(status, receiveAsset, giveAsset, cursor, limit);
       final result = response.result ?? [];
 
       orders.addAll(result.map((order) => order.toDomain()));

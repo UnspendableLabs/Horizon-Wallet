@@ -232,7 +232,12 @@ class AssetPairFormModel with FormzMixin {
             giveAssetInput.value!.balance, () => "Insufficient balance").map(
           (balance) => AtomicSwapSell(giveBalance: balance),
         ),
-      (_, _) => Either.of(CounterpartyOrder()),
+      (_, _) => Either.of(CounterpartyOrder(
+          giveBalance: giveAssetInput.value!.balance.getOrElse(
+            () => throw Exception("Give asset balance is not available"),
+          ),
+          receiveAsset: receiveAssetInput.value!,
+        )),
     };
   }
 

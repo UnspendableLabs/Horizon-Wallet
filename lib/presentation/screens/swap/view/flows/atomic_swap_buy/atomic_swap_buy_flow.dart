@@ -21,6 +21,48 @@ import 'package:horizon/presentation/forms/swap_buy_sign_form/bloc/swap_buy_sign
 import 'package:horizon/presentation/forms/swap_buy_sign_form/swap_buy_sign_form_view.dart';
 // CHAT this compnent is oveflowing.
 
+
+import 'package:horizon/presentation/common/transactions/success_animation.dart';
+import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
+
+class SwapSuccessStep extends StatefulWidget {
+  const SwapSuccessStep({super.key});
+
+  @override
+  State<SwapSuccessStep> createState() => _SwapSuccessStepState();
+}
+
+class _SwapSuccessStepState extends State<SwapSuccessStep> {
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return SingleChildScrollView(
+        child: Column(
+          children: [
+            const SizedBox(
+              height: 218,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  TxnSuccessAnimation(),
+                ],
+              ),
+            ),
+            Text(
+              "Swap Successful",
+              style: theme.textTheme.titleMedium,
+            ),
+            commonHeightSizedBox,
+            Text(
+              "2 listings successfully fulfilled",
+              style: theme.inputDecorationTheme.hintStyle,
+            ),
+          ],
+      ),
+    );
+  }
+}
 class AtomicSwapsToSign {
   final List<AtomicSwap> atomicSwaps;
   final String assetName;
@@ -209,44 +251,54 @@ class _AtomicSwapBuyFlowViewState extends State<AtomicSwapBuyFlowView> {
                   httpConfig: session.httpConfig,
                   atomicSwaps: atomciSwapsToSign.atomicSwaps,
                   assetName: atomciSwapsToSign.assetName,
-                  child: (actions, state) => FlowStep(
-                      leading: IconButton(
-                        onPressed: () {
-                          if (state.current.signatureStatus
-                                  .isInProgressOrSuccess ||
-                              state.current.broadcastStatus
-                                  .isInProgressOrSuccess) {
-                            return;
-                          }
-
-                          widget.onExitFlow();
-                        },
-                        icon: AppIcons.closeIcon(
-                          context: context,
-                          width: 24,
-                          height: 24,
-                          fit: BoxFit.fitHeight,
-                        ),
-                      ),
+                  child: (actions, state) => 
+                  FlowStep(
                       title:
                           "Sign Transaction ( ${state.swapIndex + 1} / ${state.atomicSwaps.length} )",
                       widthFactor: .9,
-                      body: Column(
-                        children: [
-                          CreateBuyPsbtSignHandler(
-                              onSuccess: actions.onSignatureCompleted,
-                              onClose: () {
-                                actions.onCloseSignPsbtModalClicked();
-                              },
-                              address: state.current.address.address),
-                          SwapBuySignForm(
-                            key: Key(
-                                "swap_buy_sign_form_${state.current.atomicSwap.id}"),
-                            state: state,
-                            actions: actions,
-                          ),
-                        ],
-                      )))))
+                      body: SwapSuccessStep()
+
+                  )
+
+                  // FlowStep(
+                  //     leading: IconButton(
+                  //       onPressed: () {
+                  //         if (state.current.signatureStatus
+                  //                 .isInProgressOrSuccess ||
+                  //             state.current.broadcastStatus
+                  //                 .isInProgressOrSuccess) {
+                  //           return;
+                  //         }
+                  //
+                  //         widget.onExitFlow();
+                  //       },
+                  //       icon: AppIcons.closeIcon(
+                  //         context: context,
+                  //         width: 24,
+                  //         height: 24,
+                  //         fit: BoxFit.fitHeight,
+                  //       ),
+                  //     ),
+                  //     title:
+                  //         "Sign Transaction ( ${state.swapIndex + 1} / ${state.atomicSwaps.length} )",
+                  //     widthFactor: .9,
+                  //     body: Column(
+                  //       children: [
+                  //         CreateBuyPsbtSignHandler(
+                  //             onSuccess: actions.onSignatureCompleted,
+                  //             onClose: () {
+                  //               actions.onCloseSignPsbtModalClicked();
+                  //             },
+                  //             address: state.current.address.address),
+                  //         SwapBuySignForm(
+                  //           key: Key(
+                  //               "swap_buy_sign_form_${state.current.atomicSwap.id}"),
+                  //           state: state,
+                  //           actions: actions,
+                  //         ),
+                  //       ],
+                  //     ))
+                  )))
         ]
             .filter((page) => page.isSome())
             .map((page) => page.getOrThrow())

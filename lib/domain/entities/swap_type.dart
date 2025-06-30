@@ -14,4 +14,9 @@ class AtomicSwapBuy extends SwapType {
   AtomicSwapBuy({required this.btcBalance, required this.receiveAsset});
 }
 
-class CounterpartyOrder extends SwapType {}
+class CounterpartyOrder extends SwapType {
+  final MultiAddressBalance giveBalance;
+  final AssetPairFormOption receiveAsset;
+
+  CounterpartyOrder({required this.giveBalance, required this.receiveAsset});
+}

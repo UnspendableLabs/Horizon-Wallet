@@ -68,3 +68,12 @@ class TenToTheEigth {
   static const String stringValue = "100000000";
   static BigInt bigIntValue = BigInt.from(100000000);
 }
+
+class TenToTheSeventh {
+
+  static const int value = 10000000;
+  static const double doubleValue = 10000000.0;
+  static const String stringValue = "10000000";
+  static BigInt bigIntValue = BigInt.from(10000000);
+
+}

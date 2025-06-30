@@ -5257,6 +5257,16 @@ abstract class V2Api {
     @Query("disable_utxo_locks") bool? disableUtxoLocks,
   ]);
 
+  @GET("/orders?verbose=true")
+  Future<Response<List<OrderVerbose>>> getOrders([
+    @Query("status") String? status,
+    @Query("get_asset") String? getAsset,
+    @Query("give_asset") String? giveAsset,
+    @Query("cursor") CursorModel? cursor,
+    @Query("limit") int? limit,
+    @Query("offset") int? offset,
+  ]);
+
   @GET("/addresses/{address}/orders?verbose=true")
   Future<Response<List<OrderVerbose>>> getOrdersByAddressVerbose(
     @Path("address") String address, [

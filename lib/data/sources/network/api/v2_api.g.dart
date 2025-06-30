@@ -5893,6 +5893,62 @@ class _V2Api implements V2Api {
   }
 
   @override
+  Future<Response<List<OrderVerbose>>> getOrders([
+    String? status,
+    String? getAsset,
+    String? giveAsset,
+    CursorModel? cursor,
+    int? limit,
+    int? offset,
+  ]) async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{
+      r'status': status,
+      r'get_asset': getAsset,
+      r'give_asset': giveAsset,
+      r'cursor': cursor?.toJson(),
+      r'limit': limit,
+      r'offset': offset,
+    };
+    queryParameters.removeWhere((k, v) => v == null);
+    final _headers = <String, dynamic>{};
+    const Map<String, dynamic>? _data = null;
+    final _options = _setStreamType<Response<List<OrderVerbose>>>(Options(
+      method: 'GET',
+      headers: _headers,
+      extra: _extra,
+    )
+        .compose(
+          _dio.options,
+          '/orders?verbose=true',
+          queryParameters: queryParameters,
+          data: _data,
+        )
+        .copyWith(
+            baseUrl: _combineBaseUrls(
+          _dio.options.baseUrl,
+          baseUrl,
+        )));
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late Response<List<OrderVerbose>> _value;
+    try {
+      _value = Response<List<OrderVerbose>>.fromJson(
+        _result.data!,
+        (json) => json is List<dynamic>
+            ? json
+                .map<OrderVerbose>(
+                    (i) => OrderVerbose.fromJson(i as Map<String, dynamic>))
+                .toList()
+            : List.empty(),
+      );
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options);
+      rethrow;
+    }
+    return _value;
+  }
+
+  @override
   Future<Response<List<OrderVerbose>>> getOrdersByAddressVerbose(
     String address, [
     String? status,
