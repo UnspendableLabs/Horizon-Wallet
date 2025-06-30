@@ -92,56 +92,6 @@ class SignPsbtModal extends StatelessWidget {
   }
 }
 
-class GetAddressesModal extends StatelessWidget {
-  final int tabId;
-  final String requestId;
-  final ImportedAddressRepository importedAddressRepository;
-  final RPCGetAddressesSuccessCallback onSuccess;
-  final AddressService addressService;
-  final ImportedAddressService importedAddressService;
-  final EncryptionService encryptionService;
-  final HttpConfig httpConfig;
-
-  const GetAddressesModal(
-      {super.key,
-      required this.httpConfig,
-      required this.encryptionService,
-      required this.addressService,
-      required this.importedAddressService,
-      required this.tabId,
-      required this.requestId,
-      required this.importedAddressRepository,
-      required this.onSuccess});
-
-  @override
-  Widget build(BuildContext context) {
-    final session = context.select<SessionStateCubit, SessionStateSuccess>(
-      (cubit) => cubit.state.successOrThrow(),
-    );
-    return BlocProvider(
-      create: (_) => GetAddressesBloc(
-        httpConfig: httpConfig,
-        passwordRequired:
-            GetIt.I<SettingsRepository>().requirePasswordForCryptoOperations,
-        inMemoryKeyRepository: GetIt.I<InMemoryKeyRepository>(),
-        encryptionService: encryptionService,
-        importedAddressService: importedAddressService,
-        addressService: addressService,
-        accounts: session.accounts,
-      ),
-      child: GetAddressesForm(
-        passwordRequired:
-            GetIt.I<SettingsRepository>().requirePasswordForCryptoOperations,
-        accounts: session.accounts,
-        onSuccess: (addresses) {
-          onSuccess(RPCGetAddressesSuccessCallbackArgs(
-              tabId: tabId, requestId: requestId, addresses: addresses));
-        },
-      ),
-    );
-  }
-}
-
 class BottomTabNavigation extends StatelessWidget {
   final TabController controller;
   const BottomTabNavigation({super.key, required this.controller});

@@ -53,6 +53,9 @@ import 'package:horizon/presentation/version_cubit.dart';
 import 'package:horizon/setup.dart';
 import 'package:horizon/utils/app_icons.dart';
 import 'package:pub_semver/pub_semver.dart';
+import 'package:web/web.dart' as web;
+import 'package:horizon/presentation/common/themes.dart';
+import 'package:horizon/presentation/screens/action_handler/action_handler_view.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 
@@ -651,6 +654,22 @@ class ErrorScreen extends StatelessWidget {
 }
 
 void main() {
+  final href = web.window.location.href;
+
+  final actionPattern = RegExp(r'[?&]action=');
+
+  if (actionPattern.hasMatch(href)) {
+    setup();
+    runZonedGuarded(() async {
+      WidgetsFlutterBinding.ensureInitialized();
+      await initSettings();
+      runApp(ActionHandlerApp());
+    }, (error, stackTrace) {
+      print(error);
+    });
+    return;
+  }
+
   setup();
   DialogHelper.init(_rootNavigatorKey);
 
@@ -1132,8 +1151,8 @@ class MyApp extends StatelessWidget {
         child: BlocBuilder<ThemeBloc, ThemeMode>(
           builder: (context, themeMode) {
             final app = MaterialApp.router(
-              theme: _buildLightTheme(),
-              darkTheme: _buildDarkTheme(),
+              theme: buildLightTheme(),
+              darkTheme: buildDarkTheme(),
               themeMode: themeMode,
               routeInformationParser: AppRouter.router.routeInformationParser,
               routerDelegate: AppRouter.router.routerDelegate,
