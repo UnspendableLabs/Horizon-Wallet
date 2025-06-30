@@ -15,6 +15,7 @@ import 'package:horizon/extensions.dart';
 
 import "./flows/atomic_swap_sell/atomic_swap_sell_flow.dart";
 import "./flows/atomic_swap_buy/atomic_swap_buy_flow.dart";
+import "./flows/order/order_flow.dart";
 
 class SwapFlowModel extends Equatable {
   final Option<SwapType> swapType;
@@ -123,6 +124,16 @@ class _SwapFlowViewState extends State<SwapFlowView> {
                           Navigator.of(context).pop();
                         }),
                   ),
+                CounterpartyOrder(
+                  giveBalance: var giveBalance,
+                  receiveAsset: var receiveAsset,
+                ) =>
+                  MaterialPage(
+                      child: OrderFlowView(
+                    addresses: session.addresses,
+                    receiveAsset: receiveAsset,
+                    giveBalance: giveBalance,
+                  )),
 
                 // AtomicSwapSell(giveBalance: var balance) => MaterialPage(
                 //       child: FlowStep(
