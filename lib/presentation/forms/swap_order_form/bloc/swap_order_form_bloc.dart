@@ -53,11 +53,17 @@ class SwapOrderFormModel with FormzMixin {
   final RemoteData<List<Order>> buyOrders;
   final RemoteData<List<Order>> sellOrders;
 
-  const SwapOrderFormModel(
-      {required this.giveAsset,
-      required this.receiveAsset,
-      required this.buyOrders,
-      required this.sellOrders});
+  final AmountType amountType;
+  final PriceType priceType;
+
+  const SwapOrderFormModel({
+    required this.amountType,
+    required this.giveAsset,
+    required this.receiveAsset,
+    required this.buyOrders,
+    required this.sellOrders,
+    required this.priceType,
+  });
 
   @override
   List<FormzInput> get inputs => [];
@@ -67,8 +73,12 @@ class SwapOrderFormModel with FormzMixin {
     String? receiveAsset,
     RemoteData<List<Order>>? buyOrders,
     RemoteData<List<Order>>? sellOrders,
+    AmountType? amountType,
+    PriceType? priceType,
   }) {
     return SwapOrderFormModel(
+      priceType: priceType ?? this.priceType,
+      amountType: amountType ?? this.amountType,
       giveAsset: giveAsset ?? this.giveAsset,
       receiveAsset: receiveAsset ?? this.receiveAsset,
       buyOrders: buyOrders ?? this.buyOrders,
@@ -80,6 +90,10 @@ class SwapOrderFormModel with FormzMixin {
     return buyOrders.combine(
         sellOrders,
         (buy, sell) => ViewModel(
+              priceAsset:
+                  priceType == PriceType.give ? giveAsset : receiveAsset,
+              amountAsset:
+                  amountType == AmountType.give ? giveAsset : receiveAsset,
               sellOrders: sell
                   .map((el) => el.toViewModel(side: OrderViewModelSide.sell))
                   .toList()
@@ -95,10 +109,23 @@ class SwapOrderFormModel with FormzMixin {
   }
 }
 
+enum AmountType {
+  give,
+  get,
+}
+
+enum PriceType { give, get }
+
 class ViewModel {
+  final String amountAsset;
+  final String priceAsset;
+
   final List<OrderViewModel> sellOrders;
   final List<OrderViewModel> buyOrders;
+
   ViewModel({
+    required this.priceAsset,
+    required this.amountAsset,
     required this.sellOrders,
     required this.buyOrders,
   });
@@ -122,6 +149,10 @@ sealed class SwapOrderFormEvent extends Equatable {
 
 class SwapOrderFormInitialized extends SwapOrderFormEvent {}
 
+class AmountTypeClicked extends SwapOrderFormEvent {}
+
+class PriceTypeClicked extends SwapOrderFormEvent {}
+
 class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
   final HttpConfig httpConfig;
   final OrderRepository _orderRepository;
@@ -138,13 +169,42 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
     OrderRepository? orderRepository,
   })  : _orderRepository = orderRepository ?? GetIt.I<OrderRepository>(),
         super(SwapOrderFormModel(
+          amountType: AmountType.get,
+          priceType: PriceType.give,
           giveAsset: giveAsset,
           receiveAsset: receiveAsset,
           buyOrders: const Initial(),
           sellOrders: const Initial(),
         )) {
     on<SwapOrderFormInitialized>(_handleSwapSliderFormInitialized);
+    on<AmountTypeClicked>(_handleAmountTypeClicked);
+    on<PriceTypeClicked>(_handlePriceTypeClicked);
     add(SwapOrderFormInitialized());
+  }
+
+  _handleAmountTypeClicked(
+    AmountTypeClicked event,
+    Emitter<SwapOrderFormModel> emit,
+  ) {
+    emit(
+      state.copyWith(
+        amountType: state.amountType == AmountType.give
+            ? AmountType.get
+            : AmountType.give,
+      ),
+    );
+  }
+  _handlePriceTypeClicked(
+    PriceTypeClicked event,
+    Emitter<SwapOrderFormModel> emit,
+  ) {
+    emit(
+      state.copyWith(
+        priceType: state.priceType == PriceType.give
+            ? PriceType.get
+            : PriceType.give,
+      ),
+    );
   }
 
   _handleSwapSliderFormInitialized(
