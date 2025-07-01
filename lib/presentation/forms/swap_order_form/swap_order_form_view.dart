@@ -121,11 +121,13 @@ class SwapOrderFormActions {
   final VoidCallback onClickAmountAsset;
   final VoidCallback onClickPriceAsset;
   final VoidCallback onSubmitClicked;
+  final Function(String value) onAmountChanged;
 
   SwapOrderFormActions(
       {required this.onSubmitClicked,
       required this.onClickAmountAsset,
-      required this.onClickPriceAsset});
+      required this.onClickPriceAsset,
+      required this.onAmountChanged});
 }
 
 class SwapOrderFormProvider extends StatefulWidget {
@@ -167,6 +169,11 @@ class _SwapOrderFormProviderState extends State<SwapOrderFormProvider> {
           return widget.child(
             SwapOrderFormActions(
                 onSubmitClicked: () => print("submit clicked"),
+                onAmountChanged: (value) {
+                  context
+                      .read<SwapOrderFormBloc>()
+                      .add(AmountInputChanged(value: value));
+                },
                 onClickPriceAsset: () {
                   context.read<SwapOrderFormBloc>().add(PriceTypeClicked());
                 },
@@ -208,6 +215,9 @@ class SwapOrderForm extends StatelessWidget {
           onSuccess: (data) => Column(
             children: [
               OrderInputs(
+                actions: actions,
+                state: state,
+                priceString: data.priceString,
                 onClickAmountAsset: actions.onClickAmountAsset,
                 onClickPriceAsset: actions.onClickPriceAsset,
                 priceAsset: data.priceAsset,
@@ -218,6 +228,8 @@ class SwapOrderForm extends StatelessWidget {
                 sellOrders: data.sellOrders,
               ),
               OrderBookView(
+                priceType: state.priceType,
+                priceString: data.priceString,
                 giveAsset: state.giveAsset,
                 receiveAsset: state.receiveAsset,
                 buyOrders: data.buyOrders,
@@ -229,6 +241,9 @@ class SwapOrderForm extends StatelessWidget {
           onRefreshing: (data) => Column(
             children: [
               OrderInputs(
+                priceString: data.priceString,
+                actions: actions,
+                state: state,
                 onClickAmountAsset: actions.onClickAmountAsset,
                 onClickPriceAsset: actions.onClickPriceAsset,
                 priceAsset: data.priceAsset,
@@ -239,6 +254,8 @@ class SwapOrderForm extends StatelessWidget {
                 sellOrders: data.sellOrders,
               ),
               OrderBookView(
+                priceType: state.priceType,
+                priceString: data.priceString,
                 giveAsset: state.giveAsset,
                 receiveAsset: state.receiveAsset,
                 buyOrders: data.buyOrders,
@@ -262,6 +279,10 @@ class OrderInputs extends StatefulWidget {
   final VoidCallback onClickAmountAsset;
   final VoidCallback onClickPriceAsset;
 
+  final SwapOrderFormActions actions;
+  final SwapOrderFormModel state;
+  final String priceString;
+
   final String amountAsset;
   final String priceAsset;
   final String giveAsset;
@@ -271,6 +292,9 @@ class OrderInputs extends StatefulWidget {
 
   const OrderInputs({
     super.key,
+    required this.priceString,
+    required this.actions,
+    required this.state,
     required this.onClickAmountAsset,
     required this.onClickPriceAsset,
     required this.priceAsset,
@@ -286,7 +310,7 @@ class OrderInputs extends StatefulWidget {
 }
 
 class _OrderInputs extends State<OrderInputs> {
-  late final TextEditingController _amountQuantityController;
+  late final TextEditingController _amountController;
   late final TextEditingController _limitPriceController;
 
   final appIcons = AppIcons();
@@ -294,7 +318,7 @@ class _OrderInputs extends State<OrderInputs> {
   @override
   void initState() {
     super.initState();
-    _amountQuantityController = TextEditingController();
+    _amountController = TextEditingController();
     _limitPriceController = TextEditingController();
   }
 
@@ -302,9 +326,6 @@ class _OrderInputs extends State<OrderInputs> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    // Total rows = header + sell + divider + buy
-    final itemCount =
-        1 + widget.sellOrders.length + 1 + widget.buyOrders.length;
     final session = context.watch<SessionStateCubit>().state.successOrThrow();
 
     return Column(
@@ -313,7 +334,10 @@ class _OrderInputs extends State<OrderInputs> {
           children: [
             Padding(
               padding: const EdgeInsets.fromLTRB(4, 0, 0, 8),
-              child: Text("Amount",
+              child: Text(
+                  widget.state.amountType == AmountType.get
+                      ? "You're buying"
+                      : "You're selling",
                   style: theme.textTheme.titleSmall!.copyWith(
                     color: theme
                         .extension<CustomThemeExtension>()!
@@ -330,11 +354,11 @@ class _OrderInputs extends State<OrderInputs> {
               Expanded(
                   child: QuantityInputV2(
                       style: const TextStyle(fontSize: 16),
-                      divisible: true,
+                      divisible: widget.state.amountInput.value.divisible,
                       controller:
-                          _amountQuantityController, // chat helpo me with a stateful controller hre,
+                          _amountController, // chat helpo me with a stateful controller hre,
                       onChanged: (value) {
-                        print(value);
+                        widget.actions.onAmountChanged(value);
                       })),
               AssetPill(
                   onTap: widget.onClickAmountAsset,
@@ -353,7 +377,8 @@ class _OrderInputs extends State<OrderInputs> {
                 children: [
                   Padding(
                     padding: const EdgeInsets.fromLTRB(4, 0, 0, 8),
-                    child: Text("At price",
+                    child: Text(
+                        "At ${_limitPriceController.text} ${widget.priceString}",
                         style: theme.textTheme.titleSmall!.copyWith(
                           color: theme
                               .extension<CustomThemeExtension>()!
@@ -458,6 +483,10 @@ class AssetPill extends StatelessWidget {
 }
 
 class OrderBookView extends StatelessWidget {
+  final String priceString;
+
+  final PriceType priceType;
+
   final String giveAsset;
   final String receiveAsset;
   final List<OrderViewModel> buyOrders;
@@ -465,6 +494,8 @@ class OrderBookView extends StatelessWidget {
 
   const OrderBookView({
     super.key,
+    required this.priceType,
+    required this.priceString,
     required this.giveAsset,
     required this.receiveAsset,
     required this.buyOrders,
@@ -474,6 +505,7 @@ class OrderBookView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final itemCount = 1 + sellOrders.length + 1 + buyOrders.length;
+    final theme = Theme.of(context);
 
     return Column(
       children: [
@@ -491,15 +523,23 @@ class OrderBookView extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Expanded(
-                          child: Text("Price (${giveAsset.toUpperCase()})",
+                          child: Text("Price (${priceString.toUpperCase()})",
                               textAlign: TextAlign.left,
                               style: TextStyle(
-                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                                color: theme
+                                    .extension<CustomThemeExtension>()!
+                                    .mutedDescriptionTextColor,
                               ))),
                       Expanded(
-                          child: Text("Size (${receiveAsset.toUpperCase()})",
+                          child: Text("Volume",
                               textAlign: TextAlign.right,
-                              style: TextStyle(fontWeight: FontWeight.bold))),
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: theme
+                                    .extension<CustomThemeExtension>()!
+                                    .mutedDescriptionTextColor,
+                              ))),
                     ],
                   );
                 }
@@ -515,7 +555,9 @@ class OrderBookView extends StatelessWidget {
                   final buy = buyOrders[index - 1];
                   return _OrderRow(
                     quantity: buy.quantity.normalized(precision: 8),
-                    price: buy.price.normalized(precision: 8),
+                    price: priceType == PriceType.give
+                        ? buy.price.normalized(precision: 8)
+                        : buy.invertedPrice.normalized(precision: 8),
                     color: Colors.red,
                   );
                 }
@@ -524,7 +566,9 @@ class OrderBookView extends StatelessWidget {
                 final sell = sellOrders[index - sellStartIndex];
                 return _OrderRow(
                   quantity: sell.quantity.normalized(precision: 8),
-                  price: sell.price.normalized(precision: 8),
+                  price: priceType == PriceType.give
+                      ? sell.price.normalized(precision: 8)
+                      : sell.invertedPrice.normalized(precision: 8),
                   color: Colors.green,
                 );
               },

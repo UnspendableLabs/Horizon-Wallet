@@ -11,14 +11,98 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:horizon/domain/repositories/order_repository.dart';
 import 'package:horizon/common/constants.dart';
 
+enum AmountInputError { required }
+
+class AmountInput extends FormzInput<AssetQuantity, AmountInputError> {
+  AmountInput.pure()
+      : super.pure(AssetQuantity(divisible: true, quantity: BigInt.zero));
+  const AmountInput.dirty({
+    required AssetQuantity value,
+  }) : super.dirty(value);
+  @override
+  AmountInputError? validator(AssetQuantity value) {
+    return value.quantity == BigInt.zero ? AmountInputError.required : null;
+  }
+}
+
+enum PriceInputError { required }
+
+class PriceInput extends FormzInput<AssetQuantity, PriceInputError> {
+  final AssetQuantity userBalance;
+  PriceInput.pure({
+    required this.userBalance,
+  }) : super.pure(AssetQuantity(divisible: true, quantity: BigInt.zero));
+  const PriceInput.dirty({
+    required AssetQuantity value,
+    required this.userBalance,
+  }) : super.dirty(value);
+  @override
+  PriceInputError? validator(AssetQuantity value) {
+    return value.quantity == BigInt.zero ? PriceInputError.required : null;
+  }
+}
+
+enum GiveQuantityInputError { required, insufficientBalance }
+
+class GiveQuantityInput
+    extends FormzInput<AssetQuantity, GiveQuantityInputError> {
+  final AssetQuantity userBalance;
+
+  GiveQuantityInput.pure({
+    required this.userBalance,
+  }) : super.pure(AssetQuantity(divisible: true, quantity: BigInt.zero));
+
+  const GiveQuantityInput.dirty({
+    required AssetQuantity value,
+    required this.userBalance,
+  }) : super.dirty(value);
+
+  @override
+  GiveQuantityInputError? validator(AssetQuantity value) {
+    return value.quantity > userBalance.quantity
+        ? GiveQuantityInputError.insufficientBalance
+        : value.quantity == BigInt.zero
+            ? GiveQuantityInputError.required
+            : null;
+  }
+}
+
+enum ReceiveQuantityInputError { required }
+
+class ReceiveQuantityInput
+    extends FormzInput<AssetQuantity, ReceiveQuantityInputError> {
+  final AssetQuantity userBalance;
+
+  ReceiveQuantityInput.pure({
+    required this.userBalance,
+  }) : super.pure(AssetQuantity(divisible: true, quantity: BigInt.zero));
+
+  const ReceiveQuantityInput.dirty({
+    required AssetQuantity value,
+    required this.userBalance,
+  }) : super.dirty(value);
+
+  @override
+  ReceiveQuantityInputError? validator(AssetQuantity value) {
+    if (value.quantity == BigInt.zero) {
+      return ReceiveQuantityInputError.required;
+    }
+    return null;
+  }
+}
+
 enum OrderViewModelSide { buy, sell }
 
 class OrderViewModel {
   final OrderViewModelSide side;
   final AssetQuantity quantity;
   final AssetQuantity price;
+  final AssetQuantity invertedPrice;
   OrderViewModel(
-      {required this.side, required this.quantity, required this.price});
+      {required this.invertedPrice,
+      required this.side,
+      required this.quantity,
+      required this.price});
 }
 
 extension OrderViewModelExtension on Order {
@@ -37,11 +121,28 @@ extension OrderViewModelExtension on Order {
                 TenToTheEigth.doubleValue)
             .round();
 
+    int invertedPrice = side == OrderViewModelSide.buy
+        ? (double.parse(giveQuantityNormalized) /
+                double.parse(getQuantityNormalized) *
+                TenToTheEigth.doubleValue)
+            .round()
+        : (double.parse(getQuantityNormalized) /
+                double.parse(giveQuantityNormalized) *
+                TenToTheEigth.doubleValue)
+            .round();
+
     return OrderViewModel(
       side: side,
       quantity: AssetQuantity(
           divisible: divisible, quantity: BigInt.from(giveRemaining)),
-      price: AssetQuantity(divisible: true, quantity: BigInt.from(price)),
+      invertedPrice: AssetQuantity(
+        divisible: divisible,
+        quantity: BigInt.from(invertedPrice),
+      ),
+      price: AssetQuantity(
+        divisible: true,
+        quantity: BigInt.from(price),
+      ),
     );
   }
 }
@@ -56,7 +157,10 @@ class SwapOrderFormModel with FormzMixin {
   final AmountType amountType;
   final PriceType priceType;
 
+  final AmountInput amountInput;
+
   const SwapOrderFormModel({
+    required this.amountInput,
     required this.amountType,
     required this.giveAsset,
     required this.receiveAsset,
@@ -66,9 +170,10 @@ class SwapOrderFormModel with FormzMixin {
   });
 
   @override
-  List<FormzInput> get inputs => [];
+  List<FormzInput> get inputs => [amountInput];
 
   SwapOrderFormModel copyWith({
+    AmountInput? amountInput,
     String? giveAsset,
     String? receiveAsset,
     RemoteData<List<Order>>? buyOrders,
@@ -77,6 +182,7 @@ class SwapOrderFormModel with FormzMixin {
     PriceType? priceType,
   }) {
     return SwapOrderFormModel(
+      amountInput: amountInput ?? this.amountInput,
       priceType: priceType ?? this.priceType,
       amountType: amountType ?? this.amountType,
       giveAsset: giveAsset ?? this.giveAsset,
@@ -90,6 +196,9 @@ class SwapOrderFormModel with FormzMixin {
     return buyOrders.combine(
         sellOrders,
         (buy, sell) => ViewModel(
+              priceString: priceType == PriceType.give
+                  ? "${giveAsset} / ${receiveAsset}"
+                  : "${receiveAsset} / ${giveAsset}",
               priceAsset:
                   priceType == PriceType.give ? giveAsset : receiveAsset,
               amountAsset:
@@ -123,11 +232,14 @@ class ViewModel {
   final List<OrderViewModel> sellOrders;
   final List<OrderViewModel> buyOrders;
 
+  final String priceString;
+
   ViewModel({
     required this.priceAsset,
     required this.amountAsset,
     required this.sellOrders,
     required this.buyOrders,
+    required this.priceString,
   });
 }
 
@@ -153,6 +265,11 @@ class AmountTypeClicked extends SwapOrderFormEvent {}
 
 class PriceTypeClicked extends SwapOrderFormEvent {}
 
+class AmountInputChanged extends SwapOrderFormEvent {
+  final String value;
+  const AmountInputChanged({required this.value});
+}
+
 class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
   final HttpConfig httpConfig;
   final OrderRepository _orderRepository;
@@ -169,6 +286,7 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
     OrderRepository? orderRepository,
   })  : _orderRepository = orderRepository ?? GetIt.I<OrderRepository>(),
         super(SwapOrderFormModel(
+          amountInput: AmountInput.pure(),
           amountType: AmountType.get,
           priceType: PriceType.give,
           giveAsset: giveAsset,
@@ -179,7 +297,26 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
     on<SwapOrderFormInitialized>(_handleSwapSliderFormInitialized);
     on<AmountTypeClicked>(_handleAmountTypeClicked);
     on<PriceTypeClicked>(_handlePriceTypeClicked);
+    on<AmountInputChanged>(_handleAmountInputChanged);
     add(SwapOrderFormInitialized());
+  }
+
+  _handleAmountInputChanged(
+    AmountInputChanged event,
+    Emitter<SwapOrderFormModel> emit,
+  ) {
+
+    final amountInput = AmountInput.dirty(
+      value: AssetQuantity.fromNormalizedString(
+          divisible: true, input: event.value),
+    );
+
+
+    print(amountInput.value.quantity);
+
+    emit(state.copyWith(
+      amountInput: amountInput,
+    ));
   }
 
   _handleAmountTypeClicked(
@@ -194,15 +331,15 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
       ),
     );
   }
+
   _handlePriceTypeClicked(
     PriceTypeClicked event,
     Emitter<SwapOrderFormModel> emit,
   ) {
     emit(
       state.copyWith(
-        priceType: state.priceType == PriceType.give
-            ? PriceType.get
-            : PriceType.give,
+        priceType:
+            state.priceType == PriceType.give ? PriceType.get : PriceType.give,
       ),
     );
   }
