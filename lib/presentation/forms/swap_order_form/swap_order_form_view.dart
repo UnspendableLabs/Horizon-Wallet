@@ -1,9 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:horizon/domain/entities/remote_data.dart';
 import 'package:horizon/utils/app_icons.dart';
+import 'package:get_it/get_it.dart';
+import 'package:fpdart/fpdart.dart' hide Order, State;
+import 'package:horizon/domain/repositories/order_repository.dart';
+import 'package:horizon/domain/repositories/asset_repository.dart';
 import 'package:horizon/presentation/common/theme_extension.dart';
 import 'package:horizon/domain/entities/http_config.dart';
+import 'package:horizon/domain/entities/order.dart';
+import 'package:horizon/presentation/common/remote_data_builder.dart';
 import 'package:horizon/domain/entities/address_v2.dart';
+import 'package:horizon/domain/entities/asset.dart';
 import 'package:horizon/extensions.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:meilisearch/meilisearch.dart';
@@ -131,6 +138,9 @@ class SwapOrderFormActions {
 }
 
 class SwapOrderFormProvider extends StatefulWidget {
+  final OrderRepository _orderRepository;
+  final AssetRepository _assetRepository;
+
   final String giveAsset;
 
   final String receiveAsset;
@@ -142,13 +152,17 @@ class SwapOrderFormProvider extends StatefulWidget {
     SwapOrderFormModel state,
   ) child;
 
-  const SwapOrderFormProvider(
+  SwapOrderFormProvider(
       {super.key,
+      AssetRepository? assetRepository,
+      OrderRepository? orderRepository,
       required this.child,
       required this.httpConfig,
       required this.address,
       required this.giveAsset,
-      required this.receiveAsset});
+      required this.receiveAsset})
+      : _orderRepository = orderRepository ?? GetIt.I<OrderRepository>(),
+        _assetRepository = assetRepository ?? GetIt.I<AssetRepository>();
 
   @override
   State<SwapOrderFormProvider> createState() => _SwapOrderFormProviderState();
@@ -157,34 +171,71 @@ class SwapOrderFormProvider extends StatefulWidget {
 class _SwapOrderFormProviderState extends State<SwapOrderFormProvider> {
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => SwapOrderFormBloc(
-        address: widget.address,
+    final task = TaskEither.sequenceList([
+      widget._assetRepository.getAssetVerboseT(
+        assetName: widget.giveAsset,
         httpConfig: widget.httpConfig,
-        receiveAsset: widget.receiveAsset,
+      ),
+      widget._assetRepository.getAssetVerboseT(
+        assetName: widget.receiveAsset,
+        httpConfig: widget.httpConfig,
+      ),
+      widget._orderRepository.getByPairTE(
+        status: "open",
+        address: widget.address.address,
+        giveAsset: widget.receiveAsset,
+        getAsset: widget.giveAsset,
+        httpConfig: widget.httpConfig,
+      ),
+      widget._orderRepository.getByPairTE(
+        address: widget.address.address,
         giveAsset: widget.giveAsset,
+        getAsset: widget.receiveAsset,
+        status: "open",
+        httpConfig: widget.httpConfig,
       ),
-      child: BlocBuilder<SwapOrderFormBloc, SwapOrderFormModel>(
-        builder: (context, state) {
-          return widget.child(
-            SwapOrderFormActions(
-                onSubmitClicked: () => print("submit clicked"),
-                onAmountChanged: (value) {
-                  context
-                      .read<SwapOrderFormBloc>()
-                      .add(AmountInputChanged(value: value));
-                },
-                onClickPriceAsset: () {
-                  context.read<SwapOrderFormBloc>().add(PriceTypeClicked());
-                },
-                onClickAmountAsset: () {
-                  context.read<SwapOrderFormBloc>().add(AmountTypeClicked());
-                }),
-            state,
-          );
-        },
-      ),
-    );
+    ]);
+
+    return RemoteDataTaskEitherBuilder(
+        task: task,
+        builder: (context, state, refresh) => state.fold3(
+            onNone: () => const Center(child: CircularProgressIndicator()),
+            onFailure: (error) =>
+                Center(child: Text("unspecified error: $error")),
+            onReplete: (data) => BlocProvider(
+                  create: (_) => SwapOrderFormBloc(
+                    address: widget.address,
+                    httpConfig: widget.httpConfig,
+                    giveAsset: data[0] as Asset,
+                    receiveAsset: data[1] as Asset,
+                    buyOrders: data[2] as List<Order>,
+                    sellOrders: data[3] as List<Order>,
+                  ),
+                  child: BlocBuilder<SwapOrderFormBloc, SwapOrderFormModel>(
+                    builder: (context, state) {
+                      return widget.child(
+                        SwapOrderFormActions(
+                            onSubmitClicked: () => print("submit clicked"),
+                            onAmountChanged: (value) {
+                              context
+                                  .read<SwapOrderFormBloc>()
+                                  .add(AmountInputChanged(value: value));
+                            },
+                            onClickPriceAsset: () {
+                              context
+                                  .read<SwapOrderFormBloc>()
+                                  .add(PriceTypeClicked());
+                            },
+                            onClickAmountAsset: () {
+                              context
+                                  .read<SwapOrderFormBloc>()
+                                  .add(AmountTypeClicked());
+                            }),
+                        state,
+                      );
+                    },
+                  ),
+                )));
   }
 }
 
@@ -205,65 +256,31 @@ class SwapOrderForm extends StatelessWidget {
     return Column(
       children: [
         // Replace with actual form layout
-        state.viewModel.fold(
-          onInitial: () => const Center(child: CircularProgressIndicator()),
-          onLoading: () => const Center(child: CircularProgressIndicator()),
-          onFailure: (error) => Text(
-            "Error: $error",
-            style: theme.textTheme.bodyMedium!.copyWith(color: Colors.red),
-          ),
-          onSuccess: (data) => Column(
-            children: [
-              OrderInputs(
-                actions: actions,
-                state: state,
-                priceString: data.priceString,
-                onClickAmountAsset: actions.onClickAmountAsset,
-                onClickPriceAsset: actions.onClickPriceAsset,
-                priceAsset: data.priceAsset,
-                amountAsset: data.amountAsset,
-                giveAsset: state.giveAsset,
-                receiveAsset: state.receiveAsset,
-                buyOrders: data.buyOrders,
-                sellOrders: data.sellOrders,
-              ),
-              OrderBookView(
-                priceType: state.priceType,
-                priceString: data.priceString,
-                giveAsset: state.giveAsset,
-                receiveAsset: state.receiveAsset,
-                buyOrders: data.buyOrders,
-                sellOrders: data.sellOrders,
-              ),
-              // Add more form fields as needed
-            ],
-          ),
-          onRefreshing: (data) => Column(
-            children: [
-              OrderInputs(
-                priceString: data.priceString,
-                actions: actions,
-                state: state,
-                onClickAmountAsset: actions.onClickAmountAsset,
-                onClickPriceAsset: actions.onClickPriceAsset,
-                priceAsset: data.priceAsset,
-                giveAsset: state.giveAsset,
-                amountAsset: data.amountAsset,
-                receiveAsset: state.receiveAsset,
-                buyOrders: data.buyOrders,
-                sellOrders: data.sellOrders,
-              ),
-              OrderBookView(
-                priceType: state.priceType,
-                priceString: data.priceString,
-                giveAsset: state.giveAsset,
-                receiveAsset: state.receiveAsset,
-                buyOrders: data.buyOrders,
-                sellOrders: data.sellOrders,
-              ),
-              // Add more form fields as needed
-            ],
-          ),
+        Column(
+          children: [
+            OrderInputs(
+              actions: actions,
+              state: state,
+              priceString: state.viewModel.priceString,
+              onClickAmountAsset: actions.onClickAmountAsset,
+              onClickPriceAsset: actions.onClickPriceAsset,
+              priceAsset: state.viewModel.priceAsset,
+              amountAsset: state.viewModel.amountAsset,
+              giveAsset: state.giveAsset,
+              receiveAsset: state.receiveAsset,
+              buyOrders: state.viewModel.buyOrders,
+              sellOrders: state.viewModel.sellOrders,
+            ),
+            OrderBookView(
+              priceType: state.priceType,
+              priceString: state.viewModel.priceString,
+              giveAsset: state.giveAsset,
+              receiveAsset: state.receiveAsset,
+              buyOrders: state.viewModel.buyOrders,
+              sellOrders: state.viewModel.sellOrders,
+            ),
+            // Add more form fields as needed
+          ],
         ),
 
         ElevatedButton(
@@ -283,10 +300,10 @@ class OrderInputs extends StatefulWidget {
   final SwapOrderFormModel state;
   final String priceString;
 
-  final String amountAsset;
-  final String priceAsset;
-  final String giveAsset;
-  final String receiveAsset;
+  final Asset amountAsset;
+  final Asset priceAsset;
+  final Asset giveAsset;
+  final Asset receiveAsset;
   final List<OrderViewModel> buyOrders;
   final List<OrderViewModel> sellOrders;
 
@@ -437,7 +454,7 @@ class AssetPill extends StatelessWidget {
   final AppIcons appIcons;
   final SessionStateSuccess session;
   final ThemeData theme;
-  final String asset;
+  final Asset asset;
 
   @override
   Widget build(BuildContext context) {
@@ -459,12 +476,12 @@ class AssetPill extends StatelessWidget {
             children: [
               appIcons.assetIcon(
                   httpConfig: session.httpConfig,
-                  assetName: asset,
+                  assetName: asset.asset,
                   context: context,
                   width: 24,
                   height: 24),
               const SizedBox(width: 8),
-              Text(asset.toUpperCase(),
+              Text(asset.displayName.toUpperCase(),
                   style: theme.textTheme.titleMedium!.copyWith(
                     fontSize: 12,
                   )),
@@ -487,8 +504,8 @@ class OrderBookView extends StatelessWidget {
 
   final PriceType priceType;
 
-  final String giveAsset;
-  final String receiveAsset;
+  final Asset giveAsset;
+  final Asset receiveAsset;
   final List<OrderViewModel> buyOrders;
   final List<OrderViewModel> sellOrders;
 

@@ -5,6 +5,7 @@ import 'package:horizon/domain/entities/remote_data.dart';
 import 'package:horizon/domain/entities/address_v2.dart';
 import 'package:horizon/domain/entities/order.dart';
 import 'package:horizon/domain/entities/asset_quantity.dart';
+import 'package:horizon/domain/entities/asset.dart';
 import 'package:horizon/domain/entities/http_config.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -148,11 +149,11 @@ extension OrderViewModelExtension on Order {
 }
 
 class SwapOrderFormModel with FormzMixin {
-  final String giveAsset;
-  final String receiveAsset;
+  final Asset giveAsset;
+  final Asset receiveAsset;
 
-  final RemoteData<List<Order>> buyOrders;
-  final RemoteData<List<Order>> sellOrders;
+  final List<Order> buyOrders;
+  final List<Order> sellOrders;
 
   final AmountType amountType;
   final PriceType priceType;
@@ -174,10 +175,10 @@ class SwapOrderFormModel with FormzMixin {
 
   SwapOrderFormModel copyWith({
     AmountInput? amountInput,
-    String? giveAsset,
-    String? receiveAsset,
-    RemoteData<List<Order>>? buyOrders,
-    RemoteData<List<Order>>? sellOrders,
+    Asset? giveAsset,
+    Asset? receiveAsset,
+    List<Order>? buyOrders,
+    List<Order>? sellOrders,
     AmountType? amountType,
     PriceType? priceType,
   }) {
@@ -192,29 +193,25 @@ class SwapOrderFormModel with FormzMixin {
     );
   }
 
-  RemoteData<ViewModel> get viewModel {
-    return buyOrders.combine(
-        sellOrders,
-        (buy, sell) => ViewModel(
-              priceString: priceType == PriceType.give
-                  ? "${giveAsset} / ${receiveAsset}"
-                  : "${receiveAsset} / ${giveAsset}",
-              priceAsset:
-                  priceType == PriceType.give ? giveAsset : receiveAsset,
-              amountAsset:
-                  amountType == AmountType.give ? giveAsset : receiveAsset,
-              sellOrders: sell
-                  .map((el) => el.toViewModel(side: OrderViewModelSide.sell))
-                  .toList()
-                ..sort((a, b) =>
-                    a.price.quantity.compareTo(b.price.quantity)), // ascending
+  ViewModel get viewModel {
+    return ViewModel(
+      priceString: priceType == PriceType.give
+          ? "${giveAsset.displayName} / ${receiveAsset.displayName}"
+          : "${receiveAsset.displayName} / ${giveAsset.displayName}",
+      priceAsset: priceType == PriceType.give ? giveAsset : receiveAsset,
+      amountAsset: amountType == AmountType.give ? giveAsset : receiveAsset,
+      sellOrders: sellOrders
+          .map((el) => el.toViewModel(side: OrderViewModelSide.sell))
+          .toList()
+        ..sort((a, b) =>
+            a.price.quantity.compareTo(b.price.quantity)), // ascending
 
-              buyOrders: buy
-                  .map((el) => el.toViewModel(side: OrderViewModelSide.buy))
-                  .toList()
-                ..sort((a, b) =>
-                    b.price.quantity.compareTo(a.price.quantity)), // descending
-            ));
+      buyOrders: buyOrders
+          .map((el) => el.toViewModel(side: OrderViewModelSide.buy))
+          .toList()
+        ..sort((a, b) =>
+            b.price.quantity.compareTo(a.price.quantity)), // descending
+    );
   }
 }
 
@@ -226,8 +223,8 @@ enum AmountType {
 enum PriceType { give, get }
 
 class ViewModel {
-  final String amountAsset;
-  final String priceAsset;
+  final Asset amountAsset;
+  final Asset priceAsset;
 
   final List<OrderViewModel> sellOrders;
   final List<OrderViewModel> buyOrders;
@@ -259,7 +256,6 @@ sealed class SwapOrderFormEvent extends Equatable {
   List<Object?> get props => [];
 }
 
-class SwapOrderFormInitialized extends SwapOrderFormEvent {}
 
 class AmountTypeClicked extends SwapOrderFormEvent {}
 
@@ -275,14 +271,14 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
   final OrderRepository _orderRepository;
 
   final AddressV2 address;
-  final String receiveAsset;
-  final String giveAsset;
 
   SwapOrderFormBloc({
     required this.address,
     required this.httpConfig,
-    required this.receiveAsset,
-    required this.giveAsset,
+    required Asset receiveAsset,
+    required Asset giveAsset,
+    required List<Order> buyOrders,
+    required List<Order> sellOrders,
     OrderRepository? orderRepository,
   })  : _orderRepository = orderRepository ?? GetIt.I<OrderRepository>(),
         super(SwapOrderFormModel(
@@ -291,26 +287,22 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
           priceType: PriceType.give,
           giveAsset: giveAsset,
           receiveAsset: receiveAsset,
-          buyOrders: const Initial(),
-          sellOrders: const Initial(),
+          buyOrders: buyOrders,
+          sellOrders: sellOrders,
         )) {
-    on<SwapOrderFormInitialized>(_handleSwapSliderFormInitialized);
     on<AmountTypeClicked>(_handleAmountTypeClicked);
     on<PriceTypeClicked>(_handlePriceTypeClicked);
     on<AmountInputChanged>(_handleAmountInputChanged);
-    add(SwapOrderFormInitialized());
   }
 
   _handleAmountInputChanged(
     AmountInputChanged event,
     Emitter<SwapOrderFormModel> emit,
   ) {
-
     final amountInput = AmountInput.dirty(
       value: AssetQuantity.fromNormalizedString(
           divisible: true, input: event.value),
     );
-
 
     print(amountInput.value.quantity);
 
@@ -344,56 +336,4 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
     );
   }
 
-  _handleSwapSliderFormInitialized(
-    SwapOrderFormInitialized event,
-    Emitter<SwapOrderFormModel> emit,
-  ) async {
-    emit(state.copyWith(
-      buyOrders: const Loading(),
-      sellOrders: const Loading(),
-    ));
-
-    final task = TaskEither<String, AsyncData>.Do(($) async {
-      final sequence = await $(TaskEither.sequenceList([
-        _orderRepository.getByPairTE(
-          status: "open",
-          address: address.address,
-          giveAsset: receiveAsset,
-          getAsset: giveAsset,
-          httpConfig: httpConfig,
-        ),
-        _orderRepository.getByPairTE(
-          address: address.address,
-          giveAsset: giveAsset,
-          getAsset: receiveAsset,
-          status: "open",
-          httpConfig: httpConfig,
-        )
-      ]));
-
-      return AsyncData(
-        buyOrders: sequence[0],
-        sellOrders: sequence[1],
-      );
-    });
-
-    final result = await task.run();
-
-    result.fold(
-      (error) => emit(
-        state.copyWith(
-          buyOrders: Failure(error.toString()),
-          sellOrders: Failure(error.toString()),
-        ),
-      ),
-      (response) => emit(
-        state.copyWith(
-          buyOrders: Success(response.buyOrders),
-          sellOrders: Success(response.sellOrders),
-        ),
-      ),
-    );
-
-    // Initialize the form or perform any necessary setup
-  }
 }

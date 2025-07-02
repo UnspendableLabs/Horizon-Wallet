@@ -118,6 +118,18 @@ extension RemoteDataX<T> on RemoteData<T> {
         Success(value: final v) => onReplete(v),
         Failure() => onNone(),
       };
+
+  R fold3<R>({
+    required R Function() onNone,
+    required R Function(T value) onReplete,
+    required R Function(Object error) onFailure,
+  }) =>
+      fold(
+          onInitial: onNone,
+          onLoading: onNone,
+          onRefreshing: onReplete,
+          onSuccess: onReplete,
+          onFailure: onFailure);
 }
 
 extension RemoteDataCombineX<A> on RemoteData<A> {

@@ -19,4 +19,8 @@ class Asset {
       this.owner,
       this.supply,
       this.supplyNormalized});
+
+  String get displayName => assetLongname ?? asset;
+
+  bool get divisibleRefined => divisible ?? false;
 }

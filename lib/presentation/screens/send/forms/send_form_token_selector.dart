@@ -32,7 +32,7 @@ class SendFormLoader extends StatelessWidget {
   Widget build(BuildContext context) {
     final session = context.watch<SessionStateCubit>().state.successOrThrow();
     return RemoteDataTaskEitherBuilder<String, List<MultiAddressBalance>>(
-      task: () => TaskEither.tryCatch(
+      task: TaskEither.tryCatch(
         () => _balanceRepository.getBalancesForAddresses(
           httpConfig: session.httpConfig,
           addresses: addresses.map((a) => a.address).toList(),
