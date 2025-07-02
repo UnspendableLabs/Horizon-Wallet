@@ -193,26 +193,39 @@ class SwapOrderFormModel with FormzMixin {
     );
   }
 
-  ViewModel get viewModel {
-    return ViewModel(
-      priceString: priceType == PriceType.give
-          ? "${giveAsset.displayName} / ${receiveAsset.displayName}"
-          : "${receiveAsset.displayName} / ${giveAsset.displayName}",
-      priceAsset: priceType == PriceType.give ? giveAsset : receiveAsset,
-      amountAsset: amountType == AmountType.give ? giveAsset : receiveAsset,
-      sellOrders: sellOrders
-          .map((el) => el.toViewModel(side: OrderViewModelSide.sell))
-          .toList()
-        ..sort((a, b) =>
-            a.price.quantity.compareTo(b.price.quantity)), // ascending
-
-      buyOrders: buyOrders
-          .map((el) => el.toViewModel(side: OrderViewModelSide.buy))
-          .toList()
-        ..sort((a, b) =>
-            b.price.quantity.compareTo(a.price.quantity)), // descending
-    );
+  String get priceString {
+    return priceType == PriceType.give
+        ? "${giveAsset.displayName} / ${receiveAsset.displayName}"
+        : "${receiveAsset.displayName} / ${giveAsset.displayName}";
   }
+
+  List<OrderViewModel> get buyOrdersView {
+    return buyOrders
+        .map((el) => el.toViewModel(side: OrderViewModelSide.buy))
+        .toList()
+      ..sort((a, b) =>
+          b.price.quantity.compareTo(a.price.quantity)); // descending
+  }
+
+  List<OrderViewModel> get sellOrdersView {
+    return sellOrders
+        .map((el) => el.toViewModel(side: OrderViewModelSide.sell))
+        .toList()
+      ..sort((a, b) =>
+          a.price.quantity.compareTo(b.price.quantity)); // ascending
+  }
+
+  Asset get amountAsset {
+    return amountType == AmountType.give ? giveAsset : receiveAsset;
+  }
+
+  Asset get priceAsset {
+    return priceType == PriceType.give ? giveAsset : receiveAsset;
+  }
+
+
+  
+
 }
 
 enum AmountType {
@@ -256,7 +269,6 @@ sealed class SwapOrderFormEvent extends Equatable {
   List<Object?> get props => [];
 }
 
-
 class AmountTypeClicked extends SwapOrderFormEvent {}
 
 class PriceTypeClicked extends SwapOrderFormEvent {}
@@ -299,12 +311,13 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
     AmountInputChanged event,
     Emitter<SwapOrderFormModel> emit,
   ) {
+
+
+
     final amountInput = AmountInput.dirty(
       value: AssetQuantity.fromNormalizedString(
-          divisible: true, input: event.value),
+          divisible: state.amountAsset.divisible, input: event.value),
     );
-
-    print(amountInput.value.quantity);
 
     emit(state.copyWith(
       amountInput: amountInput,
@@ -335,5 +348,4 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
       ),
     );
   }
-
 }
