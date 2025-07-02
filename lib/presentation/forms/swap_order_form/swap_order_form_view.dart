@@ -340,62 +340,85 @@ class _OrderInputs extends State<OrderInputs> {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _amountController.text = widget.state.amountInput.value.normalizedPretty();
+    _limitPriceController.text =
+        widget.state.priceInput.value.normalizedPretty();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
     final session = context.watch<SessionStateCubit>().state.successOrThrow();
 
-    return Column(
-      children: [
-        Row(
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(4, 0, 0, 8),
-              child: Text(
-                  widget.state.amountType == AmountType.get
-                      ? "You're buying"
-                      : "You're selling",
-                  style: theme.textTheme.titleSmall!.copyWith(
-                    color: theme
-                        .extension<CustomThemeExtension>()!
-                        .mutedDescriptionTextColor,
-                  )),
-            ),
-          ],
-        ),
-        HorizonCard(
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Expanded(
-                  child: QuantityInputV2(
-                      style: const TextStyle(fontSize: 16),
-                      divisible: widget.state.amountInput.value.divisible,
-                      controller:
-                          _amountController, // chat helpo me with a stateful controller hre,
-                      onChanged: (value) {
-                        widget.actions.onAmountChanged(value);
-                      })),
-              AssetPill(
-                  onTap: widget.onClickAmountAsset,
-                  asset: widget.amountAsset,
-                  appIcons: appIcons,
-                  session: session,
-                  theme: theme),
-            ],
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(0, 8, 0, 0),
-          child: Column(
+    return BlocConsumer<SwapOrderFormBloc, SwapOrderFormModel>(
+        listenWhen: (previous, current) =>
+            previous.amountInput.value.quantity !=
+                current.amountInput.value.quantity ||
+            previous.priceInput.value.quantity !=
+                current.priceInput.value.quantity,
+        listener: (context, state) {
+          // Update the controllers when the state changes
+
+          final newAmount = state.amountInput.value.normalizedPretty();
+
+          // Only update if the user hasn't already typed this in
+          if (_amountController.text != newAmount) {
+            final cursorPos = _amountController.selection;
+            _amountController.text = newAmount;
+
+            // Try to preserve cursor position (if possible)
+            final offset =
+                cursorPos.baseOffset.clamp(0, _amountController.text.length);
+            _amountController.selection =
+                TextSelection.collapsed(offset: offset);
+          }
+
+          final newPrice = state.priceInput.value.normalizedPretty();
+
+          if (_limitPriceController.text != newPrice) {
+            final cursorPos = _limitPriceController.selection;
+            _limitPriceController.text = newPrice;
+            // Try to preserve cursor position (if possible)
+            final offset = cursorPos.baseOffset
+                .clamp(0, _limitPriceController.text.length);
+            _limitPriceController.selection =
+                TextSelection.collapsed(offset: offset);
+          }
+
+          // if (num.parse(_amountController.text) !=
+          //     num.parse(widget.state.amountInput.value.normalizedPretty())) {
+          //   _amountController.text =
+          //       widget.state.amountInput.value.normalizedPretty();
+          // }
+
+          // _amountController.text =
+          //     state.amountInput.value.normalizedPretty();
+          //
+          // if (num.parse(_amountController.text) !=
+          //     num.parse(widget.state.amountInput.value.normalizedPretty())) {
+          //   _amountController.text =
+          //       widget.state.amountInput.value.normalizedPretty();
+          // }
+          // if (_limitPriceController.text !=
+          //     widget.state.priceInput.value.normalizedPretty()) {
+          //   _limitPriceController.text =
+          //       widget.state.priceInput.value.normalizedPretty();
+          // }
+        },
+        builder: (context, state) {
+          return Column(
             children: [
               Row(
                 children: [
                   Padding(
                     padding: const EdgeInsets.fromLTRB(4, 0, 0, 8),
                     child: Text(
-                        "At ${_limitPriceController.text} ${widget.priceString}",
+                        widget.state.amountType == AmountType.get
+                            ? "You're buying"
+                            : "You're selling",
                         style: theme.textTheme.titleSmall!.copyWith(
                           color: theme
                               .extension<CustomThemeExtension>()!
@@ -405,39 +428,82 @@ class _OrderInputs extends State<OrderInputs> {
                 ],
               ),
               HorizonCard(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Expanded(
+                        child: QuantityInputV2(
+                            style: const TextStyle(fontSize: 16),
+                            divisible: widget.state.amountInput.value.divisible,
+                            controller:
+                                _amountController, // chat helpo me with a stateful controller hre,
+                            onChanged: (value) {
+                              widget.actions.onAmountChanged(value);
+                            })),
+                    AssetPill(
+                        onTap: widget.onClickAmountAsset,
+                        asset: widget.amountAsset,
+                        appIcons: appIcons,
+                        session: session,
+                        theme: theme),
+                  ],
+                ),
+              ),
+              Text(state.amountInputError.fold(() => "", (a) => a)),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(0, 8, 0, 0),
                 child: Column(
                   children: [
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        Expanded(
-                            child: LimitPriceInput(
-                                style: const TextStyle(fontSize: 16),
-                                divisible: true,
-                                controller:
-                                    _limitPriceController, // chat helpo me with a stateful controller hre,
-                                onChanged: (value) {
-                                  print(value);
-                                })),
-
-                        // chat i'd like to wrap this in a rounded border
-                        AssetPill(
-                            onTap: widget.onClickPriceAsset,
-                            asset: widget.priceAsset,
-                            appIcons: appIcons,
-                            session: session,
-                            theme: theme),
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(4, 0, 0, 8),
+                          child: Text(
+                              "At ${_limitPriceController.text} ${widget.priceString}",
+                              style: theme.textTheme.titleSmall!.copyWith(
+                                color: theme
+                                    .extension<CustomThemeExtension>()!
+                                    .mutedDescriptionTextColor,
+                              )),
+                        ),
                       ],
+                    ),
+                    HorizonCard(
+                      child: Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Expanded(
+                                  child: LimitPriceInput(
+                                      style: const TextStyle(fontSize: 16),
+                                      divisible: true,
+                                      controller:
+                                          _limitPriceController, // chat helpo me with a stateful controller hre,
+                                      onChanged: (value) {
+                                        print(value);
+                                      })),
+
+                              // chat i'd like to wrap this in a rounded border
+                              AssetPill(
+                                  onTap: widget.onClickPriceAsset,
+                                  asset: widget.priceAsset,
+                                  appIcons: appIcons,
+                                  session: session,
+                                  theme: theme),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
               ),
             ],
-          ),
-        ),
-      ],
-    );
+          );
+        });
   }
 }
 

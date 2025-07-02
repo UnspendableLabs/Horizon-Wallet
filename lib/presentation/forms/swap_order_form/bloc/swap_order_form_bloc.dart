@@ -6,6 +6,7 @@ import 'package:horizon/domain/entities/address_v2.dart';
 import 'package:horizon/domain/entities/order.dart';
 import 'package:horizon/domain/entities/asset_quantity.dart';
 import 'package:horizon/domain/entities/asset.dart';
+import 'package:horizon/domain/entities/multi_address_balance_entry.dart';
 import 'package:horizon/domain/entities/http_config.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -72,15 +73,11 @@ enum ReceiveQuantityInputError { required }
 
 class ReceiveQuantityInput
     extends FormzInput<AssetQuantity, ReceiveQuantityInputError> {
-  final AssetQuantity userBalance;
-
-  ReceiveQuantityInput.pure({
-    required this.userBalance,
-  }) : super.pure(AssetQuantity(divisible: true, quantity: BigInt.zero));
+  ReceiveQuantityInput.pure({required bool divisible})
+      : super.pure(AssetQuantity(divisible: divisible, quantity: BigInt.zero));
 
   const ReceiveQuantityInput.dirty({
     required AssetQuantity value,
-    required this.userBalance,
   }) : super.dirty(value);
 
   @override
@@ -149,6 +146,8 @@ extension OrderViewModelExtension on Order {
 }
 
 class SwapOrderFormModel with FormzMixin {
+  final MultiAddressBalanceEntry giveAssetBalance;
+
   final Asset giveAsset;
   final Asset receiveAsset;
 
@@ -159,9 +158,17 @@ class SwapOrderFormModel with FormzMixin {
   final PriceType priceType;
 
   final AmountInput amountInput;
+  final PriceInput priceInput;
+
+  final GiveQuantityInput giveQuantityInput;
+  final ReceiveQuantityInput receiveQuantityInput;
 
   const SwapOrderFormModel({
+    required this.giveAssetBalance,
     required this.amountInput,
+    required this.priceInput,
+    required this.giveQuantityInput,
+    required this.receiveQuantityInput,
     required this.amountType,
     required this.giveAsset,
     required this.receiveAsset,
@@ -171,18 +178,26 @@ class SwapOrderFormModel with FormzMixin {
   });
 
   @override
-  List<FormzInput> get inputs => [amountInput];
+  List<FormzInput> get inputs =>
+      [amountInput, priceInput, giveQuantityInput, receiveQuantityInput];
 
-  SwapOrderFormModel copyWith({
-    AmountInput? amountInput,
-    Asset? giveAsset,
-    Asset? receiveAsset,
-    List<Order>? buyOrders,
-    List<Order>? sellOrders,
-    AmountType? amountType,
-    PriceType? priceType,
-  }) {
+  SwapOrderFormModel copyWith(
+      {MultiAddressBalanceEntry? giveAssetBalance,
+      AmountInput? amountInput,
+      PriceInput? priceInput,
+      Asset? giveAsset,
+      Asset? receiveAsset,
+      List<Order>? buyOrders,
+      List<Order>? sellOrders,
+      AmountType? amountType,
+      PriceType? priceType,
+      GiveQuantityInput? giveQuantityInput,
+      ReceiveQuantityInput? receiveQuantityInput}) {
     return SwapOrderFormModel(
+      giveQuantityInput: giveQuantityInput ?? this.giveQuantityInput,
+      receiveQuantityInput: receiveQuantityInput ?? this.receiveQuantityInput,
+      giveAssetBalance: giveAssetBalance ?? this.giveAssetBalance,
+      priceInput: priceInput ?? this.priceInput,
       amountInput: amountInput ?? this.amountInput,
       priceType: priceType ?? this.priceType,
       amountType: amountType ?? this.amountType,
@@ -203,16 +218,16 @@ class SwapOrderFormModel with FormzMixin {
     return buyOrders
         .map((el) => el.toViewModel(side: OrderViewModelSide.buy))
         .toList()
-      ..sort((a, b) =>
-          b.price.quantity.compareTo(a.price.quantity)); // descending
+      ..sort(
+          (a, b) => b.price.quantity.compareTo(a.price.quantity)); // descending
   }
 
   List<OrderViewModel> get sellOrdersView {
     return sellOrders
         .map((el) => el.toViewModel(side: OrderViewModelSide.sell))
         .toList()
-      ..sort((a, b) =>
-          a.price.quantity.compareTo(b.price.quantity)); // ascending
+      ..sort(
+          (a, b) => a.price.quantity.compareTo(b.price.quantity)); // ascending
   }
 
   Asset get amountAsset {
@@ -223,9 +238,17 @@ class SwapOrderFormModel with FormzMixin {
     return priceType == PriceType.give ? giveAsset : receiveAsset;
   }
 
+  Option<String> get amountInputError {
+    if (amountInput.isPure) {
+      return none();
+    }
 
-  
+    final error = amountType == AmountType.give
+        ? giveQuantityInput.error
+        : receiveQuantityInput.error;
 
+    return Option.fromNullable(error?.toString());
+  }
 }
 
 enum AmountType {
@@ -280,7 +303,6 @@ class AmountInputChanged extends SwapOrderFormEvent {
 
 class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
   final HttpConfig httpConfig;
-  final OrderRepository _orderRepository;
 
   final AddressV2 address;
 
@@ -292,9 +314,21 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
     required List<Order> buyOrders,
     required List<Order> sellOrders,
     OrderRepository? orderRepository,
-  })  : _orderRepository = orderRepository ?? GetIt.I<OrderRepository>(),
-        super(SwapOrderFormModel(
+  }) : super(SwapOrderFormModel(
+          giveAssetBalance: MultiAddressBalanceEntry(
+              address: address.address,
+              quantity: 100 * TenToTheEigth.value,
+              quantityNormalized: "100.00000000"),
+          giveQuantityInput: GiveQuantityInput.pure(
+              userBalance: AssetQuantity(
+                  divisible: giveAsset.divisible,
+                  quantity: BigInt.from(100 * TenToTheEigth.value))),
+          receiveQuantityInput:
+              ReceiveQuantityInput.pure(divisible: receiveAsset.divisible),
           amountInput: AmountInput.pure(),
+          priceInput: PriceInput.pure(
+            userBalance: AssetQuantity(divisible: true, quantity: BigInt.zero),
+          ),
           amountType: AmountType.get,
           priceType: PriceType.give,
           giveAsset: giveAsset,
@@ -311,17 +345,25 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
     AmountInputChanged event,
     Emitter<SwapOrderFormModel> emit,
   ) {
-
-
-
     final amountInput = AmountInput.dirty(
       value: AssetQuantity.fromNormalizedString(
           divisible: state.amountAsset.divisible, input: event.value),
     );
 
+    final giveQuantityInput = state.amountType == AmountType.give
+        ? GiveQuantityInput.dirty(
+            value: amountInput.value,
+            userBalance: state.giveQuantityInput.userBalance)
+        : state.giveQuantityInput;
+
+    final receiveQuantityInput = state.amountType == AmountType.get
+        ? ReceiveQuantityInput.dirty(value: amountInput.value)
+        : state.receiveQuantityInput;
+
     emit(state.copyWith(
-      amountInput: amountInput,
-    ));
+        amountInput: amountInput,
+        giveQuantityInput: giveQuantityInput,
+        receiveQuantityInput: receiveQuantityInput));
   }
 
   _handleAmountTypeClicked(
@@ -330,10 +372,10 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
   ) {
     emit(
       state.copyWith(
-        amountType: state.amountType == AmountType.give
-            ? AmountType.get
-            : AmountType.give,
-      ),
+          amountType: state.amountType == AmountType.give
+              ? AmountType.get
+              : AmountType.give,
+          amountInput: AmountInput.pure()),
     );
   }
 
