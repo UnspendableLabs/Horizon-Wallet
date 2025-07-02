@@ -129,12 +129,14 @@ class SwapOrderFormActions {
   final VoidCallback onClickPriceAsset;
   final VoidCallback onSubmitClicked;
   final Function(String value) onAmountChanged;
+  final Function(String value) onPriceChanged;
 
   SwapOrderFormActions(
       {required this.onSubmitClicked,
       required this.onClickAmountAsset,
       required this.onClickPriceAsset,
-      required this.onAmountChanged});
+      required this.onAmountChanged,
+      required this.onPriceChanged});
 }
 
 class SwapOrderFormProvider extends StatefulWidget {
@@ -220,6 +222,11 @@ class _SwapOrderFormProviderState extends State<SwapOrderFormProvider> {
                               context
                                   .read<SwapOrderFormBloc>()
                                   .add(AmountInputChanged(value: value));
+                            },
+                            onPriceChanged: (value) {
+                              context
+                                  .read<SwapOrderFormBloc>()
+                                  .add(PriceInputChanged(value: value));
                             },
                             onClickPriceAsset: () {
                               context
@@ -339,13 +346,13 @@ class _OrderInputs extends State<OrderInputs> {
     _limitPriceController = TextEditingController();
   }
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _amountController.text = widget.state.amountInput.value.normalizedPretty();
-    _limitPriceController.text =
-        widget.state.priceInput.value.normalizedPretty();
-  }
+  // @override
+  // void didChangeDependencies() {
+  //   super.didChangeDependencies();
+  //   _amountController.text = widget.state.amountInput.value.normalizedPretty();
+  //   _limitPriceController.text =
+  //       widget.state.priceInput.value.normalizedPretty();
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -355,14 +362,12 @@ class _OrderInputs extends State<OrderInputs> {
 
     return BlocConsumer<SwapOrderFormBloc, SwapOrderFormModel>(
         listenWhen: (previous, current) =>
-            previous.amountInput.value.quantity !=
-                current.amountInput.value.quantity ||
-            previous.priceInput.value.quantity !=
-                current.priceInput.value.quantity,
+            previous.amountInput.value != current.amountInput.value ||
+            previous.priceInput.value != current.priceInput.value,
         listener: (context, state) {
           // Update the controllers when the state changes
 
-          final newAmount = state.amountInput.value.normalizedPretty();
+          final newAmount = state.amountInput.value;
 
           // Only update if the user hasn't already typed this in
           if (_amountController.text != newAmount) {
@@ -376,7 +381,7 @@ class _OrderInputs extends State<OrderInputs> {
                 TextSelection.collapsed(offset: offset);
           }
 
-          final newPrice = state.priceInput.value.normalizedPretty();
+          final newPrice = state.priceInput.value;
 
           if (_limitPriceController.text != newPrice) {
             final cursorPos = _limitPriceController.selection;
@@ -435,9 +440,8 @@ class _OrderInputs extends State<OrderInputs> {
                     Expanded(
                         child: QuantityInputV2(
                             style: const TextStyle(fontSize: 16),
-                            divisible: widget.state.amountInput.value.divisible,
-                            controller:
-                                _amountController, // chat helpo me with a stateful controller hre,
+                            divisible: widget.state.amountInputDivisibility,
+                            controller: _amountController,
                             onChanged: (value) {
                               widget.actions.onAmountChanged(value);
                             })),
@@ -452,7 +456,7 @@ class _OrderInputs extends State<OrderInputs> {
               ),
               Text(state.amountInputError.fold(() => "", (a) => a)),
               Padding(
-                padding: const EdgeInsets.fromLTRB(0, 8, 0, 0),
+                padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
                 child: Column(
                   children: [
                     Row(
@@ -480,13 +484,10 @@ class _OrderInputs extends State<OrderInputs> {
                                   child: LimitPriceInput(
                                       style: const TextStyle(fontSize: 16),
                                       divisible: true,
-                                      controller:
-                                          _limitPriceController, // chat helpo me with a stateful controller hre,
+                                      controller: _limitPriceController,
                                       onChanged: (value) {
-                                        print(value);
+                                        widget.actions.onPriceChanged(value);
                                       })),
-
-                              // chat i'd like to wrap this in a rounded border
                               AssetPill(
                                   onTap: widget.onClickPriceAsset,
                                   asset: widget.priceAsset,
@@ -494,6 +495,50 @@ class _OrderInputs extends State<OrderInputs> {
                                   session: session,
                                   theme: theme),
                             ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(0, 8, 0, 0),
+                      child: Column(
+                        children: [
+                          Row(
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.fromLTRB(4, 0, 0, 8),
+                                child: Text("To receive",
+                                    style: theme.textTheme.titleSmall!.copyWith(
+                                      color: theme
+                                          .extension<CustomThemeExtension>()!
+                                          .mutedDescriptionTextColor,
+                                    )),
+                              ),
+                            ],
+                          ),
+                          HorizonCard(
+                            child: Column(
+                              children: [
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    Expanded(
+                                        child: QuantityText(
+                                            quantity: widget.state
+                                                .receiveQuantityInput.value
+                                                .normalizedPretty())),
+                                    AssetPill(
+                                        onTap: widget.onClickPriceAsset,
+                                        asset: widget.receiveAsset,
+                                        appIcons: appIcons,
+                                        session: session,
+                                        theme: theme),
+                                  ],
+                                ),
+                              ],
+                            ),
                           ),
                         ],
                       ),
@@ -601,7 +646,6 @@ class OrderBookView extends StatelessWidget {
               itemCount: itemCount,
               itemBuilder: (context, index) {
                 if (index == 0) {
-                  // chat make first left aligned and last right aligned
                   return Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
