@@ -10,7 +10,7 @@ typedef RemoteDataBuilderFn<T> = Widget Function(
 );
 
 class RemoteDataTaskEitherBuilder<E extends Object, T> extends StatefulWidget {
-  final TaskEither<E, T> Function() task;
+  final TaskEither<E, T>  task;
   final RemoteDataBuilderFn<T> builder;
 
   const RemoteDataTaskEitherBuilder({
@@ -32,7 +32,7 @@ class _RemoteDataTaskEitherBuilderState<E extends Object, T>
   @override
   void initState() {
     super.initState();
-    _future = widget.task().run(); // ← TaskEither → Future
+    _future = widget.task.run(); // ← TaskEither → Future
   }
 
   @override
@@ -42,7 +42,7 @@ class _RemoteDataTaskEitherBuilderState<E extends Object, T>
   }
 
   Future<void> _run() async {
-    setState(() => _future = widget.task().run());
+    setState(() => _future = widget.task.run());
     await _future;
   }
 

@@ -153,7 +153,7 @@ class SwapCreateListingFormProvider extends StatelessWidget {
     final session = context.watch<SessionStateCubit>().state.successOrThrow();
 
     return RemoteDataTaskEitherBuilder<String, FeeEstimates>(
-        task: () => _feeEstimatesRepository.getFeeEstimates(
+        task: _feeEstimatesRepository.getFeeEstimates(
             httpConfig: session.httpConfig),
         builder: (context, state, refresh) => state.fold(
             onInitial: () => const SizedBox.shrink(),
