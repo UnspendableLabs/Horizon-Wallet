@@ -33,7 +33,7 @@ class AssetRepositoryImpl implements AssetRepository {
     return a.Asset(
         asset: asset.asset,
         assetLongname: asset.assetLongname,
-        divisible: asset.divisible,
+        divisible_: asset.divisible,
         issuer: asset.issuer,
         owner: asset.owner,
         locked: asset.locked,
@@ -68,7 +68,7 @@ class AssetRepositoryImpl implements AssetRepository {
         .map((asset) => a.Asset(
               asset: asset.asset,
               assetLongname: asset.assetLongname,
-              divisible: asset.divisible,
+              divisible_: asset.divisible,
               description: asset.description,
               locked: asset.locked,
               issuer: asset.issuer,
