@@ -11,11 +11,16 @@ class AssetQuantity {
 
   factory AssetQuantity.fromNormalizedString(
       {required bool divisible, required String input}) {
-    if (divisible) {
-      int quantity = (double.parse(input) * TenToTheEigth.doubleValue).round();
-      return AssetQuantity(divisible: true, quantity: BigInt.from(quantity));
-    } else {
-      return AssetQuantity(divisible: false, quantity: BigInt.parse(input));
+    try {
+      if (divisible) {
+        int quantity =
+            (double.parse(input) * TenToTheEigth.doubleValue).round();
+        return AssetQuantity(divisible: true, quantity: BigInt.from(quantity));
+      } else {
+        return AssetQuantity(divisible: false, quantity: BigInt.parse(input));
+      }
+    } catch (_) {
+      return AssetQuantity(divisible: divisible, quantity: BigInt.zero);
     }
   }
 
@@ -24,6 +29,10 @@ class AssetQuantity {
       return (quantity / TenToTheEigth.bigIntValue).toStringAsFixed(precision);
     }
     return quantity.toString();
+  }
+
+  num normalizedNum({int precision = 8}) {
+    return quantity / TenToTheEigth.bigIntValue;
   }
 
   String normalizedPretty({int precision = 8}) {
@@ -41,6 +50,24 @@ extension AssetQuantityOperators on AssetQuantity {
     return AssetQuantity(
       divisible: divisible,
       quantity: quantity + other.quantity,
+    );
+  }
+
+  AssetQuantity operator -(AssetQuantity other) {
+    if (divisible != other.divisible) {
+      throw ArgumentError(
+          'Cannot subtract AssetQuantity with different divisibility.');
+    }
+    return AssetQuantity(
+      divisible: divisible,
+      quantity: quantity - other.quantity,
+    );
+  }
+
+  AssetQuantity operator *(BigInt multiplier) {
+    return AssetQuantity(
+      divisible: divisible,
+      quantity: quantity * multiplier,
     );
   }
 }

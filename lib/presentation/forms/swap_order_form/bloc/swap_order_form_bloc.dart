@@ -15,32 +15,27 @@ import 'package:horizon/common/constants.dart';
 
 enum AmountInputError { required }
 
-class AmountInput extends FormzInput<AssetQuantity, AmountInputError> {
-  AmountInput.pure()
-      : super.pure(AssetQuantity(divisible: true, quantity: BigInt.zero));
+class AmountInput extends FormzInput<String, AmountInputError> {
+  AmountInput.pure() : super.pure("");
   const AmountInput.dirty({
-    required AssetQuantity value,
+    required String value,
   }) : super.dirty(value);
   @override
-  AmountInputError? validator(AssetQuantity value) {
-    return value.quantity == BigInt.zero ? AmountInputError.required : null;
+  AmountInputError? validator(String value) {
+    return value.isEmpty ? AmountInputError.required : null;
   }
 }
 
 enum PriceInputError { required }
 
-class PriceInput extends FormzInput<AssetQuantity, PriceInputError> {
-  final AssetQuantity userBalance;
-  PriceInput.pure({
-    required this.userBalance,
-  }) : super.pure(AssetQuantity(divisible: true, quantity: BigInt.zero));
+class PriceInput extends FormzInput<String, PriceInputError> {
+  PriceInput.pure() : super.pure("");
   const PriceInput.dirty({
-    required AssetQuantity value,
-    required this.userBalance,
+    required String value,
   }) : super.dirty(value);
   @override
-  PriceInputError? validator(AssetQuantity value) {
-    return value.quantity == BigInt.zero ? PriceInputError.required : null;
+  PriceInputError? validator(String value) {
+    return value.isEmpty ? PriceInputError.required : null;
   }
 }
 
@@ -160,15 +155,14 @@ class SwapOrderFormModel with FormzMixin {
   final AmountInput amountInput;
   final PriceInput priceInput;
 
-  final GiveQuantityInput giveQuantityInput;
-  final ReceiveQuantityInput receiveQuantityInput;
+  // final ReceiveQuantityInput receiveQuantityInput;
 
   const SwapOrderFormModel({
     required this.giveAssetBalance,
     required this.amountInput,
     required this.priceInput,
-    required this.giveQuantityInput,
-    required this.receiveQuantityInput,
+    // required this.giveQuantityInput,
+    // required this.receiveQuantityInput,
     required this.amountType,
     required this.giveAsset,
     required this.receiveAsset,
@@ -176,6 +170,76 @@ class SwapOrderFormModel with FormzMixin {
     required this.sellOrders,
     required this.priceType,
   });
+
+  GiveQuantityInput get giveQuantityInput => switch ((amountType, priceType)) {
+        ((AmountType.give, _)) => GiveQuantityInput.dirty(
+            value: AssetQuantity.fromNormalizedString(
+                divisible: giveAsset.divisible, input: amountInput.value),
+            userBalance: AssetQuantity(
+                divisible: giveAsset.divisible,
+                quantity: BigInt.from(giveAssetBalance.quantity))),
+        ((AmountType.get, PriceType.give)) => GiveQuantityInput.dirty(
+            value: AssetQuantity.fromNormalizedString(
+                divisible: giveAsset.divisible,
+                input: (AssetQuantity.fromNormalizedString(
+                                divisible: receiveAsset.divisible,
+                                input: amountInput.value)
+                            .normalizedNum() *
+                        AssetQuantity.fromNormalizedString(
+                                divisible: giveAsset.divisible,
+                                input: priceInput.value)
+                            .normalizedNum())
+                    .toString()),
+            userBalance: AssetQuantity(
+                divisible: giveAsset.divisible,
+                quantity: BigInt.from(giveAssetBalance.quantity))),
+        ((AmountType.get, PriceType.get)) => GiveQuantityInput.dirty(
+            value: AssetQuantity.fromNormalizedString(
+                divisible: giveAsset.divisible,
+                input: (AssetQuantity.fromNormalizedString(
+                                divisible: receiveAsset.divisible,
+                                input: amountInput.value)
+                            .normalizedNum() /
+                        AssetQuantity.fromNormalizedString(
+                                divisible: receiveAsset.divisible,
+                                input: priceInput.value)
+                            .normalizedNum())
+                    .toString()),
+            userBalance: AssetQuantity(
+                divisible: giveAsset.divisible,
+                quantity: BigInt.from(giveAssetBalance.quantity))),
+      };
+
+  ReceiveQuantityInput get receiveQuantityInput =>
+      switch ((amountType, priceType)) {
+        ((AmountType.get, _)) => ReceiveQuantityInput.dirty(
+            value: AssetQuantity.fromNormalizedString(
+                divisible: receiveAsset.divisible, input: amountInput.value)),
+        ((AmountType.give, PriceType.give)) => ReceiveQuantityInput.dirty(
+            value: AssetQuantity.fromNormalizedString(
+                divisible: receiveAsset.divisible,
+                input: (AssetQuantity.fromNormalizedString(
+                                divisible: giveAsset.divisible,
+                                input: amountInput.value)
+                            .normalizedNum() /
+                        AssetQuantity.fromNormalizedString(
+                                divisible: giveAsset.divisible,
+                                input: priceInput.value)
+                            .normalizedNum())
+                    .toString())),
+        ((AmountType.give, PriceType.get)) => ReceiveQuantityInput.dirty(
+            value: AssetQuantity.fromNormalizedString(
+                divisible: receiveAsset.divisible,
+                input: (AssetQuantity.fromNormalizedString(
+                                divisible: giveAsset.divisible,
+                                input: amountInput.value)
+                            .normalizedNum() *
+                        AssetQuantity.fromNormalizedString(
+                                divisible: receiveAsset.divisible,
+                                input: priceInput.value)
+                            .normalizedNum())
+                    .toString())),
+      };
 
   @override
   List<FormzInput> get inputs =>
@@ -191,11 +255,10 @@ class SwapOrderFormModel with FormzMixin {
       List<Order>? sellOrders,
       AmountType? amountType,
       PriceType? priceType,
-      GiveQuantityInput? giveQuantityInput,
       ReceiveQuantityInput? receiveQuantityInput}) {
     return SwapOrderFormModel(
-      giveQuantityInput: giveQuantityInput ?? this.giveQuantityInput,
-      receiveQuantityInput: receiveQuantityInput ?? this.receiveQuantityInput,
+      // giveQuantityInput: giveQuantityInput ?? this.giveQuantityInput,
+      // receiveQuantityInput: receiveQuantityInput ?? this.receiveQuantityInput,
       giveAssetBalance: giveAssetBalance ?? this.giveAssetBalance,
       priceInput: priceInput ?? this.priceInput,
       amountInput: amountInput ?? this.amountInput,
@@ -249,6 +312,10 @@ class SwapOrderFormModel with FormzMixin {
 
     return Option.fromNullable(error?.toString());
   }
+
+  bool get amountInputDivisibility => amountType == AmountType.give
+      ? giveAsset.divisible
+      : receiveAsset.divisible;
 }
 
 enum AmountType {
@@ -301,6 +368,11 @@ class AmountInputChanged extends SwapOrderFormEvent {
   const AmountInputChanged({required this.value});
 }
 
+class PriceInputChanged extends SwapOrderFormEvent {
+  final String value;
+  const PriceInputChanged({required this.value});
+}
+
 class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
   final HttpConfig httpConfig;
 
@@ -319,16 +391,8 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
               address: address.address,
               quantity: 100 * TenToTheEigth.value,
               quantityNormalized: "100.00000000"),
-          giveQuantityInput: GiveQuantityInput.pure(
-              userBalance: AssetQuantity(
-                  divisible: giveAsset.divisible,
-                  quantity: BigInt.from(100 * TenToTheEigth.value))),
-          receiveQuantityInput:
-              ReceiveQuantityInput.pure(divisible: receiveAsset.divisible),
           amountInput: AmountInput.pure(),
-          priceInput: PriceInput.pure(
-            userBalance: AssetQuantity(divisible: true, quantity: BigInt.zero),
-          ),
+          priceInput: PriceInput.pure(),
           amountType: AmountType.get,
           priceType: PriceType.give,
           giveAsset: giveAsset,
@@ -339,6 +403,18 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
     on<AmountTypeClicked>(_handleAmountTypeClicked);
     on<PriceTypeClicked>(_handlePriceTypeClicked);
     on<AmountInputChanged>(_handleAmountInputChanged);
+    on<PriceInputChanged>(_handlePriceInputChanged);
+  }
+
+  _handlePriceInputChanged(
+    PriceInputChanged event,
+    Emitter<SwapOrderFormModel> emit,
+  ) {
+    final priceInput = PriceInput.dirty(value: event.value);
+
+    emit(state.copyWith(
+      priceInput: priceInput,
+    ));
   }
 
   _handleAmountInputChanged(
@@ -346,24 +422,12 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
     Emitter<SwapOrderFormModel> emit,
   ) {
     final amountInput = AmountInput.dirty(
-      value: AssetQuantity.fromNormalizedString(
-          divisible: state.amountAsset.divisible, input: event.value),
+      value: event.value,
     );
 
-    final giveQuantityInput = state.amountType == AmountType.give
-        ? GiveQuantityInput.dirty(
-            value: amountInput.value,
-            userBalance: state.giveQuantityInput.userBalance)
-        : state.giveQuantityInput;
-
-    final receiveQuantityInput = state.amountType == AmountType.get
-        ? ReceiveQuantityInput.dirty(value: amountInput.value)
-        : state.receiveQuantityInput;
-
     emit(state.copyWith(
-        amountInput: amountInput,
-        giveQuantityInput: giveQuantityInput,
-        receiveQuantityInput: receiveQuantityInput));
+      amountInput: amountInput,
+    ));
   }
 
   _handleAmountTypeClicked(
@@ -385,6 +449,7 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
   ) {
     emit(
       state.copyWith(
+        priceInput: PriceInput.pure(),
         priceType:
             state.priceType == PriceType.give ? PriceType.get : PriceType.give,
       ),
