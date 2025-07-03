@@ -84,14 +84,14 @@ class _SwapFormChooseAddressState extends State<SwapFormChooseAddress> {
       Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         child: HorizonButton(
-          variant: ButtonVariant.green,
-          disabled: selectedBalanceEntry == null,
-          onPressed: () {
-            widget.onNextStep(selectedBalanceEntry!.address!);
-          },
-          child: TextButtonContent(
-            value: "Continue",
-          )),
+            variant: ButtonVariant.green,
+            disabled: selectedBalanceEntry == null,
+            onPressed: () {
+              widget.onNextStep(selectedBalanceEntry!.address!);
+            },
+            child: TextButtonContent(
+              value: "Continue",
+            )),
       )
     ]);
   }

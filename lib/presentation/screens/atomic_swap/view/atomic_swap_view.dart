@@ -95,8 +95,8 @@ class _AtomicSwapViewState extends State<AtomicSwapView> {
           },
         );
       case 3:
-        return SwapListingSlider(
-          key: ValueKey(3),
+        return SwapListingSlider_(
+          key: const ValueKey(3),
           onNextStep: () {
             setState(() {
               _currentStep++;

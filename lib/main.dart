@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 import 'package:dio/dio.dart';
 import 'package:drift_db_viewer/drift_db_viewer.dart';
@@ -29,9 +30,9 @@ import 'package:horizon/presentation/inactivity_monitor/inactivity_monitor_bloc.
 import 'package:horizon/presentation/inactivity_monitor/inactivity_monitor_view.dart';
 import 'package:horizon/presentation/screens/asset/asset_view.dart';
 import 'package:horizon/presentation/screens/asset/bloc/asset_view_bloc.dart';
+import 'package:horizon/presentation/screens/send/view/send_view.dart';
 
 import 'package:horizon/presentation/screens/swap/view/swap_view.dart';
-import 'package:horizon/presentation/screens/atomic_swap/view/atomic_swap_view.dart';
 import 'package:horizon/presentation/screens/dashboard/view/portfolio_view.dart';
 import 'package:horizon/presentation/screens/demo_route.dart';
 import 'package:horizon/presentation/screens/login/login_view.dart';
@@ -538,15 +539,22 @@ class AppRouter {
                 },
               ),
             ),
+            GoRoute(
+              path: "/send",
+              builder: (context, state) => const SendView(),
+            ),
           ],
         ),
-        
+
         // TODO: remove later
-        GoRoute(path: "/demo/:component", builder: (context, state) {
-          final component = state.pathParameters['component'] ?? 'showList';
-          return WidgetsDemoPage(component: DemoComponent.values.firstWhere((e) => e.name == component));
-        })
-      
+        GoRoute(
+            path: "/demo/:component",
+            builder: (context, state) {
+              final component = state.pathParameters['component'] ?? 'showList';
+              return WidgetsDemoPage(
+                  component: DemoComponent.values
+                      .firstWhere((e) => e.name == component));
+            })
       ],
       errorBuilder: (context, state) => ErrorScreen(
             error: state.error,
@@ -583,7 +591,7 @@ class AppRouter {
               });
 
               // TODO: remove later
-              if(state.matchedLocation.startsWith("/demo")) {
+              if (state.matchedLocation.startsWith("/demo")) {
                 return state.matchedLocation;
               }
 
@@ -1119,7 +1127,7 @@ class MyApp extends StatelessWidget {
         },
         child: BlocBuilder<ThemeBloc, ThemeMode>(
           builder: (context, themeMode) {
-            return MaterialApp.router(
+            final app = MaterialApp.router(
               theme: _buildLightTheme(),
               darkTheme: _buildDarkTheme(),
               themeMode: themeMode,
@@ -1128,6 +1136,18 @@ class MyApp extends StatelessWidget {
               routeInformationProvider:
                   AppRouter.router.routeInformationProvider,
             );
+
+            if (kIsWeb && !GetIt.I<Config>().isWebExtension) {
+              return Center(
+                child: SizedBox(
+                  width: 440,
+                  height: 700,
+                  child: app,
+                ),
+              );
+            }
+
+            return app;
           },
         ),
       ),

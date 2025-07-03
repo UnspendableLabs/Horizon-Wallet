@@ -1,5 +1,6 @@
 import "package:horizon/domain/entities/utxo.dart";
 import "package:horizon/domain/entities/http_config.dart";
+import "package:horizon/domain/entities/bitcoin_tx.dart";
 import 'package:fpdart/fpdart.dart';
 
 class MakeRBFResponse {
@@ -15,6 +16,28 @@ class MakeRBFResponse {
     required this.fee,
     required this.inputsByTxHash,
   });
+}
+
+class UtxoWithTransaction {
+  final Utxo utxo;
+  final BitcoinTx transaction;
+  UtxoWithTransaction({
+    required this.utxo,
+    required this.transaction,
+  });
+}
+
+class MakeBuyPsbtReturn {
+  final String psbtHex;
+  final List<int> inputsToSign;
+  MakeBuyPsbtReturn({
+    required this.psbtHex,
+    required this.inputsToSign,
+  });
+
+  String toString() {
+    return 'MakeBuyPsbtReturn(psbtHex: $psbtHex, inputsToSign: $inputsToSign)';
+  }
 }
 
 abstract class TransactionService {
@@ -67,6 +90,27 @@ abstract class TransactionService {
     required num newFee,
     required HttpConfig httpConfig,
   });
+
+  String makeSalePsbt({
+    required BigInt price,
+    required String source,
+    required String utxoTxid,
+    required int utxoVoutIndex,
+    required Vout utxoVout,
+    required HttpConfig httpConfig,
+  });
+
+  MakeBuyPsbtReturn makeBuyPsbt({
+    required String buyerAddress,
+    required String sellerAddress,
+    required List<UtxoWithTransaction> utxos,
+    required HttpConfig httpConfig,
+    required int utxoAssetValue, // TODO: convert to JS BigInt
+    required BitcoinTx sellerTransaction,
+    required int sellerVout,
+    required int price, // TODO: convert to js BigInt
+    required int change,
+  });
 }
 
 class TransactionServiceException implements Exception {
@@ -75,7 +119,55 @@ class TransactionServiceException implements Exception {
 }
 
 extension TransactionServiceX on TransactionService {
-  // --- Async methods wrapped in TaskEither ---
+  Either<String, MakeBuyPsbtReturn> makeBuyPsbtT({
+    required String buyerAddress,
+    required String sellerAddress,
+    required List<UtxoWithTransaction> utxos,
+    required HttpConfig httpConfig,
+    required int utxoAssetValue, // TODO: convert to JS BigInt
+    required BitcoinTx sellerTransaction,
+    required int sellerVout,
+    required int price, // TODO: convert to js BigInt
+    required int change,
+    required String Function(Object error) onError,
+  }) {
+    return Either.tryCatch(
+      () => makeBuyPsbt(
+        buyerAddress: buyerAddress,
+        sellerAddress: sellerAddress,
+        utxos: utxos,
+        httpConfig: httpConfig,
+        utxoAssetValue: utxoAssetValue,
+        sellerTransaction: sellerTransaction,
+        sellerVout: sellerVout,
+        price: price,
+        change: change,
+      ),
+      (e, _) => onError(e),
+    );
+  }
+
+  Either<String, String> makeSalePsbtT({
+    required BigInt price,
+    required String source,
+    required String utxoTxid,
+    required int utxoVoutIndex,
+    required Vout utxoVout,
+    required HttpConfig httpConfig,
+    required String Function(Object error) onError,
+  }) {
+    return Either.tryCatch(
+      () => makeSalePsbt(
+        price: price,
+        source: source,
+        utxoTxid: utxoTxid,
+        utxoVoutIndex: utxoVoutIndex,
+        utxoVout: utxoVout,
+        httpConfig: httpConfig,
+      ),
+      (e, _) => onError(e),
+    );
+  }
 
   TaskEither<String, String> signTransactionT({
     required String unsignedTransaction,
