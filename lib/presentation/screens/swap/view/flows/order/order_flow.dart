@@ -134,7 +134,7 @@ class _OrderFlowViewState extends State<OrderFlowView> {
                           (giveBalanceEntry.address ??
                               giveBalanceEntry.utxoAddress!)),
                       httpConfig: session.httpConfig,
-                      receiveAsset: "pepecash",
+                      getAsset: "pepecash",
                       giveAsset: "xcp",
                       child: (actions, state) =>
                           SwapOrderForm(actions: actions, state: state)))))

@@ -145,7 +145,7 @@ class SwapOrderFormProvider extends StatefulWidget {
 
   final String giveAsset;
 
-  final String receiveAsset;
+  final String getAsset;
   final AddressV2 address;
   final HttpConfig httpConfig;
 
@@ -162,7 +162,7 @@ class SwapOrderFormProvider extends StatefulWidget {
       required this.httpConfig,
       required this.address,
       required this.giveAsset,
-      required this.receiveAsset})
+      required this.getAsset})
       : _orderRepository = orderRepository ?? GetIt.I<OrderRepository>(),
         _assetRepository = assetRepository ?? GetIt.I<AssetRepository>();
 
@@ -179,20 +179,20 @@ class _SwapOrderFormProviderState extends State<SwapOrderFormProvider> {
         httpConfig: widget.httpConfig,
       ),
       widget._assetRepository.getAssetVerboseT(
-        assetName: widget.receiveAsset,
+        assetName: widget.getAsset,
         httpConfig: widget.httpConfig,
       ),
       widget._orderRepository.getByPairTE(
         status: "open",
         address: widget.address.address,
-        giveAsset: widget.receiveAsset,
+        giveAsset: widget.getAsset,
         getAsset: widget.giveAsset,
         httpConfig: widget.httpConfig,
       ),
       widget._orderRepository.getByPairTE(
         address: widget.address.address,
         giveAsset: widget.giveAsset,
-        getAsset: widget.receiveAsset,
+        getAsset: widget.getAsset,
         status: "open",
         httpConfig: widget.httpConfig,
       ),
@@ -209,7 +209,7 @@ class _SwapOrderFormProviderState extends State<SwapOrderFormProvider> {
                     address: widget.address,
                     httpConfig: widget.httpConfig,
                     giveAsset: data[0] as Asset,
-                    receiveAsset: data[1] as Asset,
+                    getAsset: data[1] as Asset,
                     buyOrders: data[2] as List<Order>,
                     sellOrders: data[3] as List<Order>,
                   ),
@@ -256,6 +256,24 @@ class SwapOrderForm extends StatelessWidget {
     required this.state,
   });
 
+  _gradQtyProperty(label, value, theme) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 10),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label,
+              textAlign: TextAlign.left,
+              style: theme.inputDecorationTheme.hintStyle),
+          QuantityText(
+            quantity: value,
+            style: const TextStyle(fontSize: 35),
+          )
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -274,7 +292,7 @@ class SwapOrderForm extends StatelessWidget {
               priceAsset: state.priceAsset,
               amountAsset: state.amountAsset,
               giveAsset: state.giveAsset,
-              receiveAsset: state.receiveAsset,
+              getAsset: state.getAsset,
               buyOrders: state.buyOrdersView,
               sellOrders: state.sellOrdersView,
             ),
@@ -282,10 +300,55 @@ class SwapOrderForm extends StatelessWidget {
               priceType: state.priceType,
               priceString: state.priceString,
               giveAsset: state.giveAsset,
-              receiveAsset: state.receiveAsset,
+              getAsset: state.getAsset,
               buyOrders: state.buyOrdersView,
               sellOrders: state.sellOrdersView,
             ),
+            Column(
+              children: [
+                Text(
+                    "give quantity normalized: ${state.giveQuantityInput.value.normalizedPretty()}",
+                    style: theme.textTheme.bodySmall),
+                Text(
+                    "give quantity raw: ${state.giveQuantityInput.value.quantity}",
+                    style: theme.textTheme.bodySmall),
+                Text(
+                    "get quantity normalized: ${state.getQuantityInput.value.normalizedPretty()}",
+                    style: theme.textTheme.bodySmall),
+                Text(
+                    "get quantity raw: ${state.getQuantityInput.value.quantity}",
+                    style: theme.textTheme.bodySmall),
+                state.simulatedOrders.fold(
+                    onInitial: () => const SizedBox.shrink(),
+                    onLoading: () => const Center(
+                          child: CircularProgressIndicator(),
+                        ),
+                    onFailure: (error) => Text(error.toString()),
+                    onRefreshing: (_) => const Center(
+                          child: CircularProgressIndicator(),
+                        ),
+                    onSuccess: (simulatedOrders) => Column(
+                        children: simulatedOrders
+                            .map((order) => switch (order) {
+                                  SimulatedOrderMatch(
+                                    give: final give,
+                                    get: final get
+                                  ) =>
+                                    Text(
+                                        "match: give ${give.normalizedPretty()} ${state.giveAsset.displayName} / get ${get.normalizedPretty()} ${state.getAsset.displayName}",
+                                        style: theme.textTheme.bodySmall),
+                                  SimulatedOrderCreate(
+                                    give: final give,
+                                    get: final get
+                                  ) =>
+                                    Text(
+                                        "match create: give ${give.normalizedPretty()} ${state.giveAsset.displayName} / get ${get.normalizedPretty()} ${state.getAsset.displayName}",
+                                        style: theme.textTheme.bodySmall),
+                                })
+                            .toList()))
+              ],
+            ),
+
             // Add more form fields as needed
           ],
         ),
@@ -310,7 +373,7 @@ class OrderInputs extends StatefulWidget {
   final Asset amountAsset;
   final Asset priceAsset;
   final Asset giveAsset;
-  final Asset receiveAsset;
+  final Asset getAsset;
   final List<OrderViewModel> buyOrders;
   final List<OrderViewModel> sellOrders;
 
@@ -324,7 +387,7 @@ class OrderInputs extends StatefulWidget {
     required this.priceAsset,
     required this.amountAsset,
     required this.giveAsset,
-    required this.receiveAsset,
+    required this.getAsset,
     required this.buyOrders,
     required this.sellOrders,
   });
@@ -499,50 +562,50 @@ class _OrderInputs extends State<OrderInputs> {
                         ],
                       ),
                     ),
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(0, 8, 0, 0),
-                      child: Column(
-                        children: [
-                          Row(
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.fromLTRB(4, 0, 0, 8),
-                                child: Text("To receive",
-                                    style: theme.textTheme.titleSmall!.copyWith(
-                                      color: theme
-                                          .extension<CustomThemeExtension>()!
-                                          .mutedDescriptionTextColor,
-                                    )),
-                              ),
-                            ],
-                          ),
-                          HorizonCard(
-                            child: Column(
-                              children: [
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    Expanded(
-                                        child: QuantityText(
-                                            quantity: widget.state
-                                                .receiveQuantityInput.value
-                                                .normalizedPretty())),
-                                    AssetPill(
-                                        onTap: widget.onClickPriceAsset,
-                                        asset: widget.receiveAsset,
-                                        appIcons: appIcons,
-                                        session: session,
-                                        theme: theme),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+                    // Padding(
+                    //   padding: const EdgeInsets.fromLTRB(0, 8, 0, 0),
+                    //   child: Column(
+                    //     children: [
+                    //       Row(
+                    //         children: [
+                    //           Padding(
+                    //             padding: const EdgeInsets.fromLTRB(4, 0, 0, 8),
+                    //             child: Text("To receive",
+                    //                 style: theme.textTheme.titleSmall!.copyWith(
+                    //                   color: theme
+                    //                       .extension<CustomThemeExtension>()!
+                    //                       .mutedDescriptionTextColor,
+                    //                 )),
+                    //           ),
+                    //         ],
+                    //       ),
+                    //       HorizonCard(
+                    //         child: Column(
+                    //           children: [
+                    //             Row(
+                    //               mainAxisAlignment:
+                    //                   MainAxisAlignment.spaceBetween,
+                    //               crossAxisAlignment: CrossAxisAlignment.center,
+                    //               children: [
+                    //                 Expanded(
+                    //                     child: QuantityText(
+                    //                         quantity: widget.state
+                    //                             .receiveQuantityInput.value
+                    //                             .normalizedPretty())),
+                    //                 AssetPill(
+                    //                     onTap: widget.onClickPriceAsset,
+                    //                     asset: widget.receiveAsset,
+                    //                     appIcons: appIcons,
+                    //                     session: session,
+                    //                     theme: theme),
+                    //               ],
+                    //             ),
+                    //           ],
+                    //         ),
+                    //       ),
+                    //     ],
+                    //   ),
+                    // ),
                   ],
                 ),
               ),
@@ -616,7 +679,7 @@ class OrderBookView extends StatelessWidget {
   final PriceType priceType;
 
   final Asset giveAsset;
-  final Asset receiveAsset;
+  final Asset getAsset;
   final List<OrderViewModel> buyOrders;
   final List<OrderViewModel> sellOrders;
 
@@ -625,7 +688,7 @@ class OrderBookView extends StatelessWidget {
     required this.priceType,
     required this.priceString,
     required this.giveAsset,
-    required this.receiveAsset,
+    required this.getAsset,
     required this.buyOrders,
     required this.sellOrders,
   });
@@ -689,7 +752,6 @@ class OrderBookView extends StatelessWidget {
                   );
                 }
 
-                // Buy orders
                 final sell = sellOrders[index - sellStartIndex];
                 return _OrderRow(
                   quantity: sell.quantity.normalized(precision: 8),

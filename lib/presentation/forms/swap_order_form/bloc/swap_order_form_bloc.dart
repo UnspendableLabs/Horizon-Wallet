@@ -1,7 +1,9 @@
+import 'dart:math';
 import 'package:get_it/get_it.dart';
 import 'package:fpdart/fpdart.dart' hide Order;
 import 'package:formz/formz.dart';
 import 'package:horizon/domain/entities/remote_data.dart';
+import 'package:rxdart/rxdart.dart';
 import 'package:horizon/domain/entities/address_v2.dart';
 import 'package:horizon/domain/entities/order.dart';
 import 'package:horizon/domain/entities/asset_quantity.dart';
@@ -12,6 +14,24 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:horizon/domain/repositories/order_repository.dart';
 import 'package:horizon/common/constants.dart';
+
+sealed class SimulatedOrder extends Equatable {
+  final AssetQuantity give;
+  final AssetQuantity get;
+
+  const SimulatedOrder({required this.give, required this.get});
+
+  @override
+  List<Object?> get props => [];
+}
+
+class SimulatedOrderMatch extends SimulatedOrder {
+  const SimulatedOrderMatch({required super.give, required super.get});
+}
+
+class SimulatedOrderCreate extends SimulatedOrder {
+  const SimulatedOrderCreate({required super.give, required super.get});
+}
 
 enum AmountInputError { required }
 
@@ -64,21 +84,21 @@ class GiveQuantityInput
   }
 }
 
-enum ReceiveQuantityInputError { required }
+enum GetQuantityInputError { required }
 
-class ReceiveQuantityInput
-    extends FormzInput<AssetQuantity, ReceiveQuantityInputError> {
-  ReceiveQuantityInput.pure({required bool divisible})
+class GetQuantityInput
+    extends FormzInput<AssetQuantity, GetQuantityInputError> {
+  GetQuantityInput.pure({required bool divisible})
       : super.pure(AssetQuantity(divisible: divisible, quantity: BigInt.zero));
 
-  const ReceiveQuantityInput.dirty({
+  const GetQuantityInput.dirty({
     required AssetQuantity value,
   }) : super.dirty(value);
 
   @override
-  ReceiveQuantityInputError? validator(AssetQuantity value) {
+  GetQuantityInputError? validator(AssetQuantity value) {
     if (value.quantity == BigInt.zero) {
-      return ReceiveQuantityInputError.required;
+      return GetQuantityInputError.required;
     }
     return null;
   }
@@ -141,10 +161,12 @@ extension OrderViewModelExtension on Order {
 }
 
 class SwapOrderFormModel with FormzMixin {
+  final RemoteData<List<SimulatedOrder>> simulatedOrders;
+
   final MultiAddressBalanceEntry giveAssetBalance;
 
   final Asset giveAsset;
-  final Asset receiveAsset;
+  final Asset getAsset;
 
   final List<Order> buyOrders;
   final List<Order> sellOrders;
@@ -155,9 +177,8 @@ class SwapOrderFormModel with FormzMixin {
   final AmountInput amountInput;
   final PriceInput priceInput;
 
-  // final ReceiveQuantityInput receiveQuantityInput;
-
   const SwapOrderFormModel({
+    required this.simulatedOrders,
     required this.giveAssetBalance,
     required this.amountInput,
     required this.priceInput,
@@ -165,7 +186,7 @@ class SwapOrderFormModel with FormzMixin {
     // required this.receiveQuantityInput,
     required this.amountType,
     required this.giveAsset,
-    required this.receiveAsset,
+    required this.getAsset,
     required this.buyOrders,
     required this.sellOrders,
     required this.priceType,
@@ -179,16 +200,11 @@ class SwapOrderFormModel with FormzMixin {
                 divisible: giveAsset.divisible,
                 quantity: BigInt.from(giveAssetBalance.quantity))),
         ((AmountType.get, PriceType.give)) => GiveQuantityInput.dirty(
+
             value: AssetQuantity.fromNormalizedString(
                 divisible: giveAsset.divisible,
-                input: (AssetQuantity.fromNormalizedString(
-                                divisible: receiveAsset.divisible,
-                                input: amountInput.value)
-                            .normalizedNum() *
-                        AssetQuantity.fromNormalizedString(
-                                divisible: giveAsset.divisible,
-                                input: priceInput.value)
-                            .normalizedNum())
+                input: (getQuantityInput.value.normalizedNum() *
+                        (num.tryParse(priceInput.value) ?? 0))
                     .toString()),
             userBalance: AssetQuantity(
                 divisible: giveAsset.divisible,
@@ -197,11 +213,11 @@ class SwapOrderFormModel with FormzMixin {
             value: AssetQuantity.fromNormalizedString(
                 divisible: giveAsset.divisible,
                 input: (AssetQuantity.fromNormalizedString(
-                                divisible: receiveAsset.divisible,
+                                divisible: getAsset.divisible,
                                 input: amountInput.value)
                             .normalizedNum() /
                         AssetQuantity.fromNormalizedString(
-                                divisible: receiveAsset.divisible,
+                                divisible: getAsset.divisible,
                                 input: priceInput.value)
                             .normalizedNum())
                     .toString()),
@@ -210,14 +226,13 @@ class SwapOrderFormModel with FormzMixin {
                 quantity: BigInt.from(giveAssetBalance.quantity))),
       };
 
-  ReceiveQuantityInput get receiveQuantityInput =>
-      switch ((amountType, priceType)) {
-        ((AmountType.get, _)) => ReceiveQuantityInput.dirty(
+  GetQuantityInput get getQuantityInput => switch ((amountType, priceType)) {
+        ((AmountType.get, _)) => GetQuantityInput.dirty(
             value: AssetQuantity.fromNormalizedString(
-                divisible: receiveAsset.divisible, input: amountInput.value)),
-        ((AmountType.give, PriceType.give)) => ReceiveQuantityInput.dirty(
+                divisible: getAsset.divisible, input: amountInput.value)),
+        ((AmountType.give, PriceType.give)) => GetQuantityInput.dirty(
             value: AssetQuantity.fromNormalizedString(
-                divisible: receiveAsset.divisible,
+                divisible: getAsset.divisible,
                 input: (AssetQuantity.fromNormalizedString(
                                 divisible: giveAsset.divisible,
                                 input: amountInput.value)
@@ -227,15 +242,15 @@ class SwapOrderFormModel with FormzMixin {
                                 input: priceInput.value)
                             .normalizedNum())
                     .toString())),
-        ((AmountType.give, PriceType.get)) => ReceiveQuantityInput.dirty(
+        ((AmountType.give, PriceType.get)) => GetQuantityInput.dirty(
             value: AssetQuantity.fromNormalizedString(
-                divisible: receiveAsset.divisible,
+                divisible: getAsset.divisible,
                 input: (AssetQuantity.fromNormalizedString(
                                 divisible: giveAsset.divisible,
                                 input: amountInput.value)
                             .normalizedNum() *
                         AssetQuantity.fromNormalizedString(
-                                divisible: receiveAsset.divisible,
+                                divisible: getAsset.divisible,
                                 input: priceInput.value)
                             .normalizedNum())
                     .toString())),
@@ -243,29 +258,31 @@ class SwapOrderFormModel with FormzMixin {
 
   @override
   List<FormzInput> get inputs =>
-      [amountInput, priceInput, giveQuantityInput, receiveQuantityInput];
+      [amountInput, priceInput, giveQuantityInput, getQuantityInput];
 
   SwapOrderFormModel copyWith(
       {MultiAddressBalanceEntry? giveAssetBalance,
       AmountInput? amountInput,
       PriceInput? priceInput,
       Asset? giveAsset,
-      Asset? receiveAsset,
+      Asset? getAsset,
       List<Order>? buyOrders,
       List<Order>? sellOrders,
       AmountType? amountType,
       PriceType? priceType,
-      ReceiveQuantityInput? receiveQuantityInput}) {
+      GetQuantityInput? getQuantityInput,
+      RemoteData<List<SimulatedOrder>>? simulatedOrders}) {
     return SwapOrderFormModel(
       // giveQuantityInput: giveQuantityInput ?? this.giveQuantityInput,
       // receiveQuantityInput: receiveQuantityInput ?? this.receiveQuantityInput,
+      simulatedOrders: simulatedOrders ?? this.simulatedOrders,
       giveAssetBalance: giveAssetBalance ?? this.giveAssetBalance,
       priceInput: priceInput ?? this.priceInput,
       amountInput: amountInput ?? this.amountInput,
       priceType: priceType ?? this.priceType,
       amountType: amountType ?? this.amountType,
       giveAsset: giveAsset ?? this.giveAsset,
-      receiveAsset: receiveAsset ?? this.receiveAsset,
+      getAsset: getAsset ?? this.getAsset,
       buyOrders: buyOrders ?? this.buyOrders,
       sellOrders: sellOrders ?? this.sellOrders,
     );
@@ -273,8 +290,8 @@ class SwapOrderFormModel with FormzMixin {
 
   String get priceString {
     return priceType == PriceType.give
-        ? "${giveAsset.displayName} / ${receiveAsset.displayName}"
-        : "${receiveAsset.displayName} / ${giveAsset.displayName}";
+        ? "${giveAsset.displayName} / ${getAsset.displayName}"
+        : "${getAsset.displayName} / ${giveAsset.displayName}";
   }
 
   List<OrderViewModel> get buyOrdersView {
@@ -294,11 +311,11 @@ class SwapOrderFormModel with FormzMixin {
   }
 
   Asset get amountAsset {
-    return amountType == AmountType.give ? giveAsset : receiveAsset;
+    return amountType == AmountType.give ? giveAsset : getAsset;
   }
 
   Asset get priceAsset {
-    return priceType == PriceType.give ? giveAsset : receiveAsset;
+    return priceType == PriceType.give ? giveAsset : getAsset;
   }
 
   Option<String> get amountInputError {
@@ -308,14 +325,13 @@ class SwapOrderFormModel with FormzMixin {
 
     final error = amountType == AmountType.give
         ? giveQuantityInput.error
-        : receiveQuantityInput.error;
+        : getQuantityInput.error;
 
     return Option.fromNullable(error?.toString());
   }
 
-  bool get amountInputDivisibility => amountType == AmountType.give
-      ? giveAsset.divisible
-      : receiveAsset.divisible;
+  bool get amountInputDivisibility =>
+      amountType == AmountType.give ? giveAsset.divisible : getAsset.divisible;
 }
 
 enum AmountType {
@@ -373,37 +389,45 @@ class PriceInputChanged extends SwapOrderFormEvent {
   const PriceInputChanged({required this.value});
 }
 
+class SimulatedOrdersRequested extends SwapOrderFormEvent {}
+
 class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
   final HttpConfig httpConfig;
 
   final AddressV2 address;
 
+  final OrderRepository _orderRepository;
+
   SwapOrderFormBloc({
     required this.address,
     required this.httpConfig,
-    required Asset receiveAsset,
+    required Asset getAsset,
     required Asset giveAsset,
     required List<Order> buyOrders,
     required List<Order> sellOrders,
     OrderRepository? orderRepository,
-  }) : super(SwapOrderFormModel(
-          giveAssetBalance: MultiAddressBalanceEntry(
-              address: address.address,
-              quantity: 100 * TenToTheEigth.value,
-              quantityNormalized: "100.00000000"),
-          amountInput: AmountInput.pure(),
-          priceInput: PriceInput.pure(),
-          amountType: AmountType.get,
-          priceType: PriceType.give,
-          giveAsset: giveAsset,
-          receiveAsset: receiveAsset,
-          buyOrders: buyOrders,
-          sellOrders: sellOrders,
-        )) {
+  })  : _orderRepository = orderRepository ?? GetIt.I<OrderRepository>(),
+        super(SwapOrderFormModel(
+            giveAssetBalance: MultiAddressBalanceEntry(
+                address: address.address,
+                quantity: 100 * TenToTheEigth.value,
+                quantityNormalized: "100.00000000"),
+            amountInput: AmountInput.pure(),
+            priceInput: PriceInput.pure(),
+            amountType: AmountType.get,
+            priceType: PriceType.give,
+            giveAsset: giveAsset,
+            getAsset: getAsset,
+            buyOrders: buyOrders,
+            sellOrders: sellOrders,
+            simulatedOrders: const Initial())) {
     on<AmountTypeClicked>(_handleAmountTypeClicked);
     on<PriceTypeClicked>(_handlePriceTypeClicked);
     on<AmountInputChanged>(_handleAmountInputChanged);
     on<PriceInputChanged>(_handlePriceInputChanged);
+    on<SimulatedOrdersRequested>(_handleSimulateOrdersRequested,
+        transformer: debounce<SimulatedOrdersRequested>(
+            const Duration(milliseconds: 300)));
   }
 
   _handlePriceInputChanged(
@@ -415,6 +439,8 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
     emit(state.copyWith(
       priceInput: priceInput,
     ));
+
+    add(SimulatedOrdersRequested());
   }
 
   _handleAmountInputChanged(
@@ -428,6 +454,8 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
     emit(state.copyWith(
       amountInput: amountInput,
     ));
+
+    add(SimulatedOrdersRequested());
   }
 
   _handleAmountTypeClicked(
@@ -455,4 +483,119 @@ class SwapOrderFormBloc extends Bloc<SwapOrderFormEvent, SwapOrderFormModel> {
       ),
     );
   }
+
+  _handleSimulateOrdersRequested(
+    SimulatedOrdersRequested event,
+    Emitter<SwapOrderFormModel> emit,
+  ) async {
+    emit(state.copyWith(simulatedOrders: const Loading()));
+
+    final task =
+        TaskEither<String, (List<Order>, List<Order>, List<SimulatedOrder>)>.Do(
+      ($) async {
+        final result = await $(TaskEither.sequenceList([
+          _orderRepository.getByPairTE(
+            status: "open",
+            address: address.address,
+            giveAsset: state.getAsset.asset,
+            getAsset: state.giveAsset.asset,
+            httpConfig: httpConfig,
+          ),
+          _orderRepository.getByPairTE(
+            address: address.address,
+            giveAsset: state.giveAsset.asset,
+            getAsset: state.getAsset.asset,
+            status: "open",
+            httpConfig: httpConfig,
+          ),
+        ]));
+
+        final buyOrders = result[0];
+        final sellOrders = result[1];
+
+        int tx1GiveRemaining = state.giveQuantityInput.value.quantity.toInt();
+        int tx1GetRemaining = state.getQuantityInput.value.quantity.toInt();
+
+        final giveDivisible = state.giveAsset.divisible;
+        final getDivisible = state.getAsset.divisible;
+
+        final candidateMatches = buyOrders;
+
+        final simulatedOrders = <SimulatedOrder>[];
+
+        final tx1Price = state.getQuantityInput.value.normalizedNum() /
+            state.giveQuantityInput.value.normalizedNum();
+        final tx1InversePrice = state.giveQuantityInput.value.normalizedNum() /
+            state.getQuantityInput.value.normalizedNum();
+
+        for (final tx0 in candidateMatches) {
+          final tx0GiveRemaining = tx0.giveRemaining;
+          final tx0GetRemaining = tx0.getRemaining;
+          final tx0Price = tx0.getQuantity / tx0.giveQuantity;
+
+          if (tx0Price > tx1InversePrice) {
+            continue;
+          }
+
+          int forwardQuantity = min(
+            tx0GiveRemaining,
+            (tx1GiveRemaining / tx0Price).floor(),
+          );
+          int backwardQuantity = (forwardQuantity * tx0Price).round();
+
+          if (forwardQuantity == 0 || backwardQuantity == 0) {
+            continue;
+          }
+
+          simulatedOrders.add(SimulatedOrderMatch(
+            give: AssetQuantity(
+              divisible: giveDivisible,
+              quantity: BigInt.from(backwardQuantity),
+            ),
+            get: AssetQuantity(
+              divisible: getDivisible,
+              quantity: BigInt.from(forwardQuantity),
+            ),
+          ));
+
+          tx1GiveRemaining -= backwardQuantity;
+          tx1GetRemaining -= forwardQuantity;
+        }
+
+        if (tx1GiveRemaining > 0 && tx1GetRemaining > 0) {
+          simulatedOrders.add(SimulatedOrderCreate(
+            give: AssetQuantity(
+              divisible: giveDivisible,
+              quantity: BigInt.from(tx1GiveRemaining),
+            ),
+            get: AssetQuantity(
+              divisible: getDivisible,
+              quantity: BigInt.from(tx1GetRemaining),
+            ),
+          ));
+        }
+
+        return (buyOrders, sellOrders, simulatedOrders);
+      },
+    );
+
+    final result = await task.run();
+
+    final nextState = result.fold(
+      (error) => state.copyWith(simulatedOrders: Failure(error)),
+      (success) => state.copyWith(
+        buyOrders: success.$1,
+        sellOrders: success.$2,
+        simulatedOrders: Success(success.$3),
+      ),
+    );
+
+    emit(nextState);
+  }
+}
+
+EventTransformer<E> debounce<E>(Duration duration) {
+  return (events, mapper) => events
+      .debounceTime(duration) // wait until the stream is quiet
+      .switchMap(mapper); // then run the handler once
 }
