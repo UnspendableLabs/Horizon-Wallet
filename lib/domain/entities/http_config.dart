@@ -16,6 +16,9 @@ sealed class HttpConfig {
       required this.horizonExplorer,
       required this.horizonExplorerApi,
       required this.mempoolSpaceApi});
+
+  static Mainnet mainnet() => const Mainnet();
+  static Testnet4 testnet4() => const Testnet4();
 }
 
 class Mainnet extends HttpConfig {

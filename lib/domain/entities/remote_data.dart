@@ -130,6 +130,25 @@ extension RemoteDataX<T> on RemoteData<T> {
           onRefreshing: onReplete,
           onSuccess: onReplete,
           onFailure: onFailure);
+
+  R maybeWhen<R>({
+    R Function()? onInitial,
+    R Function()? onLoading,
+    R Function(T value)? onRefreshing,
+    R Function(T value)? onSuccess,
+    R Function(Object error)? onFailure,
+    required R Function() orElse,
+  }) {
+    return switch (this) {
+      Initial() => onInitial?.call() ?? orElse(),
+      Loading() => onLoading?.call() ?? orElse(),
+      Refreshing(value: final v) => onRefreshing?.call(v) ?? orElse(),
+      Success(value: final v) => onSuccess?.call(v) ?? orElse(),
+      Failure(error: final e) => onFailure?.call(e) ?? orElse(),
+    };
+  }
+
+  // chat help me with this
 }
 
 extension RemoteDataCombineX<A> on RemoteData<A> {
