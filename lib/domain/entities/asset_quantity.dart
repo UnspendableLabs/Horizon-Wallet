@@ -1,4 +1,5 @@
 import 'package:horizon/common/constants.dart';
+import "package:fpdart/fpdart.dart" hide Order;
 
 class AssetQuantity {
   final bool divisible;
@@ -11,29 +12,34 @@ class AssetQuantity {
 
   factory AssetQuantity.fromNormalizedString(
       {required bool divisible, required String input}) {
+    final parsed = num.parse(input);
 
-
-
-
-
-    try {
-      if (divisible) {
-        int quantity =
-            (double.parse(input) * TenToTheEigth.doubleValue).round();
-
-
-        print("input: $input");
-        print("quantity: $quantity\n\n");
-
-        return AssetQuantity(divisible: true, quantity: BigInt.from(quantity));
-      } else {
-        return AssetQuantity(divisible: false, quantity: BigInt.parse(input));
-      }
-    } catch (e) {
-      print("has there been an error?");
-      print(e);
-      return AssetQuantity(divisible: divisible, quantity: BigInt.zero);
+    if (!parsed.isFinite || parsed.isNaN) {
+      throw FormatException("non-finite input");
     }
+
+    if (divisible) {
+      int quantity = (parsed * TenToTheEigth.doubleValue).round();
+
+      return AssetQuantity(divisible: true, quantity: BigInt.from(quantity));
+    } else {
+      int floored = double.parse(input).floor();
+      return AssetQuantity(divisible: false, quantity: BigInt.from(floored));
+    }
+  }
+
+  static Either<String, AssetQuantity> fromNormalizedStringSafe(
+      {required bool divisible, required String input}) {
+    return Either<String, AssetQuantity>.tryCatch(
+      () => AssetQuantity.fromNormalizedString(
+          divisible: divisible, input: input),
+      (e, callstack) {
+        print("input: $input");
+        print(e);
+        print(callstack);
+        return e.toString() ;
+        },
+    );
   }
 
   String normalized({int precision = 8}) {
@@ -44,7 +50,7 @@ class AssetQuantity {
   }
 
   num normalizedNum({int precision = 8}) {
-      return num.parse(normalized(precision: precision));
+    return num.parse(normalized(precision: precision));
   }
 
   String normalizedPretty({int precision = 8}) {

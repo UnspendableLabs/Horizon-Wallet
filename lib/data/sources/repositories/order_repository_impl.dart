@@ -43,7 +43,7 @@ class OrderRepositoryImpl implements OrderRepository {
   Future<List<Order>> getByPair(
       {
       required String giveAsset,
-      required String receiveAsset,
+      required String getAsset,
       String? status,
       required HttpConfig httpConfig}) async {
     int limit = 50;
@@ -53,7 +53,7 @@ class OrderRepositoryImpl implements OrderRepository {
     while (true) {
       final response = await _counterpartyClientFactory
           .getClient(httpConfig)
-          .getOrders(status, receiveAsset, giveAsset, cursor, limit);
+          .getOrders(status, getAsset, giveAsset, cursor, limit);
       final result = response.result ?? [];
 
       orders.addAll(result.map((order) => order.toDomain()));

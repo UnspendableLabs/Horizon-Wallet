@@ -9,9 +9,8 @@ abstract class OrderRepository {
       required HttpConfig httpConfig});
 
   Future<List<Order>> getByPair(
-      {
-      required String giveAsset,
-      required String receiveAsset,
+      {required String giveAsset,
+      required String getAsset,
       String? status,
       required HttpConfig httpConfig});
 }
@@ -33,8 +32,7 @@ extension OrderRepositoryExtension on OrderRepository {
   }
 
   TaskEither<String, List<Order>> getByPairTE(
-      {required String address,
-      required String giveAsset,
+      {required String giveAsset,
       required String getAsset,
       String? status,
       required HttpConfig httpConfig,
@@ -42,7 +40,7 @@ extension OrderRepositoryExtension on OrderRepository {
     return TaskEither.tryCatch(
         () => getByPair(
               giveAsset: giveAsset,
-              receiveAsset: getAsset,
+              getAsset: getAsset,
               status: status,
               httpConfig: httpConfig,
             ),

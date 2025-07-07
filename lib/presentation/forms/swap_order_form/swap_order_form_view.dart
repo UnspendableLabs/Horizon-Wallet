@@ -18,6 +18,7 @@ import './bloc/swap_order_form_bloc.dart';
 import 'package:horizon/presentation/screens/horizon/redesign_ui.dart';
 import 'package:horizon/presentation/session/bloc/session_cubit.dart';
 import 'package:horizon/presentation/session/bloc/session_state.dart';
+import 'package:group_button/group_button.dart';
 
 import 'package:horizon/presentation/common/colors.dart';
 import 'package:horizon/presentation/common/redesign_colors.dart';
@@ -130,13 +131,16 @@ class SwapOrderFormActions {
   final VoidCallback onSubmitClicked;
   final Function(String value) onAmountChanged;
   final Function(String value) onPriceChanged;
+  final Function(RelativePriceValue value) onRelativePriceButtonClicked;
 
-  SwapOrderFormActions(
-      {required this.onSubmitClicked,
-      required this.onClickAmountAsset,
-      required this.onClickPriceAsset,
-      required this.onAmountChanged,
-      required this.onPriceChanged});
+  SwapOrderFormActions({
+    required this.onSubmitClicked,
+    required this.onClickAmountAsset,
+    required this.onClickPriceAsset,
+    required this.onAmountChanged,
+    required this.onPriceChanged,
+    required this.onRelativePriceButtonClicked,
+  });
 }
 
 class SwapOrderFormProvider extends StatefulWidget {
@@ -184,13 +188,11 @@ class _SwapOrderFormProviderState extends State<SwapOrderFormProvider> {
       ),
       widget._orderRepository.getByPairTE(
         status: "open",
-        address: widget.address.address,
         giveAsset: widget.getAsset,
         getAsset: widget.giveAsset,
         httpConfig: widget.httpConfig,
       ),
       widget._orderRepository.getByPairTE(
-        address: widget.address.address,
         giveAsset: widget.giveAsset,
         getAsset: widget.getAsset,
         status: "open",
@@ -217,6 +219,9 @@ class _SwapOrderFormProviderState extends State<SwapOrderFormProvider> {
                     builder: (context, state) {
                       return widget.child(
                         SwapOrderFormActions(
+                            onRelativePriceButtonClicked: (value) => context
+                                .read<SwapOrderFormBloc>()
+                                .add(RelativePriceButtonClicked(value: value)),
                             onSubmitClicked: () => print("submit clicked"),
                             onAmountChanged: (value) {
                               context
@@ -306,16 +311,17 @@ class SwapOrderForm extends StatelessWidget {
             ),
             Column(
               children: [
-                Text(
+                // chat i ned this text to be copyable
+                SelectableText(
                     "give quantity normalized: ${state.giveQuantityInput.value.normalizedPretty()}",
                     style: theme.textTheme.bodySmall),
-                Text(
+                SelectableText(
                     "give quantity raw: ${state.giveQuantityInput.value.quantity}",
                     style: theme.textTheme.bodySmall),
-                Text(
+                SelectableText(
                     "get quantity normalized: ${state.getQuantityInput.value.normalizedPretty()}",
                     style: theme.textTheme.bodySmall),
-                Text(
+                SelectableText(
                     "get quantity raw: ${state.getQuantityInput.value.quantity}",
                     style: theme.textTheme.bodySmall),
                 state.simulatedOrders.fold(
@@ -334,14 +340,14 @@ class SwapOrderForm extends StatelessWidget {
                                     give: final give,
                                     get: final get
                                   ) =>
-                                    Text(
+                                    SelectableText(
                                         "match: give ${give.normalizedPretty()} ${state.giveAsset.displayName} / get ${get.normalizedPretty()} ${state.getAsset.displayName}",
                                         style: theme.textTheme.bodySmall),
                                   SimulatedOrderCreate(
                                     give: final give,
                                     get: final get
                                   ) =>
-                                    Text(
+                                    SelectableText(
                                         "match create: give ${give.normalizedPretty()} ${state.giveAsset.displayName} / get ${get.normalizedPretty()} ${state.getAsset.displayName}",
                                         style: theme.textTheme.bodySmall),
                                 })
@@ -455,26 +461,6 @@ class _OrderInputs extends State<OrderInputs> {
             _limitPriceController.selection =
                 TextSelection.collapsed(offset: offset);
           }
-
-          // if (num.parse(_amountController.text) !=
-          //     num.parse(widget.state.amountInput.value.normalizedPretty())) {
-          //   _amountController.text =
-          //       widget.state.amountInput.value.normalizedPretty();
-          // }
-
-          // _amountController.text =
-          //     state.amountInput.value.normalizedPretty();
-          //
-          // if (num.parse(_amountController.text) !=
-          //     num.parse(widget.state.amountInput.value.normalizedPretty())) {
-          //   _amountController.text =
-          //       widget.state.amountInput.value.normalizedPretty();
-          // }
-          // if (_limitPriceController.text !=
-          //     widget.state.priceInput.value.normalizedPretty()) {
-          //   _limitPriceController.text =
-          //       widget.state.priceInput.value.normalizedPretty();
-          // }
         },
         builder: (context, state) {
           return Column(
@@ -523,6 +509,7 @@ class _OrderInputs extends State<OrderInputs> {
                 child: Column(
                   children: [
                     Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Padding(
                           padding: const EdgeInsets.fromLTRB(4, 0, 0, 8),
@@ -533,6 +520,75 @@ class _OrderInputs extends State<OrderInputs> {
                                     .extension<CustomThemeExtension>()!
                                     .mutedDescriptionTextColor,
                               )),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(0, 0, 0, 8),
+                          child: Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                Container(
+                                  height: 28,
+                                  width: 48,
+                                  child: HorizonButton(
+                                    child: TextButtonContent(
+                                        value: 'Floor',
+                                        style: const TextStyle(
+                                          fontSize: 12,
+                                        )),
+                                    height: 28,
+                                    borderRadius: 18,
+                                    variant: ButtonVariant.black,
+                                    onPressed: () {
+                                      widget.actions
+                                          .onRelativePriceButtonClicked(
+                                        RelativePriceValue.floor,
+                                      );
+                                    },
+                                  ),
+                                ),
+                                const SizedBox(width: 4),
+                                Container(
+                                  height: 28,
+                                  width: 48,
+                                  child: HorizonButton(
+                                    child: TextButtonContent(
+                                        value: '+1',
+                                        style: const TextStyle(
+                                          fontSize: 12,
+                                        )),
+                                    height: 28,
+                                    borderRadius: 18,
+                                    variant: ButtonVariant.black,
+                                    onPressed: () {
+                                      widget.actions
+                                          .onRelativePriceButtonClicked(
+                                        RelativePriceValue.plus1,
+                                      );
+                                    },
+                                  ),
+                                ),
+                                const SizedBox(width: 4),
+                                Container(
+                                  height: 28,
+                                  width: 48,
+                                  child: HorizonButton(
+                                    child: TextButtonContent(
+                                        value: '+3',
+                                        style: const TextStyle(
+                                          fontSize: 12,
+                                        )),
+                                    height: 28,
+                                    borderRadius: 18,
+                                    variant: ButtonVariant.black,
+                                    onPressed: () {
+                                      widget.actions
+                                          .onRelativePriceButtonClicked(
+                                        RelativePriceValue.plus3,
+                                      );
+                                    },
+                                  ),
+                                ),
+                              ]),
                         ),
                       ],
                     ),
